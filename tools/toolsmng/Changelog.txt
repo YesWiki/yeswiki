@@ -1,0 +1,1 @@
+2008/04/29 : DD : Corr ection bug affichage liste des plugins actifs seulements

@@ -1,0 +1,93 @@
+.nuage{margin:0;padding:0;}
+.nuage a{color:#000;text-decoration:none;border:0;background:transparent;}
+.nuage a:hover{background:transparent;}
+li.liste_tooltip {position:relative;margin:0;padding:0;display:block;float:left;list-style-type:none;background-image:none;color:#000;}
+li.liste_pageswiki{float:none;list-style-type:none;background-image:none;color:#000;text-align:center;margin:0;padding:0;}
+.hovertip{display:none; position:absolute; top:20px; left:0; z-index:100; background:#FFF; border:1px solid #333;-moz-border-radius:10px;-webkit-border-radius:10px;-moz-box-shadow:0 0 3px;-webkit-box-shadow:0 0 3px #000; margin:0; padding:10px; width:260px;}
+.hovertip ul {position:relative; display:block; }
+.hovertip li a{text-decoration:none;font-weight:bold;font-size:13px;color:#804d40;padding:3px;display:block;position:relative;}
+.hovertip li a:hover{color:#b9251a;}
+.texte_pages_assoc{display:block; font-weight:bold; width:100%; float:none; text-align:center; margin:3px; padding:0;}
+a.size6{font-size:38px;color:#e13728;padding:0 4px;}
+a.size5{font-size:34px;color:#c4876a;padding:5px;}
+a.size4{font-size:29px;color:#804d40;padding:10px;}
+a.size3{font-size:24px;color:#e13728;padding:5px;}
+a.size2{font-size:19px;color:#b9251a;padding:7px;}
+a.size1{font-size:14px;color:#b46a47;padding:5px;}
+a.size5:hover,a.size6:hover{color:#b46a47;}
+a.size1:hover,a.size2:hover,a.size3:hover,a.size4:hover{color:#e13728;}
+label.formulaire{text-align:right;float:left;clear:right;display:block;width:14%;margin:0;}
+textarea.microblog_billet{border:1px solid #999;background:#FFF;color:#000;width:84%;float:right;display:block;margin:0 0 5px 0;}
+input.microblog_toustags{border:1px solid #999;background:#FFF;color:#000;width:84%;display:inline;margin:0 0 5px 0;}
+.groupe_boutons{display:block;clear:both;margin:0 0 10px 0;text-align:right;}
+input.bouton{border:1px solid #333;color:#000;margin:0 0 0 10px;}
+.bulle_microblog{-moz-border-radius:15px;-webkit-border-radius:15px;-khtml-border-radius:15px;-moz-box-shadow:0 1px 2px #DDD;-webkit-box-shadow:0 1px 2px #DDD;border:1px solid #DDD;background:#FFF;color:#000;margin:0 0 15px 0;padding:0;clear:both;}
+.lien_titre,.lien_titre_accordeon{float:left;font-size:1.2em;margin:5px 5px 0 10px;}
+.date_microblog{float:right;font-size:.9em;margin:5px 10px 0 5px;}
+.auteur_microblog{clear:both;float:left;margin:0 5px 5px 10px;font-size:.9em;font-weight:bold;}
+.billet_microblog{clear:both;float:left;margin:10px;font-size:1em;}
+.commentaires_microblog{clear:both;margin:0 10px 10px 10px;}
+.edition_billet_microblog{clear:both;font-size:.9em;background:#EEE;width:100%;padding:4px 0;margin:10px 0 0 0;-moz-border-radius-bottomleft:15px;-moz-border-radius-bottomright:15px;-webkit-border-bottom-left-radius:15px;-webkit-border-bottom-right-radius:15px;-khtml-border-bottom-left-radius:15px;-khtml-border-bottom-right-radius:15px;text-align:right;}
+.accordeon_cache{clear:both;float:left;width:100%;display:none;}
+.spacer_microblog{clear:both;display:block;margin:0;padding:0;}
+a.voir_page,a.voir_billet,a.voir_commentaire{font-weight:bold;color:#000;border:0;margin:0 10px 0 0;padding:0 0 0 15px;background:url(images/voir.png) no-repeat top left;text-decoration:none;}
+a.editer_billet,a.editer_commentaire{font-weight:bold;color:#000;border:0;margin:0 10px 0 0;padding:0 0 0 15px;background:url(images/edit.png) no-repeat top left;text-decoration:none;}
+a.supprimer_page,a.supprimer_billet,a.supprimer_commentaire{font-weight:bold;color:#000;border:0;margin:0 10px 0 0;padding:0 0 0 15px;background:url(images/trash.gif) no-repeat top left;text-decoration:none;}
+a.repondre_billet,a.repondre_commentaire{font-weight:bold;color:#000;border:0;margin:0 10px 0 0;padding:0 0 0 15px;background:url(images/comment.png) no-repeat top left;text-decoration:none;}
+a:hover.voir_page,a:hover.voir_billet,a:hover.voir_commentaire,a:hover.editer_billet,a:hover.editer_commentaire,a:hover.supprimer_page,a:hover.supprimer_billet,a:hover.supprimer_commentaire,a:hover.repondre_billet,a:hover.repondre_commentaire{text-decoration:underline;}
+strong.lien_commenter,strong.admin_commenter{display:inline;margin:30px 0 0 0;padding:0 0 0 15px;background:url(images/comment.png) no-repeat top left;}
+.include_liste{padding:0 0 20px 0;margin:15px 0 15px 0;border-bottom:3px solid #EEE;}
+.alaligne{clear:left;}
+.lienpage{display:inline;}
+.liste_pager{text-align:center;margin:10px auto 30px auto;font-size:.8em;padding:4px 0;border-top:1px solid #EEE;border-bottom:1px solid #EEE;width:290px;}
+.comment{margin:4px auto;padding:0;font-size:1em;background:#f5f5f5;border:1px solid #EEE;}
+.comment a{text-decoration:none;font-weight:bold;color:#555;}
+.comment a:hover{text-decoration:underline;font-weight:bold;color:#555;}
+.comment_a_editer{background:#f5f5f5;margin:4px auto;padding:5px;font-size:1em;text-align:right;}
+.commenthtml{margin:10px;padding:0;font-size:1em;}
+.commentinfo{float:right;font-size:.8em;color:#AAA;margin:5px;}
+.commentactions{clear:both;font-size:.8em;margin:0;padding:2px;border-top:1px solid #EEE;text-align:right;}
+.commentreponses{padding:0 0 0 30px;background:transparent;}
+.reponsecommentform{font-size:1.1em;margin:0;padding:5px;background:#f5f5f5;text-align:right;}
+.listeinfo,.microbloginfo{font-size:.8em;color:#AAA;margin:4px 0 15px 0;}
+.lien_commenter{font-size:.9em;display:block;margin:0;}
+.microblogcommentform{margin:10px 0 0 0;text-align:right;}
+.commentaire_microblog{width:99%;height:50px;border:1px solid #BBB;text-align:left;}
+.bouton_submit,.bouton_annul,.bouton_microblog{border:1px solid #BBB;font-size:.8em;}
+textarea,input{border:1px solid #333;}
+textarea:focus,input:focus{background-color:#ffc;}
+.info_nb_car_max{display:none;}
+.liens_rss{text-align:right;width:100%;display:block;margin:3px 0 5px 0;}
+.liens_rss a{color:#e77630;}
+.liens_rss a:hover{color:#fbba77;text-decoration:none;}
+.liens_rss a img{border:0;}
+.textboxlist{font:11px "Lucida Grande",Verdana;cursor:text;}
+.textboxlist-bits{overflow:hidden;margin:0;padding:3px 3px 1px 0;border:1px solid #999;}
+.textboxlist-bit{list-style-type:none;float:left;display:block;padding:0;margin:0 0 0 5px;cursor:default;}
+.textboxlist-bit-editable{border:1px solid #fff;}
+.textboxlist-bit-editable-input{border:0;padding:2px 0; height:14px; font:11px "Lucida Grande",Verdana;}
+.textboxlist-bit-editable-input:focus{outline:0;}
+.textboxlist-bit-box{position:relative;line-height:18px;padding:0 5px;-moz-border-radius:9px;-webkit-border-radius:9px;border-radius:9px;border:1px solid #cad8f3;background:#dee7f8;cursor:default;}
+.textboxlist-bit-box-deletable{padding-right:15px;}
+.textboxlist-bit-box-deletebutton{border:none;position:absolute;right:4px;top:6px;display:block;width:7px;height:7px;font-size:1px;background:url('images/close.gif');}
+.textboxlist-bit-box-deletebutton:hover{border:none;background-color:transparent;background-position:7px;text-decoration:none;}
+.textboxlist-bit-box-hover{background:#bbcef1;border:1px solid #6d95e0;}
+.textboxlist-bit-box-focus{border-color:#598bec;background:#598bec;color:#fff;}
+.textboxlist-bit-box-focus .textboxlist-bit-box-deletebutton{background-position:bottom;}
+.textboxlist-autocomplete{position:absolute;}
+.textboxlist-autocomplete-placeholder,.textboxlist-autocomplete-results{opacity:.9;filter:alpha(opacity=90);background:#eee;-webkit-box-shadow:0 3px 3px #ccc;-moz-box-shadow:0 3px 3px #ccc;box-shadow:0 3px 3px #ccc;border:1px solid #999;border-top:none;display:none;}
+.textboxlist-autocomplete-placeholder{padding:5px 7px;}
+.textboxlist-autocomplete-results{margin:0;padding:0;}
+.textboxlist-autocomplete-result{margin:0;padding:5px;list-style-type:none;background:#eee;}
+.textboxlist-autocomplete-result-focus{background:#c6d9e4;}
+.textboxlist-autocomplete-highlight{background:#eef0c4;font-weight:bold;}
+.form_tags{margin-bottom:10px;float:right;width:84%;}
+.form_tags .textboxlist{width:100%;}
+.textboxlist-loading{background:url('images/spinner.gif') no-repeat right center;}
+.form_tags .textboxlist-autocomplete-result,.form_tags_edit .textboxlist-autocomplete-result{overflow:hidden;}
+.form_tags .textboxlist-autocomplete-result img,.form_tags_edit .textboxlist-autocomplete-result img{float:left;padding-right:10px;}
+.mots_cles{font-weight:bold;}
+.liste_tags_en_ligne{display:inline;margin:0;padding:0;}
+.liste_tags_en_ligne li{display:inline;list-style-type:none;margin:0;}
+.liste_pages_tag li{list-style-type:none;}
+.taglistitem{margin:20px 0;list-style-type:none;}

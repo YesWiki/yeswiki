@@ -1,0 +1,587 @@
+/* 
+Structure html :
+
+--> id conteneur (class gauche ou droite ou milieu)
+
+----> header
+------> id menu_commun_haut
+--------> id recherche
+--------> id pagerapidehaut
+------> id titre
+------> id menu_haut
+------> id banniere
+----> id col_menu
+----> id col_droite (que pour class milieu)
+----> id content
+----> footer
+------> id copyright
+
+Couleurs utilisées : 
+#482E15 : marron foncé (header, titre1)
+#F29313 : orange (liens, titre5)
+#86A01F : vert clair (titre2, titre4)
+#D9D6A0 : sable gris (fond conteneur)
+#AEA97B : gris (footer)
+*/
+
+
+/* CSS specifique au template */
+body {
+    font-family:"Trebuchet MS", Verdana, Arial, sans-serif;
+    font-size:.8em;
+    text-align:center;
+    background:#FFF;
+    margin:0;
+    padding:0;
+}
+
+p { 
+    line-height:17px; 
+    margin:10px 0; 
+    padding:0; 
+} 
+ 
+h1 { 
+    background:#482E15; 
+    color:#FFF; 
+    font-size:1.7em; 
+    -moz-border-radius:3px; 
+    -webkit-border-radius:3px; 
+    -khtml-border-radius:3px; 
+    margin:0 0 6px; 
+    padding:5px 8px; 
+} 
+ 
+h2 { 
+    background:#86A01F; 
+    color:#FFF; 
+    font-size:1.4em; 
+    -moz-border-radius:5px; 
+    -webkit-border-radius:5px; 
+    -khtml-border-radius:5px; 
+    margin:0 0 10px; 
+    padding:2px 6px; 
+} 
+ 
+
+h3 { 
+    font-size:1.4em; 
+    color:#482E15; 
+    background:transparent; 
+    text-decoration: underline; 
+    margin:0 0 15px; 
+    padding:13px 0 3px; 
+} 
+
+
+ 
+h4 { 
+    color:#86A01F; 
+    font-size:1.3em; 
+    font-weight:700; 
+    margin:0 0 3px; 
+    padding:0; 
+} 
+ 
+ 
+
+h5,h5 a { 
+    font-size:1.2em; 
+    color:#F29313; 
+    margin:0 0 2px; 
+    padding:0; 
+} 
+ 
+ 
+
+a, a:visited {
+    color:#F29313;
+    text-decoration:none; 
+    font-weight:700; 
+} 
+ 
+a:hover, a:active { 
+    text-decoration:underline; 
+} 
+ 
+  
+hr { 
+clear:both; 
+color:#FFF; 
+background-color:#86A01F; 
+height:2px; 
+border:0; 
+width:100%; 
+margin:5px 0; 
+}
+ 
+ul { 
+margin:0; 
+padding:5px 0 5px 20px; 
+} 
+ 
+li { 
+margin-bottom:4px; 
+list-style-type:disc; 
+padding:0; 
+} 
+ 
+#conteneur { 
+text-align:left; 
+width:960px; 
+color:#000; 
+position:relative; 
+-moz-box-shadow: 2px 2px 5px #666;
+-webkit-box-shadow: 2px 2px 5px #666;
+box-shadow: 2px 2px 5px #666; 
+margin:10px auto; 
+} 
+ 
+#pagerapidehaut { 
+color:#FFFFFF;
+float:left;
+margin:0 0 0 20px;
+padding:0;
+text-align:right;
+width:780px;
+}
+
+#pagerapidehaut a {color:#FFF;}
+
+#titre { 
+margin:0;
+padding:0 10px;
+text-align:center;
+}
+
+#conteneur.gauche #titre, #conteneur.milieu #titre {
+float:left;
+margin:0 0 0 20px;
+}
+
+#conteneur.droite #titre { 
+  float:right; 
+  margin:0 20px 0 0;
+}
+#titre h1 { 
+border:0; 
+background:transparent; 
+display:block; 
+font-size:38px; 
+color:#89551B; 
+margin:0;
+padding:0;
+text-align:center;
+text-shadow:1px 1px 1px #D9D6A0; 
+} 
+#titre a { 
+text-decoration:none; 
+color : #86A01F; 
+} 
+ 
+#titre a:hover { 
+text-decoration:none; 
+color : #F29313; 
+} 
+ 
+.signin,.signin:active { 
+float:right; 
+border:0; 
+color:#FFF; 
+background:transparent url(../images/identification.gif) no-repeat 0 5px; 
+margin:4px 20px 0; 
+padding:5px 10px 5px 24px; 
+} 
+ 
+.menu-open { 
+background-color:#D9D6A0; 
+-moz-border-radius-topright:5px; 
+-moz-border-radius-topleft:5px; 
+} 
+ 
+#signin_menu { 
+display:none; 
+text-align:right; 
+border:0; 
+background:#D9D6A0; 
+color:#462319; 
+position:absolute; 
+width:180px; 
+z-index:1; 
+-moz-border-radius:5px; 
+-webkit-border-radius:5px; 
+-khtml-border-radius:5px; 
+-moz-border-radius-topright:0; 
+padding:6px; 
+right:172px; 
+top:33px; 
+} 
+ 
+#signin_menu p { 
+margin:3px 0; 
+padding:0; 
+} 
+ 
+.input_iden { 
+width:80px; 
+border:1px solid #666; 
+} 
+ 
+.bouton_iden { 
+background:transparent; 
+color:#F29313; 
+border:0; 
+font-weight:700; 
+font-size:1em; 
+margin:0; 
+padding:0; 
+} 
+ 
+header {
+background:#482e15 url(../images/fond_menu_haut.png) repeat top left;
+display:block;
+width:100%;
+}
+ 
+#menu_commun_haut { 
+background:transparent; 
+display:block; 
+width:100%; 
+height:35px; 
+}
+
+#menu_commun_haut a { 
+display:inline-block;
+margin:5px 10px 0;
+}
+ 
+#recherche { 
+float:right; 
+color:#FFF; 
+margin:8px 20px 0 0;
+width:135px;
+} 
+ 
+.input_rech { 
+width:75px; 
+border:1px solid #666; 
+font-size:.9em; 
+background:#FFF url(../images/recherche.png) no-repeat 2px 2px; 
+margin:0; 
+padding:2px 2px 2px 22px; 
+} 
+ 
+.bouton_rech { 
+background:transparent; 
+color:#86A01F; 
+border:0; 
+width:30px; 
+font-weight:700; 
+font-size:.9em; 
+text-transform:uppercase; 
+margin:0; 
+}
+ 
+#menu_haut {
+color:#FFF;
+font-weight:700;
+font-size:1.1em;
+text-align:left;
+background:transparent;
+padding:0;
+z-index:97;  
+} 
+
+/* liens premier niveau en blanc */
+#menu_haut a, #menu_haut .missingpage { 
+color:#FFF; 
+background:transparent; 
+font-weight:700; 
+display:block; 
+position:relative; 
+text-decoration:none; 
+padding:10px; 
+}
+
+/* survol premier niveau menu haut : on ajoute une barre blanche */
+#menu_haut a:hover {
+border-top:5px solid #FFF;
+padding:5px 10px 10px 10px;
+} 
+
+/* survol premier niveau menu haut et liens deuxieme niveau : on change la couleur */
+#menu_haut a:hover, #menu_haut li li a, #menu_haut li:hover a, #menu_haut li.hover a { 
+color : #86A01F; 
+background-color:#482E15; 
+} 
+
+/* survol deuxieme niveau menu haut : on change la couleur et on met une barre blanche à gauche */
+#menu_haut li li a:hover { 
+color:#422C17; 
+background-color:#D9D6A0; 
+border:0;
+border-left:5px solid #FFF;
+padding:10px 10px 10px 5px;
+}
+
+/* les liens actifs (ceux correspondants à l'url en cours) apparaissent avec une ombre */
+#menu_haut li a.actif, #menu_haut li li a.actif:hover {
+text-shadow:1px 1px 0 #86A01F; 
+}
+#menu_haut li a.actif:hover, #menu_haut li li a.actif, #menu_haut li:hover a.actif  {
+text-shadow:1px 1px 0 #FFF; 
+}
+/* les listes actives (celles correspondantes à la rubrique de l'url en cours) apparaissent avec une barre blanche (au dessus pour premier niveau, a gauche pour deuxieme niveau) */
+#menu_haut li.liste-active {border-top:5px solid #86A01F;}
+#menu_haut li.liste-active:hover {border-top:5px solid #FFF;}
+#menu_haut li.liste-active a.actif {border:0; padding:5px 10px 10px 10px;}
+#menu_haut li li.liste-active {border:0; border-left:5px solid #86A01F;}
+#menu_haut li li.liste-active:hover {border:0; border-left:5px solid #FFF;}
+#menu_haut li li.liste-active a.actif {padding:10px 10px 10px 5px;}
+
+/* indicateur de sous menus (petite fleche) */
+.fleche_menu_gauche {display:block; float:left; margin:0 6px 0 0;}
+.fleche_menu_droite {display:block; float:right; margin:0 0 0 6px;}
+#menu_haut .fleche_menu_bas {height:20px; width:9px; background:url(../images/puce_triangle_bas_blanc.gif) no-repeat right center;}
+#menu_haut .fleche_menu_droit {height:14px; width:9px; background:url(../images/puce_triangle_droit_blanc.gif) no-repeat right center;}
+#col_menu .fleche_menu_droit {height:14px; width:9px; background:url(../images/puce_triangle_droit.gif) no-repeat right center;}
+
+/* premier niveau : on met un z-index pour apparaitre au dessus */
+#menu_haut ul { 
+position:relative;
+list-style:none; 
+text-align:left; 
+margin:0; 
+padding:0; 
+z-index:98; 
+}
+
+/* premier niveau : liste horizontale */
+#menu_haut li { 
+position: relative;
+display:block; 
+float:left; 
+margin:0; 
+padding:0;
+}
+ 
+/* deuxieme niveau : les listes sont contenues dans un boite de 210 pixels de large, et apparaissent en dessous de la liste de premier niveau survolée, elles sont cachées au départ  */
+#menu_haut ul ul { 
+display:none;
+position: absolute; top: 100%; left: 0;
+width:210px;
+font-size:0.9em;
+}
+
+/* deuxieme niveau : les listes sont positionnées pour etre les unes en dessous des autres  */
+#menu_haut ul ul li { 
+display:block; 
+float:none;
+}
+
+/* troisieme niveau : les listes apparaissent à droite de la liste de deuxieme niveau survolée, elles sont cachées au départ */
+#menu_haut ul ul ul { left: 100%; top: 0; font-size:1em; border:1px solid #86A01F;}
+#menu_haut ul li:hover > ul { visibility: visible; }
+
+ 
+#identification { 
+color:#000; 
+clear:left; 
+float:right; 
+width:150px; 
+background:transparent; 
+margin:0; 
+padding:0; 
+}
+
+#page-main {margin:0 0 10px 0;}
+
+.page {margin:10px 0;}
+
+#col_menu { 
+color:#000; 
+background:#D9D6A0 ;
+padding:0 0 0 10px; 
+margin-left:0;
+}
+
+#col_menu a { 
+color:#000; 
+display:block; 
+border:none; 
+padding:6px; 
+} 
+
+#col_menu a:hover,  #col_menu li.hover a, #col_menu li.hover li a:hover { 
+text-decoration:none; 
+color:#482E15; 
+background:#86A01F;
+}
+
+#col_menu li.liste-active a.actif {
+color:#F29313;
+text-shadow:1px 1px 0 #222;
+}
+#col_menu li li.liste-active a.actif {
+border-left:5px solid #86A01F;
+padding:6px 6px 6px 21px;
+}
+
+#col_menu li.hover .fleche_menu_droit {background:url(../images/puce_triangle_bas.gif) no-repeat left center;}
+#col_menu li .fleche_menu_droit, #col_menu li.hover li .fleche_menu_droit {background:url(../images/puce_triangle_droit.gif) no-repeat left center;}
+ 
+#col_menu ul { 
+background:transparent; 
+margin:0 0 0 -10px; 
+padding:0;
+position:relative;
+} 
+ 
+#col_menu li { 
+list-style-type:none; 
+margin:0; 
+padding:0; 
+}
+
+/* deuxieme niveau : menu caché à l'ouverture */
+#col_menu ul ul { 
+background:#FFF; 
+padding:0; 
+margin:0;
+display:none;
+position:relative;
+border:1px solid #86A01F;
+}
+ 
+#col_menu ul ul li { 
+display:block; 
+float:none;
+position:relative;
+}
+
+/* deuxieme niveau : liens gris foncé sur fond blanc*/
+#col_menu ul ul a, #col_menu li.hover li a  { 
+color:#222;
+background:#FFF;
+padding:6px 6px 6px 26px; 
+margin:0; 
+} 
+
+/* troisieme niveau : les listes apparaissent à droite de la liste de deuxieme niveau survolée, elles sont cachées au départ */
+#col_menu ul ul ul {
+position:absolute;
+left:100%;
+top:0;
+font-size:1em;
+z-index:98;
+width:200px;
+}
+#col_menu ul ul li:hover > ul { visibility: visible; }
+  
+  
+#col_droite .div_include  { 
+background:transparent; 
+margin:10px 0; 
+padding:5px; 
+width:140px; 
+} 
+ 
+#col_menu .div_include { 
+background:transparent; 
+margin:0; 
+padding:0; 
+}
+ 
+#content {
+background : #FFF;
+position:relative;
+text-align:justify;
+padding:0;
+}
+#col_droite { 
+float:right; 
+background:#FFF; 
+padding:0; 
+} 
+ 
+#col_droite li { 
+font-size:.8em; 
+list-style-type:none; 
+background:url(../images/puce_liste_boite.png) no-repeat 0 5px; 
+margin:0 0 6px; 
+padding:0 0 0 13px; 
+} 
+ 
+#col_droite a { 
+color:#000; 
+font-weight:700; 
+text-align:left; 
+} 
+
+.commentsheader {margin:10px 0; width:100%; clear:both;}
+.footer {margin:10px 0; text-align:center; width:100%; clear:both;}
+
+footer { 
+clear:both; 
+color:#FFF; 
+text-align:center; 
+width:100%; 
+background:#AEA97B; 
+margin:0; 
+padding:10px 0 0; 
+} 
+footer a { 
+color:#FFF; 
+}
+
+#copyright {
+	margin:10px 0 0;
+	font-size:0.9em;
+	color:#000;
+}
+#copyright a { 
+color:#000; 
+}
+
+span.missingpage,#recherche form { 
+display:inline; 
+} 
+ 
+#menu_haut ul { 
+margin:0; 
+padding:0; 
+} 
+ 
+#menu_haut ul.sf-menu a,#menu_haut ul.sf-menu a:visited,#menu_haut ul.sf-menu ul a:hover { 
+color:#000; 
+} 
+
+#menu_haut ul.sf-menu a:hover, #menu_haut ul.sf-menu ul a,#menu_haut ul.sf-menu ul a:visited { 
+color:#F29313;
+} 
+
+#liensfooter a { 
+color:#FFF; 
+} 
+ 
+#menu_haut ul.sf-menu li,#menu_haut ul.sf-menu li li,#menu_haut ul.sf-menu li li li { 
+background:transparent; 
+} 
+ 
+.boite_syndication, .boite_nuage {background:#AEA97B;} 
+ 
+.spacer, .hr_clear {clear:both; border:none; background:transparent; margin:0; } 
+ 
+#banniere { 
+height: 109px; 
+color: #000; 
+background:transparent url(../images/banniere.jpg) repeat-x  top left; 
+}
+#conteneur.gauche #banniere, #conteneur.milieu #banniere { 
+float:right; 
+margin:0 20px 0 0;
+}
+#conteneur.droite #banniere { 
+float:left; 
+margin:0 0 0 20px;
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wklogin" version="$Name:" active="1">
+  <author>Florian Schmitt</author>
+  <label>Formulaire identification simple - OpenID</label>
+  <desc>Formulaire identification simple (marche avec Wikini version >= 0.5) - avec possibilité d'utiliser OpenID</desc>
+</plugin>

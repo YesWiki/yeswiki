@@ -1,0 +1,269 @@
+body.rouge {
+	margin: 0;
+	font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+	font-size: .8em;
+	text-align:center;
+	background:#912f58 url(../images/fond_degrade_rouge.png) repeat-y top center;
+}
+
+body.bleu {
+	margin: 0;
+	font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+	font-size: .8em;
+	text-align:center;
+	background:#2498cb url(../images/fond_degrade_bleu.png) repeat-y top center;
+}
+
+p {
+	line-height: 17px;
+	margin: 11px 0 10px 0;
+	padding: 0;
+}
+
+h1,h2,h3,h4,h5 {clear:both;}
+
+h1 {
+	background: #931157;
+	color: #FFF; 
+	margin:0 0 6px 0;
+	padding:5px 8px;
+	font-size:1.7em;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+}
+
+h2 {
+	background: #007cba;
+	color: #FFF;
+	margin:0 0 10px 0;
+	padding:2px 6px;
+	font-size:1.4em;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+}
+
+h3 {
+	font-size:1.4em;
+	color: #000; 
+	padding:13px 0 3px 26px;
+	margin:0 0 15px 0;
+	background:transparent url(../images/puce_titre1.png) no-repeat top left;
+	border-bottom:2px solid #007cba; 
+}
+	
+.toggler {cursor:pointer;}
+.toggler:hover {background-color: #e89326;}
+
+h4 {
+	color: #931157; 
+	margin:0 0 3px 0;
+	padding:0;
+	font-size:1.3em;
+	font-weight:bold;
+}
+
+h5, h5 a {
+	width:100%;
+	margin:0 0 2px 0;
+	padding:0;
+	font-size:1.2em;
+	color: #007cba;
+}
+
+a {
+	color: #931157;
+	text-decoration: none;
+	font-weight:bold;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+blockquote{
+	background: #F7FDE3;
+	color: #606060;
+	padding: 10px;
+}
+
+hr {
+	clear:both;
+	margin:5px 0;
+	color: #FFF;
+	background-color: transparent;
+	height: 1px;
+	border: 0;
+	width:100%;
+}
+
+img {border:0;}
+
+input, textarea {
+	margin:1px;
+	font-size:1em;
+}
+
+textarea {width:100%;}
+.colonnemilieu textarea {width:490px;}
+.del {text-decoration:line-through;}
+.attach_left {float:left; margin:0 10px 0 0;}
+.attach_right {float:right; margin:0 0 0 10px;}
+.attach_center {display:block; margin: 0 auto; width:100%; text-align:center;}
+.trail_table { line-height: 30px;}
+.trail_button { color: #993333; }
+.commentsheader {display:none;}
+.hr_clear {display:none;}
+
+/**** Main Container ***/
+#conteneur {
+	text-align: left;
+	width: 961px;
+	background:transparent;
+	color: #000;
+	margin:20px auto;
+	position:relative;
+	z-index:1;
+}
+
+/**** Top ***/
+#banniererouge {
+	width: 961px;
+	height: 178px;
+	color: #000;
+	background:transparent url(../images/banniere_rouge.jpg) no-repeat top left;
+}
+#bannierebleu {
+	width: 961px;
+	height: 178px;
+	color: #000;
+	background:transparent url(../images/banniere_bleu.jpg) no-repeat top left;
+}
+
+#pagelogo {float:left; display:block; width:150px; height:94px; overflow:hidden; margin:12px 0 10px 30px; }
+#pagelogo img {border:0;}
+#logo {float:left; display:block; width:78px; height:90px; margin:15px 0 10px 30px; background:url(../images/Site-reema-logo.gif) no-repeat top left; }
+#logo:hover, #lien_accueil:hover {text-decoration:none;}
+span.missingpage {display:inline;}
+
+#menu_acces_rapide {
+	background:transparent;
+	float:right;
+	margin:13px 0 0 0;
+	padding:5px 0;
+	width:100%;	
+}
+#menu_acces_rapide a {color:#000; margin:0 10px 0 0}
+#menu_acces_rapide ul {margin:0; padding:0;}
+#menu_acces_rapide li {margin:2px 0; padding:0 0 0 12px; color:#000; list-style-type:none; background: url(../images/puce_liste.png) no-repeat 0 5px;}
+#menu_acces_rapide .div_include {float:left;}
+.formulaire_identification label {font-size:0.8em}
+#menu_acces_rapide .inscription_iden a {margin:0;}
+.formulaire_identification {float:right;margin:0 10px 0 0;}
+.input_iden {width:63px;border:1px solid #931157 ;}
+.bouton_iden {background:#000; color:#FFF; border:0; padding:0; height:20px; font-weight:bold; font-size:0.9em; text-transform:uppercase;}
+
+#top {background:#000; display:block; width:100%; height:36px; z-index:2;}
+
+#recherche {clear:both; float:left; margin:0 0 0 34px; width:130px; color:#FFF;}
+#recherche form {display:inline;}
+.titre_rechercher {display:none;}
+.input_rech {width:90px;border:1px solid #931157;font-size:.9em;}
+.bouton_rech {background:#000; color:#FFF; border:0; width:25px; font-weight:bold; font-size:.9em; text-transform:uppercase;}
+
+#menu_haut {
+	float:right; 
+	color:#000;
+	font-weight:bold;
+	text-align:right;
+	margin:2px 0 0 20px;
+	padding:0;
+	background:transparent;
+}
+
+#menu_haut a {color:#000; font-weight:bold; font-size:1em;}
+#menu_haut ul {margin:0; padding:0;}
+#menu_haut li {margin:0; padding:0; display:block; float:left;}
+#menu_haut ul ul {display:none;}
+
+.rouge #conteneurbas {background:transparent url(../images/fond_menu_rouge.png) repeat-y top left;}
+.bleu #conteneurbas {background:transparent url(../images/fond_menu_bleu.png) repeat-y top left;}
+
+/**** Menu gauche ***/
+#menu_gauche {
+	color:#000;
+	float:left;
+	margin:0;
+	padding:0;
+	width:194px;
+	background:transparent;
+}
+#menu_gauche a {color:#000; padding:0 0 0 10px; width:100%; display:block; border:none; border-left:4px solid #FFF;}
+#menu_gauche a:hover {text-decoration:none; color:#931157; border:none; border-left:4px solid #931157;}
+#menu_gauche ul {margin:0; padding:0;}
+#menu_gauche li {list-style-type:none; margin:7px 0 ; padding:0;}
+#menu_gauche ul ul {background:#FFF; margin:0; padding:0;}
+#menu_gauche ul ul a {margin:0 0 0 20px; padding:0; width:145px; border:none; color:#707173;}
+#menu_gauche ul ul a:hover {border:none;}
+#menu_gauche .div_include {margin:8px 20px;padding:0; width:150px;}
+.depliable {background:transparent url(../images/puce_triangle_droit.gif) no-repeat 0 4px;}
+.deplie {background:transparent url(../images/puce_triangle_bas.gif) no-repeat 0 4px;}
+/**** Content Container ***/
+#content {
+clear:right;
+float:right;
+margin:0 20px 0 0;
+padding:10px;
+position:relative;
+text-align:justify;
+width:710px;
+z-index:1;
+}
+
+/**** Content ***/
+ul {
+	padding: 5px 0 5px 20px;
+	margin:0;
+	
+}
+
+li {
+	margin-bottom:4px;
+	padding: 0;
+	list-style-type:disc;
+
+}
+
+
+/**** Footer ***/
+#footerrouge {
+	clear: both;
+	margin:0;
+	padding:0;
+	color: #000;
+	text-align:right;
+	width:961px;
+	height:369px;
+	background:url(../images/bas_page_rouge.png) no-repeat top left;
+	font-size:0.9em;
+}
+#footerbleu {
+	clear: both;
+	margin:0;
+	padding:0;
+	color: #000;
+	text-align:right;
+	width:961px;
+	height:369px;
+	background:url(../images/bas_page_bleu.png) no-repeat top left;
+	font-size:0.9em;
+}
+#footerrouge a, #footerbleu a {color:#000;}
+.footer {text-align:left; margin:0 0 0 220px; padding:130px 0 0; display:block;}
+.footer input {width:50px; border:1px solid #931157;}
+#financeurs {margin:70px 0 60px 200px;}
+#financeurs ul {margin:0;padding:0}
+#financeurs li {list-style-type:none; float:left; margin:0 10px; padding:0}
+#liens_footer {margin:30px 20px 0 0;}
+#copyright {text-align:left; color:#000; margin:10px auto 0 auto; width:100%; text-align:center; font-size:0.9em;}
+#copyright a {color:#000;}
+.texte_iden, .rss_site_titre {display:none;}

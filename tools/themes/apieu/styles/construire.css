@@ -1,0 +1,23 @@
+@import "apieu.css";
+/*
+*/
+#bandeau_haut { background:url(../images/bandeau_haut_construire.jpg) no-repeat top left; }
+
+#menu_gauche ul>li { background-color:#4C4A6F; }
+#menu_gauche ul>li:hover { color: #fe9802; background-color:#223246; }
+#menu_gauche ul>li:hover>a { color: #fe9802;}
+#menu_gauche_suite { background:url(../images/menu_gauche_ville.png) no-repeat top left; }
+
+
+#page_principale_droite h4 {
+    color: #970f01;
+    border-bottom: 1pt solid #52547b;
+}
+
+#page_principale_droite h5 {
+    color:  #52547b;
+}
+
+#page_principale_droite li {
+    list-style-image: url("../images/puce-bleue.png");
+}

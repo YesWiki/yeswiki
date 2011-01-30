@@ -1,0 +1,6 @@
+Convention de nommage des inclusions de page  dans squelette :
+PageMenuHaut
+PageMenu (menu gauche)
+PageMenuDroit
+PageFooter
+PageTitre

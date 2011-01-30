@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkactivite" version="$Name:  $" active="1">
+  <author>David Delon</author>
+  <label>Activite</label>
+  <desc>Utilitaires pour visualiser l'activite d'un wiki ou d'un groupe de Wiki (opml, liste des wiki etc.) </desc>
+</plugin>

@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+	<head>
+		<title>{{titrepage}}</title>{{metarobots}}
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+		<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+		<meta name="description" content="{{configuration param="meta_description"}}" />
+		<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+		{{liensstyle}}
+		{{liensjavascripts}}
+		<script type="text/javascript">
+		jQuery(function(){
+			//menu déroulant du haut
+			$('#container-navigation ul').addClass('sf-menu').superfish();	
+		});		
+		</script>
+	</head>
+
+   <body {{parambody}}>
+        <div id="container">
+            <div id="container-header">
+                <!--<div id="container-name"><a class="lien_accueil" href="{{configuration param="base_url"}}" title="Aller &agrave; la page d'accueil">{{configuration param="wakka_name"}}</a></div>
+				<div id="container-slogan">{{configuration param="meta_description"}}</div>-->
+            </div> <!--fin container-header -->
+            
+	   		<div id="container-eyecatcher">
+                <div id="container-navigation">
+                	{{include page="PageMenuHaut" doubleclic="1"}}                
+                </div><!-- fin container-navigation -->
+            	{{include page="PageBandeau" doubleclic="1"}}
+	    	</div><!-- fin container-eyecatcher -->
+
+        	<div id="container-content">
+				<div id="colonne-droite">
+					{{include page="PageMenu" doubleclic="1"}}
+				</div><!-- fin border -->
+				<div id="content" {{doubleclic}}>    
+					{WIKINI_PAGE}
+					{{barreredaction}}
+				</div> <!-- fin content -->		
+	    	</div><!-- fin container-content -->
+
+            <div id="container-footer">
+                 <div id="footer">
+                    <div id="footer-copyright">
+                    	{{include page="PageFooter" doubleclic="1"}}
+                    </div>
+                    <div id="footer-meta">
+                    	<a href="http://validator.w3.org/check?uri=referer">XHTML</a> | 
+                    	<a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a><br />
+                    	<a href="http://www.christian-pansch.de" title="Webdesign Bremen">Design by christian-pansch.de</a>
+                    </div>
+                 </div><!-- fin footer -->
+            </div><!-- fin container-footer -->
+
+        </div> <!-- fin container -->
+   </body>
+</html>

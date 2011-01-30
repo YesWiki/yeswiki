@@ -1,0 +1,972 @@
+body {
+margin:10px 0 0 0;
+padding:0;
+font-family:Verdana, Arial, sans-serif;
+font-size:.8em;
+color:#363636;
+min-width: auto !important;
+}
+
+h1 {
+font-size:1.6em;
+background:transparent url(../images/Puce-T1.gif) no-repeat top left;
+color:#363636;
+margin:0 0 10px 0;
+padding:15px 0 10px 40px;
+}
+
+h2 {
+color:#19657d;
+border-bottom:2px solid #c0c0c0;
+font-size:1.3em;
+margin:0 0 10px;
+padding:0;
+}
+
+h3 {
+color:#e89326;
+font-size:1.2em;
+margin:0 0 6px;
+padding:0;
+}
+
+h4 {
+color:#363636;
+font-size:1.1em;
+font-weight:700;
+margin:0 0 6px;
+padding:0;
+}
+
+h5,h5 a {
+width:100%;
+text-align:right;
+font-size:1em;
+color:#0dafff;
+}
+
+a, a:active, a:visited {
+color:#c93b08;
+text-decoration:none;
+font-weight:700;
+}
+
+a:hover {
+color:#e89326;
+text-decoration:underline;
+}
+
+blockquote {
+background:#F7FDE3;
+color:#606060;
+padding:10px;
+}
+
+img {
+border:0;
+}
+
+
+#container{
+position:relative;
+width:960px;
+margin: 0 auto;
+text-align: left;
+}
+
+header { width:960px; height:201px; background:url(../images/Header.png) no-repeat top left; }
+#lienlogo { width:960px; height:166px; display:block; }
+#menuhaut { float:left; }
+#identification { float:left; margin:0 10px; }
+#identification a { color:#363636; display:inline-block; padding:8px 0 8px 10px; }
+#identification .yeswiki-overlay .close {padding:0;}
+#liencontact { float:left; margin:0 0 0 10px; color:#363636; padding:8px 10px 8px 20px; background: url(../images/contact.png) no-repeat center left; } 
+
+
+/*Menu Principal du haut */
+#menuhaut ul {
+list-style:none outside none;
+margin:0;
+padding:0;
+}
+#menuhaut ul ul  { display:none; }
+#menuhaut a, #menuhaut a:hover {text-decoration:none;}
+
+#menuhaut li {
+float:left;
+}
+
+#menuhaut li a{
+	display:block;
+	font-size:14px;
+	font-weight:bold; 	
+	text-align:center;
+	text-transform:uppercase;
+	border-right:1px solid #fff;
+	text-decoration:none;
+	padding:.5em .75em;
+}
+
+#menuhaut ul li {
+float:left;
+position:relative;
+width:125px;
+}
+
+#menuhaut ul ul li {
+float:none;
+position:relative;
+padding:0 20px;
+}
+
+
+#menuhaut ul ul li a {
+text-transform:none;
+}
+
+#menuhaut ul li.sfhover ul {
+display:block;
+position:absolute;
+left:-1px;
+top:2.5em;
+width:200px;
+z-index:99;
+border:none;
+border-left:1px solid #FFF;
+border-right:1px solid #FFF;
+}
+#menuhaut ul li.sfhover ul li { width:200px; }
+#menuhaut ul li.sfhover ul a {border:none; width:100%; padding:0.5em 0;}
+
+#menuhaut ul a,#menuhaut ul a:visited {
+color:#FFF;
+text-shadow:1px 1px 0 #000000;
+}
+
+#menuhaut > ul > li.rubrique1, #menuhaut > ul > li.rubrique1 a:hover {
+-moz-border-radius-topleft: 10px;
+-webkit-border-top-left-radius: 10px;
+border-top-left-radius: 10px;
+}
+#menuhaut > ul > li.rubrique4, #menuhaut > ul > li.rubrique4 a:hover {
+-moz-border-radius-topright: 10px;
+-webkit-border-top-right-radius: 10px;
+border-top-right-radius: 10px;
+}
+
+#menuhaut ul li.rubrique1, #menuhaut ul li.rubrique1 li:hover, #menuhaut ul li.rubrique1 li, #menuhaut ul li.rubrique1 li a:hover {
+background:#b6d72e;
+}
+
+#menuhaut ul li.rubrique2, #menuhaut ul li.rubrique2 li:hover, #menuhaut ul li.rubrique2 li, #menuhaut ul li.rubrique2 li a:hover  {
+background:#1f6984;
+}
+
+#menuhaut ul li.rubrique3, #menuhaut ul li.rubrique3 li:hover, #menuhaut ul li.rubrique3 li, #menuhaut ul li.rubrique3 li a:hover  {
+background:#feb707;
+}
+
+#menuhaut ul li.rubrique4, #menuhaut ul li.rubrique4 li:hover, #menuhaut ul li.rubrique4 li, #menuhaut ul li.rubrique4 li a:hover  {
+background:#ca3e09;
+}
+
+#menuhaut ul li.rubrique1 li {
+background:#b1eb42;
+}
+
+#menuhaut ul li.rubrique2 li {
+background:#6792a8;
+}
+
+#menuhaut ul li.rubrique3 li {
+background:#ffa22a;
+}
+
+#menuhaut ul li.rubrique4 li {
+background:#b23c00;
+}
+
+#menuhaut ul li.rubrique1 li li {
+background:#9AAEDB;
+}
+
+#menuhaut ul li.rubrique1:hover, #menuhaut ul li.rubrique1 a:focus, #menuhaut ul li.rubrique1 a:hover, #menuhaut ul li.rubrique1 a:active {
+background:#b1eb42;
+outline:0;
+}
+
+#menuhaut ul li.rubrique2:hover, #menuhaut ul li.rubrique2 a:focus, #menuhaut ul li.rubrique2 a:hover, #menuhaut ul li.rubrique2 a:active {
+background:#6792a8;
+outline:0;
+}
+
+#menuhaut ul li.rubrique3:hover, #menuhaut ul li.rubrique3 a:focus, #menuhaut ul li.rubrique3 a:hover, #menuhaut ul li.rubrique3 a:active {
+background:#ffa22a;
+outline:0;
+}
+
+#menuhaut ul li.rubrique4:hover, #menuhaut ul li.rubrique4 a:focus, #menuhaut ul li.rubrique4 a:hover, #menuhaut ul li.rubrique4 a:active {
+background:#b23c00;
+outline:0;
+}
+
+#menuhaut li li a {
+text-align:left;
+padding-left:10px;
+}
+
+
+
+/* Contenu page */
+
+#page { padding: 55px 0 0 0; color:#363636; margin:0; }
+
+#page.jaune {background:transparent url(../images/Fond-jaune.png) repeat-x top left;}
+#page.rouge {background:transparent url(../images/Fond-rouge.png) repeat-x top left;}
+#page.bleu {background:transparent url(../images/Fond-bleu.png) repeat-x top left;}
+#page.vert {background:transparent url(../images/Fond-vert.png) repeat-x top left;}
+
+.page {
+margin: 0 10px;
+float: left;
+display: inline;
+width: 940px;
+}
+
+.footer {width:100%; font-size:0.9em; text-align:center; margin:0 0 15px 0;}
+.footer a, .footer a:active, .footer a:visited {color:#363636;}
+
+/* Pied de page */
+
+footer {
+	width:100%;
+	background:transparent url(../images/Footer.png) repeat-x top left;
+	padding: 30px 0 0 0;
+	font-size:.8em;
+	clear:both;
+}
+
+footer a, footer a:active, footer a:visited {color:#363636;}
+footer a:hover {text-decoration:underline;}
+
+
+#copyright {	
+font-size:11px;
+margin:20px auto;
+text-align:center;
+}
+
+
+/* Module recherche */
+#moteurrecherche{
+float:right;
+}
+
+.moteur-recherche .input_rech {
+background:#fff url(../images/Loupe.gif) no-repeat 3px 3px;
+border:1px solid #88b0ba;
+width:100px;
+color:#363636;
+font-size:12px;
+padding:3px 3px 3px 19px;
+}
+.bouton_rech {padding:2px; border:none; background:#363636; color:#FFF; -moz-border-radius:10px;
+-webkit-border-radius:10px; border-radius:10px;}
+ /* CSS Contributions wikini */
+
+/* Contribution syndication */
+ 
+.toggler { 
+    cursor:pointer; 
+} 
+ 
+.toggler:hover { 
+    background-color:#e89326; 
+} 
+
+
+/* classes pour les boites */
+
+.include_lightblue, .lightblue {
+text-align:left;
+background:#cdeaf8;
+border:1px solid #019cde;
+padding:10px;
+}
+.include_lightblue h2, .lightblue h2 {
+background:#019cde;
+border:none;
+color:#FFF;
+padding:4px 0;
+margin:-10px -10px 10px -10px;
+text-align:center;
+}
+.include_lightblue ul, .lightblue ul {
+margin:5px 0 5px -10px;
+padding:0;
+}
+.include_lightblue li, .lightblue li {
+margin:0;
+padding:5px 0 5px 10px;
+list-style-type:none;
+background:url(../images/Fleche-lightblue.gif) no-repeat center left;
+}
+.include_lightblue a, .lightblue a{
+color:#16667d;
+}
+
+.include_yellow, .yellow {
+text-align:left;
+background:#fef0cd;
+border:1px solid #ffb500;
+padding:10px;
+}
+.include_yellow h2, .yellow h2 {
+background:#ffb500;
+border:none;
+color:#FFF;
+padding:4px 0;
+margin:-10px -10px 10px -10px;
+text-align:center;
+}
+.include_yellow ul, .yellow ul {
+margin:5px 0 5px -10px;
+padding:0;
+}
+.include_yellow li, .yellow li {
+margin:0;
+padding:5px 0 5px 10px;
+list-style-type:none;
+background:url(../images/Fleche-yellow.gif) no-repeat center left;
+}
+.include_yellow a, .yellow a {
+color:#ca3d08;
+}
+
+.include_red, .red {
+text-align:left;
+background:#fef0cd;
+border:1px solid #CA3E09;
+padding:10px;
+}
+.include_red h2, .red h2 {
+background:#CA3E09;
+border:none;
+color:#FFF;
+padding:4px 0;
+margin:-10px -10px 10px -10px;
+text-align:center;
+}
+.include_red ul, .red ul {
+margin:5px 0 5px -10px;
+padding:0;
+}
+.include_red li, .red li {
+margin:0;
+padding:5px 0 5px 10px;
+list-style-type:none;
+background:url(../images/Fleche-yellow.gif) no-repeat center left;
+}
+.include_red a, .red a {
+color:#ca3d08;
+}
+
+.include_green, .green {
+text-align:left;
+background:#f0f7d5;
+border:1px solid #b4d627;
+padding:10px;
+}
+.include_green h2, .green h2 {
+background:#b4d627;
+border:none;
+color:#FFF;
+padding:4px 0;
+margin:-10px -10px 10px -10px;
+text-align:center;
+}
+.include_green ul, .green ul {
+margin:5px 0 5px -10px;
+padding:0;
+}
+.include_green li, .green li {
+margin:0;
+padding:5px 0 5px 10px;
+list-style-type:none;
+background:url(../images/Fleche-green.gif) no-repeat center left;
+}
+.include_green a, .green a {
+color:#79891f;
+}
+
+
+.include_blue, .blue {
+text-align:left;
+background: #FFF url(../images/Fond-bleu-clair.png) repeat-x top left;
+margin: -55px 0 0 0;
+padding:10px;
+}
+
+.include_blue h2, .blue h2 {
+background:transparent url(../images/Fleche-blue.gif) no-repeat center left;
+border:none;
+color:#1a6481;
+padding:4px 0 4px 20px;
+margin:0 0 10px 0;
+text-align:left;
+}
+.include_blue ul, .blue ul {
+margin:5px 0;
+padding:0;
+}
+.include_blue li, .blue li {
+margin:0;
+padding:5px 0 5px 10px;
+list-style-type:none;
+background:url(../images/Fleche-lightblue.gif) no-repeat center left;
+}
+.include_blue a, .blue a {
+color:#1a6481;
+}
+
+.background_transparent {background:transparent;}
+
+/******************************************************************* jquery tools *********************************************************************/
+
+
+/* container for slides */
+.images {
+	background:#fff;
+	border:1px solid #ccc;
+	position:relative;	
+	height:300px;
+	
+	width:600px;
+	float:left;	
+	margin:15px;
+	cursor:pointer;
+	
+	/* CSS3 tweaks for modern browsers */
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	-moz-box-shadow:0 0 25px #666;
+	-webkit-box-shadow:0 0 25px #666;	
+}
+
+/* single slide */
+.images div {
+	display:none;
+	position:absolute;
+	top:0;
+	left:0;		
+	margin:7px;
+	padding:15px 30px 15px 15px;
+	height:256px;
+	font-size:12px;
+}
+
+/* header */
+.images h3 {
+	font-size:22px;
+	font-weight:normal;
+	margin:0 0 20px 0;
+	color:#456;
+}
+
+/* tabs (those little circles below slides) */
+.slidetabs {
+	margin-left:330px;
+	clear:left;
+}
+
+/* single tab */
+.slidetabs a {
+	width:8px;
+	height:8px;
+	float:left;
+	margin:3px;
+	background:url(http://static.flowplayer.org/tools/img/scrollable/arrow/navigator.png) 0 0 no-repeat;
+	display:block;
+	font-size:1px;		
+}
+
+/* mouseover state */
+.slidetabs a:hover {
+	background-position:0 -8px;      
+}
+
+/* active state (current page state) */
+.slidetabs a.current {
+	background-position:0 -16px;     
+} 	
+
+
+/* prev and next buttons */
+.forward, .backward {
+	float:left;
+	margin-top:140px;
+	background:#fff url(http://static.flowplayer.org/tools/img/scrollable/arrow/hori_large.png) no-repeat;
+	display:block;
+	width:30px;
+	height:30px;
+	cursor:pointer;
+	font-size:1px;
+	text-indent:-9999em;	
+}
+
+/* next */
+.forward 				{ background-position: 0 -30px; }
+.forward:hover 		{ background-position:-30px -30px; }
+.forward:active 	 	{ background-position:-60px -30px; } 
+
+
+/* prev */
+.backward:hover  		{ background-position:-30px 0; }
+.backward:active  	{ background-position:-60px 0; }
+
+/* disabled navigational button. is not needed when tabs are configured with rotate: true */
+.disabled {
+	visibility:hidden !important;		
+}
+
+
+/* barre actions */
+.barre_actions {
+background:#EFEFEF;
+margin:0 20px 0 0;
+padding:0;
+position:relative;
+text-align:left;
+width:760px;
+}
+
+#conteneur.gauche .barre_actions,  #conteneur.milieu .barre_actions {
+float:right;
+clear:right;
+text-align:center;
+}
+
+.barre_actions a {
+display:inline-block;
+margin:0 8px 0 0;
+text-align:center;
+color:#333;
+}
+.lien_modifier {background:url(../../../presentation/images/edit.png) no-repeat left center; padding:4px 4px 4px 20px;}
+.lien_supprimer {background:url(../../../presentation/images/delete.gif) no-repeat left center; padding:4px 4px 4px 20px;}
+.lien_historique {background:url(../../../presentation/images/historique.png) no-repeat left center; padding:4px 4px 4px 20px;}
+.lien_droits {background:url(../../../presentation/images/droits.png) no-repeat left center; padding:4px 4px 4px 20px;}
+.lien_referrer {background:url(../../../presentation/images/referrer.png) no-repeat left center; padding:4px 4px 4px 20px;}
+.lien_share {background:url(../../../presentation/images/share.png) no-repeat left center; padding:4px 4px 4px 20px;}
+.barre_actions a:hover {background-color:#D9D6A0;text-decoration:none;}
+
+.tooltip_action {
+background-color:#AEA97B;
+color:#000;
+font-size:1em;
+font-weight:bold;
+padding:10px;
+-moz-border-radius:5px;-webkit-border-radius:5px;-khtml-border-radius:5px;border-radius:5px;
+-moz-box-shadow: 3px 3px 4px #444;
+-webkit-box-shadow: 3px 3px 4px #444;
+box-shadow: 3px 3px 4px #444;
+}
+
+#overlay-action {
+background:#FFF;
+color:#000;
+width:680px;		
+padding:10px;
+display:none;
+-moz-border-radius:5px;-webkit-border-radius:5px;-khtml-border-radius:5px;border-radius:5px;
+-moz-box-shadow: 3px 3px 24px #222;
+-webkit-box-shadow: 3px 3px 24px #222;
+box-shadow: 3px 3px 24px #222;
+}
+
+div.contenu-overlay-action {
+	max-height:441px;
+	overflow-y:auto;
+}
+
+.bouton_share {
+margin:0 32px 0 0;
+width:64px;
+height:64px;
+display:inline-block;
+}
+
+.bouton_share:hover {
+-moz-box-shadow: 3px 3px 15px #111;
+-webkit-box-shadow: 3px 3px 15px #111;
+box-shadow: 3px 3px 15px #111;
+}
+/* default close button positioned on upper right corner */
+#overlay-action .close {
+	background-image:url(../images/close.png);
+	position:absolute; right:-20px; top:-20px;
+	cursor:pointer;
+	height:35px;
+	width:35px;
+}
+
+/***** mindmap page accueil *********/
+.mindmap_menu {
+background:url("../images/fond_menu.png") no-repeat scroll center 80px #FFFFFF;
+display:block;
+height:400px;
+width:100%;
+position:relative;
+}
+.mindmap_menu ul {
+margin:0;
+padding:0;
+}
+.mindmap_menu li {
+list-style-type:none;
+margin:0;
+}
+a.branche {
+cursor:pointer;
+font-size:1.3em;
+padding:10px;
+}
+a.branche:hover {
+text-decoration:none;
+}
+#branche_actu {
+color:#196682;
+left:292px;
+position:absolute;
+top:65px;
+}
+.tooltip_actu a {
+color:#666;
+text-decoration:none;
+}
+.tooltip_actu a:hover {
+color:#196682;
+text-decoration:none;
+}
+#branche_ressources {
+color:#C83C01;
+left:270px;
+position:absolute;
+top:170px;
+}
+.tooltip_ressources a {
+color:#666;
+text-decoration:none;
+}
+.tooltip_ressources a:hover {
+color:#C83C01;
+text-decoration:none;
+}
+#branche_formations {
+color:#FFB500;
+left:490px;
+position:absolute;
+top:220px;
+}
+.tooltip_formations a {
+color:#666;
+text-decoration:none;
+}
+.tooltip_formations a:hover {
+color:#FFB500;
+text-decoration:none;
+}
+#branche_info {
+color:#009EDF;
+left:550px;
+position:absolute;
+top:140px;
+}
+.tooltip_info a {
+color:#666;
+text-decoration:none;
+}
+.tooltip_info a:hover {
+color:#009EDF;
+text-decoration:none;
+}
+#branche_projet {
+color:#B4D628;
+left:515px;
+position:absolute;
+top:56px;
+}
+.tooltip_projet a {
+color:#666;
+text-decoration:none;
+}
+.tooltip_projet a:hover {
+color:#B4D628;
+text-decoration:none;
+}
+.tooltip_actu {
+background:none repeat scroll 0 0 transparent;
+left:35px;
+position:absolute;
+text-align:right;
+top:20px;
+width:250px;
+}
+.tooltip_ressources {
+background:none repeat scroll 0 0 transparent;
+left:15px;
+position:absolute;
+text-align:right;
+top:185px;
+width:250px;
+}
+.tooltip_formations {
+background:none repeat scroll 0 0 transparent;
+left:501px;
+position:absolute;
+text-align:left;
+top:260px;
+}
+.tooltip_info {
+background:none repeat scroll 0 0 transparent;
+left:703px;
+position:absolute;
+top:155px;
+width:250px;
+}
+.tooltip_projet {
+background:none repeat scroll 0 0 transparent;
+left:627px;
+position:absolute;
+top:-27px;
+width:250px;
+}
+
+
+.hr_clear {width:940px;}
+.commentsheader {display:none;}
+.bordure {border:1px solid #000;}
+
+
+
+/** diaporama **/
+.slide_show_container {margin:0 auto;}
+
+.slide_show {
+position:relative;
+height:545px;
+overflow:hidden;
+margin:10px auto 0 auto;
+padding:0;
+font-size:1.2em;
+}
+.grid_12 .slide_show {
+width:940px;
+}
+.grid_9 .slide_show {
+width:700px;
+}
+
+.slides {
+width:99999em;
+position:absolute;
+height:540px;
+}
+
+.slide_show h1 {
+color: #19657c;
+margin:0;
+padding:5px 0 0 40px;
+font-size:29px;
+}
+
+.slide_show ul {
+margin:0;
+padding:0;
+}
+
+.slide_show li {
+margin:10px 0;
+padding:0 0 0 20px;
+background:url(../images/puce-liste-verte.png) no-repeat 0 11px;
+list-style-type:none;
+}
+
+.slide {
+float:left;
+height:498px;
+overflow:auto;
+margin:0 5px 5px 0;
+padding:20px;
+border: 1px solid #808080;
+background:#F2F2F2;
+color:#000;
+background:#fff url(../images/Fond-diapo.png) no-repeat bottom right;
+}
+.grid_12 .slide {
+width:895px;
+}
+.grid_9 .slide {
+width:655px;
+}
+
+.borderradius .slide { -moz-border-radius:4px; -webkit-border-radius:4px; border-radius:4px; }
+.boxshadow.rgba .slide { -moz-box-shadow:2px 2px 2px rgba(100,100,100,.75); -webkit-box-shadow:2px 2px 2px rgba(100,100,100,.75); box-shadow:2px 2px 2px rgba(100,100,100,.75); }
+
+.slide-header {margin:-20px -20px 10px -20px;padding:20px;}
+.borderradius .slide-header { -moz-border-radius-topright:5px;-webkit-border-top-right-radius:5px;border-top-right-radius:5px;-moz-border-radius-topleft:5px;-webkit-border-top-left-radius:5px;border-top-left-radius:5px;}
+.cssgradients .slide-header { background: -webkit-gradient(linear, left bottom, left top, from(#c0dcea), to(#fff)); background: -moz-linear-gradient(bottom, #c0dcea, #fff);background: linear-gradient(bottom, #c0dcea, #fff);}
+
+.slide-navigation {
+margin:10px auto 0 auto;
+}
+.grid_12 .slide-navigation {
+width:935px;
+}
+.grid_9 .slide-navigation {
+width:695px;
+}
+
+.slide-button {
+color:#FFF;
+background:#18657f;
+border: 1px solid #808080;
+-moz-border-radius:5px;
+-webkit-border-radius:5px;
+border-radius:5px;
+width:90px;
+display:inline-block;
+-moz-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+-webkit-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+text-align:center;
+}
+
+.t {
+display:inline-block;
+margin:0 auto;
+text-align:center;
+}
+.grid_12 .t {
+width:755px;
+}
+.grid_9 .t {
+width:515px;
+}
+
+button.prev {
+clear:left;
+float:left;
+}
+
+button.next {
+clear:right;
+float:right;
+}
+
+.t {
+padding:0 !important;
+border:0 !important;
+}
+
+.t a {
+padding:0 7px;
+margin:0 2px;
+-moz-border-radius:7px;
+-webkit-border-radius:7px;
+border-radius:7px;
+border: 1px solid #808080;
+background:#FFF;
+text-decoration:none;
+-moz-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+-webkit-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+font-size:12px;
+}
+
+.t a:hover, .t a.button-begin:hover, .slide-button:hover {text-decoration:none;background:#C0DCEA; color:#000;}
+
+a.button-begin {
+color:#FFF;
+background:#b4d627;
+padding:1px 5px;
+font-weight:normal;
+text-align:center;
+font-size:11px;
+font-weight:normal;
+line-height:1.6em;
+}
+
+.t a.active, .t a.button-begin.active {
+cursor:default !important;
+background:#18657F;
+color:#FFF;
+}
+
+.buttons-action {
+position:absolute;
+top:10px;right:10px;
+}
+	
+a.button-quit, a.button-edit {
+color:#FFF;
+background:#CC3B06;
+border:0;
+-moz-border-radius:5px;
+-webkit-border-radius:5px;
+border-radius:5px;
+padding:0 10px;
+display:inline-block;
+-moz-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+-webkit-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+text-align:center;
+font-size:11px;
+font-weight:normal;
+line-height:1.6em;
+}
+
+a.button-quit:hover, a.button-edit:hover {text-decoration:none; background:#971C1C}
+
+.tooltip-slideshow {
+-moz-border-radius:5px;
+-webkit-border-radius:5px;
+border-radius:5px;
+padding:5px;
+background:#18657F;
+color:#FFF;
+border: 1px solid #808080;
+-moz-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+-webkit-box-shadow:2px 2px 2px rgba(100, 100, 100, 0.75);
+}
+
+.licencecours {float:right;font-size:0.7em;width:180px;margin:0 0 10px 10px;}
+
+.courstutoriel {background:#fef3d8 url(../images/Tampon-Tutoriel.gif) no-repeat bottom right;-moz-border-radius:10px;padding:10px;}
+.coursconcept {background:#cbe4ef url(../images/Tampon-Concept.gif) no-repeat bottom right;-moz-border-radius:10px;padding:10px;}
+.coursmethodo {background:#d1d7b7 url(../images/Tampon-Methodo.gif) no-repeat bottom right;-moz-border-radius:10px;padding:10px;}
+.coursusage {background:#e3cec4 url(../images/Tampon-Usage.gif) no-repeat bottom right;-moz-border-radius:10px;padding:10px;}
+.ficheoutil {background:#e1f4c2 url(../images/Tampon-Outil-2.png) no-repeat bottom right;-moz-border-radius:10px;padding:10px;} 
+
+.boutons_test {text-align:center; display:block;}
+.mot_de_passe {display:block; font-weight:bold;}
+.lien_demo {
+-moz-border-radius:10px 10px 10px 10px;
+background:url("../images/demo.png") no-repeat scroll 4px 2px #CBE4EF;
+display:inline-block;
+padding:18px 10px 18px 60px;
+border:1px solid #003666;
+color:#003666;
+}
+.lien_admin {
+-moz-border-radius:10px 10px 10px 10px;
+background:url("../images/admin.png") no-repeat scroll 4px 2px #CBE4EF;
+display:inline-block;
+padding:18px 10px 18px 60px;
+margin:0 0 0 20px;
+border:1px solid #003666;
+color:#003666;
+}
+
+.lien_demo:hover, .lien_admin:hover {
+border:1px solid #e89326;
+color:#e89326;
+background-color:#fef3d8;
+}

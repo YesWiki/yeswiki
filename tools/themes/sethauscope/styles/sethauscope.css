@@ -1,0 +1,200 @@
+/*  
+Template ID: 01
+Template URI: http://symisun.com/templates/free/01/
+Description: The first free CSS template released by SymiSun*
+Version: 1.1
+Developed by SymiSun*
+Company URI: http://symisun.com/
+
+	SymiSun* Free CSS Template 01 v1.1
+	http://symisun.com/templates/free/01/
+
+	This template was designed and developed by
+	SymiSun* to celebrate the launch of symisun.com
+
+	The CSS, XHTML and design is licensed under a
+	a Creative Commons Attribution 2.5 License
+
+*/
+
+/* Global white space reset */
+* {padding:0; margin:0}
+h1, h2, h3, h4, h5, h6, p, pre, blockquote, label, ul, ol, dl, fieldset, address {margin:0 10px}
+li, dd {margin-left:15px}
+fieldset {padding:6px}
+
+/* Undo default HTML styling of common browsers */
+a:link, a:visited {text-decoration:none; color:#aaa; font-weight:bold}
+h1 a:link, h1 a:visited, h2 a:link, h2 a:visited, h3 a:link, h3 a:visited, h4 a:link, h4 a:visited {text-decoration:none; color:#1c4851}
+ul, ol {list-style:none}
+img {border:none}
+
+/* General */
+html, body {height:100%}
+body {
+	background:#282627 url('../images/bg_general.gif') no-repeat top center;
+	color:#4e4a49;
+	text-align:center;
+	margin:0;
+	font:normal 11px/15px verdana,serif
+	}
+
+/* General links */
+a:hover {text-decoration:underline}
+a:active {text-decoration:none}
+a:focus, input:focus {outline:none}
+
+/* Paragraph and headings */
+p {margin:0 0 0px 0}
+h1 {font-size:14px}
+h2 {font-size:13px}
+h3 {font-size:12px; color:#000; margin:5px 15px}
+h4 {font-size:11px}
+h5 {font-size:10px}
+
+
+#main {display:block;
+min-height:233px;}
+
+
+/* Forms */
+.submit {font:bold 12px verdana,serif; cursor:pointer!important; color:#1c4851; background:none; border:none; width:60px; margin:0 0 0 6px}
+.radio {margin:0 5px 0 0; background:none; border:none}
+.search {
+	width:150px;
+	height:18px;
+	font:normal 12px verdana;
+	color:#333;
+	border:1px solid #999;
+	background:url('../images/bg_search_field.gif') no-repeat top left;
+	padding:5px 6px 1px 6px;
+	vertical-align:middle
+	}
+
+/* Who's your daddy */
+#daddy {
+	width:998px;
+	min-height:100%;
+	height:auto;
+	margin:0 auto -95px auto;
+	text-align:left
+	}
+* html #daddy {height:100%}
+
+/* Header */
+#header {height:290px}
+#logo {
+	width:366px;
+	height:85px;
+	padding:14px 0 0 0;
+	background:url('../images/bg_menu_starter.gif') no-repeat top right;
+	float:left;
+	display:none;
+	position:relative
+	}
+#logo-text {color:#ccc; font:normal 27px arial,serif; position:absolute; top:40px; left:100px}
+#ticker {width:632px; height:10px; float:right; display:inline; padding:0px 0 0 0; text-align:center; color:#888}
+#ticker:after {content:"."; display:block; height:0; clear:both; visibility:hidden}
+#headerimage {width:998px; height:233px; background:url('../images/bg_header.jpg') no-repeat top left; float:left; position:relative}
+#slogan {display :none;color:#000; font:normal 20px arial,serif; position:absolute; bottom:35px; left:320px}
+#download {width:189px; height:59px; margin:128px 0 0 0; background:url('../images/download.gif') no-repeat top left; float:left; display:none;}
+#download-text {color:#fff; font:bold 15px/22px arial,serif; width:187px; display:none; text-align:center; padding:8px 2px 0 0}
+#icons {width:97px; height:90px; background:url('../images/bg_icon_lines.gif') no-repeat top right; margin:126px 0 0 0; float:right}
+#home {width:13px; height:13px; margin:30px 7px 0 0; float:right}
+#sitemap {width:13px; height:13px; margin:52px 7px 0 0; float:right}
+#contact {width:13px; height:13px; margin:76px 7px 0 0; float:right}
+/* Header links */
+#logo a {font-weight:normal}
+#download a {color:#fff; display:block; height:51px}
+#download a:hover, #logo a:hover {text-decoration:none; color:#ddd}
+
+/* Menu */
+#menu {
+	width:632px;
+	height:53px;
+	background:url('../images/bg_menu.gif') repeat-x top left;
+	float:right;
+	display:inline
+	}
+#menu ul {padding:20px 0 20px 17px; margin:0}
+#menu li {display:inline; list-style:none; margin:0 16px 0 0; font:bold 13px verdana,serif}
+#menu ul li a:link, #menu ul li a:visited {padding:5px 7px; color:#000; border:1px solid #ead28b; background:#fff}
+#menu ul li a:hover, #menu ul li a#active, #menu ul li a:active {color:#fff; border:1px solid #fff; background:#000; text-decoration:none}
+
+/* CONTENT AND COLUMNS */
+#left {background:white;
+width:200px;
+float:left;
+padding:0 30px 0 0;
+margin-left:33px;
+
+
+}
+
+#content {
+background:white;
+border:solid white 0px;
+width:710px;
+float:right;
+text-align:justify;
+margin:0px 0 0px 0px;
+min-height:100%;
+}
+
+/*#content {background:#f3f2f0 url('../images/bg_page.gif') repeat-y top left}*/
+
+#content a:link, #content a:visited {text-decoration:none; color:#1c4851; font-weight:bold}
+#cA {width:270px; margin:0 11px 0 30px; display:block}
+.Ctopleft {background:url('../images/corners_top.gif') no-repeat top left; width:9px; height:9px; overflow:hidden; float:left;display:none}
+#search {background:#a4c0ba; padding:10px 15px}
+#cA img {padding:4px; border:1px solid #d3cfce; margin:4px 7px 0 0}
+.testimonial {padding:10px; font:normal 10px arial,sans-serif}
+#cB {float:right; width:670px; margin:10px 0px 0px 0px; display:inline;}
+.Ctopright {background:url('../images/corners_top.gif') no-repeat top right; width:9px; height:9px; overflow:hidden; float:right;display:none}
+#cB1 {width:340px; float:left; padding:0 10px 5px 10px}
+.news {border-bottom:1px solid #e6e1dd; border-top:1px solid #fcfafb; padding:10px 15px 5px 15px}
+#cB2 {width:230px; float:left; margin-left:0px}
+.about {background:#c6d6d6; border:1px solid #a4c0ba; padding:5px; margin:0 0 10px 0; color:#282627}
+.about ul {list-style-type:none}
+.about li {padding:0 0 0 20px; margin:5px 0; background:url('../images/check.gif') no-repeat 0 50%}
+#newsletter {
+	width:309px;
+	height:86px;
+	background:url('../../images/newsletter.jpg') no-repeat top left;
+	position:relative;
+	text-transform:uppercase
+	}
+#newsletter-title {color:#fff; font:normal 24px impact,serif; position:absolute; top:10px; left:15px}
+#newsletter-title a {color:#fff!important; font-weight:normal!important}
+#newsletter-text {font:normal 10px arial,serif; position:absolute; bottom:10px; left:10px; width:209px}
+#newsletter-text a {color:#35393f!important}
+.Cpad {margin:0 8px 0 30px}
+.Cbottomleft {background:url('../images/corners_bottom.gif') no-repeat top left; width:9px; height:9px; overflow:hidden; float:left; display:inline;margin: 12px 4px 0px -30px}
+.Cbottom {
+	width:942px;
+	height:9px;
+	overflow:hidden;
+	display:inline;
+	float:left;
+	/*background:url('../images/bg_content.gif') repeat-y -39px 0*/
+	}
+.Cbottomright {background:url('../images/corners_bottom.gif') no-repeat top right; width:9px; height:9px; overflow:hidden; float:right; display:inline;margin: 3px -8px 0px 0px}
+
+/* Footer */
+#footer {height:95px; width:100%; margin:0; background:url('../images/bg_footer.gif') no-repeat bottom center; clear:both;}
+#foot {height:95px; width:998px; margin:0 auto; text-align:left}
+#foot1 {display:none;height:30px; text-align:right; padding:12px 29px 0 0}
+#foot1 a:link, #foot1 a:visited {color:#888}
+#foot1 a:active {color:#999}
+#foot2 {padding:10px 360px 0 30px; color:#999}
+#foot2 a:link, #foot2 a:visited {color:#ddd}
+#foot2 a:active {color:#eee}
+.star {color:#fc0}
+.valid {float:right}
+
+/* Misc */
+.clear {clear:both}
+.leflo {float:left}
+.riflo {float:right}
+#properspace {height:105px}
+#preloader {display:none}

@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+	<head>
+		<title>{{titrepage}}</title>{{metarobots}}
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+		<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+		<meta name="description" content="{{configuration param="meta_description"}}" />
+		<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers avis" href="{{configuration param="base_url"}}MicroBlog/xml" />
+		<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements du wikini" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+		{{liensstyle}}
+		{{liensjavascripts}}
+		<script type="text/javascript">
+		jQuery(function(){
+			//menu déroulant du haut
+			$('#menu_haut ul').addClass('sf-menu').superfish();
+			//menu de gauche avec accordeon
+			$("#menu_gauche ul ul").hide();
+			$("#menu_gauche > div > ul > li").children("ul").each(function(i) {
+				$(this).prev("a").addClass("depliable").bind("click", function()
+				{
+					if ( $(this).hasClass("depliable") ) { $(this).removeClass("depliable").addClass("deplie"); }
+					else {$(this).removeClass("deplie").addClass("depliable"); }
+					$(this).next("ul").slideToggle('fast');
+					return false;
+				})
+			});
+		});
+		</script>
+	</head>
+
+	<body {{parambody}}>
+		<div id="conteneur">
+			<div id="banniere">
+				<div id="lien_accueil"><table border=0><tr><td><a href="{{configuration param="base_url"}}" title="Retour à la page d'accueil">{{include page="PageBandeau" doubleclic="1"}}</a></td>
+<td><h1 id="titre_wiki">{{configuration param="wakka_name"}}</h1></td></tr></table></div>
+				<div id="menu_acces_rapide">
+					{{login templateform="form_reema.tpl.html"}}
+				</div><!-- fin div menu_acces_rapide -->
+			</div><!-- fin div banniere -->
+			<div id="top">
+				<div id="recherche">
+				{{moteurrecherche}}
+				</div><!-- fin div recherche -->
+				<div id="menu_haut">
+					{{include page="PageMenuHaut" doubleclic="1"}}
+				</div><!-- fin div menu_commun_haut -->
+			</div> <!-- fin div top -->
+			<div id="conteneurbas">
+			<div id="content" {{doubleclic}}>
+					{WIKINI_PAGE}
+			</div> <!-- fin div content -->
+			<div id="menu_gauche">
+				<div class="titre_menu">MENU</div>
+				<div class="fond_menu_haut">&nbsp;</div>
+				{{include page="PageMenu" doubleclic="1"}}
+				<div class="fond_menu_haut">&nbsp;</div>
+				<div class="titre_menu">Liens</div>
+				{{include page="PageMenuLiens" doubleclic="1"}}
+			</div><!-- fin div menu_gauche -->
+			<div id="footer">
+				{{barreredaction}}
+				<div id="liens_footer">
+					{{include page="PageFooter" doubleclic="1"}}
+				</div>
+				<div id="copyright">
+					{{include page="PageCopyright" doubleclic="1"}}
+				</div>  <!-- fin div copyright -->
+			</div>  <!-- fin div footer -->
+			</div> <!-- fin div conteneurbas -->
+		</div> <!-- fin div conteneur -->
+	</body>
+</html>

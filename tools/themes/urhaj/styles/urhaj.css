@@ -1,0 +1,309 @@
+body {
+background-color:#FFF;
+color:#000;
+font:11px/18px verdana;
+margin:0;
+text-align:center;
+}
+
+body,p,td,li,input,select,textarea {
+font:11px/18px verdana;
+line-height:1.7;
+}
+
+a {
+color:#4fafc7;
+font-style:italic;
+text-decoration:none;
+}
+
+a:visited {
+color:#8e204d;
+}
+
+a:hover,a:active {
+color:#15257d;
+text-decoration:underline;
+}
+
+h1 {
+background:url(../images/puce_titre1.png) no-repeat 0 8px;
+font-weight:bold;color:#732340;
+display:block;
+font-size:2em;
+margin:0 0 14px;
+padding:4px 0 6px 40px;
+}
+
+h2 {
+font-weight:bold;color:#768e12;
+display:block;
+font-size:1.8em;
+font-weight:700;
+margin:0 0 9px;
+padding:0;
+}
+
+h3 {
+color:#1e59a9;;
+display:block;
+font-size:1.6em;
+font-weight:700;
+margin:0 0 7px;
+padding:0;
+}
+
+h4 {
+color:#aa001a;
+display:block;
+font-size:1.4em;
+font-weight:700;
+margin:0 0 5px;
+padding:0;
+}
+
+h5 {
+color:#000;
+display:block;
+font-size:1.2em;
+margin:0 0 3px;
+padding:0;
+}
+
+table {
+border:#8188be 1px solid;
+border-collapse:collapse;
+border-spacing:0;
+font-size:10px;
+}
+
+th {
+background-color:#8188be;
+border:#8188be 1px solid;
+color:#FFF;
+padding:2px;
+text-align:center;
+text-transform:uppercase;
+}
+
+td {
+background-color:#FFF;
+border:#8188be 1px solid;
+color:#000;
+padding:2px;
+text-align:left;
+}
+
+img {
+border:0;
+}
+
+
+ul {
+margin:0 0 0 10px;
+padding:0;
+}
+
+li {
+list-style-type:disc;
+padding:0 0 0 0;
+margin:0 0 0 10px;
+}
+
+hr {display:block;clear:both; border:1px solid #768e12; width:60%; height:1px; margin:20px auto;}
+
+textarea {
+width:90%;
+}
+
+#conteneur {
+margin:0 auto;
+position:relative;
+width:960px;
+color:#4a4a4a;
+text-align:justify;
+background:url(../images/fond_peinture.png) no-repeat top right;
+}
+
+#bandeau_haut_accueil {
+background:url(../images/bandeau_haut_accueil.jpg) no-repeat top right;
+height:221px;
+margin:0 0 0 3px;
+padding:0;
+width:960px;
+}
+
+#bandeau_haut_jeunes {
+background:url(../images/bandeau_haut_jeunes.jpg) no-repeat top right;
+height:137px;
+margin:0;
+padding:0;
+width:960px;
+}
+
+#bandeau_haut_nous {
+background:url(../images/bandeau_haut_nous.jpg) no-repeat top right;
+height:137px;
+margin:0;
+padding:0;
+width:960px;
+}
+
+#bandeau_haut_nous a:hover, #bandeau_haut_jeunes a:hover {text-decoration:none;}
+
+#logo {
+background:url(../images/logo_urhaj.png) no-repeat top left;
+display:block;
+float:left;
+height:134px;
+margin:0 10px 0 10px;
+width:90px;
+}
+
+#lien_bandeau {float:left; height:120px; width:670px;}
+#espace_jeunes {float:right; height:120px; width:170px;}
+#nous_connaitre {float:right; height:120px; width:170px;}
+
+#boutons_haut {float:left; height:81px; margin:10px 0 0 60px; width:183px;}
+#boutons_haut_gauche {float:right; width:80px; margin:10px 10px 0 0;}
+#boutons_haut a, #boutons_haut_gauche a {display:inline; float:left; margin:0 0 0 30px;}
+#boutons_haut a:hover, #boutons_haut_gauche a:hover {text-decoration:none;}
+#nous_contacter {display:block; width:61px; height:81px; background:url(../images/bouton_contact_jeunes.png) no-repeat top left;}
+#la_gazette {display:block; width:62px; height:81px; background:url(../images/bouton_gazette_jeunes.png) no-repeat top left;}
+#nous_contacter_jeunes {display:inline; float:left; margin:0; padding:0; width:61px; height:81px; background:url(../images/bouton_contact_jeunes.png) no-repeat top left;}
+#la_gazette_jeunes {float:left; display:inline; margin:0; padding:0; width:62px; height:81px; background:url(../images/bouton_gazette_jeunes.png) no-repeat top left;}
+
+#menu_haut_jeunes {margin:5px 0 0 0;width:600px;float:right; height:81px;}
+#menu_haut_jeunes ul {margin:0; padding:0;width:600px;float:right;text-align:left;}
+#menu_haut_jeunes ul li {list-style-type:none; height:28px; float:left; margin:0 0 0 5px; padding:0; background:url(../images/bouton_jeunes_gauche.png) no-repeat top left;color:#fab70e;}
+#menu_haut_jeunes ul li:hover {background:url(../images/bouton_jeunes_gauche_hover.png) no-repeat top left; color:#628912;}
+#menu_haut_jeunes ul li a {float:left; margin:0; padding:3px 10px 17px 10px; background:url(../images/bouton_jeunes_droite.png) no-repeat top right; color:#fab70e; font-style:normal;font-weight:bold;}
+#menu_haut_jeunes ul li:hover > a {background:url(../images/bouton_jeunes_droite_hover.png) no-repeat top right; color:#628912;}
+#menu_haut_jeunes ul li a:hover {text-decoration:none; color:#628912;}
+#menu_haut_jeunes ul li ul {position:absolute;top:180px; right:0; display:none; background-color:white;  float:none; z-index:20; background-image:url(../images/menu_deuxieme_niveau_jeunes.png); width:667px; height:27px;  }
+#menu_haut_jeunes ul li ul li {list-style-type:none; float:left; color:#fff; background:transparent; background-image:0; font-weight:400;margin:0; padding:0; text-align:left;}
+#menu_haut_jeunes ul li ul li a {float:none; background:transparent; background-image:0; float:left; font-weight:bold; color:#fff; margin:0 0 0 16px;padding:4px 15px 4px 8px;}
+#menu_haut_jeunes ul li ul li:hover {color:#FFF; background:url(../images/separateur_menu_deuxieme_niveau_gauche.png) no-repeat top left;}
+#menu_haut_jeunes ul li ul li a:hover {background:#FFF url(../images/separateur_menu_deuxieme_niveau_droite.png) no-repeat top right; color:#000;}
+
+
+#menu_gauche {float:left; width:120px; }
+#menu_gauche ul {margin:0 0 0 15px; padding:0;}
+#menu_gauche ul li {list-style-type:none; display:block; width:85px; height:54px; margin:5px 0 25px 0; padding:0; background:url(../images/bouton_menu_gauche.png) no-repeat top left;color:#7d0310; text-align:center;}
+#menu_gauche ul li:hover {background:url(../images/bouton_menu_gauche_hover.png) no-repeat top left; color:#FFF;}
+#menu_gauche ul a {float:left; margin:0; padding:3px 0; width:85px; color:#7d0310; font-style:normal;font-weight:bold; text-align:center;}
+#menu_gauche ul a:hover {text-decoration:none; color:#FFF;}
+#menu_gauche ul ul a {float:none; background-image:none; float:left; font-weight:bold; color:#000; margin:0 2px; padding:0; text-align:left; width:80px;}
+#menu_gauche ul ul a:hover {color:#7d0310; background-image:none;}
+#menu_gauche ul ul {display:none; position:absolute; left:100px; width:100px; height:150px; background:white url(../images/menu_deuxieme_niveau_nous.png) no-repeat top left; color:#000; float:none; z-index:20; padding:10px 0 50px 0; margin:0;}
+#menu_gauche ul ul li {list-style-type:none; display:list-item; background-image:none; font-weight:400; margin:0; padding:0; text-align:left; width:100px; height:auto;}
+
+#page_principale {clear:both; margin:0; padding:0;}
+#page_principale_droite {float:right; width:830px; margin:0; padding:0;}
+
+#bandeau_bas {clear:both; margin:0; padding:0; text-align:center; height:155px; background:url(../images/fond_bonhommes.png) no-repeat bottom right;}
+
+#toolbar {clear:both;}
+
+#recherche {
+float:right;
+margin:157px 24px 0 0;
+width:200px;
+text-align:right;
+}
+
+.input_rech {
+font-size:10px;
+background-color:#FFF;
+border:1px solid #FFF;
+margin:0;
+padding:0;
+width:165px;
+color:#742948;
+}
+
+.bouton_rech {
+margin:0;
+padding:0;
+border:0;
+color:#fff;
+width:17px;
+height:17px;
+background:transparent url(../images/puce_recherche.png) no-repeat bottom left;
+}
+
+.error {
+color:#C33;
+font-weight:700;
+}
+
+.indent {
+margin-left:40px;
+}
+
+.additions {
+color:#080;
+}
+
+.deletions {
+color:#800;
+}
+
+.add {
+color:#c00;
+font-weight:700;
+text-decoration:underline;
+}
+
+.del {
+color:#c00;
+font-style:italic;
+text-decoration:line-through;
+}
+
+.attach_left {float:left; margin:0 10px 0 0;}
+.attach_right {float:right; margin:0 0 0 10px;}
+.attach_center {display:block; margin 0 auto; width:100%; text-align:center;}
+
+.prev_alert {
+background-color:#b4d627;
+color:#FFF;
+font-size:1.7em;
+font-weight:700;
+margin-bottom:5px;
+}
+
+.code {
+background:#FFF;
+border:solid #888 2px;
+font-family:'Courier New', Courier;
+height:400px;
+overflow:scroll;
+padding:3px;
+width:100%;
+}
+
+.revisioninfo {
+color:#AAA;
+padding-bottom:20px;
+}
+
+.footer {
+//display:block;
+display:none;
+text-align:center;
+margin: 0 0 20px 0;
+padding:75px 0 0 0;
+}
+
+.edit {width:100%; height:400px;}
+
+#recherche strong,#recherche br,.hr_clear,.commentsheader {
+display:none;
+}
+
+.violet {font-weight:bold;color:#732340;}
+.vert {font-weight:bold;color:#768e12;}
+.bordeaux {font-weight:bold;color:#8a051a;}
+.bleu {font-weight:bold;color:#1e59a9;}
+.rouge {font-weight:bold;color:#aa001a;}

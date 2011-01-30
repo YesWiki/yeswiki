@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+
+<head>
+        <title>{{titrepage}}</title>
+        {{metarobots}}
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+        <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+        <meta name="description" content="{{configuration param="meta_description"}}" />
+        <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+        {{liensstyle}}
+        {{liensjavascripts}}
+</head>
+
+<body {{parambody}}>
+<div class="page_table">
+	<div class="menu_column">
+		<div id="menu">
+			{{include page="PageMenu"  doubleclic="1"}}
+		</div><!-- fin menu -->
+	</div><!-- fin menu_column -->
+	<div class="body_column" {{doubleclic}}>
+		<div id="banniere">
+			<div id="bandeau">
+				<a href="/"><img src="http://www.lam34.org/image/logo-lam.gif" alt="logo" /></a>
+			</div><!-- fin bandeau -->
+		</div><!-- fin banniere -->
+		<div id="content">
+		{WIKINI_PAGE}
+		<div style="clear:both"></div>
+		</div><!-- fin content -->
+		<div style="clear:both"></div>
+	</div><!-- fin body_column -->
+	<div style="clear:both"></div>
+	<div id="footer">
+		{{include page="PageFooter"  doubleclic="1"}}
+	</div>
+</div><!-- fin page_table -->
+</body>
+</html>

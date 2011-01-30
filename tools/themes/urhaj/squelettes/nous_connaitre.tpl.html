@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+	<title>{{titrepage}}</title>{{metarobots}}
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+	<meta name="description" content="{{configuration param="meta_description"}}" />
+	<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+	{{liensstyle}}
+	{{liensjavascripts}}
+	<script type="text/javascript">
+		jQuery(function(){					
+			//Menu déroulant vertical
+			$("#menu_gauche ul>li").mouseover(function(){
+				$("#menu_gauche ul ul").hide();
+				$(this).find("ul").show();			
+			});
+			$("#menu_gauche ul>li").mouseout(function(){				
+				$(this).find("ul").hide();
+			});
+		});
+	</script>
+</head>
+
+<body {{parambody}}>
+	<div id="conteneur">
+		<div id="bandeau_haut_nous">
+			<a id="logo" href="wakka.php" title="Retour &agrave; la page d'accueil">&nbsp;</a>
+			<a id="lien_bandeau" href="wakka.php?wiki=NousConnaitre" title="Retour au sommaire de la rubrique">&nbsp;</a>
+			<a id="espace_jeunes" href="wakka.php?wiki=EspaceJeunes" title="Aller sur l'espace des jeunes">&nbsp;</a>
+		</div>
+		<div id="menu_gauche">
+			{{include page="PageMenuNous" doubleclic="1"}}
+		</div>
+		<div id="page_principale_droite" {{doubleclic}}>
+			<div id="boutons_haut_gauche">
+				<a id="nous_contacter" href="wakka.php?wiki=NousContacter" title="Nous contacter">&nbsp;</a>
+				<a id="la_gazette" href="wakka.php?wiki=LaGazette" title="La Gazette">&nbsp;</a>
+			</div>
+			{WIKINI_PAGE}
+		</div>		
+		<div id="bandeau_bas">{{barreredaction}}{{include page="PageFooter" doubleclic="1"}}</div>
+	</div>
+</body>
+</html>

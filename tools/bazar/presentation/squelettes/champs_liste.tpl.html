@@ -1,0 +1,96 @@
+<div class="formulaire_ligne">
+	<label><span class="symbole_obligatoire">*&nbsp;</span>Identifiant</label>
+	<input name="id" type="text" required="required" />
+</div>
+
+<div class="formulaire_ligne">
+	<label><span class="symbole_obligatoire">*&nbsp;</span>Label&nbsp;<img class="tooltip_aide" title="texte apparaissant devant le champ &agrave; remplir" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+	<input name="label" type="text" required="required" />
+</div>
+
+<div class="formulaire_ligne">
+	<label><span class="symbole_obligatoire">*&nbsp;</span>Source des valeurs</label>
+	<select id="source" name="type_champs" required="required">
+		<option value="" selected="selected">Choisir...</option>
+		<optgroup id="list_source" label="Liste"></optgroup>
+		<optgroup id="type_sheet_source" label="Type de fiche"></optgroup>
+	</select>
+</div>
+
+<div class="formulaire_ligne">
+	<label><span class="symbole_obligatoire">*&nbsp;</span>Format du champs</label>
+	<select id="type_champs" name="type_champs" required="required">
+		<option value="" selected="selected">Choisir...</option>
+		<option value="select">Liste d&eacute;roulante</option>
+		<option value="checkbox">Case &agrave; cocher</option>
+	</select>
+</div>
+
+<div id="type_champs_select" style="display:none;"><!-- choix select pour le type de champs -->
+	
+	<div class="formulaire_ligne">
+		<label>Valeur par d&eacute;faut&nbsp;<img class="tooltip_aide" title="valeur s&eacute;lectionn&eacute;e par d&eacute;faut pour la liste" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<select id="select_default" name="select_default">
+			<option value="" selected="selected">Choisir...</option>
+		</select>
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Nombre de choix minimum&nbsp;<img class="tooltip_aide" title="Laisser 0 pour que le champs ne soit pas obligatoire" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<div class="formulaire_input">
+			<input id="select_nb_choices_min" name="select_nb_choices_min" type="range" min="0" max="10" value="0" />
+			<div class="clear"></div>
+		</div>
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Nombre de choix maximum&nbsp;<img class="tooltip_aide" title="Nombre de choix simultan&eacute;s possibles" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<div class="formulaire_input">
+			<input id="select_nb_choices_max" name="select_nb_choices_max" type="range" min="1" max="10" value="1" />
+			<div class="clear"></div>
+		</div>
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Taille du champs</label>
+		<div class="formulaire_input">
+			<input id="select_size" name="select_size" type="range" min="1" max="10" value="1" />
+			<div class="clear"></div>
+		</div>
+	</div>
+
+</div>
+
+<div id="type_champs_checkbox" style="display:none;"><!-- choix checkbox pour le type de champs -->
+	
+	<fieldset class="bazar_fieldset"><legend>Valeur par d&eacute;faut</legend>
+		<div id="checkbox_default" class="bazar_checkbox"></div>
+	</fieldset>
+	
+	<div class="formulaire_ligne">
+		<label>Nombre de choix minimum&nbsp;<img class="tooltip_aide" title="Laisser 0 pour que le champs ne soit pas obligatoire" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<div class="formulaire_input">
+			<input id="checkbox_nb_choices_min" name="select_nb_choices_min" type="range" min="0" max="10" value="0" />
+			<div class="clear"></div>
+		</div>
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Nombre de choix maximum&nbsp;<img class="tooltip_aide" title="Nombre de choix simultan&eacute;s possibles" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<div class="formulaire_input">
+			<input id="checkbox_nb_choices_max" name="select_nb_choices_max" type="range" min="1" max="10" value="1" />
+			<div class="clear"></div>
+		</div>
+	</div>
+									
+</div>
+
+<div class="formulaire_ligne">
+	<label for="searchable">Apparait dans le moteur de recherche</label>
+	<input type="checkbox" id="searchable" name="searchable" />
+</div>
+
+<div class="formulaire_ligne">
+	<label>Texte de la bulle d'aide</label>
+	<input type="text" name="help_tooltip" />
+</div>

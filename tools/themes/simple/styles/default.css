@@ -1,0 +1,243 @@
+body {
+	margin: 0;
+	font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+    font-size: .8em;
+    text-align:center;
+    background:#fff;
+}
+#fond_degrade{
+	margin: 10px auto 0 auto;
+    width: 980px;
+    background:transparent url(../images/fond_degrade.png) repeat-y center;
+}
+
+p {
+	line-height: 17px;
+	margin: 11px 0 10px 0;
+	padding: 0;
+}
+
+h1 {
+	font-size:1.6em;
+	color: #e65127; 
+	padding:20px 0 10px 25px;
+	margin:0 0 15px 0;
+	background:transparent url(../images/puce_titre1.png) no-repeat top left;
+	border-bottom:2px solid #000; 
+}
+	
+h2 {
+	width:100%;
+	color: #efa947;
+	margin:0 0 10px 0;
+	padding:0 0 0 15px;
+	background:transparent url(../images/puce_titre2.png) no-repeat 0 6px;
+	font-size:1.3em;
+}
+
+h3 {
+	color: #a13d86; 
+	margin:0 0 6px 0;
+	padding:0 0 0 12px;
+	background:transparent url(../images/puce_titre3.png) no-repeat 0 5px;
+	font-size:1.2em;
+}
+
+.toggler {cursor:pointer;}
+.toggler:hover {background-color: #e89326;}
+
+h4 {
+	color: #000; 
+	margin:0 0 3px 0;
+	padding:0;
+	font-size:1.1em;
+	font-weight:bold;
+}
+
+h5, h5 a {
+	width:100%;
+	margin:0 0 2px 0;
+	padding:0;
+	font-size:1em;
+	color: #c8d664;
+}
+
+a {
+	color: #efa947;
+	text-decoration: none;
+	font-weight:bold;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+blockquote{
+	background: #F7FDE3;
+	color: #606060;
+	padding: 10px;
+}
+
+hr {
+	color: red;
+	background-color: red;
+	height: 2px;
+	border: 0;
+	width:100%;
+}
+
+img {border:0;}
+
+input, textarea {
+	margin:1px;
+	font-size:1em;
+}
+
+textarea {width:100%;}
+.del {text-decoration:line-through;}
+
+/**** Main Container ***/
+#conteneur {
+	text-align: left;
+	width: 980px;
+	background:transparent url(../images/fond.jpg) no-repeat top left;
+	color: #000;
+	margin:0 auto;
+	position:relative;
+}
+
+/**** Top ***/
+#top {
+	width: 980px;
+	height: 145px;
+	color: #000;
+}
+
+#lien_accueil { float:left; display:block; width:390px; height:100px;}
+#lien_accueil:hover {text-decoration:none;}
+span.missingpage {display:inline;}
+
+
+.attach_left {float:left; margin:0 10px 0 0;}
+.attach_right {float:right; margin:0 0 0 10px;}
+.attach_center {display:block; margin 0 auto; width:100%; text-align:center;}
+
+.trail_table { line-height: 30px;}
+.trail_button { color: #993333; }
+
+/**** Menus ***/
+#titre_haut {
+	float:left; 
+	width: 200px;
+	height: 100px;
+	margin:22px 0 0 0;
+}
+#menu_haut a {color:#7b6daa;}
+
+#menu_gauche {
+	margin:0 0 0 40px;
+	padding : 10px 1px;
+	background:#eea944;
+	width:198px;float:left;
+	border:1px solid #FFF;
+}
+
+#menu_gauche a {color:#000; padding:3px 0 3px 20px; width:178px; display:block;}
+#menu_gauche a:hover {text-decoration:none; background:#e5d448;}
+#menu_gauche ul {margin:0; padding:0;}
+#menu_gauche li {list-style-type:none; margin:0; padding:0;}
+#menu_gauche ul ul {background:#f8c888;}
+#menu_gauche ul ul a {padding:0 0 0 30px; width:168px;}
+#menu_gauche ul ul a:hover {background:#d2bbcb;}
+#menu_haut {
+	position:absolute;
+	right:0;
+	top:25px;
+	margin:0 40px 0 0;
+	padding : 10px;
+	background:#c1a8bb;
+	border:1px solid #FFF;
+	width:197px;
+	float:right;
+	clear:right;
+}
+#menu_haut a {color:#000;}
+
+#moteur_recherche {
+	position:absolute;
+	right:0;
+	top:60px;
+	margin:0 40px 0 0;
+	padding : 10px;
+	background:#c1a8bb;
+	border:1px solid #FFF;
+	width:197px;
+	float:right;
+	clear:right;
+}
+.bouton_rech {background:#c1a8bb; border:0;}
+.input_rech {border:0;}
+
+#identification {
+	position:absolute;
+	top:5px;
+	right:0;
+	z-index:3;
+	margin:10px 40px 0 0;
+	padding : 10px;
+	background:#e74f26;
+	border:1px solid #FFF;
+	width:197px;
+	float:right;
+	clear:right;
+}
+.titre_identification {font-weight:bold;color:#fff;}
+.formulaire_identification {font-size:0.9em; display:none;}
+#identification .input_iden {border:0; width:80px;}
+#identification a {color:#FFF; margin:0;}
+.texte_iden {display:block;font-weight:bold;margin:10px 0 0 0;}
+.label_iden {width:90px;text-align:right;display:block;float:left;}
+.bouton_iden {border:0;color:#FFF;background-color:#e74f26;font-weight:bold; margin:0;}
+.modif_inscription_iden {display:block;}
+
+/**** Content Container ***/
+#content {
+	position : relative;
+	margin:0 40px 20px 0;
+	padding : 10px;	
+	background:#FFF;
+	width:650px;
+	text-align:justify;
+	float:right;
+	clear:right;
+}
+
+/**** Content ***/
+#content ul {
+	padding: 5px 0 5px 20px;
+	margin:0;
+	
+}
+
+#content li {
+	margin-bottom:4px;
+	padding: 0 0 0 13px;
+	list-style-type:none;
+	background: url(../images/puce_liste.png) no-repeat 0 5px;
+}
+
+.commentsheader {display:none;}
+.hr_clear {display:none;}
+
+/**** Footer ***/
+#footer {
+	clear: both;
+    margin:0;
+	padding:0;
+	color: #000;
+	text-align:right;
+	font-size:0.9em;
+	width:940px;
+}
+
+#footer a {color:#000;}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="contact" version="$Name:  $" active="1">
+  <author>Florian Schmitt</author>
+  <label>Contact</label>
+  <desc>Permet d'envoyer des mails par un formulaire de contact, s'abonner ou se désabonner à un liste de diffusion ou encore envoyer une page par mail</desc>
+</plugin>

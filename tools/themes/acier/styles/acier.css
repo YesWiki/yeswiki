@@ -1,0 +1,275 @@
+/************ Main CSS *************/
+
+body
+{
+padding:0;
+background-image:url(../images/header_bg.jpg);
+background-repeat:repeat-x;
+margin:0;
+}
+
+
+#wrapper
+{
+width:960px;
+margin: 0 auto;
+background-color:#FFFFFF;
+}
+
+#header
+{
+width:100%;
+height:119px;
+background-image:url(../images/header_bg.jpg);
+background-repeat:repeat-x;
+}
+
+#title
+{
+width:auto;
+margin:0;
+padding:0;
+float:left;
+font-family: trebuchet ms, helvetica;
+font-size:1.5em;
+color:white;
+}
+#title .div_include {padding:35px 30px 25px 5px;}
+
+#title h1
+{
+margin:0;
+}
+
+#title a
+{
+font-family: trebuchet ms, helvetica;
+font-size:1.5em;
+color:white;
+}
+
+#left
+{
+width:715px;
+float:left;
+display:block;
+margin-bottom:10px;
+padding-bottom:50px;
+font-family:trebuchet ms, Geneva, Arial, Helvetica, sans-serif;
+font-weight: normal;
+color:#333;
+font-size:.8em;
+line-height:1.5em;
+}
+
+#intro
+{
+margin:10px 0 20px 0;
+}
+
+#info
+{
+width:100%;
+margin-top:20px;
+margin-bottom:10px;
+}
+
+#right
+{
+width:200px;
+float:right;
+margin-bottom:10px;
+margin-top:10px;
+font-size:0.9em;
+}
+#right ul {list-style:none;}
+#right h4 {color:#999; background-color:transparent;}
+
+
+
+#footer
+{
+clear:both;
+height:30px;
+background-image:url(../images/footer_bg.jpg);
+background-repeat:repeat-x;
+padding:10px 0 0 0;
+margin:0;
+font-size:.7em;
+}
+
+#credit
+{
+font-family: trebuchet ms, helvetica, arial, san-serif;
+color:#333;
+text-align:right;
+padding-right:5px;
+}
+
+/*********** ul, h2,h4,p,and so on *************/
+
+
+ul
+{
+margin:0 0 0 15px;
+padding:0;
+color:#333;
+font-family: trebuchet ms, helvetica;
+}
+h1 {font-size:1.9em;}
+h2
+{
+font-family:Geneva, Arial, Helvetica, sans-serif;
+font-weight: normal;
+color:#006699;
+margin:0;
+font-size:1.7em;
+}
+h3 {font-size:1.5em;}
+h4
+{
+font-family:Geneva, Arial, Helvetica, sans-serif;
+font-weight:bolder;
+color:#999999;
+margin:0;
+font-size:1.3em;
+}
+h5 {font-size:1.1em;}
+
+a:link {
+	color: #006699;
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+	color: #006699;
+}
+a:hover {
+	text-decoration: none;
+	color: #FF9900;
+}
+a:active {
+	text-decoration: none;
+}
+
+
+/** All of the styles below were courtesy of http://css.maxdesign.com.au/listamatic/ and modified by me **/
+
+#navcontainer {float:right; margin-top:85px; text-align:center; height:30px;}
+
+#navcontainer ul
+{
+margin: 0;
+padding: 0;
+list-style-type: none;
+white-space: nowrap;
+}
+
+#navcontainer ul ul
+{
+display:none;
+}
+
+#navcontainer li
+{
+width:90px;
+background-color:#993333;
+float: left;
+font-family: verdana, arial, sans-serif;
+font-size: 10px;
+font-weight: bold;
+margin: 0;
+padding:6px 0px 14px 0px;
+background:transparent url(../images/nav_bg.jpg);
+background-repeat:no-repeat;
+}
+
+#navcontainer a, #navcontainer a:link
+{
+margin: 0;
+padding: 6px 0px 14px 0px;
+color: #333;
+text-decoration: none;
+
+}
+
+
+#navcontainer li a:hover
+{
+color:#dd0066;
+}
+
+/****************************Lower Horizontal**********************************/
+
+#footer ul
+{
+margin-top:5px;
+padding-left: 0;
+margin-left: 0;
+color: White;
+float: left;
+height:20px;
+font-family: trebuchet ms, helvetica, arial, san-serif;
+}
+
+#footer ul li { display: inline; }
+
+#footer ul li a
+{
+padding: 0.2em 1em;
+color: #333;
+text-decoration: none;
+float: left;
+}
+
+#footer ul li a:hover
+{
+color: #333;
+}
+
+
+textarea {
+border:1px solid #333;
+margin:0;
+}
+
+#body {width:100%;}
+
+.page {margin:10px 0 10px 0;min-height:600px;}
+
+.error {
+color:#C33;
+font-weight:700;
+}
+
+.additions {
+color:#080;
+}
+
+.deletions {
+color:#800;
+}
+
+.add {
+font-weight:700;
+color:#c00;
+text-decoration:underline;
+}
+
+.del {
+font-style:italic;
+color:#c00;
+text-decoration:line-through;
+}
+
+.prev_alert {
+background-color:#7D3F00;
+color:#FFF;
+font-size:1.7em;
+font-weight:700;
+margin-bottom:5px;
+}
+
+.commentsheader,.hr_clear {
+display:none;
+}

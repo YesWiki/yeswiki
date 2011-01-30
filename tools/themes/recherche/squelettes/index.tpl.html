@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+	<title>{{titrepage}}</title>{{metarobots}}
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+	<meta name="description" content="{{configuration param="meta_description"}}" />
+	<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="http://www.wikitipi.fr/wakka.php?wiki=PagePrincipaleRecherche/xml" />
+	{{liensstyle}}
+	{{liensjavascripts}}
+<!--[if lt IE 7]>
+<script src="tools/templates/themes/tipi/javascripts/ie7/IE7.js" type="text/javascript"></script>
+<![endif]-->
+
+<script type="text/javascript">
+
+jQuery(function(){
+//menu de gauche avec accordeon
+
+$(document).ready(function(){
+$('#sidebar > div > ul').hoverAccordion({
+keepheight: 'false',
+activateitem: 'true'
+});
+
+
+// Traitement des menus actifs (menu en cours)
+
+$("#sidebar a.actif").parents("ul").show().prev("a").removeClass("closed").addClass("opened");
+
+});
+});
+
+</script>
+
+
+</head>
+
+<body {{parambody}}>
+<div id="wrap">
+
+<div id="header">
+<p id="toplinks">Aller vers : <a href="http://www.wikitipi.fr/wakka.php?wiki=ModeEmploiRecherche">Mode d'emploi</a> / <a href="http://www.wikitipi.fr/wakka.php?wiki=ConFidentialiteRecherche">Confidentialit&eacute</a> / <a href="http://www.wikitipi.fr/wakka.php?wiki=MemBresRecherche">Membres</a> <img name="" src="" width="32" height="1" alt="" style="background-color: #666666" /><a href="http://www.wikitipi.fr/wakka.php?wiki=PagePrincipale"> Accueil</a> / <a href="http://www.wikitipi.fr/wakka.php?wiki=PagePrincipalePro">WikiTipiPro</a> / <a href="http://www.wikitipi.fr/wakka.php?wiki=PagePrincipaleFormation">WikiTipiFormation</a></p>
+<a
+ href="http://www.wikitipi.fr/wakka.php?wiki=PagePrincipaleRecherche"><img
+ style="border: 0px solid ; width: 353px; height: 50px;"
+ alt="WikiTipi Recherche"
+ src="http://www.wikitipi.fr/tools/templates/themes/recherche/images/WikiTipi.Recherche.gif"></a>
+<p id="slogan">Ce que Tipi peut guérir</p>
+</div>
+
+<div id="content"{{doubleclic="1"}}>
+		{WIKINI_PAGE}
+		<div style="margin-top:60px">
+			{{listemedias}}
+		</div>
+</div>
+
+<div id="sidebar">
+  <p>{{include page="PageMenuRecherche" doubleclic="1" actif="1"}}<br />
+    {{abonnement}} </p>
+  </div>
+
+<div id="footer">
+<p>{{include page="PageBas" doubleclic="1"}}
+</p>
+</div>
+
+</div>
+</body>
+</html>

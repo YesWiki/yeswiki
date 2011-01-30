@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>{{titrepage}}</title>{{metarobots}}
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+	<meta name="description" content="{{configuration param="meta_description"}}" />
+	<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+	{{liensstyle}}
+	{{liensjavascripts}}
+</head>
+<body {{parambody}}>
+	<div id="page" align="center">
+		<div id="toppage" align="center">
+			<div id="date">
+				<div class="smalltext" style="padding:13px;"><strong>{{include page="DateSite" doubleclic="1"}}</strong></div>
+			</div>
+			<div id="topbar">
+				<div align="right" style="padding:12px;" class="smallwhitetext">{{include page="PageMenuHaut" doubleclic="1"}}</div>
+			</div>
+		</div>
+		<div id="header" align="center">
+			<div class="titletext" id="logo">
+				<div class="logotext" style="margin:30px">CC<span class="orangelogotext">PS</span>L</div> 
+			</div>
+			<div id="pagetitle">
+				<div id="title" class="titletext" align="right">{{include page="TitreSite" doubleclic="1"}}</div>
+			</div>
+		</div>
+		<div id="content" align="center">
+			<div id="menu" align="right">
+				<div align="right" style="width:189px; height:8px;"><img src="http://localhost/wiki6/tools/templates/themes/ccpsl/images/mnu_topshadow.gif" width="189" height="8" alt="mnutopshadow" /></div>
+				<div id="linksmenu" align="center">
+{{include page="PageMenu" doubleclic="1"}}
+				</div>
+				<div align="right" style="width:189px; height:8px;"><img src="http://localhost/wiki6/tools/templates/themes/ccpsl/images/mnu_bottomshadow.gif" width="189" height="8" alt="mnubottomshadow" /></div>
+			</div>
+		<div id="contenttext" {{doubleclic}}>
+			<div class="bodytext" style="padding:12px;" align="justify">
+{WIKINI_PAGE}
+			</div>
+		</div>
+		<div id="footer" class="smallgraytext" align="center">
+{{include page="PageMenuBas" doubleclic="1"}}
+			<br />
+			
+			{{include page="PageBas" doubleclic="1"}}<br />
+		</div>
+	</div>
+</body>
+</html>

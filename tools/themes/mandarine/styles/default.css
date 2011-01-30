@@ -1,0 +1,68 @@
+/*****************Proprietes generales******************************************/
+* {margin:0; padding:0; text-indent:0;}
+body {font:12px Arial, sans-serif; color:#000; background:#ffce18 url(../images/degrade.png) repeat-x top left; text-align:center;}
+#page {position:relative; width:960px; text-align:left; margin:0 auto; background:#FFF;}
+
+hr { margin:2px; width:100%; color: #7F8343;  background-color: #7F8343; height: 1px; }
+a { margin:0; padding:0; color:#849F20; text-decoration:none; font-weight:bold;}
+a:hover { text-decoration:none; color:#F90; font-weight:bold; }
+.table_cadre {width:500px;margin:2px auto;border-spacing:0;border-collapse:collapse;}
+th {font-size:11pt;padding:2px;text-align:center;border: 1px solid #006495;font-weight: normal;background:#66A1BF;height:23px;}
+td {font-size:10pt;text-align:center;border: 1px solid #006495;background:#FFF;height:23px;}
+
+/*****************Titres********************************************************/
+h1, h2, h3, h4, h5, h6 {font-family:Arial, sans-serif; text-align:left; margin:4px 0; padding:2px; }
+h1 {padding:0px 0px 0px 45px; font-size:22px; color:#751451; font-weight:bold; background:url(../images/Puce-T3-generique.gif) no-repeat;}
+h2 {padding:0px; font-size:18px; color:#F90; font-weight:bold;}
+h3 {font-size:17px; color:#849F20; font-weight:bold; }
+h4 {font-size:15px; color:#751451; font-weight:bold; }
+h5 {font-size:12px; color:#44238D; }
+
+/*****************Boutons et formulaires****************************************/
+a img {border: none;}
+form li {list-style-type:none;color:#000;}
+form table, form td, form th {border:0;}
+form td:hover {background:transparent;}
+
+/*****************Listes********************************************************/
+ul {padding:0;margin:0 0 0 10px; list-style-type:none;}
+li {padding:0;margin:2px 0 0 0; padding:1px 0 0 13px; color:#000; background:transparent url(../images/puce-liste.gif) no-repeat 0 3px;}
+
+/*****************Bandeau du haut********************************************************/
+#zone_bandeau {height:175px; width:960px; background:url(../images/Site-bandeau.png) no-repeat top left;}
+/*****************Lien de retour vers l'accueil********************************************************/
+#zone_accueil {margin:0; padding:0;}
+#zone_accueil a {position:absolute; top:10px; left:10px; width:800px; height:165px; text-decoration:none;}
+
+/*****************Contenu page (colonne gauche + corps)********************************************************/
+#zone_contenu {float:left; margin:0; padding:0 ;width:960px; background:url(../images/barre_conteneur.png) repeat-y top left;}
+p, .page {clear:both;background-color:transparent;text-align: justify;line-height: 22px;}
+
+/*****************Colonne de gauche********************************************************/
+#colonne_gauche {clear:both; float:left; width:176px; padding:0; margin:0; text-align:left;}
+#colonne_gauche h1 {padding:6px 0 0 0; margin:0; text-align:left; font-weight:bold; font-size:13px; color:#751451; }
+#colonne_gauche li {background-image:none;}
+#menu_haut {margin:0 0 0 15px; width:151px; height:34px; background:url(../images/bandeau_menu_haut.png) no-repeat top left;}
+#menu_contenu {margin:0 0 0 15px; width:151px; background:url(../images/barre_menu.png) repeat-y top left;}
+#menu_bas {margin:0 0 40px 15px; width:151px; height:12px; background:url(../images/bandeau_menu_bas.png) no-repeat top left;}
+#menu_contenu ul {display:block;margin:0; padding:1px; color:#FFF; list-style:none; list-style-type:none;}
+#menu_contenu li, #menu li li {margin:6px 0; padding:0; color:#000; text-align:left;}
+#menu_contenu li ul {margin:0; padding:0; color:#FFF;}
+#menu_contenu a:hover, #menu_contenu li.menu_actif a, #menu_contenu li.menu_inactif a:hover {background:url(../images/puce_fleche.png) no-repeat 0 2px; padding-left:15px; color:#F90; font-weight:bold; }
+#titre_site {display:block; width:100%; text-align:center; padding-top:100px; color:#000000;}
+.rss_site_titre {font-size:13px;}
+.boite_rss {border: 3px solid rgb(239, 181, 33); margin-bottom:10px; padding:6px; width:97%; float: left; -moz-border-radius-topleft: 12px; -moz-border-radius-topright: 12px; -moz-border-radius-bottomright: 12px; -moz-border-radius-bottomleft: 12px;}
+.rss_titre_item {font-size:13px;}
+.hr_clear {display:none;}
+
+/*****************Corps********************************************************/
+/*#colonne_droite {float:left; width:760px; margin:0 0 0 10px; border:3px dotted #751451;}*/
+#colonne_droite {float:left; width:650px; margin:40px 0 30px 10px; padding:10px 10px 0 10px; border:3px dotted #751451;}
+#zone_contenu_corps {float:left; width:750px;_width:544px; margin:0; padding:0 10px 0 10px; text-align:justify;}
+.footer {border-top:3px dotted #751451; margin:10px 0 0 0; padding:7px;}
+/*****************Pied de page********************************************************/
+#zone_pied {float:left; text-align:center; margin:0; padding:0 0 0 0; width:960px; height:50px; background:url(../images/bandeau_bas.gif) no-repeat top left;}
+#zone_pied a {font:12px arial, sans-serif; color:#751451; text-decoration:none;}
+#zone_pied a:hover {text-decoration:underline; color:#efb521;}
+#copyright {float:left; color:#000; width:960px;}
+textarea {width:100%;}

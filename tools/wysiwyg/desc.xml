@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkwysiwyg" version="0.1" active="0">
+  <author>Florian Schmitt</author>
+  <label>WYSIWYG</label>
+  <desc>Le plugin "WYSIWYG" vous permet d'éditer les pages de votre wiki avec un éditeur graphique TinyMCE</desc>
+</plugin>

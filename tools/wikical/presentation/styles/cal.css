@@ -1,0 +1,111 @@
+.day, .day_name {
+	border: solid 1px white;
+	width: 30px;
+	height: 22px;
+	float: left;
+	padding-top: 8px;
+	font-size: 12px;
+	background: url(../images/blanc.png) repeat;
+}
+.day_name {
+	font-weight:bold;
+}
+
+.day.evday {
+	background: url(../images/bleu.png) repeat;
+	color: white;
+	}
+	
+.day.today {
+	background: url(../images/rouge.png) repeat;
+	color: white;
+	}
+
+.day:hover {
+	background-color: black;
+	color: white;
+}
+
+.title, .title a {
+	font-size: 110%;
+	font-weight: bold;
+	color: black;
+	background : url(../images/blanc.png) repeat;		
+}
+.title a {background-image:none;}
+
+.calendar {
+	width: 224px;
+	font-size: 11px;
+	text-align: center;
+	background-color: #A3C437;
+	overflow: auto;
+	border: 1px solid #787878;
+	-moz-border-radius: 15px;
+	-webkit-border-radius: 15px;
+	border-radius: 15px;
+	padding: 2px;
+	padding-bottom: 15px;
+	margin: auto;
+	color: black;
+	
+}
+
+.events {
+	min-width:300px;
+	display: none;
+	color: black;
+}
+
+.calendar_link {
+	margin:5px 0 0 0;
+	display:block;
+	color:#000;
+}
+.calendar_link img {
+	vertical-align:middle;
+}
+
+.day:hover .events {
+	display: block;
+	position: absolute;
+	color: white;
+	margin-left: 10px;
+	padding: 0px 10px;
+	background: repeat url(../images/event.png);
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	border: 1px solid black;
+	
+}
+
+
+.event_title  {
+	text-align: left;
+	font-weight: bold;
+	font-size: 110%;
+	color: black;
+}
+
+.event_info {
+	color: black;
+}
+
+
+/* FORMULAIRE */
+.select_mois {
+	background: transparent;
+	border: solid 1px white;
+}
+
+.select_annee {
+	background: transparent;
+	border: solid 1px white;
+}
+
+.cal_next, .cal_prev, .today  {
+	background: transparent;
+	font-family: "courier";
+}
+

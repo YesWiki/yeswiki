@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+	<head>
+		<title>{{titrepage}}</title>{{metarobots}}
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+		<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+		<meta name="description" content="{{configuration param="meta_description"}}" />
+		<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+		{{liensstyle}}
+		{{liensjavascripts}}
+		<script type="text/javascript">
+		// initialise menu du haut
+		jQuery(function(){
+			jQuery('#menu ul').addClass('sf-menu').superfish();
+			jQuery('#menu > div > ul > li').each( function(i) {$(this).addClass("rubrique"+(i+1));} );
+			jQuery('#menu').show();
+		});
+		</script>
+	</head>
+	
+	<body {{parambody}}>
+		<div id="wrap">
+			<div id="top">
+				<a id="lien_accueil" href="http://outils-reseaux.org/wakka.php" title="Retour &agrave; la page d'accueil">&nbsp;</a>
+				<div id="menu">
+					{{include page="PageMenuHaut" doubleclic="1"}}
+					<div id="recherche">
+					{{moteurrecherche}}
+					</div>
+					<div id="langues">
+						<a href="{{configuration param="base_url"}}HomePage" title="View this website in english">
+							<img src="tools/templates/themes/afrisebfr/images/drapeau_en.png" alt="drapeau anglais" />
+						</a>
+						<a href="{{configuration param="base_url"}}" title="Voir ce site en francais">
+							<img src="tools/templates/themes/afrisebfr/images/drapeau_fr.png" alt="drapeau francais" />
+						</a>						
+					</div>
+				</div> <!-- fin div menu -->
+			</div> <!-- fin div top -->
+			<div id="content">
+				<div id="left">
+					<div class="menu_haut actu_bas">R&eacute;seau</div>
+					<div class="left actu">						
+						<div id="nav">
+							{{include page="PageMenuReseau"}}
+						</div>
+					</div> <!-- fin div class left -->
+					<div class="menu_haut actu_bas">Identification</div>
+					<div id="identification" class="left actu">						
+								{{login}}
+					</div> <!-- fin div identification -->
+				</div> <!-- fin div id left -->
+				<div id="right" {{doubleclic}}>
+					{WIKINI_PAGE}
+				</div> <!-- fin div right -->
+				<div id="clear">&nbsp;</div>
+			</div> <!-- fin div content -->
+			<div id="footer">
+				<div id="slogan">{{include page="PageSlogan" doubleclic="1"}}</div>
+				<div id="footerblanc">{{include page="PageFooter" doubleclic="1"}}</div>
+				<div id="footerdroite">{{include page="PageFooterDroite" doubleclic="1"}}</div>
+			</div>  <!-- fin div footer -->
+		</div> <!-- fin div wrap -->
+	</body>
+</html>

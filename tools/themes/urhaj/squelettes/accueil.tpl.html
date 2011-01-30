@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+	<title>{{titrepage}}</title>{{metarobots}}
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+	<meta name="description" content="{{configuration param="meta_description"}}" />
+	<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+	{{liensstyle}}
+	{{liensjavascripts}}
+</head>
+
+<body {{parambody}}>
+	<div id="conteneur">
+		<div id="bandeau_haut_accueil">
+			<a id="logo" href="wakka.php" title="Retour &agrave; la page d'accueil">&nbsp;</a>						
+			<div id="recherche">
+				{{moteurrecherche}}
+			</div>
+		</div>
+		<div id="contenu" {{doubleclic}}>
+			{WIKINI_PAGE}
+			<img src="tools/templates/themes/urhaj/images/image_accueil.jpg" width="741" height="536" border="0" alt="image accueil" usemap="#map" style="margin:66px 0 0 125px; text-align:center;" />
+			<map name="map">
+				<area shape="poly" coords="116,390,159,256,248,214,221,297,483,175,435,288,251,373,332,401,244,443,245,445,116,392" alt="Nous connaitre" href="wakka.php?wiki=NousConnaitre" />
+				<area shape="poly" coords="292,261,346,141,499,82,425,55,509,15,630,67,588,191,505,228,532,151" alt="Aller sur l&apos;espace jeunes" href="wakka.php?wiki=EspaceJeunes" />
+				<area shape="rect" coords="195,4,284,91" alt="Aller sur l&apos;intranet des adhérents" href="http://urhaj-ra.org/intranet" />
+			</map>			
+		</div>
+		{{barreredaction}}
+	</div>
+</body>
+</html>

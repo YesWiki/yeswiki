@@ -1,0 +1,34 @@
+<?php if ($connected) : ?>
+<a href="wakka.php?wiki=<?= $user; ?>" class="link_user"><img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" /><span class="connected"><?= $user; ?></span></a>
+<form class="formulaire_identification" style="display:inline" method="post" id="signout" action="<?= $homepage; ?>">
+	<input type="hidden" name="action" value="update" />
+	<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
+	<input class="bouton_deconnexion_iden" type="button" value="D&eacute;connexion" onclick="document.location='<?= $homepage; ?>&amp;action=logout'" />
+</form>
+<?= $PageMenuUser; ?>
+<?php else : ?>
+<form class="formulaire_identification" action="<?= $homepage; ?>" method="post">
+	<?php if ($error) : ?>
+		<div class="error_box"><?= $error; ?></div>
+	<?php endif; ?>
+	<input type="hidden" name="action" value="login" />
+	<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
+	<input type="hidden" name="remember" value="0" />
+	<label class="grid_2 label-right">NomWiki</label>
+	<input name="name" class="grid_2 input_iden" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
+	<label class="grid_2 label-right">Mot de passe</label>
+	<input type="password" name="password" class="grid_2 input_iden" size="7" />
+	<div class="clear"></div>
+	<div class="grid_2">
+		<input type="checkbox" id="remember-default" name="remember" value="1" />
+		<label for="remember-default" class="label_remember_iden" style="font-size:.9em;">Se souvenir de moi</label>
+	</div>
+	<input type="submit" class="grid_2 bouton_iden" value="Connexion" />
+	<div class="clear"></div>
+	<div class="grid_4" style="margin-top:10px">
+		<span class="texte_iden">Ou pas encore membre :</span>
+		<span class="inscription_iden"><a href="<?= $signupurl; ?>" title="S'inscrire">s'inscrire</a></span>
+	</div>
+	<div class="clear"></div>
+</form>
+<?php endif; ?>

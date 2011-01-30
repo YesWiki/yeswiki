@@ -1,0 +1,384 @@
+body {
+color:#000;
+background:#737fbb url(../images/background.png) repeat-x top left;
+}
+
+body,p,td,li,input,select,textarea {
+font-family:'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif;
+font-size:13px;
+line-height:1.3;
+}
+
+a {
+color:#849F20;
+text-decoration:none;
+margin:0;
+padding:0;
+}
+
+a:hover {
+text-decoration:none;
+color:#F90;
+}
+
+
+h1 {
+text-align:center;
+padding:5px 0 5px 20px;
+margin:20px auto;
+font-size:22px;
+color:#849F20;
+font-weight:bold;
+width:400px;
+}
+
+
+
+h2 {
+font-weight:bold;
+font-size:18px;
+text-align:left;
+padding:5px 0 5px 30px;
+margin:25px 0 25px 0;
+color:#7271b5;
+}
+
+
+
+h3 {
+
+font-size:17px;
+
+color:#849F20;
+
+font-weight:bold;
+
+}
+
+
+
+h4 {
+
+font-size:14px;
+
+color:#00A0C6;
+
+}
+
+
+
+h5 {
+
+font-size:12px;
+
+color:#F90;
+
+}
+
+
+
+a img {
+
+border:none;
+
+}
+
+
+form li {
+
+list-style-type:none;
+
+color:#000;
+
+}
+
+
+
+ul {
+
+margin:0 0 0 10px;
+
+padding:0;
+
+}
+
+
+
+li {
+
+color:#000;
+
+margin:2px 0 0 10px;
+
+padding:0;
+
+}
+
+#zone_pied {text-align:center;}
+
+
+#zone_bandeau {
+background:url(../images/bandeau_haut.jpg) no-repeat top left;
+width:957px;
+height:248px;
+margin:0 auto;
+}
+
+#titre_site {position:absolute; top:220px; left:387px; width:704px; text-align:center;}
+#lien_accueil {position:relative; top:20px; left:30px; display:block; width:250px;height:125px;text-decoration:none;}
+tt {
+color:Navy;
+}
+
+hr {
+border:0;
+color:#000;
+background-color:#000;
+height:1px;
+}
+
+.wiki_name {
+float:left;
+font-size:150%;
+margin:0 15px 0 10px;
+}
+
+.page_name {
+font-size:150%;
+}
+
+#page {
+border:none;
+height:100%;
+width:973px;
+margin:0 auto;
+padding:0;
+}
+
+#colonne_gauche {
+float:left;
+background:#FFF;
+width:191px;
+border:2px solid #c5b9a3;
+border-top:none;
+margin: 0 0 10px 17px;
+}
+
+#colonne_gauche h1 {
+text-align:center;
+font-weight:bold;
+font-size:13px;
+color:#751451;
+margin:0;
+padding:6px 0;
+width:195px;
+}
+
+#menu_contenu ul {
+display:block;
+color:#FFF;
+list-style:none;
+list-style-type:none;
+margin:0;
+padding:0 0 0 3px;
+}
+
+#menu_contenu li,#menu li li {
+color:#000;
+text-align:left;
+margin:6px 0;
+padding:0;
+
+}
+
+#colonne_droite {
+border:none;
+padding:0;
+background-color:#FFF;
+border-left:2px solid #c5b9a3;
+border-right:2px solid #c5b9a3;
+border-bottom:2px solid #c5b9a3;
+margin:0 0 0 247px;
+height:100%;
+width:705px;
+}
+
+.error {
+color:#C33;
+font-weight:700;
+}
+
+.indent {
+margin-left:40px;
+}
+
+.additions {
+color:#080;
+}
+
+.deletions {
+color:#800;
+}
+
+.add {
+font-weight:700;
+color:#c00;
+text-decoration:underline;
+}
+
+.del {
+font-style:italic;
+color:#c00;
+text-decoration:line-through;
+}
+
+.header {
+padding:0 10px 10px;
+}
+
+.page {
+padding: 0 5px 20px 5px;
+}
+
+.prev_alert {
+background-color:red;
+color:#FFF;
+font-size:1.7em;
+font-weight:700;
+margin-bottom:5px;
+}
+
+.edit {
+width:100%;
+height:400px;
+}
+
+.footer {
+background-color:#d1d2e7;
+padding:5px 10px;
+font-size:11px;
+}
+
+.code {
+background:#FFF;
+border:solid #888 2px;
+font-family:'Courier New', Courier;
+width:100%;
+height:400px;
+overflow:scroll;
+padding:3px;
+}
+
+.revisioninfo {
+color:#AAA;
+padding-bottom:20px;
+}
+
+.commentsheader {
+border-top:2px solid #c5b9a3;
+background-color:#d1d2e7;
+margin:0;
+padding:5px;
+/*width:695px;*/
+}
+
+.comment {
+background-color:#d1d2e7;
+padding:10px;
+}
+
+.commentform {
+background-color:#d1d2e7;
+padding:10px;
+}
+
+.copyright {
+font-size:11px;
+color:#AAA;
+text-align:right;
+}
+
+.searchbox {
+background:#FFFFF8;
+border:0;
+border-bottom:1px solid #CCA;
+margin:0;
+padding:0;
+}
+
+.debug {
+font-size:11px;
+color:#888;
+}
+
+.hr_clear {
+clear:both;
+visibility:hidden;
+}
+
+.include_right {
+float:right;
+width:17%;
+}
+
+.include_left {
+float:left;
+width:17%;
+}
+
+.include_solid_border {
+border:solid;
+padding:2px;
+}
+
+.include_gray_background {
+background-color:#DDD;
+}
+
+.include_small_fonts {
+font-size:.8em;
+}
+
+.include_big_fonts {
+font-size:1.2em;
+}
+
+.include_height10em {
+height:10em;
+overflow:scroll;
+}
+
+.include_height15em {
+height:15em;
+overflow:scroll;
+}
+
+.include_height30em {
+height:30em;
+overflow:scroll;
+}
+
+.include_height60em {
+height:60em;
+overflow:scroll;
+}
+
+.trail_table {
+line-height:30px;
+}
+
+h1,h2,h3,h4,h5,form {
+margin:0;
+padding:0;
+}
+
+a,.trail_button {
+color:#933;
+}
+
+ul,ol {
+margin-top:0;
+margin-bottom:0;
+padding-top:0;
+padding-bottom:0;
+}

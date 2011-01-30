@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wikical" version="0.1" active="true">
+  <author>Florestan BREDOW</author>
+  <label>wikical</label>
+  <desc>Action wikical pour afficher un calendrier ICS</desc>
+</plugin>

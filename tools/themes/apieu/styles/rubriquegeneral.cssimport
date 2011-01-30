@@ -1,0 +1,482 @@
+body {
+background-color:#FFF;
+color:#000;
+font:11px/18px verdana;
+margin:0;
+text-align:center;
+}
+
+body,p,td,li,input,select,textarea {
+font:11px/18px verdana;
+line-height:1.7;
+}
+
+a,a:visited {
+color:#000;
+font-weight:bold;
+text-decoration:none;
+}
+
+a:hover {
+background-color:#f39a25;
+}
+
+h1 {
+background:url(../images/puce_titre1.png) no-repeat 0 8px;
+font-weight:bold;color:#732340;
+display:block;
+font-size:2em;
+margin:0 0 14px;
+padding:4px 0 6px 40px;
+}
+
+h2 {
+font-weight:bold;color:#768e12;
+display:block;
+font-size:1.8em;
+font-weight:700;
+margin:0 0 9px;
+padding:0;
+}
+
+h3 {
+color:#1e59a9;;
+display:block;
+font-size:1.6em;
+font-weight:700;
+margin:0 0 7px;
+padding:0;
+}
+
+h4 {
+color:#aa001a;
+display:block;
+font-size:1.4em;
+font-weight:700;
+margin:0 0 5px;
+padding:0;
+}
+
+h5 {
+color:#000;
+display:block;
+font-size:1.2em;
+margin:0 0 3px;
+padding:0;
+}
+
+table {
+border:#8188be 1px solid;
+border-collapse:collapse;
+border-spacing:0;
+font-size:10px;
+}
+
+th {
+background-color:#8188be;
+border:#8188be 1px solid;
+color:#FFF;
+padding:2px;
+text-align:center;
+text-transform:uppercase;
+}
+
+td {
+background-color:#FFF;
+border:#8188be 1px solid;
+color:#000;
+padding:2px;
+text-align:left;
+}
+
+img {
+border:0;
+}
+
+
+ul {
+margin:0 0 0 10px;
+padding:0;
+}
+
+li {
+list-style-type:disc;
+padding:0 0 0 0;
+margin:0 0 0 10px;
+}
+
+hr {display:block;clear:both; border:1px solid #768e12; width:60%; height:1px; margin:20px auto;}
+
+textarea {
+width:90%;
+}
+
+#conteneur {
+display:block;
+margin:0 auto;
+position:relative;
+width:969px;
+text-align:justify;
+background:url(../images/barre_milieu.png) repeat-y top left;
+}
+
+#bandeau_haut_accueil {
+background:url(../images/bandeau_haut_accueil.jpg) no-repeat top right;
+height:221px;
+margin:0;
+padding:0;
+width:960px;
+}
+
+
+#conteneur_accueil {
+margin:0 auto;
+position:relative;
+top:20px;
+width:600px;
+height:585px;
+text-align:justify;
+background:url(../images/accueil.jpg) no-repeat top left;
+}
+
+#lien_contact {
+font-size:10px;
+display:block;
+position:absolute;
+top:188px;
+left:402px;
+width:95px; height:26px;
+margin:0;
+padding:4px 0 0 4px;
+}
+
+/* old
+#menu_haut_accueil {
+font-size:10px;
+display:inline;
+position:absolute;
+top:128px;
+left:503px;
+width:96px; height:92px;
+margin:0;
+padding:0;
+}
+*/
+
+/* new */
+#menu_haut_accueil {
+    font-size:10px;
+    display:block;
+    vertical-align: center;
+    padding: 5px 5px 0 5px;
+    position:absolute;
+    top:190px;
+    left:190px;
+    width:399px; height:26px;
+    background-color:#ccff44;
+}
+
+
+#menu_haut_accueil ul {margin:0;padding:0;}
+/*#menu_haut_accueil li {margin:0;padding:0;width:100%;list-style-type:none;}*/
+#menu_haut_accueil li {margin:0;padding:0;width:100%;}
+#menu_haut_accueil a {
+    border: solid 1pt black;
+    display: block;
+    width: 24%;
+    float: left;
+    text-align: center;
+    }
+
+#lien_ville {
+position:absolute;
+top:287px;
+left:101px;
+text-align:center;
+padding:20px 0 0 0;
+display:block;
+width:95px;
+height:75px;
+color:#FFF;
+font-size:16px;
+background-color:#ff9900;
+border:3px solid #FFF;
+}
+
+#lien_enseignants {
+display:block;
+text-align:center;
+padding:15px 0 0 0;
+position:absolute;
+top:386px;
+left:303px;
+width:95px;
+height:80px;
+color:#FFF;
+font-size:13px;
+background-color:#87241e;
+border:3px solid #FFF;
+}
+
+#menu_ville {display:none; background-color:white; width:200px; border:2px solid black; -moz-border-radius:10px; padding:10px; z-index:100;}
+#menu_ville a:hover {
+    background-color:white;
+    color:#fe9802;
+}
+
+#menu_enseignants {display:none; background-color:white; width:200px; border:2px solid black; -moz-border-radius:10px; padding:10px; z-index:100;}
+#menu_enseignants a:hover {
+    background-color:white;
+    color:#87241e;
+}
+
+#menu_ville a, #menu_enseignants a {
+    text-align: left;
+}
+#menu_ville a:before, #menu_enseignants a:before {
+    content: "> ";
+}
+
+#bandeau_haut {
+background:url(../images/bandeau_haut.jpg) no-repeat top left;
+height:273px;
+MARGIN:0;
+padding:0;
+width:969px;
+}
+
+#menu_commun_haut {position:absolute; top:200px; left:630px;}
+#menu_commun_haut li {display:inline; list-style-type:none;}
+
+#lien_bandeau {
+display:block;
+height:184px;
+width:969px;
+}
+#lien_bandeau:hover {background:transparent;}
+
+
+/* particularités basculées sur ville.css et  construire.css  */
+#menu_gauche {float:left; width:183px; background:#970f01; margin:0 0 20px 0; }
+#menu_gauche ul {margin:0; padding:0;}
+#menu_gauche ul li {list-style-type:none; display:block;width:183px; margin:5px 0; padding:0; color:#FFF;}
+#menu_gauche ul li a {float:left; width:173px; margin:0; padding:3px 0 3px 10px; color:#FFF; font-style:normal;font-weight:bold;}
+#menu_gauche ul li:hover a {background-color:#582220;}
+#menu_gauche ul li a:hover {text-decoration:none; color:#FFF;}
+#menu_gauche ul ul li {list-style-type:none; display:list-item; background-image:none; font-weight:400;margin:0; padding:0; text-align:left; width:84px; height:auto;}
+#menu_gauche ul li:hover ul li a {float:none; background-image:none; float:left; font-weight:bold; color:#000; margin:0 2px; padding:0; text-align:left; width:80px;}
+#menu_gauche ul li ul li:hover {color:#000;  background-image:none;}
+#menu_gauche ul li:hover ul li a:hover {color:#7d0310; background-image:none;}
+#menu_gauche li:hover ul,#menu_gauche li:hover li:hover ul {position:absolute; left:100px;display:block;background:white url(../images/menu_deuxieme_niveau_nous.png) no-repeat bottom left; color:#000;  float:none; z-index:20; padding:10px 0 50px 0; margin:0; border-top:1px solid #bc8190;}
+#menu_gauche ul ul, #menu_gauche li:hover ul ul {display:block;margin:0;padding:0;display:none; float:none;background-image:none; }
+
+#menu_gauche_suite {clear:left;float:left; width:184px; height:219px;background:url(../images/menu_gauche.png) no-repeat top left; margin:0 0 20px 0; } 
+
+
+#lien_menu_enseignants {display:block; height:74px; width:184px; margin:0 0 20px 0;}
+#lien_menu_enseignants:hover {background:transparent;}
+#menu_recherche {padding:5px 0 5px 10px; margin:0 0 20px 0;}
+#menu_recherche h3 {font-size:11px; color:#000; margin:0; padding:0;}
+#menu_recherche form {margin:0; padding:0;}
+#menu_recherche input.field {width:100px; border:1px solid #FFF; background:#FFF;}
+#menu_recherche input.button {width:36px; height:20px; padding:0; border:1px solid #ccff42; background:#ccff42; color:#000; font-weight:bold;}
+#lien_newsletters {margin:0 0 0 65px; padding:10px 0 0 0; display:block; height:74px; width:110px; text-align:left;}
+#lien_newsletters:hover {background:transparent;}
+
+#page_principale_droite {width:744px; margin:-40px 0 0 205px; padding:0;}
+
+#bandeau_bas {clear:both; margin:0; padding:0; text-align:center; width:969px; height:89px; background:url(../images/bandeau_bas.jpg) no-repeat bottom left;}
+
+#toolbar {clear:right;}
+.footer {font-size:8px;}
+#recherche {
+float:right;
+margin:157px 24px 0 0;
+width:200px;
+text-align:right;
+}
+
+.input_rech {
+font-size:10px;
+background-color:#FFF;
+border:1px solid #FFF;
+margin:0;
+padding:0;
+width:165px;
+color:#742948;
+}
+
+.bouton_rech {
+margin:0;
+padding:0;
+border:0;
+color:#fff;
+width:17px;
+height:17px;
+background:transparent url(../images/puce_recherche.png) no-repeat bottom left;
+}
+
+.error {
+color:#C33;
+font-weight:700;
+}
+
+.indent {
+margin-left:40px;
+}
+
+.additions {
+color:#080;
+}
+
+.deletions {
+color:#800;
+}
+
+.add {
+color:#c00;
+font-weight:700;
+text-decoration:underline;
+}
+
+.del {
+color:#c00;
+font-style:italic;
+text-decoration:line-through;
+}
+
+.attach_left {float:left; margin:0 10px 0 0;}
+.attach_right {float:right; margin:0 0 0 10px;}
+.attach_center {display:block; margin 0 auto; width:100%; text-align:center;}
+
+.prev_alert {
+background-color:#b4d627;
+color:#FFF;
+font-size:1.7em;
+font-weight:700;
+margin-bottom:5px;
+}
+
+.code {
+background:#FFF;
+border:solid #888 2px;
+font-family:'Courier New', Courier;
+height:400px;
+overflow:scroll;
+padding:3px;
+width:100%;
+}
+
+.revisioninfo {
+color:#AAA;
+padding-bottom:20px;
+}
+
+.footer {
+display:block;
+text-align:center;
+margin: 0 0 20px 0;
+padding:75px 0 0 0;
+}
+
+.edit {width:100%; height:400px;}
+
+#recherche strong,#recherche br,.hr_clear,.commentsheader {
+display:none;
+}
+
+.violet {font-weight:bold;color:#732340;}
+.vert {font-weight:bold;color:#768e12;}
+.bordeaux {font-weight:bold;color:#8a051a;}
+.bleu {font-weight:bold;color:#1e59a9;}
+.rouge {font-weight:bold;color:#aa001a;}
+
+.ui-tabs-hide { display: none; }
+.ui-tabs-nav, .ui-tabs-panel {
+    font-family: "Trebuchet MS", Trebuchet, Verdana, Helvetica, Arial, sans-serif;
+    font-size: 12px;
+}
+.ui-tabs-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 3px;
+}
+.ui-tabs-nav:after { /* clearing without presentational markup, IE gets extra treatment */
+    display: block;
+    clear: both;
+    content: " ";
+}
+.ui-tabs-nav li {
+    float: left;
+    margin: 0 0 0 2px;
+    font-weight: bold;
+}
+.ui-tabs-nav a, .ui-tabs-nav a span {
+    float: left; /* fixes dir=ltr problem and other quirks IE */
+    padding: 0 12px;
+    background: url(../images/tabs.png) no-repeat;
+}
+.ui-tabs-nav a {
+    margin: 5px 0 0; /* position: relative makes opacity fail for disabled tab in IE */
+    padding-left: 0;
+    background-position: 100% 0;
+    text-decoration: none;
+    white-space: nowrap; /* @ IE 6 */
+    outline: 0; /* @ Firefox, prevent dotted border after click */    
+}
+.ui-tabs-nav a:link, .ui-tabs-nav a:visited {
+    color: #fff;
+}
+.ui-tabs-nav .ui-tabs-selected a {
+    position: relative;
+    top: 1px;
+    z-index: 2;
+    margin-top: 0;
+    background-position: 100% -23px;
+}
+.ui-tabs-nav a span {
+    padding-top: 1px;
+    padding-right: 0;
+    height: 20px;
+    background-position: 0 0;
+    line-height: 20px;
+}
+.ui-tabs-nav .ui-tabs-selected a span {
+    padding-top: 0;
+    height: 27px;
+    background-position: 0 -23px;
+    line-height: 27px;
+}
+.ui-tabs-nav .ui-tabs-selected a:link, .ui-tabs-nav .ui-tabs-selected a:visited,
+.ui-tabs-nav .ui-tabs-disabled a:link, .ui-tabs-nav .ui-tabs-disabled a:visited { /* @ Opera, use pseudo classes otherwise it confuses cursor... */
+    cursor: text;
+}
+.ui-tabs-nav a:hover, .ui-tabs-nav a:focus, .ui-tabs-nav a:active,
+.ui-tabs-nav .ui-tabs-unselect a:hover, .ui-tabs-nav .ui-tabs-unselect a:focus, .ui-tabs-nav .ui-tabs-unselect a:active { /* @ Opera, we need to be explicit again here now... */
+    cursor: pointer;
+}
+.ui-tabs-disabled {
+    opacity: .4;
+    filter: alpha(opacity=40);
+}
+.ui-tabs-nav .ui-tabs-disabled a:link, .ui-tabs-nav .ui-tabs-disabled a:visited {
+    color: #000;
+}
+.ui-tabs-panel {
+    border: 1px solid #519e2d;
+    padding: 10px;
+    background: #fff; /* declare background color for container to avoid distorted fonts in IE while fading */
+}
+/*.ui-tabs-loading em {
+    padding: 0 0 0 20px;
+    background: url(loading.gif) no-repeat 0 50%;
+}*/
+
+/* Additional IE specific bug fixes... */
+* html .ui-tabs-nav { /* auto clear @ IE 6 & IE 7 Quirks Mode */
+    display: inline-block;
+}
+*:first-child+html .ui-tabs-nav  { /* auto clear @ IE 7 Standards Mode - do not group selectors, otherwise IE 6 will ignore complete rule (because of the unknown + combinator)... */
+    display: inline-block;
+}
+

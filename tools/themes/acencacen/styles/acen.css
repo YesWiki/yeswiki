@@ -1,0 +1,693 @@
+/* on efface tous les styles associés aux différents navigateurs pour partir de zéro (reset css)*/
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { 
+	margin:0;
+	padding:0;
+}
+table {
+	border-collapse:collapse;
+	border-spacing:0;
+}
+fieldset,img { 
+	border:0;
+}
+address,caption,cite,code,dfn,em,strong,th,var {
+	font-style:normal;
+	font-weight:normal;
+}
+ol,ul {
+	list-style:none;
+}
+caption,th {
+	text-align:left;
+}
+h1,h2,h3,h4,h5,h6 {
+	font-size:100%;
+	font-weight:normal;
+}
+q:before,q:after {
+	content:'';
+}
+abbr,acronym { border:0;
+}
+
+
+/* CSS specifique au template */
+body {
+    font-family:"Trebuchet MS", Verdana, Arial, sans-serif;
+    font-size:.8em;
+    text-align:center;
+    background:#FFF;
+    margin:0;
+    padding:0;
+}
+
+h1 { 
+    background:transparent url(../images/puce_titre1.jpg) no-repeat left top; 
+    color:#3b447f; 
+    font-size:1.7em;
+    font-weight:bold; 
+    margin:0 0 6px; 
+    padding:6px 8px 6px 38px;
+} 
+ 
+h2 { 
+    background:transparent; 
+    color:#fa060e; 
+    font-size:1.6em; 
+    margin:0 0 10px; 
+    padding:3px 0; 
+} 
+ 
+
+h3 { 
+    font-size:1.5em; 
+    color:#000; 
+    background:transparent; 
+    text-decoration: underline; 
+    margin:0 0 15px; 
+    padding:13px 0 3px; 
+} 
+
+
+ 
+h4 { 
+    color:#fa060e; 
+    font-size:1.3em; 
+    font-weight:700; 
+    margin:0 0 3px; 
+    padding:0; 
+} 
+ 
+ 
+
+h5 { 
+    font-size:1.1em; 
+    color:#000; 
+    background:#e4ea8a;
+    margin:2px 0; 
+    padding:6px; 
+} 
+ 
+ 
+
+a {
+    color:#fa060e;
+    text-decoration:none; 
+    font-weight:700; 
+} 
+ 
+a:hover { 
+    text-decoration:underline; 
+} 
+ 
+hr { 
+clear:both; 
+color:#FFF; 
+background-color:#fa060e; 
+height:2px; 
+border:0; 
+width:100%; 
+margin:5px 0; 
+} 
+ 
+ul { 
+margin:0; 
+padding:5px 0 5px 20px; 
+} 
+ 
+li { 
+margin-bottom:4px; 
+list-style-type:disc; 
+padding:0; 
+} 
+ 
+#conteneur { 
+text-align:left; 
+width:955px; 
+color:#000; 
+position:relative; 
+margin:10px auto; 
+}
+ 
+#header {
+background:#FFF url(../images/bandeau_haut.jpg) no-repeat top left; 
+display:block;
+height:313px;
+}
+
+#lien_banniere {
+float:left;
+display:block;
+height:160px;
+width:700px;
+}
+
+#pagerapidehaut { 
+color:#FFF;
+margin:9px 0 0 10px;
+padding:0;
+}
+#pagerapidehaut a, #pagerapidehaut a:hover {display:inline-block; text-decoration:none;}
+#lien_accueil {height:30px;width:100px;}
+#lien_contact {height:30px;width:100px;}
+
+#menu_commun_haut { 
+display:block;
+float:right;
+width:220px;
+} 
+
+#recherche { 
+color:#FFF;
+margin:25px 20px 20px 60px;
+} 
+ 
+.input_rech { 
+width:75px; 
+border:1px solid #666; 
+font-size:.8em; 
+background:#FFF url(../images/recherche.png) no-repeat 2px 2px; 
+margin:0; 
+padding:3px 2px 3px 22px; 
+} 
+ 
+.bouton_rech { 
+background:transparent; 
+color:#FFF; 
+border:0; 
+width:30px; 
+font-weight:700; 
+font-size:.9em; 
+text-transform:uppercase; 
+margin:0; 
+}
+
+#identification {margin:28px 0 0;}
+.label_iden {font-size:.8em;display:inline-block;text-align:right;font-weight:bold;width:100px;margin:5px 5px 0 0;}
+.label_remember_iden {font-size:.8em;display:inline-block;text-align:left;width:90px; margin:0; padding:0;}
+.input_iden {width:90px; border:1px solid #666;font-size:.8em;} 
+.bouton_iden {background:transparent;color:#FFF;border:0;font-weight:700;font-size:.9em;text-transform:uppercase;margin:0;padding:0;} 
+.lien_user_iden {background:transparent url(../images/user.png) no-repeat left center; padding:0 0 0 20px; float:right; margin:0 30px 0 0;}
+.bouton_deconnexion_iden {float:right;clear:right; margin:0 27px 0 0;background:transparent;color:#FFF;border:0;font-weight:700;font-size:.9em;text-transform:uppercase;padding:0; }
+
+#menu_langue {
+position:absolute;
+left:0;
+top:165px;
+}
+
+.fleche_menu {float:right;}
+
+#menu_haut {
+color:#000;
+font-weight:700;
+font-size:1.1em;
+text-align:left;
+clear:left;
+background:transparent;
+padding:0;
+margin:0;
+position:absolute;
+left:34px;
+top:192px;
+z-index:97; 
+height:35px; 
+}
+#menu_haut .div_include {height:35px;}
+
+#menu_haut .menu0 {width:150px; text-align:center;}
+ 
+#menu_haut a, #menu_haut .missingpage { 
+color:#000; 
+background:transparent; 
+font-weight:700; 
+display:block; 
+position:relative; 
+text-decoration:none; 
+padding:8px 8px 7px 8px;
+border:1px solid transparent;
+-moz-border-radius:7px; 
+-webkit-border-radius:7px; 
+-khtml-border-radius:7px; 
+border-radius:7px; 
+} 
+ 
+#menu_haut a:hover, #menu_haut li.hover a { 
+background-color:#fa060e; 
+-moz-border-radius-bottomleft:0;
+-webkit-border-bottom-left-radius:0;
+-moz-border-radius-bottomright:0;
+-webkit-border-bottom-right-radius:0;
+} 
+ 
+#menu_haut li { 
+display:block; 
+float:left; 
+margin:0; 
+padding:0;
+} 
+
+#menu_haut ul li.hover, #menu_haut ul li:hover {position: relative; }
+
+#menu_haut ul { 
+position:relative;
+list-style:none; 
+text-align:left; 
+margin:0; 
+padding:0; 
+z-index:98; 
+}
+ 
+#menu_haut ul ul { 
+display:none;
+position: absolute; top: 100%; left: 0;
+width:210px;
+background:#fa060e;
+font-size:0.9em;
+}
+
+#menu_haut ul ul li { 
+display:block; 
+float:none;
+}
+
+#menu_haut ul ul a { 
+-moz-border-radius:0; 
+-webkit-border-radius:0; 
+-khtml-border-radius:0; 
+border-radius:0; 
+}
+
+#menu_haut ul ul a:hover { 
+background-color:#C9D416; 
+} 
+
+#menu_haut ul ul ul { left: 100%; top: 0; font-size:1em;}
+#menu_haut ul li:hover > ul { visibility: visible; }
+
+
+#contenu_page {
+border:0;
+border-left:1px solid #8d8b8e;
+border-right:1px solid #8d8b8e;
+}
+
+#col_menu { 
+color:#000; 
+float:left; 
+width:170px; 
+background:transparent; 
+margin:0 0 0 15px; 
+padding:0; 
+}
+#conteneur.gauche #col_menu, #conteneur.milieu #col_menu { 
+float:left; 
+margin:0 0 0 11px;
+}
+#conteneur.droite #col_menu { 
+float:right; 
+margin:0 12px 0 0;
+} 
+#conteneur.milieu #col_menu {
+width:155px;
+}
+#col_menu a { 
+color:#000; 
+display:block; 
+border:none; 
+padding:0 0 0 10px; 
+} 
+#col_menu a:hover { 
+text-decoration:none; 
+color:#fa060e; 
+} 
+ 
+#col_menu ul { 
+background:transparent; 
+margin:0; 
+padding:5px; 
+} 
+#col_menu .div_include ul { 
+border:0;border-left:3px solid #000; 
+position:relative;
+padding:5px 0;
+z-index:98;
+}
+
+#col_menu li { 
+list-style-type:none; 
+padding:7px 0; 
+margin:0; 
+position:relative;
+} 
+
+#col_menu .div_include ul li.hover, #col_menu .div_include ul li:hover {position: relative; }
+
+#col_menu .div_include ul ul { 
+background:#FFF; 
+margin:0; 
+padding:10px; 
+border:1px solid #000;
+display:none;
+position: absolute;
+left: 90%;
+top: 0;
+width:260px;
+}
+
+#col_menu .div_include ul li:hover > ul { display:block;  float:none;} 
+ 
+#col_menu ul ul a { 
+border:none; 
+color:#333; 
+margin:0; 
+padding:0; 
+} 
+ 
+#col_menu ul ul a:hover { 
+border:none; 
+}
+#col_menu ul ul ul { left: 100%; top: 0; font-size:1em;}
+#col_menu ul li:hover > ul { visibility: visible; }
+
+#chantiers_urgents {
+clear:left;
+float:left;
+display:block;
+width:202px;
+height:175px;
+background:url(../images/chantiers.jpg) no-repeat top left;
+margin:0 0 0 -11px;
+}
+
+#partenaires {
+margin:10px 0 20px -16px;
+padding:10px;
+clear:left;
+float:left;
+width:167px;
+border:1px solid #8d8b8e; 
+border-left:0;
+-moz-border-radius:7px; 
+-webkit-border-radius:7px; 
+-khtml-border-radius:7px; 
+border-radius:7px; 
+}
+ 
+#col_droite .div_include  { 
+background:transparent; 
+padding:5px; 
+margin:10px 0 10px 20px;
+color:#fdfeff;
+} 
+ 
+#col_menu .div_include { 
+background:transparent;
+margin:0;
+padding:0; 
+font-size:1.2em;
+}
+
+#col_menu .menu0, #col_menu .menu0 a {color:#3c4483;}
+#col_menu .menu1, #col_menu .menu1 a {color:#4cbed1;}
+#col_menu .menu2, #col_menu .menu2 a {color:#C9D416;}
+#col_menu .menu3, #col_menu .menu3 a {color:#fa060e;}
+#col_menu .menu4, #col_menu .menu4 a {color:#8f7a60;}
+ 
+.depliable { 
+background:transparent url(../images/puce_triangle_droit.gif) no-repeat 0 4px; 
+} 
+ 
+.deplie { 
+background:transparent url(../images/puce_triangle_bas.gif) no-repeat 0 4px; 
+} 
+ 
+#content {
+background : #FFF;
+position:relative;
+width:688px;
+margin:0 29px 0 0;
+padding:10px;
+}
+#conteneur.gauche #content,  #conteneur.milieu #content { 
+float:right; 
+margin:0 29px 0 0;
+}
+#conteneur.droite #content { 
+float:left;
+margin:0 0 0 29px;
+} 
+#conteneur.milieu #content {
+width:480px;
+margin:-70px 10px 0 0;
+}
+
+#col_droite { 
+float:right; 
+width:255px; 
+background:#FFF url(../images/bloc_note_boucle.jpg) repeat-y top left; 
+margin:-68px 0 0 0; 
+padding:0; 
+} 
+
+#col_droite_haut { 
+width:255px; 
+height:71px;
+background:#FFF url(../images/glossaire.jpg) no-repeat top left; 
+margin:0; 
+padding:0; 
+} 
+
+#lien_glossaire {
+display:block;
+width:255px; 
+height:71px;
+margin:0; 
+padding:0; 
+}
+
+#en_savoir_plus {
+width:255px; 
+height:71px;
+background:#FFF url(../images/en_savoir_plus.jpg) no-repeat top left; 
+margin:0 0 0 -26px; 
+padding:0; 
+}
+
+#quelques_precisions {
+width:255px; 
+height:71px;
+background:#FFF url(../images/quelques_precisions.jpg) no-repeat top left; 
+margin:0 0 0 -26px; 
+padding:0; 
+}
+
+#dernieres_actus {
+width:255px; 
+height:71px;
+background:#FFF url(../images/dernieres_actus.jpg) no-repeat top left; 
+margin:0 0 0 -26px; 
+padding:0; 
+}
+
+#col_droite_bas { 
+width:255px; 
+height:35px;
+background:#FFF url(../images/bloc_note_bas.jpg) no-repeat top left; 
+margin:0; 
+padding:0; 
+} 
+
+#col_droite li { 
+font-size:.8em; 
+list-style-type:none; 
+background:url(../images/puce_liste_boite.png) no-repeat 0 5px; 
+margin:0 0 6px; 
+padding:0 0 0 13px; 
+} 
+ 
+#col_droite a { 
+color:#FFF; 
+font-weight:700; 
+text-align:left; 
+} 
+ 
+#bas_de_page { 
+clear:both; 
+height:36px;
+background:transparent url(../images/bandeau_bas.jpg) no-repeat top left; 
+margin:0; 
+padding:0; 
+} 
+
+#footer {
+color:#000; 
+text-align:center; 
+margin:0; 
+padding:0; 
+}
+
+#footer a { 
+color:#000; 
+}
+
+#copyright {
+	margin:10px 0 0;
+	font-size:0.9em;
+	color:#000;
+}
+#copyright a { 
+color:#000; 
+}
+
+span.missingpage,#recherche form { 
+display:inline; 
+}
+
+#menu_haut .form_include a {display:inline; margin-left:-5px;}
+ 
+
+#liensfooter a { 
+color:#FFF; 
+} 
+ 
+.boite_syndication, .boite_nuage {background:#AEA97B;} 
+ 
+.spacer {clear:both} 
+
+ /* CSS Contributions wikini */
+
+/* Contribution syndication */
+ 
+.toggler { 
+    cursor:pointer; 
+} 
+ 
+.toggler:hover { 
+    background-color:#e89326; 
+} 
+
+/* CSS Wikini original */
+
+/* Identification ressource */
+
+.wiki_name { float: left; margin: 0px 15px 0px 10px; font-size: 150%; }
+.page_name { font-size: 150%; }
+
+
+/* Erreurs */
+.error { color: #CC3333; font-weight: bold; }
+
+/* Mise en forme */
+
+.indent { margin-left: 40px; }
+.additions { color: #008800; }
+.deletions { color: #880000; }
+.add { font-weight: bold; color: #c00; text-decoration: underline; }
+.del { font-style: italic; color: #c00; text-decoration: line-through; }
+
+
+
+/* Navigation par table des matieres */
+
+.trail_table { line-height: 30px;}
+.trail_button { color: #993333; }
+
+
+/* Commentaires */
+
+.commentsheader {display:none;}
+.comment {display:none; }
+.commentinfo { display:none; }
+.commentform { display:none;}
+.commenteditlink {display:none;}
+
+/* Page absentes */
+
+.missingpage {display:inline;}
+
+
+/* page (contenu page centrale) */
+
+.page {
+text-align:justify;
+margin:0 0 20px 0; 
+}
+
+/* fin page */
+
+
+/* previsualisation page */
+.page_preview { background-color: #FFFFBF; padding: 10px; border: 1px inset; border-bottom: none; }
+.prev_alert { background-color: red; color: white; font-size: 1.7em; font-weight: bold; margin-bottom: 5px; }
+/* fin previsualisation page */
+
+
+/* Zone Edition */
+.edit {
+width: 100%;
+border:1px solid #666;
+}
+ 
+
+/* footer */
+.footer {
+text-align:center; 
+margin:10px auto 0 auto;
+font-size:0.9em; 
+}
+.footer a {
+color:#000;
+}
+.footer form { 
+display:inline;
+}
+/* fin footer */
+
+
+/* Divers mise en forme */
+.code { background: #FFFFFF; border: solid #888888 2px; font-family: 'Courier New', Courier; width: 100%; height: 400px; overflow: scroll; padding: 3px; }
+.revisioninfo { color: #AAAAAA; padding-bottom: 20px; }
+.searchbox { background: #FFFFF8; border: 0px; border-bottom: 1px solid #CCCCAA; padding: 0px; margin: 0px; }
+.debug { font-size: 11px; color: #888888; }
+/* Fin divers mise en forme */
+
+/* On cache divers éléments */
+.commentsheader,.hr_clear,#menu_haut ul ul,#col_droite .listeinfo,#col_droite .commentaires,#col_droite .lien_commenter,#col_droite lien_suppr_paget,#col_droite .lien_edit_page { 
+display:none; 
+} 
+ 
+
+/* Inclusion de page */
+.include_right { float: right; width: 17%; } /* bloc flotant a  droite */
+.include_left { float: left; width: 17%; } /* bloc flotant  a gauche */
+.include_solid_border { border: solid; padding: 2px; } /* encadre noir */
+.include_gray_background { background-color: #DDDDDD; } /* fond gris */
+.include_small_fonts { font-size: 0.8em; } /* petites polices */
+.include_big_fonts { font-size: 1.2em; } /* grandes polices */
+.include_height10em { height: 10em; overflow: scroll; } /* boite de 10em de hauteur, avec ascenseur */
+.include_height15em { height: 15em; overflow: scroll; }
+.include_height30em { height: 30em; overflow: scroll; }
+.include_height60em { height: 60em; overflow: scroll; }
+.include_editlink { float: right; } /* bloc flotant a droite */
+.include_editlink { display:none; } /* Inhibe l'affichage du bloc "include_editlink" */
+.include:hover .include_editlink { display: block; } /* Au passage de la souris sur le bloc "include", affiche le bloc "include_editlink" */
+/* fin inclusion de page */
+
+
+/* fichiers attachés */
+.attach_left { 
+float:left; 
+margin:0 10px 0 0; 
+} 
+.attach_right { 
+float:right; 
+margin:0 0 0 10px; 
+}  
+.attach_center { 
+display:block; 
+width:100%; 
+text-align:center; 
+margin:0 auto; 
+} 
+/* fin fichiers attachés */

@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Output</title>
+<link type="text/css" rel="stylesheet" href="../fpdf.css">
+</head>
+<body>
+<h1>Output</h1>
+<code><b>string</b> Output([<b>string</b> name, <b>string</b> dest])</code>
+<h2>Description</h2>
+Envoie le document vers une destination donnée : navigateur, fichier ou chaîne de caractères.
+Dans le cas du navigateur, on peut utiliser le plug-in (s'il est présent) ou bien forcer la
+boîte de téléchargement.
+<br>
+La méthode commence par appeler Close() si nécessaire pour terminer le document.
+<h2>Paramètres</h2>
+<dl class="param">
+<dt><code>name</code></dt>
+<dd>
+Le nom du fichier. S'il n'est pas renseigné, le document est envoyé au navigateur
+(destination <code>I</code>) avec le nom <code>doc.pdf</code>.
+</dd>
+<dt><code>dest</code></dt>
+<dd>
+Destination où envoyer le document. Le paramètre peut prendre les valeurs suivantes :
+<ul>
+<li><code>I</code> : envoyer en inline au navigateur. Le plug-in est utilisé s'il est installé.
+Le nom indiqué dans <code>name</code> est utilisé lorsque l'on sélectionne "Enregistrer sous"
+sur le lien générant le PDF.</li>
+<li><code>D</code> : envoyer au navigateur en forçant le téléchargement, avec le nom indiqué
+dans <code>name</code>.</li>
+<li><code>F</code> : sauver dans un fichier local, avec le nom indiqué dans <code>name</code>
+ (peut inclure un répertoire).</li>
+<li><code>S</code> : renvoyer le document sous forme de chaîne. <code>name</code> est ignoré.</li>
+</ul>
+</dd>
+</dl>
+<h2>Voir</h2>
+<a href="close.htm">Close()</a>.
+<hr style="margin-top:1.5em">
+<div style="text-align:center"><a href="index.htm">Index</a></div>
+</body>
+</html>

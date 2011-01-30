@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+	<title>{{titrepage}}</title>{{metarobots}}
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+	<meta name="description" content="{{configuration param="meta_description"}}" />
+	<link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+	{{liensstyle}}
+	{{liensjavascripts}}
+<!-- appelle la lib jquery-kwicks  -->
+<script type="text/javascript">
+$().ready(function() {  
+    $('.kwicks').kwicks({  
+        max : 110,  
+        spacing : 1  
+    });  
+});  
+</script>
+
+</head>
+
+<body {{parambody}}>
+	<div id="conteneur_accueil">
+    <!--
+		<a id="lien_contact" href="wakka.php?wiki=NousContacter" title="Nous contacter">Nous contacter</a>
+    -->
+        <!-- le doubleclic="1" est bugge => un div de trop
+        avec en plus un style en dur qui pourrait interagir
+        avec toute autre mise en forme: doucleclic ;-) -->
+        <!-- essai en dur pour les kwicks
+		<div id="menu_haut_accueil"> {{include page="PageMenuHaut" doubleclic="1"}}
+        </div>
+        -->
+
+		<div id="menu_haut_accueil"> 
+            <ul class="kwicks" style="list-style: none; ">
+                <li class="actu"><a  href="http://www.apieum.org/site/wakka.php?wiki=AcTualites">Actualités</a></li>
+                <li class="apie"><a  href="http://www.apieum.org/site/wakka.php?wiki=NousConnaitre">L'APIEU</a></li>
+                <li class="part"><a  href="http://www.apieum.org/site/wakka.php?wiki=ParteNaires">Partenaires</a></li>
+                <li class="acce"><a  href="http://www.apieum.org/site/wakka.php?wiki=PlanAcces">Accès</a></li>
+                <li class="cont"><a  href="http://www.apieum.org/site/wakka.php?wiki=ConTacts">Contacts</a></li>
+            </ul>
+        </div>
+
+		<div class="bubbleInfo">
+			<div id="lien_ville" >
+				<a class="trigger" href="wakka.php?wiki=VilleModeDEmploi" title="La ville mode d'emploi">Ville mode d'emploi</a>
+			</div>
+			<div id="menu_ville" class="popup">
+				{{include page="PageMenuVille" doubleclic="1"}}
+			</div>
+        </div>
+        <div class="bubbleInfo2">
+			<div id="lien_enseignants" >
+				<a class="trigger2" href="wakka.php?wiki=EnseignantsCollectivitesEntreprises" title="Enseignants, Collectivités, Entreprises">Construire un projet</a>
+			</div>
+			<div id="menu_enseignants" class="popup2">
+				{{include page="ConstruireEnsemble" doubleclic="1"}}
+			</div>
+        </div>
+
+		<p id="bandeau_bas_accueil">
+        <a class="rss" href=""> Rss 2.0</a> |
+        <a href="http://wikini.net">Wikini</a> |
+        <a href="">Accès Intranet</a> |
+        <a href="http://www.outils-reseaux.org">R&eacute;alisation www.outils-reseaux.org</a>
+        </p>
+	</div>
+	{WIKINI_PAGE}
+    <!--
+	<div id="page_footer">{{include page="PageFooter" doubleclic="1"}}</div>
+    -->
+</body>
+</html>

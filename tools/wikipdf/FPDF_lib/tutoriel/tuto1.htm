@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Exemple minimal</title>
+<link type="text/css" rel="stylesheet" href="../fpdf.css">
+</head>
+<body>
+<h1>Exemple minimal</h1>
+Voici pour commencer l'exemple classique :
+<div class="source">
+<pre><code>&lt;?php
+<span class="kw">require(</span><span class="str">'fpdf.php'</span><span class="kw">);
+
+</span>$pdf<span class="kw">=new </span>FPDF<span class="kw">();
+</span>$pdf<span class="kw">-&gt;</span>AddPage<span class="kw">();
+</span>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span>16<span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>40<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Hello World !'</span><span class="kw">);
+</span>$pdf<span class="kw">-&gt;</span>Output<span class="kw">();
+</span>?&gt;</code></pre>
+</div>
+<p class='demo'><a href='tuto1.php' target='_blank' class='demo'>[Démo]</a></p>
+Après avoir inclus la librairie, un object FPDF est créé.
+Le constructeur <a href='../doc/fpdf.htm'>FPDF()</a> est utilisé ici avec les valeurs par défaut : les pages sont en
+portrait A4 et l'unité de mesure est le millimètre. On aurait pu l'indiquer explicitement par :
+<div class="source">
+<pre><code>$pdf<span class="kw">=new </span>FPDF<span class="kw">(</span><span class="str">'P'</span><span class="kw">,</span><span class="str">'mm'</span><span class="kw">,</span><span class="str">'A4'</span><span class="kw">);
+</span></code></pre>
+</div>
+Il est possible de passer en paysage (<code>L</code>), d'utiliser d'autres formats de page (comme
+<code>A3</code> et <code>A5</code>) ainsi que d'autres unités de mesure (<code>pt</code>,
+<code>cm</code>, <code>in</code>).
+<br>
+<br>
+Il n'y a pour l'instant encore aucune page, c'est pourquoi il faut en ajouter une avec
+<a href='../doc/addpage.htm'>AddPage()</a>. L'origine est en haut à gauche et la position courante est placée par défaut
+à 1 cm des bords ; on peut changer ces marges par <a href='../doc/setmargins.htm'>SetMargins()</a>.
+<br>
+<br>
+Avant d'imprimer du texte, il est impératif de définir la police avec <a href='../doc/setfont.htm'>SetFont()</a>, sinon
+le document serait invalide. On choisit de l'Arial gras en taille 16 :
+<div class="source">
+<pre><code>$pdf<span class="kw">-&gt;</span>SetFont<span class="kw">(</span><span class="str">'Arial'</span><span class="kw">,</span><span class="str">'B'</span><span class="kw">,</span>16<span class="kw">);
+</span></code></pre>
+</div>
+On aurait pu spécifier de l'italique avec <code>I</code>, du souligné avec <code>U</code> ou une
+police normale avec une chaîne vide (ou bien encore une combinaison de styles). A noter que la
+taille de la police est ici donnée en points, pas en millimètres (ou autre unité choisie) ; c'est
+la seule exception. Les autres polices standard disponibles sont Times, Courier, Symbol et
+ZapfDingbats.
+<br>
+<br>
+On imprime ensuite une cellule grâce à <a href='../doc/cell.htm'>Cell()</a>. Une cellule est une zone rectangulaire,
+éventuellement encadrée, qui contient une ligne de texte. Elle est imprimée à la position
+courante. On spécifie ses dimensions, le texte (centré ou aligné), si des bords doivent être
+tracés, et si la position courante doit être déplacée à droite, en dessous ou bien doit
+retourner au début de la ligne suivante. On aurait par exemple encadré le texte comme ceci :
+<div class="source">
+<pre><code>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>40<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Hello World !'</span><span class="kw">,</span>1<span class="kw">);
+</span></code></pre>
+</div>
+Si on veut ajouter une nouvelle cellule à droite avec du texte centré et retourner à la ligne,
+on fait :
+<div class="source">
+<pre><code>$pdf<span class="kw">-&gt;</span>Cell<span class="kw">(</span>60<span class="kw">,</span>10<span class="kw">,</span><span class="str">'Powered by FPDF.'</span><span class="kw">,</span>0<span class="kw">,</span>1<span class="kw">,</span><span class="str">'C'</span><span class="kw">);
+</span></code></pre>
+</div>
+Remarque : le retour à la ligne peut également s'effectuer grâce à la méthode <a href='../doc/ln.htm'>Ln()</a>. Cette
+dernière permet de préciser en plus la hauteur du saut de ligne.
+<br>
+<br>
+Enfin, le document est terminé et envoyé au navigateur grâce à <a href='../doc/output.htm'>Output()</a>. On aurait pu
+le sauvegarder directement dans un fichier en passant le nom souhaité.
+<br>
+<br>
+<strong>Attention :</strong> dans le cas où le PDF est envoyé au navigateur, le script ne doit
+rien envoyer d'autre, ni avant ni après (pas d'HTML, même pas un espace ni un retour-chariot).
+Si vous envoyez quelque chose avant, vous obtiendrez le message : "Some data has already been
+output, can't send PDF file". Si vous envoyez quelque chose après, il se peut que le document
+ne s'affiche pas.
+</body>
+</html>

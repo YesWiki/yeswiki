@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+
+<head>
+<title>{WIKINI_TITRE}</title>
+{WIKINI_META_ROBOTS}
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+<meta name="keywords" content="{WIKINI_MOTS_CLES}" />
+<meta name="description" content="{WIKINI_DESCRIPTION}" />
+{WIKINI_STYLES_CSS}
+{WIKINI_JAVASCRIPTS}
+</head>
+
+<body {WIKINI_BODY}>
+<div style="display: none;"><a href="{WIKINI_RESETSTYLE}" accesskey="7"></a></div>
+<div id="page">
+    <div id="zone_bandeau">
+        <div id="zone_accueil">
+            <a class="lien_accueil" href="http://mandarinepressee.net" title="Retour &agrave; la page d'accueil">&nbsp;</a>
+        </div>
+    </div> <!--fin div zone_bandeau-->
+    <div id="zone_contenu" {WIKINI_DOUBLE_CLIC}>
+        <div id="colonne_gauche">
+            <div id="menu_haut">
+                &nbsp;
+            </div>
+            <div id="menu_contenu">
+            	{{include page="PageMenu"}}
+            </div>
+            <div id="menu_bas">
+                &nbsp;
+            </div>
+        </div>  <!-- fin div colonne_gauche -->
+        <div id="colonne_droite">
+		{WIKINI_PAGE}
+		{WIKINI_BARRE_BAS}
+	</div> <!-- fin div colonne_droite -->
+    </div> <!-- fin div zone_contenu -->
+<div id="zone_pied">
+        <div id="copyright">
+            &copy;&nbsp;<a href="http://mandarinepressee.net" title="Mandarine">Mandarine</a> 2007 - R&eacute;alisation <a href="http://outils-reseaux.org">outils-reseaux.org</a><br />
+            Site utilisant <a href="http://wikini.net">Wikini {WIKINI_VERSION}</a><br /><br />
+</div> <!-- fin div zone_pied -->
+</div> <!-- fin div page -->
+</body>
+</html>

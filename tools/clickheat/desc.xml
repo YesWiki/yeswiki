@@ -1,0 +1,6 @@
+<?xml version="0.1" encoding="ISO-8859-1"?>
+<plugin name="clickheat" version="0.1" active="0">
+  <author>Florestan BREDOW</author>
+  <label>clickheat</label>
+  <desc>Pour interfacer un wiki avec un serveur clickheat</desc>
+</plugin>
