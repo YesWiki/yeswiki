@@ -1,40 +1,35 @@
 <?php if ($connected) : ?>
-<a href="wakka.php?wiki=<?= $user; ?>" class="link_user"><img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" /><span class="connected"><?= $user; ?></span></a>
-<form class="formulaire_identification" style="display:inline" method="post" id="signout" action="<?= $homepage; ?>">
-	<input type="hidden" name="action" value="update" />
-	<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
-	<input class="bouton_deconnexion_iden" type="button" value="D&eacute;connexion" onclick="document.location='<?= $homepage; ?>&amp;action=logout'" />
+<a href="wakka.php?wiki=<?= $user; ?>" class="link_user">
+	<img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" />
+	<span class="connected"><?= $user; ?></span>
+</a>
+<form class="logout-form" style="display:inline" method="post" id="signout" action="<?= $incomingurl; ?>">
+	<input type="hidden" name="incomingurl" value="<?= $incomingurl; ?>" />
+	<input class="logout-button" type="button" value="D&eacute;connexion" onclick="document.location='<?= $incomingurl; ?>&amp;action=logout'" />
 </form>
 <?= $PageMenuUser; ?>
 <?php else : ?>
-<form class="formulaire_identification" action="<?= $homepage; ?>" method="post">
+<form class="login-form" action="<?= $incomingurl; ?>" method="post">
 	<?php if ($error) : ?>
 		<div class="error_box"><?= $error; ?></div>
 	<?php endif; ?>
 	<input type="hidden" name="action" value="login" />
-	<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
+	<input type="hidden" name="incomingurl" value="<?= $incomingurl; ?>" />
 	<input type="hidden" name="remember" value="0" />
-	<div style="margin-bottom:5px;">
-		<label class="column grid_2 label-right">NomWiki&nbsp;<img class="tooltip_aide" title="Mettre votre identifiant contenant au moins 2 majuscules (ex: NomWiki)." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
-		<input name="name" class="column grid_2 input_iden" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
+	<div class="login-row">
+		<label class="login-label">NomWiki</label>
+		<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
 		<div class="clear"></div>
 	</div>
-	<div style="margin-bottom:5px;">
-		<label class="column grid_2 label-right">Mot de passe</label>
-		<input type="password" name="password" class="column grid_2 input_iden" size="7" />
+	<div class="login-row">
+		<label class="login-label">Mot de passe</label>
+		<input type="password" name="password" class="login-input" size="7" />
 		<div class="clear"></div>
 	</div>
-	<div style="margin-bottom:5px;">
-		<div class="column grid_2">&nbsp;</div>
-		<div class="column grid_2">
-			<input type="checkbox" id="remember-mini" name="remember" value="1" />
-			<label for="remember-mini" class="label_remember_iden" style="font-size:.9em;">Se souvenir de moi</label>
-		</div>
-		<div class="clear"></div>
-	</div>
-	<div style="margin-bottom:5px;">
-		<div class="column grid_2">&nbsp;</div>
-		<input type="submit" class="column grid_2 bouton_iden" value="Connexion" />
+	<div class="login-row">
+		<input class="login-checkbox" type="checkbox" id="remember-mini" name="remember" value="1" />
+		<label class="login-label-checkbox" for="remember-mini">Se souvenir de moi</label>
+		<input type="submit" class="login-button" value="Connexion" />
 		<div class="clear"></div>
 	</div>
 </form>

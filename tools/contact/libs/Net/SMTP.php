@@ -18,10 +18,10 @@
 // |          Damian Alejandro Fernandez Sosa <damlists@cnba.uba.ar>      |
 // +----------------------------------------------------------------------+
 //
-// $Id: SMTP.php,v 1.2 2010-10-19 15:59:16 mrflos Exp $
+// $Id: SMTP.php,v 1.3 2011-03-22 10:06:33 mrflos Exp $
 
-require_once 'PEAR.php';
-require_once 'Net/Socket.php';
+require_once 'tools/contact/libs/PEAR.php';
+require_once 'Socket.php';
 
 /**
  * Provides an implementation of the SMTP protocol using PEAR's

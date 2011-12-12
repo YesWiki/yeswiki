@@ -16,9 +16,9 @@
 // | Author: Chuck Hagenbuch <chuck@horde.org>                            |
 // +----------------------------------------------------------------------+
 //
-// $Id: Mail.php,v 1.2 2010-10-19 15:59:16 mrflos Exp $
+// $Id: Mail.php,v 1.3 2011-03-22 10:06:33 mrflos Exp $
 
-require_once 'PEAR.php';
+require_once 'tools/contact/libs/PEAR.php';
 
 /**
  * PEAR's Mail:: interface. Defines the interface for implementing
@@ -26,7 +26,7 @@ require_once 'PEAR.php';
  * useful in multiple mailer backends.
  *
  * @access public
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @package Mail
  */
 class Mail
@@ -49,7 +49,7 @@ class Mail
     function &factory($driver, $params = array())
     {
         $driver = strtolower($driver);
-        @include_once 'Mail/' . $driver . '.php';
+        @include_once 'tools/contact/libs/Mail/' . $driver . '.php';
         $class = 'Mail_' . $driver;
         if (class_exists($class)) {
             $mailer = new $class($params);
@@ -157,7 +157,7 @@ class Mail
 
         foreach ($headers as $key => $value) {
             if (strcasecmp($key, 'From') === 0) {
-                include_once 'Mail/RFC822.php';
+                include_once 'tools/contact/libs/Mail/RFC822.php';
                 $parser = new Mail_RFC822();
                 $addresses = $parser->parseAddressList($value, 'localhost', false);
                 if (is_a($addresses, 'PEAR_Error')) {
@@ -214,7 +214,7 @@ class Mail
      */
     function parseRecipients($recipients)
     {
-        include_once 'Mail/RFC822.php';
+        include_once 'tools/contact/libs/Mail/RFC822.php';
 
         // if we're passed an array, assume addresses are valid and
         // implode them before parsing.

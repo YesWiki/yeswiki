@@ -16,8 +16,9 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 	{
 		$ACbuttonsBar = "		
 		<div id=\"toolbar\"> 
-		<input name=\"submit\" type=\"submit\" class=\"ACEsubmit\" value=\"Sauver\" accesskey=\"s\" />
-		<input name=\"submit\" type=\"submit\" class=\"ACEpreview\" value=\"Aper&ccedil;u\" accesskey=\"p\" />
+		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"$('input[value=Sauver]').click();\" src=\"tools/aceditor/ACEdImages/save.png\" title=\"Sauver la page\" alt=\"Sauver\" />
+		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"$('input[value=Aper&ccedil;u]').click();\" src=\"tools/aceditor/ACEdImages/apercu.png\" title=\"Apercu de la page\" alt=\"Apercu\" />
+		
 		<img class=\"buttons\"  src=\"tools/aceditor/ACEdImages/separator.gif\" alt=\"\" />
 		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"wrapSelection(thisForm.body,'**','**');\" src=\"tools/aceditor/ACEdImages/bold.gif\" title=\"Passe le texte s&eacute;lectionn&eacute; en gras  ( Ctrl-Maj-b )\" alt=\"Gras\" />
 		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"wrapSelection(thisForm.body,'//','//');\" src=\"tools/aceditor/ACEdImages/italic.gif\" title=\"Passe le texte s&eacute;lectionn&eacute; en italique ( Ctrl-Maj-t )\" alt=\"Italique\" />
@@ -39,38 +40,11 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 		<img class=\"buttons\"  src=\"tools/aceditor/ACEdImages/separator.gif\" alt=\"\"  />		      
 		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"wrapSelection(thisForm.body,'%%','%%');\" src=\"tools/aceditor/ACEdImages/code.gif\" title=\"Code\" alt=\"\" />
 		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"wrapSelection(thisForm.body,'%%(php)','%%');\" src=\"tools/aceditor/ACEdImages/php.gif\" title=\"Code PHP\" alt=\"\" />
-		</div>
-		<div id=\"toolbar_suite\">   		   
-		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"wrapSelectionWithImage(thisForm.body);\" src=\"tools/aceditor/ACEdImages/image.gif\"    title=\"ins&egrave;re un tag image \" alt=\"\" />		
-		<span class=\"texteChampsImage\">
-		&nbsp;&nbsp;Fichier&nbsp;<input type=\"text\" name=\"filename\" class=\"ACsearchbox\" size=\"10\"/>&nbsp;&nbsp;Description&nbsp;<input type=\"text\" name=\"description\" class=\"ACsearchbox\" size=\"10\"/>
-		&nbsp;&nbsp;Alignement&nbsp;<select id=\"alignment\" class=\"ACsearchbox\">
-		<option value=\"left\">Gauche</option>
-		<option value=\"center\">Centr&eacute;</option>
-		<option value=\"right\">Droite</option>
-		</select>
-		</span>
-		</div>";
+		</div><!-- FIN TOOLBAR ACEDITOR -->
+		";
 		
-			if (substr(WIKINI_VERSION,2,1)<=4) {
-
-			$plugin_output_new=preg_replace ('/\<textarea onkeydown/',
-			$ACbuttonsBar.
-			'<textarea onkeydown',
-			$plugin_output_new);
-		
-			}
-			else  {
-				if (substr(WIKINI_VERSION,2,1)>=5) {
-						$plugin_output_new=preg_replace ('/\<textarea id="body" name="body" cols="60" rows="40" wrap="soft"/',
-						$ACbuttonsBar.
-						'<textarea id="body" name="body" cols="60" rows="40" ',
-						$plugin_output_new);
-					
-				}
-			}
-		
-		
-		
+		$plugin_output_new = preg_replace ('/\<div class=\"page\"\>/',
+											'<div class="page">'.$ACbuttonsBar,
+											$plugin_output_new);
 	}
 }

@@ -7,9 +7,17 @@ if (!defined("WIKINI_VERSION"))
 //=======Restes de wikini=================================================================================
  $user = $this->GetUser();
 
+$chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+if (file_exists($chemin_theme)) {
+	$file_content = file_get_contents($chemin_theme);
+} else {
+	$file_content = file_get_contents('tools/templates/'.$chemin_theme);
+}
+
 //On recupere la partie haut du template et on execute les actions wikini
-$template_decoupe = explode("{WIKINI_PAGE}", file_get_contents('tools/templates/themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette']));
+$template_decoupe = explode("{WIKINI_PAGE}", $file_content);
 $template_header = $template_decoupe[0];
+
 if ($act=preg_match_all ("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_header, $matches)) {
 	$i = 0; $j = 0;
 	foreach($matches as $valeur) {
@@ -23,6 +31,9 @@ if ($act=preg_match_all ("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_head
 		$i++;
 	}
 }
+
+//On ajoute la dernière version de modernizer
+$template_header = preg_replace ('/<\/head>/', '<script src="tools/templates/libs/modernizr-2.0.6.min.js"></script>'."\n".'</head>', $template_header);
 
 echo $template_header;
 

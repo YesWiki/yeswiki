@@ -32,36 +32,7 @@ if (!defined("WIKINI_VERSION"))
 }
 
 $url = $this->GetParameter('url');
-if (empty($url)) exit("<div class=\"error_box\">Action player : param&egrave;tre url obligatoire.</div>");
-
-if (!function_exists('isDomainOf')) {
-	/**
-	 * Checks a URL belongs to a given domain.
-	 *
-	 * @param string $url The URL to test.
-	 * @param string $domain The target domain.
-	 * @return boolean
-	 */
-	function isDomainOf($url, $domain)
-	{
-	    if (false === filter_var($url, FILTER_VALIDATE_URL, FILTER_FLAG_HOST_REQUIRED))
-	    {
-	        return false;
-	    }
-	 
-	    $host = parse_url($url, PHP_URL_HOST);
-	    if (false === $host)
-	    {
-	        return false;
-	    }
-	 
-	    return (boolean) preg_match('#^(?:[^\.]*\.){0,}' . $domain . '$#', $host);
-	}
-}
-
-if (isDomainOf($url, $_SERVER['SERVER_NAME'])) {
-	$url = str_replace('http://'.$_SERVER['SERVER_NAME'].'/', '', $url);
-}
+if (empty($url)) exit($this->Format("//Action player : paramêtre url obligatoire.//"));
 
 $height = $this->GetParameter('height');
 if (empty($height)) $height="300px";
@@ -125,11 +96,11 @@ if (fopen($url, "r"))
 		$output .="[<a href=\"$url\" title=\"T&eacute;l&eacute;charger le fichier Freemind\">mm</a>]";
 		echo $output;
 	}
-	else echo "<div class=\"error_box\">Action player : le player ne peut que lire les fichiers mp3, flv et mm, et votre URL <a href=\"".$url."\" title=\"Voir le lien\">".$url."</a> ne pointe pas sur ces types de fichiers.</div>";
+	else echo "Le player ne peut que lire les fichiers mp3, flv et mm, et votre URL (".$url.") ne pointe pas sur ces types de fichiers.";
 }
 else
 {
-	echo "<div class=\"error_box\">Action player : l'URL <a href=\"".$url."\" title=\"Voir le lien\">".$url."</a> n'est pas valide.</div>";
+	echo 'Action player : l\'URL n\'est pas valide';
 }
 
 ?>

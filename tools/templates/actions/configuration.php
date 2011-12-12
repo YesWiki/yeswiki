@@ -3,6 +3,7 @@ if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
 }
+
 $param = $this->GetParameter('param');
 if (!empty($param)) {
 	switch($param) {		
@@ -18,6 +19,11 @@ if (!empty($param)) {
 	  	case 'favorite_style':
 	  	case 'favorite_squelette':
 	  		echo $this->config[$param];
+			break;
+		case 'theme_path':
+			echo ((is_dir('themes/'.$this->config['favorite_theme']))) ? 
+				'themes/'.$this->config['favorite_theme'].'/' : 
+				'tools/templates/themes/'.$this->config['favorite_theme'].'/';
 			break;
 	  	default:
 	  		break;	

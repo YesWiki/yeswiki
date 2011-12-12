@@ -3,6 +3,8 @@ if (!defined("WIKINI_VERSION")) {
 	die ("acc&egrave;s direct interdit");
 }
 
+include_once 'tools/templates/libs/templates.functions.php';
+
 // Dans Wakka.config.php, on peut preciser : favorite_theme, favorite_style, favorite_squelette,  hide_action_template 
 // Sinon, on prend les parametres ci dessous :
 
@@ -19,7 +21,7 @@ define ('CSS_PAR_DEFAUT', (isset($wakkaConfig['favorite_style'])) ? $wakkaConfig
 define ('SQUELETTE_PAR_DEFAUT', (isset($wakkaConfig['favorite_squelette'])) ? $wakkaConfig['favorite_squelette'] : 'yeswiki.tpl.html');
 
 //pour que seul le propriétaire et l'admin puissent changer de theme
-define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
+define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', true);
 
 // Desactivation de l'extension template si l'extension navigation est presente et active. 
 if (isset($plugins_list['navigation'])) {
@@ -28,27 +30,15 @@ if (isset($plugins_list['navigation'])) {
 }
 
 //on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-$repertoire = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
-$wakkaConfig['templates'] = array();
-$dir = opendir($repertoire);
-while (false !== ($file = readdir($dir))) {    	
-	if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($repertoire.DIRECTORY_SEPARATOR.$file)) {
-		$dir2 = opendir($repertoire.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-	    while (false !== ($file2 = readdir($dir2))) {
-	    	if (substr($file2, -4, 4)=='.css') $wakkaConfig['templates'][$file]["style"][$file2]=$file2;
-	    }
-	    closedir($dir2);
-	    if (is_array($wakkaConfig['templates'][$file]["style"])) ksort($wakkaConfig['templates'][$file]["style"]);
-	    $dir3 = opendir($repertoire.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
-	    while (false !== ($file3 = readdir($dir3))) {
-	    	if (substr($file3, -9, 9)=='.tpl.html') $wakkaConfig['templates'][$file]["squelette"][$file3]=$file3;	    
-	    }	    	
-	    closedir($dir3);
-	    if (is_array($wakkaConfig['templates'][$file]["squelette"])) ksort($wakkaConfig['templates'][$file]["squelette"]);
-    }
+$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
+$wakkaConfig['templates'] = search_template_files($repertoire_initial);
+
+//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
+if (is_dir('themes')) {
+	$repertoire_racine = 'themes';
+	$wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files($repertoire_racine));
+	if (is_array($wakkaConfig['templates'])) ksort($wakkaConfig['templates']);
 }
-closedir($dir);
-if (is_array($wakkaConfig)) ksort($wakkaConfig['templates']);
 
 
 //si le theme est passé en paramètre, on l'utilise
@@ -164,8 +154,14 @@ if  (isset($vars["squelette"]) && $vars["squelette"]!="") {
 }
 
 //=======Test existence du template, on utilise le template par defaut sinon=======================================================
-if (!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
-	|| !file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])) {
+if (
+	(!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette']) &&
+	 !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
+	) || 
+	(!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style']) && 
+	 !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
+	) 
+) {
 	if (file_exists('tools/templates/themes/yeswiki/squelettes/yeswiki.tpl.html')
 		&& file_exists('tools/templates/themes/yeswiki/styles/yeswiki.css')) {
 		$wakkaConfig['favorite_theme']='yeswiki';

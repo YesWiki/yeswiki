@@ -1,33 +1,46 @@
 <?php if ($connected) : ?>
-<a href="wakka.php?wiki=<?= $user; ?>" class="link_user"><img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" /><span class="connected"><?= $user; ?></span></a>
-<form class="formulaire_identification" style="display:inline" method="post" id="signout" action="<?= $homepage; ?>">
-	<input class="bouton_iden" type="button" value="D&eacute;connexion" onclick="document.location='<?= $homepage; ?>&amp;action=logout'" />
-	<fieldset class="login_menu" style="display:none">
-		<input type="hidden" name="action" value="update" />
-		<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
-		<span class="modif_inscription_iden"><a href="<?= $signupurl; ?>" title="Modifier mon inscription">Modifier mon inscription</a></span>
-		<?= $PageMenuUser; ?>
-	</fieldset>
+<a rel="#user-form" class="login-user-link">
+	<img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
+	<span class="connected"><?= $user; ?></span>
+</a>
+<form id="user-form" class="yeswiki-overlay" style="display:none;" method="post" action="<?= $incomingurl; ?>">
+	<?= $PageMenuUser; ?>
+	<input type="hidden" name="incomingurl" value="<?= $incomingurl; ?>" />
+	<span class="login-prefs-link">
+		<a href="<?= $signupurl; ?>" title="Modifier mon inscription">Modifier mon inscription</a>
+	</span><br />
+	<input class="login-signout-button" type="button" value="D&eacute;connexion" onclick="document.location='<?= $incomingurl; ?>&action=logout'" />
 </form>
+
 <?php else : ?>
 <?php if ($error) : ?>
-			<div class="error_box"><?= $error; ?></div>
+	<div class="error_box"><?= $error; ?></div>
 <?php endif; ?>
-<a rel="#signin-div" class="link_login"><img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" /><span>Se connecter</span></a>
-<a href="<?= $signupurl; ?>" class="link_signup">S'inscrire</a>
-<div id="signin-div" class="formulaire_identification yeswiki-overlay grid_4" style="display:none;">
-	<form method="post" id="signin" action="<?= $homepage; ?>">
+<a rel="#signin-div" class="login-link"><img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
+<span>Se connecter</span></a>
+<span class="login-link">
+	<a href="<?= $signupurl; ?>" title="S'inscrire">S'inscrire</a>
+</span>
+<div id="signin-div" class="yeswiki-overlay" style="display:none;">
+    <form class="login-form" action="<?= $incomingurl; ?>" method="post">
+		<?php if ($error) : ?>
+			<div class="error_box"><?= $error; ?></div>
+		<?php endif; ?>
 		<input type="hidden" name="action" value="login" />
-		<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
-		<label for="name">NomWiki</label>
-		<input id="name" name="name" size="16" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" class="input_iden" title="NomWiki" tabindex="4" type="text" /><br />
-		<label for="password">Mot de passe</label>
-		<input id="password" name="password" size="16" value="" class="input_iden" title="password" tabindex="5" type="password" />
-		<p class="remember">        
-			<input type="hidden" name="remember" value="0" /><input tabindex="6" type="checkbox" id="remember" name="remember" value="1" />
-			<label for="remember">Se souvenir de moi</label>
-		</p>
-	    <input id="signin_submit" class="bouton_iden" value="Se connecter" tabindex="7" type="submit" />
-    </form>
+		<input type="hidden" name="incomingurl" value="<?= $userpage; ?>" />
+		<input type="hidden" name="remember" value="0" />
+		<label class="login-label">NomWiki</label>
+		<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
+		<div class="clear"></div>
+		<label class="login-label">Mot de passe</label>
+		<input type="password" name="password" class="login-input" size="7" />
+		<div class="clear"></div>
+		<div class="login-label">
+			<input type="checkbox" id="remember-default" name="remember" value="1" />
+			<label for="remember-default" class="login-label-remember">Se souvenir de moi</label>
+		</div>
+		<input type="submit" class="login-button" value="Connexion" />
+		<div class="clear"></div>
+	</form>
 </div>
 <?php endif; ?>

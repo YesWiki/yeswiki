@@ -42,7 +42,7 @@ define('PEAR_MAIL_SMTP_ERROR_DATA', 10006);
  * SMTP implementation of the PEAR Mail interface. Requires the Net_SMTP class.
  * @access public
  * @package Mail
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class Mail_smtp extends Mail {
 
@@ -308,7 +308,7 @@ class Mail_smtp extends Mail {
             return $this->_smtp;
         }
 
-        include_once 'Net/SMTP.php';
+        include_once 'tools/contact/libs/Net/SMTP.php';
         $this->_smtp = &new Net_SMTP($this->host,
                                      $this->port,
                                      $this->localhost);

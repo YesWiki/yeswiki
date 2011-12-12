@@ -39,16 +39,11 @@ if ($this->HasAccess("read"))
 			$("a[href^=\'http://\']:not(a[href$=\'/slide_show\'])").click(function() {
 				if (window.location != window.parent.location)
 				{
-					//alert(\'iframe\');
 					if (!($(this).hasClass("bouton_annuler")))
 					{
 						window.open($(this).attr("href"));
 						return false;
 					}
-				}
-				else 
-				{
-					//alert(\'pas iframe\');					
 				}
 			});			
 		});

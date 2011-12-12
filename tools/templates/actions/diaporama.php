@@ -10,9 +10,6 @@ if (empty($pagetag)) {
 }
 
 $class = trim($this->GetParameter('class')) ;
-if (empty($class)) {
-	$class = 'grid_12' ;
-}
 
 $template = trim($this->GetParameter('template'));
 if (empty($template)) {
@@ -22,16 +19,16 @@ if (empty($template)) {
 	$template = 'diaporama_slide.tpl.html';
 }
 
-//pour l'action diaporama, on simule la présence sur la page, afin qu'il récupère les fichiers attachés au bon endroit
+//pour l'action diaporama, on simule la presence sur la page, afin qu'il recupere les fichiers attaches au bon endroit
 $oldpage = $this->GetPageTag();
 $this->tag = $pagetag;
 $this->page = $this->LoadPage($this->tag);
 
-//fonction de génération du diaporama (teste les droits et l'existence de la page)
+//fonction de generation du diaporama (teste les droits et l'existence de la page)
 include_once('tools/templates/libs/templates.functions.php');
 echo print_diaporama($pagetag, $template, $class);
 
-//on rétablie le bon nom de page
+//on retablie le bon nom de page
 $this->tag = $oldpage;
 $this->page = $this->LoadPage($oldpage);
 

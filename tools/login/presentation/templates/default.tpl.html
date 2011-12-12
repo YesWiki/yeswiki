@@ -1,33 +1,38 @@
 <?php if ($connected) : ?>
-<a href="wakka.php?wiki=<?= $user; ?>" class="link_user"><img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" /><span class="connected"><?= $user; ?></span></a>
-<form class="formulaire_identification" style="display:inline" method="post" id="signout" action="<?= $homepage; ?>">
-	<input type="hidden" name="action" value="update" />
-	<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
-	<input class="bouton_deconnexion_iden" type="button" value="D&eacute;connexion" onclick="document.location='<?= $homepage; ?>&amp;action=logout'" />
-</form>
-<?= $PageMenuUser; ?>
+	<ul class="login-prefs-links">
+		<li>
+			<a href="wakka.php?wiki=<?= $user; ?>" class="login-user-link">
+				<img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" class="login-user-icon" alt="user" />
+				<span class="connected"><?= $user; ?></span>
+			</a>
+		</li>
+		<li><a class="login-update-link"href="<?= $signupurl; ?>" title="Modifier mon inscription">Modifier mon inscription</a></li>
+		<li><a class="login-signout-link" href="<?= $incomingurl; ?>&amp;action=logout">D&eacute;connexion</a></li>
+	</ul>
+	<?= $PageMenuUser; ?>
 <?php else : ?>
-<form class="formulaire_identification" action="<?= $homepage; ?>" method="post">
+<form class="login-form" action="<?= $incomingurl; ?>" method="post">
 	<?php if ($error) : ?>
 		<div class="error_box"><?= $error; ?></div>
 	<?php endif; ?>
 	<input type="hidden" name="action" value="login" />
-	<input type="hidden" name="urldepart" value="<?= $homepage; ?>" />
+	<input type="hidden" name="incomingurl" value="<?= $incomingurl; ?>" />
 	<input type="hidden" name="remember" value="0" />
-	<label class="grid_2 label-right">NomWiki</label>
-	<input name="name" class="grid_2 input_iden" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
-	<label class="grid_2 label-right">Mot de passe</label>
-	<input type="password" name="password" class="grid_2 input_iden" size="7" />
+	<label class="login-label">NomWiki</label>
+	<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
 	<div class="clear"></div>
-	<div class="grid_2">
+	<label class="login-label">Mot de passe</label>
+	<input type="password" name="password" class="login-input" size="7" />
+	<div class="clear"></div>
+	<div class="login-label">
 		<input type="checkbox" id="remember-default" name="remember" value="1" />
-		<label for="remember-default" class="label_remember_iden" style="font-size:.9em;">Se souvenir de moi</label>
+		<label for="remember-default" class="login-label-remember">Se souvenir de moi</label>
 	</div>
-	<input type="submit" class="grid_2 bouton_iden" value="Connexion" />
+	<input type="submit" class="login-button" value="Connexion" />
 	<div class="clear"></div>
-	<div class="grid_4" style="margin-top:10px">
-		<span class="texte_iden">Ou pas encore membre :</span>
-		<span class="inscription_iden"><a href="<?= $signupurl; ?>" title="S'inscrire">s'inscrire</a></span>
+	<div class="login-subscribe">
+		<span class="login-label-member">Ou pas encore membre :</span>
+		<span class="login-link"><a href="<?= $signupurl; ?>" title="S'inscrire">S'inscrire</a></span>
 	</div>
 	<div class="clear"></div>
 </form>

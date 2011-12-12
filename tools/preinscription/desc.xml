@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkpreinscription" version="0.1" active="1">
-  <author>Florian Schmitt</author>
-  <label>Preinscription</label>
-  <desc>Pre-inscription d'une personne a une page wiki, avec envois de mail</desc>
-</plugin>

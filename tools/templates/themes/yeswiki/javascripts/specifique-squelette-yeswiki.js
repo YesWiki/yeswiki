@@ -11,7 +11,11 @@
 
 /* Author: Florian Schmitt */ 
 (function($){
-	/* menu déroulant du haut pour la navigation, inspiré du tutoriel : http://net.tutsplus.com/tutorials/html-css-techniques/how-to-create-a-drop-down-nav-menu-with-html5-css3-and-jquery/ */				
+	//gestion des classes actives pour les menus
+	$("a.actif").parent().addClass('liste-active').parents("ul").prev("a").addClass('actif').parent().addClass('liste-active');
+	
+	/* menu déroulant du haut pour la navigation
+	 * inspiré du tutoriel : http://net.tutsplus.com/tutorials/html-css-techniques/how-to-create-a-drop-down-nav-menu-with-html5-css3-and-jquery/ */				
 	//cache nav
 	var nav = $("#topnav");
 	
@@ -20,23 +24,23 @@
 		if ($(this).find("ul").length > 0) {
 			if ($(this).parents("ul").length <= 1) {
 				var arrow = $("<span>").addClass('arrow arrow-level1').html("&#9660;");
-				var firstlink = $(this).find('> a:first');
-				if (firstlink.length > 0) { arrow.appendTo(firstlink); }
-				else { arrow.appendTo($(this)); };
 			}
 			else {
-				$("<span>").addClass('arrow arrow-level'+$(this).parents("ul").length).html("&#9658;").appendTo($(this));
+				var arrow = $("<span>").addClass('arrow arrow-level'+$(this).parents("ul").length).html("&#9658;");
 			}
+			var firstsublist = $(this).find('ul:first');
+			if (firstsublist.length > 0) { firstsublist.before(arrow); }
+			else { $(this).before(arrow); };
 			
 			var config = {    
 			 sensitivity: 3,    
 			 interval: 100,    
 			 over: function() { //show submenu
-					$(this).find("ul:first").slideDown(100);
+					$(this).addClass('sfHover').find("ul:first").show();
 				},    
 			 timeout: 100,    
 			 out: function() { //hide submenu
-					$(this).find("ul").slideUp(200);
+					$(this).removeClass('sfHover').find("ul").hide();
 				}
 			};
 			$(this).hoverIntent( config );
@@ -60,4 +64,38 @@
 			wrap.load(url);
 		}
 	});
+	
+	//PageMenu
+	var config_col_menu = {    
+		 sensitivity: 3, // number = sensitivity threshold (must be 1 or higher)    
+		 interval: 100, // number = milliseconds for onMouseOver polling interval    
+		 over: function(){
+			// on ferme les menus deroulants deja ouverts
+			var listes = $(this).siblings('li');
+			listes.removeClass('hover').find('ul').slideUp('slow');
+			listes.find(".arrow").html("&#9658;");
+			
+			//on deroule et on tourne la fleche
+			$(this).addClass('hover').find('ul:first').slideDown('slow');
+			$(this).find(".arrow:first").html("&#9660;");
+		 },
+		 timeout: 100, // number = milliseconds delay before onMouseOut    
+		 out: function(){ return false; }
+	};
+	$(".liste-deroulante li:has(ul)").hoverIntent( config_col_menu );
+	
+	//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
+	var arrowright = $("<span>").addClass('arrow arrow-level1').html("&#9658;");
+	$(".liste-deroulante li:has(ul)").find("a:first").before(arrowright);
+
+	//deroule le deuxieme niveau pour la PageMenu, si elle contient le lien actif
+	var listesderoulables = $(".liste-deroulante > ul > li.liste-active:has(ul)");
+	listesderoulables.addClass('hover').find('ul:first').slideDown('fast');
+	listesderoulables.find(".arrow:first").html("&#9660;");
+	
+	//on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
+	$(".accordion, .slide_show").bind('dblclick', function(e) {
+		return false;
+	});
+	
 })(jQuery);

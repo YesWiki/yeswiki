@@ -3,6 +3,42 @@ if (!defined("WIKINI_VERSION")) {
             die ("acc&egrave;s direct interdit");
 }
 
+/**
+ * 
+ * Parcours des dossiers a la recherche de templates
+ * 
+ * @param $directory : chemin relatif vers le dossier contenant les templates
+ * 
+ * return array : tableau des themes trouves, ranges par ordre alphabetique
+ * 
+ */
+function search_template_files($directory) {
+	$tab_themes = array();
+	
+	$dir = opendir($directory);
+	while (false !== ($file = readdir($dir))) {    	
+		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
+			$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
+		    while (false !== ($file2 = readdir($dir2))) {
+		    	if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') $tab_themes[$file]["style"][$file2] = $file2;
+		    }
+		    closedir($dir2);
+		    if (is_array($tab_themes[$file]["style"])) ksort($tab_themes[$file]["style"]);
+		    $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
+		    while (false !== ($file3 = readdir($dir3))) {
+		    	if (substr($file3, -9, 9)=='.tpl.html') $tab_themes[$file]["squelette"][$file3]=$file3;	    
+		    }	    	
+		    closedir($dir3);
+		    if (is_array($tab_themes[$file]["squelette"])) ksort($tab_themes[$file]["squelette"]);
+	    }
+	}
+	closedir($dir);
+	
+	if (is_array($tab_themes)) ksort($tab_themes);
+	
+	return $tab_themes;
+}
+
 
 //remplace juste la premiere occurence d'une chaine de caracteres
 function str_replace_once($from, $to, $str) {
@@ -66,7 +102,7 @@ function replace_missingpage_links($output) {
  * @param $class : classe CSS à ajouter au diaporama
  * 
  */
-function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $class = 'grid_12') {
+function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $class = '') {
 	// On teste si l'utilisateur peut lire la page
 	if (!$GLOBALS['wiki']->HasAccess("read", $pagetag))
 	{
@@ -124,6 +160,13 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 			}
 		}
 		
+		$buttons = '';
+		//si la fonction est appelée par le handler diaporama, on ajoute les liens d'édition et de retour
+		if ($GLOBALS['wiki']->GetMethod() == "diaporama") {
+			$buttons .= '<div class="buttons-action"><a class="button-edit" href="'.$GLOBALS['wiki']->href('edit',$pagetag).'">&Eacute;diter</a>'."\n";
+			$buttons .= '<a class="button-quit" href="'.$GLOBALS['wiki']->href('',$pagetag).'">Quitter</a></div>'."\n";
+		}
+		
 		//on affiche le template
 		if (!class_exists('SquelettePhp')) include_once('tools/templates/libs/squelettephp.class.php');
 		$squel = new SquelettePhp('tools/templates/presentation/templates/'.$template);
@@ -131,20 +174,15 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 			"pagetag" => $pagetag,
 			"slides" => $slides,
 			"titles" => $titles,
+			"buttons" => $buttons,
 			"class" => $class
 		));
 		$output = $squel->analyser() ;
-
-		//si la fonction est appelée par le handler diaporama, on ajoute les liens d'édition et de retour
-		if ($GLOBALS['wiki']->GetMethod() == "diaporama") {
-			$output .= '<div class="buttons-action"><a class="button-edit" href="'.$GLOBALS['wiki']->href('edit',$pagetag).'">&Eacute;diter</a>'."\n";
-			$output .= '<a class="button-quit" href="'.$GLOBALS['wiki']->href('',$pagetag).'">Quitter</a></div>'."\n";
-		}
 		
 		//on prépare le javascript du diaporama, qui sera ajoutée par l'action footer de template, à la fin du html
 		$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script> 
-			$("#slide_show_'.$pagetag.'").scrollable({mousewheel:true}).navigator({history: true}).data("scrollable");
-			$("#thumbs_'.$pagetag.' .navi a[title]").tooltip({position:	\'bottom center\', opacity:0.9, tipClass:\'tooltip-slideshow\', offset:[5, 0]});
+			$("#slide_show_'.$pagetag.'").scrollable({mousewheel:false}).navigator({history: true}).data("scrollable");
+			$("#thumbs_'.$pagetag.' .navi a[title]").tooltip({position:	\'top center\', opacity:0.9, tipClass:\'tooltip-slideshow\', offset:[5, 0]});
 			</script>'."\n";
 		return $output;
 	}

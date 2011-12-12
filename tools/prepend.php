@@ -150,6 +150,8 @@ foreach ($plugins_list as $k => $v) {
 	if (file_exists($plugins_root.$k.'/wiki.php')) {
 		include($plugins_root.$k.'/wiki.php');
 	}
+}
+foreach ($plugins_list as $k => $v) {
 	if (file_exists($plugins_root.$k.'/actions')) {
 		$wakkaConfig['action_path']=$plugins_root.$k.'/actions/'.':'.$wakkaConfig['action_path'];
 	}

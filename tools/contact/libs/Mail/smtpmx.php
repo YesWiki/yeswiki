@@ -19,11 +19,11 @@
  * @author     gERD Schaufelberger <gerd@php-tools.net>
  * @copyright  1997-2005 The PHP Group
  * @license    http://www.php.net/license/3_0.txt  PHP License 3.0
- * @version    CVS: $Id: smtpmx.php,v 1.2 2010-10-19 15:59:15 mrflos Exp $
+ * @version    CVS: $Id: smtpmx.php,v 1.3 2011-03-22 10:06:33 mrflos Exp $
  * @see        Mail
  */
 
-require_once 'Net/SMTP.php';
+require_once 'tools/contact/libs/Net/SMTP.php';
 
 /**
  * SMTP MX implementation of the PEAR Mail interface. Requires the Net_SMTP class.
@@ -32,7 +32,7 @@ require_once 'Net/SMTP.php';
  * @access public
  * @author  gERD Schaufelberger <gerd@php-tools.net>
  * @package Mail
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class Mail_smtpmx extends Mail {
 

@@ -337,5 +337,8 @@ if (!empty($urls)) {
 } else {
 	echo 'Il faut entrer obligatoirement le param&ecirc;tre de l\'url pour syndiquer un flux RSS.';
 }
-error_reporting(E_ALL & ~E_DEPRECATED);
+
+//ajout du javascript
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script type="text/javascript" src="tools/syndication/presentation/javascripts/syndication.js"></script>'."\n";
+
 ?>

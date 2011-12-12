@@ -52,7 +52,7 @@
  *
  * @author  Richard Heyes <richard@phpguru.org>
  * @author  Chuck Hagenbuch <chuck@horde.org>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @license BSD
  * @package Mail
  */
@@ -184,7 +184,7 @@ class Mail_RFC822 {
         while ($this->address = $this->_splitAddresses($this->address));
 
         if ($this->address === false || isset($this->error)) {
-            require_once 'PEAR.php';
+            require_once 'tools/contact/libs/PEAR.php';
             return PEAR::raiseError($this->error);
         }
 
@@ -194,7 +194,7 @@ class Mail_RFC822 {
             $valid = $this->_validateAddress($address);
 
             if ($valid === false || isset($this->error)) {
-                require_once 'PEAR.php';
+                require_once 'tools/contact/libs/PEAR.php';
                 return PEAR::raiseError($this->error);
             }
 

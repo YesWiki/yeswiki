@@ -1,57 +1,49 @@
-<!doctype html> 
-<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 7 ]> <html lang="en" class="no-js ie6"> <![endif]-->
-<!--[if IE 7 ]>    <html lang="en" class="no-js ie7"> <![endif]-->
-<!--[if IE 8 ]>    <html lang="en" class="no-js ie8"> <![endif]-->
-<!--[if IE 9 ]>    <html lang="en" class="no-js ie9"> <![endif]-->
-<!--[if (gt IE 9)|!(IE)]><!--> <html lang="fr" class="no-js"> <!--<![endif]-->
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="fr"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="fr"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="fr"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="fr"> <!--<![endif]-->
 <head>
-  <meta charset="ISO-8859-1">
-  <!--[if IE]><![endif]-->
-  <title>{{titrepage}}</title>{{metarobots}}  
-  <meta name="author" content="">
-  <meta name="viewport" content="width=device-width; initial-scale=1.0;">  
+  <meta charset="iso-8859-1">
+  <title>{{titrepage}}</title>{{metarobots}}
   <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
   <meta name="description" content="{{configuration param="meta_description"}}" />
-  <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements de yeswiki" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
-  <link rel="shortcut icon" type="image/x-icon" href="tools/templates/themes/yeswiki/images/favicon.ico">
-  <link rel="apple-touch-icon" href="tools/templates/themes/yeswiki/images/apple-touch-icon.png">
-  <link rel="icon" type="image/png" href="tools/templates/themes/yeswiki/images/favicon.png" />
-  <link rel="stylesheet" href="tools/templates/presentation/styles/yeswiki-base.css?v=1">
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements du wikini" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+  <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico">
+  <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
+  <link rel="stylesheet" href="{{configuration param="theme_path"}}styles/grid/960.css">
   {{liensstyle}}
-  <link rel="stylesheet" media="handheld" href="tools/templates/presentation/styles/handheld/handheld.css?v=1">
-  <script src="tools/templates/libs/modernizr-1.6.min.js"></script>
 </head>
 
 <body {{parambody}}>
-  <div id="container">
-    {{include page="PageRapideHaut" class="menu-fixe arrondisbas" doubleclic="1" actif="1"}}
-    <header class="row">
-    	{{include page="PageHeader" class="column grid_12" doubleclic="1"}}
-        <div class="clear"></div>
-    </header><!-- end of header -->
-    <nav id="topnav" class="row">
-        {{include page="PageMenuHaut" class="left decal5pxhaut grid_12" doubleclic="1"}}
+  <div id="container" class="container_12">
+	<header class="grid_12">
+		{{include page="PageRapideHaut" class="topbar" doubleclic="1" actif="1"}}
+		{{include page="PageHeader" doubleclic="1" actif="1"}}
 		<div class="clear"></div>
-    </nav><!-- end of #topnav -->
-     
-    <div id="main" class="row" {{doubleclic}}>
+	</header><!-- end of header -->
+
+	<nav id="topnav" class="grid_12">
+		{{include page="PageMenuHaut" class="grid_12 alpha omega" doubleclic="1" actif="1"}}
+		<div class="clear"></div>
+	</nav><!-- end of #topnav -->
+	 
+	<div id="main" role="main" class="grid_12" {{doubleclic}}>
 		{WIKINI_PAGE}
 		{{barreredaction}}
-    </div><!-- end of #main -->
-    
-    <footer class="row">
+		<div class="clear"></div>
+	</div><!-- end of #main -->
+
+	<footer class="grid_12">
 		{{include page="PageFooter" doubleclic="1"}}
 		<div class="clear"></div>
-    </footer><!-- end of footer -->
-  </div> <!-- end of #container -->
-  
-  <script src="http://cdn.jquerytools.org/1.2.5/full/jquery.tools.min.js"></script>
-  <script>!window.jQuery && document.write('<script src="tools/templates/libs/jquery.tools.1.2.5-jquery.1.4.2.min.js"><\/script>')</script>
-  <!--[if lt IE 7 ]>
-    <script src="tools/templates/libs/dd_belatedpng.js?v=1"></script>
-    <script> DD_belatedPNG.fix('img, .png_bg'); //fix any <img> or .png_bg background-images </script>
-  <![endif]-->
-  {{liensjavascripts}}
+	</footer><!-- end of footer -->
+	<div class="clear"></div>
+</div> <!-- end of #container -->
+
+{{liensjavascripts}}
 </body>
 </html>

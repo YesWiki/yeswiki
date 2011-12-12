@@ -48,7 +48,7 @@
  * @author    Aleksander Machniak <alec@php.net>
  * @copyright 2003-2006 PEAR <pear-group@php.net>
  * @license   http://www.opensource.org/licenses/bsd-license.php BSD License
- * @version   CVS: $Id: mime.php,v 1.1 2010-10-19 15:59:15 mrflos Exp $
+ * @version   CVS: $Id: mime.php,v 1.2 2011-03-22 10:06:33 mrflos Exp $
  * @link      http://pear.php.net/package/Mail_mime
  *
  *            This class is based on HTML Mime Mail class from
@@ -63,7 +63,7 @@
  *
  * This package depends on PEAR to raise errors.
  */
-require_once 'PEAR.php';
+require_once 'tools/contact/libs/PEAR.php';
 
 /**
  * require Mail_mimePart
@@ -72,7 +72,7 @@ require_once 'PEAR.php';
  * create all the different parts a mail can
  * consist of.
  */
-require_once 'Mail/mimePart.php';
+require_once 'mimePart.php';
 
 
 /**

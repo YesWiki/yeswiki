@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkfaq" version="$Name:  $" active="1">
-  <author>Florian Schmitt</author>
-  <label>Foire aux questions</label>
-  <desc>Utilise un formulaire google pour générer une FAQ</desc>
-</plugin>

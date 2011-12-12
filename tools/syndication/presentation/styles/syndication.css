@@ -2,14 +2,12 @@
 
 /* menu syndication paginee */
 .boite_syndication {
-margin:0;
-padding:0 10px;
+float:left;
+margin:0 20px 20px 0;
+padding:0;
+position:relative;
+width:100%;
 }
-
-.rss_site_titre {
-margin:0 -10px;
-}
-
 /* classes de positionnement des boites */
 .alaligne {clear:both;}
 .agauche {float:left;margin:0 20px 20px 0;}
@@ -20,6 +18,15 @@ margin:0 -10px;
 .quart {width:22%;margin-left:1%; margin-right:1%;}
 .demi {width:47%;margin-left:1%; margin-right:1%;}
 
+
+.rss_site_titre {
+text-align:center;
+clear:both;
+}
+
+.boite_syndication a {
+color:#a10a01;
+}
 	 
 ul.liste_rss_paginee{
 background:none repeat scroll 0 0 transparent;
