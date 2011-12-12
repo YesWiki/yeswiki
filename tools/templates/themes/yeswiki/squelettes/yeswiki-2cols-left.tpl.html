@@ -1,0 +1,53 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="fr"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="fr"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="fr"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="fr"> <!--<![endif]-->
+<head>
+  <meta charset="iso-8859-1">
+  <title>{{titrepage}}</title>{{metarobots}}
+  <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+  <meta name="description" content="{{configuration param="meta_description"}}" />
+  <meta name="author" content="">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements du wikini" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+  <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico">
+  <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
+  <link rel="stylesheet" href="{{configuration param="theme_path"}}styles/grid/960.css">
+  {{liensstyle}}
+</head>
+
+<body {{parambody}}>
+  <div id="container" class="container_12">
+	{{include page="PageRapideHaut" class="grid_12 menu-fixe arrondisbas" doubleclic="1" actif="1"}}
+	<div class="clear"></div>
+	<header class="grid_12">
+		{{include page="PageHeader" class="alpha grid_12 omega" doubleclic="1" actif="1"}}
+		<div class="clear"></div>
+	</header><!-- end of header -->
+
+	<nav id="topnav" class="grid_12">
+		{{include page="PageMenuHaut" class="grid_12 alpha omega" doubleclic="1" actif="1"}}
+		<div class="clear"></div>
+	</nav><!-- end of #topnav -->
+	 
+	<div id="main" role="main" class="grid_12">
+		{{include page="PageMenu" class="alpha grid_2 liste-deroulante" doubleclic="1" actif="1"}}
+		<div class="grid_10 omega" {{doubleclic}}>
+			{WIKINI_PAGE}
+		</div>
+		{{barreredaction}}
+		<div class="clear"></div>
+    </div><!-- end of #main -->
+
+	<footer class="grid_12">
+		{{include page="PageFooter" doubleclic="1"}}
+		<div class="clear"></div>
+	</footer><!-- end of footer -->
+	<div class="clear"></div>
+</div> <!-- end of #container -->
+
+{{liensjavascripts}}
+</body>
+</html>
