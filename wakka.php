@@ -40,7 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	to look as small as what it does. Basically. Oh, I just suck. :)
  */
 
-
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define("WAKKA_VERSION", "0.1.1");
