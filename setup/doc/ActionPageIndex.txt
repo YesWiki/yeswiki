@@ -1,0 +1,7 @@
+L'action ##""{{PageIndex}}""## liste toutes les pages classées par ordre alphabétique et regroupées par lettre. On peut la voir en action sur l'IndexDesPagesBis.
+Pour obtenir la liste des pages du site on pourra voir également l'action [[ActionListPages ListPages]].
+
+Cette action ne prend aucun paramètre.
+
+----
+{{trail toc="ListeDesActionsWikini"}}

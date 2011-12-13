@@ -1,0 +1,29 @@
+Chaque page possède trois niveaux de contrôle d'accès :
+ - lecture de la page
+ - écriture/modification de la page
+ - commentaire de la page
+
+Les contrôles d'accès ne peuvent être modifiés que par le propriétaire de la page -- l'administrateur technique peut aussi manuellement modifier ces contrôles en travaillant directement sur la base de données.
+Le propriétaire d'une page voit apparaître, dans la page dont il est propriétaire, l'option "Éditer permissions" : cette option lui permet de modifier les contrôles d'accès.
+Ces contrôles sont matérialisés par des colonnes où le propriétaire va ajouter ou supprimer des informations.
+Le propriétaire peut compléter ces colonnes par les informations suivantes, séparées par des espaces :
+ - le nom d'un ou plusieurs utilisateurs : par exemple ""CharlesNepote"" ou ""DavidDelon""
+ - le caractère ***** désignant tous les utilisateurs
+ - le caractère **+** désignant les utilisateurs enregistrés
+ - le caractère **!** signifiant la négation : par exemple !""CharlesNepote"" signifie que ""CharlesNepote"" **ne doit pas** avoir accès à cette page
+
+===== Droits d'accès par défaut =====
+Pour toute nouvelle page créée, [[http://www.wikini.net WikiNi]] applique des droits d'accès par défaut. Ces droits d'accès sont configurables via le fichier /wakka.config.php.
+Il faut renseigner les trois variables de configuration suivantes :
+##
+	"default_write_acl" => "*",
+	"default_read_acl" => "*",
+	"default_comment_acl" => "*",
+##
+
+Par exemple, vous pouvez souhaiter que, par défaut, seuls les utilisateurs enregistrés puisse modifier des pages. Vous utiliserez alors :
+##
+	"default_write_acl" => "+",
+	"default_read_acl" => "*",
+	"default_comment_acl" => "*",
+##

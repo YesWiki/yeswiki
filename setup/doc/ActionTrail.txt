@@ -1,0 +1,38 @@
+L'action ##""{{trail toc="NomDePage"}}""## permet de lier des pages entres elles grace à une page de sommaire. Cette action affiche un navigateur du type "précedente/suivante" en indiquant le nom des pages précende et suivante.
+
+====Paramètre====
+Le paramètre ##toc## permet d'indiquer le nom de la page contenant le liste des pages liées.
+
+====Configuration====
+L'aspet des liens du navigateur est définis par deux classe CSS présente dans wakka.css :
+##
+.trail_table { line-height: 30px;}
+.trail_button { color: #993333; }
+##
+
+====Ecriture d'une page "toc"====
+Cette page peut contenir n'importe quel texte. Les règles qui permettent de définir la liste des pages liées sont :
+  - Le nom de la page appartient à une liste (numéroté, à bulle ou sans signe)
+  - Le nom de la page est le **1er** mot de chaque élément de la liste
+  - Les liens ##""[[NomPageWikiNi Nom d'une page WikiNi]]""## sont acceptés et doivent être le **1er mot** de chaque éléments de la liste.
+
+Un exemple de page sommaire :
+-----
+
+====Sommaire====
+
+Texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte.
+
+	- Page1 : texte texte texte texte texte texte texte texte texte texte texte 
+	- Page2 : texte texte texte texte texte texte texte texte texte texte texte texte texte 
+	- [[Page3 Vers la page 3]] : texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte 
+		- Page31 : texte texte texte texte texte texte texte texte texte texte texte 
+		- Page32 : texte texte texte texte texte texte texte texte texte texte texte 
+	- Page4 : texte texte texte texte texte texte texte texte texte texte texte 
+
+texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte.
+	
+	- Page5 : texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte 
+	- Page6 : texte texte texte texte texte texte texte texte texte texte texte texte texte texte texte 
+-----
+{{trail toc="ListeDesActionsWikiNi"}}

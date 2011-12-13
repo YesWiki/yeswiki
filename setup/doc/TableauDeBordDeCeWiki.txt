@@ -1,0 +1,14 @@
+Ce tableau de bord regroupe toutes les pages utiles à l'analyse et à l'animation de ce site.
+  - DerniersChangements et DerniersCommentaires
+  - PlanDuSite à partir de la racine
+  - IndexDesPages, IndexDesPagesBis 
+  - PagesOrphelines
+  - PagesACreer
+
+----
+==== 8 derniers comptes utilisateurs ====
+{{Listusers last="8"}}
+==== 8 dernières pages modifiées ====
+{{recentchanges max="8"}}
+==== 5 dernières pages commentées ====
+{{RecentlyCommented max="5"}}

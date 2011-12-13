@@ -1,0 +1,6 @@
+Bienvenue !
+
+Cliquez sur le lien "Editer cette page" au bas de la page pour démarrer,
+ou bien apprenez à faire vos PremiersPasSurLeWiki.
+
+Pages utiles : PagesOrphelines, PagesACreer, RechercheTexte, ReglesDeFormatage, AideWikiNi, TableauDeBordDeCeWiki, AdministrationDeWikiNi.

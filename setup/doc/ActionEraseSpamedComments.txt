@@ -1,0 +1,17 @@
+L'action ##""{{EraseSpamedComments}}""## permet d'effacer facilement les commentaires contenant du SPAM. Cette action n'est accessible qu'aux administrateurs.
+
+L'action liste les derniers commentaires déposés sur le site, et l'administrateur peut choisir lesquels doivent être éliminés. Il lui suffit de cocher les cases correspondantes et de valider le formulaire.
+
+
+===== Paramètres =====
+Cette action accepte 2 paramètres :
+ - //max// (optionnel) : limite le nombre de commentaires listés. --- Valeur par défaut : 0 (pas de limite)
+ - //logpage// (optionnel) : spécifie la page où sera déposé le journal des suppressions effectuées. --- Par défaut, le journal des suppressions effectuées est ajouté en fin de la page courante.
+
+Le journal est ajouté en fin de la page désignée, donc le contenu précédent de n'est pas altéré.
+Le journal est consigné même si l'administrateur n'a pas le droit d'écriture sur à la page cible.
+
+Exemple d'utilisation : ##""{{erasespamedcomments max="50" logpage="HistoriqueDesSuppressionsDesSpams}}""##.
+
+----
+{{trail toc="ListeDesActionsWikini"}}

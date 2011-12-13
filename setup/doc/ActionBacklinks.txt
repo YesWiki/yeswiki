@@ -1,0 +1,24 @@
+Action permettant d'insérer la liste de toutes les pages faisant référence à la page courante. Dans cette présente page, ""{{backlinks}}"" donne ceci :
+
+{{BackLinks}}
+
+Sur la page personnelle d'un utilisateur, cette action affichera aussi les pages dont il est le propriétaire ou le dernier modificateur.
+
+===== Paramètres =====
+
+==== Paramètre "page" ====
+Le paramètre "page" ([[http://www.wikini.net WikiNi]] >= 0.4.1) permet de spécifier une page différente de la page courante.
+Par exemple ##""{{backlinks page="PagePrincipale"}}""##
+Ce paramètre peut être utile, par exemple :
+  - pour améliorer le TableauDeBordDeCeWiki : il suffit d'ajouter la liste des pages liées à la page ""AFaire"" pour connaître les pages qui doivent faire l'objet d'un travail
+  - pour consolider des données sur une seule page : par exemple la liste des pages liées aux pages ""EstUnHomme"" et ""EstUneFemme""
+  - autres ?
+
+==== Paramètre "exclude" ====
+Le paramètre "exclude" ([[http://www.wikini.net WikiNi]] >= 0.4.1) permet de spécifier des pages à exclure de la liste des pages qui ont pourtant un lien vers la page de référence.
+Il est en effet parfois génant d'afficher la totalité des pages faisant référence à une page. Par exemple, la page ""AFaire"" liste la page ""CharlesNepoteVeilleSurInternet"" alors que, non seulement cette information n'a pas d'intérêt mais elle pollue en outre la lecture de cette page. Autre exemple, une page ""MamiFeres"" a intérêt par exemple à lister ""CheVal"" et ""ElePhant"" mais pas nécessairement ""AniMaux"" qui est une catégorie supérieure. Je suggère donc la création d'un paramètre exclude destiné à exclure certaines pages : par exemple :
+##""{{backlinks exclude="AniMaux"}}""##
+Le paramètre "exclude" peut contenir plusieurs noms de page séparés par des ";", par exemple : ##""{{backlinks exclude="AniMaux; PagePrincipale"}}""##
+
+----
+{{trail toc="ListeDesActionsWikini"}}

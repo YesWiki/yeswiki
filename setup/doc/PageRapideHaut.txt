@@ -1,0 +1,3 @@
+""<a href="wakka.php?wiki=""{{configuration param="root_page"}}""" title="Aller sur la page d'accueil">
+<img src="tools/templates/presentation/images/home-icon12-black.png" alt="home" />
+</a>"" [[AidE Aide]] [[TableauDeBordDeCeWiki Tableau de bord]] {{moteurrecherche class="right"}}""<a class="right" href="wakka.php?wiki=DerniersChangementsRss/xml" title="S'abonner au flux RSS des derniers changements"><img src="tools/templates/presentation/images/rss-icon12-black.png" alt="rss" /></a>""

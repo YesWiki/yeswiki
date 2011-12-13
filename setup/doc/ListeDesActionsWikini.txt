@@ -1,0 +1,24 @@
+Wikini propose par défaut les "actions" suivantes.
+
+  - ActionBacklinks : liste de toutes les pages faisant référence à la page courante
+  - ActionChangeStyle : changer le style graphique du wiki
+  - ActionEraseSpamedComments : effacer facilement les spams de commentaires
+  - ActionFindpage
+  - ActionInclude : inclusion d'une page au sein d'une autre
+  - ActionListPages
+  - ActionListUsers
+  - ActionMyChanges
+  - ActionMyPages
+  - ActionOrphanedPages : recherche les pages qui n'ont pas de liens vers elle (par orpheline )
+  - ActionPageIndex
+  - ActionRecentChanges
+  - ActionRecentChangesRSS
+  - ActionRecentComments
+  - ActionRecentlyCommented
+  - ActionRedirect : redirection d'une page vers une autre
+  - ActionTextSearch : recherche d'une chaine de caractères dans l'ensemble des page de [[http://www.wikini.net WikiNi]]
+  - ActionTrail : permet de lier des pages entres elles et de passer de l'une à l'autre avec un petit navigateur style "précédente/suivante"
+  - ActionUserSettings
+  - ActionWantedPages : liste les pages devant être écrites.
+
+  
