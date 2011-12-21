@@ -116,7 +116,7 @@ case "0":
   			"KEY idx_time (time),".
   			"KEY idx_latest (latest),".
   			"KEY idx_comment_on (comment_on)".
-			") ENGINE=MyISAM;", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			") TYPE=MyISAM;", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	test("Creation table ACL ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."acls (".
@@ -124,7 +124,7 @@ case "0":
 			"privilege varchar(20) NOT NULL default '',".
   			"list text NOT NULL,".
  			"PRIMARY KEY  (page_tag,privilege)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			") TYPE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	test("Creation table link ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."links (".
@@ -133,7 +133,7 @@ case "0":
   			"UNIQUE KEY from_tag (from_tag,to_tag),".
   			"KEY idx_from (from_tag),".
   			"KEY idx_to (to_tag)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			") TYPE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	test("Creation table referrer ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."referrers (".
@@ -142,7 +142,7 @@ case "0":
   			"time datetime NOT NULL default '0000-00-00 00:00:00',".
   			"KEY idx_page_tag (page_tag),".
   			"KEY idx_time (time)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			") TYPE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	test("Creation table user ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."users (".
@@ -158,7 +158,7 @@ case "0":
   			"PRIMARY KEY  (name),".
   			"KEY idx_name (name),".
   			"KEY idx_signuptime (signuptime)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			") TYPE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	test("Creation table triplets ...",
 		@mysql_query(
 			'CREATE TABLE `' .$config['table_prefix'] . 'triples` (' . 
@@ -169,7 +169,7 @@ case "0":
 			'  PRIMARY KEY  (`id`),' . 
 			'  KEY `resource` (`resource`),' . 
 			'  KEY `property` (`property`)' . 
-			') ENGINE=MyISAM', $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			') TYPE=MyISAM', $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	test("Creation compte admin ...",
 		@mysql_query(
 			"insert into ".$config["table_prefix"]."users set ".
@@ -248,7 +248,7 @@ case '0.5.0': // TODO remove this line (idem)
 			'  PRIMARY KEY  (`id`),' . 
 			'  KEY `resource` (`resource`),' . 
 			'  KEY `property` (`property`)' . 
-			') ENGINE=MyISAM', $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			') TYPE=MyISAM', $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
 	if (!empty($admin_password))
 	{
 		test("Creation compte admin ...",
