@@ -107,6 +107,11 @@ td { vertical-align: top; }
   h2, h3 { page-break-after: avoid; }
 }
 
+textarea:focus, input:focus {
+background-color:#FFFFCC;
+}
+
+
 /************************************* CSS Wikini original ****************************************/
 
 /* Mise en forme */

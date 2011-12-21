@@ -32,7 +32,7 @@ if ($act=preg_match_all ("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_head
 	}
 }
 
-//On ajoute la dernière version de modernizer
+//On ajoute la derniere version de modernizer
 $template_header = preg_replace ('/<\/head>/', '<script src="tools/templates/libs/modernizr-2.0.6.min.js"></script>'."\n".'</head>', $template_header);
 
 echo $template_header;
