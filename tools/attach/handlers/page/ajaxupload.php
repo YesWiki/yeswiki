@@ -147,14 +147,19 @@ class qqFileUploader {
             }
         }*/
         
-        //on enleve les espaces et les accents pour le nom de fichier
-        $string = htmlentities(str_replace(' ', '_', $filename));
-        $filename = preg_replace("/&([a-z])[a-z]+;/i","$1",$string);
+        // on enleve les espaces et les accents pour le nom de fichier
+        $search = array ('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_]@');
+        $replace = array ('e','a','i','u','o','c','_','');
+        $filename = preg_replace($search, $replace, utf8_decode($filename));
 
         $attach = new Attach($GLOBALS['wiki']);
         $GLOBALS['wiki']->setParameter("desc", $filename);
         $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
         
+        // dans le cas d'une nouvelle page, on donne une valeur a la date de création
+        if ($GLOBALS['wiki']->page['time'] == '') $GLOBALS['wiki']->page['time'] = date('YmdHis');
+        
+        // on envoi l'attachement en retenant l'affichage du résultat dans un buffer
         ob_start();
         $attach->doAttach();
         $fullfilename = $attach->GetFullFilename(true);

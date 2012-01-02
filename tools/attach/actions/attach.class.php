@@ -293,35 +293,34 @@ class attach {
         }
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
-            foreach ($array_classes as $c) { $this->classes = $this->classes . "attach_" . $c . " "; }
-            $this->classes = trim($this->classes);
+            foreach ($array_classes as $c) { $this->classes = $this->classes . $c . " "; }
+            $this->classes = 'attached_file '.trim($this->classes);
         }
         $this->height = $this->wiki->GetParameter('height');
         $this->width = $this->wiki->GetParameter('width');
         $size = $this->wiki->GetParameter("size");
        
         if (empty($this->height) && empty($this->width) && $size!='original') {
-                      $this->width = 300; 
-                     $this->height = 300;
+                     $this->width = 300; 
+                     $this->height = 209;
         }
    
         switch ($size) {
                 case 'small' : 
                     $this->width = 140;
-                    $this->height = 140;
+                    $this->height = 97;
                     break;
                 case 'medium': 
-                     $this->width = 300; 
-                     $this->height = 300;
-                     break;
+                    $this->width = 300; 
+                    $this->height = 209;
+                    break;
                 case 'big': 
-                     $this->width = 780;
-                    $this->height = 780;
-                     break;
-
+                    $this->width = 780;
+                    $this->height = 544;
+                    break;
             }
-       if (empty($this->height)) $this->height=$this->width; 
-       if (empty($this->width)) $this->width=$this->height; 
+       if (empty($this->height)) $this->height = round($this->width * 23 / 33); 
+       if (empty($this->width)) $this->width = round($this->height * 33 / 23); 
 
     }
     /**

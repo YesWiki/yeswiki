@@ -26,8 +26,10 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 						element: document.getElementById('attach-file-uploader'),
 						action: '".$this->Href('ajaxupload')."',
 						debug: false,
-						onSubmit: function(id, fileName){ 
-							$('#overlay-link .contentWrap').append('<h2>Joindre / Ins&eacute;rer un fichier</h2>').append($('.qq-upload-list')).append('<div id=\"overlay-form\"></div>');
+						onSubmit: function(id, fileName){
+							if (!$('#overlay-link .contentWrap h2.upload-title').length) {
+								$('#overlay-link .contentWrap').prepend('<h2 class=\"upload-title\">Joindre / Ins&eacute;rer un fichier</h2>').append($('.qq-upload-list'))
+							}
 
 							if ($('#overlay-link').hasClass('init')) {
 							    $('#overlay-link').overlay().load();
@@ -43,6 +45,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 							     closeOnClick: false,
 							     load: true,
 							     onClose: function() {
+									$('.qq-upload-list').empty();
 							     	$('#toolbar').append($('.qq-upload-list'));
 							     	$('#overlay-link .contentWrap').empty();
 								 }
@@ -50,33 +53,135 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 							}
 						},
 						onComplete: function(id, fileName, responseJSON){
-							if ((responseJSON.extension === 'jpg')||(responseJSON.extension === 'jpeg')||(responseJSON.extension === 'gif')||(responseJSON.extension === 'png')) {
-								$('#overlay-form').load('tools/attach/presentation/templates/AttachImageDialog.html');
+							
+							// pour la période de debug, on enleve le cache AJAX
+							$.ajaxSetup( {
+								cache : false
+							});
+
+						    var lastfileuploaded = $('.qq-upload-list li.qq-upload-success .qq-upload-file:contains('+fileName+')');
+							lastfileuploaded.parent('.qq-upload-success').append('<div class=\"overlay-form\"></div>');
+							var filesize = lastfileuploaded.siblings('.qq-upload-size').text();
+							if (filesize !== '') {
+								filesize = ' ('+filesize+')';
 							}
-							var actionattach = '{{attach file=\"'+responseJSON.simplefilename+'\" desc=\"'+responseJSON.simplefilename+'\" class=\"left\"}}';
-							//$('#overlay-link').append(actionattach);
-							wrapSelectionBis($('#body')[0], actionattach, \"\");
-							//attachoverlay.close();
+							
+							var overlayform = lastfileuploaded.siblings('.overlay-form');
+							if ((responseJSON.extension === 'jpg')||(responseJSON.extension === 'jpeg')||(responseJSON.extension === 'gif')||(responseJSON.extension === 'png')) {
+								overlayform.load('tools/attach/presentation/templates/AttachImageDialog.html',function() {
+									$(this).find('.filename').val(responseJSON.simplefilename);
+									$(this).find('.attach_alt').val('image '+responseJSON.simplefilename+filesize);
+									$(this).find('input[type=\"radio\"], input[type=\"checkbox\"]').each(function() {
+										var name = $(this).attr('name')+$(this).attr('value')+id;
+										$(this).attr('id',name).next().attr('for',name);
+									});
+								});	
+							}
+							else {
+								overlayform.load('tools/attach/presentation/templates/AttachFileDialog.html',function() {
+									$(this).find('.filename').val(responseJSON.simplefilename);
+									$(this).find('.attach_alt').val('Télécharger le fichier '+responseJSON.simplefilename+filesize);
+									$(this).find('input[type=\"radio\"], input[type=\"checkbox\"]').each(function() {
+										var name = $(this).attr('name')+$(this).attr('value')+id;
+										$(this).attr('id',name).next().attr('for',name);
+									});
+								});	
+							}
+							
+							
 						},
+						
+						// a l'annulation du téléchargement en cours
 						onCancel: function(id, fileName){
-							attachoverlay.close();
-							attachoverlay = NULL;
+							// on supprime l'element dans la liste sinon 
+							$('.qq-upload-list li.qq-upload-success .qq-upload-file:contains('+fileName+')').remove();
+							
+							// on ferme l'overlay si c'est le dernier
+							if ($('.qq-upload-list li').length > 0) {
+								$('#overlay-link').overlay().close(); 
+								return true;
+							}
 						}
 					});
+					
+					// on déplace la liste des fichiers dans la barre d'outils
 					$('#attach-file-uploader').appendTo('#toolbar');	
 				}
+				createUploader(); 
 				
-				// in your app create uploader as soon as the DOM is ready
-				// don't wait for the window to load  
-				window.onload = createUploader; 
-				
-				$('#overlay-link .bouton_annuler').live('click', function() {
-					$('#overlay-link').overlay().close(); 
-					//attachoverlay.close();
-					//attachoverlay = NULL;
-					return false;
+				// On veut fermer l'overlay
+				$('#overlay-link a.close').click(function(event) {
+					if (confirm(\"Voulez-vous vraiment annuler les transferts non-insérés?\")) {
+						// TODO: supprimer les fichiers associés
+						return true;
+					} 
+					else {
+						event.preventDefault();
+						return false;
+					}
 				});
 				
+				// On annule l'insertion de fichier
+				$('#overlay-link .bouton_annuler').live('click', function() {
+					
+					// TODO: supprimer le fichier associé
+				
+					// on supprime l'element dans la liste
+					$(this).parents('li.qq-upload-success').slideUp(function() {
+						$(this).remove();
+						// on ferme l'overlay si c'est le dernier
+						if ($('.qq-upload-list li').length == 0) { 	
+							$('#overlay-link').overlay().close(); 
+						}
+					});
+
+					return false;
+					
+				});
+				
+				// on insère l'action attach bien paramétrée!
+				$('#overlay-link .bouton_sauver').live('click', function() {
+					
+					var nomfich = $(this).parents('li.qq-upload-success').find('.filename').val();
+					var description = $(this).parents('li.qq-upload-success').find('.attach_alt').val();
+					
+					var actionattach = '{{attach file=\"'+nomfich+'\" desc=\"'+description+'\"';
+					
+					var imagesize = $(this).parents('li.qq-upload-success').find('input[name=attach_imagesize]:checked').val();
+					if (typeof imagesize != 'undefined') {
+						actionattach += ' size=\"'+imagesize+'\"';
+					}
+					
+					var imagealign = $(this).parents('li.qq-upload-success').find('input[name=attach_align]:checked').val();
+					if (typeof imagealign != 'undefined') {
+						actionattach += ' class=\"'+imagealign;
+						if (typeof imagesize != 'undefined') {actionattach += ' '+imagesize;}
+						$(this).parents('li.qq-upload-success').find('input[name=\"attach_css_class\"]:checked').each(function() {actionattach += ' '+$(this).val();});
+						actionattach += '\"';
+					}
+					
+					var imagelink = $(this).parents('li.qq-upload-success').find('.attach_link').val();
+					if (typeof imagelink != 'undefined' && imagelink!=='') {
+						actionattach += ' link=\"'+imagelink+'\"';
+					}
+					
+					actionattach += '}}';
+					
+					// on ajoute le code de l'action attach au mode édition
+					wrapSelectionBis($('#body')[0], actionattach, \"\");
+					
+					// on supprime l'element dans la liste
+					$(this).parents('li.qq-upload-success').slideUp(function() {
+						$(this).remove();
+						// on ferme l'overlay si c'est le dernier	
+						if ($('.qq-upload-list li').length == 0) { 		
+							$('#overlay-link').overlay().close(); 
+						}
+					});
+					
+					return false;
+					
+				});
 			});     
 			</script>";
 		$plugin_output_new = str_replace('</body>', $js.'</body>', $plugin_output_new);
