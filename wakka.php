@@ -1046,7 +1046,7 @@ class Wiki
 			$class = 'Action' . ucfirst($name);
 			if (class_exists($class))
 			{
-				$actionObj = &new $class($this);
+				$actionObj = new $class($this);
 				if (!is_a($actionObj, 'WikiniAction'))
 				{
 					die("Action invalide '$name': classe incorrecte");
