@@ -11,7 +11,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 {
 	
 	// Edition 
-	if (isset($_POST["submit"]) && $_POST["submit"] != 'Sauver') {
+	if ($_POST["submit"] != 'Sauver') {
 		
 		require_once('tools/hashcash/secret/wp-hashcash.lib');
 

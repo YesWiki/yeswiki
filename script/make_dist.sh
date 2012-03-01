@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cur_stable=v0r9-anacoluthe
-
 # Ou OUT="$(mktemp)"²
 mkdir -p ~/tmp/distrib
 cd ~/tmp/distrib
