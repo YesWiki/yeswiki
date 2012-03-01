@@ -20,11 +20,10 @@ function createHiddenField(){
 }
 
 function addVerbage(){
-	var p = document.createElement('div');
-	p.className = "right";
+	var e = getElementsByClass('<?php echo HASHCASH_FORM_CLASS; ?>');
+	var p = document.createElement('p');
 	p.innerHTML = '<?php echo str_replace("'", "\'", hashcash_verbage()); ?>';
-	var e = document.getElementById('ACEditor');
-	e.appendChild(p);
+	e[0].appendChild(p);
 }
 
 function <?php echo $fn_enable_name;?>(){

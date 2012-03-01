@@ -1,0 +1,25 @@
+Wakka / Wikini Installation
+
+
+Not much to it (as long as it works, ahem). Unpack/upload the distribution files
+into a directory that can be accessed via the web. Then go to the corresponding URL.
+A web-based installer will walk you through the rest.
+
+Example:
+
+If your website, say, http://www.mysite.com, is mapped to the directory /home/jdoe/www/,
+and you place the Wakka distribution files into /home/jdoe/www/wakka/, you should go to
+http://www.mysite.com/wakka/.
+
+Note that Wakka distributions normally unpack into directories that include the version
+in their name; you'll probably want to rename those to just "wakka" -- or, if you're
+on a unixoid system, set up a symbolic link.
+
+IMPORTANT: for installing or upgrading Wakka, do NOT access any of the files contained
+in the setup/ subdirectory. They're used by the web-based installer/updater, but you
+should really just access the Wakka directory itself, and it will (or at least should)
+work perfectly.
+
+Detailed instructions are available at <http://www.wakkawiki.com/WakkaInstallation>.
+
+- Hendrik Mans <hendrik@mans.de>

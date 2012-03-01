@@ -47,6 +47,7 @@ class attach {
    var $file = '';					//nom du fichier
    var $desc = '';					//description du fichier
    var $link = '';					//url de lien (image sensible)
+   var $caption = '';				//texte de la vignette
    var $isPicture = 0;				//indique si c'est une image
    var $isAudio = 0;				//indique si c'est un fichier audio
    var $isFreeMindMindMap = 0;		//indique si c'est un fichier mindmap freemind
@@ -284,12 +285,14 @@ class attach {
         if (empty($this->desc)) $this->desc = $this->wiki->GetParameter("desc");
         $this->link = $this->wiki->GetParameter("attachlink");//url de lien - uniquement si c'est une image
         if (empty($this->link)) $this->link = $this->wiki->GetParameter("link");
+        $this->caption = $this->wiki->GetParameter("caption");//texte de la vignette
+        
         //test de validité des parametres
         if (empty($this->file)){
-            $this->attachErr = $this->wiki->Format("//action attach : paramètre **file** manquant//---");
+            $this->attachErr = '<div class="error_box">action attach : paramètre <strong>file</strong> manquant</div>';
         }
         if ($this->isPicture() && empty($this->desc)){
-            $this->attachErr .= $this->wiki->Format("//action attach : paramètre **desc** obligatoire pour une image//---");
+            $this->attachErr .= '<div class="error_box">action attach : paramètre <strong>desc</strong> obligatoire pour une image</div>';
         }
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
@@ -340,10 +343,16 @@ class attach {
         else {
             $img_name=$fullFilename;
         }
-
+        list($width, $height, $type, $attr) = getimagesize($img_name);
+        // pour l'image avec bordure on enleve la taille de la bordure!
+        if(strstr($this->classes, 'whiteborder')) {
+        	$width = $width - 20;
+        	$height = $height - 20;
+        }
+        
         //c'est une image : balise <IMG..../>
         $img =	"<img src=\"".$this->GetScriptPath().$img_name."\" ".
-            "alt=\"".$this->desc.($this->link?"\nLien vers: $this->link":"")."\" />";
+            "alt=\"".$this->desc.($this->link?"\nLien vers: $this->link":"")."\" width=\"".$width."\" height=\"".$height."\" />";
         //test si c'est une image sensible
         if(!empty($this->link)){
             //c'est une image sensible
@@ -354,7 +363,7 @@ class attach {
             }
             //calcule du lien
             $output = $this->wiki->Format('[['.$this->link." $this->file]]");
-            $output = eregi_replace(">$this->file<",">$img<",$output);//insertion du tag <img...> dans le lien
+            $output = preg_replace("/\>$this->file\</iU",">$img<",$output);//insertion du tag <img...> dans le lien
         }else{
             if ($image_redimensionnee) {
                 $output = '<a href="'.$this->GetScriptPath().$fullFilename.'">'.$img.'</a>';
@@ -363,7 +372,11 @@ class attach {
                 $output = $img;
             }
         }
-        $output = ($this->classes?"<span class=\"$this->classes\">$output</span>":$output);
+        if(!empty($this->caption)) {
+        	$output .= '<figcaption>'.$this->caption.'</figcaption>';
+        }
+        $output = "<figure class=\"$this->classes\">$output</figure>";
+        
         echo $output;
         $this->showUpdateLink();
     }

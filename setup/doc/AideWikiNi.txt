@@ -1,0 +1,5 @@
+=====Les pages d'aide sur [[http://www.wikini.net WikiNi]]=====
+
+	- ReglesDeFormatage : résumé des syntaxes ""WikNi"" permettant la mise en forme du texte.
+	- ListeDesActionsWikini : liste des actions disponible dans [[http://www.wikini.net WikiNi]].
+	- ControlerLAccesAuxPages : explique comment gérer les droits d'accès aux page de [[http://www.wikini.net WikiNi]].

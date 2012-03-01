@@ -1,30 +1,18 @@
-YesWiki is a distribution of Wikini, a PHP/MySQL wiki system with extensions making collaboration more simple.
+Wakka
 
-Please visit the official YesWiki homepage at <http://www/yeswiki.net>.
+A Wiki-esque website toolkit by Hendrik Mans.
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. The name of the author may not be used to endorse or promote products
-   derived from this software without specific prior written permission.
+Not much to read here. For some quick installation instructions, please
+check out INSTALL.
 
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Most of the Wakka documentation is available online only. Please visit
+the official Wakka homepage at <http://www.wakkawiki.com>. You'll
+find everything else there.
 
-Wikini, a fork of Wakka, a Wiki-esque website toolkit by Hendrik Mans.
+- Hendrik Mans <hendrik@mans.de>, 2002-09-04
+
+
+Wikini, a fork of Wakka.
 
 The original code and derived work is under modified BSD license (see header).
 New code is either under modified BSD licence or GPL license (see header of each program).

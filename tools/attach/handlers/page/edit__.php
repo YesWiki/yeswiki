@@ -58,6 +58,18 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 							$.ajaxSetup( {
 								cache : false
 							});
+							
+							$('a.show_advanced').live('click',function() {
+								if ($(this).hasClass('current')) {
+									$(this).removeClass('current');
+									$(this).find('.arrow').html('&#9658;');
+									$(this).parent().next(\"div.advanced\").hide();
+								} else { 
+									$(this).addClass('current');
+									$(this).find('.arrow').html('&#9660;');
+									$(this).parent().next(\"div.advanced\").show();
+								}
+							});
 
 						    var lastfileuploaded = $('.qq-upload-list li.qq-upload-success .qq-upload-file:contains('+fileName+')');
 							lastfileuploaded.parent('.qq-upload-success').append('<div class=\"overlay-form\"></div>');
@@ -163,6 +175,11 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 					var imagelink = $(this).parents('li.qq-upload-success').find('.attach_link').val();
 					if (typeof imagelink != 'undefined' && imagelink!=='') {
 						actionattach += ' link=\"'+imagelink+'\"';
+					}
+					
+					var imagecaption = $(this).parents('li.qq-upload-success').find('.attach_caption').val();
+					if (typeof imagecaption != 'undefined' && imagecaption!=='') {
+						actionattach += ' caption=\"'+imagecaption+'\"';
 					}
 					
 					actionattach += '}}';

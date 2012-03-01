@@ -78,10 +78,7 @@
     margin: 0 20px 0 0;
     text-align: left;
 }
-.label-image-align-none {
-	background: url(../images/align-none.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
+
 .label-image-align-left {
 	background: url(../images/align-left.png) no-repeat scroll left center transparent;
 	padding:0 0 0 23px;
@@ -101,60 +98,22 @@
 
 /**************************Les classes effets graphiques pour les images**************************************************************************/
 
-.attached_file {    
+.attached_file {
+cursor: pointer;
+text-decoration: none;
+text-align:center;
+position:relative;
+}
+
+.whiteborder {
 -webkit-box-sizing: border-box;
 -moz-box-sizing: border-box;
 -o-box-sizing: border-box;
 -ms-box-sizing: border-box;
 box-sizing: border-box;
-cursor: pointer;
-text-decoration: none;
--moz-transition: all 0.3s ease-out; 
--o-transition: all 0.3s ease-out; 
--webkit-transition: all 0.3s ease-out; 
--ms-transition: all 0.3s ease-out; 
-transition: all 0.3s ease-out;
-text-align:center;
-position:relative;
+border: 10px solid #FFFFFF;
+background:#FFF;
 }
-
-.small {
-width:140px;
- -webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
--o-box-sizing: border-box;
--ms-box-sizing: border-box;
-box-sizing: border-box;
-}
-.medium {
-width:300px;
- -webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
--o-box-sizing: border-box;
--ms-box-sizing: border-box;
-box-sizing: border-box;
-}
-.big {
-width:780px;
- -webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
--o-box-sizing: border-box;
--ms-box-sizing: border-box;
-box-sizing: border-box;
-}
-
- .whiteborder {
- background:#FFF;
- }
- .whiteborder img {
-  -webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
--o-box-sizing: border-box;
--ms-box-sizing: border-box;
-box-sizing: border-box;
- border: 10px solid #FFFFFF;
- background:#FFF;
- }
  
  .lightshadow {
  -webkit-box-shadow: 1px 1px 2px #444;
@@ -162,6 +121,13 @@ box-sizing: border-box;
  box-shadow: 1px 1px 2px #444;
  } 
  
+.attached_file.zoom {
+-moz-transition: -moz-transform .2s ease-out;
+-o-transition: -o-transform .2s ease-out;
+-webkit-transition: -webkit-transform .2s ease-out;
+-ms-transition: -ms-transform .2s ease-out;
+transition: transform .2s ease-out;
+}
  .attached_file.zoom:hover {
 transform: scale(1.15);
 -ms-transform: scale(1.15); /* IE 9 */
@@ -173,3 +139,52 @@ z-index: 5;
 -moz-box-shadow: 2px 2px 15px 0px #444;
 box-shadow: 2px 2px 15px 0px #444;
  }
+ 
+ /* Style the figures */
+
+figure {
+  position: relative;
+  display: block;
+}
+
+/* Style the figure captions, hiding them by default */
+
+figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display:block;
+  width:100%;
+  font-size: .9em;
+  text-shadow:none;
+  color: #fff;
+  background-color: rgba(0,0,0,.75);
+  opacity: 0;
+  filter: alpha(opacity=0);
+ -webkit-transition: opacity .2s ease-in-out;
+  -moz-transition: opacity .2s ease-in-out;
+  -o-transition: opacity .2s ease-in-out;
+  transition: opacity .2s ease-in-out;
+  padding:5px 0;
+}
+
+/* Display the captions on hover */
+
+figure:hover figcaption {
+  opacity: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#aa000000,endColorstr=#aa000000);
+}
+
+/* Add padding and margin to the caption contents */
+
+figcaption * {
+  padding: 0 10px;
+  margin: 0;
+}
+
+figcaption *:first-child {
+  padding-top: 5px;
+}
+figcaption *:last-child {
+  padding-bottom: 5px;
+}

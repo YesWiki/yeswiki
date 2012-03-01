@@ -1,0 +1,60 @@
+body { background-color: #F5F5F5; color: black; }
+
+body, p, td, li, input, select, textarea { font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif; font-size: 13px; line-height: 1.3; }
+h1, h2, h3, h4, h5 { margin: 0px; padding: 0px; }
+a { color: #993333; }
+ul { margin-top: 0px; margin-bottom: 0px; padding-top: 0px; padding-bottom: 0px; }
+ol { margin-top: 0px; margin-bottom: 0px; padding-top: 0px; padding-bottom: 0px; }
+form { margin: 0px; padding: 0px; }
+tt { color: Navy; }
+hr { border: 0px; color: Black; /* Internet Explorer */ background-color: Black; height: 1px; }
+
+
+.wiki_name { float: left; margin: 0px 15px 0px 10px; font-size: 150%; }
+.page_name { font-size: 150%; }
+
+.error { color: #CC3333; font-weight: bold; }
+.indent { margin-left: 40px; }
+.additions { color: #008800; }
+.deletions { color: #880000; }
+.add { font-weight: bold; color: #c00; text-decoration: underline; }
+.del { font-style: italic; color: #c00; text-decoration: line-through; }
+.header { padding: 10px; padding-top: 0px; }
+.page { background-color: #FFFFFF; padding: 10px; border: 1px inset; border-bottom: none; }
+.page_preview { background-color: #FFFFBF; padding: 10px; border: 1px inset; border-bottom: none; }
+.prev_alert { background-color: red; color: white; font-size: 1.7em; font-weight: bold; margin-bottom: 5px; }
+.edit { width: 100%; height: 400px; }
+.footer { background-color: #DDDDDD; padding: 5px 10px; border: 1px inset; border-top: none; border-top: 1px solid #CCCCCC }
+.code { background: #FFFFFF; border: solid #888888 2px; font-family: 'Courier New', Courier; width: 100%; height: 400px; overflow: scroll; padding: 3px; }
+.revisioninfo { color: #AAAAAA; padding-bottom: 20px; }
+
+.commentsheader { background-color: #DDDDDD; padding: 2px 10px; border-left: 1px inset; border-right: 1px inset; border-top: 1px solid #CCCCCC }
+.comment { background-color: #EEEEEE; padding: 10px; border-left: 1px inset; border-right: 1px inset; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #EEEEEE; }
+.commentinfo { color: #AAAAAA; }
+.commentform { background-color: #EEEEEE; padding: 10px; border-left: 1px inset; border-right: 1px inset; border-top: 1px solid #CCCCCC }
+.commenteditlink { float: right; margin: 2px; }
+
+.copyright { font-size: 11px; color: #AAAAAA; text-align: right; }
+.copyright A { color: #AAAAAA; }
+.searchbox { background: #FFFFF8; border: 0px; border-bottom: 1px solid #CCCCAA; padding: 0px; margin: 0px; }
+.debug { font-size: 11px; color: #888888; }
+
+.hr_clear { clear: both; visibility: hidden; }
+.include_right { float: right; width: 17%; } /* bloc flotant à droite */
+.include_left { float: left; width: 17%; } /* bloc flotant à gauche */
+.include_solid_border { border: solid; padding: 2px; } /* encadré noir */
+.include_gray_background { background-color: #DDDDDD; } /* fond gris */
+.include_small_fonts { font-size: 0.8em; } /* petites polices */
+.include_big_fonts { font-size: 1.2em; } /* grandes polices */
+.include_height10em { height: 10em; overflow: scroll; } /* boite de 10em de hauteur, avec ascenseur */
+.include_height15em { height: 15em; overflow: scroll; }
+.include_height30em { height: 30em; overflow: scroll; }
+.include_height60em { height: 60em; overflow: scroll; }
+.include_editlink { float: right; } /* bloc flotant à droite */
+.include_editlink { display:none; } /* Inhibe l'affichage du bloc "include_editlink" */
+/*.include_editlink { _display: bloc; }*/ /* Option de compatibilité facultative pour certains navigateurs obsolètes */
+.include:hover .include_editlink { display: block; } /* Au passage de la souris sur le bloc "include", affiche le bloc "include_editlink" */
+
+.trail_table { line-height: 30px;}
+.trail_button { color: #993333; }
+

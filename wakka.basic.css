@@ -1,0 +1,35 @@
+body { background-color: #F5F5F5; color: black; font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif; }
+
+a { color: #993333; }
+
+body, p, td, li, input, select, textarea { font-family: 'Lucida Grande', Verdana, Geneva, Lucida, Arial, Helvetica, sans-serif; font-size: 13px; }
+h1, h2, h3, h4, h5 { margin: 0px; padding: 0px; }
+ul { margin-top: 0px; padding-top: 0px; padding-bottom: 0px; }
+ol { margin-top: 0px; padding-top: 0px; padding-bottom: 0px; }
+form { margin: 0px; padding: 0px; }
+tt { color: Navy; }
+
+
+.error { color: #CC3333; font-weight: bold; }
+.indent { margin-left: 40px; }
+.additions { color: #008800; }
+.deletions { color: #880000; }
+.add { font-weight: bold; color: #c00; text-decoration: underline; }
+.del { font-style: italic; color: #c00; text-decoration: line-through; }
+.header { padding: 10px; padding-top: 0px; }
+.page { background-color: #FFFFFF; padding: 10px; border: 1px inset; }
+.prev_alert { background-color: red; color: white; font-size: 1.7em; font-weight: bold; margin-bottom: 5px; }
+.edit { width: 100%; height: 400px; }
+.footer { background-color: #DDDDDD; padding: 5px; border: 1px inset }
+.code { background: #FFFFFF; border: solid #888888 2px; font-family: 'Courier New', Courier; color: black; font-size: 10pt; width: 100%; overflow: scroll; padding: 3px; }
+.revisioninfo { color: #AAAAAA; padding-bottom: 20px; }
+
+.commentsheader { background-color: #DDDDDD; padding: 2px 10px; }
+.comment { background-color: #EEEEEE; padding: 10px; }
+.commentinfo { color: #AAAAAA; }
+.commentform { background-color: #EEEEEE; padding: 10px; }
+
+.copyright { font-size: 11px; color: #AAAAAA; text-align: right; }
+.copyright A { color: #AAAAAA; }
+.searchbox { background: #FFFFF8; border: 0px; padding: 0px; margin: 0px; }
+.debug { font-size: 11px; color: #888888; }

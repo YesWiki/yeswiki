@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wksyndication" version="0.1" active="1">
-  <author>Florian</author>
-  <label>syndication_rss</label>
-  <desc>Action syndication pour afficher le contenu d'un flux rss</desc>
-</plugin>

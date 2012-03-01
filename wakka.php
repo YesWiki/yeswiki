@@ -40,7 +40,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	to look as small as what it does. Basically. Oh, I just suck. :)
  */
 
-error_reporting(E_ALL & ~E_DEPRECATED);
+
 
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define("WAKKA_VERSION", "0.1.1");
@@ -1046,7 +1046,7 @@ class Wiki
 			$class = 'Action' . ucfirst($name);
 			if (class_exists($class))
 			{
-				$actionObj = &new $class($this);
+				$actionObj = new $class($this);
 				if (!is_a($actionObj, 'WikiniAction'))
 				{
 					die("Action invalide '$name': classe incorrecte");
@@ -1598,7 +1598,13 @@ function magicQuotesSuck(&$a)
 		}
 	}
 }
-
+error_reporting(E_ALL & ~E_DEPRECATED);set_magic_quotes_runtime(0);
+if (get_magic_quotes_gpc())
+{
+	magicQuotesSuck($_POST);
+	magicQuotesSuck($_GET);
+	magicQuotesSuck($_COOKIE);
+}
 
 
 // default configuration values
