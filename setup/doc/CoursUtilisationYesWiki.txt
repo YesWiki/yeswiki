@@ -1,0 +1,195 @@
+======Cours sur l'utilisation de YesWiki======
+====Le principe "Wiki"====
+Wiki Wiki signifie rapide, en Hawaïen. 
+==N'importe qui peut modifier la page==
+[[http://the.honoluluadvertiser.com/dailypix/2002/Aug/19/ln07a_b.jpg le bus wiki wiki]]
+
+**Les Wiki sont des dispositifs permettant la modification de pages Web de façon simple, rapide et interactive.**
+YesWiki fait partie de la famille des wiki. Il a la particularité d'être très facile à installer.
+
+=====Mettre du contenu=====
+====Écrire ou coller du texte====
+ - Dans chaque page du site, un double clic sur la page ou un clic sur le lien "Éditer cette page" en bas de page permet de passer en mode "Édition".
+ - On peut alors écrire ou coller du texte
+ - On peut voir un aperçu des modifications ou sauver directement la page modifiée en cliquant sur les boutons en bas de page.
+
+====Écrire un commentaire (optionnel)====
+Si la configuration de la page permet d'ajouter des commentaires, on peut cliquer sur : Afficher commentaires/formulaire en bas de chaque page.
+Un formulaire apparaitra et vous permettra de rajouter votre commentaire.
+
+
+=====Mise en forme : Titres et traits=====
+--> Voir la page ReglesDeFormatage
+
+====Faire un titre====
+======Très gros titre====== 
+s'écrit en syntaxe wiki : ""======Très gros titre======""
+
+
+==Petit titre== 
+s'écrit en syntaxe wiki : ""==Petit titre=="" 
+
+
+//On peut mettre entre 2 et 6 = de chaque coté du titre pour qu'il soit plus petit ou plus grand//
+
+====Faire un trait de séparation====
+Pour faire apparaitre un trait de séparation
+----
+s'écrit en syntaxe wiki : ""----""
+
+=====Mise en forme : formatage texte=====
+====Mettre le texte en gras====
+**texte en gras**
+s'écrit en syntaxe wiki : ""**texte en gras**"" 
+
+====Mettre le texte en italique====
+//texte en italique//
+s'écrit en syntaxe wiki : ""//texte en italique//""
+
+====Mettre le texte en souligné====
+__texte en souligné__
+s'écrit en syntaxe wiki : ""__texte en souligné__""
+
+=====Mise en forme : listes=====
+====Faire une liste à puce====
+ - point 1
+ - point 2
+
+s'écrit en syntaxe wiki : 
+"" - point 1""
+"" - point 2""
+
+Attention : de bien mettre un espace devant le tiret pour que l'élément soit reconnu comme liste
+
+
+====Faire une liste numérotée====
+ 1) point 1
+ 2) point 2
+
+s'écrit en syntaxe wiki : 
+"" 1) point 1""
+"" 2) point 2""
+
+=====Les liens : le concept des ""ChatMots""=====
+====Créer une page YesWiki : ====
+La caractéristique qui permet de reconnaitre un lien dans un wiki : son nom avec un mot contenant au moins deux majuscules non consécutives (un ""ChatMot"", un mot avec deux bosses). 
+
+==== Lien interne====
+ - On écrit le ""ChatMot"" de la page YesWiki vers laquelle on veut pointer.
+  - Si la page existe, un lien est automatiquement créé
+  - Si la page n'existe pas, apparait un lien avec crayon. En cliquant dessus on arrive vers la nouvelle page en mode "Édition".
+
+=====Les liens : personnaliser le texte=====
+====Personnaliser le texte du lien internet====
+entre double crochets : ""[[AccueiL aller à la page d'accueil]]"", apparaitra ainsi : [[AccueiL aller à la page d'accueil]].
+
+====Liens vers d'autres sites Internet====
+entre double crochets : ""[[http://outils-reseaux.org aller sur le site d'Outils-Réseaux]]"", apparaitra ainsi : [[http://outils-reseaux.org aller sur le site d'Outils-Réseaux]].
+
+
+=====Télécharger une image, un document=====
+====On dispose d'un lien vers l'image ou le fichier====
+entre double crochets :
+ - ""[[http://mondomaine.ext/image.jpg texte de remplacement de l'image]]"" pour les images.
+ - ""[[http://mondomaine.ext/document.pdf texte du lien vers le téléchargement]]"" pour les documents.
+
+====L'action "attach"====
+En cliquant sur le pictogramme représentant une image dans la barre d'édition, on voit apparaître la ligne de code suivante :
+""{{attach file=" " desc=" " class="left" }} ""
+
+Entre les premières guillemets, on indique le nom du document (ne pas oublier son extension (.jpg, .pdf, .zip).
+Entre les secondes, on donne quelques éléments de description qui deviendront le texte du lien vers le document
+Les troisièmes guillemets, permettent, pour les images, de positionner l'image à gauche (left), ou à droite (right) ou au centre (center)
+""{{attach file="nom-document.doc" desc="mon document" class="left" }} ""
+
+Quand on sauve la page, un lien en point d'interrogation apparait. En cliquant dessus, on arrive sur une page avec un système pour aller chercher le document sur sa machine (bouton "parcourir"), le sélectionner et le télécharger.
+
+=====Intégrer du html=====
+Si on veut faire une mise en page plus compliquée, ou intégrer un widget, il faut écrire en html. Pour cela, il faut mettre notre code html entre double guillemets.
+Par exemple : ""<textarea style="width:100%;">&quot;&quot;<span style="color:#0000EE;">texte coloré</span>&quot;&quot;</textarea>""
+donnera :
+""<span style="color:#0000EE;">texte coloré</span>""
+
+
+=====Les pages spéciales=====
+ - PageHeader
+ - PageFooter
+ - PageMenuHaut
+ - PageMenu
+ - PageRapideHaut
+
+ - PagesOrphelines
+ - TableauDeBordDeCeWiki
+ 
+
+=====Les actions disponibles=====
+Voir la page spéciale : ListeDesActionsWikini
+
+**les actions à ajouter dans la barre d'adresse:**
+rajouter dans la barre d'adresse :
+/edit : pour passer en mode Edition
+/slide_show : pour transformer la texte en diaporama
+
+===La barre du bas de page permet d'effectuer diverses action sur la page===
+ - voir l'historique
+ - partager sur les réseaux sociaux
+...
+
+=====Suivre la vie du site=====
+ - Dans chaque page, en cliquant sur la date en bas de page on accède à **l'historique** et on peut comparer les différentes versions de la page.
+
+ - **Le TableauDeBordDeCeWiki : ** pointe vers toutes les pages utiles à l'analyse et à l'animation du site.
+
+ - **La page DerniersChangements** permet de visualiser les modifications qui ont été apportées sur l'ensemble du site, et voir les versions antérieures. Pour l'avoir en flux RSS DerniersChangementsRSS
+
+ - **Les lecteurs de flux RSS** :  offrent une façon simple, de produire et lire, de façon standardisée (via des fichiers XML), des fils d'actualité sur internet. On récupère les dernières informations publiées. On peut ainsi s'abonner à différents fils pour mener une veille technologique par exemple.
+[[http://www.wikini.net/wakka.php?wiki=LecteursDeFilsRSS Différents lecteurs de flux RSS]]
+
+
+
+=====L'identification=====
+====Première identification = création d'un compte YesWiki====
+    - aller sur la page spéciale ParametresUtilisateur, 
+    - choisir un nom YesWiki qui comprend 2 majuscules. //Exemple// : JamesBond
+    - choisir un mot de passe et donner un mail
+    - cliquer sur s'inscrire
+
+====Identifications suivantes====
+    - aller sur ParametresUtilisateur, 
+    - remplir le formulaire avec son nom YesWiki et son mot de passe
+    - cliquer sur "connexion"
+
+
+
+=====Gérer les droits d'accès aux pages=====
+ - **Chaque page possède trois niveaux de contrôle d'accès :**
+     - lecture de la page
+     - écriture/modification de la page
+     - commentaire de la page
+
+ - **Les contrôles d'accès ne peuvent être modifiés que par le propriétaire de la page**
+On est propriétaire des pages que l'ont créent en étant identifié. Pour devenir "propriétaire" d'une page, il faut cliquer sur Appropriation. 
+
+ - Le propriétaire d'une page voit apparaître, dans la page dont il est propriétaire, l'option "**Éditer permissions**" : cette option lui permet de **modifier les contrôles d'accès**.
+Ces contrôles sont matérialisés par des colonnes où le propriétaire va ajouter ou supprimer des informations.
+Le propriétaire peut compléter ces colonnes par les informations suivantes, séparées par des espaces :
+     - le nom d'un ou plusieurs utilisateurs : par exemple ""JamesBond"" 
+     - le caractère ***** désignant tous les utilisateurs
+     - le caractère **+** désignant les utilisateurs enregistrés
+     - le caractère **!** signifiant la négation : par exemple !""JamesBond"" signifie que ""JamesBond"" **ne doit pas** avoir accès à cette page
+
+ - **Droits d'accès par défaut** : pour toute nouvelle page créée, YesWiki applique des droits d'accès par défaut : sur ce YesWiki, les droits en lecture et écriture sont ouverts à tout internaute.
+
+=====Supprimer une page=====
+
+ - **2 conditions :**
+    - **on doit être propriétaire** de la page et **identifié** (voir plus haut),
+    - **la page doit être "orpheline"**, c'est-à-dire qu'aucune page ne pointe vers elle (pas de lien vers cette page sur le YesWiki), on peut voir toutes les pages orphelines en visitant la page : PagesOrphelines
+
+ - **On peut alors cliquer sur l''option "Supprimer"** en bas de page.
+
+
+
+=====Changer le look et la disposition=====
+En mode édition, si on est propriétaire de la page, ou que les droits sont ouverts, on peut changer la structure et la présentation du site, en jouant avec les listes déroulantes en bas de page : Thème, Squelette, Style.
+
