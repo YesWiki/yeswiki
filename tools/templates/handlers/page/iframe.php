@@ -28,12 +28,13 @@ if ($this->HasAccess("read"))
 		//javascript pour gerer les liens (ouvrir vers l'extérieur) dans les iframes
 		$scripts_iframe = '<script type="text/javascript">
 		$(document).ready(function () {
+			$("html").css({\'overflow-y\': \'auto\'});
 			$("body").css({
 							\'background-color\' : \'transparent\',
 							\'background-image\' : \'none\',
 							\'text-align\' : \'left\',
 							\'width\' : \'auto\',
-							\'min-width\' : \'auto\',
+							\'min-width\' : \'0\',
 						});
 			
 			$("a[href^=\'http://\']:not(a[href$=\'/slide_show\'])").click(function() {

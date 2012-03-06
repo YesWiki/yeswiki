@@ -4,6 +4,7 @@ Ce tableau de bord regroupe toutes les pages utiles à l'analyse et à l'animation
   - IndexDesPages, IndexDesPagesBis 
   - PagesOrphelines
   - PagesACreer
+  - ParametresUtilisateur
 
 ----
 ==== 8 derniers comptes utilisateurs ====

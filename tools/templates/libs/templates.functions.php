@@ -149,7 +149,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 							$slide = $split[2];
 						}
 						$html_slide = '' ;
-						if ($titles[$i] != "") { 
+						if (isset($titles[$i]) && $titles[$i] != "") { 
 							$html_slide .= "<div class=\"slide-header\">".$titles[$i]."</div>\n" ;
 							$titles[$i] = strip_tags($titles[$i]) ;
 						}
