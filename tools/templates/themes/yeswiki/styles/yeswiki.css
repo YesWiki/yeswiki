@@ -79,6 +79,7 @@ margin:-5px -20px;
 color:#444;
 font-weight:bold;
 text-decoration:none;
+display:block;
 }
 
 #topnav > div > ul > li { border-left:1px solid #999; border-right:1px solid #CCCCCC; }
