@@ -1,0 +1,11 @@
+<div class="formulaire_microblog">
+	<?=$rss;?>
+	<label class="formulaire">Texte (<span class="info_nb_car_max"><?=$nb;?></span><span class="info_nb_car"><?=$nb;?></span> caract&egrave;res restants)</label>
+	<textarea rows="4" cols="20" class="formulaire microblog_billet" name="microblog_billet"><?=$billet;?></textarea>
+	<label class="formulaire">Mots cl&eacute;s</label>
+	<div class="form_tags"><input type="text" name="microblog_tags" value="" class="formulaire microblog_toustags" /></div>
+	<div class="groupebouton">
+		<input type="button" value="Annuler" class="bouton_annuler btn" />
+		<input type="submit" value="Enregistrer" class="bouton_sauver btn" />		
+	</div>
+</div>
