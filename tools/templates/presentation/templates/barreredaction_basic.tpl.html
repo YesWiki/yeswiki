@@ -1,0 +1,10 @@
+<div class="<?=$class;?>">
+<?php if (isset($linkedit)) : ?><a title="<?=TEMPLATE_CLICK_TO_EDIT;?>" href="<?=$linkedit;?>" class="link-edit"><?=TEMPLATE_EDIT_THIS_PAGE;?></a> :: <?php endif; ?>
+<?php if (isset($linkdeletepage)) : ?><a href="<?=$linkdeletepage;?>" class="link-deletepage"><?=TEMPLATE_DELETE;?></a> :: <?php endif; ?>
+<?php if (isset($time)) : ?><?=TEMPLATE_LAST_UPDATE;?> : <a title="<?=TEMPLATE_CLICK_TO_SEE_REVISIONS;?>" href="<?=$linkrevisions;?>" class="link-revisions" rel="#overlay-link"><?=$time;?></a> :: <?php endif; ?>
+<?php if (isset($owner)) : ?><?=$owner;?> :: <?php endif; ?>
+<?php if (isset($linkacls)) : ?><a rel="#overlay-link" class="link-acls" href="<?=$linkacls;?>" title="<?=TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS;?>"><?=TEMPLATE_PERMISSIONS;?></a> :: <?php endif; ?> 
+<a title="<?=TEMPLATE_CLICK_TO_SEE_REFERENCES;?>" href="<?=$linkreferrers;?>" class="link-referrers" rel="#overlay-link"><?=TEMPLATE_REFERENCES;?></a> :: 
+<a title="<?=TEMPLATE_SLIDESHOW_MODE;?>" href="<?=$linkdiaporama;?>" class="link-diaporama"><?=TEMPLATE_SLIDESHOW;?></a> :: 
+<a title="<?=TEMPLATE_SEE_SHARING_OPTIONS;?>" href="<?=$linkshare;?>" class="link-share" rel="#overlay-link"><?=TEMPLATE_SHARE;?></a>
+</div>

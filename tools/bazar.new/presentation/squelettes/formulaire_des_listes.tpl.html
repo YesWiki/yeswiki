@@ -1,0 +1,16 @@
+<form action="<?=$url_formulaire;?>" method="post" id="bazarform">
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Nom de la liste</label>
+		<input class="input_texte" name="titre_liste" type="text" value="<?=(isset($titre_liste) ? $titre_liste : '');?>" required="required" />
+	</div>
+
+	<?=$valeurs_listes;?>
+
+	<div class="groupebouton">
+		<a class="btn bouton_annuler" name="annuler" href="<?=$url_annuler;?>">Annuler</a>
+		<input class="btn bouton_sauver" name="valider" value="Valider" type="submit" />
+	</div>
+
+	<div class="symbole_obligatoire">* champs requis</div>
+	<input name="NomWiki" type="hidden" value="<?=$NomWiki;?>" />
+</form>

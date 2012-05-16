@@ -1,0 +1,47 @@
+<form class="overlay_attach_form image_dialog">
+<input type="hidden" value="" name="filename" class="filename" />
+
+<label class="label_text">Alignement de l'image</label>
+<input type="radio" checked="checked" value="left" name="attach_align" class="input_radio image-align-left">
+<label class="label_radio label-image-align-left" for="image-align-left">Gauche</label>
+<input type="radio" value="center" name="attach_align" class="input_radio image-align-center">
+<label class="label_radio label-image-align-center" for="image-align-center">Centre</label>
+<input type="radio" value="right" name="attach_align" class="input_radio image-align-right">
+<label class="label_radio label-image-align-right" for="image-align-right">Droite</label><br />
+
+<label class="label_text">Taille de l'image</label>
+<input type="radio" value="small" name="attach_imagesize" class="input_radio image-size-small">
+<label class="label_radio label-image-size" for="image-size-small">Miniature&nbsp;(140x97)</label>
+<input type="radio" checked="checked" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
+<label class="label_radio label-image-size" for="image-size-medium">Moyenne&nbsp;(300x209)</label><br />
+<label class="label_text_vide">&nbsp;</label>
+<input type="radio" value="big" name="attach_imagesize" class="input_radio image-size-big">
+<label class="label_radio label-image-size" for="image-size-big">Large&nbsp;(780x544)</label>
+<input type="radio" value="original" name="attach_imagesize" class="input_radio image-size-original">
+<label class="label_radio label-image-size" for="image-size-original">Taille originale</label><br />
+
+<label class="label_text" for="attach_caption">Texte de la vignette</label>
+<input type="text" value="" name="attach_caption" class="input_text attach_caption" /><br />
+
+<label class="label_text"><a href="#" class="show_advanced" title="Voir les param&egrave;tres avanc&eacute;s"><span class="arrow">&#9658;</span>&nbsp;&nbsp;Param&egrave;tres avanc&eacute;s</a></label>
+
+<div class="advanced" style="display:none;">
+
+	<label class="label_text" for="attach_link">Lien associ&eacute;</label>
+	<input type="text" value="" name="attach_link" class="input_text attach_link"><br />
+	
+	<label class="label_text">Effets graphiques</label>
+	<input type="checkbox" name="attach_css_class" value="whiteborder" /><label>Bord blanc</label>
+	<input type="checkbox" name="attach_css_class" value="lightshadow" /><label>Ombre port&eacute;e</label>
+	<input type="checkbox" name="attach_css_class" value="zoom" /><label>Agrandissement au survol</label>
+
+	<label class="label_text" for="attach_alt" title="Ce texte sera affich&eacute; &agrave; la place de l'image si elle est introuvable sur le serveur">Texte de remplacement</label>
+	<input type="text" value="" name="attach_alt" class="input_text attach_alt" /><br />
+
+</div>
+
+<div class="groupebouton">
+	<button type="button" name="insert" class="btn bouton_sauver">Ins&eacute;rer</button>&nbsp;
+	<button type="button" name="annuler" class="btn bouton_annuler">Annuler</button>
+</div>
+</form>
