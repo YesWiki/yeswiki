@@ -99,7 +99,7 @@
 	listesderoulables.find(".arrow:first").html("&#9660;");
 	
 	//on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
-	$(".accordion, .slide_show").bind('dblclick', function(e) {
+	$(".accordion, .slide_show, form").bind('dblclick', function(e) {
 		return false;
 	});
 	

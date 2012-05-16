@@ -205,7 +205,7 @@ margin:10px 0 10px 20px;
 padding:0;
 list-style-type:disc;
 }
-/*
+
 .slide {
 float:left;
 height:498px;
@@ -348,7 +348,7 @@ padding:5px;
 color:#000;
 background:#CCC;
 border: 1px solid #808080;
-}*/
+}
 
 /*LISTE DEROULANTES des colonnes menu*/
 .liste-deroulante a, .liste-deroulante a:active, .liste-deroulante a:visited {

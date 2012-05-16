@@ -143,7 +143,7 @@ $wikiClassesContent [] = '
 
 
 // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
-if (isset($wakkaConfig['hide_action_template'])) {
+if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_template']=='1' ) {
 	if (!isset($wakkaConfig['favorite_theme'])) $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
 	if (!isset($wakkaConfig['favorite_style'])) $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
 	if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT; 
@@ -153,17 +153,21 @@ if (isset($wakkaConfig['hide_action_template'])) {
 else {
 	if (isset($_REQUEST['theme']) && (is_dir('themes/'.$_REQUEST['theme']) || is_dir('tools/templates/themes/'.$_REQUEST['theme'])) &&
 		isset($_REQUEST['style']) && (is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
-		isset($_REQUEST['squelette']) && (is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette'])) &&
-		isset($_REQUEST['bgimg']) && (is_file('themes/'.$_REQUEST['theme'].'/images/backgrounds/'.$_REQUEST['bgimg']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/images/bakgrounds/'.$_REQUEST['bgimg']))
+		isset($_REQUEST['squelette']) && (is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette'])) 
 		) {
 		$wakkaConfig['favorite_theme'] = $_REQUEST['theme'];
 		$wakkaConfig['favorite_style'] = $_REQUEST['style'];
 		$wakkaConfig['favorite_squelette'] = $_REQUEST['squelette'];
-		$wakkaConfig['favorite_background_image'] = $_REQUEST['bgimg'];
+
+		if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']) )) {
+			$wakkaConfig['favorite_background_image'] = $_REQUEST['bgimg'];
+		} else {
+			$wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT; 
+		}
 
 	}
 	else {
-		//on récupère le contenu de la page, et les metas
+		//on récupère les metas
 		$contenu = $wiki->LoadPage($page);
 		$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
 		if (!empty($metadatas)) {
@@ -171,29 +175,33 @@ else {
 		}
 
 		// si les metas sont présentes on les utilise
-		if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette'])) {
+		if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette']) && isset($metadatas['bgimg'])) {
 			$wakkaConfig['favorite_theme'] = $metadatas['theme'];
 			$wakkaConfig['favorite_style'] = $metadatas['style'];
 			$wakkaConfig['favorite_squelette'] = $metadatas['squelette'];
-			$wakkaConfig['favorite_background_image'] =  (isset($metadatas['bgimg']) ? $metadatas['bgimg'] : '');
+			$wakkaConfig['favorite_background_image'] = $metadatas['bgimg'];
 		}
 		//on récupére les valeurs du template associées à la page de l'ancienne version de templates
-		elseif ($act=preg_match_all ("/".'(\\{\\{template)'.'(.*?)'.'(\\}\\})'."/is", $contenu["body"], $matches)) {
-		     $i = 0; $j = 0;
-		     foreach($matches as $valeur) {
-		        foreach($valeur as $val) {  	
-			        if (isset($matches[2][$j]) && $matches[2][$j]!='') {
-			            $action= $matches[2][$j];
-			            if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $action, $params)) {
-			            	for ($a = 0; $a < count($params[1]); $a++) {
-								$vars[$params[1][$a]] = $params[2][$a];
+		else {
+			//on récupère le contenu de la page
+			$contenu = $wiki->LoadPage($page);
+			if ($act=preg_match_all ("/".'(\\{\\{template)'.'(.*?)'.'(\\}\\})'."/is", $contenu["body"], $matches)) {
+				$i = 0; $j = 0;
+				foreach($matches as $valeur) {
+					foreach($valeur as $val) {  	
+					    if (isset($matches[2][$j]) && $matches[2][$j]!='') {
+					        $action= $matches[2][$j];
+					        if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $action, $params)) {
+					        	for ($a = 0; $a < count($params[1]); $a++) {
+									$vars[$params[1][$a]] = $params[2][$a];
+								}
 							}
-						}
-			        }
-			        $j++;
-		       }
-		       $i++;
-		    }
+					    }
+					    $j++;
+					}
+				$i++;
+				}
+			}
 		}
 		// des valeurs ont été trouvées, on les utilise
 		if ((isset($vars["theme"]) && $vars["theme"]!="") && (isset($vars["style"]) && $vars["style"]!="") && (isset($vars["squelette"]) && $vars["squelette"]!="") ) {
@@ -210,6 +218,7 @@ else {
 		}
 	}
 }
+
 
 //=======Test existence du template, on utilise le template par defaut sinon=======================================================
 if (

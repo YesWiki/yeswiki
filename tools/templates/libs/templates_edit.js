@@ -33,15 +33,25 @@ $("#graphical_options a.button_cancel").on("click", function() {
 		newstyle = newstyle.substring(0, newstyle.lastIndexOf('/')) + '/' + $("#hiddenstyle").val();
 		$("#mainstyle").attr("href", newstyle);
 	}
+
+	// l'image de fond
+	$("#bgCarousel .choosen").removeClass("choosen");
 	var hiddenimg = $("#hiddenbgimg").val()
 	if (hiddenimg !== '') {
-		//TODO : remettre l image initiale
-		console.log(hiddenimg);
+		// pour le jpg
+		if (hiddenimg.substr(hiddenimg.length-4) === '.jpg') {		
+			$('#bgCarousel .bgimg[src$="'+hiddenimg+'"]').addClass("choosen");
+			$("body").css({'background-image':'url(files/backgrounds/'+hiddenimg+')', 'background-repeat':'no-repeat', 'width':'100%', 'height':'100%', '-webkit-background-size':'cover', '-moz-background-size':'cover', '-o-background-size':'cover', 'background-size':'cover', 'background-attachment':'fixed', 'background-clip':'border-box', 'background-origin':'padding-box', 'background-position':'center center'});
+		}
+		// pour le png
+		else if (hiddenimg.substr(hiddenimg.length-4) === '.png') {
+			$('#bgCarousel .mozaicimg[style*="'+hiddenimg+'"]').addClass("choosen");	
+			$("body").css({'background-image': 'url(files/backgrounds/'+hiddenimg+')', 'background-repeat':'repeat', 'width':'100%', 'height':'100%', '-webkit-background-size': 'auto', '-moz-background-size': 'auto', '-o-background-size': 'auto', 'background-size': 'auto', 'background-attachment': 'scroll', 'background-clip': 'border-box', 'background-origin': 'padding-box', 'background-position': 'top left'});
+		}
 	}
 	else {
 		//on enleve les images de fond
 		$("body").css({'background-image':'none', 'background-repeat':'repeat', 'width':'100%', 'height':'100%', '-webkit-background-size': 'auto', '-moz-background-size': 'auto', '-o-background-size': 'auto', 'background-size': 'auto', 'background-attachment': 'scroll', 'background-clip': 'border-box', 'background-origin': 'padding-box', 'background-position': 'top left'});
-		$(".choosen").removeClass("choosen");
 	}
 	
 	//on remet les valeurs par défaut aux listes déroulantes

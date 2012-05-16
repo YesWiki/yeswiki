@@ -1,5 +1,5 @@
 <?php
-
+error_reporting(E_ALL);
 if (!defined("WIKINI_VERSION"))
 {
             die ("acc&egrave;s direct interdit");
@@ -82,16 +82,21 @@ else {
 		$html_formulaire .= '<input type="hidden" name="FormMicroblog" value="true" />'."\n";
 		$html_formulaire .= '<input type="hidden" class="antispam" name="antispam" value="0" />'."\n";
 
-		if (!file_exists('tools/tags/presentation/'.$template_formulaire))
+		if (!file_exists('tools/tags/presentation/templates/'.$template_formulaire))
 		{
-			exit('Le fichier template du formulaire de microblog "tools/tags/presentation/'.$template_formulaire.'" n\'existe pas. Il doit exister...');
+			exit('Le fichier template du formulaire de microblog "tools/tags/presentation/templates/'.$template_formulaire.'" n\'existe pas. Il doit exister...');
 		}
 		else
 		{
 			include_once('tools/tags/libs/squelettephp.class.php');
-			$squel = new SquelettePhp('tools/tags/presentation/'.$template_formulaire);
+			$squel = new SquelettePhp('tools/tags/presentation/templates/'.$template_formulaire);
 			//pour la veille,
-			if(!empty($_GET['microblog'])) $texte_billet=trim(urldecode($_GET['microblog']));
+			if(!empty($_GET['microblog'])) {
+				$texte_billet = trim(urldecode($_GET['microblog']));
+			} 
+			else {
+				$texte_billet = '';
+			}
 			$squel->set(array("nb"=>$nbcar, "rss"=>$html_rss, "billet"=>$texte_billet));
 			$html_formulaire .= $squel->analyser();
 		}
@@ -107,7 +112,7 @@ else {
 			}
 			$toustags = substr($toustags,0,-1);
 		}
-		$tous_les_tags = split(' ', $toustags);
+		$tous_les_tags = explode(' ', $toustags);
 		$html_formulaire .= '<script src="tools/tags/libs/GrowingInput.js" type="text/javascript" charset="utf-8"></script>
 		<script src="tools/tags/libs/tags_suggestions.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript">

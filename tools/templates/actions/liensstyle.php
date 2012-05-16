@@ -38,12 +38,12 @@ if ($this->config['favorite_style']!='none') {
 }
 
 // on ajoute aux css le background personnalisé
-if (isset($this->page['metadatas']['bgimg'])) {
-	$imgextension = strtolower(substr($this->page['metadatas']['bgimg'], -4, 4));
+if (isset($this->config['favorite_background_image']) && $this->config['favorite_background_image']!='') {
+	$imgextension = strtolower(substr($this->config['favorite_background_image'], -4, 4));
 	if ($imgextension=='.jpg') {
 		$wikini_styles_css .= '<style>
 		body {
-			background-image: url("files/backgrounds/'.$this->page['metadatas']['bgimg'].'");
+			background-image: url("files/backgrounds/'.$this->config['favorite_background_image'].'");
 			background-repeat:no-repeat;
 			width:100%;
 			height:100%;
@@ -61,7 +61,7 @@ if (isset($this->page['metadatas']['bgimg'])) {
 	elseif ($imgextension=='.png') {
 		$wikini_styles_css .= '<style>
 		body {
-			background-image: url("files/backgrounds/'.$this->page['metadatas']['bgimg'].'");
+			background-image: url("files/backgrounds/'.$this->config['favorite_background_image'].'");
 		}
 		</style>'."\n";
 	}

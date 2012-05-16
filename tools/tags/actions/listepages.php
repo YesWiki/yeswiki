@@ -87,32 +87,9 @@ else
 
 $requete = "SELECT DISTINCT tag, time, user, owner, body FROM ".$this->config["table_prefix"]."pages".$req_from." WHERE latest = 'Y' and comment_on = '' ".$req;
 
-require_once 'tools/tags/libs/MDB2.php';
-$dsn = array(
-    'phptype'  => 'mysql',
-    'username' => $this->config["mysql_user"],
-    'password' => $this->config["mysql_password"],
-    'hostspec' => $this->config["mysql_host"],
-    'database' => $this->config["mysql_database"],
-);
 
-// create MDB2 instance
-$db =& MDB2::connect($dsn);
 
-if (!empty($nb))
-{
-	require_once 'tools/tags/libs/Pager/Pager_Wrapper.php'; //this file
-	$pagerOptions = array(
-    	'mode'    => 'Sliding',
-   	 	'delta'   => 2,
-    	'perPage' => $nb,
- 	);
-	$paged_data = Pager_Wrapper_MDB2($db, $requete, $pagerOptions);
-	//$paged_data['page_numbers']; //array('current', 'total');
-} else
-{
-	$paged_data['data'] = $db->queryAll($requete, null, MDB2_FETCHMODE_ASSOC);
-}
+$paged_data['data'] = $this->query($requete);
 
 $text = '';
 foreach ($paged_data['data'] as $microblogpost)

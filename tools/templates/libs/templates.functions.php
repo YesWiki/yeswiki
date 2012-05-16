@@ -110,6 +110,7 @@ function replace_missingpage_links($output) {
 		$query_string = 'theme='.urlencode($GLOBALS['wiki']->config['favorite_theme']).
 						'&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
 						'&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
+						'&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).				
 						((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '');
 		$replacement = '<a class="yeswiki-editable" href="'.$GLOBALS['wiki']->href("edit", $values[2], $query_string).'">'.
 						$values[1].'&nbsp;<img src="tools/templates/presentation/images/crayon.png" alt="crayon" /></a>';

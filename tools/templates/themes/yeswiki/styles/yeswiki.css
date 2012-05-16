@@ -20,7 +20,7 @@ header {margin:0;}
 header h1 { color:#000; font-size:2.2em; text-align:center; margin: 0; text-shadow: 1px 1px 1px white;}
 header h2 { color:#000; font-size:1.6em; text-align:center;}
 
-.topbar {font-size:0.85em;}
+.topbar {font-size:0.85em;margin-top: 10px;text-align:right;}
 .topbar a {color:#333; text-decoration:none; display:inline-block; margin:4px 10px;}
 .topbar a:hover {text-decoration:underline;}
 
@@ -132,14 +132,15 @@ border-radius:4px;
 -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-padding:10px 0 0 0;
+padding:0;
+margin-bottom:15px;
 }
 
 .page {
 position:relative;
 margin:0;
 min-height:400px;
-padding:0;
+padding:10px;
 }
 /*
 

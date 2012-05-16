@@ -42,5 +42,30 @@ define ('TEMPLATE_BG_IMAGE', 'Image de fond');
 define ('TEMPLATE_ERROR_NO_DATA', 'ERREUR : rien &agrave; ajouter dans les meta-donn&eacute;es.');
 define ('TEMPLATE_ERROR_NO_ACCESS', 'ERREUR : pas les droits d\'acc&eacute;s.');
 
+//barre de redaction
+define ('TEMPLATE_CLICK_TO_EDIT', 'Cliquez pour &eacute;diter cette page.');
+define ('TEMPLATE_EDIT_THIS_PAGE', '&Eacute;diter cette page');
+define ('TEMPLATE_CLICK_TO_SEE_REVISIONS', 'Cliquez pour voir les derni&egrave;res modifications sur cette page.');
+define ('TEMPLATE_LAST_UPDATE', 'Derni&egrave;re modification');
+define ('TEMPLATE_OWNER', 'Propri&eacute;taire');
+define ('TEMPLATE_YOU', 'vous');
+define ('TEMPLATE_NO_OWNER', 'Pas de propri&eacute;taire');
+define ('TEMPLATE_CLAIM', 'Appropriation');
+define ('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS', 'Cliquez pour &eacute;diter les permissions de cette page.');
+define ('TEMPLATE_PERMISSIONS', 'Permissions');
+define ('TEMPLATE_DELETE', 'Supprimer');
+define ('TEMPLATE_CLICK_TO_SEE_REFERENCES', 'Cliquez pour voir les URLs faisant r&eacute;f&eacute;rence &agrave; cette page.');
+define ('TEMPLATE_REFERENCES', 'R&eacute;f&eacute;rences');
+define ('TEMPLATE_SLIDESHOW_MODE', 'Lancer cette page en mode diaporama.');
+define ('TEMPLATE_SLIDESHOW', 'Diaporama');
+define ('TEMPLATE_SEE_SHARING_OPTIONS', 'Voir les possibilit&eacute;s de partage de cette page.');
+define ('TEMPLATE_SHARE', 'Partager');
 
+//formatage des dates
+define ('TEMPLATE_DATE_FORMAT', '\l\e d.m.Y \&\a\g\r\a\v\e; H:i:s');
+
+//recherche
+define ('TEMPLATE_SEARCH_INPUT_TITLE', 'Rechercher dans YesWiki [alt-shift-C]');
+define ('TEMPLATE_SEARCH_BUTTON_TITLE', 'Rechercher les pages comportant ce texte.');
+define ('TEMPLATE_SEARCH_PLACEHOLDER', 'Rechercher...');
 ?>
