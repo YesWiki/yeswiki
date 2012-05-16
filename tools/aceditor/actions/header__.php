@@ -17,9 +17,9 @@ if ($this->GetMethod() == "edit") {
 	/* ci dessous les petits champs */
 	.ACsearchbox { background: #FFFFF8; border: 0px; border-bottom: 1px solid #CCCCAA; padding: 0px; margin: 0px; font-size: 10px; }
 	.texteChampsImage {font-size: 10px; }
-	#toolbar, #toolbar_suite { margin:0; width: 100%; padding:0; height:20px; background: #ccc; border-top: 1px solid buttonhighlight; border-left: 1px solid buttonhighlight; border-bottom: 1px solid buttonshadow; border-right: 1px solid buttonshadow; text-align:left; }
-	#toolbar a, #toolbar_suite a {color:#000;}
-	.edit {	border:1px solid #666666; width:100%; }
+	#toolbar {font-size: 10px;margin:0; width: 100%; padding:0; height:20px; background: #ccc; border-top: 1px solid buttonhighlight; border-left: 1px solid buttonhighlight; border-bottom: 1px solid buttonshadow; border-right: 1px solid buttonshadow; text-align:left; }
+	#toolbar a {color:#000;}
+	.edit {	border:1px solid #C6C6C6; width:100%; }
 	.ACEsubmit {float:left;border:0; background:url(tools/aceditor/ACEdImages/save.png) left top no-repeat;height:16px;width:16px;cursor:pointer; margin:1px; color:#77a0de; font-size:0;}
 	.ACEpreview {float:left;border:0; background:url(tools/aceditor/ACEdImages/apercu.png) left top no-repeat;height:16px;width:16px;cursor:pointer; margin:1px; color:#77a0de; font-size:0;}
 	</style>

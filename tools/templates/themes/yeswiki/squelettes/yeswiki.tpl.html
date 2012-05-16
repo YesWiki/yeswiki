@@ -1,46 +1,46 @@
 <!doctype html>
-<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="fr"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="fr"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="fr"> <![endif]-->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="fr"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="fr"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="fr"> <!--<![endif]-->
 <head>
   <meta charset="iso-8859-1">
   <title>{{titrepage}}</title>{{metarobots}}
   <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
   <meta name="description" content="{{configuration param="meta_description"}}" />
-  <meta name="author" content="">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements du wikini" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
+  <meta name="viewport" content="width=device-width">
+  <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements du YesWiki" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
   <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico">
   <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
-  <link rel="stylesheet" href="{{configuration param="theme_path"}}styles/grid/960.css">
-  {{liensstyle}}
+  {{liensstyle othercss="grid/960.css"}}
 </head>
 
 <body {{parambody}}>
   <div id="container" class="container_12">
-	<header class="grid_12">
-		{{include page="PageRapideHaut" class="topbar" doubleclic="1" actif="1"}}
+	<header>
+		<!-- { { include page="PageRapideHaut" class="topbar" doubleclic="1" actif="1" } } -->
 		{{include page="PageHeader" doubleclic="1" actif="1"}}
 		<div class="clear"></div>
 	</header><!-- end of header -->
 
-	<nav id="topnav" class="grid_12">
-		{{include page="PageMenuHaut" class="grid_12 alpha omega" doubleclic="1" actif="1"}}
+	<nav id="topnav">
+		{{include page="PageMenuHaut" class="grid_10" doubleclic="1" actif="1"}}
+		{{moteurrecherche class="grid_2"}}
 		<div class="clear"></div>
 	</nav><!-- end of #topnav -->
 	 
-	<div id="main" role="main" class="grid_12" {{doubleclic}}>
-		{WIKINI_PAGE}
+	<div id="main" role="main">
+		<div class="grid_12" {{doubleclic}}>
+			{WIKINI_PAGE}
+		</div>
 		{{barreredaction}}
-		<div class="clear"></div>
+		<footer>
+			{{include page="PageFooter" class="grid_12" doubleclic="1"}}
+			<div class="clear"></div>
+		</footer><!-- end of footer -->
 	</div><!-- end of #main -->
-
-	<footer class="grid_12">
-		{{include page="PageFooter" doubleclic="1"}}
-		<div class="clear"></div>
-	</footer><!-- end of footer -->
+	
 	<div class="clear"></div>
 </div> <!-- end of #container -->
 

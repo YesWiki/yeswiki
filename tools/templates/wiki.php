@@ -1,89 +1,71 @@
 <?php
+/*vim: set expandtab tabstop=4 shiftwidth=4: */
+// +------------------------------------------------------------------------------------------------------+
+// | PHP version 5                                                                                        |
+// +------------------------------------------------------------------------------------------------------+
+// | Copyright (C) 2012 Outils-Réseaux (accueil@outils-reseaux.org)                                       |
+// +------------------------------------------------------------------------------------------------------+
+// | This library is free software; you can redistribute it and/or                                        |
+// | modify it under the terms of the GNU Lesser General Public                                           |
+// | License as published by the Free Software Foundation; either                                         |
+// | version 2.1 of the License, or (at your option) any later version.                                   |
+// |                                                                                                      |
+// | This library is distributed in the hope that it will be useful,                                      |
+// | but WITHOUT ANY WARRANTY; without even the implied warranty of                                       |
+// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU                                    |
+// | Lesser General Public License for more details.                                                      |
+// |                                                                                                      |
+// | You should have received a copy of the GNU Lesser General Public                                     |
+// | License along with this library; if not, write to the Free Software                                  |
+// | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
+// +------------------------------------------------------------------------------------------------------+
+// 
+/**
+* Fichier de lancement et de configuration de l'extension Templates
+*
+*@package 		templates
+*@author        Florian Schmitt <florian@outils-reseaux.org>
+*@copyright     2012 Outils-Réseaux
+*/
+
 if (!defined("WIKINI_VERSION")) {
 	die ("acc&egrave;s direct interdit");
 }
 
-include_once 'tools/templates/libs/templates.functions.php';
 
-// Dans Wakka.config.php, on peut preciser : favorite_theme, favorite_style, favorite_squelette,  hide_action_template 
-// Sinon, on prend les parametres ci dessous :
+// Theme par défaut
+define ('THEME_PAR_DEFAUT', 'yeswiki');
 
-// Configuration du fonctionnement des templates : faut il laisser le choix autre que par d�faut 
-define('FORCER_TEMPLATE_PAR_DEFAUT', (isset($wakkaConfig['hide_action_template'])) ? $wakkaConfig['hide_action_template'] : false);
+// Style par défaut
+define ('CSS_PAR_DEFAUT','yeswiki.css');
 
-//Theme par d�faut
-define ('THEME_PAR_DEFAUT', (isset($wakkaConfig['favorite_theme'])) ? $wakkaConfig['favorite_theme'] : 'yeswiki');
+// Squelette par défaut
+define ('SQUELETTE_PAR_DEFAUT', 'yeswiki.tpl.html');
 
-//Style par d�faut
-define ('CSS_PAR_DEFAUT', (isset($wakkaConfig['favorite_style'])) ? $wakkaConfig['favorite_style'] : 'yeswiki.css');
+// Image de fond par défaut
+define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 
-//squelette par d�faut
-define ('SQUELETTE_PAR_DEFAUT', (isset($wakkaConfig['favorite_squelette'])) ? $wakkaConfig['favorite_squelette'] : 'yeswiki.tpl.html');
+// Pour que seul le propriétaire et l'admin puissent changer de theme
+define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
-//pour que seul le propri�taire et l'admin puissent changer de theme
-define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', true);
+// Indique un code langue par defaut
+define ('TEMPLATES_DEFAULT_LANG', 'fr') ; 
 
-// Desactivation de l'extension template si l'extension navigation est presente et active. 
+
+// Désactivation de l'extension template si l'extension navigation est présente et active. 
 if (isset($plugins_list['navigation'])) {
 	unset($k);	
 	return;
 }
 
-//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
-$wakkaConfig['templates'] = search_template_files($repertoire_initial);
-
-//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-if (is_dir('themes')) {
-	$repertoire_racine = 'themes';
-	$wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files($repertoire_racine));
-	if (is_array($wakkaConfig['templates'])) ksort($wakkaConfig['templates']);
+// Code pour l'inclusion des langues
+if ( isset ($_GET['lang'])) {
+    include_once 'tools/templates/lang/templates_'.$_GET['lang'].'.inc.php';
+} else {
+    include_once 'tools/templates/lang/templates_'.TEMPLATES_DEFAULT_LANG.'.inc.php';
 }
 
-
-//si le theme est pass� en param�tre, on l'utilise
-//=======Changer de theme=================================================================================================
-if (isset($_REQUEST['theme'])  && array_key_exists($_REQUEST['theme'], $wakkaConfig['templates'])) {
-	$wakkaConfig['favorite_theme'] = $_REQUEST['theme'];
-}
-else {
-	$wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
-}
-
-//=======Changer de style=====================================================================================================
-$styles['none']='pas de style';
-if (isset($_REQUEST['style']) && array_key_exists($_REQUEST['style'], $wakkaConfig['templates'][$wakkaConfig['favorite_theme']]['style'])) {
-	$wakkaConfig['favorite_style'] = $_REQUEST['style'];
-}
-else {
-	$wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-}
-
-//=======Changer de squelette=================================================================================================    
-if(isset($_REQUEST['squelette']) && array_key_exists($_REQUEST['squelette'], $wakkaConfig['templates'][$wakkaConfig['favorite_theme']]['squelette'])) {
-	$wakkaConfig['favorite_squelette'] = $_REQUEST['squelette'];
-}
-else {
-	$wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-}
-
-
-if (!isset($wakkaConfig['hide_action_template'])) {
-	$wakkaConfig['hide_action_template'] = FORCER_TEMPLATE_PAR_DEFAUT;
-} 
-
-if (!isset($wakkaConfig['favorite_theme'])) {
-	$wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
-}
-
-if (!isset($wakkaConfig['favorite_style'])) {
-	$wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-}
-
-if (!isset($wakkaConfig['favorite_squelette'])) {
-	$wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-} 
-
+include_once 'tools/templates/libs/templates.functions.php';
 
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses [] = 'Template';
@@ -98,6 +80,8 @@ $wikiClassesContent [] = '
                         return $pages;
                 }
         }	
+        
+        
     function GetMethod() {
 	  	if ($this->method==\'iframe\')
 	  	{
@@ -107,50 +91,124 @@ $wikiClassesContent [] = '
 	    {
 			return Wiki::GetMethod();
 		}
-    }	
-';	
+    }
+	
+	
+	function LoadPage($tag, $time = "", $cache = 1)
+	{
+		// retrieve from cache
+		if (!$time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false) && isset($cachedPage["metadatas"]))
+		{
+			$page = $cachedPage;
+		}
+		else // load page
+		{
+			$sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
+				. " WHERE tag = \'".mysql_escape_string($tag)."\' AND "
+				. ($time ? "time = \'".mysql_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
+			$page = $this->LoadSingle($sql);
+			// si la page existe, on charge les meta-donnees
+			if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
+
+			// cache result
+			if (!$time) $this->CachePage($page, $tag);
+		}
+		return $page;
+	}
+	
+	
+	function GetMetaDatas($pagetag) {	
+		$metadatas = $this->GetTripleValue($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', \'\', \'\', \'\');
+		if (!empty($metadatas)) {
+			return array_map(\'utf8_decode\', json_decode($metadatas, true));
+		}
+		else {
+			return false;
+		}
+	}
+	
+	
+	function SaveMetaDatas($pagetag, $metadatas) {
+		$former_metadatas = $this->GetMetaDatas($pagetag);
+
+		if ($former_metadatas)
+		{
+			$metadatas = array_merge($former_metadatas, $metadatas);
+			$this->DeleteTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', null, \'\', \'\');
+		}
+		return $this->InsertTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', json_encode(array_map("utf8_encode", $metadatas)), \'\', \'\');
+	}
+	
+';
 
 
-//on cherche l'action template dans la page, qui definit le graphisme a utiliser, dans le cas d'un aper�u
-if (isset($_POST["submit"]) && $_POST["submit"] == html_entity_decode('Aper&ccedil;u')) {
-	$contenu["body"] = $_POST["body"].'{{template theme="'.$_POST["theme"].'" squelette="'.$_POST["squelette"].'" style="'.$_POST["style"].'"}}';	
-	$_POST["body"] = $_POST["body"].'{{template theme="'.$_POST["theme"].'" squelette="'.$_POST["squelette"].'" style="'.$_POST["style"].'"}}';
-} 
-
+// Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
+if (isset($wakkaConfig['hide_action_template'])) {
+	if (!isset($wakkaConfig['favorite_theme'])) $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+	if (!isset($wakkaConfig['favorite_style'])) $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+	if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT; 
+	if (!isset($wakkaConfig['favorite_background_image'])) $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT; 
+}
+// Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
 else {
-	$contenu = $wiki->LoadPage($page);
-}
+	if (isset($_REQUEST['theme']) && (is_dir('themes/'.$_REQUEST['theme']) || is_dir('tools/templates/themes/'.$_REQUEST['theme'])) &&
+		isset($_REQUEST['style']) && (is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
+		isset($_REQUEST['squelette']) && (is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette'])) &&
+		isset($_REQUEST['bgimg']) && (is_file('themes/'.$_REQUEST['theme'].'/images/backgrounds/'.$_REQUEST['bgimg']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/images/bakgrounds/'.$_REQUEST['bgimg']))
+		) {
+		$wakkaConfig['favorite_theme'] = $_REQUEST['theme'];
+		$wakkaConfig['favorite_style'] = $_REQUEST['style'];
+		$wakkaConfig['favorite_squelette'] = $_REQUEST['squelette'];
+		$wakkaConfig['favorite_background_image'] = $_REQUEST['bgimg'];
 
+	}
+	else {
+		//on récupère le contenu de la page, et les metas
+		$contenu = $wiki->LoadPage($page);
+		$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+		if (!empty($metadatas)) {
+			$metadatas =  array_map('utf8_decode', json_decode($metadatas, true));
+		}
 
-//on r�cup�re les valeurs du template associ�es � la page
-if (!$wakkaConfig['hide_action_template'] && $act=preg_match_all ("/".'(\\{\\{template)'.'(.*?)'.'(\\}\\})'."/is", $contenu["body"], $matches)) {
-     $i = 0; $j = 0;
-     foreach($matches as $valeur) {
-       foreach($valeur as $val) {
-       	
-         if (isset($matches[2][$j]) && $matches[2][$j]!='') {
-           $action= $matches[2][$j];
-           if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $action, $params))
-			{
-				for ($a = 0; $a < count($params[1]); $a++)
-				{
-					$vars[$params[1][$a]] = $params[2][$a];
-				}
-			}
-         }
-         $j++;
-       }
-       $i++;
-     }
-   }
-if (isset($vars["theme"]) && $vars["theme"]!="") {
-	 $wakkaConfig['favorite_theme'] = $vars["theme"]; 
-}
-if (isset($vars["style"]) && $vars["style"]!="") {
- 	$wakkaConfig['favorite_style'] = $vars["style"];
-}
-if  (isset($vars["squelette"]) && $vars["squelette"]!="") {
-	$wakkaConfig['favorite_squelette'] = $vars["squelette"];
+		// si les metas sont présentes on les utilise
+		if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette'])) {
+			$wakkaConfig['favorite_theme'] = $metadatas['theme'];
+			$wakkaConfig['favorite_style'] = $metadatas['style'];
+			$wakkaConfig['favorite_squelette'] = $metadatas['squelette'];
+			$wakkaConfig['favorite_background_image'] =  (isset($metadatas['bgimg']) ? $metadatas['bgimg'] : '');
+		}
+		//on récupére les valeurs du template associées à la page de l'ancienne version de templates
+		elseif ($act=preg_match_all ("/".'(\\{\\{template)'.'(.*?)'.'(\\}\\})'."/is", $contenu["body"], $matches)) {
+		     $i = 0; $j = 0;
+		     foreach($matches as $valeur) {
+		        foreach($valeur as $val) {  	
+			        if (isset($matches[2][$j]) && $matches[2][$j]!='') {
+			            $action= $matches[2][$j];
+			            if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $action, $params)) {
+			            	for ($a = 0; $a < count($params[1]); $a++) {
+								$vars[$params[1][$a]] = $params[2][$a];
+							}
+						}
+			        }
+			        $j++;
+		       }
+		       $i++;
+		    }
+		}
+		// des valeurs ont été trouvées, on les utilise
+		if ((isset($vars["theme"]) && $vars["theme"]!="") && (isset($vars["style"]) && $vars["style"]!="") && (isset($vars["squelette"]) && $vars["squelette"]!="") ) {
+			$wakkaConfig['favorite_theme'] = $vars["theme"]; 
+		 	$wakkaConfig['favorite_style'] = $vars["style"];
+			$wakkaConfig['favorite_squelette'] = $vars["squelette"];
+			$wakkaConfig['favorite_background_image'] = '';
+		}
+		else {
+			if (!isset($wakkaConfig['favorite_theme'])) $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+			if (!isset($wakkaConfig['favorite_style'])) $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+			if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT; 
+			if (!isset($wakkaConfig['favorite_background_image'])) $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT; 
+		}
+	}
 }
 
 //=======Test existence du template, on utilise le template par defaut sinon=======================================================
@@ -167,9 +225,9 @@ if (
 		$wakkaConfig['favorite_theme']='yeswiki';
 		$wakkaConfig['favorite_style']='yeswiki.css';
 		$wakkaConfig['favorite_squelette']='yeswiki.tpl.html';
-		echo 'Certains (ou tous les) fichiers du template '.$wakkaConfig['favorite_theme'].' ont disparu (tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].' et/ou tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].').<br />Le template par d&eacute;faut est donc utilis&eacute;.';
+		echo '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
 } else {
-		exit('Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site.');
+		exit('<div class="alert alert-error">'.TEMPLATE_NO_DEFAULT_THEME.'.</div>');
 	}
 }
 

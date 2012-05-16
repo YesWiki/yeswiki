@@ -11,7 +11,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 {
 	
 	// Edition 
-    if (!isset($_POST["submit"]) || (isset($_POST["submit"]) && $_POST["submit"] != 'Sauver') ) {
+	if (!isset($_POST["submit"]) || (isset($_POST["submit"]) && $_POST["submit"]!= 'Sauver') ) {
 		
 		require_once('tools/hashcash/secret/wp-hashcash.lib');
 
@@ -38,11 +38,11 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 
 
 		$ChampsHashcash = 
-		 '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script>';
+		 '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script><span id="hashcash-text" class="right"></span>';
 
 	 
-		$plugin_output_new=preg_replace ('/\<input name=\"submit\" type=\"submit\" value=\"Sauver\"/',
-		$ChampsHashcash.'<input name="submit" type="submit" value="Sauver"', $plugin_output_new);
+		$plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/',
+		$ChampsHashcash.'<hr class="hr_clear" />', $plugin_output_new);
 		
 	}
 

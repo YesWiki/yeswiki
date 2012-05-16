@@ -40,7 +40,18 @@ function search_template_files($directory) {
 }
 
 
-//remplace juste la premiere occurence d'une chaine de caracteres
+
+/**
+*
+* remplace juste la premiere occurence d'une chaine de caracteres
+*
+* @param $from : partie de la chaine recherchée
+* @param $to   : chaine de remplacement
+* @param $str  : chaine entrée
+*
+* return string : chaine entrée avec la premiere occurence changée
+*
+*/
 function str_replace_once($from, $to, $str) {
     if(!$newStr = strstr($str, $from)) {
         return $str;
@@ -63,6 +74,20 @@ if (!function_exists('str_ireplacement')) {
     $subject = str_replace($token,$replace,$subject);
     return $subject;
   }
+}
+
+/**
+*
+* remplace juste la premiere occurence d'une chaine de caracteres
+*
+* @param $url : url de l'image
+*
+* return boolean : indique si l'url est une image ou pas
+*
+*/
+function image_exists($url) {
+	$info = @getimagesize($url);
+	return((bool) $info);
 }
 
 //fonction recursive pour detecter un nomwiki deja present 
@@ -149,7 +174,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 							$slide = $split[2];
 						}
 						$html_slide = '' ;
-						if (isset($titles[$i]) && $titles[$i] != "") { 
+						if ($titles[$i] != "") { 
 							$html_slide .= "<div class=\"slide-header\">".$titles[$i]."</div>\n" ;
 							$titles[$i] = strip_tags($titles[$i]) ;
 						}

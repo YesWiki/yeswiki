@@ -11,7 +11,7 @@ $wikiClassesContent [] = '
 
 	function FormOpen($method = "", $tag = "", $formMethod = "post") {
 
-		if ($method=="edit") {		
+		if ($method=="edit") {
 			$result = "<form id=\"ACEditor\" name=\"ACEditor\" action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\">\n";
 		} else {
 		$result = "<form action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\">\n";
