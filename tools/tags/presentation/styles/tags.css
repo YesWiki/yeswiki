@@ -1,3 +1,23 @@
+.microblog-page {
+-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+background:#FFF;
+color:#333;
+margin:0 0 20px;
+padding: 19px;
+border: 1px solid rgba(0, 0, 0, 0.05);
+-moz-border-radius: 4px 4px 4px 4px;
+-webkit-border-radius: 4px 4px 4px 4px;
+border-radius: 4px 4px 4px 4px;
+}
+.textarea-microblog {width:100%;}
+.microblog-page-comment {margin-top:20px;}
+.microblog-page-actions {
+    margin: -19px;
+    margin-top:0;
+}
+
 /***********************************Nuage de mot clés************************************/
 
 .boite_nuage {display:block;}
@@ -214,16 +234,8 @@ margin:0 10px 10px;
 }
 
 .edition_billet_microblog {
-clear:both;
 font-size:.9em;
 background:#EEE;
-width:100%;
--moz-border-radius-bottomleft:15px;
--moz-border-radius-bottomright:15px;
--webkit-border-bottom-left-radius:15px;
--webkit-border-bottom-right-radius:15px;
--khtml-border-bottom-left-radius:15px;
--khtml-border-bottom-right-radius:15px;
 text-align:right;
 margin:10px 0 0;
 padding:4px 0;

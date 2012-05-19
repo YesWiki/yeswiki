@@ -33,16 +33,14 @@ function afficher_commentaires_recursif($page, $wiki, $premier=true) {
 		$squelcomment = new SquelettePhp('tools/tags/presentation/commentaire_microblog.tpl.html');
 		$squelcomment->set($valcomment);
 		$output .= $squelcomment->analyser();
-	} elseif ($premier && $wiki->HasAccess("comment",$page)) {
-		$output .= 'Soyez le premier &agrave; &eacute;crire un commentaire!'."\n";
-	}
+	} 
 	if ($premier && $wiki->HasAccess("comment",$page))
 	{
 		// display comment form
 		$output .= "<div class=\"microblogcommentform\">\n" ;
 		$output .= $wiki->FormOpen("addcomment", $page).'
-				<textarea name="body" class="commentaire_microblog" rows="3" cols="20"></textarea><br />
-				<input type="button" class="bouton_microblog" value="Ajouter votre commentaire" accesskey="s" />'.$wiki->FormClose();
+				<textarea name="body" class="commentaire_microblog" rows="3" placeholder="Ecrire votre commentaire ici..."></textarea><br />
+				<button class="btn btn-primary btn-microblog" name="action" value="addcomment">Ajouter votre commentaire</button>'.$wiki->FormClose();
 		$output .= "</div>\n" ;
 	}
 
