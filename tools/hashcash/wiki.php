@@ -21,3 +21,4 @@ $wikiClassesContent [] = '
 		return $result;
 	}
 ';		
+?>

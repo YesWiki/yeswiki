@@ -8,3 +8,4 @@ if (!defined("WIKINI_VERSION"))
 
 //Savoir comment PEAR Mail envoie le message: "mail", "smtp" ou "sendmail"
 define('CONTACT_MAIL_FACTORY', 'smtp');
+?>
