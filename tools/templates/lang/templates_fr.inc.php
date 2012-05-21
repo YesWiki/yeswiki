@@ -44,6 +44,7 @@ define ('TEMPLATE_ERROR_NO_ACCESS', 'ERREUR : pas les droits d\'acc&eacute;s.');
 
 //barre de redaction
 define ('TEMPLATE_CLICK_TO_EDIT', 'Cliquez pour &eacute;diter cette page.');
+define ('TEMPLATE_EDIT', '&Eacute;diter');
 define ('TEMPLATE_EDIT_THIS_PAGE', '&Eacute;diter cette page');
 define ('TEMPLATE_CLICK_TO_SEE_REVISIONS', 'Cliquez pour voir les derni&egrave;res modifications sur cette page.');
 define ('TEMPLATE_LAST_UPDATE', 'Derni&egrave;re modification');

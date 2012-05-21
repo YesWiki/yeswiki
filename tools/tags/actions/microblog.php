@@ -11,9 +11,6 @@ include_once "tools/tags/libs/tags.functions.php";
 $tags = $this->GetParameter('tags');
 $tagsvirgule = implode(',', split_words($tags));
 
-//peut on éditer les pages?
-$lienedit = $this->GetParameter('edit');
-
 $titrerss = $this->GetParameter('titrerss');
 
 //classe CSS associée au formulaire
@@ -124,6 +121,7 @@ else {
 				}});	
 			});
 	    </script>'."\n";*/
+	    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script type="text/javascript" src="tools/tags/libs/microblog.js"></script>'."\n";
 
 
 		//on formatte l'action includetag qui va tout nous afficher à l'écran la liste des bulles du microblog

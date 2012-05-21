@@ -124,16 +124,7 @@ if (count($paged_data['data'])>0) {
 				$valtemplate['comment'] .= "</div>\n";
 				
 				//liens d'actions sur le billet	
-				$valtemplate['actions'] = $this->Format('{{barreredaction page="'.$microblogpost['tag'].'"}}');	
-				/*$valtemplate['edition'] = '<a href="'.$this->href('', $microblogpost['tag']).'" class="voir_billet">Afficher</a> ';
-				if ($this->HasAccess('write', $microblogpost['tag']))
-				{
-					$valtemplate['edition'] .= '<a href="'.$this->href('edit', $microblogpost['tag']).'" class="editer_billet">Editer</a> ';
-				}			
-				if ($this->UserIsOwner($microblogpost['tag']) || $this->UserIsAdmin())
-				{
-					$valtemplate['edition'] .= '<a href="'.$this->href('deletepage', $microblogpost['tag']).'" class="supprimer_billet">Supprimer</a>'."\n" ;
-				}				*/
+				$valtemplate['actions'] = $this->Format('{{barreredaction page="'.$microblogpost['tag'].'" class="footer-microblog" template="barreredaction_minimal.tpl.html"}}');	
 				$squel->set($valtemplate);
 				$text .= $squel->analyser();			
 			}					

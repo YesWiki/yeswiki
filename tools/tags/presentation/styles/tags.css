@@ -17,7 +17,10 @@ border-radius: 4px 4px 4px 4px;
     margin: -19px;
     margin-top:0;
 }
-
+.footer-microblog {
+    text-align:right;
+    padding-right:19px;
+}
 /***********************************Nuage de mot clés************************************/
 
 .boite_nuage {display:block;}
