@@ -5,6 +5,16 @@
 // Please keep attributions if distributing code.  
 
 # Define the maximum breadcrumbs shown.
+
+# Todo : Trouver un moyen d'afficher un titre "propre" :
+/*
+ - Table des matières ?
+ - Parametre dans l'url ?
+ - Jquery ?
+
+*/
+
+
 if ($max = $this->GetParameter("nb")) {
       $max = (int) $max;
 }
