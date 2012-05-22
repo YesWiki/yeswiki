@@ -372,6 +372,7 @@ if (!class_exists('WikiniFormatter'))
                             // Same filtering in the text (no need to
                             // filter ]] because there are none here
                             // by construct)
+							$text = "";
 							$text = preg_replace("/@@|££|\[\[/", "", $text);
 							return $result.$wiki->Link($url, "", $text);
 						}
