@@ -47,7 +47,7 @@ define ('TEMPLATE_CLICK_TO_EDIT', 'Cliquez pour &eacute;diter cette page.');
 define ('TEMPLATE_EDIT', '&Eacute;diter');
 define ('TEMPLATE_EDIT_THIS_PAGE', '&Eacute;diter cette page');
 define ('TEMPLATE_CLICK_TO_SEE_REVISIONS', 'Cliquez pour voir les derni&egrave;res modifications sur cette page.');
-define ('TEMPLATE_LAST_UPDATE', 'Derni&egrave;re modification');
+define ('TEMPLATE_LAST_UPDATE', 'Modifi&eacute;e le');
 define ('TEMPLATE_OWNER', 'Propri&eacute;taire');
 define ('TEMPLATE_YOU', 'vous');
 define ('TEMPLATE_NO_OWNER', 'Pas de propri&eacute;taire');
@@ -63,7 +63,7 @@ define ('TEMPLATE_SEE_SHARING_OPTIONS', 'Voir les possibilit&eacute;s de partage
 define ('TEMPLATE_SHARE', 'Partager');
 
 //formatage des dates
-define ('TEMPLATE_DATE_FORMAT', '\l\e d.m.Y \&\a\g\r\a\v\e; H:i:s');
+define ('TEMPLATE_DATE_FORMAT', 'd.m.Y \&\a\g\r\a\v\e; H:i:s');
 
 //recherche
 define ('TEMPLATE_SEARCH_INPUT_TITLE', 'Rechercher dans YesWiki [alt-shift-C]');

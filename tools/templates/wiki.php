@@ -175,11 +175,16 @@ else {
 		}
 
 		// si les metas sont présentes on les utilise
-		if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette']) && isset($metadatas['bgimg'])) {
+		if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette'])) {
 			$wakkaConfig['favorite_theme'] = $metadatas['theme'];
 			$wakkaConfig['favorite_style'] = $metadatas['style'];
 			$wakkaConfig['favorite_squelette'] = $metadatas['squelette'];
-			$wakkaConfig['favorite_background_image'] = $metadatas['bgimg'];
+			if (isset($metadatas['bgimg'])) {
+				$wakkaConfig['favorite_background_image'] = $metadatas['bgimg'];
+			} else {
+				$wakkaConfig['favorite_background_image'] = '';
+			}
+			
 		}
 		//on récupére les valeurs du template associées à la page de l'ancienne version de templates
 		else {

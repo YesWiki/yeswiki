@@ -117,11 +117,8 @@ if (count($paged_data['data'])>0) {
 				$valtemplate['page'] = $this->Format($microblogpost["body"]);
 
 				// load comments for this page
-		        $valtemplate['comment'] = '<strong class="lien_commenter">Commentaires</strong>'."\n";
-	    		$valtemplate['comment'] .= "<div class=\"commentaires_billet_microblog\">\n";
 	    		include_once('tools/tags/libs/tags.functions.php');
-				$valtemplate['comment'] .= afficher_commentaires_recursif($microblogpost['tag'], $this);
-				$valtemplate['comment'] .= "</div>\n";
+				$valtemplate['comment'] = afficher_commentaires_recursif($microblogpost['tag'], $this);
 				
 				//liens d'actions sur le billet	
 				$valtemplate['actions'] = $this->Format('{{barreredaction page="'.$microblogpost['tag'].'" class="footer-microblog" template="barreredaction_minimal.tpl.html"}}');	

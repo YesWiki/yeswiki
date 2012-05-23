@@ -4,9 +4,10 @@ if (!defined("WIKINI_VERSION"))
         die ("acc&egrave;s direct interdit");
 }
 //javascripts
-$wikini_javascripts = '<script type="text/javascript" src="tools/templates/libs/jquery-1.7.1.min.js"></script>
+$wikini_javascripts = '<script type="text/javascript" src="tools/templates/libs/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="tools/templates/libs/bootstrap.min.js"></script>
-<script type="text/javascript" src="tools/templates/libs/jquery.tools.min.js"></script>';
+<script type="text/javascript" src="tools/templates/libs/jquery.tools.min.js"></script>
+<script type="text/javascript" src="tools/templates/libs/yeswiki-base.js"></script>';
 
 if (is_dir('themes/'.$this->config['favorite_theme'].'/javascripts')) {
 	$repertoire = 'themes/'.$this->config['favorite_theme'].'/javascripts';

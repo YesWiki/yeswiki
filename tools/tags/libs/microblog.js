@@ -4,10 +4,10 @@ $(document).ready(function() {
 	$(".antispam").attr('value', '1');
 
 	//ajax envoi de nouveaux commentaires
-	$(".bouton_microblog").live("click", function() {
-		var textcommentaire = $(this).prevAll(".commentaire_microblog").val();	
+	$(".btn-microblog").on("click", function() {
+		var textcommentaire = $(this).prev().val();	
 		var urlpost= $(this).parent("form").attr("action").replace('/addcomment','/ajaxaddcomment'+'&jsonp_callback=?'); 		
-		$(this).parents(".microblogcommentform, .reponsecommentform").attr("id",'comments');	
+		$(this).parents(".microblog-comment-form, .reponsecommentform").attr("id",'comments');	
 		
 		$.ajax({
 			type: "POST",
@@ -15,9 +15,9 @@ $(document).ready(function() {
 			data: { body: textcommentaire, antispam : "1" },
 			dataType: "jsonp",		
 			success: function(data){
-				$("#comments").before(data.html).removeAttr("id");
-				$(".microblogcommentform form").clearForm();
+				$("#comments form").clearForm();
 				$(".reponsecommentform").remove();
+				$("#comments").before(data.html).removeAttr("id");
 			}
 		 });
 
