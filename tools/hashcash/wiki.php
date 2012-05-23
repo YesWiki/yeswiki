@@ -33,3 +33,17 @@ $wikiClassesContent [] = '
 	}
 ';
 
+//TODO : Utiliser la config
+$base_url="http://".$_SERVER["SERVER_NAME"].($_SERVER["SERVER_PORT"] != 80 ? ":".$_SERVER["SERVER_PORT"] : "").$_SERVER["REQUEST_URI"].(preg_match("/".preg_quote("wakka.php")."$/", $_SERVER["REQUEST_URI"]) ? "?wiki=" : "");
+$a = parse_url($base_url);
+	
+$siteurl = $a['scheme'].'://'.$a['host'].str_replace('\\', '/', dirname($a['path']));
+
+$ChampsHashcash = 
+ '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script>';
+
+//$ChampsHashcash = urlencode($ChampsHashcash);
+
+ $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$ChampsHashcash."\n";/**/
+
+
