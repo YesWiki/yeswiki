@@ -11,13 +11,16 @@ border: 1px solid rgba(0, 0, 0, 0.05);
 -webkit-border-radius: 4px 4px 4px 4px;
 border-radius: 4px 4px 4px 4px;
 }
-.textarea-microblog {width:100%;}
+.textarea-microblog, .comment-microblog {width:100%;}
 .microblog-page-comment {margin-top:20px;}
 .microblog-page-actions {
     margin: -19px;
     margin-top:0;
 }
-
+.footer-microblog {
+    text-align:right;
+    padding-right:19px;
+}
 /***********************************Nuage de mot clés************************************/
 
 .boite_nuage {display:block;}

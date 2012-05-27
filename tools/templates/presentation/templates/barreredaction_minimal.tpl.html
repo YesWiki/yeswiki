@@ -1,0 +1,5 @@
+<div class="<?=$class;?>">
+<?php if (isset($time)) : ?><a title="<?=TEMPLATE_CLICK_TO_SEE_REVISIONS;?>" href="<?=$linkrevisions;?>" class="link-revisions" rel="#overlay-link"><i class="icon-calendar"></i><?=TEMPLATE_LAST_UPDATE;?> : <?=$time;?></a>&nbsp;<?php endif; ?>
+<?php if (isset($linkedit)) : ?><a title="<?=TEMPLATE_CLICK_TO_EDIT;?>" href="<?=$linkedit;?>" class="link-edit"><i class="icon-pencil"></i><?=TEMPLATE_EDIT;?></a>&nbsp;<?php endif; ?>
+<?php if (isset($linkdeletepage)) : ?><a href="<?=$linkdeletepage;?>" class="link-deletepage"><i class="icon-trash"></i><?=TEMPLATE_DELETE;?></a>&nbsp;<?php endif; ?>
+</div>

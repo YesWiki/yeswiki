@@ -117,23 +117,11 @@ if (count($paged_data['data'])>0) {
 				$valtemplate['page'] = $this->Format($microblogpost["body"]);
 
 				// load comments for this page
-		        $valtemplate['comment'] = '<strong class="lien_commenter">Commentaires</strong>'."\n";
-	    		$valtemplate['comment'] .= "<div class=\"commentaires_billet_microblog\">\n";
 	    		include_once('tools/tags/libs/tags.functions.php');
-				$valtemplate['comment'] .= afficher_commentaires_recursif($microblogpost['tag'], $this);
-				$valtemplate['comment'] .= "</div>\n";
+				$valtemplate['comment'] = afficher_commentaires_recursif($microblogpost['tag'], $this);
 				
 				//liens d'actions sur le billet	
-				$valtemplate['actions'] = $this->Format('{{barreredaction page="'.$microblogpost['tag'].'"}}');	
-				/*$valtemplate['edition'] = '<a href="'.$this->href('', $microblogpost['tag']).'" class="voir_billet">Afficher</a> ';
-				if ($this->HasAccess('write', $microblogpost['tag']))
-				{
-					$valtemplate['edition'] .= '<a href="'.$this->href('edit', $microblogpost['tag']).'" class="editer_billet">Editer</a> ';
-				}			
-				if ($this->UserIsOwner($microblogpost['tag']) || $this->UserIsAdmin())
-				{
-					$valtemplate['edition'] .= '<a href="'.$this->href('deletepage', $microblogpost['tag']).'" class="supprimer_billet">Supprimer</a>'."\n" ;
-				}				*/
+				$valtemplate['actions'] = $this->Format('{{barreredaction page="'.$microblogpost['tag'].'" class="footer-microblog" template="barreredaction_minimal.tpl.html"}}');	
 				$squel->set($valtemplate);
 				$text .= $squel->analyser();			
 			}					
