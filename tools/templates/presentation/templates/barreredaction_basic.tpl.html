@@ -2,7 +2,7 @@
 <?php if (isset($linkedit)) : ?><a title="<?=TEMPLATE_CLICK_TO_EDIT;?>" href="<?=$linkedit;?>" class="link-edit"><i class="icon-pencil"></i>&nbsp;<?=TEMPLATE_EDIT_THIS_PAGE;?></a><?php endif; ?>
 <?php if (isset($linkdeletepage)) : ?><a href="<?=$linkdeletepage;?>" class="link-deletepage"><i class="icon-trash"></i>&nbsp;<?=TEMPLATE_DELETE;?></a><?php endif; ?>
 <?php if (isset($time)) : ?><a title="<?=TEMPLATE_CLICK_TO_SEE_REVISIONS;?>" href="<?=$linkrevisions;?>" class="link-revisions" rel="#overlay-link"><i class="icon-calendar"></i>&nbsp;<?=TEMPLATE_LAST_UPDATE;?> : <?=$time;?></a><?php endif; ?>
-<?php if (isset($linkacls)) : ?><a rel="#overlay-link" class="link-acls" href="<?=$linkacls;?>" title="<?=TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS;?>"><i class="icon-user"></i>&nbsp;<?php if (isset($owner)) : ?><?=$owner;?><?php endif; ?> - <?=TEMPLATE_PERMISSIONS;?></a><?php endif; ?> 
+<?php if (isset($linkacls)) : ?><a <?php if (substr($linkacls, -4) == 'acls') : ?>rel="#overlay-link" <?php endif; ?>class="link-acls" href="<?=$linkacls;?>" title="<?=TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS;?>"><i class="icon-user"></i>&nbsp;<?php if (isset($owner)) : ?><?=$owner;?><?php endif; ?></a><?php endif; ?>
 <a title="<?=TEMPLATE_CLICK_TO_SEE_REFERENCES;?>" href="<?=$linkreferrers;?>" class="link-referrers" rel="#overlay-link"><i class="icon-info-sign"></i>&nbsp;<?=TEMPLATE_REFERENCES;?></a>
 <a title="<?=TEMPLATE_SLIDESHOW_MODE;?>" href="<?=$linkdiaporama;?>" class="link-diaporama"><i class="icon-film"></i>&nbsp;<?=TEMPLATE_SLIDESHOW;?></a>
 <a title="<?=TEMPLATE_SEE_SHARING_OPTIONS;?>" href="<?=$linkshare;?>" class="link-share" rel="#overlay-link"><i class="icon-share"></i>&nbsp;<?=TEMPLATE_SHARE;?></a>

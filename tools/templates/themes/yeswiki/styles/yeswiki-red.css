@@ -15,9 +15,8 @@ background:#E1E1E1;
 #container {
 margin:15px auto;
 padding:0;
-background: #fff;
 background: rgba(255, 255, 255, 0.8);
-filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#C0ffffff,endColorstr=#C0ffffff);
+filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, StartColorStr='#C0ffffff', EndColorStr='#C0ffffff'); 
 zoom: 1;
 -moz-border-radius:4px;
 -webkit-border-radius:4px;

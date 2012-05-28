@@ -28,6 +28,9 @@
 *@copyright     2012 Outils-Réseaux
 */
 
+define ('TEMPLATE_RSS_LAST_CHANGES', 'Flux RSS des derni&egrave;res pages modifi&eacute;s');
+define ('TEMPLATE_RSS_LAST_COMMENTS', 'Flux RSS des derniers commentaires');
+
 define ('TEMPLATE_DEFAULT_THEME_USED', 'Le template par d&eacute;faut est donc utilis&eacute;');
 define ('TEMPLATE_NO_THEME_FILES', 'Certains (ou tous les) fichiers du template ont disparu');
 define ('TEMPLATE_NO_DEFAULT_THEME', 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site');

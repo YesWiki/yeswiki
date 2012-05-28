@@ -553,7 +553,9 @@ if (!class_exists('WikiniFormatter'))
 } // if !class_exists
 
 
-$form = & WikiniFormatter :: getInstance($this);
+//$form = & WikiniFormatter :: getInstance($this);
+$form = new WikiniFormatter($this);
+//$form->getInstance($this);
 echo $form->format($text);
 
 ?>
