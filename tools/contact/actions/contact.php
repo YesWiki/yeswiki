@@ -94,5 +94,6 @@ else {
 			<div class="clear"></div>	
 		</form>
 	</div>';
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/contact/libs/contact.js"></script>'."\n";
 }
 ?>

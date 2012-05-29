@@ -40,23 +40,27 @@ if ($this->HasAccess("write")) {
 	if ( $content ) {   
                 // if owner is current user
                 if ($this->UserIsOwner($page) ) {   
-                       $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".TEMPLATE_YOU;
+                       $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".TEMPLATE_YOU.' - '.TEMPLATE_PERMISSIONS;
+                        $barreredactionelements['linkacls'] = $this->href("acls", $page);
+                        $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
                 }
                 else {   
                         if ($owner = $this->GetPageOwner($page)) {
-                               $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".$this->Format($owner);
+                                $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".$owner;
+                                if ($this->UserIsAdmin()) { 
+                                        $barreredactionelements['linkacls'] = $this->href("acls", $page);
+                                        $barreredactionelements['owner'] .= ' - '.TEMPLATE_PERMISSIONS;
+                                }   
+                                else {
+                                        $barreredactionelements['linkacls'] = $this->href('', $owner);
+                                }             
                         }   
                         else {   
-                               $barreredactionelements['owner'] = TEMPLATE_NO_OWNER." ".($this->GetUser() ? "(<a href=\"".$this->href("claim", $page)."\">".TEMPLATE_CLAIM."</a>)" : "");
+                                $barreredactionelements['owner'] = TEMPLATE_NO_OWNER.($this->GetUser() ? " - ".TEMPLATE_CLAIM : "");
+                                if ($this->GetUser()) $barreredactionelements['linkacls'] = $this->href("claim", $page);
+                                else $barreredactionelements['linkacls'] = $this->href();
                         }
                 }
-
-                if ($this->UserIsOwner($page) || $this->UserIsAdmin()) { 
-                        $barreredactionelements['linkacls'] = $this->href("acls", $page);
-                        $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
-                        //"<a rel=\"#overlay-link\" class=\"link-acls\" href=\"".$this->href("acls", $page)."\" title=\"".TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS."\">".TEMPLATE_PERMISSIONS."</a> :: \n".
-                        //"<a rel=\"#overlay-link\" class=\"link-delete\" href=\"".$this->href("deletepage", $page)."\">".TEMPLATE_DELETE."</a> :: \n";
-                }   
 
       }   
 		

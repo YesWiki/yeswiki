@@ -121,7 +121,7 @@ else {
 				}});	
 			});
 	    </script>'."\n";*/
-	    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script type="text/javascript" src="tools/tags/libs/microblog.js"></script>'."\n";
+	    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/tags/libs/microblog.js"></script>'."\n";
 
 
 		//on formatte l'action includetag qui va tout nous afficher à l'écran la liste des bulles du microblog

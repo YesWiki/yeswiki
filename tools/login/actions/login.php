@@ -135,4 +135,6 @@ $squel->set(array(
 $output = (!empty($class)) ? '<div class="'.$class.'">'."\n".$squel->analyser()."\n".'</div>'."\n" : $squel->analyser() ;
 
 echo $output;
+
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/login/libs/login.js"></script>'."\n";
 ?>

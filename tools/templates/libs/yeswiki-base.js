@@ -11,7 +11,7 @@
 /* Author: Florian Schmitt */ 
 (function($){
 	//gestion des classes actives pour les menus
-	$("a.actif").parent().addClass('liste-active').parents("ul").prev("a").addClass('actif').parent().addClass('liste-active');
+	$("a.active-link").parent().addClass('active-list').parents("ul").prev("a").addClass('active-parent-link').parent().addClass('active-list');
 	
 	/* Ajout de l'overlay pour le partage de page et l'envois par mail */
 	$('#container').before('<div id="overlay-link" class="yeswiki-overlay" style="display:none"><div class="contentWrap" style="width:600px"></div></div>');
@@ -25,9 +25,56 @@
 			wrap.load(url);
 		}
 	});
+
+	// Menus déroulants horizontaux
+	var confighorizontal = {    
+		sensitivity: 3,    
+		interval: 100,    
+		over: function() { //show submenu
+			$(this).addClass('hover').find("ul:first").show();
+		},    
+		timeout: 100,    
+		out: function() { //hide submenu
+			$(this).removeClass('hover').find("ul").hide();
+		}
+	};
+	var nav = $(".horizontal-dropdown-menu > ul");
+
+	/* on ajoute des flèches pour signaler les sous menus et on gère le menu déroulant */
+	nav.each(function() {
+		var $nav = $(this);
+		var nbmainlist = 1;
+		$nav.find("li").each(function(i) {
+			var $list = $(this);
+			if ($list.parents("ul").length <= 1) { $list.addClass('list-'+nbmainlist); nbmainlist++;}
+
+			// s'il y a des sous menus
+			if ($list.find("ul").length > 0) {
+				// selon la hierarchie des menu, on change le sens et la forme de la fleche
+				if ($list.parents("ul").length <= 1) {
+					var arrow = $("<span>").addClass('arrow arrow-level1').html("&#9660;");
+				}
+				else {
+					var arrow = $("<span>").addClass('arrow arrow-level'+$list.parents("ul").length).html("&#9658;");
+				}
+				
+				var firstsublist = $list.find('ul:first');
+				if (firstsublist.length > 0) { 
+					firstsublist.prev().append(arrow); 
+				}
+				else { 
+					$list.before(arrow); 
+				};
+				
+				$list.hoverIntent(confighorizontal);
+			}
+		});
+		$nav.find("li:last").addClass('last');
+	});
 	
-	// Menus déroulants
-	var config_col_menu = {    
+	
+	// Menus déroulants verticaux
+	var configvertical = {    
 		 sensitivity: 3, // number = sensitivity threshold (must be 1 or higher)    
 		 interval: 100, // number = milliseconds for onMouseOver polling interval    
 		 over: function(){
@@ -43,17 +90,18 @@
 		 timeout: 100, // number = milliseconds delay before onMouseOut    
 		 out: function(){ return false; }
 	};
-	$(".liste-deroulante li:has(ul)").hoverIntent( config_col_menu );
-	
-	//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
+
+		//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
 	var arrowright = $("<span>").addClass('arrow arrow-level1').html("&#9658;");
-	$(".liste-deroulante li:has(ul)").find("a:first").prepend(arrowright);
+	$(".vertical-dropdown-menu li:has(ul)").hoverIntent( configvertical ).find("a:first").prepend(arrowright);
+	
 
 	//deroule le deuxieme niveau pour la PageMenu, si elle contient le lien actif
-	var listesderoulables = $(".liste-deroulante > ul > li.liste-active:has(ul)");
+	var listesderoulables = $(".vertical-dropdown-menu > ul > li.active-list:has(ul)");
 	listesderoulables.addClass('hover').find('ul:first').slideDown('fast');
 	listesderoulables.find(".arrow:first").html("&#9660;");
 	
+
 	//on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
 	$(".no-dblclick, form, a").bind('dblclick', function(e) {
 		return false;

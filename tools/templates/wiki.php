@@ -51,19 +51,24 @@ define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 // Indique un code langue par defaut
 define ('TEMPLATES_DEFAULT_LANG', 'fr') ; 
 
+// Indique un encodage de caractères par defaut
+define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-1') ; 
 
-// Désactivation de l'extension template si l'extension navigation est présente et active. 
-if (isset($plugins_list['navigation'])) {
-	unset($k);	
-	return;
+
+//on récupère les metas
+$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+if (!empty($metadatas)) {
+	$metadatas =  array_map('utf8_decode', json_decode($metadatas, true));
 }
+if (isset($metadatas['lang'])) { $wakkaConfig['lang'] = $metadatas['lang']; }
+elseif (!isset($wakkaConfig['lang'])) { $wakkaConfig['lang'] = TEMPLATES_DEFAULT_LANG; }
+
+if (isset($metadatas['charset'])) { $wakkaConfig['charset'] = $metadatas['charset']; }
+elseif (!isset($wakkaConfig['charset'])) { $wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET; }
+header('Content-Type: text/html; charset='.TEMPLATES_DEFAULT_CHARSET); 
 
 // Code pour l'inclusion des langues
-if ( isset ($_GET['lang'])) {
-    include_once 'tools/templates/lang/templates_'.$_GET['lang'].'.inc.php';
-} else {
-    include_once 'tools/templates/lang/templates_'.TEMPLATES_DEFAULT_LANG.'.inc.php';
-}
+include_once 'tools/templates/lang/templates_'.$wakkaConfig['lang'].'.inc.php';
 
 include_once 'tools/templates/libs/templates.functions.php';
 
@@ -167,13 +172,6 @@ else {
 
 	}
 	else {
-		//on récupère les metas
-		$contenu = $wiki->LoadPage($page);
-		$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-		if (!empty($metadatas)) {
-			$metadatas =  array_map('utf8_decode', json_decode($metadatas, true));
-		}
-
 		// si les metas sont présentes on les utilise
 		if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette'])) {
 			$wakkaConfig['favorite_theme'] = $metadatas['theme'];
@@ -236,10 +234,10 @@ if (
 ) {
 	if (file_exists('tools/templates/themes/yeswiki/squelettes/yeswiki.tpl.html')
 		&& file_exists('tools/templates/themes/yeswiki/styles/yeswiki.css')) {
+		echo '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
 		$wakkaConfig['favorite_theme']='yeswiki';
 		$wakkaConfig['favorite_style']='yeswiki.css';
 		$wakkaConfig['favorite_squelette']='yeswiki.tpl.html';
-		echo '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
 } else {
 		exit('<div class="alert alert-error">'.TEMPLATE_NO_DEFAULT_THEME.'.</div>');
 	}

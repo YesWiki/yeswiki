@@ -84,7 +84,7 @@ $(document).ready(function() {
 			"commentaire" : "1",
 			"wiki" : $("#ACEditor input[name='wiki']").val(),
 			"previous" : $("#ACEditor input[name='previous']").val(),
-			"body" : $("#ACEditor textarea[name='body']").val(),
+			"body" : $("#ACEditor textarea[name='body']").val()
 		}, function(data) {				 
 		    if (data.nochange=='1') {
 		     	$("#comments").show();
