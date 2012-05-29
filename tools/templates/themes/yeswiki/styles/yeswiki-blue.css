@@ -1,13 +1,6 @@
  /* Styles for yeswiki's template
   * Author: Florian Schmitt <florian@outils-reseaux.org>
   * under GNU General Public License 
-  * 
-  * Colors used for gradient:
-  * #0088CC rgba(0, 136, 204, 0.9) : light blue
-  * #0055CC rgba(0, 85, 204, 0.9) : dark blue
-  * background-color: #0074cc;
-  * *background-color: #0055cc;
-  * background-image: -ms-linear-gradient(top, #0088cc, #0055cc);
   */
 
 body {
