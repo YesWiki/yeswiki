@@ -2,9 +2,10 @@
 (function($){
 	// on ajoute en jquery les classes css du bootstrap
 	$("nav.nav-collapse > div > ul").each(function() { // menu du haut
-		$(this).addClass('nav');
-		$(this).find('>li:has(ul)').addClass('dropdown').find('a:first').addClass('dropdown-toggle').attr('data-toggle','dropdown').append('<b class="caret"></b>');
-		$(this).find('> li:has(ul) > ul:first').addClass('dropdown-menu');
+		var $this = $(this);
+		$this.addClass('nav');
+		$this.find('>li:has(ul)').each(function() {
+			$(this).addClass('dropdown').find('a:first').addClass('dropdown-toggle').attr('data-toggle','dropdown').append('<b class="caret"></b>').next('ul:first').addClass('dropdown-menu')});
 	}); 
 	$("nav.sidebar-nav ul").each(function() {$(this).addClass('nav nav-list');}); // menu de gauche
 	$('nav.sidebar-nav > div > ul li').each(function() { // on met les textes entetes d'une liste en majuscules grises

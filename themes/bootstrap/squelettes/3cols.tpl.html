@@ -1,22 +1,29 @@
 <!doctype html>
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="fr"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="fr"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="fr"> <!--<![endif]-->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="{{configuration param="lang"}}"> <!--<![endif]-->
 <head>
-  <meta charset="iso-8859-1">
-  <title>{{titrepage}}</title>{{metarobots}}
+  <!-- HTML Metas -->
+  <meta charset="{{configuration param="charset"}}">
+  {{metarobots}}
   <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
   <meta name="description" content="{{configuration param="meta_description"}}" />
-  <meta name="viewport" content="width=device-width">
-  <link rel="alternate" type="application/rss+xml" title="Flux RSS des derniers changements du YesWiki" href="{{configuration param="base_url"}}DerniersChangementsRSS/xml" />
-  <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico">
-  <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Title of the page -->
+  <title>{{configuration param="wakka_name"}} : {{currentpage}}</title>
+  
+  <!-- Favicons -->
+  <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico" />
+  <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
-  {{liensstyle othercss="bootstrap/bootstrap-responsive.min.css"}}
+  
+  {{linkstyle othercss="bootstrap/bootstrap-responsive.min.css"}}
+  {{linkrss}}
 </head>
 
-  <body {{parambody}}>
+<body {{parambody}}>
 
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
@@ -28,8 +35,9 @@
           </a>
           <a class="brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{configuration param="wakka_name"}}</a>
           <nav class="nav-collapse">
-            {{include page="PageMenuHaut" doubleclic="1" actif="1"}}
+            {{include page="PageMenuHaut" class="topnavpage"  doubleclic="1" actif="1"}}
       			{{moteurrecherche template="moteurrecherche_navbar.tpl.html" class="pull-right"}}
+            <div class="clear"></div>
           </nav><!--/.nav-collapse -->
         </div>
       </div>
@@ -57,6 +65,6 @@
 
     </div><!--/.fluid-container-->
 
-    {{liensjavascripts}}
+  {{linkjavascript}}
   </body>
 </html>

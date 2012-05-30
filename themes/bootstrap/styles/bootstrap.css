@@ -1,5 +1,5 @@
 body {
-	padding-top: 60px;
+	padding-top: 40px;
 }
 
 .sidebar-nav {
@@ -19,6 +19,7 @@ body {
     margin: 0 10px 0 0;
     position: relative;
 }
+.navbar nav.nav-collapse > div > ul:after { content:"."; display:block; height:0; clear:both; visibility:hidden; }
 
 .navbar nav.nav-collapse > div > ul > li {
 	display:block;
@@ -44,6 +45,10 @@ body {
 .page {
 background-color:rgba(255,255,255,0.8);
 padding:12px;
+}
+
+.footer a {
+margin: 0 8px;
 }
 
 @media (max-width:767px) {body {padding-top:0;}}

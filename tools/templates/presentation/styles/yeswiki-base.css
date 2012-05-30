@@ -58,13 +58,23 @@ span.missingpage {display:inline;}
 .include:hover .include_editlink { display: block; } /* Au passage de la souris sur le bloc "include", affiche le bloc "include_editlink" */
 /* fin inclusion de page */
 
+/* Les 3 colonnes potentielles de la page centrale */
+.page, .menupage, .rightcolumnpage {
+position:relative;
+margin:0;
+min-height:400px;
+}
+
 /* flèches des accordeons et listes déroulantes */
 .arrow {
 font-family: Arial;
 font-size: 13px;
-margin: 2px 0 0 15px;
+margin: 0;
 width: 20px;
 }
+.horizontal-dropdown-menu .arrow-level1 {margin:0 0 0 15px;}
+.horizontal-dropdown-menu .arrow-level2 {position:absolute;right:5px;}
+
 
 /* Menus déroulants verticaux */
 .vertical-dropdown-menu ul {margin:0 0 8px; padding:0; list-style:none;}
