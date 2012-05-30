@@ -1,9 +1,13 @@
 /* Author: Florian Schmitt <florian@outils-reseaux.org> */ 
 (function($){
+	var menuhaut = $("nav.nav-collapse");
+	var pagehautinc =  menuhaut.find("> div.include");
+	menuhaut.attr('ondblclick', pagehautinc.attr('ondblclick'));
+	pagehautinc.removeAttr('ondblclick');
 	// on ajoute en jquery les classes css du bootstrap
-	$("nav.nav-collapse > div > ul").each(function() { // menu du haut
+	menuhaut.find("> div > ul").each(function() { // menu du haut
 		var $this = $(this);
-		$this.addClass('nav');
+		$this.addClass('nav').append($('<div>').addClass('clear').html());
 		$this.find('>li:has(ul)').each(function() {
 			$(this).addClass('dropdown').find('a:first').addClass('dropdown-toggle').attr('data-toggle','dropdown').append('<b class="caret"></b>').next('ul:first').addClass('dropdown-menu')});
 	}); 
@@ -14,46 +18,4 @@
 			$(this).addClass('nav-header');
 		}
 	});
-	
-	// gestion des classes actives pour les menus
-	$("a.actif").parent().addClass('active').parents("ul").prev("a").addClass('actif').parent().addClass('active');
-	
-	// ajout de l'overlay pour le partage de page et l'envois par mail 
-	$('body').prepend('<div id="overlay-link" class="yeswiki-overlay" style="display:none"><div class="contentWrap" style="width:600px"></div></div>');
-	$('a[rel="#overlay-link"]').overlay({
-		onBeforeLoad: function() {
-			// grab wrapper element inside content
-			var wrap = this.getOverlay().find(".contentWrap");
-	
-			// load the page specified in the trigger
-			var url = this.getTrigger().attr("href") + ' .page'
-			wrap.load(url);
-		}
-	});
-	
-	// on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
-	$(".accordion, .slide_show").bind('dblclick', function(e) {
-		return false;
-	});
-	
-/*
-	$("#graphical_bouton").overlay({
-		mask: 'transparent',
-		closeOnClick : false,
-		onLoad: function() {}
-	});
-	$('#graphical_bouton').modal({backdrop:false});
-*/
-
-	// accordeon pour bazarliste
-	$(".accordion_title").bind('click',function() {
-		if ($(this).hasClass('current')) {
-			$(this).removeClass('current');
-			$(this).next("div.pane").hide();
-		} else { 
-			$(this).addClass('current');
-			$(this).next("div.pane").show();
-		}
-	});
-	
 })(jQuery);

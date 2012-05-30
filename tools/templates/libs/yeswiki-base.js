@@ -14,7 +14,7 @@
 	$("a.active-link").parent().addClass('active-list').parents("ul").prev("a").addClass('active-parent-link').parent().addClass('active-list');
 	
 	/* Ajout de l'overlay pour le partage de page et l'envois par mail */
-	$('#container').before('<div id="overlay-link" class="yeswiki-overlay" style="display:none"><div class="contentWrap" style="width:600px"></div></div>');
+	$('body').prepend('<div id="overlay-link" class="yeswiki-overlay" style="display:none"><div class="contentWrap" style="width:600px"></div></div>');
 	$('a[rel="#overlay-link"]').overlay({
 		onBeforeLoad: function() {
 			// grab wrapper element inside content
