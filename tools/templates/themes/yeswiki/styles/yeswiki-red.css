@@ -14,8 +14,8 @@ a:hover {color: #bd362f;}
 #container {
 margin-top:15px;
 margin-bottom:15px;
-background: rgba(255, 255, 255, 0.8);
-filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, StartColorStr='#C0ffffff', EndColorStr='#C0ffffff'); 
+background: rgba(255, 255, 255, 0.9);
+filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, StartColorStr='#E5ffffff', EndColorStr='#E5ffffff');  
 zoom: 1;
 -moz-border-radius:4px;
 -webkit-border-radius:4px;
@@ -104,8 +104,7 @@ text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
 #topnav > div > ul > li { border-left:1px solid rgba(200, 200, 200, 0.2); border-right:1px solid rgba(100, 100, 100, 0.2); }
 #topnav > div > ul > li:first-child { border-left:none; }
 #topnav > div > ul > li:last-child { border-right:none; }
-#topnav span.arrow { font-family: Arial; font-size: 13px; margin: 2px 0 0 15px; width:20px;}
-#topnav span.arrow-level2 {float:right; margin:0;}
+
 #topnav ul ul { 
 display:none; 
 width:230px; 
