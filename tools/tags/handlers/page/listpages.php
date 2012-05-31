@@ -65,12 +65,12 @@ if (is_array($tab_tous_les_tags))
 
 	if (is_array($tab_tag))
 	{
-		$output .= '<div class="filter_tags">
+		$outputselecttag .= '<div class="filter_tags">
 		<ul  class="tagit ui-widget ui-widget-content ui-corner-all show">'."\n";
 		foreach ($tab_tag as $tag) {
-			$output .= $tag;
+			$outputselecttag .= $tag;
 		}
-		$output .= '</ul>'."\n".'</div>'."\n";
+		$outputselecttag .= '</ul>'."\n".'</div>'."\n";
 	}
 }
 
@@ -139,6 +139,6 @@ foreach ($resultat as $microblogpost)
 $output .= $text;
 
 echo $this->Header();
-echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
+echo "<div class=\"page\">\n$output.\n$outputselecttag.\n<hr class=\"hr_clear\" />\n</div>\n";
 echo $this->Footer();
 ?>

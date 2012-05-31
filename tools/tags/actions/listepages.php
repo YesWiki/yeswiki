@@ -28,7 +28,7 @@ if (empty($class)) $class = 'liste';
 $tri = $this->GetParameter('tri');
 $nb = $this->GetParameter('nb');
 $template = $this->GetParameter('vue');
-if (empty($template)) $template = 'liste_microblog.tpl.html';
+if (empty($template)) $template = 'bulle_microblog.tpl.html';
 $req = '';
 $req_from = '';
 $req_having = '';
@@ -87,110 +87,55 @@ else
 
 $requete = "SELECT DISTINCT tag, time, user, owner, body FROM ".$this->config["table_prefix"]."pages".$req_from." WHERE latest = 'Y' and comment_on = '' ".$req;
 
-require_once 'tools/tags/libs/MDB2.php';
-$dsn = array(
-    'phptype'  => 'mysql',
-    'username' => $this->config["mysql_user"],
-    'password' => $this->config["mysql_password"],
-    'hostspec' => $this->config["mysql_host"],
-    'database' => $this->config["mysql_database"],
-);
 
-// create MDB2 instance
-$db =& MDB2::connect($dsn);
 
-if (!empty($nb))
-{
-	require_once 'tools/tags/libs/Pager/Pager_Wrapper.php'; //this file
-	$pagerOptions = array(
-    	'mode'    => 'Sliding',
-   	 	'delta'   => 2,
-    	'perPage' => $nb,
- 	);
-	$paged_data = Pager_Wrapper_MDB2($db, $requete, $pagerOptions);
-	//$paged_data['page_numbers']; //array('current', 'total');
-} else
-{
-	$paged_data['data'] = $db->queryAll($requete, null, MDB2_FETCHMODE_ASSOC);
-}
-
+$paged_data['data'] = $this->LoadAll($requete);
 $text = '';
-foreach ($paged_data['data'] as $microblogpost)
-{
-    if (!file_exists('tools/tags/presentation/'.$template)) 
+if (count($paged_data['data'])>0) {
+	foreach ($paged_data['data'] as $microblogpost)
 	{
-		exit('Le fichier template du formulaire de microblog "tools/tags/presentation/'.$template.'" n\'existe pas. Il doit exister...');
-	}
-	elseif ( $this->tag!=$microblogpost['tag'] )
-	{
-		include_once('tools/tags/libs/squelettephp.class.php');
-		$valtemplate=array();
-		$squel = new SquelettePhp('tools/tags/presentation/'.$template);
-		$valtemplate['class'] = $class;
-		$valtemplate['lien'] = $this->href('',$microblogpost['tag']);
-		$valtemplate['nompage'] = $microblogpost['tag'];
-		if ($template=='liste_microblog.tpl.html')
-		{		
-			$squel->set($valtemplate);
-			$text .= '<ul>'.$squel->analyser().'</ul>';
-		}
-		else 
+	    if (!file_exists('tools/tags/presentation/templates/'.$template)) 
 		{
-			$valtemplate['user'] = $this->Format($microblogpost["user"]);					
-			$valtemplate['date'] = date("\l\e d.m.Y &\a\g\\r\av\e; H:i:s", strtotime($microblogpost["time"]));
-			$valtemplate['billet'] = $this->Format($microblogpost["body"]);
-			// load comments for this page
-	        include_once('tools/tags/libs/tags.functions.php');
-	        $valtemplate['commentaire'] = '<strong class="lien_commenter">Commentaires</strong>'."\n";
-    		$valtemplate['commentaire'] .= "<div class=\"commentaires_billet_microblog\">\n";
-			$valtemplate['commentaire'] .= afficher_commentaires_recursif($microblogpost['tag'], $this);
-			$valtemplate['commentaire'] .= "</div>\n";
-			
-			//liens d'actions sur le billet			
-			$valtemplate['edition'] = '<a href="'.$this->href('', $microblogpost['tag']).'" class="voir_billet">Afficher</a> ';
-			if ($this->HasAccess('write', $microblogpost['tag']))
+			exit('Le fichier template d\'affichage de la listes des pages "tools/tags/presentation/templates/'.$template.'" n\'existe pas. Il doit exister...');
+		}
+		elseif ( $this->tag!=$microblogpost['tag'] )
+		{
+			include_once('tools/tags/libs/squelettephp.class.php');
+			$valtemplate=array();
+			$squel = new SquelettePhp('tools/tags/presentation/templates/'.$template);
+			$valtemplate['class'] = $class;
+			$valtemplate['lien'] = $this->href('',$microblogpost['tag']);
+			$valtemplate['nompage'] = $microblogpost['tag'];
+			if ($template=='liste_microblog.tpl.html')
+			{		
+				$squel->set($valtemplate);
+				$text .= '<ul>'.$squel->analyser().'</ul>';
+			}
+			else 
 			{
-				$valtemplate['edition'] .= '<a href="'.$this->href('edit', $microblogpost['tag']).'" class="editer_billet">Editer</a> ';
-			}			
-			if ($this->UserIsOwner($microblogpost['tag']) || $this->UserIsAdmin())
-			{
-				$valtemplate['edition'] .= '<a href="'.$this->href('deletepage', $microblogpost['tag']).'" class="supprimer_billet">Supprimer</a>'."\n" ;
-			}				
-			$squel->set($valtemplate);
-			$text .= $squel->analyser();			
-		}					
-	} 
-}
+				$valtemplate['tag'] = $microblogpost['tag'];
+				$valtemplate['page'] = $this->Format($microblogpost["body"]);
 
-if ($vue=='accordeon')
-{
-	//javascript accordeon
-	echo $text.'
-	<script type="text/javascript">
-	    <!--
-	    $(document).ready( function () {
-	        // On cache les pages inclues
-	        $("div.include").hide();          
-	        // On modifie l\'evenement "click" sur les liens vers la page
-	        $("a.lien_accordeon").click( function () {
-	            // Si le div etait deja ouvert, on le referme :
-	            $("div.include:visible").slideUp("fast");
-	            
-	            // Si le div est cache, on ferme les autres et on l\'affiche :            
-	            $(this).next().next("div.include").slideDown("fast");
-	            
-	            // On empeche le navigateur de suivre le lien :
-	            return false;
-	        });
-	    
-	    } ) ;
-	    // -->
-	    </script>
-	
-	';
+				// load comments for this page
+	    		include_once('tools/tags/libs/tags.functions.php');
+				$valtemplate['comment'] = afficher_commentaires_recursif($microblogpost['tag'], $this);
+				
+				//liens d'actions sur le billet	
+				$valtemplate['actions'] = $this->Format('{{barreredaction page="'.$microblogpost['tag'].'" class="footer-microblog" template="barreredaction_minimal.tpl.html"}}');	
+				$squel->set($valtemplate);
+				$text .= $squel->analyser();			
+			}					
+		} 
+	}
 }
-elseif ($vue=='liste' && $text!='') echo '<ul>'.$text.'</ul>'."\n"; 
-else echo $text;
+else {
+	$text .= '<div class="alert alert-info">
+        <a data-dismiss="alert" class="close">&times;</a>
+        Il n\'y a pas encore de pages cr&eacute;&eacute;es.
+      </div>';
+
+}
+echo $text;
 
 
 //show the links

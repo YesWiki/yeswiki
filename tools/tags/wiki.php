@@ -115,7 +115,7 @@ $wikiClassesContent [] = '
 			$tags=trim($tags);
 			$tab_tags = explode(",", $tags);
 			$nbdetags = count($tab_tags);
-			$tags = implode(",", array_filter($tab_tags, "trim"));
+			$tags = implode(",", $tab_tags);
 			$tags = \'"\'.str_replace(\',\',\'","\',$tags).\'"\';
 			$req .= \' AND tags.value IN (\'.$tags.\') \';
 			$req .= \' AND tags.property="http://outils-reseaux.org/_vocabulary/tag" AND tags.resource=tag \';

@@ -7,6 +7,7 @@ if (!defined("WIKINI_VERSION"))
 
 if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 {
+	$response = array();
 	// on recupere tous les tags du site
 	$tab_tous_les_tags = $this->GetAllTags();
 	if (is_array($tab_tous_les_tags))
@@ -35,8 +36,8 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 		$tagspagecourante = '';
 	}
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
-	<script src="tools/tags/libs/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
-	<script src="tools/tags/libs/tag-it.js" type="text/javascript"></script>	
+	<script defer src="tools/tags/libs/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
+	<script defer src="tools/tags/libs/tag-it.js" type="text/javascript"></script>	
 	<script type="text/javascript">
 	$(function(){
         var tagsexistants = ['.$tagsexistants.'];

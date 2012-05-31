@@ -1,3 +1,26 @@
+.microblog-page {
+-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+background:#FFF;
+color:#333;
+margin:0 0 20px;
+padding: 19px;
+border: 1px solid rgba(0, 0, 0, 0.05);
+-moz-border-radius: 4px 4px 4px 4px;
+-webkit-border-radius: 4px 4px 4px 4px;
+border-radius: 4px 4px 4px 4px;
+}
+.textarea-microblog, .comment-microblog {width:100%;}
+.microblog-page-comment {margin-top:20px;}
+.microblog-page-actions {
+    margin: -19px;
+    margin-top:0;
+}
+.footer-microblog {
+    text-align:right;
+    padding-right:19px;
+}
 /***********************************Nuage de mot clés************************************/
 
 .boite_nuage {display:block;}
@@ -28,48 +51,37 @@ border:0;
 
 a.size6 {
 font-size:38px;
-/* color:#e13728; */
-color:#CBEBF8;
+color:#e13728;
 padding:0 4px;
 }
 
 a.size5 {
 font-size:34px;
-/* color:#c4876a;
-color:#26204B; */
-color:#97BF1F;
+color:#c4876a;
 padding:5px;
 }
 
 a.size4 {
 font-size:29px;
-/* color:#804d40;
-color:#02A0CB;*/
-color:#89AEEA;
+color:#804d40;
 padding:10px;
 }
 
 a.size3 {
 font-size:24px;
-/* color:#e13728;
-color:#6D6A93; */
-color:#8CBF1F;
+color:#e13728;
 padding:5px;
 }
 
 a.size2 {
 font-size:19px;
-/* color:#b9251a; 
-color:#F8BE7D;*/
-color:#6196ED;
+color:#b9251a;
 padding:7px;
 }
 
 a.size1 {
 font-size:14px;
-/* color:#b46a47; 
-color:#F39F35;*/
-color:#62A61B;
+color:#b46a47;
 padding:5px;
 }
 
@@ -83,9 +95,9 @@ color:#e13728;
 
 .hovertip {
 display:none;
-z-index:100;
-/* background:#FFF;
-background-color: rgba(255, 255, 255, 0.7); */
+z-index:100;/*
+background:#FFF;
+background-color: rgba(255, 255, 255, 0.7);*/
 border:1px solid #CCCCCC;
 -moz-border-radius:4px;
 -webkit-border-radius:4px;
@@ -93,24 +105,18 @@ border-radius:4px;
 -moz-box-shadow:1px 1px 1px 0 rgba(50,50,50,.75);
 -webkit-box-shadow:1px 1px 1px 0 rgba(50,50,50,.75);
 box-shadow:1px 1px 1px 0 rgba(50,50,50,.75);
-width:260px;
-max-height:260px;
+max-height:280px;
+min-width:280px;
 overflow:auto;
 margin:0;
 padding:10px;
-background: white;
-/* background: -moz-linear-gradient(top,  #efefef 0%, #cccccc 50%, #cccccc 100%);
-background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#efefef), color-stop(50%,#cccccc), color-stop(100%,#cccccc)); 
-background: -webkit-linear-gradient(top,  #efefef 0%,#cccccc 50%,#cccccc 100%); */
-background: -o-linear-gradient(top,  #efefef 0%,#cccccc 50%,#cccccc 100%);
-background: -ms-linear-gradient(top,  #efefef 0%,#cccccc 50%,#cccccc 100%);
-background: linear-gradient(top,  #efefef 0%,#cccccc 50%,#cccccc 100%);
-filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#efefef', endColorstr='#cccccc',GradientType=0 );
+background: #fff;
+background: rgba(255,255,255,0.8);
 }
 
 .hovertip ul {
 position:relative;
-display:block;
+display:block !important;
 list-style-type:none;
 margin:0;
 padding:0 0 0 15px;
@@ -231,16 +237,8 @@ margin:0 10px 10px;
 }
 
 .edition_billet_microblog {
-clear:both;
 font-size:.9em;
 background:#EEE;
-width:100%;
--moz-border-radius-bottomleft:15px;
--moz-border-radius-bottomright:15px;
--webkit-border-bottom-left-radius:15px;
--webkit-border-bottom-right-radius:15px;
--khtml-border-bottom-left-radius:15px;
--khtml-border-bottom-right-radius:15px;
 text-align:right;
 margin:10px 0 0;
 padding:4px 0;
