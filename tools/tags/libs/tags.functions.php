@@ -2,13 +2,14 @@
 function afficher_commentaires_recursif($page, $wiki, $premier=true) {
 	$output = '';
 	$comments = $wiki->LoadComments($page);
-	$valcomment['tag'] = $page;
-	$valcomment['commentaires'] = array();
+
 	// display comments themselves
-	if ($comments) {
+	if ($comments)
+	{
 		$valcomment=array();
 		$i=0;
-		foreach ($comments as $comment) {
+		foreach ($comments as $comment)
+		{
 			$valcomment['commentaires'][$i]['tag'] = $comment["tag"];
 			$valcomment['commentaires'][$i]['body'] = $wiki->Format($comment["body"]);
 			$valcomment['commentaires'][$i]['infos'] = "de ".$wiki->Format($comment["user"]).", ".date("\l\e d.m.Y &\a\g\\r\av\e; H:i:s", strtotime($comment["time"]));
@@ -28,34 +29,32 @@ function afficher_commentaires_recursif($page, $wiki, $premier=true) {
 			$valcomment['commentaires'][$i]['reponses'] = afficher_commentaires_recursif($comment['tag'], $wiki, false);
 			$i++;
 		}
-	} 
-
-	// formulaire d'ajout de commentaire
-	$valcomment['commentform'] = '';
-	if ($premier && $wiki->HasAccess("comment", $page))	{
-		$valcomment['commentform'] .= "<div class=\"microblog-comment-form\">\n" ;
-		$valcomment['commentform'] .= $wiki->FormOpen("addcomment", $page).'
-				<textarea name="body" class="comment-microblog" rows="3" placeholder="Ecrire votre commentaire ici..."></textarea>
-				<button class="btn btn-primary btn-microblog" name="action" value="addcomment">Ajouter votre commentaire</button>'.$wiki->FormClose();
-		$valcomment['commentform'] .= "<div class=\"clear\"></div></div>\n" ;
+		include_once('squelettephp.class.php');
+		$squelcomment = new SquelettePhp('tools/tags/presentation/commentaire_microblog.tpl.html');
+		$squelcomment->set($valcomment);
+		$output .= $squelcomment->analyser();
+	} elseif ($premier && $wiki->HasAccess("comment",$page)) {
+		$output .= 'Soyez le premier &agrave; &eacute;crire un commentaire!'."\n";
 	}
-
-	include_once('squelettephp.class.php');
-	$squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
-	$squelcomment->set($valcomment);
-	$output .= $squelcomment->analyser();
+	if ($premier && $wiki->HasAccess("comment",$page))
+	{
+		// display comment form
+		$output .= "<div class=\"microblogcommentform\">\n" ;
+		$output .= $wiki->FormOpen("addcomment", $page).'
+				<textarea name="body" class="commentaire_microblog" rows="3" cols="20"></textarea><br />
+				<input type="button" class="bouton_microblog" value="Ajouter votre commentaire" accesskey="s" />'.$wiki->FormClose();
+		$output .= "</div>\n" ;
+	}
 
 	return $output;
 }
 
-function array_non_empty($array) {
-	$retour = array();
-	foreach ($array as $a){
-		if (!empty($a)) { 
-			array_push($retour, $a);
-		}
-	}
-	return $retour;
+function array_non_empty($array){
+$retour = array();
+  foreach ($array as $a){
+  if (!empty($a)){ array_push($retour, $a); }
+  }
+  return $retour;
 }
 
 function split_words($string){
