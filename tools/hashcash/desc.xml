@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkhasshcash" version="$Name:  $" active="0">
+<plugin name="wkhasshcash" version="$Name:  $" active="1">
   <author>David</author>
   <label>Hashcash adaptation pour wikini</label>
   <desc>Hashcash adaptation pour wikini</desc>

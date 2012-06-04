@@ -1,12 +1,11 @@
 <?php
+	header('content-type:application/x-javascript');
 	ob_start("ob_gzhandler");
 	require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
 	
 	$field_id = hashcash_random_string(rand(6,18));
 	$fn_enable_name = hashcash_random_string(rand(6,18));
 ?>
-
-$("div.commentform form").attr("id","ACEditor");
 
 addLoadEvent(<?php echo $fn_enable_name; ?>);
 
@@ -25,16 +24,15 @@ function addVerbage(){
 	/*var p = document.createElement('div');
 	p.className = "right";
 	p.innerHTML = ;*/
-	//var e = document.getElementById('hashcash-text');
-	//e.innerHTML = '<?php echo str_replace("'", "\'", hashcash_verbage()); ?>';
+	var e = document.getElementById('hashcash-text');
+	e.innerHTML = '<?php echo str_replace("'", "\'", hashcash_verbage()); ?>';
 }
 
 function <?php echo $fn_enable_name;?>(){
 	createHiddenField();
 	addVerbage();
 	loadHashCashKey('<?php 
-		$siteurl = $_GET['siteurl'];
-		echo $siteurl; ?>/tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
+	echo $_GET['siteurl']; ?>/tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
 }	
 
 function loadHashCashKey(fragment_url, e_id) {
