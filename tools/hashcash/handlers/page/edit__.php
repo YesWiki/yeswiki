@@ -26,7 +26,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 			}
 		}
 		
-		if (substr($this->config['base_url'],0,4)!="http") { // Wakka.config mal configure
+		/*if (substr($this->config['base_url'],0,4)!="http") { // Wakka.config mal configure
 			$base_url="http://".$_SERVER["SERVER_NAME"].($_SERVER["SERVER_PORT"] != 80 ? ":".$_SERVER["SERVER_PORT"] : "").$_SERVER["REQUEST_URI"].(preg_match("/".preg_quote("wakka.php")."$/", $_SERVER["REQUEST_URI"]) ? "?wiki=" : "");
 			$a = parse_url($base_url);
 		}
@@ -34,14 +34,14 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 			$a = parse_url($this->config['base_url']);
 		}
 			
-        $siteurl = $a['scheme'].'://'.$a['host'].str_replace('\\', '/', dirname($a['path']));
+  		$siteurl = $a['scheme'].'://'.$a['host'].str_replace('\\', '/', dirname($a['path']));
 
 		$ChampsHashcash = 
 		 '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script><span id="hashcash-text" class="right"></span>';
 
 	 
-		$plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/',
-		$ChampsHashcash.'<hr class="hr_clear" />', $plugin_output_new);
+		//$plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/',
+		//$ChampsHashcash.'<hr class="hr_clear" />', $plugin_output_new);*/
 		
 	}
 
