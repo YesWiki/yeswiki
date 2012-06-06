@@ -21,7 +21,7 @@ if (is_dir('themes/'.$this->config['favorite_theme'].'/javascripts')) {
 
 // on ajoute les javascripts du theme
 $dir = opendir($repertoire);
-while (false !== ($file = readdir($dir))) {
+while ($dir && (false !== ($file = readdir($dir)))) {  //attention aux loop infini.
   if (substr($file, -3, 3)=='.js') $scripts[] = '	<script type="text/javascript" src="'.$repertoire.'/'.$file.'"></script>'."\n";
 }
 closedir($dir);
