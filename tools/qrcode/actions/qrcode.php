@@ -40,7 +40,7 @@ if (empty($text)) {
 else { 
 	include_once 'tools/qrcode/libs/qrlib.php';
 	
-	$cache_image = 'cache/qrcode-'.$this->getPageTag().'-'.md5($text).'.png';
+	$cache_image = 'cache'.DIRECTORY_SEPARATOR.'qrcode-'.$this->getPageTag().'-'.md5($text).'.png';
 	QRcode::png($text, $cache_image, $correction, 4, 2);
 	echo '<img src="'.$cache_image.'" alt="'.$text.'" />'."\n";
 }

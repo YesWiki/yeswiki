@@ -1,8 +1,7 @@
-<div class="formulaire_microblog">
-	<label class="formulaire">Texte (<span class="info_nb_car"><?=$nb;?></span> caract&egrave;res restants)</label>
-	<textarea maxlength="<?=$nb;?>" rows="4" cols="20" class="formulaire microblog_billet" name="microblog_billet"><?=$billet;?></textarea>
-	<div class="groupe_boutons">
-		<input type="submit" value="Enregistrer" class="bouton bouton btn_enregistrer" />
-		<input type="button" value="Annuler" class="bouton btn_annuler" />
-	</div>
-</div>
+<form class="<?=$class;?> form-microblog" method="post" action="<?=$url;?>">
+	<input type="hidden" value="<?=$pagetag;?>" name="wiki">
+	<input type="hidden" value="0" name="antispam" class="antispam">
+	<textarea maxlength="<?=$nb;?>" rows="4" placeholder="Ecrire votre texte ici..." class="textarea-microblog <?=$textareaclass;?>" name="microblog_billet"><?=$billet;?></textarea>
+	<button value="save" name="action" type="submit" class="btn btn-primary btn-large">Enregistrer ce billet</button>
+	<span class="help-block pull-right"><span class="info_nb_car"><?=$nb;?></span> caract&egrave;res restants</span>
+</form>

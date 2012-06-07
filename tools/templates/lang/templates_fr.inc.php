@@ -28,6 +28,9 @@
 *@copyright     2012 Outils-Réseaux
 */
 
+define ('TEMPLATE_RSS_LAST_CHANGES', 'Flux RSS des derni&egrave;res pages modifi&eacute;s');
+define ('TEMPLATE_RSS_LAST_COMMENTS', 'Flux RSS des derniers commentaires');
+
 define ('TEMPLATE_DEFAULT_THEME_USED', 'Le template par d&eacute;faut est donc utilis&eacute;');
 define ('TEMPLATE_NO_THEME_FILES', 'Certains (ou tous les) fichiers du template ont disparu');
 define ('TEMPLATE_NO_DEFAULT_THEME', 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site');
@@ -44,9 +47,10 @@ define ('TEMPLATE_ERROR_NO_ACCESS', 'ERREUR : pas les droits d\'acc&eacute;s.');
 
 //barre de redaction
 define ('TEMPLATE_CLICK_TO_EDIT', 'Cliquez pour &eacute;diter cette page.');
+define ('TEMPLATE_EDIT', '&Eacute;diter');
 define ('TEMPLATE_EDIT_THIS_PAGE', '&Eacute;diter cette page');
 define ('TEMPLATE_CLICK_TO_SEE_REVISIONS', 'Cliquez pour voir les derni&egrave;res modifications sur cette page.');
-define ('TEMPLATE_LAST_UPDATE', 'Derni&egrave;re modification');
+define ('TEMPLATE_LAST_UPDATE', 'Modifi&eacute;e le');
 define ('TEMPLATE_OWNER', 'Propri&eacute;taire');
 define ('TEMPLATE_YOU', 'vous');
 define ('TEMPLATE_NO_OWNER', 'Pas de propri&eacute;taire');
@@ -62,7 +66,7 @@ define ('TEMPLATE_SEE_SHARING_OPTIONS', 'Voir les possibilit&eacute;s de partage
 define ('TEMPLATE_SHARE', 'Partager');
 
 //formatage des dates
-define ('TEMPLATE_DATE_FORMAT', '\l\e d.m.Y \&\a\g\r\a\v\e; H:i:s');
+define ('TEMPLATE_DATE_FORMAT', 'd.m.Y \&\a\g\r\a\v\e; H:i:s');
 
 //recherche
 define ('TEMPLATE_SEARCH_INPUT_TITLE', 'Rechercher dans YesWiki [alt-shift-C]');

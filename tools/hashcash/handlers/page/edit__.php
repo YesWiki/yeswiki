@@ -34,8 +34,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 			$a = parse_url($this->config['base_url']);
 		}
 			
-        $siteurl = ($a['scheme'].'://'.$a['host'].dirname($a['path']));
-
+        $siteurl = $a['scheme'].'://'.$a['host'].str_replace('\\', '/', dirname($a['path']));
 
 		$ChampsHashcash = 
 		 '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script><span id="hashcash-text" class="right"></span>';

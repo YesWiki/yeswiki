@@ -11,21 +11,18 @@ include_once "tools/tags/libs/tags.functions.php";
 $tags = $this->GetParameter('tags');
 $tagsvirgule = implode(',', split_words($tags));
 
-//mot clés cachés d'office
-$notags = $this->GetParameter('notags');
-
-//peut on éditer les pages?
-$lienedit = $this->GetParameter('edit');
-
 $titrerss = $this->GetParameter('titrerss');
 
-//classe CSS associée
+//classe CSS associée au formulaire
 $class = $this->GetParameter('class');
-if (empty($class)) $class = 'microblog';
+if (empty($class)) $class = '';
+
+//classe CSS associée au formulaire
+$textareaclass = $this->GetParameter('textareaclass');
+if (empty($textareaclass)) $textareaclass = '';
 
 //template billets microblog
-$vue = $this->GetParameter('vue');
-if (empty($vue)) $vue = 'bulle_microblog.tpl.html';
+$templatepages = $this->GetParameter('templatepages');
 
 //formulaire de microblog au dessus ou en dessous
 $enhaut = $this->GetParameter('enhaut');
@@ -50,7 +47,7 @@ $nb = $this->GetParameter('nb');
 $nbcar = $this->GetParameter('nbcar');
 if (empty($nbcar)) $nbcar=300;
 
-if (isset($_POST['FormMicroblog'])) {
+if (isset($_POST['action']) && $_POST['action'] == 'save') {
 	if ($_POST['antispam']==1) {
 		if ($_POST['microblog_billet'] != '')
 		{
@@ -73,14 +70,12 @@ else {
 	{
 		//on affiche le lien vers le flux RSS
 		$html_rss = '<div class="liens_rss">';
-		$html_rss .= $this->Format('{{rss type="microblog" tags="'.$tags.'" notags="'.$notags.'" titrerss="'.$titrerss.'"}}');
+		$html_rss .= $this->Format('{{rss type="microblog" tags="'.$tags.'" titrerss="'.$titrerss.'"}}');
 		$html_rss .= '</div>';
 
 		// affichage du formulaire
 		$html_formulaire = '';
-		$html_formulaire .= $this->FormOpen();
-		$html_formulaire .= '<input type="hidden" name="FormMicroblog" value="true" />'."\n";
-		$html_formulaire .= '<input type="hidden" class="antispam" name="antispam" value="0" />'."\n";
+	
 
 		if (!file_exists('tools/tags/presentation/templates/'.$template_formulaire))
 		{
@@ -97,12 +92,12 @@ else {
 			else {
 				$texte_billet = '';
 			}
-			$squel->set(array("nb"=>$nbcar, "rss"=>$html_rss, "billet"=>$texte_billet));
+			$squel->set(array("nb"=>$nbcar, "rss"=>$html_rss, "billet"=>$texte_billet, "class"=>$class, "textareaclass"=>$textareaclass, "url"=>$this->href(), "pagetag"=>$this->GetPageTag()));
 			$html_formulaire .= $squel->analyser();
 		}
 
 		//on récupère tous les tags existants
-		$tab_tous_les_tags = $this->GetAllTags();
+		/*$tab_tous_les_tags = $this->GetAllTags();
 		$toustags = '';
 		if (is_array($tab_tous_les_tags))
 		{
@@ -125,12 +120,13 @@ else {
 					t.getContainer().removeClass(\'textboxlist-loading\');
 				}});	
 			});
-	    </script>'."\n";
-		$html_formulaire .= $this->FormClose();
-		$html_formulaire .= '<br class="alaligne" />'."\n";
+	    </script>'."\n";*/
+	    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/tags/libs/microblog.js"></script>'."\n";
+
 
 		//on formatte l'action includetag qui va tout nous afficher à l'écran la liste des bulles du microblog
-		$texte = '{{listepages type="microblog" tags="'.$tags.'" notags="'.$notags.'" class="'.$class.'" vue="'.$vue.'" tri="'.$tri.'"';
+		$texte = '{{listepages type="microblog" tags="'.$tags.'" tri="'.$tri.'"';
+		if (!empty($templatepages))  $texte .= ' vue="'.$templatepages.'"';
 		if (!empty($lienedit)) $texte .= ' edit="'.$lienedit.'"';
 		if (!empty($nb)) $texte .= ' nb="'.$nb.'"';
 		$texte .= '}}';

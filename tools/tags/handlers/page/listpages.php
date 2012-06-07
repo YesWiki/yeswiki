@@ -88,15 +88,15 @@ $output .= $this->Format('{{rss tags="'.$tags.'") class="floatright"}}').'<div c
 $text = '';
 foreach ($resultat as $microblogpost)
 {
-    if (!file_exists('tools/tags/presentation/'.$template)) 
+    if (!file_exists('tools/tags/presentation/templates/'.$template)) 
 	{
-		exit('Le fichier template du formulaire de microblog "tools/tags/presentation/'.$template.'" n\'existe pas. Il doit exister...');
+		exit('Le fichier template du formulaire de microblog "tools/tags/presentation/templates/'.$template.'" n\'existe pas. Il doit exister...');
 	}
 	else
 	{
 		include_once('tools/tags/libs/squelettephp.class.php');
 		$valtemplate=array();
-		$squel = new SquelettePhp('tools/tags/presentation/'.$template);
+		$squel = new SquelettePhp('tools/tags/presentation/templates/'.$template);
 		$valtemplate['class'] = $class;
 		$valtemplate['lien'] = $this->href('',$microblogpost['tag']);
 		$valtemplate['nompage'] = $microblogpost['tag'];
