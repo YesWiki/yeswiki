@@ -92,6 +92,13 @@ if (isset($scripts) && is_array($scripts)) {
 	}
 }
 
+// si quelque chose est passée dans la variable globale pour le javascript, on l'intègre
+$yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
+
+// on vide la variable globale pour le javascript
+$GLOBALS['js'] = '';
+
+
 // on affiche
 echo $yeswiki_javascripts;
 ?>

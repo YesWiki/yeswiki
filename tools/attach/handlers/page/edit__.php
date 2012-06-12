@@ -16,7 +16,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 	{
 		
 		
-		$js = "<script src=\"tools/attach/libs/fileuploader.js\" type=\"text/javascript\"></script>
+		$js = "<script src=\"tools/attach/libs/fileuploader.js\"></script>
 			<script>
 			$(function(){
 				var attachoverlay ;
