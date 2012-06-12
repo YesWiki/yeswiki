@@ -32,5 +32,5 @@ $wikiClassesContent [] = '
 		return $result;
 	}
 ';
-	
+
 ?>

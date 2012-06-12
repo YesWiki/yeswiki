@@ -7,6 +7,9 @@ body {
 background:#E1E1E1;
 }
 
+a {color: #0074cc;}
+a:hover {color: #0055cc;}
+
 /* Conteneur de la page Wiki */
 #container {
 margin-top:15px;
@@ -57,7 +60,6 @@ z-index:100;
 #topnav, .footer, .vertical-dropdown-menu a:hover, .vertical-dropdown-menu a.active-link {
 color: #ffffff;
 background-color: #0074cc;
-*background-color: #0055cc;
 background-image: -ms-linear-gradient(top, #0088cc, #0055cc);
 background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#0088cc), to(#0055cc));
 background-image: -webkit-linear-gradient(top, #0088cc, #0055cc);
@@ -75,7 +77,6 @@ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 #topnav li:hover, #topnav li.active-list, .footer a:hover {
 background-color: #0055cc;
-*background-color: #004ab3;
 }
 #topnav ul { padding:0; margin:0; }
 #topnav ul:after { content:"."; display:block; height:0; clear:both; visibility:hidden; }
@@ -108,8 +109,7 @@ width:230px;
 position:absolute; 
 top:34px; 
 left:0; 
-background: #0055CC;
-/*background: #004ab3;*/
+background-color: #0088cc;
 background: rgba(0, 136, 204, 0.9);
 padding:0; margin:0; z-index:99;border:none;
 -moz-border-radius-bottomleft:4px;

@@ -75,15 +75,15 @@ $("#graphical_options a.button_save").on("click", function() {
 	
 	if(!(typeof bgimg === 'undefined') && bgimg != 'none'){
 		bgimg = bgimg.substr(bgimg.lastIndexOf("/")+1, bgimg.length - bgimg.lastIndexOf("/") );
-		bgimg = bgimg.replace("\")","");
+		bgimg = bgimg.replace("\"","").replace(")","");
 	} 
 	if (typeof imgsrc === 'string') {
 		bgimg = imgsrc.substr(imgsrc.lastIndexOf("/")+1, imgsrc.length - imgsrc.lastIndexOf("/") );
 	}
 	$("#hiddenbgimg").val(bgimg);
-	var url = document.URL;
-	$.post(url.replace("/edit", "/savemetadatas"), { 'metadatas': { "theme": theme, "squelette": squelette, "style": style, "bgimg": bgimg } });
-	return;
+	var url = document.URL.replace("/edit", "/savemetadatas").replace('#', '');
+	var data = { 'metadatas': { "theme": theme, "squelette": squelette, "style": style, "bgimg": bgimg } };
+	$.post(url, data, function(data){return;});
 });
 
 // changement de fond d ecran

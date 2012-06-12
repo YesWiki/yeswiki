@@ -36,8 +36,8 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 		$tagspagecourante = '';
 	}
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
-	<script defer src="tools/tags/libs/jquery-ui-1.8.16.custom.min.js" type="text/javascript"></script>
-	<script defer src="tools/tags/libs/tag-it.js" type="text/javascript"></script>	
+	<script src="tools/tags/libs/jquery-ui-1.8.16.custom.min.js"></script>
+	<script src="tools/tags/libs/tag-it.js"></script>	
 	<script type="text/javascript">
 	$(function(){
         var tagsexistants = ['.$tagsexistants.'];

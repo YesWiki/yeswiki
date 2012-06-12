@@ -1598,7 +1598,8 @@ function magicQuotesSuck(&$a)
 		}
 	}
 }
-error_reporting(E_ALL & ~E_DEPRECATED);set_magic_quotes_runtime(0);
+//error_reporting(E_ALL & ~E_DEPRECATED);
+set_magic_quotes_runtime(0);
 if (get_magic_quotes_gpc())
 {
 	magicQuotesSuck($_POST);

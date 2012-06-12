@@ -1,4 +1,5 @@
 <?php
+	header('content-type:application/x-javascript');
 	ob_start("ob_gzhandler");
 	require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
 	

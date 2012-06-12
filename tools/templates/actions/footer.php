@@ -28,11 +28,7 @@ if ($act=preg_match_all ("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_foot
 	}
 }
 
-// si quelque chose est passée dans la variable globale pour le javascript, on l'intègre
-echo ((isset($GLOBALS['js'])) ? str_replace('</body>', $GLOBALS['js'].'</body>', $template_footer) : $template_footer);
-
-// on vide la variable globale pour le javascript
-$GLOBALS['js'] = '';
+echo $template_footer;
 
 // on affiche les requetes SQL et le temps de chargement en mode debug
 

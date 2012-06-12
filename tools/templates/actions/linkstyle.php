@@ -46,7 +46,6 @@ if (isset($this->config['favorite_background_image']) && $this->config['favorite
 		body {
 			background-image: url("files/backgrounds/'.$this->config['favorite_background_image'].'");
 			background-repeat:no-repeat;
-			width:100%;
 			height:100%;
 			-webkit-background-size:cover;
 			-moz-background-size:cover;
