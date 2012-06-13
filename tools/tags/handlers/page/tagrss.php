@@ -33,7 +33,7 @@ echo '<?xml version="1.0" encoding="iso-8859-1"?>';
 if (!empty($tags))
 {
 	$tags=trim($tags);
-	$tab_tags = explode(" ", $tags);
+	$tab_tags = explode(",", $tags);
 	$nbdetags = count($tab_tags);
 	$tags = implode(",", array_filter($tab_tags, "trim"));
 	$tags = '"'.str_replace(',','","',$tags).'"';
@@ -101,6 +101,11 @@ if ($pages = $this->LoadAll($requete)) {
 		//on enleve les actions recentchangesrssplus pour eviter les boucles infinies, avant de formater en HTML le texte
 		$page["body"] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page["body"]);
 		$page["body"] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page["body"]);
+		if (strstr($page["body"], "bf_titre")) {
+			$tab_valeurs = json_decode($page["body"], true);
+			$tab_valeurs = array_map('utf8_decode', $tab_valeurs);
+			$page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
+		}
 		$texteformat = $this->Format($page['body']);
 
 		//on tronque le texte apres le prochain espace

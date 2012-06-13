@@ -109,7 +109,7 @@ $wikiClassesContent [] = '
 		$req_having = \'\';
 
 		//on fait les tableaux pour les tags, puis on met des virgules et des guillemets
-		if (isset($tags))
+		if (isset($tags) && $tags != \'\')
 		{
 			$req_from .= ", ".$this->config["table_prefix"]."triples tags ";
 			$tags=trim($tags);

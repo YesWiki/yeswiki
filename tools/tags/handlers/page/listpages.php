@@ -34,7 +34,7 @@ $template = (isset($_GET['template'])) ? $_GET['template'] : 'accordeon_microblo
 $output = '';
 
 // création de la liste des mots clés à filtrer
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script defer src="tools/tags/libs/tag.js" type="text/javascript" charset="utf-8"></script>';
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/tags/libs/tag.js"></script>';
 
 $tab_selected_tags = explode(',',$tags);
 $selectiontags = ' AND value IN ("'.implode(",",$tab_selected_tags).'")';
@@ -63,9 +63,11 @@ if (is_array($tab_tous_les_tags))
 		$tab_tag[] = $texte_liste;
 	}
 
+	$outputselecttag = '';
 	if (is_array($tab_tag))
 	{
 		$outputselecttag .= '<div class="filter_tags">
+		<strong>Filtrer les r&eacute;sultats en cochant / d&eacute;cochant les mots cl&eacute;s ci-dessous :</strong>
 		<ul  class="tagit ui-widget ui-widget-content ui-corner-all show">'."\n";
 		foreach ($tab_tag as $tag) {
 			$outputselecttag .= $tag;
@@ -78,13 +80,14 @@ if (is_array($tab_tous_les_tags))
 // affiche le resultat de la recherche
 $resultat = $this->PageList($tags,$type,$nb,$tri,$template,$class,$lienedit);
 $nb_total = count($resultat);
+$output .= '<div class="alert alert-info">'."\n";
 
-if ($nb_total > 1) $output .= '<div class="info_box">Un total de '.$nb_total.' pages ont &eacute;t&eacute; trouv&eacute;es avec les tags : '.$tags.'.';
-elseif ($nb_total == 1) $output .= '<div class="info_box">Une page a &eacute;t&eacute; trouv&eacute;e avec les tags : '.$tags.'.';
-else $output .= '<div class="info_box">Aucune page trouv&eacute;e avec les tags : '.$tags.'.';
+if ($nb_total > 1) $output .= 'Un total de '.$nb_total.' pages ont &eacute;t&eacute; trouv&eacute;es'.(!empty($tags) ? ' avec les tags : '.$tags : '').'.';
+elseif ($nb_total == 1) $output .= 'Une page a &eacute;t&eacute; trouv&eacute;e'.(!empty($tags) ? ' avec les tags : '.$tags : '').'.';
+else $output .= 'Aucune page trouv&eacute;e'.(!empty($tags) ? ' avec les tags : '.$tags : '').'.';
 
-$output .= $this->Format('{{rss tags="'.$tags.'") class="floatright"}}').'<div class="clear"></div></div>'."\n";
-
+$output .= $this->Format('{{rss tags="'.$tags.'" class="pull-right"}}')."\n";
+$output .= '</div>'."\n";
 $text = '';
 foreach ($resultat as $microblogpost)
 {
@@ -109,7 +112,13 @@ foreach ($resultat as $microblogpost)
 		{
 			$valtemplate['user'] = $this->Format($microblogpost["user"]);					
 			$valtemplate['date'] = date("\l\e d.m.Y &\a\g\\r\av\e; H:i:s", strtotime($microblogpost["time"]));
+			if (strstr($microblogpost["body"], "bf_titre")) {
+				$tab_valeurs = json_decode($microblogpost["body"], true);
+				$tab_valeurs = array_map('utf8_decode', $tab_valeurs);
+				$microblogpost["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
+			}
 			$valtemplate['billet'] = $this->Format($microblogpost["body"]);
+
 			// load comments for this page
 			$valtemplate['commentaire'] = '';
 			$pageouverte = $this->GetTripleValue($microblogpost['tag'],'http://outils-reseaux.org/_vocabulary/comments', '', '');
