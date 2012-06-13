@@ -12,8 +12,8 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
             <input type="text" name="pagetags" id="pagetags" value="'.$tagspagecourante.'" />
             <input type="hidden" class="antispam" name="antispam" value="0" />
             </div>';
-	$plugin_output_new = preg_replace ('/\<input name=\"submit\" type=\"submit\" value=\"Sauver\"/',
-	$formtag.'<input name="submit" type="submit" value="Sauver"', $plugin_output_new);
+	$plugin_output_new = preg_replace ('/\<div class=\"form-actions\">/',
+	$formtag.'<div class="form-actions">', $plugin_output_new);
 }
 
 ?>

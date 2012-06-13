@@ -80,7 +80,7 @@ else //commentaire pas ouverts
 }
 
 // on affiche la liste des mots clés disponibles pour cette page 
-if (!CACHER_MOTS_CLES)
+if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_bazar')))
 {
 	$tabtagsexistants = $this->GetAllTags($this->GetPageTag());
 	$tagspage = array();

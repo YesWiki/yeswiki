@@ -82,7 +82,7 @@ $dir = (is_dir($repertoire) ? opendir($repertoire) : false);
 while ($dir && ($file = readdir($dir)) !== false) {
   if (substr($file, -3, 3)=='.js') $scripts[] = '	<script src="'.$repertoire.'/'.$file.'"></script>'."\n";
 }
-closedir($dir);
+if (is_dir($repertoire)) closedir($dir);
 
 // on trie les javascripts par ordre alphabéthique
 if (isset($scripts) && is_array($scripts)) {
@@ -91,6 +91,13 @@ if (isset($scripts) && is_array($scripts)) {
 	    $yeswiki_javascripts .= $val;
 	}
 }
+
+// si quelque chose est passée dans la variable globale pour le javascript, on l'intègre
+$yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
+
+// on vide la variable globale pour le javascript
+$GLOBALS['js'] = '';
+
 
 // on affiche
 echo $yeswiki_javascripts;
