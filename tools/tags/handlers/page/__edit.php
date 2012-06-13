@@ -38,7 +38,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
 	<script src="tools/tags/libs/jquery-ui-1.8.16.custom.min.js"></script>
 	<script src="tools/tags/libs/tag-it.js"></script>	
-	<script type="text/javascript">
+	<script>
 	$(function(){
         var tagsexistants = ['.$tagsexistants.'];
 

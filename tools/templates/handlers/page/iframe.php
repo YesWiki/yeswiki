@@ -23,10 +23,10 @@ if ($this->HasAccess("read"))
 		
 		//affichage de la page formatée
 		echo $this->Format($this->page["body"]);
-		echo "</div><!-- end div.page -->";
+		echo "</div><!-- end div.page-widget -->";
 		
 		//javascript pour gerer les liens (ouvrir vers l'extérieur) dans les iframes
-		$scripts_iframe = '<script type="text/javascript">
+		$scripts_iframe = '<script>
 		$(document).ready(function () {
 			$("html").css({\'overflow-y\': \'auto\'});
 			$("body").css({
