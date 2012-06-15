@@ -40,6 +40,26 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 		<img class=\"buttons\" onmouseover=\"mouseover(this);\" onmouseout=\"mouseout(this);\" onmousedown=\"mousedown(this);\" onmouseup=\"mouseup(this);\" onclick=\"wrapSelection($('#body')[0],'%%(php)','%%');\" src=\"tools/aceditor/presentation/images/php.gif\" title=\"Code PHP\" alt=\"\" /> -->
 		</div><!-- FIN TOOLBAR ACEDITOR -->
 		";
+
+		$ACbuttonsBar .= '<div class="btn-toolbar">
+		<div class="btn-group">
+          <button class="btn btn-small btn-primary">Sauver</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-small"><i class="icon-bold"></i></button>
+          <button class="btn btn-small"><i class="icon-italic"></i></button>
+          <button class="btn btn-small">3</button>
+          <button class="btn btn-small">4</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-small">T1</button>
+          <button class="btn btn-small">T2</button>
+          <button class="btn btn-small">T3</button>
+          <button class="btn btn-small">T4</button>
+          <button class="btn btn-small">T5</button>
+        </div>
+       
+      </div>';
 		
 		$plugin_output_new = preg_replace ('/\<form id=\"ACEditor\"/',
 											$ACbuttonsBar.'<form id="ACEditor"',

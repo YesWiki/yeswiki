@@ -53,10 +53,9 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 					'<form class="form-horizontal" id="form_graphical_options">'."\n";
 
 	// récupération des images de fond
-	$backgroundsdir = 'files/backgrounds';		
-	if (is_dir($backgroundsdir)) {
-		$dir = opendir($backgroundsdir);
-		while (false !== ($file = readdir($dir))) { 
+	$backgroundsdir = 'files/backgrounds';
+	$dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
+	while ($dir && ($file = readdir($dir)) !== false) {	
 			$imgextension = strtolower(substr($file, -4, 4));  	
 			// les jpg sont les fonds d'écrans, ils doivent être mis en miniature
 			if ($imgextension == '.jpg') {
@@ -78,10 +77,8 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 			elseif ($imgextension == '.png') {
 				$backgrounds[] = $backgroundsdir.'/'.$file;
 			}
-		}
-		closedir($dir);
 	}
-
+	if (is_dir($dir)) closedir($dir);
 	
 	$bgselector = '';
 	
@@ -178,7 +175,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 					'</div>'."\n";
 		
 		//AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES			
-		$js = '<script type="text/javascript"><!--
+		$js = '<script><!--
 		var tab1 = new Array();
 		var tab2 = new Array();'."\n";
 		foreach(array_keys($this->config['templates']) as $key => $value) {
@@ -201,7 +198,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 	            $js .= ');'."\n";	      
 	    }
 				
-		$js .= '</script>'."\n".'<script type="text/javascript" src="tools/templates/libs/templates_edit.js"></script>'."\n";
+		$js .= '</script>'."\n".'<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
 
 		//quand le changement des valeurs du template est caché, il faut stocker les valeurs déja entrées pour ne pas retourner au template par défaut
 		$selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$this->config['favorite_theme'].'" />'."\n";
@@ -217,20 +214,21 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 	else {
 		$changetheme = FALSE;
 	}
-
-	
-	// le bouton aperçu c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
-	$patterns = array(	0 => 	'/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
-						1 => 	'/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
-						2 => 	'/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\'' . preg_quote(addslashes($this->href()), '/') . '\';\" \/>/'
-						);
-	$replacements = array(
-						0 => 	'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'.TEMPLATE_SAVE.'</button>',
-						1 => 	'', 
-						2 => 	'<button class="btn" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'.TEMPLATE_CANCEL.'</button>'."\n".
-								(($changetheme) ? '<button class="btn btn-info offset1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'.TEMPLATE_THEME.'</button>'."\n".'</div>' : '') // le bouton Theme du bas de l'interface d'edition
-						);
-	$plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);
+} else {
+	$changetheme = FALSE;
 }
+
+// le bouton aperçu c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
+$patterns = array(	0 => 	'/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
+					1 => 	'/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
+					2 => 	'/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\'' . preg_quote(addslashes($this->href()), '/') . '\';\" \/>/'
+					);
+$replacements = array(
+					0 => 	'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'.TEMPLATE_SAVE.'</button>',
+					1 => 	'', 
+					2 => 	'<button class="btn" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'.TEMPLATE_CANCEL.'</button>'."\n".
+							(($changetheme) ? '<button class="btn btn-info offset1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'.TEMPLATE_THEME.'</button>'."\n" : '').'</div>' // le bouton Theme du bas de l'interface d'edition
+					);
+$plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);
 
 ?>
