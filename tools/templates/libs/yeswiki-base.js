@@ -19,10 +19,19 @@
 		onBeforeLoad: function() {
 			// grab wrapper element inside content
 			var wrap = this.getOverlay().find(".contentWrap");
-	
-			// load the page specified in the trigger
-			var url = this.getTrigger().attr("href") + ' .page'
-			wrap.load(url);
+			var url = this.getTrigger().attr("href");
+			var finurl = url.substr(-3);
+			
+			// si c'est une image on l'affiche
+			if (finurl === "png" || finurl === "jpg"| finurl === "jpeg" || finurl === "gif" ||
+				finurl === "PNG" || finurl === "JPG"| finurl === "JPEG" || finurl === "GIF"	) {
+				wrap.html('<img src="'+url+'" alt="image" />');
+			}
+			// on charge l'intérieur d'une page wiki sinon
+			else {
+				wrap.load(url + ' .page');
+			}
+			
 		}
 	});
 
