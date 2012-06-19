@@ -107,14 +107,13 @@
     // You already have access to the DOM element and the options via the instance, 
     // e.g., this.element and this.options
     if (this.element.tagName === 'TEXTAREA') {
-    	var toolbar = $('<div>').append($('<div>').addClass("btn-toolbar aceditor-toolbar"));
-    	var toolbarinner = toolbar.find('.aceditor-toolbar');
+    	var toolbar = $('<div>').addClass("btn-toolbar aceditor-toolbar");
     	if (this.options.savebtn) {
-    		toolbarinner.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="btn btn-primary">Sauver</button></div>'));
+    		toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="btn btn-primary">Sauver</button></div>'));
     	}
 
     	// Format du texte pour les titres
-    	toolbarinner.append(	'<div class="btn-group">' +
+    	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Format&nbsp;&nbsp;<span class="caret"></span></a>' +
 							'<ul class="dropdown-menu">' +
 								'<li><a title="En-tête énorme" class="aceditor-btn" data-lft="======" data-rgt="======"><h1>En-tête énorme</h1></a></li>' +
@@ -130,7 +129,7 @@
 						'</div>');
 			
 	    // Gras italique souligné barré
-    	toolbarinner.append(	'<div class="btn-group">' +
+    	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn aceditor-btn" data-lft="**" data-rgt="**" title="Passe le texte sélectionné en gras  ( Ctrl-Maj-b )">' +
 								'<span style="font-family:serif;font-weight:bold;">B</span>' +
 							'</a>' +
@@ -146,7 +145,7 @@
 						'</div>');
 
 	    // Ligne horizontale et liens
-    	toolbarinner.append(	'<div class="btn-group">' +
+    	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn aceditor-btn" data-lft="\n------" data-rgt="" title="Insère une ligne horizontale">' +
 								'<i class="icon-minus"></i>' +
 							'</a>' +
@@ -156,11 +155,11 @@
 						'</div>');
 
     	// Affichage de la barre juste avant le textarea
-    	this.element.insertAdjacentHTML("BeforeBegin", toolbar.html());
+    	//this.element.insertAdjacentHTML("BeforeBegin", toolbar.html() );
+    	//this.element.parentNode.insertBefore(toolbar.get(0),this.element);
 
     	// on affecte les boutons
-    	var textarea = $(this.element);
-    	textarea.prev('.aceditor-toolbar').find('a.aceditor-btn').each(function() {
+    	toolbar.find('a.aceditor-btn').each(function() {
     		$(this).on('click', function(){
     			var prompt;
     			if ($(this).data('prompt')) {
@@ -174,6 +173,8 @@
 				}
     		})
     	});
+    	var textarea = $(this.element);
+    	textarea.before(toolbar);
     }
 
   };
@@ -192,4 +193,6 @@
 
 // Initialisation pour le mode édition
 $('#body').aceditor({savebtn : true});
+
+// Initialisation pour les commentaires, et textelongs bazar
 $('.wiki-textarea, .commentform textarea').aceditor();
