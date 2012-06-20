@@ -89,14 +89,14 @@
 	      	'ACEDITOR_BIGGER_TEXT'		: 'Texte agrandi',
 	      	'ACEDITOR_HIGHLIGHT_TEXT'	: 'Texte mis en valeur',
 	      	'ACEDITOR_SOURCE_CODE'		: 'Code source',
-	      	'ACEDITOR_BOLD_TEXT'		: 'Passe le texte sélectionné en gras  ( Ctrl-Maj-b )',
-	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte sélectionné en italique ( Ctrl-Maj-t )',
-	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte sélectionné ( Ctrl-Maj-u )',
-	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte sélectionné',
-	      	'ACEDITOR_LINE'				: 'Insère une ligne horizontale',
+	      	'ACEDITOR_BOLD_TEXT'		: 'Passe le texte sélectionné en gras  ( Ctrl-b )',
+	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte sélectionné en italique ( Ctrl-i )',
+	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte sélectionné ( Ctrl-u )',
+	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte sélectionné ( Ctrl-y )',
+	      	'ACEDITOR_LINE'				: 'Insère une ligne horizontale ( Ctrl-h )',
 	      	'ACEDITOR_LINK'				: 'Lien',
 	      	'ACEDITOR_LINK_PROMPT'		: 'Entrez l\'adresse URL',
-	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte sélectionné'
+	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte sélectionné ( Ctrl-l )'
 	      }
 	  },
 	  syntax = { 
@@ -201,40 +201,40 @@
     	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang[this.options.lang]['ACEDITOR_FORMAT']+'&nbsp;&nbsp;<span class="caret"></span></a>' +
 							'<ul class="dropdown-menu">' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1>'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'</h1></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2>'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'</h2></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3>'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'</h3></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4>'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'</h4></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5>'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'</h5></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'" class="aceditor-btn aceditor-btn-title1" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1>'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'</h1></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'" class="aceditor-btn aceditor-btn-title2" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2>'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'</h2></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3>'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'</h3></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4>'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'</h4></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'" class="aceditor-btn aceditor-btn-title5" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5>'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'</h5></a></li>' +
 								'<li class="divider"></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead">'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre>'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead">'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre>'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
 							'</ul>' +
 						'</div>');
 			
 	    // Gras italique souligné barré
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_BOLD_TEXT']+'">' +
+							'<a class="btn aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_BOLD_TEXT']+'">' +
 								'<span style="font-family:serif;font-weight:bold;">B</span>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_ITALIC_TEXT']+'">' +
+							'<a class="btn aceditor-btn aceditor-btn-italic" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_ITALIC_TEXT']+'">' +
 								'<span style="font-family:serif;font-style:italic;">I</span>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_UNDERLINE_TEXT']+'">' +
+							'<a class="btn aceditor-btn aceditor-btn-underline" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_UNDERLINE_TEXT']+'">' +
 								'<span style="font-family:serif;text-decoration:underline;">U</span>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_STRIKE_TEXT']+'">' +
+							'<a class="btn aceditor-btn aceditor-btn-strike" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_STRIKE_TEXT']+'">' +
 								'<span style="font-family:serif;text-decoration:line-through;">S</span>' +
 							'</a>' +
 						'</div>');
 
 	    // Ligne horizontale et liens
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_LINE']+'">' +
+							'<a class="btn aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_LINE']+'">' +
 								'<i class="icon-minus"></i>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-prompt="' + this.lang[this.options.lang]['ACEDITOR_LINK_PROMPT'] + '" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="' + this.lang[this.options.lang]['ACEDITOR_LINK_TITLE'] + '" class="btn">' +
+							'<a class="btn aceditor-btn aceditor-btn-link" data-prompt="' + this.lang[this.options.lang]['ACEDITOR_LINK_PROMPT'] + '" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="' + this.lang[this.options.lang]['ACEDITOR_LINK_TITLE'] + '" class="btn">' +
 								'<i class="icon-share-alt"></i>&nbsp;' + this.lang[this.options.lang]['ACEDITOR_LINK'] +
 							'</a>' +
 						'</div>');
@@ -258,6 +258,63 @@
     	// Affichage de la barre juste avant le textarea
     	var textarea = $(this.element);
     	textarea.before(toolbar);
+
+    	// Gestion des raccourcis claviers
+    	var isCtrl = false;
+    	this.element.onkeyup = function(e) {
+    		if (e.keyCode == 17) {
+				isCtrl = false;
+			}
+    	}
+    	this.element.onkeydown = function(e) {
+			if (e.keyCode == 17) {
+				isCtrl = true;
+			}
+			// title 1
+			if (e.keyCode == 49 && isCtrl == true) {
+				$('.aceditor-btn-title1').click(); e.preventDefault();
+			}
+			// title 2
+			if (e.keyCode == 50 && isCtrl == true) {
+				$('.aceditor-btn-title2').click(); e.preventDefault();
+			}
+			// title 3
+			if (e.keyCode == 51 && isCtrl == true) {
+				$('.aceditor-btn-title3').click(); e.preventDefault();
+			}
+			// title 4
+			if (e.keyCode == 52 && isCtrl == true) {
+				$('.aceditor-btn-title4').click(); e.preventDefault();
+			}
+			// title 5
+			if (e.keyCode == 53 && isCtrl == true) {
+				$('.aceditor-btn-title5').click(); e.preventDefault();
+			}
+			// bold
+			if (e.keyCode == 66 && isCtrl == true) {
+				$('.aceditor-btn-bold').click(); e.preventDefault();
+			}
+			// italic
+			if (e.keyCode == 73 && isCtrl == true) {
+				$('.aceditor-btn-italic').click(); e.preventDefault();
+			}
+			// underline
+			if (e.keyCode == 85 && isCtrl == true) {
+				$('.aceditor-btn-underline').click(); e.preventDefault();	
+			}
+			// strike
+			if (e.keyCode == 89 && isCtrl == true) {
+				$('.aceditor-btn-strike').click(); e.preventDefault();	
+			}
+			// line
+			if (e.keyCode == 72 && isCtrl == true) {
+				$('.aceditor-btn-line').click(); e.preventDefault();
+			}
+			// link
+			if (e.keyCode == 76 && isCtrl == true) {
+				$('.aceditor-btn-link').click(); e.preventDefault(); isCtrl = false;
+			}
+		}
     }
 
   };
