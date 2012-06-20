@@ -48,17 +48,7 @@
 			txtarea.focus();
         }	
 	}	
-	
-	function wrapSelectionWithLink(txtarea) {
-		var my_link = prompt("Entrez l'URL: ","http://");
-		if (my_link != null) {
-			lft="[[" + my_link + " ";
-			rgt="]]";
-			wrapSelectionBis(txtarea, lft, rgt);
-		}
-		return;
-	}
-	
+
 	document.onkeypress = function (e) {
 	  if (document.all) {
 		key=event.keyCode; txtarea=thisForm.body;
@@ -83,8 +73,94 @@
   var pluginName = 'aceditor',
       document = window.document,
       defaults = {
-        savebtn: false
-      };
+        savebtn: false,
+        lang: 'fr',
+        syntax: 'yeswiki'
+      },
+      lang = { 
+      	fr : {
+	      	'ACEDITOR_SAVE'				: 'Sauver',
+	      	'ACEDITOR_FORMAT'			: 'Format',
+	      	'ACEDITOR_TITLE1'			: 'En-tête énorme',
+	      	'ACEDITOR_TITLE2'			: 'En-tête très gros',
+	      	'ACEDITOR_TITLE3'			: 'En-tête gros',
+	      	'ACEDITOR_TITLE4'			: 'En-tête normal',
+	      	'ACEDITOR_TITLE5'			: 'Petit en-tête',
+	      	'ACEDITOR_BIGGER_TEXT'		: 'Texte agrandi',
+	      	'ACEDITOR_HIGHLIGHT_TEXT'	: 'Texte mis en valeur',
+	      	'ACEDITOR_SOURCE_CODE'		: 'Code source',
+	      	'ACEDITOR_BOLD_TEXT'		: 'Passe le texte sélectionné en gras  ( Ctrl-Maj-b )',
+	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte sélectionné en italique ( Ctrl-Maj-t )',
+	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte sélectionné ( Ctrl-Maj-u )',
+	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte sélectionné',
+	      	'ACEDITOR_LINE'				: 'Insère une ligne horizontale',
+	      	'ACEDITOR_LINK'				: 'Lien',
+	      	'ACEDITOR_LINK_PROMPT'		: 'Entrez l\'adresse URL',
+	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte sélectionné'
+	      }
+	  },
+	  syntax = { 
+      	yeswiki : {
+	      	'TITLE1_LFT'			: '======',
+	      	'TITLE1_RGT'			: '======',
+	      	'TITLE2_LFT'			: '=====',
+	      	'TITLE2_RGT'			: '=====',
+	      	'TITLE3_LFT'			: '====',
+	      	'TITLE3_RGT'			: '====',
+	      	'TITLE4_LFT'			: '===',
+	      	'TITLE4_RGT'			: '===',
+	      	'TITLE5_LFT'			: '==',
+	      	'TITLE5_RGT'			: '==',
+	      	'LEAD_LFT'				: '&quot;&quot;<div class=&quot;lead&quot;>&quot;&quot;',
+	      	'LEAD_RGT'				: '&quot;&quot;</div>&quot;&quot;',
+	      	'HIGHLIGHT_LFT'			: '&quot;&quot;<div class=&quot;well&quot;>&quot;&quot;',
+	      	'HIGHLIGHT_RGT'			: '&quot;&quot;</div>&quot;&quot;',	      	
+	      	'CODE_LFT'				: '%%',
+	      	'CODE_RGT'				: '%%',
+	      	'BOLD_LFT'				: '**',
+	      	'BOLD_RGT'				: '**',
+	      	'ITALIC_LFT'			: '//',
+	      	'ITALIC_RGT'			: '//',
+	      	'UNDERLINE_LFT'			: '__',
+	      	'UNDERLINE_RGT'			: '__',
+	      	'STRIKE_LFT'			: '@@',
+	      	'STRIKE_RGT'			: '@@',
+	      	'LINE_LFT'				: '\n------\n',
+	      	'LINE_RGT'				: '',
+	      	'LINK_LFT'				: '[[',
+	      	'LINK_RGT'				: ']]'
+	      },
+	    html : {
+	      	'TITLE1_LFT'			: '<h1>',
+	      	'TITLE1_RGT'			: '</h1>',
+	      	'TITLE2_LFT'			: '<h2>',
+	      	'TITLE2_RGT'			: '</h2>',
+	      	'TITLE3_LFT'			: '<h3>',
+	      	'TITLE3_RGT'			: '</h3>',
+	      	'TITLE4_LFT'			: '<h4>',
+	      	'TITLE4_RGT'			: '</h4>',
+	      	'TITLE5_LFT'			: '<h5>',
+	      	'TITLE5_RGT'			: '</h5>',
+	      	'LEAD_LFT'				: '<div class=&quot;lead&quot;>',
+	      	'LEAD_RGT'				: '</div>',
+	      	'HIGHLIGHT_LFT'			: '<div class=&quot;well&quot;>',
+	      	'HIGHLIGHT_RGT'			: '</div>',	      	
+	      	'CODE_LFT'				: '<pre>',
+	      	'CODE_RGT'				: '</pre>',
+	      	'BOLD_LFT'				: '<strong>',
+	      	'BOLD_RGT'				: '</strong>',
+	      	'ITALIC_LFT'			: '<em>',
+	      	'ITALIC_RGT'			: '</em>',
+	      	'UNDERLINE_LFT'			: '__',
+	      	'UNDERLINE_RGT'			: '__',
+	      	'STRIKE_LFT'			: '@@',
+	      	'STRIKE_RGT'			: '@@',
+	      	'LINE_LFT'				: '<hr />',
+	      	'LINE_RGT'				: '',
+	      	'LINK_LFT'				: '<a href=&quot;#&quot;>',
+	      	'LINK_RGT'				: '</a>'
+	      }
+	  };
 
   // The actual plugin constructor
   function Plugin( element, options ) {
@@ -95,6 +171,8 @@
     // is generally empty as we don't want to alter the default options for
     // future instances of the plugin
     this.options = $.extend( {}, defaults, options) ;
+    this.lang = lang;
+    this.syntax = syntax;
 
     this._defaults = defaults;
     this._name = pluginName;
@@ -109,56 +187,59 @@
     if (this.element.tagName === 'TEXTAREA') {
     	var toolbar = $('<div>').addClass("btn-toolbar aceditor-toolbar");
     	if (this.options.savebtn) {
-    		toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="btn btn-primary">Sauver</button></div>'));
+    		toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary">'+this.lang[this.options.lang]['ACEDITOR_SAVE']+'</button></div>'));
+    		$(this.element).keypress(function(event) {
+			    if (!(event.which == 115 && event.ctrlKey) && !(event.which == 19)) return true;
+			    $(this).prev().find('.aceditor-btn-save').click();
+			    event.preventDefault();
+			    return false;
+			});
+
     	}
 
     	// Format du texte pour les titres
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">Format&nbsp;&nbsp;<span class="caret"></span></a>' +
+							'<a class="btn dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang[this.options.lang]['ACEDITOR_FORMAT']+'&nbsp;&nbsp;<span class="caret"></span></a>' +
 							'<ul class="dropdown-menu">' +
-								'<li><a title="En-tête énorme" class="aceditor-btn" data-lft="======" data-rgt="======"><h1>En-tête énorme</h1></a></li>' +
-								'<li><a title="En-tête très gros" class="aceditor-btn" data-lft="=====" data-rgt="====="><h2>En-tête très gros</h2></a></li>' +
-								'<li><a title="En-tête gros" class="aceditor-btn" data-lft="====" data-rgt="===="><h3>En-tête gros</h3></a></li>' +
-								'<li><a title="En-tête normal" class="aceditor-btn" data-lft="===" data-rgt="==="><h4>En-tête normal</h4></a></li>' +
-								'<li><a title="Petit en-tête" class="aceditor-btn" data-lft="==" data-rgt="=="><h5>Petit en-tête</h5></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1>'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'</h1></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2>'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'</h2></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3>'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'</h3></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4>'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'</h4></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5>'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'</h5></a></li>' +
 								'<li class="divider"></li>' +
-								'<li><a title="Texte agrandi" class="aceditor-btn" data-lft="&quot;&quot;<div class=&quot;lead&quot;>&quot;&quot;=" data-rgt="&quot;&quot;</div>&quot;&quot;"><div class="lead">Texte agrandi</div></a></li>' +
-								'<li><a title="Mis en valeur" class="aceditor-btn" data-lft="&quot;&quot;<div class=&quot;well&quot;>&quot;&quot;" data-rgt="&quot;&quot;</div>&quot;&quot;"><div class="well">Texte mis en valeur</div></a></li>' +
-								'<li><a title="Code" class="aceditor-btn" data-lft="%%" data-rgt="%%"><div class="code"><pre>Code source</pre></div></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead">'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
+								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre>'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
 							'</ul>' +
 						'</div>');
 			
 	    // Gras italique souligné barré
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn aceditor-btn" data-lft="**" data-rgt="**" title="Passe le texte sélectionné en gras  ( Ctrl-Maj-b )">' +
+							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_BOLD_TEXT']+'">' +
 								'<span style="font-family:serif;font-weight:bold;">B</span>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-lft="//" data-rgt="//" title="Passe le texte sélectionné en italique ( Ctrl-Maj-t )">' +
+							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_ITALIC_TEXT']+'">' +
 								'<span style="font-family:serif;font-style:italic;">I</span>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-lft="__" data-rgt="__" title="Souligne le texte sélectionné ( Ctrl-Maj-u )">' +
+							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_UNDERLINE_TEXT']+'">' +
 								'<span style="font-family:serif;text-decoration:underline;">U</span>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-lft="@@" data-rgt="@@" title="Barre le texte sélectionné">' +
+							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_STRIKE_TEXT']+'">' +
 								'<span style="font-family:serif;text-decoration:line-through;">S</span>' +
 							'</a>' +
 						'</div>');
 
 	    // Ligne horizontale et liens
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn aceditor-btn" data-lft="\n------" data-rgt="" title="Insère une ligne horizontale">' +
+							'<a class="btn aceditor-btn" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_LINE']+'">' +
 								'<i class="icon-minus"></i>' +
 							'</a>' +
-							'<a class="btn aceditor-btn" data-prompt="Entrez l\'adresse URL" data-prompt-val="http://" data-lft="[[" data-rgt="]]" title="Ajoute un lien au texte sélectionné" class="btn">' +
-								'<i class="icon-share-alt"></i>&nbsp;Lien' +
+							'<a class="btn aceditor-btn" data-prompt="' + this.lang[this.options.lang]['ACEDITOR_LINK_PROMPT'] + '" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="' + this.lang[this.options.lang]['ACEDITOR_LINK_TITLE'] + '" class="btn">' +
+								'<i class="icon-share-alt"></i>&nbsp;' + this.lang[this.options.lang]['ACEDITOR_LINK'] +
 							'</a>' +
 						'</div>');
 
-    	// Affichage de la barre juste avant le textarea
-    	//this.element.insertAdjacentHTML("BeforeBegin", toolbar.html() );
-    	//this.element.parentNode.insertBefore(toolbar.get(0),this.element);
-
-    	// on affecte les boutons
+    	// On affecte les boutons
     	toolbar.find('a.aceditor-btn').each(function() {
     		$(this).on('click', function(){
     			var prompt;
@@ -173,6 +254,8 @@
 				}
     		})
     	});
+
+    	// Affichage de la barre juste avant le textarea
     	var textarea = $(this.element);
     	textarea.before(toolbar);
     }
@@ -196,3 +279,4 @@ $('#body').aceditor({savebtn : true});
 
 // Initialisation pour les commentaires, et textelongs bazar
 $('.wiki-textarea, .commentform textarea').aceditor();
+$('.html-textarea').aceditor({syntax:'html'});
