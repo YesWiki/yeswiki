@@ -78,7 +78,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 				$backgrounds[] = $backgroundsdir.'/'.$file;
 			}
 	}
-	if ($dir) closedir($backgroundsdir);
+	if ($dir) closedir($dir);
 	
 	$bgselector = '';
 	
