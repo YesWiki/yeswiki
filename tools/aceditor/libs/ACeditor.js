@@ -1,71 +1,53 @@
-	
-	/*
-	written by chris wetherell
-	http://www.massless.org
-	chris [THE AT SIGN] massless.org
-	warning: it only works for IE4+/Win and Moz1.1+
-	feel free to take it for your site
-	if there are any problems, let chris know.
-	*/
-	
-	function wrapSelectionBis(txtarea, lft, rgt) { 
-	    // pareil que la wrapSelection, avec une différence dans IE
-	    // qui permet à wrapSelectionBis de pouvoir insérer à l'endroit du curseur même sans avoir sélectionné des caractères !!!
-	    // Pour mozilla, c'est bien la fonction Wrap standard qui est appelée, aucun changement
-	    
-        if (document.all) { // document.all est une infamie de IE, on détecte cette horreur !
-            txtarea.focus();
-	    	if (document.selection) {
-	    		txtarea.focus();
-	    		sel = document.selection.createRange();
-	    		sel.text = lft+rgt;
-	    	}
-        } 
-        else if (document.getElementById) {
-            // mémorisation de la position du scroll
-	        oldPos = txtarea.scrollTop;
-	        oldHght = txtarea.scrollHeight;
+/*
+written by chris wetherell
+http://www.massless.org
+chris [THE AT SIGN] massless.org
+warning: it only works for IE4+/Win and Moz1.1+
+feel free to take it for your site
+if there are any problems, let chris know.
+*/
 
-	        // calcul de la nouvelle position du curseur
-	        pos = txtarea.selectionEnd + lft.length + rgt.length;
+;function wrapSelectionBis(txtarea, lft, rgt) { 
+    // pareil que la wrapSelection, avec une différence dans IE
+    // qui permet à wrapSelectionBis de pouvoir insérer à l'endroit du curseur même sans avoir sélectionné des caractères !!!
+    // Pour mozilla, c'est bien la fonction Wrap standard qui est appelée, aucun changement
+    
+    if (document.all) { // document.all est une infamie de IE, on détecte cette horreur !
+        txtarea.focus();
+    	if (document.selection) {
+    		txtarea.focus();
+    		sel = document.selection.createRange();
+    		sel.text = lft+rgt;
+    	}
+    } 
+    else if (document.getElementById) {
+        // mémorisation de la position du scroll
+        oldPos = txtarea.scrollTop;
+        oldHght = txtarea.scrollHeight;
 
-	        // calculs de la position de l'insertion	
-			var selLength = txtarea.textLength;
-			var selStart = txtarea.selectionStart;
-			var selEnd = txtarea.selectionEnd;
-			if (selEnd==1 || selEnd==2) selEnd=selLength;
-			var s1 = (txtarea.value).substring(0,selStart);
-			var s2 = (txtarea.value).substring(selStart, selEnd)
-			var s3 = (txtarea.value).substring(selEnd, selLength);
-			txtarea.value = s1 + lft + s2 + rgt + s3;
-			
-			// Placement du curseur après le tag fermant
-			txtarea.selectionEnd = pos;
+        // calcul de la nouvelle position du curseur
+        pos = txtarea.selectionEnd + lft.length + rgt.length;
 
-			// calcul et application de la nouvelle bonne postion du scroll
-			newHght = txtarea.scrollHeight - oldHght;
-			txtarea.scrollTop = oldPos + newHght;
-			txtarea.focus();
-        }	
-	}	
+        // calculs de la position de l'insertion	
+		var selLength = txtarea.textLength;
+		var selStart = txtarea.selectionStart;
+		var selEnd = txtarea.selectionEnd;
+		if (selEnd==1 || selEnd==2) selEnd=selLength;
+		var s1 = (txtarea.value).substring(0,selStart);
+		var s2 = (txtarea.value).substring(selStart, selEnd)
+		var s3 = (txtarea.value).substring(selEnd, selLength);
+		txtarea.value = s1 + lft + s2 + rgt + s3;
+		
+		// Placement du curseur après le tag fermant
+		txtarea.selectionEnd = pos;
 
-	document.onkeypress = function (e) {
-	  if (document.all) {
-		key=event.keyCode; txtarea=thisForm.body;
-		if (key == 1) wrapSelectionWithLink(txtarea);
-		if (key == 2) wrapSelectionBis(txtarea,'**','**');
-		if (key == 20) wrapSelectionBis(txtarea,'//','//');
-	  }
-	  else if (document.getElementById) {
-	  	ctrl=e.ctrlKey; shft=e.shiftKey; chr=e.charCode;
-	  	if (ctrl) if (shft) if (chr==65) wrapSelectionWithLink(thisForm.body);
-	  	if (ctrl) if (shft) if (chr==66) wrapSelectionBis(thisForm.body,'**','**');
-	  	if (ctrl) if (shft) if (chr==84) wrapSelectionBis(thisForm.body,'//','//');
-	  	//if (ctrl) if (shft) if (chr==85) wrapSelectionBis(thisForm.body,'__','__');
-	  }
-	  return true;
-	}
-	/* end chris w. script */
+		// calcul et application de la nouvelle bonne postion du scroll
+		newHght = txtarea.scrollHeight - oldHght;
+		txtarea.scrollTop = oldPos + newHght;
+		txtarea.focus();
+    }	
+}	
+/* end chris w. script */
 
 
 ;(function ( $, window, undefined ) {

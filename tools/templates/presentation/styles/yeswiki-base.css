@@ -256,6 +256,7 @@ margin: 0 5px 0 0;
 .align-justify {text-align:justify;}
 
 
+/* Sélecteur de fond d'écran */
 #bgCarousel img.bgimg, #bgCarousel div.mozaicimg {
 	float:left;
 	margin:2px;
@@ -277,6 +278,29 @@ margin: 0 5px 0 0;
     margin: 0 53px;
 }
 
+/* lanceur d'accordéon*/
+.accordion-trigger {
+  cursor:pointer;
+}
+
+/* table des matieres */
+.toc {
+position:absolute;
+right:0px;
+}
+
+li.toc1 {padding-left:0;}
+li.toc2 {padding-left:10px;}
+li.toc3 {padding-left:20px;}
+li.toc4 {padding-left:30px;}
+li.toc5 {padding-left:40px;}
+
+.toc-menu {
+max-height: 400px;
+overflow: auto;
+}
+
+/* barres de progression */
 .progressbar {width:100px; float:left; clear:both; margin:0 5px 0 0 !important;}
 
 /* retour à la ligne pour les éléments flottants */

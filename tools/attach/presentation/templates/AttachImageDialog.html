@@ -1,47 +1,89 @@
-<form class="overlay_attach_form image_dialog">
-<input type="hidden" value="" name="filename" class="filename" />
+<form class="form-horizontal image_dialog">
+	<input type="hidden" value="" name="filename" class="filename" />
 
-<label class="label_text">Alignement de l'image</label>
-<input type="radio" checked="checked" value="left" name="attach_align" class="input_radio image-align-left">
-<label class="label_radio label-image-align-left" for="image-align-left">Gauche</label>
-<input type="radio" value="center" name="attach_align" class="input_radio image-align-center">
-<label class="label_radio label-image-align-center" for="image-align-center">Centre</label>
-<input type="radio" value="right" name="attach_align" class="input_radio image-align-right">
-<label class="label_radio label-image-align-right" for="image-align-right">Droite</label><br />
+	<div class="control-group">
+		<label class="control-label">Alignement de l'image</label>
+		<div class="controls">
+		  <label class="radio inline label-image-align-left" for="image-align-left">
+		    <input type="radio" checked="checked" value="left" name="attach_align" class="input_radio image-align-left" />
+		    Gauche
+		  </label>
+		  <label class="radio inline label-image-align-center" for="image-align-center">
+		    <input type="radio" value="center" name="attach_align" class="input_radio image-align-center">
+		    Centre
+		  </label>
+		  <label class="radio inline label-image-align-right" for="image-align-right">
+		    <input type="radio" value="right" name="attach_align" class="input_radio image-align-right">
+		    Droite
+		  </label>
+		</div>
+	</div>
 
-<label class="label_text">Taille de l'image</label>
-<input type="radio" value="small" name="attach_imagesize" class="input_radio image-size-small">
-<label class="label_radio label-image-size" for="image-size-small">Miniature&nbsp;(140x97)</label>
-<input type="radio" checked="checked" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
-<label class="label_radio label-image-size" for="image-size-medium">Moyenne&nbsp;(300x209)</label><br />
-<label class="label_text_vide">&nbsp;</label>
-<input type="radio" value="big" name="attach_imagesize" class="input_radio image-size-big">
-<label class="label_radio label-image-size" for="image-size-big">Large&nbsp;(780x544)</label>
-<input type="radio" value="original" name="attach_imagesize" class="input_radio image-size-original">
-<label class="label_radio label-image-size" for="image-size-original">Taille originale</label><br />
+	<div class="control-group">
+		<label class="control-label">Taille de l'image</label>
+		<div class="controls">
+			<label class="radio" for="image-size-small">
+			    <input type="radio" value="small" name="attach_imagesize" class="input_radio image-size-small">
+			    Miniature&nbsp;(160x120)
+		  	</label>
+		  	<label class="radio" for="image-size-medium">
+			    <input type="radio" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
+			    Moyenne&nbsp;(360x268)
+		  	</label>
+			<label class="radio" for="image-size-big">
+			    <input type="radio" value="big" name="attach_imagesize" class="input_radio image-size-big">
+			    Large&nbsp;(725x544))
+		  	</label>
+		  	<label class="radio" for="image-size-original">
+			    <input type="radio" checked="checked" value="original" name="attach_imagesize" class="input_radio image-size-original">
+			    Taille originale
+		  	</label>
+		</div>
+	</div>
 
-<label class="label_text" for="attach_caption">Texte de la vignette</label>
-<input type="text" value="" name="attach_caption" class="input_text attach_caption" /><br />
+	<div class="control-group">
+		<label class="control-label" for="attach_caption">Texte de la vignette</label>
+		<div class="controls">
+		  <input type="text" name="attach_caption" value="" class="attach_caption input-xlarge">
+		</div>
+    </div>
 
-<label class="label_text"><a href="#" class="show_advanced" title="Voir les param&egrave;tres avanc&eacute;s"><span class="arrow">&#9658;</span>&nbsp;&nbsp;Param&egrave;tres avanc&eacute;s</a></label>
+	<a title="Voir les param&egrave;tres avanc&eacute;s" data-target="#avanced-settings" data-toggle="collapse" class="accordion-trigger"><span class="arrow">&#9658;</span>&nbsp;Param&egrave;tres avanc&eacute;s</a>
 
-<div class="advanced" style="display:none;">
+	<div id="avanced-settings" class="collapse">
+		<div class="control-group">
+			<label class="control-label" for="attach_link">Lien associ&eacute;</label>
+			<div class="controls">
+			  <input type="text" name="attach_link" value="" class="attach_link input-xlarge">
+			</div>
+	    </div>	
+	    <div class="control-group">
+			<label class="control-label">Effets graphiques</label>
+			<div class="controls">
+			  <label class="checkbox">
+			    <input type="checkbox" name="attach_css_class" value="whiteborder" />
+			    Bord blanc
+			  </label>
+			  <label class="checkbox">
+			    <input type="checkbox" name="attach_css_class" value="lightshadow" />
+			    Ombre port&eacute;e
+			  </label>
+			  <label class="checkbox">
+			    <input type="checkbox" name="attach_css_class" value="zoom" />
+			    Agrandissement au survol
+			  </label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" title="Ce texte sera affich&eacute; &agrave; la place de l'image si elle est introuvable sur le serveur" for="attach_alt">Texte de remplacement</label>
+			<div class="controls">
+			  <input type="text" name="attach_alt" value="" class="attach_alt input-xlarge">
+			</div>
+	    </div>
+	</div>
 
-	<label class="label_text" for="attach_link">Lien associ&eacute;</label>
-	<input type="text" value="" name="attach_link" class="input_text attach_link"><br />
-	
-	<label class="label_text">Effets graphiques</label>
-	<input type="checkbox" name="attach_css_class" value="whiteborder" /><label>Bord blanc</label>
-	<input type="checkbox" name="attach_css_class" value="lightshadow" /><label>Ombre port&eacute;e</label>
-	<input type="checkbox" name="attach_css_class" value="zoom" /><label>Agrandissement au survol</label>
-
-	<label class="label_text" for="attach_alt" title="Ce texte sera affich&eacute; &agrave; la place de l'image si elle est introuvable sur le serveur">Texte de remplacement</label>
-	<input type="text" value="" name="attach_alt" class="input_text attach_alt" /><br />
-
-</div>
-
-<div class="groupebouton">
-	<button type="button" name="insert" class="btn bouton_sauver">Ins&eacute;rer</button>&nbsp;
-	<button type="button" name="annuler" class="btn bouton_annuler">Annuler</button>
-</div>
+	<div class="form-actions">
+		<button name="insert" class="btn btn-primary btn-insert-upload">Ins&eacute;rer</button>&nbsp;
+		<button name="cancel" class="btn btn-cancel-upload">Annuler cet envoi</button>
+	</div>
 </form>

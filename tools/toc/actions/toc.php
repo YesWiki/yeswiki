@@ -11,12 +11,16 @@ $GLOBALS['tocaction']=0;
 $tag = $this->GetPageTag();
 $page = $this->LoadPage($tag);
 $toc_body = $page["body"];
+$class = $this->GetParameter("class");
+$closed = $this->GetParameter("closed");
 
-echo "<div class=\"toc\">\n";
-if ($this->GetParameter("header"))
-echo "<h1>".$this->Format($this->GetParameter("header"))."</h1>\n";
-else
-echo "<h1>Table des mati&egrave;res</h1>\n";
+echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '')."\">\n";
+
+echo    "<h3 class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
+'<span class="arrow">'.($closed==1 ? '&#9658;' : '&#9660;').'</span>&nbsp;'.
+($this->GetParameter("header") ? $this->Format($this->GetParameter("header")) : "Table des mati&egrave;res").
+"</h3>\n<div class=\"toc-menu\"><div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
+
 global $wiki;
 $wiki=$this;
 
@@ -61,13 +65,60 @@ if (!function_exists("translate2toc"))
             if (! preg_match($endmatch, $cur_text, $matches))
                 break;
 
-            echo "<div class=\"$class\"><A Href=\"#$toc\">"
-                .$wiki->Format(trim($matches[1]))."</A></div>\n";
+            echo "<li class=\"$class\"><a href=\"#$toc\">"
+                .$wiki->Format(trim($matches[1]))."</a></li>\n";
             $cur_text = $matches[2];
         }
     }
 }
 
-translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body));
-echo "</div>\n";
+$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."
+    <script>
+        $(document).ready(function(){
+            $('body').attr('data-spy','scroll');
+            var toc = $('#toc".$tag."');       
+            toc.scrollspy();
+            var initialoffset = $('.page').offset().top;
+            var divLocation = toc.offset();
+            var diff = divLocation.top - initialoffset;
+
+            // A la fin du chargement de la page, on positionne la table à la bonne position
+            $(window).load(function () { 
+                if ($(document).scrollTop() > divLocation.top) {
+                    offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
+                    toc.animate({top:offset}, {duration:500,queue:false});
+                }
+            });
+
+            // quand on scrolle, la table suit
+            $(window).scroll(function () { 
+                if ($(document).scrollTop() > divLocation.top) {
+                    offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
+                    toc.animate({top:offset}, {duration:500,queue:false});
+                }
+                else {
+                    toc.animate({top:diff}, {duration:500,queue:false});
+                }
+            });
+
+            // on anime le passage à un chapitre 
+            $('.toc a').on('click', function () { 
+                var link = $(this).attr('href');
+                $('html, body').animate({
+                     scrollTop: $(link).offset().top
+                 }, 500);
+                return false;
+            });
+        }); 
+    </script>";
+
+    // on vérifie qu'il y est au moins un titre pour faire la liste
+    if (preg_match("/(={2,6})(.*)/ms", $toc_body, $matches)) {
+        echo    "<ul class=\"unstyled\">\n".
+                    translate2toc(preg_replace("/\"\".*?\"\"/ms", "", $toc_body)).
+                "</ul>\n";
+    }
+    
+    // on ferme les divs ouvertes par l'action toc
+    echo "</div>\n</div>\n</div>\n";
 ?> 

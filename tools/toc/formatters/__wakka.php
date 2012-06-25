@@ -26,7 +26,7 @@ if (!function_exists("wakka2callbacktoc"))
             if ($l5 % 2)
             {
                 $toc="TOC_5_".(2*$l5 - 1);
-                return "==\"\"<a id=\"$toc\">";
+                return "\"\"<h5 id=\"$toc\">";
             }
 
  
@@ -34,7 +34,7 @@ if (!function_exists("wakka2callbacktoc"))
             // Fermeture du titre precedent
             else  
             {
-                return "</a>\"\"==\n";
+                return "</h5>\"\"";
             }
 
         }
@@ -52,14 +52,14 @@ if (!function_exists("wakka2callbacktoc"))
             if ($l4 % 2)
             {
                 $toc="TOC_4_".(2*$l4 - 1);
-                return "===\"\"<a id=\"$toc\">";
+                return "\"\"<h4 id=\"$toc\">";
             }
 
  
             // Fermeture du titre precedent
             else  
             {
-                return "</a>\"\"===\n";
+                return "</h4>\"\"";
             }
         }
 
@@ -76,13 +76,13 @@ if (!function_exists("wakka2callbacktoc"))
             if ($l3 % 2)
             {
                 $toc="TOC_3_".(2*$l3 - 1);
-                return "====\"\"<a id=\"$toc\">";
+                return "\"\"<h3 id=\"$toc\">";
             }
 
             // Fermeture du titre precedent
             else
             {
-                return "</a>\"\"====\n";
+                return "</h3>\"\"";
             }
         }
 
@@ -100,13 +100,13 @@ if (!function_exists("wakka2callbacktoc"))
             if ($l2 % 2)
             {
                 $toc="TOC_2_".(2*$l2 - 1);
-                return "=====\"\"<a id=\"$toc\">";
+                return "\"\"<h2 id=\"$toc\">";
             }
 
             // Fermeture du titre precedent
             else
             {
-                return "</a>\"\"=====\n";
+                return "</h2>\"\"";
             }
         }
 
@@ -125,13 +125,13 @@ if (!function_exists("wakka2callbacktoc"))
             if ($l1 % 2)
             {
                 $toc="TOC_1_".(2*$l1 - 1);
-                return "======\"\"<a id=\"$toc\">";
+                return "\"\"<h1 id=\"$toc\">";
             }
 
             // Fermeture du titre precedent
             else
             {
-                return "</a>\"\"======\n";
+                return "</h1>\"\"";
             }
         }
 

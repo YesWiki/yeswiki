@@ -110,6 +110,15 @@
 	listesderoulables.addClass('hover').find('ul:first').slideDown('fast');
 	listesderoulables.find(".arrow:first").html("&#9660;");
 	
+	// on change l'icone de l'accordeon
+	$('.accordion-trigger').on('click', function () { 
+	    if ($(this).next().find('.collapse').hasClass('in')) {
+	        $(this).find('.arrow').html('&#9658;');
+	    }
+	    else {
+	        $(this).find('.arrow').html('&#9660;');
+	    }
+	});
 
 	//on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
 	$(".no-dblclick, form, a").bind('dblclick', function(e) {
