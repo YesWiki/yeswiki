@@ -44,7 +44,7 @@ if (!defined("WIKINI_VERSION")) {
 //recuperation des parametres
 $mail = $this->GetParameter('mail');
 if (empty($mail)) {
-	echo '<div class="error_box">Action contact : le param&ecirc;tre mail, obligatoire, est manquant.</div>';
+	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action contact :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
 }
 else {
 
@@ -58,7 +58,7 @@ else {
 
 	echo '<div class="contact-form '.$class.'">
 		<div class="note"></div>
-		<form id="ajax-contact-form" class="ajax-form" action="'.$this->href('mail').'">
+		<form id="ajax-contact-form" class="ajax-form form-horizontal" action="'.$this->href('mail').'">
 			<div class="contact-row">
 					<label class="contact-label">Votre nom</label>
 					<input class="contact-input contact-name" type="text" name="name" value="" />
@@ -78,7 +78,7 @@ else {
 			</div>
 	
 			<div class="contact-row">
-					<label class="contact-label">Corps du message</label>
+					<label class="contact-label">Votre message</label>
 					<textarea class="contact-textarea contact-message" name="message" rows="5" cols="25"></textarea>
 					<div class="clear"></div>
 			</div>
@@ -91,7 +91,6 @@ else {
 					<input type="hidden" name="type" value="contact" />	
 					<div class="clear"></div>
 			</div>
-			<div class="clear"></div>	
 		</form>
 	</div>';
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/contact/libs/contact.js"></script>'."\n";
