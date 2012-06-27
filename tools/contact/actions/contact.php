@@ -42,57 +42,34 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 //recuperation des parametres
-$mail = $this->GetParameter('mail');
-if (empty($mail)) {
+$contactelements['mail'] = $this->GetParameter('mail');
+if (empty($contactelements['mail'])) {
 	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action contact :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
 }
 else {
 
-	$entete = $this->GetParameter('entete');
-	if (empty($entete)) {
-		$entete = $this->config['wakka_name'];
+	$contactelements['entete'] = $this->GetParameter('entete');
+	if (empty($contactelements['entete'])) {
+		$contactelements['entete'] = $this->config['wakka_name'];
 	}
 
-	$class = $this->GetParameter('class');
+	// on choisit le template utilisé
+	$template = $this->GetParameter('template'); 
+	if (empty($template)) {
+		$template = 'complete-contact-form.tpl.html';
+	}
 
+	// on peut ajouter des classes à la classe par défaut .searchform
+	$contactelements['class'] = ($this->GetParameter('class') ? 'form-contact '.$this->GetParameter('class') : 'form-contact');
 
-	echo '<div class="contact-form '.$class.'">
-		<div class="note"></div>
-		<form id="ajax-contact-form" class="ajax-form form-horizontal" action="'.$this->href('mail').'">
-			<div class="contact-row">
-					<label class="contact-label">Votre nom</label>
-					<input class="contact-input contact-name" type="text" name="name" value="" />
-					<div class="clear"></div>
-			</div>
+	// adresse url d'envoi du mail
+	$contactelements['mailerurl'] = $this->href('mail');
 
-			<div class="contact-row">
-					<label class="contact-label">Votre adresse mail</label>
-					<input class="contact-input contact-mail" type="text" name="email" value="" />
-					<div class="clear"></div>
-			</div>
-	
-			<div class="contact-row">
-					<label class="contact-label">Sujet du message</label>
-					<input class="contact-input contact-subject" type="text" name="subject" value="" />
-					<div class="clear"></div>
-			</div>
-	
-			<div class="contact-row">
-					<label class="contact-label">Votre message</label>
-					<textarea class="contact-textarea contact-message" name="message" rows="5" cols="25"></textarea>
-					<div class="clear"></div>
-			</div>
-	
-			<div class="contact-row">
-					<label class="contact-label">&nbsp;</label>
-					<input class="contact-submit" type="submit" name="submit" value="Envoyer" />
-					<input type="hidden" name="mail" value="'.$mail.'" />
-					<input type="hidden" name="entete" value="'.$entete.'" />	
-					<input type="hidden" name="type" value="contact" />	
-					<div class="clear"></div>
-			</div>
-		</form>
-	</div>';
+	include_once('tools/contact/libs/squelettephp.class.php');
+	$contacttemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
+	$contacttemplate->set($contactelements);
+	echo $contacttemplate->analyser();
+
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/contact/libs/contact.js"></script>'."\n";
 }
 ?>

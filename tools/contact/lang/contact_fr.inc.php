@@ -29,6 +29,11 @@
 */
 
 define ('CONTACT_MAIL_REQUIRED', 'le param&ecirc;tre mail, obligatoire, est manquant.');
-define ('CONTACT_', '');
+define ('CONTACT_YOUR_NAME', 'Votre nom');
+define ('CONTACT_YOUR_MAIL', 'Votre adresse mail');
+define ('CONTACT_SUBJECT', 'Sujet du message');
+define ('CONTACT_YOUR_MESSAGE', 'Votre message');
+define ('CONTACT_SEND_MESSAGE', 'Envoyer le message');
+
 
 ?>
