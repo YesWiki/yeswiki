@@ -39,11 +39,11 @@ $despam_url = $tools_url."?p=despam";
 buffer::str(	"\n<!-- == Action erasespam v 0.7.3 ============================= -->\n");
 // La norme HTML interdit la balise style ailleurs que dans <head></head>
 // on l'utilise ici à titre de débogage et pendant la construction de l'action
-buffer::str(	"<style type=\"text/css\">",
+/*buffer::str(	"<style type=\"text/css\">",
 	"p { margin: 0; }",
 	".action_erasespam { background-color: yellow; }",
 	".action_erasespam td { text-align: right; vertical-align: top; }",
-	"</style>\n");
+	"</style>\n");*/
 
 
 
