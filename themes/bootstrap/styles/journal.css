@@ -1,5 +1,6 @@
+@import url('bootstrap/journal/bootstrap.min.css');
 .main-body {
-    padding-top: 60px;
+    padding-top: 90px;
 }
 
 .navbar nav li ul {

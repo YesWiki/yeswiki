@@ -1,9 +1,11 @@
+@import url('bootstrap/amelia/bootstrap.min.css');
+
 .main-body {
-    padding-top: 60px;
+	padding-top: 60px;
 }
 
 .navbar nav li ul {
-    display: none;
+	display: none;
 }
 
 .navbar-search, input.search-query {margin-top:0 !important;}

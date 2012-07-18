@@ -43,7 +43,7 @@
       </div>
     </div>
 
-    <div class="container-fluid" role="main">
+    <div class="container-fluid main-body" role="main">
       <div class="row-fluid">
         <div class="span3">
           <nav class="well sidebar-nav">
@@ -51,16 +51,15 @@
           </nav><!--/.well -->      
         </div><!--/span-->
         <div class="span6" {{doubleclic}}>
-          {WIKINI_PAGE}
-		      {{barreredaction class="form-actions"}}
+          {WIKINI_PAGE}    
         </div><!--/span-->
         <div class="span3">
           {{include page="PageColonneDroite" doubleclic="1" actif="1"}}
         </div><!--/span-->
       </div><!--/row-->
-	  			
+	  	{{barreredaction class="form-actions"}}
 	  <footer>
-		  <p>{{include page="PageFooter" doubleclic="1"}}</p>
+		  {{include page="PageFooter" doubleclic="1"}}
 	  </footer><!-- end of footer -->
 
     </div><!--/.fluid-container-->
