@@ -1,23 +1,3 @@
-// On change le theme dynamiquement
-$("#changetheme").on('change', function(){ 
-	var val = $(this).val();
-	// pour vider la liste
-	document.getElementById("form_graphical_options").squelette.options.length=0
-	for (var i=0; i<tab1[val].length; i++){
-		
-		  o=new Option(tab1[val][i],tab1[val][i]);
-		 document.getElementById("form_graphical_options").squelette.options[document.getElementById("form_graphical_options").squelette.options.length]=o;
-		
-					
-	}
-	document.getElementById("form_graphical_options").style.options.length=0
-	for (var i=0; i<tab2[val].length; i++){
-		  o=new Option(tab2[val][i],tab2[val][i]);
-		 document.getElementById("form_graphical_options").style.options[document.getElementById("form_graphical_options").style.options.length]=o;
-					
-	}					
-});
-
 // On change le css dynamiquement
 /*$("#form_graphical_options select[name=style]").on('change', function(){ 
 	var newstyle = $("#mainstyle").attr("href");

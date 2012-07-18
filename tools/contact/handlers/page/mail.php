@@ -6,26 +6,26 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-//inclusion de la bibliothèque de fonctions pour l'envoi des mails
+// inclusion de la bibliothèque de fonctions pour l'envoi des mails
 include_once 'tools/contact/libs/contact.functions.php';
 
 $output = '';
 
-//si le handler est appelé en ajax, on traite l'envoi de mail et on répond en ajax
+// si le handler est appelé en ajax, on traite l'envoi de mail et on répond en ajax
 if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
 	//initialisation de variables passées en POST
 	$mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
 	$mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
 	$name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
 
-	//dans le cas d'une page wiki envoyée, on formate le message en html et en txt
+	// dans le cas d'une page wiki envoyée, on formate le message en html et en txt
 	if ($_POST['type']=='mail') {
 		$subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
 		$message_html = html_entity_decode($this->Format($this->page["body"]));
 		$message_txt = strip_tags($message_html);
 	}
 
-	//pour un envoi de mail classique, le message en txt
+	// pour un envoi de mail classique, le message en txt
 	else {
 		$subject = ((isset($_POST['entete'])) ? '['.trim($_POST['entete']).'] ': '').
 				((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false).
@@ -45,7 +45,7 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERV
 
 		//on affiche l'erreur sinon
 		else {
-			echo '<div class="error_box">'.$error.'</div>';
+			echo '<div class="alert alert-error">'.$error.'</div>';
 		}
 	}
 	elseif ($_POST['type']=='abonne' || $_POST['type']=='desabonne') {
@@ -59,7 +59,7 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERV
 
 		//on affiche l'erreur sinon
 		else {
-			echo '<div class="error_box">'.$error.'</div>';
+			echo '<div class="alert alert-error">'.$error.'</div>';
 		}
 	}
 }
@@ -86,13 +86,13 @@ else {
 		}
 		//message d'erreur si pas admin
 		else {
-			$output .= '<div class="error_box">Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs.</div>';
+			$output .= '<div class="alert alert-error">Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs.</div>';
 		}
 	}
 
 	//on affiche le formulaire d'indentification sinon
 	else {
-		$output .= '<div class="info_box">Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs. Si vous faites parti ce groupe, veuillez vous identifier.</div>';
+		$output .= '<div class="alert alert-info">Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs. Si vous faites parti ce groupe, veuillez vous identifier.</div>';
 		$output .= $this->Format('{{login templateform="form_minimal.tpl.html"}}');
 	}
 

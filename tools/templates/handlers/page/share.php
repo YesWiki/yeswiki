@@ -8,7 +8,7 @@ if (!defined("WIKINI_VERSION"))
 	die ("acc&egrave;s direct interdit");
 }
 
-include_once 'tools/qrcode/libs/qrlib.php';
+//include_once 'tools/qrcode/libs/qrlib.php';
 
 $html  = "<div class=\"page\">"."\n";
 $html .= "<h2>Partager cette page</h2>\n";
@@ -20,11 +20,9 @@ $html .= '<a href="http://www.google.com/reader/link?title='.urlencode($this->Ge
 $html .= '<a href="'.$this->href("mail").'" title="Envoyer le contenu de cette page par mail" class="bouton_share"><img src="tools/templates/presentation/images/email.png" width="32" height="32" alt="email" /></a>'."\n";
 $html .= '<br /><br /><br /><br />'."\n";
 $html .= 'Code d\'int&eacute;gration de contenu dans une page HTML'."\n";
-$html .= "<div style=\"font-family: 'Courier New'; border:1px solid #ddd; text-align:left; background:#fff; padding:5px; margin:10px 0; display:block; \">\n";
-$html .= htmlentities('<iframe class="yeswiki_frame" width="960" height="700" frameborder="0" src="'.$this->Href('iframe').'"></iframe>')."\n";
-$html .= "</div>"."\n";
-$html .= '<br /><br /><br />'."\n";
-$html .= '<a href="http://yeswiki.net/wakka.php?wiki=AideHandlerShare" title="Comment partager cette page"><div class="aide_box"> Aide en ligne </div></a>'."\n";
+$html .= "<pre>\n";
+$html .= htmlentities('<iframe class="yeswiki_frame" width="100%" height="600" frameborder="0" src="'.$this->Href('iframe').'"></iframe>')."\n";
+$html .= "</pre>"."\n";
 
 echo utf8_encode($html);
 ?>

@@ -44,176 +44,33 @@ $plugin_output_new = str_replace("<script type=\"text/javascript\">\n".
 // personnalisation graphique que dans le cas ou on est autorisé
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) && 
 	($this->HasAccess("write") && $this->HasAccess("read") && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner() ) ) ) ) ) { 
-	$selecteur = 	'<div id="graphical_options" class="modal fade">'."\n".
-					'<div class="modal-header">'."\n".
-						'<a class="close" data-dismiss="modal">&times;</a>'."\n".
-						'<h3>'.TEMPLATE_CUSTOM_GRAPHICS.' '.$this->GetPageTag().'</h3>'."\n".
-					'</div>'."\n".
-					'<div class="modal-body">'."\n".
-					'<form class="form-horizontal" id="form_graphical_options">'."\n";
-
-	// récupération des images de fond
-	$backgroundsdir = 'files/backgrounds';
-	$dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
-	while ($dir && ($file = readdir($dir)) !== false) {	
-			$imgextension = strtolower(substr($file, -4, 4));  	
-			// les jpg sont les fonds d'écrans, ils doivent être mis en miniature
-			if ($imgextension == '.jpg') {
-				if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
-					require_once 'tools/attach/libs/class.imagetransform.php';
-					$imgTrans = new imageTransform();
-					$imgTrans->sourceFile = $backgroundsdir.'/'.$file;		
-					$imgTrans->targetFile = $backgroundsdir.'/thumbs/'.$file;
-					$imgTrans->resizeToWidth = 100;
-					$imgTrans->resizeToHeight = 75;
-					if ($imgTrans->resize()) {
-						$backgrounds[] = $imgTrans->targetFile;
-					}
-				} else {
-					$backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
-				}
-			}
-			// les png sont les images à répéter en mosaique
-			elseif ($imgextension == '.png') {
-				$backgrounds[] = $backgroundsdir.'/'.$file;
-			}
-	}
-	if ($dir) closedir($dir);
 	
-	$bgselector = '';
-	
-	if (isset($backgrounds) && is_array($backgrounds)) {
-		$bgselector .= '<h3>'.TEMPLATE_BG_IMAGE.'</h3>
-		<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
-    <!-- Carousel items -->
-    <div class="carousel-inner">';
-			   $nb=0; $class="active "; sort($backgrounds);
-			   foreach($backgrounds as $background) {
-					$nb++;
-					if ($nb == 1) {$bgselector .= '<div class="'.$class.'item">';$class='';}
-					$imgextension = strtolower(substr($background, -4, 4));
-					if ($imgextension=='.jpg') {
-						$bgselector .= '<img class="bgimg" src="'.$background.'" />';
-					} elseif ($imgextension=='.png') {
-						$bgselector .= '<div class="mozaicimg" style="background:url('.$background.') repeat top left;"></div>';
-					}
-					
-					if ($nb == 8) {$nb=0;$bgselector .= '</div>';}
-			  }
-			  if ($nb != 0) {$bgselector .= '</div>';}
-			   $bgselector .= '</div>
-    <!-- Carousel nav -->
-    <a class="carousel-control left" href="#bgCarousel" data-slide="prev">&lsaquo;</a>
-    <a class="carousel-control right" href="#bgCarousel" data-slide="next">&rsaquo;</a>
-    </div>';
-	}
-	$bgselector .= '';
-	
-	// Edition
-	if (!isset($_POST["submit"]) || (isset($_POST["submit"]) && $_POST["submit"] != html_entity_decode('Aper&ccedil;u') && $_POST["submit"] != 'Sauver')) {
+	$selecteur = '<div id="graphical_options" class="modal fade">'."\n".
+				'<div class="modal-header">'."\n".
+					'<a class="close" data-dismiss="modal">&times;</a>'."\n".
+					'<h3>'.TEMPLATE_CUSTOM_GRAPHICS.' '.$this->GetPageTag().'</h3>'."\n".
+				'</div>'."\n".
+				'<div class="modal-body">'."\n";
+	$selecteur .= show_form_theme_selector('edit');
+	$selecteur .= '</div>'."\n".
+				'<div class="modal-footer">'."\n".
+					'<a href="#" class="btn button_cancel" data-dismiss="modal">'.TEMPLATE_CANCEL.'</a>'."\n".
+					'<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'.TEMPLATE_APPLY.'</a>'."\n".						
+				'</div>'."\n".	
+			'</div>'."\n";
 
-		//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-		$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
-		$this->config['templates'] = search_template_files($repertoire_initial);
+	$js = '<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
 
-		//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-		if (is_dir('themes')) {
-			$repertoire_racine = 'themes';
-			$this->config['templates'] = array_merge($this->config['templates'], search_template_files($repertoire_racine));
-			if (is_array($this->config['templates'])) ksort($this->config['templates']);
-		}
+	//quand le changement des valeurs du template est caché, il faut stocker les valeurs déja entrées pour ne pas retourner au template par défaut
+	$selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$this->config['favorite_theme'].'" />'."\n";
+	$selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="'.$this->config['favorite_squelette'].'" />'."\n";
+	$selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="'.$this->config['favorite_style'].'" />'."\n";
+	$selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$this->config['favorite_background_image'].'" />'."\n";
 
 
-		$selecteur .= '<div class="control-group">'."\n".
-						'<label class="control-label">'.TEMPLATE_THEME.'</label>'."\n".
-						'<div class="controls">'."\n".
-						'<select id="changetheme" name="theme">'."\n";
-	    foreach(array_keys($this->config['templates']) as $key => $value) {
-	            if($value !== $this->config['favorite_theme']) {
-	                    $selecteur .= '<option value="'.$value.'">'.$value.'</option>'."\n";
-	            }
-	            else {
-	                    $selecteur .= '<option value="'.$value.'" selected="selected">'.$value.'</option>'."\n";
-	            }
-	    }
-	    $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
-		
-		$selecteur .= '<div class="control-group">'."\n".
-						'<label class="control-label">'.TEMPLATE_SQUELETTE.'</label>'."\n".
-						'<div class="controls">'."\n".
-						'<select id="changesquelette" name="squelette">'."\n";
-		ksort($this->config['templates'][$this->config['favorite_theme']]['squelette']);
-	    foreach($this->config['templates'][$this->config['favorite_theme']]['squelette'] as $key => $value) {
-	            if($value !== $this->config['favorite_squelette']) {
-	                    $selecteur .= '<option value="'.$key.'">'.$value.'</option>'."\n";
-	            }
-	            else {
-	                    $selecteur .= '<option value="'.$this->config['favorite_squelette'].'" selected="selected">'.$value.'</option>'."\n";
-	            }
-	    }
-	    $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
-
-		ksort($this->config['templates'][$this->config['favorite_theme']]['style']);	
-		$selecteur .= '<div class="control-group">'."\n".
-						'<label class="control-label">'.TEMPLATE_STYLE.'</label>'."\n".
-						'<div class="controls">'."\n".
-						'<select id="changestyle" name="style">'."\n";
-	    foreach($this->config['templates'][$this->config['favorite_theme']]['style'] as $key => $value) {
-	            if($value !== $this->config['favorite_style']) {
-	                    $selecteur .= '<option value="'.$key.'">'.$value.'</option>'."\n";
-	            }
-	            else {	            		
-	                    $selecteur .= '<option value="'.$this->config['favorite_style'].'" selected="selected">'.$value.'</option>'."\n";
-	            }
-	    }
-	    $selecteur .= 	'</select>'."\n".'</div>'."\n".'</div>'."\n".$bgselector."\n".
-						'</form>'."\n".'</div>'."\n".
-						'<div class="modal-footer">'."\n".
-							'<a href="#" class="btn button_cancel" data-dismiss="modal">'.TEMPLATE_CANCEL.'</a>'."\n".
-							'<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'.TEMPLATE_APPLY.'</a>'."\n".						
-						'</div>'."\n".	
-					'</div>'."\n";
-		
-		//AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES			
-		$js = '<script><!--
-		var tab1 = new Array();
-		var tab2 = new Array();'."\n";
-		foreach(array_keys($this->config['templates']) as $key => $value) {
-	            $js .= '		tab1["'.$value.'"] = new Array(';
-	            $nbocc=0;	           
-	            foreach($this->config['templates'][$value]["squelette"] as $key2 => $value2) {
-	            	if ($nbocc==0) $js .= '\''.$value2.'\'';
-	            	else $js .= ',\''.$value2.'\'';
-	            	$nbocc++;
-	            }
-	            $js .= ');'."\n";
-	            
-	            $js .= '		tab2["'.$value.'"] = new Array(';
-	            $nbocc=0;
-	            foreach($this->config['templates'][$value]["style"] as $key3 => $value3) {
-	            	if ($nbocc==0) $js .= '\''.$value3.'\'';
-	            	else $js .= ',\''.$value3.'\'';
-	            	$nbocc++;
-	            }
-	            $js .= ');'."\n";	      
-	    }
-				
-		$js .= '</script>'."\n".'<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
-
-		//quand le changement des valeurs du template est caché, il faut stocker les valeurs déja entrées pour ne pas retourner au template par défaut
-		$selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$this->config['favorite_theme'].'" />'."\n";
-		$selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="'.$this->config['favorite_squelette'].'" />'."\n";
-		$selecteur .= '<input id="hiddenstyle" type="hidden" name="style" value="'.$this->config['favorite_style'].'" />'."\n";
-		$selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$this->config['favorite_background_image'].'" />'."\n";
-
-
-		// on rajoute la personnalisation graphique
-		$plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".$js."\n".'</body>', $plugin_output_new);
-		$changetheme = TRUE;
-	}
-	else {
-		$changetheme = FALSE;
-	}
+	// on rajoute la personnalisation graphique
+	$plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".$js."\n".'</body>', $plugin_output_new);
+	$changetheme = TRUE;
 } else {
 	$changetheme = FALSE;
 }

@@ -124,5 +124,29 @@
 	$(".no-dblclick, form, a").bind('dblclick', function(e) {
 		return false;
 	});
+
+	// On change le theme dynamiquement
+	$("#changetheme").on('change', function(){ 
+		var val = $(this).val();
+		// pour vider la liste
+		var squelette = $("#changesquelette")[0];
+		squelette.options.length=0
+		for (var i=0; i<tab1[val].length; i++){
+			o = new Option(tab1[val][i],tab1[val][i]);
+			squelette.options[squelette.options.length] = o;				
+		}
+		var style = $("#changestyle")[0];
+		style.options.length=0
+		for (var i=0; i<tab2[val].length; i++){
+			o = new Option(tab2[val][i],tab2[val][i]);
+			style.options[style.options.length]=o;				
+		}					
+	});
+	// Pour l'apercu des themes, on recharge la page avec le theme selectionne
+	$("#form_theme_selector select").on('change', function(){ 
+		window.location = window.location + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
+	});
+	
+
 	
 })(jQuery);

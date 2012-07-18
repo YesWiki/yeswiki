@@ -214,4 +214,155 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 	}
 }
 
+function show_form_theme_selector($mode = 'selector') {
+	// en mode édition on recupére aussi les images de fond
+	if ($mode=='edit') {
+		$id = 'form_graphical_options'; 
+		// récupération des images de fond
+		$backgroundsdir = 'files/backgrounds';
+		$dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
+		while ($dir && ($file = readdir($dir)) !== false) {	
+				$imgextension = strtolower(substr($file, -4, 4));  	
+				// les jpg sont les fonds d'écrans, ils doivent être mis en miniature
+				if ($imgextension == '.jpg') {
+					if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
+						require_once 'tools/attach/libs/class.imagetransform.php';
+						$imgTrans = new imageTransform();
+						$imgTrans->sourceFile = $backgroundsdir.'/'.$file;		
+						$imgTrans->targetFile = $backgroundsdir.'/thumbs/'.$file;
+						$imgTrans->resizeToWidth = 100;
+						$imgTrans->resizeToHeight = 75;
+						if ($imgTrans->resize()) {
+							$backgrounds[] = $imgTrans->targetFile;
+						}
+					} else {
+						$backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
+					}
+				}
+				// les png sont les images à répéter en mosaique
+				elseif ($imgextension == '.png') {
+					$backgrounds[] = $backgroundsdir.'/'.$file;
+				}
+		}
+		if ($dir) closedir($dir);
+		
+		$bgselector = '';
+		
+		if (isset($backgrounds) && is_array($backgrounds)) {
+			$bgselector .= '<h3>'.TEMPLATE_BG_IMAGE.'</h3>
+			<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
+	    <!-- Carousel items -->
+	    <div class="carousel-inner">';
+				   $nb=0; $class="active "; sort($backgrounds);
+				   foreach($backgrounds as $background) {
+						$nb++;
+						if ($nb == 1) {$bgselector .= '<div class="'.$class.'item">';$class='';}
+						$imgextension = strtolower(substr($background, -4, 4));
+						if ($imgextension=='.jpg') {
+							$bgselector .= '<img class="bgimg" src="'.$background.'" />';
+						} elseif ($imgextension=='.png') {
+							$bgselector .= '<div class="mozaicimg" style="background:url('.$background.') repeat top left;"></div>';
+						}
+						
+						if ($nb == 8) {$nb=0;$bgselector .= '</div>';}
+				  }
+				  if ($nb != 0) {$bgselector .= '</div>';}
+				   $bgselector .= '</div>
+	    <!-- Carousel nav -->
+	    <a class="carousel-control left" href="#bgCarousel" data-slide="prev">&lsaquo;</a>
+	    <a class="carousel-control right" href="#bgCarousel" data-slide="next">&rsaquo;</a>
+	    </div>';
+		}
+	}
+	else {
+		$id = 'form_theme_selector';
+		$bgselector = '';
+	}
+
+	$selecteur = '<form class="form-horizontal" id="'.$id.'">'."\n";
+	
+	//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
+	$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
+	$GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
+
+	//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
+	if (is_dir('themes')) {
+		$repertoire_racine = 'themes';
+		$GLOBALS['wiki']->config['templates'] = array_merge($GLOBALS['wiki']->config['templates'], search_template_files($repertoire_racine));
+		if (is_array($GLOBALS['wiki']->config['templates'])) ksort($GLOBALS['wiki']->config['templates']);
+	}
+
+
+	$selecteur .= '<div class="control-group">'."\n".
+					'<label class="control-label">'.TEMPLATE_THEME.'</label>'."\n".
+					'<div class="controls">'."\n".
+					'<select id="changetheme" name="theme">'."\n";
+    foreach(array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
+            if($value !== $GLOBALS['wiki']->config['favorite_theme']) {
+                    $selecteur .= '<option value="'.$value.'">'.$value.'</option>'."\n";
+            }
+            else {
+                    $selecteur .= '<option value="'.$value.'" selected="selected">'.$value.'</option>'."\n";
+            }
+    }
+    $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
+	
+	$selecteur .= '<div class="control-group">'."\n".
+					'<label class="control-label">'.TEMPLATE_SQUELETTE.'</label>'."\n".
+					'<div class="controls">'."\n".
+					'<select id="changesquelette" name="squelette">'."\n";
+	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
+    foreach($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
+            if($value !== $GLOBALS['wiki']->config['favorite_squelette']) {
+                    $selecteur .= '<option value="'.$key.'">'.$value.'</option>'."\n";
+            }
+            else {
+                    $selecteur .= '<option value="'.$GLOBALS['wiki']->config['favorite_squelette'].'" selected="selected">'.$value.'</option>'."\n";
+            }
+    }
+    $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
+
+	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);	
+	$selecteur .= '<div class="control-group">'."\n".
+					'<label class="control-label">'.TEMPLATE_STYLE.'</label>'."\n".
+					'<div class="controls">'."\n".
+					'<select id="changestyle" name="style">'."\n";
+    foreach($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
+            if($value !== $GLOBALS['wiki']->config['favorite_style']) {
+                    $selecteur .= '<option value="'.$key.'">'.$value.'</option>'."\n";
+            }
+            else {	            		
+                    $selecteur .= '<option value="'.$GLOBALS['wiki']->config['favorite_style'].'" selected="selected">'.$value.'</option>'."\n";
+            }
+    }
+    $selecteur .= 	'</select>'."\n".'</div>'."\n".'</div>'."\n".$bgselector."\n".
+					'</form>'."\n";
+
+	//AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES			
+	$selecteur .= '<script>
+	var tab1 = new Array();
+	var tab2 = new Array();'."\n";
+	foreach(array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
+            $selecteur .= '		tab1["'.$value.'"] = new Array(';
+            $nbocc=0;	           
+            foreach($GLOBALS['wiki']->config['templates'][$value]["squelette"] as $key2 => $value2) {
+            	if ($nbocc==0) $selecteur .= '\''.$value2.'\'';
+            	else $selecteur .= ',\''.$value2.'\'';
+            	$nbocc++;
+            }
+            $selecteur .= ');'."\n";
+            
+            $selecteur .= '		tab2["'.$value.'"] = new Array(';
+            $nbocc=0;
+            foreach($GLOBALS['wiki']->config['templates'][$value]["style"] as $key3 => $value3) {
+            	if ($nbocc==0) $selecteur .= '\''.$value3.'\'';
+            	else $selecteur .= ',\''.$value3.'\'';
+            	$nbocc++;
+            }
+            $selecteur .= ');'."\n";	      
+    }	
+    $selecteur .= '</script>'."\n";
+
+	return $selecteur;
+}
 ?>

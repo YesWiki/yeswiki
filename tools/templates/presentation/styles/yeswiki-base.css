@@ -257,6 +257,7 @@ margin: 0 5px 0 0;
 
 
 /* Sélecteur de fond d'écran */
+#form_theme_selector {width:530px;}
 #bgCarousel img.bgimg, #bgCarousel div.mozaicimg {
 	float:left;
 	margin:2px;

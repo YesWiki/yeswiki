@@ -66,7 +66,7 @@ if (!function_exists("translate2toc"))
                 break;
 
             echo "<li class=\"$class\"><a href=\"#$toc\">"
-                .$wiki->Format(trim($matches[1]))."</a></li>\n";
+                .trim($matches[1])."</a></li>\n";
             $cur_text = $matches[2];
         }
     }
