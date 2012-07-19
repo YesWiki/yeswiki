@@ -144,7 +144,9 @@
 	});
 	// Pour l'apercu des themes, on recharge la page avec le theme selectionne
 	$("#form_theme_selector select").on('change', function(){ 
-		window.location = window.location + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
+		var url = window.location.toString();
+    	var urlAux = url.split('&theme=');
+		window.location = urlAux[0] + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
 	});
 	
 
