@@ -1,0 +1,39 @@
+<div class="grid_4">
+<?=$open;?>
+<?php if( count($checkboxes)>0 ) : ?>
+<?php foreach($checkboxes as $checkbox): ?>
+        <?php foreach($checkbox as $element_checkbox): ?>
+            <?php if (isset($element_checkbox['title']) ) : ?>
+
+	         <b><?=$element_checkbox['title'];?>:</b>
+            <?php else: ?>
+    	        <?=$element_checkbox['content'];?>
+            <?php endif; ?>
+             </br>
+        <?php endforeach; ?>
+<?php endforeach; ?>
+<button value=\"Go\">Go!</button>
+<?=$close;?>
+</div>
+<div class="grid_8">
+<?=$info_res;?>
+<?=$pager_links;?>
+</br>
+<?php endif; ?>
+<?php if( count($fiches)>0 ) : ?>
+<div class="accordion">
+<?php foreach($fiches as $fiche): ?>
+<h2 class="titre_accordeon">
+	<?=$fiche['bf_titre'];?>
+	<span class="liens_titre_accordeon">
+		<?=$fiche['lien_voir'];?>
+	</span>
+</h2>
+<div class="pane">
+<?=$fiche['html'];?>
+</div>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>
+</div>
+<div class="clear"></div><br/>
