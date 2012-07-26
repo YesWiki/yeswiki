@@ -1,3 +1,4 @@
+( function($) {
 $(document).ready(function(){
 
 	// validation formulaire de contact
@@ -79,3 +80,4 @@ $(document).ready(function(){
 		return false;
 	});
 });
+} ) ( jQuery );
