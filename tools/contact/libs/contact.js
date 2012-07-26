@@ -1,3 +1,4 @@
+( function($) {
 $(document).ready(function(){
 	$("#ajax-contact-form, #ajax-abonne-form, #ajax-desabonne-form, #ajax-mail-form").live("submit", function() {
 		$(this).addClass('form-selected').prev(".note").addClass('note-selected');
@@ -29,3 +30,4 @@ $(document).ready(function(){
 		return false;
 	});
 });
+} ) ( jQuery );
