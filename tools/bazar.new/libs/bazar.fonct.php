@@ -1781,7 +1781,6 @@ function baz_rechercher() {
 
 	//creation du lien pour le formulaire de recherche
 	$tab_formulaire_recherche['search_link'] = $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_DEFAUT.'&'.BAZ_VARIABLE_ACTION.'='.BAZ_MOTEUR_RECHERCHE, 0);
-	
 
 	//on recupere la liste des formulaires, a afficher dans une liste deroulante pour la recherche
 	$tab_formulaires = baz_valeurs_tous_les_formulaires();

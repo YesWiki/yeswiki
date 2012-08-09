@@ -46,6 +46,7 @@ define ('TEMPLATE_ERROR_NO_DATA', 'ERREUR : rien &agrave; ajouter dans les meta-
 define ('TEMPLATE_ERROR_NO_ACCESS', 'ERREUR : pas les droits d\'acc&eacute;s.');
 
 //barre de redaction
+define ('TEMPLATE_VIEW_PAGE', 'Voir la page');
 define ('TEMPLATE_CLICK_TO_EDIT', 'Cliquez pour &eacute;diter cette page.');
 define ('TEMPLATE_EDIT', '&Eacute;diter');
 define ('TEMPLATE_EDIT_THIS_PAGE', '&Eacute;diter cette page');

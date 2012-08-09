@@ -10,7 +10,7 @@
 
 /* Author: Florian Schmitt */ 
 (function($){
-	//gestion des classes actives pour les menus
+	// gestion des classes actives pour les menus
 	$("a.active-link").parent().addClass('active-list').parents("ul").prev("a").addClass('active-parent-link').parent().addClass('active-list');
 	
 	/* Ajout de l'overlay pour le partage de page et l'envois par mail */
@@ -33,6 +33,29 @@
 			}
 			
 		}
+	});
+
+	// fenetres modales
+	$('a.modalbox').on('click', function() {
+		var $this = $(this);
+		$this.after('<div class="modal fade hide" id="YesWikiModal">'+
+					    '<div class="modal-header">'+
+					    '<button type="button" class="close" data-dismiss="modal">&times;</button>'+
+					    '<h3>Modal header</h3>'+
+					    '</div>'+
+					    '<div class="modal-body">'+
+					    '</div>'+
+				    '</div>');
+		
+		var modal = $('#YesWikiModal');
+		modal.find('.modal-body').load($this.attr('href') + ' .page', function(response, status, xhr) {
+			modal.modal({
+				keyboard: false
+			}).modal('show');
+			return false;
+		});
+	    
+	    return false;
 	});
 
 	// Menus déroulants horizontaux
@@ -125,23 +148,6 @@
 		return false;
 	});
 
-	// On change le theme dynamiquement
-	$("#changetheme").on('change', function(){ 
-		var val = $(this).val();
-		// pour vider la liste
-		var squelette = $("#changesquelette")[0];
-		squelette.options.length=0
-		for (var i=0; i<tab1[val].length; i++){
-			o = new Option(tab1[val][i],tab1[val][i]);
-			squelette.options[squelette.options.length] = o;				
-		}
-		var style = $("#changestyle")[0];
-		style.options.length=0
-		for (var i=0; i<tab2[val].length; i++){
-			o = new Option(tab2[val][i],tab2[val][i]);
-			style.options[style.options.length]=o;				
-		}					
-	});
 	// Pour l'apercu des themes, on recharge la page avec le theme selectionne
 	$("#form_theme_selector select").on('change', function(){ 
 		var url = window.location.toString();

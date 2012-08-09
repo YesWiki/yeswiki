@@ -148,7 +148,7 @@ class qqFileUploader {
         }*/
         
         // on enleve les espaces et les accents pour le nom de fichier
-        $search = array ('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_]@');
+        $search = array ('@[Ã©Ã¨ÃªÃ«ÃŠÃ‹]@i','@[Ã Ã¢Ã¤Ã‚Ã„]@i','@[Ã®Ã¯ÃŽÃ]@i','@[Ã»Ã¹Ã¼Ã›Ãœ]@i','@[Ã´Ã¶Ã”Ã–]@i','@[Ã§]@i','@[ ]@i','@[^a-zA-Z0-9_]@');
         $replace = array ('e','a','i','u','o','c','_','');
         $filename = preg_replace($search, $replace, utf8_decode($filename));
 
@@ -156,20 +156,20 @@ class qqFileUploader {
         $GLOBALS['wiki']->setParameter("desc", $filename);
         $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
         
-        // dans le cas d'une nouvelle page, on donne une valeur a la date de création
+        // dans le cas d'une nouvelle page, on donne une valeur a la date de crÃ©ation
         if ($GLOBALS['wiki']->page['time'] == '') $GLOBALS['wiki']->page['time'] = date('YmdHis');
         
-        // on envoi l'attachement en retenant l'affichage du résultat dans un buffer
+        // on envoi l'attachement en retenant l'affichage du rÃ©sultat dans un buffer
         ob_start();
         $attach->doAttach();
         $fullfilename = $attach->GetFullFilename(true);
         ob_end_clean();
         
         if ($this->file->save($fullfilename)){
-            return array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext);
+            return array_map('utf8_encode', array('success'=>true, 'filename'=>$fullfilename, 'simplefilename'=>$filename . '.' . $ext, 'extension'=>$ext));
         } else {
-            return array('error'=> 'Impossible de sauver le fichier.' .
-                "L'upload a &eacute;t&eacute; annul&eacute; ou le serveur a plant&eacute;.");
+            return array_map('utf8_encode', array('error'=> 'Impossible de sauver le fichier.' .
+                "L'upload a &eacute;t&eacute; annul&eacute; ou le serveur a plant&eacute;."));
         }
         
     }    

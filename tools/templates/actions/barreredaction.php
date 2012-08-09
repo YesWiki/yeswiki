@@ -15,6 +15,8 @@ if ($this->HasAccess("write")) {
                 $content = $this->LoadPage($page);
                 $time = $content["time"];
         }
+        $barreredactionelements['page'] = $page;
+        $barreredactionelements['linkpage'] = $this->href("", $page);
 
         // on choisit le template utilisé
         $template = $this->GetParameter('template'); 

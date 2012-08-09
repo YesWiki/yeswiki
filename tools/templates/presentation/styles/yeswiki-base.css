@@ -190,7 +190,7 @@ margin: 0;
 padding: 0;
 text-align:center;
 }
-.footer a { 
+.footer a, .footer-hidden a { 
 color: #333;
 padding: 2px 5px;
 text-decoration:none; 
@@ -199,6 +199,7 @@ display:inline-block;
 *zoom: 1;
 margin: 0;
 }
+.footer-hidden {float:right;}
 
 
 /* Ajustements mode édition */

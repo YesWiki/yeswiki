@@ -1766,6 +1766,5 @@ if (!isset($method)) $method='';
 if (!(preg_match('#^[A-Za-z0-9_]*$#',$method))) {
 	$method='';
 }
-
 include('tools/prepend.php');$wiki->Run($page, $method);
 ?>

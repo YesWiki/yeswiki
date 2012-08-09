@@ -338,7 +338,7 @@ function show_form_theme_selector($mode = 'selector') {
     $selecteur .= 	'</select>'."\n".'</div>'."\n".'</div>'."\n".$bgselector."\n".
 					'</form>'."\n";
 
-	//AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES			
+	// AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
 	$selecteur .= '<script>
 	var tab1 = new Array();
 	var tab2 = new Array();'."\n";
@@ -362,6 +362,7 @@ function show_form_theme_selector($mode = 'selector') {
             $selecteur .= ');'."\n";	      
     }	
     $selecteur .= '</script>'."\n";
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$selecteur."\n";
 
 	return $selecteur;
 }
