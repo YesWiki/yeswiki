@@ -8,40 +8,73 @@
 */
 (function($){$.fn.hoverIntent=function(f,g){var cfg={sensitivity:7,interval:100,timeout:0};cfg=$.extend(cfg,g?{over:f,out:g}:f);var cX,cY,pX,pY;var track=function(ev){cX=ev.pageX;cY=ev.pageY};var compare=function(ev,ob){ob.hoverIntent_t=clearTimeout(ob.hoverIntent_t);if((Math.abs(pX-cX)+Math.abs(pY-cY))<cfg.sensitivity){$(ob).unbind("mousemove",track);ob.hoverIntent_s=1;return cfg.over.apply(ob,[ev])}else{pX=cX;pY=cY;ob.hoverIntent_t=setTimeout(function(){compare(ev,ob)},cfg.interval)}};var delay=function(ev,ob){ob.hoverIntent_t=clearTimeout(ob.hoverIntent_t);ob.hoverIntent_s=0;return cfg.out.apply(ob,[ev])};var handleHover=function(e){var ev=jQuery.extend({},e);var ob=this;if(ob.hoverIntent_t){ob.hoverIntent_t=clearTimeout(ob.hoverIntent_t)}if(e.type=="mouseenter"){pX=ev.pageX;pY=ev.pageY;$(ob).bind("mousemove",track);if(ob.hoverIntent_s!=1){ob.hoverIntent_t=setTimeout(function(){compare(ev,ob)},cfg.interval)}}else{$(ob).unbind("mousemove",track);if(ob.hoverIntent_s==1){ob.hoverIntent_t=setTimeout(function(){delay(ev,ob)},cfg.timeout)}}};return this.bind('mouseenter',handleHover).bind('mouseleave',handleHover)}})(jQuery);
 
-/* Author: Florian Schmitt */ 
-(function($){
+/* Author: Florian Schmitt <florian@outils-reseaux.org> under GPL licence */ 
+// polyfills pour IE, chargÃ©s en premier
+// polyfill responsive media queries
+if ( ! Modernizr.mq('only all') ) {
+  document.write('<script src="tools/templates/libs/respond.min.js"><\/script>');
+}
+
+// polyfill placeholder
+$(function() {
+    // check placeholder browser support
+    if (!Modernizr.input.placeholder)
+    {
+ 
+        // set placeholder values
+        $(this).find('[placeholder]').each(function()
+        {
+            if ($(this).val() == '') // if field is empty
+            {
+                $(this).val( $(this).attr('placeholder') ).addClass('placeholder');
+            }
+        });
+ 
+        // focus and blur of placeholders
+        $('[placeholder]').focus(function()
+        {
+            if ($(this).val() == $(this).attr('placeholder'))
+            {
+                $(this).val('');
+                $(this).removeClass('placeholder');
+            }
+        }).blur(function()
+        {
+            if ($(this).val() == '' || $(this).val() == $(this).attr('placeholder'))
+            {
+                $(this).val($(this).attr('placeholder'));
+                $(this).addClass('placeholder');
+            }
+        });
+ 
+        // remove placeholders on submit
+        $('[placeholder]').closest('form').submit(function()
+        {
+            $(this).find('[placeholder]').each(function()
+            {
+                if ($(this).val() == $(this).attr('placeholder'))
+                {
+                    $(this).val('');
+                }
+            })
+        });
+ 
+    }
+
 	// gestion des classes actives pour les menus
 	$("a.active-link").parent().addClass('active-list').parents("ul").prev("a").addClass('active-parent-link').parent().addClass('active-list');
-	
-	/* Ajout de l'overlay pour le partage de page et l'envois par mail */
-	$('body').prepend('<div id="overlay-link" class="yeswiki-overlay" style="display:none"><div class="contentWrap" style="width:600px"></div></div>');
-	$('a[rel="#overlay-link"]').overlay({
-		onBeforeLoad: function() {
-			// grab wrapper element inside content
-			var wrap = this.getOverlay().find(".contentWrap");
-			var url = this.getTrigger().attr("href");
-			var finurl = url.substr(-3);
-			
-			// si c'est une image on l'affiche
-			if (finurl === "png" || finurl === "jpg"| finurl === "jpeg" || finurl === "gif" ||
-				finurl === "PNG" || finurl === "JPG"| finurl === "JPEG" || finurl === "GIF"	) {
-				wrap.html('<img src="'+url+'" alt="image" />');
-			}
-			// on charge l'intérieur d'une page wiki sinon
-			else {
-				wrap.load(url + ' .page');
-			}
-			
-		}
-	});
 
 	// fenetres modales
 	$('a.modalbox').on('click', function() {
 		var $this = $(this);
-		$this.after('<div class="modal fade hide" id="YesWikiModal">'+
+		var text = $this.attr('title');
+		if (text.length>0) {
+			text = '<h3>' + $.trim(text) + '</h3>';
+		}
+		$('body').append('<div class="modal fade hide" id="YesWikiModal">'+
 					    '<div class="modal-header">'+
 					    '<button type="button" class="close" data-dismiss="modal">&times;</button>'+
-					    '<h3>Modal header</h3>'+
+					    text +
 					    '</div>'+
 					    '<div class="modal-body">'+
 					    '</div>'+
@@ -51,14 +84,16 @@
 		modal.find('.modal-body').load($this.attr('href') + ' .page', function(response, status, xhr) {
 			modal.modal({
 				keyboard: false
-			}).modal('show');
+			}).modal('show').on('hidden', function () {
+				modal.remove();
+			});
 			return false;
 		});
 	    
 	    return false;
 	});
 
-	// Menus déroulants horizontaux
+	// Menus dÃ©roulants horizontaux
 	var confighorizontal = {    
 		sensitivity: 3,    
 		interval: 100,    
@@ -72,7 +107,7 @@
 	};
 	var nav = $(".horizontal-dropdown-menu > ul");
 
-	/* on ajoute des flèches pour signaler les sous menus et on gère le menu déroulant */
+	/* on ajoute des flÃ¨ches pour signaler les sous menus et on gÃ¨re le menu dÃ©roulant */
 	nav.each(function() {
 		var $nav = $(this);
 		var nbmainlist = 1;
@@ -105,7 +140,7 @@
 	});
 	
 	
-	// Menus déroulants verticaux
+	// Menus dÃ©roulants verticaux
 	var configvertical = {    
 		 sensitivity: 3, // number = sensitivity threshold (must be 1 or higher)    
 		 interval: 100, // number = milliseconds for onMouseOver polling interval    
@@ -123,7 +158,7 @@
 		 out: function(){ return false; }
 	};
 
-		//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
+		//pour les menus qui possÃ¨dent des sous menus, on affiche une petite flÃ¨che pour indiquer
 	var arrowright = $("<span>").addClass('arrow arrow-level1').html("&#9658;");
 	$(".vertical-dropdown-menu li:has(ul)").hoverIntent( configvertical ).find("a:first").prepend(arrowright);
 	

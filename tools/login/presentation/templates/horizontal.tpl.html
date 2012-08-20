@@ -1,5 +1,5 @@
 <?php if ($connected) : ?>
-<a rel="#user-form" class="login-user-link">
+<a class="login-user-link">
 	<img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
 	<span class="connected"><?= $user; ?></span>
 </a>
@@ -16,7 +16,7 @@
 <?php if ($error) : ?>
 	<div class="error_box"><?= $error; ?></div>
 <?php endif; ?>
-<a rel="#signin-div" class="login-link"><img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
+<a class="login-link"><img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
 <span>Se connecter</span></a>
 <span class="login-link">
 	<a href="<?= $signupurl; ?>" title="S'inscrire">S'inscrire</a>

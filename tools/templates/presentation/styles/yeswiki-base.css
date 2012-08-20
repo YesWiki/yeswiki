@@ -206,51 +206,6 @@ margin: 0;
 #body {width:99%;}
 #ACEditor .form-actions {margin:0 -10px -18px;}
 
-/* fenetres d'overlay et bouton de fermeture */
-.yeswiki-overlay {
-display:none;
-background:#FFF;
-padding: 0 25px 25px;
--moz-border-radius:5px;
--webkit-border-radius:5px;
-border-radius:5px;
--moz-box-shadow:10px 10px 20px rgba(100,100,100,.75);
--webkit-box-shadow:10px 10px 20px rgba(100,100,100,.75);
-box-shadow:10px 10px 20px rgba(100,100,100,.75);
-z-index: 10000;
-}
-
-.search-form {
-background-color:white;
-border:1px solid #AAAAAA;
-margin:3px 0;
-height:20px;
--moz-border-radius:3px;
--webkit-border-radius:3px;
-border-radius:3px;
-font-size: 13px;
-}
-
-.search_input {
-background-color: transparent;
-border-width: 0;
-margin: 0;
-padding: 0 0 0 3px;
-vertical-align: middle;
-}
-.search_input:focus {
-background-color:transparent;
-}
-.search_button {
-background-color:transparent;
-border:medium none;
-cursor:pointer;
-font-size:x-small;
-padding:0;
-margin: 0 5px 0 0;
-}
-
-
 .align-left {text-align:left;}
 .align-center {text-align:center;}
 .align-right {text-align:right;}
@@ -304,6 +259,9 @@ overflow: auto;
 
 /* barres de progression */
 .progressbar {width:100px; float:left; clear:both; margin:0 5px 0 0 !important;}
+
+/* page wiki en format boite modale */
+#YesWikiModal .page { min-height:auto;}
 
 /* retour à la ligne pour les éléments flottants */
 .clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}
