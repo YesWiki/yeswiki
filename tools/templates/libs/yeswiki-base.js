@@ -16,49 +16,53 @@ if ( ! Modernizr.mq('only all') ) {
 }
 
 // polyfill placeholder
-$(function() {
+(function($){
     // check placeholder browser support
     if (!Modernizr.input.placeholder)
     {
- 
+        var $placeholders = $(this).find('[placeholder]');
         // set placeholder values
-        $(this).find('[placeholder]').each(function()
+        $placeholders.each(function()
         {
-            if ($(this).val() == '') // if field is empty
+            var $placeholder = $(this);
+            if ($placeholder.val() == '') // if field is empty
             {
-                $(this).val( $(this).attr('placeholder') ).addClass('placeholder');
+                $placeholder.val( $placeholder.attr('placeholder') ).addClass('placeholder');
             }
         });
- 
-        // focus and blur of placeholders
-        $('[placeholder]').focus(function()
+ 		
+ 		// focus and blur of placeholders
+        $placeholders.focus(function()
         {
-            if ($(this).val() == $(this).attr('placeholder'))
+            var $placeholder = $(this);
+            if ($placeholder.val() == $placeholder.attr('placeholder'))
             {
-                $(this).val('');
-                $(this).removeClass('placeholder');
+                $placeholder.val('');
+                $placeholder.removeClass('placeholder');
             }
         }).blur(function()
         {
-            if ($(this).val() == '' || $(this).val() == $(this).attr('placeholder'))
+            var $placeholder = $(this);
+            if ($placeholder.val() == '' || $placeholder.val() == $placeholder.attr('placeholder'))
             {
-                $(this).val($(this).attr('placeholder'));
-                $(this).addClass('placeholder');
+                $placeholder.val($placeholder.attr('placeholder'));
+                $placeholder.addClass('placeholder');
             }
         });
  
         // remove placeholders on submit
-        $('[placeholder]').closest('form').submit(function()
+        $placeholders.closest('form').submit(function()
         {
-            $(this).find('[placeholder]').each(function()
+            var $placeholder = $(this);
+            $placeholder.find('[placeholder]').each(function()
             {
-                if ($(this).val() == $(this).attr('placeholder'))
+                var $this = $(this);
+                if ($this.val() == $this.attr('placeholder'))
                 {
-                    $(this).val('');
+                    $this.val('');
                 }
             })
         });
- 
     }
 
 	// gestion des classes actives pour les menus
@@ -144,21 +148,23 @@ $(function() {
 	var configvertical = {    
 		 sensitivity: 3, // number = sensitivity threshold (must be 1 or higher)    
 		 interval: 100, // number = milliseconds for onMouseOver polling interval    
-		 over: function(){
-			// on ferme les menus deroulants deja ouverts
-			var listes = $(this).siblings('li');
-			listes.removeClass('hover').find('ul').slideUp('fast');
-			listes.find(".arrow").html("&#9658;");
-			
-			//on deroule et on tourne la fleche
-			$(this).addClass('hover').find('ul:first').slideDown('fast');
-			$(this).find(".arrow:first").html("&#9660;");
-		 },
+		 over: 	function() {
+					// on ferme les menus deroulants deja ouverts
+					var listes = $(this).siblings('li');
+					listes.removeClass('hover').find('ul').slideUp('fast');
+					listes.find(".arrow").html("&#9658;");
+					
+					//on deroule et on tourne la fleche
+					$(this).addClass('hover').find('ul:first').slideDown('fast');
+					$(this).find(".arrow:first").html("&#9660;");
+				},
 		 timeout: 100, // number = milliseconds delay before onMouseOut    
-		 out: function(){ return false; }
-	};
+		 out: 	function() { 
+				 	return false; 
+				}
+		};
 
-		//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
+	//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
 	var arrowright = $("<span>").addClass('arrow arrow-level1').html("&#9658;");
 	$(".vertical-dropdown-menu li:has(ul)").hoverIntent( configvertical ).find("a:first").prepend(arrowright);
 	
@@ -189,7 +195,4 @@ $(function() {
     	var urlAux = url.split('&theme=');
 		window.location = urlAux[0] + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
 	});
-	
-
-	
 })(jQuery);
