@@ -116,3 +116,5 @@ $("#changetheme").on('change', function(){
 		style.options[style.options.length]=o;				
 	}					
 });
+
+$('#hashcash-text').appendTo('#ACEditor .form-actions');

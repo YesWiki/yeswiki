@@ -263,5 +263,16 @@ overflow: auto;
 /* page wiki en format boite modale */
 #YesWikiModal .page { min-height:auto;}
 
+/* menu du haut fixe */
+#topnav.affix {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+#topnav.affix-top {
+  position:relative;
+}
+
 /* retour à la ligne pour les éléments flottants */
 .clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}

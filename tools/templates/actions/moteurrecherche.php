@@ -13,7 +13,7 @@ if (empty($template)) {
 $searchelements['class'] = ($this->GetParameter('class') ? 'form-search '.$this->GetParameter('class') : 'form-search');
 
 // on peut changer l'url de recherche
-$searchelements['url'] = ($this->GetParameter('url') ? $this->GetParameter('url') : $this->href("show","RechercheTexte"));
+$searchelements['url'] = ($this->GetParameter('url') ? $this->GetParameter('url') : $this->href("show", "RechercheTexte"));
 
 // si une recherche a été effectuée, on garde les mots clés
 $searchelements['phrase'] = (isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : "");

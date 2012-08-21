@@ -195,4 +195,12 @@ if ( ! Modernizr.mq('only all') ) {
     	var urlAux = url.split('&theme=');
 		window.location = urlAux[0] + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
 	});
+
+	// on ajoute un "espion" qui detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
+	var topnav = $('#topnav.fixable');
+	if (topnav.length > 0) {
+		var topoffset = topnav.offset().top;
+		topnav.affix({'offset':topoffset});
+	}
+	
 })(jQuery);
