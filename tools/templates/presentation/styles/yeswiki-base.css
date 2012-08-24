@@ -274,5 +274,18 @@ overflow: auto;
   position:relative;
 }
 
+.aceditor-btn-well:hover .well, .well:hover {color:#333;} 
+
 /* retour à la ligne pour les éléments flottants */
 .clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}
+
+
+.topbarpage .btn-toolbar, .topbarpage .btn-toolbar a {margin:0;}
+.topbarpage .btn-toolbar a:hover {text-decoration:none;}
+.topbarpage .form-search {margin:0;}
+.topbarpage .dropdown-menu a {display:block;}
+
+.dropdown-menu .login-form {margin:0;padding:18px;}
+
+.form-search {margin:0;}
+.form-search .search-btn {line-height: 20px;}

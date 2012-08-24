@@ -8,11 +8,11 @@ if there are any problems, let chris know.
 */
 
 ;function wrapSelectionBis(txtarea, lft, rgt) { 
-    // pareil que la wrapSelection, avec une différence dans IE
-    // qui permet à wrapSelectionBis de pouvoir insérer à l'endroit du curseur même sans avoir sélectionné des caractères !!!
-    // Pour mozilla, c'est bien la fonction Wrap standard qui est appelée, aucun changement
+    // pareil que la wrapSelection, avec une diff&eacute;rence dans IE
+    // qui permet à wrapSelectionBis de pouvoir ins&eacute;rer à l'endroit du curseur m&ecirc;me sans avoir s&eacute;lectionn&eacute; des caract&egrave;res !!!
+    // Pour mozilla, c'est bien la fonction Wrap standard qui est appel&eacute;e, aucun changement
     
-    if (document.all) { // document.all est une infamie de IE, on détecte cette horreur !
+    if (document.all) { // document.all est une infamie de IE, on d&eacute;tecte cette horreur !
         txtarea.focus();
     	if (document.selection) {
     		txtarea.focus();
@@ -21,7 +21,7 @@ if there are any problems, let chris know.
     	}
     } 
     else if (document.getElementById) {
-        // mémorisation de la position du scroll
+        // m&eacute;morisation de la position du scroll
         oldPos = txtarea.scrollTop;
         oldHght = txtarea.scrollHeight;
 
@@ -38,7 +38,7 @@ if there are any problems, let chris know.
 		var s3 = (txtarea.value).substring(selEnd, selLength);
 		txtarea.value = s1 + lft + s2 + rgt + s3;
 		
-		// Placement du curseur après le tag fermant
+		// Placement du curseur apr&egrave;s le tag fermant
 		txtarea.selectionEnd = pos;
 
 		// calcul et application de la nouvelle bonne postion du scroll
@@ -63,22 +63,22 @@ if there are any problems, let chris know.
       	fr : {
 	      	'ACEDITOR_SAVE'				: 'Sauver',
 	      	'ACEDITOR_FORMAT'			: 'Format',
-	      	'ACEDITOR_TITLE1'			: 'En-tête énorme',
-	      	'ACEDITOR_TITLE2'			: 'En-tête très gros',
-	      	'ACEDITOR_TITLE3'			: 'En-tête gros',
-	      	'ACEDITOR_TITLE4'			: 'En-tête normal',
-	      	'ACEDITOR_TITLE5'			: 'Petit en-tête',
+	      	'ACEDITOR_TITLE1'			: 'En-t&ecirc;te &eacute;norme',
+	      	'ACEDITOR_TITLE2'			: 'En-t&ecirc;te tr&egrave;s gros',
+	      	'ACEDITOR_TITLE3'			: 'En-t&ecirc;te gros',
+	      	'ACEDITOR_TITLE4'			: 'En-t&ecirc;te normal',
+	      	'ACEDITOR_TITLE5'			: 'Petit en-t&ecirc;te',
 	      	'ACEDITOR_BIGGER_TEXT'		: 'Texte agrandi',
 	      	'ACEDITOR_HIGHLIGHT_TEXT'	: 'Texte mis en valeur',
 	      	'ACEDITOR_SOURCE_CODE'		: 'Code source',
-	      	'ACEDITOR_BOLD_TEXT'		: 'Passe le texte sélectionné en gras  ( Ctrl-b )',
-	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte sélectionné en italique ( Ctrl-i )',
-	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte sélectionné ( Ctrl-u )',
-	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte sélectionné ( Ctrl-y )',
-	      	'ACEDITOR_LINE'				: 'Insère une ligne horizontale ( Ctrl-h )',
+	      	'ACEDITOR_BOLD_TEXT'		: 'Passe le texte s&eacute;lectionn&eacute; en gras  ( Ctrl-b )',
+	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte s&eacute;lectionn&eacute; en italique ( Ctrl-i )',
+	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte s&eacute;lectionn&eacute; ( Ctrl-u )',
+	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
+	      	'ACEDITOR_LINE'				: 'Ins&egrave;re une ligne horizontale ( Ctrl-h )',
 	      	'ACEDITOR_LINK'				: 'Lien',
 	      	'ACEDITOR_LINK_PROMPT'		: 'Entrez l\'adresse URL',
-	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte sélectionné ( Ctrl-l )'
+	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte s&eacute;lectionn&eacute; ( Ctrl-l )'
 	      }
 	  },
 	  syntax = { 
@@ -195,7 +195,7 @@ if there are any problems, let chris know.
 							'</ul>' +
 						'</div>');
 			
-	    // Gras italique souligné barré
+	    // Gras italique soulign&eacute; barr&eacute;
     	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_BOLD_TEXT']+'">' +
 								'<span style="font-family:serif;font-weight:bold;">B</span>' +
@@ -313,7 +313,7 @@ if there are any problems, let chris know.
 
 }(jQuery, window));
 
-// Initialisation pour le mode édition
+// Initialisation pour le mode &eacute;dition
 $('#body').aceditor({savebtn : true});
 
 // Initialisation pour les commentaires, et textelongs bazar

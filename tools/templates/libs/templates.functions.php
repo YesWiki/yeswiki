@@ -339,30 +339,30 @@ function show_form_theme_selector($mode = 'selector') {
 					'</form>'."\n";
 
 	// AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
-	$selecteur .= '<script>
+	$js = '<script>
 	var tab1 = new Array();
 	var tab2 = new Array();'."\n";
 	foreach(array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
-            $selecteur .= '		tab1["'.$value.'"] = new Array(';
+            $js .= '		tab1["'.$value.'"] = new Array(';
             $nbocc=0;	           
             foreach($GLOBALS['wiki']->config['templates'][$value]["squelette"] as $key2 => $value2) {
-            	if ($nbocc==0) $selecteur .= '\''.$value2.'\'';
-            	else $selecteur .= ',\''.$value2.'\'';
+            	if ($nbocc==0) $js .= '\''.$value2.'\'';
+            	else $js .= ',\''.$value2.'\'';
             	$nbocc++;
             }
-            $selecteur .= ');'."\n";
+            $js .= ');'."\n";
             
-            $selecteur .= '		tab2["'.$value.'"] = new Array(';
+            $js .= '		tab2["'.$value.'"] = new Array(';
             $nbocc=0;
             foreach($GLOBALS['wiki']->config['templates'][$value]["style"] as $key3 => $value3) {
-            	if ($nbocc==0) $selecteur .= '\''.$value3.'\'';
-            	else $selecteur .= ',\''.$value3.'\'';
+            	if ($nbocc==0) $js .= '\''.$value3.'\'';
+            	else $js .= ',\''.$value3.'\'';
             	$nbocc++;
             }
-            $selecteur .= ');'."\n";	      
+            $js .= ');'."\n";	      
     }	
-    $selecteur .= '</script>'."\n";
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$selecteur."\n";
+    $js .= '</script>'."\n";
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$js."\n";
 
 	return $selecteur;
 }

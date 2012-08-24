@@ -105,7 +105,6 @@ if ($_REQUEST["action"] == "login") {
 // cas d'une personne connectée déjà
 if ($user = $this->GetUser()) {
 	$connected = true;
-	$PageMenuUser .= '<h3 class="login-title">Connect&eacute; en tant que '.$this->Format($user["name"]).'</h3>';	
 	if ($this->LoadPage("PageMenuUser")) { 
 		$PageMenuUser .= $this->Format("{{include page=\"PageMenuUser\"}}");
 	}
