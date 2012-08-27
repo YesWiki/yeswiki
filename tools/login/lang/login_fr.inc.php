@@ -27,10 +27,15 @@
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     2012 Outils-Réseaux
 */
+define ('LOGIN_SIGNUP', 'S\'inscrire');
 define ('LOGIN_LOGIN', 'Se connecter');
 define ('LOGIN_WIKINAME', 'NomWiki');
 define ('LOGIN_PASSWORD', 'Mot de passe');
 define ('LOGIN_MODIFY_USER', 'Modifier mon inscription');
 define ('LOGIN_REMEMBER_ME', 'Se souvenir de moi');
 define ('LOGIN_LOGOUT', 'D&eacute;connexion');
+define ('LOGIN_NEW_MEMBER', 'Nouveau membre');
+define ('LOGIN_ALREADY_MEMBER', 'D&eacute;j&agrave; membre');
+define ('LOGIN_CONNECTED_AS', 'Connect&eacute; en tant que');
+
 ?>

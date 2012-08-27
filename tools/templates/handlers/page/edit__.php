@@ -44,7 +44,7 @@ $plugin_output_new = str_replace("<script type=\"text/javascript\">\n".
 // personnalisation graphique que dans le cas ou on est autorisé
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) && 
 	($this->HasAccess("write") && $this->HasAccess("read") && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner() ) ) ) ) ) { 
-	
+
 	$selecteur = '<div id="graphical_options" class="modal fade">'."\n".
 				'<div class="modal-header">'."\n".
 					'<a class="close" data-dismiss="modal">&times;</a>'."\n".
@@ -59,7 +59,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 				'</div>'."\n".	
 			'</div>'."\n";
 
-	$js = '<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
+	$js = add_templates_list_js().'<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
 
 	//quand le changement des valeurs du template est caché, il faut stocker les valeurs déja entrées pour ne pas retourner au template par défaut
 	$selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$this->config['favorite_theme'].'" />'."\n";

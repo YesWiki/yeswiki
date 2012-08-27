@@ -48,7 +48,7 @@ width:auto;
 }
 .qq-upload-drop-area-active {background:#880000;}
 
-.qq-upload-list {margin:0; list-style:none; /*height:265px;*/ overflow:auto; }
+.qq-upload-list {margin:0; list-style:none; display:inline; overflow:auto; }
 .qq-upload-list li { margin: 0 0 10px 0; padding:5px; font-size: 14px; font-weight: bold; line-height: 18px;}
 .qq-upload-file, .qq-upload-spinner, .qq-upload-size, .qq-upload-cancel, .qq-upload-failed-text {
     margin-right: 7px;

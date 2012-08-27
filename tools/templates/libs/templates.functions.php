@@ -338,6 +338,11 @@ function show_form_theme_selector($mode = 'selector') {
     $selecteur .= 	'</select>'."\n".'</div>'."\n".'</div>'."\n".$bgselector."\n".
 					'</form>'."\n";
 
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').add_templates_list_js()."\n";
+	return $selecteur;
+}
+
+function add_templates_list_js() {
 	// AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
 	$js = '<script>
 	var tab1 = new Array();
@@ -362,8 +367,7 @@ function show_form_theme_selector($mode = 'selector') {
             $js .= ');'."\n";	      
     }	
     $js .= '</script>'."\n";
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$js."\n";
 
-	return $selecteur;
+	return $js;
 }
 ?>
