@@ -29,7 +29,7 @@
 .trail_button { color: #993333; }
 
 /* Page absentes */
-span.missingpage {display:inline;}
+span.missingpage, .list-inline, .list-inline li {display:inline;}
 
 /* previsualisation page */
 .page_preview { background-color: #FFFFBF; padding: 10px; border: 1px inset; border-bottom: none; }
