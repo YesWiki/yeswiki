@@ -306,10 +306,10 @@ class attach {
         $this->width = $this->wiki->GetParameter('width');
         $size = $this->wiki->GetParameter("size");
        
-        if (empty($this->height) && empty($this->width) && $size!='original') {
+        /*if (empty($this->height) && empty($this->width) && $size!='original') {
                      $this->width = 300; 
                      $this->height = 209;
-        }
+        }*/
    
         switch ($size) {
                 case 'small' : 
@@ -325,8 +325,8 @@ class attach {
                     $this->height = 544;
                     break;
             }
-       if (empty($this->height)) $this->height = round($this->width * 23 / 33); 
-       if (empty($this->width)) $this->width = round($this->height * 33 / 23); 
+       /*if (empty($this->height)) $this->height = round($this->width * 23 / 33); 
+       if (empty($this->width)) $this->width = round($this->height * 33 / 23); */
 
     }
     /**

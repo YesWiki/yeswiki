@@ -47,7 +47,7 @@ $incomingurl = 'http'.((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
     || $_SERVER['SERVER_PORT'] == 443) ? 's' : '').'://'.
 		(($_SERVER['SERVER_PORT']!='80') ? $_SERVER['HTTP_HOST'].':'.$_SERVER['SERVER_PORT'].$_SERVER['SCRIPT_NAME'] : 
 		$_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME']).
-		(($_SERVER['QUERY_STRING']>' ') ? '?'.str_replace('&', '&amp;', $_SERVER['QUERY_STRING']) : '');
+		(($_SERVER['QUERY_STRING']>' ') ? '?'.$_SERVER['QUERY_STRING'] : '');
 
 $userpage = $this->GetParameter("userpage");
 
@@ -59,7 +59,8 @@ if (empty($userpage)) {
 	if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout") {
 		$userpage = str_replace('&action=logout', '', $userpage);
 	}
-} else {
+} 
+else {
 	if ($this->IsWikiName($userpage)) {
 		$userpage = $this->href('', $userpage);
 	}
@@ -158,7 +159,7 @@ $squel->set(array(
 	"profileurl" => $profileurl,
 	"userpage" => $userpage,
 	"PageMenuUser" => $PageMenuUser,
-	"btnclass" => $class,
+	"btnclass" => $btnclass,
 	"error" => $error
 ));
 
