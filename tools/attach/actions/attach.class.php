@@ -302,15 +302,11 @@ class attach {
             foreach ($array_classes as $c) { $this->classes = $this->classes . $c . " "; }
             $this->classes = 'attached_file '.trim($this->classes);
         }
-        $this->height = $this->wiki->GetParameter('height');
+		$this->height = $this->wiki->GetParameter('height');
         $this->width = $this->wiki->GetParameter('width');
+        
         $size = $this->wiki->GetParameter("size");
-       
-        /*if (empty($this->height) && empty($this->width) && $size!='original') {
-                     $this->width = 300; 
-                     $this->height = 209;
-        }*/
-   
+
         switch ($size) {
                 case 'small' : 
                     $this->width = 140;
@@ -325,9 +321,17 @@ class attach {
                     $this->height = 544;
                     break;
             }
-       /*if (empty($this->height)) $this->height = round($this->width * 23 / 33); 
-       if (empty($this->width)) $this->width = round($this->height * 33 / 23); */
 
+
+
+        if (empty($this->height) && !empty($this->width)) {
+        	// on ajuste la hauteur
+        	$this->height = $this->width;
+        }
+        elseif (!empty($this->height) && !empty($this->width)) {
+        	// on ajuste la largeur
+        	$this->width = $this->height;
+        }
     }
     /**
      * Affiche le fichier lié comme une image
@@ -336,7 +340,7 @@ class attach {
         // Generation d'une vignette si absente ou si changement de dimension  , TODO : suupprimer ancienne vignette ?
 
         $image_redimensionnee=0;
-        if ((!empty($this->height)) ||  (!empty($this->width))) { // Si des parametres width ou height present : redimensionnement
+        if ((!empty($this->height)) && (!empty($this->width))) { // Si des parametres width ou height present : redimensionnement
             if (!file_exists($image_dest=$this->calculer_nom_fichier_vignette($fullFilename,$this->width,$this->height))) {
                 $this->redimensionner_image($fullFilename, $image_dest,$this->width ,$this->height);
             }
