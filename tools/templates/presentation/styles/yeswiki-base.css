@@ -90,7 +90,7 @@ color:#333;
 display:block;
 *zoom: 1; 
 }
-.horizontal-dropdown-menu li a, .horizontal-dropdown-menu li a:visited{
+.horizontal-dropdown-menu li a {
 padding:8px 20px;
 text-decoration:none;
 display:inline-block;
@@ -120,7 +120,7 @@ z-index:101;
 .vertical-dropdown-menu ul {margin:0 0 8px; padding:0; list-style:none;}
 .vertical-dropdown-menu li .arrow {margin: 2px 2px 0 0;}
 .vertical-dropdown-menu li {font-weight:normal; margin:0 0 8px; padding:0;}
-.vertical-dropdown-menu a, .vertical-dropdown-menu a:visited {
+.vertical-dropdown-menu a {
 display: block;
 padding: 2px 5px;	
 color: #333;
