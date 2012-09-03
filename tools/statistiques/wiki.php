@@ -1,10 +1,10 @@
 <?php
 
+// Partie publique
 
-if (!defined("TOOLS_MANAGER"))
+if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
 }
-
 
 ?>
