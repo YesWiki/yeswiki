@@ -1,13 +1,5 @@
 <?php
 
-<<<<<<< HEAD
-=======
-// ID : Indonesie
-// MY : Malaisie
-$pays_bloque = array("ID", "MY");
-
->>>>>>> mrflos/dev
-
 if (!defined('WIKINI_VERSION')) {
     die ('acc&egrave;s direct interdit');
 }
@@ -22,22 +14,17 @@ if ($this->HasAccess("write") && $this->HasAccess("read")) // Les admins sont au
         if (!function_exists('iptocountry')) {
             function iptocountry($ip) {   
                 $numbers = preg_split( "/\./", $ip);   
-<<<<<<< HEAD
-                include("ip_files/".$numbers[0].".php");
-=======
+
                 include("tools/ipblock/ip_files/".$numbers[0].".php");
->>>>>>> mrflos/dev
                 $code=($numbers[0] * 16777216) + ($numbers[1] * 65536) + ($numbers[2] * 256) + ($numbers[3]);   
                 foreach($ranges as $key => $value){
                     if($key<=$code){
                         if($ranges[$key][0]>=$code){$country=$ranges[$key][1];break;}
                     }
                 }
-<<<<<<< HEAD
-                if ($country==""){$country="unkown";}
-=======
+
                 if ($country==""){$country="unknown";}
->>>>>>> mrflos/dev
+
                 return $country;
             }
 
@@ -46,17 +33,12 @@ if ($this->HasAccess("write") && $this->HasAccess("read")) // Les admins sont au
         $visitorIP=$_SERVER["REMOTE_ADDR"];
 
         $two_letter_country_code=iptocountry($visitorIP);
-<<<<<<< HEAD
 
-        $this->SetMessage($two_letter_country_code);
-        //$this->Redirect($this->href());
-=======
-	if (in_array($two_letter_country_code,$pays_bloque)) { 
-        	$this->SetMessage("Vous ne pouvez pas modifier le contenu de ce Wiki depuis ce poste de travail");
-        	$this->Redirect($this->href());
-	}
+    	if (in_array($two_letter_country_code,$pays_bloque)) { 
+            	$this->SetMessage("Vous ne pouvez pas modifier le contenu de ce Wiki depuis ce poste de travail");
+            	$this->Redirect($this->href());
+    	}
 
->>>>>>> mrflos/dev
     }
 
 }
