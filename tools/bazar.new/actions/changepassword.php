@@ -43,14 +43,14 @@ if ($user = $this->GetUser())
 			else if ($user["password"] != md5($_POST["oldpass"])) $error = "Mauvais mot de passe."; 
 			else
 			{
-				$this->Query("update ".$this->config["table_prefix"]."users set "."password = md5('".mysql_escape_string($password)."') "."where name = '".$user["name"]."'");				
+				$this->Query("update ".$this->config["table_prefix"]."users set "."password = md5('".mysql_real_escape_string($password)."') "."where name = '".$user["name"]."'");				
 				$this->SetMessage("Mot de passe chang&eacute; !");
 				$user["password"]=md5($password);				
 				$this->SetUser($user);
 				//envoi mail nouveau mot de passe
 				$lien = str_replace("/wakka.php?wiki=","",$this->config["base_url"]);
 				$objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$this->config["wakka_name"];
-				$messagemail = "Bonjour!\n\nVotre inscription sur le site a été modifiée, dorénavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$user["name"]."\nVotre mot de passe : ". $password . "\n\nA très bientôt !\n\nSylvie Vernet, webmestre";
+				$messagemail = "Bonjour!\n\nVotre inscription sur le site a ?t? modifi?e, dor?navant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$user["name"]."\nVotre mot de passe : ". $password . "\n\nA tr?s bient?t !\n\nSylvie Vernet, webmestre";
 				$headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
 				     'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
 				     'X-Mailer: PHP/' . phpversion();
@@ -102,6 +102,6 @@ if ($user = $this->GetUser())
 }
 else
 {
-	echo $this->Format("//Vous devez être identifiés pour changer de mot de passe...//")."\n";
+	echo $this->Format("//Vous devez ?tre identifi?s pour changer de mot de passe...//")."\n";
 }
 ?>

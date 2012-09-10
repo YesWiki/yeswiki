@@ -109,8 +109,8 @@ $wikiClassesContent [] = '
 		else // load page
 		{
 			$sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
-				. " WHERE tag = \'".mysql_escape_string($tag)."\' AND "
-				. ($time ? "time = \'".mysql_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
+				. " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
+				. ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
 			$page = $this->LoadSingle($sql);
 			// si la page existe, on charge les meta-donnees
 			if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);

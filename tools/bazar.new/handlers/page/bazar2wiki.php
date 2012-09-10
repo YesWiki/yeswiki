@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //UN MAIL EST ENVOYE A CHAQUE UTILISATEUR, POUR LUI RAPPELER SES IDENTIFIANTS, MOTS DE PASSE
 
 
-// Vérification de sécurité
+// V?rification de s?curit?
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -34,11 +34,11 @@ if (!defined("WIKINI_VERSION"))
 if ($this->UserIsInGroup('admins'))
 {
 	//PARAMETRES A CHANGER EN FONCTION DU SITE
-	//numéros d'identifiants des types de fiches correspondant à un annuaire dans bazar
+	//num?ros d'identifiants des types de fiches correspondant ? un annuaire dans bazar
 	$idtemplatebazar = '9,15';
-	//mot de passe générique associé à tous les comptes
+	//mot de passe g?n?rique associ? ? tous les comptes
 	$motdepasse = 'reema';
-	//message envoyé par mail pour le changement de mot de passe
+	//message envoy? par mail pour le changement de mot de passe
 	$lien = str_replace("/wakka.php?wiki=","",$this->config["base_url"]);
 	$objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$this->config["wakka_name"];
 		
@@ -50,68 +50,68 @@ if ($this->UserIsInGroup('admins'))
 		if ($existingUser = $this->LoadUser($nomwiki))
 		{
 			$requete = "update ".$this->config["table_prefix"]."users set ".
-			"email = '".mysql_escape_string($ligne['bf_mail'])."', ".
-			"password = md5('".mysql_escape_string($motdepasse)."') ".
+			"email = '".mysql_real_escape_string($ligne['bf_mail'])."', ".
+			"password = md5('".mysql_real_escape_string($motdepasse)."') ".
 			"where name = '".$nomwiki."' limit 1";
 		}
 		else 
 		{
 			$requete =  "insert into ".$this->config["table_prefix"]."users set ".
 						"signuptime = now(), ".
-						"name = '".mysql_escape_string($nomwiki)."', ".
-						"email = '".mysql_escape_string($ligne['bf_mail'])."', ".
-						"password = md5('".mysql_escape_string($motdepasse)."')";
+						"name = '".mysql_real_escape_string($nomwiki)."', ".
+						"email = '".mysql_real_escape_string($ligne['bf_mail'])."', ".
+						"password = md5('".mysql_real_escape_string($motdepasse)."')";
 		}					
 		$this->Query($requete);
 		
 		//on ajoute le nom wiki comme createur de sa fiche
-		$requtilisateur = "UPDATE '.BAZ_PREFIXE.'fiche SET bf_ce_utilisateur=\"".mysql_escape_string($nomwiki)."\" WHERE bf_mail=\"".$ligne['bf_mail']."\"";
+		$requtilisateur = "UPDATE '.BAZ_PREFIXE.'fiche SET bf_ce_utilisateur=\"".mysql_real_escape_string($nomwiki)."\" WHERE bf_mail=\"".$ligne['bf_mail']."\"";
 		$this->Query($requtilisateur);
 		
 		//envoi du mail
-		$messagemail = "Bonjour à tous,
-Toute l'équipe est heureuse de vous faire part de la mise en ligne du nouveau site internet coopératif du REEMA. Ce site arbore de nouvelles couleurs et de nouvelles fonctionnalités pour donner encore plus de vie à l'éducation à la montagne sur le massif alpin !
-Voir le site à cette adresse : ".str_replace("/wakka.php?wiki=","",$this->config["base_url"])."
-1- Un site coopératif pour l'éducation à la montagne
-Comme précédemment un grand nombre des fonctions du site peuvent être utilisées par les acteurs du massif alpin. Toute personne, une fois inscrite, peut facilement et directement :
-- annoncer ses activités grand public, : conférence, sortie, visite, etc ...,
-- publier une actualité et l'enregistrer sur la carte des évènements : formation, séjour, annonce, etc ...,
-- présenter une ressource pédagogique : animation, vidéo, exposition, etc ...,
+		$messagemail = "Bonjour ? tous,
+Toute l'?quipe est heureuse de vous faire part de la mise en ligne du nouveau site internet coop?ratif du REEMA. Ce site arbore de nouvelles couleurs et de nouvelles fonctionnalit?s pour donner encore plus de vie ? l'?ducation ? la montagne sur le massif alpin !
+Voir le site ? cette adresse : ".str_replace("/wakka.php?wiki=","",$this->config["base_url"])."
+1- Un site coop?ratif pour l'?ducation ? la montagne
+Comme pr?c?demment un grand nombre des fonctions du site peuvent ?tre utilis?es par les acteurs du massif alpin. Toute personne, une fois inscrite, peut facilement et directement :
+- annoncer ses activit?s grand public, : conf?rence, sortie, visite, etc ...,
+- publier une actualit? et l'enregistrer sur la carte des ?v?nements : formation, s?jour, annonce, etc ...,
+- pr?senter une ressource p?dagogique : animation, vid?o, exposition, etc ...,
 - et s'enregistrer sur la carte des acteurs du massif alpin.
-Cet outil a toujours pour objectif de rendre les acteurs autonomes pour la publication de leurs propre informations, en temps réel ...(juste après validation par le modérateur !)
-2- Petite visite guidée, quelques pages à retenir
-Pour avoir un aperçu du site, nous vous invitons à découvrir en particulier les pages suivantes :
-- Espace Actualités :
+Cet outil a toujours pour objectif de rendre les acteurs autonomes pour la publication de leurs propre informations, en temps r?el ...(juste apr?s validation par le mod?rateur !)
+2- Petite visite guid?e, quelques pages ? retenir
+Pour avoir un aper?u du site, nous vous invitons ? d?couvrir en particulier les pages suivantes :
+- Espace Actualit?s :
 voir http://www.reema.fr/wakka.php?wiki=AnnonceS
 - Espace Ressources :
 voir http://www.reema.fr/wakka.php?wiki=EspaceRessources
 - Espace Emploi, stage et formation :
 voir http://www.reema.fr/wakka.php?wiki=EmploisStages
-- Pour découvrir les nouvelles fonctionnalités très intéressantes dans l'espace Actualités :
+- Pour d?couvrir les nouvelles fonctionnalit?s tr?s int?ressantes dans l'espace Actualit?s :
   - l'agenda : http://www.reema.fr/wakka.php?wiki=Calendrier
-  - la cartographie des évènements :  http://www.reema.fr/wakka.php?wiki=CartoEvenements
+  - la cartographie des ?v?nements :  http://www.reema.fr/wakka.php?wiki=CartoEvenements
 3- A vous de jouer !
-Votre inscription a été migrée de l'ancien au nouveau système, identifiez vous en haut à droite avec les informations suivantes :
+Votre inscription a ?t? migr?e de l'ancien au nouveau syst?me, identifiez vous en haut ? droite avec les informations suivantes :
 Votre identifiant NomWiki : ".$nomwiki."
 Votre mot de passe : ". $motdepasse . "\n
-Votre fiche apparait alors, il ne vous reste plus qu'à descendre en bas de votre fiche et cliquer sur \"modifier la fiche\" pour actualiser vos informations.
-Veillez surtout à changer votre mot de passe pour des raisons de sécurité !
+Votre fiche apparait alors, il ne vous reste plus qu'? descendre en bas de votre fiche et cliquer sur \"modifier la fiche\" pour actualiser vos informations.
+Veillez surtout ? changer votre mot de passe pour des raisons de s?curit? !
 4- Des wikinis Acteurs
-Des espaces projets peuvent être mis à disposition. Ceux sont des espaces internet (virtuel) ou wikini dans lesquels des acteurs du REEMA peuvent se regrouper pour échanger des informations ou mener un projet en commun (nous contacter pour en savoir plus).
-Définition : le wikini est un logiciel de navigation sur internet collaboratif. Il suffit de double-cliquer sur chaque page. Le navigateur fonctionnera alors comme un logiciel de traitement de texte classique.
+Des espaces projets peuvent ?tre mis ? disposition. Ceux sont des espaces internet (virtuel) ou wikini dans lesquels des acteurs du REEMA peuvent se regrouper pour ?changer des informations ou mener un projet en commun (nous contacter pour en savoir plus).
+D?finition : le wikini est un logiciel de navigation sur internet collaboratif. Il suffit de double-cliquer sur chaque page. Le navigateur fonctionnera alors comme un logiciel de traitement de texte classique.
 5 - En conclusion
-Ce site est bien sûr évolutif ! N'hésitez pas à nous faire remonter vos remarques et à proposer du contenu pour l'alimenter.
-Nous restons à votre disposition pour vous accompagner dans la découverte et l'utilisation de cette nouvelle version.
+Ce site est bien s?r ?volutif ! N'h?sitez pas ? nous faire remonter vos remarques et ? proposer du contenu pour l'alimenter.
+Nous restons ? votre disposition pour vous accompagner dans la d?couverte et l'utilisation de cette nouvelle version.
 
-A très bientôt !
+A tr?s bient?t !
 
 Sylvie Vernet, webmestre
 
-Ce site a été réalisé par l'équipe d'Outils-Réseaux :
-- Florian Schmitt, David Delon, informaticien développeur de logiciel libre, concepteur d'outils et de sites collaboratifs, soutien technique en informatique oour les acteurs de l'économie sociale et solidaire
+Ce site a ?t? r?alis? par l'?quipe d'Outils-R?seaux :
+- Florian Schmitt, David Delon, informaticien d?veloppeur de logiciel libre, concepteur d'outils et de sites collaboratifs, soutien technique en informatique oour les acteurs de l'?conomie sociale et solidaire
 - Jessica Deschamps, graphiste
 - Laurent Marseault : animateur, formateur, consultant
-Merci à eux pour leur travail !";
+Merci ? eux pour leur travail !";
 		echo 'WIKINI : '.$requete.'<br />'.'<strong>'.$objetmail.'</strong><br />'.nl2br($messagemail).'<hr />';
 		
 		$headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .

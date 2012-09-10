@@ -17,7 +17,7 @@ $wikiClasses [] = 'Tags';
 $wikiClassesContent [] = '
 	function DeleteAllTags($page)
     {
-		$tags = explode(" ", mysql_escape_string($liste_tags));
+		$tags = explode(" ", mysql_real_escape_string($liste_tags));
 		//on recupere les anciens tags de la page courante
 		$tabtagsexistants = $this->GetAllTriplesValues($page, \'http://outils-reseaux.org/_vocabulary/tag\', \'\', \'\');
 		if (is_array($tabtagsexistants))
@@ -32,7 +32,7 @@ $wikiClassesContent [] = '
 
 	function SaveTags($page, $liste_tags)
     {
-		$tags = explode(",", mysql_escape_string($liste_tags));
+		$tags = explode(",", mysql_real_escape_string($liste_tags));
 		
 		
 		//on recupere les anciens tags de la page courante

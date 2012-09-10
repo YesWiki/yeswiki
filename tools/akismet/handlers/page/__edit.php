@@ -24,7 +24,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 		
 		// load array with comment data
 		
-		 $userinfo=$this->LoadSingle("select email from ".$this->config["table_prefix"]."users where name = '".mysql_escape_string($this->GetUserName())."'");
+		 $userinfo=$this->LoadSingle("select email from ".$this->config["table_prefix"]."users where name = '".mysql_real_escape_string($this->GetUserName())."'");
 		 $a = parse_url($this->config['base_url']);
 		 $website = ($a['scheme'].'://'.$a['host'].dirname($a['path']));
 		
@@ -36,8 +36,8 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 		
 		// No UTF8 :
 		$text_added=implode("\n", $added);
-		if (preg_match('/Ã/',$text_added)) {
-			$this->SetMessage("Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car le contenu ajouté est considéré comme spam");
+		if (preg_match('/?/',$text_added)) {
+			$this->SetMessage("Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car le contenu ajout? est consid?r? comme spam");
 			$this->Redirect($this->href());
 		}
 	
@@ -59,7 +59,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 		else {
 			// No errors, check for spam
 			if ($akismet->isSpam()) { // returns true if Akismet thinks the comment is spam
-				$this->SetMessage("Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car le contenu ajouté est considéré comme spam");
+				$this->SetMessage("Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car le contenu ajout? est consid?r? comme spam");
 				$this->Redirect($this->href());
 			} 
 		}

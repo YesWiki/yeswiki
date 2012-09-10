@@ -11,7 +11,7 @@ if (!$this->LoadPage('DerniersChangementsRSS')) {
 	//insertion des pages de YesWiki
 	$d = dir("tools/postinstall/setup/yeswiki/");
 	
-	// On prend le premier admin venu pour le mettre comme propriétaire des pages
+	// On prend le premier admin venu pour le mettre comme propri?taire des pages
 	$result = explode("\n",$this->GetGroupACL('admins'));
 	$admin_name = $result[0];
 
@@ -26,9 +26,9 @@ if (!$this->LoadPage('DerniersChangementsRSS')) {
 		if  (!$this->LoadPage($pagename)) {		
 			$sql = "Insert into ".$this->config["table_prefix"]."pages ".
 				"set tag = '$pagename', ".
-				"body = '".mysql_escape_string($pagecontent)."', ".
-				"user = '" . mysql_escape_string($admin_name) . "', ".
-				"owner = '" . mysql_escape_string($admin_name) . "', " .
+				"body = '".mysql_real_escape_string($pagecontent)."', ".
+				"user = '" . mysql_real_escape_string($admin_name) . "', ".
+				"owner = '" . mysql_real_escape_string($admin_name) . "', " .
 				"time = now(), ".
 				"latest = 'Y'";
 
@@ -63,11 +63,11 @@ if (!$this->LoadPage('DerniersChangementsRSS')) {
 	}
 	
 	if ($pages_ajoutees != '') {
-			echo $this->Format("\n".'Les pages suivantes ont été créées : '."\n".$pages_ajoutees."\n");
+			echo $this->Format("\n".'Les pages suivantes ont ?t? cr??es : '."\n".$pages_ajoutees."\n");
 	}
 						
 	if ($pages_deja_existantes != '') {
-			echo $this->Format("\n".'Les pages suivantes n\'ont pas été créées car elles existent déjà : '."\n".$pages_deja_existantes);
+			echo $this->Format("\n".'Les pages suivantes n\'ont pas ?t? cr??es car elles existent d?j? : '."\n".$pages_deja_existantes);
 	}
 	
 	echo '</div>'."\n";

@@ -1,18 +1,18 @@
 <?php
 
-// Charles Népote 2005-2006
+// Charles N?pote 2005-2006
 // Didier Loiseau 2005
 // License GPL.
-// Version 0.7.3 du 10/04/2006 à 23:37.
+// Version 0.7.3 du 10/04/2006 ? 23:37.
 
 // TODO
-// -- case pour sélectionner tout
-// -- attention au cas où la version mais aussi la page est effacée
+// -- case pour s?lectionner tout
+// -- attention au cas o? la version mais aussi la page est effac?e
 //   (cf. handler deletepage) (et les commentaires ?)
-// -- ne rien loguer si rien n'a été effacé
-// -- idéalement la dernière page affiche les résultats mais ne renettoie
-//    pas les pages si elle est rechargée
-// -- test pour savoir si quelque chose a bien été effacé
+// -- ne rien loguer si rien n'a ?t? effac?
+// -- id?alement la derni?re page affiche les r?sultats mais ne renettoie
+//    pas les pages si elle est recharg?e
+// -- test pour savoir si quelque chose a bien ?t? effac?
 
 
 /*$essai = $wiki->GetLinkTable();
@@ -26,7 +26,7 @@ if (!defined("TOOLS_MANAGER"))
         die ("acc&egrave;s direct interdit");
 }
 
-// Utilisation d'un objet Wiki pour acces à la base de donnée
+// Utilisation d'un objet Wiki pour acces ? la base de donn?e
 
 $wiki=new Wiki($wakkaConfig);
 
@@ -38,7 +38,7 @@ $despam_url = $tools_url."?p=despam";
 
 buffer::str(	"\n<!-- == Action erasespam v 0.7.3 ============================= -->\n");
 // La norme HTML interdit la balise style ailleurs que dans <head></head>
-// on l'utilise ici à titre de débogage et pendant la construction de l'action
+// on l'utilise ici ? titre de d?bogage et pendant la construction de l'action
 /*buffer::str(	"<style type=\"text/css\">",
 	"p { margin: 0; }",
 	".action_erasespam { background-color: yellow; }",
@@ -49,8 +49,8 @@ buffer::str(	"\n<!-- == Action erasespam v 0.7.3 ============================= -
 
 // -- (1) Formulaire d'accueil de l'action -------------------------------
 //
-// Le formulaire est affiché si aucun spammer n'a encore été précisé ou
-// si le champ a été laissé vide et validé
+// Le formulaire est affich? si aucun spammer n'a encore ?t? pr?cis? ou
+// si le champ a ?t? laiss? vide et valid?
 
 
 
@@ -81,7 +81,7 @@ if(empty($_POST['spammer']) && empty($_POST['from']) && !isset($_POST['clean']))
 }
 
 
-// -- (2) Page de résultats et form. de sélection des pages à effacer ----
+// -- (2) Page de r?sultats et form. de s?lection des pages ? effacer ----
 //
 else if(!isset($_POST['clean']))
 {
@@ -95,7 +95,7 @@ else if(!isset($_POST['clean']))
 			and latest = 'Y'
 			order by `time` desc";
 		$title =
-			"<p>Nettoyage des pages vandalisées depuis " .
+			"<p>Nettoyage des pages vandalis?es depuis " .
 			$_POST['from'] . " heure(s)</p>\n";
 	}
 	//buffer::str( $requete;
@@ -107,7 +107,7 @@ else if(!isset($_POST['clean']))
 	buffer::str(	"<table>\n");
 	foreach ($pagesFromSpammer as $i => $page)
 	{
-		$revisions=$wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where tag = '".mysql_escape_string($page["tag"])."' order by time desc"); 
+		$revisions=$wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($page["tag"])."' order by time desc"); 
 		buffer::str(	"<tr>\n".
 			"<td>".
 			$page["tag"]. " ".
@@ -126,7 +126,7 @@ else if(!isset($_POST['clean']))
 		
 		foreach ($revisions as $revision)
 		{
-			// Si c'est la dernière version on saute cette itération
+			// Si c'est la derni?re version on saute cette it?ration
 			// ce n'est pas elle qu'on va vouloir restaurer...
 			if(!isset($revision1))
 			{
@@ -157,7 +157,7 @@ else if(!isset($_POST['clean']))
 }
 
 
-// -- (3) Nettoyage des pages et affichage de la page de résultats -------
+// -- (3) Nettoyage des pages et affichage de la page de r?sultats -------
 //
 
 else if(isset($_POST['clean']))
@@ -168,14 +168,14 @@ else if(isset($_POST['clean']))
 	$restoredPages = "";
 
 	// -- 3.1 Effacement ---
-	// On efface chaque élément du tableau suppr[]
-	// Pour chaque page sélectionnée
+	// On efface chaque ?l?ment du tableau suppr[]
+	// Pour chaque page s?lectionn?e
 	if (!empty($_POST['suppr']))
 	{
 		foreach ($_POST['suppr'] as $page)
 		{
-			// Effacement de la page en utilisant la méthode adéquate
-			// (si DeleteOrphanedPage ne convient pas, soit on créé
+			// Effacement de la page en utilisant la m?thode ad?quate
+			// (si DeleteOrphanedPage ne convient pas, soit on cr??
 			// une autre, soit on la modifie
 			$wiki->DeleteOrphanedPage($page);
 			$deletedPages .= $page . ", ";
@@ -184,19 +184,19 @@ else if(isset($_POST['clean']))
 	}
 
 
-	// -- 3.2 Restauration des pages sélectionnées ---
+	// -- 3.2 Restauration des pages s?lectionn?es ---
 	if (!empty($_POST['rev']))
 	{
 		//print_r($_POST["rev"]);
 		foreach ($_POST["rev"] as $rev_id)
 		{
 			buffer::str( $rev_id."<br>");
-			// Sélectionne la révision
-			$revision = $wiki->LoadSingle("select * from ".$wiki->config["table_prefix"]."pages where id = '".mysql_escape_string($rev_id)."' limit 1"); 
+			// S?lectionne la r?vision
+			$revision = $wiki->LoadSingle("select * from ".$wiki->config["table_prefix"]."pages where id = '".mysql_real_escape_string($rev_id)."' limit 1"); 
 			
 	
-			// Fait de la dernière version de cette révision
-			// une version archivée
+			// Fait de la derni?re version de cette r?vision
+			// une version archiv?e
 			$requeteUpdate =
 				"update " . $wiki->config["table_prefix"] . "pages " .
 				"set latest = 'N' ".
@@ -208,24 +208,24 @@ else if(isset($_POST['clean']))
 	
              // add new revision
               $wiki->Query("insert into ".$wiki->config["table_prefix"]."pages set ".
-             "tag = '".mysql_escape_string($revision['tag'])."', ".
+             "tag = '".mysql_real_escape_string($revision['tag'])."', ".
              "time = now(), ".
-	         "owner = '".mysql_escape_string($revision['owner'] )."', ".
-             "user = '".mysql_escape_string("despam")."', ".
+	         "owner = '".mysql_real_escape_string($revision['owner'] )."', ".
+             "user = '".mysql_real_escape_string("despam")."', ".
              "latest = 'Y', ".
-             "body = '".mysql_escape_string(chop($revision['body']))."'");
+             "body = '".mysql_real_escape_string(chop($revision['body']))."'");
         }
 	
 		}
 		$restoredPages = trim($restoredPages, ", ");
 		
-		buffer::str( "<li>Pages restaurées&nbsp;: " .
+		buffer::str( "<li>Pages restaur?es&nbsp;: " .
 		$restoredPages . ".</li>\n" );
-		buffer::str( "<li>Pages supprimées&nbsp;: " .
+		buffer::str( "<li>Pages supprim?es&nbsp;: " .
 		$deletedPages . ".</li>\n" );
 		
 		buffer::str(	"</ul>\n");
-		buffer::str(	"<p><a href=\"". $despam_url. "\">Retour au formulaire de départ >></a></p>\n");
+		buffer::str(	"<p><a href=\"". $despam_url. "\">Retour au formulaire de d?part >></a></p>\n");
 		buffer::str(	"<p><a href=\"" );
 	
 		buffer::str(	"</div>\n\n");

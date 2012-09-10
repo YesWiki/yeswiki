@@ -14,8 +14,8 @@ $wikiClassesContent [] = '
 	  	Wiki::SavePage($tag, $method, $text, $track);	
 	          // Email watchers
         	 $results = $this->LoadAll("SELECT value FROM ".$this->config["table_prefix"]."triples WHERE ".
-                "property = \"".mysql_escape_string("subscriptions")."\" AND ".
-                "resource = \"".mysql_escape_string($tag)."\" ");
+                "property = \"".mysql_real_escape_string("subscriptions")."\" AND ".
+                "resource = \"".mysql_real_escape_string($tag)."\" ");
                 
                 $currentuser = $this->GetUser();
                 $currentuseremail = $currentuser["email"]; 

@@ -54,7 +54,7 @@ if ($_REQUEST["action"] == "logout")
 
 if ($user = $this->GetUser())
 {
-	$sql= "SELECT bf_id_fiche FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature IN (9,15) AND bf_mail ='".mysql_escape_string($user['email'])."' LIMIT 1";
+	$sql= "SELECT bf_id_fiche FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature IN (9,15) AND bf_mail ='".mysql_real_escape_string($user['email'])."' LIMIT 1";
 	$bazar = $this->LoadSingle($sql);
 	if ($bazar) $id= $bazar['bf_id_fiche'];
 	
@@ -85,7 +85,7 @@ else
 				$this->SetUser($existingUser, 0);
 				SetCookie("name", $existingUser["name"],0, $this->CookiePath);
 				SetCookie("password", $existingUser["password"],0, $this->CookiePath);
-				$sql= "SELECT bf_id_fiche FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature IN (9,15) AND bf_mail ='".mysql_escape_string($existingUser['email'])."' LIMIT 1";
+				$sql= "SELECT bf_id_fiche FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature IN (9,15) AND bf_mail ='".mysql_real_escape_string($existingUser['email'])."' LIMIT 1";
 				$bazar = $this->LoadSingle($sql);
 				if ($bazar) $id= $bazar['bf_id_fiche'];
 				$this->Redirect($urllogin.'&id_fiche='.$id.'&action=voir_fiche');

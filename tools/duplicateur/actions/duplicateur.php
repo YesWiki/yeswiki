@@ -110,7 +110,7 @@ if ($_POST['duplication']=='duplication') {
 			// Pas de gestion d'acl, ni de proprietaire, ni de link tracking !
 	
 			$sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
-				. " WHERE tag = '".mysql_escape_string($source)."' AND "
+				. " WHERE tag = '".mysql_real_escape_string($source)."' AND "
 				.  "latest = 'Y' LIMIT 1";
 			
 			if ($page = $this->LoadSingle($sql)) {
@@ -122,18 +122,18 @@ if ($_POST['duplication']=='duplication') {
 						$body = $page ['body'];
 						
 						// set all other revisions to old
-						$this->Query("update ".$target."pages set latest = 'N' where tag = '".mysql_escape_string($source)."'");
+						$this->Query("update ".$target."pages set latest = 'N' where tag = '".mysql_real_escape_string($source)."'");
 						
 						
 						// add new revision
 						$this->Query("insert into ".$target."pages set ".
-							"tag = '".mysql_escape_string($source)."', ".
+							"tag = '".mysql_real_escape_string($source)."', ".
 							"comment_on = '', ".
 							"time = now(), ".
 							"owner = '', ".
-							"user = '".mysql_escape_string($user)."', ".
+							"user = '".mysql_real_escape_string($user)."', ".
 							"latest = 'Y', ".
-							"body = '".mysql_escape_string(chop($body))."'");
+							"body = '".mysql_real_escape_string(chop($body))."'");
 			
 					}			
 						

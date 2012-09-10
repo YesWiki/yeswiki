@@ -20,7 +20,7 @@ if (isset($_GET['lien']) && isset($_GET['titre']) && isset($_GET['image'])) {
 		  	$chaine="\n~~\"\"<!--".$_GET['image_x']."-".$_GET['image_y']."-".$_POST['couleur_xy']."-->\"\"[".$_POST['image_texte']."]~~";
 			preg_match('/([0-9][0-9]*)-([0-9][0-9]*)-*([a-zA-Z]*)/',$location,$elements);
 	  	}
-		$donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_escape_string($this->GetPageTag().'DonneesCoverflow')."'and latest = 'Y' limit 1");
+		$donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($this->GetPageTag().'DonneesCoverflow')."'and latest = 'Y' limit 1");
 	  	$this->SavePage($this->GetPageTag().'DonneesCoverflow',$donneesbody['body'].$chaine);
   		$this->Redirect($this->Href());
   	}
@@ -38,7 +38,7 @@ if (isset($_GET['lien']) && isset($_GET['titre']) && isset($_GET['image'])) {
 		</div>
 		<div id="images">'."\n";
 //on recupere les donnees de la page XML associee
-$xml = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_escape_string($this->GetPageTag().'DonneesCoverflow')."'and latest = 'Y' limit 1");
+$xml = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($this->GetPageTag().'DonneesCoverflow')."'and latest = 'Y' limit 1");
 if ($xml!='') {
 	$donnees = preg_replace ("/".'(\\{\\{template)'.'(.*?)'.'(\\}\\})'."/is", '', $xml['body']);
 	$tab_ligne = explode("\n",$donnees);

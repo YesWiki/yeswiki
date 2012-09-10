@@ -4,7 +4,7 @@ textsearch.php
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
 Copyright 2002, 2003 David DELON
 Copyright 2002  Patrick PAUL
-Copyright 2004  Jean Christophe ANDRÉ
+Copyright 2004  Jean Christophe ANDR?
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,23 +29,23 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// label à afficher devant la zone de saisie
+// label ? afficher devant la zone de saisie
 $label = $this->GetParameter('label', 'Ce que vous souhaitez chercher&nbsp;: ');
 // largeur de la zone de saisie
 $size = $this->GetParameter('size', '40');
 // texte du bouton
 $button = $this->GetParameter('button', 'Chercher');
-// texte à chercher
+// texte ? chercher
 $phrase = $this->GetParameter('phrase', false);
-// séparateur entre les éléments trouvés
+// s?parateur entre les ?l?ments trouv?s
 $separator = $this->GetParameter('separator', false);
 // recherche booleene ?
 $boolsearch = $this->GetParameter('bool', false);
 
 
-// se souvenir si c'était un paramètre de l'action ou du CGI
+// se souvenir si c'?tait un param?tre de l'action ou du CGI
 $paramPhrase = $phrase;
-// récupérer le paramètre du CGI le cas échéant
+// r?cup?rer le param?tre du CGI le cas ?ch?ant
 if (!isset($_REQUEST['phrase'])) $_REQUEST['phrase'] = '';
 if (!$phrase) $phrase = $_REQUEST['phrase'];
 
@@ -54,12 +54,12 @@ if (!function_exists("FullTextBoolSearch")) {
 
 	function FullTextBoolSearch($phrase) {
 		global $wiki;
-		   return $wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where latest = 'Y' and match(tag, body) against('".mysql_escape_string($phrase)."' IN BOOLEAN MODE)"); 
+		   return $wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where latest = 'Y' and match(tag, body) against('".mysql_real_escape_string($phrase)."' IN BOOLEAN MODE)"); 
 	}
 }
 
-// s'il y a un paramètre d'action "phrase", on affiche uniquement le résultat
-// dans le cas contraire, présenter une zone de saisie
+// s'il y a un param?tre d'action "phrase", on affiche uniquement le r?sultat
+// dans le cas contraire, pr?senter une zone de saisie
 if (!$paramPhrase)
 {
 	echo $this->FormOpen('', '', 'get');

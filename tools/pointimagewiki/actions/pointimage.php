@@ -44,7 +44,7 @@ if ((isset($_GET['image_x']) || isset($_GET['image_y']) )) {
 		  	$chaine="\n~~\"\"<!--".$_GET['image_x']."-".$_GET['image_y']."-".$_POST['couleur_xy']."-->\"\"[".$_POST['image_texte']."]~~";
 			preg_match('/([0-9][0-9]*)-([0-9][0-9]*)-*([a-zA-Z]*)/',$location,$elements);
 	  	}
-		$donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_escape_string($this->GetPageTag().'PointImageDonnees')."'and latest = 'Y' limit 1");
+		$donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($this->GetPageTag().'PointImageDonnees')."'and latest = 'Y' limit 1");
 	  	$this->SavePage($this->GetPageTag().'PointImageDonnees',$donneesbody['body'].$chaine);
   		$this->Redirect($this->Href());
   	}
@@ -66,18 +66,18 @@ if (!$src_map) {
 }
 
 if (!file_exists('images/'.$src_map)) {
-	echo $this->Format('//Image non trouvée//');
+	echo $this->Format('//Image non trouv?e//');
 }
 	
 // Couleur par defaut : vert
 
-// Test valeurs de parametres historique pour compatibilité ascendante
+// Test valeurs de parametres historique pour compatibilit? ascendante
 $couleur = $this->GetParameter('color');
 if (!$couleur) {
 	$couleur = $this->GetParameter('pointcolor');
 }
 
-// Taille point par défaut : 10
+// Taille point par d?faut : 10
 
 $point_size=$this->GetParameter('pointsize');
 if (!$point_size) {
@@ -127,7 +127,7 @@ $fill_param=prepare_fill($couleur,$img);
 echo "<a name=\"topmap\"></a>";
 
 
-$donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_escape_string($this->GetPageTag().'PointImageDonnees')."'and latest = 'Y' limit 1");
+$donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($this->GetPageTag().'PointImageDonnees')."'and latest = 'Y' limit 1");
 
  
 // Recherche Points
@@ -165,7 +165,7 @@ $donneesbody = $this->LoadSingle("select * from ".$this->config["table_prefix"].
 			$x=round($x);
 			$y=round($y);
 
-			// Commentaire deja présent ? : on ajoute à la suite
+			// Commentaire deja pr?sent ? : on ajoute ? la suite
 			if ($text[$x.'|'.$y.'|'.$color_x_y]) {
 				$comment=$text[$x.'|'.$y.'|'.$color_x_y]=$text[$x.'|'.$y.'|'.$color_x_y].'<br>'.$comment;
 			}
@@ -295,7 +295,7 @@ function onMouseclick(evt)
   y_image=Math.round(y_image);
   fe['y_image'].value = y_image;
   <?php
-	echo "domTT_activate(this, evt, 'content', '<form method=\"post\" action=\"".$this->href()."&image_x='+x_image+'&image_y='+y_image+'\"><div style=\"background-color:white;\"><table><tr><td>Commentaire :</td></tr><tr><td><textarea name=\"image_texte\" cols=\"30\" rows=\"10\" wrap=\"soft\"   ></textarea></td></tr><tr><td><input type=\"submit\" name=\"submit\" value=\"Sauver\"><input type=\"submit\" name=\"cancel\" value=\"Annulation\"></td></tr></table>" . "<input type=\"radio\" name=\"couleur_xy\" value=\"green\" value CHECKED> Vert : Garrigue <input type=\"radio\" name=\"couleur_xy\" value=\"blue\"> Bleu : Géographie  <input type=\"radio\" name=\"couleur_xy\" value=\"red\"> Rouge : Questions" .
+	echo "domTT_activate(this, evt, 'content', '<form method=\"post\" action=\"".$this->href()."&image_x='+x_image+'&image_y='+y_image+'\"><div style=\"background-color:white;\"><table><tr><td>Commentaire :</td></tr><tr><td><textarea name=\"image_texte\" cols=\"30\" rows=\"10\" wrap=\"soft\"   ></textarea></td></tr><tr><td><input type=\"submit\" name=\"submit\" value=\"Sauver\"><input type=\"submit\" name=\"cancel\" value=\"Annulation\"></td></tr></table>" . "<input type=\"radio\" name=\"couleur_xy\" value=\"green\" value CHECKED> Vert : Garrigue <input type=\"radio\" name=\"couleur_xy\" value=\"blue\"> Bleu : G?ographie  <input type=\"radio\" name=\"couleur_xy\" value=\"red\"> Rouge : Questions" .
 		"</form></div>', 'type', 'sticky' );";
   		
   ?>

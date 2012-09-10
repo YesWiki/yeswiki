@@ -507,7 +507,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 		$tags_javascript = '';
 		//gestion des mots cles deja entres
 		if (isset($valeurs_fiche[$tableau_template[1]])) {
-			$tags = explode(",", mysql_escape_string($valeurs_fiche[$tableau_template[1]]));
+			$tags = explode(",", mysql_real_escape_string($valeurs_fiche[$tableau_template[1]]));
 			if (is_array($tags))
 			{
 				sort($tags);
@@ -585,7 +585,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 		$GLOBALS['wiki']->DeleteTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', NULL, '', '');
 		//on decoupe les tags pour les mettre dans un tableau
 		$liste_tags = ($valeurs_fiche['mots_cles_caches'] ? $valeurs_fiche['mots_cles_caches'].',' : '').$valeurs_fiche[$tableau_template[1]];		
-		$tags = explode(",", mysql_escape_string($liste_tags));
+		$tags = explode(",", mysql_real_escape_string($liste_tags));
 				
 		//on ajoute les tags postes
 		foreach ($tags as $tag) {
@@ -749,11 +749,11 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 			}
 			$requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
 					"signuptime = now(), ".
-					"name = '".mysql_escape_string($nomwiki)."', ";
+					"name = '".mysql_real_escape_string($nomwiki)."', ";
 			if (isset($valeurs_fiche[$tableau_template[2]]) && $valeurs_fiche[$tableau_template[2]] != '') {
-				$requeteinsertionuserwikini .= "email = '".mysql_escape_string($valeurs_fiche[$tableau_template[2]])."', ";
+				$requeteinsertionuserwikini .= "email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."', ";
 			}
-			$requeteinsertionuserwikini .= "password = md5('".mysql_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
+			$requeteinsertionuserwikini .= "password = md5('".mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
 			$resultat = $GLOBALS['wiki']->Query($requeteinsertionuserwikini) ;
 			return array('nomwiki' => $nomwiki);
 			
@@ -768,7 +768,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 		} 
 		else {
 			$requetemodificationuserwikini = 'UPDATE '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
-					"email = '".mysql_escape_string($valeurs_fiche[$tableau_template[2]])."' WHERE name=\"".$valeurs_fiche['nomwiki']."\"";
+					"email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."' WHERE name=\"".$valeurs_fiche['nomwiki']."\"";
 			$resultat = $GLOBALS['wiki']->Query($requetemodificationuserwikini) ;
 		}
 	}
@@ -1526,10 +1526,10 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 					map.setCenter(marker.getPosition());
 				});
 			  } else {
-				alert("Pas de résultats pour cette adresse: " + address);
+				alert("Pas de r?sultats pour cette adresse: " + address);
 			  }
 			} else {
-			  alert("Pas de résultats pour la raison suivante: " + status + ", rechargez la page.");
+			  alert("Pas de r?sultats pour la raison suivante: " + status + ", rechargez la page.");
 			}
 		  });
 		}

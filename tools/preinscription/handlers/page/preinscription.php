@@ -1,5 +1,5 @@
 <?php
-//vérification de sécurité
+//v?rification de s?curit?
 if (!eregi("wakka.php", $_SERVER['PHP_SELF'])) {
     die ("acc&egrave;s direct interdit");
 }
@@ -20,36 +20,36 @@ if (isset($_POST['Expediteur']))
 		include_once 'tools/preinscription/libs/Mail.php' ;
 		include_once 'tools/preinscription/libs/Mail/mime.php' ;
 	    $result = $this->LoadSingle("SELECT COUNT(*) as count FROM ".$this->config["table_prefix"]."triples WHERE ".
-	                "resource = '".mysql_escape_string($this->tag)."' AND ".
-	                "property  = '".mysql_escape_string('http://outils-reseaux.org/_vocabulary/preinscription')."' AND ".
+	                "resource = '".mysql_real_escape_string($this->tag)."' AND ".
+	                "property  = '".mysql_real_escape_string('http://outils-reseaux.org/_vocabulary/preinscription')."' AND ".
 	                "value     LIKE '".$_POST['Expediteur']."%'");
 	                
 	    if ($result['count'] >= 1) {
-	                $msg = "Vous êtes déja inscrit à cette formation.";
+	                $msg = "Vous ?tes d?ja inscrit ? cette formation.";
 	    }
 	    else {
 		        $this->Query("insert into ".$this->config["table_prefix"]."triples set ".
-	            "resource = '".mysql_escape_string($this->tag)."', ".
-	            "property  = '".mysql_escape_string('http://outils-reseaux.org/_vocabulary/preinscription')."', ".
-	            "value     = '".mysql_escape_string(trim($_POST['Expediteur']).'|'.trim($_POST['Prenom']).'|'.trim($_POST['Nom']).'|'.trim($_POST['Tarif']))."' ");
+	            "resource = '".mysql_real_escape_string($this->tag)."', ".
+	            "property  = '".mysql_real_escape_string('http://outils-reseaux.org/_vocabulary/preinscription')."', ".
+	            "value     = '".mysql_real_escape_string(trim($_POST['Expediteur']).'|'.trim($_POST['Prenom']).'|'.trim($_POST['Nom']).'|'.trim($_POST['Tarif']))."' ");
 	            
 				$email = trim($_POST['Expediteur']) ;
 
-				$texte_mail = 'Bonjour, nous confirmons votre pré-inscription à la formation décrite sur cette page '.$this->href().'.'."\n\n";
-				$texte_mail .= 'Une jauge présente sur cette page vous indique la progression des inscriptions au fur et à mesure.'."\n";
-				$texte_mail .= 'Une fois le quota de pré-inscrits acquis, une date sera proposée aux stagiaires.'."\n\n";
-				$texte_mail .= "Prénom : ".$_POST['Prenom']."\n";					
+				$texte_mail = 'Bonjour, nous confirmons votre pr?-inscription ? la formation d?crite sur cette page '.$this->href().'.'."\n\n";
+				$texte_mail .= 'Une jauge pr?sente sur cette page vous indique la progression des inscriptions au fur et ? mesure.'."\n";
+				$texte_mail .= 'Une fois le quota de pr?-inscrits acquis, une date sera propos?e aux stagiaires.'."\n\n";
+				$texte_mail .= "Pr?nom : ".$_POST['Prenom']."\n";					
 				$texte_mail .= "Nom : ".$_POST['Nom']."\n";
 				$texte_mail .= "Adresse mail : ".$_POST['Expediteur']."\n";	
 				$texte_mail .= "Tarif : ".$_POST['Tarif']." euros\n\n";			
-				$texte_mail .= 'Vous pouvez consulter les formations auxquelles vous vous êtes inscrit et vous désinscrire à la page http://outils-reseaux.org/wakka.php?wiki=InscriptionFormation&email='.$email.' '."\n\n";
-				$texte_mail .= "\n\n".'Coopérativement votre !'."\n";
-				$texte_mail .= 'L\'équipe Outils-Réseaux'."\n";
+				$texte_mail .= 'Vous pouvez consulter les formations auxquelles vous vous ?tes inscrit et vous d?sinscrire ? la page http://outils-reseaux.org/wakka.php?wiki=InscriptionFormation&email='.$email.' '."\n\n";
+				$texte_mail .= "\n\n".'Coop?rativement votre !'."\n";
+				$texte_mail .= 'L\'?quipe Outils-R?seaux'."\n";
 				$texte_mail .= 'http://outils-reseaux.org'."\n";
 				
 				$html_mail = '<html>
 				<head>
-				<title>Webzine Outils-Réseaux</title>
+				<title>Webzine Outils-R?seaux</title>
 				<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 				<style type="text/css">
 				<!--
@@ -74,7 +74,7 @@ if (isset($_POST['Expediteur']))
 				<table width="700" border="0" cellpadding="5" cellspacing="1" style="border:dotted 2px #000000; background:url(http://outils-reseaux.org/communication/Formations/bandeau_formations.png) no-repeat top right; margin:5px auto;">
 				<tr>
 				<td colspan="2">
-				<a id="logo-newsletter" style="float:left; display:block; background:url(http://outils-reseaux.org/communication/Webzine/logoOR.png) no-repeat top left; width:101px; height:130px; margin:30px 0 40px 50px;" href="http://outils-reseaux.org" title="Aller sur le site Outils-Réseaux.org"></a>
+				<a id="logo-newsletter" style="float:left; display:block; background:url(http://outils-reseaux.org/communication/Webzine/logoOR.png) no-repeat top left; width:101px; height:130px; margin:30px 0 40px 50px;" href="http://outils-reseaux.org" title="Aller sur le site Outils-R?seaux.org"></a>
 				</td>
 				</tr>
 				<tr>
@@ -88,14 +88,14 @@ if (isset($_POST['Expediteur']))
 				</tr>
 				<tr>
 				<td colspan="2" id="ours" style="padding:20px; border-top:solid 1px #000000; text-align:center;">
-				<b>Association "Outils-Réseaux",</b> <br /> chez Tela Botanica,
+				<b>Association "Outils-R?seaux",</b> <br /> chez Tela Botanica,
 				Institut de Botanique, 163 rue Auguste Broussonnet, 34090 Montpellier <br />
 				
-				Tél : 09 74 53 12 21 - N° Siret : 508 158 755 00019 - APE 9499Z <br />
-				Association prestataire de formation enregistrée sous le numéro 91 34 06579 34<br />
+				T?l : 09 74 53 12 21 - N? Siret : 508 158 755 00019 - APE 9499Z <br />
+				Association prestataire de formation enregistr?e sous le num?ro 91 34 06579 34<br />
 				<a href="mailto:accueil@outils-reseaux.org" title="Nous contacter par courriel">Nous contacter par courriel</a><br />
-				<a href="http://www.outils-reseaux.org" title="Aller sur la page d\'accueil d\'Outils-Réseaux">www.outils-reseaux.org</a><br />
-				<a href="http://outils-reseaux.org/wakka.php?wiki=WebzinE" title="Voir les options d\'abonnement par mail">S\'abonner ou se désabonner</a>	
+				<a href="http://www.outils-reseaux.org" title="Aller sur la page d\'accueil d\'Outils-R?seaux">www.outils-reseaux.org</a><br />
+				<a href="http://outils-reseaux.org/wakka.php?wiki=WebzinE" title="Voir les options d\'abonnement par mail">S\'abonner ou se d?sabonner</a>	
 				</td>
 				</tr>
 				</table>
@@ -107,7 +107,7 @@ if (isset($_POST['Expediteur']))
 				$crlf = "\n";
 				$hdrs = array(
 				              'From'    => $_POST['mailadmin'],
-				              'Subject' => '[Outils-Réseaux : pré-inscription] Formation à la carte : '.$this->tag
+				              'Subject' => '[Outils-R?seaux : pr?-inscription] Formation ? la carte : '.$this->tag
 				              );
 				
 				$mime = new Mail_mime($crlf);
@@ -122,17 +122,17 @@ if (isset($_POST['Expediteur']))
 				$mail->send($_POST['mailadmin'].','.$email, $hdrs, $body);
 				if (PEAR::isError ($mail)) 
 				{
-			    	$msg = 'Le mail de préinscription n\'est pas parti... Erreur serveur...' ;
+			    	$msg = 'Le mail de pr?inscription n\'est pas parti... Erreur serveur...' ;
 				}
 				else
 				{					
-					$msg = 'Votre pré-inscription nous a bien été envoyée. Vous recevrez par mail un message de confirmation de pré-inscription.';					
+					$msg = 'Votre pr?-inscription nous a bien ?t? envoy?e. Vous recevrez par mail un message de confirmation de pr?-inscription.';					
 				}	            
 	    }
 	}	
 } else 
 {
-	$msg="Formulaire de pré-inscription mal saisi...";
+	$msg="Formulaire de pr?-inscription mal saisi...";
 }
 
 $this->SetMessage($msg);
