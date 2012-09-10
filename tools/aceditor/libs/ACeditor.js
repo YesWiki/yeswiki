@@ -8,11 +8,11 @@ if there are any problems, let chris know.
 */
 
 ;function wrapSelectionBis(txtarea, lft, rgt) { 
-    // pareil que la wrapSelection, avec une diff&eacute;rence dans IE
-    // qui permet � wrapSelectionBis de pouvoir ins&eacute;rer � l'endroit du curseur m&ecirc;me sans avoir s&eacute;lectionn&eacute; des caract&egrave;res !!!
-    // Pour mozilla, c'est bien la fonction Wrap standard qui est appel&eacute;e, aucun changement
+    // pareil que la wrapSelection, avec une différence dans IE
+    // qui permet à wrapSelectionBis de pouvoir insérer à l'endroit du curseur même sans avoir sélectionné des caractères !!!
+    // Pour mozilla, c'est bien la fonction Wrap standard qui est appelée, aucun changement
     
-    if (document.all) { // document.all est une infamie de IE, on d&eacute;tecte cette horreur !
+    if (document.all) { // document.all est une infamie de IE, on détecte cette horreur !
         txtarea.focus();
     	if (document.selection) {
     		txtarea.focus();
@@ -21,7 +21,7 @@ if there are any problems, let chris know.
     	}
     } 
     else if (document.getElementById) {
-        // m&eacute;morisation de la position du scroll
+        // mémorisation de la position du scroll
         oldPos = txtarea.scrollTop;
         oldHght = txtarea.scrollHeight;
 
@@ -38,7 +38,7 @@ if there are any problems, let chris know.
 		var s3 = (txtarea.value).substring(selEnd, selLength);
 		txtarea.value = s1 + lft + s2 + rgt + s3;
 		
-		// Placement du curseur apr&egrave;s le tag fermant
+		// Placement du curseur après le tag fermant
 		txtarea.selectionEnd = pos;
 
 		// calcul et application de la nouvelle bonne postion du scroll
@@ -195,7 +195,7 @@ if there are any problems, let chris know.
 							'</ul>' +
 						'</div>');
 			
-	    // Gras italique soulign&eacute; barr&eacute;
+	    // Gras italique souligné barré
     	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_BOLD_TEXT']+'">' +
 								'<span style="font-family:serif;font-weight:bold;">B</span>' +
@@ -243,58 +243,69 @@ if there are any problems, let chris know.
 
     	// Gestion des raccourcis claviers
     	var isCtrl = false;
+    	var isAlt = false;
     	this.element.onkeyup = function(e) {
     		if (e.keyCode == 17) {
 				isCtrl = false;
+			}
+			if (e.keyCode == 18) {
+				isAlt = false;
 			}
     	}
     	this.element.onkeydown = function(e) {
 			if (e.keyCode == 17) {
 				isCtrl = true;
 			}
-			// title 1
-			if (e.keyCode == 49 && isCtrl == true) {
-				$('.aceditor-btn-title1').click(); e.preventDefault();
+			if (e.keyCode == 18) {
+				isAlt = true;
 			}
-			// title 2
-			if (e.keyCode == 50 && isCtrl == true) {
-				$('.aceditor-btn-title2').click(); e.preventDefault();
-			}
-			// title 3
-			if (e.keyCode == 51 && isCtrl == true) {
-				$('.aceditor-btn-title3').click(); e.preventDefault();
-			}
-			// title 4
-			if (e.keyCode == 52 && isCtrl == true) {
-				$('.aceditor-btn-title4').click(); e.preventDefault();
-			}
-			// title 5
-			if (e.keyCode == 53 && isCtrl == true) {
-				$('.aceditor-btn-title5').click(); e.preventDefault();
-			}
-			// bold
-			if (e.keyCode == 66 && isCtrl == true) {
-				$('.aceditor-btn-bold').click(); e.preventDefault();
-			}
-			// italic
-			if (e.keyCode == 73 && isCtrl == true) {
-				$('.aceditor-btn-italic').click(); e.preventDefault();
-			}
-			// underline
-			if (e.keyCode == 85 && isCtrl == true) {
-				$('.aceditor-btn-underline').click(); e.preventDefault();	
-			}
-			// strike
-			if (e.keyCode == 89 && isCtrl == true) {
-				$('.aceditor-btn-strike').click(); e.preventDefault();	
-			}
-			// line
-			if (e.keyCode == 72 && isCtrl == true) {
-				$('.aceditor-btn-line').click(); e.preventDefault();
-			}
-			// link
-			if (e.keyCode == 76 && isCtrl == true) {
-				$('.aceditor-btn-link').click(); e.preventDefault(); isCtrl = false;
+			if (isCtrl == true && isAlt == false) {
+				e.preventDefault();
+
+				// title 1
+				if (e.keyCode == 49) {
+					$('.aceditor-btn-title1').click(); 
+				}
+				// title 2
+				else if (e.keyCode == 50) {
+					$('.aceditor-btn-title2').click();
+				}
+				// title 3
+				else if (e.keyCode == 51) {
+					$('.aceditor-btn-title3').click();
+				}
+				// title 4
+				else if (e.keyCode == 52) {
+					$('.aceditor-btn-title4').click();
+				}
+				// title 5
+				else if (e.keyCode == 53) {
+					$('.aceditor-btn-title5').click();
+				}
+				// bold
+				else if (e.keyCode == 66) {
+					$('.aceditor-btn-bold').click();
+				}
+				// italic
+				else if (e.keyCode == 73) {
+					$('.aceditor-btn-italic').click();
+				}
+				// underline
+				else if (e.keyCode == 85) {
+					$('.aceditor-btn-underline').click();
+				}
+				// strike
+				else if (e.keyCode == 89) {
+					$('.aceditor-btn-strike').click();
+				}
+				// line
+				else if (e.keyCode == 72) {
+					$('.aceditor-btn-line').click();
+				}
+				// link
+				else if (e.keyCode == 76) {
+					$('.aceditor-btn-link').click(); isCtrl = false; isAlt = false;
+				}
 			}
 		}
     }
@@ -313,7 +324,7 @@ if there are any problems, let chris know.
 
 }(jQuery, window));
 
-// Initialisation pour le mode &eacute;dition
+// Initialisation pour le mode édition
 $('#body').aceditor({savebtn : true});
 
 // Initialisation pour les commentaires, et textelongs bazar
