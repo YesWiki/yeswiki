@@ -14,18 +14,18 @@ if ($this->getUser()) {
         $useremail = $us['email'];
 
         $result = $this->LoadSingle("SELECT COUNT(*) as count FROM ".$this->config["table_prefix"]."triples WHERE ".
-                "resource = '".mysql_escape_string($this->tag)."' AND ".
-                "property  = '".mysql_escape_string('subscriptions')."' AND ".
-                "value     = '".mysql_escape_string($useremail)."'");
+                "resource = '".mysql_real_escape_string($this->tag)."' AND ".
+                "property  = '".mysql_real_escape_string('subscriptions')."' AND ".
+                "value     = '".mysql_real_escape_string($useremail)."'");
                 
         if ($result['count'] >= 1) {
                 $msg = "Vous surveillez deja cette page.";
         }
         else {
             	$this->Query("insert into ".$this->config["table_prefix"]."triples set ".
-                "resource = '".mysql_escape_string($this->tag)."', ".
-                "property  = '".mysql_escape_string('subscriptions')."', ".
-                "value     = '".mysql_escape_string($useremail)."' ");
+                "resource = '".mysql_real_escape_string($this->tag)."', ".
+                "property  = '".mysql_real_escape_string('subscriptions')."', ".
+                "value     = '".mysql_real_escape_string($useremail)."' ");
                 $msg = "Vous surveillez maintenant cette page.";
         }
 

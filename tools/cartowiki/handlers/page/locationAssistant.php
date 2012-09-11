@@ -10,7 +10,7 @@ list($val,$lieu)=split('=',$endq);
 				$lieu=ereg_replace('\*+','%',$lieu);
 	            if ((strlen($lieu) > 1 ) && ($lieu != '%')) {
 				    $query="SELECT DISTINCT name, code  FROM locations WHERE " .
-				    "maj_name LIKE '".mysql_escape_string($lieu)."%' OR name LIKE '".mysql_escape_string(urldecode($lieu))."%' ORDER BY name LIMIT 50";
+				    "maj_name LIKE '".mysql_real_escape_string($lieu)."%' OR name LIKE '".mysql_real_escape_string(urldecode($lieu))."%' ORDER BY name LIMIT 50";
 		           	$locations=$this->LoadAll($query);
 	            }
 	            else {

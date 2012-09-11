@@ -24,12 +24,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 /*
 
-TODO : parametre a externaliser (et à enfouir dans les commentaires de la photo ...)
+TODO : parametre a externaliser (et ? enfouir dans les commentaires de la photo ...)
 TODO : revoir la notation des parametres
 TODO : Documenter l'inclusion des parametres dans l'image , et proposer les deux options
 TODO : chantier optimisation :
 	cherchez toutes les villes dans une meme requete ...
-TODO : zoom sur département ...
+TODO : zoom sur d?partement ...
 TODO : test centrage
 TODO : parametre de desactivation du cache
 TODO : revoir la notation des commentaires
@@ -39,11 +39,11 @@ debutant de la meme facon
 TODO : perf refresh sur zoom
 */
 
-// Forcage rafraichissement par adjonction de &refresh=1 à la requête :
+// Forcage rafraichissement par adjonction de &refresh=1 ? la requ?te :
 //
 
 // Initialisation
-// TODO : revoir la gestion de l'affichage des communes non trouvées
+// TODO : revoir la gestion de l'affichage des communes non trouv?es
 
 if (!defined("WIKINI_VERSION"))
 {
@@ -54,7 +54,7 @@ if (!defined("WIKINI_VERSION"))
 unset($_SESSION['location']);
 
 // TODO : revoir cette partie (teste ...)
-// Mise à jour contenu a la volee si coordonnée utm passé en parametre et texte dans le post :
+// Mise ? jour contenu a la volee si coordonn?e utm pass? en parametre et texte dans le post :
 
 if ((isset($_GET['utm_x']) || isset($_GET['utm_y']) )) {
 
@@ -94,7 +94,7 @@ if(!function_exists('transcribe')) {
 function transcribe($texte) {
 	
 	$texte = strtr($texte,
-        'ÀÁÂÃÄÅàáâãäåÒÓÔÕÖØòóôõöøÈÉÊËèéêëÇçÌÍÎÏìíîïÙÚÛÜùúûüÿÑñ-\'',
+        '?????????????????????????????????????????????????????-\'',
         'AAAAAAaaaaaaOOOOOOooooooEEEEeeeeCcIIIIiiiiUUUUuuuuyNn  ' ) ; 
     return($texte);
     
@@ -121,7 +121,7 @@ if (($this->page['latest']=='Y')) {
 }
 
 // Les parametres sont dans le commentaire Jpeg de l'image, utiliser le programme jhead pour les initialiser
-// Libraires de lecture des informations associées à l'image
+// Libraires de lecture des informations associ?es ? l'image
 
 include_once('tools/cartowiki/bib/metadata/'.'JPEG.php');
 
@@ -141,13 +141,13 @@ $coord_visible = $this->GetParameter('coord');
 
 // Couleur par defaut : vert
 
-// Test valeurs de parametres historique pour compatibilité ascendante
+// Test valeurs de parametres historique pour compatibilit? ascendante
 $couleur = $this->GetParameter('color');
 if (!$couleur) {
 	$couleur = $this->GetParameter('pointcolor');
 }
 
-// Taille point par défaut : 10
+// Taille point par d?faut : 10
 
 $point_size=$this->GetParameter('pointsize');
 if (!$point_size) {
@@ -164,11 +164,11 @@ if ($centrage=='') {
 // Fin lecture Parametre de l'action
 
 
-// Lecture commentaires embarqués dans la page
+// Lecture commentaires embarqu?s dans la page
 
 $comment_jpeg=get_jpeg_Comment(get_jpeg_header_data('tools/cartowiki/images/'.$src_map));
 	
-// Solution facile de lecture, mais difficile à maintenir : notamment la notation
+// Solution facile de lecture, mais difficile ? maintenir : notamment la notation
 parse_str($comment_jpeg);
 
 
@@ -313,12 +313,12 @@ switch ($couleur) {
 
 echo "<a name=\"topmap\"></a>";
 
-// Lecture des localités :
+// Lecture des localit?s :
 // Ordre de recherche
 // 1 : Correspondance exacte : localite + departement
 // 2 : Correspondance exacte : localite
-// 3 : Correspondance approchée : localite sans le departement si présent
-// 4 : Correspondance approchée : soundex sur la ville
+// 3 : Correspondance approch?e : localite sans le departement si pr?sent
+// 4 : Correspondance approch?e : soundex sur la ville
 // 5 : (On pourrait faire un super soundex  ici ...)
 
 
@@ -351,24 +351,24 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 			if ($elements[1]) {
 				$name=strtoupper(transcribe($elements[1]));
 				$code=$elements[2];
-				$utm=$this->LoadSingle("select * from locations where maj_name = '".mysql_escape_string($name)."' and code = '".mysql_escape_string($code)."' limit 1");
+				$utm=$this->LoadSingle("select * from locations where maj_name = '".mysql_real_escape_string($name)."' and code = '".mysql_real_escape_string($code)."' limit 1");
 			}
 			else {
 				// Seule la ville a ete passe en parametre
 				preg_match('/(.*)/',$location,$elements);
 				$name=strtoupper(transcribe($elements[1]));
-				$utm=$this->LoadSingle("select * from locations where maj_name = '".mysql_escape_string($name)."' limit 1");
+				$utm=$this->LoadSingle("select * from locations where maj_name = '".mysql_real_escape_string($name)."' limit 1");
 			}
 		}
 		if (!$utm) {
-			// On a rien trouvé : nouvelles tentatives
+			// On a rien trouv? : nouvelles tentatives
 			// Ville seule
-			$utm=$this->LoadSingle("select * from locations where maj_name = '".mysql_escape_string($name)."' limit 1");
+			$utm=$this->LoadSingle("select * from locations where maj_name = '".mysql_real_escape_string($name)."' limit 1");
 
 			// Toujours rien ?
 			// Ville soundex
 /*			if (!$utm) {
-				$utm=$this->LoadSingle("select * from locations where soundex(maj_name) = soundex('".mysql_escape_string($name)."') limit 1");
+				$utm=$this->LoadSingle("select * from locations where soundex(maj_name) = soundex('".mysql_real_escape_string($name)."') limit 1");
 				 //on stocke ce qu'on a trouver avec le  soundex    pour l'afficher
 				if ($utm) {
 					$_SESSION['location'][$this->GetPageTag()] [$i]='AF';
@@ -384,7 +384,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 			}
 		}
 
-		// C'est trouvé !
+		// C'est trouv? !
 
 		if ($utm) {
 
@@ -413,7 +413,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 			}
 			else {
 
-				// Fuseau 32 T : une rotation + translation est appliquée
+				// Fuseau 32 T : une rotation + translation est appliqu?e
 				if ($utm['sector']=='32T') {
 					$cosa = cos(deg2rad($angle3132));
 					$sina = sin(deg2rad($angle3132));
@@ -426,7 +426,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 				}
 
 				else {
-					// Fuseau 30 T : une rotation + translation est appliquée
+					// Fuseau 30 T : une rotation + translation est appliqu?e
 					if ($utm['sector']=='30T') {
 
 						$cosa = cos(deg2rad($angle3031));
@@ -452,7 +452,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 				$comment=' : '.$comment;
 			}
 			
-			// Le commentaire commence par un lien forcé : On lit la premiere image de la page wiki
+			// Le commentaire commence par un lien forc? : On lit la premiere image de la page wiki
 			
 			$imagewiki='';
 			$url='';
@@ -476,7 +476,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 				$link="<a href=\"".$this->href("",$url)."\"><img src=\"".$imagewiki."\"/></a><br>".$link;
 			}
 
-			// Commentaire deja présent ? : on ajoute à la suite
+			// Commentaire deja pr?sent ? : on ajoute ? la suite
 			if ($text[$x.'|'.$y]) {
 				$link=$text[$x.'|'.$y]=$text[$x.'|'.$y].'<br>'.$link;
 			}
@@ -486,7 +486,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 			}
 
 		}
-		// Pas trouvé : on stocke la ligne en session pour transmission au formatter qui affichera le message d'erreur.
+		// Pas trouv? : on stocke la ligne en session pour transmission au formatter qui affichera le message d'erreur.
 
 		else {
 			$_SESSION['location'][$this->GetPageTag()] [$i]='NF';
@@ -558,7 +558,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 	<form id='form_xy' onsubmit='return false'>
 		<table>
 			<tr>
-			<td><input type="radio" name="outil" value="zoom"   id="zoom" onclick="changeOutil()" />zoom avant/arrière<br/></td>
+			<td><input type="radio" name="outil" value="zoom"   id="zoom" onclick="changeOutil()" />zoom avant/arri?re<br/></td>
           	<td><input type="radio" name="outil" value="point"  id="point" onclick="changeOutil()" />saisie d'un point<br/></td>
 			</tr>
 		</table>
@@ -611,7 +611,7 @@ if (preg_match_all('/~~(.*)~~/',$this->page['body'],$locations)){
 	<form id='form_xy' onsubmit='return false'>
 		<table>
 			<tr>
-			<td><input type="radio" name="outil" value="zoom"   id="zoom" onclick="changeOutil()" />zoom avant/arrière<br/></td>
+			<td><input type="radio" name="outil" value="zoom"   id="zoom" onclick="changeOutil()" />zoom avant/arri?re<br/></td>
           	<td><input type="radio" name="outil" value="point"  id="point" onclick="changeOutil()" />saisie d'un point<br/></td>
 			</tr>
 		</table>

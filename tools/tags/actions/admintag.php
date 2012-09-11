@@ -10,7 +10,7 @@ if ($this->UserIsAdmin())
 
 	if (isset($_GET['supprimer_tag']))
 	{		
-		$sql = 'DELETE FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" and value="'.mysql_escape_string($_GET['supprimer_tag']).'"';
+		$sql = 'DELETE FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" and value="'.mysql_real_escape_string($_GET['supprimer_tag']).'"';
 		if (isset($_GET['pagetag']))
 		{
 			$sql .= ' AND resource="'.$_GET['pagetag'].'"';
@@ -18,7 +18,7 @@ if ($this->UserIsAdmin())
 		$this->Query($sql);
 	}
 
-	//on récupère tous les tags existants
+	//on r?cup?re tous les tags existants
 	$sql = 'SELECT value, resource FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ORDER BY value ASC, resource ASC';
 	$tab_tous_les_tags = $this->LoadAll($sql);
 
@@ -28,7 +28,7 @@ if ($this->UserIsAdmin())
 		$nb_pages = 0;
 		$liste_page = '';
 		$tag_precedent = '';
-		$tab_tous_les_tags[]='fin'; //on ajoute un élément au tableau pour bloucler une derniere fois
+		$tab_tous_les_tags[]='fin'; //on ajoute un ?l?ment au tableau pour bloucler une derniere fois
 		foreach ($tab_tous_les_tags as $tab_les_tags)
 		{
 			if ($tab_les_tags['value']==$tag_precedent || $tag_precedent== '')
@@ -57,7 +57,7 @@ if ($this->UserIsAdmin())
 				}
 				echo $liste_page.'<tr><td class="spacer" colspan="3">&nbsp;</td></tr>';
 
-				//on réinitialise les variables
+				//on r?initialise les variables
 				$nb_pages = 1;
 				$liste_page = '<tr><td>nbpage</td>
 				<td class="pagewithtag">

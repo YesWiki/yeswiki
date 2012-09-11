@@ -5,9 +5,9 @@ if ($this->getUser()) {
  $user = $this->getUser();
  $useremail=$user['email'];
  $result = $this->LoadSingle("SELECT COUNT(*) as count FROM ".$this->config["table_prefix"]."triples WHERE ".
-    "resource = '".mysql_escape_string($this->tag)."' AND ".
-    "property  = '".mysql_escape_string('subscriptions')."' AND ".
-    "value     = '".mysql_escape_string($useremail)."'");
+    "resource = '".mysql_real_escape_string($this->tag)."' AND ".
+    "property  = '".mysql_real_escape_string('subscriptions')."' AND ".
+    "value     = '".mysql_real_escape_string($useremail)."'");
                 
     if ($result['count'] >= 1)
         {

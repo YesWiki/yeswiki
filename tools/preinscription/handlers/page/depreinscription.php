@@ -1,5 +1,5 @@
 <?php
-//vérification de sécurité
+//v?rification de s?curit?
 if (!defined("WIKINI_VERSION"))
 {
             die ("acc&egrave;s direct interdit");
@@ -8,9 +8,9 @@ if (!defined("WIKINI_VERSION"))
 if (isset($_GET['email'])) 
 {
 	$req = "DELETE FROM ".$this->config["table_prefix"]."triples WHERE ".
-		"resource = '".mysql_escape_string($this->tag)."' AND ".
-		"property  = '".mysql_escape_string('http://outils-reseaux.org/_vocabulary/preinscription')."' AND ".
-		"value LIKE '".mysql_escape_string($_GET['email'])."%'";        
+		"resource = '".mysql_real_escape_string($this->tag)."' AND ".
+		"property  = '".mysql_real_escape_string('http://outils-reseaux.org/_vocabulary/preinscription')."' AND ".
+		"value LIKE '".mysql_real_escape_string($_GET['email'])."%'";        
 	$this->Query($req);
 	$msg = "Vous avez &eacute;t&eacute; d&eacute;sinscrit de la formation.";
 	$this->SetMessage($msg);

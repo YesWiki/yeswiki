@@ -28,7 +28,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//vérification de sécurité
+//v?rification de s?curit?
 if (!eregi("wakka.php", $_SERVER['PHP_SELF'])) {
     die ("acc&egrave;s direct interdit");
 }
@@ -48,7 +48,7 @@ if ($this->HasAccess("comment"))
 		
 		// load array with comment data
 		
-		 $userinfo=$this->LoadSingle("select email from ".$this->config["table_prefix"]."users where name = '".mysql_escape_string($this->GetUserName())."'");
+		 $userinfo=$this->LoadSingle("select email from ".$this->config["table_prefix"]."users where name = '".mysql_real_escape_string($this->GetUserName())."'");
 		 $a = parse_url($this->config['base_url']);
 		 $website = ($a['scheme'].'://'.$a['host'].dirname($a['path']));
 		
@@ -71,7 +71,7 @@ if ($this->HasAccess("comment"))
 		else {
 			// No errors, check for spam
 			if ($akismet->isSpam()) { // returns true if Akismet thinks the comment is spam
-				$this->SetMessage("Ce commentaire n\'a pas &eacute;t&eacute; enregistr&eacute;e car le contenu ajouté est considéré comme spam");
+				$this->SetMessage("Ce commentaire n\'a pas &eacute;t&eacute; enregistr&eacute;e car le contenu ajout? est consid?r? comme spam");
 				$this->Redirect($this->href());
 			} 
 		}
