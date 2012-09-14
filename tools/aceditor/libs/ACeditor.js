@@ -7,14 +7,18 @@ feel free to take it for your site
 if there are any problems, let chris know.
 */
 
-;function wrapSelectionBis(txtarea, lft, rgt) { 
+;function wrapSelection(txtarea, lft, rgt, prompt) { 
     // pareil que la wrapSelection, avec une différence dans IE
-    // qui permet à wrapSelectionBis de pouvoir insérer à l'endroit du curseur même sans avoir sélectionné des caractères !!!
+    // qui permet à wrapSelection de pouvoir insérer à l'endroit du curseur même sans avoir sélectionné des caractères !!!
     // Pour mozilla, c'est bien la fonction Wrap standard qui est appelée, aucun changement
     
-    if (document.all) { // document.all est une infamie de IE, on détecte cette horreur !
-        txtarea.focus();
-    	if (document.selection) {
+    if (document.all) { // document.all est une infamie de IE, on détecte cette horreur !  
+        strSelection = document.selection.createRange().text;       
+		if (strSelection!="") {
+		    document.selection.createRange().text = lft + strSelection + rgt;
+		    txtarea.focus();
+		}
+    	else if (prompt && document.selection) {
     		txtarea.focus();
     		sel = document.selection.createRange();
     		sel.text = lft+rgt;
@@ -36,7 +40,9 @@ if there are any problems, let chris know.
 		var s1 = (txtarea.value).substring(0,selStart);
 		var s2 = (txtarea.value).substring(selStart, selEnd)
 		var s3 = (txtarea.value).substring(selEnd, selLength);
-		txtarea.value = s1 + lft + s2 + rgt + s3;
+		if (s2 != "") {
+			txtarea.value = s1 + lft + s2 + rgt + s3;
+		}
 		
 		// Placement du curseur après le tag fermant
 		txtarea.selectionEnd = pos;
@@ -46,6 +52,7 @@ if there are any problems, let chris know.
 		txtarea.scrollTop = oldPos + newHght;
 		txtarea.focus();
     }	
+    return true;
 }	
 /* end chris w. script */
 
@@ -170,13 +177,6 @@ if there are any problems, let chris know.
     	var toolbar = $('<div>').addClass("btn-toolbar aceditor-toolbar");
     	if (this.options.savebtn) {
     		toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary">'+this.lang[this.options.lang]['ACEDITOR_SAVE']+'</button></div>'));
-    		$(this.element).keypress(function(event) {
-			    if (!(event.which == 115 && event.ctrlKey) && !(event.which == 19)) return true;
-			    $(this).prev().find('.aceditor-btn-save').click();
-			    event.preventDefault();
-			    return false;
-			});
-
     	}
 
     	// Format du texte pour les titres
@@ -223,17 +223,19 @@ if there are any problems, let chris know.
 
     	// On affecte les boutons
     	toolbar.find('a.aceditor-btn').each(function() {
-    		$(this).on('click', function(){
-    			var prompt;
+    		$(this).on('click', function(e){
+				return false;
+    		}).on('mousedown', function(e){
     			if ($(this).data('prompt')) {
-    				prompt = window.prompt($(this).data('prompt'), $(this).data('prompt-val'));
+    				var prompt = window.prompt($(this).data('prompt'), $(this).data('prompt-val'));
     				if (prompt != null) {
-						wrapSelectionBis(textarea[0], $(this).data('lft') + prompt + " ", $(this).data('rgt'));
+						wrapSelection(textarea[0], $(this).data('lft') + prompt + " ", $(this).data('rgt'), true);
 					} 
     			}
 				else {
-					wrapSelectionBis(textarea[0], $(this).data('lft'), $(this).data('rgt'));
+					wrapSelection(textarea[0], $(this).data('lft'), $(this).data('rgt'), false);
 				}
+    			return setTimeout('', 300);
     		})
     	});
 
@@ -244,70 +246,78 @@ if there are any problems, let chris know.
     	// Gestion des raccourcis claviers
     	var isCtrl = false;
     	var isAlt = false;
-    	this.element.onkeyup = function(e) {
-    		if (e.keyCode == 17) {
+
+    	textarea.keyup(function(e) {
+    		var keyCode = e.which;
+    		if (keyCode == 17) {
 				isCtrl = false;
 			}
-			if (e.keyCode == 18) {
+			if (keyCode == 18) {
 				isAlt = false;
 			}
-    	}
-    	this.element.onkeydown = function(e) {
-			if (e.keyCode == 17) {
+    	});
+
+    	textarea.keydown(function(e) {
+    		var keyCode = e.which;
+			if (keyCode == 17) {
 				isCtrl = true;
 			}
-			if (e.keyCode == 18) {
+			if (keyCode == 18) {
 				isAlt = true;
 			}
 			if (isCtrl == true && isAlt == false) {
 				e.preventDefault();
-
 				// title 1
-				if (e.keyCode == 49) {
-					$('.aceditor-btn-title1').click(); 
+				if (keyCode == 49) {
+					$('.aceditor-btn-title1').mousedown(); 
 				}
 				// title 2
-				else if (e.keyCode == 50) {
-					$('.aceditor-btn-title2').click();
+				else if (keyCode == 50) {
+					$('.aceditor-btn-title2').mousedown();
 				}
 				// title 3
-				else if (e.keyCode == 51) {
-					$('.aceditor-btn-title3').click();
+				else if (keyCode == 51) {
+					$('.aceditor-btn-title3').mousedown();
 				}
 				// title 4
-				else if (e.keyCode == 52) {
-					$('.aceditor-btn-title4').click();
+				else if (keyCode == 52) {
+					$('.aceditor-btn-title4').mousedown();
 				}
 				// title 5
-				else if (e.keyCode == 53) {
-					$('.aceditor-btn-title5').click();
+				else if (keyCode == 53) {
+					$('.aceditor-btn-title5').mousedown();
 				}
 				// bold
-				else if (e.keyCode == 66) {
-					$('.aceditor-btn-bold').click();
+				else if (keyCode == 66) {
+					$('.aceditor-btn-bold').mousedown();
 				}
 				// italic
-				else if (e.keyCode == 73) {
-					$('.aceditor-btn-italic').click();
+				else if (keyCode == 73) {
+					$('.aceditor-btn-italic').mousedown();
 				}
 				// underline
-				else if (e.keyCode == 85) {
-					$('.aceditor-btn-underline').click();
+				else if (keyCode == 85) {
+					$('.aceditor-btn-underline').mousedown();
 				}
 				// strike
-				else if (e.keyCode == 89) {
-					$('.aceditor-btn-strike').click();
+				else if (keyCode == 89) {
+					$('.aceditor-btn-strike').mousedown();
 				}
 				// line
-				else if (e.keyCode == 72) {
-					$('.aceditor-btn-line').click();
+				else if (keyCode == 72) {
+					$('.aceditor-btn-line').mousedown();
 				}
 				// link
-				else if (e.keyCode == 76) {
-					$('.aceditor-btn-link').click(); isCtrl = false; isAlt = false;
+				else if (keyCode == 76) {
+					$('.aceditor-btn-link').mousedown(); isCtrl = false; isAlt = false;
 				}
+				// save page
+				else if (keyCode == 83) {
+			    	$('.aceditor-btn-save').mousedown();
+			    }
+			    return false;
 			}
-		}
+		});
     }
 
   };
