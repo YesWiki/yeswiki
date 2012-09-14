@@ -53,7 +53,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'save') {
 		{
 			$date = date("Ymdhis");
 			$this->SavePage($this->getPageTag().$date, $_POST['microblog_billet']);
-			$this->InsertTriple($this->getPageTag().$date, 'http://outils-reseaux.org/_vocabulary/tag', 'microblog', '', '');
+			$this->InsertTriple($this->getPageTag().$date, 'http://outils-reseaux.org/_vocabulary/type', 'microblog', '', '');
 			$this->SaveTags($this->getPageTag().$date, $tagsvirgule.','.$_POST['microblog_tags']);
 		}
 		$this->Redirect($this->Href());
