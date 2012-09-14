@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wktags" version="0.1" active="1">
+  <author>Florian Schmitt</author>
+  <label>Tags</label>
+  <desc>Le plugin "Tags" vous permet de gerer des mots cles associes a une page wiki et afficher des listes de pages</desc>
+</plugin>

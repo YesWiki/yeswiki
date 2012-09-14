@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="convergence" version="$Name:  $" active="1">
+  <author>Florian Schmitt - Edouard Alavoine</author>
+  <label>Convergence</label>
+  <desc>Permet de faire un vote cornusien a plusieurs</desc>
+</plugin>

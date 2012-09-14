@@ -11,8 +11,8 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
 {
 	if (isset($_POST["submit"]) && $_POST["submit"] == 'Sauver') {
 			require_once('tools/hashcash/secret/wp-hashcash.lib');
-			if($_POST["hashcash_value"] != hashcash_field_value()) {
-				$error="Cette page n'a pas &eacute;t&eacute; enregistr&eacute;e car ce wiki pense que vous etes un robot.  Copiez-collez vos modifications et activez Javascript  !";
+			if(!isset($_POST["hashcash_value"]) || $_POST["hashcash_value"] != hashcash_field_value()) {
+				$error = '<div class="alert alert-error"><a href="#" data-dismiss="alert" class="close">&times;</a>'.HASHCASH_ERROR_PAGE_UNSAVED.'</div>';
 				$_POST["submit"] = '';	
 			}
 			

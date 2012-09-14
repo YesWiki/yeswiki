@@ -1,0 +1,64 @@
+<?php if ($connected) : ?>
+	<a href="#LoginModal" role="button" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>" data-toggle="modal">
+		<i class="icon-user"></i>&nbsp;<?php echo $user; ?>
+	</a>
+	<div class="modal hide fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3 id="LoginModalLabel"><?php echo LOGIN_CONNECTED_AS.' '.$user; ?></h3>
+		</div>
+		<div class="modal-body">
+			<ul class="login-actions">
+				<?php echo $PageMenuUser; ?>
+				<li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
+			</ul>
+		</div>
+		<div class="modal-footer">
+			<a href="<?php echo $incomingurl; ?>&action=logout" class="btn btn-danger" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a>
+		</div>
+	</div> <!-- /#LoginModal-->
+<?php else : ?>
+	<a href="#LoginModal" role="button" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>" data-toggle="modal">
+		<i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?>
+	</a>
+	<div class="modal hide fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3 id="LoginModalLabel"><?php echo LOGIN_LOGIN; ?></h3>
+		</div>
+		<div class="modal-body">
+			<form class="form-horizontal" action="<?php echo $incomingurl; ?>" method="post">
+				<div class="control-group">
+					<label for="inputWikiName" class="control-label"><?php echo LOGIN_WIKINAME; ?></label>
+					<div class="controls">
+						<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user); ?>" />
+					</div>
+		        </div>
+		        <div class="control-group">
+					<label for="inputPassword" class="control-label"><?php echo LOGIN_PASSWORD; ?></label>
+					<div class="controls">
+						<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo LOGIN_PASSWORD; ?>" name="password" type="password" />
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<label class="checkbox" for="remember-modal">
+							<input type="checkbox" id="remember-modal" name="remember" value="1" /><?php echo LOGIN_REMEMBER_ME; ?>
+						</label>
+					</div>			
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<button type="submit" class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?></button>
+					</div>			
+				</div>
+				<input type="hidden" name="action" value="login" />
+				<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
+				<input type="hidden" name="remember" value="0" />
+			</form> <!-- /.login-form -->	
+		</div>
+		<div class="modal-footer">
+			<a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo LOGIN_SIGNUP; ?></a>
+		</div>
+	</div> <!-- /#LoginModal-->
+<?php endif; ?>

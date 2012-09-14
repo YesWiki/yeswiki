@@ -11,7 +11,11 @@ if (!$incPage = $this->LoadPage($incPageName)) {
 	$query_string = 'theme='.urlencode($this->config['favorite_theme']).
 					'&amp;squelette='.urlencode($this->config['favorite_squelette']).
 					'&amp;style='.urlencode($this->config['favorite_style']);
-	$plugin_output_new = '<a class="yeswiki-editable" href="'.$this->href('edit', $incPageName, $query_string).'">Editer '.$incPageName.'&nbsp;<img src="tools/templates/presentation/images/crayon.png" alt="crayon" /></a>';
+	
+	$plugin_output_new = '<div class="include '.$class.'">'."\n".
+							'<a class="yeswiki-editable" href="'.$this->href('edit', $incPageName, $query_string).'">'.
+							'<i class="icon-pencil"></i>&nbsp;'.TEMPLATE_EDIT.' '.$incPageName.'</a>'."\n".
+						'</div>'."\n";
 }
 // sinon, on remplace les liens vers les NomWikis n'existant pas
 else {
@@ -23,9 +27,11 @@ else {
 if (!empty($actif) && $actif=="1") {
         $page_active=$this->tag;
         if (isset($oldpage) && $oldpage!='') { // si utilisation de l'extension attach
-            $page_active=$oldpage;
+            $page_active = $oldpage;
         }
-       $plugin_output_new=str_ireplacement('<a href="'.$this->config["base_url"].$page_active.'"','<a class="actif" href="'.$this->config["base_url"].$page_active.'"', $plugin_output_new);
+       $plugin_output_new = str_ireplacement('<a href="'.$this->config["base_url"].$page_active.'"',
+       		'<a class="active-link" href="'.$this->config["base_url"].$page_active.'"',
+       		$plugin_output_new);
 }
 
 //rajoute le javascript pour le double clic si le parametre est activé et les droits en écriture existent
