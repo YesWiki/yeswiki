@@ -1,0 +1,53 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="{{configuration param="lang"}}"> <!--<![endif]-->
+<head>
+	<!-- HTML Metas -->
+	<meta charset="{{configuration param="charset"}}">
+	{{metarobots}}
+	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+	<meta name="description" content="{{configuration param="meta_description"}}" />
+	<meta name="viewport" content="width=device-width" />
+
+	<!-- Title of the page -->
+	<title>{{configuration param="wakka_name"}} : {{currentpage}}</title>
+	
+	<!-- Favicons -->
+	<link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico" />
+	<link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png" />
+	<link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
+	
+	{{linkstyle}}
+	{{linkrss}}
+</head>
+
+<body {{parambody}}>
+	<div id="container" class="container" style="width:980px;">
+		<header>
+			{{include page="PageRapideHaut" class="topbarpage" doubleclic="1"}}
+			{{include page="PageHeader" class="headerpage" doubleclic="1"}}
+		</header><!-- end of header -->
+
+		<nav id="topnav" class="fixable">
+			{{include page="PageMenuHaut" class="topnavpage horizontal-dropdown-menu" doubleclic="1" actif="1"}}
+		</nav><!-- end of #topnav -->
+		 
+		<div id="main" role="main">
+			<div class="row">
+				<div class="span12" {{doubleclic}}>
+					{WIKINI_PAGE}
+				</div>
+			</div><!-- end of .row -->
+		</div><!-- end of #main -->
+		{{barreredaction}}
+		
+		<footer>
+			{{include page="PageFooter" class="footerpage" doubleclic="1"}}
+		</footer><!-- end of footer -->
+	</div> <!-- end of #container -->
+
+	{{linkjavascript}}
+</body>
+</html>

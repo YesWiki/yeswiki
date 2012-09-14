@@ -47,6 +47,8 @@ class attach {
    var $file = '';					//nom du fichier
    var $desc = '';					//description du fichier
    var $link = '';					//url de lien (image sensible)
+   var $caption = '';				//texte de la vignette au survol
+   var $legend = '';				//texte en dessous de l'image
    var $isPicture = 0;				//indique si c'est une image
    var $isAudio = 0;				//indique si c'est un fichier audio
    var $isFreeMindMindMap = 0;		//indique si c'est un fichier mindmap freemind
@@ -166,7 +168,8 @@ class attach {
 					}
 				}
 			}
-			if (is_array($theFile)){
+			$full_file_name = '';
+			if (isset($theFile) && is_array($theFile)){
 				$full_file_name = $path.'/'.$theFile['realname'];
 			}
 		}
@@ -283,40 +286,52 @@ class attach {
         if (empty($this->desc)) $this->desc = $this->wiki->GetParameter("desc");
         $this->link = $this->wiki->GetParameter("attachlink");//url de lien - uniquement si c'est une image
         if (empty($this->link)) $this->link = $this->wiki->GetParameter("link");
+        $this->caption = $this->wiki->GetParameter("caption");//texte de la vignette (au survol)
+        $this->legend = $this->wiki->GetParameter("legend");//texte de la vignette (en dessous)
+
+        
         //test de validité des parametres
         if (empty($this->file)){
-            $this->attachErr = $this->wiki->Format("//action attach : paramètre **file** manquant//---");
+            $this->attachErr = '<div class="error_box">action attach : paramètre <strong>file</strong> manquant</div>';
         }
         if ($this->isPicture() && empty($this->desc)){
-            $this->attachErr .= $this->wiki->Format("//action attach : paramètre **desc** obligatoire pour une image//---");
+            $this->attachErr .= '<div class="error_box">action attach : paramètre <strong>desc</strong> obligatoire pour une image</div>';
         }
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
-            foreach ($array_classes as $c) { $this->classes = $this->classes . "attach_" . $c . " "; }
-            $this->classes = trim($this->classes);
+            foreach ($array_classes as $c) { $this->classes = $this->classes . $c . " "; }
+            $this->classes = 'attached_file '.trim($this->classes);
         }
-        $this->height = $this->wiki->GetParameter('height');
+		$this->height = $this->wiki->GetParameter('height');
         $this->width = $this->wiki->GetParameter('width');
+        
         $size = $this->wiki->GetParameter("size");
-      
+
         switch ($size) {
                 case 'small' : 
                     $this->width = 140;
-                    $this->height = 140;
+                    $this->height = 97;
                     break;
                 case 'medium': 
-                     $this->width = 300; 
-                     $this->height = 300;
-                     break;
+                    $this->width = 300; 
+                    $this->height = 209;
+                    break;
                 case 'big': 
-                     $this->width = 780;
-                    $this->height = 780;
-                     break;
-
+                    $this->width = 780;
+                    $this->height = 544;
+                    break;
             }
-       if (empty($this->height)) $this->height=$this->width; 
-       if (empty($this->width)) $this->width=$this->height; 
 
+
+
+        if (empty($this->height) && !empty($this->width)) {
+        	// on ajuste la hauteur
+        	$this->height = $this->width;
+        }
+        elseif (!empty($this->height) && !empty($this->width)) {
+        	// on ajuste la largeur
+        	$this->width = $this->height;
+        }
     }
     /**
      * Affiche le fichier lié comme une image
@@ -325,7 +340,7 @@ class attach {
         // Generation d'une vignette si absente ou si changement de dimension  , TODO : suupprimer ancienne vignette ?
 
         $image_redimensionnee=0;
-        if ((!empty($this->height)) ||  (!empty($this->width))) { // Si des parametres width ou height present : redimensionnement
+        if ((!empty($this->height)) && (!empty($this->width))) { // Si des parametres width ou height present : redimensionnement
             if (!file_exists($image_dest=$this->calculer_nom_fichier_vignette($fullFilename,$this->width,$this->height))) {
                 $this->redimensionner_image($fullFilename, $image_dest,$this->width ,$this->height);
             }
@@ -335,10 +350,16 @@ class attach {
         else {
             $img_name=$fullFilename;
         }
-
+        list($width, $height, $type, $attr) = getimagesize($img_name);
+        // pour l'image avec bordure on enleve la taille de la bordure!
+        if(strstr($this->classes, 'whiteborder')) {
+        	$width = $width - 20;
+        	$height = $height - 20;
+        }
+        
         //c'est une image : balise <IMG..../>
         $img =	"<img src=\"".$this->GetScriptPath().$img_name."\" ".
-            "alt=\"".$this->desc.($this->link?"\nLien vers: $this->link":"")."\" />";
+            "alt=\"".$this->desc.($this->link?"\nLien vers: $this->link":"")."\" width=\"".$width."\" height=\"".$height."\" />";
         //test si c'est une image sensible
         if(!empty($this->link)){
             //c'est une image sensible
@@ -349,7 +370,7 @@ class attach {
             }
             //calcule du lien
             $output = $this->wiki->Format('[['.$this->link." $this->file]]");
-            $output = eregi_replace(">$this->file<",">$img<",$output);//insertion du tag <img...> dans le lien
+            $output = preg_replace("/\>$this->file\</iU",">$img<",$output);//insertion du tag <img...> dans le lien
         }else{
             if ($image_redimensionnee) {
                 $output = '<a href="'.$this->GetScriptPath().$fullFilename.'">'.$img.'</a>';
@@ -358,7 +379,14 @@ class attach {
                 $output = $img;
             }
         }
-        $output = ($this->classes?"<span class=\"$this->classes\">$output</span>":$output);
+        if(!empty($this->caption)) {
+        	$output .= '<figcaption>'.$this->caption.'</figcaption>';
+        }
+        if(!empty($this->legend)) {
+        	$output .= '<div class="legend">'.$this->legend.'</div>';
+        }
+        $output = "<figure class=\"$this->classes\">$output</figure>";
+        
         echo $output;
         $this->showUpdateLink();
     }

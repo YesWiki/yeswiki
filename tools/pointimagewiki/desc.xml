@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkpointimagewiki" version="0.1" active="0">
+  <author>David Delon</author>
+  <label>PointImageWiki</label>
+  <desc>Saisie et affichage point sur une image pour Wikini</desc>
+</plugin>

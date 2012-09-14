@@ -18,6 +18,8 @@ if (!empty($param)) {
 	  	case 'favorite_theme':
 	  	case 'favorite_style':
 	  	case 'favorite_squelette':
+	  	case 'lang':
+	  	case 'charset':
 	  		echo $this->config[$param];
 			break;
 		case 'theme_path':

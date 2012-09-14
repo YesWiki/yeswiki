@@ -1,0 +1,518 @@
+<form action="<?=$url_formulaire;?>" method="post" id="bazarform">
+
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Nom du formulaire</label>
+		<input class="input_texte" name="bn_label_nature" type="text" value="<?=(isset($default['bn_label_nature']) ? $default['bn_label_nature'] : '');?>" required="required" />
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Cat&eacute;gorie</label>
+		<input class="input_texte" name="bn_type_fiche" type="text" value="<?=(isset($default['bn_type_fiche']) ? $default['bn_type_fiche'] : '');?>" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Description</label>
+		<textarea class="input_textarea" cols="40" rows="2" name="bn_description"><?=(isset($default['bn_description']) ? $default['bn_description'] : '');?></textarea>
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Template</label>
+		<textarea class="input_textarea" cols="40" rows="2" name="bn_template"><?=(isset($default['bn_template']) ? $default['bn_template'] : '');?></textarea>
+	</div>
+
+    <fieldset class="valeurs_champs">
+		<legend>Pr&eacute;visualisation du formulaire</legend>
+		<ul class="valeur_formulaire">
+			<?=$interface_ajout_champs;?>
+		</ul>
+		
+		<div id="ajout_type_champs" style="display:none;">
+			<div id="personnalise_type_champs"></div>
+			<div class="groupebouton">
+				<a href="#" name="annuler" class="btn bouton_annuler bouton_annuler_ajout_champ">Annuler</a>&nbsp;
+				<a href="#" name="ajouter" class="btn bouton_sauver bouton_ajouter_champ">Ajouter</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+		
+		<div id="modif_type_champs" style="display:none;">
+			<div id="modif_personnalise_type_champs"></div>
+			<div class="groupebouton">
+				<a href="#" name="annuler" class="btn bouton_annuler bouton_annuler_modif_champ">Annuler</a>&nbsp;
+				<a href="#" name="ajouter" class="btn bouton_sauver bouton_modifier_champ">Modifier</a>
+			</div>
+			<div class="clear"></div>
+		</div>
+		
+		
+		<div id="choix_champ_ajout" class="formulaire_ligne">
+			<label for="type_champs_formulaire"><span class="ajout_champs_formulaire">Ajouter un nouveau champ</span></label>
+			<select name="type_champs_formulaire" id="type_champs_formulaire">
+				<option value="">Choisir...</option>
+				<option value="texte">texte</option>
+				<option value="textelong">texte long</option>
+				<option value="liste">liste d&eacute;roulante ou case &agrave; cocher</option>
+				<option value="fichier">lien vers fichier joint</option>
+				<option value="image">image</option>
+				<option value="titre">titre de section</option>
+			</select>
+		</div>
+	</fieldset>
+
+<!--	<div class="formulaire_ligne">
+		<label for="title_generator"><span class="symbole_obligatoire">*&nbsp;</span>Champ utilis&eacute; comme titre pour la fiche</label>
+		<select id="title_generator" name="title_generator" class="updatable-input-text" required="required">
+			<option value="" selected="selected">Choisir...</option>
+			<option value="personalized">Personnalis&eacute;</option>
+		</select>
+	</div>
+
+	<div id="title_generator_personalized" class="formulaire_ligne" style="display:none;"> --> <!-- choix conditionnel : title choisi pour le champs type_html -->
+		<!--<label for="personalized_title">
+			<span class="symbole_obligatoire">*&nbsp;</span>Format du titre personnalis&eacute;<img class="tooltip_aide" title="Mettre des identifiants des champs entre doubles accolades pour les utiliser.<br />Par exemple :  {{nom}}, {{prenom}} : {{ville}}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+		</label>
+		<input class="input_texte" id="personalized_title" name="personalized_title" type="text" value="<?=(isset($default['personalized_title']) ? $default['personalized_title'] : '');?>" />
+	</div>
+-->
+
+	<div class="accordion">
+
+		<h2 class="titre_accordeon">Droits d'acc&egrave;s</h2>
+		<div class="pane">
+			<h3 class="section_title">Pour le formulaire</h3>
+			<div class="formulaire_ligne">
+				<label for="terms_of_use">Conditions de saisie</label>
+				<textarea class="input_textarea" cols="40" rows="2" id="terms_of_use" name="terms_of_use"><?=(isset($default['terms_of_use']) ? $default['terms_of_use'] : '');?></textarea>
+			</div>
+			<label for="form_read_acls">Droits en lecture</label>
+			<select id="form_read_acls" name="form_read_acls">
+				<option value="default" selected="selected">Par d&eacute;faut</option>
+				<option value="logged">Seuls les identifi&eacute;s</option>
+				<?=$options_group;?>
+				<option value="owner">Seul le propri&eacute;taire</option>
+			</select>
+			<label for="form_write_acls">Droits en &eacute;criture</label>
+			<select id="form_write_acls" name="form_write_acls">
+				<option value="default" selected="selected">Par d&eacute;faut</option>
+				<option value="logged">Seuls les identifi&eacute;s</option>
+				<?=$options_group;?>
+				<option value="owner">Seul le propri&eacute;taire</option>
+			</select>
+			<h3 class="section_title">Pour les fiches saisies par le  formulaire</h3>
+			<label for="sheet_read_acls">Droits en lecture</label>
+			<select id="sheet_read_acls" name="sheet_read_acls">
+				<option value="default" selected="selected">Par d&eacute;faut</option>
+				<option value="logged">Seuls les identifi&eacute;s</option>
+				<?=$options_group;?>
+				<option value="owner">Seul le propri&eacute;taire</option>
+			</select>
+			<label for="sheet_write_acls">Droits en &eacute;criture</label>
+			<select id="sheet_write_acls" name="sheet_write_acls">
+				<option value="default" selected="selected">Par d&eacute;faut</option>
+				<option value="logged">Seuls les identifi&eacute;s</option>
+				<?=$options_group;?>
+				<option value="owner">Seul le propri&eacute;taire</option>
+			</select>
+			<label for="sheet_comments_acls">Commentaires</label>
+			<select id="sheet_comments_acls" name="sheet_comments_acls">
+				<option value="off" selected="selected">Ferm&eacute;s</option>
+				<option value="default">Ouverts, droits par d&eacute;faut</option>
+				<option value="logged">Ouverts pour les identifi&eacute;s</option>
+				<?=$options_group;?>
+			</select>
+		</div>
+
+		<h2 class="titre_accordeon">G&eacute;olocalisation</h2>
+		<div class="pane">
+			<div class="formulaire_ligne">
+				<label for="geo_adress">Champ d'adresse</label>
+				<select id="geo_adress" class="updatable-input-text" name="geo_adress">
+					<option value="" selected="selected">Choisir...</option>
+				</select>
+			</div>
+			<div class="formulaire_ligne">
+				<label for="geo_city">Champ de la ville</label>
+				<select id="geo_city" class="updatable-input-text" name="geo_city">
+					<option value="" selected="selected">Choisir...</option>
+				</select>
+			</div>
+			<div class="formulaire_ligne">
+				<label for="geo_country">Champ du pays</label>
+				<select id="geo_country" class="updatable-input-list" name="geo_country">
+					<option value="" selected="selected">Choisir...</option>
+				</select>
+			</div>
+			<div class="formulaire_ligne">
+				<label for="geo_searchfields">Texte suppl&eacute;mentaire de recherche&nbsp;<img class="tooltip_aide" title="Permet de pr&eacute;ciser un crit&egrave;re de recherche sur la carte suppl&eacute;mentaire (comme d�partement, pays ou ville) si cela n&#146;a pas &eacute;t&eacute; possible par les champs ci dessus." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+				<input id="geo_searchfields" name="geo_searchfields" type="text" />
+			</div>
+
+			<div class="formulaire_ligne">
+				<label for="required">Saisie des coordonn&eacute;es obligatoire</label>
+				<input type="checkbox" id="carto_required" name="required" />
+			</div>
+
+			<div class="formulaire_ligne">
+				<label for="view_single_point">Afficher une carte pour la consultation</label>
+				<input type="checkbox" id="view_single_point" name="view_single_point" />
+			</div>
+
+			<h3 class="section_title">Configuration de la carte google</h3>
+			<div class="formulaire_ligne">
+				<label>Latitude du centre<img class="tooltip_aide" title="permet de centrer la carte sur un point de latitude indiqu&eacute;e" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+				<input name="center_lat" type="text" />
+			</div>
+
+			<div class="formulaire_ligne">
+				<label>Longitude du centre<img class="tooltip_aide" title="permet de centrer la carte sur un point de longitude indiqu&eacute;e" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+				<input name="center_lon" type="text" />
+			</div>
+
+			<div class="formulaire_ligne">
+				<label>Echelle de la carte&nbsp;<img class="tooltip_aide" title="niveau de zoom : de 1 (plus &eacute;loign&eacute;) a 15 (plus proche)" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+				<div class="formulaire_input">
+					<input name="zoom" type="range" min="1" max="15" value="1" />
+					<div class="clear"></div>
+				</div>
+			</div>
+
+			<div class="formulaire_ligne">
+				<label>Type d'affichage de la cartographie</label>
+				<select id="type_carto" name="type_carto">
+					<option value="ROADMAP" selected="selected">Carte type IGN</option>
+					<option value="SATELLITE">Photo satellite</option>
+					<option value="HYBRID">Hybride</option>
+					<option value="TERRAIN">Terrain</option>
+				</select>
+			</div>
+
+			<div class="formulaire_ligne">
+				<label for="internet_connection">G&eacute;olocaliser par la connexion Internet</label>
+				<input type="checkbox" id="internet_connection" name="internet_connection" />
+			</div>
+
+		</div>
+
+		<h2 class="titre_accordeon">Calendriers / T&acirc;ches &agrave; faire</h2>
+		<div class="pane">
+			<div class="formulaire_ligne">
+				<label for="cal_begin_date">Champ pour la date de d&eacute;but</label>
+				<select id="cal_begin_date" class="updatable-input-date" name="cal_begin_date">
+					<option value="" selected="selected">Choisir...</option>
+				</select>
+			</div>
+			<div class="formulaire_ligne">
+				<label for="cal_end_date">Champ pour la date de fin</label>
+				<select id="cal_end_date" class="updatable-input-date" name="cal_end_date">
+					<option value="" selected="selected">Choisir...</option>
+				</select>
+			</div>
+			<div class="formulaire_ligne">
+				<label for="become_todo">Les fiches cr&eacute;&eacute;es sont des t&acirc;ches &agrave; faire</label>
+				<input type="checkbox" id="become_todo" name="become_todo" />
+			</div>
+		</div>
+
+		<h2 class="titre_accordeon">Notifications par E-mail</h2>
+		<div class="pane">
+			<div class="formulaire_ligne">
+				<label for="send_to_group">Envoyer un mail au groupe</label>
+				<select id="send_to_group" name="send_to_group">
+					<option value="" selected="selected">Choisir...</option>
+					<?=$options_group;?>
+				</select>
+			</div>
+
+		</div>
+
+		<h2 class="titre_accordeon">Cr&eacute;ation d'un NomWiki</h2>
+		<div class="pane">
+			<div class="formulaire_ligne">
+				<label for="user_wikiname">Champ pour g&eacute;n&eacute;rer le NomWiki</label>
+				<select id="user_wikiname" name="user_wikiname" class="updatable-input-text">
+					<option value="1" selected="selected">Choisir...</option>
+				</select>
+			</div>
+			<div class="formulaire_ligne">
+				<label for="user_mail">Champ pour l'E-mail</label>
+				<select id="user_mail" name="user_mail" class="updatable-input-text-email">
+					<option value="1" selected="selected">Choisir...</option>
+				</select>
+			</div>
+		</div>
+	</div>
+
+	<div class="groupebouton">
+		<a class="btn bouton_annuler" name="annuler" href="<?=$url_annuler;?>">Annuler</a>
+		<input class="btn bouton_sauver bouton_sauver_formulaire" name="valider" value="Valider" type="submit" />
+	</div>
+
+	<div class="symbole_obligatoire">* = champ requis</div>
+	<input name="idformulaire" type="hidden" value="<?=$idformulaire;?>" />
+
+</form>
+
+
+<!-- *********************************************************************************************************************************
+             Partie cachée qui est appelée par jquery selon de type de champ que l'on souhaite ajouter
+************************************************************************************************************************************** -->
+
+<div id="champs_fichier" style="display:none;">
+	<h2 class="titre_champs"><span class="action_champ">Ajouter</span> un fichier joint</h2>
+
+	<div class="formulaire_ligne">
+		<label for="link-title"><span class="symbole_obligatoire">*&nbsp;</span>Texte du lien&nbsp;<img class="tooltip_aide" title="Texte du lien ouvrir le fichier joint" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="link-title" name="link-title" type="text" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="link-description">Commentaire&nbsp;<img class="tooltip_aide" title="Description du fichier joint." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<textarea id="link-description" name="link-description" class="input_textarea" cols="20" rows="3"></textarea>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="required">L'ajout d'un fichier joint est obligatoire</label>
+		<input type="checkbox" id="required" name="required" />
+	</div>
+</div>
+
+
+<div id="champs_image" style="display:none;">
+	<h2 class="titre_champs"><span class="action_champ">Ajouter</span> un champ de type image</h2>
+
+	<div class="formulaire_ligne">
+		<label for="image_description"><span class="symbole_obligatoire">*&nbsp;</span>Texte descriptif de l'image&nbsp;<img class="tooltip_aide" title="Texte apparaissant au survol de la vignette ou de l&#146;image, et en remplacement de l&#146;image si elle ne se charge pas." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="image_description" name="image_description" type="text" value="" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="thumbnail_max">Taille maximale de la vignette&nbsp;<img class="tooltip_aide" title="En pixels, prend automatiquement le cot&eacute; le plus long entre la largeur et la hauteur.<br />Laisser vide si pas de vignettes &agrave; g&eacute;n&eacute;rer." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="thumbnail_max" name="thumbnail_max" type="range" min="0" max="480" step="10" value="0" />
+		<div class="clear"></div>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="image_max">Taille maximale de l'image&nbsp;<img class="tooltip_aide" title="En pixels, prend automatiquement le cot&eacute; le plus long entre la largeur et la hauteur.<br />Laisser vide si la taille originale de l&#146;image doit etre pr&eacute;serv&eacute;e." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="image_max" name="image_max" type="range" min="0" max="1600" step="50" value="0" />
+		<div class="clear"></div>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="required">L'ajout de l'image est obligatoire</label>
+		<input type="checkbox" id="required" name="required" />
+	</div>
+</div>
+
+
+<div id="champs_liste" style="display:none;">
+	<h2 class="titre_champs"><span class="action_champ">Ajouter</span> une liste de valeur</h2>
+
+	<div class="formulaire_ligne">
+		<label for="label_liste"><span class="symbole_obligatoire">*&nbsp;</span>Label&nbsp;<img class="tooltip_aide" title="Texte apparaissant devant le champ &agrave; remplir par l&#146;utilisateur." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="label_liste" name="label" type="text" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Texte de la bulle d'aide&nbsp;<img class="tooltip_aide" title="Ce texte sera affich&eacute; au survol de l&#146;icone avec le point d&#146;interrogation." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input type="text" name="help_tooltip" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="required">Champs obligatoire&nbsp;<img class="tooltip_aide" title="Cocher pour rendre la saisie de ce champs obligatoire." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input type="checkbox" id="required" name="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Source des valeurs&nbsp;<img class="tooltip_aide" title="Ce type de champ peut contenir:<br /> - soit des listes<br /> - soit des fiches" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<select id="source" name="type_champs" required="required">
+			<option value="" selected="selected">Choisir...</option>
+			<optgroup id="list_source" label="Liste"></optgroup>
+			<optgroup id="type_sheet_source" label="Type de fiche"></optgroup>
+		</select>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Format du champs</label>
+		<select id="type_champs" name="type_champs" required="required">
+			<option value="" selected="selected">Choisir...</option>
+			<option value="select">Liste d&eacute;roulante</option>
+			<option value="checkbox">Case &agrave; cocher</option>
+		</select>
+	</div>
+
+	<div id="type_champs_select" style="display:none;"><!-- choix select pour le type de champs -->
+
+		<div class="formulaire_ligne">
+			<label>Valeur par d&eacute;faut&nbsp;<img class="tooltip_aide" title="valeur s&eacute;lectionn&eacute;e par d&eacute;faut pour la liste" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+			<select id="select_default" name="select_default">
+				<option value="" selected="selected">Choisir...</option>
+			</select>
+		</div>
+
+	</div>
+
+	<div id="type_champs_checkbox" style="display:none;"><!-- choix checkbox pour le type de champs -->
+
+		<fieldset class="bazar_fieldset"><legend>Valeur par d&eacute;faut</legend>
+			<div id="checkbox_default" class="bazar_checkbox"></div>
+		</fieldset>
+
+		<div class="formulaire_ligne">
+			<label>Nombre de choix minimum&nbsp;<img class="tooltip_aide" title="Laisser 0 pour que le champs ne soit pas obligatoire" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+			<div class="formulaire_input">
+				<input id="checkbox_nb_choices_min" name="select_nb_choices_min" type="range" min="0" max="10" value="0" />
+				<div class="clear"></div>
+			</div>
+		</div>
+
+		<div class="formulaire_ligne">
+			<label>Nombre de choix maximum&nbsp;<img class="tooltip_aide" title="Nombre de choix simultan&eacute;s possibles" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+			<div class="formulaire_input">
+				<input id="checkbox_nb_choices_max" name="select_nb_choices_max" type="range" min="1" max="10" value="1" />
+				<div class="clear"></div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="id_liste"><span class="symbole_obligatoire">*&nbsp;</span>Identifiant&nbsp;<img class="tooltip_aide" title="Identifiant dans la base de donn&eacute;es (ne sera pas visible &agrave; l&#146;&eacute;cran).<br />Doit &ecirc;tre unique pour l&#146;ensemble des champs des formulaires, et sans caract&egrave;res sp&eacute;ciaux." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="id_liste" name="id" type="text" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="searchable">Apparait dans le moteur de recherche</label>
+		<input type="checkbox" id="searchable" name="searchable" />
+	</div>
+</div>
+
+
+<div id="champs_texte" style="display:none;">
+	<h2 class="titre_champs"><span class="action_champ">Ajouter</span> un champ de type texte</h2>
+	
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Identifiant&nbsp;<img class="tooltip_aide" title="Identifiant dans la base de donn&eacute;es (ne sera pas visible &agrave; l&#146;&eacute;cran).<br />Doit &ecirc;tre unique pour l&#146;ensemble des champs des formulaires, et sans caract&egrave;res sp&eacute;ciaux." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input name="id" type="text" required="required" />
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Label&nbsp;<img class="tooltip_aide" title="Texte apparaissant devant le champ &agrave; remplir par l&#146;utilisateur." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input name="label" type="text" required="required" />
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Format du champ&nbsp;<img class="tooltip_aide" title="Texte normal = texte saisi librement<br />Adresse URL = n&#146;accepte que des liens commancant par http://, qui seront cliquables<br />Date = propose un calendrier de saisie d&#146;une date<br />E-mail = n&#146;accepte que des adresse mails valides, qui seront cliquables<br />Mot de passe = cache la saisie du champ<br />Num&eacute;rique = n&#146;accepte que des nombres" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<select id="type_champs" name="type_champ">
+			<option value="normal" selected="selected">Texte normal</option>
+			<option value="url">Adresse URL</option>
+			<option value="date">Date</option>
+			<option value="email">E-mail</option>
+			<option value="password">Mot de passe</option>
+			<option value="numeric">Num&eacute;rique</option>
+		</select>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Texte de la bulle d'aide&nbsp;<img class="tooltip_aide" title="Ce texte sera affich&eacute; au survol de l&#146;icone avec le point d&#146;interrogation." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input type="text" name="help_tooltip" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="required">Champs obligatoire&nbsp;<img class="tooltip_aide" title="Cocher pour rendre la saisie de ce champs obligatoire." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input type="checkbox" id="required" name="required" />
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Texte par d&eacute;faut&nbsp;<img class="tooltip_aide" title="Texte apparaissant dans le champ &agrave; remplir par l&#146;utilisateur." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input name="default" type="text" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Nombre de caract&egrave;res minimum&nbsp;<img class="tooltip_aide" title="valeur comprise entre 0 et 255" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="nb_char_min" name="nb_char_min" type="range" min="0" max="255" value="0" />
+		<div class="clear"></div>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Nombre de caract&egrave;res maximum&nbsp;<img class="tooltip_aide" title="valeur comprise entre 0 et 255" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="nb_char_max" name="nb_char_max" type="range" min="0" max="255" value="255" />
+		<div class="clear"></div>
+	</div>
+
+</div>
+
+
+<div id="champs_textelong" style="display:none;">
+	<h2 class="titre_champs"><span class="action_champ">Ajouter</span> un champ de type texte long</h2>
+	
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Identifiant&nbsp;<img class="tooltip_aide" title="Identifiant dans la base de donn&eacute;es (ne sera pas visible &agrave; l&#146;&eacute;cran).<br />Doit &ecirc;tre unique pour l&#146;ensemble des champs des formulaires, et sans caract&egrave;res sp&eacute;ciaux." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input name="id" type="text" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label><span class="symbole_obligatoire">*&nbsp;</span>Label&nbsp;<img class="tooltip_aide" title="Texte apparaissant devant le champ &agrave; remplir par l&#146;utilisateur." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input name="label" type="text" required="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Texte de la bulle d'aide&nbsp;<img class="tooltip_aide" title="Ce texte sera affich&eacute; au survol de l&#146;icone avec le point d&#146;interrogation." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input type="text" name="help_tooltip" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label for="required">Champs obligatoire&nbsp;<img class="tooltip_aide" title="Cocher pour rendre la saisie de ce champs obligatoire." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input type="checkbox" id="required" name="required" />
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Texte par d&eacute;faut&nbsp;<img class="tooltip_aide" title="Texte apparaissant dans le champ &agrave; remplir par l&#146;utilisateur." src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input name="default" type="text" />
+	</div>
+	
+	<div class="formulaire_ligne">
+		<label>Nombre de caract&egrave;res minimum&nbsp;<img class="tooltip_aide" title="valeur comprise entre 0 et 65000" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="nb_char_min" name="nb_char_min" type="range" min="0" max="65000" value="10" />
+		<div class="clear"></div>
+	</div>
+
+	<div class="formulaire_ligne">
+		<label>Nombre de caract&egrave;res maximum&nbsp;<img class="tooltip_aide" title="valeur comprise entre 0 et 65000" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></label>
+		<input id="nb_char_max" name="nb_char_max" type="range" min="0" max="65000" value="65000" />
+		<div class="clear"></div>
+	</div>
+
+</div>
+
+
+<div id="champs_titre" style="display:none;">
+	<h2 class="titre_champs"><span class="action_champ">Ajouter</span> un titre de section</h2>
+
+	<div class="formulaire_ligne">
+		<label for="type_html"><span class="symbole_obligatoire">*&nbsp;</span>Format du champs</label>
+		<select id="type_html" name="type_html" required="required">
+			<option value="title" selected="selected">Titre de section</option>
+			<option value="HTML">HTML</option>
+		</select>
+	</div>
+
+	<div id="type_html_title" class="formulaire_ligne"><!-- choix conditionnel : title choisi pour le champs type_html -->
+		<label for="title_text"><span class="symbole_obligatoire">*&nbsp;</span>Texte du titre</label>
+		<input id="title_text" name="title_text" type="text" required="required" />
+	</div>
+
+	<div id="type_html_HTML" class="formulaire_ligne" style="display:none;"><!-- choix conditionnel : HTML choisi pour le champs type_html -->
+		<label for="html_text" ><span class="symbole_obligatoire">*&nbsp;</span>Code HTML</label>
+		<textarea id="html_text" name="html_text" class="input_textarea" cols="20" rows="3" required="required"></textarea>
+	</div>
+
+	<fieldset class="bazar_fieldset">
+		<legend>Apparait pour</legend>
+		<input type="checkbox" id="label_saisie" value="1" name="label_saisie" class="element_checkbox" />
+		<label for="label_saisie">la saisie d'une fiche</label>
+		<input type="checkbox" id="label_fiche" value="1" name="label_fiche" class="element_checkbox" />
+		<label for="label_fiche">la consultation de la fiche</label>
+		<input type="checkbox" id="label_search" value="1" name="label_search" class="element_checkbox" />
+		<label for="label_search">le moteur de recherche</label>
+	</fieldset>
+</div>

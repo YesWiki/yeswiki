@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="compteur" version="$Name:" active="1">
+  <author>Florestan Bredow</author>
+  <label>Compteur</label>
+  <desc>Permet de compter le nombre de mots/caractères dans une page wiki.</desc>
+</plugin>
