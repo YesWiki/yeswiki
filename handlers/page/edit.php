@@ -96,7 +96,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 				
 				// teste si la nouvelle page est differente de la précédente 
 				if(rtrim($body)==rtrim($this->page["body"])) {
-					$this->SetMessage('Cette page n\\\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\\\'a subi aucune modification.');
+					$this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
 					$this->Redirect($this->href());
 				} else { // sécurité
 					// add page (revisions)

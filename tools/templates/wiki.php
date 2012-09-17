@@ -37,10 +37,10 @@ if (!defined("WIKINI_VERSION")) {
 define ('THEME_PAR_DEFAUT', 'yeswiki');
 
 // Style par défaut
-define ('CSS_PAR_DEFAUT','yeswiki.css');
+define ('CSS_PAR_DEFAUT','gray.css');
 
 // Squelette par défaut
-define ('SQUELETTE_PAR_DEFAUT', 'yeswiki.tpl.html');
+define ('SQUELETTE_PAR_DEFAUT', 'responsive-2cols-right.tpl.html');
 
 // Image de fond par défaut
 define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');
@@ -232,13 +232,20 @@ if (
 	 !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
 	) 
 ) {
-	if (file_exists('tools/templates/themes/yeswiki/squelettes/yeswiki.tpl.html')
-		&& file_exists('tools/templates/themes/yeswiki/styles/yeswiki.css')) {
+	if (
+		(file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT) ||
+		 file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
+		) &&
+		(file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT) ||
+		 file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
+		)
+	   ) {
 		echo '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
-		$wakkaConfig['favorite_theme']='yeswiki';
-		$wakkaConfig['favorite_style']='yeswiki.css';
-		$wakkaConfig['favorite_squelette']='yeswiki.tpl.html';
-} else {
+		$wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+		$wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+		$wakkaConfig['favorite_squelette']= SQUELETTE_PAR_DEFAUT;
+		$wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT; 
+	} else {
 		exit('<div class="alert alert-error">'.TEMPLATE_NO_DEFAULT_THEME.'.</div>');
 	}
 }

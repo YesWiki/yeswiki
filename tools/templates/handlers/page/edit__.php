@@ -75,7 +75,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 	$changetheme = FALSE;
 }
 
-// le bouton aper?u c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
+// le bouton apercu c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
 $patterns = array(	0 => 	'/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
 					1 => 	'/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
 					2 => 	'/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\'' . preg_quote(addslashes($this->href()), '/') . '\';\" \/>/'

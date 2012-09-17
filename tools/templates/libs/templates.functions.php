@@ -252,26 +252,41 @@ function show_form_theme_selector($mode = 'selector') {
 			$bgselector .= '<h3>'.TEMPLATE_BG_IMAGE.'</h3>
 			<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
 	    <!-- Carousel items -->
-	    <div class="carousel-inner">';
-				   $nb=0; $class="active "; sort($backgrounds);
-				   foreach($backgrounds as $background) {
-						$nb++;
-						if ($nb == 1) {$bgselector .= '<div class="'.$class.'item">';$class='';}
-						$imgextension = strtolower(substr($background, -4, 4));
-						if ($imgextension=='.jpg') {
-							$bgselector .= '<img class="bgimg" src="'.$background.'" />';
-						} elseif ($imgextension=='.png') {
-							$bgselector .= '<div class="mozaicimg" style="background:url('.$background.') repeat top left;"></div>';
-						}
-						
-						if ($nb == 8) {$nb=0;$bgselector .= '</div>';}
-				  }
-				  if ($nb != 0) {$bgselector .= '</div>';}
-				   $bgselector .= '</div>
+	    <div class="carousel-inner">'."\n";
+			$nb = 0; $thumbs_per_slide = 8;
+			sort($backgrounds);
+			foreach($backgrounds as $background) {
+				$nb++;
+				if ($nb == 1) {
+					$bgselectorlist = '';
+					$class = '';
+				}
+				$choosen = ($background == 'files/backgrounds/'.$GLOBALS['wiki']->config['favorite_background_image']);
+				if ($choosen) $class = ' active';
+
+				$imgextension = strtolower(substr($background, -4, 4));
+
+				if ($imgextension=='.jpg') {
+					$bgselectorlist .= '<img class="bgimg'.($choosen ? ' choosen' : '').'" src="'.$background.'" width="100" height="75" />'."\n";
+				} 
+				elseif ($imgextension=='.png') {
+					$bgselectorlist .= '<div class="mozaicimg'.($choosen ? ' choosen' : '').'" style="background:url('.$background.') repeat top left;"></div>'."\n";
+				}
+				// on finit la diapositive			
+				if ($nb == $thumbs_per_slide) {
+					$nb=0;
+					$bgselector .= '<div class="item'.$class.'">'."\n".$bgselectorlist.'</div>'."\n";
+				}
+			}
+			// si la boucle se termine et qu'on ne vient pas de finir une diapositive
+			if ($nb != 0) {
+				$bgselector .= '<div class="item'.$class.'">'."\n".$bgselectorlist.'</div>'."\n";
+			}
+			$bgselector .= '</div>
 	    <!-- Carousel nav -->
 	    <a class="carousel-control left" href="#bgCarousel" data-slide="prev">&lsaquo;</a>
 	    <a class="carousel-control right" href="#bgCarousel" data-slide="next">&rsaquo;</a>
-	    </div>';
+	    </div>'."\n";
 		}
 	}
 	else {

@@ -56,10 +56,14 @@ $("#graphical_options a.button_save").on("click", function() {
 	if(!(typeof bgimg === 'undefined') && bgimg != 'none'){
 		bgimg = bgimg.substr(bgimg.lastIndexOf("/")+1, bgimg.length - bgimg.lastIndexOf("/") );
 		bgimg = bgimg.replace("\"","").replace(")","");
-	} 
-	if (typeof imgsrc === 'string') {
+	}
+	else if (typeof imgsrc === 'string') {
 		bgimg = imgsrc.substr(imgsrc.lastIndexOf("/")+1, imgsrc.length - imgsrc.lastIndexOf("/") );
 	}
+	else {
+		bgimg = "";
+	}
+
 	$("#hiddenbgimg").val(bgimg);
 	var url = document.URL.replace("/edit", "/savemetadatas").replace('#', '');
 	var data = { 'metadatas': { "theme": theme, "squelette": squelette, "style": style, "bgimg": bgimg } };
@@ -99,7 +103,7 @@ $("#bgCarousel div.mozaicimg").on("click", function() {
 	}
 }); 
 
-// On change le theme dynamiquement
+// on change le theme dynamiquement
 $("#changetheme").on('change', function(){ 
 	var val = $(this).val();
 	// pour vider la liste
