@@ -266,56 +266,55 @@ if there are any problems, let chris know.
 				isAlt = true;
 			}
 			if (isCtrl == true && isAlt == false) {
-				e.preventDefault();
 				// title 1
 				if (keyCode == 49) {
-					$('.aceditor-btn-title1').mousedown(); 
+					$('.aceditor-btn-title1').mousedown();e.preventDefault();
 				}
 				// title 2
 				else if (keyCode == 50) {
-					$('.aceditor-btn-title2').mousedown();
+					$('.aceditor-btn-title2').mousedown();e.preventDefault();
 				}
 				// title 3
 				else if (keyCode == 51) {
-					$('.aceditor-btn-title3').mousedown();
+					$('.aceditor-btn-title3').mousedown();e.preventDefault();
 				}
 				// title 4
 				else if (keyCode == 52) {
-					$('.aceditor-btn-title4').mousedown();
+					$('.aceditor-btn-title4').mousedown();e.preventDefault();
 				}
 				// title 5
 				else if (keyCode == 53) {
-					$('.aceditor-btn-title5').mousedown();
+					$('.aceditor-btn-title5').mousedown();e.preventDefault();
 				}
 				// bold
 				else if (keyCode == 66) {
-					$('.aceditor-btn-bold').mousedown();
+					$('.aceditor-btn-bold').mousedown();e.preventDefault();
 				}
 				// italic
 				else if (keyCode == 73) {
-					$('.aceditor-btn-italic').mousedown();
+					$('.aceditor-btn-italic').mousedown();e.preventDefault();
 				}
 				// underline
 				else if (keyCode == 85) {
-					$('.aceditor-btn-underline').mousedown();
+					$('.aceditor-btn-underline').mousedown();e.preventDefault();
 				}
 				// strike
 				else if (keyCode == 89) {
-					$('.aceditor-btn-strike').mousedown();
+					$('.aceditor-btn-strike').mousedown();e.preventDefault();
 				}
 				// line
 				else if (keyCode == 72) {
-					$('.aceditor-btn-line').mousedown();
+					$('.aceditor-btn-line').mousedown();e.preventDefault();
 				}
 				// link
 				else if (keyCode == 76) {
-					$('.aceditor-btn-link').mousedown(); isCtrl = false; isAlt = false;
+					$('.aceditor-btn-link').mousedown();e.preventDefault(); isCtrl = false; isAlt = false;
 				}
 				// save page
 				else if (keyCode == 83) {
-			    	$('.aceditor-btn-save').mousedown();
+			    	$('.aceditor-btn-save').mousedown();e.preventDefault();
 			    }
-			    return false;
+			    return;
 			}
 		});
     }
