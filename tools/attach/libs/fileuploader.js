@@ -1329,7 +1329,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
                 actionattach += '}}';
                 
                 // on ajoute le code de l'action attach au mode édition
-                wrapSelectionBis($('#body')[0], actionattach, "");
+                wrapSelection($('#body')[0], actionattach, "");
                 
                 // on supprime l'element dans la liste
                 $(this).parents('li.qq-upload-success').slideUp(function() {
