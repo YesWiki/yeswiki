@@ -40,9 +40,7 @@ if there are any problems, let chris know.
 		var s1 = (txtarea.value).substring(0,selStart);
 		var s2 = (txtarea.value).substring(selStart, selEnd)
 		var s3 = (txtarea.value).substring(selEnd, selLength);
-		if (s2 != "") {
-			txtarea.value = s1 + lft + s2 + rgt + s3;
-		}
+		txtarea.value = s1 + lft + s2 + rgt + s3;
 		
 		// Placement du curseur après le tag fermant
 		txtarea.selectionEnd = pos;
