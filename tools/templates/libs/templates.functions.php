@@ -45,11 +45,11 @@ function search_template_files($directory) {
 *
 * remplace juste la premiere occurence d'une chaine de caracteres
 *
-* @param $from : partie de la chaine recherchée
+* @param $from : partie de la chaine recherch?e
 * @param $to   : chaine de remplacement
-* @param $str  : chaine entrée
+* @param $str  : chaine entr?e
 *
-* return string : chaine entrée avec la premiere occurence changée
+* return string : chaine entr?e avec la premiere occurence chang?e
 *
 */
 function str_replace_once($from, $to, $str) {
@@ -75,6 +75,7 @@ if (!function_exists('str_ireplacement')) {
     return $subject;
   }
 }
+
 
 /**
 *
@@ -106,7 +107,7 @@ function replace_missingpage_links($output) {
 	preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
 	foreach ($matches as $values) {
-		// on passe en parametres GET les valeurs du template de la page de provenance, pour avoir le même graphisme dans la page créée
+		// on passe en parametres GET les valeurs du template de la page de provenance, pour avoir le m?me graphisme dans la page cr??e
 		$query_string = 'theme='.urlencode($GLOBALS['wiki']->config['favorite_theme']).
 						'&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
 						'&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
@@ -119,13 +120,14 @@ function replace_missingpage_links($output) {
 	return $output;
 }
 
+
 /**
  * 
- * crée un diaporama à partir d'une PageWiki
+ * cr?e un diaporama ? partir d'une PageWiki
  * 
  * @param $pagetag : nom de la PageWiki
  * @param $template : fichier template pour le diaporama
- * @param $class : classe CSS à ajouter au diaporama
+ * @param $class : classe CSS ? ajouter au diaporama
  * 
  */
 function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $class = '') {
@@ -152,7 +154,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 			}
 			else
 			{			
-				// préparation des tableaux pour le squelette -------------------------
+				// pr?paration des tableaux pour le squelette -------------------------
 				$i = 0 ;
 				$slides = array() ;
 				$titles = array() ;
@@ -167,7 +169,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 					//sinon, on affiche
 					else 
 					{
-						//s'il y a un titre de niveau 1 qui commence la diapositive, on la déplace en titre (sert surtout pour la première page)
+						//s'il y a un titre de niveau 1 qui commence la diapositive, on la d?place en titre (sert surtout pour la premi?re page)
 						if (preg_match('/^<h1>.*<\/h1>/', $slide)) 
 						{
 							$split = preg_split('/(.*<h1>.*<\/h1>)/',$slide, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -187,7 +189,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 		}
 		
 		$buttons = '';
-		//si la fonction est appelée par le handler diaporama, on ajoute les liens d'édition et de retour
+		//si la fonction est appel?e par le handler diaporama, on ajoute les liens d'?dition et de retour
 		if ($GLOBALS['wiki']->GetMethod() == "diaporama") {
 			$buttons .= '<div class="buttons-action"><a class="button-edit" href="'.$GLOBALS['wiki']->href('edit',$pagetag).'">&Eacute;diter</a>'."\n";
 			$buttons .= '<a class="button-quit" href="'.$GLOBALS['wiki']->href('',$pagetag).'">Quitter</a></div>'."\n";
@@ -205,7 +207,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 		));
 		$output = $squel->analyser() ;
 		
-		//on prépare le javascript du diaporama, qui sera ajoutée par l'action footer de template, à la fin du html
+		//on pr?pare le javascript du diaporama, qui sera ajout?e par l'action footer de template, ? la fin du html
 		$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script> 
 			$("#slide_show_'.$pagetag.'").scrollable({mousewheel:false}).navigator({history: true}).data("scrollable");
 			$("#thumbs_'.$pagetag.' .navi a[title]").tooltip({position:	\'top center\', opacity:0.9, tipClass:\'tooltip-slideshow\', offset:[5, 0]});
@@ -215,15 +217,15 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 }
 
 function show_form_theme_selector($mode = 'selector') {
-	// en mode édition on recupére aussi les images de fond
+	// en mode ?dition on recup?re aussi les images de fond
 	if ($mode=='edit') {
 		$id = 'form_graphical_options'; 
-		// récupération des images de fond
+		// r?cup?ration des images de fond
 		$backgroundsdir = 'files/backgrounds';
 		$dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
 		while ($dir && ($file = readdir($dir)) !== false) {	
 				$imgextension = strtolower(substr($file, -4, 4));  	
-				// les jpg sont les fonds d'écrans, ils doivent être mis en miniature
+				// les jpg sont les fonds d'?crans, ils doivent ?tre mis en miniature
 				if ($imgextension == '.jpg') {
 					if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
 						require_once 'tools/attach/libs/class.imagetransform.php';
@@ -239,7 +241,7 @@ function show_form_theme_selector($mode = 'selector') {
 						$backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
 					}
 				}
-				// les png sont les images à répéter en mosaique
+				// les png sont les images ? r?p?ter en mosaique
 				elseif ($imgextension == '.png') {
 					$backgrounds[] = $backgroundsdir.'/'.$file;
 				}
@@ -253,7 +255,7 @@ function show_form_theme_selector($mode = 'selector') {
 			<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
 	    <!-- Carousel items -->
 	    <div class="carousel-inner">'."\n";
-			$nb = 0; $thumbs_per_slide = 8;
+			$nb = 0; $thumbs_per_slide = 8; $firstitem = true;
 			sort($backgrounds);
 			foreach($backgrounds as $background) {
 				$nb++;
@@ -261,6 +263,13 @@ function show_form_theme_selector($mode = 'selector') {
 					$bgselectorlist = '';
 					$class = '';
 				}
+
+				// dans le cas ou il n'y a pas d'image de fond selectionnee on bloque la premiere diapo
+				if ($GLOBALS['wiki']->config['favorite_background_image'] == '' && $firstitem) {
+					$class = ' active';
+					$firstitem = false;
+				}
+
 				$choosen = ($background == 'files/backgrounds/'.$GLOBALS['wiki']->config['favorite_background_image']);
 				if ($choosen) $class = ' active';
 
@@ -356,6 +365,7 @@ function show_form_theme_selector($mode = 'selector') {
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').add_templates_list_js()."\n";
 	return $selecteur;
 }
+
 
 function add_templates_list_js() {
 	// AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES

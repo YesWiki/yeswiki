@@ -1,10 +1,3 @@
-// On change le css dynamiquement
-/*$("#form_graphical_options select[name=style]").on('change', function(){ 
-	var newstyle = $("#mainstyle").attr("href");
-	newstyle = newstyle.substring(0, newstyle.lastIndexOf('/')) + '/' + $(this).attr('value');
-	$("#mainstyle").attr("href", newstyle);
-});*/
-
 // on annule les changements de look
 $("#graphical_options a.button_cancel").on("click", function() {
 	if ( ($("#changetheme").val() !== $("#hiddentheme").val() ) || ( $("#hiddensquelette").val() !== $("#changesquelette").val() ) || ( $("#hiddenstyle").val() !== $("#changestyle").val() )) {
@@ -30,11 +23,11 @@ $("#graphical_options a.button_cancel").on("click", function() {
 		}
 	}
 	else {
-		//on enleve les images de fond
+		// on enleve les images de fond
 		$("body").css({'background-image':'none', 'background-repeat':'repeat', 'width':'100%', 'height':'100%', '-webkit-background-size': 'auto', '-moz-background-size': 'auto', '-o-background-size': 'auto', 'background-size': 'auto', 'background-attachment': 'scroll', 'background-clip': 'border-box', 'background-origin': 'padding-box', 'background-position': 'top left'});
 	}
 	
-	//on remet les valeurs par défaut aux listes déroulantes
+	// on remet les valeurs par défaut aux listes déroulantes
 	$("#changetheme").val($("#hiddentheme").val());
 	$("#changesquelette").val($("#hiddensquelette").val());
 	$("#changestyle").val($("#hiddenstyle").val());
@@ -121,4 +114,5 @@ $("#changetheme").on('change', function(){
 	}					
 });
 
+// on deplace hashcash au bon endroit
 $('#hashcash-text').appendTo('#ACEditor .form-actions');
