@@ -40,9 +40,8 @@ if there are any problems, let chris know.
 		var s1 = (txtarea.value).substring(0,selStart);
 		var s2 = (txtarea.value).substring(selStart, selEnd)
 		var s3 = (txtarea.value).substring(selEnd, selLength);
-		if (s2 != "") {
-			txtarea.value = s1 + lft + s2 + rgt + s3;
-		}
+
+		txtarea.value = s1 + lft + s2 + rgt + s3;
 		
 		// Placement du curseur après le tag fermant
 		txtarea.selectionEnd = pos;
@@ -224,7 +223,7 @@ if there are any problems, let chris know.
     	// On affecte les boutons
     	toolbar.find('a.aceditor-btn').each(function() {
     		$(this).on('click', function(e){
-				return false;
+				return setTimeout('', 300);
     		}).on('mousedown', function(e){
     			if ($(this).data('prompt')) {
     				var prompt = window.prompt($(this).data('prompt'), $(this).data('prompt-val'));
@@ -312,7 +311,7 @@ if there are any problems, let chris know.
 				}
 				// save page
 				else if (keyCode == 83) {
-			    	$('.aceditor-btn-save').mousedown();e.preventDefault();
+			    	$('.aceditor-btn-save').click();e.preventDefault();
 			    }
 			    return;
 			}
