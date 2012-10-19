@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkpdf" version="$Name:" active="0">
+<plugin name="wkpdf" version="0.1" active="0">
   <author>Florestan BREDOW</author>
   <label>Page en PDF</label>
   <desc>Transformation de page wiki en pdf.
