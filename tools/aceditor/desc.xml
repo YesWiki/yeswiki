@@ -2,5 +2,5 @@
 <plugin name="wkaceditor" version="0.2" active="1">
   <author>Alexandre Vicq et Philippe Drouot</author>
   <label>Aceditor Barre d'outil</label>
-  <desc>Aide � la saisie des r�gles de formatage wikini, en particulier pour l'insertion d'images et de documents � partir de la contribution ActionAttach</desc>
+  <desc>Aide à la saisie des règles de formatage YesWiki, en particulier pour l'insertion d'images et de documents à partir de la contribution ActionAttach</desc>
 </plugin>
