@@ -2,5 +2,5 @@
 <plugin name="wkqrcode" version="0.1" active="1">
   <author>Francois Labastie</author>
   <label>generateur qrcode</label>
-  <desc>G�n�rateur de qrcode</desc>
+  <desc>Générateur de qrcode</desc>
 </plugin>
