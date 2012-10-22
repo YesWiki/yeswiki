@@ -1006,14 +1006,13 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $options['required'] = 'required' ;
             $symb .= '<span class="symbole_obligatoire">*&nbsp;</span>';
         }
-        if ($longueurmax != '') $options['maxlength'] = $longueurmax;
-        $longueurmax = ($longueurmax ? ' (<span class="charsRemaining">'.$longueurmax.'</span> caract&egrave;res restants)' : '' );
+        $longueurmaxlabel = ($longueurmax ? ' (<span class="charsRemaining">'.$longueurmax.'</span> caract&egrave;res restants)' : '' );
         $bulledaide = '';
         if ($bulle_d_aide!='') $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($bulle_d_aide).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
 
         $options = array('id' => $identifiant, 'class' => 'input_textarea'.($formatage == 'wiki' ? ' wiki-textarea' : ''));
-
-        $formtexte= new HTML_QuickForm_textarea($identifiant, $symb.$label.$longueurmax.$bulledaide, $options);
+        if ($longueurmax != '') $options['maxlength'] = $longueurmax;
+        $formtexte= new HTML_QuickForm_textarea($identifiant, $symb.$label.$longueurmaxlabel.$bulledaide, $options);
         $formtexte->setCols($nb_colonnes);
         $formtexte->setRows($nb_lignes);
         $formtemplate->addElement($formtexte) ;

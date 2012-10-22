@@ -4,10 +4,10 @@
 *
 *
 *@package Bazar
-//Auteur original :
+*
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
 *@version       $Revision: 1.5 $ $Date: 2010/03/04 14:19:03 $
-// +------------------------------------------------------------------------------------------------------+
+*
 */
 
 // +------------------------------------------------------------------------------------------------------+
@@ -18,7 +18,7 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//récupération des paramètres wikini
+//r?cup?ration des param?tres wikini
 
 $categorie_nature = $this->GetParameter("categorienature");
 if (empty($categorie_nature)) {
@@ -40,7 +40,12 @@ if (empty($template)) {
     $template = 'liste_accordeon.tpl.html';
 }
 
-//on récupère les paramètres pour une requête spécifique
+$nb = $this->GetParameter("nb");
+if (empty($nb)) {
+    $nb = '';
+}
+
+//on r?cup?re les param?tres pour une requ?te sp?cifique
 $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
@@ -55,9 +60,9 @@ if (!empty($query)) {
     $tabquery = '';
 }
 
-$tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeannonce, $categorie_nature);
+$tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeannonce, $categorie_nature, 1, '', $nb);
 
-//on récupère le nombre d'entrées avant pagination
+//on r?cup?re le nombre d'entr?es avant pagination
 $pagination = $this->GetParameter("pagination");
 if (!empty($pagination)) {
     $fiches['info_res'] = '<div class="info_box">'.BAZ_IL_Y_A;
@@ -107,7 +112,7 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
     $fiches['fiches'][] = $valeurs_fiche;
 
-    //réinitialisation de l'url
+    //r?initialisation de l'url
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
 }
