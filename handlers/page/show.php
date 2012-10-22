@@ -6,7 +6,7 @@ Copyright 2002, 2003 David DELON
 Copyright 2002, 2003 Charles NEPOTE
 Copyright 2003  Eric DELORD
 Copyright 2003  Eric FELDSTEIN
-Copyright 2004  Jean Christophe ANDRÉ
+Copyright 2004  Jean Christophe ANDR?
 Copyright 2005  Didier Loiseau
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// V?rification de s?curit?
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -109,19 +109,21 @@ if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 	
 	// store comments display in session
 	$tag = $this->GetPageTag();
+
 	if (!isset($_SESSION["show_comments"][$tag]))
 		$_SESSION["show_comments"][$tag] = ($this->UserWantsComments() ? "1" : "0");
 	if (isset($_REQUEST["show_comments"])){	
-	switch($_REQUEST["show_comments"])
-	{
-	case "0":
-		$_SESSION["show_comments"][$tag] = 0;
-		break;
-	case "1":
-		$_SESSION["show_comments"][$tag] = 1;
-		break;
+		switch($_REQUEST["show_comments"])
+		{
+		case "0":
+			$_SESSION["show_comments"][$tag] = 0;
+			break;
+		case "1":
+			$_SESSION["show_comments"][$tag] = 1;
+			break;
+		}
 	}
-	}
+
 	// display comments!
 	if ($this->page && $_SESSION["show_comments"][$tag])
 	{

@@ -8,7 +8,7 @@ if (!defined('WIKINI_VERSION')) {
 if ($this->HasAccess("write") && $this->HasAccess("read")) // Les admins sont autorises
 {
     // preview?
-    if ($_POST["submit"] == "Sauver")
+    if (isset($_POST["submit"]) && $_POST["submit"] == "Sauver")
     {
 
         if (!function_exists('iptocountry')) {

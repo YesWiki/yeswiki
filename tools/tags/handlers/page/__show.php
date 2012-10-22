@@ -26,15 +26,19 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// V?rification de s?curit?
+// Verification de securite
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
 }
+$tag = $this->GetPageTag();
 
 // on ouvre les commentaires si la configuration generale ou de la page le demande
-$pageouverte = $this->GetTripleValue($this->GetPageTag(),'http://outils-reseaux.org/_vocabulary/comments', '', '');
+$pageouverte = $this->GetTripleValue($tag,'http://outils-reseaux.org/_vocabulary/comments', '', '');
 
-$_REQUEST["show_comments"] = ((COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte!='0' ) || (!COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte=='1')) && $this->page["comment_on"] == '';
+$GLOBALS["open_comments"][$tag] = ((COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte!='0' ) || (!COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte=='1')) && $this->page["comment_on"] == '';
+
+$_SESSION["show_comments"][$tag] = false;
+unset($_REQUEST["show_comments"]);
 
 ?>
