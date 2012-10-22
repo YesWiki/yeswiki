@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkattach" version="0.1" active="0">
-  <author>TheTransporter</author>
-  <label>Notif</label>
-  <desc>envoi de mail aux personnes abonnees à la page lorsque modification</desc>
-</plugin>

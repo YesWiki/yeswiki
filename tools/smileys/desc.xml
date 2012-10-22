@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="smileys" version="0.1" active="0">
-  <author>Florestan BREDOW</author>
-  <label>smileys</label>
-  <desc>Remplace les images par des smileys</desc>
-</plugin>

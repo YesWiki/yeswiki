@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkduplicateur" version="0.1" active="0">
-  <author>David Delon et Florian Schmitt</author>
-  <label>Duplicateur</label>
-  <desc>Duplication de pages vers un wiki de la meme base de donnee : a manier avec precaution, usage reserve aux administrateurs</desc>
-</plugin>

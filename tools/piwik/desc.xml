@@ -1,6 +1,0 @@
-<?xml version="0.1" encoding="ISO-8859-1"?>
-<plugin name="piwik" version="0.1" active="0">
-  <author>Florestan BREDOW</author>
-  <label>Piwik</label>
-  <desc>renseigne piwik</desc>
-</plugin>

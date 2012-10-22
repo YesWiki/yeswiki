@@ -1,0 +1,21 @@
+<?=$info_res;?>
+<?php if( count($fiches)>0 ) : ?>
+<?=$pager_links;?>
+<div class="accordion">
+<?php foreach($fiches as $fiche): ?>
+<h2 class="titre_accordeon">
+	<?=$fiche['bf_titre'];?>
+	<span class="liens_titre_accordeon">
+		<?=$fiche['lien_voir'];?>
+		<?php if( isset($fiche['lien_edition']) ) : ?><?=$fiche['lien_edition'];?><?php endif; ?>
+		<?php if( isset($fiche['lien_suppression']) ) : ?><?=$fiche['lien_suppression'];?><?php endif; ?>
+	</span>
+</h2>
+<div class="pane">
+<?=$fiche['html'];?>
+<div class="clear"></div>
+</div>
+<?php endforeach; ?>
+</div>
+<?=$pager_links;?>
+<?php endif; ?>
