@@ -26,15 +26,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// Verification de securite
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
 }
 
 $output = '';
-$pageouverte = $this->GetTripleValue($this->GetPageTag(),'http://outils-reseaux.org/_vocabulary/comments', '', '');
-if ((COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte!='0' ) || (!COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte=='1')) {
+
+if ($_REQUEST["show_comments"]) {
 	if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 	{
 		// load comments for this page
@@ -42,30 +42,22 @@ if ((COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouverte!='0' ) || (!COMMENTAIRES_OU
 		
 		// store comments display in session
 		$tag = $this->GetPageTag();
-		if (!isset($_SESSION["show_comments"][$tag]))
-			$_SESSION["show_comments"][$tag] = ($this->UserWantsComments() ? "1" : "0");
-		if (isset($_REQUEST["show_comments"])){	
-		switch($_REQUEST["show_comments"])
-		{
-		case "0":
-			$_SESSION["show_comments"][$tag] = 0;
-			break;
-		case "1":
-			$_SESSION["show_comments"][$tag] = 1;
-			break;
-		}
-		}
+
 		// display comments!
 		include_once('tools/tags/libs/tags.functions.php');
-		$gestioncommentaire = '<strong class="lien_commenter">Commentaires sur cette page.'."\n";
-		if (($this->UserIsOwner()) || ($this->UserIsAdmin()))
-		{
-			$gestioncommentaire .= '<a href="'.$this->href('closecomments').'" title="D&eacute;sactiver les commentaires sur cette page">D&eacute;sactiver les commentaires</a>'."\n";
+		$gestioncommentaire = '<div id="accordion-comments-'.$tag.'" class="accordion">
+	<div class="accordion-group">
+		<div class="accordion-heading">';
+		if (($this->UserIsOwner()) || ($this->UserIsAdmin())) {
+			$gestioncommentaire .= '<a class="btn btn-danger pull-right" href="'.$this->href('closecomments').'" title="D&eacute;sactiver les commentaires sur cette page">D&eacute;sactiver les commentaires</a>'."\n";
 		}
-		$gestioncommentaire .= '.</strong>'."\n";
-		$gestioncommentaire .= "<div class=\"commentaires_billet_microblog\">\n";
+
+		$gestioncommentaire .= '<a class="accordion-toggle comment-title" href="#comments-list-'.$tag.'" data-parent="#accordion-comments-'.$tag.'" data-toggle="collapse"><i class="icon-comment"></i>&nbsp;Commentaires sur cette page.</a>'."\n".'<div class="clearfix"></div>'."\n".
+			'</div>
+		<div class="accordion-body collapse in comments-page-microblog" id="comments-list-'.$tag.'">
+		    <div class="accordion-inner">'."\n";
 		$gestioncommentaire .= afficher_commentaires_recursif($this->getPageTag(), $this);
-		$gestioncommentaire .= "</div>\n";
+		$gestioncommentaire .= "</div>\n</div>\n</div>\n</div>\n";
 		$output .= $gestioncommentaire;
 	
 	}
@@ -75,11 +67,11 @@ else //commentaire pas ouverts
 	if (($this->UserIsOwner()) || ($this->UserIsAdmin()))
 	{
 		//TODO: le rajouter aux droits acls wiki plutot que les afficher ici
-		/*$output .= '<div class="admin_commenter">Commentaires d&eacute;sactiv&eacute;s '."\n".'<a href="'.$this->href('opencomments').'" title="Activer les commentaires sur cette page">Activer les commentaires</a>.</div>'."\n";*/
+		$output .= '<div class="well well-small"><i class="icon-comment"></i>&nbsp;Commentaires d&eacute;sactiv&eacute;s. '."\n".'<a class="btn btn-success pull-right" href="'.$this->href('opencomments').'" title="Activer les commentaires sur cette page">Activer les commentaires</a><div class="clearfix"></div></div>'."\n";
 	}
 }
 
-// on affiche la liste des mots clés disponibles pour cette page 
+// on affiche la liste des mots cles disponibles pour cette page 
 if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_bazar')))
 {
 	$tabtagsexistants = $this->GetAllTags($this->GetPageTag());

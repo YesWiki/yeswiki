@@ -119,10 +119,10 @@ class attach {
 	/**
 	* Calcule le nom complet du fichier attach&eacute; en fonction du safe_mode, du nom et de la date de
 	* revision la page courante.
-	* Le nom du fichier "mon fichier.ext" attache à la page "LaPageWiki"sera :
+	* Le nom du fichier "mon fichier.ext" attache ? la page "LaPageWiki"sera :
 	*  mon_fichier_datepage_update.ext
 	*     update : date de derniere mise a jour du fichier
-	*     datepage : date de revision de la page à laquelle le fichier a ete li&eacute;/mis a jour
+	*     datepage : date de revision de la page ? laquelle le fichier a ete li&eacute;/mis a jour
 	*  Si le fichier n'est pas une image un '_' est ajoute : mon_fichier_datepage_update.ext_
 	*  Selon la valeur de safe_mode :
 	*  safe_mode = on : 	LaPageWiki_mon_fichier_datepage_update.ext_
@@ -276,7 +276,7 @@ class attach {
      *	FONCTIONS D'ATTACHEMENTS
      *******************************************************************************/
     /**
-     * Test les param&ecirc;tres pass&eacute; à l'action
+     * Test les param&ecirc;tres pass&eacute; ? l'action
      */
     function CheckParams(){
         //recuperation des parametres necessaire
@@ -288,7 +288,6 @@ class attach {
         if (empty($this->link)) $this->link = $this->wiki->GetParameter("link");
         $this->caption = $this->wiki->GetParameter("caption");//texte de la vignette (au survol)
         $this->legend = $this->wiki->GetParameter("legend");//texte de la vignette (en dessous)
-
         
         //test de validit&eacute; des parametres
         if (empty($this->file)){
@@ -365,7 +364,7 @@ class attach {
             //c'est une image sensible
             //test si le lien est un lien interwiki
             if (preg_match("/^([A-Z][A-Z,a-z]+)[:]([A-Z,a-z,0-9]*)$/s", $this->link, $matches))
-            {  //modifie $link pour être un lien vers un autre wiki
+            {  //modifie $link pour ?tre un lien vers un autre wiki
                 $this->link = $this->wiki->GetInterWikiUrl($matches[1], $matches[2]);
             }
             //calcule du lien
@@ -400,14 +399,14 @@ class attach {
     }
     // Affiche le fichier liee comme un fichier audio
     function showAsAudio($fullFilename){
-        $output = $this->wiki->format('{{player url="'.str_replace('wakka.php?wiki=', '', $this->wiki->getConfig['base_url']).$fullFilename.'"}}');
+        $output = $this->wiki->format('{{player url="'.str_replace('wakka.php?wiki=', '', $this->wiki->config['base_url']).$fullFilename.'"}}');
         echo $output;
         $this->showUpdateLink();
     }
 
     // Affiche le fichier liee comme un fichier mind map  freemind
     function showAsFreeMindMindMap($fullFilename){
-        $output = $this->wiki->format('{{player url="'.str_replace('wakka.php?wiki=', '', $this->wiki->getConfig['base_url']).$fullFilename.'" '.
+        $output = $this->wiki->format('{{player url="'.str_replace('wakka.php?wiki=', '', $this->wiki->config['base_url']).$fullFilename.'" '.
                 'height="'.(!empty($height) ? $height : '650px').'" '.
                 'width="'.(!empty($width) ? $width : '100%').'"}}');
         echo $output;
@@ -421,7 +420,7 @@ class attach {
 
     // Affiche le fichier liee comme une video flash
     function showAsFlashvideo($fullFilename){
-        $output = $this->wiki->format('{{player url="'.str_replace('wakka.php?wiki=', '', $this->wiki->getConfig['base_url']).$fullFilename.'" '.
+        $output = $this->wiki->format('{{player url="'.str_replace('wakka.php?wiki=', '', $this->wiki->config['base_url']).$fullFilename.'" '.
                 'height="'.(!empty($height) ? $height : '300px').'" '.
                 'width="'.(!empty($width) ? $width : '400px').'"}}');
         echo $output;
@@ -433,12 +432,12 @@ class attach {
 
 
     /**
-     * Affiche le lien de mise à jour
+     * Affiche le lien de mise ? jour
      */
     function showUpdateLink(){
         echo	" <a href=\"".
             $this->wiki->href("upload",$this->wiki->GetPageTag(),"file=$this->file").
-            "\" title='Mise à jour'>".$this->attachConfig['update_symbole']."</a>";
+            "\" title='Mise ? jour'>".$this->attachConfig['update_symbole']."</a>";
     }
     /**
      * Affiche un liens comme un fichier inexistant
@@ -492,8 +491,8 @@ class attach {
                 default : echo $this->wiki->Format("//Methode de requete invalide//---");
             }
         }else{
-            echo $this->wiki->Format("//Vous n'avez pas l'acc&ecirc;s en &eacute;criture à cette page//---");
-            echo $this->wiki->Format("Retour à la page ".$this->wiki->GetPageTag());
+            echo $this->wiki->Format("//Vous n'avez pas l'acc&ecirc;s en &eacute;criture ? cette page//---");
+            echo $this->wiki->Format("Retour ? la page ".$this->wiki->GetPageTag());
         }
     }
     /**
@@ -548,7 +547,7 @@ class attach {
                 echo $this->wiki->Format("//Aucun fichier n'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.//---");
                 break;
         }
-        echo $this->wiki->Format("Retour à la page ".$this->wiki->GetPageTag());
+        echo $this->wiki->Format("Retour ? la page ".$this->wiki->GetPageTag());
     }
     /******************************************************************************
      *	FUNCTIONS DE DOWNLOAD DE FICHIERS
@@ -683,7 +682,7 @@ class attach {
 
         $files = $this->fmGetFiles($trash);
         
-        if (!$files) $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s à la page '.$this->wiki->Format($this->wiki->tag).' pour l\'instant.</div>'."\n";
+        if (!$files) $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s ? la page '.$this->wiki->Format($this->wiki->tag).' pour l\'instant.</div>'."\n";
         else {
         	// tri du tableau des fichiers
         	$files = $this->sortByNameRevFile($files);
@@ -749,7 +748,7 @@ class attach {
      * Affiche la liste des fichiers
      */
     function fmShow($trash=false){
-        $fmTitlePage = $this->wiki->Format("====Gestion des fichiers attach&eacute;s à  la page ".$this->wiki->tag."====\n---");
+        $fmTitlePage = $this->wiki->Format("====Gestion des fichiers attach&eacute;s ?  la page ".$this->wiki->tag."====\n---");
         if($trash){
             //Avertissement
             $fmTitlePage .= '<div class="prev_alert">Les fichiers effac&eacute;s sur cette page le sont d&eacute;finitivement</div>';
@@ -825,7 +824,7 @@ class attach {
         }
         $fmBodyTable .= '	</tbody>'."\n";
         //pied de la page
-        $fmFooterPage = "---\n-----\n[[".$this->wiki->tag." Retour à la page ".$this->wiki->tag."]]\n";
+        $fmFooterPage = "---\n-----\n[[".$this->wiki->tag." Retour ? la page ".$this->wiki->tag."]]\n";
         //affichage
         echo $fmTitlePage."\n";
         echo '<table class="tableFM" border="0" cellspacing="0">'."\n".$fmHeadTable.$fmFootTable.$fmBodyTable.'</table>'."\n";

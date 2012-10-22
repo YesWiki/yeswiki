@@ -9,14 +9,17 @@ elseif (!isset($wakkaConfig['lang'])) { $wakkaConfig['lang'] = 'fr'; }
 include_once 'tools/attach/lang/attach_'.$wakkaConfig['lang'].'.inc.php';
 
 
-// Une fonction pour passer les parametres à l'upload
+// theme de jplayer utilise : de base on a 2 possibilites : pink.flag ou blue.monday
+define ('ATTACH_JPLAYER_SKIN', 'blue.monday');
+
+// une fonction pour passer les parametres a l'upload
 $wikiClasses [] = 'ExtendAttach';
 
 $wikiClassesContent [] = ' 
-	// Fonction supplementaire pour les tests ...
+	// Fonction supplementaire pour paser des parametres a l\'upload
     function setParameter($parameter,$value) {
         $this->parameter[$parameter]=$value;
     }
-';	
+';
 
 ?>
