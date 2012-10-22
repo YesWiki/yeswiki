@@ -1,5 +1,5 @@
 /*
-written by chris wetherell
+written by chris wetherell odernised by Florian Schmitt
 http://www.massless.org
 chris [THE AT SIGN] massless.org
 warning: it only works for IE4+/Win and Moz1.1+

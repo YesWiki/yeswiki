@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wksimplelogin" version="$Name:" active="0">
+<plugin name="wksimplelogin" version="0.1" active="0">
   <author>David</author>
   <label>Formulaire identification simplifie</label>
   <desc>Formulaire identification simplifie</desc>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wikicolors" version="1.0" active="1">
+<plugin name="wikicolors" version="0.1" active="1">
   <author>Florestan BREDOW</author>
   <label>wikicolor</label>
   <desc>Permet de coloriser le texte</desc>

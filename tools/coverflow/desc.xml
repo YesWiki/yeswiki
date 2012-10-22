@@ -2,5 +2,5 @@
 <plugin name="wkcoverflow" version="0.1" active="0">
   <author>Florian</author>
   <label>coverflow</label>
-  <desc>Action coverflow pour ajouter une gallerie d'images style itunes</desc>
+  <desc>Action coverflow pour ajouter une galerie d'images style itunes</desc>
 </plugin>
