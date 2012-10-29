@@ -3,18 +3,18 @@
 * calendrier : programme affichant les evenements du bazar sous forme de Calendrier dans wikini
 *
 *
-*@package Bazar
-//Auteur original :
-*@author        Florian SCHMITT <florian@outils-reseaux.org>
-*@version       $Revision: 1.1 $ $Date: 2011-03-22 09:33:24 $
-// +------------------------------------------------------------------------------------------------------+
+* @package Bazar
+*
+* @author        Florian SCHMITT <florian@outils-reseaux.org>
+* @version       $Revision: 1.1 $ $Date: 2011-03-22 09:33:24 $
+*
 */
 
 if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//récupération des paramètres wikini
+//r?cup?ration des param?tres wikini
 $categorie_nature = $this->GetParameter("categorienature");
 if (!empty($categorie_nature)) {
     $GLOBALS['_BAZAR_']['categorie_nature'] = $categorie_nature;
@@ -32,7 +32,7 @@ else {
     $GLOBALS['_BAZAR_']['id_typeannonce'] = 'toutes';
 }
 
-//on récupère les paramètres pour une requête spécifique
+//on r?cup?re les param?tres pour une requ?te sp?cifique
 $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
@@ -63,8 +63,8 @@ foreach ($tableau_resultat as $fiche) {
 }
 $js = substr($js,0,-1);
 
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "<script type='text/javascript' src='tools/bazar/libs/fullcalendar/fullcalendar.min.js'></script>
-<script type='text/javascript'>
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "<script src='tools/bazar/libs/fullcalendar/fullcalendar.min.js'></script>
+<script>
 
     $(document).ready(function() {
 
@@ -106,6 +106,7 @@ $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "<script type
                         $(this).find('.page').removeClass('page').find('h1.BAZ_fiche_titre').remove();
                         modal.modal('show');
                     });
+
                     return false;
                 }
             }

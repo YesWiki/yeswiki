@@ -1,0 +1,535 @@
+<?php if( count($fiches)>0 ) : ?>
+  <?php
+  // affiche un evenement dans le temps
+  function affiche_ligne_timeline($gauche, $droite, $classligne, $classimage) {
+    $output = '<div class="ss-row'.(($classligne!='') ? ' '.$classligne : '').'">
+                    <div class="ss-left">
+                        '.$gauche.'
+                    </div>
+                    <div class="ss-right">
+                        '.$droite.'
+                    </div>
+                </div>';
+    return $output;
+  }
+  //tri par ordre chronologique
+  function date_compare($a, $b)
+  {
+      $t1 = strtotime($a['dateevenement']);
+      $t2 = strtotime($b['dateevenement']);
+      return $t1 - $t2;
+  }    
+  usort($fiches, 'date_compare');
+  $gauche = true;
+  $output = '';
+
+  foreach ($fiches as $key => $fiche) {
+    $date = DateTime::createFromFormat("Y-m-d", $fiche['dateevenement']);
+    // premier passage
+    if ( !isset($anneeencours) || $anneeencours < $date->format("Y") ) { 
+      $anneeencours = $date->format("Y");
+      $years[] =  $anneeencours;
+      $output .= affiche_ligne_timeline('<h2 id="annee'.$anneeencours.'">Ann&eacute;e</h2>', '<h2>'.$anneeencours.'</h2>', '', '');
+    }
+    if ($gauche) {
+      $gauche=false;
+      $output .= affiche_ligne_timeline('<a href="'.$fiche['lien'].'" class="ss-circle ss-circle-1">'.$fiche['bf_titre'].'<img alt="'.htmlspecialchars($fiche['bf_titre']).'" src="'.redimensionner_image('files/'.$fiche['imageimage'], 'cache/image_360_268_'.$fiche['imageimageactu'], 360, 268).'" /></a>', '<h3>
+                            <span>'.$fiche['dateevenement'].'</span>
+                            <a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a>
+                        </h3>'.$fiche['texte'], $fiche['listeListeTypeDactualites'], '');
+    }
+    else {
+      $gauche=true;
+      $output .= affiche_ligne_timeline('<h3>
+                            <span>'.$fiche['dateevenement'].'</span>
+                            <a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a>
+                        </h3>'.$fiche['texte'], '<a href="'.$fiche['lien'].'" class="ss-circle ss-circle-1">'.$fiche['bf_titre'].'</a>', $fiche['listeListeTypeDactualites'], '');
+    }
+  }
+
+
+  ?>
+      <h2 class="ss-subtitle">MrFlos's Timeline</h2>
+      <div id="ss-links" class="ss-links">
+        <?php 
+          foreach ($years as $key => $value) {
+            echo '<a href="#annee'.$value.'">'.$value.'</a>';
+          }
+        ?>
+      </div>
+      <div id="ss-container" class="ss-container">
+        <?php echo $output; ?>
+      </div>
+<?php
+ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script type="text/javascript">
+    $(function() {
+
+      var $sidescroll = (function() {
+          
+          // the row elements
+        var $rows     = $(\'#ss-container > div.ss-row\'),
+          // we will cache the inviewport rows and the outside viewport rows
+          $rowsViewport, $rowsOutViewport,
+          // navigation menu links
+          $links      = $(\'#ss-links > a\'),
+          // the window element
+          $win      = $(window),
+          // we will store the window sizes here
+          winSize     = {},
+          // used in the scroll setTimeout function
+          anim      = false,
+          // page scroll speed
+          scollPageSpeed  = 2000 ,
+          // page scroll easing
+          scollPageEasing = \'easeInOutExpo\',
+          // perspective?
+          hasPerspective  = false,
+          
+          perspective   = hasPerspective && Modernizr.csstransforms3d,
+          // initialize function
+          init      = function() {
+            
+            // get window sizes
+            getWinSize();
+            // initialize events
+            initEvents();
+            // define the inviewport selector
+            defineViewport();
+            // gets the elements that match the previous selector
+            setViewportRows();
+            // if perspective add css
+            if( perspective ) {
+              $rows.css({
+                \'-webkit-perspective\'     : 600,
+                \'-webkit-perspective-origin\'  : \'50% 0%\'
+              });
+            }
+            // show the pointers for the inviewport rows
+            $rowsViewport.find(\'a.ss-circle\').addClass(\'ss-circle-deco\');
+            // set positions for each row
+            placeRows();
+            
+          },
+          // defines a selector that gathers the row elems that are initially visible.
+          // the element is visible if its top is less than the window\'s height.
+          // these elements will not be affected when scrolling the page.
+          defineViewport  = function() {
+          
+            $.extend( $.expr[\':\'], {
+            
+              inviewport  : function ( el ) {
+                if ( $(el).offset().top < winSize.height ) {
+                  return true;
+                }
+                return false;
+              }
+            
+            });
+          
+          },
+          // checks which rows are initially visible 
+          setViewportRows = function() {
+            
+            $rowsViewport     = $rows.filter(\':inviewport\');
+            $rowsOutViewport  = $rows.not( $rowsViewport )
+            
+          },
+          // get window sizes
+          getWinSize    = function() {
+          
+            winSize.width = $win.width();
+            winSize.height  = $win.height();
+          
+          },
+          // initialize some events
+          initEvents    = function() {
+            
+            // navigation menu links.
+            // scroll to the respective section.
+            $links.on( \'click.Scrolling\', function( event ) {
+              
+              // scroll to the element that has id = menu\'s href
+              $(\'html, body\').stop().animate({
+                scrollTop: $( $(this).attr(\'href\') ).offset().top
+              }, scollPageSpeed, scollPageEasing );
+              
+              return false;
+            
+            });
+            
+            $(window).on({
+              // on window resize we need to redefine which rows are initially visible (this ones we will not animate).
+              \'resize.Scrolling\' : function( event ) {
+                
+                // get the window sizes again
+                getWinSize();
+                // redefine which rows are initially visible (:inviewport)
+                setViewportRows();
+                // remove pointers for every row
+                $rows.find(\'a.ss-circle\').removeClass(\'ss-circle-deco\');
+                // show inviewport rows and respective pointers
+                $rowsViewport.each( function() {
+                
+                  $(this).find(\'div.ss-left\')
+                       .css({ left   : \'0%\' })
+                       .end()
+                       .find(\'div.ss-right\')
+                       .css({ right  : \'0%\' })
+                       .end()
+                       .find(\'a.ss-circle\')
+                       .addClass(\'ss-circle-deco\');
+                
+                });
+              
+              },
+              // when scrolling the page change the position of each row  
+              \'scroll.Scrolling\' : function( event ) {
+                
+                // set a timeout to avoid that the 
+                // placeRows function gets called on every scroll trigger
+                if( anim ) return false;
+                anim = true;
+                setTimeout( function() {
+                  
+                  placeRows();
+                  anim = false;
+                  
+                }, 10 );
+              
+              }
+            });
+          
+          },
+          // sets the position of the rows (left and right row elements).
+          // Both of these elements will start with -50% for the left/right (not visible)
+          // and this value should be 0% (final position) when the element is on the
+          // center of the window.
+          placeRows   = function() {
+            
+              // how much we scrolled so far
+            var winscroll = $win.scrollTop(),
+              // the y value for the center of the screen
+              winCenter = winSize.height / 2 + winscroll;
+            
+            // for every row that is not inviewport
+            $rowsOutViewport.each( function(i) {
+              
+              var $row  = $(this),
+                // the left side element
+                $rowL = $row.find(\'div.ss-left\'),
+                // the right side element
+                $rowR = $row.find(\'div.ss-right\'),
+                // top value
+                rowT  = $row.offset().top;
+              
+              // hide the row if it is under the viewport
+              if( rowT > winSize.height + winscroll ) {
+                
+                if( perspective ) {
+                
+                  $rowL.css({
+                    \'-webkit-transform\' : \'translate3d(-75%, 0, 0) rotateY(-90deg) translate3d(-75%, 0, 0)\',
+                    \'opacity\'     : 0
+                  });
+                  $rowR.css({
+                    \'-webkit-transform\' : \'translate3d(75%, 0, 0) rotateY(90deg) translate3d(75%, 0, 0)\',
+                    \'opacity\'     : 0
+                  });
+                
+                }
+                else {
+                
+                  $rowL.css({ left    : \'-50%\' });
+                  $rowR.css({ right     : \'-50%\' });
+                
+                }
+                
+              }
+              // if not, the row should become visible (0% of left/right) as it gets closer to the center of the screen.
+              else {
+                  
+                  // row\'s height
+                var rowH  = $row.height(),
+                  // the value on each scrolling step will be proporcional to the distance from the center of the screen to its height
+                  factor  = ( ( ( rowT + rowH / 2 ) - winCenter ) / ( winSize.height / 2 + rowH / 2 ) ),
+                  // value for the left / right of each side of the row.
+                  // 0% is the limit
+                  val   = Math.max( factor * 50, 0 );
+                  
+                if( val <= 0 ) {
+                
+                  // when 0% is reached show the pointer for that row
+                  if( !$row.data(\'pointer\') ) {
+                  
+                    $row.data( \'pointer\', true );
+                    $row.find(\'.ss-circle\').addClass(\'ss-circle-deco\');
+                  
+                  }
+                
+                }
+                else {
+                  
+                  // the pointer should not be shown
+                  if( $row.data(\'pointer\') ) {
+                    
+                    $row.data( \'pointer\', false );
+                    $row.find(\'.ss-circle\').removeClass(\'ss-circle-deco\');
+                  
+                  }
+                  
+                }
+                
+                // set calculated values
+                if( perspective ) {
+                  
+                  var t   = Math.max( factor * 75, 0 ),
+                    r   = Math.max( factor * 90, 0 ),
+                    o   = Math.min( Math.abs( factor - 1 ), 1 );
+                  
+                  $rowL.css({
+                    \'-webkit-transform\' : \'translate3d(-\' + t + \'%, 0, 0) rotateY(-\' + r + \'deg) translate3d(-\' + t + \'%, 0, 0)\',
+                    \'opacity\'     : o
+                  });
+                  $rowR.css({
+                    \'-webkit-transform\' : \'translate3d(\' + t + \'%, 0, 0) rotateY(\' + r + \'deg) translate3d(\' + t + \'%, 0, 0)\',
+                    \'opacity\'     : o
+                  });
+                
+                }
+                else {
+                  
+                  $rowL.css({ left  : - val + \'%\' });
+                  $rowR.css({ right   : - val + \'%\' });
+                  
+                }
+                
+              } 
+            
+            });
+          
+          };
+        
+        return { init : init };
+      
+      })();
+      
+      $sidescroll.init();
+      
+    });
+    </script>
+<style>
+h2.ss-subtitle{
+    padding: 10px 10px 40px;
+    font-size: 52px;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.8);
+  position: relative;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+h2.ss-subtitle:before{
+  width: 4px;
+  height: 40px;
+  background: rgba(17,17,22,0.8);
+  content: \'\';
+  position: absolute;
+  right: 75%;
+  margin-right: -4px;
+  bottom: -4px;
+  -moz-border-radius: 2px 2px 0px 0px;
+  -webkit-border-radius: 2px 2px 0px 0px;
+  border-radius: 2px 2px 0px 0px;
+}
+h2.ss-subtitle:after{
+  width: 25%;
+  height: 0px;
+  border-bottom: 4px dotted rgba(17,17,22,0.8);
+  content: \'\';
+  position: absolute;
+  right: 50%;
+  margin-right: -1px;
+  bottom: -4px;
+}
+.ss-links{
+  position: fixed;
+  left: 10px;
+  top: 166px;
+  width: 25%;
+  z-index: 100;
+}
+.ss-links a{
+  background: rgba(0,0,0,0.2);
+  font-size: 16px;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  margin: 5px;
+  float: left;
+  border-radius: 50%;
+  display: block;
+  text-align: center;
+  -webkit-transition: background 0.2s linear;
+  -moz-transition: background 0.2s linear;
+  -o-transition: background 0.2s linear;
+  -ms-transition: background 0.2s linear;
+  transition: background 0.2s linear;
+}
+.ss-links a:hover{
+  background: rgba(0,0,0,0.4);
+}
+.ss-container{
+    width: 100%;
+    position: relative;
+    text-align: left;
+    float: left;
+  overflow: hidden;
+  padding-bottom: 500px;
+}
+.ss-container h2{
+    font-size: 40px;
+    text-transform: uppercase;
+    color: rgba(78,84,123,0.2);
+  text-shadow: 0px 1px 1px #fff;
+  padding: 20px 0px;
+}
+.ss-container:before{
+    position: absolute;
+    width: 4px;
+    background: rgba(17,17,22,0.8);
+    top: 0px;
+    left: 50%;
+  margin-left: -2px;
+    content: \'\';
+    height: 100%;
+}
+.ss-row{
+    width: 100%;
+    clear: both;
+    float: left;
+    position: relative;
+    padding: 30px 0;
+}
+.ss-left, .ss-right{
+    float: left;
+    width: 48%;
+    position: relative;
+}
+.ss-right{
+    padding-left: 2%;
+}
+.ss-left{
+    text-align: right;
+    float: left;
+    padding-right: 2%;
+}
+.ss-circle{
+    border-radius: 50%;
+    overflow: hidden;
+    display: block;
+    text-indent: -9000px;
+    text-align: left;
+    -webkit-box-shadow: 
+    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    0px 0px 0px 12px rgba(61,64,85,0.3);
+    -moz-box-shadow: 
+    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    0px 0px 0px 12px rgba(61,64,85,0.3);
+    box-shadow: 
+    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    0px 0px 0px 12px rgba(61,64,85,0.3);
+  background-size: cover;
+  background-color: #f0f0f0;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: static;
+}
+.ss-small .ss-circle{
+  width: 100px;
+  height: 100px;
+}
+.ss-medium .ss-circle{
+  width: 200px;
+  height: 200px;
+}
+.ss-large .ss-circle{
+  width: 300px;
+  height: 300px;
+}
+.ss-circle-deco:before{
+  width: 29%;
+  height: 0px;
+  border-bottom: 5px dotted #ddd;
+  border-bottom: 5px dotted rgba(17, 17, 22, 0.3);
+  -webkit-box-shadow: 0px 1px 1px #fff;
+  -moz-box-shadow: 0px 1px 1px #fff;
+  box-shadow: 0px 1px 1px #fff;
+  position: absolute;
+  top: 50%;
+  content: \'\';
+  margin-top: -3px;
+}
+.ss-circle-deco:after{
+  width: 0px;
+  height: 0px;
+  border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  content: \'\';
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+}
+.ss-left .ss-circle-deco:before{
+    right: 2%;   
+}
+.ss-right .ss-circle-deco:before{
+    left: 2%;   
+}
+.ss-left .ss-circle-deco:after{
+  right: 0;
+  border-right: 10px solid rgba(17,17,22,0.8);
+}
+.ss-right .ss-circle-deco:after{
+  left: 0;
+  border-left: 10px solid rgba(17,17,22,0.8);
+}
+.ss-left .ss-circle{
+    float: right;
+    margin-right: 30%;
+}
+.ss-right .ss-circle{
+    float: left;
+    margin-left: 30%;
+}
+.ss-container h3{
+    margin-top: 34px;
+  padding: 10px 15px;
+  background: rgba(26, 27, 33, 0.6);
+  text-shadow: 1px 1px 1px rgba(26, 27, 33, 0.8)
+}
+.ss-container .ss-medium h3{
+  margin-top: 82px;
+}
+.ss-container .ss-large h3{
+  margin-top: 133px;
+}
+.ss-container .ss-left h3{
+  border-right: 5px solid rgba(164,166,181,0.8);
+}
+.ss-container .ss-right h3{
+  border-left: 5px solid rgba(164,166,181,0.8);
+}
+.ss-container h3 span{
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    display: block;
+    padding-bottom: 5px;
+}
+.ss-container h3 a{
+    font-size: 28px;
+    color: rgba(255,255,255,0.9);
+    display: block;
+}
+.ss-container h3 a:hover{
+  color: rgba(255,255,255,1);
+}
+</style>'; ?>
+<?php endif; ?>

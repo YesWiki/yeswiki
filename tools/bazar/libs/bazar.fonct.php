@@ -1276,7 +1276,7 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
                             '<a class="controls btn btn-primary ajout_label_liste" title="'.BAZ_AJOUTER_LABEL_LISTE.'"><i class="icon-plus icon-white"></i>&nbsp;'.BAZ_AJOUTER_LABEL_LISTE.'</a>'."\n".'</div>'."\n";
 
     //on rajoute une variable globale pour mettre le javascript en plus a la fin
-    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/bazar/libs/jquery-ui-1.8.21.custom.min.js"></script>
+    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js"></script>
     <script src="tools/bazar/libs/bazar.edit_lists.js"></script>'."\n";
     $tab_formulaire['valeurs_listes'] = $html_valeurs_listes;
 

@@ -310,29 +310,27 @@ $(document).ready(function () {
 
 	$('#formulaire').removeAttr('onsubmit');
 
+	var dateinputs = $('input.bazar-date');
 	Modernizr.load([{
-			test : $.tools,
-		    nope: 'tools/bazar/libs/vendor/jquery.tools.min.1.7.2.js',
-		    complete : function () {
-			  	$.tools.dateinput.localize("fr",  {
-				   months:        'janvier,f&eacute;vrier,mars,avril,mai,juin,juillet,ao&ucirc;t,' +
-									'septembre,octobre,novembre,d&eacute;cembre',
-				   shortMonths:   'jan,f&eacute;v,mar,avr,mai,jun,jul,ao&ucirc;,sep,oct,nov,d&eacute;c',
-				   days:          'dimanche,lundi,mardi,mercredi,jeudi,vendredi,samedi',
-				   shortDays:     'dim,lun,mar,mer,jeu,ven,sam'
+		test : dateinputs.length===0,
+	    nope: 'tools/bazar/libs/vendor/bootstrap-datepicker.js',
+	    complete : function () {	
+	    	if (dateinputs.length>0) {
+		    	$.fn.datepicker.dates['fr'] = {
+		    		days: ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
+		            daysShort: ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+		            daysMin: ["D", "L", "Ma", "Me", "J", "V", "S", "D"],
+		            months: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+		            monthsShort: ["Jan", "Fév", "Mar", "Avr", "Mai", "Jui", "Jul", "Aou", "Sep", "Oct", "Nov", "Déc"]
+		        };
+				dateinputs.datepicker({
+				    format: 'yyyy-mm-dd',
+				    weekStart: 1,
+				    autoclose: true,
+				    language: 'fr'
 				});
-
-				// dateinput initialization. the language is specified with lang- option
-				$("input[type=date]").dateinput({ 
-					lang: 'fr', 
-					format: 'yyyy-mm-dd',
-					offset: [0, 0],
-					selectors: true,
-					speed: 'fast',
-					firstDay: 1,
-					yearRange: [-70,30]  
-				}); 
 			}
-		  }]);
+		}
+	}]);
 
 });

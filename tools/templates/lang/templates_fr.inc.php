@@ -87,4 +87,7 @@ define ('TEMPLATE_SHARE_NETVIBES', 'Partager sur Netvibes');
 define ('TEMPLATE_SHARE_DELICIOUS', 'Partager sur Delicious');
 define ('TEMPLATE_SHARE_GOOGLEREADER', 'Partager sur Google Reader');
 define ('TEMPLATE_SHARE_MAIL', 'Envoyer le contenu de cette page par mail');
+
+// hander exportpages
+define ('TEMPLATE_EXPORT_ONLY_FOR_ADMINS', 'L\'export int&eacute;gral des pages est r&eacute;serv&eacute; &agrave; l\'administrateur');
 ?>
