@@ -288,7 +288,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if (is_array($valliste['label'])) {
             foreach ($valliste['label'] as $key => $label) {
                 $select_html .= '<option value="'.$key.'"';
-                if ($def != '' && strstr($key, $def)) $select_html .= ' selected="selected"';
+                if ($def != '' && $key==$def) $select_html .= ' selected="selected"';
                 $select_html .= '>'.$label.'</option>'."\n";
             }
 

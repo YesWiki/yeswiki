@@ -258,7 +258,7 @@ define ('BAZ_LANGUE_PAR_DEFAUT', 'fr') ; //Indique un code langue par defaut
 define ('BAZ_VAR_URL_LANGUE', 'lang') ; //Nom de la variable GET qui sera passee dans l'URL (Laisser vide pour les sites monolingues)
 
 //code pour l'inclusion des langues NE PAS MODIFIER
-if (BAZ_VAR_URL_LANGUE != '' && isset (${BAZ_VAR_URL_LANGUE})) {
+if (BAZ_VAR_URL_LANGUE != '' && isset(${BAZ_VAR_URL_LANGUE}) && file_exists(BAZ_CHEMIN.'lang'.DIRECTORY_SEPARATOR.'bazar_'.${BAZ_VAR_URL_LANGUE}.'.inc.php')) {
     include_once BAZ_CHEMIN.'lang'.DIRECTORY_SEPARATOR.'bazar_'.${BAZ_VAR_URL_LANGUE}.'.inc.php';
 } else {
     include_once BAZ_CHEMIN.'lang'.DIRECTORY_SEPARATOR.'bazar_'.BAZ_LANGUE_PAR_DEFAUT.'.inc.php';

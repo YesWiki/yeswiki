@@ -34,7 +34,7 @@ if ($act=preg_match_all ("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_head
 
 //On ajoute la derniere version de modernizer
 $template_header = preg_replace ('/<\/head>/', '	<!-- HTML5 and CSS3 availability detection -->'."\n".
-'	<script src="tools/templates/libs/modernizr-2.5.3.min.js"></script>'."\n".
+'	<script src="tools/templates/libs/modernizr-2.6.2.min.js"></script>'."\n".
 '</head>', $template_header);
 
 echo $template_header;
