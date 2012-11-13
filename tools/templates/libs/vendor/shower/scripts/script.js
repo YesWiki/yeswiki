@@ -1,8 +1,11 @@
-if (window.location.search.indexOf('full')) {
-	$('body').addClass('full');
-} else {
-	$('body').addClass('list');
-}
+// if (window.location.search.indexOf('full')) {
+// 	console.log('full');
+// 	$('body').addClass('full');
+// } else {
+// 	console.log('list');
+	
+// }
+$('body').addClass('list');
 
 $('.attached_file').each(function() {
 	var $fig = $(this);
