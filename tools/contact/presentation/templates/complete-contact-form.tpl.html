@@ -1,0 +1,39 @@
+<form id="ajax-contact-form" class="ajax-form form-horizontal <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
+	<div class="control-group">
+		<label class="control-label"><?php echo CONTACT_YOUR_NAME; ?></label>
+		<div class="controls">
+			<input required class="contact-name" type="text" name="name" value="" />
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label"><?php echo CONTACT_YOUR_MAIL; ?></label>
+		<div class="controls">
+			<input required class="contact-mail" type="email" name="email" value="" />
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label"><?php echo CONTACT_SUBJECT; ?></label>
+		<div class="controls">
+			<input required class="contact-subject" type="text" name="subject" value="" />
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label"><?php echo CONTACT_YOUR_MESSAGE; ?></label>
+		<div class="controls">
+			<textarea required class="contact-message" name="message"></textarea>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label">&nbsp;</label>
+		<div class="controls">
+			<button class="btn btn-primary contact-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo CONTACT_SEND_MESSAGE; ?></button>
+		</div>
+	</div>
+	<input type="hidden" name="mail" value="<?php echo $mail; ?>" />
+	<input type="hidden" name="entete" value="<?php echo $entete; ?>" />	
+	<input type="hidden" name="type" value="contact" />	
+</form>

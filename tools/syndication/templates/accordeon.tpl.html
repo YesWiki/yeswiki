@@ -1,0 +1,15 @@
+<!-- SYNDICATION - DEBUT -->
+<!-- Attention ce template nécéssite le javascript de mootools ainsi que le bout de code accordeon -->
+<div id="accordion" class="liste_accordion_rss">
+<?php foreach ($syndication['pages'] as $page) : ?>
+	<h3 class="toggler atStart">
+		<?php echo $page['date'];?><?php if ($page['date']!='') : ?> - <?php endif; ?>
+		<?php echo $page['titre'];?>
+	</h3>
+	<div class="element atStart">
+	<span class="description_rss"><?php echo $page['description'];?></span><br /><br />
+	<a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'onclick="window.open(this.href); return false;"':'';?>>Voir l'article sur le site</a><br /><br />
+	</div>
+<?php endforeach; ?>	 
+</div>
+<!-- SYNDICATION - FIN -->

@@ -1,0 +1,20 @@
+<?php foreach($commentaires as $comment): ?>
+	<a name="<?php echo $comment['tag'];?>"></a>
+	<div class="comment well well-small">
+		<div class="commentinfo">
+			<?php echo $comment["infos"];?>
+		</div>
+		<div class="commenthtml">
+			<?php echo $comment["body"];?>
+		</div>
+		<div class="commentactions">
+			<?php echo $comment["actions"];?>
+		</div>
+	</div>		
+	<div class="commentreponses">
+		<?php if(!empty($comment["reponses"])): ?>
+			<?php echo $comment["reponses"]; ?>
+		<?php endif; ?>				
+	</div>
+<?php endforeach; ?>
+<?php echo $commentform; ?>

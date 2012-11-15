@@ -3,18 +3,26 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-$class = $this->GetParameter('class');
+// on choisit le template utilisé
+$template = $this->GetParameter('template'); 
+if (empty($template)) {
+	$template = 'moteurrecherche_basic.tpl.html';
+}
 
-$output = '<form action="'.$this->href("show","RechercheTexte").'" method="get" class="search-form">
-	<input name="wiki" value="RechercheTexte" type="hidden" />
-	<input name="phrase" tabindex="1" accesskey="C" title="Rechercher dans YesWiki [alt-shift-C]" class="search_input" value="';
-$output .= (isset($_POST['phrase'])) ? $_POST['phrase'] : "Recherche...";
-$output .= '" onblur="if (this.value == \'\') {this.value = \'Recherche...\';}" onfocus="if (this.value==\'Recherche...\') {this.value=\'\';}" size="8" />
-	<button title="Rechercher les pages comportant ce texte." name="button" type="submit" class="search_button">
-		<img alt="GO" src="tools/templates/presentation/images/search-button.png">
-	</button>
-</form>';
+// on peut ajouter des classes à la classe par défaut .searchform
+$searchelements['class'] = ($this->GetParameter('class') ? 'form-search '.$this->GetParameter('class') : 'form-search');
+$searchelements['btnclass'] = ($this->GetParameter('btnclass') ? ' '.$this->GetParameter('btnclass') : '');
+$searchelements['iconclass'] = ($this->GetParameter('iconclass') ? ' '.$this->GetParameter('iconclass') : '');
 
-echo ((!empty($class)) ? '<div class="'.$class.'">'."\n".$output."\n".'</div>' : $output);
+// on peut changer l'url de recherche
+$searchelements['url'] = ($this->GetParameter('url') ? $this->GetParameter('url') : $this->href("show", "RechercheTexte"));
+
+// si une recherche a été effectuée, on garde les mots clés
+$searchelements['phrase'] = (isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : "");
+
+include_once('tools/templates/libs/squelettephp.class.php');
+$searchtemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
+$searchtemplate->set($searchelements);
+echo $searchtemplate->analyser();
 
 ?>

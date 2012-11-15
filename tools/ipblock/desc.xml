@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkipblock" version="0.1" active="1">
+  <author>David</author>
+  <label>Blockage modification Wiki par region</label>
+  <desc>Blockage modification Wiki par region</desc>
+</plugin>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkhasshcash" version="$Name: v0r8-anacoluthe $" active="1">
-  <author>David</author>
-  <label>Hashcash adaptation pour wikini</label>
-  <desc>Hashcash adaptation pour wikini</desc>
+<plugin name="wkhasshcash" version="0.1" active="1">
+  <author>David Delon</author>
+  <label>Hashcash adaptation pour YesWiki</label>
+  <desc>Hashcash adaptation pour YesWiki</desc>
 </plugin>

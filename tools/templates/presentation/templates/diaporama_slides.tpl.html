@@ -1,0 +1,22 @@
+<?php $i=0; foreach($slides as $slide): $i++; ?>	
+    <div id="slidenumber<?php echo $i; ?>" class="slide<?php if (strpos($slide['html'],'<img ' )) echo ' cover'; ?>"><div>
+    	<section>
+			<?php if (isset($slide['title'])) : ?>
+			<header>
+				<h2><?php echo $slide['title']; ?></h2>
+			</header>
+			<?php endif; ?>
+			<?php echo $slide['html']; ?>
+			<small class="byline"></small>
+			<footer class="notes"></footer>
+	    </section>
+	</div></div><!-- /div.slide -->
+<?php endforeach; ?>
+<div class="slide-progress"><div></div></div><!-- /div.progress -->
+
+<?php
+	//on prepare le javascript du diaporama, qui sera ajoute par l'action footer de template, a la fin du html
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').
+	'<link rel="stylesheet" href="tools/templates/libs/vendor/shower/themes/yeswiki/styles/style.css" />'."\n".
+	'<script src="tools/templates/libs/vendor/shower/scripts/script.js"></script>'."\n";
+?>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wktoc" version="0.1" active="1">
+  <author>David Delon (source David De Cotigny)</author>
+  <label>Table des matieres</label>
+  <desc>Table des matieres d'une page Wiki</desc>
+</plugin>

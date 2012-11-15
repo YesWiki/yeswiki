@@ -1,0 +1,13 @@
+<?php if (count($tweets)>0): ?>
+<div class="twitter_feed <?php echo $class;?>"> <!-- SYNDICATION TWITTER - DEBUT -->
+	<ul class="tweet_list">
+		<?php foreach ($tweets as $tweet) : ?>
+		<li class="tweet_item">	
+			<?php if ($tweet['username'] != ''): ?><a class="tweet_username_link" href="https://twitter.com/#!/<?php echo $tweet['username'];?>"><?php echo $tweet['username'];?></a><br /><?php endif; ?>
+			<div class="tweet_content"><?php echo $tweet['title'];?></div>
+			<span class="date_rss"><?php echo $tweet['date'];?></span>
+		</li>
+		<?php endforeach; ?>
+	</ul>
+</div> <!-- SYNDICATION TWITTER - FIN -->
+<?php endif; ?>

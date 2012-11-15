@@ -1,0 +1,10 @@
+<!-- SYNDICATION - DEBUT -->
+<ul class="liste_rss">
+<?php foreach ($syndication['pages'] as $page) : ?>
+	<li class="titre_rss">
+		<?php if ($page['date']!='') : ?><span class="date_rss"><?php echo $page['date'];?></span><?php endif; ?>
+		<a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'onclick="window.open(this.href); return false;"':'';?>><?php echo $page['titre'];?></a>
+	</li>
+<?php endforeach; ?>
+</ul>
+<!-- SYNDICATION - FIN -->

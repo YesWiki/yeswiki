@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wknavigation" version="$Name: v0r8-anacoluthe $" active="0">
-  <author>Philippe Drouot</author>
-  <label>Navigation</label>
-  <desc>Menu de navigation pour Wikini</desc>
-</plugin>
