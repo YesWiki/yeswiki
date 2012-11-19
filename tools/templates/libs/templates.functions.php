@@ -192,8 +192,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 		$buttons = '';
 		//si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
 		if ($GLOBALS['wiki']->GetMethod() == "diaporama") {
-			$buttons .= '<div class="buttons-action"><a class="button-edit" href="'.$GLOBALS['wiki']->href('edit',$pagetag).'">&Eacute;diter</a>'."\n";
-			$buttons .= '<a class="button-quit" href="'.$GLOBALS['wiki']->href('',$pagetag).'">Quitter</a></div>'."\n";
+			$buttons .= '<a class="btn" href="'.$GLOBALS['wiki']->href('',$pagetag).'">&times;</a>'."\n";
 		}
 		
 		//on affiche le template
