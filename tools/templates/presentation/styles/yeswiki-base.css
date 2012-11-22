@@ -200,7 +200,7 @@ display:inline-block;
 margin: 0;
 }
 .footer-hidden {float:right;}
-
+.footer .dropdown-menu a {display:block; text-align: left;}
 
 /* Ajustements mode édition */
 #body {width:99%;}
@@ -290,12 +290,6 @@ overflow: auto;
 .form-search {margin:0;}
 .form-search .search-btn {line-height: 20px;}
 
-/* diaporama 
-html.slideshow-html, body.slideshow-body {
-height: 100%;
-}
-
-.slideshow-container {
-  margin:5%;
-  height:90%;
-}*/
+.slideshow-html, .container-slide-basic .carousel {height:100%}
+.slideshow-body {height:90%}
+.container-slide-basic {padding:18px; height:90%;}

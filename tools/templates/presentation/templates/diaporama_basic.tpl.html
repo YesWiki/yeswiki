@@ -1,0 +1,29 @@
+<div class="pull-right"><?php $first = true; $pagination = ''; echo $buttons;?></div>
+<div class="clearfix"></div>
+
+<div id="container" class="container container-slide-basic">
+	<div id="slide_show_container_<?php echo $pagetag;?>" class="carousel slide <?php echo $class;?>">
+		<div class="carousel-inner">
+		<?php foreach($slides as $key => $slide): ?>
+			<div id="slide'.$key.'" class="item<?php if($first) {echo ' active'; $first=false;}?>">
+            <?php
+            	echo '<h1>'.$slide['title'].'</h1>'."\n";
+            	echo $slide['html'];
+				$pagination .= '<option data-link="#slide'.$key.'">'.$slide['title'].'</option>'."\n";
+			?>
+	        </div> <!-- /.item -->
+		<?php endforeach; ?>
+		</div> <!-- /.carousel-inner -->
+	</div> <!-- /#slide_show_container_<?php echo $pagetag;?> -->
+</div> <!-- /#container -->
+		
+<a data-slide="prev" href="#slide_show_container_<?php echo $pagetag;?>" class="left carousel-control"><</a>
+<a data-slide="next" href="#slide_show_container_<?php echo $pagetag;?>" class="right carousel-control">></a>
+
+<div class="slide-navigation">
+	<div class="t" id="thumbs_<?php echo $pagetag;?>">
+		<select class="navi">
+			<?php echo $pagination; ?>
+		</select> <!-- end div.navi -->
+	</div> <!-- end div.t -->
+</div> <!-- end div.slide-navigation -->
