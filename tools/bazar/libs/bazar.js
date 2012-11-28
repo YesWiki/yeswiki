@@ -38,54 +38,6 @@ $(document).ready(function () {
 		$("ul.css-tabs").tabs("fieldset.tab", { onClick: function(){} } );
 	});
 	
-	//tabulations (transforme les fieldsets de classe tab en tabulation)
-	$(".BAZ_cadre_fiche, #formulaire").each(function() {
-		//nb de tabs par fiche
-		var nbtotal = $(this).children("fieldset.tab").size() - 1;
-		
-		//on ajoute le nom des tabs à partir de la legende du fieldset
-		$(this).children("fieldset.tab:first").before("<ul class='css-tabs'></ul>");
-		$(this).children("fieldset.tab").each(function(i) {
-			$(this).addClass("tab" + i)
-			if (i==0)
-			{
-				$(this).append('<a class="btn next-tab">Suivant &raquo;</a>');
-			}
-			else if (i==nbtotal)
-			{
-				$(this).append('<a class="btn prev-tab">&laquo; Pr&eacute;c&eacute;dent</a>');
-			}
-			else
-			{
-				$(this).append('<a class="btn prev-tab">&laquo; Pr&eacute;c&eacute;dent</a><a class="btn next-tab">Suivant &raquo;</a>');
-			}
-			$(this).prevAll('ul.css-tabs').append("<li class='liste" + i + "'><a href=\"#\">"+$(this).find('legend:first').hide().html()+"</a></li>");
-		});
-	});
-	//initialise tabulations
-	if ($("ul.css-tabs").size() > 1)
-	{
-		$("ul.css-tabs").tabs("> .tab", { onClick: function(){if (divcarto) {	initialize(); }} } );
-	} 
-	else if ($("ul.css-tabs").size() == 1)
-	{
-		$("ul.css-tabs").tabs("fieldset.tab", { onClick: function(){if (divcarto) {	initialize(); }} } );
-	}
-	var api = $("ul.css-tabs").data("tabs");
-	// "next tab" button
-	$("a.next-tab").live('click',function() {
-		api.next();
-		$('ul.css-tabs').scrollTo();
-		return false;
-	});
-
-	// "previous tab" button
-	$("a.prev-tab").live('click',function() {
-		api.prev();
-		$('ul.css-tabs').scrollTo();
-		return false;
-	});
-	
 	// initialise les tooltips d'aide
     $("img.tooltip_aide[title]").each(function() {
     	$(this).tooltip({ 
@@ -332,5 +284,20 @@ $(document).ready(function () {
 			}
 		}
 	}]);
+
+	// Onglets
+	$('.nav-tabs a').click(function (e) {
+		e.preventDefault();
+		$(this).tab('show');
+	});
+	// code pour les boutons suivant / precedent
+	$('.tab-content .pager a').click(function (e) {
+		e.preventDefault();
+		var lientab = $(this).attr('href');
+		$('.nav-tabs a[href="'+lientab+'"]').tab('show'); // Select tab by name
+	}); 
+
+	$('.tab-pane').removeAttr('style');
+
 
 });

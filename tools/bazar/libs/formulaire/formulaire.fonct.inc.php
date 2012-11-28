@@ -585,7 +585,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $tagsexistants = '\''.implode('\',\'', $response).'\'';
 
         $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
-            <script src="tools/tags/libs/jquery-ui-1.8.16.custom.min.js"></script>
+            <script src="tools/tags/libs/jquery-ui-1.9.1.custom.min.js"></script>
             <script src="tools/tags/libs/tag-it.js"></script>
             <script>
             $(function(){
