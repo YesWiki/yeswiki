@@ -85,7 +85,27 @@ if there are any problems, let chris know.
 	      	'ACEDITOR_LINK'				: 'Lien',
 	      	'ACEDITOR_LINK_PROMPT'		: 'Entrez l\'adresse URL',
 	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte s&eacute;lectionn&eacute; ( Ctrl-l )'
-	      }
+	      },
+	    en : {
+	    	'ACEDITOR_SAVE'				: 'Save',
+	      	'ACEDITOR_FORMAT'			: 'Format',
+	      	'ACEDITOR_TITLE1'			: 'Huge title',
+	      	'ACEDITOR_TITLE2'			: 'Very big title',
+	      	'ACEDITOR_TITLE3'			: 'Big title',
+	      	'ACEDITOR_TITLE4'			: 'Basic title',
+	      	'ACEDITOR_TITLE5'			: 'Small title',
+	      	'ACEDITOR_BIGGER_TEXT'		: 'Bigger text',
+	      	'ACEDITOR_HIGHLIGHT_TEXT'	: 'Highlighted text',
+	      	'ACEDITOR_SOURCE_CODE'		: 'Source code',
+	      	'ACEDITOR_BOLD_TEXT'		: 'Bold text ( Ctrl-b )',
+	      	'ACEDITOR_ITALIC_TEXT'		: 'Italic text ( Ctrl-i )',
+	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Underline the selected text ( Ctrl-u )',
+	      	'ACEDITOR_STRIKE_TEXT'		: 'Stroke the selected text ( Ctrl-y )',
+	      	'ACEDITOR_LINE'				: 'Insert horizontal line ( Ctrl-h )',
+	      	'ACEDITOR_LINK'				: 'Link',
+	      	'ACEDITOR_LINK_PROMPT'		: 'Enter the link adress',
+	      	'ACEDITOR_LINK_TITLE'		: 'Add a link to selected text ( Ctrl-l )'
+	    }
 	  },
 	  syntax = { 
       	yeswiki : {
@@ -150,6 +170,8 @@ if there are any problems, let chris know.
 	      }
 	  };
 
+	
+
   // The actual plugin constructor
   function Plugin( element, options ) {
     this.element = element;
@@ -159,11 +181,20 @@ if there are any problems, let chris know.
     // is generally empty as we don't want to alter the default options for
     // future instances of the plugin
     this.options = $.extend( {}, defaults, options) ;
+    
     this.lang = lang;
     this.syntax = syntax;
 
     this._defaults = defaults;
     this._name = pluginName;
+
+    // gestion du multilinguisme
+	var htmllang = $('html').attr('lang');
+	if (htmllang !== 'undefined' && htmllang in this.lang) {
+	  	this.options.lang = htmllang;
+	} else {
+	  	this.options.lang = 'fr';
+	}
 
     this.init();
   }
