@@ -7,8 +7,8 @@ if (!defined("WIKINI_VERSION"))
 $yeswiki_javascripts = "\n".
 '	<!-- javascripts -->'."\n";
 
-$yeswiki_javascripts .= '	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>'."\n".
-						'	<script>window.jQuery || document.write(\'<script src="tools/templates/libs/jquery-1.8.0.min.js"><\/script>\')</script>'."\n";
+$yeswiki_javascripts .= '	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>'."\n".
+						'	<script>window.jQuery || document.write(\'<script src="tools/templates/libs/jquery-1.8.2.min.js"><\/script>\')</script>'."\n";
 
 // javascripts de base, nécessaires au bon fonctionnement de YesWiki
 $yeswiki_javascripts .= '	<script src="tools/templates/libs/bootstrap.min.js"></script>'."\n".

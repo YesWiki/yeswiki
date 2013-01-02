@@ -14,8 +14,9 @@ a:hover {color: #0055cc;}
 #container {
 margin-top:15px;
 margin-bottom:15px;
-background: rgba(255, 255, 255, 0.9);
-filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, StartColorStr='#E5ffffff', EndColorStr='#E5ffffff');  
+background: #FFF;
+/*background: rgba(255, 255, 255, 0.9);
+filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, StartColorStr='#E5ffffff', EndColorStr='#E5ffffff');  */
 zoom: 1;
 -moz-border-radius:4px;
 -webkit-border-radius:4px;

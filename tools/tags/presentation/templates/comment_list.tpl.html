@@ -1,31 +1,20 @@
-<div id="accordion-comments-<?=$tag;?>" class="accordion">
-	<div class="accordion-group">
-		<div class="accordion-heading">
-			<a class="accordion-toggle comment-title" href="#comments-list-<?=$tag;?>" data-parent="#accordion-comments-<?=$tag;?>" data-toggle="collapse"><i class="icon-comment"></i>&nbsp;Commentaires</a>
+<?php foreach($commentaires as $comment): ?>
+	<a name="<?php echo $comment['tag'];?>"></a>
+	<div class="comment well well-small">
+		<div class="commentinfo">
+			<?php echo $comment["infos"];?>
 		</div>
-		<div class="accordion-body collapse comments-page-microblog" id="comments-list-<?=$tag;?>">
-		    <div class="accordion-inner">
-				<?php foreach($commentaires as $comment): ?>
-				<a name="<?=$comment['tag'];?>"></a>
-				<div class="comment">
-					<div class="commentinfo">
-						<?=$comment["infos"];?>
-					</div>
-					<div class="commenthtml">
-						<?=$comment["body"];?>
-					</div>
-					<div class="commentactions">
-						<?=$comment["actions"];?>
-					</div>
-				</div>		
-				<div class="commentreponses">
-					<?php if(!empty($comment["reponses"])): ?>
-						<?=$comment["reponses"]; ?>
-					<?php endif; ?>				
-				</div>
-				<?php endforeach; ?>
-				<?=$commentform; ?>
-			</div>
+		<div class="commenthtml">
+			<?php echo $comment["body"];?>
 		</div>
+		<div class="commentactions">
+			<?php echo $comment["actions"];?>
+		</div>
+	</div>		
+	<div class="commentreponses">
+		<?php if(!empty($comment["reponses"])): ?>
+			<?php echo $comment["reponses"]; ?>
+		<?php endif; ?>				
 	</div>
-</div>
+<?php endforeach; ?>
+<?php echo $commentform; ?>

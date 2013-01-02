@@ -34,7 +34,7 @@ define ('TEMPLATE_RSS_LAST_COMMENTS', 'Flux RSS des derniers commentaires');
 define ('TEMPLATE_DEFAULT_THEME_USED', 'Le template par d&eacute;faut est donc utilis&eacute;');
 define ('TEMPLATE_NO_THEME_FILES', 'Certains (ou tous les) fichiers du template ont disparu');
 define ('TEMPLATE_NO_DEFAULT_THEME', 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site');
-define ('TEMPLATE_CUSTOM_GRAPHICS', 'Personnalisation graphique de la page');
+define ('TEMPLATE_CUSTOM_GRAPHICS', 'Apparence de la page');
 define ('TEMPLATE_SAVE', 'Sauver');
 define ('TEMPLATE_APPLY', 'Appliquer');
 define ('TEMPLATE_CANCEL', 'Annuler');

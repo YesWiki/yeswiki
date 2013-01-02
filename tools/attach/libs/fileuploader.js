@@ -255,7 +255,7 @@ qq.FileUploaderBasic = function(o){
         action: '/server/upload',
         params: {},
         button: null,
-        multiple: true,
+        multiple: false,
         maxConnections: 3,
         // validation        
         allowedExtensions: [],               
@@ -485,7 +485,7 @@ qq.FileUploader = function(o){
         listElement: null,
                 
         template: '<div class="qq-uploader">' + 
-                '<div class="qq-upload-drop-area"><span>Glisser-d&eacute;poser les fichiers ici.</span></div>' +
+                //'<div class="qq-upload-drop-area"><span>Glisser-d&eacute;poser les fichiers ici.</span></div>' +
                 '<div class="qq-upload-button btn"><i class="icon-upload"></i>&nbsp;Joindre / Ins&eacute;rer un fichier</div>' +
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
@@ -529,7 +529,7 @@ qq.FileUploader = function(o){
     this._button = this._createUploadButton(this._find(this._element, 'button'));        
     
     this._bindCancelEvent();
-    this._setupDragDrop();
+    //this._setupDragDrop();
 };
 
 // inherit from Basic Uploader
@@ -811,7 +811,7 @@ qq.UploadButton.prototype = {
             top: 0,
             fontFamily: 'Arial',
             // 4 persons reported this, the max values that worked for them were 243, 236, 236, 118
-            fontSize: '118px',
+            fontSize: '14px',
             margin: 0,
             padding: 0,
             cursor: 'pointer',
@@ -1247,12 +1247,15 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 });
 
 
+/*************************************************************************************************************************************************************/
+/*************************************************************************************************************************************************************/
+/*************************************************************************************************************************************************************/
+/**************************************************         Plugin de création d'un bouton d'upload        ***************************************************/
+/*************************************************************************************************************************************************************/
+/*************************************************************************************************************************************************************/
+/*************************************************************************************************************************************************************/
 
 
-
-
-
-/****************         Plugin de création d'un bouton d'upload        *****************/
 ;(function ( $, window, undefined ) {
     
     var pluginName = 'uploadbutton',
@@ -1274,54 +1277,50 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     Plugin.prototype.init = function () {
         // code goes here
         var $this = $(this.element);
+
+        function deleteUploadModal() {
+            // on supprime l'element dans la liste
+            $('#UploadModal .modal-body li.qq-upload-success').remove();
+            $('#UploadModal .qq-upload-list').empty().appendTo($this.find('.qq-uploader'));
+            $('#UploadModal').on('hidden', function () {$(this).remove();}).modal('hide'); 
+        }
         
         function handleuploadbuttons() {
             // On annule l'insertion de fichier
-            $('#UploadModal .btn-cancel-upload').on('click', function(event) {
-                
-                // TODO: supprimer le fichier associé
+            $('#UploadModal .btn-cancel-upload, #UploadModal .close').on('click', function(event) {
+                // TODO: supprimer le fichier associe? peut etre laisser l'admin le faire par le filemanager?
             
-                // on supprime l'element dans la liste
-                $(this).parents('li.qq-upload-success').slideUp(function() {
-                    $(this).remove();
-                    // on ferme l'overlay si c'est le dernier
-                    if ($('.qq-upload-list li').length == 0) {  
-                        $('#UploadModal').modal('hide'); 
-                    }
-                });
-
-                event.preventDefault();
-                return false;
-                
+                deleteUploadModal();
+                return false;              
             });
             
-            // on insère l'action attach bien paramétrée!
+            // On insère l'action attach bien paramétrée!
             $('#UploadModal .btn-insert-upload').on('click', function(event) {
-                
-                var nomfich = $(this).parents('li.qq-upload-success').find('.filename').val();
-                var description = $(this).parents('li.qq-upload-success').find('.attach_alt').val();
+                var fileinfo = $('#UploadModal li.qq-upload-success');
+                var nomfich = fileinfo.find('.filename').val();
+                var description = fileinfo.find('.attach_alt').val();
                 
                 var actionattach = '{{attach file="'+nomfich+'" desc="'+description+'"';
                 
-                var imagesize = $(this).parents('li.qq-upload-success').find('input[name=attach_imagesize]:checked').val();
+                var imagesize = fileinfo.find('input[name=attach_imagesize]:checked').val();
                 if (typeof imagesize != 'undefined') {
                     actionattach += ' size="'+imagesize+'"';
                 }
                 
-                var imagealign = $(this).parents('li.qq-upload-success').find('input[name=attach_align]:checked').val();
+                var imagealign = fileinfo.find('input[name=attach_align]:checked').val();
                 if (typeof imagealign != 'undefined') {
                     actionattach += ' class="'+imagealign;
                     if (typeof imagesize != 'undefined') {actionattach += ' '+imagesize;}
-                    $(this).parents('li.qq-upload-success').find('input[name="attach_css_class"]:checked').each(function() {actionattach += ' '+$(this).val();});
+                    fileinfo.find('input[name="attach_css_class"]:checked').each(function() {actionattach += ' '+$(this).val();});
                     actionattach += '"';
                 }
                 
-                var imagelink = $(this).parents('li.qq-upload-success').find('.attach_link').val();
+                var imagelink = fileinfo.find('.attach_link').val();
                 if (typeof imagelink != 'undefined' && imagelink!=='') {
                     actionattach += ' link="'+imagelink+'"';
                 }
                 
-                var imagecaption = $(this).parents('li.qq-upload-success').find('.attach_caption').val();
+                var imagecaption = fileinfo.find('.attach_caption').val();
                 if (typeof imagecaption != 'undefined' && imagecaption!=='') {
                     actionattach += ' caption="'+imagecaption+'"';
                 }
@@ -1329,16 +1328,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
                 actionattach += '}}';
                 
                 // on ajoute le code de l'action attach au mode édition
-                wrapSelectionBis($('#body')[0], actionattach, "");
+                wrapSelection($('#body')[0], actionattach, "");
                 
                 // on supprime l'element dans la liste
-                $(this).parents('li.qq-upload-success').slideUp(function() {
-                    $(this).remove();
-                    // on ferme l'overlay si c'est le dernier   
-                    if ($('.qq-upload-list li').length == 0) {      
-                        $('#UploadModal').modal('hide'); 
-                    }
-                });
+                fileinfo.remove();    
+                deleteUploadModal();
                 
                 event.preventDefault();
                 return false;
@@ -1354,28 +1348,9 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
             debug: false,
 
             onSubmit: function(id, fileName){
-
                 // création de la fenetre d'envoi
                 var UploadModal = $('<div>').attr({'class':"modal hide fade", 'id':"UploadModal", 'tabindex':"-1", 'role':"dialog", 'aria-labelledby':"myModalLabel"})
-                .html('<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h3 id="myModalLabel">Joindre / Ins&eacute;rer un fichier</h3></div><div class="modal-body"></div><div class="modal-footer"><a href="#" data-dismiss="modal" role="button" class="btn btn-danger btn-cancel-all">Annuler tous les envois</a></div>').appendTo('body').modal('show').find('.modal-body').append($('.qq-upload-list'));
-
-               $('#UploadModal').on('hidden', function () {
-                    $('.qq-upload-list').empty().appendTo($this.find('.qq-uploader'));
-                    $(this).remove();
-                })
-
-                // On veut fermer la fenetre     
-                $('#UploadModal .btn-cancel-all, #UploadModal .close').on('click',function(event) {
-                    if (confirm("Voulez-vous vraiment annuler les envois en cours ?")) {
-                        // TODO: supprimer les fichiers associés
-                        return true;
-                    } 
-                    else {
-                        event.preventDefault();
-                        return false;
-                    }
-                });
-
+                .html('<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h3 id="myModalLabel">Joindre / Ins&eacute;rer un fichier</h3></div><div class="modal-body"></div><div class="modal-footer"><a href="#" data-dismiss="modal" role="button" class="btn btn-cancel-upload">Annuler cet envoi</a><button name="insert" class="btn btn-primary btn-insert-upload">Ins&eacute;rer</button></div>').appendTo('body').modal('show').find('.modal-body').append($('.qq-upload-list'));
             },
 
             onComplete: function(id, fileName, responseJSON){
@@ -1383,7 +1358,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
                 $.ajaxSetup( {
                     cache : false
                 });
-                var fileuploaded = $('.qq-upload-list li.qq-upload-success .qq-upload-file:eq('+id+')');
+                var fileuploaded = $('.qq-upload-list li.qq-upload-success .qq-upload-file');
                 var filesize = fileuploaded.siblings('.qq-upload-size').text();
                 if (filesize !== '') {
                     filesize = ' ('+filesize+')';
@@ -1418,7 +1393,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
                 
                 // on ferme l'overlay si c'est le dernier
                 if ($('.qq-upload-list li').length > 0) {
-                    $('#UploadModal').modal('hide'); 
+                    deleteUploadModal();
                     return true;
                 }
             }
