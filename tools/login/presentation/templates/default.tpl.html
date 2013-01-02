@@ -1,39 +1,46 @@
 <?php if ($connected) : ?>
-	<ul class="login-prefs-links">
-		<li>
-			<a href="wakka.php?wiki=<?= $user; ?>" class="login-user-link">
-				<img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" class="login-user-icon" alt="user" />
-				<span class="connected"><?= $user; ?></span>
-			</a>
-		</li>
-		<li><a class="login-update-link"href="<?= $signupurl; ?>" title="Modifier mon inscription">Modifier mon inscription</a></li>
-		<li><a class="login-signout-link" href="<?= $incomingurl; ?>&amp;action=logout">D&eacute;connexion</a></li>
+	<h5><i class="icon-user"></i>&nbsp;<?php echo LOGIN_CONNECTED_AS.' '.$user; ?></h5>
+	<ul class="login-actions">
+	  <?php echo $PageMenuUser; ?>
+	  <li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
+	  <li><a href="<?php echo $incomingurl; ?>&action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
 	</ul>
-	<?= $PageMenuUser; ?>
 <?php else : ?>
-<form class="login-form" action="<?= $incomingurl; ?>" method="post">
 	<?php if ($error) : ?>
-		<div class="error_box"><?= $error; ?></div>
+		<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><?= $error; ?></div>
 	<?php endif; ?>
-	<input type="hidden" name="action" value="login" />
-	<input type="hidden" name="incomingurl" value="<?= $incomingurl; ?>" />
-	<input type="hidden" name="remember" value="0" />
-	<label class="login-label">NomWiki</label>
-	<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
-	<div class="clear"></div>
-	<label class="login-label">Mot de passe</label>
-	<input type="password" name="password" class="login-input" size="7" />
-	<div class="clear"></div>
-	<div class="login-label">
-		<input type="checkbox" id="remember-default" name="remember" value="1" />
-		<label for="remember-default" class="login-label-remember">Se souvenir de moi</label>
-	</div>
-	<input type="submit" class="login-button" value="Connexion" />
-	<div class="clear"></div>
-	<div class="login-subscribe">
-		<span class="login-label-member">Ou pas encore membre :</span>
-		<span class="login-link"><a href="<?= $signupurl; ?>" title="S'inscrire">S'inscrire</a></span>
-	</div>
-	<div class="clear"></div>
-</form>
+	<form class="form-horizontal" action="<?php echo $incomingurl; ?>" method="post">
+		<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo LOGIN_ALREADY_MEMBER; ?></h5><?php endif; ?>
+		<div class="control-group">
+			<label for="inputWikiName" class="control-label"><?php echo LOGIN_WIKINAME; ?></label>
+			<div class="controls">
+				<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user); ?>" />
+			</div>
+        </div>
+        <div class="control-group">
+			<label for="inputPassword" class="control-label"><?php echo LOGIN_PASSWORD; ?></label>
+			<div class="controls">
+				<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo LOGIN_PASSWORD; ?>" name="password" type="password" />
+			</div>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<label class="checkbox" for="remember-default">
+					<input type="checkbox" id="remember-default" name="remember" value="1" /><?php echo LOGIN_REMEMBER_ME; ?>
+				</label>
+			</div>			
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<button type="submit" class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?></button>
+			</div>			
+		</div>
+		<input type="hidden" name="action" value="login" />
+		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
+		<input type="hidden" name="remember" value="0" />
+		<?php if ($signupurl != '' && $signupurl != '0') : ?>
+			<h5><?php echo LOGIN_NEW_MEMBER; ?></h5>
+			<a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo LOGIN_SIGNUP; ?></a>
+		<?php endif; ?>
+	</form> <!-- /.form-horizontal -->
 <?php endif; ?>

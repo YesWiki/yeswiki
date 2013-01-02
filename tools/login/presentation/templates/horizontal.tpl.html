@@ -1,46 +1,26 @@
 <?php if ($connected) : ?>
-<a rel="#user-form" class="login-user-link">
-	<img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
-	<span class="connected"><?= $user; ?></span>
-</a>
-<form id="user-form" class="yeswiki-overlay" style="display:none;" method="post" action="<?= $incomingurl; ?>">
-	<?= $PageMenuUser; ?>
-	<input type="hidden" name="incomingurl" value="<?= $incomingurl; ?>" />
-	<span class="login-prefs-link">
-		<a href="<?= $signupurl; ?>" title="Modifier mon inscription">Modifier mon inscription</a>
-	</span><br />
-	<input class="login-signout-button" type="button" value="D&eacute;connexion" onclick="document.location='<?= $incomingurl; ?>&action=logout'" />
-</form>
-
+	<div class="btn-group">
+		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
+		<ul class="dropdown-menu">
+		  <?php echo $PageMenuUser; ?>
+		  <li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
+		  <li><a href="<?php echo $incomingurl; ?>&action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
+		</ul>
+	</div>
 <?php else : ?>
-<?php if ($error) : ?>
-	<div class="error_box"><?= $error; ?></div>
-<?php endif; ?>
-<a rel="#signin-div" class="login-link"><img class="user-icon" src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" alt="user icon" />
-<span>Se connecter</span></a>
-<span class="login-link">
-	<a href="<?= $signupurl; ?>" title="S'inscrire">S'inscrire</a>
-</span>
-<div id="signin-div" class="yeswiki-overlay" style="display:none;">
-    <form class="login-form" action="<?= $incomingurl; ?>" method="post">
-		<?php if ($error) : ?>
-			<div class="error_box"><?= $error; ?></div>
-		<?php endif; ?>
+	<?php if ($error) : ?>
+		<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><?= $error; ?></div>
+	<?php endif; ?>
+	<form class="form-inline" action="<?php echo $incomingurl; ?>" method="post">
+		<input id="inputWikiName" class="input-small" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user); ?>" />
+		<input id="inputPassword" class="input-small" required="required" placeholder="<?php echo LOGIN_PASSWORD; ?>" name="password" type="password" />
+		<label class="checkbox" for="remember-horizontal">
+			<input type="checkbox" id="remember-horizontal" name="remember" value="1" /><?php echo LOGIN_REMEMBER_ME; ?>
+		</label>
+		<button type="submit" class="btn<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?></button>
+		<?php if ($signupurl != '' && $signupurl != '0') : ?><a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo LOGIN_SIGNUP; ?></a><?php endif; ?>
 		<input type="hidden" name="action" value="login" />
-		<input type="hidden" name="incomingurl" value="<?= $userpage; ?>" />
+		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />
-		<label class="login-label">NomWiki</label>
-		<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
-		<div class="clear"></div>
-		<label class="login-label">Mot de passe</label>
-		<input type="password" name="password" class="login-input" size="7" />
-		<div class="clear"></div>
-		<div class="login-label">
-			<input type="checkbox" id="remember-default" name="remember" value="1" />
-			<label for="remember-default" class="login-label-remember">Se souvenir de moi</label>
-		</div>
-		<input type="submit" class="login-button" value="Connexion" />
-		<div class="clear"></div>
 	</form>
-</div>
 <?php endif; ?>

@@ -1,0 +1,12 @@
+<form action="<?=$link_save;?>" method="post" id="bazarform" enctype="multipart/form-data" novalidate="novalidate">
+	<?php foreach($formulaire_ligne as $ligne): ?>
+		<?=$ligne;?>
+	<?php endforeach; ?>
+	
+	<?=$hidden_inputs;?>
+	
+	<div class="groupebouton">
+		<a class="btn bouton_annuler" name="annuler" href="<?=$link_cancel;?>"><?=BAZ_ANNULER;?></a>
+		<input class="btn bouton_sauver" name="valider" value="<?=BAZ_VALIDER;?>" type="submit" />
+	</div>
+</form>

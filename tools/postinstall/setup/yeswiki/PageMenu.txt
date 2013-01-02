@@ -1,0 +1,1 @@
+ - ""<a href="wakka.php?wiki=""{{configuration param="root_page"}}""" title="Aller sur la page d'accueil">Accueil</a>""

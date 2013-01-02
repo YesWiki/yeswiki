@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkrss" version="$Id: desc.xml,v 1.9 2009-01-28 09:49:34 ddelon Exp $" active="0">
+  <author>David Delon</author>
+  <label>RSS</label>
+  <desc>Extensions RSS  pour Wikini</desc>
+</plugin>
+$Source: /cvsroot/wikiplug/wikiplug/tools/rss/desc.xml,v $
+$Name:  $
+

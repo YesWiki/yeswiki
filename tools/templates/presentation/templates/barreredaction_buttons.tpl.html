@@ -1,0 +1,8 @@
+<div class="footer-buttons">
+	<a href="<?php echo $linkpage;?>" class="btn btn-primary"><i class="icon-eye-open icon-white"></i>&nbsp;<?php echo TEMPLATE_VIEW_PAGE;?></a>
+	<div class="pull-right">
+		<?php if (isset($linkedit)) : ?><a title="<?php echo TEMPLATE_CLICK_TO_EDIT;?>" href="<?php echo $linkedit;?>" class="btn"><i class="icon-pencil"></i></a>&nbsp;<?php endif; ?>
+		<?php if (isset($linkdeletepage)) : ?><a href="<?php echo $linkdeletepage;?>" class="btn btn-danger"><i class="icon-trash icon-white"></i></a><?php endif; ?>
+	</div>
+	<div class="clear"></div>
+</div> <!-- /.footer-buttons -->

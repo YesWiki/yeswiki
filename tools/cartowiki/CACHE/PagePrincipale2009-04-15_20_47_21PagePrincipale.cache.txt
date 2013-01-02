@@ -1,0 +1,121 @@
+<a name="topmap"></a>	<form id='form_xy' onsubmit='return false'>
+			<table>
+			<tr>
+			<td><input type="hidden" name="outil" value="zoom"   id="zoom" onclick="changeOutil()" /></td>
+          	<td><input type="hidden" name="outil" value="point"  id="point" onclick="changeOutil()" /></td>
+			</tr>
+		</table>
+	
+	<div id ="cartowikimap" style="position:relative;"><img src="tools/cartowiki/CACHE/PagePrincipale2009-04-15_20_47_21PagePrincipale.jpg" style="border:none; cursor:crosshair" alt="" usemap="#themap"></img><br />
+<map name="themap" id="themap"><area shape="circle" alt="" coords="458,554,5" onmouseover="this.T_BGCOLOR='#E6FFFB';this.T_OFFSETX=2;this.T_OFFSETY=2;this.T_STICKY=1;return escape('<a href=\'#MAP_1\'>SAINT JULIEN-DE-LA-NEF (30) Donnée ONCFS, 2000°</a>')" href="#"/><area shape="circle" alt="" coords="458,560,5" onmouseover="this.T_BGCOLOR='#E6FFFB';this.T_OFFSETX=2;this.T_OFFSETY=2;this.T_STICKY=1;return escape('<a href=\'#MAP_2\'>SAINT LAURENT LE MINIER : BOUTOLLEAU Xavier , 1998</a>')" href="#"/><area shape="circle" alt="" coords="471,587,5" onmouseover="this.T_BGCOLOR='#E6FFFB';this.T_OFFSETX=2;this.T_OFFSETY=2;this.T_STICKY=1;return escape('<a href=\'#MAP_3\'>MONTPELLIER : ddd,,dd,</a>')" href="#"/></map></div>		<table>	
+		<tr>
+			<td><input type='hidden' class='txt' id='x'></td>
+			<td><input type='hidden' class='txt' id='y'></td>
+			<td><input type='text' class='txt' id='x_utm'></td>
+			<td><input type='text' class='txt' id='y_utm'></td>
+			<td><input type='hidden' class='txt' id='valeur_outil'></td>
+		<tr>
+		</table>
+
+	</form>
+	
+	<script language="JavaScript" type="text/javascript" src="tools/cartowiki/bib/tooltip/wz_tooltip.js"></script><script type="text/javascript" src="tools/cartowiki/bib/x/x_core.js"></script><script type="text/javascript" src="tools/cartowiki/bib/x/x_event.js"></script><script type="text/javascript" src="tools/cartowiki/bib/domtt/domLib.js"></script><script type="text/javascript" src="tools/cartowiki/bib/domtt/domTT.js"></script>
+<script type="text/javascript">
+
+
+window.onload = function()
+{
+
+   var outil = xGetElementById('form_xy').elements;   
+   if (get_cookie('outil')!="") {
+   		outil['valeur_outil'].value = get_cookie('outil');
+   		outil[get_cookie('outil')].checked = true;
+   }
+   else {
+   		outil['valeur_outil'].value = 'zoom';
+   		outil['zoom'].checked = true;
+		setoutil('zoom');
+   }
+   if (window.winOnLoad) window.winOnLoad();
+
+}
+
+window.onunload = function()
+{
+    if (window.winOnUnload) window.winOnUnload();
+}
+
+function get_cookie(Name) {
+	var search = Name + "="
+	var returnvalue = "";
+	if (document.cookie.length > 0) {
+		offset = document.cookie.indexOf(search)
+		// if cookie exists
+		if (offset != -1) {
+			offset += search.length
+			// set index of beginning of value
+			end = document.cookie.indexOf(";", offset);
+			// set index of end of cookie value
+			if (end == -1) end = document.cookie.length;
+			returnvalue=unescape(document.cookie.substring(offset, end))
+		}
+	}
+	return returnvalue;
+}
+
+function setoutil(outil_selectionne){
+	document.cookie="outil="+outil_selectionne;
+}
+
+
+function changeOutil() {
+	var outil = xGetElementById('form_xy').elements;
+	if (outil['point'].checked) {
+		outil['valeur_outil'].value = 'point';
+		setoutil('point');
+	}
+	else {
+		outil['valeur_outil'].value = 'zoom';
+		setoutil('zoom');
+	}
+}
+
+
+function winOnLoad()
+{
+  xAddEventListener('cartowikimap', 'mousemove', onMousemove, false);
+  xAddEventListener('cartowikimap', 'click', onMouseclick, false);
+  
+}
+function onMousemove(evt)
+{
+  var e = new xEvent(evt);
+  var fe = xGetElementById('form_xy').elements;
+  x_utm = ((e.offsetX - 252) / 0.000674) + 250000;y_utm = ((e.offsetY - 739) / -0.000674) + 4600000;  fe['x'].value = e.offsetX;
+  fe['x_utm'].value = Math.round(x_utm);
+  fe['y'].value = e.offsetY;
+  fe['y_utm'].value = Math.round(y_utm);
+  return true;
+}
+
+function onMouseclick(evt)
+{
+  var e = new xEvent(evt);
+  var fe = xGetElementById('form_xy').elements;
+  x_utm = ((e.offsetX - 252) / 0.000674) + 250000;y_utm = ((e.offsetY - 739) / -0.000674) + 4600000;  fe['x'].value = e.offsetX;
+  x_utm=Math.round(x_utm);
+  fe['x_utm'].value = x_utm;
+  fe['y'].value = e.offsetY;
+  y_utm=Math.round(y_utm);
+  fe['y_utm'].value = y_utm;
+  if (fe['point'].checked)  {
+  domTT_activate(this, evt, 'content', '<form method="post" action="http://localhost/devdav/w5/wakka.php?wiki=PagePrincipale&refresh=1&utm_x='+x_utm+'&utm_y='+y_utm+'"><div style="background-color:white;"><table><tr><td>Description :</td></tr><tr><td><input type="text" name="texte_utm"></td><td><input type="submit" name="submit" value="OK"><input type="submit" name="cancel" value="Annuler"></td></tr></table></form></div>', 'type', 'sticky' );  }
+  else {
+  window.location.assign ('http://localhost/devdav/w5/wakka.php?wiki=PagePrincipale&refresh=1&map_x='+e.offsetX+'&map_y='+e.offsetY);  }
+  return true;
+}
+</script>
+
+
+
+	<br><a href="http://localhost/devdav/w5/wakka.php?wiki=PagePrincipale&refresh=1">*</a>

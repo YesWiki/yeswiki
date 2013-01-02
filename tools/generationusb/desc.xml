@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkgenerationusb" version="$Name:" active="1">
+  <author>Florian SCHMITT</author>
+  <label>Generation USB</label>
+  <desc>Recuperer le YesWiki pour une utilisation sur cle USB (pour Windows seulement)</desc>
+</plugin>
