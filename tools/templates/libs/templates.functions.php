@@ -47,9 +47,9 @@ function search_template_files($directory) {
 *
 * @param $from : partie de la chaine recherch?e
 * @param $to   : chaine de remplacement
-* @param $str  : chaine entr?e
+* @param $str  : chaine entree
 *
-* return string : chaine entr?e avec la premiere occurence chang?e
+* return string : chaine entree avec la premiere occurence changee
 *
 */
 function str_replace_once($from, $to, $str) {
@@ -107,7 +107,7 @@ function replace_missingpage_links($output) {
 	preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
 	foreach ($matches as $values) {
-		// on passe en parametres GET les valeurs du template de la page de provenance, pour avoir le m?me graphisme dans la page cr??e
+		// on passe en parametres GET les valeurs du template de la page de provenance, pour avoir le m?me graphisme dans la page creee
 		$query_string = 'theme='.urlencode($GLOBALS['wiki']->config['favorite_theme']).
 						'&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
 						'&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
@@ -123,25 +123,25 @@ function replace_missingpage_links($output) {
 
 /**
  * 
- * cr?e un diaporama ? partir d'une PageWiki
+ * cree un diaporama a partir d'une PageWiki
  * 
  * @param $pagetag : nom de la PageWiki
  * @param $template : fichier template pour le diaporama
- * @param $class : classe CSS ? ajouter au diaporama
+ * @param $class : classe CSS a ajouter au diaporama
  * 
  */
-function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $class = '') {
+function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $class = '') {
 	// On teste si l'utilisateur peut lire la page
 	if (!$GLOBALS['wiki']->HasAccess("read", $pagetag))
 	{
-		return '<div class="error_box">Vous n\'avez pas le droit d\'acc&eacute;der &agrave; cette page.</div>'. $GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
+		return '<div class="alert alert-danger">'.TEMPLATE_NO_ACCESS_TO_PAGE.'</div>'. $GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
 	}
 	else
 	{
 		// On teste si la page existe
 		if (!$page = $GLOBALS['wiki']->LoadPage($pagetag))
 		{
-			return '<div class="error_box">Page '.$pagetag.' non existante.</div>';
+			return '<div class="alert alert-danger">'.TEMPLATE_PAGE_DOESNT_EXIST.' ('.$pagetag.').</div>';
 		}
 		else
 		{
@@ -150,11 +150,11 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 	
 			if (!$body)
 			{
-				return '<div class="=error_box">La page '.$pagetag.' ne peut pas &ecirc;tre d&eacute;coup&eacute;e en diapositives.</div>';
+				return '<div class="=alert alert-danger">'.TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW.' ('.$pagetag.').</div>';
 			}
 			else
 			{			
-				// pr?paration des tableaux pour le squelette -------------------------
+				// preparation des tableaux pour le squelette -------------------------
 				$i = 0 ;
 				$slides = array() ;
 				$titles = array() ;
@@ -169,30 +169,30 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 					//sinon, on affiche
 					else 
 					{
-						//s'il y a un titre de niveau 1 qui commence la diapositive, on la d?place en titre (sert surtout pour la premi?re page)
+						//s'il y a un titre de niveau 1 qui commence la diapositive, on la deplace en titre (sert surtout pour la premiere page)
 						if (preg_match('/^<h1>.*<\/h1>/', $slide)) 
 						{
 							$split = preg_split('/(.*<h1>.*<\/h1>)/',$slide, -1, PREG_SPLIT_DELIM_CAPTURE);
 							$titles[$i] = $split[1];
 							$slide = $split[2];
 						}
-						$html_slide = '' ;
-						if ($titles[$i] != "") { 
-							$html_slide .= "<div class=\"slide-header\">".$titles[$i]."</div>\n" ;
-							$titles[$i] = strip_tags($titles[$i]) ;
-						}
-						$html_slide .= $slide ;
-						$slides[] = $html_slide ;
+						//$html_slide = '' ;
+						//if ($titles[$i] != "") { 
+							//$html_slide .= "<div class=\"slide-header\">".$titles[$i]."</div>\n" ;
+							//$titles[$i] = strip_tags($titles[$i]) ;
+						//}
+						//$html_slide .= $slide ;
+						$slides[$i]['html'] = $slide ;
+						$slides[$i]['title'] = strip_tags($titles[$i]) ;
 					}
 				}
 			}
 		}
 		
 		$buttons = '';
-		//si la fonction est appel?e par le handler diaporama, on ajoute les liens d'?dition et de retour
+		//si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
 		if ($GLOBALS['wiki']->GetMethod() == "diaporama") {
-			$buttons .= '<div class="buttons-action"><a class="button-edit" href="'.$GLOBALS['wiki']->href('edit',$pagetag).'">&Eacute;diter</a>'."\n";
-			$buttons .= '<a class="button-quit" href="'.$GLOBALS['wiki']->href('',$pagetag).'">Quitter</a></div>'."\n";
+			$buttons .= '<a class="btn" href="'.$GLOBALS['wiki']->href('',$pagetag).'">&times;</a>'."\n";
 		}
 		
 		//on affiche le template
@@ -207,11 +207,6 @@ function print_diaporama($pagetag, $template = 'diaporama_slide.tpl.html', $clas
 		));
 		$output = $squel->analyser() ;
 		
-		//on pr?pare le javascript du diaporama, qui sera ajout?e par l'action footer de template, ? la fin du html
-		$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script> 
-			$("#slide_show_'.$pagetag.'").scrollable({mousewheel:false}).navigator({history: true}).data("scrollable");
-			$("#thumbs_'.$pagetag.' .navi a[title]").tooltip({position:	\'top center\', opacity:0.9, tipClass:\'tooltip-slideshow\', offset:[5, 0]});
-			</script>'."\n";
 		return $output;
 	}
 }

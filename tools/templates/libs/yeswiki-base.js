@@ -137,10 +137,14 @@ if ( ! Modernizr.mq('only all') ) {
 				
 				var firstsublist = $list.find('ul:first');
 				if (firstsublist.length > 0) { 
-					firstsublist.prev().append(arrow); 
+					if ($list.find('>a').length==0) {
+						$list.contents().first().wrap('<a />');
+						$list.find('a:not([href])').attr('href', '#');
+					}
+					firstsublist.prev().append(arrow);	
 				}
 				else { 
-					$list.before(arrow); 
+					$list.prev().prepend(arrow); 
 				};
 				
 				$list.hoverIntent(confighorizontal);
@@ -172,7 +176,13 @@ if ( ! Modernizr.mq('only all') ) {
 
 	//pour les menus qui possèdent des sous menus, on affiche une petite flèche pour indiquer
 	var arrowright = $("<span>").addClass('arrow arrow-level1').html("&#9658;");
-	$(".vertical-dropdown-menu li:has(ul)").hoverIntent( configvertical ).find("a:first").prepend(arrowright);
+	var submenu = $(".vertical-dropdown-menu li:has(ul)");
+	submenu.hoverIntent( configvertical );
+	if (submenu.find("> a").length > 0) {
+		submenu.find("> a").prepend(arrowright);
+	} else {
+		submenu.prepend(arrowright);
+	}
 	
 
 	//deroule le deuxieme niveau pour la PageMenu, si elle contient le lien actif

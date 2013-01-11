@@ -47,6 +47,9 @@
 
 /**************************Les classes effets graphiques pour les images**************************************************************************/
 
+ 
+ /* Style the figures */
+
 .attached_file {
 cursor: pointer;
 text-decoration: none;
@@ -54,66 +57,12 @@ text-align:center;
 position:relative;
 margin:0;
 padding:0;
+position: relative;
+display: inline-block;
 }
 
-/* fichiers attaches */
-.attach_left, .left { 
-float:left; 
-margin:0 14px 18px 0 !important; 
-} 
-.attach_right, .right { 
-float:right; 
-margin:0 0 18px 14px !important;
-}  
-.attach_center, .center  { 
-display:table; 
-clear:both; 
-text-align:center; 
-margin:0 auto 18px auto !important;
-width:auto;
-}
+.attached_file img { vertical-align: top;}
 
-.whiteborder {
--webkit-box-sizing: border-box;
--moz-box-sizing: border-box;
--o-box-sizing: border-box;
--ms-box-sizing: border-box;
-box-sizing: border-box;
-border: 10px solid #FFFFFF;
-background:#FFF;
-}
- 
- .lightshadow {
- -webkit-box-shadow: 1px 1px 2px #444;
- -moz-box-shadow: 1px 1px 2px #444;
- box-shadow: 1px 1px 2px #444;
- } 
- 
-.attached_file.zoom {
--moz-transition: -moz-transform .2s ease-out;
--o-transition: -o-transform .2s ease-out;
--webkit-transition: -webkit-transform .2s ease-out;
--ms-transition: -ms-transform .2s ease-out;
-transition: transform .2s ease-out;
-}
- .attached_file.zoom:hover {
-transform: scale(1.1);
--ms-transform: scale(1.1); /* IE 9 */
--webkit-transform: scale(1.1); /* Safari and Chrome */
--o-transform: scale(1.1); /* Opera */
--moz-transform: scale(1.1); /* Firefox */
-z-index: 5;
--webkit-box-shadow: 2px 2px 15px 0px #444;
--moz-box-shadow: 2px 2px 15px 0px #444;
-box-shadow: 2px 2px 15px 0px #444;
- }
- 
- /* Style the figures */
-
-figure {
-  position: relative;
-  display: block;
-}
 
 /* Style the figure captions, hiding them by default */
 
@@ -156,3 +105,60 @@ figcaption *:first-child {
 figcaption *:last-child {
   padding-bottom: 5px;
 }
+
+
+/* fichiers attaches */
+.attach_left, .left { 
+float:left; 
+margin:0 18px 18px 0 !important; 
+} 
+.attach_right, .right { 
+float:right; 
+margin:0 0 18px 18px !important;
+}  
+.attach_center, .center  { 
+display:table; 
+clear:both; 
+text-align:center; 
+margin:0 auto 18px auto !important;
+width:auto;
+}
+
+.whiteborder {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+-o-box-sizing: border-box;
+-ms-box-sizing: border-box;
+box-sizing: border-box;
+border: 8px solid #FFFFFF;
+background:#FFF;
+ -webkit-box-shadow: 1px 1px 2px #444;
+ -moz-box-shadow: 1px 1px 2px #444;
+ box-shadow: 1px 1px 2px #444;
+}
+ 
+ .lightshadow {
+ -webkit-box-shadow: 1px 1px 2px #444;
+ -moz-box-shadow: 1px 1px 2px #444;
+ box-shadow: 1px 1px 2px #444;
+ } 
+ 
+.zoom {
+-moz-transition: -moz-transform .2s ease-out;
+-o-transition: -o-transform .2s ease-out;
+-webkit-transition: -webkit-transform .2s ease-out;
+-ms-transition: -ms-transform .2s ease-out;
+transition: transform .2s ease-out;
+}
+
+.zoom:hover {
+transform: scale(1.1);
+-ms-transform: scale(1.1); /* IE 9 */
+-webkit-transform: scale(1.1); /* Safari and Chrome */
+-o-transform: scale(1.1); /* Opera */
+-moz-transform: scale(1.1); /* Firefox */
+z-index: 5;
+-webkit-box-shadow: 2px 2px 15px 0px #444;
+-moz-box-shadow: 2px 2px 15px 0px #444;
+box-shadow: 2px 2px 15px 0px #444;
+ }

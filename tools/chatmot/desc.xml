@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkchatmot" version="0.1" active="0">
-  <author>David Delon</author>
-  <label>Assistant ecriture chatmot</label>
-  <desc>Assistant ecriture chatmot</desc>
-</plugin>

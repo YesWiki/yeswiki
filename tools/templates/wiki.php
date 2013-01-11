@@ -61,6 +61,7 @@ if (!empty($metadatas)) {
 	$metadatas =  array_map('utf8_decode', json_decode($metadatas, true));
 }
 if (isset($metadatas['lang'])) { $wakkaConfig['lang'] = $metadatas['lang']; }
+elseif (isset($_GET['lang'])) { $wakkaConfig['lang'] = $_GET['lang']; }
 elseif (!isset($wakkaConfig['lang'])) { $wakkaConfig['lang'] = TEMPLATES_DEFAULT_LANG; }
 
 if (isset($metadatas['charset'])) { $wakkaConfig['charset'] = $metadatas['charset']; }
@@ -68,7 +69,11 @@ elseif (!isset($wakkaConfig['charset'])) { $wakkaConfig['charset'] = TEMPLATES_D
 header('Content-Type: text/html; charset='.TEMPLATES_DEFAULT_CHARSET); 
 
 // Code pour l'inclusion des langues
-include_once 'tools/templates/lang/templates_'.$wakkaConfig['lang'].'.inc.php';
+if (file_exists('tools/templates/lang/templates_'.$wakkaConfig['lang'].'.inc.php')) {
+	include_once 'tools/templates/lang/templates_'.$wakkaConfig['lang'].'.inc.php';
+} else {
+	include_once 'tools/templates/lang/templates_'.TEMPLATES_DEFAULT_LANG.'.inc.php';
+}
 
 include_once 'tools/templates/libs/templates.functions.php';
 

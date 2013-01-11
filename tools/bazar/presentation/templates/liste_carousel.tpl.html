@@ -1,0 +1,42 @@
+<?php if( count($fiches)>0 ) : ?>
+<?php $active=true;?>
+<div class="carousel slide" id="mycarousel" style="width:600px;height:450px;">
+<div class="carousel-inner">
+<?php foreach($fiches as $fiche): ?>
+     <?php if ($active) {
+        $class="active "; $active=false; 
+        } 
+        else {
+            $class = ''; 
+        }?>
+      <div class="<?=$class;?>item">  
+          						
+   	  <img src="<?php if (!file_exists('cache/image_600_'.$fiche['imagebf_photo'])) echo redimensionner_image('files/'.$fiche['imagebf_photo'], 'cache/image_600_'.$fiche['imagebf_photo'], 600, 450); else echo 'cache/image_600_'.$fiche['imagebf_photo'];  ?>" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" />
+                     <div class="carousel-caption">
+					 <div class="pull-right">
+                                    <a href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>" title="Plus d'infos sur cette photo" class="btn btn-inverse"> <i class="icon-plus icon-white"></i>Voir la fiche</a>
+									<br/><br/>
+									<a href="files/<?php echo $fiche['imagebf_photo'];?>" class="btn btn-inverse"> <i class="icon-download-alt icon-white"></i>T&eacute;l&eacute;charger</a>
+																		
+                                </div>
+                        <div class="image-title">
+                                    
+                      </div>		
+                      <h4><?=$fiche['bf_titre'];?></h4>
+                      <p><i><?=$fiche['bf_description'];?></i></p>
+					  <p>Auteur : <?=$fiche['bf_auteur'];?> </p>
+					  </div>
+					   
+		</div> 			
+<?php endforeach; ?>
+                      
+</div>
+  
+ <a data-slide="prev" href="#mycarousel" class="left carousel-control">&lsaquo;</a>
+ <a data-slide="next" href="#mycarousel" class="right carousel-control">&rsaquo;</a>   
+
+
+
+
+</div>
+<?php endif; ?>

@@ -1,3 +1,0 @@
-<?php
-$akismet_key='';
-?>

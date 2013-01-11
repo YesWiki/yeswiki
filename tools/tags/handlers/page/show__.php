@@ -32,9 +32,19 @@ if (!defined("WIKINI_VERSION"))
 	die ("acc&egrave;s direct interdit");
 }
 
+//on supprime la vieille gestion des commentaires
+
+$string = '/\<div class="commentsheader"\>\n.*\n.*\n.*\n.*\n/Ui';
+//\<a href="(.*?)">Afficher commentaires\/formulaire\<\/a\>\]/U';
+//
+//		\<\/div\>/U';
+
+
+$plugin_output_new = preg_replace($string, '', $plugin_output_new);
+
 $output = '';
 
-if ($_REQUEST["show_comments"]) {
+if ($GLOBALS["open_comments"][$tag]) {
 	if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 	{
 		// load comments for this page
