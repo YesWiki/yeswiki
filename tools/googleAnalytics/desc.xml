@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="googleAnalytics" version="0.1" active="0">
+  <author>Florestan Bredow</author>
+  <label>googleAnalytics</label>
+  <desc>Le plugin "googleAnalytics" vous permet d'activer le service Google analytics sur votre wiki.</desc>
+</plugin>
