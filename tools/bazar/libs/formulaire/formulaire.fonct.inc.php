@@ -1570,7 +1570,7 @@ google.maps.event.addListener(marker, "dragend", function () {
         var lon = document.getElementById("longitude");lon.value = marker.getPosition().lng();
         map.setCenter(marker.getPosition());
         });
-} else {alert("Localisation par votre accÃ¨s Internet impossible..");}
+} else {alert("Localisation par votre acces Internet impossible...");}
 };
 
 function showAddress()
