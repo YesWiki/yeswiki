@@ -54,13 +54,13 @@ if ($this->HasAccess("write")) {
                                         $barreredactionelements['owner'] .= ' - '.TEMPLATE_PERMISSIONS;
                                 }   
                                 else {
-                                        $barreredactionelements['linkacls'] = $this->href('', $owner);
+                                        //$barreredactionelements['linkacls'] = $this->href('', $owner);
                                 }             
                         }   
                         else {   
                                 $barreredactionelements['owner'] = TEMPLATE_NO_OWNER.($this->GetUser() ? " - ".TEMPLATE_CLAIM : "");
                                 if ($this->GetUser()) $barreredactionelements['linkacls'] = $this->href("claim", $page);
-                                else $barreredactionelements['linkacls'] = $this->href();
+                                //else $barreredactionelements['linkacls'] = $this->href("claim", $page);
                         }
                 }
 

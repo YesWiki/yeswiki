@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkmooflow" version="0.1" active="0">
-  <author>Florian</author>
-  <label>mooflow</label>
-  <desc>Action mooflow pour ajouter une gallerie d'images style itunes avec mootools </desc>
-</plugin>

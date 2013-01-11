@@ -10,7 +10,7 @@ if (!defined("WIKINI_VERSION"))
 define ('HASHCASH_DEFAULT_LANG', 'fr') ; 
 
 // Code pour l'inclusion des langues
-if ( isset ($_GET['lang'])) {
+if ( isset ($_GET['lang']) && file_exists('tools/hashcash/lang/hashcash_'.$_GET['lang'].'.inc.php')) {
     include_once 'tools/hashcash/lang/hashcash_'.$_GET['lang'].'.inc.php';
 } else {
     include_once 'tools/hashcash/lang/hashcash_'.HASHCASH_DEFAULT_LANG.'.inc.php';

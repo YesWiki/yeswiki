@@ -24,6 +24,7 @@
 	$fn_enable_name = hashcash_random_string(rand(6,18));
 ?>
 
+
 addLoadEvent(<?php echo $fn_enable_name; ?>);
 
 function createHiddenField(){
@@ -37,17 +38,10 @@ function createHiddenField(){
     e.appendChild(inp);
 }
 
-function addVerbage(){
-	/*var p = document.createElement('div');
-	p.className = "right";
-	p.innerHTML = ;*/
-	var e = document.getElementById('hashcash-text');
-	e.innerHTML = '<?php echo str_replace("'", "\'", hashcash_verbage()); ?>';
-}
-
 function <?php echo $fn_enable_name;?>(){
+	var e = document.getElementById('hashcash-text');
 	createHiddenField();
-	addVerbage();
+	e.style.display='block';
 	loadHashCashKey('<?php 
 	echo $_GET['siteurl']; ?>/tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
 }	

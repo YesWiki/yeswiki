@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkbazar" version="0.1" active="1">
+  <author>Florian Schmitt</author>
+  <label>Bazar</label>
+  <desc>Le plugin "Bazar" vous permet de gerer un systeme de fiches (saisie, modification, RSS, recherche, consultation, administration).</desc>
+</plugin>
