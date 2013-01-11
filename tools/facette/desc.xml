@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkfacette" version="0.1" active="1">
-  <author>David Delon</author>
-  <label>Affichage sous forme de facette du contenu Bazar</label>
-  <desc>Affichage sous forme de facette du contenu Bazar</desc>
-</plugin>

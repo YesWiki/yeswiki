@@ -87,4 +87,12 @@ define ('TEMPLATE_SHARE_NETVIBES', 'Partager sur Netvibes');
 define ('TEMPLATE_SHARE_DELICIOUS', 'Partager sur Delicious');
 define ('TEMPLATE_SHARE_GOOGLEREADER', 'Partager sur Google Reader');
 define ('TEMPLATE_SHARE_MAIL', 'Envoyer le contenu de cette page par mail');
+
+// handler exportpages
+define ('TEMPLATE_EXPORT_ONLY_FOR_ADMINS', 'L\'export int&eacute;gral des pages est r&eacute;serv&eacute; &agrave; l\'administrateur');
+
+// handler diaporama
+define ('TEMPLATE_NO_ACCESS_TO_PAGE', 'Vous n\'avez pas le droit d\'acc&eacute;der &agrave; cette page.');
+define ('TEMPLATE_PAGE_DOESNT_EXIST', 'Page non existante');
+define ('PAGE_CANNOT_BE_SLIDESHOW', 'La page ne peut pas &ecirc;tre d&eacute;coup&eacute;e en diapositives (pas de titres niveau 2)');
 ?>

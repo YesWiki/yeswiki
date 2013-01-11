@@ -1,0 +1,21 @@
+<?php if( count($fiches)>0 ) : ?>
+  <ul class="thumbnails">
+	<?php foreach($fiches as $fiche): ?>
+
+    <li class="span3">
+      <div class="thumbnail">
+        <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+          <img alt="<?php echo $fiche['bf_titre'];?>" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_260_180_'.$fiche['imagebf_image'], 260, 180); ?>">
+        <?php else : ?>
+         <img alt="<?php echo $fiche['bf_titre'];?>" src="http://site-coop.net/bdd/anonymous.jpg">
+        <?php endif; ?>
+        <div class="caption">
+          <h3><?php echo $fiche['bf_titre'];?></h3>
+          <p><a class="btn btn-primary" href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>">Voir la fiche</a></p>
+        </div>
+      </div>
+    </li>
+
+    <?php endforeach; ?>
+  </ul>	
+<?php endif; ?>

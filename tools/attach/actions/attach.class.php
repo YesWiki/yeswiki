@@ -53,7 +53,7 @@ class attach {
    var $isAudio = 0;				//indique si c'est un fichier audio
    var $isFreeMindMindMap = 0;		//indique si c'est un fichier mindmap freemind
    var $isWma = 0;					//indique si c'est un fichier wma
-   var $classes = '';				//classe pour afficher une image
+   var $classes = 'attached_file';				//classe pour afficher une image
    var $attachErr = '';				//message d'erreur
    var $pageId = 0;					//identifiant de la page
    var $isSafeMode = false;			//indicateur du safe mode de PHP
@@ -298,8 +298,9 @@ class attach {
         }
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
-            foreach ($array_classes as $c) { $this->classes = $this->classes . $c . " "; }
-            $this->classes = 'attached_file '.trim($this->classes);
+            foreach ($array_classes as $c) { 
+            	$this->classes .= ' '. trim($c); 
+            }
         }
 		$this->height = $this->wiki->GetParameter('height');
         $this->width = $this->wiki->GetParameter('width');
@@ -432,12 +433,12 @@ class attach {
 
 
     /**
-     * Affiche le lien de mise ? jour
+     * Affiche le lien de mise a jour
      */
     function showUpdateLink(){
         echo	" <a href=\"".
             $this->wiki->href("upload",$this->wiki->GetPageTag(),"file=$this->file").
-            "\" title='Mise ? jour'>".$this->attachConfig['update_symbole']."</a>";
+            "\" title='Mise &agrave; jour'>".$this->attachConfig['update_symbole']."</a>";
     }
     /**
      * Affiche un liens comme un fichier inexistant
