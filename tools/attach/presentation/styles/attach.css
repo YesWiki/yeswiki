@@ -1,0 +1,164 @@
+/* bug bootstrap 2.1.1 */
+.nav-tabs > .active > a > [class^="icon-"],.nav-tabs>.active>a>[class*=" icon-"] { background-image:url("../../../templates/presentation/images/glyphicons-halflings.png") !important; }
+
+/* fin fichiers attaches */
+
+
+.qq-uploader, .qq-uploader:hover, .qq-upload-button:hover, .qq-upload-button {cursor: pointer;}
+
+
+.qq-upload-drop-area {
+    position:absolute; top:0; left:0; width:100%; height:100%; min-height: 70px; z-index:2000;
+    background:#880000; text-align:center; opacity:0.9;
+}
+.qq-upload-drop-area span {
+    display:block; position:absolute; top: 50%; width:100%; margin-top:-8px; font-size:1.2em;
+}
+.qq-upload-drop-area-active {background:#880000;}
+
+.qq-upload-list {margin:0; list-style:none; display:inline; overflow:auto; }
+.qq-upload-list li { margin: 0 0 10px 0; padding:5px; font-size: 14px; font-weight: bold; line-height: 18px;}
+.qq-upload-file, .qq-upload-spinner, .qq-upload-size, .qq-upload-cancel, .qq-upload-failed-text {
+    margin-right: 7px;
+}
+
+.qq-upload-file {}
+.qq-upload-spinner {display:inline-block; background: url("../images/loading.gif"); width:15px; height:15px; vertical-align:text-bottom;}
+.qq-upload-failed-text {display:none;}
+.qq-upload-fail .qq-upload-failed-text {display:inline;}
+
+
+.label-image-align-left {
+	background: url(../images/align-left.png) no-repeat scroll left center transparent;
+	padding:0 0 0 23px;
+}
+.label-image-align-center {
+	background: url(../images/align-center.png) no-repeat scroll left center transparent;
+	padding:0 0 0 23px;
+}
+.label-image-align-right {
+	background: url(../images/align-right.png) no-repeat scroll left center transparent;
+	padding:0 0 0 23px;
+}
+.label-image-size {
+	width:130px;
+}
+
+
+/**************************Les classes effets graphiques pour les images**************************************************************************/
+
+ 
+ /* Style the figures */
+
+.attached_file {
+cursor: pointer;
+text-decoration: none;
+text-align:center;
+position:relative;
+margin:0;
+padding:0;
+position: relative;
+display: inline-block;
+}
+
+.attached_file img { vertical-align: top;}
+
+
+/* Style the figure captions, hiding them by default */
+
+figcaption {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display:block;
+  width:100%;
+  font-size: .9em;
+  text-shadow:none;
+  color: #fff;
+  background-color: rgba(0,0,0,.75);
+  opacity: 0;
+  filter: alpha(opacity=0);
+ -webkit-transition: opacity .2s ease-in-out;
+  -moz-transition: opacity .2s ease-in-out;
+  -o-transition: opacity .2s ease-in-out;
+  transition: opacity .2s ease-in-out;
+  padding:5px 0;
+}
+
+/* Display the captions on hover */
+
+figure:hover figcaption {
+  opacity: 1;
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#aa000000,endColorstr=#aa000000);
+}
+
+/* Add padding and margin to the caption contents */
+
+figcaption * {
+  padding: 0 10px;
+  margin: 0;
+}
+
+figcaption *:first-child {
+  padding-top: 5px;
+}
+figcaption *:last-child {
+  padding-bottom: 5px;
+}
+
+
+/* fichiers attaches */
+.attach_left, .left { 
+float:left; 
+margin:0 18px 18px 0 !important; 
+} 
+.attach_right, .right { 
+float:right; 
+margin:0 0 18px 18px !important;
+}  
+.attach_center, .center  { 
+display:table; 
+clear:both; 
+text-align:center; 
+margin:0 auto 18px auto !important;
+width:auto;
+}
+
+.whiteborder {
+-webkit-box-sizing: border-box;
+-moz-box-sizing: border-box;
+-o-box-sizing: border-box;
+-ms-box-sizing: border-box;
+box-sizing: border-box;
+border: 8px solid #FFFFFF;
+background:#FFF;
+ -webkit-box-shadow: 1px 1px 2px #444;
+ -moz-box-shadow: 1px 1px 2px #444;
+ box-shadow: 1px 1px 2px #444;
+}
+ 
+ .lightshadow {
+ -webkit-box-shadow: 1px 1px 2px #444;
+ -moz-box-shadow: 1px 1px 2px #444;
+ box-shadow: 1px 1px 2px #444;
+ } 
+ 
+.zoom {
+-moz-transition: -moz-transform .2s ease-out;
+-o-transition: -o-transform .2s ease-out;
+-webkit-transition: -webkit-transform .2s ease-out;
+-ms-transition: -ms-transform .2s ease-out;
+transition: transform .2s ease-out;
+}
+
+.zoom:hover {
+transform: scale(1.1);
+-ms-transform: scale(1.1); /* IE 9 */
+-webkit-transform: scale(1.1); /* Safari and Chrome */
+-o-transform: scale(1.1); /* Opera */
+-moz-transform: scale(1.1); /* Firefox */
+z-index: 5;
+-webkit-box-shadow: 2px 2px 15px 0px #444;
+-moz-box-shadow: 2px 2px 15px 0px #444;
+box-shadow: 2px 2px 15px 0px #444;
+ }

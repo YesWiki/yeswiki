@@ -1,0 +1,292 @@
+<?php if( count($fiches)>0 ) : ?> 
+  <?php
+  // affiche un evenement dans le temps
+  function affiche_ligne_timeline($gauche, $droite, $classligne='') {
+    $output = '<div class="ss-row'.(($classligne!='') ? ' '.$classligne : '').'">
+                    <div class="ss-left">
+                        '.$gauche.'
+                    </div>
+                    <div class="ss-right">
+                        '.$droite.'
+                    </div>
+                </div>';
+    return $output;
+  }
+  //tri par ordre chronologique
+  function date_compare($a, $b)
+  {
+      $t1 = strtotime($a['dateevenement']);
+      $t2 = strtotime($b['dateevenement']);
+      return $t1 - $t2;
+  }    
+  usort($fiches, 'date_compare');
+  $gauche = true;
+  $output = '';
+
+  foreach ($fiches as $key => $fiche) {
+    $date = explode('-', $fiche['dateevenement']);
+    // premier passage
+    if ( !isset($anneeencours) || $anneeencours < $date[0] ) { 
+      $anneeencours = $date[0];
+      $years[] =  $anneeencours;
+      $output .= affiche_ligne_timeline('<h2 id="annee'.$anneeencours.'">Ann&eacute;e</h2>', '<h2>'.$anneeencours.'</h2>');
+    }
+
+    switch ($fiche['listeListeTailleImage']) {
+      case 'ss-small':
+        $pixelsimage = 100;
+        break;
+      case 'ss-medium':
+        $pixelsimage = 200;
+        break;
+      case 'ss-small':
+        $pixelsimage = 300;
+        break;
+      default:
+        $pixelsimage = 300;
+        break;
+    }
+
+    if ($gauche) {
+      $gauche=false;
+      $output .= affiche_ligne_timeline(
+                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imageimageactu'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imageimageactu'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>', 
+                  '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+                  $fiche['listeListeTailleImage']
+                );
+    }
+    else {
+      $gauche=true;
+      $output .= affiche_ligne_timeline(
+                  '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imageimageactu'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imageimageactu'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
+                  $fiche['listeListeTailleImage'], ''
+                );
+    }
+  }
+  ?>
+      <h2 class="ss-subtitle"></h2>
+      <div id="ss-links" class="ss-links">
+        <?php 
+          foreach ($years as $key => $value) {
+            echo '<a class="btn btn-mini btn-info" href="#annee'.$value.'">'.$value.'</a>';
+          }
+        ?>
+      </div>
+      <div id="ss-container" class="ss-container">
+        <?php echo $output; ?>
+      </div>
+<?php
+ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/bazar/presentation/javascripts/timeline.js"></script>
+<style>
+h2.ss-subtitle{
+  padding: 0 0 40px;
+  position: relative;
+}
+h2.ss-subtitle:before{
+  width: 4px;
+  height: 40px;
+  background: rgba(17,17,22,0.8);
+  content: \'\';
+  position: absolute;
+  right: 75%;
+  margin-right: -4px;
+  bottom: -4px;
+  -moz-border-radius: 2px 2px 0px 0px;
+  -webkit-border-radius: 2px 2px 0px 0px;
+  border-radius: 2px 2px 0px 0px;
+}
+h2.ss-subtitle:after{
+  width: 25%;
+  height: 0px;
+  border-bottom: 4px dotted rgba(17,17,22,0.8);
+  content: \'\';
+  position: absolute;
+  right: 50%;
+  margin-right: -1px;
+  bottom: -4px;
+}
+.ss-links{
+  position: fixed;
+  right: 5px;
+  top: 70px;
+  width: 42px;
+  z-index: 100;
+}
+.ss-links a{
+  margin:0 0 5px 0;
+  /*background: rgba(0,0,0,0.2);
+  font-size: 16px;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  margin: 5px;
+  float: left;
+  border-radius: 50%;
+  display: block;
+  text-align: center;
+  -webkit-transition: background 0.2s linear;
+  -moz-transition: background 0.2s linear;
+  -o-transition: background 0.2s linear;
+  -ms-transition: background 0.2s linear;
+  transition: background 0.2s linear;*/
+}
+.ss-links a:hover{
+  /*background: rgba(0,0,0,0.4); */
+}
+.ss-container{
+    width: 100%;
+    position: relative;
+    text-align: left;
+    float: left;
+  overflow: hidden;
+  padding-bottom: 500px;
+}
+.ss-container h2{
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 1px 1px 2px rgba(26, 27, 33, 0.8);
+  padding: 20px 0px;
+}
+.ss-container:before{
+    position: absolute;
+    width: 4px;
+    background: rgba(17,17,22,0.8);
+    top: 0px;
+    left: 50%;
+  margin-left: -2px;
+    content: \'\';
+    height: 100%;
+}
+.ss-row{
+    width: 100%;
+    clear: both;
+    float: left;
+    position: relative;
+    padding: 30px 0;
+}
+.ss-left, .ss-right{
+    float: left;
+    width: 48%;
+    position: relative;
+}
+.ss-right{
+    padding-left: 2%;
+}
+.ss-left{
+    text-align: right;
+    float: left;
+    padding-right: 2%;
+}
+.ss-circle{
+    border-radius: 50%;
+    overflow: hidden;
+    display: block;
+    text-indent: -9000px;
+    text-align: left;
+    -webkit-box-shadow: 
+    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    0px 0px 0px 12px rgba(61,64,85,0.3);
+    -moz-box-shadow: 
+    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    0px 0px 0px 12px rgba(61,64,85,0.3);
+    box-shadow: 
+    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    0px 0px 0px 12px rgba(61,64,85,0.3);
+  background-size: cover;
+  background-color: #f0f0f0;
+  background-repeat: no-repeat;
+  background-position: center center;
+  position: static;
+}
+.ss-small .ss-circle{
+  width: 100px;
+  height: 100px;
+}
+.ss-medium .ss-circle{
+  width: 200px;
+  height: 200px;
+}
+.ss-large .ss-circle{
+  width: 300px;
+  height: 300px;
+}
+.ss-circle-deco:before{
+  width: 29%;
+  height: 0px;
+  border-bottom: 5px dotted #ddd;
+  border-bottom: 5px dotted rgba(17, 17, 22, 0.3);
+  -webkit-box-shadow: 0px 1px 1px #fff;
+  -moz-box-shadow: 0px 1px 1px #fff;
+  box-shadow: 0px 1px 1px #fff;
+  position: absolute;
+  top: 50%;
+  content: \'\';
+  margin-top: -3px;
+}
+.ss-circle-deco:after{
+  width: 0px;
+  height: 0px;
+  border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  content: \'\';
+  position: absolute;
+  top: 50%;
+  margin-top: -10px;
+}
+.ss-left .ss-circle-deco:before{
+    right: 2%;   
+}
+.ss-right .ss-circle-deco:before{
+    left: 2%;   
+}
+.ss-left .ss-circle-deco:after{
+  right: 0;
+  border-right: 10px solid rgba(17,17,22,0.8);
+}
+.ss-right .ss-circle-deco:after{
+  left: 0;
+  border-left: 10px solid rgba(17,17,22,0.8);
+}
+.ss-left .ss-circle{
+    float: right;
+    margin-right: 30%;
+}
+.ss-right .ss-circle{
+    float: left;
+    margin-left: 30%;
+}
+.ss-container h3{
+    margin-top: 34px;
+  padding: 10px 15px;
+  background: rgba(26, 27, 33, 0.6);
+  text-shadow: 1px 1px 1px rgba(26, 27, 33, 0.8)
+}
+.ss-container .ss-medium h3{
+  margin-top: 82px;
+}
+.ss-container .ss-large h3{
+  margin-top: 133px;
+}
+.ss-container .ss-left h3{
+  border-right: 5px solid rgba(164,166,181,0.8);
+}
+.ss-container .ss-right h3{
+  border-left: 5px solid rgba(164,166,181,0.8);
+}
+.ss-container h3 span{
+    color: rgba(255,255,255,0.8);
+    font-size: 13px;
+    display: block;
+    padding-bottom: 5px;
+}
+.ss-container h3 a{
+    font-size: 28px;
+    color: rgba(255,255,255,0.9);
+    display: block;
+}
+.ss-container h3 a:hover{
+  color: rgba(255,255,255,1);
+}
+</style>'; ?>
+<?php endif; ?>

@@ -1,7 +1,7 @@
 <?php
 require_once('wakka.config.php');
 
-// Une classe minimal wiki pour l'acces à la base de donnée
+// Une classe minimal wiki pour l'acces ? la base de donn?e
 
 class Wiki
 {
@@ -56,10 +56,10 @@ class Wiki
 	
 	function DeleteOrphanedPage($tag) {
 		
-		$this->Query("delete from ".$this->config["table_prefix"]."pages where tag='".mysql_escape_string($tag)."' ");
-		$this->Query("delete from ".$this->config["table_prefix"]."links where from_tag='".mysql_escape_string($tag)."' ");
-		$this->Query("delete from ".$this->config["table_prefix"]."acls where page_tag='".mysql_escape_string($tag)."' ");
-		$this->Query("delete from ".$this->config["table_prefix"]."referrers where page_tag='".mysql_escape_string($tag)."' ");
+		$this->Query("delete from ".$this->config["table_prefix"]."pages where tag='".mysql_real_escape_string($tag)."' ");
+		$this->Query("delete from ".$this->config["table_prefix"]."links where from_tag='".mysql_real_escape_string($tag)."' ");
+		$this->Query("delete from ".$this->config["table_prefix"]."acls where page_tag='".mysql_real_escape_string($tag)."' ");
+		$this->Query("delete from ".$this->config["table_prefix"]."referrers where page_tag='".mysql_real_escape_string($tag)."' ");
 	}
 
 }

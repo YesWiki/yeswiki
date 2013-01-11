@@ -1,0 +1,17 @@
+<?php if( count($fiches)>0 ) : $nb = 0; ?>
+
+<div class="row-fluid">
+              
+<?php foreach($fiches as $fiche): $nb++; ?>
+  <?php if ($nb == 1) { echo '<ul class="thumbnails">'."\n"; } ?>
+  <li class="span3">
+    <a class="thumbnail" href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>">
+      <img alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php if (!file_exists('cache/image_260x180_'.$fiche['imagebf_photo'])) echo redimensionner_image('files/'.$fiche['imagebf_photo'], 'cache/image_260x180_'.$fiche['imagebf_photo'], 260, 180); else echo 'cache/image_260x180_'.$fiche['imagebf_photo'];  ?>" />
+    </a>
+  </li>
+  <?php if ($nb == 4) {echo '</ul> <!-- /.thumbnails -->'."\n"; $nb = 0;} ?>
+<?php endforeach; ?>                     
+
+</div> <!-- /.row-fluid -->
+  
+<?php endif; ?>

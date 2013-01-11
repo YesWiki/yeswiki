@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkaceditor" version="$Name: v0r8-anacoluthe $" active="1">
+<plugin name="wkaceditor" version="0.2" active="1">
   <author>Alexandre Vicq et Philippe Drouot</author>
-  <label>Barre d'outil</label>
-  <desc>Aide à la saisie des règles de formatage wikini, en particulier pour l'insertion d'images et de documents à partir de la contribution ActionAttach</desc>
+  <label>Aceditor Barre d'outil</label>
+  <desc>Aide Ã  la saisie des rÃ¨gles de formatage YesWiki, en particulier pour l'insertion d'images et de documents Ã  partir de la contribution ActionAttach</desc>
 </plugin>

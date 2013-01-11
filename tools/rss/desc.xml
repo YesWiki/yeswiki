@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkrss" version="0.1" active="0">
+  <author>David Delon</author>
+  <label>RSS</label>
+  <desc>Extension RSS pour YesWiki</desc>
+</plugin>
+$Source: /cvsroot/wikiplug/wikiplug/tools/rss/desc.xml,v $
+$Name:  $
+

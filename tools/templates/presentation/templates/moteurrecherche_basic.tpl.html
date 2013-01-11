@@ -1,0 +1,9 @@
+<form class="<?php echo $class;?>" method="get" action="<?php echo $url;?>">
+	<div class="btn-group">	
+		<div class="input-append">
+			<input type="text" class="input-small search-query" placeholder="<?php echo TEMPLATE_SEARCH_PLACEHOLDER;?>" value="<?php echo $phrase;?>" title="<?php echo TEMPLATE_SEARCH_INPUT_TITLE;?>" accesskey="C" tabindex="1" name="phrase" />
+			<button type="submit" class="btn search-btn<?php echo $btnclass; ?>"><i class="icon-search<?php echo $iconclass; ?>"></i>&nbsp;</button>
+		</div>
+	</div>
+	<input type="hidden" value="RechercheTexte" name="wiki" />
+</form>

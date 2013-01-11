@@ -18,35 +18,34 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
 
 	// Check sender's name
 	if($type=='contact' && !$name_sender) {
-		$error .= 'Vous devez entrer un nom.<br />';
+		$error['contact-name'] = 'Vous devez entrer un nom.<br />';
 	}
 
 	// Check sender's email
 	if(!$mail_sender) {
-		$error .= 'Vous devez entrer une adresse mail pour l\'exp&eacute;diteur.<br />';
+		$error['contact-mail'] = 'Vous devez entrer une adresse mail pour l\'exp&eacute;diteur.<br />';
 	}
 	if($mail_sender && !ValidateEmail($mail_sender)) {
-		$error .= 'L\'adresse mail de l\'exp&eacute;diteur n\'est pas valide.<br />';
+		$error['contact-mail'] = 'L\'adresse mail de l\'exp&eacute;diteur n\'est pas valide.<br />';
 	}
 
 	// Check the receiver's email
 	if(!$mail_receiver) {
-		$error .= 'Vous devez entrer une adresse mail pour le destinataire.<br />';
+		$error['mail'] = 'Vous devez entrer une adresse mail pour le destinataire.<br />';
 	}
 	if($mail_receiver && !ValidateEmail($mail_receiver)) {
-		$error .= 'L\'adresse mail du destinaire n\'est pas valide.<br />';
+		$error['mail'] = 'L\'adresse mail du destinaire n\'est pas valide.<br />';
 	}
 
 	// Check message (length)
 	if($type=='contact' && (!$message || strlen($message) < 10)) {
-		$error .= "Veuillez entrer un message. Il doit faire au minimum 10 caract&egrave;res.<br />";
+		$error['contact-message'] = "Veuillez entrer un message. Il doit faire au minimum 10 caract&egrave;res.<br />";
 	}
 
 	return $error;
 }
 
-function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html='', $output_success= 'OK') {
-	$output = '';
+function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '', $output_success = 'OK', $output_fail = 'FAIL') {
 
 	$headers['From']    = $mail_sender;
 	$headers['To']      = $mail_sender;
@@ -65,10 +64,11 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 	$object_mail = & Mail::factory(CONTACT_MAIL_FACTORY);
 
 	if($object_mail->send($mail_receiver, $headers, $message))	{
-		$output .= $output_success;
+		return $output_success;
 	}
-
-	return $output;
+	else {
+		return $output_fail;
+	}
 }
 
 ?>

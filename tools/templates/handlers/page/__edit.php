@@ -4,9 +4,9 @@ if (!defined("WIKINI_VERSION")) {
             die ("acc&egrave;s direct interdit");
 }
 
-// Sauvegarde
-if ( isset($_POST["submit"]) && $_POST["submit"] == 'Sauver' && isset($_POST["theme"]) ) {
-	$_POST["body"] = $_POST["body"].'{{template theme="'.$_POST["theme"].'" squelette="'.$_POST["squelette"].'" style="'.$_POST["style"].'"}}';
+// Sauvegarde des metas
+if ( isset($_POST["submit"]) && $_POST["submit"] == 'Sauver' && isset($_POST["theme"]) && !isset($this->page['metadatas']['theme']) ) {
+	$this->SaveMetaDatas($this->GetPageTag(), array('theme' => $_POST["theme"], 'style' => $_POST["style"], 'squelette' => $_POST["squelette"], 'bgimg' => $_POST["bgimg"] ));
 }
 
 // Si une valeur de body est passée en paramètre GET (et pas POST) on l'ajoute en titre dans la nouvelle page vierge

@@ -1,10 +1,29 @@
 <?php
-	ob_start("ob_gzhandler");
+	header('content-type:application/x-javascript');
+	// Check if the server is configured to automatically compress the output
+	if (!ini_get('zlib.output_compression') && !ini_get('zlib.output_handler'))
+	{ 
+		// Check if we can use ob_gzhandler (requires the zlib extension)
+		if (function_exists('ob_gzhandler'))
+		{
+			// let ob_gzhandler do the dirty job
+			// NB.: this must be done BEFORE session_start() when session.use_trans_sid is on
+			ob_start('ob_gzhandler');
+		}
+		// else lets do the dirty job by ourselves...
+		elseif (!empty($_SERVER['HTTP_ACCEPT_ENCODING']) && strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') && function_exists('gzencode'))
+		{
+			ob_start ('gzencode');
+			// Tell the browser the content is compressed with gzip 
+			header ("Content-Encoding: gzip"); 
+		}
+	}
 	require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
 	
 	$field_id = hashcash_random_string(rand(6,18));
 	$fn_enable_name = hashcash_random_string(rand(6,18));
 ?>
+
 
 addLoadEvent(<?php echo $fn_enable_name; ?>);
 
@@ -19,16 +38,10 @@ function createHiddenField(){
     e.appendChild(inp);
 }
 
-function addVerbage(){
-	var e = getElementsByClass('<?php echo HASHCASH_FORM_CLASS; ?>');
-	var p = document.createElement('p');
-	p.innerHTML = '<?php echo str_replace("'", "\'", hashcash_verbage()); ?>';
-	e[0].appendChild(p);
-}
-
 function <?php echo $fn_enable_name;?>(){
+	var e = document.getElementById('hashcash-text');
 	createHiddenField();
-	addVerbage();
+	e.style.display='block';
 	loadHashCashKey('<?php 
 	echo $_GET['siteurl']; ?>/tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
 }	
