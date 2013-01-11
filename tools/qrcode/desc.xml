@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkqrcode" version="0.1" active="1">
+  <author>Francois Labastie</author>
+  <label>generateur qrcode</label>
+  <desc>Générateur de qrcode</desc>
+</plugin>

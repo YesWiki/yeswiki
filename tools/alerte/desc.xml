@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wkalerte" version="0.1" active="0">
+  <author>Florestan BREDOW</author>
+  <label>Alerte avant fermeture</label>
+  <desc>Affiche une alerte avant de fermer une fenêtre d'édition sans sauvegarder</desc>
+</plugin>

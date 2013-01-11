@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wktextsearch" version="0.1" active="0">
+  <author>David Delon</author>
+  <label>TextSearch</label>
+  <desc>Ajout recherche boolenne à l'action textsearch</desc>
+</plugin>
