@@ -1674,8 +1674,10 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="htt
         }
     }
     $required = (($obligatoire == 1) ? ' required="required"' : '' );
+    $symbole_obligatoire = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
 
-    $formtemplate->addElement('html', '
+    $formtemplate->addElement('html', 
+        $symbole_obligatoire.'
         <input class="btn btn-primary btn_adresse" onclick="showAddress();" name="chercher_sur_carte" value="'.VERIFIER_MON_ADRESSE.'" type="button" />
         <input class="btn btn_client" onclick="showClientAddress();" name="chercher_client" value="'.VERIFIER_MON_ADRESSE_CLIENT.'" type="button" />
         <div class="form-inline pull-right">'."\n".
@@ -1684,10 +1686,6 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="htt
         '</div>'."\n".
         '<div id="map" style="clear:right; margin-top:8px; width: '.BAZ_GOOGLE_IMAGE_LARGEUR.'; height: '.BAZ_GOOGLE_IMAGE_HAUTEUR.';"></div>');
 
-    if (isset($obligatoire) && $obligatoire==1) {
-        /*$formtemplate->addRule ($lat, LATITUDE . ' obligatoire', 'required', '', 'client');
-          $formtemplate->addRule ($lon, LONGITUDE . ' obligatoire', 'required', '', 'client');*/
-    }
     } elseif ($mode == 'requete') {
         return array('carte_google' => $valeurs_fiche[$lat].'|'.$valeurs_fiche[$lon]);
     } elseif ($mode == 'recherche') {
