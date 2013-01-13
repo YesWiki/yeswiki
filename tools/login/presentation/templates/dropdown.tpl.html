@@ -1,0 +1,37 @@
+<div class="btn-group">
+	<?php if ($connected) : ?>
+		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
+		<ul class="dropdown-menu">
+		  <?php echo $PageMenuUser; ?>
+		  <li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
+		  <li><a href="<?php echo $incomingurl; ?>&action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
+		</ul>
+	<?php else : ?>
+		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?>&nbsp;<span class="caret"></span></button>
+		<div class="dropdown-menu">
+			<form class="login-form" action="<?php echo $incomingurl; ?>" method="post">
+				<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo LOGIN_ALREADY_MEMBER; ?></h5><?php endif; ?>
+				<div class="controls">
+					<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user); ?>" />
+				</div>
+				<div class="controls">
+					<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo LOGIN_PASSWORD; ?>" name="password" type="password" />
+				</div>
+				<div class="controls">
+					<label class="checkbox" for="remember-dropdown">
+						<input type="checkbox" id="remember-dropdown" name="remember" value="1" /><?php echo LOGIN_REMEMBER_ME; ?>
+					</label>
+				</div>
+				<button type="submit" class="btn btn-block<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?></button>
+				<input type="hidden" name="action" value="login" />
+				<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
+				<input type="hidden" name="remember" value="0" />
+				<?php if ($signupurl != '' && $signupurl != '0') : ?>
+					<br /><br />
+					<h5><?php echo LOGIN_NEW_MEMBER; ?></h5>
+					<a class="btn btn-block<?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo LOGIN_SIGNUP; ?></a>
+				<?php endif; ?>
+			</form> <!-- /.login-form -->
+		</div> <!-- /.dropdown-menu -->
+	<?php endif; ?>
+</div> <!-- /.btn-group -->

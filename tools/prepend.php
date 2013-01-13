@@ -1,6 +1,6 @@
 <?php
 
-// Vérification de sécurité
+// V?rification de s?curit?
 if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
@@ -57,9 +57,7 @@ Class WikiTools extends Wiki {
 			}
 		}
 
-		$plugin_output_before='';
 		$plugin_output_new='';
-		$plugin_output_after='';
 		$found=0;
 		
 		if (is_array($vars)) extract($vars);
@@ -68,7 +66,7 @@ Class WikiTools extends Wiki {
 				$found=1;
 				ob_start();
 				include($before);
-				$plugin_output_before.= ob_get_contents();
+				$plugin_output_new.= ob_get_contents();
 				ob_end_clean();
 		}
 		foreach ($included['new'] as $new) {
@@ -83,10 +81,10 @@ Class WikiTools extends Wiki {
 				$found=1;
 				ob_start();
 				include($after);
-				$plugin_output_after.= ob_get_contents();
+				$plugin_output_new.= ob_get_contents();
 				ob_end_clean();
 		}
-		if ($found) return $plugin_output_before.$plugin_output_new.$plugin_output_after;
+		if ($found) return $plugin_output_new;
 		if ($notfoundText) return $notfoundText;
 		else return false;
 	}

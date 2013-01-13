@@ -3,60 +3,77 @@ if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
 }
-//barre de redaction
 
 if ($this->HasAccess("write")) {
-	//action pour le footer de wikini
-	$wikini_barre_bas =
-	'<div class="footer">'."\n";
-	if ( $this->HasAccess("write") ) {
-		$wikini_barre_bas .= "<a class=\"link-edit\" href=\"".$this->href("edit")."\" title=\"Cliquez pour &eacute;diter cette page.\">&Eacute;diter cette page</a> ::\n";
+        // on récupère la page et ses valeurs associées
+        $page = $this->GetParameter('page'); 
+        if (empty($page)) {
+                $page = $this->GetPageTag();
+                $time = $this->GetPageTime();
+                $content = $this->page;
+        } else {
+                $content = $this->LoadPage($page);
+                $time = $content["time"];
+        }
+        $barreredactionelements['page'] = $page;
+        $barreredactionelements['linkpage'] = $this->href("", $page);
+
+        // on choisit le template utilisé
+        $template = $this->GetParameter('template'); 
+        if (empty($template)) {
+                $template = 'barreredaction_basic.tpl.html';
+        }
+
+        // on peut ajouter des classes à la classe par défaut .footer
+        $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
+
+	// on ajoute le lien d'édition si l'action est autorisée
+	if ( $this->HasAccess("write", $page) ) {
+                $barreredactionelements['linkedit'] = $this->href("edit", $page);
 	}
-	if ( $this->GetPageTime() ) {
-		$wikini_barre_bas .= "<a rel=\"#overlay-link\" class=\"link-revisions\" href=\"".$this->href("revisions")."\" title=\"Cliquez pour voir les derni&egrave;res modifications sur cette page.\">".$this->GetPageTime()."</a> ::\n";
+
+        //
+	if ( $time ) {
+                 $barreredactionelements['linkrevisions'] = $this->href("revisions", $page);
+                 $barreredactionelements['time'] = date(TEMPLATE_DATE_FORMAT, strtotime($time));
 	}
+
 	// if this page exists
-
-	if ($this->page)
-    {   
+	if ( $content ) {   
                 // if owner is current user
-                if ($this->UserIsOwner() )   
-                {   
-                        $wikini_barre_bas .=
-                        "Propri&eacute;taire&nbsp;: vous :: \n";
+                if ($this->UserIsOwner($page) ) {   
+                       $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".TEMPLATE_YOU.' - '.TEMPLATE_PERMISSIONS;
+                        $barreredactionelements['linkacls'] = $this->href("acls", $page);
+                        $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
                 }
-                else
-                {   
-                        if ($owner = $this->GetPageOwner())
-                        {
-                                $wikini_barre_bas .= "Propri&eacute;taire : ".$this->Format($owner);
+                else {   
+                        if ($owner = $this->GetPageOwner($page)) {
+                                $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".$owner;
+                                if ($this->UserIsAdmin()) { 
+                                        $barreredactionelements['linkacls'] = $this->href("acls", $page);
+                                        $barreredactionelements['owner'] .= ' - '.TEMPLATE_PERMISSIONS;
+                                }   
+                                else {
+                                        //$barreredactionelements['linkacls'] = $this->href('', $owner);
+                                }             
                         }   
-                        else
-                        {   
-                                $wikini_barre_bas .= "Pas de propri&eacute;taire ";
-                                $wikini_barre_bas .= ($this->GetUser() ? "(<a href=\"".$this->href("claim")."\">Appropriation</a>)" : "");
+                        else {   
+                                $barreredactionelements['owner'] = TEMPLATE_NO_OWNER.($this->GetUser() ? " - ".TEMPLATE_CLAIM : "");
+                                if ($this->GetUser()) $barreredactionelements['linkacls'] = $this->href("claim", $page);
+                                //else $barreredactionelements['linkacls'] = $this->href("claim", $page);
                         }
-                        $wikini_barre_bas .= " :: \n";
                 }
-
-                if ($this->UserIsOwner() || $this->UserIsAdmin()) { 
-                        $wikini_barre_bas .=
-                        "<a rel=\"#overlay-link\" class=\"link-acls\" href=\"".$this->href("acls")."\" title=\"Cliquez pour &eacute;diter les permissions de cette page.\">Permissions</a> :: \n".
-                        "<a rel=\"#overlay-link\" class=\"link-delete\" href=\"".$this->href("deletepage")."\">Supprimer</a> :: \n";
-                }   
 
       }   
+		
+        $barreredactionelements['linkreferrers'] = $this->href("referrers", $page);
+        $barreredactionelements['linkdiaporama'] = $this->href("diaporama", $page);
+	$barreredactionelements['linkshare'] = $this->href("share", $page);
 	
-	
-	
-	$wikini_barre_bas .=
-	'<a rel="#overlay-link" class="link-referrers" href="'.$this->href("referrers").'" title="Cliquez pour voir les URLs faisant r&eacute;f&eacute;rence &agrave; cette page.">'."\n".
-	'R&eacute;f&eacute;rences</a>'."\n".
-	" :: <a class=\"link-diaporama\" href=\"".$this->href("diaporama")."\" title=\"Lancer cette page en mode diaporama.\">Diaporama</a>\n".
-	" :: <a rel=\"#overlay-link\" class=\"link-share\" href=\"".$this->href("share")."\" title=\"Voir les possibilit&eacute;s de partage de cette page.\">Partager</a>\n".
-	'</div>'."\n";
-	
-	echo $wikini_barre_bas;	
+        include_once('tools/templates/libs/squelettephp.class.php');
+        $barreredactiontemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
+        $barreredactiontemplate->set($barreredactionelements);
+        echo $barreredactiontemplate->analyser();
 }
 
 ?>

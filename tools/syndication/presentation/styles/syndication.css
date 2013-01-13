@@ -1,0 +1,82 @@
+
+
+/* menu syndication paginee */
+.boite_syndication {
+float:left;
+margin:0 20px 20px 0;
+padding:0;
+position:relative;
+width:100%;
+}
+/* classes de positionnement des boites */
+.alaligne {clear:both;}
+.agauche {float:left;margin:0 20px 20px 0;}
+.adroite {float:right;margin:0 0 20px 20px;}
+
+/* classes de taille des boites */
+.tiers {width:30%;margin-left:1%; margin-right:1%;}
+.quart {width:22%;margin-left:1%; margin-right:1%;}
+.demi {width:47%;margin-left:1%; margin-right:1%;}
+
+
+.rss_site_titre {
+text-align:center;
+clear:both;
+}
+
+.boite_syndication a {
+color:#a10a01;
+}
+	 
+ul.liste_rss_paginee{
+background:none repeat scroll 0 0 transparent;
+overflow:hidden;
+padding:5px;
+position:relative;
+}
+
+ul.liste_rss_paginee li.titre_rss {
+background-color:#F4F4F4;
+list-style:none outside none;
+margin:0 10px 10px 12px;
+padding:20px;
+-moz-box-shadow:0 0 6px #111111;
+-webkit-box-shadow:0 0 6px #111111;
+box-shadow:0 0 6px #111111;
+display:block;
+text-align:left;
+}
+
+ul.liste_rss_paginee, ul.liste_rss_paginee li.titre_rss {
+-moz-border-radius:8px;
+-webkit-border-radius:8px;
+border-radius:8px;
+}
+
+
+.swControls{
+position:relative;
+margin:0;
+display:block;
+text-align:center;
+clear:both;
+}
+
+a.swShowPage{
+background-color:#444444;
+display:inline-block;
+height:17px;
+margin:4px 3px;
+text-align:center;
+width:18px;
+-moz-border-radius:7px;
+-webkit-border-radius:7px;
+border-radius:7px;
+}
+
+a.swShowPage:hover, a.swShowPage.active {
+background-color:#2993dd;
+-moz-box-shadow:0 0 7px #1e435d inset;
+/*-webkit-box-shadow:0 0 7px #1e435d inset;*/
+box-shadow:0 0 7px #1e435d inset;
+}

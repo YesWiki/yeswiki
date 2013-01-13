@@ -1,0 +1,38 @@
+<div class="<?php echo $class;?>">
+<?php if (isset($linkedit)) : ?>
+	<a title="<?php echo TEMPLATE_EDIT_THIS_PAGE.' '.$page;?>" href="<?php echo $linkedit;?>" class="link-edit">
+		<i class="icon-pencil"></i>&nbsp;<?php echo TEMPLATE_EDIT_THIS_PAGE;?>
+	</a>
+<?php endif; ?>
+<?php if (isset($linkdeletepage)) : ?>
+	<a href="<?php echo $linkdeletepage;?>" class="link-deletepage modalbox" title="<?php echo TEMPLATE_DELETE_PAGE.' '.$page;?>">
+		<i class="icon-trash"></i>&nbsp;<?php echo TEMPLATE_DELETE;?>
+	</a>
+<?php endif; ?>
+<?php if (isset($time)) : ?>
+	<a title="<?php echo TEMPLATE_CLICK_TO_SEE_REVISIONS.' '.$page;?>" href="<?php echo $linkrevisions;?>" class="link-revisions modalbox">
+		<i class="icon-calendar"></i>&nbsp;<?php echo TEMPLATE_LAST_UPDATE;?> : <?php echo $time;?>
+	</a>
+<?php endif; ?>
+<?php if (isset($linkacls)) : ?>
+	<a class="link-acls<?php if (substr($linkacls, -4) == 'acls') : ?> modalbox<?php endif; ?>" href="<?php echo $linkacls;?>" title="<?php echo TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS.' '.$page;?>">
+		<i class="icon-user"></i>&nbsp;<?php if (isset($owner)) : ?><?php echo $owner;?><?php endif; ?>
+	</a>
+<?php endif; ?>
+<a title="<?php echo TEMPLATE_CLICK_TO_SEE_REFERENCES.' '.$page;?>" href="<?php echo $linkreferrers;?>" class="link-referrers modalbox">
+	<i class="icon-info-sign"></i>&nbsp;<?php echo TEMPLATE_REFERENCES;?>
+</a>
+<span class="dropup">
+	<a title="<?php echo TEMPLATE_SLIDESHOW_MODE;?>" href="<?php echo $linkdiaporama;?>" class="link-diaporama dropdown-toggle" data-toggle="dropdown">
+		<i class="icon-film"></i>&nbsp;<?php echo TEMPLATE_SLIDESHOW;?>
+	</a>
+	<ul class="dropdown-menu">
+		<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama','','template=diaporama_slides.tpl.html');?>">Diapositives</a></li> 
+		<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama');?>">Diaporama plein &eacute;cran</a></li> 
+		<li><a href="<?php echo $GLOBALS['wiki']->href('slide_show');?>">Diaporama sobre</a></li> 
+	</ul>
+</span>
+<a title="<?php echo TEMPLATE_SEE_SHARING_OPTIONS.' '.$page;?>" href="<?php echo $linkshare;?>" class="link-share modalbox">
+	<i class="icon-share"></i>&nbsp;<?php echo TEMPLATE_SHARE;?>
+</a>
+</div>

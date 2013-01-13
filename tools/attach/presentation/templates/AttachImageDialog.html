@@ -1,0 +1,84 @@
+<form id="form-modal-upload" class="form-horizontal image_dialog">
+	<input type="hidden" value="" name="filename" class="filename" />
+
+	<div class="control-group">
+		<label class="control-label">Alignement de l'image</label>
+		<div class="controls">
+		  <label class="radio inline label-image-align-left" for="image-align-left">
+		    <input type="radio" checked="checked" value="left" name="attach_align" class="input_radio image-align-left" />
+		    Gauche
+		  </label>
+		  <label class="radio inline label-image-align-center" for="image-align-center">
+		    <input type="radio" value="center" name="attach_align" class="input_radio image-align-center">
+		    Centre
+		  </label>
+		  <label class="radio inline label-image-align-right" for="image-align-right">
+		    <input type="radio" value="right" name="attach_align" class="input_radio image-align-right">
+		    Droite
+		  </label>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label">Taille de l'image</label>
+		<div class="controls">
+			<label class="radio" for="image-size-small">
+			    <input type="radio" value="small" name="attach_imagesize" class="input_radio image-size-small">
+			    Miniature&nbsp;(160x120)
+		  	</label>
+		  	<label class="radio" for="image-size-medium">
+			    <input type="radio" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
+			    Moyenne&nbsp;(360x268)
+		  	</label>
+			<label class="radio" for="image-size-big">
+			    <input type="radio" value="big" name="attach_imagesize" class="input_radio image-size-big">
+			    Large&nbsp;(725x544))
+		  	</label>
+		  	<label class="radio" for="image-size-original">
+			    <input type="radio" checked="checked" value="original" name="attach_imagesize" class="input_radio image-size-original">
+			    Taille originale
+		  	</label>
+		</div>
+	</div>
+
+	<div class="control-group">
+		<label class="control-label" for="attach_caption">Texte de la vignette</label>
+		<div class="controls">
+		  <input type="text" name="attach_caption" value="" class="attach_caption input-xlarge">
+		</div>
+    </div>
+
+	<a title="Voir les param&egrave;tres avanc&eacute;s" data-target="#avanced-settings" data-toggle="collapse" class="accordion-trigger"><span class="arrow">&#9658;</span>&nbsp;Param&egrave;tres avanc&eacute;s</a>
+
+	<div id="avanced-settings" class="collapse">
+		<div class="control-group">
+			<label class="control-label" for="attach_link">Lien associ&eacute;</label>
+			<div class="controls">
+			  <input type="text" name="attach_link" value="" class="attach_link input-xlarge">
+			</div>
+	    </div>	
+	    <div class="control-group">
+			<label class="control-label">Effets graphiques</label>
+			<div class="controls">
+			  <label class="checkbox">
+			    <input type="checkbox" name="attach_css_class" value="whiteborder" />
+			    Bord blanc
+			  </label>
+			  <label class="checkbox">
+			    <input type="checkbox" name="attach_css_class" value="lightshadow" />
+			    Ombre port&eacute;e
+			  </label>
+			  <label class="checkbox">
+			    <input type="checkbox" name="attach_css_class" value="zoom" />
+			    Agrandissement au survol
+			  </label>
+			</div>
+		</div>
+		<div class="control-group">
+			<label class="control-label" title="Ce texte sera affich&eacute; &agrave; la place de l'image si elle est introuvable sur le serveur" for="attach_alt">Texte de remplacement</label>
+			<div class="controls">
+			  <input type="text" name="attach_alt" value="" class="attach_alt input-xlarge">
+			</div>
+	    </div>
+	</div>
+</form>

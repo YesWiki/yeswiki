@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wktableau" version="$Name: v0r8-anacoluthe $" active="1">
+<plugin name="wktableau" version="0.1" active="1">
   <author>GardFieldFr</author>
   <label>Tableau</label>
-  <desc>Permet de creer des tableaux dans Wikini</desc>
+  <desc>Permet de creer des tableaux dans YesWiki</desc>
 </plugin>

@@ -8,7 +8,7 @@ if (!function_exists("wakka2callbacktableaux"))
 {
 	function parsetable($thing)
 	{
-		$tableattr = 'border="1"';
+		$tableattr = '';
 //		echo "parsetable debut : \$thing = $thing<br>";
 		// recuperation des attributs
 		preg_match("/^\[\|(.*)$/m",$thing,$match);
@@ -16,7 +16,7 @@ if (!function_exists("wakka2callbacktableaux"))
 		if ($match[1]){
 			$tableattr = $match[1];
 		}
-		$table = "<table $tableattr >\n";
+		$table = "<table class=\"table table-striped table-bordered\" $tableattr >\n";
 		//suppression de [|xxxx et de |]
 		$thing = preg_replace("/^\[\|(.*)$/m","",$thing);
 		$thing = trim(preg_replace("/\|\]/m","",$thing));
@@ -34,6 +34,7 @@ if (!function_exists("wakka2callbacktableaux"))
 	//parse la definition d'une ligne
 	function parsetablerow($row)
 	{
+		$result = '';
 		$rowattr = "";
 		
 		$row = trim($row);
@@ -86,7 +87,7 @@ if (!function_exists("wakka2callbacktableaux"))
 		if (preg_match("/^\s(.*)\s$/",$cell)){
 			$align="center";
 		}
-		if ($align) $cellattr .= " align=\"$align\"";
+		if (isset($align) && $align) $cellattr .= " align=\"$align\"";
 //		echo $cell;
 
 //		echo "\$this->classname = ".get_class($wiki)."<br>";

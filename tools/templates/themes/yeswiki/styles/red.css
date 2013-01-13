@@ -1,0 +1,189 @@
+ /* Styles for yeswiki's template
+  * Author: Florian Schmitt <florian@outils-reseaux.org>
+  * under GNU General Public License 
+  */
+
+body {
+background:#E1E1E1;
+}
+
+a {color: #da4f49;}
+a:hover {color: #bd362f;}
+
+/* Conteneur de la page Wiki */
+#container {
+margin-top:15px;
+margin-bottom:15px;
+background: #FFF;
+/*background: rgba(255, 255, 255, 0.9);
+filter:progid:DXImageTransform.Microsoft.Gradient(GradientType=1, StartColorStr='#E5ffffff', EndColorStr='#E5ffffff');  */  
+zoom: 1;
+-moz-border-radius:4px;
+-webkit-border-radius:4px;
+border-radius:4px;
+-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+
+/* Liens d'accès rapide tout en haut (PageRapideHaut) */
+header .topbarpage {font-size:0.85em; padding:10px;}
+header .topbarpage a {
+color:#333; 
+text-decoration:none; 
+display:inline-block;
+*display: inline;
+*zoom: 1; 
+margin:4px 10px;}
+header .topbarpage a:hover {text-decoration:underline;}
+
+
+/* En-tete (PageHeader) */
+header .headerpage {
+margin: 0;
+padding: 20px;
+}
+header .headerpage h1 { color:#333; text-align:center;}
+header .headerpage h2 { color:#666; text-align:center;}
+
+
+/* Menu déroulant du haut pour la navigation (PageMenuHaut) */
+#topnav { 
+display:block;
+position:relative;
+font-size:1.1em;
+margin:0;
+padding:0;
+width:100%;
+z-index:100;
+}
+#topnav, .footer, .vertical-dropdown-menu a:hover, .vertical-dropdown-menu a.active-link {
+color: #ffffff;
+background-color: #da4f49;
+background-image: -ms-linear-gradient(top, #da4f49, #bd362f);
+background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#da4f49), to(#bd362f));
+background-image: -webkit-linear-gradient(top, #da4f49, #bd362f);
+background-image: -o-linear-gradient(top, #da4f49, #bd362f);
+background-image: -moz-linear-gradient(top, #da4f49, #bd362f);
+background-image: linear-gradient(top, #da4f49, #bd362f);
+background-repeat: repeat-x;
+border-color: #bd362f #bd362f #003580;
+border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+filter: progid:dximagetransform.microsoft.gradient(startColorstr='#da4f49', endColorstr='#bd362f', GradientType=0);
+filter: progid:dximagetransform.microsoft.gradient(enabled=false);
+-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+#topnav li:hover, #topnav li.active-list, .footer a:hover {
+background-color: #bd362f;
+}
+#topnav ul { padding:0; margin:0; }
+#topnav ul:after { content:"."; display:block; height:0; clear:both; visibility:hidden; }
+#topnav li {
+position:relative; 
+float:left; 
+list-style-type:none; 
+padding:8px 20px;
+margin:0;
+color:#333;
+display:block;
+*zoom: 1; 
+}
+#topnav li a, #topnav li a:visited{
+padding:8px 20px;
+margin:-8px -20px;
+text-decoration:none;
+display:inline-block;
+*display: inline;
+*zoom: 1; 
+color: #ffffff;
+text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+#topnav > div > ul > li { border-left:1px solid rgba(200, 200, 200, 0.2); border-right:1px solid rgba(100, 100, 100, 0.2); }
+#topnav > div > ul > li:first-child { border-left:none; }
+#topnav > div > ul > li:last-child { border-right:none; }
+#topnav ul ul { 
+display:none; 
+width:230px; 
+position:absolute; 
+top:34px; 
+left:0; 
+background-color: #da4f49;
+background: rgba(218, 79, 73, 0.9);
+padding:0; margin:0; z-index:99;border:none;
+-moz-border-radius-bottomleft:4px;
+-moz-border-radius-bottomright:4px;
+-webkit-border-bottom-left-radius:4px;
+-webkit-border-bottom-right-radius:4px;
+border-bottom-left-radius:4px;
+border-bottom-right-radius:4px;
+-moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+z-index:101;
+zoom: 1;
+}
+#topnav ul ul li { 
+float:none; 
+border:none;
+border-left:1px solid rgba(0,0,0,0.1); 
+border-right:1px solid rgba(0,0,0,0.1);
+}
+#topnav ul ul a { padding:5px 10px; border:none; float:none; display:block; font-size:14px; }
+#topnav ul ul ul { display:none; width:200px; position:absolute; left:229px; top:0;
+padding:0; margin:0; 
+-moz-border-radius-topright:4px;
+-webkit-border-top-right-radius:4px;
+border-top-right-radius:4px;
+}
+#topnav ul ul ul ul {left:199px;}
+#topnav ul ul li.last { border-left:1px solid rgba(0,0,0,0.1); border-bottom:1px solid rgba(0,0,0,0.1); -moz-border-radius-bottomleft:4px; -moz-border-radius-bottomright:4px; -webkit-border-bottom-left-radius:4px; -webkit-border-bottom-right-radius:4px; border-bottom-left-radius:4px; border-bottom-right-radius:4px; }
+#topnav .search-form {margin: 6px;}
+#topnav .search_input {width: 100px;}
+
+
+/* Partie centrale de la page Wiki */
+#main {
+position:relative;
+margin: 0;
+padding: 20px;
+min-height:400px;
+}
+
+
+/* Barre de rédaction */
+.footer [class^="icon-"],
+.footer [class*=" icon-"] {
+  background-image: url("../../../presentation/images/glyphicons-halflings-white.png");
+}
+.footer {
+font-size:0.9em;
+margin: 0;
+padding: 0;
+text-align:center;
+}
+.footer a { 
+color: #FFF;
+text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+padding: 5px 8px;
+text-decoration:none; 
+display:inline-block;
+*display: inline;
+*zoom: 1;
+margin: 0;
+}
+.footer a:hover {
+text-decoration:none;
+}
+
+
+/* Pied de page */
+footer {
+font-size:0.9em;
+}
+footer .footerpage {
+margin: 0;
+padding: 20px;
+}

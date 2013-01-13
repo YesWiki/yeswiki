@@ -1,0 +1,14 @@
+<?php if (is_array($syndication['pages'])) : ?>
+<!-- SYNDICATION - DEBUT -->
+<ul class="liste_rss_paginee pagination<?php echo $syndication['pagination'];?>">
+<?php foreach ($syndication['pages'] as $page) : ?>
+	<li class="titre_rss">
+		<?php if (isset($page['date']) && $page['date']!='') : ?><span class="date_rss"><?php echo $page['date'];?></span>
+		<span class="separateur_date_rss"> - </span><?php endif; ?>
+		<a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'onclick="window.open(this.href); return false;"':'';?>><?php echo $page['titre'];?></a><br />
+		<div class="description_rss"><?php echo $page['description'];?></div>
+	</li>
+<?php endforeach; ?>
+</ul>
+<!-- SYNDICATION - FIN -->
+<?php endif; ?>

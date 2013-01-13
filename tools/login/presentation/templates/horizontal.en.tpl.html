@@ -1,0 +1,54 @@
+<?php if ($connected) : ?>
+<a data-target="#loginModal" data-toggle="modal">
+	<i class="icon-user"></i><?= $user; ?>
+</a>
+<!-- Modal -->
+<div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="myModalLabel">Connected as <?= $user; ?></h3>
+    </div>
+    <form class="login-inline-form" method="post" id="signout" action="<?= $signupurl; ?>">
+    <div class="modal-body">
+    	<?= $PageMenuUser; ?>
+    	<input type="hidden" name="incomingurl" value="<?= $userpage; ?>" />
+    	<a class="btn btn-block" href="<?= $signupurl; ?>" title="Change my settings">Change my account's settings</a></span>
+    	<input class="btn btn-block btn-danger login-signout-button" type="button" value="Logout" onclick="document.location='<?= $signupurl; ?>&amp;action=logout'" />
+	</div>
+	</form>
+</div>
+
+<?php else : ?>
+<a data-target="#loginModal" data-toggle="modal" class="link_login"><img src="tools/login/presentation/images/user-icon10-black.gif" height="10" width="8" style="margin:2px 5px 0 0" alt="user" /><span>Sign-in</span></a>
+<span class="login-link"><a href="<?= $signupurl; ?>" title="Register">Register</a></span>
+<div id="loginModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="myModalLabel">Login form</h3>
+    </div>
+    <form class="form-horizontal" action="<?= $signupurl; ?>" method="post">
+    <div class="modal-body">
+    	<?php if ($error) : ?>
+			<div class="error_box"><?= $error; ?></div>
+		<?php endif; ?>
+		<input type="hidden" name="action" value="login" />
+		<input type="hidden" name="incomingurl" value="<?= $userpage; ?>" />
+		<input type="hidden" name="remember" value="0" />
+		<label class="login-label">WikiName</label>
+		<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
+		<div class="clear"></div>
+		<label class="login-label">Password</label>
+		<input type="password" name="password" class="login-input" size="7" />
+		<div class="clear"></div>
+		<div class="login-label">
+			<input type="checkbox" id="remember-default" name="remember" value="1" />
+			<label for="remember-default" class="login-label-remember">Remember me</label>
+		</div>
+		
+    </div>
+    <div class="modal-footer">
+    	<input type="submit" class="btn btn-primary login-button" value="Connection" />
+    </div>
+	</form>
+</div>
+<?php endif; ?>
