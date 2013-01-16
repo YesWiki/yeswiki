@@ -101,10 +101,8 @@ foreach ($tableau_resultat as $fiche) {
 $points_carto = implode(',',$tab_points_carto);
 
 echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
-echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>';
-echo '<script type="text/javascript" src="http://www.google.com/jsapi"></script>';
-echo '<script type="text/javascript" src="tools/bazar/libs/oms.min.js"></script>';
-echo '
+echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 
     <script type="text/javascript">
     //variable pour la carte google
@@ -146,7 +144,6 @@ echo '
           scrollwheel: '.BAZ_PERMETTRE_ZOOM_MOLETTE.'
         }
         map = new google.maps.Map(document.getElementById("map"), myOptions);
-        var oms = new OverlappingMarkerSpiderfier(map); // Gestion superposition
 
         if ($("#markers li") != undefined) {
             //tableau des points des fiches bazar
@@ -162,22 +159,18 @@ echo '
                     shadow: shadow,
                     title: item.title
                 });
-                marker.desc = item.description;
-                oms.addMarker(marker);
                 arrMarkers[i] = marker;
                 var infowindow = new google.maps.InfoWindow({
                     content: item.description
                 });
-
                 arrInfoWindows[i] = infowindow;
-                oms.addListener(\'click\', function(marker) {
-                    infowindow.setContent(marker.desc);
+                google.maps.event.addListener(marker, \'click\', function() {
                     infowindow.open(map, marker);
                     $("ul.css-tabs li").remove();
                     $("fieldset.tab").each(function(i) {
                                     $(this).parent(\'div.BAZ_cadre_fiche\').prev(\'ul.css-tabs\').append("<li class=\'liste" + i + "\'><a href=\"#\">"+$(this).find("legend:first").hide().html()+"</a></li>");
                     });
-                    // ne sert pas ?   $("ul.css-tabs").tabs("fieldset.tab", { onClick: function(){} } );
+                    $("ul.css-tabs").tabs("fieldset.tab", { onClick: function(){} } );
                 });
             });
         }
