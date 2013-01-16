@@ -64,12 +64,13 @@ $(document).ready(function () {
 				$(id).remove();
 				$("#bazar_form_lists .list-sortables input[name^='label']").each(function(i) {
 					$(this).attr('name', 'label['+(i+1)+']').
+					prev().attr('name', 'id['+(i+1)+']').
 					parent('.liste_ligne').attr('id', 'row'+(i+1)).
 					find("input:hidden").attr('name', 'ancienlabel['+(i+1)+']');
 				});
 			}
 		} else {
-			alert('Le dernier ?l?ment ne peut ?tre supprim?.');
+			alert('Le dernier élément ne peut être supprimé.');
 		}
 		return false;
 	});
