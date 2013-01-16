@@ -505,7 +505,13 @@ function baz_afficher_formulaire_export()
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
                     $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.$ligne[6];
-                } else {
+                }
+                // cas de la carto
+                elseif($ligne[0] == 'carte_google') {
+                    $tab_champs[] = $ligne[1];
+                    $tab_champs[] = $ligne[2];
+                }
+                else {
                     $tab_champs[] = $ligne[1];
                 }
                 $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
