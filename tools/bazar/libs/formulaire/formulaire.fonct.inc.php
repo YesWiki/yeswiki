@@ -153,7 +153,7 @@ function formulaire_valeurs_template_champs($template)
     return $tableau_template;
 }
 
-//-------------------FONCTIONS DE MISE EN PAGE DES FORMULAIRES
+
 
 //-------------------FONCTIONS DE MISE EN PAGE DES FORMULAIRES
 
@@ -161,7 +161,7 @@ function formulaire_valeurs_template_champs($template)
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des differentes option pour l'element liste
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÃefaut
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par daefaut
  * @return   void
  */
 function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -608,7 +608,6 @@ availableTags: tagsexistants
                     $(".antispam").attr(\'value\', \'1\');
                     });
 </script>';
-//echo $GLOBALS['js'];
 
 //gestion des valeurs par defaut : d'abord on regarde s'il y a une valeur a modifier,
 //puis s'il y a une variable passee en GET,
@@ -1367,7 +1366,7 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** titre() - Action qui camouffle le titre et le génére Ã  partir d'autres champs au formulaire
+/** titre() - Action qui camouffle le titre et le génére a  partir d'autres champs au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des différentes option pour le texte HTML
@@ -1392,7 +1391,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
                 //sinon on prend le label de la liste
                 elseif ( preg_match('#^liste#',$var)!=false || preg_match('#^checkbox#',$var)!=false ) {
-                    //on récupÃ¨re le premier chiffre (l'identifiant de la liste)
+                    //on récupere le premier chiffre (l'identifiant de la liste)
                     preg_match_all('/[0-9]{1,4}/', $var, $matches);
                     $req = 'SELECT blv_label FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$matches[0][0].' AND blv_valeur='.$_POST[$var].' AND blv_ce_i18n="fr-FR"';
                     $resultat = $GLOBALS['_BAZAR_']['db']->query($req) ;
@@ -1546,7 +1545,7 @@ google.maps.event.addListener(marker, "dragend", function () {
         var lon = document.getElementById("longitude");lon.value = marker.getPosition().lng();
         map.setCenter(marker.getPosition());
         });
-} else {alert("Localisation par votre accÃ¨s Internet impossible..");}
+} else {alert("Localisation par votre acces Internet impossible...");}
 };
 
 function showAddress()
@@ -1650,8 +1649,10 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="htt
         }
     }
     $required = (($obligatoire == 1) ? ' required="required"' : '' );
+    $symbole_obligatoire = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
 
-    $formtemplate->addElement('html', '
+    $formtemplate->addElement('html', 
+        $symbole_obligatoire.'
         <input class="btn btn-primary btn_adresse" onclick="showAddress();" name="chercher_sur_carte" value="'.VERIFIER_MON_ADRESSE.'" type="button" />
         <input class="btn btn_client" onclick="showClientAddress();" name="chercher_client" value="'.VERIFIER_MON_ADRESSE_CLIENT.'" type="button" />
         <div class="form-inline pull-right">'."\n".
@@ -1660,10 +1661,6 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="htt
         '</div>'."\n".
         '<div id="map" style="clear:right; margin-top:8px; width: '.BAZ_GOOGLE_IMAGE_LARGEUR.'; height: '.BAZ_GOOGLE_IMAGE_HAUTEUR.';"></div>');
 
-    if (isset($obligatoire) && $obligatoire==1) {
-        /*$formtemplate->addRule ($lat, LATITUDE . ' obligatoire', 'required', '', 'client');
-          $formtemplate->addRule ($lon, LONGITUDE . ' obligatoire', 'required', '', 'client');*/
-    }
     } elseif ($mode == 'requete') {
         return array('carte_google' => $valeurs_fiche[$lat].'|'.$valeurs_fiche[$lon]);
     } elseif ($mode == 'recherche') {
