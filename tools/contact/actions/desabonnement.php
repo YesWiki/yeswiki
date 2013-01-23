@@ -25,15 +25,15 @@
 /**
 * desabonnement.php
 *
-* Description : action permettant l'envoi par mail d'une demande de désinscription à une newsletter
+* Description : action permettant l'envoi par mail d'une demande de d?sinscription ? une newsletter
 *
 *@package contact
-//Auteur original :
+*
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
-//Autres auteurs :
+*
 *@copyright     outils-reseaux.org 2008
 *@version       $Revision: 1.2 $ $Date: 2010-10-19 15:59:15 $
-// +------------------------------------------------------------------------------------------------------+
+*
 */
 if (!defined("WIKINI_VERSION"))
 {
@@ -42,17 +42,28 @@ if (!defined("WIKINI_VERSION"))
 
 //recuperation des parametres
 $mail = $this->GetParameter('mail');
-if (empty($mail)) {die('<div class="error_box">Action desabonnement : param&ecirc;tre mail obligatoire.</div>');}
+if (empty($mail)) {die('<div class="alert alert-error">Action desabonnement : param&ecirc;tre mail obligatoire.</div>');}
+
+// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
+if (isset($GLOBALS['nbactionmail'])) {
+	$GLOBALS['nbactionmail']++;
+}
+else {
+	$GLOBALS['nbactionmail'] = 1;
+}
+
 echo '<div class="formulairemail">
 <div class="note"></div>
-<form id="ajax-desabonne-form" action="'.$this->href('mail').'">
+<form id="ajax-desabonne-form" class="ajax-mail-form" action="'.$this->href('mail').'">
 	<label class="grid_2 label-right">Votre adresse mail</label>
 	<input class="grid_2 textbox" type="text" name="email" value="" />
-	<input class="grid_2 button" type="submit" name="submitnewsletter" value="Se d&eacute;sabonner" />
+	<input class="grid_2 button contact-submit" type="submit" name="submitnewsletter" value="Se d&eacute;sabonner" />
 	<input type="hidden" name="mail" value="'.$mail.'" />
+	<input type="hidden" name="nbactionmail" value="'.$GLOBALS['nbactionmail'].'" >
 	<input type="hidden" name="type" value="desabonne" />	
 </form>
 <div class="clear"></div>
 </div>
 ';
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
 ?>
