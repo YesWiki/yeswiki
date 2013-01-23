@@ -25,15 +25,13 @@
 /**
 * mailinglist.php
 *
-* Description : action permettant d'inscrire ou désinscrire massivement des mails à une newsletter
+* Description : action permettant d'inscrire ou d?sinscrire massivement des mails ? une newsletter
 *
 *@package contact
-//Auteur original :
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
-//Autres auteurs :
 *@copyright     outils-reseaux.org 2012
 *@version       $Revision: 1.2 $ $Date: 2010-10-19 15:59:15 $
-// +------------------------------------------------------------------------------------------------------+
+*
 */
 if (!defined("WIKINI_VERSION"))
 {
@@ -49,11 +47,11 @@ elseif ($this->UserIsAdmin()) {
 	
 	echo '<h2>Mails &agrave; ajouter ou &agrave; supprimer de la liste '.$list.'</h2>';
 	
-	// les mails formatés sont prêts à être envoyés
+	// les mails formates sont prets a etre envoyes
 	if (isset($_POST['mails'])) {
 		if (is_array($_POST['mails'])) {
 			
-			//inclusion de la bibliothèque de fonctions pour l'envoi des mails
+			//inclusion de la bibliotheque de fonctions pour l'envoi des mails
 			include_once 'tools/contact/libs/contact.functions.php';
 			
 			$tab_listadress = explode('@',$list);
@@ -61,7 +59,7 @@ elseif ($this->UserIsAdmin()) {
 			// en fonction de l'action demand	
 			if ($_POST['action_mails'] == 'Abonner') {
 				$listaction = $tab_listadress[0].'-subscribe@'.$tab_listadress[1];
-			} elseif ($_POST['action_mails'] == 'Désabonner') {
+			} elseif ($_POST['action_mails'] == 'D?sabonner') {
 				$listaction = $tab_listadress[0].'-unsubscribe@'.$tab_listadress[1];
 			}
 			echo '<div style="margin-bottom:15px; padding:10px; border:1px solid #666; width:600px; height:150px; overflow:auto; ">';
@@ -74,7 +72,7 @@ elseif ($this->UserIsAdmin()) {
 			<a href="'.$this->href().'" title="Entrer d\'autres mails">Entrer d\'autres mails</a>';	
 		}	
 	}
-	// la liste des mails non formatée est disponible
+	// la liste des mails non formatee est disponible
 	elseif (isset($_POST['mailinglist'])) {
 		//extrait les mails
 		$regEx = "/([\s]*)[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i";
@@ -99,7 +97,7 @@ elseif ($this->UserIsAdmin()) {
 		}
 
 	}
-	// rien n'a été fait, on propose un formulaire pour ajouter les mails 
+	// rien n'a ete fait, on propose un formulaire pour ajouter les mails 
 	else {
 		echo '<div class="info_box">Entrez un texte contenant des mails dedans pour les extraire, qu\'importe les s&eacute;parateurs (virgules, point-virgules, deux points, espaces, tabulations, retours &agrave; la ligne) ou le texte entre.</div>
 		<form id="ajax-mailing-form" method="post" action="'.$this->href().'">

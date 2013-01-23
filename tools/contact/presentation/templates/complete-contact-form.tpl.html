@@ -1,4 +1,4 @@
-<form id="ajax-contact-form" class="ajax-form form-horizontal <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
+<form id="ajax-contact-form<?php echo $nbactionmail; ?>" class="ajax-mail-form form-horizontal <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
 	<div class="control-group">
 		<label class="control-label"><?php echo CONTACT_YOUR_NAME; ?></label>
 		<div class="controls">
@@ -33,7 +33,7 @@
 			<button class="btn btn-primary contact-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo CONTACT_SEND_MESSAGE; ?></button>
 		</div>
 	</div>
-	<input type="hidden" name="mail" value="<?php echo $mail; ?>" />
+	<input type="hidden" name="nbactionmail" value="<?php echo $nbactionmail; ?>" />
 	<input type="hidden" name="entete" value="<?php echo $entete; ?>" />	
 	<input type="hidden" name="type" value="contact" />	
 </form>
