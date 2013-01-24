@@ -25,7 +25,7 @@
 /**
 * mailinglist.php
 *
-* Description : action permettant d'inscrire ou d?sinscrire massivement des mails ? une newsletter
+* Description : action permettant d'inscrire ou d?sinscrire massivement des mails a une newsletter
 *
 *@package contact
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
@@ -41,7 +41,7 @@ if (!defined("WIKINI_VERSION"))
 //recuperation des parametres
 $list = $this->GetParameter('list');
 if (empty($list)) {
-	echo '<div class="error_box">Action mailinglist : param&egrave;tre list obligatoire (il s\'agit de l\'adresse mail de la liste de diffusion).</div>';
+	echo '<div class="alert alert-error">Action mailinglist : param&egrave;tre list obligatoire (il s\'agit de l\'adresse mail de la liste de diffusion).</div>';
 }
 elseif ($this->UserIsAdmin()) {
 	
@@ -92,7 +92,7 @@ elseif ($this->UserIsAdmin()) {
 			</form><br /><br />
 			<a href="'.$this->href().'" title="Essayer avec d\'autres mails dans le texte">Essayer avec d\'autres mails dans le texte</a>';
 		} else {
-			echo '<div class="error_box">Pas d\'adresses mails trouv&eacute;es dans le texte fourni.</div>
+			echo '<div class="alert alert-error">Pas d\'adresses mails trouv&eacute;es dans le texte fourni.</div>
 			<a href="'.$this->href().'" title="Essayer avec d\'autres mails dans le texte">Essayer avec d\'autres mails dans le texte</a>';	
 		}
 
@@ -108,7 +108,7 @@ elseif ($this->UserIsAdmin()) {
 	}
 }
 else{
-	echo '<div class="error_box">Action mailinglist : il faut &ecirc;tre dans le groupe admins pour utiliser cette action.</div>';
+	echo '<div class="alert alert-error">Action mailinglist : il faut &ecirc;tre dans le groupe admins pour utiliser cette action.</div>';
 }
 
 ?>

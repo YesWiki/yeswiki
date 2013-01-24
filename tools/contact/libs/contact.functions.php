@@ -61,25 +61,27 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 	$headers['From']    = $mail_sender;
 	$headers['To']      = $mail_sender;
 	$headers['Subject'] = $subject;
-	if ($message_html != '') {
-		$mime = new Mail_mime("\n");
-		$mime->setTXTBody($message_txt);
-		$mime->setHTMLBody($message_html);
-		$message = $mime->get();
-		$headers = $mime->headers($headers);
+	
+	if ($message_html == '') {
+		$message_html == $message_txt;
 	}
-	else {
-		$message = $message_txt;
-	}
+	$mime = new Mail_mime("\n");
+
+	$mimeparams=array();
+	$mimeparams['text_encoding']="7bit";
+	$mimeparams['text_charset']="iso-8859-1";
+	$mimeparams['html_charset']="iso-8859-1"; 
+	$mimeparams['head_charset']="iso-8859-1";  
+
+	$mime->setTXTBody($message_txt);
+	$mime->setHTMLBody($message_html);
+	$message = $mime->get($mimeparams);
+	$headers = $mime->headers($headers);
+	
 	// Creer un objet mail en utilisant la methode Mail::factory.
 	$object_mail = & Mail::factory(CONTACT_MAIL_FACTORY);
 
-	if($object_mail->send($mail_receiver, $headers, $message))	{
-		return true;
-	}
-	else {
-		return false;
-	}
+	return $object_mail->send($mail_receiver, $headers, $message);
 }
 
 ?>
