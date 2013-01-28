@@ -58,21 +58,22 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 	require_once('tools/contact/libs/Mail/mime.php');
 	$headers['From']    = $mail_sender;
 	$headers['To']      = $mail_sender;
-	$headers['Subject'] = utf8_encode($subject);
+	$headers['Subject'] = $subject;
+    $headers["Return-path"] = $mail_sender; 
 	
 	if ($message_html == '') {
 		$message_html == $message_txt;
 	}
 	$mime = new Mail_mime("\n");
 
-	$mimeparams=array();
+	$mimeparams = array();
 	$mimeparams['text_encoding']="7bit";
 	$mimeparams['text_charset']="UTF-8";
 	$mimeparams['html_charset']="UTF-8"; 
 	$mimeparams['head_charset']="UTF-8";  
 
-	$mime->setTXTBody(utf8_encode($message_txt));
-	$mime->setHTMLBody(utf8_encode($message_html));
+	$mime->setTXTBody($message_txt);
+	$mime->setHTMLBody($message_html);
 	$message = $mime->get($mimeparams);
 	$headers = $mime->headers($headers);
 	
