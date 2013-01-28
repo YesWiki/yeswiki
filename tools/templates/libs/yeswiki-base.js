@@ -21,7 +21,7 @@ if ( ! Modernizr.mq('only all') ) {
     // check placeholder browser support
     if (!Modernizr.input.placeholder)
     {
-        var $placeholders = $(this).find('[placeholder]');
+        var $placeholders = $('[placeholder]');
         // set placeholder values
         $placeholders.each(function()
         {
