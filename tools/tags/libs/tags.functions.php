@@ -6,44 +6,34 @@ function afficher_commentaires_recursif($page, $wiki, $premier=true) {
 	$valcomment['commentaires'] = array();
 	// display comments themselves
 	if ($comments) {
-		$valcomment=array();
-		$i=0;
+		$valcomment = array();
+		$i = 0;
 		foreach ($comments as $comment) {
 			$valcomment['commentaires'][$i]['tag'] = $comment["tag"];
 			$valcomment['commentaires'][$i]['body'] = $wiki->Format($comment["body"]);
-			$valcomment['commentaires'][$i]['infos'] = "de ".$wiki->Format($comment["user"]).", ".date("\l\e d.m.Y &\a\g\\r\av\e; H:i:s", strtotime($comment["time"]));
-			$valcomment['commentaires'][$i]['actions'] = '';
-			if ($wiki->HasAccess("comment", $comment['tag']))
-			{
-				$valcomment['commentaires'][$i]['actions'] .= '<a href="'.$wiki->href('', $comment['tag']).'" class="repondre_commentaire">R&eacute;pondre</a> ';
-			}
-			if ($wiki->HasAccess('write', $comment['tag']) || $wiki->UserIsOwner($comment['tag']) || $wiki->UserIsAdmin($comment['tag']))
-			{
-				$valcomment['commentaires'][$i]['actions'] .= '<a href="'.$wiki->href('edit', $comment['tag']).'" class="editer_commentaire">Editer</a> ';
-			}
-			if ($wiki->UserIsOwner($comment['tag']) || $wiki->UserIsAdmin())
-			{
-				$valcomment['commentaires'][$i]['actions'] .= '<a href="'.$wiki->href('deletepage', $comment['tag']).'" class="supprimer_commentaire">Supprimer</a>'."\n" ;
-			}
-			$valcomment['commentaires'][$i]['reponses'] = afficher_commentaires_recursif($comment['tag'], $wiki, false);
+			$valcomment['commentaires'][$i]['infos'] = $wiki->Format($comment["user"]).", ".date(TAGS_DATE_FORMAT, strtotime($comment["time"]));
+			$valcomment['commentaires'][$i]['hasrighttoaddcomment'] = $wiki->HasAccess("comment", $wiki->page["comment_on"]);
+			$valcomment['commentaires'][$i]['hasrighttomodifycomment'] = $wiki->HasAccess('write', $comment['tag']) || $wiki->UserIsOwner($comment['tag']) || $wiki->UserIsAdmin();
+			$valcomment['commentaires'][$i]['hasrighttodeletecomment'] = $wiki->UserIsOwner($comment['tag']) || $wiki->UserIsAdmin();
+			$valcomment['commentaires'][$i]['replies'] = afficher_commentaires_recursif($comment['tag'], $wiki, false);
 			$i++;
 		}
 	} 
 
 	// formulaire d'ajout de commentaire
-	$valcomment['commentform'] = '';
+	$commentform = '';
 	if ($premier && $wiki->HasAccess("comment", $page))	{
-		$valcomment['commentform'] .= "<div class=\"microblog-comment-form\">\n" ;
-		$valcomment['commentform'] .= $wiki->FormOpen("addcomment", $page).'
-				<textarea name="body" class="comment-microblog" rows="3" placeholder="Ecrire votre commentaire ici..."></textarea>
-				<button class="btn btn-primary btn-microblog" name="action" value="addcomment">Ajouter votre commentaire</button>'.$wiki->FormClose();
-		$valcomment['commentform'] .= "<div class=\"clear\"></div></div>\n" ;
+		$commentform .= "<div class=\"comment-form\">\n" ;
+		$commentform .= $wiki->FormOpen("addcomment", $page).'
+				<textarea name="body" required="required" class="textarea-comment" rows="3" placeholder="'.TAGS_WRITE_YOUR_COMMENT_HERE.'"></textarea>
+				<button class="btn btn-small" name="action" value="addcomment"><i class="icon-comment"></i>&nbsp;'.TAGS_ADD_YOUR_COMMENT.'</button>'.$wiki->FormClose();
+		$commentform .= "<div class=\"clearfix\"></div></div>\n" ;
 	}
 
 	include_once('squelettephp.class.php');
 	$squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
 	$squelcomment->set($valcomment);
-	$output .= $squelcomment->analyser();
+	$output .= $squelcomment->analyser()."\n".$commentform;
 
 	return $output;
 }
