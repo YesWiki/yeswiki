@@ -32,8 +32,8 @@ if (!defined("WIKINI_VERSION"))
 	die ("acc&egrave;s direct interdit");
 }
 
-//on supprime la vieille gestion des commentaires
-$string = '/\<div class="commentsheader"\>\n.*\n.*\n.*\n.*\n/Ui';
+// on supprime la vieille gestion des commentaires
+$string = '/\<div class="commentsheader"\>.*\<\/div\>/Uis';
 $plugin_output_new = preg_replace($string, '', $plugin_output_new);
 
 $output = '';
