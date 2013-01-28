@@ -2,7 +2,7 @@
 $(document).ready(function(){
 
 	// validation formulaire de contact
-	$(".contact-submit").on("click", function(e) {
+	$(".mail-submit").on("click", function(e) {
 		e.stopPropagation();
 		var form = $(this).parents('.ajax-mail-form');
 		var inputsreq = form.find('input[required], textarea[required]');
@@ -11,18 +11,17 @@ $(document).ready(function(){
 		var atleastonemailfieldnotvalid = false;
 		
 		// on efface les anciennes erreurs
-		$('span.help-inline').remove();
+		form.find('.help-inline').remove();
 
 		// il y a des champs requis, on teste la validite champs par champs
-		if (inputsreq.length > 0) {		
-			
+		if (inputsreq.length > 0) {				
 			inputsreq.each(function() {
 				if ( !($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
 					$(this).parents('.control-group').removeClass('error');
 				} else {
 					atleastonefieldnotvalid = true;
 					$(this).parents('.control-group').addClass('error');
-					$('<span>').addClass('help-inline').text('La saisie de ce champ est obligatoire.').appendTo($(this).parent());
+					$('<span>').addClass('help-inline').text('La saisie de ce champ est obligatoire.').appendTo($(this).parents('.controls'));
 				}
 			});
 		}
@@ -34,7 +33,7 @@ $(document).ready(function(){
 			if(reg.test(address) == false && !(address === '' &&  $(this).attr('required') !== 'required')) {
 				atleastonemailfieldnotvalid = true;
 				$(this).parents('.control-group').addClass('error');
-				$('<span>').addClass('help-inline').text('L\'email saisi n\'est pas valide.').appendTo($(this).parent());		
+				$('<span>').addClass('help-inline').text('L\'email saisi n\'est pas valide.').appendTo($(this).parents('.controls'));		
 			} else {
 				$(this).parents('.control-group').removeClass('error');
 			}

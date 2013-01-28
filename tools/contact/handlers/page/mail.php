@@ -29,7 +29,7 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERV
 	else {
 		$subject = ((isset($_POST['entete'])) ? '['.trim($_POST['entete']).'] ': '').
 				((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false).
-				(($name_sender) ? ' de '.$name_sender : '');
+				(($name_sender) ? ' '.CONTACT_FROM.' '.$name_sender : '');
 		$message_html = '';
 		$message_txt = (isset($_POST['message'])) ? stripslashes($_POST['message']) : '';
 	}
@@ -43,10 +43,10 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERV
 			if ($_POST['type']=='contact' || $_POST['type']=='mail') {
 				$message['message'] = CONTACT_MESSAGE_SUCCESSFULLY_SENT;
 			} 
-			elseif ($_POST['type']=='abonne') {
+			elseif ($_POST['type']=='abonnement') {
 				$message['message'] = CONTACT_SUBSCRIBE_ORDER_SENT;
 			}
-			elseif ($_POST['type']=='desabonne') {
+			elseif ($_POST['type']=='desabonnement') {
 			 	$message['message'] = CONTACT_UNSUBSCRIBE_ORDER_SENT;
 			 } 
 		} 

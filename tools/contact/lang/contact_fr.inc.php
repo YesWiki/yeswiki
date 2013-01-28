@@ -52,4 +52,9 @@ define ('CONTACT_UNSUBSCRIBE_ORDER_SENT', 'Votre demande concernant votre d&eacu
 
 define ('CONTACT_HANDLER_MAIL_FOR_ADMINS', 'Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs.');
 define ('CONTACT_LOGIN_IF_ADMIN', 'Si vous faites parti ce groupe, veuillez vous identifier.');
+
+define ('CONTACT_SUBSCRIBE', 'S\'abonner');
+define ('CONTACT_UNSUBSCRIBE', 'Se d&eacute;sabonner');
+
+define ('CONTACT_FROM', 'de');
 ?>

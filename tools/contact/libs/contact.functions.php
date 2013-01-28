@@ -1,11 +1,8 @@
 <?php
 
-require_once('tools/contact/libs/Mail.php');
-require_once('tools/contact/libs/Mail/mime.php');
-
 function FindMailFromWikiPage($wikipage,$nbactionmail) {
-	preg_match_all('/{{contact.*mail=\"(.*)\".*}}/U', $wikipage, $matches);
-	return $matches[1][$nbactionmail-1];
+	preg_match_all('/{{(contact|abonnement|desabonnement).*mail=\"(.*)\".*}}/U', $wikipage, $matches);
+	return $matches[2][$nbactionmail-1];
 }
 
 function ValidateEmail($email) {
@@ -57,10 +54,11 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
 }
 
 function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '') {
-
+	require_once('tools/contact/libs/Mail.php');
+	require_once('tools/contact/libs/Mail/mime.php');
 	$headers['From']    = $mail_sender;
 	$headers['To']      = $mail_sender;
-	$headers['Subject'] = $subject;
+	$headers['Subject'] = utf8_encode($subject);
 	
 	if ($message_html == '') {
 		$message_html == $message_txt;
@@ -69,12 +67,12 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
 	$mimeparams=array();
 	$mimeparams['text_encoding']="7bit";
-	$mimeparams['text_charset']="iso-8859-1";
-	$mimeparams['html_charset']="iso-8859-1"; 
-	$mimeparams['head_charset']="iso-8859-1";  
+	$mimeparams['text_charset']="UTF-8";
+	$mimeparams['html_charset']="UTF-8"; 
+	$mimeparams['head_charset']="UTF-8";  
 
-	$mime->setTXTBody($message_txt);
-	$mime->setHTMLBody($message_html);
+	$mime->setTXTBody(utf8_encode($message_txt));
+	$mime->setHTMLBody(utf8_encode($message_html));
 	$message = $mime->get($mimeparams);
 	$headers = $mime->headers($headers);
 	

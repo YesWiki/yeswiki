@@ -64,7 +64,7 @@ else {
 		$template = 'complete-contact-form.tpl.html';
 	}
 
-	// on peut ajouter des classes à la classe par défaut .searchform
+	// on peut ajouter des classes à la classe par défaut
 	$contactelements['class'] = ($this->GetParameter('class') ? 'form-contact '.$this->GetParameter('class') : 'form-contact');
 
 	// adresse url d'envoi du mail
