@@ -2,37 +2,38 @@
 $(document).ready(function(){
 
 	// validation formulaire de contact
-	$(".contact-submit").on("click", function() {
-		var inputsreq = $('#ajax-contact-form input[required], #ajax-contact-form textarea[required]');
+	$(".mail-submit").on("click", function(e) {
+		e.stopPropagation();
+		var form = $(this).parents('.ajax-mail-form');
+		var inputsreq = form.find('input[required], textarea[required]');
 
 		var atleastonefieldnotvalid = false;
 		var atleastonemailfieldnotvalid = false;
 		
 		// on efface les anciennes erreurs
-		$('span.help-inline').remove();
+		form.find('.help-inline').remove();
 
 		// il y a des champs requis, on teste la validite champs par champs
-		if (inputsreq.length > 0) {		
-			
+		if (inputsreq.length > 0) {				
 			inputsreq.each(function() {
 				if ( !($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
 					$(this).parents('.control-group').removeClass('error');
 				} else {
 					atleastonefieldnotvalid = true;
 					$(this).parents('.control-group').addClass('error');
-					$('<span>').addClass('help-inline').text('La saisie de ce champ est obligatoire.').appendTo($(this).parent());
+					$('<span>').addClass('help-inline').text('La saisie de ce champ est obligatoire.').appendTo($(this).parents('.controls'));
 				}
 			});
 		}
 		
 		// les emails
-		$('#ajax-contact-form input[type=email]').each(function() {
+		form.find('input[type=email]').each(function() {
 			var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
 			var address = $(this).val();
 			if(reg.test(address) == false && !(address === '' &&  $(this).attr('required') !== 'required')) {
 				atleastonemailfieldnotvalid = true;
 				$(this).parents('.control-group').addClass('error');
-				$('<span>').addClass('help-inline').text('L\'email saisi n\'est pas valide.').appendTo($(this).parent());		
+				$('<span>').addClass('help-inline').text('L\'email saisi n\'est pas valide.').appendTo($(this).parents('.controls'));		
 			} else {
 				$(this).parents('.control-group').removeClass('error');
 			}
@@ -40,43 +41,30 @@ $(document).ready(function(){
 
 		if (atleastonefieldnotvalid === true || atleastonemailfieldnotvalid === true) {
 			// on remonte en haut du formulaire
-			$('html, body').animate({scrollTop: $("#ajax-contact-form .error:first").offset().top - 80}, 800);
+			$('html, body').animate({scrollTop: form.find(".error:first").offset().top - 80}, 800);
 		}
 		else {
 			// on soumet le formulaire
-			$("#ajax-contact-form").submit();
+			var str = form.serialize();
+			$.ajax({
+				type: "POST",
+				url: form.attr('action'),
+				data: str,
+				success: function(msg) {
+					form.ajaxComplete(function(event, request, settings) {
+						// si le message a ete envoye, on affiche le message de notification
+						form.find('.alert').remove();
+						form.prepend(msg);
+						msg = '';
+						//  on vide le formulaire si succes
+						if (form.find('.alert-success').length>0) {
+							form[0].reset();
+						}
+					});
+				}
+			});
 		}
 
-		return false;
-	});
-
-
-
-	// envoi ajax et post controle
-	$("#ajax-contact-form, #ajax-abonne-form, #ajax-desabonne-form, #ajax-mail-form").on("submit", function() {
-		var $this = $(this);
-		$this.addClass('form-selected');
-		var str = $this.serialize();
-		$.ajax({
-			type: "POST",
-			url: $this.attr('action'),
-			data: str,
-			success: function(msg) {
-				$this.ajaxComplete(function(event, request, settings) {
-					// Si le message a été envoyé, on affiche le message de notification et on cache le formulaire
-					if(msg == 'OK') {
-						result = '<div class="alert alert-success">Votre message a bien &eacute;t&eacute; envoy&eacute;. Merci!</div>';
-					} else if(msg == 'abonne') {
-						result = '<div class="alert alert-success">Votre abonnement a bien &eacute;t&eacute; pris en compte. Merci!</div>';
-					} else if(msg == 'desabonne') {
-						result = '<div class="alert alert-success">Votre d&eacute;sabonnement a bien &eacute;t&eacute; pris en compte. Merci, &agrave; bient&ocirc;t!</div>';
-					} else {
-						result = msg;
-					}
-					$this.removeClass("form-selected").before(result);
-				});
-			}
-		});
 		return false;
 	});
 });

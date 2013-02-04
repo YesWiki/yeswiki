@@ -21,20 +21,17 @@
 // | along with Foobar; if not, write to the Free Software                                                |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// CVS : $Id: contact.php,v 1.5 2011-07-13 10:24:11 mrflos Exp $
+
 /**
 * contact.php
 *
 * Description :
 *
 *@package contact
-//Auteur original :
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
-//Autres auteurs :
-*@author        Aucun
 *@copyright     outils-reseaux.org 2008
 *@version       $Revision: 1.5 $ $Date: 2011-07-13 10:24:11 $
-// +------------------------------------------------------------------------------------------------------+
+*
 */
 
 if (!defined("WIKINI_VERSION")) {
@@ -47,7 +44,15 @@ if (empty($contactelements['mail'])) {
 	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action contact :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
 }
 else {
-
+	// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
+	if (isset($GLOBALS['nbactionmail'])) {
+		$GLOBALS['nbactionmail']++;
+	}
+	else {
+		$GLOBALS['nbactionmail'] = 1;
+	}
+	$contactelements['nbactionmail'] = $GLOBALS['nbactionmail']; 
+	
 	$contactelements['entete'] = $this->GetParameter('entete');
 	if (empty($contactelements['entete'])) {
 		$contactelements['entete'] = $this->config['wakka_name'];
@@ -59,7 +64,7 @@ else {
 		$template = 'complete-contact-form.tpl.html';
 	}
 
-	// on peut ajouter des classes à la classe par défaut .searchform
+	// on peut ajouter des classes à la classe par défaut
 	$contactelements['class'] = ($this->GetParameter('class') ? 'form-contact '.$this->GetParameter('class') : 'form-contact');
 
 	// adresse url d'envoi du mail
@@ -70,6 +75,6 @@ else {
 	$contacttemplate->set($contactelements);
 	echo $contacttemplate->analyser();
 
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'	<script type="text/javascript" src="tools/contact/libs/contact.js"></script>'."\n";
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
 }
 ?>

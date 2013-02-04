@@ -6,7 +6,7 @@ Copyright 2002, 2003 David DELON
 Copyright 2002, 2003 Charles NEPOTE
 Copyright 2002, 2003 Patrick PAUL
 Copyright 2003  Eric FELDSTEIN
-Copyright 2004  Jean Christophe ANDRÃ‰
+Copyright 2004  Jean Christophe ANDRÃƒÂ‰
 Copyright 2005  Didier Loiseau
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined('WIKINI_VERSION')) {
 	die ('acc&egrave;s direct interdit');
 }
@@ -64,50 +64,24 @@ if (isset($_GET['jsonp_callback']))
 	
 	
 		switch ($submit){
-			case 'Aperçu':
-				$temp = $this->SetInclusions(); // a priori, ca ne sert à rien, mais on ne sait jamais...
-				$this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
-				$output .=
-					"<div class=\"page_preview\">\n".
-					"<div class=\"prev_alert\"><strong>Aper&ccedil;u</strong></div>\n".
-					$this->Format($body)."\n\n".
-					$this->FormOpen("edit").
-					"<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-					"<input type=\"hidden\" name=\"body\" value=\"".htmlspecialchars($body)."\" />\n".
-					"<br />\n".
-					"<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" />\n".
-					"<input name=\"submit\" type=\"submit\" value=\"R&eacute;&eacute;diter\" accesskey=\"p\" />\n".
-					"<input type=\"button\" value=\"Annulation\" onclick=\"document.location='" . addslashes($this->href()) . "';\" />\n".
-					$this->FormClose()."\n"."</div>\n";
-				$this->SetInclusions($temp);
-				break;
-				
-			// pour les navigateurs n'interprétant pas le javascript
-			case 'Annulation':
-				$this->Redirect($this->Href());
-				exit; // sécurité
-	
-			// only if saving:
-			case 'Sauver':
+			case 'savecomment':
 				// check for overwriting
 				if ($this->page && $this->page['id'] != $_GET['previous'])	{
-					$error = 'ALERTE : '.
-					"Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu'un d'autre pendant que vous l'&eacute;ditiez.<br />\n".
-					"Veuillez copier vos changements et r&eacute;&eacute;diter cette page.\n";
+					$error = TAGS_ALERT_PAGE_ALREADY_MODIFIED;
 				} else { // store
 					$body = str_replace("\r", '', utf8_decode($body));
 					
-					// teste si la nouvelle page est differente de la précédente 
+					// teste si la nouvelle page est differente de la prÃ©cÃ©dente 
 					if(rtrim($body)==rtrim($this->page["body"])) {
 						echo $_GET['jsonp_callback']."(".json_encode(array("nochange"=>'1')).")";
-					} else { // sécurité
+					} else { // sÃ©curitÃ©
 						// add page (revisions)
 						$this->SavePage($this->tag, $body);
 		
 						// now we render it internally so we can write the updated link table.
 						$this->ClearLinkTable();
 						$this->StartLinkTracking();
-						$temp = $this->SetInclusions(); // a priori, ca ne sert à rien, mais on ne sait jamais...
+						$temp = $this->SetInclusions(); // a priori, ca ne sert Ã  rien, mais on ne sait jamais...
 						$this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
 						$this->Format($body);
 						$this->SetInclusions($temp);
@@ -121,41 +95,30 @@ if (isset($_GET['jsonp_callback']))
 						$this->WriteLinkTable();
 						$this->ClearLinkTable();
 		
-						// retour HTML pour ajax
-						if (isset($_GET["commentaire"]) && $_GET["commentaire"]==1)
-	 					{
-							$comment = $this->LoadPage($this->tag);
-		 						
-							$valcomment['commentaires'][0]['tag'] = $comment["tag"];
-							$valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
-							$valcomment['commentaires'][0]['infos'] = "de ".$this->Format($comment["user"]).", ".date("\l\e d.m.Y &\a\g\\r\av\e; H:i:s", strtotime($comment["time"]));
-							$valcomment['commentaires'][0]['actions'] = '<a href="'.$this->href('', $comment['tag']).'" class="repondre_commentaire">R&eacute;pondre</a> ';
-							if ($this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin($comment['tag']))
-							{
-								$valcomment['commentaires'][0]['actions'] .= '<a href="'.$this->href('edit', $comment['tag']).'" class="editer_commentaire">Editer</a> ';
-							}			
-							if ($this->UserIsOwner($comment['tag']) || $this->UserIsAdmin())
-							{
-								$valcomment['commentaires'][0]['actions'] .= '<a href="'.$this->href('deletepage', $comment['tag']).'" class="supprimer_commentaire">Supprimer</a>'."\n" ;
-							}									
-							include_once('tools/tags/lib/squelettephp.class.php');
-							$squelcomment = new SquelettePhp('tools/tags/presentation/commentaire_microblog.tpl.html');
-							$squelcomment->set($valcomment);
-							echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($squelcomment->analyser()))).")";							
-						}
-						else {
-							echo $this->format($body);
-						}
+						// on recupere le commentzire bien formatte
+						$comment = $this->LoadPage($this->tag);
+	 						
+						$valcomment['commentaires'][0]['tag'] = $comment["tag"];
+						$valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
+						$valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(TAGS_DATE_FORMAT, strtotime($comment["time"]));
+						$valcomment['commentaires'][0]['hasrighttoaddcomment'] = $this->HasAccess("comment", $_GET['initialpage']);
+						$valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
+						$valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
+						$valcomment['commentaires'][0]['replies'] = '';
+						include_once('tools/tags/libs/squelettephp.class.php');
+						$squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
+						$squelcomment->set($valcomment);
+						echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($squelcomment->analyser()))).")";
 					}
 					
-					// sécurité
+					// sÃ©curitÃ©
 					exit;
 				}
-				// NB.: en cas d'erreur on arrive ici, donc default sera exécuté...
+				// NB.: en cas d'erreur on arrive ici, donc default sera exÃ©cutÃ©...
 			default:
 				// display form
 				if (isset($error)) {
-					$output .= "<div class=\"error\">$error</div>\n";
+					$output .= "<div class=\"alert alert-error\">$error</div>\n";
 				}
 				
 				// append a comment?
@@ -163,19 +126,17 @@ if (isset($_GET['jsonp_callback']))
 					$body = trim($body);
 				}
 				
-				$output .=
-					$this->FormOpen('ajaxedit').
+				$output .= "<form class=\"form-modify-comment well well-small\" method=\"post\" action=\"".$this->href('ajaxedit')."\">\n".
 					"<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-					"<textarea id=\"body\" name=\"body\" wrap=\"soft\" class=\"commentaire_microblog\">\n".
+					"<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\"".TAGS_WRITE_YOUR_COMMENT_HERE."\" class=\"comment-response\">\n".
 					htmlspecialchars($body).
-					"</textarea><br />\n".
-					($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"bouton_submit\" value=\"Sauver\" accesskey=\"s\" />\n").
-					(isset($_GET["commentaire"]) && $_GET["commentaire"]==1 ? '' : "<input name=\"submit\" type=\"button\" value=\"Aper&ccedil;u\" class=\"bouton_preview\" accesskey=\"p\" />\n").
-					"<input type=\"button\" value=\"Annulation\" class=\"bouton_annul\" />\n".
-					$this->FormClose();
+					"</textarea>\n".
+					($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-small btn-primary btn-modify\" value=\"".TAGS_MODIFY."\" />\n").
+					"<input type=\"button\" value=\"".TAGS_CANCEL."\" class=\"btn btn-small btn-cancel-modify\" />\n".
+					"</form>\n";
 		} // switch
 	} else {
-		$output .= "<i>Vous n'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !</i>\n";
+		$output .= "<div class=\"alert alert-error\">".TAGS_NO_WRITE_ACCESS."</div>\n";
 	}
 	$response = $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($output))).")";
 	echo $response;

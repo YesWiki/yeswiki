@@ -21,38 +21,61 @@
 // | along with Foobar; if not, write to the Free Software                                                |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// CVS : $Id: desabonnement.php,v 1.2 2010-10-19 15:59:15 mrflos Exp $
+
 /**
 * desabonnement.php
 *
-* Description : action permettant l'envoi par mail d'une demande de désinscription à une newsletter
+* Description : action permettant l'envoi par mail d'une demande de desinscription a une liste de discussion
 *
 *@package contact
-//Auteur original :
+*
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
-//Autres auteurs :
+*
 *@copyright     outils-reseaux.org 2008
 *@version       $Revision: 1.2 $ $Date: 2010-10-19 15:59:15 $
-// +------------------------------------------------------------------------------------------------------+
+*
 */
 if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
 }
 
+
 //recuperation des parametres
-$mail = $this->GetParameter('mail');
-if (empty($mail)) {die('<div class="error_box">Action desabonnement : param&ecirc;tre mail obligatoire.</div>');}
-echo '<div class="formulairemail">
-<div class="note"></div>
-<form id="ajax-desabonne-form" action="'.$this->href('mail').'">
-	<label class="grid_2 label-right">Votre adresse mail</label>
-	<input class="grid_2 textbox" type="text" name="email" value="" />
-	<input class="grid_2 button" type="submit" name="submitnewsletter" value="Se d&eacute;sabonner" />
-	<input type="hidden" name="mail" value="'.$mail.'" />
-	<input type="hidden" name="type" value="desabonne" />	
-</form>
-<div class="clear"></div>
-</div>
-';
-?>
+$listelements['mail'] = $this->GetParameter('mail');
+if (empty($listelements['mail'])) {
+	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action desabonnement :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
+}
+else {
+	// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
+	if (isset($GLOBALS['nbactionmail'])) {
+		$GLOBALS['nbactionmail']++;
+	}
+	else {
+		$GLOBALS['nbactionmail'] = 1;
+	}
+	$listelements['nbactionmail'] = $GLOBALS['nbactionmail']; 
+
+	// on choisit le template utilisÃ©
+	$template = $this->GetParameter('template'); 
+	if (empty($template)) {
+		$template = 'subscribe-form.tpl.html';
+	}
+
+	// on peut ajouter des classes Ã  la classe par dÃ©faut
+	$listelements['class'] = ($this->GetParameter('class') ? 'form-desabonnement '.$this->GetParameter('class') : 'form-desabonnement');
+
+	// adresse url d'envoi du mail
+	$listelements['mailerurl'] = $this->href('mail');
+
+	// type de demande et placeholder
+	$listelements['demand'] = 'desabonnement';
+	$listelements['placeholder'] = CONTACT_UNSUBSCRIBE;
+
+	include_once('tools/contact/libs/squelettephp.class.php');
+	$listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
+	$listtemplate->set($listelements);
+	echo $listtemplate->analyser();
+
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
+}

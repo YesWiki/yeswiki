@@ -26,19 +26,19 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// Verification de securite
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
 }
 
-//on ne fait quelque chose uniquement dans le cas d'une requete jsonp
+// on ne fait quelque chose uniquement dans le cas d'une requete jsonp
 if (isset($_GET['jsonp_callback'])) 
 {
 	// on initialise la sortie:
 	header('Content-type:application/json');
-	
-	if ($this->HasAccess("comment") && $this->page && isset($_POST['antispam']) && $_POST['antispam']==1)
+
+	if ($this->page && $this->HasAccess("comment", $_POST["initialpage"]) && isset($_POST['antispam']) && $_POST['antispam']==1)
 	{
 		// find number
 		$sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
@@ -58,30 +58,20 @@ if (isset($_GET['jsonp_callback']))
 		{
 			// store new comment
 			$wakkaname = "Comment".$num;
-			$this->SavePage($wakkaname, $body, $this->tag);
+			$this->SavePage($wakkaname, $body, $this->tag, true);
 			
 			$comment = $this->LoadPage($wakkaname);
-			
-		/*	$valcomment['commentaires'][0]['tag'] = $comment["tag"];
+			$valcomment['commentaires'][0]['tag'] = $comment["tag"];
 			$valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
-			$valcomment['commentaires'][0]['infos'] = "de ".$this->Format($comment["user"]).", ".date("\l\e d.m.Y &\a\g\\r\av\e; H:i:s", strtotime($comment["time"]));
-			$valcomment['commentaires'][0]['actions'] = '<a href="'.$this->href('', $comment['tag']).'" class="repondre_commentaire">R&eacute;pondre</a> ';
-			if ($this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin($comment['tag']))
-			{
-				$valcomment['commentaires'][0]['actions'] .= '<a href="'.$this->href('edit', $comment['tag']).'" class="editer_commentaire">Editer</a> ';
-			}			
-			if ($this->UserIsOwner($comment['tag']) || $this->UserIsAdmin())
-			{
-				$valcomment['commentaires'][0]['actions'] .= '<a href="'.$this->href('deletepage', $comment['tag']).'" class="supprimer_commentaire">Supprimer</a>'."\n" ;
-			}									
+			$valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(TAGS_DATE_FORMAT, strtotime($comment["time"]));
+			$valcomment['commentaires'][0]['hasrighttoaddcomment'] = $this->HasAccess("comment", $_POST['initialpage']);
+			$valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
+			$valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
+			$valcomment['commentaires'][0]['replies'] = '';
 			include_once('tools/tags/libs/squelettephp.class.php');
-			$squelcomment = new SquelettePhp('tools/tags/presentation/commentaire_microblog.tpl.html');
+			$squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
 			$squelcomment->set($valcomment);
-			$commentaire = $squelcomment->analyser();
-			
-			$response = json_encode(array("html"=>utf8_encode($commentaire)));*/
-			$response = json_encode(array("html"=>'<div class="info_box">Votre commentaire a &eacute;t&eacute; enregistr&eacute;, veuillez rafraichir la page pour le voir.</div>'));
-			echo $_GET['jsonp_callback']."(".$response.")";
+			echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($squelcomment->analyser()))).")";
 		}
 	}
 }

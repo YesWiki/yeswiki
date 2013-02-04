@@ -1,0 +1,19 @@
+@import url('bootstrap/cosmo/bootstrap.min.css');
+.main-body {
+    padding-top: 60px;
+}
+
+.navbar nav li ul {
+    display: none;
+}
+
+.navbar-search, input.search-query {margin-top:0 !important;}
+
+.topnavpage {width:100%;}
+
+.footer a {
+margin: 0 8px;
+}
+
+@media (max-width:767px) {.main-body {padding-top:0;}}
+@media (min-width: 768px) and (max-width: 980px) {.main-body {padding-top:0;}}

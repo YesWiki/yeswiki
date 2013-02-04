@@ -18,7 +18,7 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//récupération des paramètres wikini
+//rÃ©cupÃ©ration des paramÃ¨tres wikini
 $categorie_nature = $this->GetParameter("categorienature");
 if (empty($categorie_nature)) {
     $categorie_nature = 'toutes';
@@ -56,7 +56,16 @@ if (empty($typecarto)) {
     $typecarto = strtoupper($typecarto);
 }
 
-//on récupère les paramètres pour une requête spécifique
+$cartowidth = $this->GetParameter("width");
+if (empty($cartowidth)) {
+    $cartowidth = BAZ_GOOGLE_IMAGE_LARGEUR;
+}
+$cartoheight = $this->GetParameter("height");
+if (empty($cartoheight)) {
+    $cartoheight = BAZ_GOOGLE_IMAGE_HAUTEUR;
+}
+
+//on rÃ©cupÃ¨re les paramÃ¨tres pour une requÃªte spÃ©cifique
 $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
@@ -91,7 +100,7 @@ foreach ($tableau_resultat as $fiche) {
 }
 $points_carto = implode(',',$tab_points_carto);
 
-echo '<div id="map" style="width: '.BAZ_GOOGLE_IMAGE_LARGEUR.'; height: '.BAZ_GOOGLE_IMAGE_HAUTEUR.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
+echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
 echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
     <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 

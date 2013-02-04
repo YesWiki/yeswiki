@@ -12,12 +12,18 @@ if (!defined("WIKINI_VERSION"))
 define('COMMENTAIRES_OUVERTS_PAR_DEFAUT', 0);
 define('CACHER_MOTS_CLES', 0);
 
+// inclusion de la langue
+if (file_exists('tools/tags/lang/tags_'.$wakkaConfig['lang'].'.inc.php')) {
+	include_once 'tools/tags/lang/tags_'.$wakkaConfig['lang'].'.inc.php';
+} else {
+	include_once 'tools/tags/lang/tags_fr.inc.php';
+}
+
 $wiki  = new WikiTools($wakkaConfig);
 $wikiClasses [] = 'Tags';
 $wikiClassesContent [] = '
 	function DeleteAllTags($page)
     {
-		$tags = explode(" ", mysql_real_escape_string($liste_tags));
 		//on recupere les anciens tags de la page courante
 		$tabtagsexistants = $this->GetAllTriplesValues($page, \'http://outils-reseaux.org/_vocabulary/tag\', \'\', \'\');
 		if (is_array($tabtagsexistants))

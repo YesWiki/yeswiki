@@ -1,39 +1,44 @@
-<form id="ajax-contact-form" class="ajax-form form-horizontal <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
+<form id="ajax-contact-form<?php echo $nbactionmail; ?>" class="ajax-mail-form form-inline <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
 	<div class="control-group">
-		<label class="control-label"><?php echo CONTACT_YOUR_NAME; ?></label>
 		<div class="controls">
-			<input required class="contact-name" type="text" name="name" value="" />
+			<div class="input-prepend">
+		    	<span class="add-on"><i class="icon-user"></i></span>
+				<input required class="input-medium" type="text" name="name" value="" placeholder="<?php echo CONTACT_YOUR_NAME; ?>" />
+			</div>
 		</div>
 	</div>
 
 	<div class="control-group">
-		<label class="control-label"><?php echo CONTACT_YOUR_MAIL; ?></label>
 		<div class="controls">
-			<input required class="contact-mail" type="email" name="email" value="" />
+			<div class="input-prepend">
+		    	<span class="add-on"><i class="icon-envelope"></i></span>
+				<input required class="input-medium" type="email" name="email" value="" placeholder="<?php echo CONTACT_YOUR_MAIL; ?>" />
+			</div>
 		</div>
 	</div>
 
 	<div class="control-group">
-		<label class="control-label"><?php echo CONTACT_SUBJECT; ?></label>
 		<div class="controls">
-			<input required class="contact-subject" type="text" name="subject" value="" />
+			<div class="input-prepend">
+				<input required class="contact-subject" type="text" name="subject" value="" placeholder="<?php echo CONTACT_SUBJECT; ?>" />
+			</div>
 		</div>
 	</div>
 
 	<div class="control-group">
-		<label class="control-label"><?php echo CONTACT_YOUR_MESSAGE; ?></label>
 		<div class="controls">
-			<textarea required class="contact-message" name="message"></textarea>
+			<div class="input-prepend">
+				<textarea required class="contact-message" name="message" placeholder="<?php echo CONTACT_YOUR_MESSAGE; ?>"></textarea>
+			</div>
 		</div>
 	</div>
 
 	<div class="control-group">
-		<label class="control-label">&nbsp;</label>
 		<div class="controls">
-			<button class="btn btn-primary contact-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo CONTACT_SEND_MESSAGE; ?></button>
+			<button class="btn btn-primary mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo CONTACT_SEND_MESSAGE; ?></button>
 		</div>
 	</div>
-	<input type="hidden" name="mail" value="<?php echo $mail; ?>" />
+	<input type="hidden" name="nbactionmail" value="<?php echo $nbactionmail; ?>" />
 	<input type="hidden" name="entete" value="<?php echo $entete; ?>" />	
 	<input type="hidden" name="type" value="contact" />	
 </form>

@@ -26,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// V?rification de s?curit?
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
@@ -35,8 +35,8 @@ if ($this->HasAccess('write')) {
     $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
     if ($type == 'fiche_bazar') {
         //dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
-        if (isset($_POST['id_fiche'])) {
-            $GLOBALS['_BAZAR_']['id_fiche'] = $_POST['id_fiche'];
+        if (isset($_POST['bf_titre'])) {
+            $GLOBALS['_BAZAR_']['id_fiche'] = $this->GetPageTag();
             $tab_nature = baz_valeurs_type_de_fiche($_POST['id_typeannonce']);
             $GLOBALS['_BAZAR_']['id_typeannonce']=$tab_nature['bn_id_nature'];
             $GLOBALS['_BAZAR_']['typeannonce']=$tab_nature['bn_label_nature'];

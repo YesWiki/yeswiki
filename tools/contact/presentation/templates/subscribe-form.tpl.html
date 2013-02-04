@@ -1,0 +1,14 @@
+<form id="ajax-contact-form<?php echo $nbactionmail; ?>" class="ajax-mail-form form-inline <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
+    <div class="control-group">
+    	<div class="controls">
+    		<div class="input-prepend input-append">
+			    <span class="add-on"><i class="icon-envelope"></i></span>
+			    <input required class="input-medium" type="email" name="email" placeholder="<?php echo CONTACT_YOUR_MAIL; ?>">
+			    <button class="btn btn-primary mail-submit" type="submit" name="submit"><?php echo $placeholder; ?></button>
+			</div>
+		</div>
+    </div>
+	<input type="hidden" name="nbactionmail" value="<?php echo $nbactionmail; ?>" />
+	<input type="hidden" name="entete" value="<?php echo $placeholder; ?>" />	
+	<input type="hidden" name="type" value="<?php echo $demand; ?>" />	
+</form>

@@ -1,7 +1,9 @@
 <?php
 
-require_once('tools/contact/libs/Mail.php');
-require_once('tools/contact/libs/Mail/mime.php');
+function FindMailFromWikiPage($wikipage,$nbactionmail) {
+	preg_match_all('/{{(contact|abonnement|desabonnement).*mail=\"(.*)\".*}}/U', $wikipage, $matches);
+	return $matches[2][$nbactionmail-1];
+}
 
 function ValidateEmail($email) {
 	$regex = "([a-z0-9_\.\-]+)". # name
@@ -13,62 +15,72 @@ function ValidateEmail($email) {
 	return empty($eregi) ? true : false;
 }
 
-function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver, $subject, $message) {
-	$error = '';
+function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver, $subject, $messagebody) {
+	$message['message'] = '';
+	$message['class'] = 'error';
 
 	// Check sender's name
-	if($type=='contact' && !$name_sender) {
-		$error['contact-name'] = 'Vous devez entrer un nom.<br />';
+	if($type=='contact' && !$name_sender) {	
+		$message['message'] .= CONTACT_ENTER_NAME.'<br />';
 	}
 
 	// Check sender's email
 	if(!$mail_sender) {
-		$error['contact-mail'] = 'Vous devez entrer une adresse mail pour l\'exp&eacute;diteur.<br />';
+		$message['message'] .= CONTACT_ENTER_SENDER_MAIL.'<br />';
 	}
 	if($mail_sender && !ValidateEmail($mail_sender)) {
-		$error['contact-mail'] = 'L\'adresse mail de l\'exp&eacute;diteur n\'est pas valide.<br />';
+		$message['message'] .= CONTACT_SENDER_MAIL_INVALID.'<br />';
 	}
 
 	// Check the receiver's email
 	if(!$mail_receiver) {
-		$error['mail'] = 'Vous devez entrer une adresse mail pour le destinataire.<br />';
+		$message['message'] .= CONTACT_ENTER_RECEIVER_MAIL.'<br />';
 	}
 	if($mail_receiver && !ValidateEmail($mail_receiver)) {
-		$error['mail'] = 'L\'adresse mail du destinaire n\'est pas valide.<br />';
+		$message['message'] .= CONTACT_RECEIVER_MAIL_INVALID.'<br />';
 	}
 
 	// Check message (length)
-	if($type=='contact' && (!$message || strlen($message) < 10)) {
-		$error['contact-message'] = "Veuillez entrer un message. Il doit faire au minimum 10 caract&egrave;res.<br />";
+	if($type=='contact' && (!$messagebody || strlen($messagebody) < 10)) {	
+		$message['message'] .= CONTACT_ENTER_MESSAGE.'<br />';
 	}
 
-	return $error;
+	// If no errors, we inform of success!
+	if ($message['message']=='') {
+		$message['class'] = 'success';
+	}
+
+	return $message;
 }
 
-function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '', $output_success = 'OK', $output_fail = 'FAIL') {
-
+function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '') {
+	require_once('tools/contact/libs/Mail.php');
+	require_once('tools/contact/libs/Mail/mime.php');
 	$headers['From']    = $mail_sender;
 	$headers['To']      = $mail_sender;
 	$headers['Subject'] = $subject;
-	if ($message_html != '') {
-		$mime = new Mail_mime("\n");
-		$mime->setTXTBody($message_txt);
-		$mime->setHTMLBody($message_html);
-		$message = $mime->get();
-		$headers = $mime->headers($headers);
+    $headers["Return-path"] = $mail_sender; 
+	
+	if ($message_html == '') {
+		$message_html == $message_txt;
 	}
-	else {
-		$message = $message_txt;
-	}
+	$mime = new Mail_mime("\n");
+
+	$mimeparams = array();
+	$mimeparams['text_encoding']="7bit";
+	$mimeparams['text_charset']="UTF-8";
+	$mimeparams['html_charset']="UTF-8"; 
+	$mimeparams['head_charset']="UTF-8";  
+
+	$mime->setTXTBody($message_txt);
+	$mime->setHTMLBody($message_html);
+	$message = $mime->get($mimeparams);
+	$headers = $mime->headers($headers);
+	
 	// Creer un objet mail en utilisant la methode Mail::factory.
 	$object_mail = & Mail::factory(CONTACT_MAIL_FACTORY);
 
-	if($object_mail->send($mail_receiver, $headers, $message))	{
-		return $output_success;
-	}
-	else {
-		return $output_fail;
-	}
+	return $object_mail->send($mail_receiver, $headers, $message);
 }
 
 ?>

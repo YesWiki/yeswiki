@@ -21,27 +21,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Vérification de sécurité
+// Verification de securite
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
 }
 
-//on ne fait quelque chose uniquement dans le cas d'une requete jsonp
+// on ne fait quelque chose uniquement dans le cas d'une requete jsonp
 if (isset($_GET['jsonp_callback'])) 
 {
 	// on initialise la sortie:
 	header('Content-type:application/json');
-	if ($this->UserIsOwner() || $this->UserIsAdmin())
-	{	
+	if ($this->UserIsOwner() || $this->UserIsAdmin()) {	
 		$tag = $this->GetPageTag();
 		$this->DeleteOrphanedPage($tag);
-		//on supprime les mots clés associés à la page
+		// on supprime les mots cles associes a la page
 		$this->DeleteAllTags($tag);
 		$this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
 		echo $_GET['jsonp_callback']."(".json_encode(array("reponse"=>utf8_encode("succes"))).")";
-	} else 
-	{
+	} 
+	else {
 		echo $_GET['jsonp_callback']."(".json_encode(array("reponse"=>utf8_encode("interdit"))).")";
 	}
 }

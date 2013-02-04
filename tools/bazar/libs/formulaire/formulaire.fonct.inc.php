@@ -153,7 +153,7 @@ function formulaire_valeurs_template_champs($template)
     return $tableau_template;
 }
 
-//-------------------FONCTIONS DE MISE EN PAGE DES FORMULAIRES
+
 
 //-------------------FONCTIONS DE MISE EN PAGE DES FORMULAIRES
 
@@ -161,7 +161,7 @@ function formulaire_valeurs_template_champs($template)
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des differentes option pour l'element liste
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÃefaut
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par daefaut
  * @return   void
  */
 function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -248,55 +248,58 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode=='saisie') {
-        $bulledaide = '';
-        if (isset($tableau_template[10]) && $tableau_template[10]!='') {
-            $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($tableau_template[10]).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
-        }
-
-        $select_html = '<div class="control-group">'."\n".'<div class="control-label">'."\n";
-        if (isset($tableau_template[8]) && $tableau_template[8]==1) {
-            $select_html .= '<span class="symbole_obligatoire">*&nbsp;</span>'."\n";
-        }
-        $select_html .= $tableau_template[2].$bulledaide.' : </div>'."\n".'<div class="controls">'."\n".'<select';
-
-        $select_attributes = '';
-
-        if ($tableau_template[4] != '' && $tableau_template[4] > 1) {
-            $select_attributes .= ' multiple="multiple" size="'.$tableau_template[4].'"';
-            $selectnametab = '[]';
-        } else {
-            $selectnametab = '';
-        }
-
-        $select_attributes .= ' class="bazar-select" id="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab.'"';
-
-        if (isset($tableau_template[8]) && $tableau_template[8]==1) {
-            $select_attributes .= ' required="required"';
-        }
-        $select_html .= $select_attributes.'>'."\n";
-
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!='') {
-            $def =	$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
-        } else {
-            $def = $tableau_template[5];
-        }
-
         $valliste = baz_valeurs_liste($tableau_template[1]);
-        if ($def=='' && ($tableau_template[4] == '' || $tableau_template[4] <= 1 ) || $def==0) {
-            $select_html .= '<option value="0" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
-        }
-        if (is_array($valliste['label'])) {
-            foreach ($valliste['label'] as $key => $label) {
-                $select_html .= '<option value="'.$key.'"';
-                if ($def != '' && $key==$def) $select_html .= ' selected="selected"';
-                $select_html .= '>'.$label.'</option>'."\n";
+        if ($valliste) {
+            $bulledaide = '';
+            if (isset($tableau_template[10]) && $tableau_template[10]!='') {
+                $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($tableau_template[10]).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
 
+            $select_html = '<div class="control-group">'."\n".'<div class="control-label">'."\n";
+            if (isset($tableau_template[8]) && $tableau_template[8]==1) {
+                $select_html .= '<span class="symbole_obligatoire">*&nbsp;</span>'."\n";
+            }
+            $select_html .= $tableau_template[2].$bulledaide.' : </div>'."\n".'<div class="controls">'."\n".'<select';
+
+            $select_attributes = '';
+
+            if ($tableau_template[4] != '' && $tableau_template[4] > 1) {
+                $select_attributes .= ' multiple="multiple" size="'.$tableau_template[4].'"';
+                $selectnametab = '[]';
+            } else {
+                $selectnametab = '';
+            }
+
+            $select_attributes .= ' class="bazar-select" id="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab.'"';
+
+            if (isset($tableau_template[8]) && $tableau_template[8]==1) {
+                $select_attributes .= ' required="required"';
+            }
+            $select_html .= $select_attributes.'>'."\n";
+
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!='') {
+                $def =	$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
+            } else {
+                $def = $tableau_template[5];
+            }
+
+            
+            if ($def=='' && ($tableau_template[4] == '' || $tableau_template[4] <= 1 ) || $def==0) {
+                $select_html .= '<option value="0" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
+            }
+            if (is_array($valliste['label'])) {
+                foreach ($valliste['label'] as $key => $label) {
+                    $select_html .= '<option value="'.$key.'"';
+                    if ($def != '' && $key==$def) $select_html .= ' selected="selected"';
+                    $select_html .= '>'.$label.'</option>'."\n";
+                }
+
+            }
+
+            $select_html .= "</select>\n</div>\n</div>\n";
+
+            $formtemplate->addElement('html', $select_html) ;
         }
-
-        $select_html .= "</select>\n</div>\n</div>\n";
-
-        $formtemplate->addElement('html', $select_html) ;
 
     } elseif ($mode == 'requete') {
 
@@ -375,50 +378,54 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10]!='') $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($tableau_template[10]).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         $valliste = baz_valeurs_liste($tableau_template[1]);
-        $choixcheckbox = $valliste['label'];
+        
+        if ($valliste) {
 
-        require_once 'HTML/QuickForm/checkbox.php';
-        $i=0;
-        $optioncheckbox = array('class' => 'element_checkbox');
+            $choixcheckbox = $valliste['label'];
 
-        //valeurs par defauts
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
-            $tab = split( ',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
-        } else {
-            $tab = split( ',', $tableau_template[5] );
-        }
+            require_once 'HTML/QuickForm/checkbox.php';
+            $i=0;
+            $optioncheckbox = array('class' => 'element_checkbox');
 
-        foreach ($choixcheckbox as $id => $label) {
-            if ($i==0) {
-                $tab_chkbox = $tableau_template[2] ;
+            //valeurs par defauts
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
+                $tab = split( ',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
             } else {
-                $tab_chkbox='&nbsp;';
+                $tab = split( ',', $tableau_template[5] );
             }
 
-            //teste si la valeur de la liste doit etre cochee par defaut
-            if (in_array($id,$tab)) {
-                $defaultValues[$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'] = true;
-                //echo 'a cocher '.$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'.'<br />';
-            } else {
-                $defaultValues[$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'] = false;
+            foreach ($choixcheckbox as $id => $label) {
+                if ($i==0) {
+                    $tab_chkbox = $tableau_template[2] ;
+                } else {
+                    $tab_chkbox='&nbsp;';
+                }
+
+                //teste si la valeur de la liste doit etre cochee par defaut
+                if (in_array($id,$tab)) {
+                    $defaultValues[$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'] = true;
+                    //echo 'a cocher '.$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'.'<br />';
+                } else {
+                    $defaultValues[$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'] = false;
+                }
+
+                $checkbox[$i] = $formtemplate->createElement($tableau_template[0], $id, $tab_chkbox, $label, $optioncheckbox);
+                $i++;
             }
 
-            $checkbox[$i] = $formtemplate->createElement($tableau_template[0], $id, $tab_chkbox, $label, $optioncheckbox);
-            $i++;
-        }
+            $squelette_checkbox = & $formtemplate->defaultRenderer();
+            $classrequired=''; $req = '';
+            if (isset($tableau_template[8]) && $tableau_template[8]==1) {
+                $classrequired .= ' chk_required';
+                $req = '<span class="symbole_obligatoire">&nbsp;*</span> ';
+            }
+            //$squelette_checkbox->setElementTemplate( '<fieldset class="bazar_fieldset'.$classrequired.'">'."\n".'<legend>'."\n".'{label}'."\n".
+            //        '</legend>'."\n".'{element}'."\n".'</fieldset> '."\n"."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $squelette_checkbox->setGroupElementTemplate( "\n".'<div class="checkbox">'."\n".'{element}'."\n".'</div>'."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $req.$tableau_template[2].$bulledaide, "\n");
 
-        $squelette_checkbox = & $formtemplate->defaultRenderer();
-        $classrequired=''; $req = '';
-        if (isset($tableau_template[8]) && $tableau_template[8]==1) {
-            $classrequired .= ' chk_required';
-            $req = '<span class="symbole_obligatoire">&nbsp;*</span> ';
+            $formtemplate->setDefaults($defaultValues);
         }
-        //$squelette_checkbox->setElementTemplate( '<fieldset class="bazar_fieldset'.$classrequired.'">'."\n".'<legend>'."\n".'{label}'."\n".
-        //        '</legend>'."\n".'{element}'."\n".'</fieldset> '."\n"."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-        $squelette_checkbox->setGroupElementTemplate( "\n".'<div class="checkbox">'."\n".'{element}'."\n".'</div>'."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-        $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $req.$tableau_template[2].$bulledaide, "\n");
-
-        $formtemplate->setDefaults($defaultValues);
     } elseif ($mode == 'requete') {
         return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
     } elseif ($mode == 'formulaire_recherche') {
@@ -601,7 +608,6 @@ availableTags: tagsexistants
                     $(".antispam").attr(\'value\', \'1\');
                     });
 </script>';
-//echo $GLOBALS['js'];
 
 //gestion des valeurs par defaut : d'abord on regarde s'il y a une valeur a modifier,
 //puis s'il y a une variable passee en GET,
@@ -788,90 +794,59 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 {
     if ($mode == 'saisie') {
         $option=array('size'=>$tableau_template[3],'maxlength'=>$tableau_template[4], 'id' => 'nomwiki');
-        if (isset($tableau_template[5]) && $tableau_template[5]!='') {
-            echo '<h1>'.$valeurs_fiche['nomwiki'].'</h1>';
-
-            $option['readonly'] = 'readonly';
-            //on entre le NomWiki
-            $formtemplate->addElement('text', 'nomwiki', "NomWiki", $option) ;
-            $defs=array('nomwiki'=>stripslashes($tableau_template[5]));
-            $formtemplate->setDefaults($defs);
-
-            //$formtemplate->applyFilter('nomwiki', 'addslashes') ;
-
-            /*$formtemplate->addRule('nomwiki',  'NomWiki obligatoire', 'required', '', 'client') ;*/
-            //test nomWiki du connecte, pour savoir s'il peut changer son mot de passe
-            if ($GLOBALS['_BAZAR_']['nomwiki']['name']==$tableau_template[5]) {
-                require_once 'HTML/QuickForm/html.php';
-                $formhtml= new HTML_QuickForm_html('<tr>'."\n".'<td>&nbsp;</td>'."\n".'<td style="text-align:left;"><a href="'.$GLOBALS['wiki']->href('','ChangePassword','').'" target="_blank">Changer son mot de passe</a></td>'."\n".'</tr>'."\n");
-                $formtemplate->addElement($formhtml) ;
-            }
-        } elseif (!isset($tableau_template[5]) || $tableau_template[5]=='') {
-            if (!isset($valeurs_fiche['nomwiki'])) {
+        if (!isset($valeurs_fiche['nomwiki'])) {
                 //mot de passe
                 $bulledaide = '';
                 if (isset($tableau_template[10]) && $tableau_template[10]!='') $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($tableau_template[10]).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
                 $option = array('size' => $tableau_template[3], 'class' => 'input_texte');
                 $formtemplate->addElement('password', 'mot_de_passe_wikini', BAZ_MOT_DE_PASSE.$bulledaide, $option) ;
                 $formtemplate->addElement('password', 'mot_de_passe_repete_wikini', BAZ_MOT_DE_PASSE.' ('.BAZ_VERIFICATION.')', $option) ;
-                        /*$formtemplate->addRule('mot_de_passe_wikini', 'mot de passe obligatoire', 'required', '', 'client') ;
-                          $formtemplate->addRule('mot_de_passe_repete_wikini', 'mot de passe r&eacute;p&eacute;t&eacute; obligatoire', 'required', '', 'client') ;
-                          $formtemplate->addRule(array ('mot_de_passe_wikini', 'mot_de_passe_repete_wikini'), 'Les mots de passe doivent Ãªtre identiques', 'compare', '', 'client') ;*/
-                        } else $formtemplate->addElement('hidden', 'nomwiki', $valeurs_fiche['nomwiki']) ;
-                        }
+        } 
+        else {
+            $formtemplate->addElement('hidden', 'nomwiki', $valeurs_fiche['nomwiki']) ;
+        }
+    } elseif ($mode == 'requete') {
+        if (!isset($valeurs_fiche['nomwiki'])) {
+            if ($GLOBALS['wiki']->IsWikiName($valeurs_fiche[$tableau_template[1]])) {
+                $nomwiki = $valeurs_fiche[$tableau_template[1]];
+            } else {
+                $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
+            }
+            $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
+            "signuptime = now(), ".
+            "name = '".mysql_escape_string($nomwiki)."', ".
+            "email = '".mysql_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
+            "password = md5('".mysql_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
+            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
+            if (DB::isError($resultat)) {
+                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
+            }
 
-                        } elseif ($mode == 'requete') {
-                        if (!isset($valeurs_fiche['nomwiki'])) {
-                               if ($GLOBALS['wiki']->IsWikiName($valeurs_fiche[$tableau_template[1]])) {
-                                $nomwiki = $valeurs_fiche[$tableau_template[1]];
-                            } else {
-                                $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
-                            }
-                            $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
-                            "signuptime = now(), ".
-                            "name = '".mysql_escape_string($nomwiki)."', ".
-                            "email = '".mysql_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
-                            "password = md5('".mysql_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
-                            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
-                            if (DB::isError($resultat)) {
-                                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-                            }
+            //envoi mail nouveau mot de passe
+            $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
+            $objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
+            $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre mot de passe : ". $valeurs_fiche['mot_de_passe_wikini'] . "\n\nA tres bientot ! \n\n";
+            $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
+                'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
+                'X-Mailer: PHP/' . phpversion();
+            mail($valeurs_fiche['bf_mail'], remove_accents($objetmail), $messagemail, $headers);
 
-                            //envoi mail nouveau mot de passe
-                            $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
-                            $objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
-                            $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre mot de passe : ". $valeurs_fiche['mot_de_passe_wikini'] . "\n\nA tres bientot ! \n\n";
-                            $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
-                                'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
-                                'X-Mailer: PHP/' . phpversion();
-                            mail($valeurs_fiche['bf_mail'], remove_accents($objetmail), $messagemail, $headers);
+            // ajout dans la liste de mail
+            if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]]!='') {
+                $headers =   'From: '.$valeurs_fiche['bf_mail'] . "\r\n" .
+                'Reply-To: '. $valeurs_fiche['bf_mail'] . "\r\n" .
+                'X-Mailer: PHP/' . phpversion();
+                mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
+            }
+            return array('nomwiki' => $nomwiki);
+        } else {
+            return array('nomwiki' => $valeurs_fiche['nomwiki']);
+        }
+    } elseif ($mode == 'recherche') {
 
-                            return array('nomwiki' => $nomwiki);
+    } elseif ($mode == 'html') {
 
-                        } elseif (isset($valeurs_fiche['mot_de_passe_wikini'])) {
-                            $requetemodificationuserwikini = 'UPDATE '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
-                                "email = '".mysql_escape_string($valeurs_fiche['bf_mail'])."', ".
-                                " WHERE name=\"".$valeurs_fiche['nomwiki']."\"";
-                            $resultat = $GLOBALS['_BAZAR_']['db']->query($requetemodificationuserwikini) ;
-                            if (DB::isError($resultat)) {
-                                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-                            }
-                            //envoi mail nouveau mot de passe
-                            $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
-                            $objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
-                            $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete modifiee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$valeurs_fiche['nomwiki']."\n\nVotre mot de passe : ". $valeurs_fiche['mot_de_passe_wikini'] . "\n\nA tres bientot !\n\n";
-                            $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
-                                'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
-                                'X-Mailer: PHP/' . phpversion();
-                            mail($valeurs_fiche['bf_mail'], remove_accents($objetmail), $messagemail, $headers);
-
-                            return array('nomwiki' => $valeurs_fiche['nomwiki']);
-                        }
-                        } elseif ($mode == 'recherche') {
-
-                } elseif ($mode == 'html') {
-
-                }
+    }
 }
 
 
@@ -1391,7 +1366,7 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** titre() - Action qui camouffle le titre et le génére Ã  partir d'autres champs au formulaire
+/** titre() - Action qui camouffle le titre et le génére a  partir d'autres champs au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des différentes option pour le texte HTML
@@ -1416,7 +1391,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
                 //sinon on prend le label de la liste
                 elseif ( preg_match('#^liste#',$var)!=false || preg_match('#^checkbox#',$var)!=false ) {
-                    //on récupÃ¨re le premier chiffre (l'identifiant de la liste)
+                    //on récupere le premier chiffre (l'identifiant de la liste)
                     preg_match_all('/[0-9]{1,4}/', $var, $matches);
                     $req = 'SELECT blv_label FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$matches[0][0].' AND blv_valeur='.$_POST[$var].' AND blv_ce_i18n="fr-FR"';
                     $resultat = $GLOBALS['_BAZAR_']['db']->query($req) ;
@@ -1427,7 +1402,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
             }
         }
-        $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($_POST['bf_titre']);
+        $GLOBALS['_BAZAR_']['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($_POST['bf_titre']));
         return array('bf_titre' => $_POST['bf_titre'], 'id_fiche' => $GLOBALS['_BAZAR_']['id_fiche']);
     } elseif ($mode == 'html') {
         // Le titre

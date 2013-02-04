@@ -21,61 +21,44 @@
 // | along with Foobar; if not, write to the Free Software                                                |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-
+// CVS : $Id: listsubscription.php,v 1.2 2010-10-19 15:59:15 mrflos Exp $
 /**
-* abonnement.php
+* listsubscription.php
 *
-* Description : action permettant l'envoi par mail d'une demande d'inscription a une liste de discussion
+* Description : action permettant l'envoi par mail d'une demande d'inscription ou desinscription a une liste
 *
 *@package contact
-*
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
-*
-*@copyright     outils-reseaux.org 2008
-*@version       $Revision: 1.2 $ $Date: 2010-10-19 15:59:15 $
-*
+*@copyright     outils-reseaux.org 2013
 */
 if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
 }
 
-
-//recuperation des parametres
-$listelements['mail'] = $this->GetParameter('mail');
-if (empty($listelements['mail'])) {
-	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action abonnement :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
-}
-else {
-	// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
-	if (isset($GLOBALS['nbactionmail'])) {
-		$GLOBALS['nbactionmail']++;
+// valable que pour les utilisateurs connectes
+if ($user = $this->GetUser()) {
+	if ($user['email'] != '') {
+		//recuperation des parametres
+		$list = $this->GetParameter('list');
+		if (!empty($list)) {
+			$output =  '<div class="note"></div>
+				<form id="ajax-abonne-form" class="form-mail" action="'.$this->href('mail').'">
+					'.$list.' : '."\n".
+				'</form>'."\n";
+		} 
+		else {
+			echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_LIST_REQUIRED.'.</div>';
+		}
+		
+		
 	}
 	else {
-		$GLOBALS['nbactionmail'] = 1;
-	}
-	$listelements['nbactionmail'] = $GLOBALS['nbactionmail']; 
-
-	// on choisit le template utilisé
-	$template = $this->GetParameter('template'); 
-	if (empty($template)) {
-		$template = 'subscribe-form.tpl.html';
-	}
-
-	// on peut ajouter des classes à la classe par défaut
-	$listelements['class'] = ($this->GetParameter('class') ? 'form-abonnement '.$this->GetParameter('class') : 'form-abonnement');
-
-	// adresse url d'envoi du mail
-	$listelements['mailerurl'] = $this->href('mail');
-
-		// type de demande et placeholder
-	$listelements['demand'] = 'abonnement';
-	$listelements['placeholder'] = CONTACT_SUBSCRIBE;
-
-	include_once('tools/contact/libs/squelettephp.class.php');
-	$listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
-	$listtemplate->set($listelements);
-	echo $listtemplate->analyser();
-
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
+		echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_USER_NO_EMAIL.'</div>';
+	}	
 }
+else {
+	echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_USER_NOT_LOGGED_IN.'</div>';
+}
+
+?>

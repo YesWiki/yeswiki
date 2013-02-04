@@ -13,6 +13,7 @@
 
 ;var qq = qq || {};
 
+
 /**
  * Adds all missing properties from second obj to first obj
  */ 
@@ -1246,7 +1247,6 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     }
 });
 
-
 /*************************************************************************************************************************************************************/
 /*************************************************************************************************************************************************************/
 /*************************************************************************************************************************************************************/
@@ -1277,6 +1277,8 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     Plugin.prototype.init = function () {
         // code goes here
         var $this = $(this.element);
+        var position;
+        var body = $('#body');
 
         function deleteUploadModal() {
             // on supprime l'element dans la liste
@@ -1288,14 +1290,14 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         function handleuploadbuttons() {
             // On annule l'insertion de fichier
             $('#UploadModal .btn-cancel-upload, #UploadModal .close').on('click', function(event) {
-                // TODO: supprimer le fichier associe? peut etre laisser l'admin le faire par le filemanager?
-            
+                // TODO: supprimer le fichier associe? peut etre laisser l'admin le faire par le filemanager?           
                 deleteUploadModal();
+                setTimeout(function() {body.focus()}, 10);
                 return false;              
             });
             
             // On insère l'action attach bien paramétrée!
-            $('#UploadModal .btn-insert-upload').on('click', function(event) {
+            $('#UploadModal .btn-insert-upload').on('click', function(e) {
                 var fileinfo = $('#UploadModal li.qq-upload-success');
                 var nomfich = fileinfo.find('.filename').val();
                 var description = fileinfo.find('.attach_alt').val();
@@ -1327,14 +1329,24 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
                 
                 actionattach += '}}';
                 
-                // on ajoute le code de l'action attach au mode édition
-                wrapSelection($('#body')[0], actionattach, "");
-                
                 // on supprime l'element dans la liste
                 fileinfo.remove();    
                 deleteUploadModal();
-                
-                event.preventDefault();
+
+                setTimeout(function() {            
+                    // on ajoute le code de l'action attach au mode édition
+                    body.focus();
+                    if (body.get(0).setSelectionRange) {
+                      body.get(0).setSelectionRange(position.start, position.start);
+                    } else if (body.get(0).createTextRange) {
+                      var range = body.get(0).createTextRange();
+                      range.collapse(true);
+                      range.moveEnd('character', position.start);
+                      range.moveStart('character', position.start);
+                      range.select();
+                    }
+                    body.surroundSelectedText(actionattach, "", true);
+                }, 10);
                 return false;
                 
             });       
@@ -1349,7 +1361,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
             onSubmit: function(id, fileName){
                 // création de la fenetre d'envoi
-                var UploadModal = $('<div>').attr({'class':"modal hide fade", 'id':"UploadModal", 'tabindex':"-1", 'role':"dialog", 'aria-labelledby':"myModalLabel"})
+                var UploadModal = $('<div>').attr({'class':"modal hide fade", 'id':"UploadModal", 'tabindex':"-1", 'role':"dialog", 'data-backdrop':"static", 'aria-labelledby':"myModalLabel"})
                 .html('<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h3 id="myModalLabel">Joindre / Ins&eacute;rer un fichier</h3></div><div class="modal-body"></div><div class="modal-footer"><a href="#" data-dismiss="modal" role="button" class="btn btn-cancel-upload">Annuler cet envoi</a><button name="insert" class="btn btn-primary btn-insert-upload">Ins&eacute;rer</button></div>').appendTo('body').modal('show').find('.modal-body').append($('.qq-upload-list'));
             },
 
@@ -1399,10 +1411,10 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
             }
         });
         
-        
-        
-       /* $(".qq-upload-button").on('click', function() { $(this).find('input').on('click',);});
-
+       $(".qq-upload-button").on('mousedown', function(e) { 
+            position = body.getSelection(); 
+        });
+/*
         // astuce pour avoir un curseur en forme de pointeur au survol du bouton        
         $(".qq-upload-button").mousemove(function(e) {
             var offL, offR, inpStart
@@ -1415,11 +1427,6 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
             });
         });     
 */
-
-
-
-
-
     };
 
     $.fn[pluginName] = function ( options ) {
