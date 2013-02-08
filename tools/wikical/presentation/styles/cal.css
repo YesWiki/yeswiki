@@ -1,176 +1,151 @@
-.day, .day_name, table.cal_content th {
-	border: solid 1px white;
-	font-size: 12px;
-	height: 30px;
-	background: url(../images/blanc.png) repeat;
-	vertical-align: middle;
-	text-align: center;
-}
-.day_name {
-	font-weight:bold;
-}
-
-.day.evday {
-	background: url(../images/bleu.png) repeat;
-	color: white;
-	}
-	
-.day.today {
-	background: url(../images/rouge.png) repeat;
-	color: white;
-	}
-
-.day:hover {
-	background-color: black;
-	color: white;
-}
-
-.title, .title a {
-	font-size: 110%;
-	font-weight: bold;
-	color: black;
-	background : url(../images/blanc.png) repeat;		
-}
-
 .calendar {
-	width: 224px;
-	font-size: 11px;
-	background-color: #A3C437;
-	border: 0px solid #787878;
-	-moz-border-radius: 15px;
-	-webkit-border-radius: 15px;
-	border-radius: 15px;
-	padding: 4px;
-	padding-bottom: 15px;
+	font-size:12px;
+	text-align: center;
+	overflow: auto;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	padding:0;
 	margin: auto;
 	color: black;	
+	cursor:default;
+	min-height: 203px;
 }
-
-table.cal_content {
-	width: 100%;
-}
-
-table.cal_content th{
-	text-align: center;
-}
-
-.events {
-	max-width: 224px;
-	display: none;
-	color: black;
+	.cal_entete {
+		font-size:11px;
+		margin:5px 2px;
+		width: auto;
+		height: 20px;
+		text-align: center;
+		background: url(../images/blanc.png) repeat;
+	}
 	
-}
+		.select_date {
+			list-style: none;
+			width: auto;
+		}
+		
+		li.list { float: left; padding: 0px 2px;cursor:pointer;}
+			.cal_now, .cal_prev, .cal_next {color: black;}
 
-.day:hover .events {
-	position: absolute;
-	display: block;
-	color: white;
-	margin-left: 10px;
-	padding: 0px 10px;
-	background: #A3C437 repeat url(../images/blanc.png);
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	border-radius: 1Opx;
-	border: 1px solid black;
+			li.list:hover ul.select {
+				display: block;
+				position: absolute;
+				color: black;
+				padding-bottom: 5px;
+				padding-top: 5px;
+				text-align: left;
+				-moz-border-radius: 4px;
+				-webkit-border-radius: 4px;
+				border-radius: 4px;
+			}
+			
+			ul.select {
+				display: none;
+				list-style: none;
+			}
+			
+			.select {
+				margin: 0px;
+				padding: 0px;
+				padding-left: 2px;
+			}
+			
+			.select a {
+				color: black;
+			}
+			
+			.select a:hover {
+				color: black;
+				text-decoration: none;
+			}
+			
+			.select li {
+				padding-left: 5px;
+				padding-right: 5px;
+			}
+			
+			.select li:hover {
+				background: url(../images/blanc.png) repeat;
+			}
+			
+			.select_item {
+				list-style: none;
+				
+			}
+		li.aujourdhui{margin-left:10px;}
+			li.aujourdhui a, li.aujourdhui a:visited{display:inline-block;padding:0 2px;color:white !important;}
+			
+
+
+	table.cal_contenu {width: 100%;vertical-align:middle;}
 	
-}
+		.day, .day_name {
+			height: 28px;
+			width:14.2857%;
+			background: rgb(255, 255, 255);
+			background: rgba(255, 255, 255, 0.8);}
+		
+		.day_name {
+			font-weight:bold;
+			font-size:90%;
+		}
+		
+			.today {
+				background:rgb(198, 73, 60);
+				background:rgb(198, 73, 60, 1);
+				color: white;
+				}
 
-.events p {
-	float: none;
-}
-
-.event_title  {
-	text-align: left;
-	font-weight: bold;
-	color: black;
-}
-
-.event_info {
-	color: black;
-	float: left;
-}
-
-.cal_now {
-	color: black;
-}
-
-.cal_prev {
-	color: black;
-}
-
-.cal_next {
-color: black;
-}
-
-.cal_entete {
-	margin: auto;
-	margin-top: 10px;
-	margin-bottom: 5px;
-	width: auto;
-	height: 20px;
-	background: url(../images/blanc.png) repeat;
-	position: relative;
-}
-
-.cal_contenu {
-	width: 100%;
-}
-
-ul.select {
-	display: none;
-	list-style: none;
-}
-
-li.list:hover ul.select {
-	display: block;
-	position: absolute;
-	color: black;
-	padding-bottom: 5px;
-	padding-top: 5px;
-	text-align: left;
-	-moz-border-radius: 10px;
-	-webkit-border-radius: 10px;
-	border-radius: 10px;
-}
-
-.select a {
-	color: black;
-}
-
-.select a:hover {
-	color: black;
-	text-decoration: none;
-}
-
-.select li {
-	padding-left: 5px;
-	padding-right: 5px;
-	list-style: none;
-}
-
-.select li:hover {
-	background: url(../images/blanc.png) repeat;
-}
-
-.select_item {
-	list-style: none;	
-}
-
-.select_date {
-	list-style: none;
-	width: 140px;
-	display: block;
-	margin: 0 auto;
-	padding: 4px O O O;
-}
-
-.select {
-	margin: 0px;
-	padding: 0px;
-	padding-left: 2px;
-}
-
-.list { float: left; padding: 0px 2px; list-style: none;}
-
-.list li { float: none; clear: left;}
-
+			.evday {
+				background:rgb(89, 118, 198);
+				background:rgb(89, 118, 198, 1);
+				color: white;
+				}
+			.evday:hover {
+				background:rgb(60, 85, 155);
+				background:rgb(60, 85, 155, 1);
+				cursor:pointer;
+				}
+				
+				.events {
+					max-width: 224px;
+					display: none;
+					color: black;
+					cursor:default;
+				}
+				
+				.day:hover .events {
+					display: block;
+					position: absolute;
+					color: white;
+					margin-left: 10px;
+					padding:10px;
+					background: #ffffff repeat url(../images/blanc.png);
+					-moz-border-radius: 4px;
+					-webkit-border-radius: 4px;
+					border-radius: 4px;
+					border: 1px solid #A3C437;
+					
+				}
+		
+					.events p {
+						float: none;
+						color:#333333;
+					}
+					
+					.event_title  {
+						text-align: left;
+						font-weight: bold;
+						font-size:90%;
+						margin-bottom:2px;
+					}
+					
+					.event_info {
+						text-align: left;
+						color: black;
+						float: left;
+						font-size:11px;
+						font-style:italic;
+						margin-top:-4px;
+					}

@@ -114,7 +114,7 @@ function printMonthCal($in_timeStamp, $in_data, $params) {
 	if (isset($params['color'])) $in_color = $params['color']; else $in_color = 'grey';
 	if (isset($params['url'])) $url = $params['url']; else die('ERREUR action cal : param&ecirc;tre "url" obligatoire!');
 
-	print("<div class='calendar' style='background-color: ".$in_color.";'>\n");
+	print("<div class='calendar' style='background-color: ".$in_color.";border:1px solid ".$in_color.";'>\n");
 	print("<div class='calendar_content'>\n");
 
 	$jourencours = date("j", $in_timeStamp);
@@ -138,52 +138,60 @@ function printMonthCal($in_timeStamp, $in_data, $params) {
 					 12 => "D&eacute;cembre");
 	
 	print("<div class=\"cal_entete\">");
-	print("<ul class=\"select_date\">"
-			."<li class=\"list month_list\">".$lsMonth[$moisencours]);
+	print("<ul class=\"select_date\">");
+	print("<li class=\"list\"><a href=\"tools/wikical/libs/update.php?timestamp=".$prev_month.$url_params."\" class=\"cal_prev prev_month\" title=\"Mois pr&eacute;c&eacute;dent\">&lt;&lt;</a></li>");
+	print("<li class=\"list month_list\">".$lsMonth[$moisencours]);
 	//Liste des mois		
 	print("<ul class=\"select\" style='background-color: ".$in_color.";'>\n");
 	for ($i=1; $i<=12; $i++){
-		print("\t<li><a class=\"list select_item\" href=\"tools/wikical/actions/cal.php?timestamp=".mktime(0, 0, 0, $i, $jourencours, $anneeencours).$url_params."\">".$lsMonth[$i]."</a></li>\n");
+		print("\t<li><a class=\"select_item\" href=\"tools/wikical/libs/update.php?timestamp=".mktime(0, 0, 0, $i, $jourencours, $anneeencours).$url_params."\">".$lsMonth[$i]."</a></li>\n");
 	}
 	print("</ul></li>\n");
 	//Liste des années
 	print("<li class=\"list year_list\">".$anneeencours);
 	print("<ul class=\"select\" style='background-color: ".$in_color.";'>\n");
 	for($i=-4;$i<3;$i++) {
-		print("\t<li><a class=\"select_item\" href=\"tools/wikical/actions/cal.php?timestamp=".mktime(0, 0, 0, $moisencours, $jourencours, $anneeencours+$i).$url_params.'">'.($anneeencours+$i)."</a></li>\n");	
+		print("\t<li><a class=\"select_item\" href=\"tools/wikical/libs/update.php?timestamp=".mktime(0, 0, 0, $moisencours, $jourencours, $anneeencours+$i).$url_params.'">'.($anneeencours+$i)."</a></li>\n");	
 	}
 	print("</ul></li>\n");
 	
 	print("\n
-		<li class=\"list\"><a href=\"tools/wikical/actions/cal.php?timestamp=".$prev_month.$url_params."\" class=\"cal_prev prev_month\" title=\"Mois pr&eacute;c&eacute;dent\">&lt;</a></li>
-		<li class=\"list\"><a href=\"tools/wikical/actions/cal.php?timestamp=".time().$url_params."\" class=\"cal_now today\" title=\"Aujourd'hui\">o</a></li>
-		<li class=\"list\"><a href=\"tools/wikical/actions/cal.php?timestamp=".$next_month.$url_params."\" class=\"cal_next next_month\" title=\"Mois suivant\">></a></li>\n");
+		<li class=\"list\"><a href=\"tools/wikical/libs/update.php?timestamp=".$next_month.$url_params."\" class=\"cal_next next_month\" title=\"Mois suivant\">&gt;&gt;</a></li>\n
+		<li class=\"list aujourdhui\"><a href=\"tools/wikical/libs/update.php?timestamp=".time().$url_params."\" class=\"cal_now today\" title=\"Aujourd'hui\">Aujourd'hui</a></li>");
 	
 	print("</ul>\n");
 	print("</div>");
 	
-	print("<table class='cal_content'>\n");
-	print("\t<tr>");
-	print("\t\t<th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th>");
-	print("\t</tr>\n");
-	print("\t<tr>");
-	
-	$compteur = 0;
-	
+print("<table class='cal_contenu'>\n"); 
+	print("<tr class='tr_entete'>\n"); 
+		print("<td class='day_name'>Lun</td>\n");
+		print("<td class='day_name'>Mar</td>\n");
+		print("<td class='day_name'>Mer</td>\n");
+		print("<td class='day_name'>Jeu</td>\n");
+		print("<td class='day_name'>Ven</td>\n");
+		print("<td class='day_name'>Sam</td>\n");
+		print("<td class='day_name'>Dim</td>\n");
+	print("</tr>\n"); 
+
+//création des tr
+$ligne=0;
+$nb = 7;
+
 	foreach($in_data as $day) {
-		
-		
-		if ( ($compteur % 7 == 0) && ($compteur != 0) ) {
-			print("\t</tr>\n\t<tr>\n");
-		}
-		
-		//Creation de la cellule
+
+ //si 1ere élement on commence une ligne 
+	$start = ($ligne%$nb == 0)?"<tr>":"";
+ //si dernier élément on finit la ligne 
+	$end = ($ligne%$nb == $nb-1)?"</tr>\n":""; 
+print("$start"); 
+ //on affiche  
+		//Creation du DIV
 		if ($day["isToday"])
-			print("\t\t<td class='day today'>");
+			print("<td class='day today'>");
 		else if ($day["isEvent"])
-			print("\t\t<td class='day evday'>");
+			print("<td class='day evday'>");
 		else
-			print("\t\t<td class='day'>");
+			print("<td class='day'>");
 		//Contenu du DIV
 		if(!$day["isBlank"])
 			print(date("d",$day['startDayTS']));
@@ -216,36 +224,86 @@ function printMonthCal($in_timeStamp, $in_data, $params) {
 						."</p>\n");
 			}
 			print ("</div>\n");
-		}/**/
+		}
 		print ("</td>\n");
-		
-		$compteur += 1;
+		print("$end");
+		$ligne = $ligne + 1;
 	}
-	
-	print("\t</tr>\n");
-	print("</table>");
-	
-
+	print("</table>\n");
 	print("</div>\n");
 	print("</div>\n");
-	print("<script type=\"text/javascript\"><!--
-		$(function() {
-			//liens pour se déplacer dans le calendrier
-			$(\".next_month, .prev_month, .today, .select_item\").live('click', function() {
-				var htmlcal = $(this).attr('href') + ' .calendar_content';
-				var calheight = $(this).parents('.calendar').height();
-				$(this).parents('.calendar').html('<div style=\"height:'+calheight+'px;background:transparent url(tools/wikical/presentation/images/loading.gif) no-repeat center center;\"></div>').load(htmlcal);
-				return false;
-			});
-			
-			//listes déroulantes de sélection de date
-			$(\".select_annee, .select_mois\").live('change', function() {
-				var htmlcal = $(this).find(\"option:selected\").val() + ' .calendar_content';
-				var calheight = $(this).parents('.calendar').height();
-				$(this).parents('.calendar').html('<div style=\"height:'+calheight+'px;background:transparent url(tools/wikical/presentation/images/loading.gif) no-repeat center center;\"></div>').load(htmlcal);
-				return false;
-			});
-		});
-		--></script>");
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+function firstLoad($in_timeStamp, $params) {
+
+		if (isset($params['color'])) $in_color = $params['color']; else $in_color = 'grey';
+	if (isset($params['url'])) $url = $params['url']; else die('ERREUR action cal : param&ecirc;tre "url" obligatoire!');
+
+	print("<div class='calendar' style='background-color: ".$in_color.";border:1px solid ".$in_color.";'>\n");
+	print("<div class='calendar_content'>\n");
+
+	$jourencours = date("j", $in_timeStamp);
+	$moisencours = date("n", $in_timeStamp);
+	$anneeencours = date("Y", $in_timeStamp);
+	$next_month = strtotime('+1 month',$in_timeStamp);
+	$prev_month = strtotime('-1 month',$in_timeStamp);
+	$url_params = "&amp;url=".urlencode($url)."&amp;color=".urlencode($in_color);
+	
+	$lsMonth = array(1 => "Janvier",
+					 2 => "F&eacute;vrier",
+					 3 => "Mars",
+					 4 => "Avril",
+					 5 => "Mai",
+					 6 => "Juin",
+					 7 => "Juillet",
+					 8 => "Ao&ucirc;t",
+					 9 => "Septembre",
+					 10 => "Octobre",
+					 11 => "Novembre",
+					 12 => "D&eacute;cembre");
+	
+	print("<div class=\"cal_entete\">");
+	print("<ul class=\"select_date\">");
+	print("<li class=\"list\"><a href=\"tools/wikical/libs/update.php?timestamp=".$prev_month.$url_params."\" class=\"cal_prev prev_month\" title=\"Mois pr&eacute;c&eacute;dent\">&lt;&lt;</a></li>");
+	print("<li class=\"list month_list\">".$lsMonth[$moisencours]);
+	//Liste des mois		
+	print("<ul class=\"select\" style='background-color: ".$in_color.";'>\n");
+	for ($i=1; $i<=12; $i++){
+		print("\t<li><a class=\"select_item\" href=\"tools/wikical/libs/update.php?timestamp=".mktime(0, 0, 0, $i, $jourencours, $anneeencours).$url_params."\">".$lsMonth[$i]."</a></li>\n");
+	}
+	print("</ul></li>\n");
+	//Liste des années
+	print("<li class=\"list year_list\">".$anneeencours);
+	print("<ul class=\"select\" style='background-color: ".$in_color.";'>\n");
+	for($i=-4;$i<3;$i++) {
+		print("\t<li><a class=\"select_item\" href=\"tools/wikical/libs/update.php?timestamp=".mktime(0, 0, 0, $moisencours, $jourencours, $anneeencours+$i).$url_params.'">'.($anneeencours+$i)."</a></li>\n");	
+	}
+	print("</ul></li>\n");
+	
+	print("\n
+		<li class=\"list\"><a href=\"tools/wikical/libs/update.php?timestamp=".$next_month.$url_params."\" class=\"cal_next next_month\" title=\"Mois suivant\">&gt;&gt;</a></li>\n
+		<li class=\"list aujourdhui\"><a href=\"tools/wikical/libs/update.php?timestamp=".time().$url_params."\" class=\"cal_now today\" title=\"Aujourd'hui\">Aujourd'hui</a></li>");
+	
+	print("</ul>\n");
+	print("</div>");
+	
+print("<table class='cal_contenu'>\n"); 
+	print("<tr class='tr_entete'>\n"); 
+		print("<td class='day_name'>Lun</td>\n");
+		print("<td class='day_name'>Mar</td>\n");
+		print("<td class='day_name'>Mer</td>\n");
+		print("<td class='day_name'>Jeu</td>\n");
+		print("<td class='day_name'>Ven</td>\n");
+		print("<td class='day_name'>Sam</td>\n");
+		print("<td class='day_name'>Dim</td>\n");
+	print("</tr>\n"); 
+
+
+	print("</table>\n");
+	print("</div>\n");
+	print("</div>\n");
+}
+
 ?>
