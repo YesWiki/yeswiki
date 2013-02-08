@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wktwitter" version="0.1" active="0">
+  <author>Florian Schmitt</author>
+  <label>Twitter</label>
+  <desc>affiche une liste de tweets</desc>
+</plugin>
