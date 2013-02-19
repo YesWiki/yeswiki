@@ -993,7 +993,7 @@ function baz_insertion_fiche($valeur)
 */
 function baz_mise_a_jour_fiche($valeur)
 {
-    $valeur = array_merge(baz_valeurs_fiche($GLOBALS['_BAZAR_']['id_fiche']), $valeur);
+    //$valeur = array_merge(baz_valeurs_fiche($GLOBALS['_BAZAR_']['id_fiche']), $valeur);
     //$valeur = array_intersect($valeur, baz_valeurs_fiche($GLOBALS['_BAZAR_']['id_fiche']));
     $valeur = baz_requete_bazar_fiche($valeur, $GLOBALS['_BAZAR_']['id_typeannonce']);
     //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique

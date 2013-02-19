@@ -850,6 +850,51 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 }
 
 
+/** inscriptionliste() - Permet de s'isncrire à une liste
+ *
+ * @param    mixed   L'objet QuickForm du formulaire
+ * @param    mixed   Le tableau des valeurs des différentes option pour l'élément texte
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
+ * @return   void
+ */
+function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
+{
+    $id = str_replace(array('@','.'), array('',''),$tableau_template[1]);
+    if ($mode == 'saisie') {
+
+        $input_html = '<div class="control-group">
+                    <div class="controls"> 
+                        <div class="checkbox">
+                          <input id="'.$id.'" type="checkbox"'.(isset($valeurs_fiche[$tableau_template[1]]) ? ' checked="checked"' : '').' value="'.$tableau_template[1].'" name="'.$id.'" class="element_checkbox">
+                          <label for="'.$id.'">'.$tableau_template[2].'</label>
+                        </div>
+                    </div>
+                </div>';
+        $formtemplate->addElement('html', $input_html) ;   
+    } elseif ($mode == 'requete') {
+        //var_dump($_POST);
+        //var_dump($valeurs_fiche);
+        //break;
+        include_once 'tools/contact/libs/contact.functions.php';
+        if (isset($_POST[$id])) {
+            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], str_replace('@','-subscribe@',$tableau_template[1]), 'subscribe', 'subscribe', 'subscribe');
+            $valeurs_fiche[$tableau_template[1]] = $tableau_template[1];
+            return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
+        } 
+        else {
+            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], str_replace('@','-unsubscribe@',$tableau_template[1]), 'unsubscribe', 'unsubscribe', 'unsubscribe');
+            unset($valeurs_fiche[$tableau_template[1]]);
+            return;
+        }
+    } elseif ($mode == 'recherche') {
+
+    } elseif ($mode == 'html') {
+
+    }
+}
+
+
+
 /** champs_cache() - Ajoute un élément caché au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
@@ -1241,17 +1286,17 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 //on affiche les infos sur l'effacement du fichier, et on reinitialise la variable pour le fichier pour faire apparaitre le formulaire d'ajout par la suite
                 $info = '<div class="info_box">'.BAZ_FICHIER.$nomimg.BAZ_A_ETE_EFFACE.'</div>'."\n";
-                require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'HTML/QuickForm/html.php';
+                require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n".$info."\n")) ;
                 $valeurs_fiche[$type.$identifiant] = '';
             } else {
                 $info = '<div class="info_box">'.BAZ_DROIT_INSUFFISANT.'</div>'."\n";
-                require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'HTML/QuickForm/html.php';
+                require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n".$info."\n")) ;
             }
         }
-        $labelbulle = '';
-        if ($bulle_d_aide!='') $labelbulle .= $label.' <img class="tooltip_aide" title="'.htmlentities($bulle_d_aide).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+
+        if ($bulle_d_aide!='') $label = $label.' <img class="tooltip_aide" title="'.htmlentities($bulle_d_aide).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
 
         //cas ou il y a une image dans la base de donnees
         if (isset($valeurs_fiche[$type.$identifiant]) && $valeurs_fiche[$type.$identifiant] != '') {

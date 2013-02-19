@@ -65,30 +65,6 @@ $(document).ready(function () {
 			}		
 		});
     });
-    
-    //liste oui / non conditionnelle
-	$("select[id^='liste12'], select[id^='liste1']").change( function() {
-		if ($(this).val()==1) {
-			$(this).parents(".control-group").next("div[id^='oui']").show();
-			$(this).parents(".control-group").next("div[id^='non']").hide();
-		}
-		if ($(this).val()==2) {
-			$(this).parents(".control-group").next("div[id^='non']").show();
-			$(this).parents(".control-group").next("div[id^='oui']").hide();
-		}
-	});
-	//a l'ouverture du formulaire, on affiche 
-	$(".BAZ_cadre_fiche div[id^='oui'], .BAZ_cadre_fiche div[id^='non']").show();
-	$("#formulaire select[id^='liste12'], #formulaire select[id^='liste1']").each(function() {
-		if ($(this).val()==1) {
-			$(this).parents(".control-group").next("div[id^='oui']").show();
-			$(this).parents(".control-group").next("div[id^='non']").hide();
-		}
-		if ($(this).val()==2) {
-			$(this).parents(".control-group").next("div[id^='non']").show();
-			$(this).parents(".control-group").next("div[id^='oui']").hide();
-		}
-	});
 	
 
 	//on enleve la fonction doubleclic dans le cas d'une page contenant bazar
@@ -109,8 +85,6 @@ $(document).ready(function () {
 		$("div[id='"+id+'_'+$(this).val()+"']").show();
 	});
 	
-	$('.BAZ_rubrique:hidden').parent().show();
-
 	
 	//============longueur maximale d'un champs textarea
 	var textareas = $('textarea[maxlength].input_textarea');
@@ -301,3 +275,4 @@ $(document).ready(function () {
 
 
 });
+
