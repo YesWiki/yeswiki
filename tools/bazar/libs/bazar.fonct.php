@@ -1660,18 +1660,19 @@ function baz_valeurs_fiche($idfiche = '')
 function baz_valeurs_liste($idliste = '')
 {
     if ($idliste != '') {
-        //on vérifie que la page en question est bien une page wiki
-        if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
+        if (!isset($GLOBALS['bazar']['form'][$idliste])) {
+            //on vérifie que la page en question est bien une page wiki
+            if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
 
-            $valjson = $GLOBALS['wiki']->LoadPage($idliste);
-            $valeurs_fiche = json_decode($valjson["body"], true);
-            $valeurs_fiche['titre_liste'] = utf8_decode($valeurs_fiche['titre_liste']);
-            $valeurs_fiche['label'] = array_map('utf8_decode', $valeurs_fiche['label']);
-
-            return $valeurs_fiche;
-        } else {
-            return false;
+                $valjson = $GLOBALS['wiki']->LoadPage($idliste);
+                $valeurs_fiche = json_decode($valjson["body"], true);
+                $GLOBALS['bazar']['form'][$idliste]['titre_liste'] = utf8_decode($valeurs_fiche['titre_liste']);
+                $GLOBALS['bazar']['form'][$idliste]['label'] = array_map('utf8_decode', $valeurs_fiche['label']);
+            } else {
+                return false;
+            }
         }
+        return $GLOBALS['bazar']['form'][$idliste];
     } else {
         return false;
     }
