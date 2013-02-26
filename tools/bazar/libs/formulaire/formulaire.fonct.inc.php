@@ -389,9 +389,9 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
             //valeurs par defauts
             if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
-                $tab = split( ',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
+                $tab = explode( ',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
             } else {
-                $tab = split( ',', $tableau_template[5] );
+                $tab = explode( ',', $tableau_template[5] );
             }
 
             foreach ($choixcheckbox as $id => $label) {
@@ -1862,8 +1862,8 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $optioncheckbox = array('class' => 'element_checkbox');
 
             //valeurs par défauts
-            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) $tab = split( ', ', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
-            else $tab = split( ', ', $tableau_template[5] );
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) $tab = explode( ', ', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
+            else $tab = explode( ', ', $tableau_template[5] );
 
             while ($ligne = $resultat->fetchRow()) {
                 if ($i==0) $tab_chkbox=$tableau_template[2] ; else $tab_chkbox='&nbsp;';
