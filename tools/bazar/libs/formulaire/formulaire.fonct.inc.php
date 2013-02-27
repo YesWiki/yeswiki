@@ -929,7 +929,7 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input , $obligatoire, , $bulle_d_aide) = $tableau_template;
+    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input , $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
                 // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
@@ -965,10 +965,13 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html .= ' maxlength="'.$nb_max_car.'" size="'.$nb_max_car.'"';
         $input_html .= ($obligatoire == 1) ? ' required="required"' : '';
         $input_html .= '>'."\n".'</div>'."\n".'</div>'."\n";
-
+        if ($sendmail == 1) {
+            $formtemplate->addElement('hidden', 'sendmail', $identifiant);
+        }
         $formtemplate->addElement('html', $input_html) ;
     } elseif ($mode == 'requete') {
         return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
+
     } elseif ($mode == 'recherche') {
 
     } elseif ($mode == 'html') {
@@ -1020,18 +1023,19 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $nb_colonnes, $nb_lignes, $valeur_par_defaut, $longueurmax, $formatage , $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
-        //gestion du champs obligatoire
-        $symb = '';
-        if (isset($obligatoire) && $obligatoire==1) {
-            $options['required'] = 'required' ;
-            $symb .= '<span class="symbole_obligatoire">*&nbsp;</span>';
-        }
         $longueurmaxlabel = ($longueurmax ? ' (<span class="charsRemaining">'.$longueurmax.'</span> caract&egrave;res restants)' : '' );
         $bulledaide = '';
         if ($bulle_d_aide!='') $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($bulle_d_aide).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
 
         $options = array('id' => $identifiant, 'class' => 'input_textarea'.($formatage == 'wiki' ? ' wiki-textarea' : ''));
         if ($longueurmax != '') $options['maxlength'] = $longueurmax;
+        //gestion du champs obligatoire
+        $symb = '';
+        if (isset($obligatoire) && $obligatoire==1) {
+            $options['required'] = 'required' ;
+            $symb .= '<span class="symbole_obligatoire">*&nbsp;</span>';
+        }
+
         $formtexte= new HTML_QuickForm_textarea($identifiant, $symb.$label.$longueurmaxlabel.$bulledaide, $options);
         $formtexte->setCols($nb_colonnes);
         $formtexte->setRows($nb_lignes);
@@ -1172,7 +1176,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         unlink(BAZ_CHEMIN_UPLOAD.$valeurs_fiche[$type.$identifiant]);
                     }
                 } else {
-                    $info = '<div class="info_box">'.BAZ_DROIT_INSUFFISANT.'</div>'."\n";
+                    $info = '<div class="alert alert-info">'.BAZ_DROIT_INSUFFISANT.'</div>'."\n";
                     require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'HTML/QuickForm/html.php';
                     $formtemplate->addElement(new HTML_QuickForm_html("\n".$info."\n")) ;
                 }
@@ -1268,7 +1272,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>'.$label : $label;
         //on verifie qu'il ne faut supprimer l'image
-        if (isset($_GET['suppr_image']) && $valeurs_fiche[$type.$identifiant]==$_GET['suppr_image']) {
+        if (isset($_GET['suppr_image']) && isset($valeurs_fiche[$type.$identifiant]) && $valeurs_fiche[$type.$identifiant]==$_GET['suppr_image']) {
             if (baz_a_le_droit('supp_fiche', (isset($valeurs_fiche['createur']) ? $valeurs_fiche['createur'] : ''))) {
                 //on efface le fichier s'il existe
                 if (file_exists(BAZ_CHEMIN_UPLOAD.$valeurs_fiche[$type.$identifiant])) {
@@ -1285,12 +1289,12 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
 
                 //on affiche les infos sur l'effacement du fichier, et on reinitialise la variable pour le fichier pour faire apparaitre le formulaire d'ajout par la suite
-                $info = '<div class="info_box">'.BAZ_FICHIER.$nomimg.BAZ_A_ETE_EFFACE.'</div>'."\n";
+                $info = '<div class="alert alert-info">'.BAZ_FICHIER.$nomimg.BAZ_A_ETE_EFFACE.'</div>'."\n";
                 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n".$info."\n")) ;
                 $valeurs_fiche[$type.$identifiant] = '';
             } else {
-                $info = '<div class="info_box">'.BAZ_DROIT_INSUFFISANT.'</div>'."\n";
+                $info = '<div class="alert">'.BAZ_DROIT_INSUFFISANT.'</div>'."\n";
                 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n".$info."\n")) ;
             }
@@ -1311,18 +1315,19 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $lien_supprimer .= '&suppr_image='.$valeurs_fiche[$type.$identifiant];
 
                 $html_image = afficher_image($valeurs_fiche[$type.$identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
-                $lien_supprimer_image = '<a class="BAZ_lien_supprimer lien_texte" href="'.str_replace('&', '&amp;', $lien_supprimer).'" onclick="javascript:return confirm(\''.
-                    BAZ_CONFIRMATION_SUPPRESSION_IMAGE.'\');" >'.BAZ_SUPPRIMER_IMAGE.'</a>'."\n";
+                $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="'.str_replace('&', '&amp;', $lien_supprimer).'" onclick="javascript:return confirm(\''.
+                    BAZ_CONFIRMATION_SUPPRESSION_IMAGE.'\');" ><i class="icon-trash icon-white"></i>&nbsp;'.BAZ_SUPPRIMER_IMAGE.'</a>'."\n";
                 if ($html_image!='') $formtemplate->addElement('html', $html_image) ;
                 //gestion du champs obligatoire
                 $option = '';
                 $formtemplate->addElement('file', $type.$identifiant, $lien_supprimer_image.BAZ_MODIFIER_IMAGE, $option) ;
+                $formtemplate->addElement('hidden', 'oldimage_'.$type.$identifiant, $valeurs_fiche[$type.$identifiant]) ;
                 $formtemplate->addElement(new HTML_QuickForm_html("\n".'</fieldset>'."\n")) ;
             }
 
             //le fichier image n'existe pas, du coup on efface l'entree dans la base de donnees
             else {
-                echo '<div class="BAZ_error">'.BAZ_FICHIER.$valeurs_fiche[$type.$identifiant].BAZ_FICHIER_IMAGE_INEXISTANT.'</div>'."\n";
+                echo '<div class="alert alert-danger">'.BAZ_FICHIER.$valeurs_fiche[$type.$identifiant].BAZ_FICHIER_IMAGE_INEXISTANT.'</div>'."\n";
                 //on efface une entrée de la base de données
                 unset($valeurs_fiche[$type.$identifiant]);
                 $valeur = $valeurs_fiche;
@@ -1371,14 +1376,17 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         $adr_img = redimensionner_image($chemin_destination, 'cache/image_'.$nomimage, $largeur_image, $hauteur_image);
                     }
                 } else {
-                    echo '<div class="BAZ_error">L\'image '.$nomimage.' existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.</div>';
+                    echo '<div class="alert alert-danger">L\'image '.$nomimage.' existait d&eacute;ja, elle n\'a pas &eacute;t&eacute; remplac&eacute;e.</div>';
                 }
             } else {
-                echo '<div class="BAZ_error">Fichier non autoris&eacute;.</div>';
+                echo '<div class="alert alert-danger">Fichier non autoris&eacute;.</div>';
             }
 
             return array($type.$identifiant => $nomimage);
-        }
+        } 
+        elseif (isset($valeurs_fiche['oldimage_'.$type.$identifiant]) && $valeurs_fiche['oldimage_'.$type.$identifiant] != '') {
+            return array($type.$identifiant => $valeurs_fiche['oldimage_'.$type.$identifiant]);
+        } 
     } elseif ($mode == 'recherche') {
 
     } elseif ($mode == 'html') {
@@ -1901,7 +1909,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $html .= '<a class="ajout_fiche ouvrir_overlay" href="'.str_replace('&', '&amp;', $url_checkboxfiche->getUrl()).'" rel="#overlay-link" title="'.htmlentities($tableau_template[2]).'">'.$tableau_template[2].'</a>'."\n";
             $formtemplate->addElement('html', $html);
         } else {
-            $formtemplate->addElement('html', '<div class="info_box">'.$tableau_template[3].'</div>');
+            $formtemplate->addElement('html', '<div class="alert alert-info">'.$tableau_template[3].'</div>');
         }
     } elseif ($mode == 'requete') {
         //on supprime les anciennes valeurs de la table '.BAZ_PREFIXE.'fiche_valeur_texte

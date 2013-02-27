@@ -21,18 +21,17 @@
 // | along with Foobar; if not, write to the Free Software                                                |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// CVS : $Id: bazar.php,v 1.13 2010-12-15 11:15:45 ddelon Exp $
 /**
 * bazar.php
 *
 * Description :
 *
 *@package wkbazar
-//Auteur original :
+*
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
 *@copyright     Florian SCHMITT 2008
 *@version       $Revision: 1.13 $ $Date: 2010-12-15 11:15:45 $
-// +------------------------------------------------------------------------------------------------------+
+*  +------------------------------------------------------------------------------------------------------+
 */
 
 // +------------------------------------------------------------------------------------------------------+
@@ -43,7 +42,7 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//recuperation des parametres
+// recuperation des parametres
 $action = $this->GetParameter(BAZ_VARIABLE_ACTION);
 if (!empty($action)) {
     $_GET[BAZ_VARIABLE_ACTION] = $action;
@@ -53,28 +52,35 @@ $vue = $this->GetParameter(BAZ_VARIABLE_VOIR);
 if (!empty($vue) && !isset($_GET[BAZ_VARIABLE_VOIR])) {
     $_GET[BAZ_VARIABLE_VOIR] = $vue;
 }
-//si rien n'est donne, on met la vue de consultation
+// si rien n'est donne, on met la vue de consultation
 elseif (!isset($_GET[BAZ_VARIABLE_VOIR])) {
     $_GET[BAZ_VARIABLE_VOIR] = BAZ_VOIR_CONSULTER;
 }
 
-//ordre d'affichage des fiches : chronologique ou alphabetique
+// ordre d'affichage des fiches : chronologique ou alphabetique
 $GLOBALS['_BAZAR_']['tri'] = $this->GetParameter('tri');
 if (empty($GLOBALS['_BAZAR_']['tri'])) {
     $GLOBALS['_BAZAR_']['tri'] = 'chronologique';
 }
 
+// afficher le menu de vues bazar ?
 $GLOBALS['_BAZAR_']['affiche_menu'] = $this->GetParameter("voirmenu");
 
-//si un identifiant fiche est renseigné, on récupère toutes les valeurs associées
+// template a utiliser pour afficher les resultats de la recherche
+$GLOBALS['_BAZAR_']['templates'] = $this->GetParameter("template");
+if (empty($GLOBALS['_BAZAR_']['templates']) || (!is_file('templates/bazar/'.$GLOBALS['_BAZAR_']['templates']) && !is_file('tools/bazar/presentation/templates/'.$GLOBALS['_BAZAR_']['templates'] ))) {
+    $GLOBALS['_BAZAR_']['templates'] = BAZ_TEMPLATE_LISTE_DEFAUT;
+}
+
+// si un identifiant fiche est renseigné, on récupère toutes les valeurs associées
 if (isset($_REQUEST['id_fiche'])) {
     $GLOBALS['_BAZAR_']['id_fiche'] = $_REQUEST['id_fiche'];
 
-    //on récupère les valeurs de la fiche
+    // on récupère les valeurs de la fiche
     $GLOBALS['_BAZAR_']['valeurs_fiche'] = baz_valeurs_fiche($GLOBALS['_BAZAR_']['id_fiche']);
     if ($GLOBALS['_BAZAR_']['valeurs_fiche']) {
         $GLOBALS['_BAZAR_']['id_typeannonce'] = $GLOBALS['_BAZAR_']['valeurs_fiche']['id_typeannonce'];
-        //on récupère aussi les valeurs générales du type de fiche aussi
+        // on récupère aussi les valeurs générales du type de fiche aussi
         $tab_nature = baz_valeurs_type_de_fiche($GLOBALS['_BAZAR_']['id_typeannonce']);
         $GLOBALS['_BAZAR_']['typeannonce'] = $tab_nature['bn_label_nature'];
         $GLOBALS['_BAZAR_']['condition'] = $tab_nature['bn_condition'];
@@ -95,7 +101,7 @@ else {
     $GLOBALS['_BAZAR_']['id_typeannonce'] = $this->GetParameter("idtypeannonce");
 
     if (empty($GLOBALS['_BAZAR_']['id_typeannonce'])) {
-        //si la valeur n'est pas passée en paramètre, on vérifie si l'application ne l'a pas initialisé
+        // si la valeur n'est pas passée en paramètre, on vérifie si l'application ne l'a pas initialisé
         if (isset($_REQUEST['id_typeannonce'])) {
             $GLOBALS['_BAZAR_']['id_typeannonce'] = $_REQUEST['id_typeannonce'];
             $tab_nature = baz_valeurs_type_de_fiche($GLOBALS['_BAZAR_']['id_typeannonce']);
@@ -108,7 +114,7 @@ else {
             $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
 
         }
-        //on met sur "toutes" sinon
+        // on met sur "toutes" sinon
         else {
             $GLOBALS['_BAZAR_']['id_typeannonce'] = 'toutes';
             $categorie_nature = $this->GetParameter("categorienature");
@@ -126,7 +132,7 @@ else {
         $GLOBALS['_BAZAR_']['choix_categorie'] = false;
     }
 
-    //si l'on connait le type de fiche, on prend toutes les infos
+    // si l'on connait le type de fiche, on prend toutes les infos
     if ($GLOBALS['_BAZAR_']['id_typeannonce']!='toutes') {
         $_REQUEST['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
         $tab_nature = baz_valeurs_type_de_fiche($GLOBALS['_BAZAR_']['id_typeannonce']);
@@ -140,10 +146,10 @@ else {
     }
 }
 
-//utilisateur
+// utilisateur
 $GLOBALS['_BAZAR_']['nomwiki'] = $GLOBALS['wiki']->GetUser();
 
-//variable d'affichage du bazar
+// variable d'affichage du bazar
 $output = '';
 // +------------------------------------------------------------------------------------------------------+
 // |                                            CORPS du PROGRAMME                                        |
@@ -225,69 +231,5 @@ if (isset ($_GET[BAZ_VARIABLE_VOIR])) {
                 $output .= baz_rechercher($GLOBALS['_BAZAR_']['id_typeannonce']);
         }
 }
-//affichage de la page
+// affichage de la page
 echo $output ;
-
-/* +--Fin du code ----------------------------------------------------------------------------------------+
-*
-* $Log: bazar.php,v $
-* Revision 1.13  2010-12-15 11:15:45  ddelon
-* nom du parametre voir  depuis la constante
-*
-* Revision 1.12  2010-12-01 17:01:38  mrflos
-* amÃ©lioration de l'intÃ©gration dans wiki :
-* les listes sont maintenant des PageWiki
-* les fiches sont aussi des PageWiki
-* ajout des parties apparaissant sous certaines conditions seulement
-* import export csv
-* mise a jour jquery ui et bazar.css
-* handler rss
-*
-* Revision 1.11  2010-10-26 14:18:41  ddelon
-* Remaniement des constantes
-*
-* Revision 1.10  2010-10-26 10:42:11  mrflos
-* snapshot avant coding party
-*
-* Revision 1.9  2010-06-02 08:48:51  mrflos
-* commit de transition
-*
-* Revision 1.8  2010/05/03 15:59:45  mrflos
-* Un bazar par prÃ©fixe de table
-*
-* Revision 1.7  2010/05/03 08:36:15  mrflos
-* maj gÃ©nÃ©rale des fonctions de bazar
-*
-* Revision 1.6  2010/03/04 14:19:03  mrflos
-* nouvelle version bazar
-*
-* Revision 1.5  2009/09/09 15:36:37  mrflos
-* maj css
-* ajout de la google api v3
-* possibilitÃ© d'insÃ©rer des utilisateurs wikini par bazar
-* installation automatique du fichier sql avec type d'annonces par dÃ©faut
-*
-* Revision 1.4  2009/08/01 17:01:59  mrflos
-* nouvelle action bazarcalendrier, correction bug typeannonce, validitÃ© html amÃ©liorÃ©e
-*
-* Revision 1.3  2008/09/09 12:46:42  mrflos
-* sÃ©curitÃ©: seuls les identifies peuvent supprimer une fiche ou un type de fiche
-*
-* Revision 1.2  2008/08/27 13:18:57  mrflos
-* maj gÃ©nÃ©rale
-*
-* Revision 1.1  2008/07/07 18:00:39  mrflos
-* maj carto plus calendrier
-*
-* Revision 1.2  2008/03/06 00:15:40  mrflos
-* correction des bugs bazar, ajout de fichiers d'images
-*
-* Revision 1.1  2008/02/18 09:12:47  mrflos
-* Premiere release de 3 extensions en version alpha (bugs nombreux!) des plugins bazar, e2gallery, et templates
-*
-* Revision 1.1  2006/12/13 17:06:36  florian
-* Ajout de l'applette bazar.
-*
-*
-* +-- Fin du code ----------------------------------------------------------------------------------------+
-*/

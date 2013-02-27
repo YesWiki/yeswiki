@@ -41,7 +41,7 @@
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/checkbox.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/textarea.php' ;
-require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/Table.php' ;
+//require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/Table.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR.'formulaire.fonct.inc.php';
 
 /** baz_afficher_menu() - Prépare les boutons du menu de bazar et renvoie le html
@@ -868,6 +868,11 @@ function baz_requete_bazar_fiche($valeur)
     unset($valeur["MAX_FILE_SIZE"]);
     unset($valeur["antispam"]);
 
+    if (isset($valeur["sendmail"])) {
+        if ($valeur[$valeur["sendmail"]] != '') $destmail = $valeur[$valeur["sendmail"]];
+        unset($valeur["sendmail"]);
+    }
+    
     //pour les checkbox, on met les résultats sur une ligne
     foreach ($valeur as $cle => $val) {
         if (is_array($val)) {
@@ -888,6 +893,42 @@ function baz_requete_bazar_fiche($valeur)
         // l'identifiant (sous forme de NomWiki) est généré à partir du titre
         $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
         $valeur['id_fiche'] = $GLOBALS['_BAZAR_']['id_fiche'];
+    }
+
+    // si un mail d envoie de la fiche est present, on envoie!
+    if (isset($destmail)) {
+        include_once 'Mail.php';
+        include_once 'Mail/mime.php';
+        $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
+        $sujet = remove_accents('['.str_replace("http://","",$lien).'] Votre fiche : '.$_POST['bf_titre']);
+        $lienfiche = $GLOBALS['wiki']->config["base_url"].$GLOBALS['_BAZAR_']['id_fiche'];
+        $text = 'Aller sur le site pour voir la fiche et la modifier : '.$lienfiche;
+        $texthtml = '<br /><br /><a href="'.$lienfiche.'" title="Voir la fiche">Aller sur le site pour voir la fiche et la modifier</a>';
+        $fichier = 'tools/bazar/presentation/bazar.css';
+        $style = file_get_contents($fichier);
+        $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
+        $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $valeur)).$texthtml;
+        $html = '<html><head><style type="text/css">'.$style.'</style></head><body>'.$fiche.'</body></html>';
+
+        $crlf = "\n";
+        $hdrs = array(
+                      'From'    => BAZ_ADRESSE_MAIL_ADMIN,
+                      'Subject' => $sujet
+                      );
+
+        $mime = new Mail_mime($crlf);
+
+        $mime->setTXTBody($text);
+        $mime->setHTMLBody($html);
+
+        //do not ever try to call these lines in reverse order
+        $body = $mime->get();
+        $hdrs = $mime->headers($hdrs);
+
+        $mail =& Mail::factory('mail');
+
+        $mail->send($destmail, $hdrs, $body);
+
     }
 
     //on encode en utf-8 pour réussir à encoder en json
@@ -1792,11 +1833,6 @@ function baz_voir_fiche($danslappli, $idfiche)
     }
     $res='';
 
-    // TODO:ajouter stats : pour les stats, on ajoute une vue pour la fiche
-    /*if ($danslappli==1) {
-        $requete = 'UPDATE '.BAZ_PREFIXE.'fiche SET bf_nb_consultations=bf_nb_consultations+1 WHERE bf_id_fiche="'.$idfiche.'"';
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-    }*/
 
     $url= clone($GLOBALS['_BAZAR_']['url']);
     $url->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
@@ -1975,11 +2011,11 @@ function genere_nom_wiki($nom, $occurence = 1)
         $nom = '';
         foreach ($temp as $mot) {
             // on vire d'éventuels autres caractères spéciaux
-            $nom .= ereg_replace("[^a-zA-Z0-9]","",trim($mot));
+            $nom .= preg_replace("/[^a-zA-Z0-9]/","",trim($mot));
         }
 
         // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une à la fin
-        $var = ereg_replace('[^A-Z]','',$nom);
+        $var = preg_replace('/[^A-Z]/','',$nom);
         if (strlen($var)<2) {
             $last = ucfirst(substr($nom, strlen($nom) - 1));
             $nom = substr($nom, 0, -1).$last;
@@ -2366,7 +2402,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
     //preparation de la requete pour trouver les mots cles
     if ( isset($_REQUEST['recherche_mots_cles']) && $_REQUEST['recherche_mots_cles'] != BAZ_MOT_CLE ) {
         //decoupage des mots cles
-        $recherche = split(' ', $_REQUEST['recherche_mots_cles']) ;
+        $recherche = explode(' ', $_REQUEST['recherche_mots_cles']) ;
         $nbmots=count($recherche);
         $requeteSQL .= ' AND (';
         for ($i=0; $i<$nbmots; $i++) {
@@ -2535,23 +2571,13 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
         $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
         $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
         if (baz_a_le_droit('supp_fiche', (isset($valeurs_fiche['createur']) ? $valeurs_fiche['createur'] : ''))) {
-                //$GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
-                //$GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR);
-                //$GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_SUPPRESSION);
                 $valeurs_fiche['lien_suppression'] = '<a href="'.$GLOBALS['wiki']->href('deletepage',$valeurs_fiche['id_fiche']).'" class="BAZ_lien_supprimer" onclick="javascript:return confirm(\''.BAZ_CONFIRM_SUPPRIMER_FICHE.' ?\');"></a>'."\n";
-                //$GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
         }
         if (baz_a_le_droit('modif_fiche', (isset($valeurs_fiche['createur']) ? $valeurs_fiche['createur'] : ''))) {
-                //$GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR);
-                //$GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_MODIFIER);
                 $valeurs_fiche['lien_edition'] = '<a href="'.$GLOBALS['wiki']->href('edit',$valeurs_fiche['id_fiche']).'" class="BAZ_lien_modifier"></a>'."\n";
-                //$GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
         }
-        //$GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
-        //$GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
         $valeurs_fiche['lien_voir_titre'] = '<a href="'. $GLOBALS['wiki']->href('',$valeurs_fiche['id_fiche']) .'" class="BAZ_lien_voir" title="Voir la fiche">'. stripslashes($valeurs_fiche['bf_titre']).'</a>'."\n".'</li>'."\n";
         $valeurs_fiche['lien_voir'] = '<a href="'. $GLOBALS['wiki']->href('',$valeurs_fiche['id_fiche']) .'" class="BAZ_lien_voir" title="Voir la fiche"></a>'."\n".'</li>'."\n";
-        //$GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
 
         $fiches['fiches'][] = $valeurs_fiche;
 
@@ -2560,8 +2586,14 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
     }
     include_once 'tools/bazar/libs/squelettephp.class.php';
-    $template = (isset($_GET['template']) ? $_GET['template'] : BAZ_TEMPLATE_LISTE_DEFAUT);
-    $squelcomment = new SquelettePhp('tools/bazar/presentation/templates/'.$template);
+    $template = (isset($_GET['template']) && (is_file('templates/bazar/'.$_GET['template']) || is_file('tools/bazar/presentation/templates/'.$_GET['template']) ) ) ? $_GET['template'] : $GLOBALS['_BAZAR_']['templates'];
+    if (is_file('templates/bazar/'.$template)) {
+        $template = 'templates/bazar/'.$template;
+    }
+    else {
+       $template = 'tools/bazar/presentation/templates/'.$template; 
+    } 
+    $squelcomment = new SquelettePhp($template);
     $squelcomment->set($fiches);
     $res .= $squelcomment->analyser();
 

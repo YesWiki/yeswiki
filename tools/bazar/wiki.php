@@ -282,8 +282,11 @@ define ('BAZ_AFFICHER_FILTRE_MOTEUR', true);
 //==================================================================================
 
 // coordonnees du centre de la carte
-define('BAZ_GOOGLE_CENTRE_LAT', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '37.95286091815649');
-define('BAZ_GOOGLE_CENTRE_LON', (isset($wakkaConfig['baz_google_centre_lon'])) ? $wakkaConfig['baz_google_centre_lon'] : '9.019775390625');
+
+define('BAZ_MAP_CENTER_LAT', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '37.95286091815649');
+define('BAZ_MAP_CENTER_LON', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '37.95286091815649');
+define('BAZ_GOOGLE_CENTRE_LAT', BAZ_MAP_CENTER_LAT);
+define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
 
 // niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
 define('BAZ_GOOGLE_ALTITUDE', (isset($wakkaConfig['baz_google_altitude'])) ? $wakkaConfig['baz_google_altitude'] : '5');
@@ -317,6 +320,15 @@ define ('BAZ_PERMETTRE_ZOOM_MOLETTE','false');
 define ('BAZ_STYLE_NAVIGATION','ZOOM_PAN'); // SMALL ou ZOOM_PAN ou ANDROID ou DEFAULT
 define ('BAZ_STYLE_CHOIX_CARTE','DROPDOWN_MENU'); // HORIZONTAL_BAR ou DROPDOWN_MENU ou DEFAULT
 
+
+// marqueur de base
+define('BAZ_MAP_DEFAULT_MARKER_IMAGE', 'minimarkers/marker_rounded_red.png');
+define('BAZ_MAP_DEFAULT_MARKER_SIZE_WIDTH', '16');
+define('BAZ_MAP_DEFAULT_MARKER_SIZE_HEIGHT', '16');
+define('BAZ_MAP_DEFAULT_MARKER_POINTER_X', '8');
+define('BAZ_MAP_DEFAULT_MARKER_POINTER_Y', '16');
+
+
 // inclure l'url d'un fichier kml (carte google creee precedemment) a afficher sur la carte
 define ('BAZ_GOOGLE_FOND_KML', '');
 
@@ -324,4 +336,4 @@ define ('BAZ_GOOGLE_FOND_KML', '');
 define('BAZ_JS_INIT_MAP', '');
 
 // Choix du look du template par défaut
-define ('BAZ_TEMPLATE_LISTE_DEFAUT', 'liste_accordeon.tpl.html');
+define ('BAZ_TEMPLATE_LISTE_DEFAUT', (isset($wakkaConfig['default_bazar_template'])) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html');
