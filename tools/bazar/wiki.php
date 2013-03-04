@@ -282,9 +282,8 @@ define ('BAZ_AFFICHER_FILTRE_MOTEUR', true);
 //==================================================================================
 
 // coordonnees du centre de la carte
-
-define('BAZ_MAP_CENTER_LAT', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '37.95286091815649');
-define('BAZ_MAP_CENTER_LON', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '37.95286091815649');
+define('BAZ_MAP_CENTER_LAT', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '46.22763');
+define('BAZ_MAP_CENTER_LON', (isset($wakkaConfig['baz_google_centre_lon'])) ? $wakkaConfig['baz_google_centre_lon'] : '2.213749');
 define('BAZ_GOOGLE_CENTRE_LAT', BAZ_MAP_CENTER_LAT);
 define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
 
