@@ -4,6 +4,10 @@ if (!defined('WIKINI_VERSION')) {
     die ('acc&egrave;s direct interdit');
 }
 
+// ID : Indonesie
+// MY : Malaisie
+$pays_bloque = array("ID", "MY");
+
 
 if ($this->HasAccess("write") && $this->HasAccess("read")) // Les admins sont autorises
 {
