@@ -438,7 +438,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             foreach ($valliste['label'] as $id => $label) {
                 if ($i==0) $tab_chkbox = $tableau_template[2] ; else $tab_chkbox='&nbsp;';
 
-                if (is_array($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && array_key_exists($id, $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
+                if (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && array_key_exists($id, $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
                     $optioncheckbox['checked']='checked';
                 } else {
                     unset($optioncheckbox['checked']);
