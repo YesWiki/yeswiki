@@ -39,7 +39,7 @@ if ($this->HasAccess("write")) {
     // if this page exists
     if ($content) {
         // if owner is current user
-        if ($this->UserIsOwner($page)) {
+        if ($this->UserIsOwner($page) || $this->UserIsAdmin($page)) {
             $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".TEMPLATE_YOU.' - '.TEMPLATE_PERMISSIONS;
             $barreredactionelements['linkacls'] = $this->href("acls", $page);
             $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
