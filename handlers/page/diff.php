@@ -131,7 +131,7 @@ if ($this->HasAccess("read"))
 		$sideB->split_file_into_words($bodyB);
 	
 		// diff on these two file
-		$diff = new Diff(split("\n",$bodyA),split("\n",$bodyB));
+		$diff = new Diff(explode("\n",$bodyA),explode("\n",$bodyB));
 	
 		// format output
 		$fmt = new DiffFormatter();
