@@ -806,6 +806,12 @@ function baz_afficher_formulaire_fiche($mode = 'saisie', $formtemplate, $url = '
         if (!empty($GLOBALS['_BAZAR_']['id_fiche'])) {
             $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $GLOBALS['_BAZAR_']['id_fiche']) ;
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_MODIFIER_V);
+            $formtemplate->addElement('hidden', 'createur', $valeurs['createur']);
+            $formtemplate->addElement('hidden', 'date_debut_validite_fiche', $valeurs['date_debut_validite_fiche']);
+            $formtemplate->addElement('hidden', 'date_fin_validite_fiche', $valeurs['date_fin_validite_fiche']);
+            $formtemplate->addElement('hidden', 'date_creation_fiche', $valeurs['date_creation_fiche']);
+            $formtemplate->addElement('hidden', 'statut_fiche', $valeurs['statut_fiche']);
+
         } else {
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU_V);
         }
@@ -822,6 +828,7 @@ function baz_afficher_formulaire_fiche($mode = 'saisie', $formtemplate, $url = '
         for ($i=0; $i<count($tableau); $i++) {
             $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs) ;
         }
+
         $formtemplate->addElement('hidden', 'id_typeannonce', $GLOBALS['_BAZAR_']['id_typeannonce']);
 
         //si on a passé une url, on est dans le cas d'une page de type fiche_bazar, il nous faut le nom
@@ -2364,7 +2371,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
 
     //si les parametres ne sont pas rentrés, on prend les variables globales
     if ($id_typeannonce == '' && isset($GLOBALS['_BAZAR_']['id_typeannonce'])) $id_typeannonce = $GLOBALS['_BAZAR_']['id_typeannonce'];
-    if ($categorie_fiche == '' && isset($GLOBALS['_BAZAR_']['categorie_nature'])) $categorie_fiche = $GLOBALS['_BAZAR_']['categorie_nature'];
+    //if ($categorie_fiche == '' && isset($GLOBALS['_BAZAR_']['categorie_nature'])) $categorie_fiche = $GLOBALS['_BAZAR_']['categorie_nature'];
 
     //requete pour récupérer toutes les PageWiki étant des fiches bazar
     $requete_pages_wiki_bazar_fiches = 'SELECT DISTINCT resource FROM '.BAZ_PREFIXE.'triples WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ORDER BY resource ASC';
@@ -2372,7 +2379,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
     //requete d'obtention des valeurs d'une fiche
     $requete = 'SELECT DISTINCT body FROM '.BAZ_PREFIXE.'pages WHERE latest="Y" AND comment_on = \'\'';
 
-       //on limite à la catégorie choisie
+    //on limite à la catégorie choisie
     if ($categorie_fiche != '' && $categorie_fiche != 'toutes') {
         $requete .= ' AND body LIKE \'%"categorie_fiche":"'.utf8_encode($categorie_fiche).'"%\'';
     }

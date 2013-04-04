@@ -39,26 +39,47 @@ if (!defined("WIKINI_VERSION"))
 // valable que pour les utilisateurs connectes
 if ($user = $this->GetUser()) {
 	if ($user['email'] != '') {
+
 		//recuperation des parametres
 		$list = $this->GetParameter('list');
 		if (!empty($list)) {
-			$output =  '<div class="note"></div>
-				<form id="ajax-abonne-form" class="form-mail" action="'.$this->href('mail').'">
-					'.$list.' : '."\n".
-				'</form>'."\n";
+			if (isset($_GET['list']) && $_GET['list']==$list) {
+				include_once 'tools/contact/libs/contact.functions.php';
+				if ($_GET['action'] == 'unsubscribe') {
+					send_mail($user['email'], $user['name'], str_replace('@','-unsubscribe@',$list), $_GET['action'], $_GET['action'], $$_GET['action']);
+					$this->DeleteTriple($user['name'], 'http://outils-reseaux.org/_vocabulary/userlistsubscription', $list, '', '');
+
+				} 
+				elseif ($_GET['action'] == 'subscribe') {
+					send_mail($user['email'], $user['name'], str_replace('@','-subscribe@',$list), $_GET['action'], $_GET['action'], $$_GET['action']);
+					$this->DeleteTriple($user['name'], 'http://outils-reseaux.org/_vocabulary/userlistsubscription', $list, '', '');
+					$this->InsertTriple($user['name'], 'http://outils-reseaux.org/_vocabulary/userlistsubscription', $list, '', '');
+				}
+			}
+
+			$output = '<p><strong>Liste '.$list.' :</strong> ';
+			if ($this->TripleExists($user['name'], 'http://outils-reseaux.org/_vocabulary/userlistsubscription', $list, '', '')) {
+				$output .= 'vous &ecirc;tes inscrit <a href="'.$this->href('', $this->GetPageTag(), 'list='.$list.'&amp;action=unsubscribe').'" class="btn">Se d&eacute;sinscrire de cette liste</a></p>'."\n";
+			}
+			else {
+				$output .= 'vous n\'&ecirc;tes pas inscrit <a href="'.$this->href('', $this->GetPageTag(), 'list='.$list.'&amp;action=subscribe').'" class="btn">S\'inscrire &agrave; cette liste</a></p>'."\n";
+			}
+
 		} 
 		else {
-			echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_LIST_REQUIRED.'.</div>';
+			$output = '<div class="alert alert-danger"><strong>Action userlistsubscription</strong> : '.CONTACT_LIST_REQUIRED.'.</div>';
 		}
 		
 		
 	}
 	else {
-		echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_USER_NO_EMAIL.'</div>';
+		$output = '<div class="alert alert-danger"><strong>Action userlistsubscription</strong> : '.CONTACT_USER_NO_EMAIL.'</div>';
 	}	
 }
 else {
-	echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_USER_NOT_LOGGED_IN.'</div>';
+	$output = '<div class="alert alert-danger"><strong>Action userlistsubscription</strong> : '.CONTACT_USER_NOT_LOGGED_IN.'</div>';
 }
+
+echo $output;
 
 ?>

@@ -1446,9 +1446,6 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 elseif ( preg_match('#^liste#',$var)!=false || preg_match('#^checkbox#',$var)!=false ) {
                     //on récupere le premier chiffre (l'identifiant de la liste)
                     preg_match_all('/[0-9]{1,4}/', $var, $matches);
-                    $req = 'SELECT blv_label FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$matches[0][0].' AND blv_valeur='.$_POST[$var].' AND blv_ce_i18n="fr-FR"';
-                    $resultat = $GLOBALS['_BAZAR_']['db']->query($req) ;
-                    $label = $resultat->fetchRow();
                     $_POST['bf_titre'] = str_replace('{{'.$var.'}}', ($label[0]!=null) ? $label[0] : '', $_POST['bf_titre']);
                 } else {
                     $_POST['bf_titre'] = str_replace('{{'.$var.'}}', $_POST[$var], $_POST['bf_titre']);
@@ -1773,7 +1770,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $select_html .= '<option value="0" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
         }
         $val_type = baz_valeurs_type_de_fiche($tableau_template[1]);
-        $tab_result = baz_requete_recherche_fiches('', 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"]);
+        $tab_result = baz_requete_recherche_fiches('', 'alphabetique', $tableau_template[1]);
         $select = '';
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche[0], true);
@@ -1819,12 +1816,12 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if ($tableau_template[3] == 'fiche') {
                 $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
             } else {
-                $html = '<div class="BAZ_rubrique  BAZ_rubrique_'.$GLOBALS['_BAZAR_']['class'].'">'."\n".
+                $html = '<div class="BAZ_rubrique">'."\n".
                         '<span class="BAZ_label '.$tableau_template[2].'_rubrique">'.$tableau_template[2].'&nbsp;:</span>'."\n";
-                $html .= '<span class="BAZ_texte BAZ_texte_'.$GLOBALS['_BAZAR_']['class'].' '.$tableau_template[2].'_description">';
+                $html .= '<span class="BAZ_texte '.$tableau_template[2].'_description">';
                 $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-                $html .= '<a href="'.str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])).'" class="voir_fiche ouvrir_overlay" title="Voir la fiche '.
-                        $val_fiche['bf_titre'].'" rel="#overlay-link">'.
+                $html .= '<a href="'.str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])).'" title="Voir la fiche '.
+                        $val_fiche['bf_titre'].'">'.
                         $val_fiche['bf_titre'].'</a></span>'."\n".
                         '</div>'."\n";
 
@@ -1853,18 +1850,18 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $bulledaide = '';
             if (isset($tableau_template[10]) && $tableau_template[10]!='') $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($tableau_template[10]).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             //TODO: gestion multilinguisme
-            $requete  = 'SELECT bf_id_fiche, bf_titre FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature='.$tableau_template[1];
+            //$requete  = 'SELECT bf_id_fiche, bf_titre FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature='.$tableau_template[1];
 
             //on affiche que les fiches saisie par un utilisateur donné
-            if (isset($tableau_template[7]) && $tableau_template[7]==1) $requete .= ' AND bf_ce_utilisateur="'.$GLOBALS['_BAZAR_']['nomwiki']['name'].'"';
+            //if (isset($tableau_template[7]) && $tableau_template[7]==1) $requete .= ' AND bf_ce_utilisateur="'.$GLOBALS['_BAZAR_']['nomwiki']['name'].'"';
 
             //on classe par ordre alphabetique
-            $requete .= ' ORDER BY bf_titre';
+            //$requete .= ' ORDER BY bf_titre';
 
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError ($resultat)) {
-                return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            //$resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
+            //if (DB::isError ($resultat)) {
+            //    return ($resultat->getMessage().$resultat->getDebugInfo()) ;
+            //}
             require_once 'HTML/QuickForm/checkbox.php';
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');
@@ -1937,28 +1934,22 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'formulaire_recherche') {
         if ($tableau_template[9]==1) {
-            $requete =  'SELECT * FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$tableau_template[1].
-                ' AND blv_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ORDER BY blv_label';
-            $resultat = & $GLOBALS['_BAZAR_']['db'] -> query($requete) ;
-            if (DB::isError ($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
-            require_once 'HTML/QuickForm/checkbox.php';
-            $i=0;
-            $optioncheckbox = array('class' => 'element_checkbox');
+            // require_once 'HTML/QuickForm/checkbox.php';
+            // $i=0;
+            // $optioncheckbox = array('class' => 'element_checkbox');
 
-            while ($ligne = $resultat->fetchRow()) {
-                if ($i==0) $tab_chkbox=$tableau_template[2] ; else $tab_chkbox='&nbsp;';
-                $checkbox[$i]= & HTML_QuickForm::createElement($tableau_template[0], $ligne[1], $tab_chkbox, $ligne[2], $optioncheckbox) ;
-                $i++;
-            }
+            // while ($ligne = $resultat->fetchRow()) {
+            //     if ($i==0) $tab_chkbox=$tableau_template[2] ; else $tab_chkbox='&nbsp;';
+            //     $checkbox[$i]= & HTML_QuickForm::createElement($tableau_template[0], $ligne[1], $tab_chkbox, $ligne[2], $optioncheckbox) ;
+            //     $i++;
+            // }
 
-            $squelette_checkbox =& $formtemplate->defaultRenderer();
-            $squelette_checkbox->setElementTemplate( '<fieldset class="bazar_fieldset">'."\n".'<legend>{label}'.
-                    '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->'."\n".
-                    '</legend>'."\n".'{element}'."\n".'</fieldset> '."\n"."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-            $squelette_checkbox->setGroupElementTemplate( "\n".'<div class="checkbox">'."\n".'{element}'."\n".'</div>'."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-            $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2].$bulledaide, "\n");
+            // $squelette_checkbox =& $formtemplate->defaultRenderer();
+            // $squelette_checkbox->setElementTemplate( '<fieldset class="bazar_fieldset">'."\n".'<legend>{label}'.
+            //         '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->'."\n".
+            //         '</legend>'."\n".'{element}'."\n".'</fieldset> '."\n"."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            // $squelette_checkbox->setGroupElementTemplate( "\n".'<div class="checkbox">'."\n".'{element}'."\n".'</div>'."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            // $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2].$bulledaide, "\n");
         }
     } elseif ($mode == 'html') {
         $html = '';
@@ -2017,46 +2008,32 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
     if (isset($tableau_template[2]) && $tableau_template[2] != '' ) {
         $query = $tableau_template[2].'|listefiche'.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];
-    } elseif (isset($valeurs_fiche) && $valeurs_fiche != '') {
+    } 
+    elseif (isset($valeurs_fiche) && $valeurs_fiche != '') {
         $query = 'listefiche'.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];
     }
     if (isset($tableau_template[3])) {
         $ordre = $tableau_template[3];
-    } else {
+    } 
+    else {
         $ordre = 'alphabetique';
     }
 
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie' ) {
         $actionbazarliste = '{{bazarliste idtypeannonce="'.$tableau_template[1].'" query="'.$query.'" ordre="'.$ordre.'"}}';
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
-        //ajout lien nouvelle saisie
-        $url_checkboxfiche = clone($GLOBALS['_BAZAR_']['url']);
-        $url_checkboxfiche->removeQueryString('id_fiche');
-        $url_checkboxfiche->addQueryString('vue', BAZ_VOIR_SAISIR);
-        $url_checkboxfiche->addQueryString('action', BAZ_ACTION_NOUVEAU);
-        $url_checkboxfiche->addQueryString('wiki', $_GET['wiki'].'/iframe');
-        $url_checkboxfiche->addQueryString('id_typeannonce', $tableau_template[1]);
-        $url_checkboxfiche->addQueryString('ce_fiche_liee', $_GET['id_fiche']);
-        $html .= '<a class="ajout_fiche ouvrir_overlay" href="'.str_replace('&', '&amp;', $url_checkboxfiche->getUrl()).'" rel="#overlay-link" title="'.htmlentities($tableau_template[4]).'">'.$tableau_template[4].'</a>'."\n";
-        $formtemplate->addElement('html', $html);
-    } elseif ($mode == 'requete') {
-    } elseif ($mode == 'formulaire_recherche') {
+    } 
+    elseif ($mode == 'formulaire_recherche') {
         if ($tableau_template[9]==1) {
-            $requete =  'SELECT * FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$tableau_template[1].
-                ' AND blv_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ORDER BY blv_label';
-            $resultat = & $GLOBALS['_BAZAR_']['db'] -> query($requete) ;
-            if (DB::isError ($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
             require_once 'HTML/QuickForm/checkbox.php';
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');
 
-            while ($ligne = $resultat->fetchRow()) {
-                if ($i==0) $tab_chkbox=$tableau_template[2] ; else $tab_chkbox='&nbsp;';
-                $checkbox[$i]= & HTML_QuickForm::createElement($tableau_template[0], $ligne[1], $tab_chkbox, $ligne[2], $optioncheckbox) ;
-                $i++;
-            }
+            // while ($ligne = $resultat->fetchRow()) {
+            //     if ($i==0) $tab_chkbox=$tableau_template[2] ; else $tab_chkbox='&nbsp;';
+            //     $checkbox[$i]= & HTML_QuickForm::createElement($tableau_template[0], $ligne[1], $tab_chkbox, $ligne[2], $optioncheckbox) ;
+            //     $i++;
+            // }
 
             $squelette_checkbox =& $formtemplate->defaultRenderer();
             $squelette_checkbox->setElementTemplate( '<fieldset class="bazar_fieldset">'."\n".'<legend>{label}'.
