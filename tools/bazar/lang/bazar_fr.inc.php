@@ -82,8 +82,9 @@ define ('BAZ_FICHIER_CSV_A_IMPORTER', 'Entrez le fichier CSV &agrave; importer')
 define ('BAZ_EXEMPLE_FICHIER_CSV', 'Exemple de structuration du fichier CSV pour les fiches de type : ');
 define ('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER', 'Visualisation du fichier CSV pour l\'export des fiches de type : ');
 define ('BAZ_TOTAL_FICHES', 'Total des fiches');
-define ('BAZ_ENCODAGE_CSV', 'Le fichier CSV doit être encod&eacute; en UTF-8, avec des virgules (,) comme s&eacute;parateurs et des doubles guillemets (") pour les diff&eacute;rentes valeurs.<br />Les champs avec une &eacute;toile (*) sont obligatoires et doivent contenir des donn&eacute;es.');
+define ('BAZ_ENCODAGE_CSV', 'Le fichier CSV doit &ecirc;tre encod&eacute; en UTF-8, avec des virgules (,) comme s&eacute;parateurs et des doubles guillemets (") pour les diff&eacute;rentes valeurs.<br />Les champs avec une &eacute;toile (*) sont obligatoires et doivent contenir des donn&eacute;es.');
 define ('BAZ_IMPORTER_CE_FICHIER', 'Importer ce fichier');
+define ('BAZ_VALIDER_IMPORT_FICHIER', 'Valider importation');
 define ('BAZ_IMPORTER', 'Importer');
 define ('BAZ_EXPORTER', 'Exporter');
 define ('BAZ_NON', 'Non') ;
@@ -151,6 +152,7 @@ define ('BAZ_CHOISIR', 'Choisir..');
 define ('BAZ_CHOISIR_OBLIGATOIRE', 'Il faut choisir un &eacute;l&eacute;ment dans la liste d&eacute;roulante');
 define ('BAZ_INDIFFERENT', 'Indiff&eacute;rent');
 define ('BAZ_TELECHARGER_FICHIER_EXPORT_CSV', 'T&eacute;l&eacute;charger le fichier d\'export au format csv');
+define ('BAZ_TELECHARGER_FICHIER_IMPORT_CSV', 'T&eacute;l&eacute;charger un exemple de fichier csv &agrave; importer');
 define ('BAZ_MOT_DE_PASSE', 'Mot de passe');
 define ('BAZ_VERIFICATION', 'v&eacute;rification');
 define ('BAZ_ACCEPTE_CONDITIONS', 'J\'accepte les conditions de saisie : ');
