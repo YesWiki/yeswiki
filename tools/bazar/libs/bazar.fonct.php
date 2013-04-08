@@ -347,48 +347,157 @@ function baz_afficher_liste_fiches_utilisateur()
 function baz_afficher_formulaire_import()
 {
     $output = '<h2 class="title_import">Import CSV</h2>'."\n";
+
     if (!isset($categorienature)) $categorienature = 'toutes';
     $id_type_fiche = (isset($_POST['id_type_fiche'])) ? $_POST['id_type_fiche'] : '';
 
     if (isset($_POST['submit_file'])) {
+
+
+        $output .= '<form method="post" action="'.$GLOBALS['_BAZAR_']["url"]->getUrl().'" >'."\n";
+	$output .= '<fieldset>';
+	$output .= '<div><input type="checkbox" class="checkall"> Tout cocher</div>';
         $row = 1;
         $val_formulaire = baz_valeurs_type_de_fiche($id_type_fiche);
         $GLOBALS['_BAZAR_']['id_typeannonce'] = $id_type_fiche;
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
+	// Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
         //var_dump($tableau);
-        if (($handle = fopen($_FILES['fileimport']['tmp_name'], "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
-                //la premiere ligne contient les infos sur les noms des champs
-                if ($row == 1) {
-                    $tab_labels = array_map('utf8_decode', $data) ;
-                    $row++;
-                } else {
-                    $num = count($data);
-                    $row++;
-                    for ($c=0; $c < $num; $c++) {
 
-                        //la premiere ligne est l'identifiant de la fiche
-                        if ($c==0) {
-                            $GLOBALS['_BAZAR_']['id_fiche'] = $data[$c] ;
-                            $output .= '<strong>'.$tab_labels[$c].'</strong>'.' : '.utf8_decode(str_replace('â','\'',$data[$c])) . "<br />\n";
-                        }
-
-                        //si une valeur est présente, on l'affiche et on la rajoute au tableau des valeurs à importer pour la fiche
-                        elseif ($data[$c]!='') {
-                            echo $tableau[$c-1][2].' - '.$tab_labels[$c].' : '.$data[$c].'<br />';
-                            $key = array_search($tab_labels[$c], $tableau[$c]);
-                            echo $key;
-                            $output .= '<strong>'.$tab_labels[$c].'</strong>'.' : '.utf8_decode(str_replace('â','\'',$data[$c])) . "<br />\n";
-                        }
-                    }
-                    $output .= '<hr />';
-                    //baz_insertion_fiche($valeur);
+	$nb = 0 ;
+        $tab_champs = array();
+        foreach ($tableau as $ligne) {
+            if ($ligne[0] != 'labelhtml') {
+                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
+		    $tab_champs[] = $ligne[0].$ligne[1];
                 }
+                // cas de la carto
+                elseif($ligne[0] == 'carte_google') {
+                    $tab_champs[] = $ligne[1];
+                    $tab_champs[] = $ligne[2];
+                    $nb++;
+                }
+                else {
+                    $tab_champs[] = $ligne[1];
+                }
+                $nb++;
             }
-            fclose($handle);
         }
-    } else {
+
+	if ((!empty($_FILES["fileimport"])) && ($_FILES['fileimport']['error'] == 0)) {
+			//Check if the file is csv
+			$filename = basename($_FILES['fileimport']['name']);
+			$ext = substr($filename, strrpos($filename, '.') + 1);
+			if ($ext == "csv") {
+				$newname = BAZ_CHEMIN_UPLOAD . $filename;
+				move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $newname);
+				if (($handle = fopen($newname, "r")) !== FALSE) {
+					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
+						$valeur = array();
+						$geolocalisation = false;
+						//la premiere ligne contient les infos sur les noms des champs
+						if ($row == 1) {
+							$tab_labels = array_map('utf8_decode', $data);
+							$row++;
+						} else {
+							$output.='<input name="import[]" value="' . $row . '" type="checkbox" /> ';
+
+							$num = count($data);
+							$row++;
+							for ($c = 0; $c < $num; $c++) {
+								//FIXME : accents
+								$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . utf8_decode(str_replace('â', '\'', $data[$c])) . "<br />\n";
+							}
+							$output .= '<hr />';
+
+						}
+					}
+					fclose($handle);
+				}
+			}
+		}
+
+
+	$output .= '<fieldset>';
+        $output.=  '<input type="hidden" value="'.$GLOBALS['_BAZAR_']['id_typeannonce'].'" name="id_typeannonce"  />';
+        $output.=  '<input type="hidden" value="'.$GLOBALS['_BAZAR_']['categorie_nature'].'" name="categorie_nature"  />';
+        $output.=  '<input type="hidden" value="'.$filename.'" name="cvsfilename"  />';
+        $output.=  '<input type="submit" value="'.BAZ_IMPORTER_CE_FICHIER.'" name="importfile" class="btn btn-primary" />';
+        $output .= '</form>'."\n";
+
+    $GLOBALS['js'] = '<script>'.' $(function () { $(\'.checkall\').on(\'click\', function () { $(this).closest(\'fieldset\').find(\':checkbox\').prop(\'checked\', this.checked); }); });'.'</script>';
+
+    } 
+
+   
+    
+	    if (isset($_POST['import'])) { // Traitement des fiches selectionnees (correspond au numero de ligne)
+		    
+        $row = 1;
+        $val_formulaire = baz_valeurs_type_de_fiche($_POST['id_typeannonce']);
+        $GLOBALS['_BAZAR_']['id_typeannonce'] = $_POST['id_typeannonce'];
+        $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
+	// Recuperation champs de la fiche
+        $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+
+    	$nb = 0 ;
+        $tab_champs = array();
+        foreach ($tableau as $ligne) {
+            if ($ligne[0] != 'labelhtml') {
+                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
+		    $tab_champs[] = $ligne[0].$ligne[1];
+                }
+                // cas de la carto
+                elseif($ligne[0] == 'carte_google') {
+                    $tab_champs[] = $ligne[1];
+                    $tab_champs[] = $ligne[2];
+                    $nb++;
+                }
+                else {
+                    $tab_champs[] = $ligne[1];
+                }
+                $nb++;
+            }
+        }	 
+		$import = $_POST['import'];
+		$newname = BAZ_CHEMIN_UPLOAD . $_POST['cvsfilename'];
+		if (($handle = fopen($newname, "r")) !== FALSE) {
+			while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
+				$valeur = array();
+				$geolocalisation = false;
+				if (in_array($row, $import)) {
+					$num = count($data);
+					for ($c = 0; $c < $num; $c++) {
+						print_r($tab_champs);
+						$valeur[$tab_champs[$c]] = utf8_decode($data[$c]);
+
+						if ($tab_champs[$c] == 'bf_latitude') {
+							$bf_latitude = $data[$c];
+							$geolocalisation = true;
+						}
+						if ($tab_champs[$c] == 'bf_longitude') {
+							$bf_longitude = $data[$c];
+							$geolocalisation = true;
+						}
+						
+					}
+					if ($geolocalisation) {
+						$valeur['carte_google'] = $bf_latitude . "|" . $bf_longitude;
+					}
+					$valeur['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
+
+					baz_insertion_fiche($valeur, true);
+				}
+				$row++;
+			}
+			fclose($handle);
+		}
+		$output=sizeof($import);
+	}
+		    
+	    
+    else { // Affichage par defaut  // FIXME : test plus pertinent
 
         //On choisit un type de fiches pour parser le csv en conséquence
         //requete pour obtenir l'id et le label des types d'annonces
@@ -405,6 +514,12 @@ function baz_afficher_formulaire_import()
             $output .= '<div class="control-group">'."\n".'<div class="control-label">'."\n".
                         BAZ_TYPE_FICHE.' :</div>'."\n".'<div class="controls">';
             $output .= '<select name="id_type_fiche" onchange="javascript:this.form.submit();">'."\n";
+
+	    
+            //si l'on n'a pas deja� choisi de fiche, on demarre sur l'option CHOISIR, vide
+            if (!isset($_POST['id_type_fiche'])) $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
+	
+            //on dresse la liste de types de fiches
             while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
                 $output .= '<option value="'.$ligne['bn_id_nature'].'"'.(($id_type_fiche == $ligne['bn_id_nature']) ? ' selected="selected"' : '').'>'.$ligne['bn_label_nature'].'</option>'."\n";
             }
@@ -422,19 +537,36 @@ function baz_afficher_formulaire_import()
             $output .= '<input type="file" name="fileimport" id="idfileimport" /><input name="submit_file" type="submit" value="'.BAZ_IMPORTER_CE_FICHIER.'" />'."\n".'</div>'."\n".'</div>'."\n";
             $output .= '<div class="alert alert-info">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'."\n".BAZ_ENCODAGE_CSV."\n".'</div>'."\n";
 
-            //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
-            $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-            $csv = '"PageWiki",' ;
-            $nb = 0;
-            foreach ($tableau as $ligne) {
-                if ($ligne[0] != 'labelhtml') {
-                    $csv .= '"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'", ';
+
+        //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
+        $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+        $nb = 0 ;
+        $tab_champs = array();
+        foreach ($tableau as $ligne) {
+            if ($ligne[0] != 'labelhtml') {
+                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
+                    $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.$ligne[6];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                }
+                // cas de la carto
+                elseif($ligne[0] == 'carte_google') {
+                    $tab_champs[] = $ligne[1];
+                    $tab_champs[] = $ligne[2];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                     $nb++;
                 }
+                else {
+                    $tab_champs[] = $ligne[1];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                }
+                $nb++;
             }
-            $csv = substr(trim($csv),0,-1)."\r\n";
+        }
+        $csv = substr(trim($csv),0,-1)."\r\n";
+
+
             for ($i=1; $i<4; $i++) {
-                $csv .= '"NomWiki'.$i.'",';
                 for ($j=1; $j<($nb+1); $j++) {
                     $csv .= '"ligne '.$i.' - champ '.$j.'", ';
                 }
@@ -442,7 +574,22 @@ function baz_afficher_formulaire_import()
             }
 
             $output .= '<em>'.BAZ_EXEMPLE_FICHIER_CSV.$val_formulaire["bn_label_nature"].'</em>'."\n";
-            $output .= '<pre style="height:125px; white-space:pre; padding:5px; word-wrap:break-word; border:1px solid #999; overflow:auto; ">'."\n".$csv."\n".'</pre>'."\n";
+	    $output .= '<pre style="height:125px; white-space:pre; padding:5px; word-wrap:break-word; border:1px solid #999; overflow:auto; ">'."\n".utf8_decode($csv)."\n".'</pre>'."\n";
+
+
+	 //on genere un fichier exemple pour faciliter le travail d'import
+        $chemin_destination = BAZ_CHEMIN_UPLOAD.'bazar-import-'.$id_type_fiche.'.csv';
+        //verification de la presence de ce fichier, s'il existe deja�, on le supprime
+        if (file_exists($chemin_destination)) {
+            unlink($chemin_destination);
+        }
+        $fp = fopen($chemin_destination, 'w');
+        fwrite($fp, $csv);
+        fclose($fp);
+        chmod ($chemin_destination, 0755);
+
+        //on cree le lien vers ce fichier
+        $output .= '<a href="'.$chemin_destination.'" class="link-csv-file" title="'.BAZ_TELECHARGER_FICHIER_IMPORT_CSV.'">'.BAZ_TELECHARGER_FICHIER_IMPORT_CSV.'</a>'."\n";
         }
 
         $output .= '</form>'."\n";
@@ -498,23 +645,25 @@ function baz_afficher_formulaire_export()
 
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-        $csv = '"PageWiki",' ;
         $nb = 0 ;
         $tab_champs = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
                     $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.$ligne[6];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
                     $tab_champs[] = $ligne[1];
                     $tab_champs[] = $ligne[2];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                 }
                 else {
                     $tab_champs[] = $ligne[1];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
                 }
-                $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
                 $nb++;
             }
         }
@@ -526,13 +675,13 @@ function baz_afficher_formulaire_export()
         foreach ($tableau_fiches as $fiche) {
             $tab_valeurs = json_decode($fiche[0], true);
             $tab_csv = array();
-            $tab_csv['PageWiki'] = '"'.$tab_valeurs['id_fiche'].'"';
 
             foreach ($tab_champs as $index) {
                 $tabindex = explode('|',$index);
                 $index = str_replace('|','',$index);
                 //ces types de champs nécessitent un traitement particulier
                 if ($tabindex[0]=='liste' || $tabindex[0]=='checkbox' || $tabindex[0]=='listefiche' || $tabindex[0]=='checkboxfiche') {
+			// ???  FIXME ?
                     $html = $tabindex[0]($toto, array(0 => $tabindex[0],1 => $tabindex[1], 2 => '', 6 => $tabindex[2]), 'html', array($index => $tab_valeurs[$index]));
                     $tabhtml = explode ('</span>', $html);
                     $tab_valeurs[$index] = utf8_encode(html_entity_decode(trim(strip_tags($tabhtml[1]))));
@@ -940,10 +1089,11 @@ function baz_requete_bazar_fiche($valeur)
 /** baz_insertion_fiche() - inserer une nouvelle fiche
 *
 * @array   Le tableau des valeurs a inserer
+* @boolen  True : insertion en lot
 *
 * @return   void
 */
-function baz_insertion_fiche($valeur)
+function baz_insertion_fiche($valeur,$batch=false)
 {
     //on teste au moins l'existence du titre car sans titre ca peut bugguer sérieusement
     if (isset($valeur['bf_titre'])) {
@@ -1018,8 +1168,11 @@ function baz_insertion_fiche($valeur)
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
         $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $GLOBALS['_BAZAR_']['id_fiche']) ;
-        header ('Location: '.$GLOBALS['_BAZAR_']['url']->getURL()) ;
-        exit;
+
+	if ($batch==false) {  // traitement par defaut
+	        header ('Location: '.$GLOBALS['_BAZAR_']['url']->getURL()) ;
+        	exit;
+	}
 
         return ;
     }
