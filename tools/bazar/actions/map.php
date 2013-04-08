@@ -79,7 +79,7 @@ if (!empty($id_typeannonce)) {
         $valeurs_fiche = json_decode($fiche[0], true);
         $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
         $tab = explode('|', $valeurs_fiche['carte_google']);
-        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='') {
+        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
             // on genere le point marqueur sur la carte
             $markersjs .= '
             i++;
@@ -103,12 +103,12 @@ echo '<link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.css" 
 <!--[if lte IE 8]>
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.ie.css" />
 <![endif]-->
-<div id="map" style="width:'.$width.'; height:'.$height.'"></div>'."\n";
+<div id="osmmap" style="width:'.$width.'; height:'.$height.'"></div>'."\n";
 
 
 $js = '<script src="tools/bazar/libs/vendor/leaflet/leaflet.js"></script>
 <script>
-    var map = new L.Map(\'map\');
+    var map = new L.Map(\'osmmap\');
 
     var cloudmadeUrl = \'http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png\',
         cloudmadeAttribution = \'Donn&eacute;es OpenStreetMap\',

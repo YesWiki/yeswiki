@@ -87,7 +87,7 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche[0], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $tab = explode('|', $valeurs_fiche['carte_google']);
-    if (count($tab)>1 && $tab[0]!='' && $tab[1]!='') {
+    if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
         $tab_points_carto[]= '{
                 "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
                 "description": \'<div class="BAZ_cadre_map">'.
