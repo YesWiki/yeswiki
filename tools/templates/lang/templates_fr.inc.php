@@ -90,9 +90,16 @@ define ('TEMPLATE_SHARE_MAIL', 'Envoyer le contenu de cette page par mail');
 
 // handler exportpages
 define ('TEMPLATE_EXPORT_ONLY_FOR_ADMINS', 'L\'export int&eacute;gral des pages est r&eacute;serv&eacute; &agrave; l\'administrateur');
+define ('TEMPLATE_EXPORT_THIS_SELECTION', 'Exporter cette s&eacute;lection');
+define ('TEMPLATE_EXPORT_FORMAT', 'Format d\'export');
+define ('TEMPLATE_EXPORT_PAGES_TITLE', 'Export des pages de ce YesWiki');
+define ('TEMPLATE_EXPORT_PAGES_INFO', 'Vous pouvez changer l\'ordre des pages en cliquant dessus puis en les d&eacute;pla&ccedil;ant.<br />Visualisez la page en cliquant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-eye-open"></i></a>, et enlevez des pages de cette s&eacute;lection en appuyant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-minus"></i></a> .<br />Les pages d&eacute;j&agrave; cr&eacute;&eacute;es &agrave; l\'installation sont color&eacute;es.');
+define ('TEMPLATE_EXPORT_REMOVE_INSTALLATION_PAGES', 'Enlever toutes les pages cr&eacute;&eacute;es &agrave; l\'installation');
 
 // handler diaporama
 define ('TEMPLATE_NO_ACCESS_TO_PAGE', 'Vous n\'avez pas le droit d\'acc&eacute;der &agrave; cette page.');
 define ('TEMPLATE_PAGE_DOESNT_EXIST', 'Page non existante');
 define ('PAGE_CANNOT_BE_SLIDESHOW', 'La page ne peut pas &ecirc;tre d&eacute;coup&eacute;e en diapositives (pas de titres niveau 2)');
+
+
 ?>

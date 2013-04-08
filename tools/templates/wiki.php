@@ -40,7 +40,7 @@ define ('THEME_PAR_DEFAUT', 'yeswiki');
 define ('CSS_PAR_DEFAUT','gray.css');
 
 // Squelette par défaut
-define ('SQUELETTE_PAR_DEFAUT', 'responsive-2cols-right.tpl.html');
+define ('SQUELETTE_PAR_DEFAUT', 'responsive-1col.tpl.html');
 
 // Image de fond par défaut
 define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');

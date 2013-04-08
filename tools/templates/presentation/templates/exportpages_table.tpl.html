@@ -1,0 +1,30 @@
+<?php if( count($pages)>0 ) : ?>
+	<h2><?php echo TEMPLATE_EXPORT_PAGES_TITLE; ?></h2>
+	<div class="alert alert-info"><a class="close" data-dismiss="alert" href="#">&times;</a><?php echo TEMPLATE_EXPORT_PAGES_INFO; ?> <a class="btn btn-mini delete-installed-page"><i class="icon-minus"></i>&nbsp;<?php echo TEMPLATE_EXPORT_REMOVE_INSTALLATION_PAGES; ?></a>.</div>
+	<form class="export-table-form" method="post" action="<?php echo $url;?>">
+		<div class="export-table-container">
+		    <table class="export-table table table-striped table-hover table-condensed">
+		    	<thead>
+		        <tbody>
+					<?php foreach($pages as $page): ?>
+					<tr<?php echo ((array_key_exists($page['tag'], $installedpages)) ? ' class="installedpages warning"': ''); ?>>
+						<td><a class="btn btn-mini view-page-item modalbox" title="Voir la page <?php echo htmlentities($page['tag']); ?>" href="<?php echo $GLOBALS['wiki']->href('html', $page['tag']); ?>"><i class="icon-eye-open"></i></a></td>
+						<td><?php echo $page['tag']; ?></td>
+						<td><a class="btn btn-mini delete-page-item" href="#"><i class="icon-minus"></i></a></td>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+		    </table>
+		</div><!-- /.export-table-container -->
+		<br />
+	    <input type="submit" value="<?php echo TEMPLATE_EXPORT_THIS_SELECTION; ?>" class="btn btn-large btn-primary" />
+    </form>
+    <?php 
+    	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js"></script>
+    <script src="tools/templates/libs/templates.exportpages.js"></script>
+	<style>
+		.export-table-container {overflow:auto;height:400px;}
+		.export-table tbody tr:hover {cursor:pointer;}
+	</style>'."\n"; 
+	?>
+<?php endif; ?>

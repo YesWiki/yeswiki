@@ -38,16 +38,40 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-echo $this->Header()."\n".'<div class="page">'."\n";
+$output = '';
 if ($this->UserIsAdmin()) {
-	$sql = 'SELECT tag,body FROM '.$this->GetConfigValue('table_prefix').'pages WHERE latest="Y"';
-	$pages = $this->LoadAll($sql);
-	foreach ($pages as $page) {
-		echo $page['tag'].'.txt<br />';
+	if (isset($_POST["page"])) {
+		var_dump($_POST["page"]);
+	}
+	else {
+		// recuperation des pages creees a l'installation
+		$d = dir("setup/doc/");
+		while ($doc = $d->read()){
+			if (is_dir($doc) || substr($doc, -4) != '.txt')
+				continue;
+			if ($doc=='_root_page.txt'){
+				$installpagename[$this->GetConfigValue("root_page")] = $this->GetConfigValue("root_page");
+			} else {
+				$pagename = substr($doc,0,strpos($doc,'.txt'));
+				$installpagename[$pagename] = $pagename;
+			}
+		}	
+		// recuperation des formulaires, listes, et fiches bazar
+
+		// recuperation des pages wikis
+		$sql = 'SELECT tag FROM '.$this->GetConfigValue('table_prefix').'pages WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ORDER BY tag';
+
+		$pages = $this->LoadAll($sql);
+		include_once 'tools/templates/libs/squelettephp.class.php';
+		$template_export = new SquelettePhp('tools/templates/presentation/templates/exportpages_table.tpl.html'); // charge le templates
+		$template_export->set(array('pages' => $pages, 'installedpages' => $installpagename)); // on passe le tableau de pages en parametres
+		$output .= $template_export->analyser(); // affiche les resultats
 	}
 }
 else {
-	echo '<div class="alert">'.TEMPLATE_EXPORT_ONLY_FOR_ADMINS.'.</div>'."\n";
+	$output .= '<div class="alert alert-error">'.TEMPLATE_EXPORT_ONLY_FOR_ADMINS.'.</div>'."\n";
 }
-echo '</div>'."\n".$this.Footer()."\n";
-?>
+
+echo $this->Header();
+echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
+echo $this->Footer();
