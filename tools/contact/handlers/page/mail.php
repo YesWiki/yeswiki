@@ -15,7 +15,8 @@ $output = '';
 if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
 	//initialisation de variables passees en POST
 	$mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
-	$mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : (isset($_POST['nbactionmail'])) ? FindMailFromWikiPage($this->page["body"],$_POST['nbactionmail']) : false;
+	$mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
+	if (!$mail_receiver) (isset($_POST['nbactionmail'])) ? FindMailFromWikiPage($this->page["body"],$_POST['nbactionmail']) : false;
 	$name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
 
 	// dans le cas d'une page wiki envoyee, on formate le message en html et en txt
@@ -67,17 +68,40 @@ else {
 		if ($this->UserIsAdmin()) {
 			$output .= '<div class="formulairemail">
 			<h1>Envoyer la page par mail</h1>
-			<div class="note"></div>
-			<form id="ajax-mail-form" class="ajax-form" action="'.$this->href('mail').'">
-				<label class="label-right">Votre adresse mail</label><input class="textbox" type="text" name="email" value="" /><br />
-				<label class="label-right">Sujet du message</label><input class="textbox" type="text" name="subject" value="" /><br />
-				<label class="label-right">Adresse mail du destinataire</label><input class="textbox" name="mail" value="" /><br />
-				<label class="label-right">&nbsp;</label><input class="button" type="submit" name="submit" value="Envoyer" />
+			<form id="ajax-mail-form-handler" class="ajax-mail-form form-inline" action="'.$this->href('mail').'">
+				<div class="control-group">
+					<div class="controls">
+						<div class="input-prepend">
+					    	<span class="add-on"><i class="icon-envelope"></i></span>
+							<input required class="input-large" type="email" name="email" value="" placeholder="'.CONTACT_YOUR_MAIL.'" />
+						</div>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<div class="input-prepend">
+					    	<span class="add-on"><i class="icon-envelope"></i></span>
+							<input required class="input-large" type="email" name="mail" value="" placeholder="Adresse mail du destinataire" />
+						</div>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<div class="input-prepend">
+							<input required class="contact-subject input-xlarge" type="text" name="subject" value="" placeholder="'.CONTACT_SUBJECT.'" />
+						</div>
+					</div>
+				</div>
+				<div class="control-group">
+					<div class="controls">
+						<button class="btn btn-primary mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;'.CONTACT_SEND_MESSAGE.'</button>
+					</div>
+				</div>
 				<input type="hidden" name="type" value="mail" />
 			</form>
-			<div class="clear"></div>
 			</div>
 			';
+			$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
 		}
 		//message d'erreur si pas admin
 		else {
