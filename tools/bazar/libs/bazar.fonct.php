@@ -365,33 +365,14 @@ function baz_afficher_formulaire_import()
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
         //var_dump($tableau);
 
-	$nb = 0 ;
-        $tab_champs = array();
-        foreach ($tableau as $ligne) {
-            if ($ligne[0] != 'labelhtml') {
-                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
-		    $tab_champs[] = $ligne[0].$ligne[1];
-                }
-                // cas de la carto
-                elseif($ligne[0] == 'carte_google') {
-                    $tab_champs[] = $ligne[1];
-                    $tab_champs[] = $ligne[2];
-                    $nb++;
-                }
-                else {
-                    $tab_champs[] = $ligne[1];
-                }
-                $nb++;
-            }
-        }
-
 	if ((!empty($_FILES["fileimport"])) && ($_FILES['fileimport']['error'] == 0)) {
 			//Check if the file is csv
 			$filename = basename($_FILES['fileimport']['name']);
 			$ext = substr($filename, strrpos($filename, '.') + 1);
 			if ($ext == "csv") {
 				$newname = BAZ_CHEMIN_UPLOAD . $filename;
-				move_uploaded_file($_FILES['uploaded_file']['tmp_name'], $newname);
+				       //verification de la presence de ce fichier, s'il existe deja , on le supprime
+				move_uploaded_file($_FILES['fileimport']['tmp_name'], $newname);
 				if (($handle = fopen($newname, "r")) !== FALSE) {
 					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
 						$valeur = array();
@@ -431,7 +412,6 @@ function baz_afficher_formulaire_import()
     } 
 
    
-    
 	    if (isset($_POST['import'])) { // Traitement des fiches selectionnees (correspond au numero de ligne)
 		    
         $row = 1;
@@ -442,20 +422,24 @@ function baz_afficher_formulaire_import()
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
 
     	$nb = 0 ;
-        $tab_champs = array();
+        $nom_champ = array();
+        $type_champ = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
-		    $tab_champs[] = $ligne[0].$ligne[1];
+		    $nom_champ[] = $ligne[0].$ligne[1];
+		    $type_champ[] = $ligne[0];
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
-                    $tab_champs[] = $ligne[1];
-                    $tab_champs[] = $ligne[2];
+                    $nom_champ[] = $ligne[1];
+                    $nom_champ[] = $ligne[2];
+		    $type_champ[] = $ligne[0];
                     $nb++;
                 }
                 else {
-                    $tab_champs[] = $ligne[1];
+                    $nom_champ[] = $ligne[1];
+		    $type_champ[] = $ligne[0];
                 }
                 $nb++;
             }
@@ -466,19 +450,37 @@ function baz_afficher_formulaire_import()
 			while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
 				$valeur = array();
 				$geolocalisation = false;
-				if (in_array($row, $import)) {
+				if (in_array($row, $import)) { // Fiche selectionnee
 					$num = count($data);
 					for ($c = 0; $c < $num; $c++) {
-						print_r($tab_champs);
-						$valeur[$tab_champs[$c]] = utf8_decode($data[$c]);
-
-						if ($tab_champs[$c] == 'bf_latitude') {
+						$valeur[$nom_champ[$c]] = utf8_decode($data[$c]);
+						if ($nom_champ[$c] == 'bf_latitude') {
 							$bf_latitude = $data[$c];
 							$geolocalisation = true;
 						}
-						if ($tab_champs[$c] == 'bf_longitude') {
+						if ($nom_champ[$c] == 'bf_longitude') {
 							$bf_longitude = $data[$c];
 							$geolocalisation = true;
+						}
+						if (($type_champ[$c])== 'image') {
+  //on enleve les accents sur les noms de fichiers, et les espaces
+							$nomimage = preg_replace("/&([a-z])[a-z]+;/i", "$1",utf8_decode('image'.$data[$c]));
+							$nomimage = str_replace(' ', '_', $nomimage);
+							unset ($valeur['bf_image']);
+							$valeur['image'.$nom_champ[$c]] = $nomimage;
+							if (preg_match("/(gif|jpeg|png|jpg)$/i", $nomimage)) {
+								$chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
+								//verification de la presence de ce fichier
+								if (!file_exists($chemin_destination)) {
+									print 'cache/'.$data[$c];
+									print "################";
+									print $chemin_destination;
+									rename('cache/'.utf8_decode($data[$c]), $chemin_destination);
+									print $a;
+									chmod($chemin_destination, 0755);
+									// Fixme redimensionner
+								}
+							}
 						}
 						
 					}
@@ -493,11 +495,14 @@ function baz_afficher_formulaire_import()
 			}
 			fclose($handle);
 		}
-		$output=sizeof($import);
+		$output=BAZ_NOMBRE_FICHE_IMPORTE." ".sizeof($import);
 	}
 		    
 	    
-    else { // Affichage par defaut  // FIXME : test plus pertinent
+    else { // Affichage par defaut  // FIXME : test plus pertinento
+
+	 if (! isset($_POST['submit_file']) &&  ! isset($_POST['submit_file'])) { 	 
+
 
         //On choisit un type de fiches pour parser le csv en consÃ©quence
         //requete pour obtenir l'id et le label des types d'annonces
@@ -541,23 +546,18 @@ function baz_afficher_formulaire_import()
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
         $nb = 0 ;
-        $tab_champs = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
-                    $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.$ligne[6];
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
-                    $tab_champs[] = $ligne[1];
-                    $tab_champs[] = $ligne[2];
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                     $nb++;
                 }
                 else {
-                    $tab_champs[] = $ligne[1];
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
                 }
                 $nb++;
@@ -593,6 +593,7 @@ function baz_afficher_formulaire_import()
         }
 
         $output .= '</form>'."\n";
+    }
     }
 
     return $output;
