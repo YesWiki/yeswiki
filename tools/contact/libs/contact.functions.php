@@ -72,8 +72,8 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 	$mimeparams['html_charset']="UTF-8"; 
 	$mimeparams['head_charset']="UTF-8";  
 
-	$mime->setTXTBody($message_txt);
-	$mime->setHTMLBody($message_html);
+	$mime->setTXTBody(utf8_encode($message_txt));
+	$mime->setHTMLBody(utf8_encode($message_html));
 	$message = $mime->get($mimeparams);
 	$headers = $mime->headers($headers);
 	
