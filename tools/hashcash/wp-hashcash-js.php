@@ -23,7 +23,6 @@
 	$field_id = hashcash_random_string(rand(6,18));
 	$fn_enable_name = hashcash_random_string(rand(6,18));
 ?>
-$("div.comment-form form").attr("id","ACEditor");
 
 addLoadEvent(<?php echo $fn_enable_name; ?>);
 
