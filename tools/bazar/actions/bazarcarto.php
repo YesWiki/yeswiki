@@ -18,7 +18,7 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//récupération des paramètres wikini
+//récupération des param�?tres wikini
 $categorie_nature = $this->GetParameter("categorienature");
 if (empty($categorie_nature)) {
     $categorie_nature = 'toutes';
@@ -56,6 +56,47 @@ if (empty($typecarto)) {
     $typecarto = strtoupper($typecarto);
 }
 
+$navigation = $this->GetParameter("navigation"); // true or false 
+if (empty($navigation)) {
+    $navigation = BAZ_AFFICHER_NAVIGATION;
+}
+
+$style_navigation = $this->GetParameter("stylenavigation");// SMALL ou ZOOM_PAN ou ANDROID ou DEFAULT
+
+if (empty($style_navigation)) {
+    $style_navigation = BAZ_STYLE_NAVIGATION;
+}
+
+$choix_carte= $this->GetParameter("choixcarte"); // true or false
+if (empty($choix_carte)) {
+    $choix_carte = BAZ_AFFICHER_CHOIX_CARTE;
+}
+
+$style_choix_carte= $this->GetParameter("stylechoixcarte"); // HORIZONTAL_BAR ou DROPDOWN_MENU ou DEFAULT
+if (empty($style_choix_carte)) {
+    $style_choix_carte = BAZ_STYLE_CHOIX_CARTE;
+}
+
+
+
+$echelle= $this->GetParameter("echelle"); // true or false
+if (empty($echelle)) {
+    $echelle= BAZ_AFFICHER_ECHELLE;
+}
+
+$zoom_molette= $this->GetParameter("zoommolette"); // true or false
+if (empty($zoom_molette)) {
+    $zoom_molette= BAZ_PERMETTRE_ZOOM_MOLETTE;
+}
+
+$listepoint= $this->GetParameter("liste"); // true or false
+if (empty($listepoint)) {
+    $listepoint= "true";
+}
+
+
+
+
 $cartowidth = $this->GetParameter("width");
 if (empty($cartowidth)) {
     $cartowidth = BAZ_GOOGLE_IMAGE_LARGEUR;
@@ -65,7 +106,7 @@ if (empty($cartoheight)) {
     $cartoheight = BAZ_GOOGLE_IMAGE_HAUTEUR;
 }
 
-//on récupère les paramètres pour une requête spécifique
+//on récup�?re les param�?tres pour une requête spécifique
 $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
@@ -136,12 +177,12 @@ echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sen
           zoom: '.$zoom.',
           center: myLatlng,
           mapTypeId: google.maps.MapTypeId.'.$typecarto.',
-          navigationControl: '.BAZ_AFFICHER_NAVIGATION.',
-          navigationControlOptions: {style: google.maps.NavigationControlStyle.'.BAZ_STYLE_NAVIGATION.'},
-          mapTypeControl: '.BAZ_AFFICHER_CHOIX_CARTE.',
-          mapTypeControlOptions: {style: google.maps.MapTypeControlStyle.'.BAZ_STYLE_CHOIX_CARTE.'},
-          scaleControl: '.BAZ_AFFICHER_ECHELLE.',
-          scrollwheel: '.BAZ_PERMETTRE_ZOOM_MOLETTE.'
+          navigationControl: '.$navigation.',
+          navigationControlOptions: {style: google.maps.NavigationControlStyle.'.$style_navigation.'},
+          mapTypeControl: '.$choix_carte.',
+          mapTypeControlOptions: {style: google.maps.MapTypeControlStyle.'.$style_choix_carte.'},
+          scaleControl: '.$echelle.',
+          scrollwheel: '.$zoom_molette.'
         }
         map = new google.maps.Map(document.getElementById("map"), myOptions);
 
@@ -150,8 +191,11 @@ echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sen
             var places = [
                 '.$points_carto.'
             ];
-            $.each(places, function(i, item){
-                $("#markers").append(\'<li><a href="#" rel="\' + i + \'">&nbsp;\' + (i+1) + \'&nbsp;-&nbsp;\' +item.title + \'</a></li>\');
+            $.each(places, function(i, item){';
+if ($listepoint=="true") {
+             echo '$("#markers").append(\'<li><a href="#" rel="\' + i + \'">&nbsp;\' + (i+1) + \'&nbsp;-&nbsp;\' +item.title + \'</a></li>\');';
+}
+echo '
                 var marker = new google.maps.Marker({
                     position: new google.maps.LatLng(item.lat, item.lng),
                     map: map,
