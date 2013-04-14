@@ -2001,7 +2001,9 @@ function baz_voir_fiche($danslappli, $idfiche)
     //Partie la plus importante : apres avoir récupéré toutes les valeurs de la fiche, on génére l'affichage html de cette dernière
     $tableau = formulaire_valeurs_template_champs($tab_nature['bn_template']);
     for ($i=0; $i<count($tableau); $i++) {
-        $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', $valeurs_fiche);
+        if (function_exists($tableau[$i][0])) {
+          $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', $valeurs_fiche);
+        }
     }
     //informations complementaires (id fiche, etat publication,... )
     if ($danslappli==1) {
