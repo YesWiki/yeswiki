@@ -130,7 +130,9 @@ if ($pages = $this->LoadAll("select id, tag, time, user, owner from ".$this->con
         while (($page['tag']==$break_on_tag) && ($page['user']==$break_on_user) && ($i<sizeof($pages)) ) {
             $i++;
             $lastpage=$page;
-            $page=$pages[$i];
+            if ($i<sizeof($pages)) {
+              $page=$pages[$i];
+            }
         }
 
         if ($i<sizeof($pages)) {
