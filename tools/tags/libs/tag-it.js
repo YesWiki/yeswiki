@@ -37,7 +37,7 @@
 
             // When enabled, quotes are not neccesary
             // for inputting multi-word tags.
-            allowSpaces: false,
+            allowSpaces: true,
 
             // Whether to animate tag removals or not.
             animate: true,

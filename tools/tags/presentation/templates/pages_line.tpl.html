@@ -1,0 +1,47 @@
+<div class="filter-results">
+<?php foreach ($elements as $tag => $element) : ?>
+	<div class="filtered-element <?php echo $element["tagnames"]; ?>">
+	<h3><a href="<?php echo $GLOBALS['wiki']->href('', $tag); ?>"><?php echo $element["title"]; ?></a></h3>
+	<?php echo $GLOBALS['wiki']->Format($element['body']); ?>
+	<hr />
+	<?php echo $element["tagbadges"]; ?>
+	</div> <!-- /.filter-results -->
+<?php endforeach; ?>
+</div>
+<style type="text/css">
+.filter-results { position:relative; }
+.filter-results, .filter-results * {	 
+	-moz-box-sizing: border-box; 
+	-webkit-box-sizing: border-box; 
+	box-sizing: border-box; 
+}
+.filtered-element { 
+	float:left;
+	width:100%;
+	display: block; 
+	margin: 0 0 15px 0; 
+	padding: 8px; 
+	border: 2px solid #FAFAFA; 
+	box-shadow: 0 1px 2px rgba(34, 25, 25, 0.4); 
+	background: #FEFEFE; background-image: linear-gradient(45deg, #FFF, #F9F9F9);
+	  -webkit-transition: all 0.2s ease-out;
+     -moz-transition: all 0.2s ease-out;
+       -o-transition: all 0.2s ease-out;
+          transition: all 0.2s ease-out;
+}
+.filtered-element.active:hover { 
+  -webkit-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  -moz-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+}
+.filtered-element.inactive {
+opacity: 0;
+display: none;
+}
+.filtered-element.active {
+    opacity: 1;
+    display: inline-block;
+}
+.filter-inline {display:inline-block; margin:0 24px 8px 0;}
+.filter-line {display:block;}
+</style>

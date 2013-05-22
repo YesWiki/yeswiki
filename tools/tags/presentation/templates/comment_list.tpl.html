@@ -1,30 +1,20 @@
 <?php foreach($commentaires as $comment): ?>
 	<a name="<?php echo $comment['tag'];?>"></a>
-	<div class="yeswiki-comment well well-small">
-		<div class="muted">
+	<div class="comment well well-small">
+		<div class="commentinfo">
 			<?php echo $comment["infos"];?>
 		</div>
 		<div class="commenthtml">
-			<?php echo $comment["body"]; ?>
+			<?php echo $comment["body"];?>
 		</div>
 		<div class="commentactions">
-			<hr />
-			<?php if ($comment["hasrighttoaddcomment"]) : ?>
-				<a href="<?php echo $GLOBALS['wiki']->href('', $comment['tag']); ?>" class="btn btn-small answer-comment"><i class="icon-comment"></i>&nbsp;<?php echo TAGS_ANSWER_THIS_COMMENT; ?></a>
-			<?php endif; ?>	
-			<div class="pull-right">
-				<?php if ($comment["hasrighttomodifycomment"]) : ?>
-					<a href="<?php echo $GLOBALS['wiki']->href('edit', $comment['tag']); ?>" class="btn btn-small edit-comment"><i class="icon-pencil"></i>&nbsp;<?php echo TAGS_MODIFY; ?></a>
-				<?php endif; ?>	
-				<?php if ($comment["hasrighttodeletecomment"]) : ?>
-					<a href="<?php echo $GLOBALS['wiki']->href('deletepage', $comment['tag']); ?>" class="btn btn-small btn-danger delete-comment"><i class="icon-trash icon-white"></i></a>
-				<?php endif; ?>	
-			</div>
+			<?php echo $comment["actions"];?>
 		</div>
 	</div>		
-	<div class="comment-replies">
-		<?php if(!empty($comment["replies"])): ?>
-			<?php echo $comment["replies"]; ?>
+	<div class="commentreponses">
+		<?php if(!empty($comment["reponses"])): ?>
+			<?php echo $comment["reponses"]; ?>
 		<?php endif; ?>				
 	</div>
 <?php endforeach; ?>
+<?php echo $commentform; ?>
