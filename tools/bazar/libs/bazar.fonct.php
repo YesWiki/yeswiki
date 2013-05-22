@@ -371,7 +371,7 @@ function baz_afficher_formulaire_import()
 			$ext = substr($filename, strrpos($filename, '.') + 1);
 			if ($ext == "csv") {
 				$newname = BAZ_CHEMIN_UPLOAD . $filename;
-				       //verification de la presence de ce fichier, s'il existe deja , on le supprime
+				       //verification de la presence de ce fichier, s'il existe deja?, on le supprime
 				move_uploaded_file($_FILES['fileimport']['tmp_name'], $newname);
 				if (($handle = fopen($newname, "r")) !== FALSE) {
 					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
@@ -407,7 +407,7 @@ function baz_afficher_formulaire_import()
         $output.=  '<input type="submit" value="'.BAZ_IMPORTER_CE_FICHIER.'" name="importfile" class="btn btn-primary" />';
         $output .= '</form>'."\n";
 
-    $GLOBALS['js'] = '<script>'.' $(function () { $(\'.checkall\').on(\'click\', function () { $(this).closest(\'fieldset\').find(\':checkbox\').prop(\'checked\', this.checked); }); });'.'</script>';
+    $GLOBALS['js'] .= '<script>'.' $(function () { $(\'.checkall\').on(\'click\', function () { $(this).closest(\'fieldset\').find(\':checkbox\').prop(\'checked\', this.checked); }); });'.'</script>';
 
     } 
 
@@ -476,7 +476,7 @@ function baz_afficher_formulaire_import()
 									print "################";
 									print $chemin_destination;
 									rename('cache/'.utf8_decode($data[$c]), $chemin_destination);
-									print $a;
+									print $a.'<br />';
 									chmod($chemin_destination, 0755);
 									// Fixme redimensionner
 								}
@@ -521,7 +521,7 @@ function baz_afficher_formulaire_import()
             $output .= '<select name="id_type_fiche" onchange="javascript:this.form.submit();">'."\n";
 
 	    
-            //si l'on n'a pas deja  choisi de fiche, on demarre sur l'option CHOISIR, vide
+            //si l'on n'a pas deja? choisi de fiche, on demarre sur l'option CHOISIR, vide
             if (!isset($_POST['id_type_fiche'])) $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
 	
             //on dresse la liste de types de fiches
@@ -579,7 +579,7 @@ function baz_afficher_formulaire_import()
 
 	 //on genere un fichier exemple pour faciliter le travail d'import
         $chemin_destination = BAZ_CHEMIN_UPLOAD.'bazar-import-'.$id_type_fiche.'.csv';
-        //verification de la presence de ce fichier, s'il existe deja , on le supprime
+        //verification de la presence de ce fichier, s'il existe deja?, on le supprime
         if (file_exists($chemin_destination)) {
             unlink($chemin_destination);
         }
@@ -661,6 +661,11 @@ function baz_afficher_formulaire_export()
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                 }
+                // cas des images
+                elseif($ligne[0] == 'image') {
+                    $tab_champs[] = $ligne[0].$ligne[1];
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
+                }
                 else {
                     $tab_champs[] = $ligne[1];
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
@@ -680,13 +685,6 @@ function baz_afficher_formulaire_export()
             foreach ($tab_champs as $index) {
                 $tabindex = explode('|',$index);
                 $index = str_replace('|','',$index);
-                //ces types de champs nÃ©cessitent un traitement particulier
-                if ($tabindex[0]=='liste' || $tabindex[0]=='checkbox' || $tabindex[0]=='listefiche' || $tabindex[0]=='checkboxfiche') {
-			// ???  FIXME ?
-                    $html = $tabindex[0]($toto, array(0 => $tabindex[0],1 => $tabindex[1], 2 => '', 6 => $tabindex[2]), 'html', array($index => $tab_valeurs[$index]));
-                    $tabhtml = explode ('</span>', $html);
-                    $tab_valeurs[$index] = utf8_encode(html_entity_decode(trim(strip_tags($tabhtml[1]))));
-                }
                 if (isset($tab_valeurs[$index])) $tab_csv[] = html_entity_decode('"'.str_replace('"','""',$tab_valeurs[$index]).'"'); else $tab_csv[] = '';
             }
 
