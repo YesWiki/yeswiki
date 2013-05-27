@@ -807,6 +807,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         }
     } elseif ($mode == 'requete') {
         if (!isset($valeurs_fiche['nomwiki'])) {
+		print_r($tableau_template);
             if ($GLOBALS['wiki']->IsWikiName($valeurs_fiche[$tableau_template[1]])) {
                 $nomwiki = $valeurs_fiche[$tableau_template[1]];
             } else {
@@ -817,6 +818,8 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             "name = '".mysql_escape_string($nomwiki)."', ".
             "email = '".mysql_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
             "password = md5('".mysql_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
+print $requeteinsertionuserwikini;
+	    exit;
             $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
             if (DB::isError($resultat)) {
                 echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
