@@ -31,6 +31,6 @@ if (empty($link)) {
         echo '<div class="error">Action button : param&egrave;tre "link" obligatoire.</div>'."\n";
 }
 else {
-	echo '<a href="'.$link.'" class="'.$class.'"'.(!empty($title) ? ' title="'.htmlentities($title).'"' : (!empty($text) ? ' title="'.htmlentities($text).'"' : '') ).'>'.$icon.(!empty($text)? '&nbsp;'.htmlentities($text) : '').'</a>'."\n";
+	echo '<a href="'.$link.'" class="'.$class.'"'.(!empty($title) ? ' title="'.htmlentities($title, ENT_COMPAT | ENT_HTML401,TEMPLATES_DEFAULT_CHARSET).'"' : (!empty($text) ? ' title="'.htmlentities($text, ENT_COMPAT | ENT_HTML401,TEMPLATES_DEFAULT_CHARSET).'"' : '') ).'>'.$icon.(!empty($text)? '&nbsp;'.htmlentities($text, ENT_COMPAT | ENT_HTML401,TEMPLATES_DEFAULT_CHARSET) : '').'</a>'."\n";
 }
 ?>

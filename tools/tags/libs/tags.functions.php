@@ -35,8 +35,8 @@ function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vi
 }
 
 function sanitizeEntity($string) {
-	return htmlspecialchars(strtr(str_replace('\\\'','_',$string),'/ àáâãäçèéêëìíîïñòóôõöùúûüıÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜİ',
-'__aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY'));
+	return htmlspecialchars(strtr(str_replace('\\\'','_',$string),'/ Ã Ã¡Ã¢Ã£Ã¤Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã±Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿Ã€ÃÃ‚ÃƒÃ„Ã‡ÃˆÃ‰ÃŠÃ‹ÃŒÃÃÃÃ‘Ã’Ã“Ã”Ã•Ã–Ã™ÃšÃ›ÃœÃ',
+'__aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY'), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET);
 }
 
 function tokenTruncate($string, $your_desired_width) {

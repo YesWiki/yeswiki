@@ -49,14 +49,14 @@ if ($comments = $this->LoadRecentComments($max))
 	foreach ($comments as $comment)
 	{
 		$output .= "<item>\n";
-		$output .= "<title>" . htmlspecialchars($comment['comment_on'] . ' -- ' . $comment["user"]) . "</title>\n";
-		$output .= '<dc:creator>' . htmlspecialchars($comment["user"]) . "</dc:creator>\n";
+		$output .= "<title>" . htmlspecialchars($comment['comment_on'] . ' -- ' . $comment["user"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . "</title>\n";
+		$output .= '<dc:creator>' . htmlspecialchars($comment["user"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . "</dc:creator>\n";
 		$output .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($comment['time'])) . "</pubDate>\n";
-		$output .= "<description>" . htmlspecialchars('<h3>Commentaire sur ' . $this->ComposeLinkToPage($comment["comment_on"]) . '</h3>');
-		$output .= htmlspecialchars('<pre>' . htmlspecialchars($comment['body']) . '</pre>') . "</description>\n"; // notice for later: before introducing Format()ed comments, think to spam and recursive calls to {{recentcommentsrss}} (RegisterInclusion() etc.)
-		$itemurl = $this->Href('', $comment['comment_on'], 'show_comments=1') . '#' . htmlspecialchars(rawurlencode($comment["tag"]));
+		$output .= "<description>" . htmlspecialchars('<h3>Commentaire sur ' . $this->ComposeLinkToPage($comment["comment_on"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '</h3>');
+		$output .= htmlspecialchars('<pre>' . htmlspecialchars($comment['body'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '</pre>', ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET ) . "</description>\n"; // notice for later: before introducing Format()ed comments, think to spam and recursive calls to {{recentcommentsrss}} (RegisterInclusion() etc.)
+		$itemurl = $this->Href('', $comment['comment_on'], 'show_comments=1') . '#' . htmlspecialchars(rawurlencode($comment["tag"]), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET);
 		$output .= "<link>" . $itemurl . "</link>\n";
-		$permalink = $this->href(false, $comment["tag"], "time=" . htmlspecialchars(rawurlencode($comment["time"])));
+		$permalink = $this->href(false, $comment["tag"], "time=" . htmlspecialchars(rawurlencode($comment["time"]), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET));
 		$output .= '<guid>' . $permalink . "</guid>\n";
 		$output .= "</item>\n";
 	}

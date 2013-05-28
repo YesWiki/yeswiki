@@ -84,7 +84,7 @@ else if ($user = $this->GetUser())
 		</tr>
 		<tr>
 			<td align="right">Votre adresse de messagerie &eacute;lectronique&nbsp;:</td>
-			<td><input name="email" value="<?php echo htmlspecialchars($user["email"]) ?>" size="40" /></td>
+			<td><input name="email" value="<?php echo htmlspecialchars($user["email"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
 			<td align="right">&Eacute;dition en double-cliquant&nbsp;:</td>
@@ -96,15 +96,15 @@ else if ($user = $this->GetUser())
 		</tr>
 		<tr>
 			<td align="right">Nombre maximum de derniers commentaires&nbsp;:</td>
-			<td><input name="changescount" value="<?php echo htmlspecialchars($user["changescount"]) ?>" size="40" /></td>
+			<td><input name="changescount" value="<?php echo htmlspecialchars($user["changescount"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
 			<td align="right">Nombre maximum de versions&nbsp;:</td>
-			<td><input name="revisioncount" value="<?php echo htmlspecialchars($user["revisioncount"]) ?>" size="40" /></td>
+			<td><input name="revisioncount" value="<?php echo htmlspecialchars($user["revisioncount"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
 			<td align="right">Votre devise&nbsp;:</td>
-			<td><input name="motto" value="<?php echo htmlspecialchars($user["motto"]) ?>" size="40" /></td>
+			<td><input name="motto" value="<?php echo htmlspecialchars($user["motto"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
 			<td></td>
@@ -223,7 +223,7 @@ else
 		?>
 		<tr>
 			<td align="right">Votre NomWiki&nbsp;:</td>
-			<td><input name="name" size="40" value="<?php if (isset($name)) echo htmlspecialchars($name) ?>" /></td>
+			<td><input name="name" size="40" value="<?php if (isset($name)) echo htmlspecialchars($name, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" /></td>
 		</tr>
 		<tr>
 			<td align="right">Mot de passe (5 caract&egrave;res minimum)&nbsp;:</td>
@@ -247,7 +247,7 @@ else
 		</tr>
 		<tr>
 			<td align="right">Adresse de messagerie &eacute;lectronique.&nbsp;:</td>
-			<td><input name="email" size="40" value="<?php if (isset($email)) echo htmlspecialchars($email) ?>" /></td>
+			<td><input name="email" size="40" value="<?php if (isset($email)) echo htmlspecialchars($email, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" /></td>
 		</tr>
 		<tr>
 			<td></td>

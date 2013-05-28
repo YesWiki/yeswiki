@@ -1453,10 +1453,10 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
             $html_valeurs_listes .=
                 '<li class="liste_ligne input-prepend input-append" id="row'.$i.'">'.
                 '<a title="'.BAZ_DEPLACER_L_ELEMENT.'" class="handle-listitems add-on"><i class="icon-move"></i></a>'.
-                '<input required type="text" placeholder="'.BAZ_KEY.'" name="id['.$i.']" value="'.htmlspecialchars($id).'" class="input-mini" />'.
-                '<input required type="text" placeholder="'.BAZ_TEXT.'" name="label['.$i.']" value="'.htmlspecialchars($label).'" />'.
-                '<input type="hidden" name="ancienid['.$i.']" value="'.htmlspecialchars($id).'" />'.
-                '<input type="hidden" name="ancienlabel['.$i.']" value="'.htmlspecialchars($label).'" />'.
+                '<input required type="text" placeholder="'.BAZ_KEY.'" name="id['.$i.']" value="'.htmlspecialchars($id, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" class="input-mini" />'.
+                '<input required type="text" placeholder="'.BAZ_TEXT.'" name="label['.$i.']" value="'.htmlspecialchars($label, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" />'.
+                '<input type="hidden" name="ancienid['.$i.']" value="'.htmlspecialchars($id, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" />'.
+                '<input type="hidden" name="ancienlabel['.$i.']" value="'.htmlspecialchars($label, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" />'.
                 '<a class="add-on suppression_label_liste"><i class="icon-trash"></i></a>'.
                 '</li>'."\n";
         }

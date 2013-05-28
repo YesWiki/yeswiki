@@ -65,7 +65,7 @@ if ($referrers)
 		{
 			echo "<tr>" ;
 			echo "<td width=\"30\" align=\"right\" valign=\"top\" style=\"padding-right: 10px\">",$referrer["num"],"</td>" ;
-			echo "<td valign=\"top\"><a href=\"",htmlspecialchars($referrer["referrer"]),"\">",htmlspecialchars($referrer["referrer"]),"</a></td>" ;
+			echo "<td valign=\"top\"><a href=\"",htmlspecialchars($referrer["referrer"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET),"\">",htmlspecialchars($referrer["referrer"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET),"</a></td>" ;
 			echo "</tr>\n" ;
 		}
 		echo "</table>\n" ;

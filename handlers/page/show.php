@@ -85,7 +85,7 @@ if ($HasAccessRead=$this->HasAccess("read"))
 			<br />
 			<?php echo  $this->FormOpen("edit") ?>
 			<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
-			<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"]) ?>" />
+			<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>" />
 			<input type="submit" value="R&eacute;&eacute;diter cette version archiv&eacute;e" />
 			<?php echo  $this->FormClose(); ?>
 			<?php

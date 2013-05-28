@@ -105,7 +105,7 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin()))
 						{
 							foreach($users as $user)
 							{
-								echo "<option value=\"",htmlspecialchars($user["name"]),"\">",$user["name"],"</option>\n";
+								echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET),"\">",$user["name"],"</option>\n";
 							}
 						}
 						?>

@@ -18,7 +18,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -41,7 +41,7 @@ if (!empty($tags))
 	$req .= ' AND tags.value IN ('.$tags.')';
 	$req .= ' AND tags.property="http://outils-reseaux.org/_vocabulary/tag" AND tags.resource=tag ';
 	$req_group .= ' GROUP BY tag HAVING COUNT(tag)='.$nbdetags.' ';
-	//texte utilisé pour la description du flux RSS
+	//texte utilisÃ© pour la description du flux RSS
 	$textetitre .= ', contenant les tags '.$tags;
 }
 
@@ -117,9 +117,9 @@ if ($pages = $this->LoadAll($requete)) {
 		}
 
 		$items .= $texteformat . "]]></description>\r\n";
-		$items .= "<dc:creator>by ".htmlspecialchars($page["user"])."</dc:creator>\r\n";
+		$items .= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET)."</dc:creator>\r\n";
 		$items .= "<pubDate>" . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\r\n";
-		$itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"])));
+		$itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET));
 		$items .= '<guid>' . $itemurl . "</guid>\n";
 		$items .= "</item>\r\n";
 	}

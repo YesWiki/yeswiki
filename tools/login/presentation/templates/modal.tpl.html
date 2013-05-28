@@ -31,7 +31,7 @@
 				<div class="control-group">
 					<label for="inputWikiName" class="control-label"><?php echo LOGIN_WIKINAME; ?></label>
 					<div class="controls">
-						<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user); ?>" />
+						<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET); ?>" />
 					</div>
 		        </div>
 		        <div class="control-group">

@@ -133,7 +133,7 @@ if (!defined('WIKINI_VERSION'))
 	<?php
 			foreach ($users as $user)
 			{
-				echo '<option value="', htmlspecialchars($user['name']), '">', htmlspecialchars($user['name']), "</option>\n";
+				echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), "</option>\n";
 			}
 	?>
 		</select></td></tr>
