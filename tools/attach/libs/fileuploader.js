@@ -486,7 +486,6 @@ qq.FileUploader = function(o){
         listElement: null,
                 
         template: '<div class="qq-uploader">' + 
-                //'<div class="qq-upload-drop-area"><span>Glisser-d&eacute;poser les fichiers ici.</span></div>' +
                 '<div class="qq-upload-button btn"><i class="icon-upload"></i>&nbsp;Joindre / Ins&eacute;rer un fichier</div>' +
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
@@ -771,6 +770,7 @@ qq.UploadButton = function(o){
     qq.css(this._element, {
         position: 'relative',
         overflow: 'hidden',
+        height: '20px',
         // Make sure browse button is in the right side
         // in Internet Explorer
         direction: 'ltr'
@@ -811,12 +811,12 @@ qq.UploadButton.prototype = {
             right: 0,
             top: 0,
             fontFamily: 'Arial',
-            // 4 persons reported this, the max values that worked for them were 243, 236, 236, 118
-            fontSize: '14px',
+            fontSize: '38px',
             margin: 0,
             padding: 0,
             cursor: 'pointer',
-            opacity: 0
+            opacity: 0,
+            zIndex: 2
         });
         
         this._element.appendChild(input);
@@ -1414,19 +1414,6 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
        $(".qq-upload-button").on('mousedown', function(e) { 
             position = body.getSelection(); 
         });
-/*
-        // astuce pour avoir un curseur en forme de pointeur au survol du bouton        
-        $(".qq-upload-button").mousemove(function(e) {
-            var offL, offR, inpStart
-            offL = $(this).offset().left;
-            offT = $(this).offset().top;
-            aaa= $(this).find("input").width();
-            $(this).find("input").css({
-                left:e.pageX-aaa-30,
-                top:e.pageY-offT-10
-            });
-        });     
-*/
     };
 
     $.fn[pluginName] = function ( options ) {

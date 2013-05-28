@@ -44,10 +44,10 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte s&eacute;lectionn&eacute; en italique ( Ctrl-i )',
 	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte s&eacute;lectionn&eacute; ( Ctrl-u )',
 	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
-	      	'ACEDITOR_LINE'				: 'Ins&egrave;re une ligne horizontale ( Ctrl-h )',
+	      	'ACEDITOR_LINE'				: 'Ins&egrave;re une ligne horizontale',
 	      	'ACEDITOR_LINK'				: 'Lien',
 	      	'ACEDITOR_LINK_PROMPT'		: 'Entrez l\'adresse URL',
-	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte s&eacute;lectionn&eacute; ( Ctrl-l )'
+	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte s&eacute;lectionn&eacute;'
 	      },
 	    en : {
 	    	'ACEDITOR_SAVE'				: 'Save',
@@ -64,10 +64,10 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 	      	'ACEDITOR_ITALIC_TEXT'		: 'Italic text ( Ctrl-i )',
 	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Underline the selected text ( Ctrl-u )',
 	      	'ACEDITOR_STRIKE_TEXT'		: 'Stroke the selected text ( Ctrl-y )',
-	      	'ACEDITOR_LINE'				: 'Insert horizontal line ( Ctrl-h )',
+	      	'ACEDITOR_LINE'				: 'Insert horizontal line',
 	      	'ACEDITOR_LINK'				: 'Link',
 	      	'ACEDITOR_LINK_PROMPT'		: 'Enter the link adress',
-	      	'ACEDITOR_LINK_TITLE'		: 'Add a link to selected text ( Ctrl-l )'
+	      	'ACEDITOR_LINK_TITLE'		: 'Add a link to selected text'
 	    }
 	  },
 	  syntax = { 
@@ -220,9 +220,9 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
     		$(this).on('click', function(e){
     			e.preventDefault();
 			    e.stopPropagation();
-			    if (lastFocus) {
-			        setTimeout(function() {lastFocus.focus()}, 10);
-			    }
+			    //if (lastFocus) {
+			    //    setTimeout(function() {lastFocus.focus()}, 10);
+			    //}
 			    return(false);
     		}).on('mousedown', function(e){
     			e.preventDefault();
@@ -236,10 +236,10 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 				else {
 					textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'), true);
 				}
-				if (lastFocus) {
-			        setTimeout(function() {lastFocus.focus()}, 10);
-			    }
-			    return(false);
+				//if (lastFocus) {
+			    //    setTimeout(function() {lastFocus.focus()}, 10);
+			    //}
+			    return false;
     		})
     	});
 
@@ -310,14 +310,6 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 				// strike
 				else if (keyCode == 89) {
 					$('.aceditor-btn-strike').mousedown();e.preventDefault();
-				}
-				// line
-				else if (keyCode == 72) {
-					$('.aceditor-btn-line').mousedown();e.preventDefault();
-				}
-				// link
-				else if (keyCode == 76) {
-					$('.aceditor-btn-link').mousedown();e.preventDefault(); isCtrl = false; isAlt = false;
 				}
 				// save page
 				else if (keyCode == 83) {
