@@ -1962,7 +1962,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             foreach ($tabfichecheckbox as $nomwikifiche) {
                 if ($firstiteration) {$firstiteration = false;} else {$html .= ', ';}
                 $val_fiche = baz_valeurs_fiche($nomwikifiche);
-                $html .= '<a href="'.str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])).'" title="Voir la fiche '.
+                $html .= '<a href="'.str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $nomwikifiche)).'" title="Voir la fiche '.
                     $val_fiche['bf_titre'].'">'.
                     $val_fiche['bf_titre'].'</a>';
                     
