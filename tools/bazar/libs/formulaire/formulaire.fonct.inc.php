@@ -1954,41 +1954,25 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!='') {
-            $requete  = 'SELECT bf_id_fiche, bf_titre FROM '.BAZ_PREFIXE.'fiche WHERE bf_id_fiche IN ('.$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]].') AND bf_ce_nature='.$tableau_template[1];
-
-            //on classe par ordre alphabetique
-            $requete .= ' ORDER BY bf_titre';
-
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError ($resultat)) {
-                return ($resultat->getMessage().$resultat->getDebugInfo()) ;
+            $html = '<div class="BAZ_rubrique">'."\n".
+                    '<span class="BAZ_label '.$tableau_template[2].'_rubrique">'.$tableau_template[2].'&nbsp;:</span>'."\n";
+            $html .= '<span class="BAZ_texte '.$tableau_template[2].'_description">';
+            $tabfichecheckbox = explode(',',$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+            $firstiteration=true;
+            foreach ($tabfichecheckbox as $nomwikifiche) {
+                if ($firstiteration) {$firstiteration = false;} else {$html .= ', ';}
+                $val_fiche = baz_valeurs_fiche($nomwikifiche);
+                $html .= '<a href="'.str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])).'" title="Voir la fiche '.
+                    $val_fiche['bf_titre'].'">'.
+                    $val_fiche['bf_titre'].'</a>';
+                    
             }
-            $i=0;
-
-            while ($ligne = $resultat->fetchRow()) {
-                $url_checkboxfiche = clone($GLOBALS['_BAZAR_']['url']);
-                $url_checkboxfiche->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
-                $url_checkboxfiche->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
-                $url_checkboxfiche->addQueryString('id_fiche', $ligne[0] );
-                $url_checkboxfiche->addQueryString('wiki', $_GET['wiki'].'/iframe');
-                $checkbox[$i]= '<a class="voir_fiche ouvrir_overlay" rel="#overlay-link" href="'.str_replace('&','&amp;',$url_checkboxfiche->getURL()).'">'.$ligne[1].'</a>';
-                $url_checkboxfiche->removeQueryString(BAZ_VARIABLE_VOIR);
-                $url_checkboxfiche->removeQueryString(BAZ_VARIABLE_ACTION);
-                $url_checkboxfiche->removeQueryString('id_fiche');
-                $url_checkboxfiche->removeQueryString('wiki');
-                $i++;
-            }
-
-            if (is_array($checkbox)) {
-                $html .= '<ul>'."\n";
-                foreach ($checkbox as $lien_fiche) {
-                    $html .= '<li>'.$lien_fiche.'</li>'."\n";
-                }
-                $html .= '</ul>'."\n";
-            }
+            
+            $html .= '</span>'."\n".
+                    '</div>'."\n";
         }
 
-        return $html;
+        return $html;  
     }
 }
 
