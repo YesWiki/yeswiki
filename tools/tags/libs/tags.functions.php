@@ -73,8 +73,8 @@ function get_filtertags_parameters_recursive($nb=1, $tab = array()) {
 			$tab[$nb]['arraytags']  = explode(',', $explodelabel[0]);
 		}
 		$toggle = $GLOBALS['wiki']->GetParameter('select'.$nb);
-		if (!empty($toggle) && $toggle == 'buttons-radio') $tab[$nb]['toggle'] = $toggle;
-		else $tab[$nb]['toggle'] = 'buttons-checkbox';
+		if (!empty($toggle) && $toggle == 'checkbox') $tab[$nb]['toggle'] = $toggle;
+		else $tab[$nb]['toggle'] = 'radio';
 		$class = $GLOBALS['wiki']->GetParameter('class'.$nb);
 		if (!empty($class)) $tab[$nb]['class'] = $class;
 		else $tab[$nb]['class'] = 'filter-inline';

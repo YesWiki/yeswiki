@@ -10,21 +10,30 @@ $nbcartrunc = 200;
 
 $template = $this->GetParameter('template');
 if (empty($template) || !file_exists('tools/tags/presentation/templates/'.$template)) {
-	$template = 'pages_grid.tpl.html';
+	$template = 'filter_grid.tpl.html';
 }
 
 $params = get_filtertags_parameters_recursive();
 $taglist = $params['tags'];
 unset($params['tags']);
-echo '<div class="filter-buttons well no-dblclick">'."\n".'<div class="pull-right muted"><span class="nbfilteredelements"></span> '.TAGS_RESULTS.'</div>';
+echo '<div class="well no-dblclick controls">'."\n".'<div class="pull-right muted"><span class="nbfilteredelements"></span> '.TAGS_RESULTS.'</div>';
 foreach ($params as $param) {
- 	echo '<div class="'.$param['class'].'" data-type="'.$param['toggle'].'">'."\n".$param['title']."\n".'<div class="btn-group filter-tags">'."\n";
-	foreach ($param['arraytags'] as $tagname) {
-		echo '<button type="button" class="btn btn-filter-tag" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
-	}
-	echo  '</div>'."\n".'</div>'."\n";
- } 
- echo '</div>'."\n";
+  	echo '<div class="filter-group '.$param['class'].'" data-type="'.$param['toggle'].'">'."\n".$param['title']."\n".'<div class="btn-group filter-tags">'."\n";
+ 	foreach ($param['arraytags'] as $tagname) {
+ 		echo '<button type="button" class="btn filter" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
+ 	}
+ 	echo  '</div>'."\n".'</div>'."\n";
+} 
+echo '</div>';
+// echo '<div class="filter-buttons well no-dblclick">'."\n".'<div class="pull-right muted"><span class="nbfilteredelements"></span> '.TAGS_RESULTS.'</div>';
+// foreach ($params as $param) {
+//  	echo '<div class="'.$param['class'].'" data-type="'.$param['toggle'].'">'."\n".$param['title']."\n".'<div class="btn-group filter-tags">'."\n";
+// 	foreach ($param['arraytags'] as $tagname) {
+// 		echo '<button type="button" class="btn btn-filter-tag" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
+// 	}
+// 	echo  '</div>'."\n".'</div>'."\n";
+//  } 
+//  echo '</div>'."\n";
 
 // requete avec toutes les pages contenants
 $req = "SELECT DISTINCT tag, time, user, owner, body 
@@ -92,10 +101,9 @@ $templateelements = new SquelettePhp('tools/tags/presentation/templates/'.$templ
 $templateelements->set(array('elements' => $element));
 echo $templateelements->analyser();
 
-echo '<div class="tags-no-results-message alert alert-info" style="display:none">'."\n".TAGS_NO_RESULTS."\n".'</div>'."\n";
-
 // ajout du javascript gerant le filtrage
-$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'  <script src="tools/tags/libs/vendor/jquery.wookmark.min.js"></script>
-  <script src="tools/tags/libs/filtertags.js"></script>'."\n";
+$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'  <script src="tools/tags/libs/vendor/jquery.mixitup.min.js"></script>
+<script src="tools/tags/libs/vendor/jquery.wookmark.min.js"></script>
+<script src="tools/tags/libs/filtertags.js"></script>'."\n";
 
 ?>
