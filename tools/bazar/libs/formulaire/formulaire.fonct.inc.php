@@ -812,6 +812,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             } else {
                 $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
             }
+	    // 
             $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
             "signuptime = now(), ".
             "name = '".mysql_escape_string($nomwiki)."', ".
@@ -829,12 +830,12 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
                 'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
                 'X-Mailer: PHP/' . phpversion();
-            mail($valeurs_fiche['bf_mail'], remove_accents($objetmail), $messagemail, $headers);
+            mail($valeurs_fiche[$tableau_template[2]], remove_accents($objetmail), $messagemail, $headers);
 
             // ajout dans la liste de mail
             if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]]!='') {
-                $headers =   'From: '.$valeurs_fiche['bf_mail'] . "\r\n" .
-                'Reply-To: '. $valeurs_fiche['bf_mail'] . "\r\n" .
+                $headers =   'From: '.$valeurs_fiche[$tableau_template[2]] . "\r\n" .
+                'Reply-To: '. $valeurs_fiche[$tableau_template[2]] . "\r\n" .
                 'X-Mailer: PHP/' . phpversion();
                 mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
             }
