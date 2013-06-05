@@ -1,0 +1,25 @@
+<?php if (count($fiches)>1) : ?>
+<div class="info_box">
+<?=$info_res;?>
+<?=$rafraichir;?>
+</div>
+<?=$pager_links;?>
+<div class="accordion">
+<?php $origine=''; ?>
+<?php foreach($fiches as $fiche): ?>
+<?php if ($origine!=$fiche['source']) : ?>
+	<h2><?=$fiche['source'];?></h2>
+	<?php $origine=$fiche['source']; ?> 
+<?php endif; ?>
+<h2 class="titre_accordeon"><?=$fiche['titre'];?></h2>
+<div class="pane">
+<?=$fiche['description'];?>
+<div class="actions_pagewiki">
+<?=$fiche['lien_voir'];?>
+<a class="BAZ_lien_voir" href="<?=$fiche['url'];?>" <?='onclick="window.open(this.href); return false;"';?>>Voir la fiche sur le site</a><br /><br />
+</div>
+</div>
+<?php endforeach; ?>
+</div>
+<?=$pager_links;?>
+<?php endif; ?>

@@ -1,0 +1,17 @@
+<?php if (count($fiches)>1) : ?>
+<div class="info_box">
+Il y a <?=count($fiches);?> r&eacute;sultats pour la recherche
+</div>
+<?=$pager_links;?>
+<?php $origine=''; ?>
+<?php foreach($fiches as $fiche): ?>
+<?php if ($origine!=$fiche['source']) : ?>
+	<h2><?=$fiche['source'];?></h2>
+	<?php $origine=$fiche['source']; ?> 
+<?php endif; ?>
+<h4><?=$fiche['titre'];?></h4>
+<?=$fiche['description'];?>
+<br /><a href="<?=$fiche['url'];?>" <?='onclick="window.open(this.href); return false;"';?>><?=$fiche['url'];?></a><br /><br /><br />
+<?php endforeach; ?>
+<?=$pager_links;?>
+<?php endif; ?>
