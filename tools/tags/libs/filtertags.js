@@ -13,8 +13,9 @@ $(document).ready(function() {
     var mixitupoptions = {
       /*onMixStart: activebuttons,*/
       onMixEnd: refresh,
-      multiFilter: true,
-      /*filterLogic: 'and',*/
+      filterSelector: '.filter-original', /**/
+      /*multiFilter: true,*/
+      filterLogic: 'and',
       targetSelector: '.filtered-element'
     };
     filterresults.mixitup(mixitupoptions);
@@ -40,6 +41,7 @@ console.log('nb results : '+results.length);
 
     $('.filter').on('click', function() {
       var $this = $(this);
+      $this.toggleClass('active');
       if ($this.parents('.filter-group').data('type') === 'radio') {$this.siblings('.filter').removeClass('active');}
       // for the radio type filter buttons, just one active in one row
       //var $radio = $('.filter-group').filter('div[data-type=radio]').find('.filter').removeClass('active');
@@ -47,10 +49,10 @@ console.log('nb results : '+results.length);
       //  $this.addClass('active');
       //}
       var selectedfilters = $('.controls .active');
-      filterString=new Array();var i=0;
+      filterString='';var i=0;
       $.each( selectedfilters, function() {        
-        //filterString = filterString+' '+$(this).data('filter');
-        filterString[i]=$(this).data('filter');
+        filterString = filterString+' '+$(this).data('filter');
+        //filterString[i]=$(this).data('filter');
         i++;
       });
       console.log(filterString);
