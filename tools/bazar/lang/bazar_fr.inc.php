@@ -24,14 +24,11 @@
 * Fichier de traduction en francais de l'application Bazar
 *
 *@package bazar
-//Auteur original :
 *@author        Alexandre GRANIER <alexandre@tela-botanica.org>
-*@author        Florian Schmitt <florian@ecole-et-nature.org>
-//Autres auteurs :
-*@author        Aucun
+*@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     Tela-Botanica 2000-2004
 *@version       $Revision: 1.6 $ $Date: 2010/03/04 14:19:04 $
-// +------------------------------------------------------------------------------------------------------+
+*
 */
 
 define ('BAZ_FORMULAIRE', 'Formulaires');
@@ -78,13 +75,14 @@ define ('BAZ_DATE_CREATION', 'cr&eacute;&eacute;e le' );
 define ('BAZ_DATE_MAJ', 'mise &agrave; jour le' );
 define ('BAZ_TITREANNONCE', 'Titre de la fiche') ;
 define ('BAZ_TYPE_FICHE', 'Type de fiche') ;
-define ('BAZ_FICHIER_CSV_A_IMPORTER', 'Entrez le fichier CSV &agrave; importer');
+define ('BAZ_FICHIER_CSV_A_IMPORTER', 'Fichier CSV &agrave; importer');
 define ('BAZ_EXEMPLE_FICHIER_CSV', 'Exemple de structuration du fichier CSV pour les fiches de type : ');
 define ('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER', 'Visualisation du fichier CSV pour l\'export des fiches de type : ');
 define ('BAZ_TOTAL_FICHES', 'Total des fiches');
 define ('BAZ_ENCODAGE_CSV', 'Le fichier CSV doit &ecirc;tre encod&eacute; en UTF-8, avec des virgules (,) comme s&eacute;parateurs et des doubles guillemets (") pour les diff&eacute;rentes valeurs.<br />Les champs avec une &eacute;toile (*) sont obligatoires et doivent contenir des donn&eacute;es.');
 define ('BAZ_IMPORTER_CE_FICHIER', 'Importer ce fichier');
 define ('BAZ_VALIDER_IMPORT_FICHIER', 'Valider importation');
+define ('BAZ_NOMBRE_FICHE_IMPORTE','Nombre de fiche(s) import&eacute;e(s) : ');
 define ('BAZ_IMPORTER', 'Importer');
 define ('BAZ_EXPORTER', 'Exporter');
 define ('BAZ_NON', 'Non') ;

@@ -342,7 +342,7 @@ function baz_afficher_liste_fiches_utilisateur()
 
 /**
  *
- * interface de choix des fiches à importer
+ * interface de choix des fiches a importer
  */
 function baz_afficher_formulaire_import()
 {
@@ -371,7 +371,7 @@ function baz_afficher_formulaire_import()
 			$ext = substr($filename, strrpos($filename, '.') + 1);
 			if ($ext == "csv") {
 				$newname = BAZ_CHEMIN_UPLOAD . $filename;
-				       //verification de la presence de ce fichier, s'il existe deja�, on le supprime
+				//verification de la presence de ce fichier, s'il existe deja�, on le supprime
 				move_uploaded_file($_FILES['fileimport']['tmp_name'], $newname);
 				if (($handle = fopen($newname, "r")) !== FALSE) {
 					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
@@ -387,8 +387,7 @@ function baz_afficher_formulaire_import()
 							$num = count($data);
 							$row++;
 							for ($c = 0; $c < $num; $c++) {
-								//FIXME : accents
-								$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . utf8_decode(str_replace('â', '\'', $data[$c])) . "<br />\n";
+								$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . utf8_decode(htmlentities($data[$c])) . "<br />\n";
 							}
 							$output .= '<hr />';
 
@@ -412,13 +411,13 @@ function baz_afficher_formulaire_import()
     } 
 
    
-	    if (isset($_POST['import'])) { // Traitement des fiches selectionnees (correspond au numero de ligne)
+	if (isset($_POST['import'])) { // Traitement des fiches selectionnees (correspond au numero de ligne)
 		    
         $row = 1;
         $val_formulaire = baz_valeurs_type_de_fiche($_POST['id_typeannonce']);
         $GLOBALS['_BAZAR_']['id_typeannonce'] = $_POST['id_typeannonce'];
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
-	// Recuperation champs de la fiche
+	    // Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
 
     	$nb = 0 ;
@@ -427,19 +426,19 @@ function baz_afficher_formulaire_import()
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
-		    $nom_champ[] = $ligne[0].$ligne[1];
-		    $type_champ[] = $ligne[0];
+        		    $nom_champ[] = $ligne[0].$ligne[1];
+        		    $type_champ[] = $ligne[0];
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
                     $nom_champ[] = $ligne[1];
                     $nom_champ[] = $ligne[2];
-		    $type_champ[] = $ligne[0];
+                    $type_champ[] = $ligne[0];
                     $nb++;
                 }
                 else {
                     $nom_champ[] = $ligne[1];
-		    $type_champ[] = $ligne[0];
+                    $type_champ[] = $ligne[0];
                 }
                 $nb++;
             }
@@ -463,7 +462,7 @@ function baz_afficher_formulaire_import()
 							$geolocalisation = true;
 						}
 						if (($type_champ[$c])== 'image') {
-  //on enleve les accents sur les noms de fichiers, et les espaces
+                            //on enleve les accents sur les noms de fichiers, et les espaces
 							$nomimage = preg_replace("/&([a-z])[a-z]+;/i", "$1",utf8_decode('image'.$data[$c]));
 							$nomimage = str_replace(' ', '_', $nomimage);
 							unset ($valeur['bf_image']);
@@ -488,6 +487,7 @@ function baz_afficher_formulaire_import()
 						$valeur['carte_google'] = $bf_latitude . "|" . $bf_longitude;
 					}
 					$valeur['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
+                    $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
 
 					baz_insertion_fiche($valeur, true);
 				}
@@ -495,7 +495,7 @@ function baz_afficher_formulaire_import()
 			}
 			fclose($handle);
 		}
-		$output=BAZ_NOMBRE_FICHE_IMPORTE." ".sizeof($import);
+		$output = '<div class="alert alert-info">'.BAZ_NOMBRE_FICHE_IMPORTE." ".sizeof($import).'</div>'."\n";
 	}
 		    
 	    
@@ -504,7 +504,7 @@ function baz_afficher_formulaire_import()
 	 if (! isset($_POST['submit_file']) &&  ! isset($_POST['submit_file'])) { 	 
 
 
-        //On choisit un type de fiches pour parser le csv en conséquence
+        //On choisit un type de fiches pour parser le csv en consequence
         //requete pour obtenir l'id et le label des types d'annonces
         $requete = 'SELECT bn_id_nature, bn_label_nature, bn_template FROM '.BAZ_PREFIXE.'nature WHERE';
         ($categorienature!='toutes') ? $requete .= ' bn_type_fiche="'.$categorienature.'"' : $requete .= ' 1';
@@ -512,7 +512,7 @@ function baz_afficher_formulaire_import()
         $requete .= ' ORDER BY bn_label_nature ASC';
         $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
 
-        $output .= '<form method="post" action="'.$GLOBALS['_BAZAR_']["url"]->getUrl().'" enctype="multipart/form-data">'."\n";
+        $output .= '<form method="post" action="'.$GLOBALS['_BAZAR_']["url"]->getUrl().'" enctype="multipart/form-data" class="form-horizontal">'."\n";
 
         //s'il y a plus d'un choix possible, on propose
         if ($resultat->numRows()>=1) {
@@ -539,13 +539,14 @@ function baz_afficher_formulaire_import()
             $val_formulaire = baz_valeurs_type_de_fiche($id_type_fiche);
             $output .= '<div class="control-group">'."\n".'<div class="control-label">'."\n".
                     BAZ_FICHIER_CSV_A_IMPORTER.' :</div>'."\n".'<div class="controls">';
-            $output .= '<input type="file" name="fileimport" id="idfileimport" /><input name="submit_file" type="submit" value="'.BAZ_IMPORTER_CE_FICHIER.'" />'."\n".'</div>'."\n".'</div>'."\n";
+            $output .= '<input type="file" name="fileimport" id="idfileimport" />'."\n".'</div>'."\n".'</div>'."\n";
+            $output .= '<div class="control-group">'."\n".'<div class="control-label"></div><div class="controls">'."\n".'<input name="submit_file" type="submit" value="'.BAZ_IMPORTER_CE_FICHIER.'" class="btn btn-primary" />'."\n".'</div>'."\n".'</div>'."\n";
             $output .= '<div class="alert alert-info">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'."\n".BAZ_ENCODAGE_CSV."\n".'</div>'."\n";
 
 
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-        $nb = 0 ;
+        $nb = 0 ; $csv = '';
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
@@ -601,7 +602,7 @@ function baz_afficher_formulaire_import()
 
 /**
  *
- * interface de choix des fiches à exporter
+ * interface de choix des fiches a exporter
  */
 function baz_afficher_formulaire_export()
 {
@@ -637,7 +638,7 @@ function baz_afficher_formulaire_export()
     }
     //sinon c'est vide
     else {
-        $output .= '<div class="error_box">'.BAZ_PAS_DE_FORMULAIRES_TROUVES.'</div>'."\n";
+        $output .= '<div class="alert alert-danger">'.BAZ_PAS_DE_FORMULAIRES_TROUVES.'</div>'."\n";
     }
     $output .= '</form>'."\n";
 
@@ -1094,9 +1095,9 @@ function baz_requete_bazar_fiche($valeur)
 *
 * @return   void
 */
-function baz_insertion_fiche($valeur,$batch=false)
+function baz_insertion_fiche($valeur, $batch=false)
 {
-    //on teste au moins l'existence du titre car sans titre ca peut bugguer sérieusement
+    //on teste au moins l'existence du titre car sans titre ca peut bugguer serieusement
     if (isset($valeur['bf_titre'])) {
         // ===========  Insertion d'une nouvelle fiche ===================
         //createur de la fiche
@@ -1116,7 +1117,7 @@ function baz_insertion_fiche($valeur,$batch=false)
         //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
 
-        //on cree un triple pour spécifier que la page wiki créée est une fiche bazar
+        //on cree un triple pour spécifier que la page wiki cree est une fiche bazar
         $GLOBALS["wiki"]->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar', '', '');
 
         // Envoie d un mail aux administrateurs
@@ -1178,7 +1179,7 @@ function baz_insertion_fiche($valeur,$batch=false)
         return ;
     }
     // sinon on met un message d'erreur
-    else die('<div class="error_box">'.BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE.'</div>');
+    else die('<div class="alert alert-danger">'.BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE.'</div>');
 }
 
 /** baz_mise_a_jour() - Mettre a jour une fiche
