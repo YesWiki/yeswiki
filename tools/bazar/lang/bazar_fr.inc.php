@@ -165,6 +165,9 @@ define ('BAZ_LIST_NAME', 'Nom de la liste');
 define ('BAZ_SAVE', 'Enregistrer');
 define ('BAZ_KEY', 'Cl&eacute;');
 define ('BAZ_TEXT', 'Texte');
+define ('BAZ_BAD_IMAGE_FILE_EXTENSION', 'Mauvaise extension pour l\'image (doit &ecirc;tre .jpg ou .png ou .gif)');
+define ('BAZ_IMAGE_FILE_NOT_FOUND', 'Fichier image non trouv&eacute;');
+
 
 //================ Calendrier Bazar =======================================
 define ('BAZ_AFFICHE_TITRES_COMPLETS', 'Afficher les titres complets des &eacute;v&eacute;nements');
