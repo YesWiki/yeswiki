@@ -280,7 +280,6 @@ overflow: auto;
 /* retour à la ligne pour les éléments flottants */
 .clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}
 
-
 .topbarpage .btn-toolbar, .topbarpage .btn-toolbar a {margin:0;}
 .topbarpage .btn-toolbar a:hover {text-decoration:none;}
 .topbarpage .form-search {margin:0;}
