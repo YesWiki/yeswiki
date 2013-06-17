@@ -352,20 +352,17 @@ function baz_afficher_formulaire_import()
     $id_type_fiche = (isset($_POST['id_type_fiche'])) ? $_POST['id_type_fiche'] : '';
 
     if (isset($_POST['submit_file'])) {
-
-
         $output .= '<form method="post" action="'.$GLOBALS['_BAZAR_']["url"]->getUrl().'" >'."\n";
-	$output .= '<fieldset>';
-	$output .= '<div><input type="checkbox" class="checkall"> Tout cocher</div>';
+    	$output .= '<fieldset>';
+    	$output .= '<div><input type="checkbox" class="checkall"> Tout cocher</div>';
         $row = 1;
         $val_formulaire = baz_valeurs_type_de_fiche($id_type_fiche);
         $GLOBALS['_BAZAR_']['id_typeannonce'] = $id_type_fiche;
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
-	// Recuperation champs de la fiche
+    	// Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-        //var_dump($tableau);
-
-	if ((!empty($_FILES["fileimport"])) && ($_FILES['fileimport']['error'] == 0)) {
+        
+    	if ((!empty($_FILES["fileimport"])) && ($_FILES['fileimport']['error'] == 0)) {
 			//Check if the file is csv
 			$filename = basename($_FILES['fileimport']['name']);
 			$ext = substr($filename, strrpos($filename, '.') + 1);

@@ -7,7 +7,7 @@
  
 $(document).ready(function () {
 	//accordeon pour bazarliste
-	$(".titre_accordeon").bind('click',function() {
+	$(".titre_accordeon").on('click',function() {
 		//$(this).next("div.pane").slideToggle('fast');
 		if ($(this).hasClass('current')) {
 			$(this).removeClass('current');
@@ -26,7 +26,7 @@ $(document).ready(function () {
 	var divcarto = document.getElementById("map" )
 	if (divcarto) {	initialize(); }
 	// clic sur le lien d'une fiche, l'ouvre sur la carto
-	$("#markers a").live("click", function(){
+	$("#markers a").on("click", function(){
 		var i = $(this).attr("rel");
 		// this next line closes all open infowindows before opening the selected one
 		for(x=0; x < arrInfoWindows.length; x++){ arrInfoWindows[x].close(); }
