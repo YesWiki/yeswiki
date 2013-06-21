@@ -671,6 +671,7 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
 
 
 
+// TODO:  enlever la gestion de protege car remplace par les acl...
 
 /** texte() - Ajoute un element de type texte au formulaire
  *
@@ -822,8 +823,14 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             if (DB::isError($resultat)) {
                 echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
             }
+	   
+	    // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
+	   $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
+	   // indicateur pour la gestion des droits associee a la fiche.
+	    $GLOBALS['utilisateur_wikini']=true;
 
-            //envoi mail nouveau mot de passe
+
+			//envoi mail nouveau mot de passe
             $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
             $objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
             $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre mot de passe : ". $valeurs_fiche['mot_de_passe_wikini'] . "\n\nA tres bientot ! \n\n";
