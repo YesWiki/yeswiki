@@ -1116,7 +1116,7 @@ function baz_insertion_fiche($valeur,$batch=false)
         //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
 
-	if  (isset($GLOBALS['utilisateur_wikini']) && $GLOBALS['utilisateur_wikini']==true) {
+	if  (isset($GLOBALS['utilisateur_wikini']) && $GLOBALS['utilisateur_wikini']==true) { // Il a un champ de type utilisateur dans la fiche.
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "write", " ");
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "read",  "*");
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "comment"," ");

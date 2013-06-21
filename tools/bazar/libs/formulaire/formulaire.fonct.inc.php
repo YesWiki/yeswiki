@@ -823,11 +823,10 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             if (DB::isError($resultat)) {
                 echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
             }
-
 	   
-	    // log in
-	    $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
-	    // Pour regler les acls : il n'y que l'utilisateur qui pourra modifier sa fiche
+	    // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
+	   $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
+	   // indicateur pour la gestion des droits associee a la fiche.
 	    $GLOBALS['utilisateur_wikini']=true;
 
 
