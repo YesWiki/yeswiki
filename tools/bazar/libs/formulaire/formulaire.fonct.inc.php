@@ -808,26 +808,24 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         }
     } elseif ($mode == 'requete') {
         if (!isset($valeurs_fiche['nomwiki'])) {
-            if ($GLOBALS['wiki']->IsWikiName($valeurs_fiche[$tableau_template[1]])) {
-                $nomwiki = $valeurs_fiche[$tableau_template[1]];
-            } else {
-                $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
-            }
+            $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
+
+	    if (!$GLOBALS['wiki']->LoadUser($nomwiki)) { // Pour eviter les doublons
 	    // 
-            $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
-            "signuptime = now(), ".
-            "name = '".mysql_real_escape_string($nomwiki)."', ".
-            "email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
-            "password = md5('".mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
-            if (DB::isError($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
-	   
-	    // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
-	   $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
+	            $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
+        	    "signuptime = now(), ".
+	            "name = '".mysql_real_escape_string($nomwiki)."', ".
+	            "email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
+        	    "password = md5('".mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
+	            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
+	            if (DB::isError($resultat)) {
+	                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
+            	    }
+	   // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
+	   	   $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
 	   // indicateur pour la gestion des droits associee a la fiche.
-	    $GLOBALS['utilisateur_wikini']=true;
+		  $GLOBALS['utilisateur_wikini']=true;
+	    }
 
 
 			//envoi mail nouveau mot de passe
@@ -880,10 +878,12 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
                 </div>';
         $formtemplate->addElement('html', $input_html) ;   
     } elseif ($mode == 'requete') {
-        //var_dump($_POST);
-        //var_dump($valeurs_fiche);
+        var_dump($_POST);
+        var_dump($valeurs_fiche);
         //break;
-        include_once 'tools/contact/libs/contact.functions.php';
+	if (!class_exists("Mail")) {
+	        include_once 'tools/contact/libs/contact.functions.php';
+	}
         if (isset($_POST[$id])) {
             send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], str_replace('@','-subscribe@',$tableau_template[1]), 'subscribe', 'subscribe', 'subscribe');
             $valeurs_fiche[$tableau_template[1]] = $tableau_template[1];
