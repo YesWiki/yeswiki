@@ -1054,7 +1054,7 @@ function baz_requete_bazar_fiche($valeur)
         $lienfiche = $GLOBALS['wiki']->config["base_url"].$GLOBALS['_BAZAR_']['id_fiche'];
         $text = 'Aller sur le site pour voir la fiche et la modifier : '.$lienfiche;
         $texthtml = '<br /><br /><a href="'.$lienfiche.'" title="Voir la fiche">Aller sur le site pour voir la fiche et la modifier</a>';
-        $fichier = 'tools/bazar/presentation/bazar.css';
+        $fichier = 'tools/bazar/presentation/styles/bazar.css';
         $style = file_get_contents($fichier);
         $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
         $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $valeur)).$texthtml;
@@ -1116,6 +1116,12 @@ function baz_insertion_fiche($valeur,$batch=false)
         //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
 
+	if  (isset($GLOBALS['utilisateur_wikini']) && $GLOBALS['utilisateur_wikini']==true) {
+                                 $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "write", " ");
+                                 $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "read",  "*");
+                                 $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "comment"," ");
+	}
+
         //on cree un triple pour spécifier que la page wiki créée est une fiche bazar
         $GLOBALS["wiki"]->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar', '', '');
 
@@ -1130,7 +1136,7 @@ function baz_insertion_fiche($valeur,$batch=false)
             $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $GLOBALS['_BAZAR_']['id_fiche']) ;
             $text = 'Voir la fiche sur le site pour l\'administrer : '.$GLOBALS['_BAZAR_']['url']->getUrl();
             $texthtml = '<br /><br /><a href="'.$GLOBALS['_BAZAR_']['url']->getUrl().'" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-            $fichier = 'tools/bazar/presentation/bazar.css';
+            $fichier = 'tools/bazar/presentation/styles/bazar.css';
             $style = file_get_contents($fichier);
             $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
             $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $GLOBALS['_BAZAR_']['id_fiche'])).$texthtml;
@@ -1204,7 +1210,7 @@ function baz_mise_a_jour_fiche($valeur)
             $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $GLOBALS['_BAZAR_']['id_fiche']) ;
             $text = 'Voir la fiche sur le site pour l\'administrer : '.$GLOBALS['_BAZAR_']['url']->getUrl();
             $texthtml = '<br /><br /><a href="'.$GLOBALS['_BAZAR_']['url']->getUrl().'" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-            $fichier = 'tools/bazar/presentation/bazar.css';
+            $fichier = 'tools/bazar/presentation/styles/bazar.css';
             $style = file_get_contents($fichier);
             $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
             $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $GLOBALS['_BAZAR_']['id_fiche'])).$texthtml;
@@ -1771,7 +1777,7 @@ function baz_gestion_listes()
             
             $text = 'IP utilisee : '.$_SERVER["REMOTE_ADDR"].' ('.$GLOBALS['wiki']->GetUserName().')';
             $texthtml = $text;
-            $fichier = 'tools/bazar/presentation/bazar.css';
+            $fichier = 'tools/bazar/presentation/styles/bazar.css';
             $style = file_get_contents($fichier);
             $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
             $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $GLOBALS['_BAZAR_']['id_fiche'])).$texthtml;
