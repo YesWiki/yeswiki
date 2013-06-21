@@ -1067,8 +1067,10 @@ function baz_requete_bazar_fiche($valeur)
 
     // si un mail d envoie de la fiche est present, on envoie!
     if (isset($destmail)) {
-        include_once 'Mail.php';
-        include_once 'Mail/mime.php';
+	if (!class_exists("Mail")) {
+        	include_once 'Mail.php';
+	        include_once 'Mail/mime.php';
+	}
         $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
         $sujet = remove_accents('['.str_replace("http://","",$lien).'] Votre fiche : '.$_POST['bf_titre']);
         $lienfiche = $GLOBALS['wiki']->config["base_url"].$GLOBALS['_BAZAR_']['id_fiche'];
@@ -1147,8 +1149,10 @@ function baz_insertion_fiche($valeur, $batch=false)
 
         // Envoie d un mail aux administrateurs
         if (BAZ_ENVOI_MAIL_ADMIN) {
-            include_once 'Mail.php';
-            include_once 'Mail/mime.php';
+	    if (!class_exists("Mail")) {
+            	include_once 'Mail.php';
+	        include_once 'Mail/mime.php';
+	    }
             $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
             $sujet = remove_accents('['.str_replace("http://","",$lien).'] nouvelle fiche ajoutee : '.$_POST['bf_titre']);
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
@@ -1221,8 +1225,10 @@ function baz_mise_a_jour_fiche($valeur)
 
     // Envoie d un mail aux administrateurs
         if (BAZ_ENVOI_MAIL_ADMIN) {
+	   if (!class_exists("Mail")) {
             include_once 'Mail.php';
             include_once 'Mail/mime.php';
+	   }
             $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
             $sujet = remove_accents('['.str_replace("http://","",$lien).'] fiche modifiee : '.$_POST['bf_titre']);
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
