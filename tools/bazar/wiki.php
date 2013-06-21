@@ -336,3 +336,96 @@ define('BAZ_JS_INIT_MAP', '');
 
 // Choix du look du template par défaut
 define ('BAZ_TEMPLATE_LISTE_DEFAUT', (isset($wakkaConfig['default_bazar_template'])) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html');
+
+
+if (!function_exists('CheckBazarOwner')) {
+
+	function CheckBazarOwner($page,$tag) {
+		global $wiki;
+                // check if user is logged in
+                if (!$wiki->GetUser()) return false;
+                // check if user is owner
+                if ($page["owner"] == $wiki->GetUserName()) return true;
+        }
+
+		
+}
+if (!function_exists('CheckBazarAcls')) {
+	function CheckBazarAcls($page,$tag) {
+
+	global $wiki;
+	// Acces par defaut en lecture/ecriture/modification/suppression  : proprietaire ou administrateur (reglage du droit write lors de la 
+	// creation de la fiche)
+
+
+	// TODO :
+	// loadpagebyid
+	// bazarliste ...
+	// champ mot de passe ?
+	// 
+	// On regle donc ici les droits en lecture, champ par champ, pour la lecture des non-proprietaire et non administrateur 
+	if (CheckBazarOwner($page,$tag)) {
+		return $page;
+	}
+
+	
+		    $valjson = $page["body"];
+		    $valeur = json_decode($valjson, true);
+		    $valeur = array_map('utf8_decode', $valeur);
+		    $val_formulaire = baz_valeurs_type_de_fiche($valeur['id_typeannonce']);
+        	    $formtemplate = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+		    $fieldname=array();
+		    foreach ($formtemplate as $line) {
+			    if (isset($line[11]) && $line[11]!='') {
+				if( !$wiki->CheckACL($line[11])) { // On memorise les champs non autorise
+					     $fieldname[]=$line[1];
+				}
+			    }
+		    }
+		    if (count($fieldname)>0) { // 
+			    foreach ($fieldname as $field) {
+				   $valeur[$field]=""; // ca suffit pour ne pas l'afficher ?
+			    }
+    			    $valeur = array_map("utf8_encode", $valeur);
+			    $page["body"]=json_encode($valeur);
+		    } 
+		    return $page;
+//    $this->page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
+	}
+}
+
+$wikiClasses [] = 'Bazar';
+
+//  Gestion des droits sur les champs d'une fiche Bazar, suppose que Bazar soit toujours integre a Yeswiki puisque cette 
+//  Gestion est supprimee de template. Trouver un moyen de tester l'existence de la fonction Loadpage dans le wiki.php de template et
+// la charger si elle est non presente ? 
+
+
+$wikiClassesContent [] = ' 
+
+	function LoadPage($tag, $time = "", $cache = 1)
+	{
+		// retrieve from cache
+		if (!$time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false) && isset($cachedPage["metadatas"]))
+		{
+			$page = $cachedPage;
+		}
+		else // load page
+		{
+			$sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
+				. " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
+				. ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
+			$page = $this->LoadSingle($sql);
+			// si la page existe, on charge les meta-donnees
+			if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
+			
+			$type = $this->GetTripleValue($tag, \'http://outils-reseaux.org/_vocabulary/type\', \'\', \'\');
+			if ($type == \'fiche_bazar\') {
+			    $page=CheckBazarAcls($page,$tag);
+			}
+			// cache result
+			if (!$time) $this->CachePage($page, $tag);
+		}
+		return $page;
+	}
+';
