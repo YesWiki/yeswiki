@@ -199,7 +199,13 @@ define ('BAZ_OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES', 'listes_et_fiches');
 
 // Constante pour l'envoi automatique de mail aux admins
 define ('BAZ_ENVOI_MAIL_ADMIN', false);
-define ('BAZ_ADRESSE_MAIL_ADMIN', 'admin@domaine.fr');
+// Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
+$hrefdomain = $wiki->Href();
+$fulldomain = parse_url($hrefdomain);
+$hostdomain = $fulldomain["host"];
+$adminmail="noreply@".$hostdomain;
+//define ('BAZ_ADRESSE_MAIL_ADMIN', 'admin@domaine.fr');
+define ('BAZ_ADRESSE_MAIL_ADMIN', $adminmail);
 
 
 //==================================== LES FLUX RSS==================================

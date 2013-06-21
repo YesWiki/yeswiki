@@ -1509,8 +1509,20 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
             BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&action='.$mode.(isset($_GET['idliste']) ? '&idliste='.$_GET['idliste'] : ''));
     $tab_formulaire['cancel_link'] = $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES);
 
+    
     include_once 'tools/bazar/libs/squelettephp.class.php';
-    $formlistes = new SquelettePhp('tools/bazar/presentation/templates/form_edit_lists.tpl.html');
+
+
+    // On cherche un template personnalise dans le repertoire /themes/tools/bazar/presentation/themes 
+
+	$templatetoload='themes/tools/bazar/presentation/templates/form_edit_lists.tpl.html';
+
+	if (!is_file($templatetoload)) {
+		$templatetoload='tools/bazar/presentation/templates/form_edit_lists.tpl.html';
+	}
+
+    
+    $formlistes = new SquelettePhp($templatetoload);
     $formlistes->set($tab_formulaire);
 
     return $formlistes->analyser();
