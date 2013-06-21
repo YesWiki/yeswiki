@@ -878,8 +878,8 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
                 </div>';
         $formtemplate->addElement('html', $input_html) ;   
     } elseif ($mode == 'requete') {
-        var_dump($_POST);
-        var_dump($valeurs_fiche);
+        //var_dump($_POST);
+        //var_dump($valeurs_fiche);
         //break;
 	if (!class_exists("Mail")) {
 	        include_once 'tools/contact/libs/contact.functions.php';
