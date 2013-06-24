@@ -67,10 +67,10 @@ class qqUploadedFileForm {
 
 class qqFileUploader {
     private $allowedExtensions = array();
-    private $sizeLimit = 10485760;
+    private $sizeLimit = '10000';
     private $file;
 
-    function __construct(array $allowedExtensions = array(), $sizeLimit = 10485760){        
+    function __construct(array $allowedExtensions = array(), $sizeLimit = '10000'){        
         $allowedExtensions = array_map("strtolower", $allowedExtensions);
             
         $this->allowedExtensions = $allowedExtensions;        
@@ -91,10 +91,10 @@ class qqFileUploader {
         $postSize = $this->toBytes(ini_get('post_max_size'));
         $uploadSize = $this->toBytes(ini_get('upload_max_filesize'));        
         
-        if ($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit){
+        /*if ($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit){
             $size = max(1, $this->sizeLimit / 1024 / 1024) . 'M';             
             die("{'error':'La configuration de votre serveur devrait avoir un post_max_size et un upload_max_filesize sup&eacute;rieur &agrave; $size'}");    
-        }        
+        }    */    
     }
     
     private function toBytes($str){

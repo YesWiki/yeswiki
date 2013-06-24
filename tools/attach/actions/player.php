@@ -45,7 +45,7 @@ if (!empty($url)) {
 		if ($extension=="mp3") {
 			if (!isset($GLOBALS['jplayer'])) {
 				$GLOBALS['jplayer'] = 1;
-				$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/attach/libs/vendor/jplayer.2.2.0/js/jquery.jplayer.min.js"></script>'."\n";
+				$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/attach/libs/vendor/jplayer.2.4.0/js/jquery.jplayer.min.js"></script>'."\n";
 			}
 			else {
 				$GLOBALS['jplayer']++;
@@ -73,7 +73,7 @@ if (!empty($url)) {
 								});
 							},
 							cssSelectorAncestor: "#jp_container_'.$GLOBALS['jplayer'].'",
-							swfPath: "tools/attach/libs/vendor/jplayer.2.2.0/js",
+							swfPath: "tools/attach/libs/vendor/jplayer.2.4.0/js",
 							timeupdate: function(event) {
 								my_extraPlayInfo.css({width : parseInt(event.jPlayer.status.currentPercentAbsolute, 10) + "%"});
 							},
