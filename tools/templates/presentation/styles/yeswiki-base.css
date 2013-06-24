@@ -284,6 +284,7 @@ overflow: auto;
 .topbarpage .btn-toolbar a:hover {text-decoration:none;}
 .topbarpage .form-search {margin:0;}
 .topbarpage .dropdown-menu a {display:block;}
+.topbarpage ul ul {display: none;}
 
 .dropdown-menu .login-form {margin:0;padding:18px;}
 
@@ -293,3 +294,5 @@ overflow: auto;
 .slideshow-html, .container-slide-basic .carousel {height:100%}
 .slideshow-body {height:90%}
 .container-slide-basic {padding:18px; height:90%;}
+
+.wiki-textarea {width:100% !important; height:500px !important;}
