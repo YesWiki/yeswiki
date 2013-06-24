@@ -1,6 +1,8 @@
 $(document).ready(function() {
+	$('.tag-label').hover(function(){$(this).addClass('label-info')}, function(){if(!$(this).hasClass('label-active')){$(this).removeClass('label-info')}});
+
 	//nuage de mots clés : tooltip
-	$(".tooltip_link").tooltip({tipClass:'tooltip', position: "top center", relative: true});
+	$('.tag-link').popover({html:true,placement:'top',trigger:'hover'})
 
 	//nettoyage des formulaires
 	$.fn.clearForm = function() {
@@ -21,18 +23,18 @@ $(document).ready(function() {
 	$(".antispam").attr('value', '1');
 		
 	//accordeon
-	$("a.lien_titre_accordeon").live("click", function() {
+	$("a.lien_titre_accordeon").on("click", function() {
 		$(this).siblings(".accordeon_cache").toggle();
 		return false;
 	});
 	
 	//Afficher/cacher les commentaires
-	$("strong.lien_commenter").css("cursor", "pointer").live("click", function(){
+	$("strong.lien_commenter").css("cursor", "pointer").on("click", function(){
 		$(this).siblings(".commentaires_billet_microblog").toggle().find(".commentaire_microblog").focus();
 	});
 
 	//ajax envoi de nouveaux commentaires
-	$(".bouton_microblog").live("click", function() {
+	$(".bouton_microblog").on("click", function() {
 		var textcommentaire = $(this).prevAll(".commentaire_microblog").val();	
 		var urlpost= $(this).parent("form").attr("action").replace('/addcomment','/ajaxaddcomment'+'&jsonp_callback=?'); 		
 		$(this).parents(".microblogcommentform, .reponsecommentform").attr("id",'comments');	
@@ -53,7 +55,7 @@ $(document).ready(function() {
 	});
 	
 	//ajax repondre à un commentaire			
-	$("a.repondre_commentaire").live("click", function() {
+	$("a.repondre_commentaire").on("click", function() {
 		//on cache les formulaires déja ouverts et on reaffiche le contenu
 		$(".comment_a_editer, .reponsecommentform").remove();
 		$("#comments").show().removeAttr("id");	
@@ -73,7 +75,7 @@ $(document).ready(function() {
 	});
 	 
 	//ajax edition commentaire			
-	$("a.editer_commentaire").live("click", function() {
+	$("a.editer_commentaire").on("click", function() {
 		//on cache les formulaires déja ouverts et on reaffiche le contenu
 		$(".comment_a_editer, .reponsecommentform").remove();
 		$("#comments").show().removeAttr("id");	
@@ -98,13 +100,13 @@ $(document).ready(function() {
 	});
 	
 	//annulation edition commentaire
-	$("input.bouton_annul").live("click", function() {
+	$("input.bouton_annul").on("click", function() {
 		$(".comment_a_editer, .reponsecommentform").remove();
 		$("#comments").show().removeAttr("id");		      
 	});
 	
 	//sauvegarde commentaire
-	$("input.bouton_submit").live("click", function() {
+	$("input.bouton_submit").on("click", function() {
 		var urlpost= $("#ACEditor").attr("action") + '&jsonp_callback=?' ;
 		$(this).parents(".comment").attr("id",'comments');		
 		$.getJSON(urlpost, { 
@@ -126,7 +128,7 @@ $(document).ready(function() {
 	});			
 				
 	//ajax suppression commentaire			
-	$("a.supprimer_commentaire, a.supprimer_billet").live("click", function() {
+	$("a.supprimer_commentaire, a.supprimer_billet").on("click", function() {
 		var urlget = $(this).attr('href').replace('deletepage','ajaxdeletepage')+'&jsonp_callback=?';
 		$(this).parent().parent().attr("id",'commentasupp');
 		
@@ -149,19 +151,19 @@ $(document).ready(function() {
 	});
 	
 	//on efface tous les écrits restants dans le formulaire du billet microblog
-	$('.btn_annuler').live("click", function(){
+	$('.btn_annuler').on("click", function(){
 		$(this).parents("form").clearForm();
 		var max = parseInt($('.info_nb_car_max').html());
 		$('.microblog_billet').focus().parent().find('.info_nb_car').html(max);
 	});
 	
 	//on sauve le billet microblog en ajoutant l'antispam
-	$('.btn_enregistrer').live("click", function(){
+	$('.btn_enregistrer').on("click", function(){
 		$(this).parents("form").append("<input type=\"hidden\" name=\"antispam\" value=\"1\" />");	    
 	});
 	
 	//on empeche d'aller au dela de la limite du nombre de caracteres
-	$('.microblog_billet').live("keypress", function(){
+	$('.microblog_billet').on("keypress", function(){
 		var max = parseInt($(this).parent().find('.info_nb_car_max').html());
 		if($(this).val().length > max){
 			$(this).val($(this).val().substr(0, max));

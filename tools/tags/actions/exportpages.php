@@ -33,55 +33,63 @@
 *@version       $Revision: 0.1 $ $Date: 2010/03/04 14:19:03 $
 */
 
-if (!defined("WIKINI_VERSION"))
-{
-            die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die ("acc&egrave;s direct interdit");
 }
 
+include_once 'tools/tags/libs/tags.functions.php';
+
+// ajoute t on les pages installees par defaut dans wiki
+$addinstalledpage = $this->getParameter('addinstalledpage');
+
+// quels types de pages : fiche bazar, page wiki, ou tout?
+$type = $this->getParameter('type');
+if ($type!='bazar' && $type!='wiki' && $type!='all') $type = 'all';
+
 $output = '';
-if ($this->UserIsAdmin()) {
-	if (isset($_POST["page"])) {
-		var_dump($_POST["page"]);
-	}
-	else {
-		// recuperation des pages creees a l'installation
-		$d = dir("setup/doc/");
-		while ($doc = $d->read()){
-			if (is_dir($doc) || substr($doc, -4) != '.txt')
-				continue;
-			if ($doc=='_root_page.txt'){
-				$installpagename[$this->GetConfigValue("root_page")] = $this->GetConfigValue("root_page");
-			} else {
-				$pagename = substr($doc,0,strpos($doc,'.txt'));
-				$installpagename[$pagename] = $pagename;
-			}
-		}	
-		// recuperation des formulaires, listes, et fiches bazar
 
-		// recuperation des pages wikis
-		$sql = 'SELECT tag FROM '.$this->GetConfigValue('table_prefix').'pages WHERE latest="Y" 
-					AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" '.
-					//' AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") '.
-					'ORDER BY tag';
-
-		$pages = $this->LoadAll($sql);
-
-		// on prend tous les tags
-		$sql = 'SELECT DISTINCT value FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
-		$tags = $this->LoadAll($sql);
-		var_dump($tags);
-
-
-		include_once 'tools/tags/libs/squelettephp.class.php';
-		$template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html'); // charge le templates
-		$template_export->set(array('pages' => $pages, 'installedpages' => $installpagename, 'tags' => $tags)); // on passe le tableau de pages en parametres
-		$output .= $template_export->analyser(); // affiche les resultats
+if (isset($_POST["page"])) {
+	foreach ($_POST["page"] as $page) {
+		echo $this->Format('{{include page="'.$page.'"}}');
 	}
 }
 else {
-	$output .= '<div class="alert alert-error">'.TEMPLATE_EXPORT_ONLY_FOR_ADMINS.'.</div>'."\n";
+	// recuperation des pages creees a l'installation
+	$d = dir("setup/doc/");
+	while ($doc = $d->read()){
+		if (is_dir($doc) || substr($doc, -4) != '.txt')
+			continue;
+		if ($doc=='_root_page.txt'){
+			$installpagename[$this->GetConfigValue("root_page")] = $this->GetConfigValue("root_page");
+		} else {
+			$pagename = substr($doc,0,strpos($doc,'.txt'));
+			$installpagename[$pagename] = $pagename;
+		}
+	}	
+
+	// recuperation des pages wikis
+	$sql = 'SELECT tag,body FROM '.$this->GetConfigValue('table_prefix').'pages WHERE latest="Y" 
+				AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
+
+	if ($type == 'wiki') {
+		$sql .= ' AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
+	} 
+	elseif ($type == 'bazar') {
+		$sql .= ' AND tag IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") ';
+	}
+
+	$sql .= 'ORDER BY tag';
+
+	$pages = $this->LoadAll($sql);
+
+	// on prend tous les tags
+	$sql = 'SELECT DISTINCT value FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
+	$tags = $this->LoadAll($sql);
+
+	include_once 'tools/tags/libs/squelettephp.class.php';
+	$template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html'); // charge le templates
+	$template_export->set(array('pages' => $pages, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'tags' => $tags, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
+	$output .= $template_export->analyser(); // affiche les resultats
 }
 
-echo $this->Header();
-echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
-echo $this->Footer();
+echo "\n$output\n";

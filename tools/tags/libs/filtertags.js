@@ -5,18 +5,21 @@ $(document).ready(function() {
           autoResize: true, // This will auto-update the layout when the browser window is resized.
           container: $('.filter-results'), // Optional, used for some extra CSS styling
           offset: 15, // Optional, the distance between grid items
-          itemWidth: 260 // Optional, the width of a grid item
+          itemWidth: 270 // Optional, the width of a grid item
     };
 
+    // initial alignment
+    $('.filtered-element').wookmark(wookmarkoptions);
+    
     // options for mixitup
     var filterresults = $('.filter-results');
     var mixitupoptions = {
-      /*onMixStart: activebuttons,*/
       onMixEnd: refresh,
-      filterSelector: '.filter-original', /**/
-      /*multiFilter: true,*/
+      filterSelector: '.filter-original', 
       filterLogic: 'and',
-      targetSelector: '.filtered-element'
+      targetSelector: '.filtered-element',
+      effects:  ['fade','scale'],
+      transitionSpeed: 300
     };
     filterresults.mixitup(mixitupoptions);
 
@@ -26,17 +29,15 @@ $(document).ready(function() {
       results = filterresults.find('.filtered-element').filter(function() {
         return $(this).css('opacity') == '1';
       });
-console.log('nb results : '+results.length);
-      //results.wookmark(wookmarkoptions);
+      results.wookmark(wookmarkoptions);
       $('.nbfilteredelements').text(results.length);    
     };
 
-    // initial refresh
-    //refresh();
-    
     // open filtered elements in new windows
     $('.filtered-element[data-wikipage]').on('click', function(e) { 
+        e.stopPropagation();
         window.open($(this).data('wikipage'));
+        return false;
     } );
 
     $('.filter').on('click', function() {
@@ -49,18 +50,14 @@ console.log('nb results : '+results.length);
       //  $this.addClass('active');
       //}
       var selectedfilters = $('.controls .active');
-      filterString='';var i=0;
+      filterString='';
       $.each( selectedfilters, function() {        
         filterString = filterString+' '+$(this).data('filter');
-        //filterString[i]=$(this).data('filter');
-        i++;
       });
-      console.log(filterString);
 
-      //filterString = results.join(' ');
-      //filter.find('.filtered-element').show();
+      if (filterString === '') {filterString = 'all';}
+      console.log(filterString);
       filterresults.mixitup('filter',filterString);
-      //console.log(filter.mixitup('filter',[filterString]));
       return false;
     });
 

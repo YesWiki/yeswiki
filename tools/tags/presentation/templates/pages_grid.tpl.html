@@ -6,29 +6,36 @@
     </div> <!-- /.filtered-element -->
 <?php endforeach; ?>
 </div>
-
+<?php 
+	// ajout du javascript gerant le filtrage
+	$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."\n".
+	'	<script src="tools/tags/libs/vendor/jquery.wookmark.min.js"></script>
+		<script src="tools/tags/libs/wookmark.js"></script>'."\n";
+?>
 <style>
+.filter-results .filtered-element {
+	float:left;
+    width:270px;
+	display: inline-block;
+	margin: 0 15px 15px 0; 
+	padding: 8px; 
+	border: 2px solid #FAFAFA; 
+	box-shadow: 0 1px 2px rgba(34, 25, 25, 0.4); 
+	background: #FEFEFE; background-image: linear-gradient(45deg, #FFF, #F9F9F9);
+	-webkit-transition: all 0.2s ease-out;
+       -moz-transition: all 0.2s ease-out;
+         -o-transition: all 0.2s ease-out;
+            transition: all 0.2s ease-out;
+}
+
 .filter-results { position:relative; }
 .filter-results, .filter-results * {	 
 	-moz-box-sizing: border-box; 
 	-webkit-box-sizing: border-box; 
 	box-sizing: border-box; 
 }
-.filtered-element { 
-	float:left;
-	width:18%;
-	display: inline-block; 
-	margin: 0 1% 15px 0; 
-	padding: 8px; 
-	border: 2px solid #FAFAFA; 
-	box-shadow: 0 1px 2px rgba(34, 25, 25, 0.4); 
-	background: #FEFEFE; background-image: linear-gradient(45deg, #FFF, #F9F9F9);
-	  -webkit-transition: all 0.2s ease-out;
-     -moz-transition: all 0.2s ease-out;
-       -o-transition: all 0.2s ease-out;
-          transition: all 0.2s ease-out;
-}
-.filtered-element.active:hover { 
+
+.filtered-element:hover { 
   cursor: pointer;
   -webkit-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
   -moz-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
@@ -39,17 +46,13 @@
   line-height: 20px;
   margin: 0 0 7px;
 }
-.filtered-image img {width:100%;}
-.filtered-element hr {margin:8px 0;}
-.filtered-element .label {font-size:11px !important;}
+.filtered-image-container {text-align: center;}
 .filtered-element.inactive {
 opacity: 0;
 display: none;
 }
 .filtered-element.active {
-    opacity: 1;
-    display: inline-block;
+opacity: 1;
+display: inline-block;
 }
-.filter-inline {display:inline-block; margin:0 24px 8px 0;}
-.filter-line {display:block;}
 </style>

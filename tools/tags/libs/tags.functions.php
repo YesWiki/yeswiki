@@ -35,7 +35,7 @@ function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vi
 }
 
 function sanitizeEntity($string) {
-	return htmlspecialchars(strtr(str_replace('\\\'','_',$string),'/ àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ',
+	return htmlspecialchars(strtr(str_replace(array('\\\'','\''),array('_','_'),$string),'/ àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ',
 '__aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY'));
 }
 
@@ -155,4 +155,61 @@ $retour = array();
   }
   return array_non_empty($retour);
 }
+
+
+function get_title_from_body($page){
+	// on recupere les bf_titre ou les titres de niveau 1 et de niveau 2, on met la PageWiki sinon
+	preg_match_all("/\"bf_titre\":\"(.*)\"/U", $page['body'], $titles);
+	if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
+		$title = utf8_decode(preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+	} 
+	else {
+		preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
+		if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
+			$title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+		}
+		else {
+			preg_match_all("/={5}(.*)={5}/U", $page['body'], $titles);
+			if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
+				$title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+			}
+			else {
+				$title = $page['tag'];
+			}
+		}
+	}
+	return $title;
+}
+
+function get_image_from_body($page){
+	// on cherche les actions attach avec image, puis les images bazar
+	preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $page['body'], $images);
+	if (is_array($images[0]) && isset($images[0][0]) && $images[0][0]!='') {
+		preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
+		$image = afficher_image_attach($page['tag'], $attachimg[1][0], $attachimg[3][0], 'filtered-image', 300, 225) ;
+	}
+	else {
+		preg_match_all("/\"imagebf_image\":\"(.*)\"/U", $page['body'], $image);
+		if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
+			$imagefile = utf8_decode(preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $image[1][0]));
+			$image =  afficher_image($imagefile, $imagefile, 'filtered-image', '', '', 300, 225);
+		} else {
+			preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
+			if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
+				$image = $GLOBALS['wiki']->Format('""<img alt="image" src="'.trim(str_replace('\\', '', $image[1][0])).'" />""');
+			}
+			else {
+				preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
+				if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
+					$image = $GLOBALS['wiki']->Format('""<img alt="image" src="'.trim($image[1][0]).'" />""');
+				}
+				else {
+					$image = '';
+				}
+			}	
+		}	
+	}
+	return $image;
+}
+
 ?>
