@@ -16,10 +16,10 @@ $closed = $this->GetParameter("closed");
 
 echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '')."\">\n";
 
-echo    "<h3 class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
+echo    "<h4 class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
 '<span class="arrow">'.($closed==1 ? '&#9658;' : '&#9660;').'</span>&nbsp;'.
 ($this->GetParameter("header") ? $this->Format($this->GetParameter("header")) : "Table des mati&egrave;res").
-"</h3>\n<div class=\"toc-menu\"><div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
+"</h4>\n<div class=\"toc-menu\"><div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
 
 global $wiki;
 $wiki=$this;
@@ -75,40 +75,43 @@ if (!function_exists("translate2toc"))
 $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."
     <script>
         $(document).ready(function(){
-            $('body').attr('data-spy','scroll');
-            var toc = $('#toc".$tag."');       
-            toc.scrollspy();
-            var initialoffset = $('.page').offset().top;
-            var divLocation = toc.offset();
-            var diff = divLocation.top - initialoffset;
+            var toc = $('#toc".$tag."');   
+            if (toc.length>0) {
+                $('body').attr('data-spy','scroll');
+                    
+                toc.scrollspy();
+                var initialoffset = $('.page').offset().top;
+                var divLocation = toc.offset();
+                var diff = divLocation.top - initialoffset;
 
-            // A la fin du chargement de la page, on positionne la table à la bonne position
-            $(window).load(function () { 
-                if ($(document).scrollTop() > divLocation.top) {
-                    offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
-                    toc.animate({top:offset}, {duration:500,queue:false});
-                }
-            });
+                // A la fin du chargement de la page, on positionne la table a la bonne position
+                $(window).load(function () { 
+                    if ($(document).scrollTop() > divLocation.top) {
+                        offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
+                        toc.animate({top:offset}, {duration:500,queue:false});
+                    }
+                });
 
-            // quand on scrolle, la table suit
-            $(window).scroll(function () { 
-                if ($(document).scrollTop() > divLocation.top) {
-                    offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
-                    toc.animate({top:offset}, {duration:500,queue:false});
-                }
-                else {
-                    toc.animate({top:diff}, {duration:500,queue:false});
-                }
-            });
+                // quand on scrolle, la table suit
+                $(window).scroll(function () { 
+                    if ($(document).scrollTop() > divLocation.top) {
+                        offset = ($(document).scrollTop() - initialoffset + 20 ) + 'px';
+                        toc.animate({top:offset}, {duration:500,queue:false});
+                    }
+                    else {
+                        toc.animate({top:diff}, {duration:500,queue:false});
+                    }
+                });
 
-            // on anime le passage à un chapitre 
-            $('.toc a').on('click', function () { 
-                var link = $(this).attr('href');
-                $('html, body').animate({
-                     scrollTop: $(link).offset().top
-                 }, 500);
-                return false;
-            });
+                // on anime le passage a un chapitre 
+                $('.toc a').on('click', function () { 
+                    var link = $(this).attr('href');
+                    $('html, body').animate({
+                         scrollTop: $(link).offset().top
+                     }, 500);
+                    return false;
+                });
+            }
         }); 
     </script>";
 
@@ -120,5 +123,5 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."
     }
     
     // on ferme les divs ouvertes par l'action toc
-    echo "</div>\n</div>\n</div>\n";
+    echo "</div>\n</div>\n";
 ?> 
