@@ -1519,9 +1519,9 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     include_once 'tools/bazar/libs/squelettephp.class.php';
 
 
-    // On cherche un template personnalise dans le repertoire /themes/tools/bazar/presentation/themes 
+    // On cherche un template personnalise dans le repertoire /themes/tools/bazar/template 
 
-	$templatetoload='themes/tools/bazar/presentation/templates/form_edit_lists.tpl.html';
+	$templatetoload='themes/tools/bazar/templates/form_edit_lists.tpl.html';
 
 	if (!is_file($templatetoload)) {
 		$templatetoload='tools/bazar/presentation/templates/form_edit_lists.tpl.html';
@@ -2785,13 +2785,22 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
     }
     include_once 'tools/bazar/libs/squelettephp.class.php';
-    $template = (isset($_GET['template']) && (is_file('templates/bazar/'.$_GET['template']) || is_file('tools/bazar/presentation/templates/'.$_GET['template']) ) ) ? $_GET['template'] : $GLOBALS['_BAZAR_']['templates'];
-    if (is_file('templates/bazar/'.$template)) {
-        $template = 'templates/bazar/'.$template;
+    
+
+    $template = (isset($_GET['template']) && (is_file('templates/bazar/'.$_GET['template']) || is_file('tools/bazar/presentation/templates/'.$_GET['template']) || is_file('themes/bazar/templates/'.$_GET['template']) ) ) ? $_GET['template'] : $GLOBALS['_BAZAR_']['templates'];
+
+
+    if (is_file('themes/tools/bazar/templates/'.$template)) {
+        	$template = 'themes/tools/bazar/templates/'.$template;
     }
     else {
-       $template = 'tools/bazar/presentation/templates/'.$template; 
-    } 
+	    if (is_file('templates/bazar/'.$template)) {
+        	$template = 'templates/bazar/'.$template;
+	    }
+	    else {
+	       $template = 'tools/bazar/presentation/templates/'.$template; 
+    	} 
+    }
     $squelcomment = new SquelettePhp($template);
     $squelcomment->set($fiches);
     $res .= $squelcomment->analyser();
