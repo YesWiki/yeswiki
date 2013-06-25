@@ -1519,7 +1519,7 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     include_once 'tools/bazar/libs/squelettephp.class.php';
 
 
-    // On cherche un template personnalise dans le repertoire /themes/tools/bazar/template 
+    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
 
 	$templatetoload='themes/tools/bazar/templates/form_edit_lists.tpl.html';
 
@@ -2786,6 +2786,7 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
     }
     include_once 'tools/bazar/libs/squelettephp.class.php';
     
+     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
 
     $template = (isset($_GET['template']) && (is_file('templates/bazar/'.$_GET['template']) || is_file('tools/bazar/presentation/templates/'.$_GET['template']) || is_file('themes/bazar/templates/'.$_GET['template']) ) ) ? $_GET['template'] : $GLOBALS['_BAZAR_']['templates'];
 
