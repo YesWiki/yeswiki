@@ -6,12 +6,12 @@ function FindMailFromWikiPage($wikipage,$nbactionmail) {
 }
 
 function ValidateEmail($email) {
-	$regex = "([a-z0-9_\.\-]+)". # name
+	$regex = "/([a-z0-9_\.\-]+)". # name
 			"@". # at
 			"([a-z0-9\.\-]+){2,255}". # domain & possibly subdomains
 			"\.". # period
-			"([a-z]+){2,10}"; # domain extension
-	$eregi = eregi_replace($regex, '', $email);
+			"([a-z]+){2,10}/i"; # domain extension
+	$eregi = preg_replace($regex, '', $email);
 	return empty($eregi) ? true : false;
 }
 

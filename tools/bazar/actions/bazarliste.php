@@ -47,7 +47,7 @@ if (empty($GLOBALS['champ'])) {
 }
 $template = $this->GetParameter("template");
 if (empty($template)) {
-    $template = 'liste_accordeon.tpl.html';
+    $template = BAZ_TEMPLATE_LISTE_DEFAUT;
 }
 $nb = $this->GetParameter("nb");
 if (empty($nb)) {

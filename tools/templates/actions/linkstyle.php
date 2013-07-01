@@ -10,7 +10,7 @@ $styles = "\n".
 '	<link rel="stylesheet" href="tools/templates/presentation/styles/yeswiki-base.css" />'."\n";
 
 // si pas de bootstrap dans les css, on le charge a part
-if (!strstr($this->config['favorite_style'], '.bootstrap.')) {
+if (!strstr($this->config['favorite_style'], 'bootstrap.')) {
 	$styles .= '	<link rel="stylesheet" href="tools/templates/presentation/styles/bootstrap.min.css" />'."\n";
 }
 

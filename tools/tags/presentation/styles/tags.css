@@ -23,9 +23,7 @@ border-radius: 4px 4px 4px 4px;
 }
 /***********************************Nuage de mot clés************************************/
 
-.boite_nuage {display:block;}
-
-li.liste_tooltip {
+.tag-list {
 display:block;
 float:left;
 list-style-type:none;
@@ -91,61 +89,6 @@ color:#b46a47;
 
 a.size1:hover,a.size2:hover,a.size3:hover,a.size4:hover {
 color:#e13728;
-}
-
-.hovertip {
-display:none;
-z-index:100;/*
-background:#FFF;
-background-color: rgba(255, 255, 255, 0.7);*/
-border:1px solid #CCCCCC;
--moz-border-radius:4px;
--webkit-border-radius:4px;
-border-radius:4px;
--moz-box-shadow:1px 1px 1px 0 rgba(50,50,50,.75);
--webkit-box-shadow:1px 1px 1px 0 rgba(50,50,50,.75);
-box-shadow:1px 1px 1px 0 rgba(50,50,50,.75);
-max-height:280px;
-min-width:280px;
-overflow:auto;
-margin:0;
-padding:10px;
-background: #fff;
-background: rgba(255,255,255,0.8);
-}
-
-.hovertip ul {
-position:relative;
-display:block !important;
-list-style-type:none;
-margin:0;
-padding:0 0 0 15px;
-}
-
-li.liste_pageswiki {
-float:none;
-display:list-item;
-list-style-type:disc;
-background-image:none;
-color:#000;
-text-align:left;
-margin:0;
-padding:0;
-}
-
-.hovertip li a {
-text-decoration:none;
-font-weight:700;
-color:#804d40;
-display:block;
-}
-
-.hovertip li a:hover {
-color:#b9251a;
-}
-
-.texte_pages_assoc {
-    font-size: 0.9em;
 }
 
 /***********************************FIN Nuage de mot clés************************************/

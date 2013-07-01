@@ -31,12 +31,14 @@ function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vi
     $GLOBALS['wiki']->tag = $oldpage;
 
     $output = preg_replace('/width=\".*\".*height=\".*\"/U', '', $output );
-    return $output;
+    preg_match_all('/(\<img.*\/\>)/U', $output, $matches);
+    return $matches[0][0];
 }
 
 function sanitizeEntity($string) {
-	return htmlspecialchars(strtr(str_replace('\\\'','_',$string),'/ Ã Ã¡Ã¢Ã£Ã¤Ã§Ã¨Ã©ÃªÃ«Ã¬Ã­Ã®Ã¯Ã±Ã²Ã³Ã´ÃµÃ¶Ã¹ÃºÃ»Ã¼Ã½Ã¿Ã€ÃÃ‚ÃƒÃ„Ã‡ÃˆÃ‰ÃŠÃ‹ÃŒÃÃŽÃÃ‘Ã’Ã“Ã”Ã•Ã–Ã™ÃšÃ›ÃœÃ',
+	return htmlspecialchars(strtr(str_replace(array('\\\'','\''),array('_','_'),$string),'/ àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ',
 '__aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY'), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET);
+
 }
 
 function tokenTruncate($string, $your_desired_width) {
@@ -73,8 +75,8 @@ function get_filtertags_parameters_recursive($nb=1, $tab = array()) {
 			$tab[$nb]['arraytags']  = explode(',', $explodelabel[0]);
 		}
 		$toggle = $GLOBALS['wiki']->GetParameter('select'.$nb);
-		if (!empty($toggle) && $toggle == 'buttons-radio') $tab[$nb]['toggle'] = $toggle;
-		else $tab[$nb]['toggle'] = 'buttons-checkbox';
+		if (!empty($toggle) && $toggle == 'checkbox') $tab[$nb]['toggle'] = $toggle;
+		else $tab[$nb]['toggle'] = 'radio';
 		$class = $GLOBALS['wiki']->GetParameter('class'.$nb);
 		if (!empty($class)) $tab[$nb]['class'] = $class;
 		else $tab[$nb]['class'] = 'filter-inline';
@@ -155,4 +157,113 @@ $retour = array();
   }
   return array_non_empty($retour);
 }
+
+
+function get_title_from_body($page){
+	// on recupere les bf_titre ou les titres de niveau 1 et de niveau 2, on met la PageWiki sinon
+	preg_match_all("/\"bf_titre\":\"(.*)\"/U", $page['body'], $titles);
+	if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
+		$title = utf8_decode(preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+	} 
+	else {
+		preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
+		if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
+			$title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+		}
+		else {
+			preg_match_all("/={5}(.*)={5}/U", $page['body'], $titles);
+			if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
+				$title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+			}
+			else {
+				$title = $page['tag'];
+			}
+		}
+	}
+	return $title;
+}
+
+function get_image_from_body($page){
+	// on cherche les actions attach avec image, puis les images bazar
+	preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $page['body'], $images);
+	if (is_array($images[0]) && isset($images[0][0]) && $images[0][0]!='') {
+		preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
+		$image = afficher_image_attach($page['tag'], $attachimg[1][0], $attachimg[3][0], 'filtered-image', 300, 225) ;
+	}
+	else {
+		preg_match_all("/\"imagebf_image\":\"(.*)\"/U", $page['body'], $image);
+		if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
+			$imagefile = utf8_decode(preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $image[1][0]));
+			$image =  afficher_image($imagefile, $imagefile, 'filtered-image', '', '', 300, 225);
+		} else {
+			preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
+			if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
+				$image = $GLOBALS['wiki']->Format('""<img alt="image" src="'.trim(str_replace('\\', '', $image[1][0])).'" />""');
+			}
+			else {
+				preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
+				if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
+					$image = $GLOBALS['wiki']->Format('""<img alt="image" src="'.trim($image[1][0]).'" />""');
+				}
+				else {
+					$image = '';
+				}
+			}	
+		}	
+	}
+	return $image;
+}
+
+/** generatePageName() Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant a 50 caracteres et en mettant 2 majuscules
+*	Si le NomWiki existe deja, on propose recursivement NomWiki2, NomWiki3, etc..
+*
+*   @param  string  chaine de caracteres avec de potentiels accents a enlever
+*   @param	integer	nombre d'iteration pour la fonction recursive (1 par defaut)
+*
+*
+*   return  string	chaine de caracteres, en NomWiki unique
+*/
+function generatePageName($nom, $occurence = 1)
+{
+    // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
+    if ($occurence == 1) {
+        // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48, histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
+        // plus traitement des accents
+        // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
+        $temp = explode(" ", ucwords(strtolower(preg_replace("/&([a-z])[a-z]+;/i","$1", htmlentities(substr($nom, 0, 47))))));
+        $nom = '';
+        foreach ($temp as $mot) {
+            // on vire d'eventuels autres caracteres speciaux
+            $nom .= preg_replace("/[^a-zA-Z0-9]/","",trim($mot));
+        }
+
+        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
+        $var = preg_replace('/[^A-Z]/','',$nom);
+        if (strlen($var)<2) {
+            $last = ucfirst(substr($nom, strlen($nom) - 1));
+            $nom = substr($nom, 0, -1).$last;
+        }
+    }
+    // si on en est a plus de 2 occurences, on supprime le chiffre precedent et on ajoute la nouvelle occurence
+    elseif ($occurence>2) {
+        $nb = -1*strlen(strval($occurence-1));
+        $nom = substr($nom, 0, $nb).$occurence;
+    }
+    // cas ou l'occurence est la deuxieme : on reprend le NomWiki en y ajoutant le chiffre 2
+    else {
+        $nom = $nom.$occurence;
+    }
+
+     // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
+    if (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
+        return $nom;
+    }
+    // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
+    else {
+        $occurence++;
+
+        return genere_nom_wiki($nom, $occurence);
+    }
+}
+
 ?>

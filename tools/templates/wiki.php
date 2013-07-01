@@ -52,7 +52,7 @@ define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 define ('TEMPLATES_DEFAULT_LANG', 'fr') ; 
 
 // Indique un encodage de caractères par defaut
-define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-1') ; 
+define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-15') ; 
 
 
 //on récupère les metas

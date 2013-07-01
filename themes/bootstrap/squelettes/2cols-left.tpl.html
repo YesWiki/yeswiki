@@ -24,43 +24,39 @@
 </head>
 
 <body {{parambody}}>
-
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
-        <div class="container-fluid">
+        <div class="container">
           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
           <a class="brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{configuration param="wakka_name"}}</a>
-          <nav class="nav-collapse">
+          <nav class="nav-collapse collapse">
             {{include page="PageMenuHaut" class="topnavpage" doubleclic="1" actif="1"}}
       			{{moteurrecherche class="pull-right"}}
-            <div class="clear"></div>
+            <div class="clearfix"></div>
           </nav><!--/.nav-collapse -->
         </div>
       </div>
     </div>
-
-    <div class="container-fluid main-body" role="main">
-      <div class="row-fluid">
-        <div class="span3">
-          <nav class="well sidebar-nav">
+    <div class="container main-body" role="main">
+      <div class="row">
+        <div class="span2">
+          <nav class="sidebar-nav">
             {{include page="PageMenu" doubleclic="1" actif="1"}}
-          </nav><!--/.well -->      
-        </div><!--/span-->
-        <div class="span9" {{doubleclic}}>
+          </nav><!--/.sidebar-nav -->      
+        </div><!--/span2-->
+        <div class="span10" {{doubleclic}}>
           {WIKINI_PAGE}
-        </div><!--/span-->
+        </div><!--/span10-->
       </div><!--/row-->
 	  {{barreredaction class="form-actions"}}			
 	  <footer>
       {{include page="PageFooter" doubleclic="1"}}
     </footer><!-- end of footer -->
-
-    </div><!--/.fluid-container-->
-
+    </div><!--/.container-->
   {{linkjavascript}}
   </body>
 </html>

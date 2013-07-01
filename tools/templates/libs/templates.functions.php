@@ -211,16 +211,16 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	}
 }
 
-function show_form_theme_selector($mode = 'selector') {
-	// en mode ?dition on recup?re aussi les images de fond
+function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal') {
+	// en mode edition on recupere aussi les images de fond
 	if ($mode=='edit') {
 		$id = 'form_graphical_options'; 
-		// r?cup?ration des images de fond
+		// recuperation des images de fond
 		$backgroundsdir = 'files/backgrounds';
 		$dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
 		while ($dir && ($file = readdir($dir)) !== false) {	
 				$imgextension = strtolower(substr($file, -4, 4));  	
-				// les jpg sont les fonds d'?crans, ils doivent ?tre mis en miniature
+				// les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
 				if ($imgextension == '.jpg') {
 					if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
 						require_once 'tools/attach/libs/class.imagetransform.php';
@@ -236,7 +236,7 @@ function show_form_theme_selector($mode = 'selector') {
 						$backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
 					}
 				}
-				// les png sont les images ? r?p?ter en mosaique
+				// les png sont les images a repeter en mosaique
 				elseif ($imgextension == '.png') {
 					$backgrounds[] = $backgroundsdir.'/'.$file;
 				}
@@ -298,7 +298,7 @@ function show_form_theme_selector($mode = 'selector') {
 		$bgselector = '';
 	}
 
-	$selecteur = '<form class="form-horizontal" id="'.$id.'">'."\n";
+	$selecteur = '<form class="'.$class.'" id="'.$id.'">'."\n";
 	
 	//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
 	$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';

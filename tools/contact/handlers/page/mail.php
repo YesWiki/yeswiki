@@ -16,7 +16,9 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH']) && ($_SERV
 	//initialisation de variables passees en POST
 	$mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
 	$mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
-	if (!$mail_receiver) (isset($_POST['nbactionmail'])) ? FindMailFromWikiPage($this->page["body"],$_POST['nbactionmail']) : false;
+	if (!$mail_receiver) {
+		$mail_receiver = (isset($_POST['nbactionmail'])) ? FindMailFromWikiPage($this->page["body"],$_POST['nbactionmail']) : false;
+	}
 	$name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
 
 	// dans le cas d'une page wiki envoyee, on formate le message en html et en txt
