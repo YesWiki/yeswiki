@@ -7,9 +7,8 @@ $(document).ready(function() {
           offset: 15, // Optional, the distance between grid items
           itemWidth: 270 // Optional, the width of a grid item
     };
+    var filterelements = $('.filtered-element')
 
-    // initial alignment
-    $('.filtered-element').wookmark(wookmarkoptions);
     
     // options for mixitup
     var filterresults = $('.filter-results');
@@ -26,19 +25,12 @@ $(document).ready(function() {
     // count the number of resulting filtered elements and move them in optimal shape
     var results;
     function refresh() {
-      results = filterresults.find('.filtered-element').filter(function() {
+      results = filterelements.filter(function() {
         return $(this).css('opacity') == '1';
       });
       results.wookmark(wookmarkoptions);
       $('.nbfilteredelements').text(results.length);    
     };
-
-    // open filtered elements in new windows
-    $('.filtered-element[data-wikipage]').on('click', function(e) { 
-        e.stopPropagation();
-        window.open($(this).data('wikipage'));
-        return false;
-    } );
 
     $('.filter').on('click', function() {
       var $this = $(this);
@@ -56,7 +48,6 @@ $(document).ready(function() {
       });
 
       if (filterString === '') {filterString = 'all';}
-      console.log(filterString);
       filterresults.mixitup('filter',filterString);
       return false;
     });

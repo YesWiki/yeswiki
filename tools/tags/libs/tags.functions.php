@@ -31,7 +31,8 @@ function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vi
     $GLOBALS['wiki']->tag = $oldpage;
 
     $output = preg_replace('/width=\".*\".*height=\".*\"/U', '', $output );
-    return $output;
+    preg_match_all('/(\<img.*\/\>)/U', $output, $matches);
+    return $matches[0][0];
 }
 
 function sanitizeEntity($string) {
@@ -210,6 +211,58 @@ function get_image_from_body($page){
 		}	
 	}
 	return $image;
+}
+
+/** generatePageName() Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant a 50 caracteres et en mettant 2 majuscules
+*	Si le NomWiki existe deja, on propose recursivement NomWiki2, NomWiki3, etc..
+*
+*   @param  string  chaine de caracteres avec de potentiels accents a enlever
+*   @param	integer	nombre d'iteration pour la fonction recursive (1 par defaut)
+*
+*
+*   return  string	chaine de caracteres, en NomWiki unique
+*/
+function generatePageName($nom, $occurence = 1)
+{
+    // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
+    if ($occurence == 1) {
+        // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48, histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
+        // plus traitement des accents
+        // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
+        $temp = explode(" ", ucwords(strtolower(preg_replace("/&([a-z])[a-z]+;/i","$1", htmlentities(substr($nom, 0, 47))))));
+        $nom = '';
+        foreach ($temp as $mot) {
+            // on vire d'eventuels autres caracteres speciaux
+            $nom .= preg_replace("/[^a-zA-Z0-9]/","",trim($mot));
+        }
+
+        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
+        $var = preg_replace('/[^A-Z]/','',$nom);
+        if (strlen($var)<2) {
+            $last = ucfirst(substr($nom, strlen($nom) - 1));
+            $nom = substr($nom, 0, -1).$last;
+        }
+    }
+    // si on en est a plus de 2 occurences, on supprime le chiffre precedent et on ajoute la nouvelle occurence
+    elseif ($occurence>2) {
+        $nb = -1*strlen(strval($occurence-1));
+        $nom = substr($nom, 0, $nb).$occurence;
+    }
+    // cas ou l'occurence est la deuxieme : on reprend le NomWiki en y ajoutant le chiffre 2
+    else {
+        $nom = $nom.$occurence;
+    }
+
+     // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
+    if (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
+        return $nom;
+    }
+    // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
+    else {
+        $occurence++;
+
+        return genere_nom_wiki($nom, $occurence);
+    }
 }
 
 ?>

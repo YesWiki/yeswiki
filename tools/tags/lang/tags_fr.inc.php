@@ -53,12 +53,29 @@ define ('TAGS_FILTER', 'Filtrer');
 define ('TAGS_CONTAINING_TAG', 'avec le mot cl&eacute;');
 
 // handler exportpages
-//define ('TEMPLATE_EXPORT_ONLY_FOR_ADMINS', 'L\'export int&eacute;gral des pages est r&eacute;serv&eacute; &agrave; l\'administrateur');
-define ('TEMPLATE_EXPORT_THIS_SELECTION', 'Exporter cette s&eacute;lection');
-//define ('TEMPLATE_EXPORT_FORMAT', 'Format d\'export');
-//define ('TEMPLATE_EXPORT_PAGES_TITLE', 'Export des pages de ce YesWiki');
-define ('TEMPLATE_EXPORT_PAGES_INFO', 'Vous pouvez changer l\'ordre des pages en cliquant dessus puis en les d&eacute;pla&ccedil;ant.<br />Visualisez la page en cliquant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-eye-open"></i></a>, et enlevez des pages de cette s&eacute;lection en appuyant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-minus"></i></a>.');
-//define ('TEMPLATE_EXPORT_REMOVE_INSTALLATION_PAGES', 'Enlever toutes les pages cr&eacute;&eacute;es &agrave; l\'installation');
+define ('TAGS_GENERATE_EBOOK', 'Cr&eacute;er l\'Ebook &agrave; partir de cette s&eacute;lection');
+define ('TAGS_EXPORT_PAGES_INFO', 'Vous pouvez changer l\'ordre des pages en cliquant dessus puis en les d&eacute;pla&ccedil;ant.<br />Visualisez la page en cliquant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-eye-open"></i></a>, et enlevez des pages de cette s&eacute;lection en appuyant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-minus"></i></a>.');
+define ('TAGS_EBOOK_TITLE', 'Titre de l\'ouvrage');
+define ('TAGS_EBOOK_DESC', 'Description');
+define ('TAGS_EBOOK_AUTHOR', 'Pr&eacute;nom puis nom de l\'auteur');
+define ('TAGS_EXAMPLE_AUTHOR', 'Ex: Victor Hugo');
+define ('TAGS_EBOOK_BIBLIO_AUTHOR', 'Nom de l\'auteur, virgule pr&eacute;nom');
+define ('TAGS_EXAMPLE_BIBLIO_AUTHOR', 'Ex: Hugo, Victor');
+define ('TAGS_EBOOK_COVER_IMAGE', 'Lien vers une l\'image de couverture de l\'ouvrage');
+define ('TAGS_NO_TITLE_FOUND', 'ERREUR : Le titre n\'a pas &eacute;t&eacute; renseign&eacute;.');
+define ('TAGS_NO_DESC_FOUND', 'ERREUR : La description n\'a pas &eacute;t&eacute; renseign&eacute;.');
+define ('TAGS_NO_AUTHOR_FOUND', 'ERREUR : L\'auteur n\'a pas &eacute;t&eacute; renseign&eacute;.');
+define ('TAGS_NO_BIBLIO_AUTHOR_FOUND', 'ERREUR : L\'auteur (version biblio) n\'a pas &eacute;t&eacute; renseign&eacute;.');
+define ('TAGS_NO_IMAGE_FOUND', 'ERREUR : Le lien vers l\'image de couverture n\'a pas &eacute;t&eacute; renseign&eacute;.');
+define ('TAGS_NOT_IMAGE_FILE', 'ERREUR : Le lien vers l\'image de couverture n\'est pas une image avec l\'extension .jpg.');
+define ('TAGS_EBOOK_PAGE_CREATED','La page de l\'Ebook a &eacute;t&eacute; cr&eacute;&eacute;e avec succ&egrave;s' );
+define ('TAGS_GOTO_EBOOK_PAGE', 'Aller voir la page : ');
+define ('TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA', 'Cet ouvrage est publi&eacute; sous licence Creative Commons BY SA.');
+define ('TAGS_BY', 'Par');
+define ('TAGS_ABOUT_THIS_EBOOK', "Information sur cet ouvrage");
+define ('TAGS_DOWNLOAD_EPUB', 'Ebook au format Epub');
+define ('TAGS_NO_EBOOK_METADATAS', 'Cette page ne poss&egrave;de pas les m&eacute;tadonn&eacute;es n&eacute;cessaires pour cr&eacute;er l\'ebook.');
+define ('TAGS_NO_EBOOK_FOUND', 'Pas d\'ebook trouv&eacute;.');
 
 
 ?>

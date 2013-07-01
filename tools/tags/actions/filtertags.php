@@ -10,7 +10,7 @@ $nbcartrunc = 200;
 
 $template = $this->GetParameter('template');
 if (empty($template) || !file_exists('tools/tags/presentation/templates/'.$template)) {
-	$template = 'filter_grid.tpl.html';
+	$template = 'pages_grid.tpl.html';
 }
 
 $params = get_filtertags_parameters_recursive();
@@ -60,7 +60,12 @@ echo $templateelements->analyser();
 // ajout du javascript gerant le filtrage
 $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."\n".
 '	<script src="tools/tags/libs/vendor/jquery.mixitup.min.js"></script>
-	<script src="tools/tags/libs/vendor/jquery.wookmark.min.js"></script>
-	<script src="tools/tags/libs/filtertags.js"></script>'."\n";
+	<script src="tools/tags/libs/filtertags.js"></script>
+	<style>
+	.filtered-element {
+	    opacity: 0;
+	    display: none;
+	}
+	</style>'."\n";
 
 ?>
