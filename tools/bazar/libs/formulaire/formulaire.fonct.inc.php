@@ -75,12 +75,12 @@ function afficher_image($nom_image, $label, $class, $largeur_vignette, $hauteur_
             $url_base = str_replace('wakka.php?wiki=','',$GLOBALS['wiki']->config['base_url']);
 
             return 	'<a class="triggerimage'.' '.$class.'" rel="#overlay-link" href="'.$url_base.'cache/image_'.$nom_image.'">'."\n".
-                    '<img alt="'.$nom_image.'"'.' src="'.$url_base.'cache/vignette_'.$nom_image.'" />'."\n".'</a>'."\n";
+                    '<img src="'.$url_base.'cache/vignette_'.$nom_image.'" alt="'.$nom_image.'"'.' />'."\n".'</a>'."\n";
 
         } else {
             //on renvoit l'image en vignette, avec quand on clique, l'image originale
             return  '<a class="triggerimage'.' '.$class.'" rel="#overlay-link" href="'.$url_base.BAZ_CHEMIN_UPLOAD.$nom_image.'">'."\n".
-                    '<img alt="'.$nom_image.'"'.' src="'.$url_base.'cache/vignette_'.$nom_image.'" rel="'.$url_base.'cache/image_'.$nom_image.'" />'."\n".
+                    '<img src="'.$url_base.'cache/vignette_'.$nom_image.'" alt="'.$nom_image.'"'.' rel="'.$url_base.'cache/image_'.$nom_image.'" />'."\n".
                     '</a>'."\n";
         }
     }
@@ -93,14 +93,14 @@ function afficher_image($nom_image, $label, $class, $largeur_vignette, $hauteur_
         //on renvoit l'image redimensionnee
         list($width, $height, $type, $attr) = getimagesize('cache/image_'.$nom_image);
 
-        return  '<img class="'.$class.'" alt="'.$nom_image.'"'.' src="cache/image_'.$nom_image.'" />'."\n";
+        return  '<img src="cache/image_'.$nom_image.'" class="'.$class.'" alt="'.$nom_image.'"'.' />'."\n";
 
     }
     //on affiche l'image originale sinon
     else {
         list($width, $height, $type, $attr) = getimagesize(BAZ_CHEMIN_UPLOAD.$nom_image);
 
-        return  '<img class="'.$class.'" alt="'.$nom_image.'"'.' src="'.BAZ_CHEMIN_UPLOAD.$nom_image.'" />'."\n";
+        return  '<img src="'.BAZ_CHEMIN_UPLOAD.$nom_image.'" class="'.$class.'" alt="'.$nom_image.'"'.' />'."\n";
     }
 }
 
