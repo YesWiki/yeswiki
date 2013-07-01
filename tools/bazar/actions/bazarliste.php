@@ -118,9 +118,9 @@ usort($fiches['fiches'], 'champ_compare');
 include_once 'tools/bazar/libs/squelettephp.class.php';
 
 
-  // On cherche un template personnalise dans le repertoire /themes/tools/bazar/presentation/themes 
+  // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
 
-$templatetoload='themes/tools/bazar/presentation/templates/'.$template;
+$templatetoload='themes/tools/bazar/templates/'.$template;
 
 if (!is_file($templatetoload)) {
 	$templatetoload='tools/bazar/presentation/templates/'.$template;
