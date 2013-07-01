@@ -16,10 +16,10 @@ $closed = $this->GetParameter("closed");
 
 echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '')."\">\n";
 
-echo    "<h4 class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
-'<span class="arrow">'.($closed==1 ? '&#9658;' : '&#9660;').'</span>&nbsp;'.
+echo    "<div class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
+'<span class="arrow">'.($closed==1 ? '&#9658;' : '&#9660;').'</span>&nbsp;<strong>'.
 ($this->GetParameter("header") ? $this->Format($this->GetParameter("header")) : "Table des mati&egrave;res").
-"</h4>\n<div class=\"toc-menu\"><div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
+"</strong></div>\n<div class=\"toc-menu\"><div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
 
 global $wiki;
 $wiki=$this;
