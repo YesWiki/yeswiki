@@ -17,7 +17,7 @@ $params = get_filtertags_parameters_recursive();
 $taglist = $params['tags'];
 unset($params['tags']);
 
-// requete avec toutes les pages contenants
+// requete avec toutes les pages contenants les mots cles
 $req = "SELECT DISTINCT tag, time, user, owner, body 
 FROM ".$this->config['table_prefix']."pages, ".$this->config['table_prefix']."triples tags
 WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (".$taglist.") AND tags.property = \"http://outils-reseaux.org/_vocabulary/tag\" AND tags.resource = tag ORDER BY tag ASC";
@@ -27,7 +27,12 @@ echo '<div class="well no-dblclick controls">'."\n".'<div class="pull-right mute
 foreach ($params as $param) {
   	echo '<div class="filter-group '.$param['class'].'" data-type="'.$param['toggle'].'">'."\n".$param['title']."\n".'<div class="btn-group filter-tags">'."\n";
  	foreach ($param['arraytags'] as $tagname) {
- 		echo '<button type="button" class="btn filter" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
+ 		if ($tagname == "alaligne") { 
+ 			echo '<br />'."\n";
+ 		} 
+ 		else {
+ 			echo '<button type="button" class="btn filter" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
+ 		}	
  	}
  	echo  '</div>'."\n".'</div>'."\n";
 } 
