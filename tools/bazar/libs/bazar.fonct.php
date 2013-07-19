@@ -2788,7 +2788,7 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
     
      // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
 
-    $template = (isset($_GET['template']) && (is_file('templates/bazar/'.$_GET['template']) || is_file('tools/bazar/presentation/templates/'.$_GET['template']) || is_file('themes/bazar/templates/'.$_GET['template']) ) ) ? $_GET['template'] : $GLOBALS['_BAZAR_']['templates'];
+    $template = (isset($_GET['template']) && (is_file('templates/bazar/'.$_GET['template']) || is_file('tools/bazar/presentation/templates/'.$_GET['template']) || is_file('themes/tools/bazar/templates/'.$_GET['template']) ) ) ? $_GET['template'] : $GLOBALS['_BAZAR_']['templates'];
 
 
     if (is_file('themes/tools/bazar/templates/'.$template)) {

@@ -17,7 +17,7 @@ function search_template_files($directory) {
 	
 	$dir = opendir($directory);
 	while ($dir && ($file = readdir($dir)) !== false) {    	
-		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
+		if  ($file!='.' && $file!='..' && $file!='CVS' && $file!='tools' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
 			$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
 		    while (false !== ($file2 = readdir($dir2))) {
 		    	if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') $tab_themes[$file]["style"][$file2] = $file2;
