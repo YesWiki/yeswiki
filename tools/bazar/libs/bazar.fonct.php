@@ -423,7 +423,6 @@ function baz_afficher_formulaire_import()
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
 	    // Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-
     	$nb = 0 ;
         $nom_champ = array();
         $type_champ = array();
@@ -440,12 +439,28 @@ function baz_afficher_formulaire_import()
                     $type_champ[] = $ligne[0];
                     $nb++;
                 }
+		elseif ($ligne[0] == 'utilisateur_wikini') {
+			$nom_champ[] = 'nomwiki';
+			$nom_champ[] = 'mot_de_passe_wikini';
+                    	$type_champ[] = $ligne[0];
+			$nb++;
+		}
+		elseif($ligne[0] == 'titre') {
+                    $nom_champ[] = 'bf_titre';
+                    $type_champ[] = $ligne[0];
+                }
+		elseif($ligne[0] == 'inscriptionliste') {
+                    $nom_champ[] = str_replace(array('@', '.'), array('', ''), $ligne[1]);
+                    $type_champ[] = $ligne[0];
+                }
                 else {
                     $nom_champ[] = $ligne[1];
                     $type_champ[] = $ligne[0];
                 }
                 $nb++;
             }
+
+	    
         }	 
 		$import = $_POST['import'];
 		$newname = BAZ_CHEMIN_UPLOAD . $_POST['cvsfilename'];
@@ -472,6 +487,9 @@ function baz_afficher_formulaire_import()
 							$bf_longitude = $data[$c];
 							$geolocalisation = true;
 						}
+						
+// TODO subscribe list ?? pas forcemment car fait dans les appels de requete lors de l'insertion ... a verifier
+						
 						if (($type_champ[$c])== 'image') {
                             $imageorig = utf8_decode($data[$c]);
                             //on enleve les accents sur les noms de fichiers, et les espaces
@@ -506,6 +524,8 @@ function baz_afficher_formulaire_import()
 					}
 					$valeur['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
                     $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
+
+                    $GLOBALS['_BAZAR_']['provenance'] =  'import'; // Pour les traitements particulier lors de l import
 
 					if (!$erreur) baz_insertion_fiche($valeur, true);
                     $erreur = false;
@@ -563,6 +583,7 @@ function baz_afficher_formulaire_import()
             $output .= '<div class="alert alert-info">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'."\n".BAZ_ENCODAGE_CSV."\n".'</div>'."\n";
 
 
+	    // TODO reprendre code ci apres
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
         $nb = 0 ; $csv = '';
@@ -577,6 +598,22 @@ function baz_afficher_formulaire_import()
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                     $nb++;
                 }
+			
+                elseif($ligne[0] == 'titre') { // Champ titre aggregeant plusieurs champs
+                    $csv .= utf8_encode('"'.str_replace('"','""',"Titre calcul�").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+
+		}
+
+	        elseif($ligne[0] == 'utilisateur_wikini') { // utilisateur et mot de passe 
+                    $csv .= utf8_encode('"'.str_replace('"','""',"NomWiki").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                    $csv .= utf8_encode('"'.str_replace('"','""',"Mot de passe").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                    $nb++;
+
+		}
+		elseif($ligne[0] == 'inscriptionliste') { // Nom de la liste et etat de l'abonnement
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+
+		}
                 else {
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
                 }
@@ -676,11 +713,31 @@ function baz_afficher_formulaire_export()
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
-                    $tab_champs[] = $ligne[1];
-                    $tab_champs[] = $ligne[2];
+                    $tab_champs[] = $ligne[1]; // bf_latitude
+                    $tab_champs[] = $ligne[2];  // bf_longitude
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[4]) && $ligne[4]==1) ? ' *' : '').'",');
                 }
+		
+                elseif($ligne[0] == 'titre') { // Champ titre aggregeant plusieurs champs
+                    $tab_champs[] = 'bf_titre';
+                    $csv .= utf8_encode('"'.str_replace('"','""',"Titre calcul�").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+
+		}
+
+	        elseif($ligne[0] == 'utilisateur_wikini') { // Champ titre aggregeant plusieurs champs
+                    $tab_champs[] = 'nomwiki';
+                    $tab_champs[] = 'mot_de_passe_wikini';
+                    $csv .= utf8_encode('"'.str_replace('"','""',"NomWiki").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                    $csv .= utf8_encode('"'.str_replace('"','""',"Mot de passe").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+
+		}
+		elseif($ligne[0] == 'inscriptionliste') { // Nom de la liste et etat de l'abonnement
+                    $tab_champs[] = str_replace(array('@', '.'), array('', ''), $ligne[1]); // nom de la liste
+                    $csv .= utf8_encode('"'.str_replace('"','""',$ligne[1]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+
+		}
+
                 else {
                     $tab_champs[] = $ligne[1];
                     $csv .= utf8_encode('"'.str_replace('"','""',$ligne[2]).((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
@@ -690,6 +747,7 @@ function baz_afficher_formulaire_export()
         }
         $csv = substr(trim($csv),0,-1)."\r\n";
 
+	// TODO : inscription liste
         //on rÃ©cupÃ¨re toutes les fiches du type choisi et on les met au format csv
         $tableau_fiches = baz_requete_recherche_fiches('', 'alphabetique', $id_type_fiche, $val_formulaire['bn_type_fiche']);
         $total = count($tableau_fiches);
@@ -1054,11 +1112,10 @@ function baz_requete_bazar_fiche($valeur)
 
     $tableau = formulaire_valeurs_template_champs($GLOBALS['_BAZAR_']['template']);
     for ($i=0; $i<count($tableau); $i++) {
-        $tab = $tableau[$i][0]($formtemplate, $tableau[$i], 'requete', $valeur);
+        $tab = $tableau[$i][0]($formtemplate, $tableau[$i], 'requete', $valeur); // appel des fonctions
         if (is_array($tab)) $valeur = array_merge($valeur, $tab);
     }
     $valeur['date_maj_fiche'] = date( 'Y-m-d H:i:s', time() );
-
     if (!isset($valeur['id_fiche'])) {
         // l'identifiant (sous forme de NomWiki) est gÃ©nÃ©rÃ© Ã  partir du titre
         $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
@@ -2044,11 +2101,32 @@ function baz_voir_fiche($danslappli, $idfiche)
 
     //Partie la plus importante : apres avoir rÃ©cupÃ©rÃ© toutes les valeurs de la fiche, on gÃ©nÃ©re l'affichage html de cette derniÃ¨re
     $tableau = formulaire_valeurs_template_champs($tab_nature['bn_template']);
+    // TODO pas de controle si proprietaire : 
+
+ // check if user is logged in
+                //if (!$wiki->GetUser()) return false;
+                // check if user is owner
+                //if ($page["owner"] == $wiki->GetUserName()) return true;
+    
     for ($i=0; $i<count($tableau); $i++) {
-        if (function_exists($tableau[$i][0])) {
-          $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', $valeurs_fiche);
-        }
+	if (isset($tableau[$i][11]) && $tableau[$i][11]!='') { // Champ  acls  present
+		if( !$GLOBALS['wiki']->CheckACL($tableau[$i][11])) { // Non autorise : non ne fait rien
+			$res.="";
+		}
+		else { // Mauvais style de programmation ... 
+	 		if (function_exists($tableau[$i][0])) {
+	       	  		$res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', $valeurs_fiche);
+			}
+
+		}
+	}
+	else {
+	 if (function_exists($tableau[$i][0])) {
+	       	  $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', $valeurs_fiche);
+         }
+    	}
     }
+    
     //informations complementaires (id fiche, etat publication,... )
     if ($danslappli==1) {
         $res .= '<div class="BAZ_fiche_info BAZ_fiche_info_'.$tab_nature['bn_label_class'].'">'."\n";
