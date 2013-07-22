@@ -370,7 +370,7 @@ if (!function_exists('CheckBazarAcls')) {
 	// champ mot de passe ?
 	// 
 	// On regle donc ici les droits en lecture, champ par champ, pour la lecture des non-proprietaire et non administrateur 
-	if (CheckBazarOwner($page,$tag)) {
+	if (CheckBazarOwner($page,$tag)) { // Pas de controle si proprietaire 
 		return $page;
 	}
 

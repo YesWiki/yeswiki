@@ -68,9 +68,12 @@ $GLOBALS['_BAZAR_']['affiche_menu'] = $this->GetParameter("voirmenu");
 
 // template a utiliser pour afficher les resultats de la recherche
 $GLOBALS['_BAZAR_']['templates'] = $this->GetParameter("template");
-if (empty($GLOBALS['_BAZAR_']['templates']) || (!is_file('templates/bazar/'.$GLOBALS['_BAZAR_']['templates']) && !is_file('tools/bazar/presentation/templates/'.$GLOBALS['_BAZAR_']['templates'] ))) {
+
+if ((empty($GLOBALS['_BAZAR_']['templates'])) ||(!is_file('templates/bazar/'.$GLOBALS['_BAZAR_']['templates']) && is_file('tools/bazar/presentation/templates/'.$GLOBALS['_BAZAR_']['templates']  && !is_file('themes/tools/bazar/templates/'.$GLOBALS['_BAZAR_']['templates'] ) ))) {
     $GLOBALS['_BAZAR_']['templates'] = BAZ_TEMPLATE_LISTE_DEFAUT;
 }
+
+
 
 // si un identifiant fiche est renseigné, on récupère toutes les valeurs associées
 if (isset($_REQUEST['id_fiche'])) {
@@ -166,7 +169,6 @@ if (isset($_GET['message'])) {
     if ($_GET['message']=='delete_ok') $output.= BAZ_FICHE_SUPPRIMEE;
     $output .= '</div>'."\n";
 }
-
 if (isset ($_GET[BAZ_VARIABLE_VOIR])) {
         switch ($_GET[BAZ_VARIABLE_VOIR]) {
             case BAZ_VOIR_CONSULTER:
