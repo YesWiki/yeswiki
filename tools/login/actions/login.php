@@ -157,7 +157,17 @@ else {
 
 // on affiche le template
 if (!class_exists('SquelettePhp')) include_once('tools/login/libs/squelettephp.class.php');
-$squel = new SquelettePhp('tools/login/presentation/templates/'.$template);
+
+
+// On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
+
+$templatetoload='themes/tools/login/templates/'.$template;
+
+if (!is_file($templatetoload)) {
+	$templatetoload='tools/login/presentation/templates/'.$template;
+}
+
+$squel = new SquelettePhp($templatetoload);
 $squel->set(array(
 	"connected" => $connected,
 	"user" => ((isset($user["name"])) ? $user["name"] : ((isset($_POST["name"])) ? $_POST["name"] : '' )), 
