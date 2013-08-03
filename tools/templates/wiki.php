@@ -245,7 +245,7 @@ if (
 		 file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
 		)
 	   ) {
-		echo '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
+		$GLOBALS['template-error'] = '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
 		$wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
 		$wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
 		$wakkaConfig['favorite_squelette']= SQUELETTE_PAR_DEFAUT;
