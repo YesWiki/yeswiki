@@ -86,8 +86,9 @@ $GLOBALS['_BAZAR_']['url'] = new Net_URL($wakkaConfig['base_url'].$GLOBALS['_BAZ
 
 // Connection a la base de donnee
 $dsn='mysql://'.$wakkaConfig['mysql_user'].':'.$wakkaConfig['mysql_password'].'@'.$wakkaConfig['mysql_host'].'/'.$wakkaConfig['mysql_database'];
-$GLOBALS['_BAZAR_']['db'] =& DB::connect($dsn) ;
-if (DB::isError($GLOBALS['_BAZAR_']['db'])) {
+$db = new DB();
+$GLOBALS['_BAZAR_']['db'] = $db->connect($dsn) ;
+if ($db->isError($GLOBALS['_BAZAR_']['db'])) {
     echo $GLOBALS['_BAZAR_']['db']->getMessage();
 }
 
@@ -138,7 +139,7 @@ if ($resultat->numRows() == 0) {
                     //}
                 }
             }
-            echo '<div class="info_box">La base de donn&eacute;es de bazar vient d\'&ecirc;tre ajout&eacute;e,</div>'."\n";
+            echo '<div class="alert alert-success">La base de donn&eacute;es de bazar vient d\'&ecirc;tre ajout&eacute;e,</div>'."\n";
         } else {
             die ('<div class="BAZ_error">Fichier sql introuvable.</div>'."\n");
         }
