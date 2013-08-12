@@ -628,8 +628,10 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
 
 } elseif ($mode == 'requete') {
     //on supprime les tags existants
-    $GLOBALS['wiki']->DeleteTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', NULL, '', '');
-
+    if (!isset($GLOBALS['delete_tags'])) {
+        $GLOBALS['wiki']->DeleteTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', NULL, '', '');
+        $GLOBALS['delete_tags'] = true;    
+    }
     //on découpe les tags pour les mettre dans un tableau
     $tags = explode(",", mysql_real_escape_string($valeurs_fiche[$tableau_template[1]]));
 
