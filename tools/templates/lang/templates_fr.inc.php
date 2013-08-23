@@ -38,7 +38,7 @@ define ('TEMPLATE_CUSTOM_GRAPHICS', 'Apparence de la page');
 define ('TEMPLATE_SAVE', 'Sauver');
 define ('TEMPLATE_APPLY', 'Appliquer');
 define ('TEMPLATE_CANCEL', 'Annuler');
-define ('TEMPLATE_THEME', 'Th&egrave;me graphique');
+define ('TEMPLATE_THEME', 'Th&egrave;me');
 define ('TEMPLATE_SQUELETTE', 'Squelette');
 define ('TEMPLATE_STYLE', 'Style');
 define ('TEMPLATE_BG_IMAGE', 'Image de fond');

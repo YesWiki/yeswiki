@@ -23,6 +23,8 @@ if (!empty($icon)) $icon = '<i class="icon-'.$icon.'"></i>';
 // classe css supplémentaire pour changer le look
 $class = $this->GetParameter('class');
 $class = 'btn '.$class;
+if (!strstr($class, 'btn-')) $class .= ' btn-default';
+
 
 $nobtn = $this->GetParameter('nobtn');
 if (!empty($nobtn) && $nobtn == '1') $class = str_replace('btn ', '', $class);

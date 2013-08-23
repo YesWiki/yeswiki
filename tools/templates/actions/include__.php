@@ -47,7 +47,7 @@ $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 
 // on ajoute pour le menu du haut la classe nav de bootstrap
 if ($incPageName == 'PageMenuHaut') {
-	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav">', $plugin_output_new, 1);
+	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
 }
 
 // on rajoute une div clear pour mettre le flow css en dessous des éléments flottants

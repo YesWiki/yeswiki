@@ -13,23 +13,24 @@ if (!defined("WIKINI_VERSION")) {
  * 
  */
 function search_template_files($directory) {
-	$tab_themes = array();
-	
+	$tab_themes = array();	
 	$dir = opendir($directory);
 	while ($dir && ($file = readdir($dir)) !== false) {    	
-		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-			$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-		    while (false !== ($file2 = readdir($dir2))) {
-		    	if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') $tab_themes[$file]["style"][$file2] = $file2;
-		    }
-		    closedir($dir2);
-		    if (is_array($tab_themes[$file]["style"])) ksort($tab_themes[$file]["style"]);
-		    $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
-		    while (false !== ($file3 = readdir($dir3))) {
-		    	if (substr($file3, -9, 9)=='.tpl.html') $tab_themes[$file]["squelette"][$file3]=$file3;	    
-		    }	    	
-		    closedir($dir3);
-		    if (is_array($tab_themes[$file]["squelette"])) ksort($tab_themes[$file]["squelette"]);
+		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) { 
+			if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles') && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
+				$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
+			    while (false !== ($file2 = readdir($dir2))) {
+			    	if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') $tab_themes[$file]["style"][$file2] = $file2;
+			    }
+			    closedir($dir2);
+			    if (is_array($tab_themes[$file]["style"])) ksort($tab_themes[$file]["style"]);
+			    $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
+			    while (false !== ($file3 = readdir($dir3))) {
+			    	if (substr($file3, -9, 9)=='.tpl.html') $tab_themes[$file]["squelette"][$file3]=$file3;	    
+			    }	    	
+			    closedir($dir3);
+			    if (is_array($tab_themes[$file]["squelette"])) ksort($tab_themes[$file]["squelette"]);
+			}
 	    }
 	}
 	closedir($dir);
@@ -298,7 +299,7 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
 		$bgselector = '';
 	}
 
-	$selecteur = '<form class="'.$class.'" id="'.$id.'">'."\n";
+	$selecteur = '<form class="form-horizontal '.$class.'" id="'.$id.'" role="form">'."\n";
 	
 	//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
 	$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
@@ -312,10 +313,10 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
 	}
 
 
-	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_THEME.'</label>'."\n".
-					'<div class="controls">'."\n".
-					'<select id="changetheme" name="theme">'."\n";
+	$selecteur .= '<div class="control-group form-group">'."\n".
+					'<label class="col-lg-3 control-label">'.TEMPLATE_THEME.'</label>'."\n".
+					'<div class="col-lg-9 controls">'."\n".
+					'<select id="changetheme" class="form-control" name="theme">'."\n";
     foreach(array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
             if($value !== $GLOBALS['wiki']->config['favorite_theme']) {
                     $selecteur .= '<option value="'.$value.'">'.$value.'</option>'."\n";
@@ -326,10 +327,10 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
     }
     $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
 	
-	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_SQUELETTE.'</label>'."\n".
-					'<div class="controls">'."\n".
-					'<select id="changesquelette" name="squelette">'."\n";
+	$selecteur .= '<div class="control-group form-group">'."\n".
+					'<label class="col-lg-3 control-label">'.TEMPLATE_SQUELETTE.'</label>'."\n".
+					'<div class="col-lg-9 controls">'."\n".
+					'<select id="changesquelette" class="form-control" name="squelette">'."\n";
 	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
     foreach($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
             if($value !== $GLOBALS['wiki']->config['favorite_squelette']) {
@@ -342,10 +343,10 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
     $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
 
 	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);	
-	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_STYLE.'</label>'."\n".
-					'<div class="controls">'."\n".
-					'<select id="changestyle" name="style">'."\n";
+	$selecteur .= '<div class="control-group form-group">'."\n".
+					'<label class="col-lg-3 control-label">'.TEMPLATE_STYLE.'</label>'."\n".
+					'<div class="col-lg-9 controls">'."\n".
+					'<select id="changestyle" class="form-control" name="style">'."\n";
     foreach($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
             if($value !== $GLOBALS['wiki']->config['favorite_style']) {
                     $selecteur .= '<option value="'.$key.'">'.$value.'</option>'."\n";

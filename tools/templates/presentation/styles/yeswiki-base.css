@@ -214,6 +214,7 @@ margin: 0;
 
 
 /* Sélecteur de fond d'écran */
+#graphical_options {display: none}
 #form_theme_selector {width:530px;}
 #bgCarousel img.bgimg, #bgCarousel div.mozaicimg {
 	float:left;
@@ -245,6 +246,9 @@ margin: 0;
 .toc {
 position:absolute;
 right:0px;
+z-index: 10000;
+top:50px;
+width:300px;
 }
 
 li.toc1 {padding-left:0;}
@@ -275,7 +279,7 @@ overflow: auto;
   position:relative;
 }
 
-.aceditor-btn-well:hover .well, .well:hover {color:#333;} 
+.aceditor-btn-well:hover .well {color:#333;} 
 
 /* retour à la ligne pour les éléments flottants */
 .clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}
