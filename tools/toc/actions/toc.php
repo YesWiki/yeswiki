@@ -19,7 +19,10 @@ echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '
 echo    "<div class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" data-target=\"#toc-menu".$tag."\">".
 '<span class="arrow">'.($closed==1 ? '&#9658;' : '&#9660;').'</span>&nbsp;<strong>'.
 ($this->GetParameter("header") ? $this->Format($this->GetParameter("header")) : "Table des mati&egrave;res").
-"</strong></div>\n<div class=\"toc-menu\"><div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
+"</strong>
+</div><!-- /.toc-title -->\n
+<div class=\"toc-menu\">
+<div id=\"toc-menu".$tag."\" class=\"collapse".($closed==1 ? '' : ' in')."\">\n";
 
 global $wiki;
 $wiki=$this;
@@ -123,5 +126,7 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."
     }
     
     // on ferme les divs ouvertes par l'action toc
-    echo "</div>\n</div>\n";
+    echo "</div><!-- /.toc-menu -->\n
+    </div><!-- /#toc-menu".$tag." -->\n
+    </div><!-- /#toc".$tag." -->\n";
 ?> 
