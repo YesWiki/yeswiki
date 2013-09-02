@@ -116,6 +116,18 @@ foreach ($tableau_resultat as $fiche) {
 }
 usort($fiches['fiches'], 'champ_compare');
 include_once 'tools/bazar/libs/squelettephp.class.php';
-$squelcomment = new SquelettePhp('tools/bazar/presentation/templates/'.$template);    //gere les templates
+
+
+  // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
+
+$templatetoload='themes/tools/bazar/templates/'.$template;
+
+if (!is_file($templatetoload)) {
+	$templatetoload='tools/bazar/presentation/templates/'.$template;
+}
+
+		
+
+$squelcomment = new SquelettePhp($templatetoload);    //gere les templates
 $squelcomment->set($fiches);   //on passe le tableau de fiches en parametres
 echo $squelcomment->analyser(); // affiche les résultats

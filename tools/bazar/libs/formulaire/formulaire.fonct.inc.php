@@ -674,6 +674,7 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
 
 
 
+// TODO:  enlever la gestion de protege car remplace par les acl...
 
 /** texte() - Ajoute un element de type texte au formulaire
  *
@@ -809,24 +810,36 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             $formtemplate->addElement('hidden', 'nomwiki', $valeurs_fiche['nomwiki']) ;
         }
     } elseif ($mode == 'requete') {
-        if (!isset($valeurs_fiche['nomwiki'])) {
-            if ($GLOBALS['wiki']->IsWikiName($valeurs_fiche[$tableau_template[1]])) {
-                $nomwiki = $valeurs_fiche[$tableau_template[1]];
-            } else {
-                $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
-            }
-	    // 
-            $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
-            "signuptime = now(), ".
-            "name = '".mysql_real_escape_string($nomwiki)."', ".
-            "email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
-            "password = md5('".mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
-            if (DB::isError($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
 
-            //envoi mail nouveau mot de passe
+
+	    if (!isset($valeurs_fiche['nomwiki']) || ( $GLOBALS['_BAZAR_']['provenance']  &&  $GLOBALS['_BAZAR_']['provenance']=='import')) {
+
+	    if ( $GLOBALS['_BAZAR_']['provenance'] !='import')  { // 
+	            $nomwiki = genere_nom_wiki($valeurs_fiche['nomwiki']);
+	    }
+	    else {
+	            $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
+	    }
+
+	    if (!$GLOBALS['wiki']->LoadUser($nomwiki)) { // Pour eviter les doublons
+	    // 
+	            $requeteinsertionuserwikini = 'INSERT INTO '.$GLOBALS['wiki']->config["table_prefix"]."users SET ".
+        	    "signuptime = now(), ".
+	            "name = '".mysql_real_escape_string($nomwiki)."', ".
+	            "email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
+        	    "password = md5('".mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
+	            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
+	            if (DB::isError($resultat)) {
+	                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
+            	    }
+	   // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
+	   	   $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
+	   // indicateur pour la gestion des droits associee a la fiche.
+		  $GLOBALS['utilisateur_wikini']=true;
+	    }
+
+
+			//envoi mail nouveau mot de passe
             $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
             $objetmail = '['.str_replace("http://","",$lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
             $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre mot de passe : ". $valeurs_fiche['mot_de_passe_wikini'] . "\n\nA tres bientot ! \n\n";
@@ -863,32 +876,35 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
  */
 function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
+	//Remplacer champ par subscribe / unsubscribe et ne pas faire le test
     $id = str_replace(array('@','.'), array('',''),$tableau_template[1]);
+    $valsub = str_replace('@', '-subscribe@', $tableau_template[1]);
+    $valunsub = str_replace('@', '-unsubscribe@', $tableau_template[1]);
     if ($mode == 'saisie') {
-
         $input_html = '<div class="control-group">
                     <div class="controls"> 
                         <div class="checkbox">
-                          <input id="'.$id.'" type="checkbox"'.(isset($valeurs_fiche[$tableau_template[1]]) ? ' checked="checked"' : '').' value="'.$tableau_template[1].'" name="'.$id.'" class="element_checkbox">
+                          <input id="'.$id.'" type="checkbox"'.(($valeurs_fiche[$id]==$valsub) ? ' checked="checked"' : '').' value="'.$tableau_template[1].'" name="'.$id.'" class="element_checkbox">
                           <label for="'.$id.'">'.$tableau_template[2].'</label>
                         </div>
                     </div>
                 </div>';
         $formtemplate->addElement('html', $input_html) ;   
     } elseif ($mode == 'requete') {
-        //var_dump($_POST);
-        //var_dump($valeurs_fiche);
-        //break;
-        include_once 'tools/contact/libs/contact.functions.php';
+        //var_dump($_POdumpST);
+       // var_dump($valeurs_fiche);
+	if (!class_exists("Mail")) {
+	        include_once 'tools/contact/libs/contact.functions.php';
+	}
         if (isset($_POST[$id])) {
-            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], str_replace('@','-subscribe@',$tableau_template[1]), 'subscribe', 'subscribe', 'subscribe');
-            $valeurs_fiche[$tableau_template[1]] = $tableau_template[1];
-            return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
+            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valsub, 'subscribe', 'subscribe', 'subscribe');
+            $valeurs_fiche[$tableau_template[1]] = $valsub;
+            return array($id => $valeurs_fiche[$tableau_template[1]]);
         } 
         else {
-            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], str_replace('@','-unsubscribe@',$tableau_template[1]), 'unsubscribe', 'unsubscribe', 'unsubscribe');
-            unset($valeurs_fiche[$tableau_template[1]]);
-            return;
+            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valunsub, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+            $valeurs_fiche[$tableau_template[1]] = $valunsub; 
+            return array($id => $valeurs_fiche[$tableau_template[1]]);
         }
     } elseif ($mode == 'recherche') {
 
@@ -1437,6 +1453,11 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $formtemplate->addElement('hidden', 'bf_titre', $template, array ('id' => 'bf_titre')) ;
     } elseif ($mode == 'requete') {
+	        if (!isset($valeurs_fiche['nomwiki']) || (isset( $GLOBALS['_BAZAR_']['provenance'] ) &&  $GLOBALS['_BAZAR_']['provenance']=='import')) {
+		        $GLOBALS['_BAZAR_']['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
+		        return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $GLOBALS['_BAZAR_']['id_fiche']);
+		}
+
         preg_match_all  ('#{{(.*)}}#U'  , $_POST['bf_titre']  , $matches);
         $tab = array();
         foreach ($matches[1] as $var) {

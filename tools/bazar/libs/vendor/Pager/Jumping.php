@@ -33,7 +33,7 @@
  * @author    Richard Heyes <richard@phpguru.org>
  * @copyright 2003-2008 Lorenzo Alberton, Richard Heyes
  * @license   http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
- * @version   CVS: $Id: Jumping.php,v 1.1 2008-07-07 18:00:48 mrflos Exp $
+ * @version   CVS: $Id: Jumping.php,v 1.20 2008/03/05 13:57:45 quipo Exp $
  * @link      http://pear.php.net/package/Pager
  */
 
@@ -65,7 +65,7 @@ class Pager_Jumping extends Pager_Common
      *
      * @access public
      */
-    public function Pager_Jumping($options = array())
+    function Pager_Jumping($options = array())
     {
         $err = $this->setOptions($options);
         if ($err !== PAGER_OK) {
@@ -84,18 +84,17 @@ class Pager_Jumping extends Pager_Common
      *
      * @return int PageID for given offset
      */
-    public function getPageIdByOffset($index)
+    function getPageIdByOffset($index)
     {
         if (!isset($this->_pageData)) {
             $this->_generatePageData();
         }
 
         if (($index % $this->_perPage) > 0) {
-            $pageID = ceil((float) $index / (float) $this->_perPage);
+            $pageID = ceil((float)$index / (float)$this->_perPage);
         } else {
             $pageID = $index / $this->_perPage;
         }
-
         return $pageID;
     }
 
@@ -113,17 +112,16 @@ class Pager_Jumping extends Pager_Common
      *
      * @param integer $pageid PageID to get offsets for
      *
-     * @return array First and last offsets
+     * @return array  First and last offsets
      * @access public
      */
-    public function getPageRangeByPageId($pageid = null)
+    function getPageRangeByPageId($pageid = null)
     {
-        $pageid = isset($pageid) ? (int) $pageid : $this->_currentPage;
+        $pageid = isset($pageid) ? (int)$pageid : $this->_currentPage;
         if (isset($this->_pageData[$pageid]) || is_null($this->_itemData)) {
             // I'm sure I'm missing something here, but this formula works
             // so I'm using it until I find something simpler.
             $start = ((($pageid + (($this->_delta - ($pageid % $this->_delta))) % $this->_delta) / $this->_delta) - 1) * $this->_delta +1;
-
             return array(
                 max($start, 1),
                 min($start+$this->_delta-1, $this->_totalPages)
@@ -147,15 +145,15 @@ class Pager_Jumping extends Pager_Common
      * the method act as it previously did. This hack's only purpose is to
      * mantain backward compatibility.
      *
-     * @param integer $pageID Optional pageID. If specified, links for that
+     * @param integer $pageID    Optional pageID. If specified, links for that 
      *                           page are provided instead of current one.
      *                           [ADDED IN NEW PAGER VERSION]
-     * @param string $next_html HTML to put inside the next link
+     * @param string  $next_html HTML to put inside the next link
      *                           [deprecated: use the factory instead]
      *
      * @return array Back/pages/next links
      */
-    public function getLinks($pageID=null, $next_html='')
+    function getLinks($pageID=null, $next_html='')
     {
         //BC hack
         if (!empty($next_html)) {
@@ -226,7 +224,7 @@ class Pager_Jumping extends Pager_Common
      * @return string Links
      * @access private
      */
-    public function _getPageLinks($url = '')
+    function _getPageLinks($url = '')
     {
         //legacy setting... the preferred way to set an option now
         //is adding it to the constuctor
@@ -254,9 +252,9 @@ class Pager_Jumping extends Pager_Common
             $links .= $this->_spacesBefore
                    . (($i != $this->_totalPages) ? $this->_separator.$this->_spacesAfter : '');
         }
-
         return $links;
     }
 
     // }}}
 }
+?>

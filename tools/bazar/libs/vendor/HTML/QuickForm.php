@@ -566,7 +566,8 @@ class HTML_QuickForm extends HTML_Common
     function &createElement($elementType)
     {
         $args    =  func_get_args();
-        $element =& HTML_QuickForm::_loadElement('createElement', $elementType, array_slice($args, 1));
+        $HTML_QuickForm = new HTML_QuickForm();
+        $element = $HTML_QuickForm->_loadElement('createElement', $elementType, array_slice($args, 1));
 
         return $element;
     } // end func createElement
@@ -588,7 +589,8 @@ class HTML_QuickForm extends HTML_Common
     function &_loadElement($event, $type, $args)
     {
         $type = strtolower($type);
-        if (!HTML_QuickForm::isTypeRegistered($type)) {
+        $HTML_QuickForm = new HTML_QuickForm();
+        if (!$HTML_QuickForm->isTypeRegistered($type)) {
             $error = PEAR::raiseError(null, QUICKFORM_UNREGISTERED_ELEMENT, null, E_USER_WARNING, "Element '$type' does not exist in HTML_QuickForm::_loadElement()", 'HTML_QuickForm_Error', true);
 
             return $error;
@@ -634,7 +636,8 @@ class HTML_QuickForm extends HTML_Common
         } else {
             $args = func_get_args();
             $elementObject =& $this->_loadElement('addElement', $element, array_slice($args, 1));
-            if (PEAR::isError($elementObject)) {
+            $pear = new PEAR();
+            if ($pear->isError($elementObject)) {
                 return $elementObject;
             }
         }
