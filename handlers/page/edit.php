@@ -70,7 +70,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 				$this->Format($body)."\n\n".
 				$this->FormOpen("edit").
 				"<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-				"<input type=\"hidden\" name=\"body\" value=\"".htmlspecialchars($body, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET)."\" />\n".
+				"<input type=\"hidden\" name=\"body\" value=\"".htmlspecialchars($body, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)."\" />\n".
 				"<br />\n".
 				"<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" />\n".
 				"<input name=\"submit\" type=\"submit\" value=\"R&eacute;&eacute;diter\" accesskey=\"p\" />\n".
@@ -147,7 +147,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 				$this->FormOpen('edit').
 				"<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
 				"<textarea id=\"body\" name=\"body\" cols=\"60\" rows=\"40\" wrap=\"soft\" class=\"edit\">\n".
-				htmlspecialchars($body, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).
+				htmlspecialchars($body, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).
 				"</textarea><br />\n".
 				"<script type=\"text/javascript\">\n".
 				"document.getElementById(\"body\").onkeydown=fKeyDown;\n".

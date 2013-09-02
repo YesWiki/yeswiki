@@ -117,9 +117,9 @@ if ($pages = $this->LoadAll($requete)) {
 		}
 
 		$items .= $texteformat . "]]></description>\r\n";
-		$items .= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET)."</dc:creator>\r\n";
+		$items .= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)."</dc:creator>\r\n";
 		$items .= "<pubDate>" . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\r\n";
-		$itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET));
+		$itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET));
 		$items .= '<guid>' . $itemurl . "</guid>\n";
 		$items .= "</item>\r\n";
 	}

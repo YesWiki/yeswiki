@@ -69,6 +69,6 @@ if (preg_match("/^[[:alnum:]][[:alnum:]]+$/", $set))
 }
 else if ($set)
 {
-	$this->SetMessage("Le nom '".htmlspecialchars($set, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET)."' n'est pas conforme à la r&egrave;gle de nommage impos&eacute;e par l'action ChangeStyle. Reportez-vous &agrave; la documentation de cette action pour plus de pr&eacute;cisions.");
+	$this->SetMessage("Le nom '".htmlspecialchars($set, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)."' n'est pas conforme à la r&egrave;gle de nommage impos&eacute;e par l'action ChangeStyle. Reportez-vous &agrave; la documentation de cette action pour plus de pr&eacute;cisions.");
 }
 ?>

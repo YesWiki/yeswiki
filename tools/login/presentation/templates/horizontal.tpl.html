@@ -12,7 +12,7 @@
 		<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><?= $error; ?></div>
 	<?php endif; ?>
 	<form class="form-inline" action="<?php echo $incomingurl; ?>" method="post">
-		<input id="inputWikiName" class="input-small" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET); ?>" />
+		<input id="inputWikiName" class="input-small" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>" />
 		<input id="inputPassword" class="input-small" required="required" placeholder="<?php echo LOGIN_PASSWORD; ?>" name="password" type="password" />
 		<label class="checkbox" for="remember-horizontal">
 			<input type="checkbox" id="remember-horizontal" name="remember" value="1" /><?php echo LOGIN_REMEMBER_ME; ?>

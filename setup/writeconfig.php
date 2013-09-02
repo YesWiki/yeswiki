@@ -100,7 +100,7 @@ else
 			"devrait fonctionner correctement.</p>\n";
 	?>
 	<form action="<?php echo  myLocation() ?>?installAction=writeconfig" method="POST">
-	<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config2), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) ?>">
+	<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config2), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>">
 	<input type="submit" value="Essayer &agrave; nouveau">
 	</form>	
 	<?php

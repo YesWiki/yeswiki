@@ -37,7 +37,7 @@ function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vi
 
 function sanitizeEntity($string) {
 	return htmlspecialchars(strtr(str_replace(array('\\\'','\''),array('_','_'),$string),'/ àáâãäçèéêëìíîïñòóôõöùúûüıÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜİ',
-'__aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY'), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET);
+'__aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY'), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
 
 }
 

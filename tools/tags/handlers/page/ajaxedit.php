@@ -129,7 +129,7 @@ if (isset($_GET['jsonp_callback']))
 				$output .= "<form class=\"form-modify-comment well well-small\" method=\"post\" action=\"".$this->href('ajaxedit')."\">\n".
 					"<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
 					"<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\"".TAGS_WRITE_YOUR_COMMENT_HERE."\" class=\"comment-response\">\n".
-					htmlspecialchars($body, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).
+					htmlspecialchars($body, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).
 					"</textarea>\n".
 					($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-small btn-primary btn-modify\" value=\"".TAGS_MODIFY."\" />\n").
 					"<input type=\"button\" value=\"".TAGS_CANCEL."\" class=\"btn btn-small btn-cancel-modify\" />\n".

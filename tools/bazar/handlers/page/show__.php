@@ -32,5 +32,5 @@ if (!defined("WIKINI_VERSION")) {
 }
 if (isset($valjson)) {
     $plugin_output_new = preg_replace ('/(<input type="hidden" name="body" value=".*" \/>)/Uis',
-        '<input type="hidden" name="body" value="'.htmlspecialchars($valjson, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" />', $plugin_output_new);
+        '<input type="hidden" name="body" value="'.htmlspecialchars($valjson, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'" />', $plugin_output_new);
 }

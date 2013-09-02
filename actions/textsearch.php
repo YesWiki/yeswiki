@@ -58,10 +58,10 @@ if (!$paramPhrase)
 	{
 		echo $this->Format($label), ' ';
 	}
-	echo '<input name="phrase" size="', htmlspecialchars($size, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), '" value="', htmlspecialchars($phrase, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), '" />';
+	echo '<input name="phrase" size="', htmlspecialchars($size, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" value="', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" />';
 	if ($button)
 	{
-		echo '&nbsp;<input type="submit" value="', htmlspecialchars($button, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), '" />';
+		echo '&nbsp;<input type="submit" value="', htmlspecialchars($button, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" />';
 	}
 	echo "\n", $this->FormClose();
 }
@@ -72,10 +72,10 @@ if ($phrase)
 	{
 	    if ($separator)
 	    {
-		$separator = htmlspecialchars($separator, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET);
+		$separator = htmlspecialchars($separator, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
 		if (!$paramPhrase)
 		{
-			echo '<p>R&eacute;sultat(s) de la recherche de "', htmlspecialchars($phrase, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;: ';
+			echo '<p>R&eacute;sultat(s) de la recherche de "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;: ';
 		}
 		foreach ($results as $i => $page)
 		{
@@ -89,7 +89,7 @@ if ($phrase)
 	    }
 	    else
 	    {
-		echo	'<p><strong>R&eacute;sultat(s) de la recherche de "', htmlspecialchars($phrase, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;:</strong></p>', "\n",
+		echo	'<p><strong>R&eacute;sultat(s) de la recherche de "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;:</strong></p>', "\n",
 			'<ol>', "\n";
 		foreach ($results as $i => $page)
 		{
@@ -102,7 +102,7 @@ if ($phrase)
 	{
 	    if (!$paramPhrase)
 	    {
-		echo "<p>Aucun r&eacute;sultat pour \"", htmlspecialchars($phrase, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET), "\". :-(</p>";
+		echo "<p>Aucun r&eacute;sultat pour \"", htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "\". :-(</p>";
 	    }
 	}
 }

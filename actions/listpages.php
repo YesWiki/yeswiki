@@ -135,7 +135,7 @@ if ($tree)
         $sql .= ' WHERE a.tag = "' . AddSlashes($tree) . '" AND a.latest = "Y" LIMIT 1';
         if (!$rootData = $this->LoadSingle($sql))
         {
-            echo '<em><strong>Erreur ActionListPages</strong>: La page ' . htmlspecialchars($tree, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . ' n\'existe pas !</strong>';
+            echo '<em><strong>Erreur ActionListPages</strong>: La page ' . htmlspecialchars($tree, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . ' n\'existe pas !</strong>';
             return;
         }
         $links[$tree] = $rootData;
@@ -536,7 +536,7 @@ else
                 }
                 else
                 {
-                    echo htmlspecialchars($page['user'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET);
+                    echo htmlspecialchars($page['user'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
                 }
             }
         }
