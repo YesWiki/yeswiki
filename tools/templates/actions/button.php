@@ -27,7 +27,7 @@ if (!strstr($class, 'btn-')) $class .= ' btn-default';
 
 
 $nobtn = $this->GetParameter('nobtn');
-if (!empty($nobtn) && $nobtn == '1') $class = str_replace('btn ', '', $class);
+if (!empty($nobtn) && $nobtn == '1') $class = str_replace(array('btn ', 'btn-default'), array('',''), $class);
 
 if (empty($link)) {
         echo '<div class="error">Action button : param&egrave;tre "link" obligatoire.</div>'."\n";
