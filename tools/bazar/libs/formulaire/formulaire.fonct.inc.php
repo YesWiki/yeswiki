@@ -809,7 +809,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
     } elseif ($mode == 'requete') {
 
 
-	    if (!isset($valeurs_fiche['nomwiki']) || ( $GLOBALS['_BAZAR_']['provenance']  &&  $GLOBALS['_BAZAR_']['provenance']=='import')) {
+	    if (!isset($valeurs_fiche['nomwiki']) || ( isset($GLOBALS['_BAZAR_']['provenance'])  &&  $GLOBALS['_BAZAR_']['provenance']=='import')) {
 
 	    if ( $GLOBALS['_BAZAR_']['provenance'] !='import')  { // 
 	            $nomwiki = genere_nom_wiki($valeurs_fiche['nomwiki']);
@@ -890,20 +890,39 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
     } elseif ($mode == 'requete') {
         //var_dump($_POdumpST);
        // var_dump($valeurs_fiche);
+
+	
 	if (!class_exists("Mail")) {
 	        include_once 'tools/contact/libs/contact.functions.php';
 	}
-        if (isset($_POST[$id])) {
-            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valsub, 'subscribe', 'subscribe', 'subscribe');
-            $valeurs_fiche[$tableau_template[1]] = $valsub;
-            return array($id => $valeurs_fiche[$tableau_template[1]]);
-        } 
-        else {
-            send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valunsub, 'unsubscribe', 'unsubscribe', 'unsubscribe');
-            $valeurs_fiche[$tableau_template[1]] = $valunsub; 
-            return array($id => $valeurs_fiche[$tableau_template[1]]);
-        }
-    } elseif ($mode == 'recherche') {
+
+	if ( isset($GLOBALS['_BAZAR_']['provenance'])  &&  $GLOBALS['_BAZAR_']['provenance']=='import') {
+		if ($valeurs_fiche[$id]==$valsub) { 
+		    send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valsub, 'subscribe', 'subscribe', 'subscribe');
+		    return array($id => $valeurs_fiche[$id]);
+		} 
+		else {
+			if ($valeurs_fiche[$id]==$valunsub) { 
+			    send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valunsub, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+		          return array($id => $valeurs_fiche[$id]);
+			}
+		}
+
+
+	}
+	else {
+		if (isset($_POST[$id])) { 
+		    send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valsub, 'subscribe', 'subscribe', 'subscribe');
+		    $valeurs_fiche[$tableau_template[1]] = $valsub;
+		    return array($id => $valeurs_fiche[$tableau_template[1]]);
+		} 
+		else {
+		    send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valunsub, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+		    $valeurs_fiche[$tableau_template[1]] = $valunsub; 
+		    return array($id => $valeurs_fiche[$tableau_template[1]]);
+		}
+	}
+     } elseif ($mode == 'recherche') {
 
     } elseif ($mode == 'html') {
 
@@ -1450,7 +1469,8 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $formtemplate->addElement('hidden', 'bf_titre', $template, array ('id' => 'bf_titre')) ;
     } elseif ($mode == 'requete') {
-	        if (!isset($valeurs_fiche['nomwiki']) || (isset( $GLOBALS['_BAZAR_']['provenance'] ) &&  $GLOBALS['_BAZAR_']['provenance']=='import')) {
+
+	   if ( isset($GLOBALS['_BAZAR_']['provenance'])  &&  $GLOBALS['_BAZAR_']['provenance']=='import') {
 		        $GLOBALS['_BAZAR_']['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
 		        return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $GLOBALS['_BAZAR_']['id_fiche']);
 		}
