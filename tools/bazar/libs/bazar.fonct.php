@@ -2679,13 +2679,13 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
     //preparation de la requete pour trouver les mots cles
     if ( isset($_REQUEST['recherche_mots_cles']) && $_REQUEST['recherche_mots_cles'] != BAZ_MOT_CLE ) {
         //decoupage des mots cles
+//:	     mysql_query('SET NAMES utf8');
         $recherche = explode(' ', $_REQUEST['recherche_mots_cles']) ;
         $nbmots=count($recherche);
         $requeteSQL .= ' AND (';
         for ($i=0; $i<$nbmots; $i++) {
             if ($i>0) $requeteSQL.=' OR ';
-            $requeteSQL.=' body LIKE "%'.$recherche[$i].'%"';
-
+            $requeteSQL.=' body LIKE "%'. preg_replace("/\"/","",json_encode(utf8_encode($recherche[$i]))).'%"';
         }
         $requeteSQL .= ')';
     }
@@ -2754,7 +2754,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
     }
 
     // debug
-    //echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
+   // echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
     //var_dump($GLOBALS['_BAZAR_']['db']->getAll($requete));
     return $GLOBALS['_BAZAR_']['db']->getAll($requete);
 }
