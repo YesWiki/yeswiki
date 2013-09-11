@@ -272,6 +272,6 @@ d'&eacute;crire le fichier de configuration <tt><?php echo  $wakkaConfigLocation
 Assurez vous que le serveur web a bien le droit d'&eacute;crire dans ce fichier, sinon vous devrez le modifier manuellement.  </p>
 
 <form action="<?php echo  myLocation(); ?>?installAction=writeconfig" method="POST">
-<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>">
+<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config), ENT_COMPAT, 'ISO-8859-1') ?>">
 <input type="submit" value="Continuer">
 </form>
