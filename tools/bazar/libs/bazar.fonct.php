@@ -30,7 +30,7 @@
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@author        Alexandre Granier <alexandre@tela-botanica.org>
 * Autres auteurs :
-*@copyright     Outils-RÃ©seaux 2000-2010
+*@copyright     Outils-Reseaux 2000-2010
 *@version       $Revision: 1.10 $ $Date: 2010/03/04 14:19:03 $
 *  +------------------------------------------------------------------------------------------------------+
 */
@@ -44,7 +44,7 @@ require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.
 //require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/Table.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR.'formulaire.fonct.inc.php';
 
-/** baz_afficher_menu() - PrÃ©pare les boutons du menu de bazar et renvoie le html
+/** baz_afficher_menu() - Prepare les boutons du menu de bazar et renvoie le html
 *
 * @return   string  HTML
 */
@@ -172,8 +172,8 @@ function fiches_a_valider()
             //$lien_voir->addQueryString('typeannonce', $ligne['bn_id_nature']);
 
             // Nettoyage de l'url
-            // NOTE (jpm - 23 mai 2007): pour Ã¯Â¿Â½tre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
-            // copie bien une variable mais pas en php5, cela reste une rÃ¯Â¿Â½fÃ¯Â¿Â½rence...
+            // NOTE (jpm - 23 mai 2007): pour etre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
+            // copie bien une variable mais pas en php5, cela reste une reference...
             $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
             //$GLOBALS['_BAZAR_']['url']->removeQueryString('typeannonce');
@@ -264,7 +264,7 @@ function fiches_a_valider()
 
             // Nettoyage de l'url
             // NOTE (jpm - 23 mai 2007): pour Ãªtre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
-            // copie bien une variable mais pas en php5, cela reste une rÃ©fÃ©rence...
+            // copie bien une variable mais pas en php5, cela reste une reference...
             $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
             $GLOBALS['_BAZAR_']['url']->removeQueryString('typeannonce');
@@ -322,7 +322,7 @@ function baz_afficher_liste_fiches_utilisateur()
     $res = '<h2 class="titre_mes_fiches">'.BAZ_VOS_FICHES.'</h2>'."\n";
     $nomwiki = $GLOBALS['wiki']->getUser();
 
-    //test si l'on est identifiÃ© pour voir les fiches
+    //test si l'on est identifie pour voir les fiches
     if ( baz_a_le_droit('voir_mes_fiches') && isset($nomwiki["name"])) {
 
         $tableau_dernieres_fiches = baz_requete_recherche_fiches('', '', $GLOBALS['_BAZAR_']['id_typeannonce'], $GLOBALS['_BAZAR_']['categorie_nature'], 1, $nomwiki["name"], 10);
@@ -667,7 +667,7 @@ function baz_afficher_formulaire_export()
     if (!isset($categorienature)) $categorienature = 'toutes';
     $id_type_fiche = (isset($_POST['id_type_fiche'])) ? $_POST['id_type_fiche'] : '';
 
-    //On choisit un type de fiches pour parser le csv en consÃ©quence
+    //On choisit un type de fiches pour parser le csv en consequence
     //requete pour obtenir l'id et le label des types d'annonces
     $requete = 'SELECT bn_id_nature, bn_label_nature, bn_template FROM '.BAZ_PREFIXE.'nature WHERE';
     ($categorienature!='toutes') ? $requete .= ' bn_type_fiche="'.$categorienature.'"' : $requete .= ' 1';
@@ -683,7 +683,7 @@ function baz_afficher_formulaire_export()
                     BAZ_TYPE_FICHE.' :</div>'."\n".'<div class="controls">';
         $output .= '<select name="id_type_fiche" onchange="javascript:this.form.submit();">'."\n";
 
-        //si l'on n'a pas dÃ©jÃ  choisit de fiche, on dÃ©marre sur l'option CHOISIR, vide
+        //si l'on n'a pas deja choisit de fiche, on demarre sur l'option CHOISIR, vide
         if (!isset($_POST['id_type_fiche'])) $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
 
         //on dresse la liste de types de fiches
@@ -748,7 +748,7 @@ function baz_afficher_formulaire_export()
         $csv = substr(trim($csv),0,-1)."\r\n";
 
 	// TODO : inscription liste
-        //on rÃ©cupÃ¨re toutes les fiches du type choisi et on les met au format csv
+        //on recupere toutes les fiches du type choisi et on les met au format csv
         $tableau_fiches = baz_requete_recherche_fiches('', 'alphabetique', $id_type_fiche, $val_formulaire['bn_type_fiche']);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
@@ -758,7 +758,7 @@ function baz_afficher_formulaire_export()
             foreach ($tab_champs as $index) {
                 $tabindex = explode('|',$index);
                 $index = str_replace('|','',$index);
-                //ces types de champs nÃ©cessitent un traitement particulier
+                //ces types de champs necessitent un traitement particulier
                 if ($tabindex[0]=='liste' || $tabindex[0]=='checkbox' || $tabindex[0]=='listefiche' || $tabindex[0]=='checkboxfiche') {
 			// ???  FIXME ?
                     $html = $tabindex[0]($toto, array(0 => $tabindex[0],1 => $tabindex[1], 2 => '', 6 => $tabindex[2]), 'html', array($index => $tab_valeurs[$index]));
@@ -774,9 +774,9 @@ function baz_afficher_formulaire_export()
         $output .= '<em>'.BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER.$val_formulaire["bn_label_nature"].' - '.BAZ_TOTAL_FICHES.' : '.$total.'</em>'."\n";
         $output .= '<pre style="height:125px; white-space:pre; padding:5px; word-wrap:break-word; border:1px solid #999; overflow:auto; ">'."\n".utf8_decode($csv)."\n".'</pre>'."\n";
 
-        //on gÃ©nÃ©re le fichier
+        //on genere le fichier
         $chemin_destination = BAZ_CHEMIN_UPLOAD.'bazar-export-'.$id_type_fiche.'.csv';
-        //vÃ©rification de la prÃ©sence de ce fichier, s'il existe dÃ©jÃ , on le supprime
+        //verification de la presence de ce fichier, s'il existe deja, on le supprime
         if (file_exists($chemin_destination)) {
             unlink($chemin_destination);
         }
@@ -785,7 +785,7 @@ function baz_afficher_formulaire_export()
         fclose($fp);
         chmod ($chemin_destination, 0755);
 
-        //on crÃ©e le lien vers ce fichier
+        //on cree le lien vers ce fichier
         $output .= '<a href="'.$chemin_destination.'" class="link-csv-file" title="'.BAZ_TELECHARGER_FICHIER_EXPORT_CSV.'">'.BAZ_TELECHARGER_FICHIER_EXPORT_CSV.'</a>'."\n";
 
     }
@@ -796,7 +796,7 @@ function baz_afficher_formulaire_export()
 
 /** baz_formulaire() - Renvoie le formulaire pour les saisies ou modification des fiches
 *
-* @param	string	action du formulaire : soit formulaire de saisie, soit inscription dans la base de donnÃ©es, soit formulaire de modification, soit modification de la base de donnÃ©es
+* @param	string	action du formulaire : soit formulaire de saisie, soit inscription dans la base de donnees, soit formulaire de modification, soit modification de la base de donnees
 * @param	string	url de renvois du formulaire (facultatif)
 * @param	array	valeurs de la fiche en cas de modification (facultatif)
 *
@@ -905,7 +905,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $GLOBALS['_BAZAR_']['image_logo']=$ligne['bn_image_logo'];
                 $mode = BAZ_ACTION_NOUVEAU;
 
-                //on remplace l'attribut action du formulaire par l'action adÃ©quate
+                //on remplace l'attribut action du formulaire par l'action adequate
                 $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU_V);
                 $attributes = array('action'=>str_replace ("&amp;", "&", $lien_formulaire->getURL()));
                 $formtemplate->updateAttributes($attributes);
@@ -1052,16 +1052,16 @@ function baz_afficher_formulaire_fiche($mode = 'saisie', $formtemplate, $url = '
         }
         $formtemplate->addElement('hidden', 'id_typeannonce', $GLOBALS['_BAZAR_']['id_typeannonce']);
 
-        //si on a passÃ© une url, on est dans le cas d'une page de type fiche_bazar, il nous faut le nom
+        //si on a passe une url, on est dans le cas d'une page de type fiche_bazar, il nous faut le nom
         if ($url != '') {
             $formtemplate->addElement('hidden', 'id_fiche', $GLOBALS['_BAZAR_']['id_fiche']);
         }
 
-        // Bouton d annulation : on retourne Ã  la visualisation de la fiche saisie en cas de modification
+        // Bouton d annulation : on retourne a la visualisation de la fiche saisie en cas de modification
         if ($mode == 'modification') {
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
-        // Bouton d annulation : on retourne Ã  la page wiki sans aucun choix par defaut sinon
+        // Bouton d annulation : on retourne a la page wiki sans aucun choix par defaut sinon
         } else {
             $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
             $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
@@ -1082,16 +1082,16 @@ function baz_afficher_formulaire_fiche($mode = 'saisie', $formtemplate, $url = '
 }
 
 
-/** baz_requete_bazar_fiche() - prepare la requete d'insertion ou de MAJ de la fiche en supprimant de la valeur POST les valeurs inadÃ©quates
+/** baz_requete_bazar_fiche() - prepare la requete d'insertion ou de MAJ de la fiche en supprimant de la valeur POST les valeurs inadequates
  * puis en l'encodant en JSON
  *
  * @global   mixed L'objet contenant les valeurs issues de la saisie du formulaire
- * @return   string Tableau des valeurs Ã  sauver dans la PageWiki, au format JSON
+ * @return   string Tableau des valeurs a sauver dans la PageWiki, au format JSON
  *
  **/
 function baz_requete_bazar_fiche($valeur)
 {
-    //on enleve les champs hidden pas nÃ©cÃ©ssaires Ã  la fiche
+    //on enleve les champs hidden pas necessaires a la fiche
     unset($valeur["valider"]);
     unset($valeur["MAX_FILE_SIZE"]);
     unset($valeur["antispam"]);
@@ -1101,7 +1101,7 @@ function baz_requete_bazar_fiche($valeur)
         unset($valeur["sendmail"]);
     }
     
-    //pour les checkbox, on met les rÃ©sultats sur une ligne
+    //pour les checkbox, on met les resultats sur une ligne
     foreach ($valeur as $cle => $val) {
         if (is_array($val)) {
             $valeur[$cle] = implode(',', array_keys($val));
@@ -1117,7 +1117,7 @@ function baz_requete_bazar_fiche($valeur)
     }
     $valeur['date_maj_fiche'] = date( 'Y-m-d H:i:s', time() );
     if (!isset($valeur['id_fiche'])) {
-        // l'identifiant (sous forme de NomWiki) est gÃ©nÃ©rÃ© Ã  partir du titre
+        // l'identifiant (sous forme de NomWiki) est genere a partir du titre
         $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
         $valeur['id_fiche'] = $GLOBALS['_BAZAR_']['id_fiche'];
     }
@@ -1160,7 +1160,7 @@ function baz_requete_bazar_fiche($valeur)
 
     }
 
-    //on encode en utf-8 pour rÃ©ussir Ã  encoder en json
+    //on encode en utf-8 pour reussir a encoder en json
     $valeur = array_map("utf8_encode", $valeur);
 
     return json_encode($valeur);
@@ -1201,7 +1201,7 @@ function baz_insertion_fiche($valeur, $batch=false)
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "comment"," ");
 	}
 
-        //on cree un triple pour spÃ©cifier que la page wiki crÃ©Ã©e est une fiche bazar
+        //on cree un triple pour specifier que la page wiki creee est une fiche bazar
         $GLOBALS["wiki"]->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar', '', '');
 
         // Envoie d un mail aux administrateurs
@@ -1355,7 +1355,7 @@ function baz_suppression($idfiche)
                 return ('Echec de la requete<br />'.$resultat->getMessage().'<br />'.$resultat->getDebugInfo().'<br />'."\n") ;
             }
 
-            //TODO:suppression des fichiers et images associÃ©es
+            //TODO:suppression des fichiers et images associees
 
             //suppression de la fiche dans '.BAZ_PREFIXE.'fiche
             $requete = 'DELETE FROM '.BAZ_PREFIXE.'fiche WHERE bf_id_fiche = "'.$idfiche.'"';
@@ -1370,11 +1370,11 @@ function baz_suppression($idfiche)
                 $GLOBALS['_BAZAR_']['db']->query($requete) ;
             }
 
-            //on supprime les pages wiki crÃ©es
+            //on supprime les pages wiki crees
             $GLOBALS['wiki']->DeleteOrphanedPage($idfiche);
             $GLOBALS["wiki"]->DeleteTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/type', NULL, '', '');
 
-            //on nettoie l'url, on retourne Ã  la consultation des fiches
+            //on nettoie l'url, on retourne a la consultation des fiches
             $GLOBALS['_BAZAR_']['url']->addQueryString ('message', 'delete_ok') ;
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
             $GLOBALS['_BAZAR_']['url']->removeQueryString (BAZ_VARIABLE_VOIR) ;
@@ -1397,7 +1397,7 @@ function baz_suppression($idfiche)
 */
 function publier_fiche($valid)
 {
-    //l'utilisateur Ã  t'il le droit de valider
+    //l'utilisateur a t'il le droit de valider
     if ( baz_a_le_droit( 'valider_fiche' ) ) {
         if ($valid==0) {
             $requete = 'UPDATE '.BAZ_PREFIXE.'fiche SET  bf_statut_fiche=2 WHERE bf_id_fiche="'.$_GET['id_fiche'].'"' ;
@@ -1645,7 +1645,7 @@ function baz_gestion_formulaire()
         }
         $res .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'.BAZ_FORMULAIRE_MODIFIE.'</div>'."\n";
 
-    // il y a un id de formulaire Ã  supprimer
+    // il y a un id de formulaire a supprimer
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire']=='delete' && baz_a_le_droit('saisie_formulaire')) {
         //suppression de l'entree dans '.BAZ_PREFIXE.'nature
         $requete = 'DELETE FROM '.BAZ_PREFIXE.'nature WHERE bn_id_nature='.$_GET['idformulaire'];
@@ -1659,7 +1659,7 @@ function baz_gestion_formulaire()
         $res .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'.BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES.'</div>'."\n";
     }
 
-    // affichage de la liste des templates Ã  modifier ou supprimer (on l'affiche dans tous les cas, sauf cas de modif de formulaire)
+    // affichage de la liste des templates a modifier ou supprimer (on l'affiche dans tous les cas, sauf cas de modif de formulaire)
     if (!isset($_GET['action_formulaire']) || ($_GET['action_formulaire']!='modif' && $_GET['action_formulaire']!='new') ) {
         $res .= '<div class="alert alert-info">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'.BAZ_INTRO_MODIFIER_FORMULAIRE.'</div>'."\n";
 
@@ -1926,7 +1926,7 @@ function baz_gestion_listes()
 function baz_valeurs_fiche($idfiche = '')
 {
     if ($idfiche != '') {
-        //on vÃ©rifie que la page en question est bien une page wiki
+        //on verifie que la page en question est bien une page wiki
         if ($GLOBALS['wiki']->GetTripleValue($idfiche, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'fiche_bazar') {
 
             $valjson = $GLOBALS['wiki']->LoadPage($idfiche);
@@ -1956,7 +1956,7 @@ function baz_valeurs_liste($idliste = '')
 {
     if ($idliste != '') {
         if (!isset($GLOBALS['bazar']['form'][$idliste])) {
-            //on vÃ©rifie que la page en question est bien une page wiki
+            //on verifie que la page en question est bien une page wiki
             if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
 
                 $valjson = $GLOBALS['wiki']->LoadPage($idliste);
@@ -2028,9 +2028,9 @@ function baz_nextId($table, $colonne_identifiant, $bdd)
 
 /** baz_titre_wiki() Renvoie la chaine de caractere sous une forme compatible avec wikini
 *
-*   @param  string  mot Ã  transformer (enlever accents, espaces)
+*   @param  string  mot a transformer (enlever accents, espaces)
 *
-*   return  string  mot transformÃ©
+*   return  string  mot transforme
 */
 function baz_titre_wiki($nom)
 {
@@ -2048,7 +2048,7 @@ function baz_titre_wiki($nom)
 
 /**  baz_voir_fiches() - Permet de visualiser en detail une liste de fiche  au format XHTML
 *
-* @global boolean Rajoute des informations internes a l'application (date de modification, lien vers la page de dÃ©part de l'appli)
+* @global boolean Rajoute des informations internes a l'application (date de modification, lien vers la page de depart de l'appli)
 * @global integer Tableau d(Identifiant des fiches a afficher
 *
 * @return   string  HTML
@@ -2067,7 +2067,7 @@ function baz_voir_fiches($danslappli, $idfiches=array())
 /**  baz_voir_fiche() - Permet de visualiser en detail une fiche  au format XHTML
 *
 * @global boolean Rajoute des informations internes a l'application (date de modification, lien vers la page de depart de l'appli) si a 1
-* @global integer Identifiant de la fiche a afficher ou mixed un tableau avec toutes les valeurs stockÃ©es pour la fiche
+* @global integer Identifiant de la fiche a afficher ou mixed un tableau avec toutes les valeurs stockees pour la fiche
 *
 * @return   string  HTML
 */
@@ -2075,14 +2075,14 @@ function baz_voir_fiche($danslappli, $idfiche)
 {
     //si c'est un tableau avec les valeurs de la fiche
     if (is_array($idfiche)) {
-        //on dÃ©place le tableau et on donne la bonne valeur Ã  id fiche
+        //on deplace le tableau et on donne la bonne valeur a id fiche
         $valeurs_fiche = $idfiche;
         $idfiche = $valeurs_fiche['id_fiche'];
         $tab_nature = baz_valeurs_type_de_fiche($valeurs_fiche["id_typeannonce"]);
     } else {
-        //on rÃ©cupere les valeurs de la fiche
+        //on recupere les valeurs de la fiche
         $valeurs_fiche = baz_valeurs_fiche($idfiche);
-        //on rÃ©cupere les infos du type de fiche
+        //on recupere les infos du type de fiche
         $tab_nature = baz_valeurs_type_de_fiche($valeurs_fiche["id_typeannonce"]);
     }
     $res='';
@@ -2099,7 +2099,7 @@ function baz_voir_fiche($danslappli, $idfiche)
     //affiche le type de fiche pour la vue consulter
     if ($danslappli==1) {$res .= '<h2 class="BAZ_titre BAZ_titre_'.$tab_nature['bn_label_class'].'">'.$tab_nature['bn_label_nature'].'</h2>'."\n";}
 
-    //Partie la plus importante : apres avoir rÃ©cupÃ©rÃ© toutes les valeurs de la fiche, on gÃ©nÃ©re l'affichage html de cette derniÃ¨re
+    //Partie la plus importante : apres avoir recupere toutes les valeurs de la fiche, on genere l'affichage html de cette derniere
     $tableau = formulaire_valeurs_template_champs($tab_nature['bn_template']);
     // TODO pas de controle si proprietaire : 
 
@@ -2130,11 +2130,11 @@ function baz_voir_fiche($danslappli, $idfiche)
     //informations complementaires (id fiche, etat publication,... )
     if ($danslappli==1) {
         $res .= '<div class="BAZ_fiche_info BAZ_fiche_info_'.$tab_nature['bn_label_class'].'">'."\n";
-        //affichage du nom de la PageWiki de la fiche et de son propriÃ©taire
+        //affichage du nom de la PageWiki de la fiche et de son proprietaire
         $res .= $GLOBALS['wiki']->Format($idfiche.(($GLOBALS['wiki']->GetPageOwner($idfiche)!='') ? ', '.BAZ_ECRITE.' '.$GLOBALS['wiki']->GetPageOwner($idfiche) : ''));
         // TODO:ajouter stats $res .= BAZ_NB_VUS.$valeurs_fiche['bf_nb_consultations'].BAZ_FOIS.'</span>'."\n";
 
-        //affichage de l'Ã©tat de validation
+        //affichage de l'etat de validation
         if ($valeurs_fiche['statut_fiche']==1) {
             if ($valeurs_fiche['date_debut_validite_fiche'] != '0000-00-00' && $valeurs_fiche['date_fin_validite_fiche'] != '0000-00-00') {
             $res .= ', <span class="BAZ_rubrique BAZ_rubrique_'.$tab_nature['bn_label_class'].'">'.BAZ_PUBLIEE.':</span> '.BAZ_DU.
@@ -2196,7 +2196,7 @@ function baz_voir_fiche($danslappli, $idfiche)
 }
 
 
-/** baz_a_le_droit() Renvoie true si la personne Ã  le droit d'accÃ¨der Ã  la fiche
+/** baz_a_le_droit() Renvoie true si la personne a le droit d'acceder a la fiche
 *
 *   @param  string  type de demande (voir, saisir, modifier)
 *   @param  string  identifiant, soit d'un formulaire, soit d'une fiche, soit d'un type de fiche
@@ -2205,7 +2205,7 @@ function baz_voir_fiche($danslappli, $idfiche)
 */
 function baz_a_le_droit( $demande = 'saisie_fiche', $id = '' )
 {
-    //cas d'une personne identifiÃ©e
+    //cas d'une personne identifiee
     $nomwiki = $GLOBALS['wiki']->getUser();
 
     //l'administrateur peut tout faire
@@ -2229,11 +2229,11 @@ function baz_a_le_droit( $demande = 'saisie_fiche', $id = '' )
             }
         }
         if ($demande == 'modif_fiche') {
-            // pour la modif d'une fiche : ouvert Ã  tous
+            // pour la modif d'une fiche : ouvert a tous
             return true;
         }
         if ($demande == 'saisie_fiche') {
-            // pour la saisie d'une fiche, ouvert Ã  tous
+            // pour la saisie d'une fiche, ouvert a tous
             return true;
         }
         //pour la validation d'une fiche, pour l 'instant seul les admins peuvent valider une fiche
@@ -2244,22 +2244,22 @@ function baz_a_le_droit( $demande = 'saisie_fiche', $id = '' )
         elseif ($demande == 'saisie_formulaire' || $demande == 'saisie_liste') {
             return false;
         }
-        //pour la liste des fiches saisies, il suffit d'Ãªtre identifiÃ©
+        //pour la liste des fiches saisies, il suffit d'Ãªtre identifie
         elseif ($demande == 'voir_mes_fiches') {
             return true;
         }
-        //les autres demandes sont rÃ©servÃ©es aux admins donc non!
+        //les autres demandes sont reservees aux admins donc non!
         else {
             return false;
         }
     }
 }
 
-/** remove_accents() Renvoie une chaine de caractÃ¨res avec les accents en moins
+/** remove_accents() Renvoie une chaine de caracteres avec les accents en moins
 *
-*   @param  string  chaine de caractÃ¨res avec de potentiels accents Ã  enlever
+*   @param  string  chaine de caracteres avec de potentiels accents a enlever
 *
-*   return  string	chaine de caractÃ¨res, sans accents
+*   return  string	chaine de caracteres, sans accents
 */
 function remove_accents( $string )
 {
@@ -2268,37 +2268,37 @@ function remove_accents( $string )
     return preg_replace("/&([a-z])[a-z]+;/i","$1",$string);
 }
 
-/** genere_nom_wiki() Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant Ã  50 caractÃ¨res et en mettant 2 majuscules
-*	Si le NomWiki existe dÃ©jÃ , on propose rÃ©cursivement NomWiki2, NomWiki3, etc..
+/** genere_nom_wiki() Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant a 50 caracteres et en mettant 2 majuscules
+*	Si le NomWiki existe deja, on propose recursivement NomWiki2, NomWiki3, etc..
 *
-*   @param  string  chaine de caractÃ¨res avec de potentiels accents Ã  enlever
-*   @param	integer	nombre d'itÃ©ration pour la fonction rÃ©cursive (1 par dÃ©faut)
+*   @param  string  chaine de caracteres avec de potentiels accents a enlever
+*   @param	integer	nombre d'iteration pour la fonction recursive (1 par defaut)
 *
 *
-*   return  string	chaine de caractÃ¨res, en NomWiki unique
+*   return  string	chaine de caracteres, en NomWiki unique
 */
 function genere_nom_wiki($nom, $occurence = 1)
 {
-    // si la fonction est appelÃ©e pour la premiÃ¨re fois, on nettoie le nom passÃ© en paramÃ¨tre
+    // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
     if ($occurence == 1) {
-        // les noms wiki ne doivent pas dÃ©passer les 50 caracteres, on coupe Ã  48, histoire de pouvoir ajouter un chiffre derriÃ¨re si nom wiki dÃ©ja existant
+        // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48, histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents
-        // plus on met des majuscules au dÃ©but de chaque mot et on fait sauter les espaces
+        // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
         $temp = explode(" ", ucwords(strtolower(remove_accents(substr($nom, 0, 47)))));
         $nom = '';
         foreach ($temp as $mot) {
-            // on vire d'Ã©ventuels autres caractÃ¨res spÃ©ciaux
+            // on vire d'eventuels autres caracteres speciaux
             $nom .= preg_replace("/[^a-zA-Z0-9]/","",trim($mot));
         }
 
-        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une Ã  la fin
+        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
         $var = preg_replace('/[^A-Z]/','',$nom);
         if (strlen($var)<2) {
             $last = ucfirst(substr($nom, strlen($nom) - 1));
             $nom = substr($nom, 0, -1).$last;
         }
     }
-    // si on en est a plus de 2 occurences, on supprime le chiffre prÃ©cÃ©dent et on ajoute la nouvelle occurence
+    // si on en est a plus de 2 occurences, on supprime le chiffre precedent et on ajoute la nouvelle occurence
     elseif ($occurence>2) {
         $nb = -1*strlen(strval($occurence-1));
         $nom = substr($nom, 0, $nb).$occurence;
@@ -2308,11 +2308,11 @@ function genere_nom_wiki($nom, $occurence = 1)
         $nom = $nom.$occurence;
     }
 
-     // on vÃ©rifie que la page n'existe pas dÃ©ja : si c'est le cas on le retourne
+     // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
     if (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
         return $nom;
     }
-    // sinon, on rappele rÃ©cursivement la fonction jusqu'Ã  ce que le nom aille bien
+    // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
     else {
         $occurence++;
 
@@ -2633,28 +2633,28 @@ function baz_rechercher($typeannonce = 'toutes', $categorienature = 'toutes')
 }
 
 /**
- * Cette fonction rÃ©cupÃ¨re tous les parametres passÃ©s pour la recherche, et retourne un tableau de valeurs des fiches
+ * Cette fonction recupere tous les parametres passes pour la recherche, et retourne un tableau de valeurs des fiches
  */
 function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typeannonce = '', $categorie_fiche = '', $statut = 1, $personne='', $nb_limite='', $motcles = true)
 {
     $nb_jointures=0;
 
-    //si les parametres ne sont pas rentrÃ©s, on prend les variables globales
+    //si les parametres ne sont pas rentres, on prend les variables globales
     if ($id_typeannonce == '' && isset($GLOBALS['_BAZAR_']['id_typeannonce'])) $id_typeannonce = $GLOBALS['_BAZAR_']['id_typeannonce'];
     if ($categorie_fiche == '' && isset($GLOBALS['_BAZAR_']['categorie_nature'])) $categorie_fiche = $GLOBALS['_BAZAR_']['categorie_nature'];
 
-    //requete pour rÃ©cupÃ©rer toutes les PageWiki Ã©tant des fiches bazar
+    //requete pour recuperer toutes les PageWiki etant des fiches bazar
     $requete_pages_wiki_bazar_fiches = 'SELECT DISTINCT resource FROM '.BAZ_PREFIXE.'triples WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ORDER BY resource ASC';
 
     //requete d'obtention des valeurs d'une fiche
     $requete = 'SELECT DISTINCT body FROM '.BAZ_PREFIXE.'pages WHERE latest="Y" AND comment_on = \'\'';
 
-       //on limite Ã  la catÃ©gorie choisie
+       //on limite a la categorie choisie
     if ($categorie_fiche != '' && $categorie_fiche != 'toutes') {
         $requete .= ' AND body LIKE \'%"categorie_fiche":"'.utf8_encode($categorie_fiche).'"%\'';
     }
 
-    //on limite Ã  la langue choisie
+    //on limite a la langue choisie
     if (isset($GLOBALS['_BAZAR_']['langue'])) {
         //$requete .= ' AND body LIKE \'%"langue":"'.utf8_encode($GLOBALS['_BAZAR_']['langue']).'"%\'' ;
     }
@@ -2667,7 +2667,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
     //statut de validation
     $requete .= ' AND body LIKE \'%"statut_fiche":"'.$statut.'"%\'' ;
 
-    //si une personne a Ã©tÃ© prÃ©cisÃ©e, on limite la recherche sur elle
+    //si une personne a ete precisee, on limite la recherche sur elle
     if ($personne != '') {
         $requete .= ' AND body LIKE \'%"createur":"'.utf8_encode($personne).'"%\'' ;
     }
@@ -2690,11 +2690,11 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
         $requeteSQL .= ')';
     }
 
-    //on parcourt le tableau post pour agrÃ©menter la requete les valeurs passÃ©es dans les champs liste et checkbox du moteur de recherche
+    //on parcourt le tableau post pour agrementer la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
     if ($tableau_criteres == '') {
         $tableau_criteres = array();
 
-        //si l'on est passÃ© par le mot de recherche, on transforme les spÃ©cifications de recherche sur les liste et checkbox
+        //si l'on est passe par le mot de recherche, on transforme les specifications de recherche sur les liste et checkbox
         if (isset($_REQUEST['rechercher'])) {
             reset($_REQUEST);
             //var_dump($_REQUEST);
@@ -2708,6 +2708,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
             }
         }
     }
+
     if ($motcles == true) {
         reset($tableau_criteres);
 
@@ -2718,14 +2719,15 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
                 $first  = true;
                 foreach ($valcrit as $critere) {
                     if (!$first) $requeteSQL .= ' OR ';
-                    //$requeteSQL .= '(body REGEXP BINARY \'"'.$nom.'":"[^"]*'.$critere.'[^"]*"\')'; //  Recherche case sensitive
                     $requeteSQL .= '(body REGEXP \'"'.$nom.'":"[^"]*'.$critere.'[^"]*"\')';
                     $first = false;
                 }
                 $requeteSQL .= ')';
             } else {
-                //$requeteSQL .= ' AND (body REGEXP BINARY \'"'.$nom.'":"[^"]*'.$val.'[^"]*"\')'; // Recherche case sensitive
-                $requeteSQL .= ' AND (body REGEXP \'"'.$nom.'":"[^"]*'.$val.'[^"]*"\')';
+                if (strcmp(substr($nom, 0, 5), "liste") == 0)
+                        $requeteSQL .= ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                else
+                        $requeteSQL .= ' AND (body REGEXP \'"'.$nom.'":"[^"]*'.$val.'[^"]*"\')';
             }
         }
     }
@@ -2734,7 +2736,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
         $requete .= $requeteSQL;
     }
 
-    //TODO: faire les requetes sur les fiches antidatÃ©es
+    //TODO: faire les requetes sur les fiches antidatees
     if (isset($_POST['perime'])&& $_POST['perime']==0) {
         //$requete .= ' AND NOT (bf_date_debut_validite_fiche<=NOW() or bf_date_debut_validite_fiche="0000-00-00") OR NOT (bf_date_fin_validite_fiche>=NOW() or bf_date_fin_validite_fiche="0000-00-00") ';
     } elseif (isset($_POST['perime'])&& $_POST['perime']==2) {
@@ -2803,8 +2805,8 @@ function baz_valeurs_tous_les_formulaires($categorie = 'toutes', $format = 'html
 /**
  *
  * Affiche la liste des resultats d'une recherche
- * @param $tableau_fiches : tableau de fiches provenant du rÃ©sultat de la recherche
- * @param $info_nb : boolÃ©en pour afficher ou non le nombre  du rÃ©sultat de la recherche (vrai par dÃ©faut)
+ * @param $tableau_fiches : tableau de fiches provenant du resultat de la recherche
+ * @param $info_nb : booleen pour afficher ou non le nombre  du resultat de la recherche (vrai par defaut)
  */
 function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
 {
@@ -2858,7 +2860,7 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
 
         $fiches['fiches'][] = $valeurs_fiche;
 
-        //rÃ©initialisation de l'url
+        //reinitialisation de l'url
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
     }
