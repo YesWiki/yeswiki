@@ -172,8 +172,8 @@ function fiches_a_valider()
             //$lien_voir->addQueryString('typeannonce', $ligne['bn_id_nature']);
 
             // Nettoyage de l'url
-            // NOTE (jpm - 23 mai 2007): pour ÃÂ¯ÃÂ¿ÃÂ½tre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
-            // copie bien une variable mais pas en php5, cela reste une rÃÂ¯ÃÂ¿ÃÂ½fÃÂ¯ÃÂ¿ÃÂ½rence...
+            // NOTE (jpm - 23 mai 2007): pour etre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
+            // copie bien une variable mais pas en php5, cela reste une reference...
             $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
             //$GLOBALS['_BAZAR_']['url']->removeQueryString('typeannonce');
@@ -369,7 +369,7 @@ function baz_afficher_formulaire_import()
 			if ($ext == "csv") {
 				$newname = BAZ_CHEMIN_UPLOAD . $filename;
 
-				//verification de la presence de ce fichier, s'il existe deja , on le supprime
+				//verification de la presence de ce fichier, s'il existe deja�, on le supprime
 				move_uploaded_file($_FILES['fileimport']['tmp_name'], $newname);
 				if (($handle = fopen($newname, "r")) !== FALSE) {
 					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
@@ -561,7 +561,7 @@ function baz_afficher_formulaire_import()
             $output .= '<select name="id_type_fiche" onchange="javascript:this.form.submit();">'."\n";
 
 	    
-            //si l'on n'a pas dejaÂ  choisi de fiche, on demarre sur l'option CHOISIR, vide
+            //si l'on n'a pas deja  choisi de fiche, on demarre sur l'option CHOISIR, vide
             if (!isset($_POST['id_type_fiche'])) $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
 	
             //on dresse la liste de types de fiches
@@ -601,7 +601,7 @@ function baz_afficher_formulaire_import()
                 }
 			
                 elseif($ligne[0] == 'titre') { // Champ titre aggregeant plusieurs champs
-                    $csv .= utf8_encode('"'.str_replace('"','""',"Titre calculé").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                    $csv .= utf8_encode('"'.str_replace('"','""',"Titre calcul�").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
 
 		}
 
@@ -638,7 +638,7 @@ function baz_afficher_formulaire_import()
     	//on genere un fichier exemple pour faciliter le travail d'import
         $chemin_destination = BAZ_CHEMIN_UPLOAD.'bazar-import-'.$id_type_fiche.'.csv';
 
-        //verification de la presence de ce fichier, s'il existe deja , on le supprime
+        //verification de la presence de ce fichier, s'il existe deja�, on le supprime
         if (file_exists($chemin_destination)) {
             unlink($chemin_destination);
         }
@@ -723,7 +723,7 @@ function baz_afficher_formulaire_export()
 		
                 elseif($ligne[0] == 'titre') { // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'bf_titre';
-                    $csv .= utf8_encode('"'.str_replace('"','""',"Titre calculé").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
+                    $csv .= utf8_encode('"'.str_replace('"','""',"Titre calcul�").((isset($ligne[9]) && $ligne[9]==1) ? ' *' : '').'",');
 
 		}
 
@@ -749,7 +749,8 @@ function baz_afficher_formulaire_export()
         }
         $csv = substr(trim($csv),0,-1)."\r\n";
 
-        //on recupere toutes les fiches du type choisi et on les met au format csv
+	// TODO : inscription liste
+        //on rÃ©cupÃ¨re toutes les fiches du type choisi et on les met au format csv
         $tableau_fiches = baz_requete_recherche_fiches('', 'alphabetique', $id_type_fiche, $val_formulaire['bn_type_fiche']);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
@@ -1203,7 +1204,7 @@ function baz_insertion_fiche($valeur, $batch=false)
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "comment"," ");
 	}
 
-        //on cree un triple pour specifier que la page wiki crÃÂ©ÃÂ©e est une fiche bazar
+        //on cree un triple pour spÃ©cifier que la page wiki crÃ©Ã©e est une fiche bazar
         $GLOBALS["wiki"]->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar', '', '');
 
         // Envoie d un mail aux administrateurs
@@ -2247,7 +2248,7 @@ function baz_a_le_droit( $demande = 'saisie_fiche', $id = '' )
         elseif ($demande == 'saisie_formulaire' || $demande == 'saisie_liste') {
             return false;
         }
-        //pour la liste des fiches saisies, il suffit d'etre identifie
+        //pour la liste des fiches saisies, il suffit d'Ãªtre identifiÃ©
         elseif ($demande == 'voir_mes_fiches') {
             return true;
         }
@@ -2712,6 +2713,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
             }
         }
     }
+
     if ($motcles == true) {
         reset($tableau_criteres);
 
@@ -2722,14 +2724,15 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
                 $first  = true;
                 foreach ($valcrit as $critere) {
                     if (!$first) $requeteSQL .= ' OR ';
-                    //$requeteSQL .= '(body REGEXP BINARY \'"'.$nom.'":"[^"]*'.$critere.'[^"]*"\')'; //  Recherche case sensitive
                     $requeteSQL .= '(body REGEXP \'"'.$nom.'":"[^"]*'.$critere.'[^"]*"\')';
                     $first = false;
                 }
                 $requeteSQL .= ')';
             } else {
-                //$requeteSQL .= ' AND (body REGEXP BINARY \'"'.$nom.'":"[^"]*'.$val.'[^"]*"\')'; // Recherche case sensitive
-                $requeteSQL .= ' AND (body REGEXP \'"'.$nom.'":"[^"]*'.$val.'[^"]*"\')';
+                if (strcmp(substr($nom, 0, 5), "liste") == 0)
+                        $requeteSQL .= ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                else
+                        $requeteSQL .= ' AND (body REGEXP \'"'.$nom.'":"[^"]*'.$val.'[^"]*"\')';
             }
         }
     }
