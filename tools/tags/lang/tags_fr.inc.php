@@ -53,7 +53,7 @@ define ('TAGS_FILTER', 'Filtrer');
 define ('TAGS_CONTAINING_TAG', 'avec le mot cl&eacute;');
 
 // handler exportpages
-define ('TAGS_GENERATE_EBOOK', 'Cr&eacute;er l\'Ebook &agrave; partir de cette s&eacute;lection');
+define ('TAGS_GENERATE_EBOOK', 'G&eacute;n&eacute;rer l\'Ebook');
 define ('TAGS_EXPORT_PAGES_INFO', 'Vous pouvez changer l\'ordre des pages en cliquant dessus puis en les d&eacute;pla&ccedil;ant.<br />Visualisez la page en cliquant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-eye-open"></i></a>, et enlevez des pages de cette s&eacute;lection en appuyant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-minus"></i></a>.');
 define ('TAGS_EBOOK_TITLE', 'Titre de l\'ouvrage');
 define ('TAGS_EBOOK_DESC', 'Description');
@@ -61,7 +61,7 @@ define ('TAGS_EBOOK_AUTHOR', 'Pr&eacute;nom puis nom de l\'auteur');
 define ('TAGS_EXAMPLE_AUTHOR', 'Ex: Victor Hugo');
 define ('TAGS_EBOOK_BIBLIO_AUTHOR', 'Nom de l\'auteur, virgule pr&eacute;nom');
 define ('TAGS_EXAMPLE_BIBLIO_AUTHOR', 'Ex: Hugo, Victor');
-define ('TAGS_EBOOK_COVER_IMAGE', 'Lien vers une l\'image de couverture de l\'ouvrage');
+define ('TAGS_EBOOK_COVER_IMAGE', 'Lien vers l\'image de couverture de l\'ouvrage');
 define ('TAGS_NO_TITLE_FOUND', 'ERREUR : Le titre n\'a pas &eacute;t&eacute; renseign&eacute;.');
 define ('TAGS_NO_DESC_FOUND', 'ERREUR : La description n\'a pas &eacute;t&eacute; renseign&eacute;.');
 define ('TAGS_NO_AUTHOR_FOUND', 'ERREUR : L\'auteur n\'a pas &eacute;t&eacute; renseign&eacute;.');

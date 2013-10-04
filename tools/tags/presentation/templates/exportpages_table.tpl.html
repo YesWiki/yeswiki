@@ -19,43 +19,43 @@
 		</div><!-- /.export-table-container -->
 		<div class="well">
 			<div class="row">
-				<div class="span4">
-					<div class="control-group">
+				<div class="col-md-4">
+					<div class="form-group">
 		            	<label for="ebook-title" class="control-label"><?php echo TAGS_EBOOK_TITLE; ?></label>
 		            	<div class="controls">
-		                	<input class="span4" type="text" required="required" placeholder="<?php echo TAGS_EBOOK_TITLE; ?>" id="ebook-title" name="ebook-title" />
+		                	<input class="form-control" type="text" required="required" placeholder="<?php echo TAGS_EBOOK_TITLE; ?>" id="ebook-title" name="ebook-title" />
 		            	</div>
 		            </div>
-					<div class="control-group">
+					<div class="form-group">
 		            	<label for="ebook-description" class="control-label"><?php echo TAGS_EBOOK_DESC; ?></label>
 		             	<div class="controls">
-							<textarea class="span4" required="required" placeholder="<?php echo TAGS_EBOOK_DESC; ?>" id="ebook-description" name="ebook-description"></textarea>
+							<textarea class="form-control" required="required" placeholder="<?php echo TAGS_EBOOK_DESC; ?>" id="ebook-description" name="ebook-description"></textarea>
 						</div>
 					</div>
 				</div>
-				<div class="span3">
-					<div class="control-group">
+				<div class="col-md-4">
+					<div class="form-group">
 		            	<label for="ebook-author" class="control-label"><?php echo TAGS_EBOOK_AUTHOR; ?></label>
 		             	<div class="controls">
-							<input class="span3" type="text" required="required" placeholder="<?php echo TAGS_EXAMPLE_AUTHOR; ?>" id="ebook-author" name="ebook-author" />
+							<input class="form-control" type="text" required="required" placeholder="<?php echo TAGS_EXAMPLE_AUTHOR; ?>" id="ebook-author" name="ebook-author" />
 						</div>
 					</div>
-					<div class="control-group">
+					<div class="form-group">
 		            	<label for="ebook-biblio-author" class="control-label"><?php echo TAGS_EBOOK_BIBLIO_AUTHOR; ?></label>
 		             	<div class="controls">
-							<input class="span3" type="text" required="required" placeholder="<?php echo TAGS_EXAMPLE_BIBLIO_AUTHOR; ?>" id="ebook-biblio-author" name="ebook-biblio-author" />
+							<input class="form-control" type="text" required="required" placeholder="<?php echo TAGS_EXAMPLE_BIBLIO_AUTHOR; ?>" id="ebook-biblio-author" name="ebook-biblio-author" />
 						</div>
 					</div>
 				</div>
-				<div class="span4">
-					<div class="control-group">
+				<div class="col-md-4">
+					<div class="form-group">
 		            	<label for="ebook-cover-image" class="control-label"><?php echo TAGS_EBOOK_COVER_IMAGE; ?></label>
 		             	<div class="controls">
-							<input class="span4" type="url" required="required" placeholder="http://" id="ebook-cover-image" name="ebook-cover-image" />
+							<input class="form-control" type="url" required="required" placeholder="http://" id="ebook-cover-image" name="ebook-cover-image" <?php if (!empty($coverimageurl)) echo ' value="'.$coverimageurl.'"'; ?> />
 						</div>
 					</div>
 					<br />
-				    <input type="submit" value="<?php echo TAGS_GENERATE_EBOOK; ?>" class="btn btn-block btn-large btn-primary" />
+				    <input type="submit" value="<?php echo TAGS_GENERATE_EBOOK; ?>" class="btn btn-block btn-lg btn-primary" />
 				</div>
 			</div>
 		</div>

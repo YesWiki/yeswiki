@@ -60,9 +60,9 @@ if (count($pages) > 0) {
 			<img src="'.$metas['ebook-cover-image'].'" alt="cover" class="media-object" width="128" />
 		</a>
 		<div class="media-body">
+			<a class="btn btn-primary pull-right" href="'.$this->href('epub',$page['resource']).'"><i class="icon-book icon-white"></i>&nbsp;'.TAGS_DOWNLOAD_EPUB.'</a>
     		<h4 class="media-heading"><a href="'.$this->href('',$page['resource']).'">'.$metas['ebook-title'].'</a></h4>
 			<strong>'.$metas['ebook-author'].'</strong><br />'.$metas['ebook-description'].'<br /><br />
-			<a class="btn btn-primary" href="'.$this->href('epub',$page['resource']).'"><i class="icon-book icon-white"></i>&nbsp;'.TAGS_DOWNLOAD_EPUB.'</a>
 		</div>
 		</li>'."\n";
 	}

@@ -49,6 +49,9 @@ if (empty($ebookpagenamestart)) $ebookpagenamestart = 'Ebook';
 // ajoute t on les pages installees par defaut dans wiki
 $addinstalledpage = $this->getParameter('addinstalledpage');
 
+// couverture de l'ebbok par defaut
+$coverimageurl = $this->getParameter('coverimageurl');
+
 // mot cles
 $taglist = $this->getParameter('tags');
 if (!empty($taglist)) {
@@ -152,7 +155,7 @@ else {
 
 	include_once 'tools/tags/libs/squelettephp.class.php';
 	$template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html'); // charge le templates
-	$template_export->set(array('pages' => $pages, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
+	$template_export->set(array('pages' => $pages, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
 	$output .= $template_export->analyser(); // affiche les resultats
 }
 
