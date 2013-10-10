@@ -346,10 +346,14 @@ function baz_afficher_liste_fiches_utilisateur()
  */
 function baz_afficher_formulaire_import()
 {
+	    if ($GLOBALS['wiki']->UserIsAdmin())  {
     $output = '<h2 class="title_import">Import CSV</h2>'."\n";
 
     if (!isset($categorienature)) $categorienature = 'toutes';
     $id_type_fiche = (isset($_POST['id_type_fiche'])) ? $_POST['id_type_fiche'] : '';
+    if ($id_type_fiche=='') {
+	    $id_type_fiche = (isset($_GET['id_type_fiche'])) ? $_GET['id_type_fiche'] : '';
+    }
 
     if (isset($_POST['submit_file'])) {
         $output .= '<form method="post" action="'.$GLOBALS['_BAZAR_']["url"]->getUrl().'" >'."\n";
@@ -540,7 +544,7 @@ function baz_afficher_formulaire_import()
 	    
     else { // Affichage par defaut  // FIXME : test plus pertinento
 
-	 if (! isset($_POST['submit_file']) &&  ! isset($_POST['submit_file'])) { 	 
+	 if (! isset($_POST['submit_file']) ) { 	 
 
 
         //On choisit un type de fiches pour parser le csv en consequence
@@ -561,7 +565,7 @@ function baz_afficher_formulaire_import()
 
 	    
             //si l'on n'a pas dejaÂ  choisi de fiche, on demarre sur l'option CHOISIR, vide
-            if (!isset($_POST['id_type_fiche'])) $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
+            if ($id_type_fiche=='') $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
 	
             //on dresse la liste de types de fiches
             while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
@@ -655,6 +659,7 @@ function baz_afficher_formulaire_import()
 
     return $output;
 }
+}
 
 /**
  *
@@ -662,6 +667,7 @@ function baz_afficher_formulaire_import()
  */
 function baz_afficher_formulaire_export()
 {
+    if ($GLOBALS['wiki']->UserIsAdmin())  {
     $output = '<h2 class="title_export">Export CSV</h2>'."\n";
 
     if (!isset($categorienature)) $categorienature = 'toutes';
@@ -765,7 +771,15 @@ function baz_afficher_formulaire_export()
                     $tabhtml = explode ('</span>', $html);
                     $tab_valeurs[$index] = utf8_encode(html_entity_decode(trim(strip_tags($tabhtml[1]))));
                 }
-                if (isset($tab_valeurs[$index])) $tab_csv[] = html_entity_decode('"'.str_replace('"','""',$tab_valeurs[$index]).'"'); else $tab_csv[] = '';
+		if (isset($tab_valeurs[$index])) {
+			if ($index=="mot_de_passe_wikini" ) {
+				$tab_valeurs[$index]=md5($tab_valeurs[$index]);
+			}
+			$tab_csv[] = html_entity_decode('"'.str_replace('"','""',$tab_valeurs[$index]).'"'); 
+		}
+		else {
+			$tab_csv[] = '';
+		}	
             }
 
             $csv .=  implode(',',$tab_csv)."\r\n";
@@ -791,6 +805,7 @@ function baz_afficher_formulaire_export()
     }
 
     return $output;
+}
 }
 
 
@@ -1096,6 +1111,7 @@ function baz_requete_bazar_fiche($valeur)
     unset($valeur["MAX_FILE_SIZE"]);
     unset($valeur["antispam"]);
 
+    // Champ sendmail positionne : on envoi un mail ...
     if (isset($valeur["sendmail"])) {
         if ($valeur[$valeur["sendmail"]] != '') $destmail = $valeur[$valeur["sendmail"]];
         unset($valeur["sendmail"]);
@@ -1131,8 +1147,10 @@ function baz_requete_bazar_fiche($valeur)
         $lien = str_replace("/wakka.php?wiki=","",$GLOBALS['wiki']->config["base_url"]);
         $sujet = remove_accents('['.str_replace("http://","",$lien).'] Votre fiche : '.$_POST['bf_titre']);
         $lienfiche = $GLOBALS['wiki']->config["base_url"].$GLOBALS['_BAZAR_']['id_fiche'];
-        $text = 'Aller sur le site pour voir la fiche et la modifier : '.$lienfiche;
-        $texthtml = '<br /><br /><a href="'.$lienfiche.'" title="Voir la fiche">Aller sur le site pour voir la fiche et la modifier</a>';
+        $texthtml = 'Bienvenue sur '.remove_accents(str_replace("http://","",$lien).' , ');
+        $text = 'Bienvenue sur '.remove_accents(str_replace("http://","",$lien).' , ');
+        $text .= 'allez sur le site pour gérer votre inscription  : '.$lienfiche;
+        $texthtml .= '<br /><br /><a href="'.$lienfiche.'" title="Voir la fiche">allez sur le site pour gerer votre inscription</a>';
         $fichier = 'tools/bazar/presentation/styles/bazar.css';
         $style = file_get_contents($fichier);
         $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
@@ -1154,7 +1172,7 @@ function baz_requete_bazar_fiche($valeur)
         $body = $mime->get();
         $hdrs = $mime->headers($hdrs);
 
-        $mail =& Mail::factory('mail');
+        $mail =& Mail::factory('mail',array("debug"=>true));
 
         $mail->send($destmail, $hdrs, $body);
 
@@ -1196,6 +1214,7 @@ function baz_insertion_fiche($valeur, $batch=false)
         $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
 
 	if  (isset($GLOBALS['utilisateur_wikini']) && $GLOBALS['utilisateur_wikini']==true) { // Il a un champ de type utilisateur dans la fiche.
+		// On regle les droits par defaut
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "write", " ");
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "read",  "*");
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "comment"," ");

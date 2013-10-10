@@ -356,47 +356,51 @@ if (!function_exists('CheckBazarOwner')) {
 
 		
 }
+
+// Teste les droits d'acces champ par champ du contenu d'un fiche bazar
+// Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
+// Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
+// Introduction du droit % : seul le proprietaire peut acceder
+
+
 if (!function_exists('CheckBazarAcls')) {
 	function CheckBazarAcls($page,$tag) {
 
-	global $wiki;
-	// Acces par defaut en lecture/ecriture/modification/suppression  : proprietaire ou administrateur (reglage du droit write lors de la 
-	// creation de la fiche)
-
-
-	// TODO :
-	// loadpagebyid
-	// bazarliste ...
-	// champ mot de passe ?
-	// 
-	// On regle donc ici les droits en lecture, champ par champ, pour la lecture des non-proprietaire et non administrateur 
-	if (CheckBazarOwner($page,$tag)) { // Pas de controle si proprietaire 
-		return $page;
-	}
-
-	
-		    $valjson = $page["body"];
-		    $valeur = json_decode($valjson, true);
-		    $valeur = array_map('utf8_decode', $valeur);
-		    $val_formulaire = baz_valeurs_type_de_fiche($valeur['id_typeannonce']);
-        	    $formtemplate = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-		    $fieldname=array();
-		    foreach ($formtemplate as $line) {
-			    if (isset($line[11]) && $line[11]!='') {
-				if( !$wiki->CheckACL($line[11])) { // On memorise les champs non autorise
-					     $fieldname[]=$line[1];
-				}
-			    }
+		global $wiki;
+		// TODO :
+		// loadpagebyid
+		// bazarliste ...
+		// champ mot de passe ?
+		// 
+		if (CheckBazarOwner($page,$tag)) { // Pas de controle si proprietaire 
+			return $page;
+		}
+		
+		$valjson = $page["body"];
+		$valeur = json_decode($valjson, true);
+		$valeur = array_map('utf8_decode', $valeur);
+		$val_formulaire = baz_valeurs_type_de_fiche($valeur['id_typeannonce']);
+		$formtemplate = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+		$fieldname=array();
+		foreach ($formtemplate as $line) {
+		   if (isset($line[11]) && $line[11]!='') {
+			if($wiki->CheckAcl($line[11])=="%") {
+				$line[11]= $wiki->GetUserName();
+			}
+			if( !$wiki->CheckACL($line[11])) { // On memorise les champs non autorise
+			    $fieldname[]=$line[1];
+			}
 		    }
-		    if (count($fieldname)>0) { // 
-			    foreach ($fieldname as $field) {
-				   $valeur[$field]=""; // ca suffit pour ne pas l'afficher ?
-			    }
-    			    $valeur = array_map("utf8_encode", $valeur);
-			    $page["body"]=json_encode($valeur);
-		    } 
-		    return $page;
-//    $this->page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
+		}
+		if (count($fieldname)>0) { // 
+		    foreach ($fieldname as $field) {
+			   $valeur[$field]=""; // on vide le champ
+		    }
+		    $valeur = array_map("utf8_encode", $valeur);
+		    $page["body"]=json_encode($valeur);
+		} 
+		return $page;
+	//    $this->page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
 	}
 }
 

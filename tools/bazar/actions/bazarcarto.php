@@ -89,6 +89,13 @@ if (empty($zoom_molette)) {
     $zoom_molette= BAZ_PERMETTRE_ZOOM_MOLETTE;
 }
 
+$barregestion= $this->GetParameter("barregestion"); // true or false : si présent (defaut), ajout des liens vers la gestion de la fiche
+
+if (empty($barregestion)) {
+    $barregestion= "true";
+}
+
+
 $listepoint= $this->GetParameter("liste"); // true or false
 if (empty($listepoint)) {
     $listepoint= "true";
@@ -129,10 +136,16 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $tab = explode('|', $valeurs_fiche['carte_google']);
     if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+	if ($barregestion=="true") {
+		$contenu_fiche=baz_voir_fiche(1,$valeurs_fiche);
+	}
+	else {
+		$contenu_fiche=baz_voir_fiche(0,$valeurs_fiche);
+	}
         $tab_points_carto[]= '{
                 "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
                 "description": \'<div class="BAZ_cadre_map">'.
-                preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.baz_voir_fiche(1, $valeurs_fiche))).'\',
+                preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
                 "lat": '.$tab[0].',
                 "lng": '.$tab[1].'
         }';
