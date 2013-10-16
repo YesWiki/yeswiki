@@ -16,8 +16,6 @@ $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $pl
 $plugin_output_new = str_replace('onload="alert(\'Cette page n\\\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\\\'a subi aucune modification.\');"', '', $plugin_output_new );
 
 if (isset($GLOBALS['template-error']) && $GLOBALS['template-error'] != '') {
-
-echo 'toto';
 	// on affiche le message d'erreur des templates inexistants
 	$plugin_output_new = str_replace('<div class="page" >', '<div class="page">'."\n".$GLOBALS['template-error'], $plugin_output_new );
 	$GLOBALS['template-error'] = '';
