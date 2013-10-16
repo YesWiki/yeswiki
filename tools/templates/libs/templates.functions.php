@@ -112,7 +112,8 @@ function replace_missingpage_links($output) {
 						'&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
 						'&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
 						'&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).				
-						((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '');
+						((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '').
+						'&amp;newpage=1';
 		$replacement = '<a class="yeswiki-editable" href="'.$GLOBALS['wiki']->href("edit", $values[2], $query_string).'"><i class="icon-pencil"></i>&nbsp;'.
 						$values[1].'</a>';
 		$output = str_replace_once( $values[0], $replacement, $output );

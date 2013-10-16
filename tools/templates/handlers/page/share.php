@@ -14,11 +14,23 @@ $html .= '<a href="http://www.netvibes.com/share?title='.urlencode($this->GetPag
 $html .= '<a href="http://del.icio.us/post?url='.urlencode($this->Href()).'&amp;title='.urlencode($this->GetPageTag()).'" title="'.TEMPLATE_SHARE_DELICIOUS.'" class="bouton_share"><img src="tools/templates/presentation/images/delicious.png" width="32" height="32" alt="Delicious" /></a>'."\n";
 $html .= '<a href="http://www.google.com/reader/link?title='.urlencode($this->GetPageTag()).'&amp;url='.urlencode($this->Href()).'" title="'.TEMPLATE_SHARE_GOOGLEREADER.'" class="bouton_share"><img src="tools/templates/presentation/images/google.png" width="32" height="32" alt="Google" /></a>'."\n";
 $html .= '<a href="'.$this->href("mail").'" title="'.TEMPLATE_SHARE_MAIL.'" class="bouton_share"><img src="tools/templates/presentation/images/email.png" width="32" height="32" alt="email" /></a>'."\n";
-$html .= '<br /><br /><br /><br />'."\n";
+$html .= '<br /><br />'."\n";
 $html .= '<div class="alert alert-info">'.TEMPLATE_SHARE_INCLUDE_CODE.'</div>'."\n";
-$html .= "<pre>\n";
+$html .= "<pre id=\"htmlsharecode\">\n";
 $html .= htmlentities('<iframe class="yeswiki_frame" width="100%" height="700" frameborder="0" src="'.$this->Href('iframe').'"></iframe>')."\n";
 $html .= "</pre>\n";
+$html .= '
+<div class="checkbox">
+	<label>
+	  <input type="checkbox" checked="checked" onclick="document.getElementById(\'htmlsharecode\').innerHTML = this.checked ? document.getElementById(\'htmlsharecode\').innerHTML.replace(\'&amp;share=0\', \'\') : document.getElementById(\'htmlsharecode\').innerHTML.replace(\''.$this->Href('iframe').'\', \''.$this->Href('iframe').'&amp;share=0\');"> Ajouter un bouton de partage en haut &agrave; droite de la page
+	</label>
+</div>
+<div class="checkbox">
+	<label>
+	  <input type="checkbox" checked="checked" onclick="document.getElementById(\'htmlsharecode\').innerHTML = this.checked ? document.getElementById(\'htmlsharecode\').innerHTML.replace(\'\&amp\;edit\=0\', \' \') : document.getElementById(\'htmlsharecode\').innerHTML.replace(\''.$this->Href('iframe').'\', \''.$this->Href('iframe').'&amp;edit=0\');"> Ajouter la barre d\'&eacute;dition en bas de page
+	</label>
+</div>
+';
 
 // si l'on est dans une requete ajax, pas besoin de titre, et pas besoin de charger tout le html
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
