@@ -194,16 +194,16 @@ function get_image_from_body($page){
 		preg_match_all("/\"imagebf_image\":\"(.*)\"/U", $page['body'], $image);
 		if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
 			$imagefile = utf8_decode(preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $image[1][0]));
-			$image =  afficher_image($imagefile, $imagefile, 'filtered-image', '', '', 300, 225);
+			$image =  afficher_image($imagefile, $imagefile, 'filtered-image img-responsive', '', '', 300, 225);
 		} else {
 			preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
 			if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
-				$image = $GLOBALS['wiki']->Format('""<img alt="image" src="'.trim(str_replace('\\', '', $image[1][0])).'" />""');
+				$image = $GLOBALS['wiki']->Format('""<img alt="image" class="img-responsive" src="'.trim(str_replace('\\', '', $image[1][0])).'" />""');
 			}
 			else {
 				preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
 				if (is_array($image[1]) && isset($image[1][0]) && $image[1][0]!='') {
-					$image = $GLOBALS['wiki']->Format('""<img alt="image" src="'.trim($image[1][0]).'" />""');
+					$image = $GLOBALS['wiki']->Format('""<img alt="image" class="img-responsive" src="'.trim($image[1][0]).'" />""');
 				}
 				else {
 					$image = '';

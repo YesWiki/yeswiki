@@ -46,7 +46,9 @@ define ('TAGS_DATE_FORMAT', "\l\e d.m.Y &\a\g\\r\av\e; H:i:s");
 define ('TAGS_WRITE_YOUR_COMMENT_HERE', 'Ecrire votre commentaire ici...');
 define ('TAGS_ADD_YOUR_COMMENT', 'Ajouter votre commentaire');
 define ('TAGS_NO_FILTERS', 'Action filtertags : pas de parametre filter1 trouv&eacute;, alors qu\'il est obligatoire.');
+define ('TAGS_NO_PARAM_PAGES', 'Action includepages : pas de parametre <strong>pages</strong> trouv&eacute;, alors qu\'il est obligatoire.');
 define ('TAGS_ONLY_ONE_DOUBLEPOINT', 'Action filtertags : il ne peut y avoir qu\'une fois le double point (:) pour indiquer le label, plusieurs trouv&eacute;s.');
+
 define ('TAGS_NO_RESULTS', 'Pas de r&eacute;sultats avec ces mots cl&eacute;s.');
 define ('TAGS_RESULTS', 'r&eacute;sultats');
 define ('TAGS_FILTER', 'Filtrer');
