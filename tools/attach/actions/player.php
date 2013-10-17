@@ -107,7 +107,7 @@ if (!empty($url)) {
 							<span style="width:100%; text-align:center; z-index:2; position:absolute; left:0;">
 								<span class="jp-current-time">00:00</span> / <span class="jp-duration">00:00</span>
 							</span>
-							<div class="progress" style="margin-bottom:-1px;">
+							<div class="progress" style="margin-bottom:0;">
 						    	<div class="bar extra-play-info" style="width: 0%;"></div>
 						    </div>
 					    </span>
