@@ -361,6 +361,51 @@ function baz_afficher_formulaire_import()
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
     	// Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+
+
+        //============================== a factoriser =================================
+        $nb = 0 ;
+        $nom_champ = array();
+        $type_champ = array();
+        foreach ($tableau as $ligne) {
+            if ($ligne[0] != 'labelhtml') {
+                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
+                    $nom_champ[] = $ligne[0].$ligne[1].$ligne[6];
+                    $type_champ[] = $ligne[0];
+                }
+                // cas de la carto
+                elseif($ligne[0] == 'carte_google') {
+                    $nom_champ[] = $ligne[1];
+                    $nom_champ[] = $ligne[2];
+                    $type_champ[] = $ligne[0];
+                    $nb++;
+                }
+                elseif ($ligne[0] == 'utilisateur_wikini') {
+                    $nom_champ[] = 'nomwiki';
+                    $nom_champ[] = 'mot_de_passe_wikini';
+                    $type_champ[] = $ligne[0];
+                    $nb++;
+                }
+                elseif($ligne[0] == 'titre') {
+                    $nom_champ[] = 'bf_titre';
+                    $type_champ[] = $ligne[0];
+                }
+                elseif($ligne[0] == 'inscriptionliste') {
+                    $nom_champ[] = str_replace(array('@', '.'), array('', ''), $ligne[1]);
+                    $type_champ[] = $ligne[0];
+                }
+                else {
+                    $nom_champ[] = $ligne[1];
+                    $type_champ[] = $ligne[0];
+                }
+                $nb++;
+            }
+
+        
+        } 
+        //============================== fin a factoriser =================================   
+
+
         
     	if ((!empty($_FILES["fileimport"])) && ($_FILES['fileimport']['error'] == 0)) {
 			//Check if the file is csv
@@ -372,6 +417,7 @@ function baz_afficher_formulaire_import()
 				//verification de la presence de ce fichier, s'il existe deja�, on le supprime
 				move_uploaded_file($_FILES['fileimport']['tmp_name'], $newname);
 				if (($handle = fopen($newname, "r")) !== FALSE) {
+                    $fiche = array();
 					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
 						$valeur = array();
 						$geolocalisation = false;
@@ -392,10 +438,21 @@ function baz_afficher_formulaire_import()
                                     array(chr(130), chr(131), chr(132), chr(133), chr(134), chr(135), chr(136), chr(137), chr(138), chr(139), chr(140), chr(145), chr(146), chr(147), chr(148), chr(149), chr(150), chr(151), chr(152), chr(153), chr(154), chr(155), chr(156), chr(159)),
                                     $val);
                                 }
-								$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . $val . "<br />\n";
+								//$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . $val . "<br />\n";
+                                $fiche[$nom_champ[$c]] = $val;
 							}
-							$output .= '<hr />';
-
+							//$output .= '<hr />';
+                            $fiche['id_fiche'] = genere_nom_wiki($fiche['bf_titre']);
+                            $fiche['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
+                            $fiche['categorie_nature'] = $GLOBALS['_BAZAR_']['categorie_nature'];
+                            
+                            $fiche['statut_fiche'] = 1;
+                            $fiche['date_creation_fiche'] = date("Y-m-d H:i:s");
+                            $fiche['date_maj_fiche'] = date("Y-m-d H:i:s");
+                            //$output .= baz_voir_fiche(0, $fiche);
+                            var_dump($fiche);
+                            $fiche = '';
+                            $output .= '<hr />';
 						}
 					}
 					fclose($handle);
@@ -419,19 +476,21 @@ function baz_afficher_formulaire_import()
 	if (isset($_POST['import'])) { // Traitement des fiches selectionnees (correspond au numero de ligne)
 		    
         $row = 1;
+
+        //============================== a factoriser =================================
         $val_formulaire = baz_valeurs_type_de_fiche($_POST['id_typeannonce']);
         $GLOBALS['_BAZAR_']['id_typeannonce'] = $_POST['id_typeannonce'];
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
-	    // Recuperation champs de la fiche
+        // Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-    	$nb = 0 ;
+        $nb = 0 ;
         $nom_champ = array();
         $type_champ = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
-        		    $nom_champ[] = $ligne[0].$ligne[1];
-        		    $type_champ[] = $ligne[0];
+                    $nom_champ[] = $ligne[0].$ligne[1];
+                    $type_champ[] = $ligne[0];
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
@@ -440,17 +499,17 @@ function baz_afficher_formulaire_import()
                     $type_champ[] = $ligne[0];
                     $nb++;
                 }
-		elseif ($ligne[0] == 'utilisateur_wikini') {
-			$nom_champ[] = 'nomwiki';
-			$nom_champ[] = 'mot_de_passe_wikini';
-                    	$type_champ[] = $ligne[0];
-			$nb++;
-		}
-		elseif($ligne[0] == 'titre') {
+        elseif ($ligne[0] == 'utilisateur_wikini') {
+            $nom_champ[] = 'nomwiki';
+            $nom_champ[] = 'mot_de_passe_wikini';
+                        $type_champ[] = $ligne[0];
+            $nb++;
+        }
+        elseif($ligne[0] == 'titre') {
                     $nom_champ[] = 'bf_titre';
                     $type_champ[] = $ligne[0];
                 }
-		elseif($ligne[0] == 'inscriptionliste') {
+        elseif($ligne[0] == 'inscriptionliste') {
                     $nom_champ[] = str_replace(array('@', '.'), array('', ''), $ligne[1]);
                     $type_champ[] = $ligne[0];
                 }
@@ -461,8 +520,11 @@ function baz_afficher_formulaire_import()
                 $nb++;
             }
 
-	    
-        }	 
+        
+        } 
+        //============================== fin a factoriser =================================   
+
+
 		$import = $_POST['import'];
 		$newname = BAZ_CHEMIN_UPLOAD . $_POST['cvsfilename'];
         $erreur = false;
@@ -706,6 +768,7 @@ function baz_afficher_formulaire_export()
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
         $nb = 0 ;
+        $csv = '';
         $tab_champs = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
@@ -750,7 +813,7 @@ function baz_afficher_formulaire_export()
         $csv = substr(trim($csv),0,-1)."\r\n";
 
 	// TODO : inscription liste
-        //on rÃ©cupÃ¨re toutes les fiches du type choisi et on les met au format csv
+        //on recupere toutes les fiches du type choisi et on les met au format csv
         $tableau_fiches = baz_requete_recherche_fiches('', 'alphabetique', $id_type_fiche, $val_formulaire['bn_type_fiche']);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
@@ -1204,7 +1267,7 @@ function baz_insertion_fiche($valeur, $batch=false)
                                  $GLOBALS["wiki"]->SaveAcl($GLOBALS['_BAZAR_']['id_fiche'], "comment"," ");
 	}
 
-        //on cree un triple pour spÃ©cifier que la page wiki crÃ©Ã©e est une fiche bazar
+        //on cree un triple pour specifier que la page wiki creee est une fiche bazar
         $GLOBALS["wiki"]->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar', '', '');
 
         // Envoie d un mail aux administrateurs
@@ -2248,7 +2311,7 @@ function baz_a_le_droit( $demande = 'saisie_fiche', $id = '' )
         elseif ($demande == 'saisie_formulaire' || $demande == 'saisie_liste') {
             return false;
         }
-        //pour la liste des fiches saisies, il suffit d'Ãªtre identifiÃ©
+        //pour la liste des fiches saisies, il suffit d'Ãªtre identifie
         elseif ($demande == 'voir_mes_fiches') {
             return true;
         }
