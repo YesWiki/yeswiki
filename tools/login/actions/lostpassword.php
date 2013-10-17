@@ -187,8 +187,7 @@ switch ($step) {
 		}
 		?>
 
-		<div <label for="uname">Utilisateur Wiki</label><div class="field"><input type="text" name="uname" id="uname" value="" maxlength="20"></div></div>
-		<div <label>- Ou -</label></div>
+		<div style="display:none" <label for="uname">Utilisateur Wiki</label><div class="field"><input type="text" name="uname" id="uname" value="" maxlength="20"></div></div>
 		<div <label for="email">Email</label><div class="field"><input type="text" name="email" id="email" value="" maxlength="255"></div></div>
 		<input type="hidden" name="subStep" value="1" />
 		<div class="fieldGroup"><input type="submit" value="Submit" style="margin-left: 150px;" /></div>
