@@ -56,7 +56,8 @@ define ('TAGS_CONTAINING_TAG', 'avec le mot cl&eacute;');
 
 // handler exportpages
 define ('TAGS_GENERATE_EBOOK', 'G&eacute;n&eacute;rer l\'Ebook');
-define ('TAGS_EXPORT_PAGES_INFO', 'Vous pouvez changer l\'ordre des pages en cliquant dessus puis en les d&eacute;pla&ccedil;ant.<br />Visualisez la page en cliquant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-eye-open"></i></a>, et enlevez des pages de cette s&eacute;lection en appuyant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-minus"></i></a>.');
+define ('TAGS_EXPORT_PAGES_INFO', 'S&eacute;lectionnez vos pages pour l\'Ebook en cliquant sur ');
+define ('TAGS_ORDER_PAGES_INFO', 'D&eacute;placez les pages pour les mettre dans l\'ordre qui vous convient.');
 define ('TAGS_EBOOK_TITLE', 'Titre de l\'ouvrage');
 define ('TAGS_EBOOK_DESC', 'Description');
 define ('TAGS_EBOOK_AUTHOR', 'Pr&eacute;nom puis nom de l\'auteur');
@@ -72,6 +73,15 @@ define ('TAGS_NO_IMAGE_FOUND', 'ERREUR : Le lien vers l\'image de couverture n\'
 define ('TAGS_NOT_IMAGE_FILE', 'ERREUR : Le lien vers l\'image de couverture n\'est pas une image avec l\'extension .jpg.');
 define ('TAGS_EBOOK_PAGE_CREATED','La page de l\'Ebook a &eacute;t&eacute; cr&eacute;&eacute;e avec succ&egrave;s' );
 define ('TAGS_GOTO_EBOOK_PAGE', 'Aller voir la page : ');
+define ('TAGS_FILTER_PAGES', 'Filtrer les pages');
+define ('TAGS_SEE_PAGE', 'Voir la page');
+define ('TAGS_SELECT_PAGE', 'S&eacute;lectionner la page');
+define ('TAGS_DELETE_PAGE', 'Enlever la page');
+define ('TAGS_FOR_THE_EBOOK', 'pour l&apos;Ebook');
+define ('TAGS_FROM_THE_EBOOK', 'de l&apos;Ebook');
+define ('TAGS_AVAILABLE_PAGES', 'Pages disponibles');
+define ('TAGS_START_PAGE', 'Page d\'introduction');
+define ('TAGS_END_PAGE', 'Page de fin');
 define ('TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA', 'Cet ouvrage est publi&eacute; sous licence Creative Commons BY SA.');
 define ('TAGS_BY', 'Par');
 define ('TAGS_ABOUT_THIS_EBOOK', "Information sur cet ouvrage");

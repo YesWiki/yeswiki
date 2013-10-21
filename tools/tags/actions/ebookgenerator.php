@@ -155,7 +155,7 @@ else {
 
 	include_once 'tools/tags/libs/squelettephp.class.php';
 	$template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html'); // charge le templates
-	$template_export->set(array('pages' => $pages, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
+	$template_export->set(array('pages' => $pages, 'ebookstart' => $ebookstart, 'ebookend' => $ebookend, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
 	$output .= $template_export->analyser(); // affiche les resultats
 }
 

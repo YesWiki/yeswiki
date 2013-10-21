@@ -21,6 +21,13 @@ border-radius: 4px 4px 4px 4px;
     text-align:right;
     padding-right:19px;
 }
+/********* Ebook *********/
+#ebook-selection-container .list-group-item:hover {
+    cursor: pointer;
+}
+#ebook-selection-container .movable {
+    margin-right: 10px;
+}
 /***********************************Nuage de mot clés************************************/
 
 .tag-list {
