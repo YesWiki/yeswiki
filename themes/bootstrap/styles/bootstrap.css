@@ -13,4 +13,5 @@ affix{position:fixed}
 /* additions for yeswiki */
 @media (min-width: 980px) {
   .main-body {padding-top: 60px;}
+  .nav-collapse {position:inherit;}
 }

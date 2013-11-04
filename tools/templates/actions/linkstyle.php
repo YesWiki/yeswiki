@@ -4,13 +4,17 @@ if (!defined("WIKINI_VERSION"))
         die ("acc&egrave;s direct interdit");
 }
 
-// feuilles de styles de base yeswiki
-$styles = "\n".
-'	<!-- CSS files -->'."\n".
-'	<link rel="stylesheet" href="tools/templates/presentation/styles/yeswiki-base.css" />'."\n";
+// feuilles de styles css
+$styles = "\n".'	<!-- CSS files -->'."\n";
 
-// si pas de bootstrap dans les css, on le charge a part
-if (!strstr($this->config['favorite_style'], 'bootstrap.')) {
+// si pas le mot yeswiki. ou yw. dans les css, on charge les styles par defaut de yeswiki
+if (!strstr($this->config['favorite_style'], 'yeswiki.') && !strstr($this->config['favorite_style'], 'yw.') ) {
+	$styles .= '	<link rel="stylesheet" href="tools/templates/presentation/styles/yeswiki-base.css" />'."\n";
+}
+
+
+// si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
+if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->config['favorite_style'], 'bs.')) {
 	$styles .= '	<link rel="stylesheet" href="tools/templates/presentation/styles/bootstrap.min.css" />'."\n";
 }
 
@@ -23,12 +27,9 @@ if (file_exists('themes/'.$this->config['favorite_theme'].'/styles/'.$this->conf
 
 // on ajoute le style css selectionne du theme
 if ($this->config['favorite_style']!='none') {
-	if (substr($this->config['favorite_style'], -4, 4) == '.css') $styles .= '	<link rel="stylesheet" href="'.$css_file.'" id="mainstyle" />'."\n";
-	elseif (substr($this->config['favorite_style'], -5, 5) == '.less') {
-		$styles .= '	<link rel="stylesheet/less" href="'.$css_file.'" id="mainstyle" />'."\n".
-'	<script src="tools/templates/libs/less-1.3.0.min.js" type="text/javascript"></script>'."\n";
+	if (substr($this->config['favorite_style'], -4, 4) == '.css') {
+		$styles .= '	<link rel="stylesheet" href="'.$css_file.'" id="mainstyle" />'."\n";
 	}
-	
 }
 
 // si l'action propose d'autres css a ajouter, on les ajoute
@@ -44,7 +45,7 @@ if (!empty($othercss)) {
 	}
 }
 
-// on ajoute aux css le background personnalis?
+// on ajoute aux css le background personnalise
 if (isset($this->config['favorite_background_image']) && $this->config['favorite_background_image']!='') {
 	$imgextension = strtolower(substr($this->config['favorite_background_image'], -4, 4));
 	if ($imgextension=='.jpg') {

@@ -37,7 +37,7 @@ class ActionEditgroups extends WikiniAdminAction
 		$res .= 'D&eacute;finition du groupe <select name="groupname">';
 		foreach ($list as $group)
 		{
-			$res .= '<option value="' . htmlspecialchars($group) . '">' . htmlspecialchars($group) .  '</option>';
+			$res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '">' . htmlspecialchars($group, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) .  '</option>';
 		}
 		$res .= '</select> <input type="submit" value="voir" />' . $wiki->FormClose();
 		$res .= $wiki->FormOpen('', '', 'get') . 'Ou cr&eacute;er un nouveau groupe: <input type="text" name="groupname" />';
@@ -82,7 +82,7 @@ class ActionEditgroups extends WikiniAdminAction
 			if (!preg_match('/[^A-Za-z0-9]/', $name))
 			{
 				$res .= $wiki->FormOpen();
-				$res .= '<br />&Eacute;diter le groupe <strong>' . htmlspecialchars($name) . '</strong>: <br />';
+				$res .= '<br />&Eacute;diter le groupe <strong>' . htmlspecialchars($name, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '</strong>: <br />';
 				$res .= '<input type="hidden" name="groupname" value="'. $name . '" />';
 				$res .= '<textarea name="acl" rows="4" cols="20">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />'; 
 				$res .= '<input type="submit" value="Enregistrer" style="width: 120px" accesskey="s" />';

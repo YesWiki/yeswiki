@@ -12,7 +12,7 @@ if (!$incPage = $this->LoadPage($incPageName)) {
 					'&amp;squelette='.urlencode($this->config['favorite_squelette']).
 					'&amp;style='.urlencode($this->config['favorite_style']);
 	
-	$plugin_output_new = '<div class="include '.$class.'">'."\n".
+	$plugin_output_new = '<div class="'.$class.'">'."\n".
 							'<a class="yeswiki-editable" href="'.$this->href('edit', $incPageName, $query_string).'">'.
 							'<i class="icon-pencil"></i>&nbsp;'.TEMPLATE_EDIT.' '.$incPageName.'</a>'."\n".
 						'</div>'."\n";
@@ -40,18 +40,18 @@ if (!empty($dblclic) && $dblclic=="1" && $this->HasAccess("write", $incPageName)
 } else {
 	$actiondblclic = '';
 }
-$plugin_output_new = str_replace('<div class="include', '<div'.$actiondblclic.' class="include div_include', $plugin_output_new);
+$plugin_output_new = str_replace('<div class="include ', '<div'.$actiondblclic.' class="', $plugin_output_new);
 
 // on enleve le préfixe include_ des classes pour que le parametre passé et le nom de classe CSS soient bien identiques 
 $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 
 // on ajoute pour le menu du haut la classe nav de bootstrap
 if ($incPageName == 'PageMenuHaut') {
-	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav">', $plugin_output_new, 1);
+	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
 }
 
 // on rajoute une div clear pour mettre le flow css en dessous des éléments flottants
-$plugin_output_new =  (!empty($clear) && $clear=="1") ? $plugin_output_new.'<div class="clear"></div>'."\n" : $plugin_output_new;
+$plugin_output_new =  (!empty($clear) && $clear=="1") ? $plugin_output_new.'<div class="clearfix"></div>'."\n" : $plugin_output_new;
 
 
 ?>

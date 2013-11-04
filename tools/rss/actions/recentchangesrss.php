@@ -114,7 +114,7 @@ if ($pages = $this->LoadAll("select id, tag, time, user, owner from ".$this->con
     $output .= "<atom:link href=\"".$this->Href("xml")."\" rel=\"self\" type=\"application/rss+xml\" />\n";
 	$output .= "<title> ". $this->GetConfigValue("wakka_name")  . "</title>\n";
 	$output .= "<link>" . $this->Href(false, $link) . "</link>\n";
-	$output .= "<description>" . htmlspecialchars($this->GetConfigValue("wakka_name")) . "</description>\n";
+	$output .= "<description>" . htmlspecialchars($this->GetConfigValue("wakka_name"), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . "</description>\n";
 	$output .= "<language>fr</language>\n";
 	$output .= '<generator>WikiNi ' . WIKINI_VERSION . "</generator>\n";
 
@@ -138,8 +138,8 @@ if ($pages = $this->LoadAll("select id, tag, time, user, owner from ".$this->con
         if ($i<sizeof($pages)) {
             $page=$firstpage;
             $output .= "<item>\n";
-            $output .= "<title>" . htmlspecialchars($page["tag"]) . "</title>\n";
-            $output .= '<dc:creator>' . htmlspecialchars($page["user"]) . "</dc:creator>\n";
+            $output .= "<title>" . htmlspecialchars($page["tag"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . "</title>\n";
+            $output .= '<dc:creator>' . htmlspecialchars($page["user"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . "</dc:creator>\n";
             $output .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\n";
             $output .= "<description>" . htmlspecialchars(
                     'Modification de ' . $this->ComposeLinkToPage($page["tag"])
@@ -147,7 +147,7 @@ if ($pages = $this->LoadAll("select id, tag, time, user, owner from ".$this->con
                         . ' --- par ' . $page["user"]  . rssdiff($page["tag"],$firstpage["id"],$lastpage["id"])). "</description>\n";
             $output .= "<dc:format>text/html</dc:format>";
 
-            $itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"])));
+            $itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET));
             $output .= '<guid>' . $itemurl . "</guid>\n";
             $output .= "</item>\n";
         }

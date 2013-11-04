@@ -104,7 +104,7 @@ class Net_URL
     *
     * @see __construct()
     */
-    public function Net_URL($url = null, $useBrackets = true)
+    public function cNet_URL($url = null, $useBrackets = true)
     {
         $this->__construct($url, $useBrackets);
     }

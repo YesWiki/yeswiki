@@ -38,7 +38,7 @@ define ('TEMPLATE_CUSTOM_GRAPHICS', 'Apparence de la page');
 define ('TEMPLATE_SAVE', 'Sauver');
 define ('TEMPLATE_APPLY', 'Appliquer');
 define ('TEMPLATE_CANCEL', 'Annuler');
-define ('TEMPLATE_THEME', 'Th&egrave;me graphique');
+define ('TEMPLATE_THEME', 'Th&egrave;me');
 define ('TEMPLATE_SQUELETTE', 'Squelette');
 define ('TEMPLATE_STYLE', 'Style');
 define ('TEMPLATE_BG_IMAGE', 'Image de fond');
@@ -87,14 +87,8 @@ define ('TEMPLATE_SHARE_NETVIBES', 'Partager sur Netvibes');
 define ('TEMPLATE_SHARE_DELICIOUS', 'Partager sur Delicious');
 define ('TEMPLATE_SHARE_GOOGLEREADER', 'Partager sur Google Reader');
 define ('TEMPLATE_SHARE_MAIL', 'Envoyer le contenu de cette page par mail');
-
-// handler exportpages
-define ('TEMPLATE_EXPORT_ONLY_FOR_ADMINS', 'L\'export int&eacute;gral des pages est r&eacute;serv&eacute; &agrave; l\'administrateur');
-define ('TEMPLATE_EXPORT_THIS_SELECTION', 'Exporter cette s&eacute;lection');
-define ('TEMPLATE_EXPORT_FORMAT', 'Format d\'export');
-define ('TEMPLATE_EXPORT_PAGES_TITLE', 'Export des pages de ce YesWiki');
-define ('TEMPLATE_EXPORT_PAGES_INFO', 'Vous pouvez changer l\'ordre des pages en cliquant dessus puis en les d&eacute;pla&ccedil;ant.<br />Visualisez la page en cliquant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-eye-open"></i></a>, et enlevez des pages de cette s&eacute;lection en appuyant sur le bouton <a href="#" class="btn btn-mini"><i class="icon-minus"></i></a> .<br />Les pages d&eacute;j&agrave; cr&eacute;&eacute;es &agrave; l\'installation sont color&eacute;es.');
-define ('TEMPLATE_EXPORT_REMOVE_INSTALLATION_PAGES', 'Enlever toutes les pages cr&eacute;&eacute;es &agrave; l\'installation');
+define ('TEMPLATE_ADD_SHARE_BUTTON', 'Ajouter un bouton de partage en haut &agrave; droite de la page');
+define ('TEMPLATE_ADD_EDIT_BAR', 'Ajouter la barre d\'&eacute;dition en bas de page');
 
 // handler diaporama
 define ('TEMPLATE_NO_ACCESS_TO_PAGE', 'Vous n\'avez pas le droit d\'acc&eacute;der &agrave; cette page.');

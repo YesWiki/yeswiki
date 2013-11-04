@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script defer type="text/javascript" src="tools/tags/libs/tag.js"></script>';
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/tags/libs/tag.js"></script>';
 
 $class = $this->GetParameter('class');
 if (empty($class)) $class='';
@@ -55,13 +55,13 @@ if (is_array($tab_tous_les_tags))
 	$i=1;$nb_pages=0;
 	$liste_page = '';
 	$tag_precedent = '';
-	$tab_tous_les_tags[]='fin'; //on ajoute un élément au tableau pour bloucler une derniere fois
-	foreach ($tab_tous_les_tags as $tab_les_tags)
-	{
+	$tab_tous_les_tags['dummy']['value']='fin'; //on ajoute un element au tableau pour boucler une derniere fois
+	$tab_tous_les_tags['dummy']['resource']='fin'; 
+	foreach ($tab_tous_les_tags as $tab_les_tags) {
 		if ($tab_les_tags['value']==$tag_precedent || $tag_precedent== '')
 		{
 			$nb_pages++;
-			$liste_page .= '<li class="liste_pageswiki"><a class="link_pagewiki" href="'.$this->href('',$tab_les_tags['resource']).'">'.$tab_les_tags['resource'].'</a></li>'."\n";
+			$liste_page .= '<li class="pagewiki-link"><a class="link_pagewiki" href="'.$this->href('',$tab_les_tags['resource']).'">'.$tab_les_tags['resource'].'</a></li>';
 
 		}
 		else
@@ -69,16 +69,13 @@ if (is_array($tab_tous_les_tags))
 			// on affiche les informations pour ce tag
 			if ($nb_pages>1) $texte_page= $nb_pages.' pages';
 			else $texte_page='Une page';
-			$texte_liste  = '<li class="liste_tooltip">'."\n".'<a class="tooltip_link size'.ceil($nb_pages/$mult).'" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag_precedent).'" id="j'.$i.'">'.$tag_precedent.'</a>'."\n";
-			$texte_liste .= '<div class="hovertip" id="tooltipj'.$i.'">'."\n".'<span class="texte_pages_assoc">'.$texte_page.' avec le mot cl&eacute; "'.$tag_precedent.'" :</span>'."\n".'<ul>'."\n";
-			$texte_liste .= $liste_page."\n";
-			$texte_liste .= '</ul>'."\n".'</div>'."\n";
+			$texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag_precedent).'" id="j'.$i.'" data-title="'.$texte_page.' '.TAGS_CONTAINING_TAG.' : '.$tag_precedent.'" data-content="'.htmlspecialchars('<ul class="unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
 			$texte_liste .= '</li>'."\n";
 			$tab_tag[] = $texte_liste;
 
-			// on réinitialise les variables
+			// on reinitialise les variables
 			$nb_pages = 1;
-			$liste_page = '<li class="liste_pageswiki"><a class="link_pagewiki" href="'.$this->href('',$tab_les_tags['resource']).'">'.$tab_les_tags['resource'].'</a></li>'."\n";
+			$liste_page = '<li><a class="pagewiki-link" href="'.$this->href('',$tab_les_tags['resource']).'">'.$tab_les_tags['resource'].'</a></li>'."\n";
 			$i++;
 		}
 		$tag_precedent = $tab_les_tags['value'];

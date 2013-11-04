@@ -45,7 +45,7 @@ if (!empty($url)) {
 		if ($extension=="mp3") {
 			if (!isset($GLOBALS['jplayer'])) {
 				$GLOBALS['jplayer'] = 1;
-				$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/attach/libs/vendor/jplayer.2.2.0/js/jquery.jplayer.min.js"></script>'."\n";
+				$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/attach/libs/vendor/jplayer.2.4.0/js/jquery.jplayer.min.js"></script>'."\n";
 			}
 			else {
 				$GLOBALS['jplayer']++;
@@ -73,7 +73,7 @@ if (!empty($url)) {
 								});
 							},
 							cssSelectorAncestor: "#jp_container_'.$GLOBALS['jplayer'].'",
-							swfPath: "tools/attach/libs/vendor/jplayer.2.2.0/js",
+							swfPath: "tools/attach/libs/vendor/jplayer.2.4.0/js",
 							timeupdate: function(event) {
 								my_extraPlayInfo.css({width : parseInt(event.jPlayer.status.currentPercentAbsolute, 10) + "%"});
 							},
@@ -99,21 +99,21 @@ if (!empty($url)) {
 			$output = '
 				<div id="jquery_jplayer_'.$GLOBALS['jplayer'].'" class="jp-jplayer"></div>
 				<div id="jp_container_'.$GLOBALS['jplayer'].'" class="jp-audio">
-					<div class="btn-group no-dblclick">
-						<a href="#" class="jp-play btn btn-primary btn-small"><i class="icon-play icon-white"></i></a>
-						<a href="#" class="jp-pause btn btn-primary btn-small" style="display:none"><i class="icon-pause icon-white"></i></a>
-						<a href="#" class="jp-stop btn btn-small"><i class="icon-stop"></i></a>
-						<span class="btn btn-small disabled" style="width:100px; position:relative;">
+					<div class="btn-group btn-group-sm no-dblclick">
+						<a href="#" class="jp-play btn btn-default btn-primary btn-small"><i class="icon-play icon-white"></i></a>
+						<a href="#" class="jp-pause btn btn-default btn-primary btn-small" style="display:none"><i class="icon-pause icon-white"></i></a>
+						<a href="#" class="jp-stop btn btn-default btn-small"><i class="icon-stop"></i></a>
+						<span class="btn btn-default btn-small" style="width:140px; position:relative;">
 							<span style="width:100%; text-align:center; z-index:2; position:absolute; left:0;">
 								<span class="jp-current-time">00:00</span> / <span class="jp-duration">00:00</span>
 							</span>
-							<div class="progress" style="margin-bottom:0; height:18px">
+							<div class="progress" style="margin-bottom:0;">
 						    	<div class="bar extra-play-info" style="width: 0%;"></div>
 						    </div>
 					    </span>
-					    <a href="#" class="jp-mute btn btn-small"><i class="icon-volume-off"></i></a>
-						<a href="#" class="jp-unmute btn btn-small" style="display: none;"><i class="icon-volume-up"></i></a>
-						<a href="'.$url.'" title="T&eacute;l&eacute;charger le fichier '.($url).'" class="btn btn-small"><i class="icon-download-alt"></i></a>
+					    <a href="#" class="jp-mute btn btn-default btn-small"><i class="icon-volume-off"></i></a>
+						<a href="#" class="jp-unmute btn btn-default btn-small" style="display: none;"><i class="icon-volume-up"></i></a>
+						<a href="'.$url.'" title="T&eacute;l&eacute;charger le fichier '.($url).'" class="btn btn-default btn-small"><i class="icon-download-alt"></i></a>
 					</div>
 				</div>';
 			echo $output;

@@ -263,7 +263,8 @@ function fiches_a_valider()
             $lien_voir->addQueryString('typeannonce', $ligne['bn_id_nature']);
 
             // Nettoyage de l'url
-            // NOTE (jpm - 23 mai 2007): pour Ãªtre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
+
+            // NOTE (jpm - 23 mai 2007): pour etre compatible avec PHP5 il faut utiliser tjrs $GLOBALS['_BAZAR_']['url'] car en php4 on
             // copie bien une variable mais pas en php5, cela reste une reference...
             $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
@@ -365,6 +366,51 @@ function baz_afficher_formulaire_import()
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
     	// Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+
+
+        //============================== a factoriser =================================
+        $nb = 0 ;
+        $nom_champ = array();
+        $type_champ = array();
+        foreach ($tableau as $ligne) {
+            if ($ligne[0] != 'labelhtml') {
+                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
+                    $nom_champ[] = $ligne[0].$ligne[1].$ligne[6];
+                    $type_champ[] = $ligne[0];
+                }
+                // cas de la carto
+                elseif($ligne[0] == 'carte_google') {
+                    $nom_champ[] = $ligne[1];
+                    $nom_champ[] = $ligne[2];
+                    $type_champ[] = $ligne[0];
+                    $nb++;
+                }
+                elseif ($ligne[0] == 'utilisateur_wikini') {
+                    $nom_champ[] = 'nomwiki';
+                    $nom_champ[] = 'mot_de_passe_wikini';
+                    $type_champ[] = $ligne[0];
+                    $nb++;
+                }
+                elseif($ligne[0] == 'titre') {
+                    $nom_champ[] = 'bf_titre';
+                    $type_champ[] = $ligne[0];
+                }
+                elseif($ligne[0] == 'inscriptionliste') {
+                    $nom_champ[] = str_replace(array('@', '.'), array('', ''), $ligne[1]);
+                    $type_champ[] = $ligne[0];
+                }
+                else {
+                    $nom_champ[] = $ligne[1];
+                    $type_champ[] = $ligne[0];
+                }
+                $nb++;
+            }
+
+        
+        } 
+        //============================== fin a factoriser =================================   
+
+
         
     	if ((!empty($_FILES["fileimport"])) && ($_FILES['fileimport']['error'] == 0)) {
 			//Check if the file is csv
@@ -372,9 +418,11 @@ function baz_afficher_formulaire_import()
 			$ext = substr($filename, strrpos($filename, '.') + 1);
 			if ($ext == "csv") {
 				$newname = BAZ_CHEMIN_UPLOAD . $filename;
-				//verification de la presence de ce fichier, s'il existe deja , on le supprime
+
+				//verification de la presence de ce fichier, s'il existe deja�, on le supprime
 				move_uploaded_file($_FILES['fileimport']['tmp_name'], $newname);
 				if (($handle = fopen($newname, "r")) !== FALSE) {
+                    $fiche = array();
 					while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
 						$valeur = array();
 						$geolocalisation = false;
@@ -395,10 +443,21 @@ function baz_afficher_formulaire_import()
                                     array(chr(130), chr(131), chr(132), chr(133), chr(134), chr(135), chr(136), chr(137), chr(138), chr(139), chr(140), chr(145), chr(146), chr(147), chr(148), chr(149), chr(150), chr(151), chr(152), chr(153), chr(154), chr(155), chr(156), chr(159)),
                                     $val);
                                 }
-								$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . $val . "<br />\n";
+								//$output .= '<strong>' . $tab_labels[$c] . '</strong>' . ' : ' . $val . "<br />\n";
+                                $fiche[$nom_champ[$c]] = $val;
 							}
-							$output .= '<hr />';
-
+							//$output .= '<hr />';
+                            $fiche['id_fiche'] = genere_nom_wiki($fiche['bf_titre']);
+                            $fiche['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
+                            $fiche['categorie_nature'] = $GLOBALS['_BAZAR_']['categorie_nature'];
+                            
+                            $fiche['statut_fiche'] = 1;
+                            $fiche['date_creation_fiche'] = date("Y-m-d H:i:s");
+                            $fiche['date_maj_fiche'] = date("Y-m-d H:i:s");
+                            //$output .= baz_voir_fiche(0, $fiche);
+                            var_dump($fiche);
+                            $fiche = '';
+                            $output .= '<hr />';
 						}
 					}
 					fclose($handle);
@@ -422,19 +481,21 @@ function baz_afficher_formulaire_import()
 	if (isset($_POST['import'])) { // Traitement des fiches selectionnees (correspond au numero de ligne)
 		    
         $row = 1;
+
+        //============================== a factoriser =================================
         $val_formulaire = baz_valeurs_type_de_fiche($_POST['id_typeannonce']);
         $GLOBALS['_BAZAR_']['id_typeannonce'] = $_POST['id_typeannonce'];
         $GLOBALS['_BAZAR_']['categorie_nature'] = $val_formulaire['bn_type_fiche'];
-	    // Recuperation champs de la fiche
+        // Recuperation champs de la fiche
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-    	$nb = 0 ;
+        $nb = 0 ;
         $nom_champ = array();
         $type_champ = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
-        		    $nom_champ[] = $ligne[0].$ligne[1];
-        		    $type_champ[] = $ligne[0];
+                    $nom_champ[] = $ligne[0].$ligne[1];
+                    $type_champ[] = $ligne[0];
                 }
                 // cas de la carto
                 elseif($ligne[0] == 'carte_google') {
@@ -443,17 +504,17 @@ function baz_afficher_formulaire_import()
                     $type_champ[] = $ligne[0];
                     $nb++;
                 }
-		elseif ($ligne[0] == 'utilisateur_wikini') {
-			$nom_champ[] = 'nomwiki';
-			$nom_champ[] = 'mot_de_passe_wikini';
-                    	$type_champ[] = $ligne[0];
-			$nb++;
-		}
-		elseif($ligne[0] == 'titre') {
+        elseif ($ligne[0] == 'utilisateur_wikini') {
+            $nom_champ[] = 'nomwiki';
+            $nom_champ[] = 'mot_de_passe_wikini';
+                        $type_champ[] = $ligne[0];
+            $nb++;
+        }
+        elseif($ligne[0] == 'titre') {
                     $nom_champ[] = 'bf_titre';
                     $type_champ[] = $ligne[0];
                 }
-		elseif($ligne[0] == 'inscriptionliste') {
+        elseif($ligne[0] == 'inscriptionliste') {
                     $nom_champ[] = str_replace(array('@', '.'), array('', ''), $ligne[1]);
                     $type_champ[] = $ligne[0];
                 }
@@ -464,8 +525,11 @@ function baz_afficher_formulaire_import()
                 $nb++;
             }
 
-	    
-        }	 
+        
+        } 
+        //============================== fin a factoriser =================================   
+
+
 		$import = $_POST['import'];
 		$newname = BAZ_CHEMIN_UPLOAD . $_POST['cvsfilename'];
         $erreur = false;
@@ -503,7 +567,7 @@ function baz_afficher_formulaire_import()
 							$valeur['image'.$nom_champ[$c]] = $nomimage;
 							if (file_exists(BAZ_CHEMIN_UPLOAD . $imageorig)) {
                                 if (preg_match("/(gif|jpeg|png|jpg)$/i", $nomimage)) {
-								$chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
+								    $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
     								//verification de la presence de ce fichier
     								if (!file_exists($chemin_destination)) {
     									rename(BAZ_CHEMIN_UPLOAD . $imageorig, $chemin_destination);
@@ -634,13 +698,14 @@ function baz_afficher_formulaire_import()
                 $csv = substr(trim($csv),0,-1)."\r\n";
             }
 
-            $output .= '<em>'.BAZ_EXEMPLE_FICHIER_CSV.$val_formulaire["bn_label_nature"].'</em>'."\n";
-	    $output .= '<pre style="height:125px; white-space:pre; padding:5px; word-wrap:break-word; border:1px solid #999; overflow:auto; ">'."\n".utf8_decode($csv)."\n".'</pre>'."\n";
+        $output .= '<em>'.BAZ_EXEMPLE_FICHIER_CSV.$val_formulaire["bn_label_nature"].'</em>'."\n";
+    $output .= '<pre style="height:125px; white-space:pre; padding:5px; word-wrap:break-word; border:1px solid #999; overflow:auto; ">'."\n".utf8_decode($csv)."\n".'</pre>'."\n";
 
 
-	 //on genere un fichier exemple pour faciliter le travail d'import
+    	//on genere un fichier exemple pour faciliter le travail d'import
         $chemin_destination = BAZ_CHEMIN_UPLOAD.'bazar-import-'.$id_type_fiche.'.csv';
-        //verification de la presence de ce fichier, s'il existe deja , on le supprime
+
+        //verification de la presence de ce fichier, s'il existe deja�, on le supprime
         if (file_exists($chemin_destination)) {
             unlink($chemin_destination);
         }
@@ -710,6 +775,7 @@ function baz_afficher_formulaire_export()
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
         $nb = 0 ;
+        $csv = '';
         $tab_champs = array();
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
@@ -943,10 +1009,10 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $lien_formulaire->removeQueryString(BAZ_VARIABLE_VOIR);
                 $lien_formulaire->removeQueryString('id_typeannonce');
                 $lien_formulaire->removeQueryString('id_fiche');
-
+                $HTML_QuickForm = new HTML_QuickForm();
                 // Nettoyage de l'url avant les return
-                $buttons[] = &HTML_QuickForm::createElement('link', 'annuler', BAZ_ANNULER, str_replace("&amp;", "&", $GLOBALS['_BAZAR_']['url']->getURL()), BAZ_ANNULER, array('class' => 'btn btn-danger bouton_annuler'));
-                $buttons[] = &HTML_QuickForm::createElement('submit', 'valider', BAZ_VALIDER, array('class' => 'btn btn-success bouton_sauver'));
+                $buttons[] = $HTML_QuickForm->createElement('link', 'annuler', BAZ_ANNULER, str_replace("&amp;", "&", $GLOBALS['_BAZAR_']['url']->getURL()), BAZ_ANNULER, array('class' => 'btn btn-danger bouton_annuler'));
+                $buttons[] = $HTML_QuickForm->createElement('submit', 'valider', BAZ_VALIDER, array('class' => 'btn btn-success bouton_sauver'));
                 $formtemplate->addGroup($buttons, 'groupe_boutons', null, '&nbsp;', 0);
                 $squelette->setElementTemplate( '<div class="control-group">'."\n".
                                     '<div class="radio"> '."\n".'{element}'."\n".
@@ -1132,6 +1198,7 @@ function baz_requete_bazar_fiche($valeur)
         if (is_array($tab)) $valeur = array_merge($valeur, $tab);
     }
     $valeur['date_maj_fiche'] = date( 'Y-m-d H:i:s', time() );
+
     if (!isset($valeur['id_fiche'])) {
         // l'identifiant (sous forme de NomWiki) est genere a partir du titre
         $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
@@ -1512,8 +1579,9 @@ function baz_formulaire_des_formulaires($mode, $valeursformulaire = '')
     $formtemplate->addRule('bn_template', BAZ_CHAMPS_REQUIS.' : '.BAZ_TEMPLATE, 'required', '', 'client');
     // Nettoyage de l'url avant les return
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
-     $buttons[] = &HTML_QuickForm::createElement('link', 'annuler', BAZ_ANNULER, str_replace("&amp;", "&", $GLOBALS['_BAZAR_']['url']->getURL()), BAZ_ANNULER, array('class' => 'btn btn-danger bouton_annuler'));
-    $buttons[] = &HTML_QuickForm::createElement('submit', 'valider', BAZ_VALIDER, array('class' => 'btn btn-success bouton_sauver'));
+    $HTML_QuickForm = new HTML_QuickForm();
+     $buttons[] = $HTML_QuickForm->createElement('link', 'annuler', BAZ_ANNULER, str_replace("&amp;", "&", $GLOBALS['_BAZAR_']['url']->getURL()), BAZ_ANNULER, array('class' => 'btn btn-danger bouton_annuler'));
+    $buttons[] = $HTML_QuickForm->createElement('submit', 'valider', BAZ_VALIDER, array('class' => 'btn btn-success bouton_sauver'));
     $formtemplate->addGroup($buttons, 'groupe_boutons', null, '&nbsp;', 0);
 
     return $formtemplate;
@@ -2610,7 +2678,8 @@ function baz_rechercher($typeannonce = 'toutes', $categorienature = 'toutes')
     //champs texte pour entrer les mots cles
     $option = array('maxlength'=>255, 'class'=>'', 'placeholder' => BAZ_MOT_CLE);
     //$groupe_rech[] = &HTML_QuickForm::createElement('text', 'recherche_mots_cles', '<div class="input-prepend"><span class="add-on">@</span>', $option) ;
-    $groupe_rech[] = &HTML_QuickForm::createElement('html', '<div class="control-group">
+    $HTML_QuickForm = new HTML_QuickForm();
+    $groupe_rech[] = $HTML_QuickForm->createElement('html', '<div class="control-group">
         <label class="control-label"></label>
         <div class="controls">
             <div class="input-prepend">
@@ -2950,7 +3019,7 @@ function encoder_en_utf8($txt)
     return  strtr(preg_replace('/ \x{0026} /u', ' &#38; ', mb_convert_encoding($txt, 'UTF-8','HTML-ENTITIES')), $cp1252_map);
 }
 
-/** baz_affiche_flux_RSS() - affiche le flux rss ÃƒÂ  partir de parametres
+/** baz_affiche_flux_RSS() - affiche le flux rss a partir de parametres
 *
 *
 * @return  string Le flux RSS, avec les headers et tout et tout

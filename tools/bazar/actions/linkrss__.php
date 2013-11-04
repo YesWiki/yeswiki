@@ -8,7 +8,7 @@ if (!defined("WIKINI_VERSION")) {
 $requete = 'SELECT bn_id_nature, bn_label_nature '.
            'FROM '.BAZ_PREFIXE.'nature WHERE 1';
 $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-if (DB::isError($resultat)) {
+if ($GLOBALS['_BAZAR_']['db']->isError($resultat)) {
     return ($resultat->getMessage().$resultat->getDebugInfo()) ;
 }
 

@@ -20,28 +20,58 @@
  * javascript for pages export
  *
  *
- * @package 	template
+ * @package 	tags
  * @author		Florian Schmitt <florian@outils-reseaux.org>
  * 
  * 
  **/
 
 $(document).ready(function () {
-	// on rend les pages deplacables
-	var fixHelperModified = function(e, tr) {
-	    var $originals = tr.children();
-	    var $helper = tr.clone();
-	    $helper.children().each(function(index)
-	    {
-	      $(this).width($originals.eq(index).width())
-	    });
-	    return $helper;
-	};
 
-	$(".export-table tbody").sortable({
-	    helper: fixHelperModified    
-	}).disableSelection().on('click', '.delete-page-item', function() {
-		$(this).parents('tr').remove();
-		return false;
+	$("#ebook-selection-container").sortable();
+
+	$('.btn-erase-filter').on('click', function() {$("#filter").val('').keyup();});
+
+	$('.select-page-item').on('click', function() {
+		$(this).siblings().filter('.remove-page-item').removeClass('hide');
+        $(this).siblings().filter(".movable").removeClass('hide');
+		$(this).addClass('hide');
+		var listitem = $(this).parent();
+		listitem.fadeOut("fast", function() {
+			listitem.appendTo("#ebook-selection-container").fadeIn("fast");
+		});
 	});
+    
+    $('.remove-page-item').on('click', function() {
+        $(this).siblings().filter('.select-page-item').removeClass('hide');
+        $(this).siblings().filter(".movable").addClass('hide');
+        $(this).addClass('hide');
+        var listitem = $(this).parent();
+        listitem.fadeOut("fast", function() {
+            listitem.prependTo("#list-pages-to-export").fadeIn("fast");
+        });
+    });
+
+    var listpages = $("#list-pages-to-export .list-group-item"), filter = $("#filter"), filtercount = $("#filter-count");
+	filter.keyup(function(){ 
+        // Retrieve the input field text and reset the count to zero
+        var count = 0;
+
+        // Loop through the comment list
+        listpages.each(function(){ 
+            // If the list item does not contain the text phrase fade it out
+            if ($(this).text().search(new RegExp(filter.val(), "i")) < 0) {
+                $(this).hide();
+ 
+            // Show the list item if the phrase matches and increase the count by 1
+            } else {
+                $(this).show();
+                count++;
+            }
+        });
+ 
+        // Update the count
+        var numberItems = count;
+        filtercount.text("Nombre de pages : "+count);
+    });
 });

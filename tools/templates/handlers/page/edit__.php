@@ -45,19 +45,23 @@ $plugin_output_new = str_replace("<script type=\"text/javascript\">\n".
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) && 
 	($this->HasAccess("write") && $this->HasAccess("read") && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner() ) ) ) ) ) { 
 
-	$selecteur = '<div id="graphical_options" class="modal hide fade">'."\n".
-				'<div class="modal-header">'."\n".
-					'<a class="close" data-dismiss="modal">&times;</a>'."\n".
-					'<h3>'.TEMPLATE_CUSTOM_GRAPHICS.' '.$this->GetPageTag().'</h3>'."\n".
-				'</div>'."\n".
-				'<div class="modal-body">'."\n";
+	$selecteur = '<div id="graphical_options" class="modal fade">'."\n".
+				'<div class="modal-dialog">'."\n".
+					'<div class="modal-content">'."\n".
+						'<div class="modal-header">'."\n".
+							'<a class="close" data-dismiss="modal">&times;</a>'."\n".
+							'<h3>'.TEMPLATE_CUSTOM_GRAPHICS.' '.$this->GetPageTag().'</h3>'."\n".
+						'</div>'."\n".
+						'<div class="modal-body">'."\n";
 	$selecteur .= show_form_theme_selector('edit');
 	$selecteur .= '</div>'."\n".
 				'<div class="modal-footer">'."\n".
-					'<a href="#" class="btn button_cancel" data-dismiss="modal">'.TEMPLATE_CANCEL.'</a>'."\n".
+					'<a href="#" class="btn btn-default button_cancel" data-dismiss="modal">'.TEMPLATE_CANCEL.'</a>'."\n".
 					'<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'.TEMPLATE_APPLY.'</a>'."\n".						
-				'</div>'."\n".	
-			'</div>'."\n";
+				'</div>'."\n".
+			'</div>'."\n".
+		'</div>'."\n".	
+	'</div>'."\n";
 
 	$js = add_templates_list_js().'<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
 

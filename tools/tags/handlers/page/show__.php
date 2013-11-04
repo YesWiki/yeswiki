@@ -41,9 +41,6 @@ $output = '';
 if ($GLOBALS["open_comments"][$tag]) {
 	if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 	{
-		$plugin_output_new = str_replace('	<script src="tools/tags/libs/tag.js"></script>'."\n", '', $plugin_output_new);
-		$plugin_output_new = str_replace('</body>', '	<script src="tools/tags/libs/tag.js"></script>'."\n".'</body>', $plugin_output_new);
-
 		// load comments for this page
 		$comments = $this->LoadComments($this->tag);
 		
@@ -91,17 +88,17 @@ if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_baz
 	if (count($tagspage)>0)
 	{
 		sort($tagspage);
-		$tagsexistants = '<ul class="tagit ui-widget ui-widget-content ui-corner-all show">'."\n";
+		$tagsexistants = '';
 		foreach ($tagspage as $tag)
 		{
-			$tagsexistants .= '<li class="tagit-tag ui-widget-content ui-state-default ui-corner-all">
-				<a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag).'" title="'.TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS.'">'.$tag.'</a>
-			</li>'."\n";
+			$tagsexistants .= '&nbsp;<a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag).'" title="'.TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS.'"><span class="tag-label label">'.$tag.'</span></a>';
 		}
-		$tagsexistants .= '</ul>'."\n";
-		$output .= '<div class="list_tags">'."\n".$tagsexistants.'</div>'."\n";
+		$output .= '<span class="icon icon-tags"></span>'."\n".$tagsexistants."\n";
 	}
 }
+
+$plugin_output_new = str_replace('	<script src="tools/tags/libs/tag.js"></script>'."\n", '', $plugin_output_new);
+$plugin_output_new = str_replace('</body>', '	<script src="tools/tags/libs/tag.js"></script>'."\n".'</body>', $plugin_output_new);
 
 $plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/', '<hr class="hr_clear" />'."\n".$output, $plugin_output_new);
 

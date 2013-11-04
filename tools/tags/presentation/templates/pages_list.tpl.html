@@ -1,0 +1,7 @@
+<ul class="filter-results list-unstyled">
+<?php foreach ($elements as $tag => $element) : ?>
+	<li class="filtered-element <?php echo $element["tagnames"]; ?>">
+		<a href="<?php echo $GLOBALS['wiki']->href('', $tag); ?>"><?php echo $element["title"]; ?></a>
+	</li>
+<?php endforeach; ?>
+</ul>

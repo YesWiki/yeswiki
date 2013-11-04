@@ -22,10 +22,10 @@
 // 
 /**
 *
-* Export de toutes les pages en derniere version, au format txt
+* Liste de toutes les pages Ebook
 *
 *
-*@package templates
+*@package tags
 *
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *
@@ -33,45 +33,41 @@
 *@version       $Revision: 0.1 $ $Date: 2010/03/04 14:19:03 $
 */
 
-if (!defined("WIKINI_VERSION"))
-{
-            die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die ("acc&egrave;s direct interdit");
 }
+
+
+$ebookpagenamestart = $this->getParameter('ebookpagenamestart');
+if (empty($ebookpagenamestart)) $ebookpagenamestart = 'Ebook';
 
 $output = '';
-if ($this->UserIsAdmin()) {
-	if (isset($_POST["page"])) {
-		var_dump($_POST["page"]);
+
+// recuperation des pages wikis
+$sql = 'SELECT DISTINCT resource FROM '.$this->GetConfigValue('table_prefix').'triples';
+$sql .= ' WHERE property="http://outils-reseaux.org/_vocabulary/metadata" 
+			AND value LIKE "%ebook-title%"
+			AND resource LIKE "'.$ebookpagenamestart.'%" ';
+$sql .= ' ORDER BY resource ASC';
+
+$pages = $this->LoadAll($sql);
+if (count($pages) > 0) {
+	$output .= '<ul class="media-list">'."\n";
+	foreach($pages as $page) {
+		$metas = $this->GetMetadatas($page['resource']);
+		$output .= '<li class="media">
+		<a href="'.$this->href('',$page['resource']).'" class="pull-left">
+			<img src="'.$metas['ebook-cover-image'].'" alt="cover" class="media-object" width="128" />
+		</a>
+		<div class="media-body">
+			<a class="btn btn-primary pull-right" href="'.$this->href('epub',$page['resource']).'"><i class="icon-book icon-white"></i>&nbsp;'.TAGS_DOWNLOAD_EPUB.'</a>
+    		<h4 class="media-heading"><a href="'.$this->href('',$page['resource']).'">'.$metas['ebook-title'].'</a></h4>
+			<strong>'.$metas['ebook-author'].'</strong><br />'.$metas['ebook-description'].'<br /><br />
+		</div>
+		</li>'."\n";
 	}
-	else {
-		// recuperation des pages creees a l'installation
-		$d = dir("setup/doc/");
-		while ($doc = $d->read()){
-			if (is_dir($doc) || substr($doc, -4) != '.txt')
-				continue;
-			if ($doc=='_root_page.txt'){
-				$installpagename[$this->GetConfigValue("root_page")] = $this->GetConfigValue("root_page");
-			} else {
-				$pagename = substr($doc,0,strpos($doc,'.txt'));
-				$installpagename[$pagename] = $pagename;
-			}
-		}	
-		// recuperation des formulaires, listes, et fiches bazar
-
-		// recuperation des pages wikis
-		$sql = 'SELECT tag FROM '.$this->GetConfigValue('table_prefix').'pages WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ORDER BY tag';
-
-		$pages = $this->LoadAll($sql);
-		include_once 'tools/templates/libs/squelettephp.class.php';
-		$template_export = new SquelettePhp('tools/templates/presentation/templates/exportpages_table.tpl.html'); // charge le templates
-		$template_export->set(array('pages' => $pages, 'installedpages' => $installpagename)); // on passe le tableau de pages en parametres
-		$output .= $template_export->analyser(); // affiche les resultats
-	}
+	$output .= '</ul>'."\n";
 }
-else {
-	$output .= '<div class="alert alert-error">'.TEMPLATE_EXPORT_ONLY_FOR_ADMINS.'.</div>'."\n";
-}
+else $output .= '<div class="alert alert-info">'.TAGS_NO_EBOOK_FOUND.'</div>';
 
-echo $this->Header();
-echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
-echo $this->Footer();
+echo $output."\n";
