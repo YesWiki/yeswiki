@@ -1,0 +1,42 @@
+<ul class="filter-results grid-elements">
+<?php foreach ($elements as $tag => $element) : ?>
+	<li class="filtered-element gradient-grid-box <?php echo $element["tagnames"]; ?>">
+		<a href="<?php echo $GLOBALS['wiki']->href('', $tag) ?>" target="_blank">
+			<h3 class="filtered-title"><?php echo $element["title"]; ?></h3>
+    	</a>
+    </li> <!-- /.filtered-element -->
+<?php endforeach; ?>
+</ul>
+<style>
+.grid-elements { position:relative; margin:0; padding:0; list-style: none}
+.grid-elements, .grid-elements * {	 
+	-moz-box-sizing: border-box; 
+	-webkit-box-sizing: border-box; 
+	box-sizing: border-box; 
+}
+
+.gradient-grid-box {
+	margin: 0 15px 15px 0; 
+	padding: 8px; 
+	border: 2px solid #FAFAFA; 
+	box-shadow: 0 1px 2px rgba(34, 25, 25, 0.4); 
+	background: #FEFEFE; background-image: linear-gradient(45deg, #FFF, #F9F9F9);
+	-webkit-transition: all 0.2s ease-out;
+       -moz-transition: all 0.2s ease-out;
+         -o-transition: all 0.2s ease-out;
+            transition: all 0.2s ease-out;
+}
+.gradient-grid-box:hover { 
+  cursor: pointer;
+  -webkit-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  -moz-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+}
+
+.filtered-title {  
+  font-size: 16px;
+  line-height: 20px;
+  margin: 0 0 7px;
+}
+.filtered-image-container {text-align: center;}
+</style>
