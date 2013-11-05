@@ -534,9 +534,11 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'recherche') {
 
     } elseif ($mode == 'html') {
-        $res = '<div class="BAZ_rubrique">'."\n".
-                '<span class="BAZ_label">'.$tableau_template[2].'&nbsp;:</span>'."\n";
-        $res .= '<span class="BAZ_texte">'.strftime('%d.%m.%Y',strtotime($valeurs_fiche[$tableau_template[1]])).'</span>'."\n".'</div>'."\n";
+        if ($valeurs_fiche[$tableau_template[1]]!="") {
+            $res = '<div class="BAZ_rubrique">'."\n".
+            '<span class="BAZ_label">'.$tableau_template[2].'&nbsp;:</span>'."\n";
+            $res .= '<span class="BAZ_texte">'.$valeurs_fiche[$tableau_template[1]].'</span>'."\n".'</div>'."\n";
+        }
 
         return $res;
     }
