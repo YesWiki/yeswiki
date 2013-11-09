@@ -1,14 +1,8 @@
 <?php
 /**
-* bazarcarto : programme affichant les fiches du bazar sous forme de Cartographie Google
+*  Programme gerant les fiches bazar depuis une interface de type geographique
 *
-*
-*@package Bazar
-//Auteur original :
-*@author        Florian SCHMITT <florian@outils-reseaux.org>
-*@version       $Revision: 1.10 $ $Date: 2010-12-15 14:23:19 $
-// +------------------------------------------------------------------------------------------------------+
-*/
+**/
 
 // +------------------------------------------------------------------------------------------------------+
 // |                                            ENTETE du PROGRAMME                                       |
@@ -18,36 +12,81 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//rÃ©cupÃ©ration des paramÃ?tres wikini
+//reuperation des parametres wikini
+
+/*
+* categorienature : filtre par categorie de formulaire,affiche l'ensemble des fiches d'une meme categorie
+* @testok
+* 
+*/
+
 $categorie_nature = $this->GetParameter("categorienature");
 if (empty($categorie_nature)) {
     $categorie_nature = 'toutes';
 }
+
+/*
+* categorienature : filtre par numero de formulaire.
+* @testok
+* 
+*/
 
 $id_typeannonce = $this->GetParameter("idtypeannonce");
 if (empty($id_typeannonce)) {
     $id_typeannonce = 'toutes';
 }
 
+/*
+* ordre : ordre affichage detail des points
+* @atester
+* 
+*/
+
 $ordre = $this->GetParameter("ordre");
 if (empty($ordre)) {
     $ordre = 'alphabetique';
 }
+
+/*
+* lat : latitude point central en degres WGS84 (exemple : 46.22763) , sinon parametre par defaut
+* @atester
+* 
+*/
 
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
     $latitude = BAZ_GOOGLE_CENTRE_LAT;
 }
 
+/*
+* lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
+* @atester
+* 
+*/
+
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
     $longitude = BAZ_GOOGLE_CENTRE_LON;
 }
 
+
+/*
+* niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
+* @atester
+* 
+*/
+
 $zoom = $this->GetParameter("zoom");
 if (empty($zoom)) {
     $zoom = BAZ_GOOGLE_ALTITUDE;
 }
+
+/*
+* Type de carto : ROADMAP ou SATELLITE ou HYBRID ou TERRAIN , sinon parametre par defaut TERRAIN
+* @atester
+* 
+*/
+
 
 $typecarto = $this->GetParameter("typecarto");
 if (empty($typecarto)) {
@@ -56,51 +95,69 @@ if (empty($typecarto)) {
     $typecarto = strtoupper($typecarto);
 }
 
+/*
+* Outil de navigation , sinon parametre par defaut true
+* @atester
+* 
+*/
+
 $navigation = $this->GetParameter("navigation"); // true or false 
 if (empty($navigation)) {
     $navigation = BAZ_AFFICHER_NAVIGATION;
 }
 
-$style_navigation = $this->GetParameter("stylenavigation");// SMALL ou ZOOM_PAN ou ANDROID ou DEFAULT
 
-if (empty($style_navigation)) {
-    $style_navigation = BAZ_STYLE_NAVIGATION;
-}
 
-$choix_carte= $this->GetParameter("choixcarte"); // true or false
+/*
+* Bouton choix carte : true or false, par defaut true
+* @atester
+* 
+*/
+
+$choix_carte= $this->GetParameter("choixcarte"); // 
 if (empty($choix_carte)) {
     $choix_carte = BAZ_AFFICHER_CHOIX_CARTE;
 }
 
-$style_choix_carte= $this->GetParameter("stylechoixcarte"); // HORIZONTAL_BAR ou DROPDOWN_MENU ou DEFAULT
-if (empty($style_choix_carte)) {
-    $style_choix_carte = BAZ_STYLE_CHOIX_CARTE;
-}
+
+/*
+* Zoom sur molette : true or false, par defaut false
+* @atester
+* 
+*/
 
 
-
-$echelle= $this->GetParameter("echelle"); // true or false
-if (empty($echelle)) {
-    $echelle= BAZ_AFFICHER_ECHELLE;
-}
-
-$zoom_molette= $this->GetParameter("zoommolette"); // true or false
+$zoom_molette= $this->GetParameter("zoommolette"); 
 if (empty($zoom_molette)) {
     $zoom_molette= BAZ_PERMETTRE_ZOOM_MOLETTE;
 }
 
-$barregestion= $this->GetParameter("barregestion"); // true or false : si présent (defaut), ajout des liens vers la gestion de la fiche
+
+/*
+* Barre de gestion de fiches bazar affiche sous un point : true or false, par defaut true
+* @atester
+* @FIXME : ajouter parametre par defaut dans wiki.php
+* 
+*/
+
+$barregestion= $this->GetParameter("barregestion");
 
 if (empty($barregestion)) {
     $barregestion= "true";
 }
 
 
+/*
+* Affichage detail des points en dessous de la carte : true or false, par defaut true
+* @atester
+* @FIXME : ajouter parametre par defaut dans wiki.php
+* 
+*/
+
 $listepoint= $this->GetParameter("liste"); // true or false
 if (empty($listepoint)) {
     $listepoint= "true";
 }
-
 
 
 
@@ -113,7 +170,7 @@ if (empty($cartoheight)) {
     $cartoheight = BAZ_GOOGLE_IMAGE_HAUTEUR;
 }
 
-//on rÃ©cupÃ?re les paramÃ?tres pour une requÃªte spÃ©cifique
+//on recupere les parametres pour une requete specifique
 $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
@@ -131,117 +188,141 @@ if (!empty($query)) {
 $tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeannonce, $categorie_nature);
 $tab_points_carto = array();
 
+
+$tablinktitle = array();
+$i = 0;
+
 foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche[0], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $tab = explode('|', $valeurs_fiche['carte_google']);
     if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
-	if ($barregestion=="true") {
-		$contenu_fiche=baz_voir_fiche(1,$valeurs_fiche);
-	}
-	else {
-		$contenu_fiche=baz_voir_fiche(0,$valeurs_fiche);
-	}
+    	if ($barregestion=="true") {
+    		$contenu_fiche=baz_voir_fiche(1,$valeurs_fiche);
+    	}
+    	else {
+    		$contenu_fiche=baz_voir_fiche(0,$valeurs_fiche);
+    	}
         $tab_points_carto[]= '{
-                "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
-                "description": \'<div class="BAZ_cadre_map">'.
-                preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
-                "lat": '.$tab[0].',
-                "lng": '.$tab[1].'
+            "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
+            "description": \'<div class="BAZ_cadre_map">'.
+            preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
+            "lat": '.$tab[0].',
+            "lng": '.$tab[1].'
         }';
+         // on genere la liste des titres ? cliquer pour faire apparaitre sur la carte
+           
+            $tablinktitle[$i] = '<li class="markerlist"><a class="markerlink" href="#" onclick="popups['.$i.'].setContent(markers['.$i.'].desc);popups['.$i.'].setLatLng(markers['.$i.'].getLatLng());map.openPopup(popups['.$i.']);map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;">'.$valeurs_fiche['bf_titre'].'</a></li>'."\n";
+            $i++;
     }
+
+
 
 }
 $points_carto = implode(',',$tab_points_carto);
 
-echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
-echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+echo
+    '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
+    <![endif]-->
+    <link rel="stylesheet" href="tools/bazar/libs/leaflet/label/leaflet.label.css" />
+    
+    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+    <script src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
+    <script src="tools/bazar/libs/leaflet/layer/tile/Google.js"></script>
+    <script src="tools/bazar/libs/leaflet/label/leaflet.label.js"></script>
+    <script src="tools/bazar/libs/leaflet/spiderfier/oms.min.js"></script>';
 
-    <script type="text/javascript">
-    //variable pour la carte google
+// Leaflet + plugins :
+// Google : add Google layer.
+// Label : add a label to markers
+// Spiderfier : Spiderfy multiple markers on a same point.
+
+echo 
+    '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div> <ul id="markers"></ul>';
+echo 
+    '<script type="text/javascript">
+
+    var markers = Array();
+    var popups = Array();
+
     var map;
+    
+    function initialize() {
+    
+        map = L.map("map", {
+            center: ['.$latitude.', '.$longitude.'],
+            zoom: '.$zoom.',
+            scrollWheelZoom:'.$zoom_molette.',
+            zoomControl:'.$navigation.'
+        });
 
-    //tableau des marqueurs google
-    var arrMarkers = [];
 
-    //tableau des infobox google
-    var arrInfoWindows = [];
+        //Extend the Default marker class
+        var CustomIcon = L.Icon.Default.extend({
+        options: {
+                iconUrl: "'.BAZ_IMAGE_MARQUEUR.'",
+                iconSize:['.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'],
+                shadowSize:   ['.BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR.'],
+                iconAnchor:   [6, 20],
+                shadowAnchor: [6, 20], 
+            }
+         });
 
-    //image du marqueur
-    var image = new google.maps.MarkerImage(\''.BAZ_IMAGE_MARQUEUR.'\',
-    //taille, point d\'origine, point d\'arrivee de l\'image
-    new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-    new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-    new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
+        var  customIcon = new CustomIcon();
 
-    //ombre du marqueur
-    var shadow = new google.maps.MarkerImage(\''.BAZ_IMAGE_OMBRE_MARQUEUR.'\',
-    // taille, point d\'origine, point d\'arrivee de l\'image de l\'ombre
-    new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR.'),
-    new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_OMBRE_MARQUEUR.'),
-    new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_OMBRE_MARQUEUR.'));
+        var choixcarte= '.$choix_carte.';
+        var osm = new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+        var ggl = new L.Google("'.$typecarto.'");
 
-    //initialise la carte google
-    function initialize()
-    {
-        var myLatlng = new google.maps.LatLng('.$latitude.', '.$longitude.');
-        var myOptions = {
-          zoom: '.$zoom.',
-          center: myLatlng,
-          mapTypeId: google.maps.MapTypeId.'.$typecarto.',
-          navigationControl: '.$navigation.',
-          navigationControlOptions: {style: google.maps.NavigationControlStyle.'.$style_navigation.'},
-          mapTypeControl: '.$choix_carte.',
-          mapTypeControlOptions: {style: google.maps.MapTypeControlStyle.'.$style_choix_carte.'},
-          scaleControl: '.$echelle.',
-          scrollwheel: '.$zoom_molette.'
+        map.addLayer(ggl);
+
+        if (choixcarte) {
+            map.addControl(new L.Control.Layers( {"OSM":osm, "Google":ggl}, {}));
         }
-        map = new google.maps.Map(document.getElementById("map"), myOptions);
-
-        if ($("#markers li") != undefined) {
+        
             //tableau des points des fiches bazar
             var places = [
                 '.$points_carto.'
             ];
-            $.each(places, function(i, item){';
-if ($listepoint=="true") {
-             echo '$("#markers").append(\'<li><a href="#" rel="\' + i + \'">&nbsp;\' + (i+1) + \'&nbsp;-&nbsp;\' +item.title + \'</a></li>\');';
-}
-echo '
-                var marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(item.lat, item.lng),
-                    map: map,
-                    icon: image,
-                    shadow: shadow,
-                    title: item.title
-                });
-                arrMarkers[i] = marker;
-                var infowindow = new google.maps.InfoWindow({
-                    content: item.description
-                });
-                arrInfoWindows[i] = infowindow;
-                google.maps.event.addListener(marker, \'click\', function() {
-                    infowindow.open(map, marker);
-                    $("ul.css-tabs li").remove();
-                    $("fieldset.tab").each(function(i) {
-                                    $(this).parent(\'div.BAZ_cadre_fiche\').prev(\'ul.css-tabs\').append("<li class=\'liste" + i + "\'><a href=\"#\">"+$(this).find("legend:first").hide().html()+"</a></li>");
-                    });
-                    $("ul.css-tabs").tabs("fieldset.tab", { onClick: function(){} } );
-                });
+
+
+        var oms = new OverlappingMarkerSpiderfier(map);
+
+        $.each(places, function(i, item){
+            var marker =  new L.Marker(new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title);    
+            marker.desc = item.description;
+            var popup = new L.Popup({maxWidth:"1000"});
+            oms.addListener("click", function(marker) {
+                popup.setContent(marker.desc);
+                popup.setLatLng(marker.getLatLng());
+                map.openPopup(popup);
             });
-        }
-        ';
+            map.addLayer(marker);
+            oms.addMarker(marker);
+            markers[i]=marker;
+            popups[i]=popup;
 
-    if ( defined('BAZ_JS_INIT_MAP') && BAZ_JS_INIT_MAP != '' && file_exists(BAZ_JS_INIT_MAP) ) {
-        $handle = fopen(BAZ_JS_INIT_MAP, "r");
-        echo fread($handle, filesize(BAZ_JS_INIT_MAP));
-        fclose($handle);
-        echo 'var poly = createPolygon( Coords, "#002F0F");
-        poly.setMap(map);
 
-        ';
-    };
+            //markers[i]=new L.Marker(new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title).bindPopup(new L.Popup({maxWidth:"1000"}).setContent(item.description) );
+        });
+    
+        
+    }
 
-    echo '}
-</script>';
+    ';
+
+echo 
+    '</script>';
+
+if (($listepoint=="true") && count($tablinktitle)>0) {
+    //asort($tablinktitle);
+    echo '<ol class="listofmarkers" style="-moz-column-count:4; -webkit-column-count:4; column-count:4;">'."\n";
+    foreach ($tablinktitle as $key => $value) {
+        echo $value;
+    }
+    echo '</ol>'."\n";
+}
+
+?>
