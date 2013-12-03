@@ -9,7 +9,7 @@ if (!defined("TOOLS_MANAGER"))
 }
 
 
-buffer::str(
+$buffer->str(
 '
 Le plugin "Tags" vous permet de gerer des mots clés par page et ajoute des actions pour les consulter par flux RSS, moteur de recherche ou liste.
 '

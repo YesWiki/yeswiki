@@ -25,12 +25,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 if ($page = trim($this->GetParameter('page')))
 {
-	$title = 'Pages ayant un lien vers '.$this->ComposeLinkToPage($page)."&nbsp;: <br />\n";
+	$title = _t('PAGES_WITH_LINK').' '.$this->ComposeLinkToPage($page)."&nbsp;: <br />\n";
 }
 else
 {
 	$page = $this->getPageTag();
-	$title = "Pages ayant un lien vers la page courante&nbsp;: <br />\n";
+	$title = _t('PAGES_WITH_LINK_TO_CURRENT_PAGE')."&nbsp;: <br />\n";
 }
 
 $pages = $this->LoadPagesLinkingTo($page);
@@ -51,6 +51,6 @@ if ($pages)
 }
 else
 {
-	echo '<i>Aucune page n\'a de lien vers ', $this->ComposeLinkToPage($page), '.</i>';
+	echo '<i>'._t('NO_PAGES_WITH_LINK_TO').' ', $this->ComposeLinkToPage($page), '.</i>';
 }
 ?>

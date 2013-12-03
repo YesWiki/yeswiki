@@ -9,12 +9,16 @@ if (!defined("WIKINI_VERSION"))
 $wikiClasses [] = 'Aceditor';
 $wikiClassesContent [] = ' 
 
-	function FormOpen($method = "", $tag = "", $formMethod = "post") {
+	function FormOpen($method = "", $tag = "", $formMethod = "post", $class="") {
 
 		if ($method=="edit") {
-			$result = "<form id=\"ACEditor\" enctype=\"multipart/form-data\" name=\"ACEditor\" action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\">\n";
+			$result  = "<form id=\"ACEditor\" name=\"ACEditor\" enctype=\"multipart/form-data\" action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\"";
+			$result .= ((!empty($class)) ? " class=\"".$class."\"" : "");
+			$result .= ">\n";
 		} else {
-		$result = "<form action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\">\n";
+			$result = "<form action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\"";
+			$result .= ((!empty($class)) ? " class=\"".$class."\"" : "");
+			$result .= ">\n";
 		}
 
 		if (!$this->config["rewrite_mode"]) $result .= "<input type=\"hidden\" name=\"wiki\" value=\"".$this->MiniHref($method, $tag)."\" />\n";

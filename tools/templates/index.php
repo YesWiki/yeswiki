@@ -9,7 +9,7 @@ if (!defined("TOOLS_MANAGER"))
 }
 
 
-buffer::str(
+$buffer->str(
 '
 Le plugin "Templates" vous permet de gerer des template html et css pour votre design web.
 '
