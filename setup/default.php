@@ -31,10 +31,16 @@ if (!defined('WIKINI_VERSION'))
 {
 	die ("acc&egrave;s direct interdit");
 }
-?><form action="<?php echo  myLocation() ?>?installAction=install" method="post">
-<table>
+?>
 
-	<tr><td></td><td><b>Installation de WikiNi</b></td></tr>
+<link href="tools/templates/presentation/styles/bootstrap.min.css" rel="stylesheet">
+<link href="tools/templates/presentation/styles/install.css" rel="stylesheet">
+
+<form class="form-horizontal" action="<?php echo  myLocation() ?>?installAction=install" method="post">
+
+	<div class="row span12">
+
+	<div class="hero-unit"><h1>Installation de YesWiki</h1>
 
 	<?php
 	if (($wakkaConfig["wakka_version"]) || ($wakkaConfig["wikini_version"]))
@@ -45,90 +51,185 @@ if (!defined('WIKINI_VERSION'))
 		else {
 			$config=$wakkaConfig["wakka_version"];
 		}
-		echo "<tr><td></td><td>Votre syst&egrave;me WikiNi existant a &eacute;t&eacute;",
+		echo "<p>Votre syst&egrave;me WikiNi existant a &eacute;t&eacute;",
 			" reconnu comme &eacute;tant la version ",$config,". Vous &ecirc;tes sur le point ",
 			"de <b>mettre &agrave; jour</b> WikiNi pour la version ",WIKINI_VERSION,
-			". Veuillez revoir vos informations de configuration ci-dessous.</td></tr>\n";
+			". Veuillez revoir vos informations de configuration ci-dessous.</p>\n";
 		$wiki = new Wiki($wakkaConfig);
 	}
 	else
 	{
-		echo "<tr><td></td><td>Vous &ecirc;tes sur le point d'installer WikiNi ",WIKINI_VERSION,
-			". Veuillez configurer votre WikiNi en utilisant le formulaire suivant.</td></tr>\n";
+		echo "<h4>(Cercopith&egrave;que)</h4><p>Veuillez compl&eacute;ter le formulaire suivant :</p>\n";
 		$wiki = null;
 	}
 	?>
 
-	<tr><td></td><td><br />NOTE: Ce programme d'installation va essayer de modifier les options
-		de configurations dans le fichier <tt>wakka.config.php</tt>, situ&eacute; dans votre
-		r&eacute;pertoire WikiNi. Pour que cela fonctionne, veuillez vous assurer que votre serveur
-		a les droits d'acc&egrave;s en &eacute;criture pour ce fichier. Si pour une raison
-		quelconque vous ne pouvez pas faire &ccedil;a vous devrez modifier ce fichier manuellement
-		(ce programme d'installation vous dira comment).</td></tr>
+	</div>
 
-	<tr><td></td><td><br /><b>Configuration de la base de donn&eacute;es</b></td></tr>
-	<tr><td></td><td>La machine sur laquelle se trouve votre serveur MySQL.
-		En g&eacute;n&eacute;ral c'est "localhost" (ie, la m&ecirc;me machine que celle
-		o&ugrave; se trouvent les pages de WikiNi.).</td></tr>
-	<tr><td align="right" nowrap>Machine MySQL :</td>
-		<td><input type="text" size="50" name="config[mysql_host]" value="<?php
-			echo $wakkaConfig["mysql_host"] ?>" /></td></tr>
-	<tr><td></td><td>La base de donn&eacute;es MySQL &agrave; utiliser pour WikiNi.
-		Cette base de donn&eacute;es doit d&eacute;j&agrave; exister avant de pouvoir continuer.</td></tr>
-	<tr><td align="right" nowrap>Base de donn&eacute;es MySQL :</td>
-		<td><input type="text" size="50" name="config[mysql_database]" value="<?php
-			echo $wakkaConfig["mysql_database"] ?>" /></td></tr>
-	<tr><td></td><td>Nom et mot de passe de l'utilisateur MySQL qui sera utilis&eacute;
-		pour se connecter &agrave; votre base de donn&eacute;es.</td></tr>
-	<tr><td align="right" nowrap>Non de l'utilisateur MySQL :</td>
-		<td><input type="text" size="50" name="config[mysql_user]" value="<?php
-			echo $wakkaConfig["mysql_user"] ?>" /></td></tr>
-	<tr><td align="right" nowrap>Mot de passe MySQL :</td>
-		<td><input type="password" size="50" name="config[mysql_password]" value="" /></td></tr>
-	<tr><td></td><td>Pr&eacute;fixe &agrave; utiliser pour toutes les tables utilis&eacute;es
-		par WikiNi. Ceci vous permet d'utiliser plusieurs WikiNi sur une m&ecirc;me base
-		de donnn&eacute;es en donnant diff&eacute;rents pr&eacute;fixes aux tables.</td></tr>
-	<tr><td align="right" nowrap>Prefixe des tables :</td>
-		<td><input type="text" size="50" name="config[table_prefix]" value="<?php
-			echo $wakkaConfig["table_prefix"] ?>" /></td></tr>
+	<fieldset>
+	
+		<legend>Configuration de la base de donn&eacute;es</legend>
+			
+			<div class="accordion-heading">
+				<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">+ Infos</a>
+			</div>
+			
+			<div class="accordion" id="accordion2">
+				<div class="accordion-group">
+					<div id="collapseOne" class="accordion-body collapse">
+						<div class="accordion-inner">
+							<dl class="dl-horizontal">
+    							<dt>Machine MySQL </dt>
+    							<dd>La machine sur laquelle se trouve votre serveur MySQL</dd>
+    						</dl>
+    						<dl class="dl-horizontal">
+    							<dt>Base de donn&eacute;es MySQL </dt>
+    							<dd>Cette base de donn&eacute;es doit d&eacute;j&agrave; exister avant de pouvoir continuer</dd>
+    						</dl>
+    						<dl class="dl-horizontal">
+    							<dt>Nom de l'utilisateur MySQL </dt>
+    							<dd>N&eacute;cessaire pour se connecter &agrave; votre base de donn&eacute;es</dd>
+    						</dl>
+    						<dl class="dl-horizontal">
+    							<dt>Pr&eacute;fixe des tables </dt>
+    							<dd>Permet d'utiliser plusieurs YesWiki sur une m&ecirc;me base de donnn&eacute;es</dd>
+    						</dl>
+						</div>
+					</div>
+				</div>
+			</div>
 
-	<tr><td></td><td><br /><b>Configuration de votre site WikiNi</b></td></tr>
+			<div class="control-group">
+				<label class="control-label">Machine MySQL</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[mysql_host]" value="<?php echo $wakkaConfig["mysql_host"] ?>" />
+				</div>
+			</div>
 
-	<tr><td></td><td>Le nom de votre site WikiNi. Ceci est g&eacute;n&eacute;ralement un NomWiki
-		et EstSousCetteForme.</td></tr>
-	<tr><td align="right" nowrap>Le nom de votre WikiNi :</td>
-		<td><input type="text" size="50" name="config[wakka_name]" value="<?php
-			echo $wakkaConfig["wakka_name"] ?>" /></td></tr>
+			<div class="control-group">
+				<label class="control-label">Base de donn&eacute;es MySQL</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[mysql_database]" value="<?php echo $wakkaConfig["mysql_database"] ?>" />
+				</div>
+			</div>
 
-	<tr><td></td><td>La page d'accueil de votre WikiNi. Ceci doit &ecirc;tre un NomWiki.</td></tr>
-	<tr><td align="right" nowrap>Home page:</td>
-		<td><input type="text" size="50" name="config[root_page]" value="<?php
-			echo $wakkaConfig["root_page"] ?>" /></td></tr>
+			<div class="control-group">
+				<label class="control-label">Nom de l'utilisateur MySQL</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[mysql_user]" value="<?php echo $wakkaConfig["mysql_user"] ?>" />
+				</div>
+			</div>
 
-	<tr><td></td><td>META Mots clefs/Description qui seront ins&eacute;r&eacute;s dans les codes HTML.</td></tr>
-	<tr><td align="right" nowrap>Mots clefs :</td>
-		<td><input type="text" size="50" name="config[meta_keywords]" value="<?php
-			echo $wakkaConfig["meta_keywords"] ?>" /></td></tr>
-	<tr><td align="right" nowrap>Description :</td>
-		<td><input type="text" size="50" name="config[meta_description]" value="<?php
-			echo $wakkaConfig["meta_description"] ?>" /></td></tr>
+			<div class="control-group">
+				<label class="control-label">Mot de passe MySQL</label>
+				<div class="controls">
+					<input type="password" required class="input-large" name="config[mysql_password]" value="" />
+				</div>
+			</div>
 
-	<tr><td></td><td><br /><strong>Cr&eacute;ation d'un compte administrateur</strong></td></tr>
-	<tr><td></td><td>Le compte administrateur permet de :
-		<ul>
-			<li>modifier et supprimer n'importe quelle page,</li>
-			<li>modifier les droits d'acc&egrave;s &agrave; n'importe quelle page,</li>
-			<li>g&eacute;rer les droits d'acc&egrave;s &agrave; n'importe quelle action ou handler,</li>
-			<li>g&eacute;rer les groupes, ajouter/supprimer des utilisateurs au groupe administrateur (ayant les m&ecirc;mes droits que lui).</li>
-		</ul>
-		Toutes les t&acirc;ches d'administration sont d&eacute;crites dans la page "AdministrationDeWikiNi" accessible depuis la page d'accueil
-	</td></tr>
+			<div class="control-group">
+				<label class="control-label">Pr&eacute;fixe des tables</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[table_prefix]" value="<?php echo $wakkaConfig["table_prefix"] ?>" />
+				</div>
+			</div>
+
+		<legend>Configuration de votre site YesWiki</legend>
+
+			<div class="accordion-heading">
+				<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">+ Infos</a>
+			</div>
+			
+			<div class="accordion" id="accordion2">
+				<div class="accordion-group">
+					<div id="collapseTwo" class="accordion-body collapse">
+						<div class="accordion-inner">
+							<dl class="dl-horizontal">
+    							<dt>Nom de votre site</dt>
+    							<dd>Ceci est g&eacute;n&eacute;ralement un NomWiki et EstSousCetteForme</dd>
+    						</dl>
+    						<dl class="dl-horizontal">
+    							<dt>Home page</dt>
+    							<dd>La page d'accueil de votre YesWiki. Elle doit &ecirc;tre un NomWiki</dd>
+    						</dl>
+    						<dl class="dl-horizontal">
+    							<dt>Mots clefs</dt>
+    							<dd>META Mots clefs/Description qui seront ins&eacute;r&eacute;s dans les codes HTML</dd>
+    						</dl>
+    						<dl class="dl-horizontal">
+    							<dt>Description</dt>
+    							<dd>La description de votre site</dd>
+    						</dl>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label class="control-label">Nom de votre site</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[wakka_name]" value="<?php echo $wakkaConfig["wakka_name"] ?>" />
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label class="control-label">Home page</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[root_page]" value="<?php echo $wakkaConfig["root_page"] ?>" />
+				</div>
+			</div>
+
+
+			<div class="control-group">
+				<label class="control-label">Mots clefs</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[meta_keywords]" value="<?php echo $wakkaConfig["meta_keywords"] ?>" />
+				</div>
+			</div>
+
+			<div class="control-group">
+				<label class="control-label">Description</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="config[meta_description]" value="<?php echo $wakkaConfig["meta_description"] ?>" />
+				</div>
+			</div>
+
+		<legend>Cr&eacute;ation d'un compte administrateur</legend>
+
+			<div class="accordion-heading">
+				<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">+ Infos</a>
+			</div>
+			
+			<div class="accordion" id="accordion2">
+				<div class="accordion-group">
+					<div id="collapseThree" class="accordion-body collapse">
+						<div class="accordion-inner">
+							<dl class="dl-horizontal">
+    							<dt class="admin">Le compte administrateur permet de</dt>
+    							<dd class="droits-admin">
+    								<ul>
+    									<li>Modifier et supprimer n'importe quelle page</li>
+    									<li>Modifier les droits d'acc&egrave;s &agrave; n'importe quelle page</li>
+    									<li>G&eacute;rer les droits d'acc&egrave;s &agrave; n'importe quelle action ou handler</li>
+    									<li>G&eacute;rer les groupes, ajouter/supprimer des utilisateurs au groupe administrateur</br>
+    										(ayant les m&ecirc;mes droits que lui)</li>
+    								</ul>
+    							</dd>
+    						</dl>
+							<div class="control-group">
+								<p>Toutes les t&acirc;ches d'administration sont d&eacute;crites dans la page "<span>AdministrationDeWikiNi</span>" accessible depuis la page d'accueil</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 	<?php
 		if ($wiki && $users = $wiki->LoadUsers())
 		{
 	?>
-	<tr><td align="right" nowrap>Utiliser un compte existant :</td>
-		<td><select name="admin_login">
+	<div class="controls"><p>Utiliser un compte existant :</p><br>
+			<select name="admin_login">
 			<option selected="selected">non</option>
 	<?php
 			foreach ($users as $user)
@@ -136,59 +237,119 @@ if (!defined('WIKINI_VERSION'))
 				echo '<option value="', htmlspecialchars($user['name']), '">', htmlspecialchars($user['name']), "</option>\n";
 			}
 	?>
-		</select></td></tr>
-	<tr><td align="right" nowrap>Ou cr&eacute;er un nouveau compte :</td>
+		</select>
+		<p>Ou cr&eacute;er un nouveau compte :</p></div>
 	<?php
 		}
 	?>
-		<td></td></tr>
-	<tr><td align="right" nowrap>Administrateur :</td>
-		<td><input type="text" size="50" name="admin_name" value="WikiAdmin" /> (choississez un NomWiki)</td></tr>
-	<tr><td align="right" nowrap>Mot de passe :</td>
-		<td><input type="password" size="50" name="admin_password" value="" /> (minimum 6 carract&egrave;res)</td></tr>
-	<tr><td align="right" nowrap>Confirmation du mot de passe :</td>
-		<td><input type="password" size="50" name="admin_password_conf" value="" /></td></tr>
-	<tr><td align="right" nowrap>Adresse e-mail :</td>
-		<td><input type="text" size="50" name="admin_email" value="" /></td></tr>
 
-	<tr><td></td><td><br /><b>Configuration de l'URL de votre WikiNi</b><?php
-		if (!$wakkaConfig["wikini_version"])
-		{
-			echo "<br />Ceci est une nouvelle installation. Le programme d'installation",
-				" va essayer de trouver les valeurs appropri&eacute;es. Changez-les uniquement" .
-				" si vous savez ce que vous faites.";
-		} ?></td></tr>
+			<div class="control-group">
+				<label class="control-label">Administrateur</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="admin_name" value="WikiAdmin" /> (choississez un NomWiki)
+				</div>
+			</div>
 
-	<tr><td></td><td>L'URL de base de votre site WikiNi. Les noms des pages seront directement
-		rajout&eacute;s &agrave; cet URL. Supprimez la partie "?wiki=" uniquement si vous utilisez
-		la redirection (voir ci apr&egrave;s).</td></tr>
-	<tr><td align="right" nowrap>URL de base :</td>
-		<td><input type="text" size="50" name="config[base_url]" value="<?php
-			echo $wakkaConfig["base_url"] ?>" /></td></tr>
+			<div class="control-group">
+				<label class="control-label">Mot de passe</label>
+				<div class="controls">
+					<input type="password" required class="input-large" name="admin_password" value="" /> (minimum 6 caract&egrave;res)
+				</div>
+			</div>
 
-	<tr><td></td><td>Le mode "redirection automatique" doit &ecirc;tre s&eacute;lectionn&eacute;
-		uniquement si vous utilisez WikiNi avec la redirection d'URL (si vous ne savez pas
-		ce qu'est la redirection d'URL n'activez pas cette option).</td></tr>
-	<tr><td align="right" nowrap>Mode "redirection" :</td>
-		<td><input type="hidden" name="config[rewrite_mode]" value="0" />
-			<input type="checkbox" name="config[rewrite_mode]" value="1" <?php
-				echo $wakkaConfig["rewrite_mode"] ? "checked" : "" ?> /> Activation</td></tr>
+			<div class="control-group">
+				<label class="control-label">Confirmation du mot de passe</label>
+				<div class="controls">
+					<input type="password" required class="input-large" size="50" name="admin_password_conf" value="" />
+				</div>
+			</div>
 
-	<tr><td></td><td><br /><b>Options suppl&eacute;mentaires</b></td></tr>
+			<div class="control-group">
+				<label class="control-label">Adresse e-mail</label>
+				<div class="controls">
+					<input type="text" required class="input-large" name="admin_email" value="" />
+				</div>
+			</div>
 
-	<tr><td></td><td><input type="hidden" name="config[preview_before_save]" value="0" />
-			<input type="checkbox" name="config[preview_before_save]" value="1" <?php
-				echo $wakkaConfig["preview_before_save"] ? "checked" : "" ?> />
-				Imposer de faire un aper&ccedil;u avant de pouvoir sauver une page.</td></tr>
+   		<legend>Options suppl&eacute;mentaires</legend>
+   	
+			<div class="accordion-heading">
+				<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseFour">+ Configuration avanc&eacute;e</a>
+			</div>
+			
+			<div class="accordion" id="accordion2">
+				<div class="accordion-group">
+					<div id="collapseFour" class="accordion-body collapse">
+						<div class="accordion-inner">
 
-	<tr><td></td><td><input type="checkbox" name="config[allow_raw_html]" value="1" <?php
-				echo $wakkaConfig['allow_raw_html'] ? 'checked' : '' ?> />
-				Autoriser l'insertion de HTML brut.
-				<span style="color: red; font-weight: bold">! Attention !</span>
-				Ceci peut pr&eacute;senter une v&eacute;ritable faille de s&eacute;curit&eacute; ! Ne cochez pas cette case
-				si vous ne savez pas ce que vous faites.</td></tr>
+						<p><legend><span>Redirection d'URL</span></legend></p>
 
-	<tr><td></td><td><br />
-        <input type="submit" value="Continuer" /></td></tr>
-</table>
+						<?php
+							if (!$wakkaConfig["wikini_version"])
+							{
+								echo "Ceci est une nouvelle installation. Le programme d'installation",
+									" va essayer de trouver les valeurs appropri&eacute;es. <br />Changez-les uniquement" .
+									" si vous savez ce que vous faites.</p>";
+							} ?>
+
+						<p>Les noms des pages seront directement rajout&eacute;s &agrave; l'URL de base de votre site YesWiki.<br />
+							Supprimez la partie "?wiki=" uniquement si vous utilisez la redirection (voir ci apr&egrave;s).</p>
+
+							<div class="control-group">
+								<label class="control-label">URL de base </label>
+								<div class="controls">
+									<input type="text" class="input-xxlarge" name="config[base_url]" value="<?php echo $wakkaConfig["base_url"] ?>" />
+								</div>
+							</div>
+
+						<p>Le mode "redirection automatique" doit &ecirc;tre s&eacute;lectionn&eacute; uniquement si vous utilisez YesWiki avec la redirection d'URL <br />
+						(si vous ne savez pas ce qu'est la redirection d'URL n'activez pas cette option).</p>
+
+							<div class="control-group">
+								<label class="checkbox">
+									<input type="hidden" name="config[rewrite_mode]" value="0" />
+									<input type="checkbox" name="config[rewrite_mode]" value="1" <?php echo $wakkaConfig["rewrite_mode"] ? "checked" : "" ?> >  &nbsp;Activation du mode "redirection automatique"
+								</label>
+							</div>
+
+						<p><legend><span>Autres Options</span></legend></p>
+
+							<div class="control-group">
+								<label class="checkbox">
+									<input type="hidden" name="config[preview_before_save]" value="0" />
+									<input type="checkbox" name="config[preview_before_save]" value="1" <?php echo $wakkaConfig["preview_before_save"] ? "checked" : "" ?> />
+									 &nbsp;Imposer de faire un aper&ccedil;u avant de pouvoir sauver une page
+								</label>
+							</div>
+
+							<div class="control-group">
+								<label class="checkbox">
+									<input type="checkbox" name="config[allow_raw_html]" value="1" <?php echo $wakkaConfig['allow_raw_html'] ? '' : 'checked' ?> />
+									 &nbsp;Autoriser l'insertion de HTML brut<br />
+								</label>
+							</div>
+
+						</div>   
+					</div>
+				</div>
+			</div>
+
+	<div class="form-actions">
+		<input class="btn btn-large btn-primary continuer" type="submit" value="Continuer" />
+	</div>
+	
+	</fieldset>
+
 </form>
+
+</div> <!-- row -->
+
+<script src="tools/templates/libs/jquery-1.8.2.min.js"></script>
+<script src="tools/templates/libs/bootstrap.min.js"></script>
+<script src="tools/templates/libs/bootstrap/js/bootstrap-popover.js"></script>
+
+    <script type="text/javascript">
+      $(function(){ 
+        $("#example").popover();
+      });
+    </script>

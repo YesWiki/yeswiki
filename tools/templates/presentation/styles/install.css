@@ -1,0 +1,123 @@
+/*
+Couleurs Outils-Réseaux
+#c93c05
+#18657f
+#b4d627
+#009ddf
+#ffb500
+
+
+*/
+p, li{
+    font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
+}
+
+a:active, a:focus{ 
+	outline:none; 
+}
+
+.form-horizontal .control-label {
+    float: left;
+    padding-top: 5px;
+    padding-right: 10px;
+    text-align: right;
+    width: 250px;
+}
+
+legend {
+    color: #18657f;
+    padding-left: 15px;
+}
+
+.hero-unit h1 {
+    display:inline;
+    color: #ffb500;
+    font-size: 40px;
+}
+
+h4 {
+    display:inline;
+    color: #ffb500;
+}
+
+
+.hero-unit {
+    padding: 30px;
+}
+
+.accordion-group {
+    border: none;
+}
+
+.accordion-inner {
+    border-radius: 4px 4px 4px 4px;
+    background-color: #00FFFF;
+}
+
+.plusinfos {
+    float:right;
+    margin-top: -50px;
+}
+
+.accordion-heading{
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.fieldset{
+    /*    margin-bottom:100px;*/
+}
+
+.continuer {
+	margin-left: 80px;
+    padding: 20px 75px;
+}
+
+.form-actions {
+    margin-bottom: 100px;
+}
+
+.accordion-inner .control-label {
+    width: 232px;
+}
+
+.checkbox {
+    margin-left: 240px;
+    padding-right: 20px;
+}
+
+.accordion-inner legend {
+    padding-left: 0;
+}
+
+.dl-horizontal dt {
+    width: 235px;
+    color: #FFB500;
+    font-weight:600;
+}
+
+.dl-horizontal dd {
+    margin-left: 245px;
+}
+
+.dl-horizontal dd.droits-admin {
+    margin-left: 230px;
+}
+
+.dl-horizontal ul {
+    margin-left: 50px;
+    list-style-type:square;
+}
+
+.dl-horizontal dt.admin {
+    width: 248px;
+}
+
+span {
+    color: #FFB500;
+    font-weight:600;
+}
+
+#collapseFour span {
+    font-size: 14px;
+}
