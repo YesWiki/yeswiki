@@ -51,9 +51,9 @@ if (!defined('WIKINI_VERSION'))
 		else {
 			$config=$wakkaConfig["wakka_version"];
 		}
-		echo "<p>Votre syst&egrave;me WikiNi existant a &eacute;t&eacute;",
+		echo "<p>Votre syst&egrave;me YesWiki existant a &eacute;t&eacute;",
 			" reconnu comme &eacute;tant la version ",$config,". Vous &ecirc;tes sur le point ",
-			"de <b>mettre &agrave; jour</b> WikiNi pour la version ",WIKINI_VERSION,
+			"de <b>mettre &agrave; jour</b> YesWiki pour la version ",WIKINI_VERSION,
 			". Veuillez revoir vos informations de configuration ci-dessous.</p>\n";
 		$wiki = new Wiki($wakkaConfig);
 	}
@@ -178,7 +178,6 @@ if (!defined('WIKINI_VERSION'))
 					<input type="text" required class="input-large" name="config[root_page]" value="<?php echo $wakkaConfig["root_page"] ?>" />
 				</div>
 			</div>
-
 
 			<div class="control-group">
 				<label class="control-label">Mots clefs</label>
@@ -314,13 +313,14 @@ if (!defined('WIKINI_VERSION'))
 
 						<p><legend><span>Autres Options</span></legend></p>
 
-							<div class="control-group">
+							<!-- option apercu avant sauvegarde de page -->
+							<!--<div class="control-group">
 								<label class="checkbox">
 									<input type="hidden" name="config[preview_before_save]" value="0" />
-									<input type="checkbox" name="config[preview_before_save]" value="1" <?php echo $wakkaConfig["preview_before_save"] ? "checked" : "" ?> />
+									<input type="checkbox" name="config[preview_before_save]" value="1" <?php //echo $wakkaConfig["preview_before_save"] ? "checked" : "" ?> />
 									 &nbsp;Imposer de faire un aper&ccedil;u avant de pouvoir sauver une page
 								</label>
-							</div>
+							</div>-->
 
 							<div class="control-group">
 								<label class="checkbox">
