@@ -109,21 +109,21 @@ if (!defined('WIKINI_VERSION'))
 			<div class="control-group">
 				<label class="control-label">Base de donn&eacute;es MySQL</label>
 				<div class="controls">
-					<input type="text" required class="input-large" name="config[mysql_database]" value="<?php echo $wakkaConfig["mysql_database"] ?>" />
+					<input type="text" required class="input-large" name="config[mysql_database]" value=""/>
 				</div>
 			</div>
 
 			<div class="control-group">
 				<label class="control-label">Nom de l'utilisateur MySQL</label>
 				<div class="controls">
-					<input type="text" required class="input-large" name="config[mysql_user]" value="<?php echo $wakkaConfig["mysql_user"] ?>" />
+					<input type="text" required class="input-large" name="config[mysql_user]" value="" />
 				</div>
 			</div>
 
 			<div class="control-group">
 				<label class="control-label">Mot de passe MySQL</label>
 				<div class="controls">
-					<input type="password" required class="input-large" name="config[mysql_password]" value="" />
+					<input type="password"  class="input-large" name="config[mysql_password]" value="" />
 				</div>
 			</div>
 
@@ -182,14 +182,14 @@ if (!defined('WIKINI_VERSION'))
 			<div class="control-group">
 				<label class="control-label">Mots clefs</label>
 				<div class="controls">
-					<input type="text" required class="input-large" name="config[meta_keywords]" value="<?php echo $wakkaConfig["meta_keywords"] ?>" />
+					<input type="text" class="input-large" name="config[meta_keywords]" value="<?php echo $wakkaConfig["meta_keywords"] ?>" />
 				</div>
 			</div>
 
 			<div class="control-group">
 				<label class="control-label">Description</label>
 				<div class="controls">
-					<input type="text" required class="input-large" name="config[meta_description]" value="<?php echo $wakkaConfig["meta_description"] ?>" />
+					<input type="text" class="input-large" name="config[meta_description]" value="<?php echo $wakkaConfig["meta_description"] ?>" />
 				</div>
 			</div>
 

@@ -96,7 +96,7 @@ else
 			"les transf&eacute;rer au moyen d'un logiciel de transfert de " .
 			"fichier (ftp) sur le serveur dans un fichier " .
 			"<tt>wakka.config.php</tt> directement dans le r&eacute;pertoire " .
-			"de WikiNi. Une fois que vous aurez fait cela, votre site WikiNi " .
+			"de Yeswiki. Une fois que vous aurez fait cela, votre site Yeswiki " .
 			"devrait fonctionner correctement.</p>\n";
 	?>
 	<form action="<?php echo  myLocation() ?>?installAction=writeconfig" method="POST">
