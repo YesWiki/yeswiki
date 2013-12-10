@@ -1,13 +1,9 @@
-/*
-Couleurs Outils-Réseaux
-#c93c05
-#18657f
-#b4d627
-#009ddf
-#ffb500
+ /* Styles for yeswiki's install
+  * Author: Francois Labastie <francois@outils-reseaux.org>
+  * under GNU General Public License 
+  * 10/12/2013
+  */
 
-
-*/
 p, li{
     font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
 }
@@ -62,10 +58,6 @@ h4 {
 .accordion-heading{
     margin-top: 0;
     margin-bottom: 0;
-}
-
-.fieldset{
-    /*    margin-bottom:100px;*/
 }
 
 .continuer {
