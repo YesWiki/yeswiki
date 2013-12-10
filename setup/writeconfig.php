@@ -78,7 +78,7 @@ if ($fp)
 	
 	echo	"<p>Voila c'est termin&eacute; ! Vous pouvez " .
 			"<a href=\"",$config["base_url"],"\">retourner sur votre " .
-			"site WikiNi</a>. Il est conseill&eacute; de retirer " .
+			"site YesWiki</a>. Il est conseill&eacute; de retirer " .
 			"l'acc&egrave;s en &eacute;criture au fichier " .
 			"<tt>wakka.config.php</tt>. Ceci peut &ecirc;tre une faille " .
 			"dans la s&eacute;curit&eacute;.</p>";
@@ -96,7 +96,7 @@ else
 			"les transf&eacute;rer au moyen d'un logiciel de transfert de " .
 			"fichier (ftp) sur le serveur dans un fichier " .
 			"<tt>wakka.config.php</tt> directement dans le r&eacute;pertoire " .
-			"de Yeswiki. Une fois que vous aurez fait cela, votre site Yeswiki " .
+			"de YesWiki. Une fois que vous aurez fait cela, votre site YesWiki " .
 			"devrait fonctionner correctement.</p>\n";
 	?>
 	<form action="<?php echo  myLocation() ?>?installAction=writeconfig" method="POST">
