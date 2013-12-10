@@ -49,7 +49,7 @@ $config["wikini_version"] = WIKINI_VERSION;
 $config["wakka_version"] = WAKKA_VERSION;
 
 // convert config array into PHP code
-$configCode = "<?php\n// wakka.config.php cr&eacute;&eacute;e ".strftime("%c")."\n// ne changez pas la wikini_version manuellement!\n\n\$wakkaConfig = ";
+$configCode = "<?php\n// wakka.config.php cr&eacute;&eacute;e ".strftime("%c")."\n// ne changez pas la yeswiki_version manuellement!\n\n\$wakkaConfig = ";
 if (function_exists('var_export'))
 {
 	// var_export gives a better result but was added in php 4.2.0 (wikini asks only php 4.1.0)
