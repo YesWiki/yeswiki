@@ -78,9 +78,9 @@ if ($fp)
 	
 	echo	"<p>Voila c'est termin&eacute; ! Vous pouvez " .
 			"<a href=\"",$config["base_url"],"\">retourner sur votre " .
-			"site YesWiki</a>. Il est conseill&eacute; de retirer " .
+			"site YesWiki</a>.</p><p>Il est conseill&eacute; de retirer " .
 			"l'acc&egrave;s en &eacute;criture au fichier " .
-			"<tt>wakka.config.php</tt>. Ceci peut &ecirc;tre une faille " .
+			"<tt>wakka.config.php</tt>. <br>Ceci peut &ecirc;tre une faille " .
 			"dans la s&eacute;curit&eacute;.</p>";
 }
 else
