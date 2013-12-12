@@ -300,3 +300,20 @@ overflow: auto;
 .container-slide-basic {padding:18px; height:90%;}
 
 .wiki-textarea {width:100% !important; height:500px !important;}
+
+
+.accordion-group .panel-heading {
+  cursor: pointer;
+}
+.accordion-group .panel-title:after {
+    /* symbol for "opening" panels */
+    content:"\02C4";
+    float: right;
+    color: inherit;
+    font-size: 27px;
+    font-weight: bold;
+}
+.accordion-group .panel-heading.collapsed .panel-title:after {
+    /* symbol for "collapsed" panels */
+    content:"\02C5";
+}
