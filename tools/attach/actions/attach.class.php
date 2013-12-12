@@ -49,6 +49,7 @@ class attach {
    var $link = '';					//url de lien (image sensible)
    var $caption = '';				//texte de la vignette au survol
    var $legend = '';				//texte en dessous de l'image
+   var $nofullimagelink = '';		//mettre un lien vers l'image entiere
    var $isPicture = 0;				//indique si c'est une image
    var $isAudio = 0;				//indique si c'est un fichier audio
    var $isFreeMindMindMap = 0;		//indique si c'est un fichier mindmap freemind
@@ -302,11 +303,12 @@ class attach {
             	$this->classes .= ' '. trim($c); 
             }
         }
+        $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
+
 		$this->height = $this->wiki->GetParameter('height');
         $this->width = $this->wiki->GetParameter('width');
         
         $size = $this->wiki->GetParameter("size");
-
         switch ($size) {
                 case 'small' : 
                     $this->width = 140;
@@ -345,7 +347,7 @@ class attach {
                 $this->redimensionner_image($fullFilename, $image_dest,$this->width ,$this->height);
             }
             $img_name=$image_dest;
-            $image_redimensionnee=1;
+            if (empty($this->nofullimagelink)) $image_redimensionnee=1;
         }
         else {
             $img_name=$fullFilename;
