@@ -27,7 +27,7 @@
  **/
 
 $(document).ready(function () {
-
+    $('.export-table-form').on('submit', function() {$(this).append('<input type="hidden" name="antispam" value="1" />')})
 	$("#ebook-selection-container").sortable();
 
 	$('.btn-erase-filter').on('click', function() {$("#filter").val('').keyup();});
