@@ -5,7 +5,9 @@ $(document).ready(function () {
 	var $popovers = $(".img-marker");
 
 	$pointimagecontainers.each(function( index ) {
-		$(this).find('.pointimage-image').append('<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="icon-plus"></i> '+labeladdpoint+'</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="'+$(this).data('pagetag')+'/edit"><i class="icon-edit"></i></a>');
+		if ($(this).data('readonly') === false) {
+			$(this).find('.pointimage-image').append('<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="icon-plus"></i> '+labeladdpoint+'</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="'+$(this).data('pagetag')+'/edit"><i class="icon-edit"></i></a>');
+		}
 	});
 
 	$popovers.popover({trigger: 'click', html:'true', placement:'top', delay: { show: 0, hide: 0 }});

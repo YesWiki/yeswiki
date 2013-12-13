@@ -73,6 +73,9 @@ if (empty($point_size)) {
 	$point_size = 10;
 }
 
+// readonly (no add of markers)
+$readonly = $this->GetParameter('readonly');
+
 // get an unique pagename based on the image filename, without extension
 $datapagetag = mysql_real_escape_string($this->GetPageTag().'PointImageDonnees'.preg_replace("/[^A-Za-z0-9 ]/", '', str_replace('.'.$ext, '', $file)));
 
@@ -159,7 +162,8 @@ if (!isset($GLOBALS['pointimagejsincluded'])) {
 }
 
 // output the image on the page
-echo '<div class="pointimage-container no-dblclick" data-markerscolor=\''.$colors.'\' data-markerslabel=\''.$labels.'\' data-markersize="'.$point_size.'" data-pagetag="'.$this->Href('', $datapagetag).'">'."\n";
+
+echo '<div class="pointimage-container no-dblclick" data-readonly="'.((!empty($readonly) && $readonly==1) ? 'true' : 'false').'" data-markerscolor=\''.$colors.'\' data-markerslabel=\''.$labels.'\' data-markersize="'.$point_size.'" data-pagetag="'.$this->Href('', $datapagetag).'">'."\n";
 if (isset($size)) {
 	echo $this->Format('{{attach file="'.$file.'" desc="image '.$file.'" size="original" class="pointimage-image" nofullimagelink="1"}}');
 } else {
