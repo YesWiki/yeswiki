@@ -317,3 +317,7 @@ overflow: auto;
     /* symbol for "collapsed" panels */
     content:"\02C5";
 }
+
+/* bootstrap 2.3.2 retro compatibility */ 
+.modal { z-index: -2 !important; }
+.modal.in { z-index: 1050 !important; }
