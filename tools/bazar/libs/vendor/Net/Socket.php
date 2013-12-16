@@ -19,7 +19,7 @@
 //
 // $Id: Socket.php,v 1.1 2009/09/21 14:54:47 mrflos Exp $
 
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
 define('NET_SOCKET_READ',  1);
 define('NET_SOCKET_WRITE', 2);

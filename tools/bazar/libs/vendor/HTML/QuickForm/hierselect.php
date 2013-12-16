@@ -26,11 +26,11 @@
 /**
  * Class for a group of form elements
  */
-require_once 'HTML/QuickForm/group.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/group.php';
 /**
  * Class for <select></select> elements
  */
-require_once 'HTML/QuickForm/select.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/select.php';
 
 /**
  * Hierarchical select element

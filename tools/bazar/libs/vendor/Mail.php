@@ -18,7 +18,7 @@
 //
 // $Id: Mail.php,v 1.20 2007/10/06 17:00:00 chagenbu Exp $
 
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
 /**
  * PEAR's Mail:: interface. Defines the interface for implementing

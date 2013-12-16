@@ -36,7 +36,7 @@
 /**
  * uses PEAR's error handling
  */
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
 /**
  * resource could not be created

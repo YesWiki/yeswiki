@@ -25,7 +25,7 @@
 /**
  * HTML class for a checkbox type field
  */
-require_once 'HTML/QuickForm/checkbox.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/checkbox.php';
 
 /**
  * HTML class for an advanced checkbox type field

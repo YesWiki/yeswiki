@@ -24,7 +24,7 @@
 /**
  * Abstract base class for QuickForm validation rules
  */
-require_once 'HTML/QuickForm/Rule.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule.php';
 
 /**
  * Validates values using regular expressions

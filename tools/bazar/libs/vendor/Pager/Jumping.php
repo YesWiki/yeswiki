@@ -40,7 +40,7 @@
 /**
  * require PEAR::Pager_Common base class
  */
-require_once 'Pager/Common.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Pager/Common.php';
 
 /**
  * Pager_Jumping - Generic data paging class  ("jumping window" style)

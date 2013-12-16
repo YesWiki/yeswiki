@@ -25,7 +25,7 @@
 /**
  * Base class for <input /> form elements
  */
-require_once 'HTML/QuickForm/input.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/input.php';
 
 /**
  * HTML class for a hidden type element

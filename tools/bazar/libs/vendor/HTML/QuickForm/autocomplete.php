@@ -24,7 +24,7 @@
 /**
  * HTML class for a text field
  */
-require_once 'HTML/QuickForm/text.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/text.php';
 
 /**
  * HTML class for an autocomplete element

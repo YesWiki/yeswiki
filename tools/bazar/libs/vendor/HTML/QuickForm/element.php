@@ -26,7 +26,7 @@
 /**
  * Base class for all HTML classes
  */
-require_once 'HTML/Common.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/Common.php';
 
 /**
  * Base class for form elements
