@@ -174,9 +174,9 @@ case "0":
 		@mysql_query(
 			"insert into ".$config["table_prefix"]."users set ".
 					"signuptime = now(), ".
-					"name = '".mysql_escape_string($admin_name)."', ".
-					"email = '".mysql_escape_string($admin_email)."', ".
-					"password = md5('".mysql_escape_string($admin_password)."')"), 0);
+					"name = '".mysql_real_escape_string($admin_name)."', ".
+					"email = '".mysql_real_escape_string($admin_email)."', ".
+					"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
 	$wiki = new Wiki($config);
 	$wiki->SetGroupACL("admins", $admin_name);
 				
@@ -199,9 +199,9 @@ case "0":
 			
 			$sql = "Insert into ".$config["table_prefix"]."pages ".
 				"set tag = '$pagename', ".
-				"body = '".mysql_escape_string($pagecontent)."', ".
-				"user = '" . mysql_escape_string($admin_name) . "', ".
-				"owner = '" . mysql_escape_string($admin_name) . "', " .
+				"body = '".mysql_real_escape_string($pagecontent)."', ".
+				"user = '" . mysql_real_escape_string($admin_name) . "', ".
+				"owner = '" . mysql_real_escape_string($admin_name) . "', " .
 				"time = now(), ".
 				"latest = 'Y'";
 
@@ -255,9 +255,9 @@ case '0.5.0': // TODO remove this line (idem)
 			@mysql_query(
 				"insert into ".$config["table_prefix"]."users set ".
 				"signuptime = now(), ".
-				"name = '".mysql_escape_string($admin_name)."', ".
-				"email = '".mysql_escape_string($admin_email)."', ".
-				"password = md5('".mysql_escape_string($admin_password)."')"), 0);
+				"name = '".mysql_real_escape_string($admin_name)."', ".
+				"email = '".mysql_real_escape_string($admin_email)."', ".
+				"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
 	}
 	$wiki = new Wiki($config);
 	test("Insertion de l'utilisateur sp&eacute;cifi&eacute; dans le groupe admin ...",

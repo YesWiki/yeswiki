@@ -344,12 +344,5 @@ if (!defined('WIKINI_VERSION'))
 
 </div> <!-- row -->
 
-<script src="tools/templates/libs/jquery-1.8.2.min.js"></script>
-<script src="tools/templates/libs/bootstrap.min.js"></script>
-<script src="tools/templates/libs/bootstrap/js/bootstrap-popover.js"></script>
-
-    <script type="text/javascript">
-      $(function(){ 
-        $("#example").popover();
-      });
-    </script>
+<script src="tools/templates/libs/vendor/jquery-1.10.2.min.js"></script>
+<script src="tools/templates/libs/vendor/bootstrap-2.3.2.min.js"></script>
