@@ -50,9 +50,6 @@ if (!defined("WIKINI_VERSION")) {
 define ('BAZ_CHEMIN', 'tools'.DIRECTORY_SEPARATOR.'bazar'.DIRECTORY_SEPARATOR);
 define ('BAZ_CHEMIN_UPLOAD', 'files'.DIRECTORY_SEPARATOR);
 
-//bouh! c'est pas propre! c'est a cause de PEAR et de ses includes
-set_include_path(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.PATH_SEPARATOR.get_include_path());
-
 //librairies PEAR
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Net'.DIRECTORY_SEPARATOR.'URL.php' ;
@@ -93,58 +90,26 @@ if ($db->isError($GLOBALS['_BAZAR_']['db'])) {
 }
 
 //test de l'existance des tables de bazar et installation si absentes.
-$req = 'SHOW TABLES FROM '.$wakkaConfig['mysql_database'].' LIKE "'.BAZ_PREFIXE.'nature%"';
-$resultat = $GLOBALS['_BAZAR_']['db']->query ($req);
-if ($resultat->numRows() == 0) {
-    $fichier_sql = 'tools/bazar/install/bazar.sql';
-    if (file_exists($fichier_sql)) {
-            // Des champs textes sont multilignes, d'ou la boucle sur INSERT, marqueur de fin de la requete precedente.
-            if ($lines = file($fichier_sql)) {
-                $i=0;
-                $ligne_courante=$lines[$i];
-                if (($i+1)>=count($lines)) {
-                    $ligne_suivante='FIN';
-                } else {
-                    $ligne_suivante=$lines[$i+1];
-                }
-                while ($i<count($lines)) {
-                    $line_in=$ligne_courante;
-                    while (($i < count($lines)) && ((substr($ligne_suivante, 0, 6) != 'INSERT') && (substr($ligne_suivante, 0, 6) != 'CREATE') ) && ($ligne_suivante != 'FIN')) {
-                        $line_in.=$ligne_suivante;
-                        $i++;
-                        $ligne_courante=$lines[$i];
-                        if (($i+1)>=count($lines)) {
-                            $ligne_suivante='FIN';
-                        } else {
-                        $ligne_suivante=$lines[$i+1];
-                        }
-                    }
-
-                    $requete = str_replace('BAZ_PREFIXE', BAZ_PREFIXE, $line_in);
-
-                    //requete sql
-                    //echo $requete.'<br />';
-                    $result = $GLOBALS['_BAZAR_']['db']->query ($requete);
-
-                    $i++;
-                    $ligne_courante=$lines[$i];
-                    if (($i+1)>=count($lines)) {
-                        $ligne_suivante='FIN';
-                    } else {
-                        $ligne_suivante=$lines[$i+1];
-                    }
-
-                    //if ($i == (int) $this->test) {
-                    //    break;
-                    //}
-                }
-            }
-            echo '<div class="alert alert-success">La base de donn&eacute;es de bazar vient d\'&ecirc;tre ajout&eacute;e,</div>'."\n";
-        } else {
-            die ('<div class="BAZ_error">Fichier sql introuvable.</div>'."\n");
-        }
-
-}
+//$req = 'SHOW TABLES FROM '.$wakkaConfig['mysql_database'].' LIKE "'.BAZ_PREFIXE.'nature%"';
+$req = "CREATE TABLE IF NOT EXISTS `".BAZ_PREFIXE."nature` (
+  `bn_id_nature` int(10) unsigned NOT NULL DEFAULT '0',
+  `bn_label_nature` varchar(255) DEFAULT NULL,
+  `bn_description` text,
+  `bn_condition` text,
+  `bn_ce_id_menu` int(3) unsigned NOT NULL DEFAULT '0',
+  `bn_commentaire` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `bn_appropriation` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `bn_image_titre` varchar(255) NOT NULL DEFAULT '',
+  `bn_image_logo` varchar(255) NOT NULL DEFAULT '',
+  `bn_couleur_calendrier` varchar(255) NOT NULL DEFAULT '',
+  `bn_picto_calendrier` varchar(255) NOT NULL DEFAULT '',
+  `bn_template` text NOT NULL,
+  `bn_ce_i18n` varchar(5) NOT NULL DEFAULT '',
+  `bn_type_fiche` varchar(255) NOT NULL,
+  `bn_label_class` varchar(255) NOT NULL,
+  PRIMARY KEY (`bn_id_nature`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+$resultat = $GLOBALS['_BAZAR_']['db']->query($req);
 
 // +------------------------------------------------------------------------------------------------------+
 // |                             LES CONSTANTES DES ACTIONS DE BAZAR                                      |

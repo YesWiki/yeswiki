@@ -174,9 +174,9 @@ case "0":
 		@mysql_query(
 			"insert into ".$config["table_prefix"]."users set ".
 					"signuptime = now(), ".
-					"name = '".mysql_escape_string($admin_name)."', ".
-					"email = '".mysql_escape_string($admin_email)."', ".
-					"password = md5('".mysql_escape_string($admin_password)."')"), 0);
+					"name = '".mysql_real_escape_string($admin_name)."', ".
+					"email = '".mysql_real_escape_string($admin_email)."', ".
+					"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
 	$wiki = new Wiki($config);
 	$wiki->SetGroupACL("admins", $admin_name);
 				
@@ -199,9 +199,9 @@ case "0":
 			
 			$sql = "Insert into ".$config["table_prefix"]."pages ".
 				"set tag = '$pagename', ".
-				"body = '".mysql_escape_string($pagecontent)."', ".
-				"user = '" . mysql_escape_string($admin_name) . "', ".
-				"owner = '" . mysql_escape_string($admin_name) . "', " .
+				"body = '".mysql_real_escape_string($pagecontent)."', ".
+				"user = '" . mysql_real_escape_string($admin_name) . "', ".
+				"owner = '" . mysql_real_escape_string($admin_name) . "', " .
 				"time = now(), ".
 				"latest = 'Y'";
 
@@ -255,9 +255,9 @@ case '0.5.0': // TODO remove this line (idem)
 			@mysql_query(
 				"insert into ".$config["table_prefix"]."users set ".
 				"signuptime = now(), ".
-				"name = '".mysql_escape_string($admin_name)."', ".
-				"email = '".mysql_escape_string($admin_email)."', ".
-				"password = md5('".mysql_escape_string($admin_password)."')"), 0);
+				"name = '".mysql_real_escape_string($admin_name)."', ".
+				"email = '".mysql_real_escape_string($admin_email)."', ".
+				"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
 	}
 	$wiki = new Wiki($config);
 	test("Insertion de l'utilisateur sp&eacute;cifi&eacute; dans le groupe admin ...",
@@ -266,9 +266,18 @@ case '0.5.0': // TODO remove this line (idem)
 
 ?>
 
+<style type="text/css">
+	input[type="submit"]{
+ 	cursor:pointer;
+ 	height: 50px;
+ 	width: 200px;
+ 	margin-bottom: 200px;
+ 	}
+</style>
+
 <p>
 A l'&eacute;tape suivante, le programme d'installation va essayer
-d'&eacute;crire le fichier de configuration <tt><?php echo  $wakkaConfigLocation ?></tt>.
+d'&eacute;crire le fichier de configuration <tt><?php echo  $wakkaConfigLocation ?></tt>.</br>
 Assurez vous que le serveur web a bien le droit d'&eacute;crire dans ce fichier, sinon vous devrez le modifier manuellement.  </p>
 
 <form action="<?php echo  myLocation(); ?>?installAction=writeconfig" method="POST">

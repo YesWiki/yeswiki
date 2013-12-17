@@ -66,50 +66,55 @@ if ($type!='bazar' && $type!='wiki' && $type!='all') $type = 'all';
 $output = '';
 
 if (isset($_POST["page"])) {
-	if (isset($_POST["ebook-title"]) && $_POST["ebook-title"] != '') {
-		if (isset($_POST["ebook-description"]) && $_POST["ebook-description"] != '') {
-			if (isset($_POST["ebook-author"]) && $_POST["ebook-author"] != '') {	
-				if (isset($_POST["ebook-biblio-author"]) && $_POST["ebook-biblio-author"] != '') {	
-					if (isset($_POST["ebook-cover-image"]) && $_POST["ebook-biblio-author"] != '') {
-						if (preg_match("/.(jpg)$/i", $_POST["ebook-cover-image"])==1) {	
-							$pagename = generatePageName($ebookpagenamestart.' '.$_POST["ebook-title"]);
-							$output .= '{{button link="'.$this->href('epub',$pagename).'" text="'.TAGS_DOWNLOAD_EPUB.'" class="btn-primary pull-right" icon="book icon-white"}}';
-							if ($this->IsWikiName($ebookstart)) {
-								$output .= '{{include page="'.$ebookstart.'" class=""}}'."\n";
+	if (isset($_POST['antispam']) && $_POST['antispam'] == 1) {
+		if (isset($_POST["ebook-title"]) && $_POST["ebook-title"] != '') {
+			if (isset($_POST["ebook-description"]) && $_POST["ebook-description"] != '') {
+				if (isset($_POST["ebook-author"]) && $_POST["ebook-author"] != '') {	
+					if (isset($_POST["ebook-biblio-author"]) && $_POST["ebook-biblio-author"] != '') {	
+						if (isset($_POST["ebook-cover-image"]) && $_POST["ebook-biblio-author"] != '') {
+							if (preg_match("/.(jpg)$/i", $_POST["ebook-cover-image"])==1) {	
+								$pagename = generatePageName($ebookpagenamestart.' '.$_POST["ebook-title"]);
+								$output .= '{{button link="'.$this->href('epub',$pagename).'" text="'.TAGS_DOWNLOAD_EPUB.'" class="btn-primary pull-right" icon="book icon-white"}}';
+								if ($this->IsWikiName($ebookstart)) {
+									$output .= '{{include page="'.$ebookstart.'" class=""}}'."\n";
+								}
+								foreach ($_POST["page"] as $page) {
+									$output .= '{{include page="'.$page.'" class=""}}'."\n";
+								}
+								if ($this->IsWikiName($ebookend)) {
+									$output .= '{{include page="'.$ebookend.'" class=""}}'."\n";
+								}
+								unset($_POST['page']);
+								$this->SaveMetaDatas($pagename, $_POST);
+								$this->SavePage($pagename, $output);
+								$output = $this->Format('""<div class="alert alert-success">'.TAGS_EBOOK_PAGE_CREATED.' !""'."\n".'{{button class="btn-primary" link="'.$pagename.'" text="'.TAGS_GOTO_EBOOK_PAGE.' '.$pagename.'"}}""</div>""'."\n");
 							}
-							foreach ($_POST["page"] as $page) {
-								$output .= '{{include page="'.$page.'" class=""}}'."\n";
+							else {
+								$output = '<div class="alert alert-danger">'.TAGS_NOT_IMAGE_FILE.'</div>'."\n";
 							}
-							if ($this->IsWikiName($ebookend)) {
-								$output .= '{{include page="'.$ebookend.'" class=""}}'."\n";
-							}
-							unset($_POST['page']);
-							$this->SaveMetaDatas($pagename, $_POST);
-							$this->SavePage($pagename, $output);
-							$output = $this->Format('""<div class="alert alert-success">'.TAGS_EBOOK_PAGE_CREATED.' !""'."\n".'{{button class="btn-primary" link="'.$pagename.'" text="'.TAGS_GOTO_EBOOK_PAGE.' '.$pagename.'"}}""</div>""'."\n");
 						}
 						else {
-							$output = '<div class="alert alert-error">'.TAGS_NOT_IMAGE_FILE.'</div>'."\n";
+							$output = '<div class="alert alert-danger">'.TAGS_NO_IMAGE_FOUND.'</div>'."\n";
 						}
 					}
 					else {
-						$output = '<div class="alert alert-error">'.TAGS_NO_IMAGE_FOUND.'</div>'."\n";
+						$output = '<div class="alert alert-danger">'.TAGS_NO_BIBLIO_AUTHOR_FOUND.'</div>'."\n";
 					}
 				}
 				else {
-					$output = '<div class="alert alert-error">'.TAGS_NO_BIBLIO_AUTHOR_FOUND.'</div>'."\n";
+					$output = '<div class="alert alert-danger">'.TAGS_NO_AUTHOR_FOUND.'</div>'."\n";
 				}
 			}
 			else {
-				$output = '<div class="alert alert-error">'.TAGS_NO_AUTHOR_FOUND.'</div>'."\n";
+				$output = '<div class="alert alert-danger">'.TAGS_NO_DESC_FOUND.'</div>'."\n";
 			}
 		}
 		else {
-			$output = '<div class="alert alert-error">'.TAGS_NO_DESC_FOUND.'</div>'."\n";
+			$output = '<div class="alert alert-danger">'.TAGS_NO_TITLE_FOUND.'</div>'."\n";
 		}
 	}
 	else {
-		$output = '<div class="alert alert-error">'.TAGS_NO_TITLE_FOUND.'</div>'."\n";
+		$output = '<div class="alert alert-danger">'.TAGS_SPAM_RISK.'</div>'."\n";
 	}
 }
 else {

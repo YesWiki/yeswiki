@@ -20,8 +20,8 @@
 //
 // $Id: SMTP.php,v 1.1 2009/09/21 14:54:47 mrflos Exp $
 
-require_once 'PEAR.php';
-require_once 'Net/Socket.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Net/Socket.php';
 
 /**
  * Provides an implementation of the SMTP protocol using PEAR's

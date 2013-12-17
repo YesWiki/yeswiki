@@ -88,7 +88,7 @@ $patterns = array(	0 => 	'/<input name=\"submit\" type=\"submit\" value=\"Sauver
 $replacements = array(
 					0 => 	'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'.TEMPLATE_SAVE.'</button>',
 					1 => 	'', 
-					2 => 	'<button class="btn" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'.TEMPLATE_CANCEL.'</button>'."\n".
+					2 => 	'<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'.TEMPLATE_CANCEL.'</button>'."\n".
 							(($changetheme) ? '<button class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'.TEMPLATE_THEME.'</button>'."\n" : '').'</div>', // le bouton Theme du bas de l'interface d'edition
 					3 =>	' class="edit form-control">'
 					);

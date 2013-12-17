@@ -2913,7 +2913,7 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
     $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
 
     // Mise en place du Pager
-    require_once 'Pager/Pager.php';
+    require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Pager/Pager.php';
     $params = array(
         'mode'       => BAZ_MODE_DIVISION,
         'perPage'    => BAZ_NOMBRE_RES_PAR_PAGE,

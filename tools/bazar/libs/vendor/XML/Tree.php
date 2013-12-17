@@ -21,8 +21,8 @@
 // $Id: Tree.php,v 1.1 2008-07-07 18:00:48 mrflos Exp $
 //
 
-require_once 'XML/Parser.php';
-require_once 'XML/Tree/Node.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Parser.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Tree/Node.php';
 
 /**
 * PEAR::XML_Tree

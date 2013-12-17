@@ -110,7 +110,7 @@ class XML_Util
     * entities should be replaced.
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // replace XML entites:
     * $string = XML_Util::replaceEntities("This string contains < & >.");
@@ -155,7 +155,7 @@ class XML_Util
     * entities should be reversed.
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // reverse XML entites:
     * $string = XML_Util::reverseEntities("This string contains &lt; &amp; &gt;.");
@@ -199,7 +199,7 @@ class XML_Util
     * build an xml declaration
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // get an XML declaration:
     * $xmlDecl = XML_Util::getXMLDeclaration("1.0", "UTF-8", true);
@@ -234,7 +234,7 @@ class XML_Util
     * build a document type declaration
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // get a doctype declaration:
     * $xmlDecl = XML_Util::getDocTypeDeclaration("rootTag","myDocType.dtd");
@@ -269,7 +269,7 @@ class XML_Util
     * create string representation of an attribute list
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // build an attribute string
     * $att = array(
@@ -383,7 +383,7 @@ class XML_Util
     * is more flexible.
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // create an XML tag:
     * $tag = XML_Util::createTag("myNs:myTag", array("foo" => "bar"), "This is inside the tag", "http://www.w3c.org/myNs#");
@@ -439,7 +439,7 @@ class XML_Util
     * </pre>
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * $tag = array(
     *           "qname"        => "foo:bar",
@@ -544,7 +544,7 @@ class XML_Util
     * create a start element
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // create an XML start element:
     * $tag = XML_Util::createStartElement("myNs:myTag", array("foo" => "bar") ,"http://www.w3c.org/myNs#");
@@ -601,7 +601,7 @@ class XML_Util
     * create an end element
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // create an XML start element:
     * $tag = XML_Util::createEndElement("myNs:myTag");
@@ -624,7 +624,7 @@ class XML_Util
     * create an XML comment
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // create an XML start element:
     * $tag = XML_Util::createComment("I am a comment");
@@ -646,7 +646,7 @@ class XML_Util
     * create a CData section
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // create a CData section
     * $tag = XML_Util::createCDataSection("I am content.");
@@ -666,7 +666,7 @@ class XML_Util
     * split qualified name and return namespace and local part
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // split qualified tag
     * $parts = XML_Util::splitQualifiedName("xslt:stylesheet");
@@ -713,7 +713,7 @@ class XML_Util
     * </p>
     *
     * <code>
-    * require_once 'XML/Util.php';
+    * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     *
     * // verify tag name
     * $result = XML_Util::isValidName("invalidTag?");
@@ -756,7 +756,7 @@ class XML_Util
     */
     public static function raiseError($msg, $code)
     {
-        require_once 'PEAR.php';
+        require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
         return PEAR::raiseError($msg, $code);
     }

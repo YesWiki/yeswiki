@@ -8,15 +8,14 @@ if (!defined("WIKINI_VERSION"))
 
 if ($this->HasAccess("comment") && !$this->page['comment_on'])
 {
-
 	// Ajoute le javascript qui calcule le hashcash
 	$siteurl = str_replace("/wakka.php?wiki=", "", $this->config['base_url']);
 
-	$ChampsHashcash = '<script type="text/javascript" src="' 
+	$ChampsHashcash = '	<script src="' 
 		. $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='
-		.$siteurl.'"></script>';
+		. $siteurl . '"></script>';
 
-	 $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$ChampsHashcash."\n";
+	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$ChampsHashcash."\n";
 }
 
 ?>

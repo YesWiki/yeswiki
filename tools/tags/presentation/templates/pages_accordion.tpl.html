@@ -1,0 +1,19 @@
+<?php if( count($elements)>0 ) : $GLOBALS['nb_accordion'] = isset($GLOBALS['nb_accordion']) ? $GLOBALS['nb_accordion']++ : 1; ?>
+<div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $GLOBALS['nb_accordion']; ?>">
+<?php foreach ($elements as $tag => $element) : ?>
+  <div class="panel panel-default">
+    <div class="panel-heading collapsed" data-target="#collapse<?php echo $tag; ?>" data-toggle="collapse">
+      <h4 class="panel-title">
+        <?php echo $element["title"]; ?>
+      </h4>
+    </div>
+    <div id="collapse<?php echo $tag; ?>" class="panel-collapse collapse">
+      <div class="panel-body">
+        <?php echo $GLOBALS['wiki']->Format('{{include page="'.$tag.'"}}'); ?>
+        <?php echo $GLOBALS['wiki']->Format('{{barreredaction page="'.$tag.'" template="barreredaction_buttons.tpl.html" }}');?>
+      </div>
+    </div>
+  </div>
+<?php endforeach; ?>
+</div>
+<?php endif; ?>

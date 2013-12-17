@@ -27,7 +27,7 @@
 /**
  * Obtain the PEAR class so it can be extended from
  */
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
 // {{{ constants
 // {{{ error codes
@@ -487,7 +487,7 @@ class DB
      *
      * Example 1.
      * <code>
-     * require_once 'DB.php';
+     * require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php';
      *
      * $dsn = 'pgsql://user:password@host/database';
      * $options = array(

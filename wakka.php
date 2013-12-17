@@ -1624,10 +1624,10 @@ $wakkaDefaultConfig = array(
 	'wikini_version'	=> '',
 	'debug'				=> 'no',
 	"mysql_host"		=> "localhost",
-	"mysql_database"	=> "",
-	"mysql_user"		=> "",
+	"mysql_database"	=> '',
+	"mysql_user"		=> '',
 	"mysql_password"	=> '',
-	"table_prefix"		=> "yw_",
+	"table_prefix"		=> "yeswiki_",
 	"root_page"			=> "PagePrincipale",
 	"wakka_name"		=> "Mon Yeswiki",
 	"base_url"			=> computeBaseURL($_rewrite_mode),
@@ -1697,14 +1697,14 @@ if (!ini_get('zlib.output_compression') && !ini_get('zlib.output_handler'))
 	{
 		// let ob_gzhandler do the dirty job
 		// NB.: this must be done BEFORE session_start() when session.use_trans_sid is on
-		//ob_start('ob_gzhandler');
+		ob_start('ob_gzhandler');
 	}
 	// else lets do the dirty job by ourselves...
 	elseif (!empty($_SERVER['HTTP_ACCEPT_ENCODING']) && strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') && function_exists('gzencode'))
 	{
-		//ob_start ('gzencode');
+		ob_start ('gzencode');
 		// Tell the browser the content is compressed with gzip 
-		//header ("Content-Encoding: gzip"); 
+		header ("Content-Encoding: gzip"); 
 	}
 }
 
