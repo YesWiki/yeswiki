@@ -55,6 +55,7 @@ define ('TAGS_FILTER', 'Filtrer');
 define ('TAGS_CONTAINING_TAG', 'avec le mot cl&eacute;');
 
 // handler exportpages
+define ('TAGS_SPAM_RISK', 'Il faut activer javascript pour ne pas &ecirc;tre consid&eacute;r&eacute; comme du spam.');
 define ('TAGS_GENERATE_EBOOK', 'G&eacute;n&eacute;rer l\'Ebook');
 define ('TAGS_EXPORT_PAGES_INFO', 'S&eacute;lectionnez vos pages pour l\'Ebook en cliquant sur ');
 define ('TAGS_ORDER_PAGES_INFO', 'D&eacute;placez les pages pour les mettre dans l\'ordre qui vous convient.');

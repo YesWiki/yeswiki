@@ -49,7 +49,7 @@ $config["wikini_version"] = WIKINI_VERSION;
 $config["wakka_version"] = WAKKA_VERSION;
 
 // convert config array into PHP code
-$configCode = "<?php\n// wakka.config.php cr&eacute;&eacute;e ".strftime("%c")."\n// ne changez pas la wikini_version manuellement!\n\n\$wakkaConfig = ";
+$configCode = "<?php\n// wakka.config.php cr&eacute;&eacute;e ".strftime("%c")."\n// ne changez pas la yeswiki_version manuellement!\n\n\$wakkaConfig = ";
 if (function_exists('var_export'))
 {
 	// var_export gives a better result but was added in php 4.2.0 (wikini asks only php 4.1.0)
@@ -78,9 +78,9 @@ if ($fp)
 	
 	echo	"<p>Voila c'est termin&eacute; ! Vous pouvez " .
 			"<a href=\"",$config["base_url"],"\">retourner sur votre " .
-			"site WikiNi</a>. Il est conseill&eacute; de retirer " .
+			"site YesWiki</a>.</p><p>Il est conseill&eacute; de retirer " .
 			"l'acc&egrave;s en &eacute;criture au fichier " .
-			"<tt>wakka.config.php</tt>. Ceci peut &ecirc;tre une faille " .
+			"<tt>wakka.config.php</tt>. <br>Ceci peut &ecirc;tre une faille " .
 			"dans la s&eacute;curit&eacute;.</p>";
 }
 else
@@ -96,7 +96,7 @@ else
 			"les transf&eacute;rer au moyen d'un logiciel de transfert de " .
 			"fichier (ftp) sur le serveur dans un fichier " .
 			"<tt>wakka.config.php</tt> directement dans le r&eacute;pertoire " .
-			"de WikiNi. Une fois que vous aurez fait cela, votre site WikiNi " .
+			"de YesWiki. Une fois que vous aurez fait cela, votre site YesWiki " .
 			"devrait fonctionner correctement.</p>\n";
 	?>
 	<form action="<?php echo  myLocation() ?>?installAction=writeconfig" method="POST">

@@ -24,7 +24,7 @@
 /**
  * HTML class for static data
  */
-require_once 'HTML/QuickForm/static.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/static.php';
 
 /**
  * A pseudo-element used for adding headers to form

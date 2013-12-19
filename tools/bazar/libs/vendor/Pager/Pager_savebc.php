@@ -15,5 +15,5 @@
  * @link      http://pear.php.net/package/Pager
  */
 
-require_once 'Pager.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Pager.php';
 ?>

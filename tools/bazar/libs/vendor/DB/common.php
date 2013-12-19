@@ -27,7 +27,7 @@
 /**
  * Obtain the PEAR class so it can be extended from
  */
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
 /**
  * DB_common is the base class from which each database driver class extends

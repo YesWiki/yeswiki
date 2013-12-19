@@ -61,7 +61,7 @@
  *
  * This package depends on PEAR to raise errors.
  */
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 
 /**
  * require Mail_mimePart
@@ -70,7 +70,7 @@ require_once 'PEAR.php';
  * create all the different parts a mail can
  * consist of.
  */
-require_once 'Mail/mimePart.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Mail/mimePart.php';
 
 /**
  * The Mail_Mime class provides an OO interface to create MIME

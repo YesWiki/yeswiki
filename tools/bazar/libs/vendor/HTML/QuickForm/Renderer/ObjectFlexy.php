@@ -24,7 +24,7 @@
 /**
  * A concrete renderer for HTML_QuickForm, makes an object from form contents
  */
-require_once 'HTML/QuickForm/Renderer/Object.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Renderer/Object.php';
 
 /**
  * QuickForm renderer for Flexy template engine, static version.

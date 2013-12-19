@@ -31,7 +31,7 @@ foreach ($params as $param) {
  			echo '<br />'."\n";
  		} 
  		else {
- 			echo '<button type="button" class="btn filter" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
+ 			echo '<button type="button" class="btn btn-default filter" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
  		}	
  	}
  	echo  '</div>'."\n".'</div>'."\n";

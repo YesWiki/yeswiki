@@ -650,7 +650,7 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
 } elseif ($mode == 'html') {
     $html = '';
     if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]]!='') {
-        $html = '<div class="BAZ_rubrique">'."\n".
+        $html = '<div class="BAZ_rubrique tags_'.$tableau_template[1].'">'."\n".
             '<span class="BAZ_label">'.$tableau_template[2].'&nbsp;:</span>'."\n";
         $html .= '<div class="BAZ_texte"> ';
         $tabtagsexistants = explode(',',htmlentities($valeurs_fiche[$tableau_template[1]]));

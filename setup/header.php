@@ -76,6 +76,7 @@ function myLocation()
 }
 
 $charset='iso-8859-1';
+if (!defined('TEMPLATES_DEFAULT_CHARSET')) define('TEMPLATES_DEFAULT_CHARSET', $charset);
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
@@ -85,7 +86,7 @@ ob_start();
 <html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $charset; ?>"/>
-  <title>Installation de WikiNi</title>
+  <title>Installation de YesWiki</title>
   <style type="text/css">
     P, BODY, TD, LI, INPUT, SELECT, TEXTAREA { font-family: Verdana; font-size: 13px; }
     INPUT { color: #880000; }

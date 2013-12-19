@@ -170,7 +170,7 @@ class Pager
     {
         $mode = (isset($options['mode']) ? ucfirst($options['mode']) : 'Jumping');
         $classname = 'Pager_' . $mode;
-        $classfile = 'Pager' . DIRECTORY_SEPARATOR . $mode . '.php';
+        $classfile = BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Pager' . DIRECTORY_SEPARATOR . $mode . '.php';
 
         // Attempt to include a custom version of the named class, but don't treat
         // a failure as fatal.  The caller may have already included their own
