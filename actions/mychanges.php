@@ -37,7 +37,7 @@ if ($user = $this->GetUser())
 
 	if (($bydate = $this->GetParameter("bydate")))
 	{
-		echo "<b>Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par date de modification.</b><br /><br />\n";	
+		echo "<b>"._t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE').".</b><br /><br />\n";	
 
 		if ($pages = $this->LoadAll("SELECT tag, time FROM ".$this->config["table_prefix"]."pages WHERE user = '".mysql_escape_string($this->GetUserName())."' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC"))
 		{
@@ -67,17 +67,17 @@ if ($user = $this->GetUser())
 			
 			if ($my_edits_count == 0)
 			{
-				echo "<i>Vous n'avez pas modifi&eacute; de page.</i>";
+				echo "<i>"._t('YOU_DIDNT_MODIFY_ANY_PAGE').".</i>";
 			}
 		}
 		else
 		{
-			echo "<i>Aucune page trouv&eacute;e.</i>";
+			echo "<i>"._t('NO_PAGE_FOUND').".</i>";
 		}
 	}
 	else
 	{
-		echo "<b>Liste des pages que vous avez modifi&eacute;es, tri&eacute;e par ordre alphab&eacute;tique.</b><br /><br />\n";	
+		echo "<b>"._t('YOUR_MODIFIED_PAGES_ORDERED_BY_NAME').".</b><br /><br />\n";	
 
 		if ($pages = $this->LoadAll("SELECT tag, time FROM ".$this->config["table_prefix"]."pages WHERE user = '".mysql_escape_string($this->GetUserName())."' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC"))
 		{
@@ -106,18 +106,18 @@ if ($user = $this->GetUser())
 			
 			if ($my_edits_count == 0)
 			{
-				echo "<i>Vous n'avez pas modifi&eacute; de page.</i>";
+				echo "<i>"._t('YOU_DIDNT_MODIFY_ANY_PAGE').".</i>";
 			}
 		}
 		else
 		{
-			echo "<i>Aucune page trouv&eacute;e.</i>";
+			echo "<i>"._t('NO_PAGE_FOUND').".</i>";
 		}
 	}
 }
 else
 {
-	echo "<i>Vous n'&ecirc;tes pas identifi&eacute; : impossible d'afficher la liste des pages que vous avez modifi&eacute;es.</i>";
+	echo "<div class=\"alert alert-danger\">"._t('YOU_ARENT_LOGGED_IN')." : "._t('IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES').".</div>\n";
 }
 
 ?>

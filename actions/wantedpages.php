@@ -44,6 +44,6 @@ if ($pages = $this->LoadWantedPages())
 }
 else
 {
-	echo "<i>Aucune page &agrave; cr&eacute;er.</i>";
+	echo "<i>"._t('NO_PAGE_TO_CREATE').".</i>";
 }
 ?>

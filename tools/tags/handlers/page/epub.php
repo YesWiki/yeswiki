@@ -34,7 +34,7 @@ if (isset($metadatas["ebook-title"]) && isset($metadatas["ebook-description"]) &
 	$book->setAuthor($metadatas["ebook-author"], $metadatas["ebook-author-biblio"]); 
 	$book->setPublisher($metadatas["ebook-author"], $this->href('',$this->getPageTag())); // I hope this is a non existant address :) 
 	$book->setDate(time()); // Strictly not needed as the book date defaults to time().
-	$book->setRights(TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA); // As this is generated, this _could_ contain the name or licence information of the user who purchased the book, if needed. If this is used that way, the identifier must also be made unique for the book.
+	$book->setRights(_t('TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA')); // As this is generated, this _could_ contain the name or licence information of the user who purchased the book, if needed. If this is used that way, the identifier must also be made unique for the book.
 	$book->setSourceURL($this->href('',$this->getPageTag()));
 
 	// on concatene tous les styles dans un css
@@ -51,8 +51,8 @@ if (isset($metadatas["ebook-title"]) && isset($metadatas["ebook-description"]) &
 	$book->setCoverImage("Cover.jpg", file_get_contents($metadatas["ebook-cover-image"]), "image/jpeg");
 
 	// Titre et courte description de l'ouvrage
-	$cover = $content_start . '<h1>'.$metadatas["ebook-title"].'</h1>'."\n".'<h2>'.TAGS_BY.': '.$metadatas["ebook-author"].'</h2>'."\n" . $metadatas["ebook-description"] . $bookEnd;
-	$book->addChapter(TAGS_ABOUT_THIS_EBOOK, "Cover.html", $cover);
+	$cover = $content_start . '<h1>'.$metadatas["ebook-title"].'</h1>'."\n".'<h2>'._t('TAGS_BY').': '.$metadatas["ebook-author"].'</h2>'."\n" . $metadatas["ebook-description"] . $bookEnd;
+	$book->addChapter(_t('TAGS_ABOUT_THIS_EBOOK'), "Cover.html", $cover);
 
 	// on recupere les include pour faire les chapitres 
 	preg_match_all("/{{include.*page=\"(.*)\".*class=\"(.*)\".*}}/U", $this->page["body"], $matches);
@@ -75,7 +75,7 @@ if (isset($metadatas["ebook-title"]) && isset($metadatas["ebook-description"]) &
 	$zipData = $book->sendBook($this->getPageTag());
 }
 else {
-	echo $this->Header().'<div class="alert alert-danger">'.TAGS_NO_EBOOK_METADATAS.'</div>'.$this->Footer();
+	echo $this->Header().'<div class="alert alert-danger">'._t('TAGS_NO_EBOOK_METADATAS').'</div>'.$this->Footer();
 }
 
 ?>

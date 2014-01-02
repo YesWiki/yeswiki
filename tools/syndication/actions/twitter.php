@@ -34,7 +34,7 @@ if (!defined("WIKINI_VERSION")) {
 $username = $this->GetParameter('user');
 // si pas de user, on affiche une erreur
 if (empty($username)) {
-	echo ("<div class=\"error_box\">ERREUR action twitter : pas d'utilisateur saisi (param&egrave;tre user=\"\" manquant).</div>");
+	echo ("<div class=\"alert alert-danger\"><strong>"._t('SYNDICATION_ACTION_TWITTER')."</strong> : "._t('SYNDICATION_PARAM_USER_REQUIRED').".</div>");
 }
 else { 
 	 //on inclue Magpie le parser RSS
@@ -83,7 +83,7 @@ else {
 		}
 		include($template);
 	} else {
-		echo '<p class="error_box">Erreur '.magpie_error().'</p>'."\n";        			    
+		echo '<p class="alert alert-danger">'._t('ERROR').' : '.magpie_error().'</p>'."\n";        			    
 	}	
 }
 

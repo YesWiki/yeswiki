@@ -122,14 +122,13 @@ if (!function_exists('truncate')) {
 }
 
 
-
-//on v?rifie si il existe un dossier pour le cache et si on a les droits d'?criture dessus
+//on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
 if (file_exists('cache')) {
 	if (!is_writable('cache')) {
-		echo '<p class="erreur">Le r&eacute;pertoire "cache" n\'a pas les droits d\'acc&egrave;s en &eacute;criture.</p>'."\n";
+		echo '<p class="alert alert-danger">Le r&eacute;pertoire "cache" n\'a pas les droits d\'acc&egrave;s en &eacute;criture.</p>'."\n";
 	}
 } else {
-	echo '<p class="erreur">Il faut cr&eacute;er un r&eacute;pertoire "cache" dans le r&eacute;pertoire principal du wikini.</p>'."\n";
+	echo '<p class="alert alert-danger">Il faut cr&eacute;er un r&eacute;pertoire "cache" dans le r&eacute;pertoire principal.</p>'."\n";
 }
 
 //r?cuperation des parametres
@@ -246,7 +245,7 @@ if (!empty($urls)) {
 						$syndication['pages'][$aso_page['datestamp']] = $aso_page;
 					}
 				} else {
-					echo '<p class="erreur">Erreur '.magpie_error().'</p>'."\n";        			    
+					echo '<p class="alert alert-danger">'._t('ERROR').' '.magpie_error().'</p>'."\n";        			    
 				}			
 			}
         }    
@@ -257,10 +256,10 @@ if (!empty($urls)) {
 	include($template);
 	echo '</div>'."\n";
 } else {
-	echo 'Il faut entrer obligatoirement le param&ecirc;tre de l\'url pour syndiquer un flux RSS.';
+	echo '<div class="alert alert-danger"><strong>'._t('SYNDICATION_ACTION_SYNDICATION').'</strong> : '._t('SYNDICATION_PARAM_URL_REQUIRED').'.</div>'."\n";
 }
 
 //ajout du javascript
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script defer type="text/javascript" src="tools/syndication/presentation/javascripts/syndication.js"></script>'."\n";
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/syndication/presentation/javascripts/syndication.js"></script>'."\n";
 
 ?>

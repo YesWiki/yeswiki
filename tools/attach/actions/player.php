@@ -113,7 +113,7 @@ if (!empty($url)) {
 					    </span>
 					    <a href="#" class="jp-mute btn btn-default btn-small"><i class="icon-volume-off"></i></a>
 						<a href="#" class="jp-unmute btn btn-default btn-small" style="display: none;"><i class="icon-volume-up"></i></a>
-						<a href="'.$url.'" title="T&eacute;l&eacute;charger le fichier '.($url).'" class="btn btn-default btn-small"><i class="icon-download-alt"></i></a>
+						<a href="'.$url.'" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="icon-download-alt"></i></a>
 					</div>
 				</div>';
 			echo $output;
@@ -162,18 +162,18 @@ if (!empty($url)) {
 		elseif ($extension=="mm") 
 		{
 			$output = '<embed id="visorFreeMind" height="'.$height.'" align="middle" width="'.$width.'" flashvars="openUrl=_blank&initLoadFile='.$url.'&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
-			$output .="[<a href=\"$url\" title=\"T&eacute;l&eacute;charger le fichier Freemind\">mm</a>]";
+			$output .="[<a href=\"$url\" title=\""._t('ATTACH_DOWNLOAD_THE_FILE')."\">mm</a>]";
 			echo $output;
 		}
-		else echo '<div class="alert">Le player ne peut que lire les fichiers mp3, flv et mm, et votre URL ('.$url.') ne pointe pas sur ces types de fichiers.</div>'."\n";
+		else echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE').' ('.$url.') '._t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION').'.</div>'."\n";
 	}
 	else
 	{
-		echo '<div class="alert alert-danger">Action player : l\'URL n\'est pas valide ou ne peut pas &ecirc;tre ouverte.</div>'."\n";
+		echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_URL_NOT_VALID').'.</div>'."\n";
 	}
 }
 else {
-	echo '<div class="alert alert-danger">Action player : param&egrave;tre url obligatoire.</div>'."\n";
+	echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PARAM_URL_REQUIRED').'.</div>'."\n";
 }
 
 ?>

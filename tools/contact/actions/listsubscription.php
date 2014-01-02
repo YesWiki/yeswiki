@@ -49,17 +49,17 @@ if ($user = $this->GetUser()) {
 				$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
 		} 
 		else {
-			echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_LIST_REQUIRED.'.</div>';
+			echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_LIST_REQUIRED').'.</div>';
 		}
 		
 		
 	}
 	else {
-		echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_USER_NO_EMAIL.'</div>';
+		echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_USER_NO_EMAIL').'</div>';
 	}	
 }
 else {
-	echo '<div class="alert alert-danger"><strong>Action listsubscription</strong> : '.CONTACT_USER_NOT_LOGGED_IN.'</div>';
+	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_USER_NOT_LOGGED_IN').'</div>';
 }
 
 ?>

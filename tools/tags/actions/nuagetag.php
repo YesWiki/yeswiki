@@ -69,7 +69,7 @@ if (is_array($tab_tous_les_tags))
 			// on affiche les informations pour ce tag
 			if ($nb_pages>1) $texte_page= $nb_pages.' pages';
 			else $texte_page='Une page';
-			$texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag_precedent).'" id="j'.$i.'" data-title="'.$texte_page.' '.TAGS_CONTAINING_TAG.' : '.$tag_precedent.'" data-content="'.htmlspecialchars('<ul class="unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
+			$texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag_precedent).'" id="j'.$i.'" data-title="'.$texte_page.' '._t('TAGS_CONTAINING_TAG').' : '.$tag_precedent.'" data-content="'.htmlspecialchars('<ul class="unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
 			$texte_liste .= '</li>'."\n";
 			$tab_tag[] = $texte_liste;
 

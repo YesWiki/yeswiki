@@ -30,11 +30,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // label à afficher devant la zone de saisie
-$label = $this->GetParameter('label', 'Ce que vous souhaitez chercher&nbsp;: ');
+$label = $this->GetParameter('label', _t('WHAT_YOU_SEARCH').'&nbsp;: ');
 // largeur de la zone de saisie
 $size = $this->GetParameter('size', '40');
 // texte du bouton
-$button = $this->GetParameter('button', 'Chercher');
+$button = $this->GetParameter('button', _t('SEARCH'));
 // texte à chercher
 $phrase = $this->GetParameter('phrase', false);
 // séparateur entre les éléments trouvés
@@ -75,7 +75,7 @@ if ($phrase)
 		$separator = htmlspecialchars($separator, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
 		if (!$paramPhrase)
 		{
-			echo '<p>R&eacute;sultat(s) de la recherche de "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;: ';
+			echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;: ';
 		}
 		foreach ($results as $i => $page)
 		{
@@ -89,7 +89,7 @@ if ($phrase)
 	    }
 	    else
 	    {
-		echo	'<p><strong>R&eacute;sultat(s) de la recherche de "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;:</strong></p>', "\n",
+		echo	'<p><strong>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;:</strong></p>', "\n",
 			'<ol>', "\n";
 		foreach ($results as $i => $page)
 		{
@@ -102,7 +102,7 @@ if ($phrase)
 	{
 	    if (!$paramPhrase)
 	    {
-		echo "<p>Aucun r&eacute;sultat pour \"", htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "\". :-(</p>";
+		echo "<p>"._t('NO_RESULT_FOR')." \"", htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "\". :-(</p>";
 	    }
 	}
 }

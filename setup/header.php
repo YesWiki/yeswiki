@@ -80,20 +80,13 @@ if (!defined('TEMPLATES_DEFAULT_CHARSET')) define('TEMPLATES_DEFAULT_CHARSET', $
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
+<!doctype html>
+<html lang="fr">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $charset; ?>"/>
-  <title>Installation de YesWiki</title>
-  <style type="text/css">
-    P, BODY, TD, LI, INPUT, SELECT, TEXTAREA { font-family: Verdana; font-size: 13px; }
-    INPUT { color: #880000; }
-    .ok { color: #008800; font-weight: bold; }
-    .failed { color: #880000; font-weight: bold; }
-    A { color: #0000FF; }
-  </style>
+  <meta charset="<?php echo $charset; ?>">
+  <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>
+  <link href="tools/templates/presentation/styles/bootstrap.min.css" rel="stylesheet">
+  <link href="tools/templates/presentation/styles/install.css" rel="stylesheet">
 </head>
 
-<body>
+<body class="container">

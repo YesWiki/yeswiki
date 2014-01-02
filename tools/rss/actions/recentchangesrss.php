@@ -27,7 +27,7 @@ if (!defined("WIKINI_VERSION"))
 
 if ($this->GetMethod() != 'xml')
 {
-	echo 'Pour obtenir le fil RSS des derniers changements, utilisez l\'adresse suivante: ';
+	echo _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS').' : ';
 	echo $this->Link($this->Href('xml'));
 	return;
 }

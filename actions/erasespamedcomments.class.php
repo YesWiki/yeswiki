@@ -36,7 +36,7 @@ if (!defined('WIKINI_VERSION'))
 
 class ActionErasespamedcomments extends WikiniAdminAction
 {
-	function PerformAction($args)
+	function PerformAction($args, $command)
 	{
 		$wiki = &$this->wiki;
 		ob_start();

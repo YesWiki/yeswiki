@@ -60,7 +60,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_MES_FICHES))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_MES_FICHES);
         $res .= '<li id="menu_mes_fiches"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_MES_FICHES) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_MES_FICHES) $class =' btn-primary'; else $class = ' btn-default';
         $res .= '><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_VOIR_VOS_FICHES.'</a>'."\n".'</li>'."\n";
     }
 
@@ -68,7 +68,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_CONSULTER))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
         $res .= '<li id="menu_consulter"';
-        if ((isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_CONSULTER)) $class =' btn-inverse'; else $class = '';
+        if ((isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_CONSULTER)) $class =' btn-primary'; else $class = ' btn-default';
         $res .='><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_CONSULTER.'</a>'."\n".'</li>'."\n";
     }
 
@@ -76,7 +76,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_SAISIR))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR);
         $res .= '<li id="menu_deposer"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && ($_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_SAISIR )) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && ($_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_SAISIR )) $class =' btn-primary'; else $class = ' btn-default';
         $res .='><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_SAISIR.'</a>'."\n".'</li>'."\n";
     }
 
@@ -84,7 +84,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_S_ABONNER))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_S_ABONNER);
         $res .= '<li id="menu_inscrire"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_S_ABONNER) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_S_ABONNER) $class =' btn-primary'; else $class = ' btn-default';
         $res .= '><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_S_ABONNER.'</a></li>'."\n" ;
     }
 
@@ -92,7 +92,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_FORMULAIRE))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_FORMULAIRE);
         $res .= '<li id="menu_formulaire"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_FORMULAIRE) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_FORMULAIRE) $class =' btn-primary'; else $class = ' btn-default';
         $res .= '><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_FORMULAIRE.'</a></li>'."\n" ;
     }
 
@@ -100,7 +100,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_LISTES))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_LISTES);
         $res .= '<li id="menu_listes"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_LISTES) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_LISTES) $class =' btn-primary'; else $class = ' btn-default';
         $res .= '><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_LISTES.'</a></li>'."\n" ;
     }
 
@@ -108,7 +108,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_IMPORTER))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_IMPORTER);
         $res .= '<li id="menu_import"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_IMPORTER) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_IMPORTER) $class =' btn-primary'; else $class = ' btn-default';
         $res .= '><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_IMPORTER.'</a></li>'."\n" ;
     }
 
@@ -116,7 +116,7 @@ function baz_afficher_menu()
     if (strstr(BAZ_VOIR_AFFICHER, strval(BAZ_VOIR_EXPORTER))) {
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_EXPORTER);
         $res .= '<li id="menu_export"';
-        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_EXPORTER) $class =' btn-inverse'; else $class = '';
+        if (isset($_GET[BAZ_VARIABLE_VOIR]) && $_GET[BAZ_VARIABLE_VOIR]==BAZ_VOIR_EXPORTER) $class =' btn-primary'; else $class = ' btn-default';
         $res .= '><a href="'.str_replace('&','&amp;',$GLOBALS['_BAZAR_']['url']->getURL()).'" class="btn'.$class.'">'.BAZ_EXPORTER.'</a></li>'."\n" ;
     }
 

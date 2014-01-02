@@ -35,7 +35,7 @@ if (!defined('WIKINI_VERSION'))
 if (empty($_POST['config']))
 {
 	header('Location: ' . myLocation());
-	die ('probl&egrave;me dans la proc&eacute;dure d\'installation');
+	die (_t('PROBLEM_WHILE_INSTALLING'));
 }
 
 // fetch configuration

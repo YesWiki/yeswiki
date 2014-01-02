@@ -87,13 +87,14 @@ else {
 $_SESSION['breadcrumbs'] = $crumbs;
 
 # Create the trail by walking through the array of page names.
-$separator  = "\"\"<li>\"\"";
-$page_trail = "\"\"<ul class=\"breadcrumb\">\"\"";
-foreach ($crumbs as $this_crumb) {
-    $page_trail .= $separator."[[".$this_crumb."]]";
-    $separator   = "\"\"</li><span class=\"divider\">/</span><li>\"\"";
-}
-$page_trail .= "\"\"</ul>\"\"";
 
-echo $this->format($page_trail);
+$page_trail = "<ol class=\"breadcrumb\">\n";
+$page_trail .= '<li><a href="'.$this->href('', $this->config['root_page']).'"><span class="glyphicon glyphicon-home"></span></a></li>'."\n";
+foreach ($crumbs as $this_crumb) {
+    if ($this->GetPageTag() == $this_crumb)  $page_trail .= '<li class="active">'.$this_crumb.'</li>'."\n";
+    else $page_trail .= '<li><a href="'.$this->href('', $this_crumb).'">'.$this_crumb.'</a></li>'."\n";
+}
+$page_trail .= "</ol>\n";
+
+echo $page_trail;
 ?>

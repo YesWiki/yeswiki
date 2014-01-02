@@ -50,14 +50,14 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 					'<div class="modal-content">'."\n".
 						'<div class="modal-header">'."\n".
 							'<a class="close" data-dismiss="modal">&times;</a>'."\n".
-							'<h3>'.TEMPLATE_CUSTOM_GRAPHICS.' '.$this->GetPageTag().'</h3>'."\n".
+							'<h3>'._t('TEMPLATE_CUSTOM_GRAPHICS').' '.$this->GetPageTag().'</h3>'."\n".
 						'</div>'."\n".
 						'<div class="modal-body">'."\n";
 	$selecteur .= show_form_theme_selector('edit');
 	$selecteur .= '</div>'."\n".
 				'<div class="modal-footer">'."\n".
-					'<a href="#" class="btn btn-default button_cancel" data-dismiss="modal">'.TEMPLATE_CANCEL.'</a>'."\n".
-					'<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'.TEMPLATE_APPLY.'</a>'."\n".						
+					'<a href="#" class="btn btn-default button_cancel" data-dismiss="modal">'._t('TEMPLATE_CANCEL').'</a>'."\n".
+					'<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'._t('TEMPLATE_APPLY').'</a>'."\n".						
 				'</div>'."\n".
 			'</div>'."\n".
 		'</div>'."\n".	
@@ -86,10 +86,10 @@ $patterns = array(	0 => 	'/<input name=\"submit\" type=\"submit\" value=\"Sauver
 					3 =>	'/ class=\"edit\">/'
 					);
 $replacements = array(
-					0 => 	'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'.TEMPLATE_SAVE.'</button>',
+					0 => 	'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'._t('TEMPLATE_SAVE').'</button>',
 					1 => 	'', 
-					2 => 	'<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'.TEMPLATE_CANCEL.'</button>'."\n".
-							(($changetheme) ? '<button class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'.TEMPLATE_THEME.'</button>'."\n" : '').'</div>', // le bouton Theme du bas de l'interface d'edition
+					2 => 	'<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
+							(($changetheme) ? '<button class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'._t('TEMPLATE_THEME').'</button>'."\n" : '').'</div>', // le bouton Theme du bas de l'interface d'edition
 					3 =>	' class="edit form-control">'
 					);
 $plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);

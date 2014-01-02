@@ -28,7 +28,7 @@ if ($this->HasAccess("read"))
 			// pas de bouton de partage
 		}
 		else {
-			$output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="'.$this->href('share').'" title="'.TEMPLATE_SEE_SHARING_OPTIONS.' '.$this->GetPageTag().'"><i class="icon-share"></i>&nbsp;'.TEMPLATE_SHARE.'</a>';
+			$output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="'.$this->href('share').'" title="'._t('TEMPLATE_SEE_SHARING_OPTIONS').' '.$this->GetPageTag().'"><i class="icon-share"></i>&nbsp;'._t('TEMPLATE_SHARE').'</a>';
 		}
 
 		// affichage de la page formatee

@@ -59,7 +59,7 @@ class attach {
    var $pageId = 0;					//identifiant de la page
    var $isSafeMode = false;			//indicateur du safe mode de PHP
    /**
-   * Constructeur. Met les valeurs par defaut aux param&ecirc;tres de configuration
+   * Constructeur. Met les valeurs par defaut aux parametres de configuration
    */
 	function attach(&$wiki){
    	$this->wiki = $wiki;
@@ -277,7 +277,7 @@ class attach {
      *	FONCTIONS D'ATTACHEMENTS
      *******************************************************************************/
     /**
-     * Test les param&ecirc;tres pass&eacute; ? l'action
+     * Test les parametres passes a l'action
      */
     function CheckParams(){
         //recuperation des parametres necessaire
@@ -292,10 +292,10 @@ class attach {
         
         //test de validit&eacute; des parametres
         if (empty($this->file)){
-            $this->attachErr = '<div class="error_box">action attach : param&ecirc;tre <strong>file</strong> manquant</div>';
+            $this->attachErr = '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_FILE_NOT_FOUND').'.</div>'."\n";
         }
         if ($this->isPicture() && empty($this->desc)){
-            $this->attachErr .= '<div class="error_box">action attach : param&ecirc;tre <strong>desc</strong> obligatoire pour une image</div>';
+            $this->attachErr .= '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_DESC_REQUIRED').'.</div>'."\n";
         }
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
@@ -685,7 +685,7 @@ class attach {
 
         $files = $this->fmGetFiles($trash);
         
-        if (!$files) $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s ? la page '.$this->wiki->Format($this->wiki->tag).' pour l\'instant.</div>'."\n";
+        if (!$files) $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s &agrave; la page '.$this->wiki->Format($this->wiki->tag).' pour l\'instant.</div>'."\n";
         else {
         	// tri du tableau des fichiers
         	$files = $this->sortByNameRevFile($files);

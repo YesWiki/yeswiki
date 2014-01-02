@@ -54,7 +54,7 @@ if (is_array($tab_tous_les_tags)) {
 	}
 	$outputselecttag = '';
 	if (is_array($tab_tag))	{
-		$outputselecttag .= '<strong><span class="icon icon-tags"></span>&nbsp;'.TAGS_FILTER.' : </strong>';
+		$outputselecttag .= '<strong><span class="icon icon-tags"></span>&nbsp;'._t('TAGS_FILTER').' : </strong>';
 		//<strong>Filtrer les r&eacute;sultats en cochant / d&eacute;cochant les mots cl&eacute;s ci-dessous :</strong>
 		foreach ($tab_tag as $tag) {
 			$outputselecttag .= $tag;

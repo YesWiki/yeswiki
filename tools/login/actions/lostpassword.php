@@ -13,8 +13,7 @@ if (!defined("WIKINI_VERSION")) {
 	die("acc&egrave;s direct interdit");
 }
 
-
-define(PW_SALT, 'FBcA');
+if (!defined('PW_SALT')) define('PW_SALT', 'FBcA');
 
 if (!function_exists('checkUNEmail')) {
 function checkUNEmail($uname, $email) {
@@ -129,7 +128,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 }
 
 
-
+$error = false;
 $step = 'emailForm'; // Formulaire par defaut
 
 if (isset($_POST['subStep']) && !isset($_GET['a']) ) { // Sous-etape
@@ -209,8 +208,8 @@ switch ($step) {
 		<div <label for="pw0">New Password</label><div class="field"><input type="password" class="input" name="pw0" id="pw0" value="" maxlength="20"></div></div>
 		<div <label for="pw1">Confirm Password</label><div class="field"><input type="password" class="input" name="pw1" id="pw1" value="" maxlength="20"></div></div>
 		<input type="hidden" name="subStep" value="2" />
-		<input type="hidden" name="userID" value="<?= $securityUser == '' ? $_POST['userID'] : $securityUser; ?>" />
-		<input type="hidden" name="key" value="<?= $_GET['email'] == '' ? $_POST['key'] : $_GET['email']; ?>" />
+		<input type="hidden" name="userID" value="<?php echo  $securityUser == '' ? $_POST['userID'] : $securityUser; ?>" />
+		<input type="hidden" name="key" value="<?php echo  $_GET['email'] == '' ? $_POST['key'] : $_GET['email']; ?>" />
 		<div> <input type="submit" value="Submit" style="margin-left: 150px;" /></div>
 		<div class="clear"></div>
 		<?php
@@ -223,12 +222,4 @@ switch ($step) {
 		echo $this->Format("Mot de passe mis à jour !");
 		break;
 }
-
-define(PW_SALT, 'FBcA');
-
-/*
-  // forward
-  $this->SetMessage("Votre nouveau mot de passe ...........");
-  $this->Redirect($this->href());
- */
 ?>

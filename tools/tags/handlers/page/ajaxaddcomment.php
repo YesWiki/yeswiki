@@ -63,7 +63,7 @@ if (isset($_GET['jsonp_callback']))
 			$comment = $this->LoadPage($wakkaname);
 			$valcomment['commentaires'][0]['tag'] = $comment["tag"];
 			$valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
-			$valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(TAGS_DATE_FORMAT, strtotime($comment["time"]));
+			$valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(_t('TAGS_DATE_FORMAT'), strtotime($comment["time"]));
 			$valcomment['commentaires'][0]['hasrighttoaddcomment'] = $this->HasAccess("comment", $_POST['initialpage']);
 			$valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
 			$valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();

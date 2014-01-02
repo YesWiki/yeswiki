@@ -48,5 +48,5 @@ if($this->HasAccess('write')){
 	$att->doFilemanagerAction();
 	unset($att);
 } else {
-	echo '<div class="alert alert-danger">Il faut avoir acc&egrave; en &eacute;criture &agrave; la page pour acc&eacute;der au gestionnaire des fichiers attach&eacute;s.</div>'."\n";
+	echo '<div class="alert alert-danger">'._t('ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER').'.</div>'."\n";
 }

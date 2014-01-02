@@ -60,7 +60,7 @@ if (count($pages) > 0) {
 			<img src="'.$metas['ebook-cover-image'].'" alt="cover" class="media-object" width="128" />
 		</a>
 		<div class="media-body">
-			<a class="btn btn-primary pull-right" href="'.$this->href('epub',$page['resource']).'"><i class="icon-book icon-white"></i>&nbsp;'.TAGS_DOWNLOAD_EPUB.'</a>
+			<a class="btn btn-primary pull-right" href="'.$this->href('epub',$page['resource']).'"><i class="icon-book icon-white"></i>&nbsp;'._t('TAGS_DOWNLOAD_EPUB').'</a>
     		<h4 class="media-heading"><a href="'.$this->href('',$page['resource']).'">'.$metas['ebook-title'].'</a></h4>
 			<strong>'.$metas['ebook-author'].'</strong><br />'.$metas['ebook-description'].'<br /><br />
 		</div>
@@ -68,6 +68,6 @@ if (count($pages) > 0) {
 	}
 	$output .= '</ul>'."\n";
 }
-else $output .= '<div class="alert alert-info">'.TAGS_NO_EBOOK_FOUND.'</div>';
+else $output .= '<div class="alert alert-info">'._t('TAGS_NO_EBOOK_FOUND').'</div>';
 
 echo $output."\n";

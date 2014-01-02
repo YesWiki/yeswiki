@@ -29,7 +29,7 @@ if ($pages = $this->LoadOrphanedPages())
 }
 else
 {
-	echo "<i>Pas de pages orphelines</i>" ;
+	echo "<i>"._t('NO_ORPHAN_PAGES')."</i>" ;
 }
 
 ?>

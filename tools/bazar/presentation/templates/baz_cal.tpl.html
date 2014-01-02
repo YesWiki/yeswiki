@@ -1,13 +1,13 @@
 <!-- ENTETE DU CALENDRIER -->
 <div class="navi">
-<a href="<?= $prev ; ?>" id="navi_ant"> &lt;&lt; </a>
+<a href="<?php echo  $prev ; ?>" id="navi_ant"> &lt;&lt; </a>
 &nbsp;&nbsp;
-<a href="<?= $cur; ?>">
-<?= $fr_month[(date('n',$curStamp))]; ?>
+<a href="<?php echo  $cur; ?>">
+<?php echo  $fr_month[(date('n',$curStamp))]; ?>
 &nbsp;
-<?= date('Y',$curStamp); ?>
+<?php echo  date('Y',$curStamp); ?>
 </a>
 &nbsp;&nbsp;
-<a href="<?= $next ;?>" id="navi_post"> &gt;&gt; </a>
+<a href="<?php echo  $next ;?>" id="navi_post"> &gt;&gt; </a>
 </div>
 <!-- FIN ENTETE CALENDRIER -->

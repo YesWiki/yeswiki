@@ -134,31 +134,33 @@ $tab_points_carto = array();
 foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche[0], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
-    $tab = explode('|', $valeurs_fiche['carte_google']);
-    if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
-	if ($barregestion=="true") {
-		$contenu_fiche=baz_voir_fiche(1,$valeurs_fiche);
-	}
-	else {
-		$contenu_fiche=baz_voir_fiche(0,$valeurs_fiche);
-	}
-        $tab_points_carto[]= '{
-                "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
-                "description": \'<div class="BAZ_cadre_map">'.
-                preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
-                "lat": '.$tab[0].',
-                "lng": '.$tab[1].'
-        }';
+    if (isset($valeurs_fiche['carte_google'])) {
+        $tab = explode('|', $valeurs_fiche['carte_google']);
+        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+    	if ($barregestion=="true") {
+    		$contenu_fiche=baz_voir_fiche(1,$valeurs_fiche);
+    	}
+    	else {
+    		$contenu_fiche=baz_voir_fiche(0,$valeurs_fiche);
+    	}
+            $tab_points_carto[]= '{
+                    "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
+                    "description": \'<div class="BAZ_cadre_map">'.
+                    preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
+                    "lat": '.$tab[0].',
+                    "lng": '.$tab[1].'
+            }';
+        }
     }
-
 }
 $points_carto = implode(',',$tab_points_carto);
 
 echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
-echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
 
-    <script type="text/javascript">
+$js = 
+'    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="http://www.google.com/jsapi"></script>
+    <script>
     //variable pour la carte google
     var map;
 
@@ -206,9 +208,9 @@ echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sen
             ];
             $.each(places, function(i, item){';
 if ($listepoint=="true") {
-             echo '$("#markers").append(\'<li><a href="#" rel="\' + i + \'">&nbsp;\' + (i+1) + \'&nbsp;-&nbsp;\' +item.title + \'</a></li>\');';
+             $js .= '$("#markers").append(\'<li><a href="#" rel="\' + i + \'">&nbsp;\' + (i+1) + \'&nbsp;-&nbsp;\' +item.title + \'</a></li>\');';
 }
-echo '
+$js .=  '
                 var marker = new google.maps.Marker({
                     position: new google.maps.LatLng(item.lat, item.lng),
                     map: map,
@@ -235,13 +237,15 @@ echo '
 
     if ( defined('BAZ_JS_INIT_MAP') && BAZ_JS_INIT_MAP != '' && file_exists(BAZ_JS_INIT_MAP) ) {
         $handle = fopen(BAZ_JS_INIT_MAP, "r");
-        echo fread($handle, filesize(BAZ_JS_INIT_MAP));
+        $js .=  fread($handle, filesize(BAZ_JS_INIT_MAP));
         fclose($handle);
-        echo 'var poly = createPolygon( Coords, "#002F0F");
+        $js .=  'var poly = createPolygon( Coords, "#002F0F");
         poly.setMap(map);
 
         ';
     };
 
-    echo '}
-</script>';
+    $js .=  '   }
+    </script>'."\n";
+
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$js;

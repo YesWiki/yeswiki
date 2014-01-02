@@ -14,12 +14,12 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-//r?cup?ration des param?tres wikini
+// recuperation des parametres de l'action
 $categorie_nature = $this->GetParameter("categorienature");
 if (!empty($categorie_nature)) {
     $GLOBALS['_BAZAR_']['categorie_nature'] = $categorie_nature;
 }
-//si rien n'est donne, on affiche toutes les categories
+// si rien n'est donne, on affiche toutes les categories
 else {
     $GLOBALS['_BAZAR_']['categorie_nature'] = 'toutes';
 }
@@ -27,12 +27,12 @@ $id_typeannonce = $this->GetParameter("idtypeannonce");
 if (!empty($id_typeannonce)) {
     $GLOBALS['_BAZAR_']['id_typeannonce'] = $id_typeannonce;
 }
-//si rien n'est donne, on affiche toutes les annonces
+// si rien n'est donne, on affiche toutes les annonces
 else {
     $GLOBALS['_BAZAR_']['id_typeannonce'] = 'toutes';
 }
 
-//on r?cup?re les param?tres pour une requ?te sp?cifique
+// on recupere les parametres pour une requete specifique
 $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
@@ -53,7 +53,7 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche[0], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     if (isset($valeurs_fiche['bf_date_debut_evenement']) && isset($valeurs_fiche['bf_date_fin_evenement'])) {
-        $js .= '{
+        $js .= '        {
                     title: "'.addslashes($valeurs_fiche['bf_titre']).'",
                     start: new Date('.date('Y', strtotime($valeurs_fiche['bf_date_debut_evenement'])).','.(date('n', strtotime($valeurs_fiche['bf_date_debut_evenement']))-1).','.date('d', strtotime($valeurs_fiche['bf_date_debut_evenement'])).'),
                     end: new Date('.date('Y', strtotime($valeurs_fiche['bf_date_fin_evenement'])).','.(date('n', strtotime($valeurs_fiche['bf_date_fin_evenement']))-1).','.date('d', strtotime($valeurs_fiche['bf_date_fin_evenement'])).'),
@@ -61,18 +61,13 @@ foreach ($tableau_resultat as $fiche) {
         },';
     }
 }
-$js = substr($js,0,-1);
+if (!empty($js)) {
+    $js = substr($js,0,-1);    
+}
 
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "<script src='tools/bazar/libs/fullcalendar/fullcalendar.min.js'></script>
-<script>
-
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "    <script src='tools/bazar/libs/vendor/fullcalendar/fullcalendar.js'></script>
+    <script>
     $(document).ready(function() {
-
-        var date = new Date();
-        var d = date.getDate();
-        var m = date.getMonth();
-        var y = date.getFullYear();
-
         $('#calendar').fullCalendar({
             header: {
                 left: 'prev,next today',
@@ -113,5 +108,5 @@ $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "<script src=
         });
 
     });
-</script>";
-echo "<div id='calendar'></div>";
+</script>\n";
+echo "<div id='calendar'></div>\n";

@@ -30,7 +30,7 @@ $pages = $this->GetParameter('pages');
 
 
 if (empty($pages)) {
-	$output .= '<div class="alert alert-danger">'.TAGS_NO_PARAM_PAGES.'</div>'."\n";
+	$output .= '<div class="alert alert-danger"><strong>'._t('TAGS_ACTION_INCLUDEPAGES').'</strong> : '._t('TAGS_NO_PARAM_PAGES').'</div>'."\n";
 }
 else {
 	$template = $this->GetParameter('template');

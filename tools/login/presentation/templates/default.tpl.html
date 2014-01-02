@@ -3,11 +3,11 @@
 	<ul class="login-actions">
 	  <?php echo $PageMenuUser; ?>
 	  <li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
-	  <li><a href="<?php echo $incomingurl; ?>&action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
+	  <li><a href="<?php echo $incomingurl; ?>&amp;action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
 	</ul>
 <?php else : ?>
 	<?php if ($error) : ?>
-		<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><?= $error; ?></div>
+		<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button><?php echo  $error; ?></div>
 	<?php endif; ?>
 	<form class="form-horizontal" action="<?php echo $incomingurl; ?>" method="post">
 		<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo LOGIN_ALREADY_MEMBER; ?></h5><?php endif; ?>

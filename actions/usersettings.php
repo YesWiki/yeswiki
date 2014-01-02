@@ -32,7 +32,7 @@ if (!isset($_REQUEST["action"])) $_REQUEST["action"] = '';
 if ($_REQUEST["action"] == "logout")
 {
 	$this->LogoutUser();
-	$this->SetMessage("Vous &ecirc;tes maintenant d&eacute;connect&eacute; !");
+	$this->SetMessage(_t('YOU_ARE_NOW_DISCONNECTED')." !");
 	$this->Redirect($this->href());
 }
 else if ($user = $this->GetUser())
@@ -53,7 +53,7 @@ else if ($user = $this->GetUser())
 		$this->SetUser($this->LoadUser($user["name"]));
 		
 		// forward
-		$this->SetMessage("Param&egrave;tres sauvegard&eacute;s !");
+		$this->SetMessage(_t('PARAMETERS_SAVED')." !");
 		$this->Redirect($this->href());
 	}
 	
@@ -61,13 +61,13 @@ else if ($user = $this->GetUser())
 	{
 			// check password
 			$password = $_POST["password"];			
-			if (preg_match("/ /", $password)) $error = "Les espaces ne sont pas permis dans les mots de passe.";
-			else if (strlen($password) < 5) $error = "Mot de passe trop court.";
-			else if ($user["password"] != md5($_POST["oldpass"])) $error = "Mauvais mot de passe."; 
+			if (preg_match("/ /", $password)) $error = _t('NO_SPACES_IN_PASSWORD').".";
+			else if (strlen($password) < 5) $error = _t('PASSWORD_TOO_SHORT').".";
+			else if ($user["password"] != md5($_POST["oldpass"])) $error = _t('WRONG_PASSWORD')."."; 
 			else
 			{
 				$this->Query("update ".$this->config["table_prefix"]."users set "."password = md5('".mysql_escape_string($password)."') "."where name = '".$user["name"]."'");				
-				$this->SetMessage("Mot de passe chang&eacute; !");
+				$this->SetMessage(_t('PASSWORD_CHANGED')." !");
 				$user["password"]=md5($password);
 				$this->SetUser($user);
 				$this->Redirect($this->href());
@@ -80,35 +80,35 @@ else if ($user = $this->GetUser())
 	<table>
 		<tr>
 			<td align="right"></td>
-			<td>Bonjour, <?php echo $this->Link($user["name"]) ?>&nbsp;!</td>
+			<td><?php echo _t('GREETINGS'); ?>, <?php echo $this->Link($user["name"]) ?>&nbsp;!</td>
 		</tr>
 		<tr>
-			<td align="right">Votre adresse de messagerie &eacute;lectronique&nbsp;:</td>
+			<td align="right"><?php echo _t('YOUR_EMAIL_ADDRESS'); ?>&nbsp;:</td>
 			<td><input name="email" value="<?php echo htmlspecialchars($user["email"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
-			<td align="right">&Eacute;dition en double-cliquant&nbsp;:</td>
+			<td align="right"><?php echo _t('DOUBLE_CLICK_TO_EDIT'); ?>&nbsp;:</td>
 			<td><input type="hidden" name="doubleclickedit" value="N" /><input type="checkbox" name="doubleclickedit" value="Y" <?php echo $user["doubleclickedit"] == "Y" ? "checked=\"checked\"" : "" ?> /></td>
 		</tr>
 		<tr>
-			<td align="right">Par d&eacute;faut, montrer les commentaires&nbsp;:</td>
+			<td align="right"><?php echo _t('SHOW_COMMENTS_BY_DEFAULT'); ?>&nbsp;:</td>
 			<td><input type="hidden" name="show_comments" value="N" /><input type="checkbox" name="show_comments" value="Y" <?php echo $user["show_comments"] == "Y" ? "checked\"checked\"" : "" ?> /></td>
 		</tr>
 		<tr>
-			<td align="right">Nombre maximum de derniers commentaires&nbsp;:</td>
+			<td align="right"><?php echo _t('MAX_NUMBER_OF_LASTEST_COMMENTS'); ?>&nbsp;:</td>
 			<td><input name="changescount" value="<?php echo htmlspecialchars($user["changescount"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
-			<td align="right">Nombre maximum de versions&nbsp;:</td>
+			<td align="right"><?php echo _t('MAX_NUMBER_OF_VERSIONS'); ?>&nbsp;:</td>
 			<td><input name="revisioncount" value="<?php echo htmlspecialchars($user["revisioncount"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
-			<td align="right">Votre devise&nbsp;:</td>
+			<td align="right"><?php echo _t('YOUR_MOTTO'); ?>&nbsp;:</td>
 			<td><input name="motto" value="<?php echo htmlspecialchars($user["motto"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>" size="40" /></td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="Mise &agrave; jour" /> <input type="button" value="D&eacute;connexion" onclick="document.location='<?php echo $this->href("", "", "action=logout"); ?>'" /></td>
+			<td><input type="submit" value="<?php _t('UPDATE'); ?>" /> <input type="button" value="<?php _t('DISCONNECT'); ?>" onclick="document.location='<?php echo $this->href("", "", "action=logout"); ?>'" /></td>
 		</tr>
 	</table>
 
@@ -125,25 +125,25 @@ else if ($user = $this->GetUser())
 		</tr>
 		<tr>
 			<td align="right"></td>
-			<td><?php echo $this->Format("Changement de mot de passe"); ?></td>
+			<td><?php echo _t('CHANGE_THE_PASSWORD'); ?></td>
 		</tr>
 		<?php
 		if (isset($error))
 		{
-			echo "<tr><td></td><td><div class=\"error\">", $this->Format($error), "</div></td></tr>\n";
+			echo "<tr><td></td><td><div class=\"alert alert-danger\">", $error, "</div></td></tr>\n";
 		}
 		?>
 		<tr>
-			<td align="right">Votre ancien mot de passe&nbsp;:</td>
+			<td align="right"><?php echo _t('YOUR_OLD_PASSWORD'); ?>&nbsp;:</td>
 			<td><input type="password" name="oldpass" size="40" /></td>
 		</tr>
 		<tr>
-			<td align="right">Nouveau mot de passe&nbsp;:</td>
+			<td align="right"><?php echo _t('NEW_PASSWORD'); ?>&nbsp;:</td>
 			<td><input type="password" name="password" size="40" /></td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="Changer" size="40" /></td>
+			<td><input type="submit" value="<?php echo _t('CHANGE'); ?>" size="40" /></td>
 		</tr>
 	</table>
 	<?php
@@ -168,7 +168,7 @@ else
 			}
 			else
 			{
-				$error = "Mauvais mot de passe&nbsp;!";
+				$error = _t('WRONG_PASSWORD')."&nbsp;!";
 			}
 		}
 		// otherwise, create new account
@@ -180,12 +180,12 @@ else
 			$confpassword = $_POST["confpassword"];
 
 			// check if name is WikkiName style
-			if (!$this->IsWikiName($name)) $error = "Votre nom d'utilisateur doit &ecirc;tre format&eacute; en NomWiki.";
-			else if (!$email) $error = "Vous devez sp&eacute;cifier une adresse de messagerie &eacute;lectronique.";
-			else if (!preg_match("/^.+?\@.+?\..+$/", $email)) $error = "Ceci ne ressemble pas &agrave; une adresse de messagerie &eacute;lectronique.";
-			else if ($confpassword != $password) $error = "Les mots de passe n'&eacute;taient pas identiques";
-			else if (preg_match("/ /", $password)) $error = "Les espaces ne sont pas permis dans un mot de passe.";
-			else if (strlen($password) < 5) $error = "Mot de passe trop court. Un mot de passe doit contenir au minimum 5 caract&egrave;res alphanum&eacute;riques.";
+			if (!$this->IsWikiName($name)) $error = _t('USERNAME_MUST_BE_WIKINAME').".";
+			else if (!$email) $error = _t('YOU_MUST_SPECIFY_AN_EMAIL').".";
+			else if (!preg_match("/^.+?\@.+?\..+$/", $email)) $error = _t('THIS_IS_NOT_A_VALID_EMAIL').".";
+			else if ($confpassword != $password) $error = _t('PASSWORDS_NOT_IDENTICAL').".";
+			else if (preg_match("/ /", $password)) $error = _t('NO_SPACES_IN_PASSWORD').".";
+			else if (strlen($password) < 5) $error = _t('PASSWORD_TOO_SHORT').". "._t('PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM').".";
 			else
 			{
 				$this->Query("insert into ".$this->config["table_prefix"]."users set ".
@@ -204,7 +204,7 @@ else
 	}
 	elseif ($_REQUEST['action'] == 'checklogged')
 	{
-		$error = 'Vous devez accepter les cookies pour pouvoir vous connecter.';
+		$error = _t('YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED').'.';
 	}
 
 	echo $this->FormOpen();
@@ -213,45 +213,45 @@ else
 	<table>
 		<tr>
 			<td></td>
-			<td><?php echo $this->Format("Si vous &ecirc;tes d&eacute;j&agrave; enregistr&eacute;, identifiez-vous ici"); ?></td>
+			<td><?php echo _t('IF_YOU_ARE_REGISTERED_LOGGIN_HERE'); ?></td>
 		</tr>
 		<?php
 		if (isset($error))
 		{
-			echo "<tr><td></td><td><div class=\"error\">", $this->Format($error), "</div></td></tr>\n";
+			echo "<tr><td></td><td><div class=\"alert alert-danger\">", $error, "</div></td></tr>\n";
 		}
 		?>
 		<tr>
-			<td align="right">Votre NomWiki&nbsp;:</td>
+			<td align="right"><?php echo _t('YOUR_WIKINAME'); ?>&nbsp;:</td>
 			<td><input name="name" size="40" value="<?php if (isset($name)) echo htmlspecialchars($name, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>" /></td>
 		</tr>
 		<tr>
-			<td align="right">Mot de passe (5 caract&egrave;res minimum)&nbsp;:</td>
+			<td align="right"><?php echo _t('PASSWORD_5_CHARS_MINIMUM'); ?>&nbsp;:</td>
 			<td>
 			<input type="password" name="password" size="40" />
 			<input type="hidden" name="remember" value="0" />
-			<input type="checkbox" name="remember" value="1" />&nbsp;Se souvenir de moi.
+			<input type="checkbox" name="remember" value="1" />&nbsp;<?php echo _t('REMEMBER_ME'); ?>.
 			</td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="Identification" size="40" /></td>
+			<td><input type="submit" value="<?php echo _t('IDENTIFICATION'); ?>" size="40" /></td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><?php echo $this->Format("Les champs suivants sont &agrave; remplir si vous vous identifiez pour la premi&egrave;re fois (vous cr&eacute;erez ainsi un compte)"); ?></td>
+			<td><?php echo _t('FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER'); ?></td>
 		</tr>
 		<tr>
-			<td align="right">Confirmation du mot de passe&nbsp;:</td>
+			<td align="right"><?php echo _t('PASSWORD_CONFIRMATION'); ?>&nbsp;:</td>
 			<td><input type="password" name="confpassword" size="40" /></td>
 		</tr>
 		<tr>
-			<td align="right">Adresse de messagerie &eacute;lectronique.&nbsp;:</td>
+			<td align="right"><?php echo _t('YOUR_EMAIL_ADDRESS'); ?>.&nbsp;:</td>
 			<td><input name="email" size="40" value="<?php if (isset($email)) echo htmlspecialchars($email, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>" /></td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="Nouveau compte" size="40" /></td>
+			<td><input type="submit" value="<?php echo _t('NEW_ACCOUNT'); ?>" size="40" /></td>
 		</tr>
 	</table>
 	<?php

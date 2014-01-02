@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 if ($this->GetMethod() != 'xml')
 {
-	echo 'Pour obtenir le fil RSS des derniers commentaires, utilisez l\'adresse suivante: ';
+	echo _t('TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS').' : ';
 	echo $this->Link($this->Href('xml'));
 	return;
 }
@@ -41,11 +41,11 @@ if ($comments = $this->LoadRecentComments($max))
 	if (!($link = $this->GetParameter("link"))) $link=$this->GetConfigValue("root_page");
 	$output = '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">' . "\n";
 	$output .= "<channel>\n";
-	$output .= "<title>Derniers commentaires sur ". $this->GetConfigValue("wakka_name")  . "</title>\n";
+	$output .= "<title>"._t('LATEST_COMMENTS_ON')." ". $this->GetConfigValue("wakka_name")  . "</title>\n";
 	$output .= "<link>" . $this->Href('', $link) . "</link>\n";
-	$output .= "<description> Derniers commentaires sur " . $this->GetConfigValue("wakka_name") . " </description>\n";
+	$output .= "<description> "._t('LATEST_COMMENTS_ON')." " . $this->GetConfigValue("wakka_name") . " </description>\n";
 	$output .= "<language>fr</language>\n";
-	$output .= '<generator>WikiNi ' . WIKINI_VERSION . "</generator>\n";
+	$output .= '<generator>YesWiki ' . YESWIKI_VERSION . "</generator>\n";
 	foreach ($comments as $comment)
 	{
 		$output .= "<item>\n";

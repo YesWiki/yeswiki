@@ -33,28 +33,28 @@ if ($this->HasAccess("write")) {
 
     if ( $time ) {
         $barreredactionelements['linkrevisions'] = $this->href("revisions", $page);
-        $barreredactionelements['time'] = date(TEMPLATE_DATE_FORMAT, strtotime($time));
+        $barreredactionelements['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
     }
 
     // if this page exists
     if ($content) {
         // if owner is current user
         if ($this->UserIsOwner($page) || $this->UserIsAdmin($page)) {
-            $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".TEMPLATE_YOU.' - '.TEMPLATE_PERMISSIONS;
+            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : "._t('TEMPLATE_YOU').' - '._t('TEMPLATE_PERMISSIONS');
             $barreredactionelements['linkacls'] = $this->href("acls", $page);
             $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
         } else {
             if ($owner = $this->GetPageOwner($page)) {
-                    $barreredactionelements['owner'] = TEMPLATE_OWNER." : ".$owner;
+                    $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
                     if ($this->UserIsAdmin()) { 
                             $barreredactionelements['linkacls'] = $this->href("acls", $page);
-                            $barreredactionelements['owner'] .= ' - '.TEMPLATE_PERMISSIONS;
+                            $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
                     }   
                     else {
                             //$barreredactionelements['linkacls'] = $this->href('', $owner);
                     }             
             } else {
-                $barreredactionelements['owner'] = TEMPLATE_NO_OWNER.($this->GetUser() ? " - ".TEMPLATE_CLAIM : "");
+                $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER').($this->GetUser() ? " - "._t('TEMPLATE_CLAIM') : "");
                 if ($this->GetUser()) $barreredactionelements['linkacls'] = $this->href("claim", $page);
                 //else $barreredactionelements['linkacls'] = $this->href("claim", $page);
             }

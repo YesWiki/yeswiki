@@ -6,7 +6,7 @@ if (!defined("WIKINI_VERSION"))
         die ("acc&egrave;s direct interdit");
 }
 
-$GLOBALS['tocaction']=0;
+$GLOBALS['tocaction'] = 0;
 
 $tag = $this->GetPageTag();
 $page = $this->LoadPage($tag);
@@ -14,7 +14,8 @@ $toc_body = $page["body"];
 $class = $this->GetParameter("class");
 $closed = $this->GetParameter("closed");
 $title = $this->GetParameter("title");
-if (empty($title)) $title = 'Table de mati&egrave;re';
+if (empty($title)) $title = _t('TOC_TABLE_OF_CONTENTS');
+
 
 
 echo "<div id=\"toc".$tag."\" class=\"toc well".(!empty($class) ? ' '.$class : '')."\">\n";

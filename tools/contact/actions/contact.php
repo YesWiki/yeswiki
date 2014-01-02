@@ -41,7 +41,7 @@ if (!defined("WIKINI_VERSION")) {
 //recuperation des parametres
 $contactelements['mail'] = $this->GetParameter('mail');
 if (empty($contactelements['mail'])) {
-	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action contact :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
+	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_CONTACT').' :</strong>&nbsp;'._t('CONTACT_MAIL_REQUIRED').'</div>';
 }
 else {
 	// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page

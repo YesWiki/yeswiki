@@ -14,6 +14,10 @@ if (empty($template) || !file_exists('tools/tags/presentation/templates/'.$templ
 }
 
 $params = get_filtertags_parameters_recursive();
+if (strstr($params,'alert-danger')) {
+	echo $params;
+	return;
+}
 $taglist = $params['tags'];
 unset($params['tags']);
 
@@ -23,7 +27,7 @@ FROM ".$this->config['table_prefix']."pages, ".$this->config['table_prefix']."tr
 WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (".$taglist.") AND tags.property = \"http://outils-reseaux.org/_vocabulary/tag\" AND tags.resource = tag ORDER BY tag ASC";
 $pages = $this->LoadAll($req);
 
-echo '<div class="well no-dblclick controls">'."\n".'<div class="pull-right muted"><span class="nbfilteredelements">'.count($pages).'</span> '.TAGS_RESULTS.'</div>';
+echo '<div class="well no-dblclick controls">'."\n".'<div class="pull-right muted"><span class="nbfilteredelements">'.count($pages).'</span> '._t('TAGS_RESULTS').'</div>';
 foreach ($params as $param) {
   	echo '<div class="filter-group '.$param['class'].'" data-type="'.$param['toggle'].'">'."\n".$param['title']."\n".'<div class="btn-group filter-tags">'."\n";
  	foreach ($param['arraytags'] as $tagname) {

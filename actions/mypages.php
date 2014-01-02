@@ -32,7 +32,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 if ($user = $this->GetUser())
 {
-	echo "<b>Liste des pages dont vous &ecirc;tes le propri&eacute;taire.</b><br /><br />\n" ;
+	echo "<b>"._t('LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER').".</b><br /><br />\n" ;
 
 	$my_pages_count = 0;
 	$curChar = '';
@@ -62,17 +62,17 @@ if ($user = $this->GetUser())
 		
 		if ($my_pages_count == 0)
 		{
-			echo "<i>Vous n'&ecirc;tes le propri&eacute;taire d'aucune page.</i>";
+			echo "<i>"._t('YOU_DONT_OWN_ANY_PAGE').".</i>";
 		}
 	}
 	else
 	{
-		echo "<i>Aucune page trouv&eacute;e.</i>" ;
+		echo "<i>"._t('NO_PAGE_FOUND').".</i>" ;
 	}
 }
 else
 {
-	echo "<i>Vous n'&ecirc;tes pas identifi&eacute; : impossible d'afficher la liste des pages que vous avez modifi&eacute;es.</i>" ;
+	echo "<div class=\"alert alert-danger\">"._t('YOU_ARENT_LOGGED_IN')." : "._t('IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES').".</div>\n" ;
 }
 
 ?>

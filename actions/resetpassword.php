@@ -31,7 +31,7 @@ if (($user = $this->GetUser()) && ($user["name"]==$this->GetConfigValue("admin")
 					"password = md5('".mysql_escape_string($_POST["password"])."') ".
 					"where name = '".mysql_escape_string($_POST["name"])."' limit 1");				
 					
-				$this->SetMessage("Mot de passe r&eacute;initialis&eacute; !");
+				$this->SetMessage(_t('PASSWORD_UPDATED')." !");
 				$this->Redirect($this->href());
 	}
 	else
@@ -47,25 +47,25 @@ if (($user = $this->GetUser()) && ($user["name"]==$this->GetConfigValue("admin")
 	<table>
 		<tr>
 			<td align="right"></td>
-			<td><?php echo  $this->Format("R&eacute;initialisation du mot de passe"); ?></td>
+			<td><?php echo _t('RESETTING_THE_PASSWORD'); ?></td>
 		</tr>
 		<?php
 		if ($error)
 		{
-			echo "<tr><td></td><td><div class=\"error\">".$this->Format($error)."</div></td></tr>\n" ;
+			echo "<tr><td></td><td><div class=\"alert alert-danger error\">".$this->Format($error)."</div></td></tr>\n" ;
 		}
 		?>
 		<tr>
-			<td align="right">Login:</td>
+			<td align="right"><?php echo _t('WIKINAME'); ?> :</td>
 			<td><input name="name" size="40" value="<?php echo  $name ?>"></td>
 		</tr>
 		<tr>
-			<td align="right">Nouveau mot de passe:</td>
+			<td align="right"><?php echo _t('NEW_PASSWORD'); ?> :</td>
 			<td><input type="password" name="password" size="40"></td>
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="Reset password" size="40"></td>
+			<td><input type="submit" value="<?php echo _t('RESET_PASSWORD'); ?>" size="40"></td>
 		</tr>
 	</table>
 	<?php
@@ -73,7 +73,7 @@ if (($user = $this->GetUser()) && ($user["name"]==$this->GetConfigValue("admin")
 }
 else
 {
-	echo "<i>Vous n'avez pas les permissions n&eacute;cessaires pour ex&eacute;cuter cette action.</i>" ;
+	echo "<div class=\"alert alert-danger\"><strong>"._t('ACTION_RESETPASSWORD')."</strong> : "._t('NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION').".</div>\n" ;
 }
 
 ?>

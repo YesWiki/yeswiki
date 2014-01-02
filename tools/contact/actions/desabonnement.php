@@ -44,7 +44,7 @@ if (!defined("WIKINI_VERSION"))
 //recuperation des parametres
 $listelements['mail'] = $this->GetParameter('mail');
 if (empty($listelements['mail'])) {
-	echo '<div class="alert alert-error"><button data-dismiss="alert" class="close" type="button">&times;</button><strong>Action desabonnement :</strong>&nbsp;'.CONTACT_MAIL_REQUIRED.'</div>';
+	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_DESABONNEMENT').' :</strong>&nbsp;'._t('CONTACT_MAIL_REQUIRED').'</div>';
 }
 else {
 	// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
@@ -70,7 +70,7 @@ else {
 
 	// type de demande et placeholder
 	$listelements['demand'] = 'desabonnement';
-	$listelements['placeholder'] = CONTACT_UNSUBSCRIBE;
+	$listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
 
 	include_once('tools/contact/libs/squelettephp.class.php');
 	$listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);

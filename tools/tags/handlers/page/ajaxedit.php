@@ -67,7 +67,7 @@ if (isset($_GET['jsonp_callback']))
 			case 'savecomment':
 				// check for overwriting
 				if ($this->page && $this->page['id'] != $_GET['previous'])	{
-					$error = TAGS_ALERT_PAGE_ALREADY_MODIFIED;
+					$error = _t('TAGS_ALERT_PAGE_ALREADY_MODIFIED');
 				} else { // store
 					$body = str_replace("\r", '', utf8_decode($body));
 					
@@ -100,7 +100,7 @@ if (isset($_GET['jsonp_callback']))
 	 						
 						$valcomment['commentaires'][0]['tag'] = $comment["tag"];
 						$valcomment['commentaires'][0]['body'] = $this->Format($comment["body"]);
-						$valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(TAGS_DATE_FORMAT, strtotime($comment["time"]));
+						$valcomment['commentaires'][0]['infos'] = $this->Format($comment["user"]).", ".date(_t('TAGS_DATE_FORMAT'), strtotime($comment["time"]));
 						$valcomment['commentaires'][0]['hasrighttoaddcomment'] = $this->HasAccess("comment", $_GET['initialpage']);
 						$valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
 						$valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
@@ -118,7 +118,7 @@ if (isset($_GET['jsonp_callback']))
 			default:
 				// display form
 				if (isset($error)) {
-					$output .= "<div class=\"alert alert-error\">$error</div>\n";
+					$output .= "<div class=\"alert alert-danger\">$error</div>\n";
 				}
 				
 				// append a comment?
@@ -128,15 +128,15 @@ if (isset($_GET['jsonp_callback']))
 				
 				$output .= "<form class=\"form-modify-comment well well-small\" method=\"post\" action=\"".$this->href('ajaxedit')."\">\n".
 					"<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-					"<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\"".TAGS_WRITE_YOUR_COMMENT_HERE."\" class=\"comment-response\">\n".
+					"<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\""._t('TAGS_WRITE_YOUR_COMMENT_HERE')."\" class=\"comment-response\">\n".
 					htmlspecialchars($body, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).
 					"</textarea>\n".
-					($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-small btn-primary btn-modify\" value=\"".TAGS_MODIFY."\" />\n").
-					"<input type=\"button\" value=\"".TAGS_CANCEL."\" class=\"btn btn-small btn-cancel-modify\" />\n".
+					($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-small btn-primary btn-modify\" value=\""._t('TAGS_MODIFY')."\" />\n").
+					"<input type=\"button\" value=\""._t('TAGS_CANCEL')."\" class=\"btn btn-small btn-cancel-modify\" />\n".
 					"</form>\n";
 		} // switch
 	} else {
-		$output .= "<div class=\"alert alert-error\">".TAGS_NO_WRITE_ACCESS."</div>\n";
+		$output .= "<div class=\"alert alert-danger\">"._t('TAGS_NO_WRITE_ACCESS')."</div>\n";
 	}
 	$response = $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($output))).")";
 	echo $response;

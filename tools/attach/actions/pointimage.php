@@ -30,7 +30,7 @@ if (empty($file)) {
 	// former parameter from filename
 	$file = $this->GetParameter('srcmap');
 	if (empty($file)) {
-		echo '<div class="alert alert-danger">'.ATTACH_ACTION.' {{pointimage}} : '.ATTACH_PARAM_FILE_NOT_FOUND.'.</div>'."\n";
+		echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_POINTIMAGE').'</strong> : '._t('ATTACH_PARAM_FILE_NOT_FOUND').'.</div>'."\n";
 		return;
 	}
 }
@@ -39,7 +39,7 @@ if (empty($file)) {
 $supported_image_extensions = array('gif', 'jpg', 'jpeg', 'png');
 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION)); // Using strtolower to overcome case sensitive
 if (!in_array($ext, $supported_image_extensions)) {
-   	echo '<div class="alert alert-danger">'.ATTACH_ACTION.' {{pointimage}} : '.ATTACH_PARAM_FILE_MUST_BE_IMAGE.'.</div>'."\n";
+   	echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_POINTIMAGE').'</strong> : '._t('ATTACH_PARAM_FILE_MUST_BE_IMAGE').'.</div>'."\n";
 	return;
 }
 
@@ -62,7 +62,7 @@ $colors = '["'.str_replace(',', '","', $colors).'"]';
 // labels of markers
 $labels = $this->GetParameter('label');
 if (empty($labels)) {
-	$labels = ATTACH_DEFAULT_MARKER;
+	$labels = _t('ATTACH_DEFAULT_MARKER');
 }
 $labels = '["'.str_replace(',', '","', $labels).'"]';
 
@@ -134,21 +134,21 @@ $javascriptadded = '	<script src="tools/attach/libs/pointimage.js"></script>
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	        <h4 class="modal-title">'.ATTACH_ADD_MARKER.'</h4>
+	        <h4 class="modal-title">'._t('ATTACH_ADD_MARKER').'</h4>
 	      </div>
 	      <form class="form-pointimage" method="post" action="'.$this->href().'">
 	      <div class="modal-body">
 	      	<div class="form-group markers-choice"></div>
 	     	<div class="form-group">
-	        	<input name="title" required="required" class="form-control" placeholder="'.ATTACH_TITLE.'" />
+	        	<input name="title" required="required" class="form-control" placeholder="'._t('ATTACH_TITLE').'" />
 	        </div>
 	        <div class="form-group">
-	        	<textarea name="description" required="required" class="form-control wiki-textarea" placeholder="'.ATTACH_DESCRIPTION.'"></textarea>
+	        	<textarea name="description" required="required" class="form-control wiki-textarea" placeholder="'._t('ATTACH_DESCRIPTION').'"></textarea>
 	        </div>
 	      </div>
 	      <div class="modal-footer">
-	        <button type="button" class="btn btn-default btn-close" data-dismiss="modal">'.ATTACH_CANCEL.'</button>
-	        <button type="submit" class="btn btn-primary btn-save">'.ATTACH_SAVE.'</button>
+	        <button type="button" class="btn btn-default btn-close" data-dismiss="modal">'._t('ATTACH_CANCEL').'</button>
+	        <button type="submit" class="btn btn-primary btn-save">'._t('ATTACH_SAVE').'</button>
 	      </div>
 	      </form>
 	    </div><!-- /.modal-content -->

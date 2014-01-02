@@ -45,9 +45,9 @@ if ($this->HasAccess("write") && $this->HasAccess("read")) {
 	if (isset($_POST['metadatas'])) {
 		echo json_encode(array('result' => $this->SaveMetaDatas($this->GetPageTag(), $_POST['metadatas'])));
 	} else {
-		echo json_encode(array('result' => TEMPLATE_ERROR_NO_DATA));
+		echo json_encode(array('result' => _t('TEMPLATE_ERROR_NO_DATA')));
 	}
 } else {
-	echo json_encode(array('result' => TEMPLATE_ERROR_NO_ACCESS));
+	echo json_encode(array('result' => _t('TEMPLATE_ERROR_NO_ACCESS')));
 }
 ?>

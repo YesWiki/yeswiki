@@ -45,6 +45,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define("WAKKA_VERSION", "0.1.1");
 define("WIKINI_VERSION", "0.5.0");
+define("YESWIKI_VERSION", "Cercopitheque");
+define("YESWIKI_RELEASE", "2013.12.25");
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
 include 'includes/i18n.inc.php';
@@ -951,7 +953,7 @@ class Wiki
 		// extract $action and $vars_temp ("raw" attributes)
 		if (!preg_match("/^([a-zA-Z-0-9]+)\/?(.*)$/", $cmd, $matches))
 		{
-			return '<i>'._t('INVALID_ACTION').' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '&quot;</i>';
+			return '<div class="alert alert-danger">'._t('INVALID_ACTION').' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '&quot;</div>'."\n";
 		}
 		list(, $action, $vars_temp) = $matches;
 		$vars[$vars_temp] = $vars_temp; // usefull for {{action/vars_temp}}
@@ -959,7 +961,7 @@ class Wiki
 		// now that we have the action's name, we can check if the user satisfies the ACLs
 		if (!$this->CheckModuleACL($action, 'action'))
 		{
-			return _t('ERROR_NO_ACCESS').' ' . $action . '.';
+			return '<div class="alert alert-danger">'._t('ERROR_NO_ACCESS').' ' . $action . '.</div>'."\n";
 		}
 
 		// match all attributes (key and value)
@@ -987,7 +989,7 @@ class Wiki
 		else // $actionObj == null (not found, no error message)
 		{
 			$this->parameter = &$vars;
-			$result = $this->IncludeBuffered(strtolower($action).".php", "<i>"._t('UNKNOWN_ACTION')." &quot;$action&quot;</i>", $vars, $this->config["action_path"]);
+			$result = $this->IncludeBuffered(strtolower($action).".php", '<div class="alert alert-danger">'._t('UNKNOWN_ACTION')." &quot;$action&quot;</div>\n", $vars, $this->config["action_path"]);
 			unset($this->parameter);
 		}
 		$this->StartLinkTracking(); // shouldn't we restore the previous status ?
@@ -1622,6 +1624,8 @@ $_rewrite_mode = detectRewriteMode();
 $wakkaDefaultConfig = array(
 	'wakka_version'		=> '',
 	'wikini_version'	=> '',
+	'yeswiki_version'	=> '',
+	'yeswiki_release'	=> '',
 	'debug'				=> 'no',
 	"mysql_host"		=> "localhost",
 	"mysql_database"	=> '',
@@ -1629,7 +1633,7 @@ $wakkaDefaultConfig = array(
 	"mysql_password"	=> '',
 	"table_prefix"		=> "yeswiki_",
 	"root_page"			=> "PagePrincipale",
-	"wakka_name"		=> "Mon Yeswiki",
+	"wakka_name"		=> _t('MY_YESWIKI_SITE'),
 	"base_url"			=> computeBaseURL($_rewrite_mode),
 	"rewrite_mode"		=> $_rewrite_mode,
 	'meta_keywords'		=> '',

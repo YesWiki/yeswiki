@@ -461,13 +461,13 @@ else
         echo ":\n";
         if (!$pages)
         {
-            echo "<br />\nAucune page trouv&eacute;e...<br />\n";
+            echo "<br />\n"._t('NO_PAGE_FOUND')."...<br />\n";
             return;
         }
     }
     elseif ($owner)
     {
-        echo 'Liste des pages appartenant &agrave; ' . $this->Link($owner);
+        echo _t('LIST_PAGES_BELONGING_TO').' ' . $this->Link($owner);
         if ($exclude)
         {
             echo ' ('._t('EXCLUDING_EXCLUSIONS').')';
@@ -475,14 +475,14 @@ else
         echo ":\n";
         if (!$pages)
         {
-            echo "<br />\nCet utilisateur ne poss&egrave;de aucune page...\n<br />\n";
+            echo "<br />\n"._t('THIS_USER_HAS_NO_PAGE')."...\n<br />\n";
             return;
         }
     }
     elseif (!$pages)
     {
         // because it is still possible...
-        echo 'Aucune page trouv&eacute;e dans ce wiki ('._t('EXCLUDING_EXCLUSIONS').')';
+        echo _t('NO_PAGE_FOUND').' '._t('IN_THIS_WIKI').' ('._t('EXCLUDING_EXCLUSIONS').')';
         return;
     }
     // No header if it is a simple page list that was asked
@@ -509,19 +509,19 @@ else
             }
             else
             {
-                echo 'Inconnu';
+                echo _t('UNKNOWN');
             }
         }
         if ($sort == 'user' || $sort == 'time')
         {
-            echo '  . . . . <strong>derni&egrave;re modification</strong>';
+            echo '  . . . . <strong>'._t('LAST_CHANGE').'</strong>';
             if ($sort == 'time')
             {
                 echo ': ' . $page['time'];
             }
             if ($sort == 'user' || ($user && $sort == 'time'))
             {
-                echo ' <strong>par</strong> ';
+                echo ' <strong>'._t('BY').'</strong> ';
                 if ($page['user_is_registered'])
                 {
                     if ($page['user_has_ownpage'])

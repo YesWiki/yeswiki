@@ -136,14 +136,14 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	// On teste si l'utilisateur peut lire la page
 	if (!$GLOBALS['wiki']->HasAccess("read", $pagetag))
 	{
-		return '<div class="alert alert-danger">'.TEMPLATE_NO_ACCESS_TO_PAGE.'</div>'. $GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
+		return '<div class="alert alert-danger">'._t('TEMPLATE_NO_ACCESS_TO_PAGE').'</div>'. $GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
 	}
 	else
 	{
 		// On teste si la page existe
 		if (!$page = $GLOBALS['wiki']->LoadPage($pagetag))
 		{
-			return '<div class="alert alert-danger">'.TEMPLATE_PAGE_DOESNT_EXIST.' ('.$pagetag.').</div>';
+			return '<div class="alert alert-danger">'._t('TEMPLATE_PAGE_DOESNT_EXIST').' ('.$pagetag.').</div>';
 		}
 		else
 		{
@@ -152,7 +152,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	
 			if (!$body)
 			{
-				return '<div class="=alert alert-danger">'.TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW.' ('.$pagetag.').</div>';
+				return '<div class="=alert alert-danger">'._t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW').' ('.$pagetag.').</div>';
 			}
 			else
 			{			
@@ -248,7 +248,7 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
 		$bgselector = '';
 		
 		if (isset($backgrounds) && is_array($backgrounds)) {
-			$bgselector .= '<h3>'.TEMPLATE_BG_IMAGE.'</h3>
+			$bgselector .= '<h3>'._t('TEMPLATE_BG_IMAGE').'</h3>
 			<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
 	    <!-- Carousel items -->
 	    <div class="carousel-inner">'."\n";
@@ -315,7 +315,7 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
 
 
 	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_THEME.'</label>'."\n".
+					'<label class="control-label">'._t('TEMPLATE_THEME').'</label>'."\n".
 					'<div class="controls">'."\n".
 					'<select id="changetheme" name="theme">'."\n";
     foreach(array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
@@ -329,7 +329,7 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
     $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
 	
 	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_SQUELETTE.'</label>'."\n".
+					'<label class="control-label">'._t('TEMPLATE_SQUELETTE').'</label>'."\n".
 					'<div class="controls">'."\n".
 					'<select id="changesquelette" name="squelette">'."\n";
 	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
@@ -345,7 +345,7 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
 
 	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);	
 	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_STYLE.'</label>'."\n".
+					'<label class="control-label">'._t('TEMPLATE_STYLE').'</label>'."\n".
 					'<div class="controls">'."\n".
 					'<select id="changestyle" name="style">'."\n";
     foreach($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {

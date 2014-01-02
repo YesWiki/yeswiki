@@ -4,12 +4,12 @@
 		<ul class="dropdown-menu">
 		  <?php echo $PageMenuUser; ?>
 		  <li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
-		  <li><a href="<?php echo $incomingurl; ?>&action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
+		  <li><a href="<?php echo $incomingurl; ?>&amp;action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
 		</ul>
 	</div>
 <?php else : ?>
 	<?php if ($error) : ?>
-		<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button><?= $error; ?></div>
+		<div class="alert alert-danger"><?php echo  $error; ?></div>
 	<?php endif; ?>
 	<form class="form-inline" action="<?php echo $incomingurl; ?>" method="post">
 		<input id="inputWikiName" class="input-small" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>" />

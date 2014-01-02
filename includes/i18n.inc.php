@@ -118,14 +118,14 @@ function detectPreferedLanguage($available_languages, $http_accept_language="aut
 function initI18n()
 {
     // we initialise with french language, because it is the most beautiful ;) or maybe just the most updated because we are a french dev team
-    include_once 'lang/yeswiki_fr.php';
+    require_once 'lang/yeswiki_fr.php';
 
     $GLOBALS['available_languages'] = detectAvailableLanguages();
     $GLOBALS['prefered_language'] = detectPreferedLanguage($GLOBALS['available_languages']);
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        include_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
     }
     return;
 }

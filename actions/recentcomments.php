@@ -61,7 +61,7 @@ if ($comments = $this->LoadRecentComments($max))
 }
 else
 {
-	echo "<i>Pas de commentaires r&eacute;cents.</i>" ;
+	echo "<i>"._t('NO_RECENT_COMMENTS').".</i>" ;
 }
 
 ?>

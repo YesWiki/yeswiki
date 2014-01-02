@@ -58,14 +58,14 @@ function tokenTruncate($string, $your_desired_width) {
 function get_filtertags_parameters_recursive($nb=1, $tab = array()) {	
 	$filter = $GLOBALS['wiki']->GetParameter('filter'.$nb);
 
-	if (empty($filter) && $nb == 1) exit('<div class="alert alert-danger">'.TAGS_NO_FILTERS.'</div>'."\n");
+	if (empty($filter) && $nb == 1) return('<div class="alert alert-danger"><strong>'._t('TAGS_ACTION_FILTERTAGS').'</strong> : '._t('TAGS_NO_FILTERS').'</div>'."\n");
 	elseif (empty($filter)) return $tab;
 	else {
 		if (!isset($tab['tags'])) $tab['tags'] = ''; else $tab['tags'] .= ',';
 		$explodelabel = explode(":", $filter);
 
 		// on decoupe le choix pour recuperer le titre
-		if (count($explodelabel)> 2) exit('<div class="alert alert-danger">'.TAGS_ONLY_ONE_DOUBLEPOINT.'</div>'."\n");
+		if (count($explodelabel)> 2) return('<div class="alert alert-danger"><strong>'._t('TAGS_ACTION_FILTERTAGS').'</strong> : '._t('TAGS_ONLY_ONE_DOUBLEPOINT').'</div>'."\n");
 		elseif (count($explodelabel) == 2) {
 			$tab[$nb]['title'] =  '<strong>'.$explodelabel[0].' : </strong>'."\n"; 
 			$tab[$nb]['arraytags'] = explode(',', $explodelabel[1]);
