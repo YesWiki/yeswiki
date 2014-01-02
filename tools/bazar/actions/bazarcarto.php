@@ -271,7 +271,7 @@ $tablinktitle = array();
 $i = 0;
 
 foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche[0], true);
+    $valeurs_fiche = json_decode($fiche["body"], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
 
 

@@ -143,11 +143,9 @@ function fiches_a_valider()
         $requete .= ' and bn_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ';
     }
     $requete .= 'ORDER BY bf_date_maj_fiche DESC' ;
-    $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-    if (DB::isError($resultat)) {
-        echo ('Echec de la requete<br />'.$resultat->getMessage().'<br />'.$resultat->getDebugInfo()) ;
-    }
-    if ($resultat->numRows() != 0) {
+    $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
+    
+    if (count($resultat) != 0) {
         $tableAttr = array('id' => 'table_bazar') ;
         $table = new HTML_Table($tableAttr) ;
         $entete = array (BAZ_TITREANNONCE ,BAZ_ANNONCEUR, BAZ_TYPE_FICHE, BAZ_PUBLIER, BAZ_SUPPRIMER) ;
@@ -155,15 +153,13 @@ function fiches_a_valider()
         $table->setRowType (0, 'th') ;
 
         // On affiche une ligne par proposition
-        while ($ligne = $resultat->fetchRow (DB_FETCHMODE_ASSOC)) {
+        foreach ($resultat as $ligne) {
             //Requete pour trouver le nom et prenom de l'annonceur
             $requetenomprenom = 'SELECT '.BAZ_CHAMPS_PRENOM.', '.BAZ_CHAMPS_NOM.' FROM '.BAZ_ANNUAIRE.
                                 ' WHERE '.BAZ_CHAMPS_ID.'='.$ligne['bf_ce_utilisateur'] ;
-            $resultatnomprenom = $GLOBALS['_BAZAR_']['db']->query ($requetenomprenom) ;
-            if (DB::isError($resultatnomprenom)) {
-                echo ("Echec de la requete<br />".$resultatnomprenom->getMessage()."<br />".$resultatnomprenom->getDebugInfo()) ;
-            }
-            while ($lignenomprenom = $resultatnomprenom->fetchRow (DB_FETCHMODE_ASSOC)) {
+            $resultatnomprenom = $GLOBALS['wiki']->LoadAll($requetenomprenom) ;
+           
+            foreach ($resultatnomprenom as $lignenomprenom) {
                 $annonceur=$lignenomprenom[BAZ_CHAMPS_PRENOM]." ".$lignenomprenom[BAZ_CHAMPS_NOM];
             }
             $lien_voir=$GLOBALS['_BAZAR_']['url'];
@@ -234,11 +230,9 @@ function fiches_a_valider()
         $requete .= ' and bn_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ';
     }
     $requete .= 'ORDER BY bf_date_maj_fiche DESC' ;
-    $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-    if (DB::isError($resultat)) {
-        echo ('Echec de la requete<br />'.$resultat->getMessage().'<br />'.$resultat->getDebugInfo()) ;
-    }
-    if ($resultat->numRows() != 0) {
+    $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
+    
+    if (count($resultat) != 0) {
         $tableAttr = array('class' => 'table_bazar') ;
         $table = new HTML_Table($tableAttr) ;
         $entete = array (BAZ_TITREANNONCE ,BAZ_ANNONCEUR, BAZ_TYPE_FICHE, BAZ_PUBLIER, BAZ_SUPPRIMER) ;
@@ -246,14 +240,12 @@ function fiches_a_valider()
         $table->setRowType (0, 'th') ;
 
         // On affiche une ligne par proposition
-        while ($ligne = $resultat->fetchRow (DB_FETCHMODE_ASSOC)) {
+        foreach ($resultat as $ligne) {
             //Requete pour trouver le nom et prenom de l'annonceur
             $requetenomprenom = 'SELECT '.BAZ_CHAMPS_PRENOM.', '.BAZ_CHAMPS_NOM.' FROM '.BAZ_ANNUAIRE.
                                 ' WHERE '.BAZ_CHAMPS_ID.'='.$ligne['bf_ce_utilisateur'] ;
-            $resultatnomprenom = $GLOBALS['_BAZAR_']['db']->query ($requetenomprenom) ;
-            if (DB::isError($resultatnomprenom)) {
-                echo ("Echec de la requete<br />".$resultatnomprenom->getMessage()."<br />".$resultatnomprenom->getDebugInfo()) ;
-            }
+            $resultatnomprenom = $GLOBALS['wiki']->LoadAll($requetenomprenom) ;
+            
             while ($lignenomprenom = $resultatnomprenom->fetchRow (DB_FETCHMODE_ASSOC)) {
                 $annonceur=$lignenomprenom[BAZ_CHAMPS_PRENOM]." ".$lignenomprenom[BAZ_CHAMPS_NOM];
             }
@@ -617,22 +609,22 @@ function baz_afficher_formulaire_import()
         ($categorienature!='toutes') ? $requete .= ' bn_type_fiche="'.$categorienature.'"' : $requete .= ' 1';
         (isset($GLOBALS['_BAZAR_']['langue'])) ? $requete .= ' AND bn_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ' : $requete .= '';
         $requete .= ' ORDER BY bn_label_nature ASC';
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
+        $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
 
         $output .= '<form method="post" action="'.$GLOBALS['_BAZAR_']["url"]->getUrl().'" enctype="multipart/form-data" class="form-horizontal">'."\n";
 
         //s'il y a plus d'un choix possible, on propose
-        if ($resultat->numRows()>=1) {
+        if (count($resultat)>=1) {
             $output .= '<div class="control-group">'."\n".'<div class="control-label">'."\n".
                         BAZ_TYPE_FICHE.' :</div>'."\n".'<div class="controls">';
             $output .= '<select name="id_type_fiche" onchange="javascript:this.form.submit();">'."\n";
 
 	    
-            //si l'on n'a pas deja  choisi de fiche, on demarre sur l'option CHOISIR, vide
+            //si l'on n'a pas deja choisi de fiche, on demarre sur l'option CHOISIR, vide
             if ($id_type_fiche=='') $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
 	
             //on dresse la liste de types de fiches
-            while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
+            foreach ($resultat as $ligne) {
                 $output .= '<option value="'.$ligne['bn_id_nature'].'"'.(($id_type_fiche == $ligne['bn_id_nature']) ? ' selected="selected"' : '').'>'.$ligne['bn_label_nature'].'</option>'."\n";
             }
             $output .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
@@ -744,12 +736,12 @@ function baz_afficher_formulaire_export()
     ($categorienature!='toutes') ? $requete .= ' bn_type_fiche="'.$categorienature.'"' : $requete .= ' 1';
     (isset($GLOBALS['_BAZAR_']['langue'])) ? $requete .= ' AND bn_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ' : $requete .= '';
     $requete .= ' ORDER BY bn_label_nature ASC';
-    $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
+    $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
     $output .= '<form method="post" action="'.$GLOBALS['wiki']->Href().
                 (($GLOBALS['wiki']->GetMethod()!='show')? '/'.$GLOBALS['wiki']->GetMethod() : '&amp;'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_EXPORTER).'">'."\n";
 
     //s'il y a plus d'un choix possible, on propose
-    if ($resultat->numRows()>=1) {
+    if (count($resultat)>=1) {
         $output .= '<div class="control-group">'."\n".'<div class="control-label">'."\n".
                     BAZ_TYPE_FICHE.' :</div>'."\n".'<div class="controls">';
         $output .= '<select name="id_type_fiche" onchange="javascript:this.form.submit();">'."\n";
@@ -758,7 +750,7 @@ function baz_afficher_formulaire_export()
         if (!isset($_POST['id_type_fiche'])) $output .= '<option value="" selected="selected">'.BAZ_CHOISIR.'</option>'."\n";
 
         //on dresse la liste de types de fiches
-        while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
+        foreach ($resultat as $ligne) {
             $output .= '<option value="'.$ligne['bn_id_nature'].'"'.(($id_type_fiche == $ligne['bn_id_nature']) ? ' selected="selected"' : '').'>'.$ligne['bn_label_nature'].'</option>'."\n";
         }
         $output .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
@@ -824,7 +816,7 @@ function baz_afficher_formulaire_export()
         $tableau_fiches = baz_requete_recherche_fiches('', 'alphabetique', $id_type_fiche, $val_formulaire['bn_type_fiche']);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
-            $tab_valeurs = json_decode($fiche[0], true);
+            $tab_valeurs = json_decode($fiche["body"], true);
             $tab_csv = array();
 
             foreach ($tab_champs as $index) {
@@ -968,14 +960,12 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $requete .= 'AND bn_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ';
             }
             $requete .= 'ORDER BY bn_label_nature ASC';
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError($resultat)) {
-                return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
+            
 
-            if ($resultat->numRows()==1) {
+            if (count($resultat)==1) {
                 $res = '';
-                $ligne = $resultat->fetchRow (DB_FETCHMODE_ASSOC);
+                $ligne = $resultat[0];
                 $GLOBALS['_BAZAR_']['id_typeannonce']=$ligne['bn_id_nature'];
                 $GLOBALS['_BAZAR_']['typeannonce']=$ligne['bn_label_nature'];
                 $GLOBALS['_BAZAR_']['condition']=$ligne['bn_condition'];
@@ -991,7 +981,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $attributes = array('action'=>str_replace ("&amp;", "&", $lien_formulaire->getURL()));
                 $formtemplate->updateAttributes($attributes);
             } else {
-                while ($ligne = $resultat->fetchRow (DB_FETCHMODE_ASSOC)) {
+                foreach ($resultat as $ligne) {
                         if ($ligne['bn_image_titre']!='') {
                             $titre='&nbsp;<img src="'.BAZ_CHEMIN.'presentation'.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.$ligne['bn_image_titre'].'" alt="'.
                                             $ligne['bn_label_nature'].'" />'."\n";
@@ -1328,8 +1318,7 @@ function baz_insertion_fiche($valeur, $batch=false)
 
             //on va chercher les admins
             $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']->config["table_prefix"].'triples WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-            $resultatadmins = $GLOBALS['_BAZAR_']['db']->query($requeteadmins);
-            $ligne = $resultatadmins->fetchRow(DB_FETCHMODE_ASSOC);
+            $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
             $tabadmin = explode("\n", $ligne['value']);
             foreach ($tabadmin  as $line) {
                 $admin = $GLOBALS['wiki']->LoadUser(trim($line));
@@ -1404,8 +1393,7 @@ function baz_mise_a_jour_fiche($valeur)
 
             //on va chercher les admins
             $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']->config["table_prefix"].'triples WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-            $resultatadmins = $GLOBALS['_BAZAR_']['db']->query($requeteadmins);
-            $ligne = $resultatadmins->fetchRow(DB_FETCHMODE_ASSOC);
+            $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
             $tabadmin = explode("\n", $ligne['value']);
             foreach ($tabadmin  as $line) {
                 $admin = $GLOBALS['wiki']->LoadUser(trim($line));
@@ -1429,31 +1417,24 @@ function baz_suppression($idfiche)
 
             /*//suppression des valeurs des champs texte, checkbox et liste
             $requete = 'DELETE FROM '.BAZ_PREFIXE.'fiche_valeur_texte WHERE bfvt_ce_fiche = "'.$idfiche.'"';
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError($resultat)) {
-                return ('Echec de la requete<br />'.$resultat->getMessage().'<br />'.$resultat->getDebugInfo().'<br />'."\n") ;
-            }
+            $resultat = $GLOBALS['wiki']->query($requete) ;
+            
 
             //suppression des valeurs des champs texte long
             $requete = 'DELETE FROM '.$GLOBALS['wiki']->config["table_prefix"].'triples WHERE resource = "'.$idfiche.'"';
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError($resultat)) {
-                return ('Echec de la requete<br />'.$resultat->getMessage().'<br />'.$resultat->getDebugInfo().'<br />'."\n") ;
-            }
-
+            $resultat = $GLOBALS['wiki']->query($requete) ;
+            
             //TODO:suppression des fichiers et images associees
 
             //suppression de la fiche dans '.BAZ_PREFIXE.'fiche
             $requete = 'DELETE FROM '.BAZ_PREFIXE.'fiche WHERE bf_id_fiche = "'.$idfiche.'"';
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError($resultat)) {
-                echo ('Echec de la requete<br />'.$resultat->getMessage().'<br />'.$resultat->getDebugInfo().'<br />'."\n") ;
-            }*/
+            $resultat = $GLOBALS['wiki']->query($requete) ;
+            */
 
             //on supprime l'utilisateur associe
             if (isset($valeur["nomwiki"])) {
                 $requete = 'DELETE FROM `'.BAZ_PREFIXE.'users` WHERE `name` = "'.$valeur["nomwiki"].'"';
-                $GLOBALS['_BAZAR_']['db']->query($requete) ;
+                $GLOBALS['wiki']->query($requete) ;
             }
 
             //on supprime les pages wiki crees
@@ -1494,10 +1475,8 @@ function publier_fiche($valid)
         }
 
         // ====================Mise a jour de la table '.BAZ_PREFIXE.'fiche====================
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->query($requete) ;
+        
         unset ($resultat) ;
         //TODO envoie mail annonceur
     }
@@ -1515,10 +1494,8 @@ function baz_liste_rss()
     //requete pour obtenir l'id et le label des types d'annonces
     $requete = 'SELECT bn_id_nature, bn_label_nature '.
                'FROM '.BAZ_PREFIXE.'nature WHERE 1';
-    $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-    if (DB::isError($resultat)) {
-        return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-    }
+    $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
+    
 
     // Nettoyage de l url
     $lien_RSS = $GLOBALS['_BAZAR_']['url'];
@@ -1526,7 +1503,7 @@ function baz_liste_rss()
     $lien_RSS->addQueryString('wiki', $GLOBALS['wiki']->minihref('rss',$_GET['wiki']));
     //$lien_RSS->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FLUX_RSS);
     $liste='';
-    while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
+    foreach ($resultat as $ligne) {
         $lien_RSS->addQueryString('id_typeannonce', $ligne['bn_id_nature']);
         $liste .= '<li><a href="'.str_replace('&', '&amp;', $lien_RSS->getURL()).'"><img src="tools/bazar/presentation/images/BAZ_rss.png" alt="'.BAZ_RSS.'" /></a>&nbsp;';
         $liste .= $ligne['bn_label_nature'];
@@ -1597,12 +1574,9 @@ function baz_valeurs_formulaire($idformulaire)
 {
     if ($idformulaire != '') {
         $requete = 'SELECT * FROM '.BAZ_PREFIXE.'nature WHERE bn_id_nature='.$idformulaire;
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->LoadSingle($requete) ;
 
-        return $resultat->fetchRow(DB_FETCHMODE_ASSOC);
+        return $resultat;
     } else {
         return false;
     }
@@ -1690,11 +1664,7 @@ function baz_gestion_formulaire()
     if (isset($_GET['action_formulaire']) && $_GET['action_formulaire']=='modif') {
         //recuperation des informations du type de formulaire
         $requete = 'SELECT * FROM '.BAZ_PREFIXE.'nature WHERE bn_id_nature='.$_GET['idformulaire'];
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
-        $ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC);
+        $ligne = $GLOBALS['wiki']->LoadSingle($requete) ;
         $formulaire=baz_formulaire_des_formulaires('modif_v');
         $formulaire->setDefaults($ligne);
         $res .= $formulaire->toHTML();
@@ -1707,14 +1677,12 @@ function baz_gestion_formulaire()
     //il y a des donnees pour ajouter un nouveau formulaire
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire']=='new_v') {
         $requete = 'INSERT INTO '.BAZ_PREFIXE.'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)' .
-                   ' VALUES ('.baz_nextId(BAZ_PREFIXE.'nature', 'bn_id_nature', $GLOBALS['_BAZAR_']['db']).
+                   ' VALUES ('.baz_nextId(BAZ_PREFIXE.'nature', 'bn_id_nature', $GLOBALS['wiki']).
                    ', "fr-FR", "'.addslashes($_POST["bn_label_nature"]).'", "'.addslashes($_POST["bn_template"]).
                    '", "'.addslashes($_POST["bn_description"]).'", "'.addslashes($_POST["bn_condition"]).
                    '", "'.$_POST["bn_label_class"].'", "'.$_POST["bn_type_fiche"].'")';
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->query($requete) ;
+        
         $res .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'.BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE.'</div>'."\n";
 
     //il y a des donnees pour modifier un formulaire
@@ -1726,20 +1694,15 @@ function baz_gestion_formulaire()
                     '" ,`bn_label_class`="'.addslashes($_POST["bn_label_class"]).
                     '" ,`bn_type_fiche`="'.addslashes($_POST["bn_type_fiche"]).'"'.
                     ' WHERE `bn_id_nature`='.$_POST["bn_id_nature"];
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->query($requete) ;
+        
         $res .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>'.BAZ_FORMULAIRE_MODIFIE.'</div>'."\n";
 
     // il y a un id de formulaire a supprimer
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire']=='delete' && baz_a_le_droit('saisie_formulaire')) {
         //suppression de l'entree dans '.BAZ_PREFIXE.'nature
         $requete = 'DELETE FROM '.BAZ_PREFIXE.'nature WHERE bn_id_nature='.$_GET['idformulaire'];
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->query($requete) ;
 
         //TODO : suppression des fiches associees au formulaire
 
@@ -1753,12 +1716,10 @@ function baz_gestion_formulaire()
         //requete pour obtenir l'id et le label des types d'annonces
         $requete = 'SELECT bn_id_nature, bn_label_nature, bn_type_fiche '.
                    'FROM '.BAZ_PREFIXE.'nature WHERE 1 ORDER BY bn_type_fiche';
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->LoadAll($requete) ;
+        
         $liste=''; $type_formulaire='';
-        while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
+        foreach ($resultat as $ligne) {
             if ($type_formulaire!=$ligne['bn_type_fiche']) {
                 if ($type_formulaire!='') $liste .= '</ul><br />'."\n";
                 $liste .= '<h3>'.$ligne['bn_type_fiche'].'</h3>'."\n".
@@ -1984,8 +1945,7 @@ function baz_gestion_listes()
 
             //on va chercher les admins
             $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']->config["table_prefix"].'triples WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-            $resultatadmins = $GLOBALS['_BAZAR_']['db']->query($requeteadmins);
-            $ligne = $resultatadmins->fetchRow(DB_FETCHMODE_ASSOC);
+            $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
             $tabadmin = explode("\n", $ligne['value']);
             foreach ($tabadmin  as $line) {
                 $admin = $GLOBALS['wiki']->LoadUser(trim($line));
@@ -2074,13 +2034,7 @@ function baz_valeurs_type_de_fiche($idtypefiche)
         if (isset($GLOBALS['_BAZAR_']['langue'])) {
             $requete .= ' and bn_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%"';
         }
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-        if (DB::isError($resultat)) {
-            echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
-        $ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC);
-
-        return $ligne;
+        return $GLOBALS['wiki']->LoadSingle($requete) ;
     } else {
         return false;
     }
@@ -2098,18 +2052,11 @@ function baz_valeurs_type_de_fiche($idtypefiche)
 function baz_nextId($table, $colonne_identifiant, $bdd)
 {
     $requete = 'SELECT MAX('.$colonne_identifiant.') AS maxi FROM '.$table;
-    $resultat = $bdd->query($requete) ;
-    if (DB::isError($resultat)) {
-        echo (__FILE__ . __LINE__ . $resultat->getMessage() . $requete);
-
-        return $bdd->raiseError($resultat) ;
-    }
-
-    if ($resultat->numRows() > 1) {
+    $ligne = $GLOBALS['wiki']->LoadSingle($requete) ;
+    
+    if (count($ligne) > 1) {
         return $bdd->raiseError('<br />La table '.$table.' a un identifiant non unique<br />') ;
     }
-    $ligne = $resultat->fetchRow(DB_FETCHMODE_OBJECT) ;
-
     return $ligne->maxi + 1 ;
 }
 
@@ -2436,7 +2383,7 @@ function gen_RSS($typeannonce='', $nbitem='', $emetteur='', $valide=1, $requeteS
         $req_where=1;
         //le nom du flux devient le type d'annonce
         $requete_nom_flux = 'select bn_label_nature from '.BAZ_PREFIXE.'nature where bn_id_nature = '.$typeannonce;
-        $nomflux = $GLOBALS['_BAZAR_']['db']->getOne($requete_nom_flux) ;
+        $nomflux = $GLOBALS['wiki']->LoadSingle($requete_nom_flux) ;
     }
     // Cas ou il y plusieurs type d annonce demande
     if (is_array ($typeannonce)) {
@@ -2461,11 +2408,8 @@ function gen_RSS($typeannonce='', $nbitem='', $emetteur='', $valide=1, $requeteS
         //requete pour afficher le nom de la structure
         $requetenom = 'SELECT '.BAZ_CHAMPS_NOM.', '.BAZ_CHAMPS_PRENOM.' FROM '.
                         BAZ_ANNUAIRE.' WHERE '.BAZ_CHAMPS_ID.'='.$emetteur;
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requetenom) ;
-        if (DB::isError($resultat)) {
-            echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
-        $ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC);
+        $ligne = $GLOBALS['wiki']->LoadSingle($requetenom) ;
+        
         $nomflux .= ' ('.$ligne[BAZ_CHAMPS_NOM].' '.$ligne[BAZ_CHAMPS_PRENOM].')';
     }
     if ($requeteSQL!='') {
@@ -2481,11 +2425,7 @@ function gen_RSS($typeannonce='', $nbitem='', $emetteur='', $valide=1, $requeteS
 
     $requete .= ' ORDER BY   bf_date_creation_fiche DESC, bf_date_fin_validite_fiche DESC, bf_date_maj_fiche DESC';
     if ($nbitem!='') {$requete .= ' LIMIT 0,'.$nbitem;} else {$requete .= ' LIMIT 0,50';}
-    $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-    //echo $requete;
-    if (DB::isError($resultat)) {
-        echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-    }
+    $resultat = $GLOBALS['wiki']->query($requete) ;
 
     require_once 'XML/Util.php';
 
@@ -2532,9 +2472,9 @@ function gen_RSS($typeannonce='', $nbitem='', $emetteur='', $valide=1, $requeteS
         $xml .= XML_Util::createTag ('link', null, BAZ_RSS_ADRESSESITE);
         $xml .= "\r\n      ";
     $xml .= XML_Util::createEndElement ('image');
-    if ($resultat->numRows() > 0) {
+    if (count($resultat) > 0) {
         // Creation des items : titre + lien + description + date de publication
-        while ($ligne = $resultat->fetchRow(DB_FETCHMODE_ASSOC)) {
+        foreach ($resultat as $ligne) {
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement ('item');
             $xml .= "\r\n        ";
@@ -2846,8 +2786,8 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
 
     // debug
    // echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
-    //var_dump($GLOBALS['_BAZAR_']['db']->getAll($requete));
-    return $GLOBALS['_BAZAR_']['db']->getAll($requete);
+    //var_dump($GLOBALS['wiki']->LoadAll($requete));
+    return $GLOBALS['wiki']->LoadAll($requete);
 }
 
 /** baz_valeurs_tous_les_formulaires() - Toutes les informations de tous les formulaires d'une categorie ou de toutes les categories
@@ -2935,7 +2875,7 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
 
     $fiches['fiches'] = array();
     foreach ($data as $fiche) {
-        $valeurs_fiche = json_decode($fiche[0], true);
+        $valeurs_fiche = json_decode($fiche['body'], true);
         $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
         $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
         if (baz_a_le_droit('supp_fiche', (isset($valeurs_fiche['createur']) ? $valeurs_fiche['createur'] : ''))) {
@@ -3064,7 +3004,7 @@ function baz_afficher_flux_RSS()
     }
     $tableau_flux_rss = baz_requete_recherche_fiches($query, '', $id_typeannonce, $categorie_fiche, $statut, $utilisateur, 20);
 
-    require_once 'XML/Util.php';
+    require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'XML/Util.php';
     // setlocale() pour avoir les formats de date valides (w3c) --julien
     setlocale(LC_TIME, "C");
 
@@ -3108,7 +3048,7 @@ function baz_afficher_flux_RSS()
     if (count($tableau_flux_rss) > 0) {
         // Creation des items : titre + lien + description + date de publication
         foreach ($tableau_flux_rss as $ligne) {
-            $ligne = json_decode($ligne[0], true);
+            $ligne = json_decode($ligne["body"], true);
             $ligne = array_map('utf8_decode', $ligne);
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement ('item');

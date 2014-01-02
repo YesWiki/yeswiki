@@ -141,7 +141,7 @@ $comptage_groupe=array();
 foreach ($tableau_resultat as $fiche) {
 
 
-    $valeurs_fiche = json_decode($fiche[0], true);
+    $valeurs_fiche = json_decode($fiche["body"], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
     $valeurs_fiche['origine']['bf_titre']=$valeurs_fiche['bf_titre'];
