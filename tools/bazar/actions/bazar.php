@@ -73,8 +73,6 @@ if ((empty($GLOBALS['_BAZAR_']['templates'])) ||(!is_file('templates/bazar/'.$GL
     $GLOBALS['_BAZAR_']['templates'] = BAZ_TEMPLATE_LISTE_DEFAUT;
 }
 
-
-
 // si un identifiant fiche est renseigné, on récupère toutes les valeurs associées
 if (isset($_REQUEST['id_fiche'])) {
     $GLOBALS['_BAZAR_']['id_fiche'] = $_REQUEST['id_fiche'];
@@ -169,6 +167,7 @@ if (isset($_GET['message'])) {
     if ($_GET['message']=='delete_ok') $output.= BAZ_FICHE_SUPPRIMEE;
     $output .= '</div>'."\n";
 }
+
 if (isset ($_GET[BAZ_VARIABLE_VOIR])) {
         switch ($_GET[BAZ_VARIABLE_VOIR]) {
             case BAZ_VOIR_CONSULTER:

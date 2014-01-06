@@ -44,14 +44,14 @@ if (!defined("WIKINI_VERSION")) {
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-//error_reporting(E_ALL & ~E_DEPRECATED);
+//error_reporting(E_ALL & E_STRICT);
 
 //chemin relatif d'acces au bazar
 define ('BAZ_CHEMIN', 'tools'.DIRECTORY_SEPARATOR.'bazar'.DIRECTORY_SEPARATOR);
 define ('BAZ_CHEMIN_UPLOAD', 'files'.DIRECTORY_SEPARATOR);
 
 //librairies PEAR
-require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
+//require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Net'.DIRECTORY_SEPARATOR.'URL.php' ;
 
 //principales fonctions de bazar
@@ -63,7 +63,6 @@ define('BAZ_PREFIXE', $wakkaConfig['table_prefix']);
 // +------------------------------------------------------------------------------------------------------+
 // |                                            CORPS du PROGRAMME                                        |
 // +------------------------------------------------------------------------------------------------------+
-
 
 $wikireq = $_REQUEST['wiki'];
 
@@ -81,16 +80,7 @@ $methode = ($method == 'bazarframe') ? '/bazarframe' : '';
 // Variable d'url
 $GLOBALS['_BAZAR_']['url'] = new Net_URL($wakkaConfig['base_url'].$GLOBALS['_BAZAR_']['pagewiki'].$methode);
 
-// Connection a la base de donnee
-$dsn='mysql://'.$wakkaConfig['mysql_user'].':'.$wakkaConfig['mysql_password'].'@'.$wakkaConfig['mysql_host'].'/'.$wakkaConfig['mysql_database'];
-$db = new DB();
-$GLOBALS['_BAZAR_']['db'] = $db->connect($dsn) ;
-if ($db->isError($GLOBALS['_BAZAR_']['db'])) {
-    echo $GLOBALS['_BAZAR_']['db']->getMessage();
-}
-
 //test de l'existance des tables de bazar et installation si absentes.
-//$req = 'SHOW TABLES FROM '.$wakkaConfig['mysql_database'].' LIKE "'.BAZ_PREFIXE.'nature%"';
 $req = "CREATE TABLE IF NOT EXISTS `".BAZ_PREFIXE."nature` (
   `bn_id_nature` int(10) unsigned NOT NULL DEFAULT '0',
   `bn_label_nature` varchar(255) DEFAULT NULL,
@@ -109,7 +99,7 @@ $req = "CREATE TABLE IF NOT EXISTS `".BAZ_PREFIXE."nature` (
   `bn_label_class` varchar(255) NOT NULL,
   PRIMARY KEY (`bn_id_nature`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
-$resultat = $GLOBALS['_BAZAR_']['db']->query($req);
+$resultat = $GLOBALS['wiki']->query($req);
 
 // +------------------------------------------------------------------------------------------------------+
 // |                             LES CONSTANTES DES ACTIONS DE BAZAR                                      |

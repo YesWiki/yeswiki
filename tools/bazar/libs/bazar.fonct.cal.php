@@ -71,7 +71,7 @@ function GestionAffichageCalendrier($type = 'calendrier')
     $retour = '<div class="'.$type.'">';
 
     $url = $GLOBALS['_BAZAR_']['url'] ;
-    $db = &$GLOBALS['_BAZAR_']['db'] ;
+    $db = &$GLOBALS['wiki'] ;
 
     // Nettoyage de l'url de la query string
     $chaine_url = $url->getQueryString();
@@ -168,7 +168,7 @@ function GestionAffichageCalendrier($type = 'calendrier')
         $tableau_resultat = baz_requete_recherche_fiches('', 'chronologique', $GLOBALS['_BAZAR_']['id_typeannonce'], $GLOBALS['_BAZAR_']['categorie_nature']);
         $tab_fiches = array();
         foreach ($tableau_resultat as $fiche) {
-            $valeurs_fiche = json_decode($fiche[0], true);
+            $valeurs_fiche = json_decode($fiche["body"], true);
             $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
             //echo $valeurs_fiche['bf_titre'].' du '.$valeurs_fiche['bf_date_debut_evenement'].' au '.$valeurs_fiche['bf_date_fin_evenement'].'<br />';
             //echo 'date fin mois : '.date('Y-n-j', $ts_jour_fin_mois).'<br />';

@@ -805,10 +805,8 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 	            "name = '".mysql_real_escape_string($nomwiki)."', ".
 	            "email = '".mysql_real_escape_string($valeurs_fiche[$tableau_template[2]])."', ".
         	    "password = md5('".mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini'])."')";
-	            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertionuserwikini) ;
-	            if (DB::isError($resultat)) {
-	                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            	    }
+	            $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini) ;
+	            
 	   // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
 	   	   $GLOBALS['wiki']->SetUser($GLOBALS['wiki']->LoadUser($nomwiki));
 	   // indicateur pour la gestion des droits associee a la fiche.
@@ -1479,8 +1477,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     //on récupere le premier chiffre (l'identifiant de la liste)
                     preg_match_all('/[0-9]{1,4}/', $var, $matches);
                     $req = 'SELECT blv_label FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$matches[0][0].' AND blv_valeur='.$_POST[$var].' AND blv_ce_i18n="fr-FR"';
-                    $resultat = $GLOBALS['_BAZAR_']['db']->query($req) ;
-                    $label = $resultat->fetchRow();
+                    $label = $GLOBALS['wiki']->LoadSingle($req) ;
                     $_POST['bf_titre'] = str_replace('{{'.$var.'}}', ($label[0]!=null) ? $label[0] : '', $_POST['bf_titre']);
                 } else {
                     $_POST['bf_titre'] = str_replace('{{'.$var.'}}', $_POST[$var], $_POST['bf_titre']);
@@ -1808,7 +1805,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $tab_result = baz_requete_recherche_fiches('', 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"]);
         $select = '';
         foreach ($tab_result as $fiche) {
-            $valeurs_fiche_liste = json_decode($fiche[0], true);
+            $valeurs_fiche_liste = json_decode($fiche["body"], true);
             $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
             $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'] ;
         }
@@ -1833,7 +1830,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $tab_result = baz_requete_recherche_fiches('', $tri = 'alphabetique', $tableau_template[1], '');
             $select[0] = BAZ_INDIFFERENT;
             foreach ($tab_result as $fiche) {
-                $valeurs_fiche = json_decode($fiche[0], true);
+                $valeurs_fiche = json_decode($fiche["body"], true);
                 $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
                 $select[$valeurs_fiche['id_fiche']] = $valeurs_fiche['bf_titre'] ;
             }
@@ -1893,10 +1890,8 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             //on classe par ordre alphabetique
             $requete .= ' ORDER BY bf_titre';
 
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError ($resultat)) {
-                return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            $resultat = $GLOBALS['wiki']->query($requete) ;
+            
             require_once 'HTML/QuickForm/checkbox.php';
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');
@@ -1946,10 +1941,8 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         //on supprime les anciennes valeurs de la table '.BAZ_PREFIXE.'fiche_valeur_texte
         $requetesuppression='DELETE FROM '.BAZ_PREFIXE.'fiche_valeur_texte WHERE bfvt_ce_fiche="'.$GLOBALS['_BAZAR_']['id_fiche'].'" AND bfvt_id_element_form="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].'"';
-        $resultat = $GLOBALS['_BAZAR_']['db']->query($requetesuppression) ;
-        if (DB::isError($resultat)) {
-            echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-        }
+        $resultat = $GLOBALS['wiki']->query($requetesuppression) ;
+        
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!=0)) {
             //on insere les nouvelles valeurs
             $requeteinsertion='INSERT INTO '.BAZ_PREFIXE.'fiche_valeur_texte (bfvt_ce_fiche, bfvt_id_element_form, bfvt_texte) VALUES ';
@@ -1962,19 +1955,15 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $nb++;
                 }
             }
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requeteinsertion) ;
-            if (DB::isError($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            $resultat = $GLOBALS['wiki']->query($requeteinsertion) ;
+            
         }
     } elseif ($mode == 'formulaire_recherche') {
         if ($tableau_template[9]==1) {
             $requete =  'SELECT * FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$tableau_template[1].
                 ' AND blv_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ORDER BY blv_label';
-            $resultat = & $GLOBALS['_BAZAR_']['db'] -> query($requete) ;
-            if (DB::isError ($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            $resultat =  $GLOBALS['wiki'] -> LoadSingle($requete) ;
+            
             require_once 'HTML/QuickForm/checkbox.php';
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');
@@ -2000,10 +1989,8 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             //on classe par ordre alphabetique
             $requete .= ' ORDER BY bf_titre';
 
-            $resultat = $GLOBALS['_BAZAR_']['db']->query($requete) ;
-            if (DB::isError ($resultat)) {
-                return ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            $resultat = $GLOBALS['wiki']->query($requete) ;
+            
             $i=0;
 
             while ($ligne = $resultat->fetchRow()) {
@@ -2076,10 +2063,8 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($tableau_template[9]==1) {
             $requete =  'SELECT * FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$tableau_template[1].
                 ' AND blv_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ORDER BY blv_label';
-            $resultat = & $GLOBALS['_BAZAR_']['db'] -> query($requete) ;
-            if (DB::isError ($resultat)) {
-                echo ($resultat->getMessage().$resultat->getDebugInfo()) ;
-            }
+            $resultat = $GLOBALS['wiki'] -> query($requete) ;
+            
             require_once 'HTML/QuickForm/checkbox.php';
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');

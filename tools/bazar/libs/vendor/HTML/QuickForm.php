@@ -563,7 +563,7 @@ class HTML_QuickForm extends HTML_Common
      * @return HTML_QuickForm_Element
      * @throws HTML_QuickForm_Error
      */
-    function &createElement($elementType)
+    static function &createElement($elementType)
     {
         $args    =  func_get_args();
         $HTML_QuickForm = new HTML_QuickForm();

@@ -76,7 +76,7 @@ if (!empty($id_typeannonce)) {
     $tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeannonce, $categorie_nature);
 
     foreach ($tableau_resultat as $fiche) {
-        $valeurs_fiche = json_decode($fiche[0], true);
+        $valeurs_fiche = json_decode($fiche["body"], true);
         $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
         $tab = explode('|', $valeurs_fiche['carte_google']);
         if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {

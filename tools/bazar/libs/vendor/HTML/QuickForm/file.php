@@ -328,7 +328,7 @@ class HTML_QuickForm_file extends HTML_QuickForm_input
     * @access    private
     * @return    mixed
     */
-    public function _findValue()
+    public function _findValue(&$values='')
     {
         if (empty($_FILES)) {
             return null;

@@ -264,7 +264,7 @@ class PEAR
      * @access  public
      * @return bool true if parameter is an error
      */
-    public function isError($data, $code = null)
+    static public function isError($data, $code = null)
     {
         if (!is_a($data, 'PEAR_Error')) {
             return false;

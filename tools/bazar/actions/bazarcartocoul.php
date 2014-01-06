@@ -80,7 +80,7 @@ $tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeanno
 $tab_points_carto = array();
 
 foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche[0], true);
+    $valeurs_fiche = json_decode($fiche["body"], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     if (isset($valeurs_fiche['carte_google'])) {
         $tab = explode('|', $valeurs_fiche['carte_google']);
