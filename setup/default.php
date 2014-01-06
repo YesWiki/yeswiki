@@ -32,11 +32,6 @@ if (!defined('WIKINI_VERSION'))
 	die ("acc&egrave;s direct interdit");
 }
 ?>
-
-<form class="form-horizontal" action="<?php echo  myLocation() ?>?installAction=install" method="post">
-	<div class="row">
-		<div class="span12">
-
 		<div class="hero-unit"><h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></h1>
 
 	<?php 
@@ -61,12 +56,13 @@ if (!defined('WIKINI_VERSION'))
 	}
 	else
 	{
-		echo "<h4>(".YESWIKI_VERSION." - ".YESWIKI_RELEASE.")</h4><p>"._t('FILL_THE_FORM_BELOW')." :</p>\n";
+		echo "<h4>(".YESWIKI_VERSION." - ".YESWIKI_RELEASE.")</h4><p>"._t('FILL_THE_FORM_BELOW')."</p>\n";
 		$wiki = null;
 	}
 	?>
 
 		</div>
+		<form class="form-horizontal" action="<?php echo  myLocation() ?>?installAction=install" method="post">
 
 		<fieldset>
 		
@@ -338,5 +334,3 @@ if (!defined('WIKINI_VERSION'))
 		</fieldset>
 
 	</form>
-</div> <!-- /.span12 -->
-</div> <!-- /.row -->

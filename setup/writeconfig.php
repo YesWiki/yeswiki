@@ -35,9 +35,15 @@ if (!defined('WIKINI_VERSION'))
 if (empty($_POST['config']))
 {
 	header('Location: ' . myLocation());
-	die ('probl&egrave;me dans la proc&eacute;dure d\'installation');
+	die (_t('PROBLEM_WHILE_INSTALLING'));
 }
-
+?>
+		<div class="hero-unit">
+			<h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></h1>
+			<h4>(<?php echo YESWIKI_VERSION." - ".YESWIKI_RELEASE; ?>)</h4>
+			<p><?php echo _t('WRITING_CONFIGURATION_FILE'); ?></p>
+		</div>
+<?php
 // fetch config
 $config = $config2 = unserialize($_POST["config"]);
 
@@ -47,9 +53,11 @@ $config = array_merge($wakkaConfig, $config);
 // set version to current version, yay!
 $config["wikini_version"] = WIKINI_VERSION;
 $config["wakka_version"] = WAKKA_VERSION;
+$config["yeswiki_version"] = YESWIKI_VERSION;
+$config["yeswiki_release"] = YESWIKI_RELEASE;
 
 // convert config array into PHP code
-$configCode = "<?php\n// wakka.config.php cr&eacute;&eacute;e ".strftime("%c")."\n// ne changez pas la yeswiki_version manuellement!\n\n\$wakkaConfig = ";
+$configCode = "<?php\n// wakka.config.php "._t('CREATED')." ".strftime("%c")."\n// "._t('DONT_CHANGE_YESWIKI_VERSION_MANUALLY')." !\n\n\$wakkaConfig = ";
 if (function_exists('var_export'))
 {
 	// var_export gives a better result but was added in php 4.2.0 (wikini asks only php 4.1.0)
@@ -67,8 +75,8 @@ else
 }
 
 // try to write configuration file
-echo "<b>Cr&eacute;ation du fichier de configuration en cours...</b><br>\n";
-test("&Eacute;criture du fichier de configuration <tt>".$wakkaConfigLocation."</tt>...", $fp = @fopen($wakkaConfigLocation, "w"), "", 0);
+echo "<b>"._t('WRITING_CONFIGURATION_FILE_WIP')." ...</b><br>\n";
+test(_t('WRITING_CONFIGURATION_FILE')." <tt>".$wakkaConfigLocation."</tt> ...", $fp = @fopen($wakkaConfigLocation, "w"), "", 0);
 
 if ($fp)
 {
@@ -76,35 +84,25 @@ if ($fp)
 	// write
 	fclose($fp);
 	
-	echo	"<p>Voila c'est termin&eacute; ! Vous pouvez " .
-			"<a href=\"",$config["base_url"],"\">retourner sur votre " .
-			"site YesWiki</a>.</p><p>Il est conseill&eacute; de retirer " .
-			"l'acc&egrave;s en &eacute;criture au fichier " .
-			"<tt>wakka.config.php</tt>. <br>Ceci peut &ecirc;tre une faille " .
-			"dans la s&eacute;curit&eacute;.</p>";
+	echo	"<br />\n<div class=\"alert alert-success\"><strong>"._t('FINISHED_CONGRATULATIONS')." !</strong><br />" ._t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE')." <tt>wakka.config.php</tt> ("._t('THIS_COULD_BE_UNSECURE').").</div>";
+	echo "<div class=\"form-actions\">\n<a class=\"btn btn-primary btn-large continuer\" href=\"",$config["base_url"],"\">"._t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE')."</a>\n</div>\n";
 }
 else
 {
 	// complain
-	echo	"<p><span class=\"failed\">AVERTISSEMENT:</span> Le " .
-			"fichier de configuration <tt>",$wakkaConfigLocation,"</tt> " .
-			"n'a pu &ecirc;tre cr&eacute;&eacute;. " .
-			"Veuillez vous assurez que votre serveur a les droits " .
-			"d'acc&egrave;s en &eacute;criture pour ce fichier. Si pour " .
-			"une raison quelconque vous ne pouvez pas faire &ccedil;a, vous " .
-			"devez copier les informations suivantes dans un fichier et " .
-			"les transf&eacute;rer au moyen d'un logiciel de transfert de " .
-			"fichier (ftp) sur le serveur dans un fichier " .
-			"<tt>wakka.config.php</tt> directement dans le r&eacute;pertoire " .
-			"de YesWiki. Une fois que vous aurez fait cela, votre site YesWiki " .
-			"devrait fonctionner correctement.</p>\n";
+	echo	"<br />\n<div class=\"alert alert-danger\"><strong>"._t('WARNING')."</strong> :</span> "._t('CONFIGURATION_FILE')." <tt>",$wakkaConfigLocation,"</tt> "._t('CONFIGURATION_FILE_NOT_CREATED').".<br />" .
+			_t('TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT') .
+			"<tt>wakka.config.php</tt> "._t('DIRECTLY_IN_THE_YESWIKI_FOLDER').".</div>\n";
+	echo "\n<pre><xmp>",$configCode,"</xmp></pre>\n";
 	?>
 	<form action="<?php echo  myLocation() ?>?installAction=writeconfig" method="POST">
-	<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config2), ENT_COMPAT, 'ISO-8859-1') ?>">
-	<input type="submit" value="Essayer &agrave; nouveau">
+	<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config2), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>">
+	<div class="form-actions">
+		<input type="submit" class="btn btn-large btn-primary continuer" value="<?php echo _t('TRY_AGAIN'); ?>">
+	</div>
 	</form>	
 	<?php
-	echo"<div style=\"background-color: #EEEEEE; padding: 10px 10px;\">\n<pre><xmp>",$configCode,"</xmp></pre>\n</div>\n";
+	
 }
 
 ?>

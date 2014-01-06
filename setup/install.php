@@ -37,7 +37,13 @@ if (empty($_POST['config']))
 	header('Location: ' . myLocation());
 	die (_t('PROBLEM_WHILE_INSTALLING'));
 }
-
+?>
+		<div class="hero-unit">
+			<h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></h1>
+			<h4>(<?php echo YESWIKI_VERSION." - ".YESWIKI_RELEASE; ?>)</h4>
+			<p><?php echo _t('VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION'); ?></p>
+		</div>
+<?php
 // fetch configuration
 $config = $config2 = $_POST["config"];
 
@@ -45,28 +51,26 @@ $config = $config2 = $_POST["config"];
 $config = array_merge($wakkaConfig, $config);
 if (!$version = trim($wakkaConfig["wikini_version"])) $version = "0";
 
-// test configuration
-echo "<p><strong>Test de la configuration</strong></p>\n";
 if ($version)
 {
-	test('V&eacute;rification mot de passe MySQL ...',
+	test(_t('VERIFY_MYSQL_PASSWORD').' ...',
 		isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'],
-		'Le mot de passe MySQL est incorrect !');
+		_t('INCORRECT_MYSQL_PASSWORD').' !');
 }
-test("Test connexion MySQL ...",
+test(_t('TEST_MYSQL_CONNECTION')." ...",
 	$dblink = @mysql_connect($config["mysql_host"], $config["mysql_user"], $config["mysql_password"]));
-$testdb = test("Recherche base de donn&eacute;es ...",
+$testdb = test(_t('SEARCH_FOR_DATABASE')." ...",
 	@mysql_select_db($config["mysql_database"], $dblink),
-	"La base de donn&eacute;es que vous avez choisie n'existe pas. Nous allons tenter de la cr&eacute;er...",
+	_t('NO_DATABASE_FOUND_TRY_TO_CREATE').".",
 	0);
 if($testdb == 1)
 {
-	test("Tentative de cr&eacute;ation de la base de donn&eacute;es...",
+	test(_t('TRYING_TO_CREATE_DATABASE')." ...",
 		@mysql_query("CREATE DATABASE ".$config["mysql_database"], $dblink),
-		"Cr&eacute;ation de la base impossible. Vous devez cr&eacute;er cette base manuellement avant d'installer WikiNi !");
-	test("Recherche base de donn&eacute;es ...",
+		_t('DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY')." !");
+	test(_t('SEARCH_FOR_DATABASE')." ...",
 		@mysql_select_db($config["mysql_database"], $dblink),
-		"La base de donn&eacute;es que vous avez choisie n'existe pas, vous devez la cr&eacute;er avant d'installer WikiNi !",
+		_t('DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT')." !",
 		1);
 }
 
@@ -76,13 +80,13 @@ if (!$version || empty($_POST['admin_login']))
 	$admin_email = $_POST["admin_email"];
 	$admin_password = $_POST["admin_password"];
 	$admin_password_conf = $_POST["admin_password_conf"];
-	test('V&eacute;rification du mot de passe Administrateur...',
-		strlen($admin_password) >= 6,
-		'Le mot de passe est trop court',
+	test(_t('CHECKING_THE_ADMIN_PASSWORD').' ...',
+		strlen($admin_password) >= 5,
+		_t('PASSWORD_TOO_SHORT'),
 		1);
-	test('V&eacute;rification de l\'identit&eacute; des mots de passes administrateurs',
+	test(_t('CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION')." ...",
 		$admin_password == $admin_password_conf,
-		'Les mots de passe Administrateur sont diff&eacute;rents',
+		_t('ADMIN_PASSWORD_ARE_DIFFERENT'),
 		1);
 }
 else
@@ -96,8 +100,8 @@ switch ($version)
 {
 // new installation
 case "0":
-	echo "<b>Installation</b><br>\n";
-	test("Creation table page...",
+	echo "<br /><b>"._t('DATABASE_INSTALLATION')."</b><br>\n";
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."pages ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."pages (".
   			"id int(10) unsigned NOT NULL auto_increment,".
@@ -116,16 +120,16 @@ case "0":
   			"KEY idx_time (time),".
   			"KEY idx_latest (latest),".
   			"KEY idx_comment_on (comment_on)".
-			") ENGINE=MyISAM;", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
-	test("Creation table ACL ...",
+			") ENGINE=MyISAM;", $dblink), _t('ALREADY_CREATED')." ?", 0);
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."acls ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."acls (".
   			"page_tag varchar(50) NOT NULL default '',".
 			"privilege varchar(20) NOT NULL default '',".
   			"list text NOT NULL,".
  			"PRIMARY KEY  (page_tag,privilege)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
-	test("Creation table link ...",
+			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."links ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."links (".
 			"from_tag char(50) NOT NULL default '',".
@@ -133,8 +137,8 @@ case "0":
   			"UNIQUE KEY from_tag (from_tag,to_tag),".
   			"KEY idx_from (from_tag),".
   			"KEY idx_to (to_tag)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
-	test("Creation table referrer ...",
+			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."referrers ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."referrers (".
   			"page_tag char(50) NOT NULL default '',".
@@ -142,8 +146,8 @@ case "0":
   			"time datetime NOT NULL default '0000-00-00 00:00:00',".
   			"KEY idx_page_tag (page_tag),".
   			"KEY idx_time (time)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
-	test("Creation table user ...",
+			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."users ...",
 		@mysql_query(
 			"CREATE TABLE ".$config["table_prefix"]."users (".
   			"name varchar(80) NOT NULL default '',".
@@ -158,8 +162,8 @@ case "0":
   			"PRIMARY KEY  (name),".
   			"KEY idx_name (name),".
   			"KEY idx_signuptime (signuptime)".
-			") ENGINE=MyISAM", $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
-	test("Creation table triplets ...",
+			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."triples ...",
 		@mysql_query(
 			'CREATE TABLE `' .$config['table_prefix'] . 'triples` (' . 
 			'  `id` int(10) unsigned NOT NULL auto_increment,' . 
@@ -169,14 +173,14 @@ case "0":
 			'  PRIMARY KEY  (`id`),' . 
 			'  KEY `resource` (`resource`),' . 
 			'  KEY `property` (`property`)' . 
-			') ENGINE=MyISAM', $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
-	test("Creation compte admin ...",
+			') ENGINE=MyISAM', $dblink), _t('ALREADY_CREATED')." ?", 0);
+	test(_t('ADMIN_ACCOUNT_CREATION')." ...",
 		@mysql_query(
 			"insert into ".$config["table_prefix"]."users set ".
 					"signuptime = now(), ".
 					"name = '".mysql_real_escape_string($admin_name)."', ".
 					"email = '".mysql_real_escape_string($admin_email)."', ".
-					"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
+					"password = md5('".mysql_real_escape_string($admin_password)."')"), _t('ALREADY_EXISTING').".", 0);
 	$wiki = new Wiki($config);
 	$wiki->SetGroupACL("admins", $admin_name);
 				
@@ -205,7 +209,7 @@ case "0":
 				"time = now(), ".
 				"latest = 'Y'";
 
-			test("Insertion de la page $pagename ...", @mysql_query($sql, $dblink),"?",0);
+			test(_t('INSERTION_OF_PAGE')." $pagename ...", @mysql_query($sql, $dblink),"?",0);
 
 			// update table_links 
 			$wiki->SetPage($wiki->LoadPage($pagename,"",0));
@@ -221,7 +225,7 @@ case "0":
 		}
 		else
 		{
-			test("Insertion de la page $pagename ...", 0 ,"Existe d&eacute;j&agrave;.",0);
+			test(_t('INSERTION_OF_PAGE')." $pagename ...", 0 ,_t('ALREADY_EXISTING').".",0);
 		}	
 
 	}
@@ -229,9 +233,9 @@ case "0":
 	
 	// The funny upgrading stuff. Make sure these are in order! //
 case "0.1":
-	echo "<b>En cours de mise &agrave; jour de WikiNi 0.1</b><br>\n";
-	test("Modification très légère de la table des pages...", 
-		@mysql_query("alter table ".$config["table_prefix"]."pages add body_r text not null default '' after body", $dblink), "Already done? Hmm!", 0);
+	echo "<b>"._t('UPDATING_FROM_WIKINI_0_1')."</b><br>\n";
+	test(_t('TINY_MODIFICATION_OF_PAGES_TABLE')." ...", 
+		@mysql_query("alter table ".$config["table_prefix"]."pages add body_r text not null default '' after body", $dblink), _t('ALREADY_DONE'), 0);
 	// continue through the upgrading process to create the triple's table
 case '0.4.0':
 case '0.4.1':
@@ -239,7 +243,7 @@ case '0.4.2':
 case '0.4.3':
 case '0.4.4':
 case '0.5.0': // TODO remove this line (idem)
-	test("Creation table triplets ...",
+	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."triples ...",
 		@mysql_query('CREATE TABLE `' .$config['table_prefix'] . 'triples` (' . 
 			'  `id` int(10) unsigned NOT NULL auto_increment,' . 
 			'  `resource` varchar(255) NOT NULL default \'\',' . 
@@ -248,10 +252,10 @@ case '0.5.0': // TODO remove this line (idem)
 			'  PRIMARY KEY  (`id`),' . 
 			'  KEY `resource` (`resource`),' . 
 			'  KEY `property` (`property`)' . 
-			') ENGINE=MyISAM', $dblink), "D&eacute;j&agrave; cr&eacute;&eacute;e ?", 0);
+			') ENGINE=MyISAM', $dblink), _t('ALREADY_CREATED')." ?", 0);
 	if (!empty($admin_password))
 	{
-		test("Creation compte admin ...",
+		test(_t('ADMIN_ACCOUNT_CREATION')." ...",
 			@mysql_query(
 				"insert into ".$config["table_prefix"]."users set ".
 				"signuptime = now(), ".
@@ -260,27 +264,19 @@ case '0.5.0': // TODO remove this line (idem)
 				"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
 	}
 	$wiki = new Wiki($config);
-	test("Insertion de l'utilisateur sp&eacute;cifi&eacute; dans le groupe admin ...",
+	test(_t('INSERTION_OF_USER_IN_ADMIN_GROUP')." ...",
 		!$wiki->SetGroupACL("admins", $admin_name), 0);
 }
 
 ?>
-
-<style type="text/css">
-	input[type="submit"]{
- 	cursor:pointer;
- 	height: 50px;
- 	width: 200px;
- 	margin-bottom: 200px;
- 	}
-</style>
-
-<p>
-A l'&eacute;tape suivante, le programme d'installation va essayer
-d'&eacute;crire le fichier de configuration <tt><?php echo  $wakkaConfigLocation ?></tt>.</br>
-Assurez vous que le serveur web a bien le droit d'&eacute;crire dans ce fichier, sinon vous devrez le modifier manuellement.  </p>
+<br />
+<div class="alert alert-info"><?php echo _t('NEXT_STEP_WRITE_CONFIGURATION_FILE'); ?>
+<tt><?php echo  $wakkaConfigLocation ?></tt>.</br>
+<?php echo _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'); ?>.  </div>
 
 <form action="<?php echo  myLocation(); ?>?installAction=writeconfig" method="POST">
 <input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config), ENT_COMPAT, 'ISO-8859-1') ?>">
-<input type="submit" value="Continuer">
+<div class="form-actions">
+	<input class="btn btn-large btn-primary continuer" type="submit" value="<?php echo _t('CONTINUE'); ?>" />
+</div>
 </form>

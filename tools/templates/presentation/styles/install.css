@@ -67,7 +67,7 @@ h4 {
     margin-bottom: 0;
 }
 
-.continuer {
+.continuer, .revenir {
 	margin-left: 80px;
     padding: 20px 75px;
 }

@@ -183,14 +183,15 @@ $GLOBALS['translations']['IDENTIFICATION'] = 'Identification';
 $GLOBALS['translations']['FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER'] = 'Les champs suivants sont &agrave; remplir si vous vous identifiez pour la premi&egrave;re fois (vous cr&eacute;erez ainsi un compte)';
 $GLOBALS['translations']['PASSWORD_CONFIRMATION'] = 'Confirmation du mot de passe';
 $GLOBALS['translations']['NEW_ACCOUNT'] = 'Nouveau compte';
-$GLOBALS['translations'][''] = '';
-$GLOBALS['translations'][''] = '';
-$GLOBALS['translations'][''] = '';
-$GLOBALS['translations'][''] = '';
-$GLOBALS['translations'][''] = '';
+
 
 // actions/wantedpages.php 
 $GLOBALS['translations']['NO_PAGE_TO_CREATE'] = 'Aucune page &agrave; cr&eacute;er';
+
+// setup/header.php
+$GLOBALS['translations']['OK'] = 'OK';
+$GLOBALS['translations']['FAIL'] = 'ECHEC';
+$GLOBALS['translations']['END_OF_INSTALLATION_BECAUSE_OF_ERRORS'] = 'Fin de l\'installation suite &agrave; des erreurs dans la configuration';
 
 // setup/default.php
 $GLOBALS['translations']['INSTALLATION_OF_YESWIKI'] = 'Installation de YesWiki';
@@ -245,6 +246,50 @@ $GLOBALS['translations']['OTHER_OPTIONS'] = 'Autres options';
 $GLOBALS['translations']['OBLIGE_TO_PREVIEW_BEFORE_SAVING_PAGE'] = 'Imposer de faire un aper&ccedil;u avant de pouvoir sauver une page';
 $GLOBALS['translations']['AUTHORIZE_HTML_INSERTION'] = 'Autoriser l\'insertion de HTML brut';
 $GLOBALS['translations']['CONTINUE'] = 'Continuer';
-$GLOBALS['translations'][''] = '';
-$GLOBALS['translations'][''] = '';
+
+// setup/install.php
+$GLOBALS['translations']['PROBLEM_WHILE_INSTALLING'] = 'probl&egrave;me dans la proc&eacute;dure d\'installation';
+$GLOBALS['translations']['VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION'] = 'Test de la configuration et installation de la base de donn&eacute;es';
+$GLOBALS['translations']['VERIFY_MYSQL_PASSWORD'] = 'V&eacute;rification mot de passe MySQL';
+$GLOBALS['translations']['INCORRECT_MYSQL_PASSWORD'] = 'Le mot de passe MySQL est incorrect';
+$GLOBALS['translations']['TEST_MYSQL_CONNECTION'] = 'Test connexion MySQL';
+$GLOBALS['translations']['SEARCH_FOR_DATABASE'] = 'Recherche base de donn&eacute;es';
+$GLOBALS['translations']['GO_BACK'] = 'Revenir';
+$GLOBALS['translations']['NO_DATABASE_FOUND_TRY_TO_CREATE'] = 'La base de donn&eacute;es que vous avez choisie n\'existe pas. Nous allons tenter de la cr&eacute;er';
+$GLOBALS['translations']['TRYING_TO_CREATE_DATABASE'] = 'Tentative de cr&eacute;ation de la base de donn&eacute;es';
+$GLOBALS['translations']['DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY'] = 'Cr&eacute;ation de la base impossible. Vous devez cr&eacute;er cette base manuellement avant d\'installer YesWiki';
+$GLOBALS['translations']['SEARCH'] = 'Recherche base de donn&eacute;es';
+$GLOBALS['translations']['DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT'] = 'La base de donn&eacute;es que vous avez choisie n\'existe pas, vous devez la cr&eacute;er avant d\'installer YesWiki';
+$GLOBALS['translations']['CHECKING_THE_ADMIN_PASSWORD'] = 'V&eacute;rification du mot de passe Administrateur';
+$GLOBALS['translations']['CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION'] = 'V&eacute;rification de l\'identit&eacute; des mots de passes administrateurs';
+$GLOBALS['translations']['ADMIN_PASSWORD_ARE_DIFFERENT'] = 'Les mots de passe Aaministrateur sont diff&eacute;rents';
+$GLOBALS['translations']['DATABASE_INSTALLATION'] = 'Installation de la base de donn&eacute;es';
+$GLOBALS['translations']['CREATION_OF_TABLE'] = 'Cr&eacute;ation de la table';
+$GLOBALS['translations']['ALREADY_CREATED'] = 'D&eacute;j&agrave; cr&eacute;&eacute;e';
+$GLOBALS['translations']['ADMIN_ACCOUNT_CREATION'] = 'Cr&eacute;ation du compte Administrateur';
+$GLOBALS['translations']['INSERTION_OF_PAGE'] = 'Insertion de la page';
+$GLOBALS['translations']['ALREADY_EXISTING'] = 'Existe d&eacute;j&agrave;';
+$GLOBALS['translations']['UPDATING_FROM_WIKINI_0_1'] = 'En cours de mise &agrave; jour de WikiNi 0.1';
+$GLOBALS['translations']['TINY_MODIFICATION_OF_PAGES_TABLE'] = 'Modification très légère de la table des pages';
+$GLOBALS['translations']['ALREADY_DONE'] = 'Already done? Hmm!';
+$GLOBALS['translations']['INSERTION_OF_USER_IN_ADMIN_GROUP'] = 'Insertion de l\'utilisateur sp&eacute;cifi&eacute; dans le groupe admin';
+$GLOBALS['translations']['NEXT_STEP_WRITE_CONFIGURATION_FILE'] = 'A l\'&eacute;tape suivante, le programme d\'installation va essayer d\'&eacute;crire le fichier de configuration ';
+$GLOBALS['translations']['VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'] = 'Assurez vous que le serveur web a bien le droit d\'&eacute;crire dans ce fichier, sinon vous devrez le modifier manuellement';
+
+// setup/writeconfig.php
+$GLOBALS['translations']['WRITING_CONFIGURATION_FILE'] = '&Eacute;criture du fichier de configuration';
+$GLOBALS['translations']['CREATED'] = 'cr&eacute;&eacute;e';
+$GLOBALS['translations']['DONT_CHANGE_YESWIKI_VERSION_MANUALLY'] = 'ne changez pas la yeswiki_version manuellement';
+$GLOBALS['translations']['WRITING_CONFIGURATION_FILE_WIP'] = 'Cr&eacute;ation du fichier de configuration en cours';
+$GLOBALS['translations']['FINISHED_CONGRATULATIONS'] = 'Voila c\'est termin&eacute;, f&eacute;licitations';
+$GLOBALS['translations']['GO_TO_YOUR_NEW_YESWIKI_WEBSITE'] = 'Aller sur votre nouveau site YesWiki';
+$GLOBALS['translations']['IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE'] = 'Il est conseill&eacute; de retirer l\'acc&egrave;s en &eacute;criture au fichier';
+$GLOBALS['translations']['THIS_COULD_BE_UNSECURE'] = 'ceci peut &ecirc;tre une faille dans la s&eacute;curit&eacute;';
+$GLOBALS['translations']['WARNING'] = 'AVERTISSEMENT';
+$GLOBALS['translations']['CONFIGURATION_FILE'] = 'le fichier de configuration';
+$GLOBALS['translations']['CONFIGURATION_FILE_NOT_CREATED'] = 'n\'a pu &ecirc;tre cr&eacute;&eacute;';
+$GLOBALS['translations']['TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT'] = 'Veuillez vous assurez que votre serveur a les droits d\'acc&egrave;s en &eacute;criture pour ce fichier. Si pour une raison quelconque vous ne pouvez pas faire &ccedil;a, vous devez copier les informations suivantes dans un fichier et les transf&eacute;rer au moyen d\'un logiciel de transfert de fichier (ftp) sur le serveur dans un fichier ';
+$GLOBALS['translations']['DIRECTLY_IN_THE_YESWIKI_FOLDER'] = 'directement dans le r&eacute;pertoire de YesWiki. Une fois que vous aurez fait cela, votre site YesWiki devrait fonctionner correctement';
+$GLOBALS['translations']['TRY_AGAIN'] = 'Essayer &agrave; nouveau';
+
 ?>
