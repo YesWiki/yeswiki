@@ -209,7 +209,7 @@ $GLOBALS['translations']['MYSQL_DATABASE_INFOS'] = 'Cette base de donn&eacute;es
 $GLOBALS['translations']['MYSQL_USERNAME'] = 'Nom de l\'utilisateur MySQL';
 $GLOBALS['translations']['MYSQL_USERNAME_INFOS'] = 'N&eacute;cessaire pour se connecter &agrave; votre base de donn&eacute;es';
 $GLOBALS['translations']['TABLE_PREFIX'] = 'Pr&eacute;fixe des tables';
-$GLOBALS['translations']['TABLE_PREFIX_INFOS'] = 'Permet d\'utiliser plusieurs YesWiki sur une m&ecirc;me base de donn&eacute;es : chaque nouveau YesWiki install&eacute; devra avoir un pr&eacute;fixe des tables diff&eacute;rent';
+$GLOBALS['translations']['TABLE_PREFIX_INFOS'] = 'Permet d\'utiliser plusieurs YesWiki sur une m&ecirc;me base de donn&eacute;es <br> (Un pr&eacute;fixe pour chaque YesWiki)';
 $GLOBALS['translations']['MYSQL_PASSWORD'] = 'Mot de passe MySQL';
 $GLOBALS['translations']['YESWIKI_WEBSITE_CONFIGURATION'] = 'Configuration de votre site YesWiki';
 $GLOBALS['translations']['YOUR_WEBSITE_NAME'] = 'Nom de votre site';
@@ -246,6 +246,8 @@ $GLOBALS['translations']['OTHER_OPTIONS'] = 'Autres options';
 $GLOBALS['translations']['OBLIGE_TO_PREVIEW_BEFORE_SAVING_PAGE'] = 'Imposer de faire un aper&ccedil;u avant de pouvoir sauver une page';
 $GLOBALS['translations']['AUTHORIZE_HTML_INSERTION'] = 'Autoriser l\'insertion de HTML brut';
 $GLOBALS['translations']['CONTINUE'] = 'Continuer';
+$GLOBALS['translations']['INFORMATION_FROM_HOSTING_COMPANY'] = ' (Informations fournies par votre h&eacute;bergeur)';
+
 
 // setup/install.php
 $GLOBALS['translations']['PROBLEM_WHILE_INSTALLING'] = 'probl&egrave;me dans la proc&eacute;dure d\'installation';

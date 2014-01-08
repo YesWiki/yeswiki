@@ -56,7 +56,7 @@ if (!defined('WIKINI_VERSION'))
 	}
 	else
 	{
-		echo "<h4>(".YESWIKI_VERSION." - ".YESWIKI_RELEASE.")</h4><p>"._t('FILL_THE_FORM_BELOW')."</p>\n";
+		echo "<h4>(".YESWIKI_VERSION." - ".YESWIKI_RELEASE.")</h4><p class='soustitre'>"._t('FILL_THE_FORM_BELOW')."</p>\n";
 		$wiki = null;
 	}
 	?>
@@ -66,10 +66,10 @@ if (!defined('WIKINI_VERSION'))
 
 		<fieldset>
 		
-			<legend><?php echo _t('DATABASE_CONFIGURATION'); ?></legend>
+			<legend class="legend-first"><?php echo _t('DATABASE_CONFIGURATION'); ?><span><?php echo _t('INFORMATION_FROM_HOSTING_COMPANY'); ?></span></legend>
 				
 				<div class="accordion-heading">
-					<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
+					<a class="plusinfosfirst btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
 				</div>
 				
 				<div class="accordion" id="accordion1">
