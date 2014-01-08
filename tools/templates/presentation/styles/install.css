@@ -24,9 +24,13 @@ legend {
     color: #18657f;
     padding-left: 15px;
     font-size: 20px;
-    margin-bottom: 8px;
-    margin-top: 40px;
+    margin-bottom: 10px;
+    margin-top: 30px;
     line-height: 32px;
+}
+
+.legend-first {
+    margin-bottom: -20px;
 }
 
 .hero-unit h1 {
@@ -59,6 +63,11 @@ h4 {
 }
 
 .plusinfos {
+    float:right;
+    margin-top: -38px;
+}
+
+.plusinfosfirst {
     float:right;
     margin-top: -38px;
 }

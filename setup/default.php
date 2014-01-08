@@ -68,10 +68,10 @@ if (!defined('WIKINI_VERSION'))
 
 	<fieldset>
 	
-		<legend>Configuration de la base de donn&eacute;es <span>(Informations fournies par votre h&eacute;bergeur)</span></legend>
+		<legend class="legend-first">Configuration de la base de donn&eacute;es <span>(Informations fournies par votre h&eacute;bergeur)</span></legend>
 			
 			<div class="accordion-heading">
-				<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">+ Infos</a>
+				<a class="plusinfosfirst btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">+ Infos</a>
 			</div>
 			
 			<div class="accordion" id="accordion2">
