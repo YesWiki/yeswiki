@@ -135,7 +135,7 @@ if ($tree)
         $sql .= ' WHERE a.tag = "' . AddSlashes($tree) . '" AND a.latest = "Y" LIMIT 1';
         if (!$rootData = $this->LoadSingle($sql))
         {
-            echo '<em><strong>Erreur ActionListPages</strong>: La page ' . htmlspecialchars($tree) . ' n\'existe pas !</strong>';
+            echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' ListPages</strong> : '._('THE_PAGE').' ' . htmlspecialchars($tree, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . ' '._t('DOESNT_EXIST').' !</div>';
             return;
         }
         $links[$tree] = $rootData;
@@ -297,7 +297,7 @@ if ($tree)
                         switch ($show)
                         {
                             case 'owner':
-                                $retour .= ' . . . . appartenant &agrave; : ';
+                                $retour .= ' . . . . '._t('BELONGING_TO').' : ';
                                 if ($pageData['owner'])
                                 {
                                     if ($pageData['owner_has_ownpage'])
@@ -312,11 +312,11 @@ if ($tree)
                                 }
                                 else
                                 {
-                                    $retour .= 'Inconnu';
+                                    $retour .= _t('UNKNOWN');
                                 }
                                 break;
                             case 'user':
-                                $retour .= ' . . . . derni&egrave;re modification par : ';
+                                $retour .= ' . . . . '._t('LAST_CHANGE_BY').' : ';
                                 if ($pageData['user_is_registered'])
                                 {
                                     if ($pageData['user_has_ownpage'])
@@ -335,7 +335,7 @@ if ($tree)
                                 }
                                 break;
                             case 'time':
-                                $retour .= ' . . . . derni&egrave;re modification : ' . $pageData['time'];
+                                $retour .= ' . . . . '._t('LAST_CHANGE').' : ' . $pageData['time'];
                                 break;
                         } // switch
                         if ($pageData['haslinksto'])
@@ -449,40 +449,40 @@ else
     // Header
     if ($user)
     {
-        echo 'Liste des pages auxquelles ' . $this->Format($user) . ' a particip&eacute;';
+        echo _t('PAGE_LIST_WHERE').' ' . $this->Format($user) . ' '._t('HAS_PARTICIPATED');
         if ($owner)
         {
-            echo ' et dont ' . $this->Link($owner) . ' est le propri&eacute;taire';
+            echo ' '._t('INCLUDING').' ' . $this->Link($owner) . ' '._t('IS_THE_OWNER');
         }
         if ($exclude)
         {
-            echo ' (hors exclusions)';
+            echo ' ('._t('EXCLUDING_EXCLUSIONS').')';
         }
         echo ":\n";
         if (!$pages)
         {
-            echo "<br />\nAucune page trouv&eacute;e...<br />\n";
+            echo "<br />\n"._t('NO_PAGE_FOUND')."...<br />\n";
             return;
         }
     }
     elseif ($owner)
     {
-        echo 'Liste des pages appartenant &agrave; ' . $this->Link($owner);
+        echo _t('LIST_PAGES_BELONGING_TO').' ' . $this->Link($owner);
         if ($exclude)
         {
-            echo ' (hors exclusions)';
+            echo ' ('._t('EXCLUDING_EXCLUSIONS').')';
         }
         echo ":\n";
         if (!$pages)
         {
-            echo "<br />\nCet utilisateur ne poss&egrave;de aucune page...\n<br />\n";
+            echo "<br />\n"._t('THIS_USER_HAS_NO_PAGE')."...\n<br />\n";
             return;
         }
     }
     elseif (!$pages)
     {
         // because it is still possible...
-        echo 'Aucune page trouv&eacute;e dans ce wiki (hors exclusions)';
+        echo _t('NO_PAGE_FOUND').' '._t('IN_THIS_WIKI').' ('._t('EXCLUDING_EXCLUSIONS').')';
         return;
     }
     // No header if it is a simple page list that was asked
@@ -509,19 +509,19 @@ else
             }
             else
             {
-                echo 'Inconnu';
+                echo _t('UNKNOWN');
             }
         }
         if ($sort == 'user' || $sort == 'time')
         {
-            echo '  . . . . <strong>derni&egrave;re modification</strong>';
+            echo '  . . . . <strong>'._t('LAST_CHANGE').'</strong>';
             if ($sort == 'time')
             {
                 echo ': ' . $page['time'];
             }
             if ($sort == 'user' || ($user && $sort == 'time'))
             {
-                echo ' <strong>par</strong> ';
+                echo ' <strong>'._t('BY').'</strong> ';
                 if ($page['user_is_registered'])
                 {
                     if ($page['user_has_ownpage'])
@@ -536,7 +536,7 @@ else
                 }
                 else
                 {
-                    echo htmlspecialchars($page['user']);
+                    echo htmlspecialchars($page['user'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
                 }
             }
         }

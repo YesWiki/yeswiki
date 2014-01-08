@@ -13,23 +13,24 @@ if (!defined("WIKINI_VERSION")) {
  * 
  */
 function search_template_files($directory) {
-	$tab_themes = array();
-	
+	$tab_themes = array();	
 	$dir = opendir($directory);
 	while ($dir && ($file = readdir($dir)) !== false) {    	
-		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-			$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-		    while (false !== ($file2 = readdir($dir2))) {
-		    	if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') $tab_themes[$file]["style"][$file2] = $file2;
-		    }
-		    closedir($dir2);
-		    if (is_array($tab_themes[$file]["style"])) ksort($tab_themes[$file]["style"]);
-		    $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
-		    while (false !== ($file3 = readdir($dir3))) {
-		    	if (substr($file3, -9, 9)=='.tpl.html') $tab_themes[$file]["squelette"][$file3]=$file3;	    
-		    }	    	
-		    closedir($dir3);
-		    if (is_array($tab_themes[$file]["squelette"])) ksort($tab_themes[$file]["squelette"]);
+		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) { 
+			if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles') && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
+				$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
+			    while (false !== ($file2 = readdir($dir2))) {
+			    	if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') $tab_themes[$file]["style"][$file2] = $file2;
+			    }
+			    closedir($dir2);
+			    if (is_array($tab_themes[$file]["style"])) ksort($tab_themes[$file]["style"]);
+			    $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
+			    while (false !== ($file3 = readdir($dir3))) {
+			    	if (substr($file3, -9, 9)=='.tpl.html') $tab_themes[$file]["squelette"][$file3]=$file3;	    
+			    }	    	
+			    closedir($dir3);
+			    if (is_array($tab_themes[$file]["squelette"])) ksort($tab_themes[$file]["squelette"]);
+			}
 	    }
 	}
 	closedir($dir);
@@ -112,7 +113,8 @@ function replace_missingpage_links($output) {
 						'&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
 						'&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
 						'&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).				
-						((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '');
+						((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '').
+						'&amp;newpage=1';
 		$replacement = '<a class="yeswiki-editable" href="'.$GLOBALS['wiki']->href("edit", $values[2], $query_string).'"><i class="icon-pencil"></i>&nbsp;'.
 						$values[1].'</a>';
 		$output = str_replace_once( $values[0], $replacement, $output );
@@ -134,14 +136,14 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	// On teste si l'utilisateur peut lire la page
 	if (!$GLOBALS['wiki']->HasAccess("read", $pagetag))
 	{
-		return '<div class="alert alert-danger">'.TEMPLATE_NO_ACCESS_TO_PAGE.'</div>'. $GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
+		return '<div class="alert alert-danger">'._t('TEMPLATE_NO_ACCESS_TO_PAGE').'</div>'. $GLOBALS['wiki']->Format('{{login template="minimal.tpl.html"}}');
 	}
 	else
 	{
 		// On teste si la page existe
 		if (!$page = $GLOBALS['wiki']->LoadPage($pagetag))
 		{
-			return '<div class="alert alert-danger">'.TEMPLATE_PAGE_DOESNT_EXIST.' ('.$pagetag.').</div>';
+			return '<div class="alert alert-danger">'._t('TEMPLATE_PAGE_DOESNT_EXIST').' ('.$pagetag.').</div>';
 		}
 		else
 		{
@@ -150,7 +152,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	
 			if (!$body)
 			{
-				return '<div class="=alert alert-danger">'.TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW.' ('.$pagetag.').</div>';
+				return '<div class="=alert alert-danger">'._t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW').' ('.$pagetag.').</div>';
 			}
 			else
 			{			
@@ -211,16 +213,16 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	}
 }
 
-function show_form_theme_selector($mode = 'selector') {
-	// en mode ?dition on recup?re aussi les images de fond
+function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal') {
+	// en mode edition on recupere aussi les images de fond
 	if ($mode=='edit') {
 		$id = 'form_graphical_options'; 
-		// r?cup?ration des images de fond
+		// recuperation des images de fond
 		$backgroundsdir = 'files/backgrounds';
 		$dir = (is_dir($backgroundsdir) ? opendir($backgroundsdir) : false);
 		while ($dir && ($file = readdir($dir)) !== false) {	
 				$imgextension = strtolower(substr($file, -4, 4));  	
-				// les jpg sont les fonds d'?crans, ils doivent ?tre mis en miniature
+				// les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
 				if ($imgextension == '.jpg') {
 					if (!is_file($backgroundsdir.'/thumbs/'.$file)) {
 						require_once 'tools/attach/libs/class.imagetransform.php';
@@ -236,7 +238,7 @@ function show_form_theme_selector($mode = 'selector') {
 						$backgrounds[] = $backgroundsdir.'/thumbs/'.$file;
 					}
 				}
-				// les png sont les images ? r?p?ter en mosaique
+				// les png sont les images a repeter en mosaique
 				elseif ($imgextension == '.png') {
 					$backgrounds[] = $backgroundsdir.'/'.$file;
 				}
@@ -246,7 +248,7 @@ function show_form_theme_selector($mode = 'selector') {
 		$bgselector = '';
 		
 		if (isset($backgrounds) && is_array($backgrounds)) {
-			$bgselector .= '<h3>'.TEMPLATE_BG_IMAGE.'</h3>
+			$bgselector .= '<h3>'._t('TEMPLATE_BG_IMAGE').'</h3>
 			<div id="bgCarousel" class="carousel" data-interval="5000" data-pause="true">
 	    <!-- Carousel items -->
 	    <div class="carousel-inner">'."\n";
@@ -298,7 +300,7 @@ function show_form_theme_selector($mode = 'selector') {
 		$bgselector = '';
 	}
 
-	$selecteur = '<form class="form-horizontal" id="'.$id.'">'."\n";
+	$selecteur = '<form class="'.$class.'" id="'.$id.'">'."\n";
 	
 	//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
 	$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
@@ -313,7 +315,7 @@ function show_form_theme_selector($mode = 'selector') {
 
 
 	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_THEME.'</label>'."\n".
+					'<label class="control-label">'._t('TEMPLATE_THEME').'</label>'."\n".
 					'<div class="controls">'."\n".
 					'<select id="changetheme" name="theme">'."\n";
     foreach(array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
@@ -327,7 +329,7 @@ function show_form_theme_selector($mode = 'selector') {
     $selecteur .= '</select>'."\n".'</div>'."\n".'</div>'."\n";
 	
 	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_SQUELETTE.'</label>'."\n".
+					'<label class="control-label">'._t('TEMPLATE_SQUELETTE').'</label>'."\n".
 					'<div class="controls">'."\n".
 					'<select id="changesquelette" name="squelette">'."\n";
 	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
@@ -343,7 +345,7 @@ function show_form_theme_selector($mode = 'selector') {
 
 	ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);	
 	$selecteur .= '<div class="control-group">'."\n".
-					'<label class="control-label">'.TEMPLATE_STYLE.'</label>'."\n".
+					'<label class="control-label">'._t('TEMPLATE_STYLE').'</label>'."\n".
 					'<div class="controls">'."\n".
 					'<select id="changestyle" name="style">'."\n";
     foreach($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {

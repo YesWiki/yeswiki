@@ -4,6 +4,10 @@
   * 10/12/2013
   */
 
+body {
+    padding-top:30px;
+}
+
 p, li{
     font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
 }
@@ -11,6 +15,9 @@ p, li{
 a:active, a:focus{ 
 	outline:none; 
 }
+
+.ok { color: #008800; font-weight: bold; }
+.failed { color: #880000; font-weight: bold; }
 
 .form-horizontal .control-label {
     float: left;
@@ -77,7 +84,7 @@ h4 {
     margin-bottom: 0;
 }
 
-.continuer {
+.continuer, .revenir {
 	margin-left: 80px;
     padding: 20px 75px;
 }
@@ -144,4 +151,8 @@ legend span {
 
 dl {
     margin-bottom: 12px;
+}
+
+.soustitre {
+    font-size: 14px;
 }

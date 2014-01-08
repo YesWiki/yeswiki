@@ -1,14 +1,14 @@
 <?php if( count($fiches)>0 ) : ?>
-<?=$info_res;?>
-<?=$pager_links;?>
+<?php echo $info_res;?>
+<?php echo $pager_links;?>
 <ul class="BAZ_liste">
 <?php foreach($fiches as $fiche): ?>
 <li class="BAZ_titre_fiche">
-<?php if( isset($fiche['lien_suppression']) ) : ?><?=$fiche['lien_suppression'];?><?php endif; ?>
-<?php if( isset($fiche['lien_edition']) ) : ?><?=$fiche['lien_edition'];?><?php endif; ?>
-<?=$fiche['lien_voir_titre'];?>
+<?php if( isset($fiche['lien_suppression']) ) : ?><?php echo $fiche['lien_suppression'];?><?php endif; ?>
+<?php if( isset($fiche['lien_edition']) ) : ?><?php echo $fiche['lien_edition'];?><?php endif; ?>
+<?php echo $fiche['lien_voir_titre'];?>
 </li>
 <?php endforeach; ?>
 </ul>
-<?=$pager_links;?>
+<?php echo $pager_links;?>
 <?php endif; ?>

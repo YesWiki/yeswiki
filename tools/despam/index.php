@@ -16,9 +16,9 @@
 
 
 /*$essai = $wiki->GetLinkTable();
-buffer::str( "<pre>";
+$buffer->str( "<pre>";
 print_r($essai);
-buffer::str( "</pre>\n";*/
+$buffer->str( "</pre>\n";*/
 
 
 if (!defined("TOOLS_MANAGER"))
@@ -36,10 +36,10 @@ $tools_url= "http://".$_SERVER["SERVER_NAME"].($_SERVER["SERVER_PORT"] != 80 ? "
 $despam_url = $tools_url."?p=despam";
 
 
-buffer::str(	"\n<!-- == Action erasespam v 0.7.3 ============================= -->\n");
+$buffer->str(	"\n<!-- == Action erasespam v 0.7.3 ============================= -->\n");
 // La norme HTML interdit la balise style ailleurs que dans <head></head>
 // on l'utilise ici ? titre de d?bogage et pendant la construction de l'action
-/*buffer::str(	"<style type=\"text/css\">",
+/*$buffer->str(	"<style type=\"text/css\">",
 	"p { margin: 0; }",
 	".action_erasespam { background-color: yellow; }",
 	".action_erasespam td { text-align: right; vertical-align: top; }",
@@ -56,11 +56,11 @@ buffer::str(	"\n<!-- == Action erasespam v 0.7.3 ============================= -
 
 if(empty($_POST['spammer']) && empty($_POST['from']) && !isset($_POST['clean']))
 {
-	buffer::str(	"<div class=\"action_erasespam\">\n" .
+	$buffer->str(	"<div class=\"action_erasespam\">\n" .
 		"<form method=\"post\" action=\"". $despam_url . "\" name=\"selection\">\n".
 		"<fieldset>\n".
 		"<legend>S&eacute;lection des pages</legend>\n");
-	buffer::str(	"<p>\n".
+	$buffer->str(	"<p>\n".
 		"Toutes les modifications depuis ".
 		"<select name=\"from\">\n".
 		"<option selected=\"selected\" value=\"1\">depuis 1 heure</option>\n".
@@ -75,7 +75,7 @@ if(empty($_POST['spammer']) && empty($_POST['from']) && !isset($_POST['clean']))
 		"</select>\n".
 		"<button name=\"2\" value=\"Valider\">Valider</button>\n".
 		"</p>\n");
-	buffer::str(	"</fieldset>\n".
+	$buffer->str(	"</fieldset>\n".
 		"</form>\n".
 		"</div>\n\n");
 }
@@ -98,29 +98,29 @@ else if(!isset($_POST['clean']))
 			"<p>Nettoyage des pages vandalis?es depuis " .
 			$_POST['from'] . " heure(s)</p>\n";
 	}
-	//buffer::str( $requete;
+	//$buffer->str( $requete;
 	$pagesFromSpammer = $wiki->LoadAll($requete);
 	// Affichage des pages pour validation
-	buffer::str(	"<div class=\"action_erasespam\">\n");
-	buffer::str(	$title);
-	buffer::str(	"<form method=\"post\" action=\"". $despam_url . "\">\n");
-	buffer::str(	"<table>\n");
+	$buffer->str(	"<div class=\"action_erasespam\">\n");
+	$buffer->str(	$title);
+	$buffer->str(	"<form method=\"post\" action=\"". $despam_url . "\">\n");
+	$buffer->str(	"<table>\n");
 	foreach ($pagesFromSpammer as $i => $page)
 	{
 		$revisions=$wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($page["tag"])."' order by time desc"); 
-		buffer::str(	"<tr>\n".
+		$buffer->str(	"<tr>\n".
 			"<td>".
 			$page["tag"]. " ".
 			"(". $page["time"]. ") ".
 				" par ". $page['user'] . " ".
 			"</td>\n");
-		buffer::str(	"<td>".
+		$buffer->str(	"<td>".
 			"<input name=\"suppr[]\" value=\"" . $page["tag"] . "\" type=\"checkbox\" /> [Suppr.!]".
 			"</td>\n");
-		buffer::str(	"<td>\n");
-		buffer::str("<p>");
-		buffer::str("_____________________________________________________________________________________________________");
-		buffer::str("<p>");
+		$buffer->str(	"<td>\n");
+		$buffer->str("<p>");
+		$buffer->str("_____________________________________________________________________________________________________");
+		$buffer->str("<p>");
 		
 		
 		
@@ -133,27 +133,27 @@ else if(!isset($_POST['clean']))
 				$revision1 = "";
 				continue;
 			}
-			buffer::str(	"<input name=	\"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /> ");
-			buffer::str(	"Restaurer depuis la version du ".
+			$buffer->str(	"<input name=	\"rev[]\" value=\"" . $revision["id"] . "\" type=\"checkbox\" /> ");
+			$buffer->str(	"Restaurer depuis la version du ".
 				 " ".$revision["time"]." ".
 				" par ". $revision['user'] . " ".
 				"<br />\n");
 		}
 		unset($revision1);
-		buffer::str(	//" . . . . ",$wiki->Format($page["user"]),"</p>\n",
+		$buffer->str(	//" . . . . ",$wiki->Format($page["user"]),"</p>\n",
 			"</td>\n",
 			"</tr>\n",
 			"");
 	}
-	buffer::str(	"</table>\n");
-	buffer::str(	"<p>Commentaire&nbsp;: <input name=\"comment\" style=\"width: 80%;\" /></p>\n");
-	buffer::str(	"<p>\n".
+	$buffer->str(	"</table>\n");
+	$buffer->str(	"<p>Commentaire&nbsp;: <input name=\"comment\" style=\"width: 80%;\" /></p>\n");
+	$buffer->str(	"<p>\n".
 		"<input type=\"hidden\" name=\"spammer\" value=\"" . $_POST['spammer'] . "\" />\n".
 		"<input type=\"hidden\" name=\"clean\" value=\"yes\" />\n".
 		"<button value=\"Valider\">Nettoyer >></button>\n".
 		"</p>\n");
-	buffer::str(	"</form>\n");
-	buffer::str(	"</div>\n\n");
+	$buffer->str(	"</form>\n");
+	$buffer->str(	"</div>\n\n");
 }
 
 
@@ -163,7 +163,7 @@ else if(!isset($_POST['clean']))
 else if(isset($_POST['clean']))
 {
 
-	//buffer::str( "<script type=\"text/javascript\">alert('test');</script>";
+	//$buffer->str( "<script type=\"text/javascript\">alert('test');</script>";
 	$deletedPages = "";
 	$restoredPages = "";
 
@@ -190,7 +190,7 @@ else if(isset($_POST['clean']))
 		//print_r($_POST["rev"]);
 		foreach ($_POST["rev"] as $rev_id)
 		{
-			buffer::str( $rev_id."<br>");
+			$buffer->str( $rev_id."<br>");
 			// S?lectionne la r?vision
 			$revision = $wiki->LoadSingle("select * from ".$wiki->config["table_prefix"]."pages where id = '".mysql_real_escape_string($rev_id)."' limit 1"); 
 			
@@ -219,16 +219,16 @@ else if(isset($_POST['clean']))
 		}
 		$restoredPages = trim($restoredPages, ", ");
 		
-		buffer::str( "<li>Pages restaur?es&nbsp;: " .
+		$buffer->str( "<li>Pages restaur?es&nbsp;: " .
 		$restoredPages . ".</li>\n" );
-		buffer::str( "<li>Pages supprim?es&nbsp;: " .
+		$buffer->str( "<li>Pages supprim?es&nbsp;: " .
 		$deletedPages . ".</li>\n" );
 		
-		buffer::str(	"</ul>\n");
-		buffer::str(	"<p><a href=\"". $despam_url. "\">Retour au formulaire de d?part >></a></p>\n");
-		buffer::str(	"<p><a href=\"" );
+		$buffer->str(	"</ul>\n");
+		$buffer->str(	"<p><a href=\"". $despam_url. "\">Retour au formulaire de d?part >></a></p>\n");
+		$buffer->str(	"<p><a href=\"" );
 	
-		buffer::str(	"</div>\n\n");
+		$buffer->str(	"</div>\n\n");
 
 		
 }

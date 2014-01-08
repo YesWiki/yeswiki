@@ -26,7 +26,7 @@
 /**
  * Base class for all HTML classes
  */
-require_once 'HTML/Common.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/Common.php';
 
 /**
  * Base class for form elements
@@ -236,7 +236,7 @@ class HTML_QuickForm_element extends HTML_Common
     {
         $value = $this->getValue();
 
-        return (strlen($value)? htmlspecialchars($value): '&nbsp;') .
+        return (strlen($value)? htmlspecialchars($value, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET): '&nbsp;') .
                $this->_getPersistantData();
     } //end func getFrozenHtml
 

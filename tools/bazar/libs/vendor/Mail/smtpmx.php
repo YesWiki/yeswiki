@@ -23,7 +23,7 @@
  * @see        Mail
  */
 
-require_once 'Net/SMTP.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Net/SMTP.php';
 
 /**
  * SMTP MX implementation of the PEAR Mail interface. Requires the Net_SMTP class.

@@ -35,7 +35,7 @@
 		<input type="hidden" name="incomingurl" value="<?= $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />
 		<label class="login-label">WikiName</label>
-		<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user) ?><?php endif; ?>" />
+		<input name="name" class="login-input" size="7" value="<?php if($user) : ?><?= htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?><?php endif; ?>" />
 		<div class="clear"></div>
 		<label class="login-label">Password</label>
 		<input type="password" name="password" class="login-input" size="7" />

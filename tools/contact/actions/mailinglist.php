@@ -41,11 +41,11 @@ if (!defined("WIKINI_VERSION"))
 //recuperation des parametres
 $list = $this->GetParameter('list');
 if (empty($list)) {
-	echo '<div class="alert alert-error">Action mailinglist : param&egrave;tre list obligatoire (il s\'agit de l\'adresse mail de la liste de diffusion).</div>';
+	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_MAILINGLIST').'</strong> : '._t('CONTACT_PARAMETER_LIST_REQUIRED').'.</div>';
 }
 elseif ($this->UserIsAdmin()) {
 	
-	echo '<h2>Mails &agrave; ajouter ou &agrave; supprimer de la liste '.$list.'</h2>';
+	echo '<h2>'._('CONTACT_MAILS_TO_ADD_OR_REMOVE').' '.$list.'</h2>';
 	
 	// les mails formates sont prets a etre envoyes
 	if (isset($_POST['mails'])) {
@@ -57,19 +57,19 @@ elseif ($this->UserIsAdmin()) {
 			$tab_listadress = explode('@',$list);
 			
 			// en fonction de l'action demand	
-			if ($_POST['action_mails'] == 'Abonner') {
+			if ($_POST['action_mails'] == _t('CONTACT_BTN_SUBSCRIBE')) {
 				$listaction = $tab_listadress[0].'-subscribe@'.$tab_listadress[1];
-			} elseif ($_POST['action_mails'] == 'D?sabonner') {
+			} elseif ($_POST['action_mails'] == _t('CONTACT_BTN_UNSUBSCRIBE')) {
 				$listaction = $tab_listadress[0].'-unsubscribe@'.$tab_listadress[1];
 			}
-			echo '<div style="margin-bottom:15px; padding:10px; border:1px solid #666; width:600px; height:150px; overflow:auto; ">';
+			echo '<div class="well" style="width:600px; height:150px; overflow:auto; ">';
 			foreach($_POST['mails'] as $email) {
-				echo 'Envoi &agrave; '.$listaction.' l\'email '.$email;
-				echo send_mail($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails'], '', ' <span style="color:green;">OK</span>').'<br />';
+				echo _t('CONTACT_SENT_TO_THE_LIST').' : '.$listaction.' '._t('CONTACT_THE_EMAIL').' : '.$email;
+				echo send_mail($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails'], '', ' <span class="text-success">'._t('CONTACT_OK').'</span>').'<br />';
 
 			}
 			echo '</div>
-			<a href="'.$this->href().'" title="Entrer d\'autres mails">Entrer d\'autres mails</a>';	
+			<a href="'.$this->href().'" title="'._t('CONTACT_SUBMIT_OTHER_EMAILS').'">'._t('CONTACT_SUBMIT_OTHER_EMAILS').'</a>';	
 		}	
 	}
 	// la liste des mails non formatee est disponible
@@ -80,35 +80,35 @@ elseif ($this->UserIsAdmin()) {
 		if (is_array($emails) && count($emails[0])>0) {
 			sort($emails[0]);	
 			echo '<form id="ajax-mailing-form" method="post" action="'.$this->href().'">
-			<div style="margin-bottom:15px; padding:10px; border:1px solid #666; width:600px; height:150px; overflow:auto;">';
+			<div class="well" style="width:600px; height:150px; overflow:auto; ">';
 			
 			foreach($emails[0] as $email) {
-				echo $email.'<br /><input name="mails[]" type="hidden" value="'.htmlspecialchars($email).'" />';
+				echo $email.'<br /><input name="mails[]" type="hidden" value="'.htmlspecialchars($email, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'" />';
 				$emails[] = $email;
 			}
 			echo '</div>
-			<strong>Pour toutes ces adresses mails : </strong><input class="btn button_save" type="submit" name="action_mails" value="Abonner" />
-			<input class="btn button_cancel" type="submit" name="action_mails" value="D&eacute;sabonner" />
+			<strong>'._t('CONTACT_FOR_ALL_THOSE_EMAILS').' : </strong><input class="btn button_save" type="submit" name="action_mails" value="'._t('CONTACT_BTN_UNSUBSCRIBE').'" />
+			<input class="btn button_cancel" type="submit" name="action_mails" value="'._t('CONTACT_BTN_UNSUBSCRIBE').'" />
 			</form><br /><br />
-			<a href="'.$this->href().'" title="Essayer avec d\'autres mails dans le texte">Essayer avec d\'autres mails dans le texte</a>';
+			<a href="'.$this->href().'" title="'._t('CONTACT_TRY_WITH_OTHER_EMAILS').'">'._t('CONTACT_TRY_WITH_OTHER_EMAILS').'</a>';
 		} else {
-			echo '<div class="alert alert-error">Pas d\'adresses mails trouv&eacute;es dans le texte fourni.</div>
-			<a href="'.$this->href().'" title="Essayer avec d\'autres mails dans le texte">Essayer avec d\'autres mails dans le texte</a>';	
+			echo '<div class="alert alert-danger">'._t('CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT').'.</div>
+			<a href="'.$this->href().'" title="'._t('CONTACT_TRY_WITH_OTHER_EMAILS').'">'._t('CONTACT_TRY_WITH_OTHER_EMAILS').'</a>';	
 		}
 
 	}
 	// rien n'a ete fait, on propose un formulaire pour ajouter les mails 
 	else {
-		echo '<div class="info_box">Entrez un texte contenant des mails dedans pour les extraire, qu\'importe les s&eacute;parateurs (virgules, point-virgules, deux points, espaces, tabulations, retours &agrave; la ligne) ou le texte entre.</div>
+		echo '<div class="alert alert-info">'._t('CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE').'.</div>
 		<form id="ajax-mailing-form" method="post" action="'.$this->href().'">
-			<label style="display:inline-block;width:200px;text-align:right;">Votre liste d\'adresses mails</label>		
+			<label style="display:inline-block;width:200px;text-align:right;">'._t('CONTACT_YOUR_EMAIL_LIST').'</label>		
 			<textarea name="mailinglist" rows="6" cols="20" style="width:600px;height:150px;"></textarea>
-			<input class="btn button_save" style="margin:10px 0 10px 205px;" type="submit" name="submit" value="Extraire les mails de ce texte" />
+			<input class="btn button_save" style="margin:10px 0 10px 205px;" type="submit" name="submit" value="'._t('CONTACT_EXTRACT_EMAILS_FROM_TEXT').'" />
 		</form>';
 	}
 }
 else{
-	echo '<div class="alert alert-error">Action mailinglist : il faut &ecirc;tre dans le groupe admins pour utiliser cette action.</div>';
+	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_MAILINGLIST').'</strong> : '._t('CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION').'.</div>'."\n";
 }
 
 ?>

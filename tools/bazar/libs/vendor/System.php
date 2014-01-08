@@ -17,8 +17,8 @@
 /**
  * base class
  */
-require_once 'PEAR.php';
-require_once 'Console/Getopt.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Console/Getopt.php';
 
 $GLOBALS['_System_temp_files'] = array();
 

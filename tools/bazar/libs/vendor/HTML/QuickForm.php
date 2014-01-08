@@ -26,11 +26,11 @@
 /**
  * PEAR and PEAR_Error classes, for error handling
  */
-require_once 'PEAR.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'PEAR.php';
 /**
  * Base class for all HTML classes
  */
-require_once 'HTML/Common.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/Common.php';
 
 /**
  * Element types known to HTML_QuickForm
@@ -40,29 +40,29 @@ require_once 'HTML/Common.php';
  */
 $GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] =
         array(
-            'group'         =>array('HTML/QuickForm/group.php','HTML_QuickForm_group'),
-            'hidden'        =>array('HTML/QuickForm/hidden.php','HTML_QuickForm_hidden'),
-            'reset'         =>array('HTML/QuickForm/reset.php','HTML_QuickForm_reset'),
-            'checkbox'      =>array('HTML/QuickForm/checkbox.php','HTML_QuickForm_checkbox'),
-            'file'          =>array('HTML/QuickForm/file.php','HTML_QuickForm_file'),
-            'image'         =>array('HTML/QuickForm/image.php','HTML_QuickForm_image'),
-            'password'      =>array('HTML/QuickForm/password.php','HTML_QuickForm_password'),
-            'radio'         =>array('HTML/QuickForm/radio.php','HTML_QuickForm_radio'),
-            'button'        =>array('HTML/QuickForm/button.php','HTML_QuickForm_button'),
-            'submit'        =>array('HTML/QuickForm/submit.php','HTML_QuickForm_submit'),
-            'select'        =>array('HTML/QuickForm/select.php','HTML_QuickForm_select'),
-            'hiddenselect'  =>array('HTML/QuickForm/hiddenselect.php','HTML_QuickForm_hiddenselect'),
-            'text'          =>array('HTML/QuickForm/text.php','HTML_QuickForm_text'),
-            'textarea'      =>array('HTML/QuickForm/textarea.php','HTML_QuickForm_textarea'),
-            'link'          =>array('HTML/QuickForm/link.php','HTML_QuickForm_link'),
-            'advcheckbox'   =>array('HTML/QuickForm/advcheckbox.php','HTML_QuickForm_advcheckbox'),
-            'date'          =>array('HTML/QuickForm/date.php','HTML_QuickForm_date'),
-            'static'        =>array('HTML/QuickForm/static.php','HTML_QuickForm_static'),
-            'header'        =>array('HTML/QuickForm/header.php', 'HTML_QuickForm_header'),
-            'html'          =>array('HTML/QuickForm/html.php', 'HTML_QuickForm_html'),
-            'hierselect'    =>array('HTML/QuickForm/hierselect.php', 'HTML_QuickForm_hierselect'),
-            'autocomplete'  =>array('HTML/QuickForm/autocomplete.php', 'HTML_QuickForm_autocomplete'),
-            'xbutton'       =>array('HTML/QuickForm/xbutton.php','HTML_QuickForm_xbutton')
+            'group'         =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/group.php','HTML_QuickForm_group'),
+            'hidden'        =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/hidden.php','HTML_QuickForm_hidden'),
+            'reset'         =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/reset.php','HTML_QuickForm_reset'),
+            'checkbox'      =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/checkbox.php','HTML_QuickForm_checkbox'),
+            'file'          =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/file.php','HTML_QuickForm_file'),
+            'image'         =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/image.php','HTML_QuickForm_image'),
+            'password'      =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/password.php','HTML_QuickForm_password'),
+            'radio'         =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/radio.php','HTML_QuickForm_radio'),
+            'button'        =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/button.php','HTML_QuickForm_button'),
+            'submit'        =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/submit.php','HTML_QuickForm_submit'),
+            'select'        =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/select.php','HTML_QuickForm_select'),
+            'hiddenselect'  =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/hiddenselect.php','HTML_QuickForm_hiddenselect'),
+            'text'          =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/text.php','HTML_QuickForm_text'),
+            'textarea'      =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/textarea.php','HTML_QuickForm_textarea'),
+            'link'          =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/link.php','HTML_QuickForm_link'),
+            'advcheckbox'   =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/advcheckbox.php','HTML_QuickForm_advcheckbox'),
+            'date'          =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/date.php','HTML_QuickForm_date'),
+            'static'        =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/static.php','HTML_QuickForm_static'),
+            'header'        =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/header.php', 'HTML_QuickForm_header'),
+            'html'          =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/html.php', 'HTML_QuickForm_html'),
+            'hierselect'    =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/hierselect.php', 'HTML_QuickForm_hierselect'),
+            'autocomplete'  =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/autocomplete.php', 'HTML_QuickForm_autocomplete'),
+            'xbutton'       =>array(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/xbutton.php','HTML_QuickForm_xbutton')
         );
 
 /**
@@ -72,19 +72,19 @@ $GLOBALS['HTML_QUICKFORM_ELEMENT_TYPES'] =
  * @global array $GLOBALS['_HTML_QuickForm_registered_rules']
  */
 $GLOBALS['_HTML_QuickForm_registered_rules'] = array(
-    'required'      => array('html_quickform_rule_required', 'HTML/QuickForm/Rule/Required.php'),
-    'maxlength'     => array('html_quickform_rule_range',    'HTML/QuickForm/Rule/Range.php'),
-    'minlength'     => array('html_quickform_rule_range',    'HTML/QuickForm/Rule/Range.php'),
-    'rangelength'   => array('html_quickform_rule_range',    'HTML/QuickForm/Rule/Range.php'),
-    'email'         => array('html_quickform_rule_email',    'HTML/QuickForm/Rule/Email.php'),
-    'regex'         => array('html_quickform_rule_regex',    'HTML/QuickForm/Rule/Regex.php'),
-    'lettersonly'   => array('html_quickform_rule_regex',    'HTML/QuickForm/Rule/Regex.php'),
-    'alphanumeric'  => array('html_quickform_rule_regex',    'HTML/QuickForm/Rule/Regex.php'),
-    'numeric'       => array('html_quickform_rule_regex',    'HTML/QuickForm/Rule/Regex.php'),
-    'nopunctuation' => array('html_quickform_rule_regex',    'HTML/QuickForm/Rule/Regex.php'),
-    'nonzero'       => array('html_quickform_rule_regex',    'HTML/QuickForm/Rule/Regex.php'),
-    'callback'      => array('html_quickform_rule_callback', 'HTML/QuickForm/Rule/Callback.php'),
-    'compare'       => array('html_quickform_rule_compare',  'HTML/QuickForm/Rule/Compare.php')
+    'required'      => array('html_quickform_rule_required', BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Required.php'),
+    'maxlength'     => array('html_quickform_rule_range',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Range.php'),
+    'minlength'     => array('html_quickform_rule_range',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Range.php'),
+    'rangelength'   => array('html_quickform_rule_range',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Range.php'),
+    'email'         => array('html_quickform_rule_email',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Email.php'),
+    'regex'         => array('html_quickform_rule_regex',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Regex.php'),
+    'lettersonly'   => array('html_quickform_rule_regex',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Regex.php'),
+    'alphanumeric'  => array('html_quickform_rule_regex',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Regex.php'),
+    'numeric'       => array('html_quickform_rule_regex',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Regex.php'),
+    'nopunctuation' => array('html_quickform_rule_regex',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Regex.php'),
+    'nonzero'       => array('html_quickform_rule_regex',    BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Regex.php'),
+    'callback'      => array('html_quickform_rule_callback', BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Callback.php'),
+    'compare'       => array('html_quickform_rule_compare',  BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Rule/Compare.php')
 );
 
 // {{{ error codes
@@ -378,7 +378,7 @@ class HTML_QuickForm extends HTML_Common
      */
     public function registerRule($ruleName, $type, $data1, $data2 = null)
     {
-        include_once 'HTML/QuickForm/RuleRegistry.php';
+        include_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/RuleRegistry.php';
         $registry =& HTML_QuickForm_RuleRegistry::singleton();
         $registry->registerRule($ruleName, $type, $data1, $data2);
     } // end func registerRule
@@ -563,10 +563,11 @@ class HTML_QuickForm extends HTML_Common
      * @return HTML_QuickForm_Element
      * @throws HTML_QuickForm_Error
      */
-    function &createElement($elementType)
+    static function &createElement($elementType)
     {
         $args    =  func_get_args();
-        $element =& HTML_QuickForm::_loadElement('createElement', $elementType, array_slice($args, 1));
+        $HTML_QuickForm = new HTML_QuickForm();
+        $element = $HTML_QuickForm->_loadElement('createElement', $elementType, array_slice($args, 1));
 
         return $element;
     } // end func createElement
@@ -588,7 +589,8 @@ class HTML_QuickForm extends HTML_Common
     function &_loadElement($event, $type, $args)
     {
         $type = strtolower($type);
-        if (!HTML_QuickForm::isTypeRegistered($type)) {
+        $HTML_QuickForm = new HTML_QuickForm();
+        if (!$HTML_QuickForm->isTypeRegistered($type)) {
             $error = PEAR::raiseError(null, QUICKFORM_UNREGISTERED_ELEMENT, null, E_USER_WARNING, "Element '$type' does not exist in HTML_QuickForm::_loadElement()", 'HTML_QuickForm_Error', true);
 
             return $error;
@@ -634,7 +636,8 @@ class HTML_QuickForm extends HTML_Common
         } else {
             $args = func_get_args();
             $elementObject =& $this->_loadElement('addElement', $element, array_slice($args, 1));
-            if (PEAR::isError($elementObject)) {
+            $pear = new PEAR();
+            if ($pear->isError($elementObject)) {
                 return $elementObject;
             }
         }
@@ -1389,7 +1392,7 @@ class HTML_QuickForm extends HTML_Common
             return false;
         }
         // automatically register the rule if requested
-        include_once 'HTML/QuickForm/RuleRegistry.php';
+        include_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/RuleRegistry.php';
         $ruleName = false;
         if (is_object($name) && is_a($name, 'html_quickform_rule')) {
             $ruleName = !empty($name->name)? $name->name: strtolower(get_class($name));
@@ -1529,7 +1532,7 @@ class HTML_QuickForm extends HTML_Common
             return false;
         }
 
-        include_once 'HTML/QuickForm/RuleRegistry.php';
+        include_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/RuleRegistry.php';
         $registry =& HTML_QuickForm_RuleRegistry::singleton();
 
         foreach ($this->_rules as $target => $rules) {
@@ -1720,7 +1723,7 @@ class HTML_QuickForm extends HTML_Common
     function &defaultRenderer()
     {
         if (!isset($GLOBALS['_HTML_QuickForm_default_renderer'])) {
-            include_once 'HTML/QuickForm/Renderer/Default.php';
+            include_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Renderer/Default.php';
             $GLOBALS['_HTML_QuickForm_default_renderer'] = new HTML_QuickForm_Renderer_Default();
         }
 
@@ -1767,7 +1770,7 @@ class HTML_QuickForm extends HTML_Common
             return '';
         }
 
-        include_once 'HTML/QuickForm/RuleRegistry.php';
+        include_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/RuleRegistry.php';
         $registry =& HTML_QuickForm_RuleRegistry::singleton();
         $test = array();
         $js_escape = array(
@@ -1880,7 +1883,7 @@ class HTML_QuickForm extends HTML_Common
      */
     public function toArray($collectHidden = false)
     {
-        include_once 'HTML/QuickForm/Renderer/Array.php';
+        include_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Renderer/Array.php';
         $renderer = new HTML_QuickForm_Renderer_Array($collectHidden);
         $this->accept($renderer);
 

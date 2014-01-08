@@ -1,13 +1,14 @@
 <?php
 // Get configuration
-
-
+define("WAKKA_VERSION", "0.1.1");
+define("WIKINI_VERSION", "0.5.0");
 require_once ('tools/libs/class.plugins.php');
 require_once ('tools/libs/lib.compat.php');
 require_once ('tools/libs/lib.form.php');
 require_once ('tools/libs/lib.files.php');
 require_once ('tools/libs/lib.buffer.php');
 require_once ('tools/libs/class.wiki.php');
+include 'includes/i18n.inc.php';
 
 function __($str) {
 	return $str;
@@ -36,7 +37,7 @@ class CustomAuthContainer extends Auth_Container
 	    $this->mysql_password=$mysql_password;
     }
 
-    function fetchData($username, $password)
+    function fetchData($username, $password, $isChallengeResponse = false)
     {
         if (($username == $this->mysql_user ) && ( $password == $this->mysql_password)) {
             return true;
@@ -57,7 +58,7 @@ $a = new Auth($auth_container,$params);
 
 $a->start();
 
-if ($_GET['tools_action'] == "logout" && $a->checkAuth()) {
+if (isset($_GET['tools_action']) && $_GET['tools_action'] == "logout" && $a->checkAuth()) {
     $a->logout();
     $a->start();
     exit;
@@ -84,10 +85,11 @@ if ((!empty($_REQUEST['p']) && !empty($plugins_list[$_REQUEST['p']])
 && $plugins_list[$_REQUEST['p']]['active']))
 {
 	$p = $_REQUEST['p'];
-	buffer::init();
+	$buffer = new buffer();
+	$buffer->init();
 	include $plugins_root.$p.'/index.php';
-	$PLUGIN_BODY = buffer::getContent();
-	buffer::clean();
+	$PLUGIN_BODY = $buffer->getContent();
+	$buffer->clean();
 	
 }
 
@@ -97,7 +99,7 @@ if ((!empty($_REQUEST['p']) && !empty($plugins_list[$_REQUEST['p']])
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
 <head>
-  <title>Configuration extension(s) de WikiNi</title>
+  <title><?php echo _t('YESWIKI_TOOLS_CONFIG'); ?></title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
 </head>
 
@@ -108,7 +110,7 @@ if ((!empty($_REQUEST['p']) && !empty($plugins_list[$_REQUEST['p']])
 
 $tools_url= "http://".$_SERVER["SERVER_NAME"].($_SERVER["SERVER_PORT"] != 80 ? ":".$_SERVER["SERVER_PORT"] : "").dirname($_SERVER["REQUEST_URI"]).'/tools.php';
 
-echo '<a href="'.$tool_url.'?tools_action=logout">Déconnexion</a>';
+echo '<a href="'.$tools_url.'?tools_action=logout">'._t('DISCONNECT').'</a>';
 
 
 if ($PLUGIN_HEAD != '')
@@ -121,7 +123,7 @@ if ($PLUGIN_HEAD != '')
 if ($PLUGIN_BODY != '')
 {
 	echo '<h1>';
-	echo '<a href="'.$tools_url.'">Retour à la liste des extensions actives</a>';
+	echo '<a href="'.$tools_url.'">'._t('RETURN_TO_EXTENSION_LIST').'</a>';
 	echo '</h1>';
 	echo $PLUGIN_BODY;
 }
@@ -129,7 +131,7 @@ else
 {
 	if (count($plugins_list) == 0)
 	{
-		echo '<p>Aucun outil n\'est disponible ou actif</p>';
+		echo '<p>'._t('NO_TOOL_AVAILABLE').'</p>';
 	}
 	else
 	{
@@ -139,7 +141,7 @@ else
 		
 		# Liste des plugins
 		echo '<h1>';
-		echo '<a href="'.$tools_url.'">Liste des extensions actives</a>';
+		echo '<a href="'.$tools_url.'">'._t('LIST_OF_ACTIVE_TOOLS').'</a>';
 		echo '</h1>';
 		
 		echo '<dl class="plugin-list">';

@@ -51,17 +51,20 @@ function test($text, $condition, $errorText = "", $stopOnError = 1)
 	echo "$text ";
 	if ($condition)
 	{
-		echo "<span class=\"ok\">OK</span><br />\n";
+		echo "<span class=\"ok\">"._t('OK')."</span><br />\n";
 		return 0;
 	}
 	else
 	{
-		echo "<span class=\"failed\">ECHEC</span>";
+		echo "<span class=\"failed\">"._t('FAIL')."</span>";
 		if ($errorText) echo ": ",$errorText;
 		echo "<br />\n";
 		if ($stopOnError)
 		{
-			echo "Fin de l'installation.<br />\n";
+			echo "<br />\n<div class=\"alert alert-danger alert-error\"><strong>"._t('END_OF_INSTALLATION_BECAUSE_OF_ERRORS').".</strong></div>\n";
+			echo "<script>
+    			document.write('<div class=\"form-actions\"><a class=\"btn btn-large btn-primary revenir\" href=\"javascript:history.go(-1);\">"._t('GO_BACK')."</a></div>');
+    			</script>\n";
 			echo "</body>\n</html>\n";
 			exit;
 		}
@@ -76,23 +79,17 @@ function myLocation()
 }
 
 $charset='iso-8859-1';
+if (!defined('TEMPLATES_DEFAULT_CHARSET')) define('TEMPLATES_DEFAULT_CHARSET', $charset);
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" lang="fr" xml:lang="fr">
+<!doctype html>
+<html lang="fr">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=<?php echo $charset; ?>"/>
-  <title>Installation de WikiNi</title>
-  <style type="text/css">
-    P, BODY, TD, LI, INPUT, SELECT, TEXTAREA { font-family: Verdana; font-size: 13px; }
-    INPUT { color: #880000; }
-    .ok { color: #008800; font-weight: bold; }
-    .failed { color: #880000; font-weight: bold; }
-    A { color: #0000FF; }
-  </style>
+  <meta charset="<?php echo $charset; ?>">
+  <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>
+  <link href="tools/templates/presentation/styles/bootstrap.min.css" rel="stylesheet">
+  <link href="tools/templates/presentation/styles/install.css" rel="stylesheet">
 </head>
 
-<body>
+<body class="container">

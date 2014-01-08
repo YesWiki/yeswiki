@@ -43,40 +43,22 @@ $selectiontags = ' AND value IN ("'.implode(",",$tab_selected_tags).'")';
 $sql = 'SELECT DISTINCT value FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ORDER BY value ASC';
 $tab_tous_les_tags = $this->LoadAll($sql);
 
-if (is_array($tab_tous_les_tags))
-{	
-	foreach ($tab_tous_les_tags as $tag)
-	{
+if (is_array($tab_tous_les_tags)) {	
+	foreach ($tab_tous_les_tags as $tag) {
 		if (in_array($tag['value'], $tab_selected_tags)) {
-			$additionnal_class = ' selectedtag';
-			$taglist = $tag['value'];
-			// suppression ergonomie david delon
-			//$tab_reduced = $tab_selected_tags;
-			//unset($tab_reduced[array_search($tag['value'], $tab_reduced)]);
-			//$taglist = implode(',',$tab_reduced);
-		} else {
-			$additionnal_class = '';
-			// suppression ergonomie david delon
-			//$taglist = ($tags=='') ? $tag['value'] : $tags.','.$tag['value'] ;
-			$taglist = $tag['value'];
+			$tab_tag[] = '&nbsp;<a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag['value']).'"><span class="tag-label label label-info label-active">'.$tag['value'].'</span></a>'."\n";
+		} 
+		else {
+			$tab_tag[] = '&nbsp;<a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag['value']).'"><span class="tag-label label">'.$tag['value'].'</span></a>'."\n";
 		}
-		$texte_liste  = '<li class="tagit-tag ui-widget-content ui-state-default ui-corner-all'.$additionnal_class;
-		$texte_liste .= '">'."\n";
-		$texte_liste .= '<a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$taglist).'">'.$tag['value'].'</a>'."\n";
-		$texte_liste .= '</li>'."\n";
-		$tab_tag[] = $texte_liste;
 	}
-
 	$outputselecttag = '';
-	if (is_array($tab_tag))
-	{
-		$outputselecttag .= '<div class="filter_tags"><strong>Filtrer :</strong>'.
+	if (is_array($tab_tag))	{
+		$outputselecttag .= '<strong><span class="icon icon-tags"></span>&nbsp;'._t('TAGS_FILTER').' : </strong>';
 		//<strong>Filtrer les r&eacute;sultats en cochant / d&eacute;cochant les mots cl&eacute;s ci-dessous :</strong>
-		'<ul  class="tagit ui-widget ui-widget-content ui-corner-all show">'."\n";
 		foreach ($tab_tag as $tag) {
 			$outputselecttag .= $tag;
 		}
-		$outputselecttag .= '</ul>'."\n".'</div>'."\n";
 	}
 }
 

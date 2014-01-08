@@ -26,7 +26,7 @@
 /**
  * Base class for <input /> form elements
  */
-require_once 'HTML/QuickForm/input.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/input.php';
 
 // register file-related rules
 if (class_exists('HTML_QuickForm')) {
@@ -328,7 +328,7 @@ class HTML_QuickForm_file extends HTML_QuickForm_input
     * @access    private
     * @return    mixed
     */
-    public function _findValue()
+    public function _findValue(&$values='')
     {
         if (empty($_FILES)) {
             return null;

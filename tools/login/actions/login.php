@@ -26,6 +26,23 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+if (!defined("WIKINI_VERSION"))
+{
+    die ("acc&egrave;s direct interdit");
+}
+
+
+if (!function_exists('LoadUserbyEmail')) {
+
+ function LoadUserbyEmail($email, $password = 0) {
+	 
+	global $wiki;
+	return $wiki->LoadSingle("select * from ".$wiki->config["table_prefix"]."users where email = '".mysql_real_escape_string($email)."' ".($password === 0 ? "" : "and password = '".mysql_real_escape_string($password)."'")." limit 1");
+ }               
+	
+}
+
+
 // Lecture des parametres de l'action
 
 // url d'inscription
@@ -93,7 +110,7 @@ if ($_REQUEST["action"] == "logout") {
 // cas de l'identification
 if ($_REQUEST["action"] == "login") {	
 	// si l'utilisateur existe, on vérifie son mot de passe
-	if (isset($_POST["name"]) && $existingUser = $this->LoadUser($_POST["name"])) {
+	if (isset($_POST["name"]) && $_POST["name"]!='' && $existingUser = $this->LoadUser($_POST["name"])) {
 		// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
 		if ($existingUser["password"] == md5($_POST["password"])) {
 			$this->SetUser($existingUser, $_POST["remember"]);
@@ -112,10 +129,31 @@ if ($_REQUEST["action"] == "login") {
 			$this->Redirect($_POST['incomingurl']);
 		}
 	}
+	else { 
+	 if (isset($_POST["email"]) && $_POST["email"] !='' && $existingUser = LoadUserbyEmail($_POST["email"])) {
+		// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
+		if ($existingUser["password"] == md5($_POST["password"])) {
+			$this->SetUser($existingUser, $_POST["remember"]);
+			// si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
+			if ( $userpage=='user' && $this->LoadPage($existingUser["name"]) ) {
+				$this->Redirect($this->href('', $existingUser["name"], ''));
+			}
+			// on va sur la page d'ou on s'est identifie sinon
+			else {
+				$this->Redirect($_POST['incomingurl']);
+			}			
+		}
+		// on affiche une erreur sur le mot de passe sinon
+		else {
+			$this->SetMessage("Identification impossible : mauvais mot de passe.");
+			$this->Redirect($_POST['incomingurl']);
+		}
+	 }
 	// on affiche une erreur sur le NomWiki sinon
 	else {
-		$this->SetMessage("Identification impossible : NomWiki non reconnu.");
+		$this->SetMessage("Identification impossible : Identifiant non reconnu.");
 		$this->Redirect($_POST['incomingurl']);
+	}
 	}
 }
 
@@ -150,10 +188,21 @@ else {
 
 // on affiche le template
 if (!class_exists('SquelettePhp')) include_once('tools/login/libs/squelettephp.class.php');
-$squel = new SquelettePhp('tools/login/presentation/templates/'.$template);
+
+
+// On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
+
+$templatetoload='themes/tools/login/templates/'.$template;
+
+if (!is_file($templatetoload)) {
+	$templatetoload='tools/login/presentation/templates/'.$template;
+}
+
+$squel = new SquelettePhp($templatetoload);
 $squel->set(array(
 	"connected" => $connected,
 	"user" => ((isset($user["name"])) ? $user["name"] : ((isset($_POST["name"])) ? $_POST["name"] : '' )), 
+	"email" => ((isset($user["email"])) ? $user["email"] : ((isset($_POST["email"])) ? $_POST["email"] : '' )), 
 	"incomingurl" => $incomingurl, 
 	"signupurl" => $signupurl, 
 	"profileurl" => $profileurl,

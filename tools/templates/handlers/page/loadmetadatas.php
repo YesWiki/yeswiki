@@ -42,9 +42,9 @@ header('Content-type: application/json; charset=UTF-8');
 
 // on teste si on a le droit d'accès aux meta-données
 if ($this->HasAccess("read")) {
-	echo json_encode(array('result' => $this->GetMetaDatas($this->GetPageTag()));
+	echo json_encode(array('result' => $this->GetMetaDatas($this->GetPageTag())));
 } else {
-	echo json_encode(array('result' => 'ERREUR : pas les droits d\'acc&eacute;s.');
+	echo json_encode(array('result' => 'ERREUR : pas les droits d\'acc&eacute;s.'));
 }
 
 ?>

@@ -80,28 +80,30 @@ $tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeanno
 $tab_points_carto = array();
 
 foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche[0], true);
+    $valeurs_fiche = json_decode($fiche["body"], true);
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
-    $tab = explode('|', $valeurs_fiche['carte_google']);
-    if (count($tab)>1 && $tab[0]!='' && $tab[1]!='') {
-        $tab_points_carto[]= '{
-                "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
-                "couleur": "'.addslashes($valeurs_fiche[$champcoul]).'",
-                "description": \'<div class="BAZ_cadre_map">'.
-                preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.baz_voir_fiche(1, $valeurs_fiche))).'\',
-                "lat": '.$tab[0].',
-                "lng": '.$tab[1].'
-        }';
+    if (isset($valeurs_fiche['carte_google'])) {
+        $tab = explode('|', $valeurs_fiche['carte_google']);
+        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='') {
+            $tab_points_carto[]= '{
+                    "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
+                    "couleur": "'.addslashes($valeurs_fiche[$champcoul]).'",
+                    "description": \'<div class="BAZ_cadre_map">'.
+                    preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.baz_voir_fiche(1, $valeurs_fiche))).'\',
+                    "lat": '.$tab[0].',
+                    "lng": '.$tab[1].'
+            }';
+        }
     }
-
 }
 $points_carto = implode(',',$tab_points_carto);
 
-echo '<div id="map" style="width: '.BAZ_GOOGLE_IMAGE_LARGEUR.'; height: '.BAZ_GOOGLE_IMAGE_HAUTEUR.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
-echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+echo '<div id="mapcol" style="width: '.BAZ_GOOGLE_IMAGE_LARGEUR.'; height: '.BAZ_GOOGLE_IMAGE_HAUTEUR.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
+$js = 
+'    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script src="http://www.google.com/jsapi"></script>
 
-    <script type="text/javascript">
+    <script>
     //variable pour la carte google
     var map;
 
@@ -177,7 +179,7 @@ echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sen
     new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_OMBRE_MARQUEUR.'));
 
     //initialise la carte google
-    public function initialize()
+    function initialize_cartocoul()
     {
         var myLatlng = new google.maps.LatLng('.$latitude.', '.$longitude.');
         var myOptions = {
@@ -191,7 +193,7 @@ echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sen
           scaleControl: '.BAZ_AFFICHER_ECHELLE.',
           scrollwheel: '.BAZ_PERMETTRE_ZOOM_MOLETTE.'
         }
-        map = new google.maps.Map(document.getElementById("map"), myOptions);
+        map = new google.maps.Map(document.getElementById("mapcol"), myOptions);
 
         if ($("#markers li") != undefined) {
             //tableau des points des fiches bazar
@@ -313,13 +315,16 @@ echo '<script type="text/javascript" src="http://maps.google.com/maps/api/js?sen
 
     if ( defined('BAZ_JS_INIT_MAP') && BAZ_JS_INIT_MAP != '' && file_exists(BAZ_JS_INIT_MAP) ) {
         $handle = fopen(BAZ_JS_INIT_MAP, "r");
-        echo fread($handle, filesize(BAZ_JS_INIT_MAP));
+        $js .=  fread($handle, filesize(BAZ_JS_INIT_MAP));
         fclose($handle);
-        echo 'var poly = createPolygon( Coords, "#002F0F");
+        $js .=  'var poly = createPolygon( Coords, "#002F0F");
         poly.setMap(map);
 
         ';
     };
 
-    echo '}
-</script>';
+    $js .=  '   }
+    initialize_cartocoul();
+    </script>'."\n";
+
+$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$js;

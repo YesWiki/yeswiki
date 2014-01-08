@@ -49,6 +49,7 @@ class attach {
    var $link = '';					//url de lien (image sensible)
    var $caption = '';				//texte de la vignette au survol
    var $legend = '';				//texte en dessous de l'image
+   var $nofullimagelink = '';		//mettre un lien vers l'image entiere
    var $isPicture = 0;				//indique si c'est une image
    var $isAudio = 0;				//indique si c'est un fichier audio
    var $isFreeMindMindMap = 0;		//indique si c'est un fichier mindmap freemind
@@ -58,7 +59,7 @@ class attach {
    var $pageId = 0;					//identifiant de la page
    var $isSafeMode = false;			//indicateur du safe mode de PHP
    /**
-   * Constructeur. Met les valeurs par defaut aux param&ecirc;tres de configuration
+   * Constructeur. Met les valeurs par defaut aux parametres de configuration
    */
 	function attach(&$wiki){
    	$this->wiki = $wiki;
@@ -276,7 +277,7 @@ class attach {
      *	FONCTIONS D'ATTACHEMENTS
      *******************************************************************************/
     /**
-     * Test les param&ecirc;tres pass&eacute; ? l'action
+     * Test les parametres passes a l'action
      */
     function CheckParams(){
         //recuperation des parametres necessaire
@@ -291,10 +292,10 @@ class attach {
         
         //test de validit&eacute; des parametres
         if (empty($this->file)){
-            $this->attachErr = '<div class="error_box">action attach : param&ecirc;tre <strong>file</strong> manquant</div>';
+            $this->attachErr = '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_FILE_NOT_FOUND').'.</div>'."\n";
         }
         if ($this->isPicture() && empty($this->desc)){
-            $this->attachErr .= '<div class="error_box">action attach : param&ecirc;tre <strong>desc</strong> obligatoire pour une image</div>';
+            $this->attachErr .= '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_DESC_REQUIRED').'.</div>'."\n";
         }
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
@@ -302,11 +303,12 @@ class attach {
             	$this->classes .= ' '. trim($c); 
             }
         }
+        $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
+
 		$this->height = $this->wiki->GetParameter('height');
         $this->width = $this->wiki->GetParameter('width');
         
         $size = $this->wiki->GetParameter("size");
-
         switch ($size) {
                 case 'small' : 
                     $this->width = 140;
@@ -345,7 +347,7 @@ class attach {
                 $this->redimensionner_image($fullFilename, $image_dest,$this->width ,$this->height);
             }
             $img_name=$image_dest;
-            $image_redimensionnee=1;
+            if (empty($this->nofullimagelink)) $image_redimensionnee=1;
         }
         else {
             $img_name=$fullFilename;
@@ -683,7 +685,7 @@ class attach {
 
         $files = $this->fmGetFiles($trash);
         
-        if (!$files) $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s ? la page '.$this->wiki->Format($this->wiki->tag).' pour l\'instant.</div>'."\n";
+        if (!$files) $output .= '<div class="alert alert-info">Pas de fichiers attach&eacute;s &agrave; la page '.$this->wiki->Format($this->wiki->tag).' pour l\'instant.</div>'."\n";
         else {
         	// tri du tableau des fichiers
         	$files = $this->sortByNameRevFile($files);

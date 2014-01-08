@@ -49,7 +49,7 @@ if ($pages = $this->LoadAll('SELECT tag FROM ' . $this->config["table_prefix"] .
 }
 else
 {
-	echo '<i>Aucune page trouv&eacute;e.</i>' ;
+	echo '<i>'._t('NO_PAGE_FOUND').'.</i>' ;
 }
 
 ?>

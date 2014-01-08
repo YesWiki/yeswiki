@@ -25,7 +25,7 @@
 /**
  * Base class for form elements
  */
-require_once 'HTML/QuickForm/element.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/element.php';
 
 /**
  * HTML class for a textarea type field
@@ -197,7 +197,7 @@ class HTML_QuickForm_textarea extends HTML_QuickForm_element
             return $this->_getTabs() .
                    '<textarea' . $this->_getAttrString($this->_attributes) . '>' .
                    // because we wrap the form later we don't want the text indented
-                   preg_replace("/(\r\n|\n|\r)/", '&#010;', htmlspecialchars($this->_value)) .
+                   preg_replace("/(\r\n|\n|\r)/", '&#010;', htmlspecialchars($this->_value, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)) .
                    '</textarea>';
         }
     } //end func toHtml
@@ -214,7 +214,7 @@ class HTML_QuickForm_textarea extends HTML_QuickForm_element
      */
     public function getFrozenHtml()
     {
-        $value = htmlspecialchars($this->getValue());
+        $value = htmlspecialchars($this->getValue(), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
         if ($this->getAttribute('wrap') == 'off') {
             $html = $this->_getTabs() . '<pre>' . $value."</pre>\n";
         } else {

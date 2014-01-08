@@ -23,14 +23,16 @@ if (!empty($icon)) $icon = '<i class="icon-'.$icon.'"></i>';
 // classe css supplémentaire pour changer le look
 $class = $this->GetParameter('class');
 $class = 'btn '.$class;
+if (!strstr($class, 'btn-')) $class .= ' btn-default';
+
 
 $nobtn = $this->GetParameter('nobtn');
-if (!empty($nobtn) && $nobtn == '1') $class = str_replace('btn ', '', $class);
+if (!empty($nobtn) && $nobtn == '1') $class = str_replace(array('btn ', 'btn-default'), array('',''), $class);
 
 if (empty($link)) {
-        echo '<div class="error">Action button : param&egrave;tre "link" obligatoire.</div>'."\n";
+        echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_BUTTON').'</strong> : '._t('TEMPLATE_LINK_PARAMETER_REQUIRED').'.</div>'."\n";
 }
 else {
-	echo '<a href="'.$link.'" class="'.$class.'"'.(!empty($title) ? ' title="'.htmlentities($title).'"' : (!empty($text) ? ' title="'.htmlentities($text).'"' : '') ).'>'.$icon.(!empty($text)? '&nbsp;'.htmlentities($text) : '').'</a>'."\n";
+	echo '<a href="'.$link.'" class="'.$class.'"'.(!empty($title) ? ' title="'.htmlentities($title, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET).'"' : (!empty($text) ? ' title="'.htmlentities($text, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET).'"' : '') ).'>'.$icon.(!empty($text)? '&nbsp;'.htmlentities($text, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET) : '').'</a>'."\n";
 }
 ?>

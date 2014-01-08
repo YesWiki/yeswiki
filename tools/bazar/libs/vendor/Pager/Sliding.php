@@ -32,14 +32,14 @@
  * @author    Lorenzo Alberton <l.alberton@quipo.it>
  * @copyright 2003-2008 Lorenzo Alberton
  * @license   http://www.debian.org/misc/bsd.license  BSD License (3 Clause)
- * @version   CVS: $Id: Sliding.php,v 1.1 2008-07-07 18:00:48 mrflos Exp $
+ * @version   CVS: $Id: Sliding.php,v 1.18 2008/01/06 13:36:22 quipo Exp $
  * @link      http://pear.php.net/package/Pager
  */
 
 /**
  * require PEAR::Pager_Common base class
  */
-require_once 'Pager/Common.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Pager/Common.php';
 
 /**
  * Pager_Sliding - Generic data paging class  ("sliding window" style)
@@ -63,7 +63,7 @@ class Pager_Sliding extends Pager_Common
      *
      * @access public
      */
-    public function Pager_Sliding($options = array())
+    function Pager_Sliding($options = array())
     {
         //set default Pager_Sliding options
         $this->_delta                 = 2;
@@ -95,7 +95,7 @@ class Pager_Sliding extends Pager_Common
      * @deprecated
      * @access public
      */
-    public function getPageIdByOffset($index)
+    function getPageIdByOffset($index)
     {
     }
 
@@ -112,12 +112,12 @@ class Pager_Sliding extends Pager_Common
      *
      * @param integer $pageid PageID to get offsets for
      *
-     * @return array First and last offsets
+     * @return array  First and last offsets
      * @access public
      */
-    public function getPageRangeByPageId($pageid = null)
+    function getPageRangeByPageId($pageid = null)
     {
-        $pageid = isset($pageid) ? (int) $pageid : $this->_currentPage;
+        $pageid = isset($pageid) ? (int)$pageid : $this->_currentPage;
         if (!isset($this->_pageData)) {
             $this->_generatePageData();
         }
@@ -129,13 +129,11 @@ class Pager_Sliding extends Pager_Common
             } else {
                 $min_surplus = $max_surplus = 0;
             }
-
             return array(
                 max($pageid - $this->_delta - $max_surplus, 1),
                 min($pageid + $this->_delta + $min_surplus, $this->_totalPages)
             );
         }
-
         return array(0, 0);
     }
 
@@ -148,12 +146,12 @@ class Pager_Sliding extends Pager_Common
      *
      * @param integer $pageID Optional pageID. If specified, links for that page
      *                        are provided instead of current one.
-     * @param string $dummy used to comply with parent signature (leave empty)
+     * @param string  $dummy  used to comply with parent signature (leave empty)
      *
      * @return array back/pages/next/first/last/all links
      * @access public
      */
-    public function getLinks($pageID = null, $dummy='')
+    function getLinks($pageID = null, $dummy='')
     {
         if (!is_null($pageID)) {
             $_sav = $this->_currentPage;
@@ -214,14 +212,14 @@ class Pager_Sliding extends Pager_Common
      * @return string Links
      * @access private
      */
-    public function _getPageLinks($url = '')
+    function _getPageLinks($url = '')
     {
         //legacy setting... the preferred way to set an option now
         //is adding it to the constuctor
         if (!empty($url)) {
             $this->_path = $url;
         }
-
+        
         //If there's only one page, don't display links
         if ($this->_clearIfVoid && ($this->_totalPages < 2)) {
             return '';
@@ -237,7 +235,7 @@ class Pager_Sliding extends Pager_Common
                 }
                 for ($i = $this->_currentPage - $this->_delta - $expansion_before; $expansion_before; $expansion_before--, $i++) {
                     $print_separator_flag = ($i != $this->_currentPage + $this->_delta); // && ($i != $this->_totalPages - 1)
-
+                    
                     $this->range[$i] = false;
                     $this->_linkData[$this->_urlVar] = $i;
                     $links .= $this->_renderLink(str_replace('%d', $i, $this->_altPage), $i)
@@ -295,9 +293,9 @@ class Pager_Sliding extends Pager_Common
                        . (($i != $this->_totalPages) ? $this->_separator.$this->_spacesAfter : '');
             }
         }
-
         return $links;
     }
 
     // }}}
 }
+?>

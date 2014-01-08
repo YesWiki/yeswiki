@@ -407,7 +407,7 @@ class Auth {
     {
         $storage_class = 'Auth_Container_' . $driver;
         include_once $driver . '.php';
-        $obj =& new $storage_class($options);
+        $obj = new $storage_class($options);
         return $obj;
     }
 
@@ -516,7 +516,8 @@ class Auth {
 
                 // New Login form
                 include_once 'Html.php';
-                return Auth_Frontend_Html::render($this, $this->username);
+                $frontend = new Auth_Frontend_Html();
+                return $frontend->render($this, $this->username);
             }
         } else {
             return;

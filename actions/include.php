@@ -56,7 +56,7 @@ if ($this->GetParameter('class'))
 //
 if (empty($incPageName))
 {
-	echo $this->Format('//**Erreur ActionInclude**: Le param&egrave;tre "page" est manquant.//');
+	echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' Include</strong> : '._t('MISSING_PAGE_PARAMETER').'.</div>'."\n";
 }
 elseif ($this->IsIncludedBy($incPageName))
 {
@@ -67,16 +67,16 @@ elseif ($this->IsIncludedBy($incPageName))
 	{
 		$err = '[[' . $inclusions[$i] . ']] > ' . $err;
 	} 
-	echo $this->Format("//**Erreur ActionInclude**: Impossible pour la page '[[$incPageName]]' de s'inclure en elle m&ecirc;me//"
-		 . ($i ? ":---**Chaine d'inclusions**: [[$pg]] > $err": '.')); // si $i = 0, alors c'est une page qui s'inclut elle-même directement...
+	echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' Include</strong> : '._t('IMPOSSIBLE_FOR_THIS_PAGE').' '.$incPageName.' '._t('TO_INCLUDE_ITSELF')
+		 . ($i ? ':<br /><strong>'._t('INCLUSIONS_CHAIN').'</strong> : '.$pg.' > '.$err : '').'</div>'."\n"; // si $i = 0, alors c'est une page qui s'inclut elle-même directement...
 }
 elseif (!$this->HasAccess('read', $incPageName) && $this->GetParameter('auth')!='noError')
 {
-	echo $this->Format("//**Erreur ActionInclude**: Lecture de la page inclue '\"\"$incPageName\"\"' non autoris&eacute;e.//");
+	echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' Include</strong> : '.' '._t('READING_OF_INCLUDED_PAGE').' '.$incPageName.' '._t('NOT_ALLOWED').'.</div>'."\n";
 }
 elseif (!$incPage = $this->LoadPage($incPageName))
 {
-	echo $this->Format("//**Erreur ActionInclude**: La page inclue '[[$incPageName]]' ne semble pas exister...//");
+	echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' Include</strong> : '._t('INCLUDED_PAGE').' '.$incPageName.' '._t('DOESNT_EXIST').'...</div>'."\n";
 } 
 // Affichage de la page quand il n'y a pas d'erreur
 elseif ($this->HasAccess('read', $incPageName))
@@ -86,7 +86,7 @@ elseif ($this->HasAccess('read', $incPageName))
 	if (isset($classes))
 	{
 		if($this->GetParameter('edit')=='show')
-			$editLink = "<div class=\"include_editlink\"><a href=\"" . $this->Href("edit", $incPageName) . "\">[Édition]</a></div>\n";
+			$editLink = "<div class=\"include_editlink\"><a href=\"" . $this->Href("edit", $incPageName) . "\">["._t('EDITION')."]</a></div>\n";
 		else $editLink = "";
 		// Affichage
 		echo "<div class=\"include " . $classes . "\">\n" . $editLink . $output . "</div>\n";

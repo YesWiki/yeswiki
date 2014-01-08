@@ -44,17 +44,14 @@ if (!defined("WIKINI_VERSION")) {
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-//error_reporting(E_ALL & ~E_DEPRECATED);
+//error_reporting(E_ALL & E_STRICT);
 
 //chemin relatif d'acces au bazar
 define ('BAZ_CHEMIN', 'tools'.DIRECTORY_SEPARATOR.'bazar'.DIRECTORY_SEPARATOR);
 define ('BAZ_CHEMIN_UPLOAD', 'files'.DIRECTORY_SEPARATOR);
 
-//bouh! c'est pas propre! c'est a cause de PEAR et de ses includes
-set_include_path(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.PATH_SEPARATOR.get_include_path());
-
 //librairies PEAR
-require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
+//require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Net'.DIRECTORY_SEPARATOR.'URL.php' ;
 
 //principales fonctions de bazar
@@ -66,7 +63,6 @@ define('BAZ_PREFIXE', $wakkaConfig['table_prefix']);
 // +------------------------------------------------------------------------------------------------------+
 // |                                            CORPS du PROGRAMME                                        |
 // +------------------------------------------------------------------------------------------------------+
-
 
 $wikireq = $_REQUEST['wiki'];
 
@@ -84,66 +80,26 @@ $methode = ($method == 'bazarframe') ? '/bazarframe' : '';
 // Variable d'url
 $GLOBALS['_BAZAR_']['url'] = new Net_URL($wakkaConfig['base_url'].$GLOBALS['_BAZAR_']['pagewiki'].$methode);
 
-// Connection a la base de donnee
-$dsn='mysql://'.$wakkaConfig['mysql_user'].':'.$wakkaConfig['mysql_password'].'@'.$wakkaConfig['mysql_host'].'/'.$wakkaConfig['mysql_database'];
-$GLOBALS['_BAZAR_']['db'] =& DB::connect($dsn) ;
-if (DB::isError($GLOBALS['_BAZAR_']['db'])) {
-    echo $GLOBALS['_BAZAR_']['db']->getMessage();
-}
-
 //test de l'existance des tables de bazar et installation si absentes.
-$req = 'SHOW TABLES FROM '.$wakkaConfig['mysql_database'].' LIKE "'.BAZ_PREFIXE.'nature%"';
-$resultat = $GLOBALS['_BAZAR_']['db']->query ($req);
-if ($resultat->numRows() == 0) {
-    $fichier_sql = 'tools/bazar/install/bazar.sql';
-    if (file_exists($fichier_sql)) {
-            // Des champs textes sont multilignes, d'ou la boucle sur INSERT, marqueur de fin de la requete precedente.
-            if ($lines = file($fichier_sql)) {
-                $i=0;
-                $ligne_courante=$lines[$i];
-                if (($i+1)>=count($lines)) {
-                    $ligne_suivante='FIN';
-                } else {
-                    $ligne_suivante=$lines[$i+1];
-                }
-                while ($i<count($lines)) {
-                    $line_in=$ligne_courante;
-                    while (($i < count($lines)) && ((substr($ligne_suivante, 0, 6) != 'INSERT') && (substr($ligne_suivante, 0, 6) != 'CREATE') ) && ($ligne_suivante != 'FIN')) {
-                        $line_in.=$ligne_suivante;
-                        $i++;
-                        $ligne_courante=$lines[$i];
-                        if (($i+1)>=count($lines)) {
-                            $ligne_suivante='FIN';
-                        } else {
-                        $ligne_suivante=$lines[$i+1];
-                        }
-                    }
-
-                    $requete = str_replace('BAZ_PREFIXE', BAZ_PREFIXE, $line_in);
-
-                    //requete sql
-                    //echo $requete.'<br />';
-                    $result = $GLOBALS['_BAZAR_']['db']->query ($requete);
-
-                    $i++;
-                    $ligne_courante=$lines[$i];
-                    if (($i+1)>=count($lines)) {
-                        $ligne_suivante='FIN';
-                    } else {
-                        $ligne_suivante=$lines[$i+1];
-                    }
-
-                    //if ($i == (int) $this->test) {
-                    //    break;
-                    //}
-                }
-            }
-            echo '<div class="info_box">La base de donn&eacute;es de bazar vient d\'&ecirc;tre ajout&eacute;e,</div>'."\n";
-        } else {
-            die ('<div class="BAZ_error">Fichier sql introuvable.</div>'."\n");
-        }
-
-}
+$req = "CREATE TABLE IF NOT EXISTS `".BAZ_PREFIXE."nature` (
+  `bn_id_nature` int(10) unsigned NOT NULL DEFAULT '0',
+  `bn_label_nature` varchar(255) DEFAULT NULL,
+  `bn_description` text,
+  `bn_condition` text,
+  `bn_ce_id_menu` int(3) unsigned NOT NULL DEFAULT '0',
+  `bn_commentaire` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `bn_appropriation` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `bn_image_titre` varchar(255) NOT NULL DEFAULT '',
+  `bn_image_logo` varchar(255) NOT NULL DEFAULT '',
+  `bn_couleur_calendrier` varchar(255) NOT NULL DEFAULT '',
+  `bn_picto_calendrier` varchar(255) NOT NULL DEFAULT '',
+  `bn_template` text NOT NULL,
+  `bn_ce_i18n` varchar(5) NOT NULL DEFAULT '',
+  `bn_type_fiche` varchar(255) NOT NULL,
+  `bn_label_class` varchar(255) NOT NULL,
+  PRIMARY KEY (`bn_id_nature`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+$resultat = $GLOBALS['wiki']->query($req);
 
 // +------------------------------------------------------------------------------------------------------+
 // |                             LES CONSTANTES DES ACTIONS DE BAZAR                                      |
@@ -199,7 +155,13 @@ define ('BAZ_OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES', 'listes_et_fiches');
 
 // Constante pour l'envoi automatique de mail aux admins
 define ('BAZ_ENVOI_MAIL_ADMIN', false);
-define ('BAZ_ADRESSE_MAIL_ADMIN', 'admin@domaine.fr');
+// Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
+$hrefdomain = $wiki->Href();
+$fulldomain = parse_url($hrefdomain);
+$hostdomain = $fulldomain["host"];
+$adminmail="noreply@".$hostdomain;
+//define ('BAZ_ADRESSE_MAIL_ADMIN', 'admin@domaine.fr');
+define ('BAZ_ADRESSE_MAIL_ADMIN', $adminmail);
 
 
 //==================================== LES FLUX RSS==================================
@@ -336,3 +298,100 @@ define('BAZ_JS_INIT_MAP', '');
 
 // Choix du look du template par défaut
 define ('BAZ_TEMPLATE_LISTE_DEFAUT', (isset($wakkaConfig['default_bazar_template'])) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html');
+
+
+if (!function_exists('CheckBazarOwner')) {
+
+	function CheckBazarOwner($page,$tag) {
+		global $wiki;
+                // check if user is logged in
+                if (!$wiki->GetUser()) return false;
+                // check if user is owner
+                if ($page["owner"] == $wiki->GetUserName()) return true;
+        }
+
+		
+}
+
+// Teste les droits d'acces champ par champ du contenu d'un fiche bazar
+// Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
+// Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
+// Introduction du droit % : seul le proprietaire peut acceder
+
+
+if (!function_exists('CheckBazarAcls')) {
+	function CheckBazarAcls($page,$tag) {
+
+		global $wiki;
+		// TODO :
+		// loadpagebyid
+		// bazarliste ...
+		// champ mot de passe ?
+		// 
+		if (CheckBazarOwner($page,$tag)) { // Pas de controle si proprietaire 
+			return $page;
+		}
+		
+		$valjson = $page["body"];
+		$valeur = json_decode($valjson, true);
+		$valeur = array_map('utf8_decode', $valeur);
+		$val_formulaire = baz_valeurs_type_de_fiche($valeur['id_typeannonce']);
+		$formtemplate = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+		$fieldname=array();
+		foreach ($formtemplate as $line) {
+		   if (isset($line[11]) && $line[11]!='') {
+			if($wiki->CheckAcl($line[11])=="%") {
+				$line[11]= $wiki->GetUserName();
+			}
+			if( !$wiki->CheckACL($line[11])) { // On memorise les champs non autorise
+			    $fieldname[]=$line[1];
+			}
+		    }
+		}
+		if (count($fieldname)>0) { // 
+		    foreach ($fieldname as $field) {
+			   $valeur[$field]=""; // on vide le champ
+		    }
+		    $valeur = array_map("utf8_encode", $valeur);
+		    $page["body"]=json_encode($valeur);
+		} 
+		return $page;
+	//    $this->page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
+	}
+}
+
+$wikiClasses [] = 'Bazar';
+
+//  Gestion des droits sur les champs d'une fiche Bazar, suppose que Bazar soit toujours integre a Yeswiki puisque cette 
+//  Gestion est supprimee de template. Trouver un moyen de tester l'existence de la fonction Loadpage dans le wiki.php de template et
+// la charger si elle est non presente ? 
+
+
+$wikiClassesContent [] = ' 
+
+	function LoadPage($tag, $time = "", $cache = 1)
+	{
+		// retrieve from cache
+		if (!$time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false) && isset($cachedPage["metadatas"]))
+		{
+			$page = $cachedPage;
+		}
+		else // load page
+		{
+			$sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
+				. " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
+				. ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
+			$page = $this->LoadSingle($sql);
+			// si la page existe, on charge les meta-donnees
+			if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
+			
+			$type = $this->GetTripleValue($tag, \'http://outils-reseaux.org/_vocabulary/type\', \'\', \'\');
+			if ($type == \'fiche_bazar\') {
+			    $page=CheckBazarAcls($page,$tag);
+			}
+			// cache result
+			if (!$time) $this->CachePage($page, $tag);
+		}
+		return $page;
+	}
+';

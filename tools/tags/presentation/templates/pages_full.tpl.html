@@ -1,0 +1,9 @@
+<div class="filter-results">
+<?php foreach ($elements as $tag => $element) : ?>
+	<div class="filtered-element <?php echo $element["tagnames"]; ?>">
+	<?php echo $GLOBALS['wiki']->Format('{{include page="'.$tag.'"}}'); ?>
+	<?php echo $element["tagbadges"]; ?>
+	<hr />
+	</div> <!-- /.filter-results -->
+<?php endforeach; ?>
+</div>

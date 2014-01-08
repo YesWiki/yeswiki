@@ -30,6 +30,7 @@
 define ('LOGIN_SIGNUP', 'S\'inscrire');
 define ('LOGIN_LOGIN', 'Se connecter');
 define ('LOGIN_WIKINAME', 'NomWiki');
+define ('LOGIN_EMAIL', 'Email');
 define ('LOGIN_PASSWORD', 'Mot de passe');
 define ('LOGIN_MODIFY', 'Modifier');
 define ('LOGIN_MODIFY_USER', 'Modifier mon inscription');

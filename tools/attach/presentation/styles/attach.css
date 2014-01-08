@@ -16,8 +16,8 @@
 }
 .qq-upload-drop-area-active {background:#880000;}
 
-.qq-upload-list {margin:0; list-style:none; display:inline; overflow:auto; }
-.qq-upload-list li { margin: 0 0 10px 0; padding:5px; font-size: 14px; font-weight: bold; line-height: 18px;}
+.qq-upload-list {margin:0; padding:0; list-style:none; display:inline; overflow:auto; }
+.qq-upload-list li { margin: 0 0 10px 0; padding:5px;}
 .qq-upload-file, .qq-upload-spinner, .qq-upload-size, .qq-upload-cancel, .qq-upload-failed-text {
     margin-right: 7px;
 }
@@ -162,3 +162,55 @@ z-index: 5;
 -moz-box-shadow: 2px 2px 15px 0px #444;
 box-shadow: 2px 2px 15px 0px #444;
  }
+
+
+/* pointimage */
+.pointimage-container {
+  position:relative;
+  display:inline-block;
+}
+.pointimage-container .attached_file {
+  cursor:default !important;
+}
+.pointimage-container .popover.fade {z-index:-2;}
+.pointimage-container .popover.fade.in {z-index:1010;}
+
+.img-marker {
+  position:absolute;
+  display:block;
+  height:10px; 
+  width:10px;
+  -webkit-border-radius:50%;
+  border-radius:50%;
+  border:1px solid #FFF;
+  -webkit-box-shadow:  1px 1px 1px 0px rgba(0, 0, 0, 0.8);
+  box-shadow:  1px 1px 1px 0px rgba(0, 0, 0, 0.8);
+}
+.btn-add-point, .btn-cancel {
+  position:absolute;
+  top:5px;
+  left:5px;
+  display:none;
+}
+.btn-edit-points {
+  position:absolute;
+  top:5px;
+  right:5px;
+  display:none;
+}
+.pointimage-container:hover .btn-add-point, .pointimage-container:hover .btn-cancel, .pointimage-container:hover .btn-edit-points {
+  display:block;
+}
+.popover-content {overflow:auto;max-height:300px;}
+.modal-pointimage .wiki-textarea { height:260px !important;}
+
+/* bootstrap 2.3 tweaks */
+.modal-pointimage {
+  z-index:-2;
+}
+.modal-pointimage.in {
+  z-index: 1050;
+}
+.modal-pointimage .form-control {
+  width:100%;
+}

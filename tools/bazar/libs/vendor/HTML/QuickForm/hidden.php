@@ -25,7 +25,7 @@
 /**
  * Base class for <input /> form elements
  */
-require_once 'HTML/QuickForm/input.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/input.php';
 
 /**
  * HTML class for a hidden type element
@@ -83,7 +83,7 @@ class HTML_QuickForm_hidden extends HTML_QuickForm_input
     * @access public
     * @return void
     */
-    public function accept(&$renderer)
+    public function accept(&$renderer, $required = false, $error = NULL)
     {
         $renderer->renderHidden($this);
     } // end func accept

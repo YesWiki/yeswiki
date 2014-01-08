@@ -34,7 +34,7 @@ if (!defined("WIKINI_VERSION")) {
 $query = $this->GetParameter('query');
 // si pas de user, on affiche une erreur
 if (empty($query)) {
-	echo ("<div class=\"error_box\">ERREUR action twittersearch : pas de recherche saisie (param&egrave;tre query=\"\" manquant).</div>");
+	echo ("<div class=\"alert alert-danger\"><strong>"._t('SYNDICATION_ACTION_TWITTERSEARCH')."</strong> : "._t('SYNDICATION_PARAM_QUERY_REQUIRED').".</div>");
 }
 else { 
 	$limit = $this->GetParameter('limit');
@@ -63,7 +63,7 @@ else {
 	} else {
 		$template = 'tools/syndication/templates/'.$this->GetParameter("template");
 		if (!file_exists($template)) {
-				echo 'Le fichier template: "'.$template.'" n\'existe pas, on utilise le template twitter.tpl.html par d&eacute;faut.';
+				echo _t('SYNDICATION_TEMPLATE_DOESNT_EXISTS').' : "'.$template.'" '._t('SYNDICATION_USE_OF_DEFAULT_TEMPLATE').'.';
 				$template = 'tools/syndication/templates/twitter.tpl.html';
 		}
 	}
@@ -89,7 +89,7 @@ else {
 		}
 		include($template);
 	} else {
-		echo '<p class="error_box">Erreur '.magpie_error().'</p>'."\n";        			    
+		echo '<p class="alert alert-danger">'._t('ERROR').' : '.magpie_error().'</p>'."\n";        			    
 	}	
 }
 

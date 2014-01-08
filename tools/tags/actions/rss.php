@@ -17,13 +17,13 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-
+$tags = $this->GetParameter('tags');
 $class = $this->GetParameter("class");
 if (empty($class)) $class='';
 
 if ($this->GetMethod() != 'rss' && $this->GetMethod() != 'xml' && $this->GetMethod() != 'tagrss') //on affiche un lien dans la page si on n'est pas en xml
 {
-	echo '<a class="'.$class.'" href="'.$this->Href('tagrss', $this->GetPageTag() ,'tags='.$tags).'" title="Flux RSS des nouvelles pages avec les tags : '.$tags.'">
+	echo '<a class="'.$class.'" href="'.$this->Href('tagrss', $this->GetPageTag() ,'tags='.$tags).'" title="'._t('TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS').' : '.$tags.'">
 			<img src="tools/tags/presentation/images/rss.png" alt="logo rss" width="24" height="24" />
 		</a>'."\n";
 	return;

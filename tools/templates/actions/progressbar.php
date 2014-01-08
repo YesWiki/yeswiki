@@ -18,9 +18,8 @@ $class = 'progressbar progress '.$class;
 
 
 if (isset($error)) {
-        echo '<div class="alert alert-error">
-        <a data-dismiss="alert" class="close">&times</a>
-        <strong>Action progressbar :</strong> '.$error.'
+        echo '<div class="alert alert-danger">
+        <strong>Action {{progressbar ..}}</strong> : '.$error.'
       </div>'."\n";
 }
 else {

@@ -24,39 +24,41 @@ if (!defined("WIKINI_VERSION"))
 
 class ActionEditactionsacls extends WikiniAdminAction
 {
-    function PerformAction($args)
+    function PerformAction($args, $command)
     {
         $wiki = &$this->wiki;
         $list = $wiki->GetActionsList();
         sort($list);
         $res = $wiki->FormOpen('', '', 'get');
-        $res .= 'Droits de l\'action <select name="actionname">';
+        $res .= _t('ACTION_RIGHTS').' <select name="actionname">';
         foreach ($list as $action)
         {
-        	$res .= '<option value="' . $action . '">' . ucfirst($action) .  '</option>';
+        	$res .= '<option value="' . $action . '"';
+            if (!empty($_GET['actionname']) && $_GET['actionname'] == $action) $res .= ' selected="selected"';
+            $res .= '>' . ucfirst($action) .  '</option>';
         }
-        $res .= '</select> <input type="submit" value="voir" />' . $wiki->FormClose();
+        $res .= '</select> <input type="submit" class="btn btn-default" value="'._t('SEE').'" />' . $wiki->FormClose();
         
         if ($_POST && !empty($_POST['actionname'])) // save ACL's
         {
         	$result = $wiki->SetModuleACL($name = $_POST['actionname'], 'action', @$_POST['acl']);
         	if ($result)
         	{
-        		return $res . 'Une erreur s\'est produite pendant l\'enregistrement de l\'ACL pour l\'action ' . ucfirst($name) . ' (code d\'erreur ' . $result . ')<br />';
+        		return $res . _t('ERROR_WHILE_SAVING_ACL') .' ' . ucfirst($name) . ' ('._t('ERROR_CODE').' ' . $result . ')<br />';
         	}
         	else
         	{
-        		$wiki->LogAdministrativeAction($wiki->GetUserName(), "Nouvelle ACL pour l'action " . ucfirst($name) . ' : ' . @$_POST['acl'] . "\n");
-        		return $res . 'Nouvelle ACL enregistr&eacute;e avec succ&egrave;s pour l\'action ' . ucfirst($name) . '.<br />';
+        		$wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_ACTION')." " . ucfirst($name) . ' : ' . @$_POST['acl'] . "\n");
+        		return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION').' ' . ucfirst($name) . '.<br />';
         	}
         }
         elseif (!empty($_GET['actionname']) && in_array($name = $_GET['actionname'], $list))
         {
         	$res .= $wiki->FormOpen();
-        	$res .= '<br />&Eacute;diter les droits de l\'action <strong>' . ucfirst($name) . '</strong>: <br />';
+        	$res .= '<br />'._t('EDIT_RIGHTS_FOR_ACTION').' <strong>' . ucfirst($name) . '</strong>:';
         	$res .= '<input type="hidden" name="actionname" value="'. $name . '" />';
-        	$res .= '<textarea name="acl" rows="4" cols="20">' . $wiki->GetModuleACL($name, 'action') . '</textarea><br />'; 
-        	$res .= '<input type="submit" value="Enregistrer" style="width: 120px" accesskey="s" />';
+        	$res .= '<textarea class="form-control" name="acl" rows="3">' . $wiki->GetModuleACL($name, 'action') . '</textarea><br />'; 
+        	$res .= '<input type="submit" value="'._t('SAVE').'" class="btn btn-primary" accesskey="s" />';
 			return $res . $wiki->FormClose();
         }
         return $res;

@@ -486,7 +486,7 @@ qq.FileUploader = function(o){
         listElement: null,
                 
         template: '<div class="qq-uploader">' + 
-                '<div class="qq-upload-button btn"><i class="icon-upload"></i>&nbsp;Joindre / Ins&eacute;rer un fichier</div>' +
+                '<div class="qq-upload-button btn btn-default"><i class="icon-upload"></i>&nbsp;Joindre / Ins&eacute;rer un fichier</div>' +
                 '<ul class="qq-upload-list"></ul>' + 
              '</div>',
 
@@ -770,7 +770,7 @@ qq.UploadButton = function(o){
     qq.css(this._element, {
         position: 'relative',
         overflow: 'hidden',
-        height: '20px',
+        height: 'auto',
         // Make sure browse button is in the right side
         // in Internet Explorer
         direction: 'ltr'
@@ -1361,8 +1361,8 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
             onSubmit: function(id, fileName){
                 // création de la fenetre d'envoi
-                var UploadModal = $('<div>').attr({'class':"modal hide fade", 'id':"UploadModal", 'tabindex':"-1", 'role':"dialog", 'data-backdrop':"static", 'aria-labelledby':"myModalLabel"})
-                .html('<div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h3 id="myModalLabel">Joindre / Ins&eacute;rer un fichier</h3></div><div class="modal-body"></div><div class="modal-footer"><a href="#" data-dismiss="modal" role="button" class="btn btn-cancel-upload">Annuler cet envoi</a><button name="insert" class="btn btn-primary btn-insert-upload">Ins&eacute;rer</button></div>').appendTo('body').modal('show').find('.modal-body').append($('.qq-upload-list'));
+                var UploadModal = $('<div>').attr({'class':"modal fade", 'id':"UploadModal", 'tabindex':"-1", 'role':"dialog", 'aria-labelledby':"myModalLabel"})
+                .html('<div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal">&times;</button><h3 id="myModalLabel">Joindre / Ins&eacute;rer un fichier</h3></div><div class="modal-body"></div><div class="modal-footer"><a href="#" data-dismiss="modal" role="button" class="btn btn-default btn-cancel-upload">Annuler cet envoi</a><button name="insert" class="btn btn-primary btn-insert-upload">Ins&eacute;rer</button></div></div></div>').appendTo('body').modal('show').find('.modal-body').append($('.qq-upload-list'));
             },
 
             onComplete: function(id, fileName, responseJSON){

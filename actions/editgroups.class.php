@@ -24,7 +24,7 @@ if (!defined("WIKINI_VERSION"))
 
 class ActionEditgroups extends WikiniAdminAction
 {
-	function PerformAction($args)
+	function PerformAction($args, $command)
 	{
 		$wiki = &$this->wiki;
 		$list = $wiki->GetGroupsList();
@@ -33,15 +33,17 @@ class ActionEditgroups extends WikiniAdminAction
 			$list = array_diff($list, array(ADMIN_GROUP));
 		}
 		sort($list);
-		$res = $wiki->FormOpen('', '', 'get');
-		$res .= 'D&eacute;finition du groupe <select name="groupname">';
+		$res = $wiki->FormOpen('', '', 'get', 'form-inline');
+		$res .= _t('DEFINITION_OF_THE_GROUP').'<select name="groupname">';
 		foreach ($list as $group)
 		{
-			$res .= '<option value="' . htmlspecialchars($group) . '">' . htmlspecialchars($group) .  '</option>';
+			$res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '"';
+			if (!empty($_GET['groupname']) && $_GET['groupname'] == $group) $res .= ' selected="selected"';
+			$res .= '>' . htmlspecialchars($group, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) .  '</option>';
 		}
-		$res .= '</select> <input type="submit" value="voir" />' . $wiki->FormClose();
-		$res .= $wiki->FormOpen('', '', 'get') . 'Ou cr&eacute;er un nouveau groupe: <input type="text" name="groupname" />';
-		$res .= '<input type="submit" value="d&eacute;finir" />' . $wiki->FormClose();
+		$res .= '</select>'."\n".'<input class="btn btn-default" type="submit" value="'._t('SEE').'" />'."\n" . $wiki->FormClose();
+		$res .= $wiki->FormOpen('', '', 'get', 'form-inline') . _t('CREATE_NEW_GROUP').': <input type="text" required="required" name="groupname" />';
+		$res .= '<input class="btn btn-default" type="submit" value="'._t('DEFINE').'" />' . $wiki->FormClose();
 
 		if ($_POST && !empty($_POST['groupname']) && isset($_POST['acl'])) // save ACL's
 		{
@@ -51,11 +53,11 @@ class ActionEditgroups extends WikiniAdminAction
 			{
 				if (!$wiki->UserIsAdmin())
 				{
-					return $res . 'Vous ne pouvez pas changer les membres du groupe des administrateurs car vous n\'&ecirc;tes pas administrateur.<br/>';
+					return $res . _t('ONLY_ADMINS_CAN_CHANGE_MEMBERS') .'.<br/>';
 				}
 				if (!$wiki->CheckACL($newacl))
 				{
-					return $res . 'Vous ne pouvez pas vous retirer vous-m&ecirc;me du groupe des administrateurs.<br/>';
+					return $res . _t('YOU_CANNOT_REMOVE_YOURSELF').'.<br/>';
 				}
 			}
 			$result = $wiki->SetGroupACL($name, $newacl);
@@ -63,17 +65,17 @@ class ActionEditgroups extends WikiniAdminAction
 			{
 				if ($result == 1000)
 				{
-					return $res . 'Erreur: vous ne pouvez pas d&eacute;finir un groupe r&eacute;cursivement !<br />';
+					return $res . _t('ERROR_RECURSIVE_GROUP').' !<br />';
 				}
 				else
 				{
-					return $res . 'Une erreur s\'est produite pendant l\'enregistrement du groupe ' . ucfirst($name) . ' (code d\'erreur ' . $result . ')<br />';
+					return $res . _t('ERROR_WHILE_SAVING_GROUP') . ' ' . ucfirst($name) . ' ('._t('ERROR_CODE').' ' . $result . ')<br />';
 				}
 			}
 			else
 			{
-				$wiki->LogAdministrativeAction($wiki->GetUserName(), "Nouvelle ACL pour le groupe " . ucfirst($name) . ' : ' . $newacl . "\n");
-				return $res . 'Nouvelle ACL enr&eacute;gistr&eacute;e avec succ&egrave;s pour le groupe ' . ucfirst($name) . '.<br />';
+				$wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_GROUP')." " . ucfirst($name) . ' : ' . $newacl . "\n");
+				return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP').' ' . ucfirst($name) . '.<br />';
 			}
 		}
 		elseif (!empty($_GET['groupname']))
@@ -82,15 +84,15 @@ class ActionEditgroups extends WikiniAdminAction
 			if (!preg_match('/[^A-Za-z0-9]/', $name))
 			{
 				$res .= $wiki->FormOpen();
-				$res .= '<br />&Eacute;diter le groupe <strong>' . htmlspecialchars($name) . '</strong>: <br />';
+				$res .= '<br />'._t('EDIT_GROUP').' <strong>' . htmlspecialchars($name, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '</strong>: <br />';
 				$res .= '<input type="hidden" name="groupname" value="'. $name . '" />';
-				$res .= '<textarea name="acl" rows="4" cols="20">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />'; 
-				$res .= '<input type="submit" value="Enregistrer" style="width: 120px" accesskey="s" />';
+				$res .= '<textarea name="acl" rows="3" class="form-control">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />'; 
+				$res .= '<input type="submit" value="'._t('SAVE').'" class="btn btn-primary" accesskey="s" />';
 				return $res . $wiki->FormClose();
 			}
 			else
 			{
-				$res .= 'Les noms de groupes ne peuvent contenir que des caractères alphanum&eacute;riques.';
+				$res .= _t('ONLY_ALPHANUM_FOR_GROUP_NAME').'.';
 			}
 		}
 		return $res;

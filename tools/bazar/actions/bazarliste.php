@@ -47,7 +47,7 @@ if (empty($GLOBALS['champ'])) {
 }
 $template = $this->GetParameter("template");
 if (empty($template)) {
-    $template = 'liste_accordeon.tpl.html';
+    $template = BAZ_TEMPLATE_LISTE_DEFAUT;
 }
 $nb = $this->GetParameter("nb");
 if (empty($nb)) {
@@ -101,7 +101,7 @@ if (!empty($pagination)) {
 }
 $fiches['fiches'] = array();
 foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche[0], true);  //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
+    $valeurs_fiche = json_decode($fiche['body'], true);  //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
     $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);  //permet de voir la fiche
     if (baz_a_le_droit('supp_fiche', $valeurs_fiche['createur'])) {  //lien de suppression visible pour le super admin
@@ -116,6 +116,18 @@ foreach ($tableau_resultat as $fiche) {
 }
 usort($fiches['fiches'], 'champ_compare');
 include_once 'tools/bazar/libs/squelettephp.class.php';
-$squelcomment = new SquelettePhp('tools/bazar/presentation/templates/'.$template);    //gere les templates
+
+
+  // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
+
+$templatetoload='themes/tools/bazar/templates/'.$template;
+
+if (!is_file($templatetoload)) {
+	$templatetoload='tools/bazar/presentation/templates/'.$template;
+}
+
+		
+
+$squelcomment = new SquelettePhp($templatetoload);    //gere les templates
 $squelcomment->set($fiches);   //on passe le tableau de fiches en parametres
 echo $squelcomment->analyser(); // affiche les résultats

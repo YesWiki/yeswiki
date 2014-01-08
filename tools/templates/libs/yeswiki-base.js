@@ -76,14 +76,18 @@ if ( ! Modernizr.mq('only all') ) {
 		if (text.length>0) {
 			text = '<h3>' + $.trim(text) + '</h3>';
 		}
-		$('body').append('<div class="modal fade hide" id="YesWikiModal">'+
-					    '<div class="modal-header">'+
-					    '<button type="button" class="close" data-dismiss="modal">&times;</button>'+
-					    text +
-					    '</div>'+
-					    '<div class="modal-body">'+
-					    '</div>'+
-				    '</div>');
+		$('body').append('<div class="modal fade" id="YesWikiModal">'+
+							'<div class="modal-dialog">'+
+								'<div class="modal-content">'+
+								    '<div class="modal-header">'+
+								    '<button type="button" class="close" data-dismiss="modal">&times;</button>'+
+								    text +
+								    '</div>'+
+					    			'<div class="modal-body">'+
+					    			'</div>'+
+					    		'</div>'+
+					    	'</div>'+
+				    	'</div>');
 		
 		var modal = $('#YesWikiModal');
 		modal.find('.modal-body').load($this.attr('href') + ' .page', function(response, status, xhr) {

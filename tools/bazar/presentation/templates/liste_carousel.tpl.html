@@ -9,9 +9,9 @@
         else {
             $class = ''; 
         }?>
-      <div class="<?=$class;?>item">  
+      <div class="<?php echo $class;?>item">  
           						
-   	  <img src="<?php if (!file_exists('cache/image_600_'.$fiche['imagebf_photo'])) echo redimensionner_image('files/'.$fiche['imagebf_photo'], 'cache/image_600_'.$fiche['imagebf_photo'], 600, 450); else echo 'cache/image_600_'.$fiche['imagebf_photo'];  ?>" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" />
+   	  <img src="<?php if (!file_exists('cache/image_600_'.$fiche['imagebf_photo'])) echo redimensionner_image('files/'.$fiche['imagebf_photo'], 'cache/image_600_'.$fiche['imagebf_photo'], 600, 450); else echo 'cache/image_600_'.$fiche['imagebf_photo'];  ?>" alt="<?php echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);?>" />
                      <div class="carousel-caption">
 					 <div class="pull-right">
                                     <a href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>" title="Plus d'infos sur cette photo" class="btn btn-inverse"> <i class="icon-plus icon-white"></i>Voir la fiche</a>
@@ -22,9 +22,9 @@
                         <div class="image-title">
                                     
                       </div>		
-                      <h4><?=$fiche['bf_titre'];?></h4>
-                      <p><i><?=$fiche['bf_description'];?></i></p>
-					  <p>Auteur : <?=$fiche['bf_auteur'];?> </p>
+                      <h4><?php echo $fiche['bf_titre'];?></h4>
+                      <p><i><?php echo $fiche['bf_description'];?></i></p>
+					  <p>Auteur : <?php echo $fiche['bf_auteur'];?> </p>
 					  </div>
 					   
 		</div> 			

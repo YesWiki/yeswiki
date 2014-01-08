@@ -45,8 +45,11 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define("WAKKA_VERSION", "0.1.1");
 define("WIKINI_VERSION", "0.5.0");
+define("YESWIKI_VERSION", "Cercopitheque");
+define("YESWIKI_RELEASE", "2013.12.25");
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
+include 'includes/i18n.inc.php';
 
 // start the compute time
 list($g_usec, $g_sec) = explode(" ",microtime());
@@ -102,9 +105,9 @@ class Wiki
 		// determine le chemin pour les cookies
 		$a = parse_url($this->GetConfigValue('base_url'));
 		$this->CookiePath = dirname($a['path']);
-		// Fixe la gestion des cookie sous les OS utilisant le \ comme s?parteur de chemin
+		// Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
 		$this->CookiePath = str_replace("\\","/",$this->CookiePath);
-		// ajoute un '/' terminal sauf si on est ? la racine web
+		// ajoute un '/' terminal sauf si on est a la racine web
 		if ($this->CookiePath != '/') $this->CookiePath .= '/';
 	}
 
@@ -336,17 +339,17 @@ class Wiki
 
 	// inclusions
 	/**
-	 * Enr?gistre une nouvelle inclusion dans la pile d'inclusions.
+	 * Enregistre une nouvelle inclusion dans la pile d'inclusions.
 	 * 
-	 * @param string $pageTag Le nom de la page qui va ?tre inclue
-	 * @return int Le nombre d'?l?ments dans la pile
+	 * @param string $pageTag Le nom de la page qui va etre inclue
+	 * @return int Le nombre d'elements dans la pile
 	 */
 	function RegisterInclusion($pageTag)
 	{
 		return array_unshift($this->inclusions, strtolower(trim($pageTag)));
 	} 
 	/**
-	 * Retire le dernier ?l?ment de la pile d'inclusions.
+	 * Retire le dernier element de la pile d'inclusions.
 	 * 
 	 * @return string Le nom de la page dont l'inclusion devrait se terminer.
 	 * null s'il n'y a plus d'inclusion dans la pile.
@@ -360,7 +363,7 @@ class Wiki
 	 * 
 	 * @example // dans le cas d'une action comme l'ActionEcrivezMoi
 	 * if($inc = $this->CurrentInclusion() && strtolower($this->GetPageTag()) != $inc)
-	 * 	echo 'Cette action ne peut ?tre appel?e depuis une page inclue';
+	 * 	echo 'Cette action ne peut etre appelee depuis une page inclue';
 	 * @return string Le nom (tag) de la page (en minuscules)
 	 * false si la pile est vide.
 	 */
@@ -369,10 +372,10 @@ class Wiki
 		return isset($this->inclusions[0]) ? $this->inclusions[0]: false ;
 	} 
 	/**
-	 * V?rifie si on est ? l'int?rieur d'une inclusion par $pageTag (sans tenir compte de la casse)
+	 * Verifie si on est a l'interieur d'une inclusion par $pageTag (sans tenir compte de la casse)
 	 * 
-	 * @param string $pageTag Le nom de la page ? v?rifier
-	 * @return bool True si on est ? l'int?rieur d'une inclusion par $pageTag (false sinon)
+	 * @param string $pageTag Le nom de la page a verifier
+	 * @return bool True si on est a l'interieur d'une inclusion par $pageTag (false sinon)
 	 */
 	function IsIncludedBy($pageTag)
 	{
@@ -381,18 +384,18 @@ class Wiki
 	/**
 	 * 
 	 * @return array La pile d'inclusions
-	 * L'?l?ment 0 sera la derni?re inclusion, l'?l?ment 1 sera son parent et ainsi de suite.
+	 * L'element 0 sera la derniere inclusion, l'element 1 sera son parent et ainsi de suite.
 	 */
 	function GetAllInclusions()
 	{
 		return $this->inclusions;
 	} 
 	/**
-	 * Remplace la pile des inclusions par une nouvelle pile (par d?faut une pile vide)
-	 * Permet de formatter une page sans tenir compte des inclusions pr?c?dentes.
+	 * Remplace la pile des inclusions par une nouvelle pile (par defaut une pile vide)
+	 * Permet de formatter une page sans tenir compte des inclusions precedentes.
 	 * 
 	 * @param array $ La nouvelle pile d'inclusions.
-	 * L'?l?ment 0 doit repr?senter la derni?re inclusion, l'?l?ment 1 son parent et ainsi de suite.
+	 * L'element 0 doit representer la derniere inclusion, l'element 1 son parent et ainsi de suite.
 	 * @return array L'ancienne pile d'inclusions, avec les noms des pages en minuscules.
 	 */
 	function SetInclusions($pile = array())
@@ -483,13 +486,13 @@ class Wiki
 
 	/**
 	 * SavePage
-	 * Sauvegarde un contenu dans une page donn?e
+	 * Sauvegarde un contenu dans une page donnee
 	 *
-	 * @param string $body Contenu ? sauvegarder dans la page
+	 * @param string $body Contenu a sauvegarder dans la page
 	 * @param string $tag Nom de la page
 	 * @param string $comment_on Indication si c'est un commentaire
-	 * @param boolean $bypass_acls Indication si on bypasse les droits d'?criture
-	 * @return int Code d'erreur : 0 (succ?s), 1 (l'utilisateur n'a pas les droits)
+	 * @param boolean $bypass_acls Indication si on bypasse les droits d'ecriture
+	 * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
 	 */	
 	function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
 	{
@@ -549,27 +552,27 @@ class Wiki
 	
 	/**
 	 * AppendContentToPage
-	 * Ajoute du contenu ? la fin d'une page
+	 * Ajoute du contenu a la fin d'une page
 	 *
-	 * @param string $content Contenu ? ajouter ? la page
+	 * @param string $content Contenu a ajouter a la page
 	 * @param string $page Nom de la page
-	 * @param boolean $bypass_acls Boul?en pour savoir s'il faut bypasser les ACLs
-	 * @return int Code d'erreur : 0 (succ?s), 1 (pas de contenu sp?cifi?)
+	 * @param boolean $bypass_acls Bouleen pour savoir s'il faut bypasser les ACLs
+	 * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
 	 */
 	function AppendContentToPage($content, $page, $bypass_acls = false)
 	{
-		// Si un contenu est sp?cifi?
+		// Si un contenu est specifie
 		if (isset($content))
 		{
-			// -- D?termine quelle est la page :
-			//    -- pass?e en param?tre (que se passe-t'il si elle n'existe pas ?)
-			//    -- ou la page en cours par d?faut
+			// -- Determine quelle est la page :
+			//    -- passee en parametre (que se passe-t'il si elle n'existe pas ?)
+			//    -- ou la page en cours par defaut
 			$page = isset($page) ? $page : $this->GetPageTag();
 
 			// -- Chargement de la page
 			$result = $this->LoadPage($page);
 			$body = $result['body'];
-			// -- Ajout du contenu ? la fin de la page
+			// -- Ajout du contenu a la fin de la page
 			$body .= $content;
 
 			// -- Sauvegarde de la page
@@ -595,7 +598,7 @@ class Wiki
 			$this->WriteLinkTable();
 			$this->ClearLinkTable();/**/
 
-			// Retourne 0 seulement si tout c'est bien pass?
+			// Retourne 0 seulement si tout c'est bien passe
 			return 0;
 		}
 		else return 1;
@@ -608,7 +611,7 @@ class Wiki
 	 * @param string $content Contenu de l'enregistrement
 	 * @param string $page Page de log
 	 * 
-	 * @return int Code d'erreur : 0 (succ?s), 1 (pas de contenu sp?cifi?)
+	 * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
 	 */
 	function LogAdministrativeAction($user, $content, $page = "")
 	{
@@ -706,11 +709,11 @@ class Wiki
 		if (preg_match('/^' . WN_INTERWIKI_CAPTURE . '$/', $tag, $matches))
 		{
 			if ($tagInterWiki = $this->GetInterWikiUrl($matches[1], $matches[2])) {
-				return '<a href="'.htmlspecialchars($tagInterWiki).'">'
-					.htmlspecialchars($displayText).' (interwiki)</a>';
+				return '<a href="'.htmlspecialchars($tagInterWiki, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'">'
+					.htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).' (interwiki)</a>';
 			}
-			else return '<a href="'.htmlspecialchars($tag).'">'
-				.htmlspecialchars($displayText).' (interwiki inconnu)</a>';
+			else return '<a href="'.htmlspecialchars($tag, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'">'
+				.htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).' (interwiki inconnu)</a>';
 		}
 		// is this a full link? ie, does it contain non alpha-numeric characters?
 		// Note : [:alnum:] is equivalent [0-9A-Za-z]
@@ -738,7 +741,7 @@ class Wiki
 				// There is a high risk that $tag is just XSS (bad
 				// javascript: code) or anything nasty. So we must not
 				// produce any link at all.
-				return htmlspecialchars($tag.($text ? ' '.$text : ''));
+				return htmlspecialchars($tag.($text ? ' '.$text : ''), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
 			}
 			// Important: Here, we know that $tag is not something bad
 			// and that we must produce a link with it
@@ -746,8 +749,8 @@ class Wiki
 			// An inline image? (text!=tag and url ends by png,gif,jpeg)
 			if ($text and preg_match("/\.(gif|jpeg|png|jpg)$/i",$tag))
 			{
-				return '<img src="'.htmlspecialchars($tag)
-					.'" alt="'.htmlspecialchars($displayText).'"/>';
+				return '<img src="'.htmlspecialchars($tag, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)
+					.'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'"/>';
 			}
 			else
 			{
@@ -755,8 +758,8 @@ class Wiki
 				// in HTML with htmlspecialchars() before echoing it.
 				// This is not about being paranoiac. This is about
 				// being compliant to the HTML standard.
-				return '<a href="'.htmlspecialchars($tag).'">'
-					.htmlspecialchars($displayText).'</a>';
+				return '<a href="'.htmlspecialchars($tag, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'">'
+					.htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'</a>';
 			}
 		}
 		else
@@ -764,16 +767,16 @@ class Wiki
 			// it's a Wiki link!
 			if (!empty($track)) $this->TrackLinkTo($tag);
 			if ($this->LoadPage($tag))
-				return '<a href="'.htmlspecialchars($this->href($method, $tag)).'">'
-					.htmlspecialchars($displayText).'</a>';
+				return '<a href="'.htmlspecialchars($this->href($method, $tag), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'">'
+					.htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'</a>';
 			else
-				return '<span class="missingpage">'.htmlspecialchars($displayText)
-				.'</span><a href="'.htmlspecialchars($this->href("edit", $tag)).'">?</a>';
+				return '<span class="missingpage">'.htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)
+				.'</span><a href="'.htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'">?</a>';
 		}
 	}
 	function ComposeLinkToPage($tag, $method = "", $text = "", $track = 1) {
 		if (!$text) $text = $tag;
-		$text = htmlspecialchars($text);
+		$text = htmlspecialchars($text, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
 		if ($track)
 			$this->TrackLinkTo($tag);
 		return '<a href="'.$this->href($method, $tag).'">'.$text.'</a>';
@@ -861,8 +864,10 @@ class Wiki
 	}
 
 	// FORMS
-	function FormOpen($method = "", $tag = "", $formMethod = "post") {
-		$result = "<form action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\">\n";
+	function FormOpen($method = "", $tag = "", $formMethod = "post", $class="") {
+		$result  = "<form action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\"";
+		$result .= ((!empty($class)) ? " class=\"".$class."\"" : "");
+		$result .= ">\n";
 		if (!$this->config["rewrite_mode"]) $result .= "<input type=\"hidden\" name=\"wiki\" value=\"".$this->MiniHref($method, $tag)."\" />\n";
 		return $result;
 	}
@@ -948,7 +953,7 @@ class Wiki
 		// extract $action and $vars_temp ("raw" attributes)
 		if (!preg_match("/^([a-zA-Z-0-9]+)\/?(.*)$/", $cmd, $matches))
 		{
-			return '<i>Action invalide &quot;' . htmlspecialchars($cmd) . '&quot;</i>';
+			return '<div class="alert alert-danger">'._t('INVALID_ACTION').' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '&quot;</div>'."\n";
 		}
 		list(, $action, $vars_temp) = $matches;
 		$vars[$vars_temp] = $vars_temp; // usefull for {{action/vars_temp}}
@@ -956,7 +961,7 @@ class Wiki
 		// now that we have the action's name, we can check if the user satisfies the ACLs
 		if (!$this->CheckModuleACL($action, 'action'))
 		{
-			return 'Erreur: vous n\'avez pas acc&egrave;s &agrave; l\'action ' . $action . '.';
+			return '<div class="alert alert-danger">'._t('ERROR_NO_ACCESS').' ' . $action . '.</div>'."\n";
 		}
 
 		// match all attributes (key and value)
@@ -984,7 +989,7 @@ class Wiki
 		else // $actionObj == null (not found, no error message)
 		{
 			$this->parameter = &$vars;
-			$result = $this->IncludeBuffered(strtolower($action).".php", "<i>Action inconnue &quot;$action&quot;</i>", $vars, $this->config["action_path"]);
+			$result = $this->IncludeBuffered(strtolower($action).".php", '<div class="alert alert-danger">'._t('UNKNOWN_ACTION')." &quot;$action&quot;</div>\n", $vars, $this->config["action_path"]);
 			unset($this->parameter);
 		}
 		$this->StartLinkTracking(); // shouldn't we restore the previous status ?
@@ -1049,7 +1054,7 @@ class Wiki
 				$actionObj = new $class($this);
 				if (!is_a($actionObj, 'WikiniAction'))
 				{
-					die("Action invalide '$name': classe incorrecte");
+					die(_t('INVALID_ACTION')." '$name': "._t('INCORRECT_CLASS'));
 				}
 			}
 		}
@@ -1102,10 +1107,10 @@ class Wiki
 	function Method($method) {
 		if (!$handler = $this->page["handler"]) $handler = "page";
 		$methodLocation = $handler."/".$method.".php";
-		return $this->IncludeBuffered($methodLocation, "<i>M&eacute;thode inconnue \"$methodLocation\"</i>", "", $this->config["handler_path"]);
+		return $this->IncludeBuffered($methodLocation, "<i>"._t('UNKNOWN_METHOD')." \"$methodLocation\"</i>", "", $this->config["handler_path"]);
 	}
 	function Format($text, $formatter = "wakka") {
-		return $this->IncludeBuffered("formatters/".$formatter.".php", "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text")); 
+		return $this->IncludeBuffered("formatters/".$formatter.".php", "<i>"._t('FORMATTER_NOT_FOUND')." \"$formatter\"</i>", compact("text")); 
 	}
 
 
@@ -1123,11 +1128,11 @@ class Wiki
 
 	// COMMENTS
 	/**
-	 * Charge les commentaires relatifs ? une page.
+	 * Charge les commentaires relatifs a une page.
 	 * 
 	 * @param string $tag Nom de la page. Ex : "PagePrincipale"
 	 * @return array Tableau contenant tous les commentaires et leurs
-	 * propri?t?s correspondantes.
+	 * proprietes correspondantes.
 	 */
 	function LoadComments($tag)
 	{
@@ -1141,11 +1146,11 @@ class Wiki
 	/**
 	 * Charge les derniers commentaires de toutes les pages.
 	 * 
-	 * @param int $limit Nombre de commentaires charg?s.
+	 * @param int $limit Nombre de commentaires charges.
 	 *                   0 par d?faut (ie tous les commentaires).
 	 * @return array Tableau contenant chaque commentaire et ses
-	 *               propri?t?s associ?es.
-	 * @todo Ajouter le param?tre $start pour permettre une pagination
+	 *               proprietes associees.
+	 * @todo Ajouter le parametre $start pour permettre une pagination
 	 *       des commentaires : ->LoadRecentComments(10, 10)
 	 */
 	function LoadRecentComments($limit = 0)
@@ -1564,17 +1569,17 @@ class Wiki
 		$this->SetPage($this->LoadPage($tag, (isset($_REQUEST["time"]) ? $_REQUEST["time"] :'')));
 		$this->LogReferrer();
 
-		//correction pour un support plus facile de nouveaux handlers
+		// correction pour un support plus facile de nouveaux handlers
 		if ($this->CheckModuleACL($this->method, 'handler'))
 		{
 			echo $this->Method($this->method);
 		}
 		else
 		{
-			echo 'Vous ne pouvez pas acc&eacute;der &agrave; cette page par le handler sp&eacute;cifi&eacute;.';
+			echo _t('HANDLER_NO_ACCESS');
 		}
 
-		// action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections pr?c?dentes
+		// action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
 		if(!empty($_SESSION['redirects'])) session_unregister('redirects');
 	}
 }
@@ -1582,7 +1587,7 @@ class Wiki
 
 
 // stupid version check
-if (!isset($_REQUEST)) die('$_REQUEST[] not found. Wakka requires PHP 4.1.0 or higher!');
+if (!isset($_REQUEST)) die(_t('NO_REQUEST_FOUND'));
 
 // workaround for the amazingly annoying magic quotes.
 function magicQuotesSuck(&$a)
@@ -1619,6 +1624,8 @@ $_rewrite_mode = detectRewriteMode();
 $wakkaDefaultConfig = array(
 	'wakka_version'		=> '',
 	'wikini_version'	=> '',
+	'yeswiki_version'	=> '',
+	'yeswiki_release'	=> '',
 	'debug'				=> 'no',
 	"mysql_host"		=> "localhost",
 	"mysql_database"	=> '',
@@ -1626,7 +1633,7 @@ $wakkaDefaultConfig = array(
 	"mysql_password"	=> '',
 	"table_prefix"		=> "yeswiki_",
 	"root_page"			=> "PagePrincipale",
-	"wakka_name"		=> "MonSiteYesWiki",
+	"wakka_name"		=> _t('MY_YESWIKI_SITE'),
 	"base_url"			=> computeBaseURL($_rewrite_mode),
 	"rewrite_mode"		=> $_rewrite_mode,
 	'meta_keywords'		=> '',
@@ -1640,7 +1647,7 @@ $wakkaDefaultConfig = array(
 	"pages_purge_time"	=> 90,
 	"default_write_acl"	=> "*",
 	"default_read_acl"	=> "*",
-	"default_comment_acl"	=> "*",
+	"default_comment_acl"	=> "+",
 	"preview_before_save"	=> 0,
 	'allow_raw_html'	=> false);
 unset($_rewrite_mode);
@@ -1669,7 +1676,7 @@ if (file_exists("locked")) {
 	if ($ask) {
 		header("WWW-Authenticate: Basic realm=\"".$wakkaConfig["wakka_name"]." Install/Upgrade Interface\"");
 		header("HTTP/1.0 401 Unauthorized");
-		echo "Ce site est en cours de mise &agrave; jour. Veuillez essayer plus tard." ;
+		echo _t("SITE_BEING_UPDATED") ;
 		exit;
 	}
 }
@@ -1681,7 +1688,7 @@ if (($wakkaConfig["wakka_version"] != WAKKA_VERSION) || ($wakkaConfig["wikini_ve
 	// start installer
 	if (!isset($_REQUEST["installAction"]) OR !$installAction = trim($_REQUEST["installAction"])) $installAction = "default";
 	include("setup/header.php");
-	if (file_exists("setup/".$installAction.".php")) include("setup/".$installAction.".php"); else echo "<i>Invalid action</i>" ;
+	if (file_exists("setup/".$installAction.".php")) include("setup/".$installAction.".php"); else echo "<em>"._t("INVALID_ACTION")."</em>" ;
 	include("setup/footer.php");
 	exit;
 }
@@ -1744,7 +1751,7 @@ elseif (preg_match('`^' . WN_PAGE_TAG . '$`', $wiki))
 }
 else
 {
-	echo "<p>Le nom de la page est incorrect.</p>";
+	echo "<p>"._t('INCORRECT_PAGENAME')."</p>";
 	exit;
 }
 
@@ -1753,12 +1760,9 @@ $wiki = new Wiki($wakkaConfig);
 // check for database access
 if (!$wiki->dblink)
 {
-	echo	"<p>Pour des raisons ind&eacute;pendantes de notre volont&eacute;, ".
-		"le contenu de ce Wiki est temporairement inaccessible. Veuillez ".
-		"r&eacute;essayer ult&eacute;rieurement, merci de votre ".
-		"compr&eacute;hension.</p>";
+	echo	"<p>"._t('DB_CONNECT_FAIL')."</p>";
 	// Log error (useful to find the buggy server in a load balancing platform)
-	trigger_error("WikiNi : DB connection failed");
+	trigger_error(_t('LOG_DB_CONNECT_FAIL'));
 	exit;
 }
 
@@ -1771,5 +1775,7 @@ if (!isset($method)) $method='';
 if (!(preg_match('#^[A-Za-z0-9_]*$#',$method))) {
 	$method='';
 }
-include('tools/prepend.php');$wiki->Run($page, $method);
+include('tools/prepend.php');
+$wiki->Run($page, $method);
+
 ?>

@@ -214,6 +214,7 @@ margin: 0;
 
 
 /* Sélecteur de fond d'écran */
+#graphical_options {display: none}
 #form_theme_selector {width:530px;}
 #bgCarousel img.bgimg, #bgCarousel div.mozaicimg {
 	float:left;
@@ -245,6 +246,9 @@ margin: 0;
 .toc {
 position:absolute;
 right:0px;
+z-index: 10000;
+top:50px;
+width:300px;
 }
 
 li.toc1 {padding-left:0;}
@@ -275,16 +279,16 @@ overflow: auto;
   position:relative;
 }
 
-.aceditor-btn-well:hover .well, .well:hover {color:#333;} 
+.aceditor-btn-well:hover .well {color:#333;} 
 
 /* retour à la ligne pour les éléments flottants */
 .clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}
-
 
 .topbarpage .btn-toolbar, .topbarpage .btn-toolbar a {margin:0;}
 .topbarpage .btn-toolbar a:hover {text-decoration:none;}
 .topbarpage .form-search {margin:0;}
 .topbarpage .dropdown-menu a {display:block;}
+.topbarpage ul ul {display: none;}
 
 .dropdown-menu .login-form {margin:0;padding:18px;}
 
@@ -294,3 +298,26 @@ overflow: auto;
 .slideshow-html, .container-slide-basic .carousel {height:100%}
 .slideshow-body {height:90%}
 .container-slide-basic {padding:18px; height:90%;}
+
+.wiki-textarea {width:100% !important; height:500px !important;}
+
+
+.accordion-group .panel-heading {
+  cursor: pointer;
+}
+.accordion-group .panel-title:after {
+    /* symbol for "opening" panels */
+    content:"\02C4";
+    float: right;
+    color: inherit;
+    font-size: 27px;
+    font-weight: bold;
+}
+.accordion-group .panel-heading.collapsed .panel-title:after {
+    /* symbol for "collapsed" panels */
+    content:"\02C5";
+}
+
+/* bootstrap 2.3.2 retro compatibility */ 
+.modal { z-index: -2 !important; }
+.modal.in { z-index: 1050 !important; }

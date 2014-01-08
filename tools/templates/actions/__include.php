@@ -13,5 +13,8 @@ $class = $this->GetParameter('class');
 if (empty($class)) {
     $this->parameter['class'] = 'include';
     $class = 'include';
+} else {
+ 	$this->parameter['class'] = 'include '.$class;
+    $class = 'include '.$class;
 }
 ?>

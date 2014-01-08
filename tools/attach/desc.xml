@@ -2,5 +2,5 @@
 <plugin name="wkattach" version="0.2" active="1">
   <author>GarfieldFr</author>
   <label>Attach</label>
-  <desc>Action permettant de joindre un fichier à YesWiki</desc>
+  <desc>Action permettant de joindre un fichier a YesWiki</desc>
 </plugin>

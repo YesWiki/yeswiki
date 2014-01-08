@@ -27,7 +27,7 @@
 /**
  * A concrete renderer for HTML_QuickForm, makes an array of form contents
  */
-require_once 'HTML/QuickForm/Renderer/Array.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Renderer/Array.php';
 
 /**
  * A static renderer for HTML_QuickForm, makes an array of form content

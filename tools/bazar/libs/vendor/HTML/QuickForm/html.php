@@ -24,7 +24,7 @@
 /**
  * HTML class for static data
  */
-require_once 'HTML/QuickForm/static.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/static.php';
 
 /**
  * A pseudo-element used for adding raw HTML to form
@@ -66,7 +66,7 @@ class HTML_QuickForm_html extends HTML_QuickForm_static
     * @access public
     * @return void
     */
-    public function accept(&$renderer)
+    public function accept(&$renderer, $required = false, $error = NULL)
     {
         $renderer->renderHtml($this);
     } // end func accept

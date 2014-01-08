@@ -48,13 +48,13 @@ texte texte texte texte texte texte texte texte texte texte texte texte
 //echo $this->Format("===Action Trail===");
 $sommaire = $this->GetParameter("toc");
 if (!$sommaire) {
-   echo $this->Format("//Indiquez le nom de la page sommaire, paramètre 'toc'//.");
+   echo '<div class="alert alert-danger"><strong>'._t('ERROR_ACTION_TRAIL').'</strong> : '._t('INDICATE_THE_PARAMETER_TOC').'.</div>'."\n";
 }else{
    //chargement de la page sommaire
    $tocPage = $this->LoadPage($sommaire);
    if (!$tocPage)
    {
-	   echo 'Erreur: action {{trail}}: La page ', $this->Link($sommaire), ' n\'existe pas !<br />';
+	   echo '<div class="alert alert-danger"><strong>'._t('ERROR_ACTION_TRAIL').'</strong> : '._t('THE_PAGE').' ', $this->Link($sommaire), ' '._t('DOESNT_EXIST').' !</div>'."\n";
 	   return;
    }
    //analyse de la page sommaire pour récupérer la liste des pages
@@ -85,23 +85,17 @@ if (!$sommaire) {
    //ecriture des liens Page Précedente/sommaire/page suivante
    if ($currentPageIndex>0) {
       $PrevPage = $pages[$currentPageIndex-1];
-      $btnPrev = "<span class=\"trail_button\">".$this->Format("&lt;&lt; $PrevPage")."</span>";
+      $btnPrev = "<li class=\"previous\"><span class=\"trail_button\">".$this->Format("&larr; $PrevPage")."</span></li>\n";
    }else{
-      $btnPrev = "&nbsp;";
+      $btnPrev = "";
    }
-   $btnTOC = "<span class=\"trail_button\">".$this->ComposeLinkToPage($sommaire)."</span>";
+   $btnTOC = "<li><span class=\"trail_button\">".$this->ComposeLinkToPage($sommaire)."</span></li>\n";
    if ($currentPageIndex < (count($pages)-1)){
       $NextPage = $pages[$currentPageIndex+1];
-      $btnNext = "<span class=\"trail_button\">".$this->Format("$NextPage &gt;&gt;")."</span>";
+      $btnNext = "<li class=\"next\"><span class=\"trail_button\">".$this->Format("$NextPage &rarr;")."</span></li>\n";
    }else{
-      $btnNext = "&nbsp;";
+      $btnNext = "";
    }
-   echo "<table class=\"trail_table\" width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"5\">\n";
-   echo "   <tr>\n";
-   echo "      <td align=\"left\" width=\"35%\">$btnPrev</td>\n";
-   echo "      <td align=\"center\">$btnTOC</td>\n";
-   echo "      <td align=\"right\" width=\"35%\">$btnNext</td>\n";
-   echo "   </tr>\n";
-   echo "</table>\n";
+   echo '<ul class="pager">'."\n".$btnPrev.$btnTOC.$btnNext.'</ul>'."\n";
 }
 ?>

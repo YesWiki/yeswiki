@@ -5,7 +5,7 @@
 // +------------------------------------------------------------------------------------------------------+
 // | Copyright (C) 1999-2006 Kaleidos-coop.org                                                            |
 // +------------------------------------------------------------------------------------------------------+
-// | This file is part of wkbazar.                                                                     |
+// | This file is part of wkbazar.                                                                        |
 // |                                                                                                      |
 // | Foobar is free software; you can redistribute it and/or modify                                       |
 // | it under the terms of the GNU General Public License as published by                                 |
@@ -68,7 +68,8 @@ $GLOBALS['_BAZAR_']['affiche_menu'] = $this->GetParameter("voirmenu");
 
 // template a utiliser pour afficher les resultats de la recherche
 $GLOBALS['_BAZAR_']['templates'] = $this->GetParameter("template");
-if (empty($GLOBALS['_BAZAR_']['templates']) || (!is_file('templates/bazar/'.$GLOBALS['_BAZAR_']['templates']) && !is_file('tools/bazar/presentation/templates/'.$GLOBALS['_BAZAR_']['templates'] ))) {
+
+if ((empty($GLOBALS['_BAZAR_']['templates'])) ||(!is_file('templates/bazar/'.$GLOBALS['_BAZAR_']['templates']) && is_file('tools/bazar/presentation/templates/'.$GLOBALS['_BAZAR_']['templates']  && !is_file('themes/tools/bazar/templates/'.$GLOBALS['_BAZAR_']['templates'] ) ))) {
     $GLOBALS['_BAZAR_']['templates'] = BAZ_TEMPLATE_LISTE_DEFAUT;
 }
 
@@ -91,7 +92,7 @@ if (isset($_REQUEST['id_fiche'])) {
         $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
     } else {
         $GLOBALS['_BAZAR_']['id_fiche'] = NULL;
-        exit('<div class="error_box">la fiche que vous recherchez n\'existe plus (sans doute a-t-elle &eacute;t&eacute; supprim&eacute;e entre temps)...</div>');
+        exit('<div class="alert alert-danger">la fiche que vous recherchez n\'existe plus (sans doute a-t-elle &eacute;t&eacute; supprim&eacute;e entre temps)...</div>');
     }
 }
 

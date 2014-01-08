@@ -52,7 +52,7 @@ define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 define ('TEMPLATES_DEFAULT_LANG', 'fr') ; 
 
 // Indique un encodage de caractères par defaut
-define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-1') ; 
+define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-15') ; 
 
 
 //on récupère les metas
@@ -104,27 +104,6 @@ $wikiClassesContent [] = '
     }
 	
 	
-	function LoadPage($tag, $time = "", $cache = 1)
-	{
-		// retrieve from cache
-		if (!$time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false) && isset($cachedPage["metadatas"]))
-		{
-			$page = $cachedPage;
-		}
-		else // load page
-		{
-			$sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
-				. " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
-				. ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
-			$page = $this->LoadSingle($sql);
-			// si la page existe, on charge les meta-donnees
-			if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
-
-			// cache result
-			if (!$time) $this->CachePage($page, $tag);
-		}
-		return $page;
-	}
 	
 	
 	function GetMetaDatas($pagetag) {	
@@ -245,13 +224,13 @@ if (
 		 file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
 		)
 	   ) {
-		echo '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'.TEMPLATE_NO_THEME_FILES.' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'.TEMPLATE_DEFAULT_THEME_USED.'.</div>';
+		$GLOBALS['template-error'] = '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('TEMPLATE_NO_THEME_FILES').' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'._t('TEMPLATE_DEFAULT_THEME_USED').'.</div>';
 		$wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
 		$wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
 		$wakkaConfig['favorite_squelette']= SQUELETTE_PAR_DEFAUT;
 		$wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT; 
 	} else {
-		exit('<div class="alert alert-error">'.TEMPLATE_NO_DEFAULT_THEME.'.</div>');
+		exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
 	}
 }
 

@@ -25,7 +25,7 @@
 /**
  * An abstract base class for QuickForm renderers
  */
-require_once 'HTML/QuickForm/Renderer.php';
+require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/Renderer.php';
 
 /**
  * A static renderer for HTML_QuickForm compatible

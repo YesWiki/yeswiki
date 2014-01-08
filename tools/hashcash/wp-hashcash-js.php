@@ -34,13 +34,13 @@ function createHiddenField(){
 	inp.setAttribute('value', '-1');
 	
 	var e = document.getElementById('<?php echo HASHCASH_FORM_ID; ?>');
-    e.appendChild(inp);
+    if (e) {e.appendChild(inp)};
 }
 
 function <?php echo $fn_enable_name;?>(){
 	var e = document.getElementById('hashcash-text');
 	createHiddenField();
-	e.style.display='block';
+	if (e) {e.style.display='block'};
 	loadHashCashKey('<?php 
 	echo $_GET['siteurl']; ?>/tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
 }	
@@ -51,7 +51,7 @@ function loadHashCashKey(fragment_url, e_id) {
 
 	xmlhttp.open("GET", fragment_url, true);
 	xmlhttp.onreadystatechange = function() {
-		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+		if (xmlhttp.readyState == 4 && xmlhttp.status == 200 && element) {
 			element.value = eval(xmlhttp.responseText);
 		}
 	}

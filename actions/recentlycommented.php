@@ -70,7 +70,7 @@ if ($pages = $this->LoadRecentlyCommented($max))
 }
 else
 {
-	echo "<i>Aucune page n'a &eacute;t&eacute; comment&eacute;e r&eacute;cemment.</i>" ;
+	echo "<i>"._t('NO_RECENT_COMMENTS_ON_PAGES').".</i>" ;
 }
 
 ?>

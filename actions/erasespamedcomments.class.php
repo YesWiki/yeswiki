@@ -36,7 +36,7 @@ if (!defined('WIKINI_VERSION'))
 
 class ActionErasespamedcomments extends WikiniAdminAction
 {
-	function PerformAction($args)
+	function PerformAction($args, $command)
 	{
 		$wiki = &$this->wiki;
 		ob_start();
@@ -72,7 +72,7 @@ class ActionErasespamedcomments extends WikiniAdminAction
 						"<li><input name=\"suppr[]\" value=\"" . $comment["tag"] . "\" type=\"checkbox\" /> [Suppr.!] ".
 						$comment["tag"].
 						" (",$comment["time"],") <code>".
-						htmlspecialchars(substr($comment['body'], 0, 25))."</code> ".
+						htmlspecialchars(substr($comment['body'], 0, 25), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)."</code> ".
 						"<a href=\"",$wiki->href("", $comment["comment_on"], "show_comments=1")."#".$comment["tag"]."\">".
 						$comment["comment_on"],"</a> . . . . ".
 						$wiki->Format($comment["user"]),"</li>\n" ;
