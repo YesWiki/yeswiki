@@ -68,7 +68,7 @@ if (!defined('WIKINI_VERSION'))
 
 	<fieldset>
 	
-		<legend>Configuration de la base de donn&eacute;es</legend>
+		<legend>Configuration de la base de donn&eacute;es <span>(Informations fournies par votre h&eacute;bergeur)</span></legend>
 			
 			<div class="accordion-heading">
 				<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">+ Infos</a>
@@ -92,7 +92,8 @@ if (!defined('WIKINI_VERSION'))
     						</dl>
     						<dl class="dl-horizontal">
     							<dt>Pr&eacute;fixe des tables </dt>
-    							<dd>Permet d'utiliser plusieurs YesWiki sur une m&ecirc;me base de donnn&eacute;es</dd>
+    							<dd>Permet d'utiliser plusieurs YesWiki sur une m&ecirc;me base de donn&eacute;es<br>
+    								(Un pr&eacute;fixe diff&eacute;rent pour chaque YesWiki)</dd>
     						</dl>
 						</div>
 					</div>
