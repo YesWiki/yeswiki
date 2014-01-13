@@ -162,9 +162,9 @@ if ($GLOBALS['_BAZAR_']['affiche_menu']!='0') {
 
 if (isset($_GET['message'])) {
     $output .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>';
-    if ($_GET['message']=='ajout_ok') $output.= BAZ_FICHE_ENREGISTREE;
-    if ($_GET['message']=='modif_ok') $output.= BAZ_FICHE_MODIFIEE;
-    if ($_GET['message']=='delete_ok') $output.= BAZ_FICHE_SUPPRIMEE;
+    if ($_GET['message']=='ajout_ok') $output.= _t('BAZ_FICHE_ENREGISTREE');
+    if ($_GET['message']=='modif_ok') $output.= _t('BAZ_FICHE_MODIFIEE');
+    if ($_GET['message']=='delete_ok') $output.= _t('BAZ_FICHE_SUPPRIMEE');
     $output .= '</div>'."\n";
 }
 

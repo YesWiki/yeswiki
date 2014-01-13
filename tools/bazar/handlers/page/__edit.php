@@ -45,7 +45,7 @@ if ($this->HasAccess('write')) {
             $GLOBALS['_BAZAR_']['commentaire']=$tab_nature['bn_commentaire'];
             $GLOBALS['_BAZAR_']['appropriation']=$tab_nature['bn_appropriation'];
             $GLOBALS['_BAZAR_']['class']=$tab_nature['bn_label_class'];
-            baz_formulaire(BAZ_ACTION_MODIFIER_V);
+            baz_formulaire(_t('BAZ_ACTION_MODIFIER_V'));
             $this->Redirect($this->Href());
         } else {
             $page = $this->LoadPage($this->GetPageTag());
@@ -60,7 +60,7 @@ if ($this->HasAccess('write')) {
             $GLOBALS['_BAZAR_']['commentaire']=$tab_nature['bn_commentaire'];
             $GLOBALS['_BAZAR_']['appropriation']=$tab_nature['bn_appropriation'];
             $GLOBALS['_BAZAR_']['class']=$tab_nature['bn_label_class'];
-            $pageeditionfiche = baz_formulaire(BAZ_ACTION_MODIFIER, $this->href('edit'), $tab_valeurs);
+            $pageeditionfiche = baz_formulaire(_t('BAZ_ACTION_MODIFIER'), $this->href('edit'), $tab_valeurs);
         }
     }
 }

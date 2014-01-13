@@ -1,5 +1,5 @@
 <?php
-/*vim: set expandtab tabstop=4 shiftwidth=4: */
+/*vim=> set expandtab tabstop=4 shiftwidth=4=> */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
 // +------------------------------------------------------------------------------------------------------+
@@ -21,17 +21,32 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* English translation for Hashcash extension
+* English translation for ACeditor extension
 *
-*@package 		hashcash
+*@package 		aceditor
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@copyright     2014 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
-'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.'
+'ACEDITOR_SAVE'				=> 'Save',
+'ACEDITOR_FORMAT'			=> 'Format',
+'ACEDITOR_TITLE1'			=> 'Huge title',
+'ACEDITOR_TITLE2'			=> 'Very big title',
+'ACEDITOR_TITLE3'			=> 'Big title',
+'ACEDITOR_TITLE4'			=> 'Basic title',
+'ACEDITOR_TITLE5'			=> 'Small title',
+'ACEDITOR_BIGGER_TEXT'		=> 'Bigger text',
+'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Highlighted text',
+'ACEDITOR_SOURCE_CODE'		=> 'Source code',
+'ACEDITOR_BOLD_TEXT'		=> 'Bold text ( Ctrl-b )',
+'ACEDITOR_ITALIC_TEXT'		=> 'Italic text ( Ctrl-i )',
+'ACEDITOR_UNDERLINE_TEXT'	=> 'Underline the selected text ( Ctrl-u )',
+'ACEDITOR_STRIKE_TEXT'		=> 'Stroke the selected text ( Ctrl-y )',
+'ACEDITOR_LINE'				=> 'Insert horizontal line',
+'ACEDITOR_LINK'				=> 'Link',
+'ACEDITOR_LINK_PROMPT'		=> 'Enter the link adress',
+'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text'
 
 ));

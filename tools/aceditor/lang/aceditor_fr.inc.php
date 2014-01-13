@@ -1,5 +1,5 @@
 <?php
-/*vim: set expandtab tabstop=4 shiftwidth=4: */
+/*vim=> set expandtab tabstop=4 shiftwidth=4=> */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
 // +------------------------------------------------------------------------------------------------------+
@@ -21,17 +21,32 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* English translation for Hashcash extension
+* French translation for ACeditor extension
 *
-*@package 		hashcash
+*@package 		aceditor
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@copyright     2014 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
-'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.'
+'ACEDITOR_SAVE'				=> 'Sauver',
+'ACEDITOR_FORMAT'			=> 'Format',
+'ACEDITOR_TITLE1'			=> 'En-t&ecirc;te &eacute;norme',
+'ACEDITOR_TITLE2'			=> 'En-t&ecirc;te tr&egrave;s gros',
+'ACEDITOR_TITLE3'			=> 'En-t&ecirc;te gros',
+'ACEDITOR_TITLE4'			=> 'En-t&ecirc;te normal',
+'ACEDITOR_TITLE5'			=> 'Petit en-t&ecirc;te',
+'ACEDITOR_BIGGER_TEXT'		=> 'Texte agrandi',
+'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Texte mis en valeur',
+'ACEDITOR_SOURCE_CODE'		=> 'Code source',
+'ACEDITOR_BOLD_TEXT'		=> 'Passe le texte s&eacute;lectionn&eacute; en gras  ( Ctrl-b )',
+'ACEDITOR_ITALIC_TEXT'		=> 'Passe le texte s&eacute;lectionn&eacute; en italique ( Ctrl-i )',
+'ACEDITOR_UNDERLINE_TEXT'	=> 'Souligne le texte s&eacute;lectionn&eacute; ( Ctrl-u )',
+'ACEDITOR_STRIKE_TEXT'		=> 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
+'ACEDITOR_LINE'				=> 'Ins&egrave;re une ligne horizontale',
+'ACEDITOR_LINK'				=> 'Lien',
+'ACEDITOR_LINK_PROMPT'		=> 'Entrez l\'adresse URL',
+'ACEDITOR_LINK_TITLE'		=> 'Ajoute un lien au texte s&eacute;lectionn&eacute;'
 
 ));

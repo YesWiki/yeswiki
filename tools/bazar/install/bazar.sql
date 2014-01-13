@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `BAZ_PREFIXEnature` (
+CREATE TABLE IF NOT EXISTS `_t('BAZ_PREFIXEnature')` (
   `bn_id_nature` int(10) unsigned NOT NULL DEFAULT '0',
   `bn_label_nature` varchar(255) DEFAULT NULL,
   `bn_description` text,

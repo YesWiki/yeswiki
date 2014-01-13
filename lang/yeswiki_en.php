@@ -108,10 +108,10 @@ $GLOBALS['translations'] = array(
 'YOU_DONT_OWN_ANY_PAGE' => 'Vous n\'&ecirc;tes le propri&eacute;taire d\'aucune page',
 
 // actions/orphanedpages.php
-'NO_ORPHAN_PAGES' => 'Pas de pages orphelines',
+'NO_ORPHAN_PAGES' => 'No orphan pages',
 
 // actions/recentchanges.php
-'HISTORY' => 'historique',
+'HISTORY' => 'history',
 
 // actions/recentchangesrss.php
 'TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS' => 'Pour obtenir le fil RSS des derniers changements, utilisez l\'adresse suivante',

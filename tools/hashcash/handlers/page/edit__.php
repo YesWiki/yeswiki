@@ -37,7 +37,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read"))
         $siteurl = $a['scheme'].'://'.$a['host'].str_replace('\\', '/', dirname($a['path']));
 
 		$ChampsHashcash = 
-		 '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script><span id="hashcash-text" style="display:none" class="pull-right">'.HASHCASH_ANTISPAM_ACTIVATED.'</span>';
+		 '<script type="text/javascript" src="' . $siteurl . '/tools/hashcash/wp-hashcash-js.php?siteurl='.$siteurl.'"></script><span id="hashcash-text" style="display:none" class="pull-right">'._t('HASHCASH_ANTISPAM_ACTIVATED').'</span>';
 
 	 
 		$plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/',

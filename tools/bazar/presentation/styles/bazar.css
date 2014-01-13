@@ -118,17 +118,17 @@ margin:0 10px 0 0;
 padding:0;
 }
 
-.BAZ_lien_valider {
+.BAZ_lien_modifier {
 background:transparent url(../images/valide.png) no-repeat center left;
 padding: 2px 0 2px 18px;
 }
 
-.BAZ_lien_invalider {
+.BAZ_lien_modifier {
 background:transparent url(../images/invalide.png) no-repeat center left;
 padding: 2px 0 2px 18px;
 }
 
-.BAZ_lien_voir {
+.BAZ_lien_modifier {
 background:transparent url(../images/voir.png) no-repeat 4px center;
 padding: 0 0 0 3px !important;
 }

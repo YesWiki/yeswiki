@@ -21,17 +21,23 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* English translation for Hashcash extension
+* Fichier de traduction en francais de l'extension syndication
 *
-*@package 		hashcash
+*@package 		syndication
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@copyright     2013 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
+// actions/syndication.php
+$GLOBALS['translations']['SYNDICATION_ACTION_SYNDICATION'] = 'Action {{syndication ...}}';
+$GLOBALS['translations']['SYNDICATION_PARAM_URL_REQUIRED'] = 'il faut entrer obligatoirement le param&egrave;tre "url" pour syndiquer un flux RSS';
 
-'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
-'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.'
+// actions/twitter.php
+$GLOBALS['translations']['SYNDICATION_ACTION_TWITTER'] = 'Action {{twitter ...}}';
+$GLOBALS['translations']['SYNDICATION_PARAM_USER_REQUIRED'] = 'param&egrave;tre "user" manquant, il est obligatoire pour sp&eacute;fifier l\'utilisateur twitter choisi';
 
-));
+// actions/twittersearch.php
+$GLOBALS['translations']['SYNDICATION_ACTION_TWITTERSEARCH'] = 'Action {{twittersearch ...}}';
+$GLOBALS['translations']['SYNDICATION_PARAM_QUERY_REQUIRED'] = 'param&egrave;tre "query" manquant, il est obligatoire pour sp&eacute;cifier votre recherche';
+$GLOBALS['translations']['SYNDICATION_TEMPLATE_DOESNT_EXISTS'] = 'Le fichier template';
+$GLOBALS['translations']['SYNDICATION_USE_OF_DEFAULT_TEMPLATE'] = 'n\'existe pas, on utilise le template par d&eacute;faut';

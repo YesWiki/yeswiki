@@ -34,7 +34,7 @@ if (empty($ordre)) {
 
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
-    $latitude = BAZ_GOOGLE_CENTRE_LAT;
+    $latitude = _t('BAZ_GOOGLE_CENTRE_LAT');
 }
 
 /*
@@ -45,13 +45,13 @@ if (empty($latitude)) {
 
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
-    $longitude = BAZ_GOOGLE_CENTRE_LON;
+    $longitude = _t('BAZ_GOOGLE_CENTRE_LON');
 }
 
 
 $zoom = $this->GetParameter("zoom");
 if (empty($zoom)) {
-    $zoom = BAZ_GOOGLE_ALTITUDE;
+    $zoom = _t('BAZ_GOOGLE_ALTITUDE');
 }
 
 
@@ -277,8 +277,8 @@ foreach ($fiche_resultat as $valeurs_fiche) {
         foreach ($selections as $key_selection=>$valeur_selection) { 
             if (!$grouplist[$key_selection]) {
                 if ((in_arrayi($valeurs_fiche[$key_selection],$valeur_selection))) {
-                    $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
-                    $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
+                    $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
+                    $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
                     $facettes['fiches'][$valeurs_fiche['id_fiche']] = $valeurs_fiche;
 
                 }
@@ -290,8 +290,8 @@ foreach ($fiche_resultat as $valeurs_fiche) {
                 }
                 foreach ($index_liste as $key_liste=>$element_liste) {
                     if ((in_arrayi($element_liste,$valeur_selection))) {
-                        $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
-                        $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
+                        $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
+                        $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
                         $facettes['fiches'][$valeurs_fiche['id_fiche']] = $valeurs_fiche;
                         $facettes['html'] = baz_voir_fiche(0, $valeurs_fiche);
                     }
@@ -302,8 +302,8 @@ foreach ($fiche_resultat as $valeurs_fiche) {
         }
     }
     else { // Pas de selections : on affiche toutes les fiches TODO : pagination
-        $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
-        $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
+        $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
+        $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
         $valeurs_fiche['categorie']="";
 
         // On renseigne les categories pour de l'eventuel Facet Javascript.

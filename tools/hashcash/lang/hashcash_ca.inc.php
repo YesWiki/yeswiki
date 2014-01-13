@@ -21,11 +21,11 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* English translation for Hashcash extension
+* Catalan translation for Hashcash extension
 *
 *@package 		hashcash
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@copyright     2014 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(

@@ -62,10 +62,86 @@ if (!defined('WIKINI_VERSION'))
 	?>
 
 		</div>
-		<form class="form-horizontal" action="<?php echo  myLocation() ?>?installAction=install" method="post">
+		<form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?installAction=install" method="post">
 
 		<fieldset>
-		
+
+			<legend><?php echo _t('YESWIKI_WEBSITE_CONFIGURATION'); ?></legend>
+
+				<div class="accordion-heading">
+					<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo"><?php echo _t('MORE_INFOS'); ?></a>
+				</div>
+				
+				<div class="accordion" id="accordion2">
+					<div class="accordion-group">
+						<div id="collapseTwo" class="accordion-body collapse">
+							<div class="accordion-inner">
+								<dl class="dl-horizontal">
+	    							<dt><?php echo _t('DEFAULT_LANGUAGE'); ?></dt>
+	    							<dd><?php echo _t('DEFAULT_LANGUAGE_INFOS'); ?></dd>
+	    						</dl>
+	    						<dl class="dl-horizontal">
+	    							<dt><?php echo _t('YOUR_WEBSITE_NAME'); ?></dt>
+	    							<dd><?php echo _t('YOUR_WEBSITE_NAME_INFOS'); ?></dd>
+	    						</dl>
+	    						<dl class="dl-horizontal">
+	    							<dt><?php echo _t('DESCRIPTION'); ?></dt>
+	    							<dd><?php echo _t('DESCRIPTION_INFOS'); ?></dd>
+	    						</dl>
+	    						<dl class="dl-horizontal">
+	    							<dt><?php echo _t('KEYWORDS'); ?></dt>
+	    							<dd><?php echo _t('KEYWORDS_INFOS'); ?></dd>
+	    						</dl>
+	    						<dl class="dl-horizontal">
+	    							<dt><?php echo _t('HOMEPAGE'); ?></dt>
+	    							<dd><?php echo _t('HOMEPAGE_INFOS'); ?></dd>
+	    						</dl>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label"><?php echo _t('DEFAULT_LANGUAGE'); ?></label>
+					<div class="controls">
+						<select required autocomplete="off" class="input-large" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo  myLocation() ?>?installAction=default&lang='+$(this).val()).submit();">
+							<?php
+							 foreach ($GLOBALS['available_languages'] as $value) {
+							 	echo "<option value=\"".$value."\"".(($value==$GLOBALS['prefered_language']) ? ' selected="selected"' : '').">".ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
+							 }
+							?>
+						</select>
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label"><?php echo _t('YOUR_WEBSITE_NAME'); ?></label>
+					<div class="controls">
+						<input type="text" required class="input-large" name="config[wakka_name]" value="<?php echo $wakkaConfig["wakka_name"] ?>" />
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label"><?php echo _t('DESCRIPTION'); ?></label>
+					<div class="controls">
+						<input type="text" class="input-large" name="config[meta_description]" value="<?php echo $wakkaConfig["meta_description"] ?>" />
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label"><?php echo _t('KEYWORDS'); ?></label>
+					<div class="controls">
+						<input type="text" class="input-large" name="config[meta_keywords]" value="<?php echo $wakkaConfig["meta_keywords"] ?>" />
+					</div>
+				</div>
+
+				<div class="control-group">
+					<label class="control-label"><?php echo _t('HOMEPAGE'); ?></label>
+					<div class="controls">
+						<input type="text" required class="input-large" name="config[root_page]" value="<?php echo $wakkaConfig["root_page"] ?>" /> (<?php echo _t('MUST_BE_WIKINAME'); ?>)
+					</div>
+				</div>
+
 			<legend><?php echo _t('DATABASE_CONFIGURATION'); ?></legend>
 				
 				<div class="accordion-heading">
@@ -129,65 +205,6 @@ if (!defined('WIKINI_VERSION'))
 					<label class="control-label"><?php echo _t('TABLE_PREFIX'); ?></label>
 					<div class="controls">
 						<input type="text" required class="input-large" name="config[table_prefix]" value="<?php echo $wakkaConfig["table_prefix"] ?>" />
-					</div>
-				</div>
-
-			<legend><?php echo _t('YESWIKI_WEBSITE_CONFIGURATION'); ?></legend>
-
-				<div class="accordion-heading">
-					<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo"><?php echo _t('MORE_INFOS'); ?></a>
-				</div>
-				
-				<div class="accordion" id="accordion2">
-					<div class="accordion-group">
-						<div id="collapseTwo" class="accordion-body collapse">
-							<div class="accordion-inner">
-								<dl class="dl-horizontal">
-	    							<dt><?php echo _t('YOUR_WEBSITE_NAME'); ?></dt>
-	    							<dd><?php echo _t('YOUR_WEBSITE_NAME_INFOS'); ?></dd>
-	    						</dl>
-	    						<dl class="dl-horizontal">
-	    							<dt><?php echo _t('HOMEPAGE'); ?></dt>
-	    							<dd><?php echo _t('HOMEPAGE_INFOS'); ?></dd>
-	    						</dl>
-	    						<dl class="dl-horizontal">
-	    							<dt><?php echo _t('KEYWORDS'); ?></dt>
-	    							<dd><?php echo _t('KEYWORDS_INFOS'); ?></dd>
-	    						</dl>
-	    						<dl class="dl-horizontal">
-	    							<dt><?php echo _t('DESCRIPTION'); ?>Description</dt>
-	    							<dd><?php echo _t('DESCRIPTION_INFOS'); ?></dd>
-	    						</dl>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="control-group">
-					<label class="control-label"><?php echo _t('YOUR_WEBSITE_NAME'); ?></label>
-					<div class="controls">
-						<input type="text" required class="input-large" name="config[wakka_name]" value="<?php echo $wakkaConfig["wakka_name"] ?>" />
-					</div>
-				</div>
-
-				<div class="control-group">
-					<label class="control-label"><?php echo _t('HOMEPAGE'); ?></label>
-					<div class="controls">
-						<input type="text" required class="input-large" name="config[root_page]" value="<?php echo $wakkaConfig["root_page"] ?>" />
-					</div>
-				</div>
-
-				<div class="control-group">
-					<label class="control-label"><?php echo _t('KEYWORDS'); ?></label>
-					<div class="controls">
-						<input type="text" class="input-large" name="config[meta_keywords]" value="<?php echo $wakkaConfig["meta_keywords"] ?>" />
-					</div>
-				</div>
-
-				<div class="control-group">
-					<label class="control-label"><?php echo _t('DESCRIPTION'); ?></label>
-					<div class="controls">
-						<input type="text" class="input-large" name="config[meta_description]" value="<?php echo $wakkaConfig["meta_description"] ?>" />
 					</div>
 				</div>
 
@@ -263,7 +280,7 @@ if (!defined('WIKINI_VERSION'))
 				<div class="control-group">
 					<label class="control-label"><?php echo _t('EMAIL_ADDRESS'); ?></label>
 					<div class="controls">
-						<input type="text" required class="input-large" name="admin_email" value="" />
+						<input type="email" required class="input-large" name="admin_email" value="" />
 					</div>
 				</div>
 

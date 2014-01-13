@@ -21,7 +21,7 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* English translation for the Templates extension
+* Catalan translation for the Templates extension
 *
 *@package 		templates
 *@author        Florian Schmitt <florian@outils-reseaux.org>

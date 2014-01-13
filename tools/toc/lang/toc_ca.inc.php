@@ -21,17 +21,11 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* English translation for Hashcash extension
+* Fichier de traduction en francais de l'extension syndication
 *
-*@package 		hashcash
+*@package 		toc
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@copyright     2013 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
-
-'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
-'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.'
-
-));
+$GLOBALS['translations']['TOC_TABLE_OF_CONTENTS'] = 'Table des mati&egrave;res';

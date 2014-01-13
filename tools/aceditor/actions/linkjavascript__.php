@@ -6,6 +6,6 @@ if (!defined("WIKINI_VERSION"))
 }
 
 
-echo '	<script src="tools/aceditor/libs/ACeditor.js"></script>'."\n";
+echo '	<script src="'.$this->href('aceditor').'"></script>'."\n";
 	
 ?>

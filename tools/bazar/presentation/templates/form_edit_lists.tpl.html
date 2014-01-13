@@ -1,8 +1,8 @@
 <form action="<?php echo $form_link; ?>" method="post" id="bazar_form_lists" class="form-horizontal">
 	<div class="control-group">
-		<label class="control-label"><span class="required_symbol">*&nbsp;</span><?php echo BAZ_LIST_NAME;?></label>
+		<label class="control-label"><span class="required_symbol">*&nbsp;</span><?php echo _t('BAZ_LIST_NAME');?></label>
 		<div class="controls">
-			<input name="titre_liste" type="text" value="<?php echo (isset($titre_liste) ? $titre_liste : '');?>" required="required" placeholder="<?php echo BAZ_LIST_NAME;?>" />
+			<input name="titre_liste" type="text" value="<?php echo (isset($titre_liste) ? $titre_liste : '');?>" required="required" placeholder="<?php echo _t('BAZ_LIST_NAME');?>" />
 		</div>
 	</div>
 
@@ -11,7 +11,7 @@
 	<input name="NomWiki" type="hidden" value="<?php echo $NomWiki;?>" />
 
 	<div class="form-actions">
-		<button class="btn btn-success btn-save-list" name="valider" type="submit"><?php echo BAZ_SAVE;?></button>
-		<a class="btn btn-danger btn-cancel-list" name="annuler" href="<?php echo $cancel_link;?>"><?php echo BAZ_ANNULER;?></a>
+		<button class="btn btn-success btn-save-list" name="valider" type="submit"><?php echo _t('BAZ_SAVE');?></button>
+		<a class="btn btn-danger btn-cancel-list" name="annuler" href="<?php echo $cancel_link;?>"><?php echo _t('BAZ_ANNULER');?></a>
 	</div>
 </form>

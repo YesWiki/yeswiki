@@ -48,9 +48,6 @@ define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 // Pour que seul le propriétaire et l'admin puissent changer de theme
 define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
-// Indique un code langue par defaut
-define ('TEMPLATES_DEFAULT_LANG', 'fr') ; 
-
 // Indique un encodage de caractères par defaut
 define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-15') ; 
 
@@ -102,8 +99,6 @@ $wikiClassesContent [] = '
 			return Wiki::GetMethod();
 		}
     }
-	
-	
 	
 	
 	function GetMetaDatas($pagetag) {	

@@ -62,6 +62,7 @@ class Wiki
 {
 	var $dblink;
 	var $page;
+	var $metadata;
 	var $tag;
 	var $parameter = array();
 	var $queryLog = array();
@@ -1632,8 +1633,6 @@ $wakkaDefaultConfig = array(
 	"mysql_user"		=> '',
 	"mysql_password"	=> '',
 	"table_prefix"		=> "yeswiki_",
-	"root_page"			=> "PagePrincipale",
-	"wakka_name"		=> _t('MY_YESWIKI_SITE'),
 	"base_url"			=> computeBaseURL($_rewrite_mode),
 	"rewrite_mode"		=> $_rewrite_mode,
 	'meta_keywords'		=> '',
@@ -1654,9 +1653,17 @@ unset($_rewrite_mode);
 
 // load config
 if (!$configfile = GetEnv("WAKKA_CONFIG")) $configfile = "wakka.config.php";
-if (file_exists($configfile)) include($configfile);
+if (file_exists($configfile)) {
+	include($configfile);
+} 
+else {
+	// we must init language file without loading the page's settings.. to translate some default config settings
+	$wakkaDefaultConfig["root_page"] =_t('HOMEPAGE_WIKINAME');
+	$wakkaDefaultConfig["wakka_name"] = _t('MY_YESWIKI_SITE');
+}
 $wakkaConfigLocation = $configfile;
 $wakkaConfig = array_merge($wakkaDefaultConfig, $wakkaConfig);
+
 
 // check for locking
 if (file_exists("locked")) {
@@ -1757,6 +1764,9 @@ else
 
 // create wiki object
 $wiki = new Wiki($wakkaConfig);
+
+// update lang
+loadpreferredI18n($page);
 // check for database access
 if (!$wiki->dblink)
 {

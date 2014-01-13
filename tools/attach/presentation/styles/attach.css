@@ -27,23 +27,10 @@
 .qq-upload-failed-text {display:none;}
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
 
-
-.label-image-align-left {
-	background: url(../images/align-left.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
-.label-image-align-center {
-	background: url(../images/align-center.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
-.label-image-align-right {
-	background: url(../images/align-right.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
-.label-image-size {
+/*.label-image-size {
 	width:130px;
 }
-
+*/
 
 /**************************Les classes effets graphiques pour les images**************************************************************************/
 
