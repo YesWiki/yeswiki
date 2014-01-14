@@ -50,6 +50,10 @@ if (!defined("WIKINI_VERSION")) {
 define ('BAZ_CHEMIN', 'tools'.DIRECTORY_SEPARATOR.'bazar'.DIRECTORY_SEPARATOR);
 define ('BAZ_CHEMIN_UPLOAD', 'files'.DIRECTORY_SEPARATOR);
 
+
+//bouh! c'est pas propre! c'est a cause de PEAR et de ses includes
+set_include_path(BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.PATH_SEPARATOR.get_include_path());
+
 //librairies PEAR
 //require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'Net'.DIRECTORY_SEPARATOR.'URL.php' ;
