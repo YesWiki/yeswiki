@@ -2041,6 +2041,7 @@ function baz_valeurs_type_de_fiche($idtypefiche)
 }
 
 
+
 /** baz_nextId () Renvoie le prochain identifiant numerique libre d'une table
 *
 *   @param  string  Nom de la table
@@ -2051,13 +2052,16 @@ function baz_valeurs_type_de_fiche($idtypefiche)
 */
 function baz_nextId($table, $colonne_identifiant, $bdd)
 {
+
     $requete = 'SELECT MAX('.$colonne_identifiant.') AS maxi FROM '.$table;
+
     $ligne = $GLOBALS['wiki']->LoadSingle($requete) ;
     
     if (count($ligne) > 1) {
         return $bdd->raiseError('<br />La table '.$table.' a un identifiant non unique<br />') ;
     }
-    return $ligne->maxi + 1 ;
+
+    return $ligne['maxi'] + 1 ;
 }
 
 /** baz_titre_wiki() Renvoie la chaine de caractere sous une forme compatible avec wikini
