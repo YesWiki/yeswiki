@@ -279,7 +279,7 @@ foreach ($tableau_resultat as $fiche) {
         //print $valeurs_fiche['listefiche'.$jointure[$valeurs_fiche['id_typeannonce']]]; // clef listefiche+idtypannonce cible
         foreach ($tableau_resultat_lie[$jointure[$valeurs_fiche['id_typeannonce']]] as $fiche_lies) {
 
-             $valeurs_fiche_liee = json_decode($fiche_lies[0], true);
+             $valeurs_fiche_liee = json_decode($fiche_lies["body"], true);
              $valeurs_fiche_liee = array_map('utf8_decode', $valeurs_fiche_liee);
 
              if ($valeurs_fiche_liee['id_fiche']==$valeurs_fiche['listefiche'.$jointure[$valeurs_fiche['id_typeannonce']]]) { // clef  : listefiche+idtypannonce cible
