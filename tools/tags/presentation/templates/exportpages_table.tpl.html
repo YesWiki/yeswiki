@@ -1,15 +1,15 @@
 <?php if( count($pages)>0 ) : ?>
 	<form class="export-table-form" method="post" action="<?php echo $url;?>">
-		<div class="row">
-			<div class="col-lg-6 export-table-container">
+		<div class="row row-fluid">
+			<div class="span6 col-lg-6 export-table-container">
 				<h3><?php echo _t('TAGS_AVAILABLE_PAGES'); ?></h3>
 				<div class="alert alert-info">
-					<?php echo _t('TAGS_EXPORT_PAGES_INFO'); ?><a class="btn btn-default btn-success btn-xs" href="#"><i class="icon-plus"></i></a>.
+					<?php echo _t('TAGS_EXPORT_PAGES_INFO'); ?><a class="btn btn-default btn-success btn-mini btn-xs" href="#"><i class="icon-plus"></i></a>.
 				</div>	
-				<div class="input-group">
-					<span class="input-group-addon"><i class="icon-filter"></i></span>
+				<div class="input-group input-prepend input-append">
+					<span class="input-group-addon add-on"><i class="icon-filter"></i></span>
 				    <input class="form-control input-sm" type="text" id="filter" value="" placeholder="<?php echo _t('TAGS_FILTER_PAGES'); ?>" />
-				    <span class="input-group-btn">
+				    <span class="input-group-btn add-on">
 				        <button class="btn btn-default btn-sm btn-erase-filter" type="button">&times;</button>
 				    </span>
 				</div><!-- /input-group -->
@@ -19,14 +19,14 @@
 				    <?php foreach($pages as $page): ?>
 						<?php if (!$addinstalledpage && !(array_key_exists($page['tag'], $installedpages))) : ?>
 							<li class="list-group-item">
-								<a class="pull-right btn btn-default btn-xs btn-success select-page-item" title="<?php echo _t('TAGS_SELECT_PAGE'); ?> <?php echo htmlentities($page['tag']); ?> <?php echo _t('TAGS_FOR_THE_EBOOK'); ?>" href="#">
+								<a class="pull-right btn btn-default btn-mini btn-xs btn-success select-page-item" title="<?php echo _t('TAGS_SELECT_PAGE'); ?> <?php echo htmlentities($page['tag']); ?> <?php echo _t('TAGS_FOR_THE_EBOOK'); ?>" href="#">
 									<i class="icon-plus"></i>
 								</a>
-								<a class="hide pull-right btn btn-default btn-xs btn-danger remove-page-item" title="<?php echo _t('TAGS_DELETE_PAGE'); ?> <?php echo htmlentities($page['tag']); ?> <?php echo _t('TAGS_FROM_THE_EBOOK'); ?>" href="#">
+								<a class="hide pull-right btn btn-default btn-mini btn-xs btn-danger remove-page-item" title="<?php echo _t('TAGS_DELETE_PAGE'); ?> <?php echo htmlentities($page['tag']); ?> <?php echo _t('TAGS_FROM_THE_EBOOK'); ?>" href="#">
 									<i class="icon-minus"></i>
 								</a>
 								<span class="pull-left hide movable"><i class="icon-resize-vertical"></i></span>
-								<a class="pull-left btn btn-default btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo htmlentities($page['tag']); ?>" href="<?php echo $GLOBALS['wiki']->href('html', $page['tag']); ?>">
+								<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo htmlentities($page['tag']); ?>" href="<?php echo $GLOBALS['wiki']->href('html', $page['tag']); ?>">
 									<i class="icon-eye-open"></i>
 								</a> 
 								<input type="hidden" name="page[]" value="<?php echo $page['tag']; ?>" />
@@ -36,10 +36,10 @@
 					<?php endforeach; ?>
 				</ul>
 
-			</div><!-- /.col-lg-6.export-table-container -->
+			</div><!-- /.span6 col-lg-6.export-table-container -->
 			
-			<div class="col-lg-6">
-				<h3><?php echo _t('TAGS_YOUR_EBOOK'); ?></h3>
+			<div class="span6 col-lg-6">
+				<h3>Votre Ebook</h3>
 				<div class="alert alert-info">
 					<?php echo _t('TAGS_ORDER_PAGES_INFO'); ?>
 				</div>
@@ -47,7 +47,7 @@
 				<?php if (!empty($ebookstart)) : ?>
 					<ul class="list-group">
 						<li class="list-group-item">
-							<a class="pull-left btn btn-default btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo $ebookstart; ?>" href="<?php echo $GLOBALS['wiki']->href('html', $ebookstart); ?>">
+							<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo $ebookstart; ?>" href="<?php echo $GLOBALS['wiki']->href('html', $ebookstart); ?>">
 								<i class="icon-eye-open"></i>
 							</a> 
 							<input type="hidden" name="page[]" value="<?php echo $ebookstart; ?>" />
@@ -60,7 +60,7 @@
 				<?php if (!empty($ebookend)) : ?>
 					<ul class="list-group">
 						<li class="list-group-item">
-							<a class="pull-left btn btn-default btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> PageEbookFin" href="<?php echo $GLOBALS['wiki']->href('html', $ebookend); ?>">
+							<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> PageEbookFin" href="<?php echo $GLOBALS['wiki']->href('html', $ebookend); ?>">
 								<i class="icon-eye-open"></i>
 							</a> 
 							<input type="hidden" name="page[]" value="<?php echo $ebookend; ?>" />
@@ -102,7 +102,7 @@
 					<br />
 				    <input type="submit" value="<?php echo _t('TAGS_GENERATE_EBOOK'); ?>" class="btn btn-block btn-lg btn-primary" />
 				</div>
-			</div> <!-- /.col-lg-6. ebook-selection-container -->
+			</div> <!-- /.span6 col-lg-6. ebook-selection-container -->
 		</div> <!-- /.row -->
     </form>
     <?php 

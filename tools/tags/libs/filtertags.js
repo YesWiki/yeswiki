@@ -4,8 +4,8 @@ $(document).ready(function() {
     var wookmarkoptions = {
           autoResize: true, // This will auto-update the layout when the browser window is resized.
           container: $('.filter-results'), // Optional, used for some extra CSS styling
-          offset: 15, // Optional, the distance between grid items
-          itemWidth: 270 // Optional, the width of a grid item
+          offset: 10, // Optional, the distance between grid items
+          itemWidth: 200 // Optional, the width of a grid item
     };
     var filterelements = $('.filtered-element')
 

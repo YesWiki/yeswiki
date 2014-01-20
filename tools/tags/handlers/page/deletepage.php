@@ -50,6 +50,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin())
 		else
 		{
 			$this->DeleteOrphanedPage($tag);
+			$this->Query("DELETE FROM ".$this->config["table_prefix"]."triples WHERE resource = '".$this->GetPageTag()."'");
 			$this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
 			$msg = "La page ${tag} a d&eacute;finitivement &eacute;t&eacute; supprim&eacute;e";
 		}
