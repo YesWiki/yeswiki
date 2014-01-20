@@ -201,3 +201,12 @@ box-shadow: 2px 2px 15px 0px #444;
 .modal-pointimage .form-control {
   width:100%;
 }
+
+/*background image */
+.background-image {
+  -webkit-background-size:cover;-moz-background-size:cover;-o-background-size:cover;background-size:cover;
+      /*background-attachment:fixed;*/
+      background-clip:border-box;
+      background-origin:padding-box;
+      background-position:center center;
+}

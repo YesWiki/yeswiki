@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-if ($this->HasAccess("write") && $this->HasAccess("read"))
+if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar' )
 {
 	// preview?
 	if (isset($_POST["submit"]) && $_POST["submit"] == "Aperçu") {
