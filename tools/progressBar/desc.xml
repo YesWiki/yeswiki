@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wikiProgressBar" version="0.1" active="1">
+  <author>Florestan BREDOW</author>
+  <label>wikiProgressBar</label>
+  <desc>Permet d afficher une barre de progression</desc>
+</plugin>
