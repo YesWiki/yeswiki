@@ -187,7 +187,7 @@ margin:15px 0 0 0;
 }
 */
 .footer {
-margin: 0;
+margin: 18px 0;
 padding: 0;
 text-align:center;
 }
@@ -299,10 +299,10 @@ overflow: auto;
 .slideshow-body {height:90%}
 .container-slide-basic {padding:18px; height:90%;}
 
-.wiki-textarea {width:100% !important; height:500px !important;}
+.yeswiki-textarea-full {width:100% !important; height:500px !important;}
 
 
-.accordion-group .panel-heading {
+.accordion-group {
   cursor: pointer;
 }
 .accordion-group .panel-title:after {
@@ -310,7 +310,7 @@ overflow: auto;
     content:"\02C4";
     float: right;
     color: inherit;
-    font-size: 27px;
+    font-size: 25px;
     font-weight: bold;
 }
 .accordion-group .panel-heading.collapsed .panel-title:after {
@@ -321,3 +321,12 @@ overflow: auto;
 /* bootstrap 2.3.2 retro compatibility */ 
 .modal { z-index: -2 !important; }
 .modal.in { z-index: 1050 !important; }
+
+/* dropdown menu in modal */
+#page_options .typeahead.dropdown-menu { z-index: 200000; }
+
+#form_page_options .control-label {width:200px;}
+#form_page_options .controls {margin-left:210px;}
+
+.yeswiki-menu-btn {margin-bottom: 0 !important;}
+

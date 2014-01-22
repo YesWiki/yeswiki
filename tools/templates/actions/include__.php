@@ -48,6 +48,32 @@ $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 // on ajoute pour le menu du haut la classe nav de bootstrap
 if ($incPageName == 'PageMenuHaut') {
 	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
+
+	$dom = new DOMDocument();
+	$dom->loadHTML($plugin_output_new);
+
+	$xpath = new DOMXpath($dom);
+
+	$dropdowns = $xpath->query("*/div/ul/li/ul");
+	if (!is_null($dropdowns)) {
+		foreach ($dropdowns as $element) {
+			$element->setAttribute("class", "dropdown-menu");
+			$element->parentNode->setAttribute("class", "dropdown");
+			$class = $element->previousSibling->previousSibling->getAttribute("class");
+			$element->previousSibling->previousSibling->setAttribute("class", $class." dropdown-toggle");
+			$element->previousSibling->previousSibling->setAttribute("data-toggle", "dropdown");
+			$caret = $dom->createElement("b");
+			$caret->setAttribute("class", "caret");
+    		$element->previousSibling->previousSibling->appendChild($caret);
+		}
+	}
+	$activelinks = $xpath->query("//a[contains(@class, 'active-link')]");
+	if (!is_null($activelinks)) {
+		foreach ($activelinks as $activelink) {
+			$activelink->parentNode->setAttribute("class", "active");
+		}
+	}
+	$plugin_output_new =  preg_replace('/^<!DOCTYPE.+?>/', '', str_replace( array('<html>', '</html>', '<body>', '</body>'), '', $dom->saveHTML()))."\n";
 }
 
 // on rajoute une div clear pour mettre le flow css en dessous des éléments flottants

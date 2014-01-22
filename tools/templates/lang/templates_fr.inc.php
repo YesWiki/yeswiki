@@ -101,4 +101,21 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TEMPLATE_PAGE_DOESNT_EXIST' => 'Page non existante',
 'PAGE_CANNOT_BE_SLIDESHOW' => 'La page ne peut pas &ecirc;tre d&eacute;coup&eacute;e en diapositives (pas de titres niveau 2)',
 
+// handler edit
+'TEMPLATE_CUSTOM_PAGE' => 'Pr&eacute;f&eacute;rences de la page',
+'TEMPLATE_PAGE_PREFERENCES' => 'Param&egrave;tres de la page',
+'PAGE_LANGUAGE' => 'Langue de la page',
+'CHOOSE_PAGE_FOR' => 'Choisir une page pour',
+'HORIZONTAL_MENU_PAGE' => 'le menu horizontal',
+'FAST_ACCESS_RIGHT_PAGE' => 'les raccourcis en haut &agrave; droite',
+'HEADER_PAGE' => 'l\'ent&ecirc;te (bandeau)',
+'FOOTER_PAGE' => 'le pied de page',
+'FOR_2_OR_3_COLUMN_THEMES' => 'Pour les th&egrave;mes &agrave; 2 ou 3 colonnes',
+'VERTICAL_MENU_PAGE' => 'le menu vertical',
+'RIGHT_COLUMN_PAGE' => 'la colonne de droite',
+
+// actions/yeswikiversion.php
+'RUNNING_WITH' => 'Galope sous',
+
+
 ));

@@ -101,4 +101,17 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TEMPLATE_PAGE_DOESNT_EXIST' => 'Page doesn\'t exist',
 'PAGE_CANNOT_BE_SLIDESHOW' => 'This page cannot be split in slides (no second level titles)',
 
+// handler edit
+'TEMPLATE_CUSTOM_PAGE' => 'Preferences for page',
+'TEMPLATE_PAGE_PREFERENCES' => 'Page preferences',
+'PAGE_LANGUAGE' => 'Page\'s language',
+'CHOOSE_PAGE_FOR' => 'Choose a page for',
+'HORIZONTAL_MENU_PAGE' => 'the horizontal menu',
+'FAST_ACCESS_RIGHT_PAGE' => 'fast access on top right corner',
+'HEADER_PAGE' => 'the header (banner)',
+'FOOTER_PAGE' => 'the footer',
+'FOR_2_OR_3_COLUMN_THEMES' => 'For themes with 2 or 3 columns',
+'VERTICAL_MENU_PAGE' => 'the vertical menu',
+'RIGHT_COLUMN_PAGE' => 'the right column',
+
 ));

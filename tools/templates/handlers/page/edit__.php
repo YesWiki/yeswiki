@@ -45,23 +45,26 @@ $plugin_output_new = str_replace("<script type=\"text/javascript\">\n".
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) && 
 	($this->HasAccess("write") && $this->HasAccess("read") && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner() ) ) ) ) ) { 
 
-	$selecteur = '<div id="graphical_options" class="modal fade">'."\n".
-				'<div class="modal-dialog">'."\n".
-					'<div class="modal-content">'."\n".
-						'<div class="modal-header">'."\n".
-							'<a class="close" data-dismiss="modal">&times;</a>'."\n".
-							'<h3>'._t('TEMPLATE_CUSTOM_GRAPHICS').' '.$this->GetPageTag().'</h3>'."\n".
-						'</div>'."\n".
-						'<div class="modal-body">'."\n";
+	// graphical options : theme and background image
+	$selecteur = '
+<div id="graphical_options" class="modal fade">'."\n".
+'	<div class="modal-dialog">'."\n".
+'		<div class="modal-content">'."\n".
+'			<div class="modal-header">'."\n".
+'				<a class="close" data-dismiss="modal">&times;</a>'."\n".
+'				<h3>'._t('TEMPLATE_CUSTOM_GRAPHICS').' '.$this->GetPageTag().'</h3>'."\n".
+'			</div>'."\n".
+'			<div class="modal-body">'."\n";
 	$selecteur .= show_form_theme_selector('edit');
-	$selecteur .= '</div>'."\n".
-				'<div class="modal-footer">'."\n".
-					'<a href="#" class="btn btn-default button_cancel" data-dismiss="modal">'._t('TEMPLATE_CANCEL').'</a>'."\n".
-					'<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'._t('TEMPLATE_APPLY').'</a>'."\n".						
-				'</div>'."\n".
-			'</div>'."\n".
-		'</div>'."\n".	
-	'</div>'."\n";
+	$selecteur .= '
+			</div>'."\n".
+'			<div class="modal-footer">'."\n".
+'				<a href="#" class="btn btn-default button_cancel" data-dismiss="modal">'._t('TEMPLATE_CANCEL').'</a>'."\n".
+'				<a href="#" class="btn btn-primary button_save" data-dismiss="modal">'._t('TEMPLATE_APPLY').'</a>'."\n".						
+'			</div>'."\n".
+'		</div>'."\n".
+'	</div>'."\n".	
+'</div> <!-- /#graphical_options -->'."\n";
 
 	$js = add_templates_list_js().'<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
 
@@ -80,17 +83,17 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
 }
 
 // le bouton apercu c'est pour les vieilles versions de wikini, on en profite pour rajouter des classes pour colorer les boutons et la personnalisation graphique
-$patterns = array(	0 => 	'/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
-					1 => 	'/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
-					2 => 	'/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\'' . preg_quote(addslashes($this->href()), '/') . '\';\" \/>/',
-					3 =>	'/ class=\"edit\">/'
+$patterns = array(	0 => '/<input name=\"submit\" type=\"submit\" value=\"Sauver\" accesskey=\"s\" \/>/',
+					1 => '/<input name=\"submit\" type=\"submit\" value=\"Aper\&ccedil;u\" accesskey=\"p\" \/>/',
+					2 => '/<input type=\"button\" value=\"Annulation\" onclick=\"document.location=\'' . preg_quote(addslashes($this->href()), '/') . '\';\" \/>/',
+					3 => '/ class=\"edit\">/'
 					);
 $replacements = array(
-					0 => 	'<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'._t('TEMPLATE_SAVE').'</button>',
-					1 => 	'', 
-					2 => 	'<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
-							(($changetheme) ? '<button class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'._t('TEMPLATE_THEME').'</button>'."\n" : '').'</div>', // le bouton Theme du bas de l'interface d'edition
-					3 =>	' class="edit form-control">'
+					0 => '<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'._t('TEMPLATE_SAVE').'</button>'."\n",
+					1 => '', 
+					2 => '<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
+							(($changetheme) ? '<button class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'._t('TEMPLATE_THEME').'</button>'."\n" : '').'</div>'."\n", // le bouton Theme du bas de l'interface d'edition
+					3 => ' class="edit form-control">'."\n"
 					);
 $plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);
 
