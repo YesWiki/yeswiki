@@ -62,7 +62,6 @@ class Wiki
 {
 	var $dblink;
 	var $page;
-	var $metadata;
 	var $tag;
 	var $parameter = array();
 	var $queryLog = array();
