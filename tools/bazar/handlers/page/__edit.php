@@ -32,6 +32,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if ($this->HasAccess('write')) {
+
     $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
     if ($type == 'fiche_bazar') {
         //dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
@@ -45,7 +46,7 @@ if ($this->HasAccess('write')) {
             $GLOBALS['_BAZAR_']['commentaire']=$tab_nature['bn_commentaire'];
             $GLOBALS['_BAZAR_']['appropriation']=$tab_nature['bn_appropriation'];
             $GLOBALS['_BAZAR_']['class']=$tab_nature['bn_label_class'];
-            baz_formulaire(_t('BAZ_ACTION_MODIFIER_V'));
+            baz_formulaire(BAZ_ACTION_MODIFIER_V);
             $this->Redirect($this->Href());
         } else {
             $page = $this->LoadPage($this->GetPageTag());
@@ -60,7 +61,7 @@ if ($this->HasAccess('write')) {
             $GLOBALS['_BAZAR_']['commentaire']=$tab_nature['bn_commentaire'];
             $GLOBALS['_BAZAR_']['appropriation']=$tab_nature['bn_appropriation'];
             $GLOBALS['_BAZAR_']['class']=$tab_nature['bn_label_class'];
-            $pageeditionfiche = baz_formulaire(_t('BAZ_ACTION_MODIFIER'), $this->href('edit'), $tab_valeurs);
+            $pageeditionfiche = baz_formulaire(BAZ_ACTION_MODIFIER, $this->href('edit'), $tab_valeurs);
         }
     }
 }

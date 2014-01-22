@@ -57,7 +57,7 @@ if (empty($ordre)) {
 
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
-    $latitude = _t('BAZ_GOOGLE_CENTRE_LAT');
+    $latitude = BAZ_MAP_CENTER_LAT;
 }
 
 /*
@@ -68,7 +68,7 @@ if (empty($latitude)) {
 
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
-    $longitude = _t('BAZ_GOOGLE_CENTRE_LON');
+    $longitude = BAZ_MAP_CENTER_LON;
 }
 
 
@@ -80,7 +80,7 @@ if (empty($longitude)) {
 
 $zoom = $this->GetParameter("zoom");
 if (empty($zoom)) {
-    $zoom = _t('BAZ_GOOGLE_ALTITUDE');
+    $zoom = BAZ_GOOGLE_ALTITUDE;
 }
 
 /*
@@ -92,7 +92,7 @@ if (empty($zoom)) {
 
 $typecarto = $this->GetParameter("typecarto");
 if (empty($typecarto)) {
-    $typecarto = _t('BAZ_TYPE_CARTO');
+    $typecarto = BAZ_TYPE_CARTO;
 } else {
     $typecarto = strtoupper($typecarto);
 }
@@ -418,7 +418,7 @@ echo
         //Extend the Default marker class
         var CustomIcon = L.Icon.Default.extend({
         options: {
-                iconUrl: "'._t('BAZ_IMAGE_MARQUEUR').'",
+                iconUrl: "'.BAZ_IMAGE_MARQUEUR.'",
                 iconSize:['.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'],
                 shadowSize:   ['.BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR.'],
                 iconAnchor:   [6, 20],

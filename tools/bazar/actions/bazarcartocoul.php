@@ -36,17 +36,17 @@ if (empty($ordre)) {
 
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
-    $latitude = _t('BAZ_GOOGLE_CENTRE_LAT');
+    $latitude = BAZ_GOOGLE_CENTRE_LAT;
 }
 
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
-    $longitude = _t('BAZ_GOOGLE_CENTRE_LON');
+    $longitude = BAZ_GOOGLE_CENTRE_LON;
 }
 
 $zoom = $this->GetParameter("zoom");
 if (empty($zoom)) {
-    $zoom = _t('BAZ_GOOGLE_ALTITUDE');
+    $zoom = BAZ_GOOGLE_ALTITUDE;
 }
 
 $champcoul = $this->GetParameter("champcoul");
@@ -56,7 +56,7 @@ if (empty($champcoul)) {
 
 $typecarto = $this->GetParameter("typecarto");
 if (empty($typecarto)) {
-    $typecarto = _t('BAZ_TYPE_CARTO');
+    $typecarto = BAZ_TYPE_CARTO;
 } else {
     $typecarto = strtoupper($typecarto);
 }

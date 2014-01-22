@@ -34,7 +34,7 @@ if (empty($ordre)) {
 
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
-    $latitude = _t('BAZ_GOOGLE_CENTRE_LAT');
+    $latitude = BAZ_GOOGLE_CENTRE_LAT;
 }
 
 /*
@@ -45,13 +45,13 @@ if (empty($latitude)) {
 
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
-    $longitude = _t('BAZ_GOOGLE_CENTRE_LON');
+    $longitude = BAZ_GOOGLE_CENTRE_LON;
 }
 
 
 $zoom = $this->GetParameter("zoom");
 if (empty($zoom)) {
-    $zoom = _t('BAZ_GOOGLE_ALTITUDE');
+    $zoom = BAZ_GOOGLE_ALTITUDE;
 }
 
 
@@ -419,7 +419,7 @@ function liste_to_array($idliste = '') {
         //on vérifie que la page en question est bien une page wiki
         if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
 
-            $valjson = $GLOBALS['wiki']->LoadPage($idliste);
+        $valjson = $GLOBALS['wiki']->LoadPage($idliste);
         $valeurs_fiche = json_decode($valjson["body"], true);
         $valeurs_fiche['label'] = array_map('utf8_decode', $valeurs_fiche['label']);
         return $valeurs_fiche['label'];

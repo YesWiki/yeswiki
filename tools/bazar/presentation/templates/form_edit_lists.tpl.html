@@ -1,7 +1,7 @@
 <form action="<?php echo $form_link; ?>" method="post" id="bazar_form_lists" class="form-horizontal">
-	<div class="control-group">
-		<label class="control-label"><span class="required_symbol">*&nbsp;</span><?php echo _t('BAZ_LIST_NAME');?></label>
-		<div class="controls">
+	<div class="control-group form-group">
+		<label class="control-label col-lg-3"><span class="required_symbol">*&nbsp;</span><?php echo _t('BAZ_LIST_NAME');?></label>
+		<div class="controls col-lg-5">
 			<input name="titre_liste" type="text" value="<?php echo (isset($titre_liste) ? $titre_liste : '');?>" required="required" placeholder="<?php echo _t('BAZ_LIST_NAME');?>" />
 		</div>
 	</div>

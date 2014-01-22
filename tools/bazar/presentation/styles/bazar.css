@@ -1,4 +1,7 @@
 #map img {max-width:none !important;}
+#map label { 
+  width: auto !important; display:inline !important; 
+} 
 .BAZ_titre_liste {
 font-size:1.3em;
 font-weight:700;
@@ -307,11 +310,6 @@ color:#FFF;
 text-align:center;
 }
 
-fieldset.bazar_fieldset {
-margin:0 0 15px 0;
-padding:10px;
-border:1px solid #999;
-}
 
 .tooltip_aide {
 border:none;
@@ -428,16 +426,6 @@ line-height:14px;
 padding:15px;
 }
 
-.tooltip  {
--moz-box-shadow:2px 2px 11px #666;
--webkit-box-shadow:2px 2px 11px #666;
-box-shadow:2px 2px 11px #666;
-background-color:#000;
-color:#FFF;
-display:none;
-font-size:13px;
-padding:5px;
-}
 
 .cal_entete {
 display:block;

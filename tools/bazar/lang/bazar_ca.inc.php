@@ -145,6 +145,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'VERIFIER_MON_ADRESSE' => 'Mettre le marqueur sur la carte grace &agrave; l\'adresse saisie',
 'VERIFIER_MON_ADRESSE_CLIENT' => 'Grace &agrave; votre acc&egrave;s Internet',
 'TEXTE_POINT_DEPLACABLE' => 'Si ce point ne correspond pas &agrave; votre adresse, vous pouvez le d&eacute;placer en cliquant gauche dessus et en laissant appuy&eacute;, afin de le faire correspondre parfaitement &agrave; votre adresse.',
+'YOUR_POSITION' => 'Votre position',
 'LATITUDE' => 'Lat',
 'LONGITUDE' => 'Lon',
 'BAZ_ECRITE' => '&eacute;crite par',
