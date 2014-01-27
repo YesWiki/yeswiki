@@ -1,47 +1,47 @@
 <?php
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
-// | PHP version 5                                                                                        |
+// | PHP versió 5                                                                                         |
 // +------------------------------------------------------------------------------------------------------+
 // | Copyright (C) 2012 Outils-Réseaux (accueil@outils-reseaux.org)                                       |
 // +------------------------------------------------------------------------------------------------------+
-// | This library is free software; you can redistribute it and/or                                        |
-// | modify it under the terms of the GNU Lesser General Public                                           |
-// | License as published by the Free Software Foundation; either                                         |
-// | version 2.1 of the License, or (at your option) any later version.                                   |
+// | Aquesta llibreria és de programari lliure; podeu redistribuir-la i/o                                 |
+// | modificar-la d'acord amb els termes del GNU Lesser General Public                                    |
+// | License tal com ha estat publicada per la Free Software Foundation; sigui la                         |
+// | versió 2.1 de la llicència o bé (opcionalment) qualsevol versió posterior.                           |
 // |                                                                                                      |
-// | This library is distributed in the hope that it will be useful,                                      |
-// | but WITHOUT ANY WARRANTY; without even the implied warranty of                                       |
-// | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU                                    |
-// | Lesser General Public License for more details.                                                      |
+// | Aquesta llibreria és distribuïda amb l'ànim que sigui útil                                           |
+// | però SENSE CAP GARANTIA; fins i tot sense la garantia implícita de                                   |
+// | MERCHANTABILITY o de FITNESS FOR A PARTICULAR PURPOSE. Vegeu la GNU                                  |
+// | Lesser General Public License per a més detalls.                                                     |
 // |                                                                                                      |
-// | You should have received a copy of the GNU Lesser General Public                                     |
-// | License along with this library; if not, write to the Free Software                                  |
-// | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
+// | Amb aquesta llibreria heu d'haver rebut còpia de la GNU Lesser General Public                        |
+// | License; altrament, escriviu a la Free Software Foundation,                                          |
+// | Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                                        |
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Catalan translation for the  extension syndication
+* Fitxer de traducció al català de l'extensió syndication
 *
 *@package 		syndication
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2013 Outils-Réseaux
+*@author        Jordi Picart <jordi.picart@aposta.coop>
+*@copyright     2014 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 // actions/syndication.php
-'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
-'SYNDICATION_PARAM_URL_REQUIRED' => 'the parameter "url" is required for RSS feed',
+'SYNDICATION_ACTION_SYNDICATION' => 'Acció {{syndication ...}}',
+'SYNDICATION_PARAM_URL_REQUIRED' => 'El paràmetre "url" és obligatori per sindicar un flux RSS',
 
 // actions/twitter.php
-'SYNDICATION_ACTION_TWITTER' => 'Action {{twitter ...}}',
-'SYNDICATION_PARAM_USER_REQUIRED' => 'the parameter "user" is missing, it is required to enter the twitter username',
+'SYNDICATION_ACTION_TWITTER' => 'Acció {{twitter ...}}',
+'SYNDICATION_PARAM_USER_REQUIRED' => 'Falta el paràmetre "user", que és oblogatori per definir l\'usuari de Twitter',
 
 // actions/twittersearch.php
-'SYNDICATION_ACTION_TWITTERSEARCH' => 'Action {{twittersearch ...}}',
-'SYNDICATION_PARAM_QUERY_REQUIRED' => 'parameter "query" is missing, it is required specify your search',
-'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'The template file',
-'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'doesn\'t exist, the defaut template will be used',
+'SYNDICATION_ACTION_TWITTERSEARCH' => 'Acció {{twittersearch ...}}',
+'SYNDICATION_PARAM_QUERY_REQUIRED' => 'Falta el paràmetre "query", que és obligatori per definir la vostra cerca',
+'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'El fitxer de patró',
+'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'no existeix, s\'utilitzarà el patró per defecte'
 
 ));

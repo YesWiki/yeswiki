@@ -49,7 +49,7 @@ define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
 // Indique un encodage de caractères par defaut
-define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-15') ; 
+define ('TEMPLATES_DEFAULT_CHARSET', 'utf-8') ; 
 
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses [] = 'Template';

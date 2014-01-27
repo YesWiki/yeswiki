@@ -42,6 +42,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'SYNDICATION_ACTION_TWITTERSEARCH' => 'Action {{twittersearch ...}}',
 'SYNDICATION_PARAM_QUERY_REQUIRED' => 'param&egrave;tre "query" manquant, il est obligatoire pour sp&eacute;cifier votre recherche',
 'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'Le fichier template',
-'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'n\'existe pas, on utilise le template par d&eacute;faut',
+'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'n\'existe pas, on utilise le template par d&eacute;faut'
 
 ));

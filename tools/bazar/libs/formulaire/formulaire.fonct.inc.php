@@ -1092,7 +1092,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $html = '<div class="BAZ_rubrique">'."\n".
                     '<span class="BAZ_label '.$identifiant.'_rubrique">'.$label.'&nbsp;:</span>'."\n";
             $html .= '<span class="BAZ_texte '.$identifiant.'_description"> ';
-            if ($formatage == 'wiki') {
+            if ($formatage == 'wiki-textarea') {
                 $html .= $GLOBALS['wiki']->Format($valeurs_fiche[$identifiant]);
             } elseif ($formatage == 'nohtml') {
                 $html .= htmlentities($valeurs_fiche[$identifiant]);

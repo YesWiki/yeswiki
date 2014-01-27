@@ -89,6 +89,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_SUBSCRIBE' => 'S\'abonner',
 'CONTACT_UNSUBSCRIBE' => 'Se d&eacute;sabonner',
 
-'CONTACT_FROM' => 'de',
+'CONTACT_FROM' => 'de'
 
 ));
