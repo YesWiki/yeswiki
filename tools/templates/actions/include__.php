@@ -50,6 +50,9 @@ if ($incPageName == 'PageMenuHaut') {
 	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
 
 	$dom = new DOMDocument();
+	if (TEMPLATES_DEFAULT_CHARSET != "ISO-8859-1" && TEMPLATES_DEFAULT_CHARSET != "ISO-8859-15") {
+        $plugin_output_new = mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8');
+    } 
 	$dom->loadHTML($plugin_output_new);
 
 	$xpath = new DOMXpath($dom);

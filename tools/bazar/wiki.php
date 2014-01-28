@@ -382,15 +382,18 @@ $wikiClassesContent [] = '
 				. " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
 				. ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
 			$page = $this->LoadSingle($sql);
-			// si la page existe, on charge les meta-donnees
-			if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
-			
-			$type = $this->GetTripleValue($tag, \'http://outils-reseaux.org/_vocabulary/type\', \'\', \'\');
-			if ($type == \'fiche_bazar\') {
-			    $page=CheckBazarAcls($page,$tag);
-			}
-			// cache result
-			if (!$time) $this->CachePage($page, $tag);
+      // si la page existe, on charge les meta-donnees
+      if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
+      
+      $type = $this->GetTripleValue($tag, \'http://outils-reseaux.org/_vocabulary/type\', \'\', \'\');
+      if ($type == \'fiche_bazar\') {
+        $page=CheckBazarAcls($page,$tag);
+      }
+      if (TEMPLATES_DEFAULT_CHARSET != "ISO-8859-1" && TEMPLATES_DEFAULT_CHARSET != "ISO-8859-15") {
+        $page[\'body\'] = mb_convert_encoding($page[\'body\'], TEMPLATES_DEFAULT_CHARSET, "ISO-8859-1");
+      } 
+      // cache result
+      if (!$time) $this->CachePage($page, $tag);
 		}
 		return $page;
 	}
