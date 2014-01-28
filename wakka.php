@@ -1118,7 +1118,7 @@ class Wiki
 	// USERS
 	function LoadUser($name, $password = 0) { return $this->LoadSingle("select * from ".$this->config["table_prefix"]."users where name = '".mysql_real_escape_string($name)."' ".($password === 0 ? "" : "and password = '".mysql_real_escape_string($password)."'")." limit 1"); }
 	function LoadUsers() { return $this->LoadAll("select * from ".$this->config["table_prefix"]."users order by name"); }
-	function GetUserName() { if ($user = $this->GetUser()) $name = $user["name"]; else if (!$name = gethostbyaddr($_SERVER["REMOTE_ADDR"])) $name = $_SERVER["REMOTE_ADDR"]; return $name; }
+	function GetUserName() { if ($user = $this->GetUser()) $name = $user["name"]; else $name = $_SERVER["REMOTE_ADDR"]; return $name; }
 	function GetUser() { return (isset($_SESSION["user"]) ? $_SESSION["user"] : '');}
 	function SetUser($user, $remember=0) { $_SESSION["user"] = $user; $this->SetPersistentCookie("name", $user["name"], $remember); $this->SetPersistentCookie("password", $user["password"], $remember); $this->SetPersistentCookie("remember", $remember, $remember); }
 	function LogoutUser() { $_SESSION["user"] = ""; $this->DeleteCookie("name"); $this->DeleteCookie("password"); }
