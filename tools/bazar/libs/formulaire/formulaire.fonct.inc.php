@@ -239,11 +239,11 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 
 
-/** liste() - Ajoute un ÈlÈment de type liste dÈroulante au formulaire
+/** liste() - Ajoute un √©l√©ment de type liste d√©roulante au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment liste
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment liste
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -313,7 +313,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $select = $select + $valliste['label'];
             }
 
-            $option = array('id' => $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $option = array('id' => $tableau_template[0].$tableau_template[1].$tableau_template[6], 'class' => 'form-control');
             require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'HTML/QuickForm/select.php';
             $select= new HTML_QuickForm_select($tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2], $select, $option);
             if ($tableau_template[4] != '') $select->setSize($tableau_template[4]);
@@ -487,11 +487,11 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** jour() - Ajoute un ÈlÈment de type date au formulaire
+/** jour() - Ajoute un √©l√©ment de type date au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment date
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment date
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -560,12 +560,12 @@ function listedatefin(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     return jour($formtemplate, $tableau_template , $mode, $valeurs_fiche);
 }
 
-/** tags() - Ajoute un ÈlÈment de type mot clÈs (tags)
+/** tags() - Ajoute un √©l√©ment de type mot cl√©s (tags)
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
- * @param    mixed   valeur par dÈfaut du champs
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
+ * @param    mixed   valeur par d√©faut du champs
  * @return   void
  */
 function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -588,7 +588,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $tab_tous_les_tags = $GLOBALS['wiki']->GetAllTags();
         if (is_array($tab_tous_les_tags)) {
             foreach ($tab_tous_les_tags as $tab_les_tags) {
-                $response[] = $tab_les_tags['value'];
+                $response[] = _convert($tab_les_tags['value'], 'ISO-8859-15');
             }
         }
         sort($response);
@@ -637,11 +637,11 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
     //on decoupe les tags pour les mettre dans un tableau
     $tags = explode(",", mysql_real_escape_string($valeurs_fiche[$tableau_template[1]]));
 
-    //on ajoute les tags postÈs
+    //on ajoute les tags post√©s
     foreach ($tags as $tag) {
         trim($tag);
         if ($tag!='') {
-            $GLOBALS['wiki']->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
+            $GLOBALS['wiki']->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, TEMPLATES_DEFAULT_CHARSET, true), '', '');
         }
     }
     //on copie tout de meme dans les metadonnees
@@ -680,8 +680,8 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
 /** texte() - Ajoute un element de type texte au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -719,7 +719,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html .= '<div class="controls col-lg-8">'."\n";
         $input_html .= '<input type="'.$type_input.'"';
         $input_html .= ($defauts != '') ? ' value="'.$defauts.'"' : '';
-        $input_html .= ' name="'.$identifiant.'" class="form-control" id="'.$identifiant.'"';
+        $input_html .= ' name="'.$identifiant.'" class="form-control input-xxlarge" id="'.$identifiant.'"';
         $input_html .= ' maxlength="'.$nb_max_car.'" size="'.$nb_max_car.'"';
         $input_html .= ($type_input == 'number' && $nb_min_car != '') ? ' min="'.$nb_min_car.'"' : '';
         $input_html .= ($type_input == 'number') ? ' max="'.$nb_max_car.'"' : '';
@@ -738,12 +738,12 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]]!='') {
                 if ($tableau_template[1] == 'bf_titre') {
                     // Le titre
-                    $html .= '<h1 class="BAZ_fiche_titre">'.htmlentities($valeurs_fiche[$tableau_template[1]]).'</h1>'."\n";
+                    $html .= '<h1 class="BAZ_fiche_titre">'.$valeurs_fiche[$tableau_template[1]].'</h1>'."\n";
                 } else {
                     $html = '<div class="BAZ_rubrique">'."\n".
                             '<span class="BAZ_label">'.$tableau_template[2].'&nbsp;:</span>'."\n";
                     $html .= '<span class="BAZ_texte"> ';
-                    $html .= htmlentities($valeurs_fiche[$tableau_template[1]]).'</span>'."\n".'</div>'."\n";
+                    $html .= $valeurs_fiche[$tableau_template[1]].'</span>'."\n".'</div>'."\n";
                 }
             }
         //else
@@ -760,11 +760,11 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 
 
-/** utilisateur_wikini() - Ajoute un ÈlÈment de type texte pour crÈer un utilisateur wikini au formulaire
+/** utilisateur_wikini() - Ajoute un √©l√©ment de type texte pour cr√©er un utilisateur wikini au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 // TODO : ne pas enregistrer le mot de passe dans la fiche bazar ?
@@ -846,11 +846,11 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 }
 
 
-/** inscriptionliste() - Permet de s'isncrire ‡ une liste
+/** inscriptionliste() - Permet de s'isncrire √† une liste
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -916,11 +916,11 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
 
 
 
-/** champs_cache() - Ajoute un ÈlÈment cachÈ au formulaire
+/** champs_cache() - Ajoute un √©l√©ment cach√© au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment cachÈ
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment cach√©
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @param    mixed   Le tableau des valeurs de la fiche
  *
  * @return   void
@@ -929,7 +929,7 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'saisie') {
         $formtemplate->addElement('hidden', $tableau_template[1], $tableau_template[2], array ('id' => $tableau_template[1])) ;
-        //gestion des valeurs par dÈfaut
+        //gestion des valeurs par d√©faut
         $defs=array($tableau_template[1]=>$tableau_template[5]);
         $formtemplate->setDefaults($defs);
     } elseif ($mode == 'requete') {
@@ -941,11 +941,11 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** champs_mail() - Ajoute un ÈlÈment texte formatÈ comme un mail au formulaire
+/** champs_mail() - Ajoute un √©l√©ment texte format√© comme un mail au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1014,8 +1014,8 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 /** mot_de_passe() - Ajoute un element de type mot de passe au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment mot de passe
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment mot de passe
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1036,11 +1036,11 @@ function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 }
 
 
-/** textelong() - Ajoute un ÈlÈment de type texte long (textarea) au formulaire
+/** textelong() - Ajoute un √©l√©ment de type texte long (textarea) au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte long
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte long
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1052,7 +1052,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $bulledaide = '';
         if ($bulle_d_aide!='') $bulledaide = ' <img class="tooltip_aide" title="'.htmlentities($bulle_d_aide).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
 
-        $options = array('id' => $identifiant, 'class' => 'form-control '.$formatage);
+        $options = array('id' => $identifiant, 'class' => 'form-control input-xxlarge '.$formatage);
         if ($longueurmax != '') $options['maxlength'] = $longueurmax;
         //gestion du champs obligatoire
         $symb = '';
@@ -1108,19 +1108,19 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 
 
-/** url() - Ajoute un ÈlÈment de type url internet au formulaire
+/** url() - Ajoute un √©l√©ment de type url internet au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment url internet
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment url internet
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 
-/** lien_internet() - Ajoute un ÈlÈment de type texte contenant une URL au formulaire
+/** lien_internet() - Ajoute un √©l√©ment de type texte contenant une URL au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment texte url
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment texte url
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1164,7 +1164,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $formtemplate->addElement('html', $input_html) ;
     } elseif ($mode == 'requete') {
-        //on supprime la valeur, si elle est restÈe par dÈfaut
+        //on supprime la valeur, si elle est rest√©e par d√©faut
         if ($valeurs_fiche[$tableau_template[1]]!='http://') return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
         else return;
     } elseif ($mode == 'html') {
@@ -1184,8 +1184,8 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 /** fichier() - Ajoute un element de type fichier au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'ÈlÈment fichier
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'√©l√©ment fichier
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1251,7 +1251,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if (!file_exists($chemin_destination)) {
                     move_uploaded_file($_FILES[$type.$identifiant]['tmp_name'], $chemin_destination);
                     chmod ($chemin_destination, 0755);
-                } else echo 'fichier dÈja existant<br />';
+                } else echo 'fichier d√©ja existant<br />';
             } else {
                 echo 'fichier non autorise<br />';
 
@@ -1287,7 +1287,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des differentes option pour l'element image
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1304,7 +1304,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     unlink(BAZ_CHEMIN_UPLOAD.$valeurs_fiche[$type.$identifiant]);
                 }
                 $nomimg = $valeurs_fiche[$type.$identifiant];
-                //on efface une entrÈe de la base de donnÈes
+                //on efface une entr√©e de la base de donn√©es
                 unset($valeurs_fiche[$type.$identifiant]);
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date( 'Y-m-d H:i:s', time() );
@@ -1353,7 +1353,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             //le fichier image n'existe pas, du coup on efface l'entree dans la base de donnees
             else {
                 echo '<div class="alert alert-danger">'._t('BAZ_FICHIER').$valeurs_fiche[$type.$identifiant]._t('BAZ_FICHIER_IMAGE_INEXISTANT').'</div>'."\n";
-                //on efface une entrÈe de la base de donnÈes
+                //on efface une entr√©e de la base de donn√©es
                 unset($valeurs_fiche[$type.$identifiant]);
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date( 'Y-m-d H:i:s', time() );
@@ -1424,8 +1424,8 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 /** labelhtml() - Ajoute du texte HTML au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour le texte HTML
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour le texte HTML
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1444,11 +1444,11 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** titre() - Action qui camouffle le titre et le gÈnÈre a† partir d'autres champs au formulaire
+/** titre() - Action qui camouffle le titre et le g√©n√©re a¬† partir d'autres champs au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour le texte HTML
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour le texte HTML
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1475,7 +1475,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
                 //sinon on prend le label de la liste
                 elseif ( preg_match('#^liste#',$var)!=false || preg_match('#^checkbox#',$var)!=false ) {
-                    //on rÈcupere le premier chiffre (l'identifiant de la liste)
+                    //on r√©cupere le premier chiffre (l'identifiant de la liste)
                     preg_match_all('/[0-9]{1,4}/', $var, $matches);
                     $req = 'SELECT blv_label FROM '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste='.$matches[0][0].' AND blv_valeur='.$_POST[$var].' AND blv_ce_i18n="fr-FR"';
                     $label = $GLOBALS['wiki']->LoadSingle($req) ;
@@ -1495,11 +1495,11 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** carte_google() - Ajoute un ÈlÈment de carte google au formulaire
+/** carte_google() - Ajoute un √©l√©ment de carte google au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour la carte google
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour la carte google
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
  * @return   void
  */
 function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
@@ -1533,7 +1533,7 @@ function initialize()
     }
     map = new google.maps.Map(document.getElementById("map"), myOptions);
 
-    //on pose un point si les coordonnÈes existent dÈja (cas d\'une modification de fiche)
+    //on pose un point si les coordonn√©es existent d√©ja (cas d\'une modification de fiche)
     if (document.getElementById("latitude") && document.getElementById("latitude").value != \'\' &&
         document.getElementById("longitude") && document.getElementById("longitude").value != \'\' ) {
         var lat = document.getElementById("latitude").value;
@@ -1757,7 +1757,7 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="htt
 /** listefiche() - Ajoute un element de type liste deroulante correspondant a un autre type de fiche au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour l'element liste
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour l'element liste
  * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par defaut
  * @return   void
  */
@@ -1869,9 +1869,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 /** checkboxfiche() - permet d'aller saisir et modifier un autre type de fiche
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour le texte HTML
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
- * @param    mixed	Tableau des valeurs par dÈfauts (pour modification)
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour le texte HTML
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
+ * @param    mixed	Tableau des valeurs par d√©fauts (pour modification)
  *
  * @return   void
  */
@@ -1885,7 +1885,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             //TODO: gestion multilinguisme
             $requete  = 'SELECT bf_id_fiche, bf_titre FROM '.BAZ_PREFIXE.'fiche WHERE bf_ce_nature='.$tableau_template[1];
 
-            //on affiche que les fiches saisie par un utilisateur donnÈ
+            //on affiche que les fiches saisie par un utilisateur donn√©
             if (isset($tableau_template[7]) && $tableau_template[7]==1) $requete .= ' AND bf_ce_utilisateur="'.$GLOBALS['_BAZAR_']['nomwiki']['name'].'"';
 
             //on classe par ordre alphabetique
@@ -1897,7 +1897,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');
 
-            //valeurs par dÈfauts
+            //valeurs par d√©fauts
             if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) $tab = explode( ', ', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] );
             else $tab = explode( ', ', $tableau_template[5] );
 
@@ -1947,7 +1947,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!=0)) {
             //on insere les nouvelles valeurs
             $requeteinsertion='INSERT INTO '.BAZ_PREFIXE.'fiche_valeur_texte (bfvt_ce_fiche, bfvt_id_element_form, bfvt_texte) VALUES ';
-            //pour les checkbox, les diffÈrentes valeurs sont dans un tableau
+            //pour les checkbox, les diff√©rentes valeurs sont dans un tableau
             if (is_array($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
                 $nb=0;
                 while (list($cle, $val) = each($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
@@ -2024,16 +2024,16 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 /** listefiches() - permet d'aller saisir et modifier un autre type de fiche
  *
  * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des diffÈrentes option pour le texte HTML
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par dÈfaut
- * @param    mixed	Tableau des valeurs par dÈfauts (pour modification)
+ * @param    mixed   Le tableau des valeurs des diff√©rentes option pour le texte HTML
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par d√©faut
+ * @param    mixed	Tableau des valeurs par d√©fauts (pour modification)
  *
  * @return   void
  */
 function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if (!isset($tableau_template[1])) {
-        return $GLOBALS['wiki']->Format('//Erreur sur listefiches : pas d\'identifiant de type de fiche passÈ...//');
+        return $GLOBALS['wiki']->Format('//Erreur sur listefiches : pas d\'identifiant de type de fiche pass√©...//');
     }
     if (isset($tableau_template[2]) && $tableau_template[2] != '' ) {
         $query = $tableau_template[2].'|listefiche'.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];

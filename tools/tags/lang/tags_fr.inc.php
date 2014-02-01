@@ -59,6 +59,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_RESULTS' => 'r&eacute;sultats',
 'TAGS_FILTER' => 'Filtrer',
 'TAGS_CONTAINING_TAG' => 'avec le mot cl&eacute;',
+'TAGS_ONE_PAGE' => 'Une page',
+'TAGS_PAGES' => 'pages',
 
 // actions/rss.php
 'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'Flux RSS des nouvelles pages avec les tags',

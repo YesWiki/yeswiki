@@ -49,9 +49,7 @@ if ($this->HasAccess('write')) {
             baz_formulaire(BAZ_ACTION_MODIFIER_V);
             $this->Redirect($this->Href());
         } else {
-            $page = $this->LoadPage($this->GetPageTag());
-            $tab_valeurs = json_decode( $page['body'], true);
-            $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
+            $tab_valeurs = baz_valeurs_fiche($this->GetPageTag());
             $GLOBALS['_BAZAR_']['id_fiche'] = $tab_valeurs['id_fiche'];
             $tab_nature = baz_valeurs_type_de_fiche($tab_valeurs['id_typeannonce']);
             $GLOBALS['_BAZAR_']['id_typeannonce']=$tab_nature['bn_id_nature'];

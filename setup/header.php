@@ -78,7 +78,7 @@ function myLocation()
 	return $url;
 }
 
-$charset='iso-8859-1';
+$charset='UTF-8';
 if (!defined('TEMPLATES_DEFAULT_CHARSET')) define('TEMPLATES_DEFAULT_CHARSET', $charset);
 header("Content-Type: text/html; charset=$charset");
 ob_start();

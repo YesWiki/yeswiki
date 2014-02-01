@@ -59,6 +59,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_RESULTS' => 'Resultats',
 'TAGS_FILTER' => 'Filtra',
 'TAGS_CONTAINING_TAG' => 'amb el mot clau',
+'TAGS_ONE_PAGE' => 'Una pàgina',
+'TAGS_PAGES' => 'pàgines',
 
 // actions/rss.php
 'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'Flux RSS de pàgines noves amb els mots clau',

@@ -83,7 +83,7 @@ if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_baz
 	$tagspage = array();
 	foreach ($tabtagsexistants as $tab)
 	{
-		$tagspage[] = $tab["value"];
+		$tagspage[] = _convert($tab["value"], 'ISO-8859-1');
 	}
 	if (count($tagspage)>0)
 	{

@@ -213,7 +213,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 	}
 }
 
-function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal') {
+function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizontal') {
 	// en mode edition on recupere aussi les images de fond
 	if ($mode=='edit') {
 		$id = 'form_graphical_options'; 
@@ -300,7 +300,7 @@ function show_form_theme_selector($mode = 'selector', $class = 'form-horizontal'
 		$bgselector = '';
 	}
 
-	$selecteur = '		<form class="'.$class.'" id="'.$id.'">'."\n";
+	$selecteur = '		<form class="'.$formclass.'" id="'.$id.'">'."\n";
 	
 	//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
 	$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';

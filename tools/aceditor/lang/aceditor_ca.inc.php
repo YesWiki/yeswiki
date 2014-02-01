@@ -30,23 +30,23 @@
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-'ACEDITOR_SAVE'				=> 'Save',
+'ACEDITOR_SAVE'				=> 'Desa',
 'ACEDITOR_FORMAT'			=> 'Format',
-'ACEDITOR_TITLE1'			=> 'Huge title',
-'ACEDITOR_TITLE2'			=> 'Very big title',
-'ACEDITOR_TITLE3'			=> 'Big title',
-'ACEDITOR_TITLE4'			=> 'Basic title',
-'ACEDITOR_TITLE5'			=> 'Small title',
-'ACEDITOR_BIGGER_TEXT'		=> 'Bigger text',
-'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Highlighted text',
-'ACEDITOR_SOURCE_CODE'		=> 'Source code',
-'ACEDITOR_BOLD_TEXT'		=> 'Bold text ( Ctrl-b )',
-'ACEDITOR_ITALIC_TEXT'		=> 'Italic text ( Ctrl-i )',
-'ACEDITOR_UNDERLINE_TEXT'	=> 'Underline the selected text ( Ctrl-u )',
-'ACEDITOR_STRIKE_TEXT'		=> 'Stroke the selected text ( Ctrl-y )',
-'ACEDITOR_LINE'				=> 'Insert horizontal line',
-'ACEDITOR_LINK'				=> 'Link',
-'ACEDITOR_LINK_PROMPT'		=> 'Enter the link adress',
-'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text'
+'ACEDITOR_TITLE1'			=> 'Nivell de text enorme',
+'ACEDITOR_TITLE2'			=> 'Nivell de text força gros',
+'ACEDITOR_TITLE3'			=> 'Nivell de text gros',
+'ACEDITOR_TITLE4'			=> 'Nivell de text normal',
+'ACEDITOR_TITLE5'			=> 'Nivell de text petit',
+'ACEDITOR_BIGGER_TEXT'		=> 'Text augmentat',
+'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Text destacat',
+'ACEDITOR_SOURCE_CODE'		=> 'Codi font',
+'ACEDITOR_BOLD_TEXT'		=> 'Negreta (Ctrl+b)',
+'ACEDITOR_ITALIC_TEXT'		=> 'Itàlica (Ctrl+i)',
+'ACEDITOR_UNDERLINE_TEXT'	=> 'Subratllat (Ctrl+u)',
+'ACEDITOR_STRIKE_TEXT'		=> 'Ratllat (Ctrl+y)',
+'ACEDITOR_LINE'				=> 'Insereix una línia horitzontal',
+'ACEDITOR_LINK'				=> 'Enllaç',
+'ACEDITOR_LINK_PROMPT'		=> 'Escriviu ladreça URL',
+'ACEDITOR_LINK_TITLE'		=> 'Insereix un enllaç'
 
 ));

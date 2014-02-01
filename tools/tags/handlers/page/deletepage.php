@@ -35,7 +35,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin())
 	if ($this->IsOrphanedPage($this->GetPageTag()))
 	{
 		$tag = $this->GetPageTag();
-		if (!$_GET['confirme'] == 'oui')
+		if (!isset($_GET['confirme']) || !$_GET['confirme'] == 'oui')
 		{			
 			$msg = '<form action="'.$this->Href('deletepage', "", "confirme=oui");
 			$msg .= '" method="post" style="display: inline">'."\n";

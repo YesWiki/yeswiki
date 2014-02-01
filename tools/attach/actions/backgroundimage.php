@@ -57,11 +57,7 @@ $fullFilename = $att->GetFullFilename();
 //test d'existance du fichier
 if((!file_exists($fullFilename))||($fullFilename=='')){
     $att->showFileNotExits();
-    return;
+    //return;
 }
 
 echo '<div class="background-image" style="'.(!empty($height) ? 'height:'.$height.'px; ' : '').'background-image:url('.$fullFilename.');">'."\n".'<div class="container">'."\n";
-//echo $this->Format('{{attach file="'.$file.'" desc="image '.$file.'"'.
-//	(!empty($width) ? ' width="'.$width.'"' : '').
-//	(!empty($height) ? ' height="'.$height.'"' : '').
-//	' class="background-image" nofullimagelink="1"}}');

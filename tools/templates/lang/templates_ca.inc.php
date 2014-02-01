@@ -73,7 +73,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TEMPLATE_SHARE' => 'Comparteix',
 
 // formatage des dates
-'TEMPLATE_DATE_FORMAT' => 'd.m.Y a les H:i:s',
+'TEMPLATE_DATE_FORMAT' => 'd.m.Y \a \l\e\s H:i:s',
 
 // recherche
 'TEMPLATE_SEARCH_INPUT_TITLE' => 'Cerca a YesWiki [alt-shift-C]',
@@ -102,16 +102,16 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'PAGE_CANNOT_BE_SLIDESHOW' => 'La pàgina no es pot distribuir en diapositives (no hi ha títols de nivell 2)',
 
 // handler edit
-'TEMPLATE_CUSTOM_PAGE' => 'Preferences for page',
-'TEMPLATE_PAGE_PREFERENCES' => 'Page preferences',
-'PAGE_LANGUAGE' => 'Page\'s language',
-'CHOOSE_PAGE_FOR' => 'Choose a page for',
-'HORIZONTAL_MENU_PAGE' => 'the horizontal menu',
-'FAST_ACCESS_RIGHT_PAGE' => 'fast access on top right corner',
-'HEADER_PAGE' => 'the header (banner)',
-'FOOTER_PAGE' => 'the footer',
-'FOR_2_OR_3_COLUMN_THEMES' => 'For themes with 2 or 3 columns',
-'VERTICAL_MENU_PAGE' => 'the vertical menu',
-'RIGHT_COLUMN_PAGE' => 'the right column',
+'TEMPLATE_CUSTOM_PAGE' => 'Preferències per la pàgina',
+'TEMPLATE_PAGE_PREFERENCES' => 'Preferències de la pàgina',
+'PAGE_LANGUAGE' => 'Llengua de la pàgina',
+'CHOOSE_PAGE_FOR' => 'Trieu una pàgina per',
+'HORIZONTAL_MENU_PAGE' => 'Menú horitzontal',
+'FAST_ACCESS_RIGHT_PAGE' => 'Accés ràpid al racó superior dret',
+'HEADER_PAGE' => 'L\'encapçalament (bàner)',
+'FOOTER_PAGE' => 'Peu de pàgina',
+'FOR_2_OR_3_COLUMN_THEMES' => 'Per a temes amb 2 o 3 columnes',
+'VERTICAL_MENU_PAGE' => 'El menú vertical',
+'RIGHT_COLUMN_PAGE' => 'La columna dreta'
 
 ));

@@ -154,13 +154,12 @@ define ('BAZ_VOIR_FLUX_RSS', 'affiche_rss'); // Un flux
 define ('BAZ_OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES', 'listes_et_fiches');
 
 // Constante pour l'envoi automatique de mail aux admins
-define ('BAZ_ENVOI_MAIL_ADMIN', false);
+define ('BAZ_ENVOI_MAIL_ADMIN', true);
 // Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
 $hrefdomain = $wiki->Href();
 $fulldomain = parse_url($hrefdomain);
 $hostdomain = $fulldomain["host"];
 $adminmail="noreply@".$hostdomain;
-//define ('BAZ_ADRESSE_MAIL_ADMIN', 'admin@domaine.fr');
 define ('BAZ_ADRESSE_MAIL_ADMIN', $adminmail);
 
 
@@ -188,7 +187,7 @@ define('BAZ_RSS_CATEGORIE', (isset($wakkaConfig['baz_rss_categorie'])) ? $wakkaC
 //Valeur par defaut d'etat de la fiche annonce apres saisie
 //Mettre 0 pour 'en attente de validation d'un administrateur'
 //Mettre 1 pour 'directement validee en ligne'
-define ('BAZ_ETAT_VALIDATION', 1);
+define ('BAZ_ETAT_VALIDATION', "1");
 
 //Valeur maximale en octets pour la taille d'un fichier joint a telecharger
 define ('BAZ_TAILLE_MAX_FICHIER', 10000*1024);
@@ -389,8 +388,9 @@ $wikiClassesContent [] = '
       if ($type == \'fiche_bazar\') {
         $page=CheckBazarAcls($page,$tag);
       }
-      if (TEMPLATES_DEFAULT_CHARSET != "ISO-8859-1" && TEMPLATES_DEFAULT_CHARSET != "ISO-8859-15") {
-        $page[\'body\'] = mb_convert_encoding($page[\'body\'], TEMPLATES_DEFAULT_CHARSET, "ISO-8859-1");
+      // the database is in ISO-8859-1, it must be converted
+      if (isset($page[\'body\'])) {
+        $page[\'body\'] = _convert($page[\'body\'], "ISO-8859-1");
       } 
       // cache result
       if (!$time) $this->CachePage($page, $tag);

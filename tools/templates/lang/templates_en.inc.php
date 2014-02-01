@@ -112,6 +112,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'FOOTER_PAGE' => 'the footer',
 'FOR_2_OR_3_COLUMN_THEMES' => 'For themes with 2 or 3 columns',
 'VERTICAL_MENU_PAGE' => 'the vertical menu',
-'RIGHT_COLUMN_PAGE' => 'the right column',
+'RIGHT_COLUMN_PAGE' => 'the right column'
 
 ));

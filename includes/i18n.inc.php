@@ -42,6 +42,34 @@ function _t($textkey)
 }
 
 /**
+ * Convert the text in the page's charset, or in the datadase's charset
+ *
+ * @param string the text
+ * @param string the page's encoding
+ * @param bool is it for the database ?
+ * @return string the encoded text
+ */
+function _convert($text, $fromencoding, $database = FALSE)
+{
+    if ($database) { 
+        if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
+            return iconv($fromencoding, "ISO-8859-1", $text);
+        } 
+        else {
+            return $text;
+        }
+    }
+    else {
+        if ($fromencoding != TEMPLATES_DEFAULT_CHARSET) {
+            return iconv($fromencoding, TEMPLATES_DEFAULT_CHARSET, $text);
+        } 
+        else {
+            return $text;
+        }
+    }
+}
+
+/**
  * Automatically detects the languages available in the lang dir
  * @return array available languages
  */

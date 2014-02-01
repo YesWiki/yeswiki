@@ -30,8 +30,8 @@
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>This page could not be saved.</strong><br />You may have clicked two times on the "Save" button, making two saved in an interval consired as too short, or leaved the page opened in edit mode for a too long period.<br />To save this page, please copy your content, refresh your browser, and paste the content before saving again.',
-'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.'
+'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>No s\'ha pogut desar la pàgina.</strong> Potser heu clicat dues vegades el botó "desa" en un interval massa curt, o heu deixat la pàgina oberta en mode d\'edició massa estona. Per desar aquesta pàgina, copieu-ne sisplau el contingut, actualitzeu el vostre navegador i enganxeu el contingut abans de desar de nou.',
+'HASHCASH_ANTISPAM_ACTIVATED' => 'Protecció contra el contingut no desitjat activada',
+'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'El vostre comentari no s\'ha pogut desar. No sou pas un robot ?'
 
 ));
