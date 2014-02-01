@@ -24,7 +24,7 @@
 </head>
 
 <body {{parambody}}>
-    <div class="navbar navbar-fixed-top">
+    <div class="navbar navbar-default navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
           <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -32,16 +32,20 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{configuration param="wakka_name"}}</a>
+          <a class="brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{include page="PageTitre" doubleclic="1"}}</a>
           <nav class="nav-collapse collapse">
             {{include page="PageMenuHaut" class="topnavpage" doubleclic="1" actif="1"}}
-      			{{moteurrecherche class="pull-right"}}
-            <div class="clearfix"></div>
+            {{moteurrecherche class="pull-right"}}
           </nav><!--/.nav-collapse -->
         </div>
       </div>
     </div>
-    <div class="container main-body" role="main">
+
+  <div class="fullwidth-header">
+    {{include page="PageHeader" doubleclic="1"}}
+  </div><!--/.fullwidth-header-->
+  <div class="container">
+    <div class="main-body" role="main">
       <div class="row">
         <div class="span2">
           <nav class="sidebar-nav">
@@ -52,11 +56,14 @@
           {WIKINI_PAGE}
         </div><!--/span10-->
       </div><!--/row-->
-	  {{barreredaction class="form-actions"}}			
-	  <footer>
+    </div><!--/.main-body-->
+  </div><!--/.container -->
+  {{barreredaction}}
+  <footer class="yeswiki-footer">
+    <div class="container">
       {{include page="PageFooter" doubleclic="1"}}
-    </footer><!-- end of footer -->
-    </div><!--/.container-->
+    </div>
+  </footer><!-- end of footer -->
   {{linkjavascript}}
-  </body>
+</body>
 </html>

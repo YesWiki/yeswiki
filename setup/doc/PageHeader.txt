@@ -1,1 +1,5 @@
-====== {{configuration param="wakka_name"}} ======
+""<div style="height:60px; background-image:url(files/backgrounds/cosmos.jpg);" class="background-image">
+<div class="container">
+<h3><span style="color:#fff;text-shadow:1px 1px 1px #000;">""{{configuration param="meta_description"}}""</span></h3>
+</div> <!-- /.container -->
+</div>""
