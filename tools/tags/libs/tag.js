@@ -2,7 +2,11 @@ $(document).ready(function() {
 	$('.tag-label').hover(function(){$(this).addClass('label-info')}, function(){if(!$(this).hasClass('label-active')){$(this).removeClass('label-info')}});
 
 	//nuage de mots clés : tooltip
-	$('.tag-link').popover({html:true,placement:'top',trigger:'hover'})
+	$('.tag-link').popover({html:true,placement:'top',trigger:'click'})
+	$('.nuage').on( "click", ".btn-close-popover",  function() {
+		$(this).parents('.popover').prev('.tag-link').popover('hide'); 
+		return false;
+	});
 
 	//nettoyage des formulaires
 	$.fn.clearForm = function() {

@@ -9,6 +9,8 @@ if (!empty($param)) {
 	switch($param) {		
 	  	case 'wakka_version':
 	  	case 'wikini_version':
+	  	case 'yeswiki_version':
+	  	case 'yeswiki_release':
 	  	case 'root_page':
 	  	case 'wakka_name':
 	  	case 'base_url':
@@ -18,9 +20,12 @@ if (!empty($param)) {
 	  	case 'favorite_theme':
 	  	case 'favorite_style':
 	  	case 'favorite_squelette':
-	  	case 'lang':
+	  	case 'default_language':
 	  	case 'charset':
-	  		echo $this->config[$param];
+	  		echo htmlentities($this->config[$param], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+			break;
+		case 'lang':
+			echo $GLOBALS['prefered_language'];
 			break;
 		case 'theme_path':
 			echo ((is_dir('themes/'.$this->config['favorite_theme']))) ? 

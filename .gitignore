@@ -1,1 +1,8 @@
+.gitignore
 wakka.config.php
+info.php
+cache/*
+files/*
+themes/*
+!themes/bootstrap/
+

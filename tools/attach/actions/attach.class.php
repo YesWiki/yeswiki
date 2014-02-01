@@ -311,16 +311,16 @@ class attach {
         $size = $this->wiki->GetParameter("size");
         switch ($size) {
                 case 'small' : 
-                    $this->width = 140;
-                    $this->height = 97;
+                    $this->width = $this->wiki->config['image-small-width'];
+                    $this->height = $this->wiki->config['image-small-height'];
                     break;
                 case 'medium': 
-                    $this->width = 300; 
-                    $this->height = 209;
+                    $this->width = $this->wiki->config['image-medium-width']; 
+                    $this->height = $this->wiki->config['image-medium-height'];
                     break;
                 case 'big': 
-                    $this->width = 780;
-                    $this->height = 544;
+                    $this->width = $this->wiki->config['image-big-width'];
+                    $this->height = $this->wiki->config['image-big-height'];
                     break;
             }
 

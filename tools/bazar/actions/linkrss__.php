@@ -19,4 +19,4 @@ foreach ($resultat as $key => $ligne) {
     $lien_RSS->removeQueryString('id_typeannonce');
 }
 
-echo '	<link rel="alternate" type="application/rss+xml" title="'.BAZ_FLUX_RSS_GENERAL.'" href="'.str_replace('&','&amp;',$lien_RSS->getURL()).'" />'."\n".$liste;
+echo '	<link rel="alternate" type="application/rss+xml" title="'._t('BAZ_FLUX_RSS_GENERAL').'" href="'.str_replace('&','&amp;',$lien_RSS->getURL()).'" />'."\n".$liste;

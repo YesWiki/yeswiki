@@ -44,6 +44,7 @@ if (empty($_POST['config']))
 			<p><?php echo _t('VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION'); ?></p>
 		</div>
 <?php
+
 // fetch configuration
 $config = $config2 = $_POST["config"];
 

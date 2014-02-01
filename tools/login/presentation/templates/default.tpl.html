@@ -1,46 +1,46 @@
 <?php if ($connected) : ?>
-	<h5><i class="icon-user"></i>&nbsp;<?php echo LOGIN_CONNECTED_AS.' '.$user; ?></h5>
+	<h5><i class="icon-user"></i>&nbsp;<?php echo _t('LOGIN_CONNECTED_AS').' '.$user; ?></h5>
 	<ul class="login-actions">
 	  <?php echo $PageMenuUser; ?>
-	  <li><a href="<?php echo $profileurl; ?>" title="<?php echo LOGIN_MODIFY_USER; ?>"><?php echo LOGIN_MODIFY_USER; ?></a></li>
-	  <li><a href="<?php echo $incomingurl; ?>&amp;action=logout" class="login-signout-link" title="<?php echo LOGIN_LOGOUT; ?>"><?php echo LOGIN_LOGOUT; ?></a></li>
+	  <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
+	  <li><a href="<?php echo $incomingurl; ?>&amp;action=logout" class="login-signout-link" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a></li>
 	</ul>
 <?php else : ?>
 	<?php if ($error) : ?>
 		<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button><?php echo  $error; ?></div>
 	<?php endif; ?>
 	<form class="form-horizontal" action="<?php echo $incomingurl; ?>" method="post">
-		<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo LOGIN_ALREADY_MEMBER; ?></h5><?php endif; ?>
+		<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo _t('LOGIN_ALREADY_MEMBER'); ?></h5><?php endif; ?>
 		<div class="control-group">
-			<label for="inputWikiName" class="control-label"><?php echo LOGIN_WIKINAME; ?></label>
+			<label for="inputWikiName" class="control-label"><?php echo _t('LOGIN_WIKINAME'); ?></label>
 			<div class="controls">
-				<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo LOGIN_WIKINAME; ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>" />
+				<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>" />
 			</div>
         </div>
         <div class="control-group">
-			<label for="inputPassword" class="control-label"><?php echo LOGIN_PASSWORD; ?></label>
+			<label for="inputPassword" class="control-label"><?php echo _t('LOGIN_PASSWORD'); ?></label>
 			<div class="controls">
-				<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo LOGIN_PASSWORD; ?>" name="password" type="password" />
+				<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />
 			</div>
 		</div>
 		<div class="control-group">
 			<div class="controls">
 				<label class="checkbox" for="remember-default">
-					<input type="checkbox" id="remember-default" name="remember" value="1" /><?php echo LOGIN_REMEMBER_ME; ?>
+					<input type="checkbox" id="remember-default" name="remember" value="1" /><?php echo _t('LOGIN_REMEMBER_ME'); ?>
 				</label>
 			</div>			
 		</div>
 		<div class="control-group">
 			<div class="controls">
-				<button type="submit" class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo LOGIN_LOGIN; ?></button>
+				<button type="submit" class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo _t('LOGIN_LOGIN'); ?></button>
 			</div>			
 		</div>
 		<input type="hidden" name="action" value="login" />
 		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />
 		<?php if ($signupurl != '' && $signupurl != '0') : ?>
-			<h5><?php echo LOGIN_NEW_MEMBER; ?></h5>
-			<a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo LOGIN_SIGNUP; ?></a>
+			<h5><?php echo _t('LOGIN_NEW_MEMBER'); ?></h5>
+			<a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo _t('LOGIN_SIGNUP'); ?></a>
 		<?php endif; ?>
 	</form> <!-- /.form-horizontal -->
 <?php endif; ?>

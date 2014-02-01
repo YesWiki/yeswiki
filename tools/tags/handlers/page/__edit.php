@@ -14,7 +14,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 	{
 		foreach ($tab_tous_les_tags as $tab_les_tags)
 		{
-			$response[] = $tab_les_tags['value'];
+			$response[] = _convert($tab_les_tags['value'], 'ISO-8859-1');
 		}
 	}
 	sort($response);
@@ -25,7 +25,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 	$tabtagsexistants = $this->GetAllTags($this->GetPageTag());
 	foreach ($tabtagsexistants as $tab)
 	{
-		$tagspage[] = $tab["value"];
+		$tagspage[] = _convert($tab["value"], 'ISO-8859-1');
 	}
 
 	if (isset($tagspage) && is_array($tagspage))

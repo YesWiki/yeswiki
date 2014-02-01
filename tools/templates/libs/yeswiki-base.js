@@ -205,9 +205,10 @@ if ( ! Modernizr.mq('only all') ) {
 	});
 
 	//on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
-	$(".no-dblclick, form, a").bind('dblclick', function(e) {
+	$(".no-dblclick, form, a:not(.navbar-brand), button, .dropdown-menu").on('dblclick', function(e) {
 		return false;
 	});
+
 
 	// Pour l'apercu des themes, on recharge la page avec le theme selectionne
 	$("#form_theme_selector select").on('change', function(){
@@ -233,6 +234,10 @@ if ( ! Modernizr.mq('only all') ) {
     	var urlAux = url.split('&theme=');
 		window.location = urlAux[0] + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
 	});
+	
+	/* tooltips */
+	$("[data-toggle='tooltip']").tooltip();
+
 
 	// on ajoute un "espion" qui detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
 	var topnav = $('#topnav.fixable');

@@ -108,7 +108,7 @@ else if ($user = $this->GetUser())
 		</tr>
 		<tr>
 			<td></td>
-			<td><input type="submit" value="<?php _t('UPDATE'); ?>" /> <input type="button" value="<?php _t('DISCONNECT'); ?>" onclick="document.location='<?php echo $this->href("", "", "action=logout"); ?>'" /></td>
+			<td><input type="submit" value="<?php echo _t('UPDATE'); ?>" /> <input type="button" value="<?php echo _t('DISCONNECT'); ?>" onclick="document.location='<?php echo $this->href("", "", "action=logout"); ?>'" /></td>
 		</tr>
 	</table>
 

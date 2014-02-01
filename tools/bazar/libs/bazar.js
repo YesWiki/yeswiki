@@ -87,7 +87,7 @@ $(document).ready(function () {
 	
 	
 	//============longueur maximale d'un champs textarea
-	var textareas = $('textarea[maxlength].input_textarea');
+	var textareas = $('textarea[maxlength].form-control');
 	// si les textarea contiennent déja quelque chose, on calcule les caractères restants
 	textareas.each(function(){
 		var $this = $(this);

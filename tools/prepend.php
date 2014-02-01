@@ -148,6 +148,14 @@ foreach ($plugins_list as $k => $v) {
 	if (file_exists($plugins_root.$k.'/wiki.php')) {
 		include($plugins_root.$k.'/wiki.php');
 	}
+
+	// language files : first default language, then preferred language
+	if (file_exists($plugins_root.$k.'/lang/'.$k.'_fr.inc.php')) {
+		include($plugins_root.$k.'/lang/'.$k.'_fr.inc.php');
+	}
+	if ($GLOBALS['prefered_language'] != 'fr' && file_exists($plugins_root.$k.'/lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php')) {
+		include($plugins_root.$k.'/lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php');
+	}
 }
 foreach ($plugins_list as $k => $v) {
 	if (file_exists($plugins_root.$k.'/actions')) {

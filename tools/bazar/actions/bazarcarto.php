@@ -57,7 +57,7 @@ if (empty($ordre)) {
 
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
-    $latitude = BAZ_GOOGLE_CENTRE_LAT;
+    $latitude = BAZ_MAP_CENTER_LAT;
 }
 
 /*
@@ -68,7 +68,7 @@ if (empty($latitude)) {
 
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
-    $longitude = BAZ_GOOGLE_CENTRE_LON;
+    $longitude = BAZ_MAP_CENTER_LON;
 }
 
 

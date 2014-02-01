@@ -796,7 +796,7 @@ class Mail_mimePart
      * @access public
      * @since 1.6.1
      */
-    function encodeHeader($name, $value, $charset='ISO-8859-1',
+    static function encodeHeader($name, $value, $charset='ISO-8859-1',
         $encoding='quoted-printable', $eol="\r\n"
     ) {
         // Structured headers
@@ -931,7 +931,7 @@ class Mail_mimePart
      * @return array            String tokens array
      * @access private
      */
-    function _explodeQuotedString($delimiter, $string)
+    static function _explodeQuotedString($delimiter, $string)
     {
         $result = array();
         $strlen = strlen($string);

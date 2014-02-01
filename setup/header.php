@@ -78,13 +78,13 @@ function myLocation()
 	return $url;
 }
 
-$charset='iso-8859-1';
+$charset='UTF-8';
 if (!defined('TEMPLATES_DEFAULT_CHARSET')) define('TEMPLATES_DEFAULT_CHARSET', $charset);
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
 <!doctype html>
-<html lang="fr">
+<html lang="<?php echo $GLOBALS['prefered_language']; ?>">
 <head>
   <meta charset="<?php echo $charset; ?>">
   <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>

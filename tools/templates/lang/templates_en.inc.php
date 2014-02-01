@@ -21,78 +21,97 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Fichier de traduction en francais de l'extension Templates
+* English translation for the Templates extension
 *
 *@package 		templates
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@copyright     2014 Outils-Réseaux
 */
 
-define ('TEMPLATE_RSS_LAST_CHANGES', 'Last modified pages RSS feed');
-define ('TEMPLATE_RSS_LAST_COMMENTS', 'Last comments RSS feed');
+$GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-define ('TEMPLATE_DEFAULT_THEME_USED', 'Default template will be used');
-define ('TEMPLATE_NO_THEME_FILES', 'Some (or all) of the template\'s files could not be found');
-define ('TEMPLATE_NO_DEFAULT_THEME', 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site');
-define ('TEMPLATE_CUSTOM_GRAPHICS', 'Appearance of page');
-define ('TEMPLATE_SAVE', 'Save');
-define ('TEMPLATE_APPLY', 'Apply');
-define ('TEMPLATE_CANCEL', 'Cancel');
-define ('TEMPLATE_THEME', 'Graphical theme');
-define ('TEMPLATE_SQUELETTE', 'Template');
-define ('TEMPLATE_STYLE', 'Style');
-define ('TEMPLATE_BG_IMAGE', 'Background image');
-define ('TEMPLATE_ERROR_NO_DATA', 'ERROR : no metadatas to add.');
-define ('TEMPLATE_ERROR_NO_ACCESS', 'ERROR : no access rights.');
+// actions/button.php
+'TEMPLATE_ACTION_BUTTON' => 'Action {{button ...}}',
+'TEMPLATE_LINK_PARAMETER_REQUIRED' => '"link" parameter required',
+
+'TEMPLATE_RSS_LAST_CHANGES' => 'Last modified pages RSS feed',
+'TEMPLATE_RSS_LAST_COMMENTS' => 'Last comments RSS feed',
+
+'TEMPLATE_DEFAULT_THEME_USED' => 'Default template will be used',
+'TEMPLATE_NO_THEME_FILES' => 'Some (or all) of the template\'s files could not be found',
+'TEMPLATE_NO_DEFAULT_THEME' => 'The files of template\'s default theme not found. <br />Please re-install the tools template or contact an administrator of this website',
+'TEMPLATE_CUSTOM_GRAPHICS' => 'Appearance of page',
+'TEMPLATE_SAVE' => 'Save',
+'TEMPLATE_APPLY' => 'Apply',
+'TEMPLATE_CANCEL' => 'Cancel',
+'TEMPLATE_THEME' => 'Theme',
+'TEMPLATE_SQUELETTE' => 'Template',
+'TEMPLATE_STYLE' => 'Style',
+'TEMPLATE_BG_IMAGE' => 'Background image',
+'TEMPLATE_ERROR_NO_DATA' => 'ERROR : no metadatas to add.',
+'TEMPLATE_ERROR_NO_ACCESS' => 'ERROR : no access rights.',
 
 // barre de redaction
-define ('TEMPLATE_VIEW_PAGE', 'See the page');
-define ('TEMPLATE_EDIT', 'Edit');
-define ('TEMPLATE_EDIT_THIS_PAGE', 'Edit this page');
-define ('TEMPLATE_CLICK_TO_SEE_REVISIONS', 'Last changes on this page');
-define ('TEMPLATE_LAST_UPDATE', 'Modified on');
-define ('TEMPLATE_OWNER', 'Owner');
-define ('TEMPLATE_YOU', 'you');
-define ('TEMPLATE_NO_OWNER', 'No owner');
-define ('TEMPLATE_CLAIM', 'Claim');
-define ('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS', 'Change permissions');
-define ('TEMPLATE_PERMISSIONS', 'Permissions');
-define ('TEMPLATE_DELETE', 'Delete');
-define ('TEMPLATE_DELETE_PAGE', 'Delete this page');
-define ('TEMPLATE_CLICK_TO_SEE_REFERENCES', 'Incoming URLs to this page');
-define ('TEMPLATE_REFERENCES', 'Referrers');
-define ('TEMPLATE_SLIDESHOW_MODE', 'See this page as slideshow.');
-define ('TEMPLATE_SLIDESHOW', 'Slideshow');
-define ('TEMPLATE_SEE_SHARING_OPTIONS', 'Share this page');
-define ('TEMPLATE_SHARE', 'Share');
+'TEMPLATE_VIEW_PAGE' => 'See the page',
+'TEMPLATE_EDIT' => 'Edit',
+'TEMPLATE_EDIT_THIS_PAGE' => 'Edit this page',
+'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Last changes on this page',
+'TEMPLATE_LAST_UPDATE' => 'Modified on',
+'TEMPLATE_OWNER' => 'Owner',
+'TEMPLATE_YOU' => 'you',
+'TEMPLATE_NO_OWNER' => 'No owner',
+'TEMPLATE_CLAIM' => 'Claim',
+'TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS' => 'Change permissions',
+'TEMPLATE_PERMISSIONS' => 'Permissions',
+'TEMPLATE_DELETE' => 'Delete',
+'TEMPLATE_DELETE_PAGE' => 'Delete this page',
+'TEMPLATE_CLICK_TO_SEE_REFERENCES' => 'Incoming URLs to this page',
+'TEMPLATE_REFERENCES' => 'Referrers',
+'TEMPLATE_SLIDESHOW_MODE' => 'See this page as slideshow.',
+'TEMPLATE_SLIDESHOW' => 'Slideshow',
+'TEMPLATE_SEE_SHARING_OPTIONS' => 'Share this page',
+'TEMPLATE_SHARE' => 'Share',
 
 // formatage des dates
-define ('TEMPLATE_DATE_FORMAT', 'd.m.Y \a\t H:i:s');
+'TEMPLATE_DATE_FORMAT' => 'd.m.Y \a\t H:i:s',
 
 // recherche
-define ('TEMPLATE_SEARCH_INPUT_TITLE', 'Search in YesWiki [alt-shift-C]');
-define ('TEMPLATE_SEARCH_BUTTON_TITLE', 'Search the page containing those words.');
-define ('TEMPLATE_SEARCH_PLACEHOLDER', 'Search...');
+'TEMPLATE_SEARCH_INPUT_TITLE' => 'Search in YesWiki [alt-shift-C]',
+'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Search the page containing those words.',
+'TEMPLATE_SEARCH_PLACEHOLDER' => 'Search...',
 
 // handler widget
-define ('TEMPLATE_WIDGET_TITLE', 'Widget : integrate this page\'s content elsewhere');
-define ('TEMPLATE_WIDGET_COPY_PASTE', 'Copy/Paste this HTML code to integrate this page\'s content elsewhere.');
+'TEMPLATE_WIDGET_TITLE' => 'Widget : integrate this page\'s content elsewhere',
+'TEMPLATE_WIDGET_COPY_PASTE' => 'Copy/Paste this HTML code to integrate this page\'s content elsewhere.',
 
 // handler share
-define ('TEMPLATE_SHARE_INCLUDE_CODE', 'Code to integrate in a HTML page');
-define ('TEMPLATE_SHARE_MUST_READ', 'To read : ');
-define ('TEMPLATE_SHARE_FACEBOOK', 'Share on Facebook');
-define ('TEMPLATE_SHARE_TWITTER', 'Share on Twitter');
-define ('TEMPLATE_SHARE_NETVIBES', 'Share on Netvibes');
-define ('TEMPLATE_SHARE_DELICIOUS', 'Share on Delicious');
-define ('TEMPLATE_SHARE_GOOGLEREADER', 'Share on Google Reader');
-define ('TEMPLATE_SHARE_MAIL', 'Send this page by mail');
-
-// hander exportpages
-define ('TEMPLATE_EXPORT_ONLY_FOR_ADMINS', 'Integral pages export is limited to admins');
+'TEMPLATE_SHARE_INCLUDE_CODE' => 'Code to integrate in a HTML page',
+'TEMPLATE_SHARE_MUST_READ' => 'To read : ',
+'TEMPLATE_SHARE_FACEBOOK' => 'Share on Facebook',
+'TEMPLATE_SHARE_TWITTER' => 'Share on Twitter',
+'TEMPLATE_SHARE_NETVIBES' => 'Share on Netvibes',
+'TEMPLATE_SHARE_DELICIOUS' => 'Share on Delicious',
+'TEMPLATE_SHARE_GOOGLEREADER' => 'Share on Google Reader',
+'TEMPLATE_SHARE_MAIL' => 'Send this page by mail',
+'TEMPLATE_ADD_SHARE_BUTTON' => 'Add a share button on the top right of the included widget',
+'TEMPLATE_ADD_EDIT_BAR' => 'Add the edition actions bar on the included widget',
 
 // handler diaporama
-define ('TEMPLATE_NO_ACCESS_TO_PAGE', 'You have no access right to this page.');
-define ('TEMPLATE_PAGE_DOESNT_EXIST', 'Page does not exist');
-define ('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW', 'This page cannot be split in slides (no second level titles)');
-?>
+'TEMPLATE_NO_ACCESS_TO_PAGE' => 'You have no access right to this page.',
+'TEMPLATE_PAGE_DOESNT_EXIST' => 'Page doesn\'t exist',
+'PAGE_CANNOT_BE_SLIDESHOW' => 'This page cannot be split in slides (no second level titles)',
+
+// handler edit
+'TEMPLATE_CUSTOM_PAGE' => 'Preferences for page',
+'TEMPLATE_PAGE_PREFERENCES' => 'Page preferences',
+'PAGE_LANGUAGE' => 'Page\'s language',
+'CHOOSE_PAGE_FOR' => 'Choose a page for',
+'HORIZONTAL_MENU_PAGE' => 'the horizontal menu',
+'FAST_ACCESS_RIGHT_PAGE' => 'fast access on top right corner',
+'HEADER_PAGE' => 'the header (banner)',
+'FOOTER_PAGE' => 'the footer',
+'FOR_2_OR_3_COLUMN_THEMES' => 'For themes with 2 or 3 columns',
+'VERTICAL_MENU_PAGE' => 'the vertical menu',
+'RIGHT_COLUMN_PAGE' => 'the right column'
+
+));
