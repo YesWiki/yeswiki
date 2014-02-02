@@ -10,7 +10,7 @@
 // | License as published by the Free Software Foundation; either                                         |
 // | version 2.1 of the License, or (at your option) any later version.                                   |
 // |                                                                                                      |
-// | This library is distributed in the hope that it will be useful =>                                     |
+// | This library is distributed in the hope that it will be useful =>                                    |
 // | but WITHOUT ANY WARRANTY; without even the implied warranty of                                       |
 // | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU                                    |
 // | Lesser General Public License for more details.                                                      |
@@ -19,14 +19,13 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// CVS : $Id: baz_langue_fr.inc.php,v 1.6 2010/03/04 14:19:04 mrflos Exp $
 /**
+*
 * English translation of Bazar extension
 *
 *@package 		bazar
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     Outils-Réseaux
-*@version       $Revision: 1.6 $ $Date: 2010/03/04 14:19:04 $
 *
 */
 
@@ -44,6 +43,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_INTRO_AJOUT_LISTE' => '<strong>No list created for now.</strong><br />You can create a new list by clicking on the button with the plus sign.',
 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' => 'Warning! All datas will be lost... Are you sure you want to delete this form and all the associated entries',
 'BAZ_CONFIRM_SUPPRIMER_LISTE' => 'Warning! All datas will be lost... Are you sure you want to delete this list and all the associated data',
+'BAZ_NO_FORMS_FOUND' => 'No forms found',
 'BAZ_NOUVEAU_FORMULAIRE' => 'Add a new form',
 'BAZ_NOUVELLE_LISTE' => 'Add a new list',
 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES' => 'The form and its entries were successfully deleted.',
@@ -101,6 +101,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_SUPPRIMER_IMAGE' => 'delete the image',
 'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Are you sure to delete this image ?',
 'BAZ_DROIT_INSUFFISANT' => 'Operation permited to owner of the entry or an administrator only',
+'BAZ_NEED_ADMIN_RIGHTS' => 'Operation permited to administrators only',
 'BAZ_TITRE_SAISIE_FICHE' => 'Add an entry : ',
 'BAZ_CHOIX_TYPE_FICHE' => 'Choose the type of entry you want to add :',
 'BAZ_CONFIRMATION_SUPPRESSION' => 'Are you sur you want to delete this entry ?',
