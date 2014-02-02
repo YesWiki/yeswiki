@@ -6,7 +6,7 @@
 // | Copyright (C) 2004 Tela Botanica (accueil@tela-botanica.org)                                         |
 // +------------------------------------------------------------------------------------------------------+
 // | Aquesta llibreria és de programari lliure; podeu redistribuir-la i/o                                 |
-// | modificar-la d\'acord amb els termes del GNU Lesser General Public                                    |
+// | modificar-la d\'acord amb els termes del GNU Lesser General Public                                   |
 // | License tal com ha estat publicada per la Free Software Foundation; sigui la                         |
 // | versió 2.1 de la llicència o bé (opcionalment) qualsevol versió posterior.                           |
 // |                                                                                                      |
@@ -15,7 +15,7 @@
 // | MERCHANTABILITY o de FITNESS FOR A PARTICULAR PURPOSE. Vegeu la GNU                                  |
 // | Lesser General Public License per a més detalls.                                                     |
 // |                                                                                                      |
-// | Amb aquesta llibreria heu d\'haver rebut còpia de la GNU Lesser General Public                        |
+// | Amb aquesta llibreria heu d\'haver rebut còpia de la GNU Lesser General Public                       |
 // | License; altrament, escriviu a la Free Software Foundation,                                          |
 // | Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                                        |
 // +------------------------------------------------------------------------------------------------------+
@@ -43,6 +43,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_INTRO_AJOUT_LISTE',  '<strong>No s\'ha creat cap llista.</strong><br />Podeu crear-ne manualment una de nova (cliqueu el botó amb el signe d\'afegir),<br /> O importeu llistes d\'un altre YesWiki (per exemple http://yeswiki.net).',
 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' => 'Compte! Totes les dades es perdran. Confirmeu que voleu suprimir aquest tipus de formulari i totes les fitxes associades',
 'BAZ_CONFIRM_SUPPRIMER_LISTE' => 'Compte! Totes les dades desades es perdran. Confirmeu que voleu suprimir aquesta llista i totes les dades associades',
+'BAZ_NO_FORMS_FOUND' => 'No s\'han trobat formulari',
 'BAZ_NOUVEAU_FORMULAIRE' => 'Crear un formulari nou',
 'BAZ_NOUVELLE_LISTE' => 'Crear una llista nova',
 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES' => 'S\'ha eliminat aquest tipus de formulari i les fitxes que hi eren associades.',
@@ -100,6 +101,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_SUPPRIMER_IMAGE' => 'Suprimeix la imatge',
 'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Confirmeu que voleu suprimir aquesta imatge',
 'BAZ_DROIT_INSUFFISANT' => 'Només el propietari de la fitxa o un administrador poden fer aquesta operació',
+'BAZ_NEED_ADMIN_RIGHTS' => 'Només un administrador pode fer aquesta operació',
 'BAZ_TITRE_SAISIE_FICHE' => 'Entrar una fitxa: ',
 'BAZ_CHOIX_TYPE_FICHE' => 'Trieu la classe de fitxa que voleu desar:',
 'BAZ_CONFIRMATION_SUPPRESSION' => 'Confirmeu que voleu eliminar aquesta fitxa',

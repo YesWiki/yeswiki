@@ -10,7 +10,7 @@
 // | License as published by the Free Software Foundation; either                                         |
 // | version 2.1 of the License, or (at your option) any later version.                                   |
 // |                                                                                                      |
-// | This library is distributed in the hope that it will be useful =>                                     |
+// | This library is distributed in the hope that it will be useful =>                                    |
 // | but WITHOUT ANY WARRANTY; without even the implied warranty of                                       |
 // | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU                                    |
 // | Lesser General Public License for more details.                                                      |
@@ -19,15 +19,13 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// CVS : $Id: baz_langue_fr.inc.php,v 1.6 2010/03/04 14:19:04 mrflos Exp $
 /**
+*
 * Fichier de traduction en francais de l'extension Bazar
 *
 *@package 		bazar
-*@author        Alexandre GRANIER <alexandre@tela-botanica.org>
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     Outils-Réseaux
-*@version       $Revision: 1.6 $ $Date: 2010/03/04 14:19:04 $
 *
 */
 
@@ -45,6 +43,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_INTRO_AJOUT_LISTE' => '<strong>Pas de liste cr&eacute;&eacute;e pour l\'instant.</strong><br />Vous pouvez cr&eacute;er une nouvelle liste manuellement (cliquez sur le bouton avec un signe plus),<br />ou importer les listes d\'un YesWiki existant (comme http://yeswiki.net).',
 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' => 'Attention! Toutes les donn&eacute;es enregistr&eacute;es seront perdues.. Etes-vous s&ucirc;rs de vouloir supprimer ce type de formulaire et toutes ses fiches associ&eacute;es',
 'BAZ_CONFIRM_SUPPRIMER_LISTE' => 'Attention! Toutes les donn&eacute;es enregistr&eacute;es seront perdues.. Etes-vous s&ucirc;rs de vouloir supprimer cette liste et toutes ses donn&eacute;es associ&eacute;es',
+'BAZ_NO_FORMS_FOUND' => 'Pas de formulaire trouv&eacute;',
 'BAZ_NOUVEAU_FORMULAIRE' => 'Saisir un nouveau formulaire',
 'BAZ_NOUVELLE_LISTE' => 'Saisir une nouvelle liste',
 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES' => 'Le type de formulaire et ses fiches associ&eacute;es ont bien &eacute;t&eacute; supprim&eacute;s.',
@@ -102,6 +101,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_SUPPRIMER_IMAGE' => 'Supprimer l\'image',
 'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Etes vous s&ucirc;rs de vouloir supprimer cette image?',
 'BAZ_DROIT_INSUFFISANT' => 'Op&eacute;ration permise au propri&eacutetaire de la fiche ou &agrave; un administrateur uniquement',
+'BAZ_NEED_ADMIN_RIGHTS' => 'Op&eacute;ration permise aux administrateurs uniquement',
 'BAZ_TITRE_SAISIE_FICHE' => 'Saisir une fiche : ',
 'BAZ_CHOIX_TYPE_FICHE' => 'Choisissez le type de fiche que vous souhaitez d&eacute;poser:',
 'BAZ_CONFIRMATION_SUPPRESSION' => 'Etes-vous s&ucirc;r de vouloir supprimer cette fiche ?',

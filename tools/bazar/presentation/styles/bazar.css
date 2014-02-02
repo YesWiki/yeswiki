@@ -2,6 +2,11 @@
 #map label { 
   width: auto !important; display:inline !important; 
 } 
+
+.required_symbol, .symbole_obligatoire {
+color:#E9322D;
+}
+/*
 .BAZ_titre_liste {
 font-size:1.3em;
 font-weight:700;
@@ -12,9 +17,7 @@ display:block;
 text-align:right;
 }
 
-.required_symbol, .symbole_obligatoire {
-color:#E9322D;
-}
+
 
 .BAZ_liste {
 list-style:none;
@@ -34,11 +37,11 @@ padding:0;
 .table_bazar a {color:#990000;}
 .ligne_paire {background:#FFDEDE;}
 .ligne_impaire {background:#FFF;}
-
+*/
 #BAZ_menu {
 display:block;
-width:100%;
-text-align:center;
+/*width:100%;
+text-align:center;*/
 margin:10px auto;
 padding:0;
 }
@@ -57,7 +60,7 @@ list-style-type:none;
 margin:0 10px 0 0;
 padding:0;
 }
-
+/*
 .boite_recherche {
 display:inline;
 background:#FFF url(../images/recherche.png) no-repeat scroll 1px center;
@@ -81,7 +84,7 @@ display:block;
 width:480px;
 margin:0 auto 15px;
 }
-
+*/
 .BAZ_fiche_info {
 clear:both;
 background:#EEE;
@@ -91,6 +94,8 @@ font-size:.9em;
 padding:3px;
 margin:10px 0;
 }
+
+/*
 .BAZ_info {
 background:#FBF9EE url(../images/info.png) no-repeat 3px center;
 border:1px solid #FCEFA1;
@@ -185,7 +190,7 @@ padding:10px;
 -moz-box-shadow:2px 2px 20px rgba(100, 100, 100, 0.75);
 -moz-border-radius:10px;
 }
-
+*/
 .btn_adresse,.btn_client {
 display:inline;
 width:215px;
@@ -414,288 +419,6 @@ border:0;
 cursor:pointer;
 }
 
-#dynatooltip, #dynatooltipiframe {
-display:none;
-background:transparent url(../images/white_arrow.png);
-font-size:11px;
-height:90px;
-width:180px;
-color:#000;
-z-index:1000;
-line-height:14px;
-padding:15px;
-}
-
-
-.cal_entete {
-display:block;
-margin:10px auto;
-}
-
-.calendrierjquerymini .cal_navigation {
-display:block;
-width:147px;
-margin:0 auto;
-}
-
-.tc_lien {
-float:right;
-}
-
-.cal_precedent_lien,.cal_suivant_lien {
-display:block;
-float:left;
-width:23px;
-height:28px;
-background:transparent;
-}
-
-.cal_suivant_lien img,.cal_precedent_lien img {
-width:23px;
-height:28px;
-border:0;
-}
-
-.cal_mois_courrant {
-width:120px;
-display:block;
-float:left;
-text-align:center;
-border:1px solid #CCC;
-text-transform:uppercase;
-font-weight:700;
-font-size:1.3em;
-padding:2px 15px;
-}
-
-.calendrierjquerymini .cal_mois_courrant {
-width:97px;
-display:block;
-float:left;
-text-align:center;
-border:0;
-text-transform:uppercase;
-font-weight:700;
-font-size:0.9em;
-padding:8px 0 0;
-}
-
-.calendrier {
-width:100%;
-margin:5px auto;
-}
-
-.calendrierjquery {
-width:560px;
-margin:5px auto;
-}
-
-.calendrierjquerymini {
-width:160px;
-margin:5px auto;
-}
-
-.calendrier table,.calendrierjquery table {
-clear:both;
-font-weight:700;
-font-size:14px;
-border-collapse:collapse;
-border-spacing:0;
-width:100%;
-}
-
-.calendrierjquerymini table {
-clear:both;
-font-weight:700;
-font-size:11px;
-border-collapse:collapse;
-border-spacing:0;
-width:100%;
-}
-
-.calendrier th {
-color:#000;
-background-color:#D2BBCB;
-border:1px solid #D2BBCB;
-text-align:center;
-height:20px;
-width:14%;
-}
-
-.calendrierjquery th {
-color:#000;
-background-color:#D2BBCB;
-border:1px solid #D2BBCB;
-text-align:center;
-height:20px;
-width:80px;
-}
-
-.calendrierjquerymini th {
-color:#000;
-background-color:#D2BBCB;
-border:1px solid #D2BBCB;
-text-align:center;
-}
-
-.calendrier td {
-width:14%;
-border:1px solid #D2BBCB;
-background:#FFF;
-text-align:left;
-vertical-align:top;
-}
-
-.calendrierjquery td {
-height:80px;
-width:80px;
-border:1px solid #D2BBCB;
-background:#FFF;
-text-align:center;
-vertical-align:middle;
-}
-
-.calendrierjquerymini td {
-border:1px solid #D2BBCB;
-background:#FFF;
-text-align:center;
-vertical-align:middle;
-}
-
-.cal_j {
-display:block;
-float:right;
-font-size:0.8em;
-padding:1px;
-}
-
-.cal_autre_mois {
-background-color:#E8E8E8;
-color:#C9C9C9;
-}
-
-.cal_samedi,.cal_dimanche {
-background-color:#DBDBDB;
-}
-
-.date_avec_evenements {
-background-color:#FFC95C;
-}
-
-.evenements {
-position:relative;
-}
-
-.evenements ul {
-text-align:left;
-position:absolute;
-display:none;
-z-index:1000;
-background:#FFF;
-color:#000;
-border:2px solid #D2BBCB;
-font-size:14px;
-width:270px;
--moz-border-radius:3px;
--khtml-border-radius:3px;
--webkit-border-radius:3px;
--border-radius:3px;
-list-style:none;
--webkit-box-shadow:0 8px 8px #333;
-padding:15px;
-}
-
-.evenements li {
-padding-bottom:10px;
-}
-
-.evenements li span {
-display:block;
-font-size:12px;
-text-align:left;
-color:#555;
-}
-
-.evenements li span.titre_evenement {
-font-weight:700;
-color:#222;
-}
-
-.BAZ_label,.titre_carte_google,.table_bazar th {
-font-weight:700;
-}
-
-.BAZ_actions_fiche ul,#BAZ_bas_page,.bulle_haut,.bulle_bas {
-margin:0;
-padding:0;
-}
-
-.cal_jour_courant,.date_hover {
-background-color:#c4d9fb;
-}
-
-#triggers {
-	text-align:center;
-}
-
-a.triggerimage img {
-	background-color:#fff;
-	padding:2px;
-	border:1px solid #ccc;
-	margin:15px 2px;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-}
-
-/* the active thumbnail */
-a.active img {
-	outline:1px solid #000;
-
-	/* show on top of the expose mask */
-	z-index:9999;
-	position:relative;
-}
-/* the overlayed element */
-.simple_overlay {
-
-	/* must be initially hidden */
-	display:none;
-
-	/* place overlay on top of other elements */
-	z-index:10000;
-
-	/* styling */
-	background-color:#333;
-
-	width:675px;
-	min-height:200px;
-	border:1px solid #666;
-
-	/* CSS3 styling for latest browsers */
-	-moz-box-shadow:0 0 90px 5px #000;
-	-webkit-box-shadow: 0 0 90px #000;
-}
-
-/* close button positioned on upper right corner */
-.yeswiki-overlay .close{
-	background-image:url(../images/overlay_close.png);
-	position:absolute;
-	right:-15px;
-	top:-15px;
-	cursor:pointer;
-	height:35px;
-	width:35px;
-	opacity:1;
-}
-/* the large image. we use a gray border around it */
-#img {
-	border:1px solid #666;
-}
-
-
-.bouton_sauver, .btn-save-list, .bouton_annuler {
-margin-right:10px;
-}
 
 .BAZ_cadre_map {font-size:.9em; width:450px; display:block; text-align:left;}
 .BAZ_cadre_map ul.css-tabs a {
