@@ -1664,7 +1664,7 @@ function showAddress()
                 var lon = document.getElementById("longitude");lon.value = map.getCenter().lng();
 
                 infowindow = new google.maps.InfoWindow({
-                    content: "<h4>Votre emplacement<\/h4>'.TEXTE_POINT_DEPLACABLE.'",
+                    content: "<h4>Votre emplacement<\/h4>'._t("TEXTE_POINT_DEPLACABLE").'",
                     maxWidth: 250
                 });
                 //image du marqueur
