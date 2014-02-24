@@ -337,4 +337,5 @@ overflow: auto;
 #form_page_options .control-label {width:200px;}
 #form_page_options .controls {margin-left:210px;}
 
-.yeswiki-menu-btn {margin-bottom: 0 !important;}
+.yeswiki-menu-btn {margin-bottom: 0 !important; margin-left: 10px !important;}
+.topbarpage .yeswiki-search-form .input-append, .topbarpage .yeswiki-search-form .input-prepend {margin-top: 0 !important;}

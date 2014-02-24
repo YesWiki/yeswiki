@@ -23,4 +23,8 @@ body {padding-top: 51px;}
 	background-color: #3CB9C6;
     border-top: 1px solid #32A1AC;
 }
-.search-btn {border-radius: 0 14px 14px 0 !important;}
+.yeswiki-search-form .search-btn {border-radius: 0 14px 14px 0 !important;}
+.yeswiki-search-form .input-append .search-query {
+    border-radius: 14px 0 0 14px !important;
+    padding-bottom: 3px;
+}

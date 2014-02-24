@@ -24,5 +24,6 @@ body {padding-top: 41px;}
 	border-top: 1px solid #E5E5E5;
 }
 .form-search .search-btn {
-    line-height: 13px;
+    line-height: 16px;
 }
+.yeswiki-search-form {margin-top: 0 !important;}
