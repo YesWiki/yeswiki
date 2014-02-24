@@ -203,6 +203,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_SEPTEMBRE' => 'Septembre',
 'BAZ_OCTOBRE' => 'Octobre',
 'BAZ_NOVEMBRE' => 'Novembre',
-'BAZ_DECEMBRE' => 'D&eacute;cembre'
+'BAZ_DECEMBRE' => 'D&eacute;cembre',
+
+'BAZ_TODAY' => 'Aujourd\\\'hui',
+'BAZ_MONTH' => 'Mois',
+'BAZ_WEEK' => 'Semaine',
+'BAZ_DAY' => 'Jour'
 
 ));

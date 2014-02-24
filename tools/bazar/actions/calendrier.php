@@ -78,27 +78,28 @@ $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "    <script 
             events: [
                 ".$js."
             ],
-            monthNames: ['Janvier','F&eacute;vrier','Mars','Avril','Mai','Juin','Juillet','Ao&ucirc;t','Septembre','Octobre','Novembre','D&eacute;cembre'],
+            monthNames: ['"._t('BAZ_JANVIER')."','"._t('BAZ_FEVRIER')."','"._t('BAZ_MARS')."','"._t('BAZ_AVRIL')."','"._t('BAZ_MAI')."','"._t('BAZ_JUIN')."','"._t('BAZ_JUILLET')."','"._t('BAZ_AOUT')."','"._t('BAZ_SEPTEMBRE')."','"._t('BAZ_OCTOBRE')."','"._t('BAZ_NOVEMBRE')."','"._t('BAZ_DECEMBRE')."'],
             monthNamesShort: ['Jan','Fev','Mar','Avr','Mai','Juin','Juil','Aug','Sep','Oct','Nov','Dec'],
-            dayNames: ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
-            dayNamesShort: ['Dim','Lun','Mar','Mer','Jeu','Vendredi','Sam'],
+            dayNames: ['"._t('BAZ_DIMANCHE')."','"._t('BAZ_LUNDI')."','"._t('BAZ_MARDI')."','"._t('BAZ_MERCREDI')."','"._t('BAZ_JEUDI')."','"._t('BAZ_VENDREDI')."','"._t('BAZ_SAMEDI')."'],
+            dayNamesShort: ['"._t('BAZ_DIMANCHE_COURT')."','"._t('BAZ_LUNDI_COURT')."','"._t('BAZ_MARDI_COURT')."','"._t('BAZ_MERCREDI_COURT')."','"._t('BAZ_JEUDI_COURT')."','"._t('BAZ_VENDREDI_COURT')."','"._t('BAZ_SAMEDI_COURT')."'],
             buttonText: {
                 prev: '&nbsp;&#9668;&nbsp;',
                 next: '&nbsp;&#9658;&nbsp;',
                 prevYear: '&nbsp;&lt;&lt;&nbsp;',
                 nextYear: '&nbsp;&gt;&gt;&nbsp;',
-                today: 'Aujourd\'hui',
-                month: 'Mois',
-                week: 'Semaine',
-                day: 'Jour'
+                today: '"._t('BAZ_TODAY')."',
+                month: '"._t('BAZ_MONTH')."',
+                week: '"._t('BAZ_WEEK')."',
+                day: '"._t('BAZ_DAY')."'
             },
+            firstDay : 1,
             eventClick: function(event) {
                 if (event.url) {
                     $('<div>').attr('id', 'dateModal' ).addClass('modal fade hide').appendTo($('body'));
                     var modal = $('#dateModal');
                     modal.html('<div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button><h3>'+event.title+'</h3></div><div class=\"modal-body\"></div>').on('hidden', function() {modal.remove()});
                     modal.find('.modal-body').load(event.url + ' .page', function() {
-                        $(this).find('.page').removeClass('page').find('h1._t('BAZ_fiche_titre')').remove();
+                        $(this).find('.page').removeClass('page').find('h1.BAZ_fiche_titre').remove();
                         modal.modal('show');
                     });
 
