@@ -1101,7 +1101,7 @@ function baz_formulaire( $mode, $url = '', $valeurs = '' )
                 $res = '<div class="alert alert-info">' . _t( 'BAZ_NO_FORMS_FOUND' ) . '.</div>' . "\n";
             } elseif ( count( $resultat ) == 1 ) {
                 $res                                  = '';
-                $ligne                                = $resultat[0];
+                $ligne                                = reset($resultat);
                 $GLOBALS['_BAZAR_']['id_typeannonce'] = $ligne['bn_id_nature'];
                 $GLOBALS['_BAZAR_']['typeannonce']    = $ligne['bn_label_nature'];
                 $GLOBALS['_BAZAR_']['condition']      = $ligne['bn_condition'];
