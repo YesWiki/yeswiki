@@ -1645,7 +1645,7 @@ $wakkaDefaultConfig = array(
 	"pages_purge_time"	=> 90,
 	"default_write_acl"	=> "*",
 	"default_read_acl"	=> "*",
-	"default_comment_acl"	=> "+",
+	"default_comment_acl"	=> "@admins",
 	"preview_before_save"	=> 0,
 	'allow_raw_html'	=> false);
 unset($_rewrite_mode);
