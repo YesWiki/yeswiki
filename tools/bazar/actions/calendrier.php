@@ -99,7 +99,7 @@ $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "    <script 
                     var modal = $('#dateModal');
                     modal.html('<div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button><h3>'+event.title+'</h3></div><div class=\"modal-body\"></div>').on('hidden', function() {modal.remove()});
                     modal.find('.modal-body').load(event.url + ' .page', function() {
-                        $(this).find('.page').removeClass('page').find('h1.BAZ_fiche_titre').remove();
+                        $(this).find('.page').append('<a href=\"'+event.url + '/edit' +'\" class=\"btn btn-default pull-right\"><i class=\"icon-pencil glyphicon glyphicon-pencil\"></i> "._t('BAZ_MODIFIER_LA_FICHE')."</a>').removeClass('page').find('h1.BAZ_fiche_titre').remove();
                         modal.modal('show');
                     });
 
