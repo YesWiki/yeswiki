@@ -5,6 +5,18 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/attach.class.php
 'ATTACH_ACTION_ATTACH' => 'Action {{attach ...}}',
 'ATTACH_PARAM_DESC_REQUIRED' => 'param&egrave;tre "desc" obligatoire pour une image',
+'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'le param&egrave;tre "height", en pixels, doit &ecirc;tre uniquement compos&eacute; de chiffres entiers',
+'ATTACH_PARAM_WIDTH_NOT_NUMERIC' => 'le param&egrave;tre "width", en pixels, doit &ecirc;tre uniquement compos&eacute; de chiffres entiers',
+'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Formulaire d\'envoi du fichier',
+'ATTACH_BACK_TO_PAGE' => 'Retour &agrave; la page',
+'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'Vous n\'avez pas l\'acc&ecirc;s en &eacute;criture &agrave; cette page',
+'INVALID_REQUEST_METHOD' => 'M&eacute;thode de requ&egrave;te invalide',
+'ERROR_MOVING_TEMPORARY_FILE' => 'Erreur lors du d&eacute;placement du fichier temporaire',
+'ERROR_UPLOAD_MAX_FILESIZE' => 'Le fichier t&eacute;l&eacute;charg&eacute; exc&ecirc;de la taille de upload_max_filesize, configur&eacute; dans le php.ini.',
+'ERROR_MAX_FILE_SIZE' => 'Le fichier t&eacute;l&eacute;charg&eacute; exc&ecirc;de la taille de MAX_FILE_SIZE, qui a &eacute;t&eacute; sp&eacute;cifi&eacute;e dans le formulaire HTML.',
+'ERROR_PARTIAL_UPLOAD' => 'Le fichier n\'a &eacute;t&eacute; que partiellement t&eacute;l&eacute;charg&eacute;.',
+'ERROR_NO_FILE_UPLOADED' => 'Aucun fichier n\'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.',
+
 
 // actions/filemanager.php
 'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Il faut avoir acc&egrave; en &eacute;criture &agrave; la page pour acc&eacute;der au gestionnaire des fichiers attach&eacute;s',

@@ -5,6 +5,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/attach.class.php
 'ATTACH_ACTION_ATTACH' => 'Acció {{attach ...}}',
 'ATTACH_PARAM_DESC_REQUIRED' => 'El paràmetre "desc" és obligatori per una imatge',
+'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => '"height" parameter, in pixels, should be a number integer',
+'ATTACH_PARAM_WIDTH_NOT_NUMERIC' => '"width" parameter, in pixels, should be a number integer',
+'ATTACH_UPLOAD_FORM_FOR_FILE' => 'Upload form for file',
+'ATTACH_BACK_TO_PAGE' => 'Back to the page',
+'NO_RIGHT_TO_WRITE_IN_THIS_PAGE' => 'No rights to write in this page',
 
 // actions/filemanager.php
 'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Cal tenir drets d\'escriptura a la pàgina per accedir a la gestió dels fitxers adjunts',
