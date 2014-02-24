@@ -392,9 +392,9 @@ $wikiClassesContent [] = '
       if ($type == \'fiche_bazar\') {
         $page=CheckBazarAcls($page,$tag);
       }
-      // the database is in ISO-8859-1, it must be converted
+      // the database is in ISO-8859-15, it must be converted
       if (isset($page[\'body\'])) {
-        $page[\'body\'] = _convert($page[\'body\'], "ISO-8859-1");
+        $page[\'body\'] = _convert($page[\'body\'], "ISO-8859-15");
       } 
       // cache result
       if (!$time) $this->CachePage($page, $tag);

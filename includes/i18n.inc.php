@@ -53,7 +53,7 @@ function _convert($text, $fromencoding, $database = FALSE)
 {
     if ($database) { 
         if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
-            return iconv($fromencoding, "ISO-8859-1", $text);
+            return iconv($fromencoding, "ISO-8859-15", $text);
         } 
         else {
             return $text;
