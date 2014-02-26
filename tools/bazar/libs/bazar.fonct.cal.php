@@ -118,9 +118,9 @@ function GestionAffichageCalendrier($type = 'calendrier')
     }
     $url->removeQueryString('ctt');
     $url->removeQueryString('tt');
-    $tc_txt = BAZ_AFFICHE_TITRES_COMPLETS;
+    $tc_txt = _t('BAZ_AFFICHE_TITRES_COMPLETS');
     if (isset($_GET['tt']) && $_GET['tt'] == '0') {
-        $tc_txt = BAZ_TRONQUER_TITRES;
+        $tc_txt = _t('BAZ_TRONQUER_TITRES');
         $url->addQueryString('tt', $_GET['tt']);
     }
 
@@ -140,8 +140,8 @@ function GestionAffichageCalendrier($type = 'calendrier')
     // Suppression du parametre de troncage des titres
     $url->removeQueryString('tt');
 
-    $fr_month = array(	"1"=>BAZ_JANVIER,"2"=>BAZ_FEVRIER,"3"=>BAZ_MARS,"4"=>BAZ_AVRIL,"5"=>BAZ_MAI,"6"=>BAZ_JUIN,
-                        "7"=>BAZ_JUILLET,"8"=>BAZ_AOUT,"9"=>BAZ_SEPTEMBRE,"10"=>BAZ_OCTOBRE,"11"=>BAZ_NOVEMBRE,"12"=>BAZ_DECEMBRE);
+    $fr_month = array(	"1"=>_t('BAZ_JANVIER'),"2"=>_t('BAZ_FEVRIER'),"3"=>_t('BAZ_MARS'),"4"=>_t('BAZ_AVRIL'),"5"=>_t('BAZ_MAI'),"6"=>_t('BAZ_JUIN'),
+                        "7"=>_t('BAZ_JUILLET'),"8"=>_t('BAZ_AOUT'),"9"=>_t('BAZ_SEPTEMBRE'),"10"=>_t('BAZ_OCTOBRE'),"11"=>_t('BAZ_NOVEMBRE'),"12"=>_t('BAZ_DECEMBRE'));
 
     if ($type == 'calendrier' || $type == 'calendrierjquery' || $type == 'calendrierjquerymini') {
         $retour .= '<div class="cal_entete">'."\n";
@@ -245,23 +245,23 @@ function GestionAffichageCalendrier($type = 'calendrier')
                 '<thead>'."\n".
                  "<tr>"."\n";
         if ($type == 'calendrier' || $type == 'calendrierjquery') {
-              $retour .= "<th> ". BAZ_LUNDI ."</th>
-              <th> ". BAZ_MARDI ."</th>
-              <th> ". BAZ_MERCREDI ."</th>
-              <th> ". BAZ_JEUDI ."</th>
-              <th> ". BAZ_VENDREDI ."</th>
-              <th> ". BAZ_SAMEDI ."</th>
-              <th> ". BAZ_DIMANCHE ."</th>
+              $retour .= "<th> ". _t('BAZ_LUNDI') ."</th>
+              <th> ". _t('BAZ_MARDI') ."</th>
+              <th> ". _t('BAZ_MERCREDI') ."</th>
+              <th> ". _t('BAZ_JEUDI') ."</th>
+              <th> ". _t('BAZ_VENDREDI') ."</th>
+              <th> ". _t('BAZ_SAMEDI') ."</th>
+              <th> ". _t('BAZ_DIMANCHE') ."</th>
              </tr>
              ".'</thead>'."\n".'<tbody>'."\n";
         } elseif ($type == 'calendrierjquerymini') {
-            $retour.= "<th> ". BAZ_LUNDI_COURT ."</th>
-              <th> ". BAZ_MARDI_COURT ."</th>
-              <th> ". BAZ_MERCREDI_COURT ."</th>
-              <th> ". BAZ_JEUDI_COURT ."</th>
-              <th> ". BAZ_VENDREDI_COURT ."</th>
-              <th> ". BAZ_SAMEDI_COURT ."</th>
-              <th> ". BAZ_DIMANCHE_COURT ."</th>
+            $retour.= "<th> ". _t('BAZ_LUNDI_COURT') ."</th>
+              <th> ". _t('BAZ_MARDI_COURT') ."</th>
+              <th> ". _t('BAZ_MERCREDI_COURT') ."</th>
+              <th> ". _t('BAZ_JEUDI_COURT') ."</th>
+              <th> ". _t('BAZ_VENDREDI_COURT') ."</th>
+              <th> ". _t('BAZ_SAMEDI_COURT') ."</th>
+              <th> ". _t('BAZ_DIMANCHE_COURT') ."</th>
              </tr>
              ".'</thead>'."\n".'<tbody>'."\n";
         }

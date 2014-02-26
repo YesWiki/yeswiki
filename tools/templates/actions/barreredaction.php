@@ -32,6 +32,8 @@ if ($this->HasAccess("write")) {
     }
 
     if ( $time ) {
+        // hack to hide E_STRICT error if no timezone set
+        date_default_timezone_set(@date_default_timezone_get());
         $barreredactionelements['linkrevisions'] = $this->href("revisions", $page);
         $barreredactionelements['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
     }

@@ -1,5 +1,6 @@
 // on annule les changements de look
 $("#graphical_options a.button_cancel").on("click", function() {
+	$('#graphical_options form')[0].reset();
 	if ( ($("#changetheme").val() !== $("#hiddentheme").val() ) || ( $("#hiddensquelette").val() !== $("#changesquelette").val() ) || ( $("#hiddenstyle").val() !== $("#changestyle").val() )) {
 		//on charge le theme et on remet les valeurs
 		var newstyle = $("#mainstyle").attr("href");
@@ -58,10 +59,27 @@ $("#graphical_options a.button_save").on("click", function() {
 	}
 
 	$("#hiddenbgimg").val(bgimg);
-	var url = document.URL.replace("/edit", "/savemetadatas").replace('#', '');
-	var data = { 'metadatas': { "theme": theme, "squelette": squelette, "style": style, "bgimg": bgimg } };
+
+	var o = {};
+    var a = $('#form_graphical_options').serializeArray();
+
+    $.each(a, function() {
+        if (o[this.name] !== undefined) {
+            if (!o[this.name].push) {
+                o[this.name] = [o[this.name]];
+            }
+            o[this.name].push(this.value || '');
+        } else {
+            o[this.name] = this.value || '';
+        }
+    });
+	var url = document.URL.split("/edit")[0]+'/savemetadatas';
+
+	var data = { 'metadatas': $.extend({}, o, { "theme": theme, "squelette": squelette, "style": style, "bgimg": bgimg }) };
+	console.log(a);
 	$.post(url, data, function(data){return;});
 });
+
 
 // changement de fond d ecran
 $("#bgCarousel img.bgimg").on("click", function() {

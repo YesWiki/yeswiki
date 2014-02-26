@@ -71,12 +71,12 @@ $tableau_resultat = baz_requete_recherche_fiches($tabquery, 'alphabetique', $id_
 //on recupere le nombre d'entrees avant pagination
 $pagination = $this->GetParameter("pagination");
 if (!empty($pagination)) {
-    $fiches['info_res'] = '<div class="info_box">'.BAZ_IL_Y_A;
+    $fiches['info_res'] = '<div class="info_box">'._t('BAZ_IL_Y_A');
     $nb_result = count($tableau_resultat);
     if ($nb_result<=1) {
-        $fiches['info_res'] .= $nb_result.' '.BAZ_FICHE.'</div>'."\n";
+        $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHE').'</div>'."\n";
     } else {
-        $fiches['info_res'] .= $nb_result.' '.BAZ_FICHES.'</div>'."\n";
+        $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHES').'</div>'."\n";
     }
     // Mise en place du Pager
     require_once 'Pager/Pager.php';
@@ -86,10 +86,10 @@ if (!empty($pagination)) {
         'delta'      => BAZ_DELTA,
         'httpMethod' => 'GET',
         'extraVars' => array_merge($_POST, $_GET),
-        'altNext' => BAZ_SUIVANT,
-        'altPrev' => BAZ_PRECEDENT,
-        'nextImg' => BAZ_SUIVANT,
-        'prevImg' => BAZ_PRECEDENT,
+        'altNext' => _t('BAZ_SUIVANT'),
+        'altPrev' => _t('BAZ_PRECEDENT'),
+        'nextImg' => _t('BAZ_SUIVANT'),
+        'prevImg' => _t('BAZ_PRECEDENT'),
         'itemData'   => $tableau_resultat
     );
     $pager = & Pager::factory($params);
@@ -102,7 +102,7 @@ if (!empty($pagination)) {
 $fiches['fiches'] = array();
 foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche['body'], true);  //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
-    $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
+    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);  //permet de voir la fiche
     if (baz_a_le_droit('supp_fiche', $valeurs_fiche['createur'])) {  //lien de suppression visible pour le super admin
         $valeurs_fiche['lien_suppression'] = '<a class="BAZ_lien_supprimer" href="'.$this->href('deletepage', $valeurs_fiche['id_fiche']).'"></a>'."\n";
@@ -110,8 +110,8 @@ foreach ($tableau_resultat as $fiche) {
     if (baz_a_le_droit('modif_fiche', $valeurs_fiche['createur'])) {
         $valeurs_fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="'.$this->href('edit', $valeurs_fiche['id_fiche']).'"></a>'."\n";
     }
-    $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
-    $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_voir" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
+    $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
+    $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
     $fiches['fiches'][] = $valeurs_fiche;  //tableau qui contient le contenu de touts les fiches
 }
 usort($fiches['fiches'], 'champ_compare');

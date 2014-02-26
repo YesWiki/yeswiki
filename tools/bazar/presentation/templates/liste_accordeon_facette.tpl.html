@@ -1,53 +1,46 @@
 <div class="row">
-<div class="span3">
-<?=$open;?>
+	<div class="span3">
+	<?php echo $open;?>
 
-<?php if( count($checkboxes)>0 ) :?>
-<button class="btn btn-success" value=\"Go\">Rechercher</button>
-<?php foreach($checkboxes as $checkbox): ?>
-        <?php foreach($checkbox as $element_checkbox): ?>
-            <?php if (isset($element_checkbox['title']) ) : ?>
-	         <h5> <?=$element_checkbox['title'];?>:</h5>	 
-            <?php else: ?>
-			<?=$element_checkbox['content'];?> 
-			<br/>
-            <?php endif; ?>
-			
-<?php endforeach; ?>
-		
-<?php endforeach; ?>
-<br/>
-<button class="btn btn-success" value=\"Go\">Rechercher</button>
-<?=$close;?>
-</div>
-<div class="span9">
-<?php echo $info_res;?>
-<?php if( count($fiches)>0 ) : ?>
-	<?php if( isset($GLOBALS['numaccordion'])) { $GLOBALS['numaccordion']++; } else { $GLOBALS['numaccordion'] = 1; }; ?>
-	<div id="accordion<?php echo $GLOBALS['numaccordion'];?>" class="accordion">
-	<?php foreach($fiches as $fiche): ?>
-		<div class="accordion-group">
-          <div class="accordion-heading">
-            <a href="#collapse<?php echo $fiche['id_fiche']; ?>" data-toggle="collapse" class="accordion-toggle">
-              <?php echo $fiche['bf_titre']; ?>
-            </a>
-          </div> <!-- /.accordion-heading -->
-          <div class="accordion-body collapse" id="collapse<?php echo $fiche['id_fiche']; ?>">
-            <div class="accordion-inner">
-              <?php echo $fiche['html'];?><br />
-              <?php echo $GLOBALS['wiki']->Format('{{barreredaction page="'.$fiche['id_fiche'].'" template="barreredaction_buttons_ecorem.tpl.html" }}');?>
-            </div> <!-- /.accordion-inner -->
-          </div> <!-- /.accordion-body -->
-        </div> <!-- /.accordion-group -->
-	<?php endforeach; ?>
-</div>
-<?php echo $pager_links;?>
-<?php endif; ?>
-</div>
-<div class="clear"></div><br/>
-	
-	
-	
-	
-
-<?php endif; ?>
+	<?php if( count($checkboxes)>0 ) :?>
+		<button class="btn btn-success" value=\"Go\"><?php echo _t('BAZ_RECHERCHER'); ?></button>
+		<?php foreach($checkboxes as $checkbox): ?>
+			<?php foreach($checkbox as $element_checkbox): ?>
+				<?php if (isset($element_checkbox['title']) ) : ?>
+					<h5> <?php echo $element_checkbox['title'];?>:</h5>	 
+				<?php else: ?>
+					<?php echo $element_checkbox['content'];?> 
+					<br/>
+				<?php endif; ?>	
+			<?php endforeach; ?>
+		<?php endforeach; ?>
+		<br/>
+		<button class="btn btn-success" value=\"Go\"><?php echo _t('BAZ_RECHERCHER'); ?></button>
+	<?php endif; ?>
+	<?php echo $close;?>
+	</div> <!-- /.span3 -->
+	<div class="span9">
+		<?php echo $info_res;?>
+		<?php if (isset($fiches) && count($fiches)>0 ) : ?>
+			<?php if( isset($GLOBALS['numaccordion'])) { $GLOBALS['numaccordion']++; } else { $GLOBALS['numaccordion'] = 1; }; ?>
+			<div id="accordion<?php echo $GLOBALS['numaccordion'];?>" class="accordion">
+			<?php foreach($fiches as $fiche): ?>
+				<div class="accordion-group">
+				  <div class="accordion-heading">
+				    <a href="#collapse<?php echo $fiche['id_fiche']; ?>" data-toggle="collapse" class="accordion-toggle">
+				      <?php echo $fiche['bf_titre']; ?>
+				    </a>
+				  </div> <!-- /.accordion-heading -->
+				  <div class="accordion-body collapse" id="collapse<?php echo $fiche['id_fiche']; ?>">
+				    <div class="accordion-inner">
+				      <?php echo $fiche['html'];?><br />
+				      <?php echo $GLOBALS['wiki']->Format('{{barreredaction page="'.$fiche['id_fiche'].'" template="barreredaction_buttons_ecorem.tpl.html" }}');?>
+				    </div> <!-- /.accordion-inner -->
+				  </div> <!-- /.accordion-body -->
+				</div> <!-- /.accordion-group -->
+			<?php endforeach; ?>
+			</div> <!-- /#accordion<?php echo $GLOBALS['numaccordion'];?> -->
+			<?php echo $pager_links;?>
+		<?php endif; ?>
+	</div>  <!-- /.span9 -->	
+</div> <!-- /.row -->

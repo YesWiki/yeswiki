@@ -48,34 +48,8 @@ define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 // Pour que seul le propriétaire et l'admin puissent changer de theme
 define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
-// Indique un code langue par defaut
-define ('TEMPLATES_DEFAULT_LANG', 'fr') ; 
-
 // Indique un encodage de caractères par defaut
-define ('TEMPLATES_DEFAULT_CHARSET', 'iso-8859-15') ; 
-
-
-//on récupère les metas
-$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-if (!empty($metadatas)) {
-	$metadatas =  array_map('utf8_decode', json_decode($metadatas, true));
-}
-if (isset($metadatas['lang'])) { $wakkaConfig['lang'] = $metadatas['lang']; }
-elseif (isset($_GET['lang'])) { $wakkaConfig['lang'] = $_GET['lang']; }
-elseif (!isset($wakkaConfig['lang'])) { $wakkaConfig['lang'] = TEMPLATES_DEFAULT_LANG; }
-
-if (isset($metadatas['charset'])) { $wakkaConfig['charset'] = $metadatas['charset']; }
-elseif (!isset($wakkaConfig['charset'])) { $wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET; }
-header('Content-Type: text/html; charset='.TEMPLATES_DEFAULT_CHARSET); 
-
-// Code pour l'inclusion des langues
-if (file_exists('tools/templates/lang/templates_'.$wakkaConfig['lang'].'.inc.php')) {
-	include_once 'tools/templates/lang/templates_'.$wakkaConfig['lang'].'.inc.php';
-} else {
-	include_once 'tools/templates/lang/templates_'.TEMPLATES_DEFAULT_LANG.'.inc.php';
-}
-
-include_once 'tools/templates/libs/templates.functions.php';
+define ('TEMPLATES_DEFAULT_CHARSET', 'UTF-8') ; 
 
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses [] = 'Template';
@@ -104,8 +78,6 @@ $wikiClassesContent [] = '
     }
 	
 	
-	
-	
 	function GetMetaDatas($pagetag) {	
 		$metadatas = $this->GetTripleValue($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', \'\', \'\', \'\');
 		if (!empty($metadatas)) {
@@ -129,6 +101,16 @@ $wikiClassesContent [] = '
 	}
 	
 ';
+
+//on récupère les metadonnées de la page
+$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+if (!empty($metadatas)) {
+        $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
+}
+
+if (isset($metadatas['charset'])) { $wakkaConfig['charset'] = $metadatas['charset']; }
+elseif (!isset($wakkaConfig['charset'])) { $wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET; }
+header('Content-Type: text/html; charset='.TEMPLATES_DEFAULT_CHARSET); 
 
 
 // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus

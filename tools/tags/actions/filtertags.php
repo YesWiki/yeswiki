@@ -18,7 +18,7 @@ if (strstr($params,'alert-danger')) {
 	echo $params;
 	return;
 }
-$taglist = $params['tags'];
+$taglist = _convert($params['tags'], TEMPLATES_DEFAULT_CHARSET, TRUE);
 unset($params['tags']);
 
 // requete avec toutes les pages contenants les mots cles
@@ -35,7 +35,7 @@ foreach ($params as $param) {
  			echo '<br />'."\n";
  		} 
  		else {
- 			echo '<button type="button" class="btn btn-default filter" data-filter="'.sanitizeEntity($tagname).'">'.$tagname.'</button>'."\n";
+ 			echo '<button type="button" class="btn btn-default filter" data-filter="'.sanitizeEntity(_convert($tagname, TEMPLATES_DEFAULT_CHARSET, TRUE)).'">'.$tagname.'</button>'."\n";
  		}	
  	}
  	echo  '</div>'."\n".'</div>'."\n";

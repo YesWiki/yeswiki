@@ -289,38 +289,44 @@ class attach {
         if (empty($this->link)) $this->link = $this->wiki->GetParameter("link");
         $this->caption = $this->wiki->GetParameter("caption");//texte de la vignette (au survol)
         $this->legend = $this->wiki->GetParameter("legend");//texte de la vignette (en dessous)
+        $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
+		$this->height = $this->wiki->GetParameter('height');
+		$this->width = $this->wiki->GetParameter('width');
         
         //test de validit&eacute; des parametres
         if (empty($this->file)){
             $this->attachErr = '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_FILE_NOT_FOUND').'.</div>'."\n";
         }
         if ($this->isPicture() && empty($this->desc)){
-            $this->attachErr .= '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_DESC_REQUIRED').'.</div>'."\n";
+            $this->attachErr = '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_DESC_REQUIRED').'.</div>'."\n";
         }
+        if (!empty($this->width) && !ctype_digit($this->width) ){
+            $this->attachErr = '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_WIDTH_NOT_NUMERIC').'.</div>'."\n";
+        }
+        if (!empty($this->height) && !ctype_digit($this->height) ){
+            $this->attachErr = '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_ATTACH').'</strong> : '._t('ATTACH_PARAM_HEIGHT_NOT_NUMERIC').'.</div>'."\n";
+        }
+
         if ($this->wiki->GetParameter("class")) {
             $array_classes = explode(" ", $this->wiki->GetParameter("class"));
             foreach ($array_classes as $c) { 
             	$this->classes .= ' '. trim($c); 
             }
         }
-        $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
-
-		$this->height = $this->wiki->GetParameter('height');
-        $this->width = $this->wiki->GetParameter('width');
-        
+       
         $size = $this->wiki->GetParameter("size");
         switch ($size) {
                 case 'small' : 
-                    $this->width = 140;
-                    $this->height = 97;
+                    $this->width = $this->wiki->config['image-small-width'];
+                    $this->height = $this->wiki->config['image-small-height'];
                     break;
                 case 'medium': 
-                    $this->width = 300; 
-                    $this->height = 209;
+                    $this->width = $this->wiki->config['image-medium-width']; 
+                    $this->height = $this->wiki->config['image-medium-height'];
                     break;
                 case 'big': 
-                    $this->width = 780;
-                    $this->height = 544;
+                    $this->width = $this->wiki->config['image-big-width'];
+                    $this->height = $this->wiki->config['image-big-height'];
                     break;
             }
 
@@ -446,7 +452,7 @@ class attach {
      * Affiche un liens comme un fichier inexistant
      */
     function showFileNotExits(){
-        echo $this->file."<a href=\"".$this->wiki->href("upload",$this->wiki->GetPageTag(),"file=$this->file")."\">?</a>";
+        echo "<a href=\"".$this->wiki->href("upload",$this->wiki->GetPageTag(),"file=$this->file")."\" class=\"btn btn-primary\"><i class=\"glyphicon glyphicon-upload icon-upload icon-white\"></i> "._t('UPLOAD_FILE').' '.$this->file."</a>";
     }
     /**
      * Affiche l'attachement
@@ -491,26 +497,25 @@ class attach {
             switch ($_SERVER["REQUEST_METHOD"]) {
                 case 'GET' : $this->showUploadForm(); break;
                 case 'POST': $this->performUpload(); break;
-                default : echo $this->wiki->Format("//Methode de requete invalide//---");
+                default : echo "<div class=\"alert alert-error alert-danger\">"._t('INVALID_REQUEST_METHOD')."</div>\n";
             }
         }else{
-            echo $this->wiki->Format("//Vous n'avez pas l'acc&ecirc;s en &eacute;criture ? cette page//---");
-            echo $this->wiki->Format("Retour ? la page ".$this->wiki->GetPageTag());
+            echo "<div class=\"alert alert-error alert-danger\">"._t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE')."</div>\n";
+            echo $this->wiki->Format(_t('ATTACH_BACK_TO_PAGE')." ".$this->wiki->GetPageTag());
         }
     }
     /**
      * Formulaire d'upload
      */
     function showUploadForm(){
-        echo $this->wiki->Format("====Formulaire d'envois de fichier====\n---");
         $this->file = $_GET['file'];
-        echo 	$this->wiki->Format("**Envois du fichier $this->file :**\n")
-            ."<form enctype=\"multipart/form-data\" name=\"frmUpload\" method=\"POST\" action=\"".$_SERVER["PHP_SELF"]."\">\n"
+        echo "<h3>"._t('ATTACH_UPLOAD_FORM_FOR_FILE')." ".$this->file."</h3>\n";
+        echo "<form enctype=\"multipart/form-data\" name=\"frmUpload\" method=\"POST\" action=\"".$_SERVER["PHP_SELF"]."\">\n"
             ."	<input type=\"hidden\" name=\"wiki\" value=\"".$this->wiki->GetPageTag()."/upload\" />\n"
-            ."	<input TYPE=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"".$this->attachConfig['max_file_size']."\" />\n"
+            ."	<input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"".$this->attachConfig['max_file_size']."\" />\n"
             ."	<input type=\"hidden\" name=\"file\" value=\"$this->file\" />\n"
             ."	<input type=\"file\" name=\"upFile\" size=\"50\" /><br />\n"
-            ."	<input type=\"submit\" value=\"Envoyer\" />\n"
+            ."	<input class=\"btn btn-primary\" type=\"submit\" value=\""._t("ATTACH_SAVE")."\" />\n"
             ."</form>\n";
     }
     /**
@@ -535,22 +540,23 @@ class attach {
                     header("Location: ".$this->wiki->href("",$this->wiki->GetPageTag(),""));
                 }else{
                     echo $this->wiki->Format("//Erreur lors du d&eacute;placement du fichier temporaire//---");
+                    echo "<div class=\"alert alert-error alert-danger\">"._t('ERROR_MOVING_TEMPORARY_FILE')."</div>\n";
                 }
                 break;
             case 1:
-                echo $this->wiki->Format("//Le fichier t&eacute;l&eacute;charg&eacute; exc&ecirc;de la taille de upload_max_filesize, configur&eacute; dans le php.ini.//---");
+                echo "<div class=\"alert alert-error alert-danger\">"._t('ERROR_UPLOAD_MAX_FILESIZE')."</div>\n";
                 break;
             case 2:
-                echo $this->wiki->Format("//Le fichier t&eacute;l&eacute;charg&eacute; exc&ecirc;de la taille de MAX_FILE_SIZE, qui a &eacute;t&eacute; sp&eacute;cifi&eacute;e dans le formulaire HTML.//---");
+                echo "<div class=\"alert alert-error alert-danger\">"._t('ERROR_MAX_FILE_SIZE')."</div>\n";
                 break;
             case 3:
-                echo $this->wiki->Format("//Le fichier n'a &eacute;t&eacute; que partiellement t&eacute;l&eacute;charg&eacute;.//---");
+                echo "<div class=\"alert alert-error alert-danger\">"._t('ERROR_PARTIAL_UPLOAD')."</div>\n";
                 break;
             case 4:
-                echo $this->wiki->Format("//Aucun fichier n'a &eacute;t&eacute; t&eacute;l&eacute;charg&eacute;.//---");
+                echo "<div class=\"alert alert-error alert-danger\">"._t('ERROR_NO_FILE_UPLOADED')."</div>\n";
                 break;
         }
-        echo $this->wiki->Format("Retour ? la page ".$this->wiki->GetPageTag());
+        echo $this->wiki->Format(_t('ATTACH_BACK_TO_PAGE')." ".$this->wiki->GetPageTag());
     }
     /******************************************************************************
      *	FUNCTIONS DE DOWNLOAD DE FICHIERS
@@ -827,7 +833,7 @@ class attach {
         }
         $fmBodyTable .= '	</tbody>'."\n";
         //pied de la page
-        $fmFooterPage = "---\n-----\n[[".$this->wiki->tag." Retour ? la page ".$this->wiki->tag."]]\n";
+        $fmFooterPage = "---\n-----\n[[".$this->wiki->tag." "._t('ATTACH_BACK_TO_PAGE')." ".$this->wiki->tag."]]\n";
         //affichage
         echo $fmTitlePage."\n";
         echo '<table class="tableFM" border="0" cellspacing="0">'."\n".$fmHeadTable.$fmFootTable.$fmBodyTable.'</table>'."\n";

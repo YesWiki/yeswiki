@@ -27,23 +27,10 @@
 .qq-upload-failed-text {display:none;}
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
 
-
-.label-image-align-left {
-	background: url(../images/align-left.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
-.label-image-align-center {
-	background: url(../images/align-center.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
-.label-image-align-right {
-	background: url(../images/align-right.png) no-repeat scroll left center transparent;
-	padding:0 0 0 23px;
-}
-.label-image-size {
+/*.label-image-size {
 	width:130px;
 }
-
+*/
 
 /**************************Les classes effets graphiques pour les images**************************************************************************/
 
@@ -214,3 +201,13 @@ box-shadow: 2px 2px 15px 0px #444;
 .modal-pointimage .form-control {
   width:100%;
 }
+
+/*background image */
+.background-image {
+  -webkit-background-size:cover;-moz-background-size:cover;-o-background-size:cover;background-size:cover;
+      /*background-attachment:fixed;*/
+      background-clip:border-box;
+      background-origin:padding-box;
+      background-position:center center;
+}
+.headerpage .background-image { margin:-20px; padding:20px;}

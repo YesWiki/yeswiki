@@ -25,51 +25,8 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
       document = window.document,
       defaults = {
         savebtn: false,
-        lang: 'fr',
         syntax: 'yeswiki'
       },
-      lang = { 
-      	fr : {
-	      	'ACEDITOR_SAVE'				: 'Sauver',
-	      	'ACEDITOR_FORMAT'			: 'Format',
-	      	'ACEDITOR_TITLE1'			: 'En-t&ecirc;te &eacute;norme',
-	      	'ACEDITOR_TITLE2'			: 'En-t&ecirc;te tr&egrave;s gros',
-	      	'ACEDITOR_TITLE3'			: 'En-t&ecirc;te gros',
-	      	'ACEDITOR_TITLE4'			: 'En-t&ecirc;te normal',
-	      	'ACEDITOR_TITLE5'			: 'Petit en-t&ecirc;te',
-	      	'ACEDITOR_BIGGER_TEXT'		: 'Texte agrandi',
-	      	'ACEDITOR_HIGHLIGHT_TEXT'	: 'Texte mis en valeur',
-	      	'ACEDITOR_SOURCE_CODE'		: 'Code source',
-	      	'ACEDITOR_BOLD_TEXT'		: 'Passe le texte s&eacute;lectionn&eacute; en gras  ( Ctrl-b )',
-	      	'ACEDITOR_ITALIC_TEXT'		: 'Passe le texte s&eacute;lectionn&eacute; en italique ( Ctrl-i )',
-	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Souligne le texte s&eacute;lectionn&eacute; ( Ctrl-u )',
-	      	'ACEDITOR_STRIKE_TEXT'		: 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
-	      	'ACEDITOR_LINE'				: 'Ins&egrave;re une ligne horizontale',
-	      	'ACEDITOR_LINK'				: 'Lien',
-	      	'ACEDITOR_LINK_PROMPT'		: 'Entrez l\'adresse URL',
-	      	'ACEDITOR_LINK_TITLE'		: 'Ajoute un lien au texte s&eacute;lectionn&eacute;'
-	      },
-	    en : {
-	    	'ACEDITOR_SAVE'				: 'Save',
-	      	'ACEDITOR_FORMAT'			: 'Format',
-	      	'ACEDITOR_TITLE1'			: 'Huge title',
-	      	'ACEDITOR_TITLE2'			: 'Very big title',
-	      	'ACEDITOR_TITLE3'			: 'Big title',
-	      	'ACEDITOR_TITLE4'			: 'Basic title',
-	      	'ACEDITOR_TITLE5'			: 'Small title',
-	      	'ACEDITOR_BIGGER_TEXT'		: 'Bigger text',
-	      	'ACEDITOR_HIGHLIGHT_TEXT'	: 'Highlighted text',
-	      	'ACEDITOR_SOURCE_CODE'		: 'Source code',
-	      	'ACEDITOR_BOLD_TEXT'		: 'Bold text ( Ctrl-b )',
-	      	'ACEDITOR_ITALIC_TEXT'		: 'Italic text ( Ctrl-i )',
-	      	'ACEDITOR_UNDERLINE_TEXT'	: 'Underline the selected text ( Ctrl-u )',
-	      	'ACEDITOR_STRIKE_TEXT'		: 'Stroke the selected text ( Ctrl-y )',
-	      	'ACEDITOR_LINE'				: 'Insert horizontal line',
-	      	'ACEDITOR_LINK'				: 'Link',
-	      	'ACEDITOR_LINK_PROMPT'		: 'Enter the link adress',
-	      	'ACEDITOR_LINK_TITLE'		: 'Add a link to selected text'
-	    }
-	  },
 	  syntax = { 
       	yeswiki : {
 	      	'TITLE1_LFT'			: '======',
@@ -145,19 +102,10 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
     // future instances of the plugin
     this.options = $.extend( {}, defaults, options) ;
     
-    this.lang = lang;
     this.syntax = syntax;
 
     this._defaults = defaults;
     this._name = pluginName;
-
-    // gestion du multilinguisme
-	var htmllang = $('html').attr('lang');
-	if (htmllang !== 'undefined' && htmllang in this.lang) {
-	  	this.options.lang = htmllang;
-	} else {
-	  	this.options.lang = 'fr';
-	}
 
     this.init();
   }
@@ -169,53 +117,52 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
     if (this.element.tagName === 'TEXTAREA') {
     	var toolbar = $('<div>').addClass("btn-toolbar aceditor-toolbar");
     	if (this.options.savebtn) {
-    		toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary">'+this.lang[this.options.lang]['ACEDITOR_SAVE']+'</button></div>'));
+    		toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary"><?php echo _t('ACEDITOR_SAVE'); ?></button></div>'));
     	}
 
-    	// Format du texte pour les titres
+    	// Text formatting
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang[this.options.lang]['ACEDITOR_FORMAT']+'&nbsp;&nbsp;<span class="caret"></span></a>' +
+							'<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#"><?php echo _t('ACEDITOR_FORMAT'); ?>&nbsp;&nbsp;<span class="caret"></span></a>' +
 							'<ul class="dropdown-menu">' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'" class="aceditor-btn aceditor-btn-title1" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1>'+this.lang[this.options.lang]['ACEDITOR_TITLE1']+'</h1></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'" class="aceditor-btn aceditor-btn-title2" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2>'+this.lang[this.options.lang]['ACEDITOR_TITLE2']+'</h2></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3>'+this.lang[this.options.lang]['ACEDITOR_TITLE3']+'</h3></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4>'+this.lang[this.options.lang]['ACEDITOR_TITLE4']+'</h4></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'" class="aceditor-btn aceditor-btn-title5" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5>'+this.lang[this.options.lang]['ACEDITOR_TITLE5']+'</h5></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_TITLE1'); ?>" class="aceditor-btn aceditor-btn-title1" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1><?php echo _t('ACEDITOR_TITLE1'); ?></h1></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_TITLE2'); ?>" class="aceditor-btn aceditor-btn-title2" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2><?php echo _t('ACEDITOR_TITLE2'); ?></h2></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_TITLE3'); ?>" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3><?php echo _t('ACEDITOR_TITLE3'); ?></h3></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_TITLE4'); ?>" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4><?php echo _t('ACEDITOR_TITLE4'); ?></h4></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_TITLE5'); ?>" class="aceditor-btn aceditor-btn-title5" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5><?php echo _t('ACEDITOR_TITLE5'); ?></h5></a></li>' +
 								'<li class="divider"></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead">'+this.lang[this.options.lang]['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang[this.options.lang]['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
-								'<li><a title="'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre>'+this.lang[this.options.lang]['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_BIGGER_TEXT'); ?>" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead"><?php echo _t('ACEDITOR_BIGGER_TEXT'); ?></div></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_HIGHLIGHT_TEXT'); ?>" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well"><?php echo _t('ACEDITOR_HIGHLIGHT_TEXT'); ?></div></a></li>' +
+								'<li><a title="<?php echo _t('ACEDITOR_SOURCE_CODE'); ?>" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre><?php echo _t('ACEDITOR_SOURCE_CODE'); ?></pre></div></a></li>' +
 							'</ul>' +
 						'</div>');
 			
-	    // Gras italique souligné barré
+	    // Bold Italic Underline Stroke
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_BOLD_TEXT']+'">' +
+							'<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="<?php echo _t('ACEDITOR_BOLD_TEXT'); ?>">' +
 								'<span style="font-family:serif;font-weight:bold;">B</span>' +
 							'</a>' +
-							'<a class="btn btn-default aceditor-btn aceditor-btn-italic" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_ITALIC_TEXT']+'">' +
+							'<a class="btn btn-default aceditor-btn aceditor-btn-italic" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="<?php echo _t('ACEDITOR_ITALIC_TEXT'); ?>">' +
 								'<span style="font-family:serif;font-style:italic;">I</span>' +
 							'</a>' +
-							'<a class="btn btn-default aceditor-btn aceditor-btn-underline" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_UNDERLINE_TEXT']+'">' +
+							'<a class="btn btn-default aceditor-btn aceditor-btn-underline" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="<?php echo _t('ACEDITOR_UNDERLINE_TEXT'); ?>">' +
 								'<span style="font-family:serif;text-decoration:underline;">U</span>' +
 							'</a>' +
-							'<a class="btn btn-default aceditor-btn aceditor-btn-strike" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_STRIKE_TEXT']+'">' +
+							'<a class="btn btn-default aceditor-btn aceditor-btn-strike" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="<?php echo _t('ACEDITOR_STRIKE_TEXT'); ?>">' +
 								'<span style="font-family:serif;text-decoration:line-through;">S</span>' +
 							'</a>' +
 						'</div>');
 
-	    // Ligne horizontale et liens
+	    // Horizontal line and links
     	toolbar.append(	'<div class="btn-group">' +
-							'<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang[this.options.lang]['ACEDITOR_LINE']+'">' +
+							'<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="<?php echo _t('ACEDITOR_LINE'); ?>">' +
 								'<i class="icon-minus"></i>' +
 							'</a>' +
-							'<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="' + this.lang[this.options.lang]['ACEDITOR_LINK_PROMPT'] + '" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="' + this.lang[this.options.lang]['ACEDITOR_LINK_TITLE'] + '" class="btn">' +
-								'<i class="icon-share-alt"></i>&nbsp;' + this.lang[this.options.lang]['ACEDITOR_LINK'] +
-							'</a>' +
+							'<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="<?php echo addslashes(_t('ACEDITOR_LINK_PROMPT')); ?>" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="<?php echo _t('ACEDITOR_LINK_TITLE'); ?>" class="btn">' +
+								'<i class="icon-share-alt"></i>&nbsp;<?php echo _t('ACEDITOR_LINK'); ?></a>' +
 						'</div>');
 
     	var lastFocus;
-    	// On affecte les boutons
+    	// Buttons fonctions
     	toolbar.find('a.aceditor-btn').each(function() {
     		$(this).on('click', function(e){
     			e.preventDefault();
@@ -243,16 +190,16 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
     		})
     	});
 
-    	// Affichage de la barre juste avant le textarea
+    	// Add buttonbar over textarea
     	var textarea = $(this.element);
     	textarea.before(toolbar);
 
-    	// Test du blur
+    	// Blur
 		textarea.blur(function() {
 		    lastFocus = textarea;
 		});
 
-    	// Gestion des raccourcis claviers
+    	// Keyboard shortcuts
     	var isCtrl = false;
     	var isAlt = false;
 
@@ -334,9 +281,9 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 
 }(jQuery, window));
 
-// Initialisation pour le mode édition
+// Edit handler of yeswiki
 $('#body').aceditor({savebtn : true});
 
-// Initialisation pour les commentaires, et textelongs bazar
+// For comments and Bazar's textarea
 $('.wiki-textarea, .commentform textarea').aceditor();
 $('.html-textarea').aceditor({syntax:'html'});

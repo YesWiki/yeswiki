@@ -3,7 +3,7 @@
 		<div class="controls">
 			<div class="input-prepend">
 		    	<span class="add-on"><i class="icon-user"></i></span>
-				<input required class="input-medium" type="text" name="name" value="" placeholder="<?php echo CONTACT_YOUR_NAME; ?>" />
+				<input required class="input-medium" type="text" name="name" value="" placeholder="<?php echo _t('CONTACT_YOUR_NAME'); ?>" />
 			</div>
 		</div>
 	</div>
@@ -12,7 +12,7 @@
 		<div class="controls">
 			<div class="input-prepend">
 		    	<span class="add-on"><i class="icon-envelope"></i></span>
-				<input required class="input-medium" type="email" name="email" value="" placeholder="<?php echo CONTACT_YOUR_MAIL; ?>" />
+				<input required class="input-medium" type="email" name="email" value="" placeholder="<?php echo _t('CONTACT_YOUR_MAIL'); ?>" />
 			</div>
 		</div>
 	</div>
@@ -20,7 +20,7 @@
 	<div class="control-group">
 		<div class="controls">
 			<div class="input-prepend">
-				<input required class="contact-subject" type="text" name="subject" value="" placeholder="<?php echo CONTACT_SUBJECT; ?>" />
+				<input required class="contact-subject" type="text" name="subject" value="" placeholder="<?php echo _t('CONTACT_SUBJECT'); ?>" />
 			</div>
 		</div>
 	</div>
@@ -28,14 +28,14 @@
 	<div class="control-group">
 		<div class="controls">
 			<div class="input-prepend">
-				<textarea required class="contact-message" name="message" placeholder="<?php echo CONTACT_YOUR_MESSAGE; ?>"></textarea>
+				<textarea required class="contact-message" name="message" placeholder="<?php echo _t('CONTACT_YOUR_MESSAGE'); ?>"></textarea>
 			</div>
 		</div>
 	</div>
 
 	<div class="control-group">
 		<div class="controls">
-			<button class="btn btn-primary mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo CONTACT_SEND_MESSAGE; ?></button>
+			<button class="btn btn-primary mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo _t('CONTACT_SEND_MESSAGE'); ?></button>
 		</div>
 	</div>
 	<input type="hidden" name="nbactionmail" value="<?php echo $nbactionmail; ?>" />

@@ -28,7 +28,7 @@ if ( $this->HasAccess("comment") && !$this->page['comment_on']){
 
 	$plugin_output_new = 
 		str_replace('<div class="clearfix"></div></div>', 
-					'<span id="hashcash-text" style="display:none" class="pull-right">'.HASHCASH_ANTISPAM_ACTIVATED.'</span>
+					'<span id="hashcash-text" style="display:none" class="pull-right">'._t('HASHCASH_ANTISPAM_ACTIVATED').'</span>
 					<div class="clearfix"></div></div>', 
 					$plugin_output_new);
 }

@@ -42,6 +42,34 @@ function _t($textkey)
 }
 
 /**
+ * Convert the text in the page's charset, or in the datadase's charset
+ *
+ * @param string the text
+ * @param string the page's encoding
+ * @param bool is it for the database ?
+ * @return string the encoded text
+ */
+function _convert($text, $fromencoding, $database = FALSE)
+{
+    if ($database) { 
+        if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
+            return iconv($fromencoding, "ISO-8859-15", $text);
+        } 
+        else {
+            return $text;
+        }
+    }
+    else {
+        if ($fromencoding != TEMPLATES_DEFAULT_CHARSET) {
+            return iconv($fromencoding, TEMPLATES_DEFAULT_CHARSET, $text);
+        } 
+        else {
+            return $text;
+        }
+    }
+}
+
+/**
  * Automatically detects the languages available in the lang dir
  * @return array available languages
  */
@@ -65,10 +93,42 @@ function detectAvailableLanguages()
  * 
  *  @array $available_languages        array with language-tag-strings (must be lowercase) that are available
  *  @string $http_accept_language    a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
+ *  @string $page    name of WikiPage to check for informations on language
  */
-function detectPreferedLanguage($available_languages, $http_accept_language="auto") {
-    // if $http_accept_language was left out, read it from the HTTP-Header
-    if ($http_accept_language == "auto") $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+function detectPreferedLanguage($available_languages, $http_accept_language="auto", $page = '') {
+    // first choice : if lang changed in url
+    if (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) {
+        return $_GET['lang'];
+    }
+    // just for installation
+    elseif (isset($_POST["config"])) {
+        if (count($_POST["config"])==1) {
+            $conf = unserialize($_POST["config"]);
+            if (isset($conf['default_language']) && in_array($conf['default_language'], $available_languages)) {
+                return $conf['default_language'];
+            }
+        } 
+        elseif (isset($_POST["config"]['default_language']) && in_array($_POST["config"]['default_language'], $available_languages) ) {
+            return $_POST["config"]['default_language'];
+        }
+    }
+    // page's metadata lang
+    elseif ($page!='') {
+        $GLOBALS['wiki']->metadatas = $GLOBALS['wiki']->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+        if (!empty($GLOBALS['wiki']->metadatas)) {
+            $GLOBALS['wiki']->metadatas =  array_map('utf8_decode', json_decode($GLOBALS['wiki']->metadatas, true));
+        }
+        if (isset($GLOBALS['wiki']->metadatas['lang']) && in_array($GLOBALS['wiki']->metadatas['lang'], $available_languages)) {
+            return $GLOBALS['wiki']->metadatas['lang'];
+        }
+        // default language from config file
+        if (isset($GLOBALS['wiki']->config['default_language']) && in_array($GLOBALS['wiki']->config['default_language'], $available_languages)) {
+            return $GLOBALS['wiki']->config['default_language'];
+        }
+    }
+    
+    // if $http_accept_language was left out, read it from the HTTP-Header of the browser
+    elseif ($http_accept_language == "auto") $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
 
     // standard  for HTTP_ACCEPT_LANGUAGE is defined under
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
@@ -82,7 +142,7 @@ function detectPreferedLanguage($available_languages, $http_accept_language="aut
                    "(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
                    $http_accept_language, $hits, PREG_SET_ORDER);
 
-    // default language (in case of no hits) is french, like the dev speak
+    // default language (in case of no hits) is french, like the devs speak
     $bestlang = 'fr';
     $bestqval = 0;
 
@@ -117,6 +177,9 @@ function detectPreferedLanguage($available_languages, $http_accept_language="aut
  */
 function initI18n()
 {
+    // get the language list
+    require_once 'lang/languages_list.php';
+
     // we initialise with french language, because it is the most beautiful ;) or maybe just the most updated because we are a french dev team
     require_once 'lang/yeswiki_fr.php';
 
@@ -130,6 +193,25 @@ function initI18n()
     return;
 }
 
+/**
+ * Update the table of translation, based on the information gathered in the page, eventually
+ * Must be run once initI18n() was..
+ *
+ *  @string $page    name of current WikiPage to check for informations on language
+ *
+ */
+function loadpreferredI18n($page = '')
+{
+    $GLOBALS['prefered_language'] = detectPreferedLanguage($GLOBALS['available_languages'], 'auto', $page);
+
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
+        // this will overwrite the values of $GLOBALS['translations'] in the selected language
+        require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+    }
+    return;
+}
+
+// default init
 initI18n();
 
 ?>

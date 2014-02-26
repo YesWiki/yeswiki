@@ -98,6 +98,10 @@ a.size1:hover,a.size2:hover,a.size3:hover,a.size4:hover {
 color:#e13728;
 }
 
+.tag-link {
+    cursor: pointer;
+}
+
 /***********************************FIN Nuage de mot clés************************************/
 
 

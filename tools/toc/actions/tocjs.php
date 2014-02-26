@@ -13,7 +13,7 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
         $(document).ready(function(){
             var page = $(".page");
             var titles = page.find("h1,h2,h3,h4,h5");
-            page.addClass("col-md-9").wrap( "<div class=\'row\'></div>" ).parent().prepend( "<div id=\'tocjs-'.$tag.'\' class=\'col-md-3 no-dblclick\'><div class=\'bs-sidebar affix hidden-print\' role=\'complementary\'><ul class=\'nav bs-sidenav\'></ul></div></div>" );
+            page.addClass("span9 col-md-9").wrap( "<div class=\'row\'></div>" ).parent().append( "<div id=\'tocjs-'.$tag.'\' class=\'span3 col-md-3 no-dblclick\'><div class=\'bs-sidebar affix hidden-print\' role=\'complementary\'><ul class=\'nav bs-sidenav\'></ul></div></div>" );
             var toc = $("#tocjs-'.$tag.'");  
             var title, idtitle, typetitle, h1 = 0, h2 = 0, h3 = 0, h4 = 0, h5 = 0; 
             titles.each(function() {

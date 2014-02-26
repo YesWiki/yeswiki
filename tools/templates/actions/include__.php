@@ -5,9 +5,9 @@ if (!defined("WIKINI_VERSION")) {
 
 include_once 'tools/templates/libs/templates.functions.php';
 
-// si la page inclue n'existe pas, on propose de la créer
+// si la page inclue n'existe pas, on propose de la crÃ©er
 if (!$incPage = $this->LoadPage($incPageName)) {
-	// on passe en parametres GET les valeurs du template de la page de provenance, pour avoir le même graphisme dans la page créée
+	// on passe en parametres GET les valeurs du template de la page de provenance, pour avoir le mÃªme graphisme dans la page crÃ©Ã©e
 	$query_string = 'theme='.urlencode($this->config['favorite_theme']).
 					'&amp;squelette='.urlencode($this->config['favorite_squelette']).
 					'&amp;style='.urlencode($this->config['favorite_style']);
@@ -23,7 +23,7 @@ else {
 }
 
 
-// si le lien correspond à l'url, on rajoute une classe "actif"
+// si le lien correspond Ã  l'url, on rajoute une classe "actif"
 if (!empty($actif) && $actif=="1") {
         $page_active=$this->tag;
         if (isset($oldpage) && $oldpage!='') { // si utilisation de l'extension attach
@@ -34,7 +34,7 @@ if (!empty($actif) && $actif=="1") {
        		$plugin_output_new);
 }
 
-// rajoute le javascript pour le double clic si le parametre est activé et les droits en écriture existent
+// rajoute le javascript pour le double clic si le parametre est activÃ© et les droits en Ã©criture existent
 if (!empty($dblclic) && $dblclic=="1" && $this->HasAccess("write", $incPageName)) {
 	$actiondblclic = ' ondblclick="document.location=\''.$this->Href("edit", $incPageName).'\';"';
 } else {
@@ -42,15 +42,85 @@ if (!empty($dblclic) && $dblclic=="1" && $this->HasAccess("write", $incPageName)
 }
 $plugin_output_new = str_replace('<div class="include ', '<div'.$actiondblclic.' class="', $plugin_output_new);
 
-// on enleve le préfixe include_ des classes pour que le parametre passé et le nom de classe CSS soient bien identiques 
+// on enleve le prÃ©fixe include_ des classes pour que le parametre passÃ© et le nom de classe CSS soient bien identiques 
 $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 
 // on ajoute pour le menu du haut la classe nav de bootstrap
-if ($incPageName == 'PageMenuHaut') {
+if ($incPageName == 'PageMenuHaut' && !strstr($class, 'horizontal-dropdown-menu')) {
 	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
+
+	//TODO: a faire pour toutes les pages ou juste le menu???
+	if (TEMPLATES_DEFAULT_CHARSET != "ISO-8859-1" && TEMPLATES_DEFAULT_CHARSET != "ISO-8859-15") {
+        $plugin_output_new = mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8');
+    } 
+
+	$dom = new DOMDocument();
+	$dom->loadHTML($plugin_output_new);
+	$xpath = new DOMXpath($dom);
+
+	$dropdowns = $xpath->query("*/div/ul/li/ul");
+	if (!is_null($dropdowns)) {
+		foreach ($dropdowns as $element) {
+			$element->setAttribute("class", "dropdown-menu");
+			$element->parentNode->setAttribute("class", "dropdown");
+		}
+	}	
+	$dropdownslist = $xpath->query("*/div/ul/li/ul/..");
+	if (!is_null($dropdownslist)) {
+		foreach ($dropdownslist as $element) {
+			$nodes = $element->childNodes;
+			foreach ($nodes as $node) {
+
+				// we search for #text child or a link, if we accessed the dropdown menu, we break
+				if ($node->nodeName == 'ul') break; 
+
+				// we add trigger for dropdown
+				if ($node->nodeName == 'a') {
+					$class = $node->getAttribute("class");
+					$node->setAttribute("class", $class." dropdown-toggle");
+					$node->setAttribute("data-toggle", "dropdown");
+					$caret = $dom->createElement("b");
+					$caret->setAttribute("class", "caret");
+		    		$node->appendChild($caret);
+				}
+
+				// check if <a exists or must be created
+				else if ($node->nodeName == '#text' && !trim($node->nodeValue) == '')  {
+					$a = $dom->createElement('a');
+					$a->setAttribute("class", "dropdown-toggle");
+					$a->setAttribute("data-toggle", "dropdown");
+					$a->setAttribute('href', "#");
+					$a->nodeValue = trim($node->nodeValue);
+					$node->nodeValue = '';
+					$caret = $dom->createElement("b");
+					$caret->setAttribute("class", "caret");
+		    		$a->appendChild($caret);
+				    $node->parentNode->insertBefore($a,$node);
+				}
+		    }			
+		}
+	}
+
+/*			$class = $element->previousSibling->previousSibling->getAttribute("class");
+			$element->previousSibling->previousSibling->setAttribute("class", $class." dropdown-toggle");
+			$element->previousSibling->previousSibling->setAttribute("data-toggle", "dropdown");
+			$caret = $dom->createElement("b");
+			$caret->setAttribute("class", "caret");
+    		$element->previousSibling->previousSibling->appendChild($caret);
+		}
+	}
+	*/
+	$activelinks = $xpath->query("//a[contains(@class, 'active-link')]");
+	if (!is_null($activelinks)) {
+		foreach ($activelinks as $activelink) {
+			$class = $activelink->parentNode->getAttribute("class");
+			$activelink->parentNode->setAttribute("class", $class." active");
+		}
+	}
+	$plugin_output_new =  preg_replace('/^<!DOCTYPE.+?>/', '', str_replace( array('<html>', '</html>', '<body>', '</body>'), '', $dom->saveHTML()))."\n";
 }
 
-// on rajoute une div clear pour mettre le flow css en dessous des éléments flottants
+// on rajoute une div clear pour mettre le flow css en dessous des Ã©lÃ©ments flottants
 $plugin_output_new =  (!empty($clear) && $clear=="1") ? $plugin_output_new.'<div class="clearfix"></div>'."\n" : $plugin_output_new;
 
 

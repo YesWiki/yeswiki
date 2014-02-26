@@ -99,6 +99,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 					$this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
 					$this->Redirect($this->href());
 				} else { // sécurité
+					// l'encodage de la base est en iso-8859-1, voir s'il faut convertir
+					$body = _convert($body, TEMPLATES_DEFAULT_CHARSET, TRUE);
+				     
+
 					// add page (revisions)
 					$this->SavePage($this->tag, $body);
 	
