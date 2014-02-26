@@ -1,3 +1,4 @@
+// Fonction debogage a supprimer
 function dump(arr,level) {
     var dumped_text = "";
     if(!level) level = 0;
@@ -23,6 +24,12 @@ function dump(arr,level) {
     return dumped_text;
 }
 
+// Comportement :
+// Par defaut, pas d'affichage des points.
+// Affichage uniquement si point selectionné
+// Pas de gestion du filtre "all" (le code est present au cas ou ...)
+
+
 $(function(){
         $('#Grid').mixitup({
         targetSelector: '.mix',
@@ -37,7 +44,7 @@ $(function(){
         targetDisplayList: 'block',
         listClass: 'list',
         transitionSpeed: 600,
-        showOnLoad: 'all',
+        showOnLoad: 'none',
         sortOnLoad: false,
         multiFilter: false,
         filterLogic: 'or',
@@ -47,41 +54,49 @@ $(function(){
         perspectiveDistance: '3000',
         perspectiveOrigin: '50% 50%',
         animateGridList: false,
-        onMixLoad: null,
-        onMixStart: null,
-        onMixEnd: function(config){
-
- 
-            // On se sert du rendu mixio pour afficher les points
-
+        onMixLoad: function(config){
             $.each(markers, function(i, marker){
                      map.removeLayer(marker);
              });
-
+        },
+        onMixStart: null,
+        onMixEnd: function(config){
+            // On se sert du rendu mixio pour afficher les points sur la carte
              $('#Grid .mix').map(function() {
 
                 if ($(this).css('opacity') == '1') {
                    map.addLayer(markers[this.id.substring(6)]);
+                   
                 }
             });
+
+        
           
         }
     });
 
-    
+
+    // Gestion des filtres
+
         var $filters = $('#Filters').find('li');
 
         var filterbydimension=Array();
         var filterString="";
         var dimensions=Array();
 
-        $.each(groups, function(t, group){
+        $.each(groups, function(t, group){ // Genere par bazarcato
                 dimensions[group]="";
                     
         });
-        //alert(dump(dimensions));
+        
 
         $filters.on('click',function(){
+
+                    // Nettoyage markers
+                    $.each(markers, function(i, marker){
+                     map.removeLayer(marker);
+                    });
+
                     var $t = $(this),
                     dimension = $t.attr('data-dimension'),
                     filter = $t.attr('data-filter');
@@ -89,6 +104,26 @@ $(function(){
                       dimensions[dimension]="";
                     }
                     filterString = dimensions[dimension];
+
+                    if(filter == 'all'){
+                        // If "all"
+                        if(!$t.hasClass('active')){
+                            // if unchecked, check "all" and uncheck all other active filters
+                            $t.addClass('active').siblings().removeClass('active');
+                            // Replace entire string with "all"
+                            filterString = 'all';
+                        } else {
+                            // Uncheck
+                            $t.removeClass('active');
+                            // Emtpy string
+                            filterString = '';
+                        }
+                    }
+                    else {
+                        // Else, uncheck "all"
+                        $t.siblings('[data-filter="all"]').removeClass('active');
+                        // Remove "all" from string
+                        filterString = filterString.replace('all','');
                         
                         if(!$t.hasClass('active')){
                             // Check checkbox
@@ -101,10 +136,12 @@ $(function(){
                             var re = new RegExp('(\\s|^)'+filter);
                             filterString = filterString.replace(re,'');
                         }
+                    }
 
                     dimensions[dimension] = filterString;
 
-  
+              //alert(dump(dimensions));
+
             
                     
                     filterbydimension=Array();
@@ -114,11 +151,14 @@ $(function(){
                             filterbydimension[w]=dimensions[group];
                         }
                         else {
-                         filterbydimension[w]="all";
+                            filterbydimension[w]="";
                         }
                     });
 
   
+
+
+            //  alert(dump(filterbydimension));
 
                     $('#Grid').mixitup('filter',filterbydimension);
 

@@ -366,6 +366,9 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
+
+
+
 /** checkbox() - Ajoute un element de type case a cocher au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
@@ -1630,6 +1633,7 @@ google.maps.event.addListener(marker, "dragend", function () {
 } else {alert("Localisation par votre acces Internet impossible...");}
 };
 
+
 function showAddress()
 {
     if (document.getElementById("bf_adresse1")) 	var adress_1 = document.getElementById("bf_adresse1").value ; else var adress_1 = "";
@@ -1647,6 +1651,7 @@ function showAddress()
 
 
     var address = adress_1 + \' \' + adress_2 + \' \'  + cp + \' \' + ville + \' \' +pays ;
+    
     address = address.replace(/\\("|\'|\\)/g, " ");
     if (geocoder) {
         geocoder.geocode( { \'address\': address}, function(results, status) {

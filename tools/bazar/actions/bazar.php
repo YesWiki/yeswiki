@@ -180,7 +180,7 @@ if (isset ($_GET[BAZ_VARIABLE_VOIR])) {
                     $output .= baz_rechercher($GLOBALS['_BAZAR_']['id_typeannonce'],$GLOBALS['_BAZAR_']['categorie_nature']);
                 }
                 break;
-            case BAZ_VOIR_MES_FICHES :
+            case BAZ_VOIR_MES_FICHES : 
                 $output .= baz_afficher_liste_fiches_utilisateur();
                 break;
             case BAZ_VOIR_S_ABONNER :

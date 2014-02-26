@@ -2788,7 +2788,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '', $id_typ
         $requete .= ' LIMIT 0,'.$nb_limite;
     }
 
-    // debug
+    // debug 
    // echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
     //var_dump($GLOBALS['wiki']->LoadAll($requete));
     return $GLOBALS['wiki']->LoadAll($requete);

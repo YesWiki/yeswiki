@@ -18,7 +18,7 @@ if (!class_exists('SquelettePhp')) {
         }
 
         /**
-        * Ajout une variable pour le squelette.
+        * Ajout  une variable pour le squelette.
         */
         public function set($nom, $valeur = null)
         {
