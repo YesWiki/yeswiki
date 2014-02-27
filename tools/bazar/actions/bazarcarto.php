@@ -272,7 +272,7 @@ $i = 0;
 
 foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche["body"], true);
-    $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
+    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
 
 
     if (isset($jointure[$valeurs_fiche['id_typeannonce']])) {
@@ -280,7 +280,7 @@ foreach ($tableau_resultat as $fiche) {
         foreach ($tableau_resultat_lie[$jointure[$valeurs_fiche['id_typeannonce']]] as $fiche_lies) {
 
              $valeurs_fiche_liee = json_decode($fiche_lies["body"], true);
-             $valeurs_fiche_liee = array_map('utf8_decode', $valeurs_fiche_liee);
+             if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche_liee = array_map('utf8_decode', $valeurs_fiche_liee);
 
              if ($valeurs_fiche_liee['id_fiche']==$valeurs_fiche['listefiche'.$jointure[$valeurs_fiche['id_typeannonce']]]) { // clef  : listefiche+idtypannonce cible
                     $valeurs_fiche=array_merge($valeurs_fiche_liee,$valeurs_fiche);

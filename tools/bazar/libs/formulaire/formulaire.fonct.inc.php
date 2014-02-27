@@ -1093,7 +1093,18 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     '<span class="BAZ_label '.$identifiant.'_rubrique">'.$label.'&nbsp;:</span>'."\n";
             $html .= '<span class="BAZ_texte '.$identifiant.'_description"> ';
             if ($formatage == 'wiki-textarea') {
+                $containsattach = (strpos($valeurs_fiche[$identifiant],'{{attach') !== false);
+                if ($containsattach) {
+                    $oldpage = $GLOBALS['wiki']->GetPageTag();
+                    $oldpagearray = $GLOBALS['wiki']->page;
+                    $GLOBALS['wiki']->tag = $valeurs_fiche['id_fiche'];
+                    $GLOBALS['wiki']->page = $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->tag);       
+                }
                 $html .= $GLOBALS['wiki']->Format($valeurs_fiche[$identifiant]);
+                if ($containsattach) {
+                    $GLOBALS['wiki']->tag = $oldpage;
+                    $GLOBALS['wiki']->page = $oldpagearray;
+                }
             } elseif ($formatage == 'nohtml') {
                 $html .= htmlentities($valeurs_fiche[$identifiant]);
             } else {
