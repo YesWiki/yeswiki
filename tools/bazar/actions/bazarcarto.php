@@ -142,6 +142,7 @@ if (empty($zoom_molette)) {
 * 
 */
 
+
 $barregestion= $this->GetParameter("barregestion");
 
 if (empty($barregestion)) {
@@ -199,6 +200,7 @@ if (!empty($query)) {
 }
 
 
+
 // Filtres
 
 $groups = $this->GetParameter("groups"); // parametre groups="bf_ce_titre,bf_ce_pays,etc."
@@ -235,33 +237,68 @@ foreach ($groups as $group) {
 }
 
 
+
+$facette = $this->GetParameter("facette"); // true or false 
+if (empty($facette)) {
+    $facette = false;
+}
+
+
+
+
+// Recuperation de tous les formulaires
+$tous_les_formulaires=baz_valeurs_tous_les_formulaires();
+
+
 $tableau_resultat=array();
 $jointure=array();
-foreach ($id_typeannonce as $annonce) {
+foreach ($id_typeannonce as $annonce) { // Pour chaque annonce : 
+
+    // Fusion des resultats 
     $tableau_resultat = array_merge($tableau_resultat, baz_requete_recherche_fiches($tabquery, $ordre, $annonce, $categorie_nature));
 
+
     // Detection jointure avec autre fiche
+/*    
      $val_formulaire = baz_valeurs_type_de_fiche($annonce);
      $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-     foreach ($tableau as $ligne) {
+     //print_r($tableau);
+
+    foreach ($tableau as $ligne) {
         if ($ligne[0]=="listefiche") { // jointure 
             $jointure[$annonce]=$ligne[1]; // il y a une fiche liee
         }
         
     }
+  */  
+/*
+    // Detection autre fiche contenant une reference à cette fiche.
+    foreach ($tous_les_formulaires as $formulaire => $template) {
+        foreach ($template as $numformulaire => $val_formulaire) {
+            $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+            foreach ($tableau as $ligne) {
+               if ($ligne[0]=="listefiche") { // jointure 
+                    if ($ligne[1]==$annonce) {
+                       $jointure[$numformulaire]=$ligne[1]; // numero de fiche liee
+                    }
+                }
+        
+            }
+        }
+    }*/
+
 }
+
 
 
 
 // Recherche de l'ensemble des fiches liee supplementaires 
-
+/*
 $tableau_resultat_lie=array();
-foreach ($jointure as $origine=>$cible) {
-    $tableau_resultat_lie[$cible]=baz_requete_recherche_fiches($tabquery, $ordre, $cible, '');
+foreach ($jointure as $cible=>$origine) {
+    $tableau_resultat_lie[$origine][$cible]=baz_requete_recherche_fiches($tabquery, $ordre, $cible, '');
 }
-
-
-
+*/
 
 $tab_points_carto = array();
 $tab_layers_carto = array();
@@ -275,22 +312,31 @@ foreach ($tableau_resultat as $fiche) {
     if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
 
 
-    if (isset($jointure[$valeurs_fiche['id_typeannonce']])) {
-        //print $valeurs_fiche['listefiche'.$jointure[$valeurs_fiche['id_typeannonce']]]; // clef listefiche+idtypannonce cible
-        foreach ($tableau_resultat_lie[$jointure[$valeurs_fiche['id_typeannonce']]] as $fiche_lies) {
+// Recherche des fiches liees supplementaires :
+/*
+    if (isset($tableau_resultat_lie[$valeurs_fiche['id_typeannonce']])) {
 
+        //print $valeurs_fiche['listefiche'.$jointure[$valeurs_fiche['id_typeannonce']]]; // clef listefiche+idtypannonce cible
+
+        foreach ($tableau_resultat_lie[$valeurs_fiche['id_typeannonce']] as $formulaire_lies) {
+
+            foreach ($formulaire_lies as $fiche_lies) {
+            
              $valeurs_fiche_liee = json_decode($fiche_lies["body"], true);
              if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche_liee = array_map('utf8_decode', $valeurs_fiche_liee);
 
-             if ($valeurs_fiche_liee['id_fiche']==$valeurs_fiche['listefiche'.$jointure[$valeurs_fiche['id_typeannonce']]]) { // clef  : listefiche+idtypannonce cible
-                    $valeurs_fiche=array_merge($valeurs_fiche_liee,$valeurs_fiche);
-             }
 
+             if ($valeurs_fiche_liee['listefiche'.$valeurs_fiche['id_typeannonce']]==$valeurs_fiche['id_fiche']) { // clef  : listefiche+idtypannonce cible
+                    $valeurs_fiche['ficheliees'][$valeurs_fiche_liee['id_fiche']]=$valeurs_fiche_liee;
+             }
+        }
         }
 
     }
+*/
+   // print_r($valeurs_fiche);
 
-  //  print_r($valeurs_fiche);
+
 
     $tab = explode('|', $valeurs_fiche['carte_google']);
     if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
@@ -329,7 +375,23 @@ foreach ($tableau_resultat as $fiche) {
 
         }
 
+
+
+        if ($facette=="true") {
+
         $tab_points_carto[]= '{
+            "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
+            "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" >'.$valeurs_fiche['bf_titre'].'</a>",
+            "categories":'.json_encode($categories).',
+            "lat": '.$tab[0].',
+            "lng": '.$tab[1].'
+
+
+        }';
+
+        }
+        else  {
+            $tab_points_carto[]= '{
             "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
             "description": \'<div class="BAZ_cadre_map">'.
             preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
@@ -339,16 +401,26 @@ foreach ($tableau_resultat as $fiche) {
 
 
         }';
+
+
+        }
+
         // Preparation tableau affiche sous la carte.
         if ($spider=="true") {
             $tablinktitle[$i] = '<li class="markerlist"><a class="markerlink" href="#" onclick="popups['.$i.'].setContent(markers['.$i.'].desc);popups['.$i.'].setLatLng(markers['.$i.'].getLatLng());map.openPopup(popups['.$i.']);map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;">'.$valeurs_fiche['bf_titre'].'</a></li>'."\n";
+            $tabclick[$i] = 'popups['.$i.'].setContent(markers['.$i.'].desc);popups['.$i.'].setLatLng(markers['.$i.'].getLatLng());map.openPopup(popups['.$i.']);map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;';            
         }
         else {
             $tablinktitle[$i] = '<li class="markerlist"><a class="markerlink" href="#" onclick="markers['.$i.'].openPopup();map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;">'.$valeurs_fiche['bf_titre'].'</a></li>'."\n";
+            $tabclick[$i] = 'markers['.$i.'].openPopup();map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;';
         }
+
         $i++;
     }
 }
+
+// Un tableau qui peut servir pour actioner l'ouverture d'une fenetre sur un clic
+$GLOBALS['tabclick']=$tabclick;
 
 
  // print_r ($tab_points_carto);
@@ -405,6 +477,8 @@ echo
 
     'var map;
     
+    
+
     function initialize() {
     
         map = L.map("map", {
@@ -462,11 +536,14 @@ echo
                     popup.setLatLng(marker.getLatLng());
                     map.openPopup(popup);
                 });
+                
+
                 map.addLayer(marker);
                 oms.addMarker(marker);
                 markers[i]=marker;
                 popups[i]=popup;
-                   // Specifique facette javascript
+
+                       // Specifique facette javascript
                   // Creation tableau layers pour ajout/suppression de point en fonction des criteres
                   $.each(item.categories, function(key, categorie){
                      if (typeof (layers[categorie])=="undefined") {
@@ -475,6 +552,10 @@ echo
                      layers[categorie].push(i);
                   });
                  // Fin specifique facette javascript
+                
+      
+
+               
 
             });
         ';
@@ -487,8 +568,8 @@ echo
     $.each(places, function(i, item){
           var marker=new L.Marker (new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title).bindPopup(new L.Popup({maxWidth:"1000"}).setContent(item.description)).addTo(map);
           markers[i]=marker;
-
-          // Specifique facette javascript
+         
+           // Specifique facette javascript
           // Creation tableau layers pour ajout/suppression de point en fonction des criteres
           $.each(item.categories, function(key, categorie){
              if (typeof (layers[categorie])=="undefined") {
@@ -497,8 +578,10 @@ echo
              layers[categorie].push(i);
           });
          // Fin specifique facette javascript
+    
 
     });
+
  // alert (dump( layers )); 
             ';
         }
