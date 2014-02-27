@@ -24,6 +24,26 @@ if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit"); 
 }
 
+// Compatibility with php versions without json functions
+if (!function_exists('json_decode')) {
+    function json_decode($content, $assoc=false) {
+        require_once 'includes/JSON.php';
+        if ($assoc) {
+            $json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
+        }
+        else {
+            $json = new Services_JSON;
+        }
+        return $json->decode($content);
+    }
+}
+if (!function_exists('json_encode')) {
+    function json_encode($content) {
+        require_once 'includes/JSON.php';
+        $json = new Services_JSON;
+        return $json->encode($content);
+    }
+}
 
 /**
  * Translate the text in the page's language
