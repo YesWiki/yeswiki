@@ -92,7 +92,7 @@ $replacements = array(
 					0 => '<div class="form-actions">'."\n".'<button type="submit" name="submit" value="Sauver" class="btn btn-primary">'._t('TEMPLATE_SAVE').'</button>'."\n",
 					1 => '', 
 					2 => '<button class="btn btn-default" onclick="location.href=\''.addslashes($this->href()).'\';return false;">'._t('TEMPLATE_CANCEL').'</button>'."\n".
-							(($changetheme) ? '<button class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'._t('TEMPLATE_THEME').'</button>'."\n" : '').'</div>'."\n", // le bouton Theme du bas de l'interface d'edition
+							(($changetheme) ? '<a class="btn btn-info offset1 col-lg-offset-1" data-toggle="modal" data-target="#graphical_options" data-backdrop="false">'._t('TEMPLATE_THEME').'</a>'."\n" : '').'</div>'."\n", // le bouton Theme du bas de l'interface d'edition
 					3 => ' class="edit form-control">'
 					);
 $plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);

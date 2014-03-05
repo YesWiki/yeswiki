@@ -365,7 +365,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 		    <div class="panel-group accordion" id="accordion-avanced-page-settings">
 				<div class="panel panel-default accordion-group">
 				    <div class="panel-heading accordion-heading">
-				      <h4 class="panel-title" data-parent="#accordion-avanced-page-settings" href="#avanced-page-settings" data-target="#avanced-page-settings" data-toggle="collapse" class="accordion-trigger" title="'._t('SEE_THE_ADVANCED_PARAMETERS').'">'._t('ADVANCED_PARAMETERS').'</h4>
+				      <h4 class="panel-title accordion-trigger" data-parent="#accordion-avanced-page-settings" href="#avanced-page-settings" data-target="#avanced-page-settings" data-toggle="collapse" title="'._t('SEE_THE_ADVANCED_PARAMETERS').'">'._t('ADVANCED_PARAMETERS').'</h4>
 				    </div>
 				    <div id="avanced-page-settings" class="panel-collapse accordion-body collapse">
 				    	<div class="panel-body accordion-inner">

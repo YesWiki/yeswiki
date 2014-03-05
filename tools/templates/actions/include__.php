@@ -101,15 +101,6 @@ if ($incPageName == 'PageMenuHaut' && !strstr($class, 'horizontal-dropdown-menu'
 		}
 	}
 
-/*			$class = $element->previousSibling->previousSibling->getAttribute("class");
-			$element->previousSibling->previousSibling->setAttribute("class", $class." dropdown-toggle");
-			$element->previousSibling->previousSibling->setAttribute("data-toggle", "dropdown");
-			$caret = $dom->createElement("b");
-			$caret->setAttribute("class", "caret");
-    		$element->previousSibling->previousSibling->appendChild($caret);
-		}
-	}
-	*/
 	$activelinks = $xpath->query("//a[contains(@class, 'active-link')]");
 	if (!is_null($activelinks)) {
 		foreach ($activelinks as $activelink) {
@@ -118,7 +109,14 @@ if ($incPageName == 'PageMenuHaut' && !strstr($class, 'horizontal-dropdown-menu'
 		}
 	}
 	$plugin_output_new =  preg_replace('/^<!DOCTYPE.+?>/', '', str_replace( array('<html>', '</html>', '<body>', '</body>'), '', $dom->saveHTML()))."\n";
+} 
+else if (strstr($class, 'menu-unstyled')) {
+	// add style to remove bullets on all ul
+	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="list-unstyled">', $plugin_output_new);
+	// remove list-unstyled class for level 2 ul
+	$plugin_output_new = preg_replace('/\<\/a>\s+<ul class="list-unstyled">/Ui', "</a>\n<ul>", $plugin_output_new);
 }
+
 
 // on rajoute une div clear pour mettre le flow css en dessous des éléments flottants
 $plugin_output_new =  (!empty($clear) && $clear=="1") ? $plugin_output_new.'<div class="clearfix"></div>'."\n" : $plugin_output_new;

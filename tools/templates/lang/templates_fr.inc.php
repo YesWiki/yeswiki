@@ -117,5 +117,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/yeswikiversion.php
 'RUNNING_WITH' => 'Galope sous',
 
+'TEMPLATE_NO_THEME_FILES' => 'Fichiers du thème manquants',
+'TEMPLATE_DEFAULT_THEME_USED' => 'Le theme par défaut sera utilisé'
+
 
 ));
