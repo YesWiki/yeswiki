@@ -639,7 +639,13 @@ function baz_afficher_formulaire_import()
                     if ( in_array( $row, $import ) ) { // Fiche selectionnee
                         $num = count( $data );
                         for ( $c = 0; $c < $num; $c++ ) {
-                            $valeur[$nom_champ[$c]] = html_entity_decode( utf8_decode( htmlentities( $data[$c], ENT_QUOTES, 'UTF-8' ) ), ENT_QUOTES, 'ISO-8859-15' );
+                            //$valeur[$nom_champ[$c]] = html_entity_decode( utf8_decode( htmlentities( $data[$c], ENT_QUOTES, 'UTF-8' ) ), ENT_QUOTES, 'ISO-8859-15' );
+                            if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                                $valeur[$nom_champ[$c]] = html_entity_decode( utf8_decode( htmlentities( $data[$c], ENT_QUOTES, 'UTF-8' ) ), ENT_QUOTES, 'ISO-8859-15' );
+                            }
+                            else {
+                                $valeur[$nom_champ[$c]] = $data[$c];
+                            }
                             $valeur[$nom_champ[$c]] = str_replace( array(
                                  '&sbquo;',
                                 '&fnof;',
@@ -2069,8 +2075,13 @@ function baz_valeurs_liste( $idliste = '' )
                 
                 $valjson                                           = $GLOBALS['wiki']->LoadPage( $idliste );
                 $valeurs_fiche                                     = json_decode( $valjson["body"], true );
-                $GLOBALS['bazar']['form'][$idliste]['titre_liste'] = utf8_decode( $valeurs_fiche['titre_liste'] );
-                $GLOBALS['bazar']['form'][$idliste]['label']       = array_map( 'utf8_decode', $valeurs_fiche['label'] );
+                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                    $GLOBALS['bazar']['form'][$idliste]['titre_liste'] = utf8_decode( $valeurs_fiche['titre_liste'] );
+                    $GLOBALS['bazar']['form'][$idliste]['label']       = array_map( 'utf8_decode', $valeurs_fiche['label'] );
+                }
+                else {
+                    $GLOBALS['bazar']['form'][$idliste] = $valeurs_fiche;
+                }
             } else {
                 return false;
             }
