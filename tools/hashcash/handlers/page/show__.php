@@ -5,6 +5,8 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
+/* Desactivated because replacetext everywere
+
 if ( $this->HasAccess("comment") && !$this->page['comment_on']){
 
 	require_once('tools/hashcash/secret/wp-hashcash.lib');
@@ -31,6 +33,6 @@ if ( $this->HasAccess("comment") && !$this->page['comment_on']){
 					'<span id="hashcash-text" style="display:none" class="pull-right">'._t('HASHCASH_ANTISPAM_ACTIVATED').'</span>
 					<div class="clearfix"></div></div>', 
 					$plugin_output_new);
-}
+}*/
 
 ?>

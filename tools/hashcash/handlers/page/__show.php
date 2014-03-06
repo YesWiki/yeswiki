@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-
+/* Desactivated because replacetext everywere
 if ($this->HasAccess("comment") && !$this->page['comment_on'])
 {
 	// Ajoute le javascript qui calcule le hashcash
@@ -17,6 +17,7 @@ if ($this->HasAccess("comment") && !$this->page['comment_on'])
 
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$ChampsHashcash."\n";
 }
+*/
 
 ?>
 
