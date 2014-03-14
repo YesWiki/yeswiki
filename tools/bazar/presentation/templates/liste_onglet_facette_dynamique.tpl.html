@@ -108,7 +108,7 @@ echo $GLOBALS['wiki']->Format("{{bazarcarto barregestion=\"false\" spider=\"true
             <?php // // echo "<li data-dimension =\"".$groups[$it]."\" data-filter=\"all\">"."Tout"."</li>"; ?>
             
             <?php foreach($filter as $filter_key=>$filter_value): ?>
-                    <?php echo "<li data-dimension =\"".$groups[$it]."\" data-filter=\"".preg_replace('/\W+/','',strtolower(strip_tags($filter_key)))."\">".$filter_key." (".$filter_value.")"."</li>"; ?>
+                    <?php echo "<li data-dimension =\"".$groups[$it]."\" data-filter=\"".trim(preg_replace('/\W+/','',strtolower(strip_tags($filter_key))))."\">".$filter_key." (".$filter_value.")"."</li>"; ?>
             <?php endforeach; ?>
             </ul>
           </div>
@@ -126,7 +126,7 @@ echo $GLOBALS['wiki']->Format("{{bazarcarto barregestion=\"false\" spider=\"true
 <?php $i=0;?>
 <?php if( count($fiches)>0 ) : ?>
         <?php foreach($fiches as $fiche): ?>
-          <?php echo "<li id=\"marker".$i."\" class=\"mix ".$fiche['categorie']."\">"; ?>
+          <?php echo "<li style=\"opacity: 0;\" id=\"marker".$i."\" class=\"mix ".$fiche['categorie']."\">"; ?>
                   <div class="tabbable">
                      <ul class="nav nav-tabs">
            
@@ -154,7 +154,8 @@ echo $GLOBALS['wiki']->Format("{{bazarcarto barregestion=\"false\" spider=\"true
                                     
                         <?php } ?>    
                         
-                                    <li><a href="#<?php echo $fiche['id_fiche']?>evenenements" data-toggle="tab">Observations ponctuelle</a>
+
+                                    <li><a href="#<?php echo $fiche['id_fiche']?>evenenements" data-toggle="tab">Observations ponctuelles</a>
                                     </li>
                     <?php } ?>         
                     </ul> 

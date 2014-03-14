@@ -225,17 +225,18 @@ else {
     $titles=explode(",",$titles);
 }
 
+
 // Detection des parametres de type liste
 $grouplist=array();
 foreach ($groups as $group) {
     if (is_liste($group)) {
-        $grouplist[$group]=liste_to_array($group); // On charge les valeurs de la liste
+        $groupfix=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
+        $grouplist[$groupfix]=liste_to_array($group); // On charge les valeurs de la liste
     }
     else {
         $grouplist[$group]=false;
     }
 }
-
 
 
 $facette = $this->GetParameter("facette"); // true or false 
@@ -379,10 +380,14 @@ foreach ($tableau_resultat as $fiche) {
 
         if ($facette=="true") {
 
+// TODO : a revoir
         $tab_points_carto[]= '{
             "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
             "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" >'.$valeurs_fiche['bf_titre'].'</a>",
+            "descriptionlongue": \'<div class="BAZ_cadre_map">'.
+            preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
             "categories":'.json_encode($categories).',
+            "idtypeannonce": '.$valeurs_fiche['id_typeannonce'].',
             "lat": '.$tab[0].',
             "lng": '.$tab[1].'
 
@@ -457,6 +462,7 @@ if ($spider=="true") {
 }
 
 
+
 echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div> <ul id="markers"></ul>';
 echo 
     '<script type="text/javascript">
@@ -467,6 +473,14 @@ echo
 // Fin Specifique facette javascript
 
     var markers = Array();';
+
+echo '
+//tableau des points des fiches bazar
+    var places = [
+        '.$points_carto.'
+    ];
+';
+
 
 
 if ($spider=="true") {
@@ -514,12 +528,6 @@ echo
             map.addControl(new L.Control.Layers( {"OSM":osm, "Google":ggl}, {}));
         }';
 
-        echo '
-        //tableau des points des fiches bazar
-            var places = [
-                '.$points_carto.'
-            ];
-        ';
 
 
 

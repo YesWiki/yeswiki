@@ -46,7 +46,7 @@ $(function(){
         transitionSpeed: 600,
         showOnLoad: 'none',
         sortOnLoad: false,
-        multiFilter: false,
+        multiFilter: true,
         filterLogic: 'or',
         resizeContainer: true,
         minHeight: 0,
@@ -58,20 +58,56 @@ $(function(){
             $.each(markers, function(i, marker){
                      map.removeLayer(marker);
              });
+
+/* Specifique SMT */
+        //Extend the Default marker class
+        var GereIcon = L.Icon.Default.extend({
+        options: {
+                iconUrl: "tools/bazar/presentation/images/marker_bleu.png",
+                iconSize:[12,20],
+                shadowSize:   [22,20],
+                iconAnchor:   [6, 20],
+                shadowAnchor: [6, 20]
+            }
+         });
+
+
+        var  gereIcon = new GereIcon();
+
+
+            var geres=Array();
+            $.each(places, function(u, place){ // Genere par bazarcato
+                 if(place.idtypeannonce=='5') {
+                    marker=markers[u];
+                    marker.setIcon(gereIcon);
+                    marker.unbindPopup();
+                    marker.bindPopup(new L.Popup({maxWidth:"1000"}).setContent(place.descriptionlongue));
+                    map.addLayer(marker);
+                    geres[u]=marker;
+                 }
+            });
+/* Fin Specifique SMT */
         },
         onMixStart: null,
         onMixEnd: function(config){
             // On se sert du rendu mixio pour afficher les points sur la carte
              $('#Grid .mix').map(function() {
 
-                if ($(this).css('opacity') == '1') {
+                if ($(this).css('opacity')=='1') {
+                   if (places[this.id.substring(6)].idtypeannonce=='5') {
+                        marker=geres[this.id.substring(6)];
+                       // map.removeLayer(marker);
+                   }
                    map.addLayer(markers[this.id.substring(6)]);
-                   
                 }
             });
 
-        
-          
+         
+            $.each(places, function(u, place){ // Genere par bazarcato
+                 if(place.idtypeannonce=='5') {
+                    map.addLayer(markers[u]);
+                 }
+            });
         }
     });
 
@@ -82,6 +118,8 @@ $(function(){
 
         var filterbydimension=Array();
         var filterString="";
+
+
         var dimensions=Array();
 
         $.each(groups, function(t, group){ // Genere par bazarcato
@@ -89,6 +127,7 @@ $(function(){
                     
         });
         
+
 
         $filters.on('click',function(){
 
@@ -140,7 +179,7 @@ $(function(){
 
                     dimensions[dimension] = filterString;
 
-              //alert(dump(dimensions));
+               //alert(dump(dimensions));
 
             
                     
@@ -158,7 +197,7 @@ $(function(){
   
 
 
-            //  alert(dump(filterbydimension));
+          //  alert(dump(filterbydimension));
 
                     $('#Grid').mixitup('filter',filterbydimension);
 
