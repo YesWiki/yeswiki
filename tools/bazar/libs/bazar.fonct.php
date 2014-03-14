@@ -887,11 +887,12 @@ function baz_afficher_formulaire_export()
     ( isset( $GLOBALS['_BAZAR_']['langue'] ) ) ? $requete .= ' AND bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%" ' : $requete .= '';
     $requete .= ' ORDER BY bn_label_nature ASC';
     $resultat = $GLOBALS['wiki']->LoadAll( $requete );
-    $output .= '<form method="post" action="' . $GLOBALS['wiki']->Href() . ( ( $GLOBALS['wiki']->GetMethod() != 'show' ) ? '/' . $GLOBALS['wiki']->GetMethod() : '&amp;' . BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_EXPORTER ) . '">' . "\n";
+
+    $output .= '<form method="post" class="form-horizontal" action="' . $GLOBALS['wiki']->Href() . ( ( $GLOBALS['wiki']->GetMethod() != 'show' ) ? '/' . $GLOBALS['wiki']->GetMethod() : '&amp;' . BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_EXPORTER ) . '">' . "\n";
     
     //s'il y a plus d'un choix possible, on propose
     if ( count( $resultat ) >= 1 ) {
-        $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . _t( 'BAZ_TYPE_FICHE' ) . ' :</div>' . "\n" . '<div class="controls col-lg-8">';
+        $output .= '<div class="row">'."\n".'<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . _t( 'BAZ_TYPE_FICHE' ) . ' :</div>' . "\n" . '<div class="controls col-lg-8">';
         $output .= '<select class="form-control" name="id_type_fiche" onchange="javascript:this.form.submit();">' . "\n";
         
         //si l'on n'a pas deja choisit de fiche, on demarre sur l'option CHOISIR, vide
@@ -908,7 +909,7 @@ function baz_afficher_formulaire_export()
     else {
         $output .= '<div class="alert alert-danger">' . _t( 'BAZ_PAS_DE_FORMULAIRES_TROUVES' ) . '</div>' . "\n";
     }
-    $output .= '</form>' . "\n";
+    $output .= '</div> <!-- /.row -->' . "\n" . '</form>' . "\n";
     
     if ( $id_type_fiche != '' ) {
         $val_formulaire = baz_valeurs_type_de_fiche( $id_type_fiche );
@@ -922,23 +923,23 @@ function baz_afficher_formulaire_export()
             if ( $ligne[0] != 'labelhtml' ) {
                 if ( $ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche' ) {
                     $tab_champs[] = $ligne[0] . '|' . $ligne[1] . '|' . $ligne[6];
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",' );
+                    $csv .= '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
                 }
                 // cas de la carto
                 elseif ( $ligne[0] == 'carte_google' ) {
                     $tab_champs[] = $ligne[1]; // bf_latitude
                     $tab_champs[] = $ligne[2]; // bf_longitude
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', $ligne[1] ) . ( ( isset( $ligne[4] ) && $ligne[4] == 1 ) ? ' *' : '' ) . '",' );
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[4] ) && $ligne[4] == 1 ) ? ' *' : '' ) . '",' );
+                    $csv .= '"' . str_replace( '"', '""', $ligne[1] ) . ( ( isset( $ligne[4] ) && $ligne[4] == 1 ) ? ' *' : '' ) . '",';
+                    $csv .= '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[4] ) && $ligne[4] == 1 ) ? ' *' : '' ) . '",';
                 } elseif ( $ligne[0] == 'titre' ) { // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'bf_titre';
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', "Titre calculé" ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",' );
+                    $csv .= '"' . str_replace( '"', '""', "Titre calculé" ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
                     
                 } elseif ( $ligne[0] == 'utilisateur_wikini' ) { // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'nomwiki';
                     $tab_champs[] = 'mot_de_passe_wikini';
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', "NomWiki" ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",' );
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', "Mot de passe" ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",' );
+                    $csv .= '"' . str_replace( '"', '""', "NomWiki" ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
+                    $csv .= '"' . str_replace( '"', '""', "Mot de passe" ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
                     
                 } elseif ( $ligne[0] == 'inscriptionliste' ) { // Nom de la liste et etat de l'abonnement
                     $tab_champs[] = str_replace( array(
@@ -948,13 +949,13 @@ function baz_afficher_formulaire_export()
                          '',
                         '' 
                     ), $ligne[1] ); // nom de la liste
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', $ligne[1] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",' );
+                    $csv .= '"' . str_replace( '"', '""', $ligne[1] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
                     
                 }
                 
                 else {
                     $tab_champs[] = $ligne[1];
-                    $csv .= utf8_encode( '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",' );
+                    $csv .= '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
                 }
                 $nb++;
             }
@@ -984,7 +985,7 @@ function baz_afficher_formulaire_export()
                          $index => $tab_valeurs[$index] 
                     ) );
                     $tabhtml             = explode( '</span>', $html );
-                    $tab_valeurs[$index] = utf8_encode( html_entity_decode( trim( strip_tags( $tabhtml[1] ) ) ) );
+                    $tab_valeurs[$index] = html_entity_decode( trim( strip_tags( $tabhtml[1] ) ) );
                 }
                 if ( isset( $tab_valeurs[$index] ) ) {
                     if ( $index == "mot_de_passe_wikini" ) {
@@ -998,7 +999,7 @@ function baz_afficher_formulaire_export()
             
             $csv .= implode( ',', $tab_csv ) . "\r\n";
         }
-        $csv = _convert( $csv, 'ISO-8859-1' );
+        //$csv = _convert( $csv );
         $output .= '<em>' . _t( 'BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER' ) . $val_formulaire["bn_label_nature"] . ' - ' . _t( 'BAZ_TOTAL_FICHES' ) . ' : ' . $total . '</em>' . "\n";
         $output .= '<pre style="height:125px; white-space:pre; padding:5px; word-wrap:break-word; border:1px solid #999; overflow:auto; ">' . "\n" . $csv . "\n" . '</pre>' . "\n";
         
@@ -1937,8 +1938,13 @@ function baz_gestion_listes()
                 $i++;
             }
         }
-        $valeur["label"]       = array_map( "utf8_encode", $valeur["label"] );
-        $valeur["titre_liste"] = utf8_encode( $_POST["titre_liste"] );
+        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+            $valeur["label"]       = array_map( "utf8_encode", $valeur["label"] );
+            $valeur["titre_liste"] = utf8_encode( $_POST["titre_liste"] );
+        } 
+        else {
+            $valeur["titre_liste"] = $_POST["titre_liste"];
+        }
         
         //on sauve les valeurs d'une liste dans une PageWiki, pour garder l'historique
         $GLOBALS["wiki"]->SavePage( $nomwikiliste, json_encode( $valeur ) );
@@ -1961,8 +1967,13 @@ function baz_gestion_listes()
                 $i++;
             }
         }
-        $valeur["label"]       = array_map( "utf8_encode", $valeur["label"] );
-        $valeur["titre_liste"] = utf8_encode( $_POST["titre_liste"] );
+        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+            $valeur["label"]       = array_map( "utf8_encode", $valeur["label"] );
+            $valeur["titre_liste"] = utf8_encode( $_POST["titre_liste"] );
+        }
+        else {
+            $valeur["titre_liste"] = $_POST["titre_liste"];
+        }
         
         /* ----------------- TODO: gerer les suppressions de valeurs dans les fiches associees pour garantir l'integrite des donnees
         //on verifie si les valeurs des listes ont changees afin de garder de l'integrite de la base des fiches
@@ -2374,11 +2385,13 @@ function baz_a_le_droit( $demande = 'saisie_fiche', $id = '' )
  *
  *   return  string chaine de caracteres, sans accents
  */
-function remove_accents( $string )
+function remove_accents( $str )
 {
-    $string = htmlentities( $string, ENT_QUOTES, "ISO-8859-1" );
-    
-    return preg_replace( "/&([a-z])[a-z]+;/i", "$1", $string );
+    $str = htmlentities($str, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+    $str = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
+    $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
+    return $str;
 }
 
 /** genere_nom_wiki() Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant a 50 caracteres et en mettant 2 majuscules
@@ -2397,7 +2410,20 @@ function genere_nom_wiki( $nom, $occurence = 1 )
         // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48, histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents et ponctuation
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $temp = explode( " ", ucwords( strtolower( remove_accents( substr( preg_replace( "/[[:punct:]]/", " ", $nom ), 0, 47 ) ) ) ) );
+        $temp = remove_accents( mb_substr( preg_replace( "/[[:punct:]]/", " ", $nom ), 0, 47, TEMPLATES_DEFAULT_CHARSET ) );
+        $temp = explode(" ", ucwords(strtolower($temp)));
+        $nom = '';
+        foreach ($temp as $mot) {
+            // on vire d'eventuels autres caracteres speciaux
+            $nom .= preg_replace("/[^a-zA-Z0-9]/","",trim($mot));
+        }
+
+        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
+        $var = preg_replace('/[^A-Z]/','',$nom);
+        if (strlen($var)<2) {
+            $last = ucfirst(substr($nom, strlen($nom) - 1));
+            $nom = substr($nom, 0, -1).$last;
+        }
         
         $nom = '';
         foreach ( $temp as $mot ) {

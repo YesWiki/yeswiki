@@ -48,23 +48,6 @@ $(document).ready(function () {
 			opacity: 0.7
     	});
     });
-
-    // initialise les iframe en overlay
-    $("a.ouvrir_overlay[rel]").each(function() {
-    	$(this).overlay({
-			expose:			'black',
-			effect:			'apple',
-			oneInstance:	true,
-			closeOnClick:	false,
-			onBeforeLoad: function() {
-				//on transforme le lien avecle handler /iframe, pour le charger dans une fenetre overlay
-				var overlay_encours = this;
-				var lien = overlay_encours.getTrigger().attr("href");
-				//alert(lien + ' .BAZ_cadre_fiche');
-				$("#overlay-link div.contentWrap").load(lien + ' #BAZ_menu');
-			}		
-		});
-    });
 	
 
 	//on enleve la fonction doubleclic dans le cas d'une page contenant bazar
