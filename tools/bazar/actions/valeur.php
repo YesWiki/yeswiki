@@ -17,7 +17,7 @@ if (!defined("WIKINI_VERSION")) {
 
 // url de la fiche bazar
 $url = $this->GetParameter("url"); 
-if (empty($url) && isset($this->config['source_url'])) $url = $this->config['source_url'];
+if (empty($url) && isset($this->config['source_url']) && !empty($this->config['source_url'])) $url = $this->config['source_url'];
 if (!empty($url)) {
     // parameter of this action
     $champ = $this->GetParameter("champ");
