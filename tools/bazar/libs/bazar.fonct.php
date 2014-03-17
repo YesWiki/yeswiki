@@ -1863,7 +1863,7 @@ function baz_gestion_listes()
     
     //titre
     $res .= '<h2 class="baz_title titre_gestion_liste">' . _t( 'BAZ_GESTION_LISTES' ) . '</h2>' . "\n";
-    
+    var_dump($_GET);
     // affichage de la liste des templates a modifier ou supprimer (dans le cas ou il n'y a pas d'action selectionnee)
     if ( !isset( $_GET['action'] ) ) {
         //requete pour obtenir l'id et le label des types d'annonces
@@ -1956,7 +1956,7 @@ function baz_gestion_listes()
         $GLOBALS["wiki"]->Redirect( $GLOBALS["wiki"]->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES, false ) );
     }
     //il y a des donnees pour modifier une liste
-        elseif ( $_GET['action'] == BAZ_ACTION_MODIFIER_LISTE_V && $GLOBALS['wiki']->HasAccess( 'write', $_POST['NomWiki'] ) ) {
+    elseif ( $_GET['action'] == BAZ_ACTION_MODIFIER_LISTE_V && $GLOBALS['wiki']->HasAccess( 'write', $_POST['NomWiki'] ) ) {
         unset( $_POST["valider"] );
         //on supprime les valeurs vides et on encode en utf-8 pour reussir a encoder en json
         $i               = 1;
@@ -1999,6 +1999,7 @@ function baz_gestion_listes()
     }
     // il y a un id de liste a supprimer
         elseif ( $_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE && isset( $_GET['idliste'] ) && $_GET['idliste'] == '' && ( $GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner( $_GET['idliste'] ) ) ) {
+            echo '<h1>ok</h1>';
         $GLOBALS["wiki"]->DeleteOrphanedPage( $_GET['idliste'] );
         $sql = 'DELETE FROM ' . $GLOBALS['wiki']->config["table_prefix"] . 'triples ' . 'WHERE resource = "' . addslashes( $_GET['idliste'] ) . '" ';
         $GLOBALS["wiki"]->Query( $sql );

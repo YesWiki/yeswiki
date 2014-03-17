@@ -74,13 +74,13 @@ function afficher_image($nom_image, $label, $class, $largeur_vignette, $hauteur_
             //on renvoit l'image en vignette, avec quand on clique, l'image redimensionnee
             $url_base = str_replace('wakka.php?wiki=','',$GLOBALS['wiki']->config['base_url']);
 
-            return 	'<a class="img-responsive triggerimage'.' '.$class.'" rel="#overlay-link" href="'.$url_base.'cache/image_'.$nom_image.'">'."\n".
+            return 	'<a class="triggerimage '.$class.'" href="'.$url_base.'cache/image_'.$nom_image.'">'."\n".
                     '<img src="'.$url_base.'cache/vignette_'.$nom_image.'" alt="'.$nom_image.'"'.' />'."\n".'</a>'."\n";
 
         } else {
             //on renvoit l'image en vignette, avec quand on clique, l'image originale
-            return  '<a class="img-responsive triggerimage'.' '.$class.'" rel="#overlay-link" href="'.$url_base.BAZ_CHEMIN_UPLOAD.$nom_image.'">'."\n".
-                    '<img src="'.$url_base.'cache/vignette_'.$nom_image.'" alt="'.$nom_image.'"'.' rel="'.$url_base.'cache/image_'.$nom_image.'" />'."\n".
+            return  '<a class="triggerimage '.$class.'" rel="#overlay-link" href="'.$url_base.BAZ_CHEMIN_UPLOAD.$nom_image.'">'."\n".
+                    '<img class="img-responsive" src="'.$url_base.'cache/vignette_'.$nom_image.'" alt="'.$nom_image.'"'.' rel="'.$url_base.'cache/image_'.$nom_image.'" />'."\n".
                     '</a>'."\n";
         }
     }
@@ -1813,7 +1813,20 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $select_html .= '<option value="0" selected="selected">'._t('BAZ_CHOISIR').'</option>'."\n";
         }
         $val_type = baz_valeurs_type_de_fiche($tableau_template[1]);
-        $tab_result = baz_requete_recherche_fiches('', 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"]);
+        $tabquery = array();
+        if (!empty($tableau_template[12])) {
+            $tableau = array();
+            $tab = explode('|', $tableau_template[12]); //découpe la requete autour des |
+            foreach ($tab as $req) {
+                $tabdecoup = explode('=', $req, 2);
+                $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+            }
+            $tabquery = array_merge($tabquery, $tableau);
+        } else {
+            $tabquery = '';
+        }
+        if (!empty($tableau_template[13])) {$_REQUEST['recherche_mots_cles'] = addslashes($tableau_template[13]);}
+        $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"]);
         $select = '';
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche["body"], true);
@@ -2055,9 +2068,13 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } else {
         $ordre = 'alphabetique';
     }
-
+    if (isset($tableau_template[5])) {
+        $template = $tableau_template[5];
+    } else {
+        $template = BAZ_TEMPLATE_LISTE_DEFAUT;
+    }
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie' ) {
-        $actionbazarliste = '{{bazarliste idtypeannonce="'.$tableau_template[1].'" query="'.$query.'" ordre="'.$ordre.'"}}';
+        $actionbazarliste = '{{bazarliste idtypeannonce="'.$tableau_template[1].'" query="'.$query.'" ordre="'.$ordre.'" template="'.$template.'"}}';
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
         //ajout lien nouvelle saisie
         $url_checkboxfiche = clone($GLOBALS['_BAZAR_']['url']);
@@ -2094,7 +2111,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2].$bulledaide, "\n");
         }
     } elseif ($mode == 'html') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="'.$tableau_template[1].'" query="'.$query.'" ordre="'.$ordre.'"}}';
+        $actionbazarliste = '{{bazarliste idtypeannonce="'.$tableau_template[1].'" query="'.$query.'" ordre="'.$ordre.'" template="'.$template.'"}}';
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
 
         return $html;
