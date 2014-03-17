@@ -40,6 +40,7 @@ $(document).ready(function () {
 		listitem.fadeOut("fast", function() {
 			listitem.appendTo("#ebook-selection-container").fadeIn("fast");
 		});
+        return false;
 	});
     
     $('.remove-page-item').on('click', function() {
@@ -50,6 +51,7 @@ $(document).ready(function () {
         listitem.fadeOut("fast", function() {
             listitem.prependTo("#list-pages-to-export").fadeIn("fast");
         });
+        return false;
     });
 
     var listpages = $("#list-pages-to-export .list-group-item"), filter = $("#filter"), filtercount = $("#filter-count");

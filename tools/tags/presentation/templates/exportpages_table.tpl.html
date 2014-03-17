@@ -1,6 +1,5 @@
 <?php if( count($pages)>0 ) : ?>
-	<form class="export-table-form" method="post" action="<?php echo $url;?>">
-		<div class="row">
+		<div class="row row-fluid">
 			<div class="span6 col-lg-6 export-table-container">
 				<h3><?php echo _t('TAGS_AVAILABLE_PAGES'); ?></h3>
 				<div class="alert alert-info">
@@ -44,67 +43,85 @@
 					<?php echo _t('TAGS_ORDER_PAGES_INFO'); ?>
 				</div>
 				<div class="well">
-				<?php if (!empty($ebookstart)) : ?>
-					<ul class="list-group">
-						<li class="list-group-item">
-							<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo $ebookstart; ?>" href="<?php echo $GLOBALS['wiki']->href('html', $ebookstart); ?>">
-								<i class="icon-eye-open"></i>
-							</a> 
-							<input type="hidden" name="page[]" value="<?php echo $ebookstart; ?>" />
-							&nbsp;<?php echo _t('TAGS_START_PAGE'); ?> (<?php echo $ebookstart; ?>)
-						</li>
-					</ul>
-				<?php endif; ?>
-					<ul id="ebook-selection-container" class="list-group">			
-					</ul>
-				<?php if (!empty($ebookend)) : ?>
-					<ul class="list-group">
-						<li class="list-group-item">
-							<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> PageEbookFin" href="<?php echo $GLOBALS['wiki']->href('html', $ebookend); ?>">
-								<i class="icon-eye-open"></i>
-							</a> 
-							<input type="hidden" name="page[]" value="<?php echo $ebookend; ?>" />
-							&nbsp;<?php echo _t('TAGS_END_PAGE'); ?> (<?php echo $ebookend; ?>)
-						</li>
-					</ul>
-				<?php endif; ?>
-
-					<div class="form-group">
-		            	<label for="ebook-title" class="control-label"><?php echo _t('TAGS_EBOOK_TITLE'); ?></label>
-		            	<div class="controls">
-		                	<input class="form-control" type="text" required="required" placeholder="<?php echo _t('TAGS_EBOOK_TITLE'); ?>" id="ebook-title" name="ebook-title" />
-		            	</div>
-		            </div>
-					<div class="form-group">
-		            	<label for="ebook-description" class="control-label"><?php echo _t('TAGS_EBOOK_DESC'); ?></label>
-		             	<div class="controls">
-							<textarea class="form-control" required="required" placeholder="<?php echo _t('TAGS_EBOOK_DESC'); ?>" id="ebook-description" name="ebook-description"></textarea>
+					<form class="export-table-form form-horizontal" method="post" action="<?php echo $url;?>">
+					<?php if (!empty($ebookstart)) : ?>
+						<ul class="list-group">
+							<li class="list-group-item">
+								<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo $ebookstart; ?>" href="<?php echo $GLOBALS['wiki']->href('html', $ebookstart); ?>">
+									<i class="icon-eye-open"></i>
+								</a> 
+								<input type="hidden" name="page[]" value="<?php echo $ebookstart; ?>" />
+								&nbsp;<?php echo _t('TAGS_START_PAGE'); ?> (<?php echo $ebookstart; ?>)
+							</li>
+						</ul>
+					<?php endif; ?>
+						<ul id="ebook-selection-container" class="list-group">
+						<?php foreach($selectedpages as $page): ?>
+							<li class="list-group-item">
+								<a class="hide pull-right btn btn-default btn-mini btn-xs btn-success select-page-item" title="<?php echo _t('TAGS_SELECT_PAGE'); ?> <?php echo htmlentities($page['tag']); ?> <?php echo _t('TAGS_FOR_THE_EBOOK'); ?>" href="#">
+									<i class="icon-plus"></i>
+								</a>
+								<a class="pull-right btn btn-default btn-mini btn-xs btn-danger remove-page-item" title="<?php echo _t('TAGS_DELETE_PAGE'); ?> <?php echo htmlentities($page['tag']); ?> <?php echo _t('TAGS_FROM_THE_EBOOK'); ?>" href="#">
+									<i class="icon-minus"></i>
+								</a>
+								<span class="pull-left movable"><i class="icon-resize-vertical"></i></span>
+								<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> <?php echo htmlentities($page['tag']); ?>" href="<?php echo $GLOBALS['wiki']->href('html', $page['tag']); ?>">
+									<i class="icon-eye-open"></i>
+								</a> 
+								<input type="hidden" name="page[]" value="<?php echo $page['tag']; ?>" />
+								&nbsp;<?php echo ' '.get_title_from_body($page); ?>												
+							</li>
+						<?php endforeach; ?>		
+						</ul>
+					<?php if (!empty($ebookend)) : ?>
+						<ul class="list-group">
+							<li class="list-group-item">
+								<a class="pull-left btn btn-default btn-mini btn-xs view-page-item modalbox" title="<?php echo _t('TAGS_SEE_PAGE'); ?> PageEbookFin" href="<?php echo $GLOBALS['wiki']->href('html', $ebookend); ?>">
+									<i class="icon-eye-open"></i>
+								</a> 
+								<input type="hidden" name="page[]" value="<?php echo $ebookend; ?>" />
+								&nbsp;<?php echo _t('TAGS_END_PAGE'); ?> (<?php echo $ebookend; ?>)
+							</li>
+						</ul>
+					<?php endif; ?>
+						<br />
+						<div class="form-group">
+			            	<label for="ebook-title" class="control-label"><?php echo _t('TAGS_EBOOK_TITLE'); ?></label>
+			            	<div class="controls">
+			                	<input class="control-group form-control" type="text" required="required" placeholder="<?php echo _t('TAGS_EBOOK_TITLE'); ?>" id="ebook-title" name="ebook-title" value="<?php echo (isset($metadatas['ebook-title'])) ? $metadatas['ebook-title'] : ''; ?>" />
+			            	</div>
+			            </div>
+						<div class="form-group">
+			            	<label for="ebook-description" class="control-label"><?php echo _t('TAGS_EBOOK_DESC'); ?></label>
+			             	<div class="controls">
+								<textarea class="control-group form-control" required="required" placeholder="<?php echo _t('TAGS_EBOOK_DESC'); ?>" id="ebook-description" name="ebook-description"><?php echo (isset($metadatas['ebook-description'])) ? $metadatas['ebook-description'] : ''; ?></textarea>
+							</div>
 						</div>
-					</div>
-					<div class="form-group">
-		            	<label for="ebook-author" class="control-label"><?php echo _t('TAGS_EBOOK_AUTHOR'); ?></label>
-		             	<div class="controls">
-							<input class="form-control" type="text" required="required" placeholder="<?php echo _t('TAGS_EXAMPLE_AUTHOR'); ?>" id="ebook-author" name="ebook-author" />
+						<div class="form-group">
+			            	<label for="ebook-author" class="control-label"><?php echo _t('TAGS_EBOOK_AUTHOR'); ?></label>
+			             	<div class="controls">
+								<input class="control-group form-control" type="text" required="required" placeholder="<?php echo _t('TAGS_EXAMPLE_AUTHOR'); ?>" id="ebook-author" name="ebook-author" value="<?php echo (isset($metadatas['ebook-author'])) ? $metadatas['ebook-author'] : ''; ?>" />
+							</div>
 						</div>
-					</div>
-					<div class="form-group">
-		            	<label for="ebook-biblio-author" class="control-label"><?php echo _t('TAGS_EBOOK_BIBLIO_AUTHOR'); ?></label>
-		             	<div class="controls">
-							<input class="form-control" type="text" required="required" placeholder="<?php echo _t('TAGS_EXAMPLE_BIBLIO_AUTHOR'); ?>" id="ebook-biblio-author" name="ebook-biblio-author" />
+						<div class="form-group">
+			            	<label for="ebook-biblio-author" class="control-label"><?php echo _t('TAGS_EBOOK_BIBLIO_AUTHOR'); ?></label>
+			             	<div class="controls">
+								<input class="control-group form-control" type="text" required="required" placeholder="<?php echo _t('TAGS_EXAMPLE_BIBLIO_AUTHOR'); ?>" id="ebook-biblio-author" name="ebook-biblio-author" value="<?php echo (isset($metadatas['ebook-biblio-author'])) ? $metadatas['ebook-biblio-author'] : ''; ?>" />
+							</div>
 						</div>
-					</div>
-					<div class="form-group">
-		            	<label for="ebook-cover-image" class="control-label"><?php echo _t('TAGS_EBOOK_COVER_IMAGE'); ?></label>
-		             	<div class="controls">
-							<input class="form-control" type="url" required="required" placeholder="http://" id="ebook-cover-image" name="ebook-cover-image" <?php if (!empty($coverimageurl)) echo ' value="'.$coverimageurl.'"'; ?> />
+						<div class="form-group">
+			            	<label for="ebook-cover-image" class="control-label"><?php echo _t('TAGS_EBOOK_COVER_IMAGE'); ?></label>
+			             	<div class="controls">
+								<input class="control-group form-control" type="url" required="required" placeholder="http://" id="ebook-cover-image" name="ebook-cover-image" value="<?php if (isset($metadatas['ebook-cover-image'])) { echo $metadatas['ebook-cover-image']; } elseif(!empty($coverimageurl)) {echo $coverimageurl; } ?>" />
+							</div>
 						</div>
-					</div>
-					<br />
-				    <input type="submit" value="<?php echo _t('TAGS_GENERATE_EBOOK'); ?>" class="btn btn-block btn-lg btn-primary" />
+						<?php if(!empty($ebookpagename)) echo '<input name="ebookpagename" value="'.$ebookpagename.'">'; ?>
+						<br />
+					    <input type="submit" value="<?php echo _t('TAGS_GENERATE_EBOOK'); ?>" class="btn btn-block btn-lg btn-primary" />
+    				</form>
 				</div>
 			</div> <!-- /.span6 col-lg-6. ebook-selection-container -->
 		</div> <!-- /.row -->
-    </form>
     <?php 
     	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js"></script>
     <script src="tools/tags/libs/exportpages.js"></script>'."\n"; 

@@ -91,6 +91,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_SEE_PAGE' => 'See the page',
 'TAGS_SELECT_PAGE' => 'Select the page',
 'TAGS_DELETE_PAGE' => 'Remove the page',
+'TAGS_DELETE' => 'Delete',
 'TAGS_FOR_THE_EBOOK' => 'for the Ebook',
 'TAGS_FROM_THE_EBOOK' => 'from the Ebook',
 'TAGS_AVAILABLE_PAGES' => 'Available pages',
@@ -99,7 +100,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'This Ebook is published under the Creative Commons BY SA licence.',
 'TAGS_BY' => 'By',
 'TAGS_ABOUT_THIS_EBOOK' => 'Information about this book',
-'TAGS_DOWNLOAD_EPUB' => 'Ebook in Epub format',
+'TAGS_DOWNLOAD_EPUB' => '.epub',
+'TAGS_DOWNLOAD' => 'Download',
 'TAGS_NO_EBOOK_METADATAS' => 'This page has no meta-datas pour creating an ebook.',
 'TAGS_NO_EBOOK_FOUND' => 'No Ebook found.',
 
