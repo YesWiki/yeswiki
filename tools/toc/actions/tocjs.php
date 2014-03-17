@@ -11,9 +11,11 @@ $class = $this->GetParameter("class");
 
 $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
         $(document).ready(function(){
-            var page = $(".page");
+            var page = $(".page:first");
             var titles = page.find("h1,h2,h3,h4,h5");
-            page.addClass("span9 col-md-9").wrap( "<div class=\'row\'></div>" ).parent().append( "<div id=\'tocjs-'.$tag.'\' class=\'span3 col-md-3 no-dblclick\'><div class=\'bs-sidebar affix hidden-print\' role=\'complementary\'><ul class=\'nav bs-sidenav\'></ul></div></div>" );
+            var bootstrap3_enabled = (typeof $().emulateTransitionEnd == \'function\');
+            if (bootstrap3_enabled) {var rowclass=\'row\';} else {var rowclass=\'row-fluid\';}
+            page.addClass("span9 col-md-9").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div id=\'tocjs-'.$tag.'\' class=\'span3 col-md-3 no-dblclick\'><div class=\'bs-sidebar hidden-print\' role=\'complementary\'><ul class=\'nav bs-sidenav\'></ul></div></div>" );
             var toc = $("#tocjs-'.$tag.'");  
             var title, idtitle, typetitle, h1 = 0, h2 = 0, h3 = 0, h4 = 0, h5 = 0; 
             titles.each(function() {
@@ -45,13 +47,14 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
 
             var $window = $(window)
             var $body = $(document.body)
-            var $sideBar = $(\'.bs-sidebar\')
-            var navHeight = $(\'.navbar\').outerHeight(true) + 10
+            var pagestartHeight = page.offset().top;
+            var $sideBar = $(\'.bs-sidebar\');
+            var offsetnavbar = 70;
 
             $body.scrollspy({
                 target: \'.bs-sidebar\',
-                offset: navHeight
-            })
+                offset: offsetnavbar
+            });
 
             $(\'.toc-link\').click(function (e) {
                 e.preventDefault();
@@ -59,7 +62,7 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
                 var link = $(this).attr(\'href\');
                 
                 $(\'html, body\').animate({
-                    scrollTop: $(link).offset().top - 70
+                    scrollTop: $(link).offset().top - offsetnavbar
                 }, 500);
             })
 
@@ -69,20 +72,11 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
                 $sideBar.affix(\'checkPosition\')
             })
 
-            /*
             $window.on(\'load\', function () {
                 $body.scrollspy(\'refresh\');
                 $sideBar.affix({
                     offset: {
-                        top: function () {
-                            var offsetTop = $sideBar.offset().top + 70
-                            var sideBarMargin = parseInt($sideBar.children(0).css(\'margin-top\'), 10)
-                            var navOuterHeight = page.height()
-
-                            // We can cache the height of the header (hence the this.top=)
-                            // This function will never be called again.
-                            return (this.top = offsetTop - navOuterHeight - sideBarMargin);
-                        },
+                        top: pagestartHeight,
                         bottom: function () {
                             // We can\'t cache the height of the footer, since it could change
                             // when the window is resized. This function will be called every
@@ -91,6 +85,14 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
                         }
                     }
                 })
+                $sideBar.on(\'affixed.bs.affix\', function (e) {
+                  $sideBar.css(\'top\', offsetnavbar);
+                })
+                $sideBar.on(\'affix-top.bs.affix\', function (e) {
+                  $sideBar.css(\'top\', 0);
+                })
+
+
                 setTimeout(function () {
                     // Check the position of the nav box ASAP
                     $sideBar.affix(\'checkPosition\')
@@ -100,39 +102,36 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
                     $sideBar.affix(\'checkPosition\')
                 }, 100);
             });
-            */
         }); 
     </script>
 
 
     <style>
-        .bs-sidebar {
-            position: fixed;
-        }
         /* First level of nav */
          .bs-sidenav {
-            margin-bottom: 30px;
             padding-top: 10px;
             padding-bottom: 10px;
-            text-shadow: 0 1px 0 #fff;
-            background-color: #f7f5fa;
-            border-radius: 5px;
+            background-color: transparent;
         }
         /* All levels of nav */
          .bs-sidebar .nav > li > a {
             display: block;
-            padding: 5px 20px;
+            color: #999999;
+            font-size: 0.9em;
+            font-weight: 500;
+            padding: 4px 20px;
         }
         .bs-sidebar .nav > li > a:hover, .bs-sidebar .nav > li > a:focus {
             text-decoration: none;
-            background-color: #e5e3e9;
-            border-right: 1px solid #dbd8e0;
+            color: #563d7c;
+            background-color: transparent;
+            border-left: 1px solid #563d7c;
         }
         .bs-sidebar .nav > .active > a, .bs-sidebar .nav > .active:hover > a, .bs-sidebar .nav > .active:focus > a {
             font-weight: bold;
             color: #563d7c;
             background-color: transparent;
-            border-right: 1px solid #563d7c;
+            border-left: 2px solid #563d7c;
         }
         /* Nav: second level (shown on .active) */
          .bs-sidebar .nav .nav {
@@ -158,8 +157,6 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
             }
             .bs-sidebar.affix {
                 position: fixed;
-                /* Undo the static from mobile first approach */
-                top: 80px;
             }
             .bs-sidebar.affix-bottom {
                 position: absolute;

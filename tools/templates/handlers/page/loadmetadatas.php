@@ -26,9 +26,8 @@
 *
 *
 *@package templates
-//Auteur original :
+*
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-//Autres auteurs :
 *@copyright     Outils-Réseaux 2012
 *@version       $Revision: 0.1 $ $Date: 2010/03/04 14:19:03 $
 */

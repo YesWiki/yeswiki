@@ -339,3 +339,6 @@ overflow: auto;
 
 .yeswiki-menu-btn {margin-bottom: 0 !important; margin-left: 10px !important;}
 .topbarpage .yeswiki-search-form .input-append, .topbarpage .yeswiki-search-form .input-prepend {margin-top: 0 !important;}
+
+/* on /iframe page, we use white background, can be overwritten in the theme */
+.page-widget {background:#FFF; background-image: none;}
