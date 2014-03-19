@@ -83,12 +83,28 @@ if (empty($zoom)) {
     $zoom = BAZ_GOOGLE_ALTITUDE;
 }
 
+
+
 /*
-* Type de carto : ROADMAP ou SATELLITE ou HYBRID ou TERRAIN , sinon parametre par defaut TERRAIN
+* Layer pour la carto : osm (leaflet) ou ggl (google), par defaut osm
 * @atester
 * 
 */
+$layercarto = $this->GetParameter("layercarto");
+if (empty($layercarto)) {
+    $layercarto = BAZ_LAYER_CARTO;
+}
+if ($layercarto == 'google' || $layercarto == 'googlemap') {
+    $layercarto = 'ggl';
+}
 
+
+
+/*
+* Type de carto google : ROADMAP ou SATELLITE ou HYBRID ou TERRAIN , sinon parametre par defaut TERRAIN
+* @atester
+* 
+*/
 
 $typecarto = $this->GetParameter("typecarto");
 if (empty($typecarto)) {
@@ -185,7 +201,8 @@ if (empty($cartoheight)) {
 }
 
 //on recupere les parametres pour une requete specifique
-$query = $this->GetParameter("query");
+if (isset($_GET['query'])) {$query = $_GET['query'];}
+else $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
     $tableau = array();
@@ -506,7 +523,7 @@ echo
         var osm = new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
         var ggl = new L.Google("'.$typecarto.'");
 
-        map.addLayer(ggl);';
+        map.addLayer('.$layercarto.');';
 
     
         echo '

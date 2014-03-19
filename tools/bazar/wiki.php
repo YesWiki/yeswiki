@@ -255,9 +255,12 @@ define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
 // niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
 define('BAZ_GOOGLE_ALTITUDE', (isset($wakkaConfig['baz_google_altitude'])) ? $wakkaConfig['baz_google_altitude'] : '5');
 
-// type de carto google
+// layer pour carte leaflet
+// osm ou google
+define('BAZ_LAYER_CARTO', (isset($wakkaConfig['baz_layer_carto'])) ? $wakkaConfig['baz_layer_carto'] : 'osm');
 
-//ROADMAP ou SATELLITE ou HYBRID ou TERRAIN
+// type de carto google
+// ROADMAP ou SATELLITE ou HYBRID ou TERRAIN
 define('BAZ_TYPE_CARTO', (isset($wakkaConfig['baz_type_carto'])) ? $wakkaConfig['baz_type_carto'] : 'TERRAIN');
 
 // taille de la carte a l'ecran
