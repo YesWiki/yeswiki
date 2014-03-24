@@ -1863,7 +1863,7 @@ function baz_gestion_listes()
     
     //titre
     $res .= '<h2 class="baz_title titre_gestion_liste">' . _t( 'BAZ_GESTION_LISTES' ) . '</h2>' . "\n";
-    var_dump($_GET);
+
     // affichage de la liste des templates a modifier ou supprimer (dans le cas ou il n'y a pas d'action selectionnee)
     if ( !isset( $_GET['action'] ) ) {
         //requete pour obtenir l'id et le label des types d'annonces
@@ -1912,8 +1912,7 @@ function baz_gestion_listes()
         //ajout du lien pour creer une nouvelle liste
         $lien_formulaire = $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES . '&amp;' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_NOUVELLE_LISTE );
         $res .= '<a href="' . $lien_formulaire . '" class="btn btn-primary"><i class="icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_NOUVELLE_LISTE' ) . '</a>' . "\n";
-    }
-    
+    }    
     // il y a une liste a modifier
     elseif ( $_GET['action'] == BAZ_ACTION_MODIFIER_LISTE ) {
         //recuperation des informations de la liste
@@ -1921,11 +1920,11 @@ function baz_gestion_listes()
         $res .= baz_formulaire_des_listes( BAZ_ACTION_MODIFIER_LISTE_V, $valeursliste );
     }
     //il y a une nouvelle liste a saisir
-        elseif ( $_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE ) {
+    elseif ( $_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE ) {
         $res .= baz_formulaire_des_listes( BAZ_ACTION_NOUVELLE_LISTE_V );
     }
     //il y a des donnees pour ajouter une nouvelle liste
-        elseif ( $_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE_V ) {
+    elseif ( $_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE_V ) {
         unset( $_POST["valider"] );
         $nomwikiliste = genere_nom_wiki( 'Liste ' . $_POST['titre_liste'] );
         
@@ -1998,10 +1997,9 @@ function baz_gestion_listes()
         $GLOBALS["wiki"]->Redirect( $GLOBALS["wiki"]->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES, false ) );
     }
     // il y a un id de liste a supprimer
-        elseif ( $_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE && isset( $_GET['idliste'] ) && $_GET['idliste'] == '' && ( $GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner( $_GET['idliste'] ) ) ) {
-            echo '<h1>ok</h1>';
+    elseif ( $_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE && isset( $_GET['idliste'] ) && $_GET['idliste'] != '' && ( $GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner( $_GET['idliste'] ) ) ) {
         $GLOBALS["wiki"]->DeleteOrphanedPage( $_GET['idliste'] );
-        $sql = 'DELETE FROM ' . $GLOBALS['wiki']->config["table_prefix"] . 'triples ' . 'WHERE resource = "' . addslashes( $_GET['idliste'] ) . '" ';
+        $sql = 'DELETE FROM ' . $GLOBALS['wiki']->config["table_prefix"] . 'triples ' . 'WHERE resource = "' . htmlspecialchars( $_GET['idliste'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET ) . '" ';
         $GLOBALS["wiki"]->Query( $sql );
         
         // Envoie d un mail aux administrateurs
