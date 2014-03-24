@@ -52,16 +52,16 @@ if (!empty($url)) {
             
             if (isset($matches[1]) && count($matches[1])>0) {
                 if (!empty($texte) && $texte!="lien") {
-                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">'.$texte.'</a>', array_shift($matches[1]));
+                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">'.trim($texte).'</a>', trim(array_shift($matches[1])));
                 } 
                 else if (!empty($texte) && $texte=="lien") {
                     echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1]));
                 }
                 else if ($image == '1') {
-                    echo '<img class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">'."\n";
+                    echo '<img class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">';
                 }
                 else {
-                    echo array_shift($matches[1])."\n";
+                    echo trim(array_shift($matches[1]));
                 }
             }
             else {

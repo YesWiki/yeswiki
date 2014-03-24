@@ -248,6 +248,8 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 
 .lien_texte {padding:2px 0 2px 20px;}
 
+.BAZ_label {font-weight: bold;}
+
  /*
   Datepicker for Bootstrap
   Copyright 2012 Stefan Petre
