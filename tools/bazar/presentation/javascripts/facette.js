@@ -162,7 +162,7 @@ $(function(){
                         // Else, uncheck "all"
                         $t.siblings('[data-filter="all"]').removeClass('active');
                         // Remove "all" from string
-                        filterString = filterString.replace('all','');
+                        filterString = filterString.replace(/\ball\b/, "");
                         
                         if(!$t.hasClass('active')){
                             // Check checkbox
@@ -190,11 +190,12 @@ $(function(){
                             filterbydimension[w]=dimensions[group];
                         }
                         else {
-                            filterbydimension[w]="";
+                            filterbydimension[w]='';
                         }
+
                     });
 
-  
+
 
 
           //  alert(dump(filterbydimension));

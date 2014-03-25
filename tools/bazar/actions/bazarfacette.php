@@ -373,6 +373,7 @@ foreach ($fiche_resultat as $valeurs_fiche) {
             if (!$grouplist[$group]) {
                 // string compatible css 
                 $valeurs_fiche['categorie']=$valeurs_fiche['categorie']." ".trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group]))));
+                
                 if (isset($valeurs_fiche['ficheliees'])) {
                     foreach ($valeurs_fiche['ficheliees'] as $valeurs_fiche_liee) {
                         $valeurs_fiche['categorie']=$valeurs_fiche['categorie']." ".trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche_liee[$group]))));
@@ -405,6 +406,8 @@ foreach ($fiche_resultat as $valeurs_fiche) {
             }
         }
 
+        $valeurs_fiche['categorie']=trim(preg_replace('/[ ][ ]*/', ' ', $valeurs_fiche['categorie'])); 
+ 
         $facettes['fiches'][$valeurs_fiche['id_fiche']] = $valeurs_fiche;
         $facettes['html'] = baz_voir_fiche(0, $valeurs_fiche);
 

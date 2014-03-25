@@ -335,8 +335,7 @@ foreach ($tableau_resultat as $fiche) {
 
     }
 */
-   // print_r($valeurs_fiche);
-
+   
 
 
     $tab = explode('|', $valeurs_fiche['carte_google']);
@@ -351,11 +350,10 @@ foreach ($tableau_resultat as $fiche) {
         $categories=Array();
 
         foreach ($groups as $group) {
-    
-            
+            $group=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
             if (!$grouplist[$group]) {
                 if ($valeurs_fiche[$group]!="") {
-                    $categories[$group][]=preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group])));
+                    $categories[$group][]=trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group]))));
                 }
             }
             else { // C'est une  liste !
@@ -366,7 +364,7 @@ foreach ($tableau_resultat as $fiche) {
                 if (!empty($index_liste[0])) {
                     foreach ($index_liste as $element_liste) { 
                         if ($grouplist[$group][$element_liste]!="") {
-                           $categories[$grouplist[$group][$element_liste]][]=preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste])));
+                           $categories[$grouplist[$group][$element_liste]][]=trim(preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste]))));
                         }
                     }
                 }
@@ -375,7 +373,7 @@ foreach ($tableau_resultat as $fiche) {
 
 
         }
-
+    
 
 
         if ($facette=="true") {
