@@ -90,6 +90,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_SEE_PAGE' => 'Mostra la pàgina',
 'TAGS_SELECT_PAGE' => 'Selecciona la pàgina',
 'TAGS_DELETE_PAGE' => 'Elimina la pàgina',
+'TAGS_DELETE' => 'Elimina',
 'TAGS_FOR_THE_EBOOK' => 'per l\'ebook',
 'TAGS_FROM_THE_EBOOK' => 'de l\'ebook',
 'TAGS_AVAILABLE_PAGES' => 'Pàgines disponibles',
@@ -98,7 +99,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Aquesta obra es publica amb llicència Creative Commons BY SA.',
 'TAGS_BY' => 'Per',
 'TAGS_ABOUT_THIS_EBOOK' => 'Informació sobre aquesta obra',
-'TAGS_DOWNLOAD_EPUB' => 'Baixa el llibre en format Epub',
+'TAGS_DOWNLOAD_EPUB' => '.epub',
+'TAGS_DOWNLOAD' => 'Download',
 'TAGS_NO_EBOOK_METADATAS' => 'Aquesta pàgina no inclou les metadades necessàries per crear l\'ebook.',
 'TAGS_NO_EBOOK_FOUND' => 'No s\'ha trobat cap ebook.'
 

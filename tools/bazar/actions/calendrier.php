@@ -95,11 +95,11 @@ $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').  "    <script 
             firstDay : 1,
             eventClick: function(event) {
                 if (event.url) {
-                    $('<div>').attr('id', 'dateModal' ).addClass('modal fade hide').appendTo($('body'));
+                    $('<div>').attr('id', 'dateModal' ).addClass('modal fade').appendTo($('body'));
                     var modal = $('#dateModal');
-                    modal.html('<div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button><h3>'+event.title+'</h3></div><div class=\"modal-body\"></div>').on('hidden', function() {modal.remove()});
+                    modal.html('<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button><h3>'+event.title+'</h3></div><div class=\"modal-body\"></div></div></div>').on('hidden', function() {modal.remove()});
                     modal.find('.modal-body').load(event.url + ' .page', function() {
-                        $(this).find('.page').append('<a href=\"'+event.url + '/edit' +'\" class=\"btn btn-default pull-right\"><i class=\"icon-pencil glyphicon glyphicon-pencil\"></i> "._t('BAZ_MODIFIER_LA_FICHE')."</a>').removeClass('page').find('h1.BAZ_fiche_titre').remove();
+                        $(this).find('.page').append('<a href=\"'+event.url + '/edit' +'\" class=\"btn btn-default pull-right\"><i class=\"icon-pencil glyphicon glyphicon-pencil\"></i> "._t('BAZ_MODIFIER_LA_FICHE')."</a><div class=\"clearfix\"></div>').removeClass('page').find('h1.BAZ_fiche_titre').remove();
                         modal.modal('show');
                     });
 

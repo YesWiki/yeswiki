@@ -170,7 +170,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_TEXT' => 'Texte',
 'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Mauvaise extension pour l\'image (doit &ecirc;tre .jpg ou .png ou .gif)',
 'BAZ_IMAGE_FILE_NOT_FOUND' => 'Fichier image non trouv&eacute;',
-
+'BAZAR_ACTION_VALEUR' => 'Action {{valeur...}}',
+'BAZAR_PARAM_URL_REQUIRED' => 'le paramètre "url" est obligatoire',
+'BAZAR_PARAM_CHAMP_REQUIRED' => 'le paramètre "champ" est obligatoire',
+'BAZAR_URL_ERROR' => 'l\'url n\'a pas pu être chargée',
 
 //================ Calendrier Bazar =======================================
 'BAZ_AFFICHE_TITRES_COMPLETS' => 'Afficher les titres complets des &eacute;v&eacute;nements',

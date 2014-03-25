@@ -158,7 +158,7 @@ define ('BAZ_VOIR_FLUX_RSS', 'affiche_rss'); // Un flux
 define ('BAZ_OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES', 'listes_et_fiches');
 
 // Constante pour l'envoi automatique de mail aux admins
-define ('BAZ_ENVOI_MAIL_ADMIN', true);
+define ('BAZ_ENVOI_MAIL_ADMIN', false);
 // Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
 $hrefdomain = $wiki->Href();
 $fulldomain = parse_url($hrefdomain);
@@ -255,9 +255,12 @@ define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
 // niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
 define('BAZ_GOOGLE_ALTITUDE', (isset($wakkaConfig['baz_google_altitude'])) ? $wakkaConfig['baz_google_altitude'] : '5');
 
-// type de carto google
+// layer pour carte leaflet
+// osm ou google
+define('BAZ_LAYER_CARTO', (isset($wakkaConfig['baz_layer_carto'])) ? $wakkaConfig['baz_layer_carto'] : 'osm');
 
-//ROADMAP ou SATELLITE ou HYBRID ou TERRAIN
+// type de carto google
+// ROADMAP ou SATELLITE ou HYBRID ou TERRAIN
 define('BAZ_TYPE_CARTO', (isset($wakkaConfig['baz_type_carto'])) ? $wakkaConfig['baz_type_carto'] : 'TERRAIN');
 
 // taille de la carte a l'ecran

@@ -234,7 +234,11 @@ function generatePageName($nom, $occurence = 1)
         // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48, histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $temp = explode(" ", ucwords(strtolower(preg_replace("/&([a-z])[a-z]+;/i","$1", htmlentities(substr($nom, 0, 47))))));
+        $str = htmlentities(mb_substr($nom, 0, 47, TEMPLATES_DEFAULT_CHARSET), ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+        $str = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+	    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
+	    $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
+        $temp = explode(" ", ucwords(strtolower($str)));
         $nom = '';
         foreach ($temp as $mot) {
             // on vire d'eventuels autres caracteres speciaux
@@ -269,5 +273,23 @@ function generatePageName($nom, $occurence = 1)
         return genere_nom_wiki($nom, $occurence);
     }
 }
+
+
+/*
+ * filtering an array
+ */
+function filter_by_value ($array, $index, $value){
+    if(is_array($array) && count($array)>0) 
+    {
+        foreach(array_keys($array) as $key){
+            $temp[$key] = $array[$key][$index];
+            
+            if ($temp[$key] == $value){
+                $newarray[$key] = $array[$key];
+            }
+        }
+      }
+  return $newarray;
+} 
 
 ?>

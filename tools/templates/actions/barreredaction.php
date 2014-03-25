@@ -70,6 +70,6 @@ if ($this->HasAccess("write")) {
     include_once('tools/templates/libs/squelettephp.class.php');
     $barreredactiontemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
     $barreredactiontemplate->set($barreredactionelements);
-    echo $barreredactiontemplate->analyser();
+    echo $barreredactiontemplate->analyser().' <!-- /.footer -->'."\n";
 }
 ?>

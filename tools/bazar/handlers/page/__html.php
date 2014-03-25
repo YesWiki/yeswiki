@@ -37,6 +37,6 @@ $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_v
 if ($type == 'fiche_bazar') {
     $valjson = $this->page["body"];
     $tab_valeurs = json_decode($valjson, true);
-    $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
+    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
     $this->page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
 }

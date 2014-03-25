@@ -6,4 +6,4 @@ cache/*
 files/*
 themes/*
 !themes/bootstrap/
-
+tools/wkhtmltopdf/*

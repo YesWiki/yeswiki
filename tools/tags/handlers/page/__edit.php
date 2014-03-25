@@ -36,7 +36,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 		$tagspagecourante = '';
 	}
 	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
-	<script src="tools/tags/libs/jquery-ui-1.9.1.custom.min.js"></script>
+	<script src="tools/tags/libs/jquery-ui-1.9.2.custom.min.js"></script>
 	<script src="tools/tags/libs/tag-it.js"></script>	
 	<script>
 	$(function(){
@@ -59,4 +59,11 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") &&
 {
 	$this->SaveTags($this->GetPageTag(), $_POST["pagetags"]);
 }
+
+// If the page is an ebook, we will display the ebook generator 
+if ($this->HasAccess('write') && isset($this->page["metadatas"]["ebook-title"])) {
+	//var_dump($this->page["metadatas"] ["ebook-title"]);break;
+	$pageeditionebook = $this->Format('{{ebookgenerator}}');
+}
+
 ?>

@@ -102,6 +102,9 @@ if ( ! Modernizr.mq('only all') ) {
 	    return false;
 	});
 
+	//hack retro compatibilite bs2
+	if (!(typeof $().emulateTransitionEnd == 'function')) {$('.row.row-fluid').removeClass('row');}
+
 	// login dans un dropdown
 	$('.dropdown-menu form').on('click', function (e) {
 	    e.stopPropagation()

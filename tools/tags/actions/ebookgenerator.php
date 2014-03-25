@@ -73,18 +73,24 @@ if (isset($_POST["page"])) {
 					if (isset($_POST["ebook-biblio-author"]) && $_POST["ebook-biblio-author"] != '') {	
 						if (isset($_POST["ebook-cover-image"]) && $_POST["ebook-biblio-author"] != '') {
 							if (preg_match("/.(jpg)$/i", $_POST["ebook-cover-image"])==1) {	
-								$pagename = generatePageName($ebookpagenamestart.' '.$_POST["ebook-title"]);
-								$output .= '{{button link="'.$this->href('epub',$pagename).'" text="'._t('TAGS_DOWNLOAD_EPUB').'" class="btn-primary pull-right" icon="book icon-white"}}';
-								if ($this->IsWikiName($ebookstart)) {
-									$output .= '{{include page="'.$ebookstart.'" class=""}}'."\n";
+								if (isset($ebookpagename) && !empty($ebookpagename)) {
+									$pagename = $ebookpagename;
 								}
+								else {
+									$pagename = generatePageName($ebookpagenamestart.' '.$_POST["ebook-title"]);
+								}
+								$output .= '//'._t('TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE').' : '.$this->href('',$pagename).' // {{button link="'.$this->href('epub',$pagename).'" text="'._t('TAGS_DOWNLOAD_EPUB').'" class="btn-primary pull-right" icon="book icon-white"}}'."\n";
+								/*if ($this->IsWikiName($ebookstart)) {
+									$output .= '{{include page="'.$ebookstart.'" class=""}}'."\n";
+								}*/
 								foreach ($_POST["page"] as $page) {
 									$output .= '{{include page="'.$page.'" class=""}}'."\n";
 								}
-								if ($this->IsWikiName($ebookend)) {
+								/*if ($this->IsWikiName($ebookend)) {
 									$output .= '{{include page="'.$ebookend.'" class=""}}'."\n";
-								}
+								}*/
 								unset($_POST['page']);
+								unset($_POST['antispam']);
 								$this->SaveMetaDatas($pagename, $_POST);
 								$this->SavePage($pagename, $output);
 								$output = $this->Format('""<div class="alert alert-success">'._t('TAGS_EBOOK_PAGE_CREATED').' !""'."\n".'{{button class="btn-primary" link="'.$pagename.'" text="'._t('TAGS_GOTO_EBOOK_PAGE').' '.$pagename.'"}}""</div>""'."\n");
@@ -157,10 +163,29 @@ else {
 	// on prend tous les tags
 	//$sql = 'SELECT DISTINCT value FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
 	//$tags = $this->LoadAll($sql);
+	
+	if (isset($this->page["metadatas"]["ebook-title"])) {
+		$ebookpagename = $this->GetPageTag();
+		preg_match_all('/{{include page="(.*)".*}}/Ui', $this->page['body'], $matches);
+		$ebookstart = $matches[1][0];
+		$last =count($matches[1])-1;
+		$ebookend = $matches[1][$last];
+		unset($matches[1][0]);
+		unset($matches[1][$last]);
+		foreach ($matches[1] as $key => $value) {
+			$pagesfiltre = filter_by_value($pages, 'tag', $value); 
+			$selectedpages[] = array_shift($pagesfiltre);	
+			$key = array_keys($pagesfiltre);
+			if ($key && isset($pages[$key[0]])) unset($pages[$key[0]]); 
+		}
+	} else {
+		$ebookpagename = '';
+		$selectedpages = array();
+	}
 
 	include_once 'tools/tags/libs/squelettephp.class.php';
 	$template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html'); // charge le templates
-	$template_export->set(array('pages' => $pages, 'ebookstart' => $ebookstart, 'ebookend' => $ebookend, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
+	$template_export->set(array('pages' => $pages, 'ebookstart' => $ebookstart, 'ebookend' => $ebookend, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'ebookpagename' => $ebookpagename, 'metadatas' => $this->page["metadatas"], 'selectedpages' => $selectedpages, 'url' => $this->href('',$this->GetPageTag()))); // on passe le tableau de pages en parametres
 	$output .= $template_export->analyser(); // affiche les resultats
 }
 

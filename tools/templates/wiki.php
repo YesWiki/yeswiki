@@ -81,7 +81,8 @@ $wikiClassesContent [] = '
 	function GetMetaDatas($pagetag) {	
 		$metadatas = $this->GetTripleValue($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', \'\', \'\', \'\');
 		if (!empty($metadatas)) {
-			return array_map(\'utf8_decode\', json_decode($metadatas, true));
+			if (TEMPLATES_DEFAULT_CHARSET != \'UTF-8\') return array_map(\'utf8_decode\', json_decode($metadatas, true));
+			else return json_decode($metadatas, true);
 		}
 		else {
 			return false;
@@ -97,7 +98,9 @@ $wikiClassesContent [] = '
 			$metadatas = array_merge($former_metadatas, $metadatas);
 			$this->DeleteTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', null, \'\', \'\');
 		}
-		return $this->InsertTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', json_encode(array_map("utf8_encode", $metadatas)), \'\', \'\');
+		if (TEMPLATES_DEFAULT_CHARSET != \'UTF-8\') $metadatas = json_encode(array_map("utf8_encode", $metadatas));
+		else $metadatas = json_encode($metadatas);
+		return $this->InsertTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', $metadatas, \'\', \'\');
 	}
 	
 ';
@@ -105,7 +108,8 @@ $wikiClassesContent [] = '
 //on récupère les metadonnées de la page
 $metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
 if (!empty($metadatas)) {
-        $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
+	if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
+    else $metadatas = json_decode($metadatas, true);
 }
 
 if (isset($metadatas['charset'])) { $wakkaConfig['charset'] = $metadatas['charset']; }

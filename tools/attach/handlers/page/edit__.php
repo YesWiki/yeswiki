@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar' )
+if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar' && !isset($this->page["metadatas"]["ebook-title"]) )
 {
 	// preview?
 	if (isset($_POST["submit"]) && $_POST["submit"] == "Aperçu") {
