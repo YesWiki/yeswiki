@@ -39,18 +39,19 @@
       case 'ss-medium':
         $pixelsimage = 200;
         break;
-      case 'ss-small':
+            case 'ss-large':
         $pixelsimage = 300;
         break;
       default:
         $pixelsimage = 300;
+        $fiche['listeListeTailleImage'] = 'ss-large';
         break;
     }
 
     if ($gauche) {
       $gauche=false;
       $output .= affiche_ligne_timeline(
-                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imageimageactu'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imageimageactu'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>', 
+                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>', 
                   '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
                   $fiche['listeListeTailleImage']
                 );
@@ -59,7 +60,7 @@
       $gauche=true;
       $output .= affiche_ligne_timeline(
                   '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imageimageactu'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imageimageactu'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
+                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
                   $fiche['listeListeTailleImage'], ''
                 );
     }

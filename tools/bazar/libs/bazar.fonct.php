@@ -2519,15 +2519,13 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     
     // Ajout des options si un type de fiche a ete choisie
     if ( isset( $_REQUEST['id_typeannonce'] ) && $_REQUEST['id_typeannonce'] != 'toutes' && $_REQUEST['id_typeannonce'] != '' ) {
-        $requete_sql                         = 'SELECT * FROM `' . BAZ_PREFIXE . 'nature` WHERE bn_id_nature=' . $_REQUEST['id_typeannonce'];
-        $nomwikiformulaire                   = $GLOBALS['wiki']->LoadAll( $requete_sql );
-        $tab_nature                          = $nomwikiformulaire[0];
-        $GLOBALS['_BAZAR_']['typeannonce']   = $tab_nature['bn_label_nature'];
-        $GLOBALS['_BAZAR_']['condition']     = $tab_nature['bn_condition'];
-        $GLOBALS['_BAZAR_']['template']      = $tab_nature['bn_template'];
-        $GLOBALS['_BAZAR_']['commentaire']   = $tab_nature['bn_commentaire'];
-        $GLOBALS['_BAZAR_']['appropriation'] = $tab_nature['bn_appropriation'];
-        $GLOBALS['_BAZAR_']['class']         = $tab_nature['bn_label_class'];
+        $tableauform  = baz_valeurs_type_de_fiche( $_REQUEST['id_typeannonce'] );
+        $GLOBALS['_BAZAR_']['typeannonce']   = $tableauform['bn_label_nature'];
+        $GLOBALS['_BAZAR_']['condition']     = $tableauform['bn_condition'];
+        $GLOBALS['_BAZAR_']['template']      = $tableauform['bn_template'];
+        $GLOBALS['_BAZAR_']['commentaire']   = $tableauform['bn_commentaire'];
+        $GLOBALS['_BAZAR_']['appropriation'] = $tableauform['bn_appropriation'];
+        $GLOBALS['_BAZAR_']['class']         = $tableauform['bn_label_class'];
         $res                                 = '<h2 class="titre_consulter">' . _t( 'BAZ_RECHERCHER_2POINTS' ) . ' ' . $GLOBALS['_BAZAR_']['typeannonce'] . '</h2>' . "\n";
         
         $tableau = formulaire_valeurs_template_champs( $GLOBALS['_BAZAR_']['template'] );
@@ -2546,17 +2544,12 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     }
     
     //champs texte pour entrer les mots cles
-    $option         = array(
-         'maxlength' => 255,
-        'class' => '',
-        'placeholder' => _t( 'BAZ_MOT_CLE' ) 
-    );
     $HTML_QuickForm = new HTML_QuickForm();
     $groupe_rech[]  = $HTML_QuickForm->createElement( 'html', '<div class="control-group form-group">
         <label class="control-label col-lg-3"></label>
         <div class="controls col-lg-8">
             <div class="input-group input-prepend input-append">
-                <span class="add-on input-group-addon"><i class="icon-search"></i></span><input type="text" value="" name="recherche_mots_cles" placeholder="' . _t( 'BAZ_MOT_CLE' ) . '" maxlength="255" class="form-control">
+                <span class="add-on input-group-addon"><i class="icon-search"></i></span><input type="text" value="'.((isset($_REQUEST['recherche_mots_cles']) && $_REQUEST['recherche_mots_cles'] != '') ? $_REQUEST['recherche_mots_cles'] : '').'" name="recherche_mots_cles" placeholder="' . _t( 'BAZ_MOT_CLE' ) . '" maxlength="255" class="form-control">
                 <span class="input-group-btn"><input type="submit" value="' . _t( 'BAZ_RECHERCHER' ) . '" name="rechercher" class="btn btn-primary" /></span>
             </div>
             
@@ -2576,15 +2569,7 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     }
     //la recherche a ete effectuee, on etablie la requete SQL
     else {
-        /*unset($_GET['wiki']);
-        unset($_GET['vue']);
-        unset($_GET['action']);
-        unset($_GET['id_typeannonce']);
-        unset($_GET['recherche_mots_cles']);
-        unset($_GET['rechercher']);
-        unset($_GET['personnes']);
-        unset($_GET['pageID']);*/
-        $tableau_fiches = baz_requete_recherche_fiches( '', '', $_REQUEST['id_typeannonce'], $categorienature, 1, '' );
+        $tableau_fiches = baz_requete_recherche_fiches( '', '', $_REQUEST['id_typeannonce'], $categorienature, 1, '', '', true, (isset($_REQUEST['recherche_mots_cles'])) ? $_REQUEST['recherche_mots_cles'] : ''  );
         $res .= baz_afficher_liste_resultat( $tableau_fiches );
     }
     
@@ -2595,7 +2580,7 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
 /**
  * Cette fonction recupere tous les parametres passes pour la recherche, et retourne un tableau de valeurs des fiches
  */
-function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_typeannonce = '', $categorie_fiche = '', $statut = 1, $personne = '', $nb_limite = '', $motcles = true )
+function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_typeannonce = '', $categorie_fiche = '', $statut = 1, $personne = '', $nb_limite = '', $motcles = true, $searchstring = '' )
 {
     $nb_jointures = 0;
     
@@ -2639,16 +2624,18 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
     $requeteSQL = '';
     
     //preparation de la requete pour trouver les mots cles
-    if ( isset( $_REQUEST['recherche_mots_cles'] ) && $_REQUEST['recherche_mots_cles'] != _t( 'BAZ_MOT_CLE' ) ) {
+    if ( isset( $searchstring ) && $searchstring != '' && $searchstring != _t( 'BAZ_MOT_CLE' ) ) {
+
+        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $searchstring = utf8_encode( $searchstring );
         //decoupage des mots cles
         //:      mysql_query('SET NAMES utf8');
-        $recherche = explode( ' ', $_REQUEST['recherche_mots_cles'] );
+        $recherche = explode( ' ', $searchstring );
         $nbmots    = count( $recherche );
         $requeteSQL .= ' AND (';
         for ( $i = 0; $i < $nbmots; $i++ ) {
             if ( $i > 0 )
-                $requeteSQL .= ' OR ';
-            $requeteSQL .= ' body LIKE "%' . preg_replace( "/\"/", "", json_encode( utf8_encode( $recherche[$i] ) ) ) . '%"';
+                $requeteSQL .= ' OR ';        
+            $requeteSQL .= ' body LIKE "%' . $recherche[$i] . '%"';
         }
         $requeteSQL .= ')';
     }
@@ -2662,7 +2649,7 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
             reset( $_REQUEST );
             //var_dump($_REQUEST);
             while ( list( $nom, $val ) = each( $_REQUEST ) ) {
-                if ( ( ( substr( $nom, 0, 5 ) == 'liste' ) || ( substr( $nom, 0, 8 ) == 'checkbox' ) ) && $val != '0' ) {
+                if ( ( ( substr( $nom, 0, 5 ) == 'liste' ) || ( substr( $nom, 0, 8 ) == 'checkbox' ) ) && $val != '0' && $val != '') {
                     if ( is_array( $val ) ) {
                         $val = implode( ',', array_keys( $val ) );
                     }
@@ -2720,7 +2707,7 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
     }
     
     // debug
-    // echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
+    //echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
     //var_dump($GLOBALS['wiki']->LoadAll($requete));
     return $GLOBALS['wiki']->LoadAll( $requete );
 }

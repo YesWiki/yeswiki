@@ -286,7 +286,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
             
             if ($def=='' && ($tableau_template[4] == '' || $tableau_template[4] <= 1 ) || $def==0) {
-                $select_html .= '<option value="0" selected="selected">'._t('BAZ_CHOISIR').'</option>'."\n";
+                $select_html .= '<option value="" selected="selected">'._t('BAZ_CHOISIR').'</option>'."\n";
             }
             if (is_array($valliste['label'])) {
                 foreach ($valliste['label'] as $key => $label) {
@@ -1773,21 +1773,21 @@ $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="htt
  */
 function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode=='saisie') {
+    if ($mode=='saisie' || ($mode == 'formulaire_recherche' && $tableau_template[9]==1) ) {
         $bulledaide = '';
-        if (isset($tableau_template[10]) && $tableau_template[10]!='') {
+        if ($mode=='saisie' && isset($tableau_template[10]) && $tableau_template[10]!='') {
             $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'.htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $select_html = '<div class="control-group form-group">'."\n".'<div class="control-label col-lg-3">'."\n";
-        if (isset($tableau_template[8]) && $tableau_template[8]==1) {
+        if ($mode=='saisie' && isset($tableau_template[8]) && $tableau_template[8]==1) {
             $select_html .= '<span class="symbole_obligatoire">*&nbsp;</span>'."\n";
         }
         $select_html .= $tableau_template[2].$bulledaide.' : </div>'."\n".'<div class="controls col-lg-8">'."\n".'<select';
 
         $select_attributes = '';
 
-        if ($tableau_template[4] != '' && $tableau_template[4] > 1) {
+        if ($mode=='saisie' && $tableau_template[4] != '' && $tableau_template[4] > 1) {
             $select_attributes .= ' multiple="multiple" size="'.$tableau_template[4].'"';
             $selectnametab = '[]';
         } else {
@@ -1797,20 +1797,23 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $select_attributes .= ' class="form-control" id="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab.'"';
 
 
-        if (isset($tableau_template[8]) && $tableau_template[8]==1) {
+        if ($mode=='saisie' && isset($tableau_template[8]) && $tableau_template[8]==1) {
             $select_attributes .= ' required="required"';
         }
         $select_html .= $select_attributes.'>'."\n";
 
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!='') {
             $def =	$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
-        } else {
+        } elseif (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!='') {
+            $def = $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
+        } 
+        else {
             $def = $tableau_template[5];
         }
 
         /*$valliste = baz_valeurs_liste($tableau_template[1]);*/
         if ($def=='' && ($tableau_template[4] == '' || $tableau_template[4] <= 1 ) || $def==0) {
-            $select_html .= '<option value="0" selected="selected">'._t('BAZ_CHOISIR').'</option>'."\n";
+            $select_html .= '<option value="" selected="selected">'._t('BAZ_CHOISIR').'</option>'."\n";
         }
         $val_type = baz_valeurs_type_de_fiche($tableau_template[1]);
         $tabquery = array();
@@ -1825,13 +1828,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $tabquery = '';
         }
-        if (!empty($tableau_template[13])) {
-            $_REQUEST['recherche_mots_cles'] = addslashes($tableau_template[13]);
-        }
-        else {
-            $_REQUEST['recherche_mots_cles'] = '';
-        }
-        $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"]);
+        $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"], 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : ''  );
         $select = '';
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche["body"], true);
@@ -1853,22 +1850,6 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]!=0)) {
             return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-        }
-    } elseif ($mode == 'formulaire_recherche') {
-        if ($tableau_template[9]==1) {
-            $tab_result = baz_requete_recherche_fiches('', $tri = 'alphabetique', $tableau_template[1], '');
-            $select[0] = _t('BAZ_INDIFFERENT');
-            foreach ($tab_result as $fiche) {
-                $valeurs_fiche = json_decode($fiche["body"], true);
-                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
-                $select[$valeurs_fiche['id_fiche']] = $valeurs_fiche['bf_titre'] ;
-            }
-            $option = array('id' => $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-            require_once 'HTML/QuickForm/select.php';
-            $select= new HTML_QuickForm_select($tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2], $select, $option);
-            if ($tableau_template[4] != '') $select->setSize($tableau_template[4]);
-            $select->setMultiple(0);
-            $formtemplate->addElement($select) ;
         }
     } elseif ($mode == 'html') {
         $html = '';
