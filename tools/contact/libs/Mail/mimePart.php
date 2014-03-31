@@ -964,7 +964,7 @@ class Mail_mimePart
      * @access public
      * @since 1.6.1
      */
-    function encodeHeaderValue($value, $charset, $encoding, $prefix_len=0, $eol="\r\n")
+    static function encodeHeaderValue($value, $charset, $encoding, $prefix_len=0, $eol="\r\n")
     {
         // #17311: Use multibyte aware method (requires mbstring extension)
         if ($result = Mail_mimePart::encodeMB($value, $charset, $encoding, $prefix_len, $eol)) {
@@ -1094,7 +1094,7 @@ class Mail_mimePart
      * @access public
      * @since 1.8.0
      */
-    function encodeMB($str, $charset, $encoding, $prefix_len=0, $eol="\r\n")
+    static function encodeMB($str, $charset, $encoding, $prefix_len=0, $eol="\r\n")
     {
         if (!function_exists('mb_substr') || !function_exists('mb_strlen')) {
             return;
@@ -1192,7 +1192,7 @@ class Mail_mimePart
      * @return string        Encoded character string
      * @access private
      */
-    function _qpReplaceCallback($matches)
+    static function _qpReplaceCallback($matches)
     {
         return sprintf('=%02X', ord($matches[1]));
     }
