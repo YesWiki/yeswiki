@@ -6,12 +6,12 @@
   <?php if ($nb == 1) { echo '<ul class="thumbnails">'."\n"; } ?>
   <li class="span4">
     <div class="thumbnail">
-      <img src="<?php if (!file_exists('cache/image_600_'.$fiche['imagebf_photo'])) echo redimensionner_image('files/'.$fiche['imagebf_photo'], 'cache/image_600_'.$fiche['imagebf_photo'], 600, 600); else echo 'cache/image_600_'.$fiche['imagebf_photo'];  ?>" alt="<?php echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);?>" />
+      <img src="<?php if (!file_exists('cache/image_600_'.$fiche['imagebf_image'])) echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_600_'.$fiche['imagebf_image'], 600, 600); else echo 'cache/image_600_'.$fiche['imagebf_image'];  ?>" alt="<?php echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);?>" />
       <div class="caption">
         <h3><?php echo $fiche['bf_titre'];?></h3>
         <p><?php echo $fiche['bf_description'];?></p>
   			<p>Auteur : <?php echo $fiche['bf_auteur'];?> </p>
-        <p><a href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>" title="Plus d'infos sur cette photo" class="btn btn-primary"> <i class="icon-plus icon-white"></i>Voir la fiche</a>  <a href="files/<?php echo $fiche['imagebf_photo'];?>" class="btn"> <i class="icon-download-alt"></i>T&eacute;l&eacute;charger</a> </p>
+        <p><a href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>" title="Plus d'infos sur cette photo" class="btn btn-primary"> <i class="icon-plus icon-white"></i>Voir la fiche</a>  <a href="files/<?php echo $fiche['imagebf_image'];?>" class="btn"> <i class="icon-download-alt"></i>T&eacute;l&eacute;charger</a> </p>
       </div>
     </div>
   </li>

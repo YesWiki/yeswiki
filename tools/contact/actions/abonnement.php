@@ -70,7 +70,7 @@ else {
 
 		// type de demande et placeholder
 	$listelements['demand'] = 'abonnement';
-	$listelements['placeholder'] = CONTACT_SUBSCRIBE;
+	$listelements['placeholder'] = _t('CONTACT_SUBSCRIBE');
 
 	include_once('tools/contact/libs/squelettephp.class.php');
 	$listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);

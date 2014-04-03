@@ -51,16 +51,14 @@ $(document).ready(function(){
 				url: form.attr('action'),
 				data: str,
 				success: function(msg) {
-					form.ajaxComplete(function(event, request, settings) {
-						// si le message a ete envoye, on affiche le message de notification
-						form.find('.alert').remove();
-						form.prepend(msg);
-						msg = '';
-						//  on vide le formulaire si succes
-						if (form.find('.alert-success').length>0) {
-							form[0].reset();
-						}
-					});
+					// si le message a ete envoye, on affiche le message de notification
+					form.find('.alert').remove();
+					form.prepend(msg);
+					msg = '';
+					//  on vide le formulaire si succes
+					if (form.find('.alert-success').length>0) {
+						form[0].reset();
+					}
 				}
 			});
 		}

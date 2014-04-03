@@ -174,6 +174,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZAR_PARAM_URL_REQUIRED' => 'le paramètre "url" est obligatoire',
 'BAZAR_PARAM_CHAMP_REQUIRED' => 'le paramètre "champ" est obligatoire',
 'BAZAR_URL_ERROR' => 'l\'url n\'a pas pu être chargée',
+'BAZAR_CHECKALL' => 'Cocher tout',
 
 //================ Calendrier Bazar =======================================
 'BAZ_AFFICHE_TITRES_COMPLETS' => 'Afficher les titres complets des &eacute;v&eacute;nements',
