@@ -2791,6 +2791,7 @@ function baz_afficher_liste_resultat( $tableau_fiches, $info_nb = true )
     $fiches['fiches'] = array();
     foreach ( $data as $fiche ) {
         $tab_valeurs_fiche = json_decode( $fiche['body'], true );
+        $valeurs_fiche = array();
         foreach ( $tab_valeurs_fiche as $key => $value ) {
             $valeurs_fiche[$key] = _convert( $value, 'UTF-8' );
         }

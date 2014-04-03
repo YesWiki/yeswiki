@@ -256,6 +256,19 @@ $(document).ready(function () {
 
 	$('.tab-pane').removeAttr('style');
 
+	// cocher / decocher tous
+    $('.selectall').click(function(event) {  	
+        if(this.checked) { // check select status
+            $(this).parent().siblings('.yeswiki-checkbox').each(function() { 
+                $(this).find(":checkbox").prop('checked', true);             
+            });
+        }else{
+            $(this).parent().siblings('.yeswiki-checkbox').each(function() {
+                $(this).find(":checkbox").prop('checked', false);                
+            });        
+        }
+    });
+
 
 });
 
