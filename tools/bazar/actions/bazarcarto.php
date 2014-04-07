@@ -191,6 +191,19 @@ if (empty($spider)) {
 }
 
 
+/*
+*
+* Affichage en cluster : true or false, par defaut false
+*
+*/
+
+$cluster= $this->GetParameter("cluster"); // true or false
+if (empty($cluster)) {
+    $cluster= "false";
+}
+
+
+
 $cartowidth = $this->GetParameter("width");
 if (empty($cartowidth)) {
     $cartowidth = BAZ_GOOGLE_IMAGE_LARGEUR;
@@ -242,17 +255,18 @@ else {
     $titles=explode(",",$titles);
 }
 
+
 // Detection des parametres de type liste
 $grouplist=array();
 foreach ($groups as $group) {
     if (is_liste($group)) {
-        $grouplist[$group]=liste_to_array($group); // On charge les valeurs de la liste
+        $groupfix=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
+        $grouplist[$groupfix]=liste_to_array($group); // On charge les valeurs de la liste
     }
     else {
         $grouplist[$group]=false;
     }
 }
-
 
 
 $facette = $this->GetParameter("facette"); // true or false 
@@ -351,8 +365,7 @@ foreach ($tableau_resultat as $fiche) {
 
     }
 */
-   // print_r($valeurs_fiche);
-
+   
 
 
     $tab = explode('|', $valeurs_fiche['carte_google']);
@@ -367,11 +380,10 @@ foreach ($tableau_resultat as $fiche) {
         $categories=Array();
 
         foreach ($groups as $group) {
-    
-            
+            $group=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
             if (!$grouplist[$group]) {
                 if ($valeurs_fiche[$group]!="") {
-                    $categories[$group][]=preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group])));
+                    $categories[$group][]=trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group]))));
                 }
             }
             else { // C'est une  liste !
@@ -382,7 +394,7 @@ foreach ($tableau_resultat as $fiche) {
                 if (!empty($index_liste[0])) {
                     foreach ($index_liste as $element_liste) { 
                         if ($grouplist[$group][$element_liste]!="") {
-                           $categories[$grouplist[$group][$element_liste]][]=preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste])));
+                           $categories[$grouplist[$group][$element_liste]][]=trim(preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste]))));
                         }
                     }
                 }
@@ -391,15 +403,19 @@ foreach ($tableau_resultat as $fiche) {
 
 
         }
-
+    
 
 
         if ($facette=="true") {
 
+// TODO : a revoir
         $tab_points_carto[]= '{
             "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
             "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" >'.$valeurs_fiche['bf_titre'].'</a>",
+            "descriptionlongue": \'<div class="BAZ_cadre_map">'.
+            preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
             "categories":'.json_encode($categories).',
+            "idtypeannonce": '.$valeurs_fiche['id_typeannonce'].',
             "lat": '.$tab[0].',
             "lng": '.$tab[1].'
 
@@ -456,14 +472,17 @@ $points_carto = implode(',',$tab_points_carto);
 // Spiderfier : Spiderfy multiple markers on a same point.
 
 
+    
+
+
 echo
-    '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+    '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
     <!--[if lte IE 8]>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
     <![endif]-->
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/label/leaflet.label.css" />
     
-    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
     <script src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
     <script src="tools/bazar/libs/vendor/leaflet/layer/tile/Google.js"></script>
     <script src="tools/bazar/libs/vendor/leaflet/label/leaflet.label.js"></script>';
@@ -472,6 +491,16 @@ if ($spider=="true") {
     echo 
     '<script src="tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js"></script>';
 }
+
+
+if ($cluster=="true") {
+    echo '
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css" />
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.Default.css" />
+    <script src="tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster-src.js"></script>';
+    
+}
+
 
 
 echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div> <ul id="markers"></ul>';
@@ -484,6 +513,14 @@ echo
 // Fin Specifique facette javascript
 
     var markers = Array();';
+
+echo '
+//tableau des points des fiches bazar
+    var places = [
+        '.$points_carto.'
+    ];
+';
+
 
 
 if ($spider=="true") {
@@ -531,12 +568,6 @@ echo
             map.addControl(new L.Control.Layers( {"OSM":osm, "Google":ggl}, {}));
         }';
 
-        echo '
-        //tableau des points des fiches bazar
-            var places = [
-                '.$points_carto.'
-            ];
-        ';
 
 
 
@@ -577,10 +608,50 @@ echo
             });
         ';
         }
-        else {   // Pas de spider : option a privilegier si autre plugin a charger
+        else { 
+
+
+            if ($cluster=="true") {
+
+                echo '
+
+                    var markerscluster = new L.MarkerClusterGroup();
+
+       
+                     $.each(places, function(i, item){
+
+                           var marker=new L.Marker (new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title).bindPopup(new L.Popup({maxWidth:"1000"}).setContent(item.description));
+                           markers[i]=marker;
+                           markerscluster.addLayer(marker);
+                         
+                           // Specifique facette javascript
+                          // Creation tableau layers pour ajout/suppression de point en fonction des criteres
+                          $.each(item.categories, function(key, categorie){
+                             if (typeof (layers[categorie])=="undefined") {
+                                layers[categorie]=Array();
+                             }
+                             layers[categorie].push(i);
+                          });
+                         // Fin specifique facette javascript
+    
+
+                     });
+
+                     map.addLayer(markerscluster);
+
+
+                ';
+
+
+            }
+
+            else {   // Pas de spider ni de cluster: option a privilegier si autre plugin a charger
+
+
 
         echo '
   
+
 
     $.each(places, function(i, item){
           var marker=new L.Marker (new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title).bindPopup(new L.Popup({maxWidth:"1000"}).setContent(item.description)).addTo(map);
@@ -601,6 +672,7 @@ echo
 
  // alert (dump( layers )); 
             ';
+            }
         }
         echo '
         }
