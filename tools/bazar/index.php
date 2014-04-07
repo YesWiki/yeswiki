@@ -1,7 +1,6 @@
 <?php
 // Administration
 
-//
 
 // Verification de securite
 if (!defined("TOOLS_MANAGER")) {

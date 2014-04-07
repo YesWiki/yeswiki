@@ -191,6 +191,19 @@ if (empty($spider)) {
 }
 
 
+/*
+*
+* Affichage en cluster : true or false, par defaut false
+*
+*/
+
+$cluster= $this->GetParameter("cluster"); // true or false
+if (empty($cluster)) {
+    $cluster= "false";
+}
+
+
+
 $cartowidth = $this->GetParameter("width");
 if (empty($cartowidth)) {
     $cartowidth = BAZ_GOOGLE_IMAGE_LARGEUR;
@@ -459,14 +472,17 @@ $points_carto = implode(',',$tab_points_carto);
 // Spiderfier : Spiderfy multiple markers on a same point.
 
 
+    
+
+
 echo
-    '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.css" />
+    '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
     <!--[if lte IE 8]>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
     <![endif]-->
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/label/leaflet.label.css" />
     
-    <script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
     <script src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
     <script src="tools/bazar/libs/vendor/leaflet/layer/tile/Google.js"></script>
     <script src="tools/bazar/libs/vendor/leaflet/label/leaflet.label.js"></script>';
@@ -474,6 +490,15 @@ echo
 if ($spider=="true") {
     echo 
     '<script src="tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js"></script>';
+}
+
+
+if ($cluster=="true") {
+    echo '
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css" />
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.Default.css" />
+    <script src="tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster-src.js"></script>';
+    
 }
 
 
@@ -583,10 +608,50 @@ echo
             });
         ';
         }
-        else {   // Pas de spider : option a privilegier si autre plugin a charger
+        else { 
+
+
+            if ($cluster=="true") {
+
+                echo '
+
+                    var markerscluster = new L.MarkerClusterGroup();
+
+       
+                     $.each(places, function(i, item){
+
+                           var marker=new L.Marker (new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title).bindPopup(new L.Popup({maxWidth:"1000"}).setContent(item.description));
+                           markers[i]=marker;
+                           markerscluster.addLayer(marker);
+                         
+                           // Specifique facette javascript
+                          // Creation tableau layers pour ajout/suppression de point en fonction des criteres
+                          $.each(item.categories, function(key, categorie){
+                             if (typeof (layers[categorie])=="undefined") {
+                                layers[categorie]=Array();
+                             }
+                             layers[categorie].push(i);
+                          });
+                         // Fin specifique facette javascript
+    
+
+                     });
+
+                     map.addLayer(markerscluster);
+
+
+                ';
+
+
+            }
+
+            else {   // Pas de spider ni de cluster: option a privilegier si autre plugin a charger
+
+
 
         echo '
   
+
 
     $.each(places, function(i, item){
           var marker=new L.Marker (new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title).bindPopup(new L.Popup({maxWidth:"1000"}).setContent(item.description)).addTo(map);
@@ -607,6 +672,7 @@ echo
 
  // alert (dump( layers )); 
             ';
+            }
         }
         echo '
         }
