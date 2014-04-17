@@ -331,14 +331,20 @@ overflow: auto;
     position: relative;
 }
 
+/* typography */
+.justify {
+  text-align:justify;
+  text-justify:inter-word;
+} 
+
 /* dropdown menu in modal */
 #page_options .typeahead.dropdown-menu { z-index: 200000; }
 
 #form_page_options .control-label {width:200px;}
 #form_page_options .controls {margin-left:210px;}
 
-.yeswiki-menu-btn {margin-bottom: 0 !important; margin-left: 10px !important;}
+.yeswiki-menu-btn {margin-bottom: 0 !important; margin-left: 10px !important;} 
 .topbarpage .yeswiki-search-form .input-append, .topbarpage .yeswiki-search-form .input-prepend {margin-top: 0 !important;}
 
 /* on /iframe page, we use white background, can be overwritten in the theme */
-.page-widget {background:#FFF; background-image: none;}
+.yeswiki-page-widget {padding:15px;background:#FFF; background-image: none;}

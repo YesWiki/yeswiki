@@ -118,7 +118,24 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'RUNNING_WITH' => 'Galope sous',
 
 'TEMPLATE_NO_THEME_FILES' => 'Fichiers du thème manquants',
-'TEMPLATE_DEFAULT_THEME_USED' => 'Le theme par défaut sera utilisé'
+'TEMPLATE_DEFAULT_THEME_USED' => 'Le theme par défaut sera utilisé',
 
+// actions/end.php
+'TEMPLATE_ACTION_END' => 'Action {{end ...}}',
+'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'param&egrave;tre "elem" obligatoire',
+
+// actions/col.php
+'TEMPLATE_ACTION_COL' => 'Action {{col ...}}',
+'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'param&egrave;tre "size" obligatoire',
+'TEMPLATE_SIZE_PARAMETER_MUST_BE_INTEGER_FROM_1_TO_12' => 'le param&egrave;tre "size" doit &ecirc;tre un entier compris entre 1 et 12',
+'TEMPLATE_ELEM_COL_NOT_CLOSED' => 'l\'action {{col ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="col"}}',
+
+// actions/grid.php
+'TEMPLATE_ACTION_GRID' => 'Action {{grid ...}}',
+'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'l\'action {{grid ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="grid"}}',
+
+// actions/buttondropdown.php
+'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Action {{buttondropdown ...}}',
+'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'l\'action {{buttondropdown ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="buttondropdown"}}',
 
 ));
