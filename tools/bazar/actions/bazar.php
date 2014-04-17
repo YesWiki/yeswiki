@@ -103,7 +103,7 @@ else {
 
     if (empty($GLOBALS['_BAZAR_']['id_typeannonce'])) {
         // si la valeur n'est pas passée en paramètre, on vérifie si l'application ne l'a pas initialisé
-        if (isset($_REQUEST['id_typeannonce'])) {
+        if (isset($_REQUEST['id_typeannonce']) && $_REQUEST['id_typeannonce'] != 'toutes' && $_REQUEST['id_typeannonce'] != '') {
             $GLOBALS['_BAZAR_']['id_typeannonce'] = $_REQUEST['id_typeannonce'];
             $tab_nature = baz_valeurs_type_de_fiche($GLOBALS['_BAZAR_']['id_typeannonce']);
             $GLOBALS['_BAZAR_']['typeannonce'] = $tab_nature['bn_label_nature'];

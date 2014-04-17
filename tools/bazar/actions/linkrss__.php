@@ -1,22 +1,13 @@
 <?php
 
 if (!defined("WIKINI_VERSION")) {
-            die ("acc&egrave;s direct interdit");
+    die ("acc&egrave;s direct interdit");
 }
-//requete pour obtenir l'id et le label des types d'annonces
-$requete = 'SELECT bn_id_nature, bn_label_nature '.
-           'FROM '.BAZ_PREFIXE.'nature WHERE 1';
-$resultat = $GLOBALS['wiki']->LoadAll($requete) ;
 
-// Nettoyage de l url
-$GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
 $liste='';
-$lien_RSS= clone($GLOBALS['_BAZAR_']['url']);
-$lien_RSS->addQueryString('wiki', $this->minihref('rss',$this->tag));
+$resultat = baz_valeurs_type_de_fiche() ;
 foreach ($resultat as $key => $ligne) {
-    $lien_RSS->addQueryString('id_typeannonce', $ligne['bn_id_nature']);
-    $liste .= '	<link rel="alternate" type="application/rss+xml" title="'.$ligne['bn_label_nature'].'" href="'.str_replace('&','&amp;',$lien_RSS->getURL()).'"  />'."\n";
-    $lien_RSS->removeQueryString('id_typeannonce');
+    $liste .= '  <link rel="alternate" type="application/rss+xml" title="'.$ligne['bn_label_nature'].'" href="'.$this->href('rss', $this->getPageTag(), 'id_typeannonce='.$ligne['bn_id_nature']).'"  />'."\n";
 }
 
-echo '	<link rel="alternate" type="application/rss+xml" title="'._t('BAZ_FLUX_RSS_GENERAL').'" href="'.str_replace('&','&amp;',$lien_RSS->getURL()).'" />'."\n".$liste;
+echo '  <link rel="alternate" type="application/rss+xml" title="'._t('BAZ_FLUX_RSS_GENERAL').'" href="'.$this->href('rss').'" />'."\n".$liste;

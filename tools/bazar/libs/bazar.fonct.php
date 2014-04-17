@@ -2109,19 +2109,34 @@ function baz_valeurs_liste( $idliste = '' )
  *
  * @return   void
  */
-function baz_valeurs_type_de_fiche( $idtypefiche )
+function baz_valeurs_type_de_fiche( $idtypefiche= '' )
 {
     if ( $idtypefiche != '' && $idtypefiche != 'toutes' ) {
         $requete = 'SELECT * FROM ' . BAZ_PREFIXE . 'nature WHERE bn_id_nature = ' . $idtypefiche;
         if ( isset( $GLOBALS['_BAZAR_']['langue'] ) ) {
-            $requete .= ' and bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%"';
+            $requete .= ' AND bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%"';
         }
-        foreach ( $GLOBALS['wiki']->LoadSingle( $requete ) as $key => $value ) {
-            $valeurs_type_de_fiche[$key] = _convert( $value, 'ISO-8859-15' );
+        $results = $GLOBALS['wiki']->LoadSingle( $requete );
+        if (is_array($results)) {
+            foreach ( $results as $key => $value ) {
+                $valeurs_type_de_fiche[$key] = _convert( $value, 'ISO-8859-15' );
+            }
+            return $valeurs_type_de_fiche;
         }
-        return $valeurs_type_de_fiche;
+        else return false;    
     } else {
-        return false;
+        $requete = 'SELECT * FROM ' . BAZ_PREFIXE . 'nature WHERE 1';
+        if ( isset( $GLOBALS['_BAZAR_']['langue'] ) ) {
+            $requete .= ' AND bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%"';
+        }
+        $results = $GLOBALS['wiki']->LoadAll( $requete );
+        if (is_array($results)) {
+            foreach ( $results as $key => $value ) {
+                $valeurs_type_de_fiche[$value["bn_id_nature"]] = _convert( $value, 'ISO-8859-15' );
+            }
+            return $valeurs_type_de_fiche;
+        }
+        else return false;
     }
 }
 
@@ -2596,11 +2611,6 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
     //requete d'obtention des valeurs d'une fiche
     $requete = 'SELECT DISTINCT body FROM ' . BAZ_PREFIXE . 'pages WHERE latest="Y" AND comment_on = \'\'';
     
-    //on limite a la categorie choisie
-    if ( $categorie_fiche != '' && $categorie_fiche != 'toutes' ) {
-        $requete .= ' AND body LIKE \'%"categorie_fiche":"' . utf8_encode( $categorie_fiche ) . '"%\'';
-    }
-    
     //on limite a la langue choisie
     if ( isset( $GLOBALS['_BAZAR_']['langue'] ) ) {
         //$requete .= ' AND body LIKE \'%"langue":"'.utf8_encode($GLOBALS['_BAZAR_']['langue']).'"%\'' ;
@@ -2635,7 +2645,7 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
         for ( $i = 0; $i < $nbmots; $i++ ) {
             if ( $i > 0 )
                 $requeteSQL .= ' OR ';        
-            $requeteSQL .= ' body LIKE "%' . $recherche[$i] . '%"';
+            $requeteSQL .= ' body LIKE \'%' . $recherche[$i] . '%\'';
         }
         $requeteSQL .= ')';
     }
@@ -2925,7 +2935,7 @@ function baz_afficher_flux_RSS()
     if ( isset( $_GET['nbitem'] ) ) {
         $nbitem = $_GET['nbitem'];
     } else {
-        $nbitem = _t( 'BAZ_NB_ENTREES_FLUX_RSS' );
+        $nbitem = BAZ_NB_ENTREES_FLUX_RSS;
     }
     
     if ( isset( $_GET['utilisateur'] ) ) {
@@ -2960,46 +2970,46 @@ function baz_afficher_flux_RSS()
     $xml .= "\r\n    ";
     $xml .= XML_Util::createStartElement( 'channel' );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'title', null, utf8_encode( html_entity_decode( _t( 'BAZ_DERNIERE_ACTU' ) ) ) );
+    $xml .= XML_Util::createTag( 'title', null, _convert(_t( 'BAZ_DERNIERE_ACTU' ), TEMPLATES_DEFAULT_CHARSET) );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'link', null, utf8_encode( html_entity_decode( _t( 'BAZ_RSS_ADRESSESITE' ) ) ) );
+    $xml .= XML_Util::createTag( 'link', null, _convert( html_entity_decode( BAZ_RSS_ADRESSESITE ), TEMPLATES_DEFAULT_CHARSET ) );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'description', null, utf8_encode( html_entity_decode( _t( 'BAZ_RSS_DESCRIPTIONSITE' ) ) ) );
+    $xml .= XML_Util::createTag( 'description', null, _convert( html_entity_decode(BAZ_RSS_DESCRIPTIONSITE ), TEMPLATES_DEFAULT_CHARSET ) );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag( 'language', null, 'fr-FR' );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'copyright', null, 'Copyright (c) ' . date( 'Y' ) . ' ' . utf8_encode( html_entity_decode( _t( 'BAZ_RSS_NOMSITE' ) ) ) );
+    $xml .= XML_Util::createTag( 'copyright', null, 'Copyright (c) ' . date( 'Y' ) . ' ' . _convert( html_entity_decode( BAZ_RSS_NOMSITE ), TEMPLATES_DEFAULT_CHARSET ) );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag( 'lastBuildDate', null, strftime( '%a, %d %b %Y %H:%M:%S GMT' ) );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag( 'docs', null, 'http://www.stervinou.com/projets/rss/' );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'category', null, _t( 'BAZ_RSS_CATEGORIE' ) );
+    $xml .= XML_Util::createTag( 'category', null, BAZ_RSS_CATEGORIE );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'managingEditor', null, _t( 'BAZ_RSS_MANAGINGEDITOR' ) );
+    $xml .= XML_Util::createTag( 'managingEditor', null, BAZ_RSS_MANAGINGEDITOR );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'webMaster', null, _t( 'BAZ_RSS_WEBMASTER' ) );
+    $xml .= XML_Util::createTag( 'webMaster', null, BAZ_RSS_WEBMASTER );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag( 'ttl', null, '60' );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createStartElement( 'image' );
     $xml .= "\r\n        ";
-    $xml .= XML_Util::createTag( 'title', null, utf8_encode( html_entity_decode( _t( 'BAZ_DERNIERE_ACTU' ) ) ) );
+    $xml .= XML_Util::createTag( 'title', null, _convert( html_entity_decode( _t( 'BAZ_DERNIERE_ACTU' )), TEMPLATES_DEFAULT_CHARSET ) );
     $xml .= "\r\n        ";
-    $xml .= XML_Util::createTag( 'url', null, _t( 'BAZ_RSS_LOGOSITE' ) );
+    $xml .= XML_Util::createTag( 'url', null, BAZ_RSS_LOGOSITE );
     $xml .= "\r\n        ";
-    $xml .= XML_Util::createTag( 'link', null, _t( 'BAZ_RSS_ADRESSESITE' ) );
+    $xml .= XML_Util::createTag( 'link', null, BAZ_RSS_ADRESSESITE );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createEndElement( 'image' );
     if ( count( $tableau_flux_rss ) > 0 ) {
         // Creation des items : titre + lien + description + date de publication
         foreach ( $tableau_flux_rss as $ligne ) {
             $ligne = json_decode( $ligne["body"], true );
-            $ligne = array_map( 'utf8_decode', $ligne );
+            $ligne = _convert($ligne, 'UTF-8');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement( 'item' );
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag( 'title', null, encoder_en_utf8( html_entity_decode( stripslashes( $ligne['bf_titre'] ) ) ) );
+            $xml .= XML_Util::createTag( 'title', null, html_entity_decode( stripslashes( $ligne['bf_titre'] ) ) );
             $xml .= "\r\n        ";
             $lien = $GLOBALS['_BAZAR_']['url'];
             $lien->addQueryString( BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE );
@@ -3015,7 +3025,7 @@ function baz_afficher_flux_RSS()
             $xml .= "\r\n      ";
             
             $tab = explode( "wakka.php?wiki=", $lien->getURL() );
-            $xml .= XML_Util::createTag( 'description', null, '<![CDATA[' . encoder_en_utf8( html_entity_decode( baz_voir_fiche( 0, $ligne ) ) ) . ']]>' );
+            $xml .= XML_Util::createTag( 'description', null, '<![CDATA[' . html_entity_decode( baz_voir_fiche( 0, $ligne ) ) . ']]>' );
             $xml .= "\r\n        ";
             if ( $ligne['date_debut_validite_fiche'] != '0000-00-00' && $ligne['date_debut_validite_fiche'] > $ligne['date_creation_fiche'] ) {
                 $date_pub = $ligne['date_debut_validite_fiche'];
@@ -3029,13 +3039,13 @@ function baz_afficher_flux_RSS()
         $xml .= "\r\n      ";
         $xml .= XML_Util::createStartElement( 'item' );
         $xml .= "\r\n          ";
-        $xml .= XML_Util::createTag( 'title', null, utf8_encode( html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ) ) ) );
+        $xml .= XML_Util::createTag( 'title', null, html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ) ) );
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag( 'link', null, '<![CDATA[' . $GLOBALS['_BAZAR_']['url']->getUrl() . ']]>' );
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag( 'guid', null, '<![CDATA[' . $GLOBALS['_BAZAR_']['url']->getUrl() . ']]>' );
         $xml .= "\r\n          ";
-        $xml .= XML_Util::createTag( 'description', null, utf8_encode( html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ) ) ) );
+        $xml .= XML_Util::createTag( 'description', null, html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ) ) );
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag( 'pubDate', null, strftime( '%a, %d %b %Y %H:%M:%S GMT', strtotime( "01/01/%Y" ) ) );
         $xml .= "\r\n      ";
