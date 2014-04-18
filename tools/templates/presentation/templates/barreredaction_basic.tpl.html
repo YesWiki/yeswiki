@@ -22,9 +22,9 @@
 	<a title="<?php echo _t('TEMPLATE_CLICK_TO_SEE_REFERENCES').' '.$page;?>" href="<?php echo $linkreferrers;?>" class="link-referrers modalbox">
 		<i class="icon-info-sign"></i>&nbsp;<?php echo _t('TEMPLATE_REFERENCES');?>
 	</a>
-	<span class="dropup">
+	<span class="btn-group dropup">
 		<a title="<?php echo _t('TEMPLATE_SLIDESHOW_MODE');?>" href="<?php echo $linkdiaporama;?>" class="link-diaporama dropdown-toggle" data-toggle="dropdown">
-			<i class="icon-film"></i>&nbsp;<?php echo _t('TEMPLATE_SLIDESHOW');?>
+			<i class="icon-film"></i>&nbsp;<?php echo _t('TEMPLATE_SLIDESHOW');?><span class="caret"></span>
 		</a>
 		<ul class="dropdown-menu">
 			<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama','','template=diaporama_slides.tpl.html');?>">Diapositives</a></li> 

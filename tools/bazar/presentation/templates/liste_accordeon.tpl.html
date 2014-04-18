@@ -12,7 +12,18 @@
     <div id="collapse<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
       <div class="panel-body">
         <?php echo $fiche['html']; ?>
-        <?php echo $GLOBALS['wiki']->Format('{{barreredaction page="'.$fiche['id_fiche'].'" template="barreredaction_buttons.tpl.html" }}');?>
+        <div class="footer-buttons">
+          <a href="<?php echo $linkpage;?>" class="btn btn-primary"><i class="icon-eye-open icon-white"></i>&nbsp;<?php echo _t('TEMPLATE_VIEW_PAGE');?></a>
+          <div class="pull-right">
+            <?php if ($GLOBALS['wiki']->HasAccess("write")) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('edit', $linkpage); ?>" class="btn btn-default"><i class="icon-pencil"></i></a>
+            <?php endif; ?>
+            <?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $linkpage); ?>" class="btn btn-danger"><i class="icon-trash icon-white"></i></a>
+            <?php endif; ?>
+          </div>
+          <div class="clearfix"></div>
+        </div> <!-- /.footer-buttons -->
       </div>
     </div>
   </div>

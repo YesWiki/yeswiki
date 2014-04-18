@@ -388,8 +388,10 @@ if (!class_exists('WikiniFormatter'))
 					// events
 					elseif (preg_match("/^\{\{(.*?)\}\}$/s", $thing, $matches))
 					{
-						if ($matches[1])
+						if ($matches[1]) {
+							$this->br = 0;
 							return $wiki->Action($matches[1]);
+						}
 						else
 							return "{{}}";
 					}

@@ -106,7 +106,7 @@ if ($this->HasAccess("read"))
 		  {
 			$output .= "<br />\nPas de diff&eacute;rences.";
 		  }
-		  echo $output;
+		  echo _convert($output, 'ISO-8859-15');
 	
 	}
 	
@@ -205,7 +205,7 @@ if ($this->HasAccess("read"))
 		  $sideB->copy_until_ordinal($count_total_right,$output);
 		  $sideB->copy_whitespace($output);
 		  $out=$this->Format($output);
-		  echo $out;
+		  echo _convert($out, 'ISO-8859-15');
 	
 	}
 

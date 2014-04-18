@@ -22,12 +22,12 @@ $html .= "</pre>\n";
 $html .= '
 <div class="checkbox">
 	<label>
-	  <input id="checkbox-share" type="checkbox" checked="checked" onclick="document.getElementById(\'htmlsharecode\').textContent = this.checked ? document.getElementById(\'htmlsharecode\').textContent.replace(\'&share=0\', \'\') : document.getElementById(\'htmlsharecode\').textContent.replace(\''.$this->Href('iframe').'\', \''.$this->Href('iframe').'&share=0\');"> '._t('TEMPLATE_ADD_SHARE_BUTTON').'
+	  <input id="checkbox-share" type="checkbox" checked="checked" onclick="document.getElementById(\'htmlsharecode\').textContent = this.checked ? document.getElementById(\'htmlsharecode\').textContent.replace(\'&share=1\', \'\') : document.getElementById(\'htmlsharecode\').textContent.replace(\''.$this->Href('iframe').'\', \''.$this->Href('iframe').'&share=1\');"> '._t('TEMPLATE_ADD_SHARE_BUTTON').'
 	</label>
 </div>
 <div class="checkbox">
 	<label>
-	  <input id="checkbox-edit" type="checkbox" checked="checked" onclick="document.getElementById(\'htmlsharecode\').textContent = this.checked ? document.getElementById(\'htmlsharecode\').textContent.replace(\'\&edit\=0\', \'\') : document.getElementById(\'htmlsharecode\').textContent.replace(\''.$this->Href('iframe').'\', \''.$this->Href('iframe').'&edit=0\');"> '._t('TEMPLATE_ADD_EDIT_BAR').'
+	  <input id="checkbox-edit" type="checkbox" checked="checked" onclick="document.getElementById(\'htmlsharecode\').textContent = this.checked ? document.getElementById(\'htmlsharecode\').textContent.replace(\'\&edit\=1\', \'\') : document.getElementById(\'htmlsharecode\').textContent.replace(\''.$this->Href('iframe').'\', \''.$this->Href('iframe').'&edit=1\');"> '._t('TEMPLATE_ADD_EDIT_BAR').'
 	</label>
 </div>
 ';

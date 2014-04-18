@@ -21,13 +21,10 @@ if ($this->HasAccess("read"))
 		$output = '';
 		// on recupere les entetes html mais pas ce qu'il y a dans le body
 		$header =  explode('<body',$this->Header());
-		$output .= $header[0]."<body>\n<div class=\"page-widget\">\n";	
+		$output .= $header[0]."<body>\n<div class=\"yeswiki-page-widget page-widget\">\n";	
 
 		// par defaut on ajoute un bouton de partage, mais il peut etre desactive en ajoutant &share=0 à l'url de l'iframe
-		if (isset($_GET['share']) && $_GET['share'] == '0') {
-			// pas de bouton de partage
-		}
-		else {
+		if (isset($_GET['share']) && $_GET['share'] == '1') {
 			$output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="'.$this->href('share').'" title="'._t('TEMPLATE_SEE_SHARING_OPTIONS').' '.$this->GetPageTag().'"><i class="icon-share"></i>&nbsp;'._t('TEMPLATE_SHARE').'</a>';
 		}
 
@@ -44,10 +41,7 @@ if ($this->HasAccess("read"))
 		$output .= "</div><!-- end div.page-widget -->";
 		
 		// par defaut on ajoute la barre de modification, mais elle peut etre desactivee en ajoutant &edit=0 à l'url de l'iframe
-		if (isset($_GET['edit']) && $_GET['edit'] == '0') {
-			// pas de barre d'edition
-		}
-		else {
+		if (isset($_GET['edit']) && $_GET['edit'] == '1') {
 			$output .= $this->Format('{{barreredaction}}');
 		}
 

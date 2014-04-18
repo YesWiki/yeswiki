@@ -18,7 +18,7 @@ $title = $this->GetParameter('title');
 
 // icone du bouton
 $icon = $this->GetParameter('icon');
-if (!empty($icon)) $icon = '<i class="icon-'.$icon.'"></i>';
+if (!empty($icon)) $icon = '<i class="icon-'.$icon.' glyphicon glyphicon-'.$icon.'"></i>';
 
 // classe css supplémentaire pour changer le look
 $class = $this->GetParameter('class');
