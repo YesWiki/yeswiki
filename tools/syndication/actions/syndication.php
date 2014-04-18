@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION"))
 }
 
 //on inclue Magpie le parser RSS
-if (!defined('MAGPIE_OUTPUT_ENCODING')) define('MAGPIE_OUTPUT_ENCODING', 'UTF-8');
+if (!defined('MAGPIE_OUTPUT_ENCODING')) define('MAGPIE_OUTPUT_ENCODING', TEMPLATES_DEFAULT_CHARSET);
 if (!defined('MAGPIE_DIR')) define('MAGPIE_DIR', 'tools/syndication/libs/');
 require_once(MAGPIE_DIR.'rss_fetch.inc');
 
@@ -116,28 +116,26 @@ if (!function_exists('truncate')) {
 		}
 		return $truncate;
 	}
-
-
-
 }
 
 
-//on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
+// on verifie si il existe un dossier pour le cache et si on a les droits d'ecriture dessus
 if (file_exists('cache')) {
 	if (!is_writable('cache')) {
-		echo '<p class="alert alert-danger">Le r&eacute;pertoire "cache" n\'a pas les droits d\'acc&egrave;s en &eacute;criture.</p>'."\n";
+		echo '<p class="alert alert-error alert-danger">'._t('SYNDICATION_ACTION_SYNDICATION').' : '._t('SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER').'.</p>'."\n";
 	}
 } else {
-	echo '<p class="alert alert-danger">Il faut cr&eacute;er un r&eacute;pertoire "cache" dans le r&eacute;pertoire principal.</p>'."\n";
+	echo '<p class="alert alert-error alert-danger">'._t('SYNDICATION_ACTION_SYNDICATION').' : '._t('SYNDICATION_CREATE_CACHE_FOLDER').'.</p>'."\n";
 }
 
-//r?cuperation des parametres
+
+// recuperation des parametres
 $titre = $this->GetParameter("titre");
 
 $nb = $this->GetParameter("nb");
 
 $pagination = $this->GetParameter("pagination");
-if (empty($pagination)) $pagination = 2;
+if (empty($pagination)) $pagination = 5;
 
 $nbchar = $this->GetParameter("nbchar");
 
@@ -153,8 +151,8 @@ if (empty($template)) {
 } else {
 	$template = 'tools/syndication/templates/'.$this->GetParameter("template");
 	if (!file_exists($template)) {
-			echo 'Le fichier template: "'.$template.'" n\'existe pas, on utilise le template par d&eacute;faut.';
-			$template = 'tools/syndication/templates/liste.tpl.html';
+		echo '<p class="alert alert-error alert-danger">'._t('SYNDICATION_ACTION_SYNDICATION').' : '.$template.' '._t('SYNDICATION_TEMPLATE_NOT_FOUND').'.</p>'."\n";
+		$template = 'tools/syndication/templates/liste.tpl.html';
 	}
 }
 
@@ -178,29 +176,29 @@ if (!empty($urls)) {
 						$aso_page = array();
 						// Gestion du titre
 						if ( $titre == 'rss' ) {
-							$aso_page['titre_site'] = htmlentities($feed->channel['title'], ENT_QUOTES, 'UTF-8');
+							$aso_page['titre_site'] = $feed->channel['title'];
 						} else {
 							$aso_page['titre_site'] = $titre;
 						}
 						// Gestion de l'url du site
-						$aso_page['url_site'] = htmlentities($feed->channel['link'], ENT_QUOTES, 'UTF-8');
+						$aso_page['url_site'] = $feed->channel['link'];
 						// Ouverture du lien dans une nouvelle fenetre
 						$aso_page['ext'] = $nouvellefenetre;
 						//url de l'article	
-						$aso_page['url'] = htmlentities($item['link'], ENT_QUOTES, 'UTF-8');
+						$aso_page['url'] = $item['link'];
 						//titre de l'article						
-						$aso_page['titre'] = html_entity_decode(htmlentities($item['title'], ENT_QUOTES, 'UTF-8'), ENT_QUOTES);
+						$aso_page['titre'] = $item['title'];
 						//description de la description : soit tronquee, soit en entier
 						if (!empty($nbchar)) {
 							//On verifie si le texte est plus grand que le nombre de caracteres specifies
 							if (strlen($item['description']) > 0 &&  strlen($item['description']) > $nbchar) {
 								//on decoupe avec une bibliotheque qui respecte le DOM html
 							    $item['description'] = truncate($item['description'], $nbchar, ' [...] <a class="lien_lire_suite" href="'.$aso_page['url'].'" '.
-							    ($nouvellefenetre ? 'onclick="window.open(this.href); return false;" ' : '').'title="lire la suite">Lire la suite</a>');
+							    ($nouvellefenetre ? 'onclick="window.open(this.href); return false;" ' : '').'title="'._t('SYNDICATION_READ_MORE').'">'._t('SYNDICATION_READ_MORE').'</a>');
 							}
-							$aso_page['description'] = html_entity_decode(htmlentities($item['description'], ENT_QUOTES, 'UTF-8'), ENT_QUOTES);
+							$aso_page['description'] = $item['description'];
 						} else {
-							$aso_page['description'] = html_entity_decode(htmlentities($item['description'], ENT_QUOTES, 'UTF-8'), ENT_QUOTES);	
+							$aso_page['description'] = $item['description'];	
 						}
 													
 						//gestion de la date de publication, selon le flux, elle se trouve parsee ? des endroits differents 

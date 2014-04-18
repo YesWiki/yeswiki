@@ -33,6 +33,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/syndication.php
 'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
 'SYNDICATION_PARAM_URL_REQUIRED' => 'il faut entrer obligatoirement le param&egrave;tre "url" pour syndiquer un flux RSS',
+'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'le r&eacute;pertoire "cache" n\'a pas les droits d\'acc&egrave;s en &eacute;criture',
+'SYNDICATION_CREATE_CACHE_FOLDER' => 'il faut cr&eacute;er un r&eacute;pertoire "cache" dans le r&eacute;pertoire principal',
+'SYNDICATION_TEMPLATE_NOT_FOUND' => 'n\'existe pas, on utilise le fichier template par d&eacute;faut.',
+'SYNDICATION_READ_MORE' => 'Lire la suite',
 
 // actions/twitter.php
 'SYNDICATION_ACTION_TWITTER' => 'Action {{twitter ...}}',
