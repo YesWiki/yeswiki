@@ -405,13 +405,14 @@ foreach ($tableau_resultat as $fiche) {
         }
     
 
-
         if ($facette=="true") {
 
 // TODO : a revoir
-        $tab_points_carto[]= '{
+// "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" >'.$valeurs_fiche['bf_titre'].'</a>",
+//            "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" onclick=\"(\"#'.$valeurs_fiche['id_fiche'].'.collapse(\"show\")\")\">'.'Voir la fiche'.'</a>",
+            $tab_points_carto[]= '{
             "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
-            "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" >'.$valeurs_fiche['bf_titre'].'</a>",
+            "description": "<a onclick=\"jQuery(\'#collapse'.$valeurs_fiche['id_fiche'].'\').collapse(\'show\');\" href=\"#collapse'.$valeurs_fiche['id_fiche'].'\" >Voir la fiche</a>",
             "descriptionlongue": \'<div class="BAZ_cadre_map">'.
             preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
             "categories":'.json_encode($categories).',
@@ -465,6 +466,8 @@ $GLOBALS['tabclick']=$tabclick;
 
 
 $points_carto = implode(',',$tab_points_carto);
+
+$GLOBALS['points_carto']=$tab_points_carto;
 
 // Leaflet + plugins :
 // Google : add Google layer.
@@ -530,6 +533,7 @@ if ($spider=="true") {
 echo 
 
     'var map;
+     var oms;
     
     
 
@@ -573,7 +577,7 @@ echo
 
         if ($spider=="true") {
         echo '
-            var oms = new OverlappingMarkerSpiderfier(map);
+            oms = new OverlappingMarkerSpiderfier(map);
 
             $.each(places, function(i, item){
                 var marker =  new L.Marker(new L.LatLng(item.lat, item.lng),{icon: customIcon}).bindLabel(item.title);    
