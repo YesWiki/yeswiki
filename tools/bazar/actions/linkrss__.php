@@ -4,11 +4,12 @@ if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-$liste='';
+$liste = '';
 $resultat = baz_valeurs_type_de_fiche() ;
-if (count($resultat)>0) {
+
+if (is_array($resultat) && count($resultat)>0) {
 	foreach ($resultat as $key => $ligne) {
-	    $liste .= '  <link rel="alternate" type="application/rss+xml" title="'.$ligne['bn_label_nature'].'" href="'.$this->href('rss', $this->getPageTag(), 'id_typeannonce='.$ligne['bn_id_nature']).'">'."\n";
+	    $liste .= '<link rel="alternate" type="application/rss+xml" title="'.$ligne['bn_label_nature'].'" href="'.$this->href('rss', $this->getPageTag(), 'id_typeannonce='.$ligne['bn_id_nature']).'">'."\n";
 	}	
 }
 

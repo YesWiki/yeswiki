@@ -2125,7 +2125,7 @@ function baz_valeurs_type_de_fiche( $idtypefiche= '' )
             $requete .= ' AND bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%"';
         }
         $results = $GLOBALS['wiki']->LoadAll( $requete );
-        if (is_array($results)) {
+        if (is_array($results) && count($results)>0) {
             foreach ( $results as $key => $value ) {
                 $valeurs_type_de_fiche[$value["bn_id_nature"]] = _convert( $value, 'ISO-8859-15' );
             }
