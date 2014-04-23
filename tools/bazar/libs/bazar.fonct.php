@@ -760,11 +760,7 @@ function baz_afficher_formulaire_import()
             if ( !isset( $_POST['submit_file'] ) ) {
                 //On choisit un type de fiches pour parser le csv en consequence
                 //requete pour obtenir l'id et le label des types d'annonces
-                $requete = 'SELECT bn_id_nature, bn_label_nature, bn_template FROM ' . BAZ_PREFIXE . 'nature WHERE';
-                ( $categorienature != 'toutes' ) ? $requete .= ' bn_type_fiche="' . $categorienature . '"' : $requete .= ' 1';
-                ( isset( $GLOBALS['_BAZAR_']['langue'] ) ) ? $requete .= ' AND bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%" ' : $requete .= '';
-                $requete .= ' ORDER BY bn_label_nature ASC';
-                $resultat = $GLOBALS['wiki']->LoadAll( $requete );
+                $resultat = baz_valeurs_tous_les_formulaires($categorienature);
                 
                 $output .= '<form method="post" action="' . $GLOBALS['_BAZAR_']["url"]->getUrl() . '" enctype="multipart/form-data" class="form-horizontal">' . "\n";
                 
@@ -779,8 +775,10 @@ function baz_afficher_formulaire_import()
                         $output .= '<option value="" selected="selected">' . _t( 'BAZ_CHOISIR' ) . '</option>' . "\n";
                     
                     //on dresse la liste de types de fiches
-                    foreach ( $resultat as $ligne ) {
-                        $output .= '<option value="' . $ligne['bn_id_nature'] . '"' . ( ( $id_type_fiche == $ligne['bn_id_nature'] ) ? ' selected="selected"' : '' ) . '>' . $ligne['bn_label_nature'] . '</option>' . "\n";
+                    foreach ( $resultat as $categorie ) {
+                        foreach ( $categorie as $ligne ) {
+                            $output .= '<option value="' . $ligne['bn_id_nature'] . '"' . ( ( $id_type_fiche == $ligne['bn_id_nature'] ) ? ' selected="selected"' : '' ) . '>' . $ligne['bn_label_nature'] . '</option>' . "\n";
+                        }
                     }
                     $output .= '</select>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
                 }
@@ -881,12 +879,7 @@ function baz_afficher_formulaire_export()
     $id_type_fiche = ( isset( $_POST['id_type_fiche'] ) ) ? $_POST['id_type_fiche'] : '';
     
     //On choisit un type de fiches pour parser le csv en consequence
-    //requete pour obtenir l'id et le label des types d'annonces
-    $requete = 'SELECT bn_id_nature, bn_label_nature, bn_template FROM ' . BAZ_PREFIXE . 'nature WHERE';
-    ( $categorienature != 'toutes' ) ? $requete .= ' bn_type_fiche="' . $categorienature . '"' : $requete .= ' 1';
-    ( isset( $GLOBALS['_BAZAR_']['langue'] ) ) ? $requete .= ' AND bn_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%" ' : $requete .= '';
-    $requete .= ' ORDER BY bn_label_nature ASC';
-    $resultat = $GLOBALS['wiki']->LoadAll( $requete );
+    $resultat = baz_valeurs_tous_les_formulaires($categorienature);
 
     $output .= '<form method="post" class="form-horizontal" action="' . $GLOBALS['wiki']->Href() . ( ( $GLOBALS['wiki']->GetMethod() != 'show' ) ? '/' . $GLOBALS['wiki']->GetMethod() : '&amp;' . BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_EXPORTER ) . '">' . "\n";
     
@@ -900,8 +893,10 @@ function baz_afficher_formulaire_export()
             $output .= '<option value="" selected="selected">' . _t( 'BAZ_CHOISIR' ) . '</option>' . "\n";
         
         //on dresse la liste de types de fiches
-        foreach ( $resultat as $ligne ) {
-            $output .= '<option value="' . $ligne['bn_id_nature'] . '"' . ( ( $id_type_fiche == $ligne['bn_id_nature'] ) ? ' selected="selected"' : '' ) . '>' . $ligne['bn_label_nature'] . '</option>' . "\n";
+        foreach ($resultat as $group) {
+            foreach ( $group as $ligne ) {
+                $output .= '<option value="' . $ligne['bn_id_nature'] . '"' . ( ( $id_type_fiche == $ligne['bn_id_nature'] ) ? ' selected="selected"' : '' ) . '>' . $ligne['bn_label_nature'] . '</option>' . "\n";
+            }
         }
         $output .= '</select>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
     }
