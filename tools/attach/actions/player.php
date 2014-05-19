@@ -45,56 +45,52 @@ if (!empty($url)) {
 		if ($extension=="mp3") {
 			if (!isset($GLOBALS['jplayer'])) {
 				$GLOBALS['jplayer'] = 1;
-				$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/attach/libs/vendor/jplayer.2.4.0/js/jquery.jplayer.min.js"></script>'."\n";
+				$this->AddJavascriptFile('tools/attach/libs/vendor/jplayer.2.4.0/js/jquery.jplayer.min.js');
 			}
 			else {
 				$GLOBALS['jplayer']++;
 			}
-			$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').
-				'<script>
-					//<![CDATA[
-					$(document).ready(function(){
-						// Local copy of jQuery selectors, for performance.
-						var	my_jPlayer = $("#jquery_jplayer_'.$GLOBALS['jplayer'].'"),
-						    my_playbtn = $("#jp_container_'.$GLOBALS['jplayer'].' .jp-play"),
-						    my_pausebtn = $("#jp_container_'.$GLOBALS['jplayer'].' .jp-pause"),
-							my_extraPlayInfo = $("#jp_container_'.$GLOBALS['jplayer'].' .extra-play-info");
+			$script = '$(document).ready(function(){
+	// Local copy of jQuery selectors, for performance.
+	var	my_jPlayer = $("#jquery_jplayer_'.$GLOBALS['jplayer'].'"),
+	    my_playbtn = $("#jp_container_'.$GLOBALS['jplayer'].' .jp-play"),
+	    my_pausebtn = $("#jp_container_'.$GLOBALS['jplayer'].' .jp-pause"),
+		my_extraPlayInfo = $("#jp_container_'.$GLOBALS['jplayer'].' .extra-play-info");
 
-						// Change the time format
-						$.jPlayer.timeFormat.padMin = true;
-						$.jPlayer.timeFormat.padSec = true;
-						$.jPlayer.timeFormat.sepMin = ":";
-						$.jPlayer.timeFormat.sepSec = "";
+	// Change the time format
+	$.jPlayer.timeFormat.padMin = true;
+	$.jPlayer.timeFormat.padSec = true;
+	$.jPlayer.timeFormat.sepMin = ":";
+	$.jPlayer.timeFormat.sepSec = "";
 
-						$("#jquery_jplayer_'.$GLOBALS['jplayer'].'").jPlayer({
-							ready: function () {
-								$(this).jPlayer("setMedia", {
-									mp3:"'.$url.'"
-								});
-							},
-							cssSelectorAncestor: "#jp_container_'.$GLOBALS['jplayer'].'",
-							swfPath: "tools/attach/libs/vendor/jplayer.2.4.0/js",
-							timeupdate: function(event) {
-								my_extraPlayInfo.css({width : parseInt(event.jPlayer.status.currentPercentAbsolute, 10) + "%"});
-							},
-							play: function(event) {
-								my_playbtn.before(my_pausebtn);
-								my_pausebtn.show();
-							},
-							pause: function(event) {	
-								my_pausebtn.before(my_playbtn);
-								my_playbtn.show();
-							},
-							ended: function(event) {
-								my_pausebtn.before(my_playbtn);
-								my_playbtn.show();
-							},
-							supplied: "mp3",
-							wmode: "window"
-						});
-					});
-					//]]>
-				</script>'."\n";
+	$("#jquery_jplayer_'.$GLOBALS['jplayer'].'").jPlayer({
+		ready: function () {
+			$(this).jPlayer("setMedia", {
+				mp3:"'.$url.'"
+			});
+		},
+		cssSelectorAncestor: "#jp_container_'.$GLOBALS['jplayer'].'",
+		swfPath: "tools/attach/libs/vendor/jplayer.2.4.0/js",
+		timeupdate: function(event) {
+			my_extraPlayInfo.css({width : parseInt(event.jPlayer.status.currentPercentAbsolute, 10) + "%"});
+		},
+		play: function(event) {
+			my_playbtn.before(my_pausebtn);
+			my_pausebtn.show();
+		},
+		pause: function(event) {	
+			my_pausebtn.before(my_playbtn);
+			my_playbtn.show();
+		},
+		ended: function(event) {
+			my_pausebtn.before(my_playbtn);
+			my_playbtn.show();
+		},
+		supplied: "mp3",
+		wmode: "window"
+	});
+});'."\n";
+			$this->AddJavascript($script);
 
 			$output = '
 				<div id="jquery_jplayer_'.$GLOBALS['jplayer'].'" class="jp-jplayer"></div>
@@ -127,36 +123,35 @@ if (!empty($url)) {
 							 href="'.$url.'"  
 							 style="display:block;width:'.$width.';height:'.$height.'"  
 							 class="flvplayer"> 
-						</a>'."\n";         
-			$output .= '<script type="text/javascript" src="tools/attach/players/flowplayer-3.1.4.min.js"></script> 
-						<script>
-							flowplayer("a.flvplayer", "tools/attach/players/flowplayer-3.2.2.swf", { 
-							    clip:  { 
-								autoPlay: false, 
-								autoBuffering: false
-							    },
-							    plugins:  { 
-							        controls: {             
-									url: \'tools/attach/players/flowplayer.controls-3.2.1.swf\', 
-									autoHide: \'always\', 
-									 
-									// which buttons are visible and which are not? 
-									play:true,      
-									volume:true, 
-									mute:true,  
-									time:true,  
-									stop:true, 
-									playlist:false,  
-									fullscreen:true, 
-									 
-									// scrubber is a well-known nickname for the timeline/playhead combination 
-									scrubber: true         
-									 
-									// you can also use the "all" flag to disable/enable all controls 
-								}
-							    } 
-							});
-						</script>';
+						</a>'."\n";   
+			$this->AddJavascriptFile('tools/attach/players/flowplayer-3.1.4.min.js');      
+			$this->AddJavascript($script);      
+			$script = 'flowplayer("a.flvplayer", "tools/attach/players/flowplayer-3.2.2.swf", { 
+    clip:  { 
+	autoPlay: false, 
+	autoBuffering: false
+    },
+    plugins:  { 
+        controls: {             
+		url: \'tools/attach/players/flowplayer.controls-3.2.1.swf\', 
+		autoHide: \'always\', 
+		 
+		// which buttons are visible and which are not? 
+		play:true,      
+		volume:true, 
+		mute:true,  
+		time:true,  
+		stop:true, 
+		playlist:false,  
+		fullscreen:true, 
+		 
+		// scrubber is a well-known nickname for the timeline/playhead combination 
+		scrubber: true         
+		 
+		// you can also use the "all" flag to disable/enable all controls 
+	}
+    } 
+});'."\n";
 			echo $output;
 		}
 		elseif ($extension=="mm") 
