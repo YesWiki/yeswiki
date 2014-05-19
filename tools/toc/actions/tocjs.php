@@ -9,104 +9,101 @@ if (!defined("WIKINI_VERSION"))
 $tag = $this->GetPageTag();
 $class = $this->GetParameter("class");
 
-$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'    <script>
-        $(document).ready(function(){
-            var page = $(".page:first");
-            var titles = page.find("h1,h2,h3,h4,h5");
-            var bootstrap3_enabled = (typeof $().emulateTransitionEnd == \'function\');
-            if (bootstrap3_enabled) {var rowclass=\'row\';} else {var rowclass=\'row-fluid\';}
-            page.addClass("span9 col-md-9").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div id=\'tocjs-'.$tag.'\' class=\'span3 col-md-3 no-dblclick\'><div class=\'bs-sidebar hidden-print\' role=\'complementary\'><ul class=\'nav bs-sidenav\'></ul></div></div>" );
-            var toc = $("#tocjs-'.$tag.'");  
-            var title, idtitle, typetitle, h1 = 0, h2 = 0, h3 = 0, h4 = 0, h5 = 0; 
-            titles.each(function() {
-                title = $(this);
-                typetitle = title.prop("tagName");
-                if (typetitle == \'H1\') {
-                    h1 += 1;
-                    idtitle = "H1-"+h1;
+$script = '$(document).ready(function(){
+    var page = $(".page:first");
+    var titles = page.find("h1,h2,h3,h4,h5");
+    var bootstrap3_enabled = (typeof $().emulateTransitionEnd == \'function\');
+    if (bootstrap3_enabled) {var rowclass=\'row\';} else {var rowclass=\'row-fluid\';}
+    page.addClass("span9 col-md-9").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div id=\'tocjs-'.$tag.'\' class=\'span3 col-md-3 no-dblclick\'><div class=\'bs-sidebar hidden-print\' role=\'complementary\'><ul class=\'nav bs-sidenav\'></ul></div></div>" );
+    var toc = $("#tocjs-'.$tag.'");  
+    var title, idtitle, typetitle, h1 = 0, h2 = 0, h3 = 0, h4 = 0, h5 = 0; 
+    titles.each(function() {
+        title = $(this);
+        typetitle = title.prop("tagName");
+        if (typetitle == \'H1\') {
+            h1 += 1;
+            idtitle = "H1-"+h1;
+        }
+        else if (typetitle == \'H2\') {
+            h2 += 1;
+            idtitle = "H2-"+h2;
+        }
+        else if (typetitle == \'H3\') {
+            h3 += 1;
+            idtitle = "H3-"+h3;
+        }
+        else if (typetitle == \'H4\') {
+            h4 += 1;
+            idtitle = "H4-"+h4;
+        }
+        else if (typetitle == \'H5\') {
+            h5 += 1;
+            idtitle = "H5-"+h5;
+        }
+        title.attr(\'id\', idtitle);
+        toc.find(".bs-sidenav").append("<li class=\'"+typetitle+"\'><a class=\'toc-link\' href=\'#"+idtitle+"\'>"+title.html()+"</a></li>");
+    });
+
+    var $window = $(window)
+    var $body = $(document.body)
+    var pagestartHeight = page.offset().top;
+    var $sideBar = $(\'.bs-sidebar\');
+    var offsetnavbar = 70;
+
+    $body.scrollspy({
+        target: \'.bs-sidebar\',
+        offset: offsetnavbar
+    });
+
+    $(\'.toc-link\').click(function (e) {
+        e.preventDefault();
+
+        var link = $(this).attr(\'href\');
+        
+        $(\'html, body\').animate({
+            scrollTop: $(link).offset().top - offsetnavbar
+        }, 500);
+    })
+
+    $window.on(\'resize\', function () {
+        $body.scrollspy(\'refresh\')
+        // We were resized. Check the position of the nav box
+        $sideBar.affix(\'checkPosition\')
+    })
+
+    $window.on(\'load\', function () {
+        $body.scrollspy(\'refresh\');
+        $sideBar.affix({
+            offset: {
+                top: pagestartHeight,
+                bottom: function () {
+                    // We can\'t cache the height of the footer, since it could change
+                    // when the window is resized. This function will be called every
+                    // time the window is scrolled or resized
+                    return $(\'.footer\').outerHeight(true)
                 }
-                else if (typetitle == \'H2\') {
-                    h2 += 1;
-                    idtitle = "H2-"+h2;
-                }
-                else if (typetitle == \'H3\') {
-                    h3 += 1;
-                    idtitle = "H3-"+h3;
-                }
-                else if (typetitle == \'H4\') {
-                    h4 += 1;
-                    idtitle = "H4-"+h4;
-                }
-                else if (typetitle == \'H5\') {
-                    h5 += 1;
-                    idtitle = "H5-"+h5;
-                }
-                title.attr(\'id\', idtitle);
-                toc.find(".bs-sidenav").append("<li class=\'"+typetitle+"\'><a class=\'toc-link\' href=\'#"+idtitle+"\'>"+title.html()+"</a></li>");
-            });
-
-            var $window = $(window)
-            var $body = $(document.body)
-            var pagestartHeight = page.offset().top;
-            var $sideBar = $(\'.bs-sidebar\');
-            var offsetnavbar = 70;
-
-            $body.scrollspy({
-                target: \'.bs-sidebar\',
-                offset: offsetnavbar
-            });
-
-            $(\'.toc-link\').click(function (e) {
-                e.preventDefault();
-
-                var link = $(this).attr(\'href\');
-                
-                $(\'html, body\').animate({
-                    scrollTop: $(link).offset().top - offsetnavbar
-                }, 500);
-            })
-
-            $window.on(\'resize\', function () {
-                $body.scrollspy(\'refresh\')
-                // We were resized. Check the position of the nav box
-                $sideBar.affix(\'checkPosition\')
-            })
-
-            $window.on(\'load\', function () {
-                $body.scrollspy(\'refresh\');
-                $sideBar.affix({
-                    offset: {
-                        top: pagestartHeight,
-                        bottom: function () {
-                            // We can\'t cache the height of the footer, since it could change
-                            // when the window is resized. This function will be called every
-                            // time the window is scrolled or resized
-                            return $(\'.footer\').outerHeight(true)
-                        }
-                    }
-                })
-                $sideBar.on(\'affixed.bs.affix\', function (e) {
-                  $sideBar.css(\'top\', offsetnavbar);
-                })
-                $sideBar.on(\'affix-top.bs.affix\', function (e) {
-                  $sideBar.css(\'top\', 0);
-                })
+            }
+        })
+        $sideBar.on(\'affixed.bs.affix\', function (e) {
+          $sideBar.css(\'top\', offsetnavbar);
+        })
+        $sideBar.on(\'affix-top.bs.affix\', function (e) {
+          $sideBar.css(\'top\', 0);
+        })
 
 
-                setTimeout(function () {
-                    // Check the position of the nav box ASAP
-                    $sideBar.affix(\'checkPosition\')
-                }, 10);
-                setTimeout(function () {
-                    // Check it again after a while (required for IE)
-                    $sideBar.affix(\'checkPosition\')
-                }, 100);
-            });
-        }); 
-    </script>
-
-
-    <style>
+        setTimeout(function () {
+            // Check the position of the nav box ASAP
+            $sideBar.affix(\'checkPosition\')
+        }, 10);
+        setTimeout(function () {
+            // Check it again after a while (required for IE)
+            $sideBar.affix(\'checkPosition\')
+        }, 100);
+    });
+});'."\n";
+$this->AddJavascript($script);
+echo '<style>
         /* First level of nav */
          .bs-sidenav {
             padding-top: 10px;
