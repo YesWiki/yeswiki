@@ -105,7 +105,7 @@ class Wiki
 		// determine le chemin pour les cookies
 		$a = parse_url($this->GetConfigValue('base_url'));
 		$this->CookiePath = dirname($a['path']);
-		// Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
+		// Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
 		$this->CookiePath = str_replace("\\","/",$this->CookiePath);
 		// ajoute un '/' terminal sauf si on est a la racine web
 		if ($this->CookiePath != '/') $this->CookiePath .= '/';
