@@ -1,20 +1,14 @@
-<ul class="filter-results grid-elements">
+<ul class="grid-elements">
 <?php foreach ($elements as $tag => $element) : ?>
-	<li class="filtered-element gradient-grid-box <?php echo $element["tagnames"]; ?>">
+	<li class="page-element gradient-grid-box <?php echo $element["tagnames"]; ?>">
 		<a href="<?php echo $GLOBALS['wiki']->href('', $tag) ?>" target="_blank">
-			<h3 class="filtered-title"><?php echo $element["title"]; ?></h3>
-    		<div class="filtered-image-container"><?php echo $element["image"]; ?></div>
+			<h3 class="page-title"><?php echo $element["title"]; ?></h3>
+    		<div class="page-image-container"><?php echo $element["image"]; ?></div>
     	</a>
-    </li> <!-- /.filtered-element -->
+    </li> <!-- /.page-element -->
 <?php endforeach; ?>
 </ul>
 
-<?php 
-	// ajout du javascript gerant le filtrage
-	//$GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '')."\n".
-	//'	<script src="tools/tags/libs/vendor/jquery.wookmark.min.js"></script>
-	//	<script src="tools/tags/libs/wookmark.js"></script>'."\n";
-?>
 <style>
 .grid-elements { position:relative; }
 .grid-elements, .grid-elements * {	 
@@ -24,8 +18,7 @@
 }
 
 .gradient-grid-box {
-	float:left;
-    width:270px;
+    width:280px;
 	display: inline-block;
 	margin: 0 15px 15px 0; 
 	padding: 8px; 
@@ -44,10 +37,10 @@
   box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
 }
 
-.filtered-title {  
+.page-title {  
   font-size: 16px;
   line-height: 20px;
   margin: 0 0 7px;
 }
-.filtered-image-container {text-align: center;}
+.page-image-container {text-align: center;}
 </style>

@@ -35,21 +35,25 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 	} else {
 		$tagspagecourante = '';
 	}
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
-	<script src="tools/tags/libs/jquery-ui-1.9.2.custom.min.js"></script>
-	<script src="tools/tags/libs/tag-it.js"></script>	
-	<script>
-	$(function(){
-        var tagsexistants = ['.$tagsexistants.'];
-
-	    $(\'#pagetags\').tagit({
-		    availableTags: tagsexistants
-		});
-		
-		//bidouille antispam
-		$(".antispam").attr(\'value\', \'1\');
+	$script = '$(function(){
+    var tagsexistants = ['.$tagsexistants.'];
+    var pagetag = $(\'#ACEditor .yeswiki-input-pagetag\');
+	pagetag.tagsinput({
+		typeahead: {
+			source: tagsexistants
+		},
+		confirmKeys: [13, 188]
 	});
-	</script>';
+	
+	//bidouille antispam
+	$(".antispam").attr(\'value\', \'1\');
+
+	$("#ACEditor").on(\'submit\', function() {
+		pagetag.tagsinput(\'add\', pagetag.tagsinput(\'input\').val());
+	});
+});'."\n";
+  $this->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
+  $this->AddJavascript($script);
 }
 
 //Sauvegarde
@@ -57,12 +61,11 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") &&
 	isset($_POST["submit"]) && $_POST["submit"] == 'Sauver' && 
 	isset($_POST["pagetags"]) && $_POST['antispam']==1 )
 {
-	$this->SaveTags($this->GetPageTag(), $_POST["pagetags"]);
+	$this->SaveTags($this->GetPageTag(), stripslashes($_POST["pagetags"]));
 }
 
 // If the page is an ebook, we will display the ebook generator 
 if ($this->HasAccess('write') && isset($this->page["metadatas"]["ebook-title"])) {
-	//var_dump($this->page["metadatas"] ["ebook-title"]);break;
 	$pageeditionebook = $this->Format('{{ebookgenerator}}');
 }
 

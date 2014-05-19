@@ -84,7 +84,7 @@ $wikiClassesContent [] = '
 		}
 	}
 
-	function PageList($tags=\'\', $type=\'\', $nb=\'\', $tri=\'\', $template=\'\', $class=\'\', $lienedit=\'\')
+	function PageList($tags=\'\', $type=\'\', $nb=\'\', $tri=\'\')
 	{
 		if (isset($tags) && $tags!=  \'\') {
 			$req_from = ", ".$this->config["table_prefix"]."triples tags ";
@@ -92,7 +92,7 @@ $wikiClassesContent [] = '
 			$tab_tags = explode(",", $tags);
 			$nbdetags = count($tab_tags);
 			$tags = implode(",", $tab_tags);
-			$tags = \'"\'.str_replace(\',\',\'","\',$tags).\'"\';
+			$tags = \'"\'.str_replace(\',\',\'","\',_convert(mysql_real_escape_string(addslashes($tags)), TEMPLATES_DEFAULT_CHARSET, true)).\'"\';
 			$req = \' AND tags.value IN (\'.$tags.\') \';
 			$req .= \' AND tags.property="http://outils-reseaux.org/_vocabulary/tag" AND tags.resource=tag \';
 			$req_having = \' HAVING COUNT(tag)=\'.$nbdetags.\' \';

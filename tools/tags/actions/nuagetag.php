@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/tags/libs/tag.js"></script>';
+$this->AddJavascriptFile('tools/tags/libs/tag.js');
 
 $class = $this->GetParameter('class');
 if (empty($class)) $class='';
@@ -33,14 +33,14 @@ $min = 100000000;
 $max = 0;
 foreach ($min_max as $tab_min_max)
 {
-		if ($tab_min_max['nb'] > $max)
-		{
-			$max=$tab_min_max['nb'];
-		}
-		elseif ($tab_min_max['nb'] < $min)
-		{
-			$min=$tab_min_max['nb'];
-		}
+	if ($tab_min_max['nb'] > $max)
+	{
+		$max=$tab_min_max['nb'];
+	}
+	elseif ($tab_min_max['nb'] < $min)
+	{
+		$min=$tab_min_max['nb'];
+	}
 }
 // permettra de fixer une classe pour la taille du tag
 $mult = $max/$nb_taille_tag;
@@ -59,7 +59,8 @@ if (is_array($tab_tous_les_tags))
 	$tab_tous_les_tags['dummy']['value']='fin'; //on ajoute un element au tableau pour boucler une derniere fois
 	$tab_tous_les_tags['dummy']['resource']='fin'; 
 	foreach ($tab_tous_les_tags as $tab_les_tags) {
-		if (_convert($tab_les_tags['value'], 'ISO-8859-1')==$tag_precedent || $tag_precedent== '')
+		$tagstripped = _convert(stripslashes($tab_les_tags['value']), 'ISO-8859-1');
+		if ($tagstripped==$tag_precedent || $tag_precedent== '')
 		{
 			$nb_pages++;
 			$liste_page .= '<li class="pagewiki-link"><a class="link_pagewiki" href="'.$this->href('',$tab_les_tags['resource']).'">'.$tab_les_tags['resource'].'</a></li>';
@@ -69,7 +70,7 @@ if (is_array($tab_tous_les_tags))
 			// on affiche les informations pour ce tag
 			if ($nb_pages>1) $texte_page= $nb_pages.' '._t('TAGS_PAGES');
 			else $texte_page= _t('TAGS_ONE_PAGE');
-			$texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" id="j'.$i.'" data-title="'.htmlspecialchars('<button class="btn-close-popover pull-right close" type="button">&times;</button>'.$texte_page.' '._t('TAGS_CONTAINING_TAG').' : <a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag_precedent, ENT_QUOTES, $this->config['charset']).'"><span class="label label-info">'.$tag_precedent.'</span></a>').'" data-content="'.htmlspecialchars('<ul class="unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
+			$texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" id="j'.$i.'" data-title="'.htmlspecialchars('<button class="btn-close-popover pull-right close" type="button">&times;</button>'.$texte_page.' '._t('TAGS_CONTAINING_TAG').' : <a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag_precedent, ENT_QUOTES, $this->config['charset']).'" class="tag-label label label-primary">'.$tag_precedent.'</a>').'" data-content="'.htmlspecialchars('<ul class="unstyled list-unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
 			$texte_liste .= '</li>'."\n";
 			$tab_tag[] = $texte_liste;
 
@@ -78,7 +79,7 @@ if (is_array($tab_tous_les_tags))
 			$liste_page = '<li><a class="pagewiki-link" href="'.$this->href('',$tab_les_tags['resource']).'">'.$tab_les_tags['resource'].'</a></li>'."\n";
 			$i++;
 		}
-		$tag_precedent = _convert($tab_les_tags['value'], 'ISO-8859-1');
+		$tag_precedent = $tagstripped;
 	}
 
 	if (count($tab_tag)>0)

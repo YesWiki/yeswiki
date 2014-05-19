@@ -38,7 +38,7 @@ if (empty($template)) $template = 'pages_list.tpl.html';
 $output = '';
 
 // affiche le resultat de la recherche
-$resultat = $this->PageList($tags,$type,$nb,$tri,$template,$class,$lienedit);
+$resultat = $this->PageList($tags,$type,$nb,$tri);
 if ($resultat) {
 	$nb_total = count($resultat);
 	// affichage des resultats

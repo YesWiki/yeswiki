@@ -91,9 +91,10 @@ if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_baz
 		$tagsexistants = '';
 		foreach ($tagspage as $tag)
 		{
-			$tagsexistants .= '&nbsp;<a href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'"><span class="tag-label label">'.$tag.'</span></a>';
+			$tag = stripslashes($tag);
+			$tagsexistants .= '&nbsp;<a class="tag-label label label-info" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.urlencode($tag)).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'">'.$tag.'</a>';
 		}
-		$output .= '<span class="icon icon-tags"></span>'."\n".$tagsexistants."\n";
+		$output .= '<i class="icon icon-tags"></i>'."\n".$tagsexistants."\n";
 	}
 }
 

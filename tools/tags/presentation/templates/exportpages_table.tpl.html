@@ -123,7 +123,7 @@
 			</div> <!-- /.span6 col-lg-6. ebook-selection-container -->
 		</div> <!-- /.row -->
     <?php 
-    	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'<script src="tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js"></script>
-    <script src="tools/tags/libs/exportpages.js"></script>'."\n"; 
+    	$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js');
+    	$GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/exportpages.js');   	
 	?>
 <?php endif; ?>

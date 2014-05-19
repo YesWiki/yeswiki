@@ -1,5 +1,13 @@
 $(document).ready(function() {
-	$('.tag-label').hover(function(){$(this).addClass('label-info')}, function(){if(!$(this).hasClass('label-active')){$(this).removeClass('label-info')}});
+	$('.tag-label').hover(function(){
+		$(this).addClass('label-primary');
+		$(this).removeClass('label-info');
+	}, function(){
+		if(!$(this).hasClass('label-active')){
+			$(this).addClass('label-info');
+			$(this).removeClass('label-primary');
+		}
+	});
 
 	//nuage de mots clés : tooltip
 	$('.tag-link').popover({html:true,placement:'top',trigger:'click'})

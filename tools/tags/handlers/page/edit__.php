@@ -8,10 +8,10 @@ if (!defined("WIKINI_VERSION"))
 
 if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 {
-	$formtag = '<div class="edit_tags">
-            <input type="text" name="pagetags" id="pagetags" value="'.$tagspagecourante.'" />
-            <input type="hidden" class="antispam" name="antispam" value="0" />
-            </div>';
+	$formtag = '
+	<i class="icon-tags"></i> 
+	<input class="yeswiki-input-pagetag" name="pagetags" type="text" value="'.htmlspecialchars(stripslashes($tagspagecourante), ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" placeholder="'._t('TAGS_ADD_TAGS').'">
+    <input type="hidden" class="antispam" name="antispam" value="0">';
 	$plugin_output_new = preg_replace ('/\<div class=\"form-actions\">/',
 	$formtag.'<div class="form-actions">', $plugin_output_new);
 }

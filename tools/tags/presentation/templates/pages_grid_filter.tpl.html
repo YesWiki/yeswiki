@@ -1,0 +1,59 @@
+<div class="filter-container" data-element-width="<?php echo $elementwidth; ?>" data-element-offset="<?php echo $elementoffset; ?>">
+	<ul class="filter-results">
+	<?php foreach ($elements as $tag => $element) : ?>
+		<li class="filtered-element gradient-grid-box <?php echo $element["tagnames"]; ?>" data-filter-class='["<?php echo str_replace(' ', '", "', $element["tagnames"]); ?>", "art"]' style="width:<?php echo $elementwidth; ?>px;margin:0 <?php echo $elementoffset; ?>px <?php echo $elementoffset; ?>px 0">
+			<a href="<?php echo $GLOBALS['wiki']->href('', $tag) ?>" target="_blank">
+				<h3 class="filtered-title"><?php echo $element["title"]; ?></h3>
+	    		<div class="filtered-image-container"><?php echo $element["image"]; ?></div>
+	    	</a>
+	    </li> <!-- /.filtered-element -->
+	<?php endforeach; ?>
+	</ul> <!-- /.filter-results -->
+</div> <!-- /.filter-container -->
+
+<style>
+.filter-container {
+  overflow: hidden;
+}
+
+.filter-results {padding:0; list-style-type: none; position: relative;}
+.filter-results, .filter-results *, .wookmark-placeholder  {
+  -webkit-transition: all 0.3s ease-out;
+     -moz-transition: all 0.3s ease-out;
+       -o-transition: all 0.3s ease-out;
+          transition: all 0.3s ease-out;
+	-webkit-box-sizing: border-box; 
+	   -moz-box-sizing: border-box; 
+	        box-sizing: border-box;
+
+}
+
+.gradient-grid-box {
+	display: inline-block; 
+	padding: 4px; 
+	border: 1px solid #dedede;   
+	cursor: pointer;
+	background: #FEFEFE; background-image: linear-gradient(45deg, #FFF, #F9F9F9);
+}
+
+.gradient-grid-box:hover { 
+  -webkit-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  -moz-box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  box-shadow: 0px 0px 10px rgba(34, 25, 25, 0.6);
+  text-decoration: none;
+}
+
+.filtered-element.inactive {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.filtered-title {  
+  font-size: inherit;
+  line-height: 20px;
+  margin: 0 0 7px;
+}
+
+.filtered-image-container {text-align: center;}
+
+</style>
