@@ -3,6 +3,23 @@ if (!defined("WIKINI_VERSION")) {
             die ("acc&egrave;s direct interdit");
 }
 
+
+/**
+ * 
+ * Verifie si le nombre d'elements graphiques d'un type trouvés et de leur fermeture correspondent
+ * 
+ * @param $element : name of element
+ * 
+ * return bool vrai si chaque élément est bien fermé
+ * 
+ */
+function check_graphical_elements($element, $pagetag, $pagecontent) {
+	preg_match_all('/{{'.$element.'.*}}/Ui', $pagecontent, $matchesaction);
+	preg_match_all('/{{end.*elem="'.$element.'".*}}/Ui', $pagecontent, $matchesendaction);
+	return count($matchesaction[0]) == count($matchesendaction[0]);
+}
+
+
 /**
  * 
  * Parcours des dossiers a la recherche de templates
@@ -185,7 +202,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
 						//}
 						//$html_slide .= $slide ;
 						$slides[$i]['html'] = $slide ;
-						$slides[$i]['title'] = strip_tags($titles[$i]) ;
+						$slides[$i]['title'] = ((isset($titles[$i])) ? strip_tags($titles[$i]) : '') ;
 					}
 				}
 			}
@@ -254,6 +271,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 	    <div class="carousel-inner">'."\n";
 			$nb = 0; $thumbs_per_slide = 8; $firstitem = true;
 			sort($backgrounds);
+
 			foreach($backgrounds as $background) {
 				$nb++;
 				if ($nb == 1) {
@@ -268,6 +286,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 				}
 
 				$choosen = ($background == 'files/backgrounds/'.$GLOBALS['wiki']->config['favorite_background_image']);
+				var_dump($choosen);
 				if ($choosen) $class = ' active';
 
 				$imgextension = strtolower(substr($background, -4, 4));

@@ -57,6 +57,26 @@ $wikiClasses [] = 'Template';
 
 
 $wikiClassesContent [] = ' 
+	function AddJavascript($script) {	
+		if (!isset($GLOBALS[\'js\'])) {
+			$GLOBALS[\'js\'] = \'\';
+		}
+		if (!empty($script) && !strpos($GLOBALS[\'js\'], \'<script>\'."\n".$script.\'</script>\')) {
+			$GLOBALS[\'js\'] .= \'  <script>\'."\n".$script.\'</script>\'."\n";
+		}
+		return;
+	}
+
+	function AddJavascriptFile($file) {	
+		if (!isset($GLOBALS[\'js\'])) {
+			$GLOBALS[\'js\'] = \'\';
+		}
+		if (!strpos($GLOBALS[\'js\'], \'<script src="\'.$file.\'"></script>\') && !empty($file) && file_exists($file)) {
+			$GLOBALS[\'js\'] .= \'  <script src="\'.$file.\'"></script>\'."\n";
+		}
+		return;
+	}
+
 	function LoadRecentlyChanged($limit=50)
         {
                 $limit= (int) $limit;
