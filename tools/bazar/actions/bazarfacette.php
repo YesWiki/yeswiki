@@ -19,7 +19,10 @@ else {
     $id_typeannonce=explode(",",$id_typeannonce);
 }
 
-
+$facettejointure = $this->GetParameter("jointure");
+if (empty($facettejointure)) {
+    $facettejointure = 'OR';
+}
 
 /*
 * ordre : ordre affichage detail des points
@@ -114,8 +117,7 @@ $tableau_resultat=array();
 $jointure=array();
 
 foreach ($id_typeannonce as $annonce) {
-    $tableau_resultat = array_merge($tableau_resultat, baz_requete_recherche_fiches($tabquery, $ordre, $annonce, $categorie_nature));
-
+    $tableau_resultat = array_merge($tableau_resultat, baz_requete_recherche_fiches($tabquery, $ordre, $annonce, $categorie_nature, 1, '', '', true, '', $facettejointure));
  /*   // Detection jointure avec autre fiche
      $val_formulaire = baz_valeurs_type_de_fiche($annonce);
      $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
@@ -161,7 +163,7 @@ foreach ($tableau_resultat as $fiche) {
 
 
     $valeurs_fiche = json_decode($fiche["body"], true);
-    $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
+    $valeurs_fiche = _convert($valeurs_fiche, 'UTF-8');
     $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
 
   
@@ -515,7 +517,7 @@ function liste_to_array($idliste = '') {
 
         $valjson = $GLOBALS['wiki']->LoadPage($idliste);
         $valeurs_fiche = json_decode($valjson["body"], true);
-        $valeurs_fiche['label'] = array_map('utf8_decode', $valeurs_fiche['label']);
+        $valeurs_fiche['label'] = _convert($valeurs_fiche['label'], 'UTF-8');
         return $valeurs_fiche['label'];
     }
         else {

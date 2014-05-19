@@ -1591,31 +1591,24 @@ function publier_fiche( $valid )
 function baz_liste_rss()
 {
     $res      = '<h2>' . _t( 'BAZ_S_ABONNER_AUX_FICHES' ) . '</h2>' . "\n";
+
     //requete pour obtenir l'id et le label des types d'annonces
-    $requete  = 'SELECT bn_id_nature, bn_label_nature ' . 'FROM ' . BAZ_PREFIXE . 'nature WHERE 1';
-    $resultat = $GLOBALS['wiki']->LoadAll( $requete );
+    $resultat = baz_valeurs_tous_les_formulaires();
     
-    
-    // Nettoyage de l url
-    $lien_RSS = $GLOBALS['_BAZAR_']['url'];
-    $lien_RSS->removeQueryString( BAZ_VARIABLE_VOIR );
-    $lien_RSS->addQueryString( 'wiki', $GLOBALS['wiki']->minihref( 'rss', $_GET['wiki'] ) );
-    //$lien_RSS->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FLUX_RSS);
     $liste = '';
-    foreach ( $resultat as $ligne ) {
-        $lien_RSS->addQueryString( 'id_typeannonce', $ligne['bn_id_nature'] );
-        $liste .= '<li><a href="' . str_replace( '&', '&amp;', $lien_RSS->getURL() ) . '"><img src="tools/bazar/presentation/images/BAZ_rss.png" alt="' . _t( 'BAZ_RSS' ) . '" /></a>&nbsp;';
-        $liste .= $ligne['bn_label_nature'];
-        $liste .= '</li>' . "\n";
-        $lien_RSS->removeQueryString( 'id_typeannonce' );
+    foreach ( $resultat as $categorie ) {
+        foreach ( $categorie as $ligne ) {
+            $liste .= '<li><a href="' . $GLOBALS['wiki']->href( 'rss', '', 'id_typeannonce='.$ligne['bn_id_nature'] ) . '"><img src="tools/bazar/presentation/images/BAZ_rss.png" alt="' . _t( 'BAZ_RSS' ) . '" /></a>&nbsp;';
+            $liste .= $ligne['bn_label_nature'];
+            $liste .= '</li>' . "\n";
+        }
     }
     if ( $liste != '' )
-        $res .= '<ul class="list-unstyled unstyled">' . "\n" . '<li><a href="' . str_replace( '&', '&amp;', $lien_RSS->getURL() ) . '"><img src="tools/bazar/presentation/images/BAZ_rss.png" alt="' . _t( 'BAZ_RSS' ) . '" /></a>&nbsp;<strong>' . _t( 'BAZ_FLUX_RSS_GENERAL' ) . '</strong></li>' . "\n" . $liste . '</ul>' . "\n";
+        $res .= '<ul class="list-unstyled unstyled">' . "\n" . '<li><a href="' . $GLOBALS['wiki']->href( 'rss' ) . '"><img src="tools/bazar/presentation/images/BAZ_rss.png" alt="' . _t( 'BAZ_RSS' ) . '" /></a>&nbsp;<strong>' . _t( 'BAZ_FLUX_RSS_GENERAL' ) . '</strong></li>' . "\n" . $liste . '</ul>' . "\n";
     else {
         $res .= '<div class="alert alert-info">' . _t( 'BAZ_NO_FORMS_FOUND' ) . '.</div>' . "\n";
     }
-    // Nettoyage de l'url
-    //GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
+
     return $res;
 }
 
@@ -1806,8 +1799,6 @@ function baz_gestion_formulaire()
     
     // affichage de la liste des templates a modifier ou supprimer (on l'affiche dans tous les cas, sauf cas de modif de formulaire)
     if ( !isset( $_GET['action_formulaire'] ) || ( $_GET['action_formulaire'] != 'modif' && $_GET['action_formulaire'] != 'new' ) ) {
-        $res .= '<div class="alert alert-info">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_INTRO_MODIFIER_FORMULAIRE' ) . '</div>' . "\n";
-        
         $formulaires = baz_valeurs_tous_les_formulaires();
         
         $liste           = '';
@@ -2590,7 +2581,7 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
 /**
  * Cette fonction recupere tous les parametres passes pour la recherche, et retourne un tableau de valeurs des fiches
  */
-function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_typeannonce = '', $categorie_fiche = '', $statut = 1, $personne = '', $nb_limite = '', $motcles = true, $searchstring = '' )
+function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_typeannonce = '', $categorie_fiche = '', $statut = 1, $personne = '', $nb_limite = '', $motcles = true, $searchstring = '', $facettesearch = 'OR' )
 {
     $nb_jointures = 0;
     
@@ -2674,7 +2665,7 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
                 $first = true;
                 foreach ( $valcrit as $critere ) {
                     if ( !$first )
-                        $requeteSQL .= ' OR ';
+                        $requeteSQL .= ' '.$facettesearch.' ';
                     $requeteSQL .= '(body REGEXP \'"' . $nom . '":"[^"]*' . $critere . '[^"]*"\')';
                     $first = false;
                 }
@@ -2915,38 +2906,45 @@ function encoder_en_utf8( $txt )
  */
 function baz_afficher_flux_RSS()
 {
+    $urlrss = $GLOBALS['wiki']->href('rss');
     if ( isset( $_GET['id_typeannonce'] ) ) {
         $id_typeannonce = $_GET['id_typeannonce'];
+        $urlrss .= '&amp;id_typeannonce='.$id_typeannonce;
     } else {
         $id_typeannonce = '';
     }
     
     if ( isset( $_GET['categorie_fiche'] ) ) {
         $categorie_fiche = $_GET['categorie_fiche'];
+        $urlrss .= '&amp;categorie_fiche='.$categorie_fiche;
     } else {
         $categorie_fiche = '';
     }
     
     if ( isset( $_GET['nbitem'] ) ) {
         $nbitem = $_GET['nbitem'];
+        $urlrss .= '&amp;nbitem='.$nbitem;
     } else {
         $nbitem = BAZ_NB_ENTREES_FLUX_RSS;
     }
     
     if ( isset( $_GET['utilisateur'] ) ) {
         $utilisateur = $_GET['utilisateur'];
+        $urlrss .= '&amp;utilisateur='.$utilisateur;
     } else {
         $utilisateur = '';
     }
     
     if ( isset( $_GET['statut'] ) ) {
         $statut = $_GET['statut'];
+        $urlrss .= '&amp;statut='.$statut;
     } else {
         $statut = 1;
     }
     
     if ( isset( $_GET['query'] ) ) {
         $query = $_GET['query'];
+        $urlrss .= '&amp;query='.$query;
     } else {
         $query = '';
     }
@@ -2960,20 +2958,21 @@ function baz_afficher_flux_RSS()
     $xml .= "\r\n  ";
     $xml .= XML_Util::createStartElement( 'rss', array(
          'version' => '2.0',
-        'xmlns:atom' => "http://www.w3.org/2005/Atom" 
+        'xmlns:atom' => "http://www.w3.org/2005/Atom" ,
+        'xmlns:dc' => "http://purl.org/dc/elements/1.1/"
     ) );
     $xml .= "\r\n    ";
     $xml .= XML_Util::createStartElement( 'channel' );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'title', null, _convert(_t( 'BAZ_DERNIERE_ACTU' ), TEMPLATES_DEFAULT_CHARSET) );
+    $xml .= XML_Util::createTag( 'title', null, html_entity_decode( _t( 'BAZ_DERNIERE_ACTU' ), ENT_QUOTES, 'UTF-8' ) );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'link', null, _convert( html_entity_decode( BAZ_RSS_ADRESSESITE ), TEMPLATES_DEFAULT_CHARSET ) );
+    $xml .= XML_Util::createTag( 'link', null, html_entity_decode( BAZ_RSS_ADRESSESITE, ENT_QUOTES, 'UTF-8' ) );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'description', null, _convert( html_entity_decode(BAZ_RSS_DESCRIPTIONSITE ), TEMPLATES_DEFAULT_CHARSET ) );
+    $xml .= XML_Util::createTag( 'description', null, html_entity_decode(BAZ_RSS_DESCRIPTIONSITE, ENT_QUOTES, 'UTF-8' ) );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag( 'language', null, 'fr-FR' );
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag( 'copyright', null, 'Copyright (c) ' . date( 'Y' ) . ' ' . _convert( html_entity_decode( BAZ_RSS_NOMSITE ), TEMPLATES_DEFAULT_CHARSET ) );
+    $xml .= XML_Util::createTag( 'copyright', null, 'Copyright (c) ' . date( 'Y' ) . ' ' . html_entity_decode( BAZ_RSS_NOMSITE , ENT_QUOTES, 'UTF-8' ) );
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag( 'lastBuildDate', null, strftime( '%a, %d %b %Y %H:%M:%S GMT' ) );
     $xml .= "\r\n      ";
@@ -2989,7 +2988,7 @@ function baz_afficher_flux_RSS()
     $xml .= "\r\n      ";
     $xml .= XML_Util::createStartElement( 'image' );
     $xml .= "\r\n        ";
-    $xml .= XML_Util::createTag( 'title', null, _convert( html_entity_decode( _t( 'BAZ_DERNIERE_ACTU' )), TEMPLATES_DEFAULT_CHARSET ) );
+    $xml .= XML_Util::createTag( 'title', null, html_entity_decode( _t( 'BAZ_DERNIERE_ACTU' ), ENT_QUOTES, 'UTF-8' ) );
     $xml .= "\r\n        ";
     $xml .= XML_Util::createTag( 'url', null, BAZ_RSS_LOGOSITE );
     $xml .= "\r\n        ";
@@ -3004,7 +3003,7 @@ function baz_afficher_flux_RSS()
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement( 'item' );
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag( 'title', null, html_entity_decode( stripslashes( $ligne['bf_titre'] ) ) );
+            $xml .= XML_Util::createTag( 'title', null, html_entity_decode( stripslashes( $ligne['bf_titre'] ), ENT_QUOTES, 'UTF-8' ) );
             $xml .= "\r\n        ";
             $lien = $GLOBALS['_BAZAR_']['url'];
             $lien->addQueryString( BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE );
@@ -3015,12 +3014,11 @@ function baz_afficher_flux_RSS()
             $xml .= XML_Util::createTag( 'guid', null, '<![CDATA[' . $lien->getURL() . ']]>' );
             $xml .= "\r\n        ";
             
-            /*  ajout de l'auteur --- Lila */
-            $xml .= XML_Util::createTag( 'author', null, $ligne['createur'] );
+            $xml .= XML_Util::createTag( 'dc:creator', null, $ligne['createur'] );
             $xml .= "\r\n      ";
             
             $tab = explode( "wakka.php?wiki=", $lien->getURL() );
-            $xml .= XML_Util::createTag( 'description', null, '<![CDATA[' . html_entity_decode( baz_voir_fiche( 0, $ligne ) ) . ']]>' );
+            $xml .= XML_Util::createTag( 'description', null, '<![CDATA[' . preg_replace('/data-id=".*"/Ui', '', html_entity_decode( baz_voir_fiche( 0, $ligne ), ENT_QUOTES, 'UTF-8' )) . ']]>' );
             $xml .= "\r\n        ";
             if ( $ligne['date_debut_validite_fiche'] != '0000-00-00' && $ligne['date_debut_validite_fiche'] > $ligne['date_creation_fiche'] ) {
                 $date_pub = $ligne['date_debut_validite_fiche'];
@@ -3034,21 +3032,19 @@ function baz_afficher_flux_RSS()
         $xml .= "\r\n      ";
         $xml .= XML_Util::createStartElement( 'item' );
         $xml .= "\r\n          ";
-        $xml .= XML_Util::createTag( 'title', null, html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ) ) );
+        $xml .= XML_Util::createTag( 'title', null, html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ), ENT_QUOTES, 'UTF-8' ) );
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag( 'link', null, '<![CDATA[' . $GLOBALS['_BAZAR_']['url']->getUrl() . ']]>' );
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag( 'guid', null, '<![CDATA[' . $GLOBALS['_BAZAR_']['url']->getUrl() . ']]>' );
         $xml .= "\r\n          ";
-        $xml .= XML_Util::createTag( 'description', null, html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ) ) );
+        $xml .= XML_Util::createTag( 'description', null, html_entity_decode( _t( 'BAZ_PAS_DE_FICHES' ), ENT_QUOTES , 'UTF-8') );
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag( 'pubDate', null, strftime( '%a, %d %b %Y %H:%M:%S GMT', strtotime( "01/01/%Y" ) ) );
         $xml .= "\r\n      ";
         $xml .= XML_Util::createEndElement( 'item' );
     }
     $xml .= "\r\n    ";
-    $GLOBALS['_BAZAR_']['url']->addQueryString( BAZ_VARIABLE_ACTION, BAZ_VOIR_FLUX_RSS );
-    //  $xml .= utf8_encode(html_entity_decode('<atom:link href="'.$GLOBALS['_BAZAR_']['url']->getUrl().'" rel="self" type="application/rss+xml" />'."\r\n  "));
     $xml .= XML_Util::createEndElement( 'channel' );
     $xml .= "\r\n  ";
     $xml .= XML_Util::createEndElement( 'rss' );
@@ -3057,6 +3053,6 @@ function baz_afficher_flux_RSS()
     $GLOBALS['_BAZAR_']['url']->removeQueryString( BAZ_VARIABLE_ACTION );
     $GLOBALS['_BAZAR_']['url']->removeQueryString( 'id_fiche' );
     
-    echo html_entity_decode( $xml );
+    echo str_replace('</image>', '</image>'."\n".'<atom:link href="'.$urlrss.'" rel="self" type="application/rss+xml" />', html_entity_decode($xml, ENT_QUOTES, 'UTF-8') );
     
 }

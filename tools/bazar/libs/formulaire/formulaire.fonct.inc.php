@@ -721,7 +721,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html .= $label.$bulledaide.' : </div>'."\n";
         $input_html .= '<div class="controls col-lg-8">'."\n";
         $input_html .= '<input type="'.$type_input.'"';
-        $input_html .= ($defauts != '') ? ' value="'.$defauts.'"' : '';
+        $input_html .= ($defauts != '') ? ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'"' : '';
         $input_html .= ' name="'.$identifiant.'" class="form-control input-xxlarge" id="'.$identifiant.'"';
         $input_html .= ' maxlength="'.$nb_max_car.'" size="'.$nb_max_car.'"';
         $input_html .= ($type_input == 'number' && $nb_min_car != '') ? ' min="'.$nb_min_car.'"' : '';

@@ -178,7 +178,7 @@ define('BAZ_NB_ENTREES_FLUX_RSS', 20); //nombre maximum d'articles présents dan
 //Logo du site indique dans les flux rss
 define('BAZ_RSS_LOGOSITE', (isset($wakkaConfig['baz_rss_logosite'])) ? $wakkaConfig['baz_rss_logosite'] : 'http://outils-reseaux.org/tools/templates/themes/outils-reseaux/images/Puce-titre.gif');
 //Managing editor du site
-define('BAZ_RSS_MANAGINGEDITOR', (isset($wakkaConfig['baz_rss_managingeditor'])) ? $wakkaConfig['baz_rss_managingeditor'] : 'http://outils-reseaux.org/tools/templates/themes/outils-reseaux/images/Puce-titre.gif');
+define('BAZ_RSS_MANAGINGEDITOR', (isset($wakkaConfig['baz_rss_managingeditor'])) ? $wakkaConfig['baz_rss_managingeditor'] : 'accueil@outils-reseaux.org (association Outils-Reseaux)');
 //Mail Webmaster du site
 define('BAZ_RSS_WEBMASTER', (isset($wakkaConfig['baz_rss_webmaster'])) ? $wakkaConfig['baz_rss_webmaster'] : 'accueil@outils-reseaux.org (association Outils-Reseaux)');
 //categorie du flux RSS

@@ -5,11 +5,13 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 $liste = '';
-$resultat = baz_valeurs_type_de_fiche() ;
+$resultat = baz_valeurs_tous_les_formulaires() ;
 
 if (is_array($resultat) && count($resultat)>0) {
-	foreach ($resultat as $key => $ligne) {
-	    $liste .= '<link rel="alternate" type="application/rss+xml" title="'.$ligne['bn_label_nature'].'" href="'.$this->href('rss', $this->getPageTag(), 'id_typeannonce='.$ligne['bn_id_nature']).'">'."\n";
+	foreach ($resultat as $categories) {
+		foreach ($categories as $ligne) {
+		    $liste .= '<link rel="alternate" type="application/rss+xml" title="'.$ligne['bn_label_nature'].'" href="'.$this->href('rss', $this->getPageTag(), 'id_typeannonce='.$ligne['bn_id_nature']).'">'."\n";
+		}	
 	}	
 }
 
