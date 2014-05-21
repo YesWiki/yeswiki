@@ -1210,13 +1210,15 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     }
                 } else {
                     $info = '<div class="alert alert-info">'._t('BAZ_DROIT_INSUFFISANT').'</div>'."\n";
-                    require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'HTML/QuickForm/html.php';
+                    require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor/HTML/QuickForm/html.php';
                     $formtemplate->addElement(new HTML_QuickForm_html("\n".$info."\n")) ;
                 }
             }
             if (file_exists(BAZ_CHEMIN_UPLOAD.$valeurs_fiche[$type.$identifiant])) {
                 $lien_supprimer = $GLOBALS['wiki']->href( 'edit', $GLOBALS['wiki']->GetPageTag() );
-                $lien_supprimer .= '&delete_file='.$valeurs_fiche[$type.$identifiant];
+                $lien_supprimer .= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&").'delete_file='.$valeurs_fiche[$type.$identifiant];
+
+
 
                 $html = '<div class="control-group form-group">
                     <div class="control-label col-lg-3">'.$label.' : </div>
@@ -1345,7 +1347,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $formtemplate->addElement(new HTML_QuickForm_html("\n".'<fieldset class="bazar_fieldset">'."\n".'<legend>'.$label.'</legend>'."\n")) ;
 
                 $lien_supprimer = $GLOBALS['wiki']->href( 'edit', $GLOBALS['wiki']->GetPageTag() );
-                $lien_supprimer .= '&suppr_image='.$valeurs_fiche[$type.$identifiant];
+                $lien_supprimer .= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&").'suppr_image='.$valeurs_fiche[$type.$identifiant];
 
                 $html_image = afficher_image($valeurs_fiche[$type.$identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
                 $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="'.str_replace('&', '&amp;', $lien_supprimer).'" onclick="javascript:return confirm(\''.
@@ -2029,7 +2031,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 ' AND blv_ce_i18n like "'.$GLOBALS['_BAZAR_']['langue'].'%" ORDER BY blv_label';
             $resultat = $GLOBALS['wiki'] -> query($requete) ;
             
-            require_once 'HTML/QuickForm/checkbox.php';
+            require_once 'vendor/HTML/QuickForm/checkbox.php';
             $i=0;
             $optioncheckbox = array('class' => 'element_checkbox');
 
