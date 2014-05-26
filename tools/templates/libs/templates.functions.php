@@ -286,7 +286,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 				}
 
 				$choosen = ($background == 'files/backgrounds/'.$GLOBALS['wiki']->config['favorite_background_image']);
-				var_dump($choosen);
 				if ($choosen) $class = ' active';
 
 				$imgextension = strtolower(substr($background, -4, 4));
