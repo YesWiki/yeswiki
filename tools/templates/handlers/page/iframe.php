@@ -21,7 +21,7 @@ if ($this->HasAccess("read"))
 		$output = '';
 		// on recupere les entetes html mais pas ce qu'il y a dans le body
 		$header =  explode('<body',$this->Header());
-		$output .= $header[0]."<body>\n<div class=\"yeswiki-page-widget page-widget\">\n";	
+		$output .= $header[0]."<body class=\"yeswiki-body\">\n<div class=\"yeswiki-page-widget page-widget\">\n";	
 
 		// par defaut on ajoute un bouton de partage, mais il peut etre desactive en ajoutant &share=0 à l'url de l'iframe
 		if (isset($_GET['share']) && $_GET['share'] == '1') {
@@ -48,7 +48,7 @@ if ($this->HasAccess("read"))
 		// javascript pour gerer les liens (ouvrir vers l'exterieur) dans les iframes
 		$scripts_iframe = '<script>
 		$(document).ready(function () {
-			$("a[href^=\'http://\']:not(a[href$=\'/slide_show\'], a[href$=\'/iframe\'])").click(function() {
+			$("a[href^=\'http://\']:not(a[href$=\'/slide_show\'], a[href$=\'/iframe\'], a.modalbox)").click(function() {
 				if (window.location != window.parent.location)
 				{
 					if (!($(this).hasClass("bouton_annuler")))
@@ -65,13 +65,15 @@ if ($this->HasAccess("read"))
 		$styleiframe = '<style>
 			html {
 				overflow-y: auto;
+				background-color : transparent;
+				background-image : none;
 			}
-			body {
-				background-color : transparent,
-				background-image : none,
-				text-align : left,
-				width : auto,
-				min-width : 0,
+			.yeswiki-body {
+				background-color : transparent;
+				background-image : none;
+				text-align : left;
+				width : auto;
+				min-width : 0;
 			}
 		</style>'."\n";
 
