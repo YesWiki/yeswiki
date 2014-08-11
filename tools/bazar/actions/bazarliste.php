@@ -54,7 +54,11 @@ if (empty($nb)) {
     $nb = '';
 }
 //on recupere les parameres pour une requete specifique
-if (isset($_GET['query'])) {$query = $_GET['query'];}
+if (isset($_GET['query'])) {
+    $query = $this->GetParameter("query");
+    if (!empty($query)) $query .= '|'.$_GET['query'];
+    else $query = $_GET['query'];
+}
 else $query = $this->GetParameter("query");
 if (!empty($query)) {
     $tabquery = array();
