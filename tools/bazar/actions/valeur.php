@@ -24,9 +24,12 @@ if (!empty($url)) {
     $image = $this->GetParameter('image');
     $texte = $this->GetParameter('texte');
     $defaut = $this->GetParameter('defaut');
+    $target = $this->GetParameter('target');
+    if (!empty($target)) $target = 'target="'.$target.'" ';
+
 
     if (!empty($champ)) {
-        // on harge dans une variable globale pour le cas ou l'action est appelée plusieurs fois
+        // on charge dans une variable globale pour le cas ou l'action est appelée plusieurs fois
         if (!isset($GLOBALS['externalpage'][$url])) $GLOBALS['externalpage'][$url] = @file_get_contents($url.'/html');
         if (!$GLOBALS['externalpage'][$url] === FALSE) {
 
@@ -52,13 +55,13 @@ if (!empty($url)) {
             
             if (isset($matches[1]) && count($matches[1])>0) {
                 if (!empty($texte) && $texte!="lien") {
-                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">'.trim($texte).'</a>', trim(array_shift($matches[1])));
+                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a '.$target.'href="$1">'.trim($texte).'</a>', trim(array_shift($matches[1])));
                 } 
                 else if (!empty($texte) && $texte=="lien") {
-                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1]));
+                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', trim(array_shift($matches[1])));
                 }
                 else if ($image == '1') {
-                    echo '<img class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">';
+                    echo '<img class="img-responsive" src="'.trim(array_shift($matches[1])).'" alt="image '.$champ.'">';
                 }
                 else {
                     echo trim(array_shift($matches[1]));
