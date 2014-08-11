@@ -766,7 +766,7 @@ function baz_afficher_formulaire_import()
                 
                 //s'il y a plus d'un choix possible, on propose
                 if ( count( $resultat ) >= 1 ) {
-                    $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . _t( 'BAZ_TYPE_FICHE' ) . ' :</div>' . "\n" . '<div class="controls col-lg-8">';
+                    $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . _t( 'BAZ_TYPE_FICHE' ) . ' :</div>' . "\n" . '<div class="controls col-xs-8">';
                     $output .= '<select class="form-control" name="id_type_fiche" onchange="javascript:this.form.submit();">' . "\n";
                     
                     
@@ -789,9 +789,9 @@ function baz_afficher_formulaire_import()
                 
                 if ( $id_type_fiche != '' ) {
                     $val_formulaire = baz_valeurs_type_de_fiche( $id_type_fiche );
-                    $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . _t( 'BAZ_FICHIER_CSV_A_IMPORTER' ) . ' :</div>' . "\n" . '<div class="controls col-lg-8">';
+                    $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . _t( 'BAZ_FICHIER_CSV_A_IMPORTER' ) . ' :</div>' . "\n" . '<div class="controls col-xs-8">';
                     $output .= '<input type="file" name="fileimport" id="idfileimport" />' . "\n" . '</div>' . "\n" . '</div>' . "\n";
-                    $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3"></div><div class="controls col-lg-8">' . "\n" . '<input name="submit_file" type="submit" value="' . _t( 'BAZ_IMPORTER_CE_FICHIER' ) . '" class="btn btn-primary" />' . "\n" . '</div>' . "\n" . '</div>' . "\n";
+                    $output .= '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3"></div><div class="controls col-xs-8">' . "\n" . '<input name="submit_file" type="submit" value="' . _t( 'BAZ_IMPORTER_CE_FICHIER' ) . '" class="btn btn-primary" />' . "\n" . '</div>' . "\n" . '</div>' . "\n";
                     $output .= '<div class="alert alert-info">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . "\n" . _t( 'BAZ_ENCODAGE_CSV' ) . "\n" . '</div>' . "\n";
                     
                     
@@ -885,7 +885,7 @@ function baz_afficher_formulaire_export()
     
     //s'il y a plus d'un choix possible, on propose
     if ( count( $resultat ) >= 1 ) {
-        $output .= '<div class="row">'."\n".'<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . _t( 'BAZ_TYPE_FICHE' ) . ' :</div>' . "\n" . '<div class="controls col-lg-8">';
+        $output .= '<div class="row">'."\n".'<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . _t( 'BAZ_TYPE_FICHE' ) . ' :</div>' . "\n" . '<div class="controls col-xs-8">';
         $output .= '<select class="form-control" name="id_type_fiche" onchange="javascript:this.form.submit();">' . "\n";
         
         //si l'on n'a pas deja choisit de fiche, on demarre sur l'option CHOISIR, vide
@@ -1072,11 +1072,11 @@ function baz_formulaire( $mode, $url = '', $valeurs = '' )
     //contruction du squelette du formulaire
     $formtemplate = new HTML_QuickForm( 'formulaire', 'post', preg_replace( '/&amp;/', '&', ( $url ? $url : $lien_formulaire->getURL() ) ) );
     $squelette =& $formtemplate->defaultRenderer();
-    $squelette->setFormTemplate( "\n" . '<div class="row">' . "\n" . '<div class="col-lg-8">' . "\n" . '<form {attributes} class="form-horizontal" novalidate="novalidate">' . "\n" . '{content}' . "\n" . '</form>' . "\n" . '</div> <!-- /.col-lg-8 -->' . "\n" . '</div> <!-- /.row -->' . "\n" );
-    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-lg-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="alert alert-error alert-danger">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
+    $squelette->setFormTemplate( '<form {attributes} class="form-horizontal" novalidate="novalidate">' . "\n" . '{content}' . "\n" . '</form>' . "\n" . '</div>' . "\n" );
+    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="alert alert-error alert-danger">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
     $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</div>' . "\n" . '</div>' . "\n", 'accept_condition' );
     $squelette->setElementTemplate( '<div class="form-actions">{label}{element}</div>' . "\n", 'groupe_boutons' );
-    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-lg-8"> ' . "\n" . '{element}' . "\n" . '</div>' . "\n" . '</div>', 'select' );
+    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '</div>' . "\n" . '</div>', 'select' );
     $squelette->setRequiredNoteTemplate( "\n" . '<div class="symbole_obligatoire">* {requiredNote}</div>' . "\n" );
     //Traduction de champs requis
     $formtemplate->setRequiredNote( _t( 'BAZ_CHAMPS_REQUIS' ) );
@@ -1625,8 +1625,8 @@ function baz_formulaire_des_formulaires( $mode, $valeursformulaire = '' )
     $formtemplate = new HTML_QuickForm( 'formulaire', 'post', preg_replace( '/&amp;/', '&', $GLOBALS['_BAZAR_']['url']->getURL() ) );
     $GLOBALS['_BAZAR_']['url']->removeQueryString( 'action_formulaire' );
     $squelette =& $formtemplate->defaultRenderer();
-    $squelette->setFormTemplate( "\n" . '<div class="row">' . "\n" . '<div class="col-lg-8">' . "\n" . '<form {attributes} class="form-horizontal">' . "\n" . '{content}' . "\n" . '</form>' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
-    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . '{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . ' </div>' . "\n" . '<div class="controls col-lg-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="erreur">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
+    $squelette->setFormTemplate( '<form {attributes} class="form-horizontal">' . "\n" . '{content}' . "\n" . '</form>' . "\n" );
+    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . '{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . ' </div>' . "\n" . '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="erreur">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
     $squelette->setElementTemplate( '<div class="form-actions">{label}{element}</div>' . "\n", 'groupe_boutons' );
     $squelette->setRequiredNoteTemplate( "\n" . '<div class="symbole_obligatoire">* {requiredNote}</div>' . "\n" );
     //traduction de champs requis
@@ -1709,7 +1709,7 @@ function baz_formulaire_des_listes( $mode, $valeursliste = '' )
         $tab_formulaire['NomWiki'] = $_GET['idliste'];
     }
     
-    $html_valeurs_listes = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-lg-3">' . _t( 'BAZ_VALEURS_LISTE' ) . '</label>' . "\n" . '<ul class="list-sortables controls col-lg-8">' . "\n";
+    $html_valeurs_listes = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-xs-3">' . _t( 'BAZ_VALEURS_LISTE' ) . '</label>' . "\n" . '<ul class="list-sortables controls col-xs-8">' . "\n";
     if ( is_array( $valeursliste ) ) {
         $tab_formulaire['titre_liste'] = $valeursliste['titre_liste'];
         $elements                      = $valeursliste['label'];
@@ -1722,7 +1722,7 @@ function baz_formulaire_des_listes( $mode, $valeursliste = '' )
         $html_valeurs_listes .= '<li class="liste_ligne input-prepend input-append" id="row1">' . '<a title="' . _t( 'BAZ_DEPLACER_L_ELEMENT' ) . '" class="handle-listitems add-on"><i class="icon-move"></i></a>' . '<input required type="text" placeholder="' . _t( 'BAZ_KEY' ) . '" name="id[1]" class="input-mini" />' . '<input required type="text" placeholder="' . _t( 'BAZ_TEXT' ) . '" name="label[1]" />' . '<a class="add-on suppression_label_liste"><i class="icon-trash"></i></a>' . '</li>' . "\n";
     }
     
-    $html_valeurs_listes .= '</ul>' . "\n" . '<a class="controls col-lg-8 btn btn-primary ajout_label_liste" title="' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '"><i class="icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '</a>' . "\n" . '</div>' . "\n";
+    $html_valeurs_listes .= '</ul>' . "\n" . '<a class="controls col-xs-8 btn btn-primary ajout_label_liste" title="' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '"><i class="icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '</a>' . "\n" . '</div>' . "\n";
     
     //on rajoute une variable globale pour mettre le javascript en plus a la fin
     $GLOBALS['js']                    = ( ( isset( $GLOBALS['js'] ) ) ? $GLOBALS['js'] : '' ) . '<script src="tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js"></script>
@@ -2474,11 +2474,11 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     $formtemplate    = new HTML_QuickForm( 'formulaire', 'post', $lien_formulaire );
     
     $squelette =& $formtemplate->defaultRenderer();
-    $squelette->setFormTemplate( "\n" . '<div class="row">' . "\n" . '<div class="col-lg-8">' . "\n" . '<form {attributes} class="form-horizontal">' . "\n" . '{content}' . "\n" . '</form>' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
-    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-lg-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="erreur">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
+    $squelette->setFormTemplate( "\n" . '<div class="row">' . "\n" . '<div class="col-xs-8">' . "\n" . '<form {attributes} class="form-horizontal">' . "\n" . '{content}' . "\n" . '</form>' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
+    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="erreur">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
     $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</div>' . "\n" . '</div>' . "\n", 'accept_condition' );
     $squelette->setElementTemplate( '<div class="control-group form-group">{label}{element}</div>' . "\n", 'groupe_recherche' );
-    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-lg-3">' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-lg-8"> ' . "\n" . '{element}' . "\n" . '</div>' . "\n" . '</div>', 'select' );
+    $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '</div>' . "\n" . '</div>', 'select' );
     $squelette->setRequiredNoteTemplate( "\n" . '<div class="symbole_obligatoire">* {requiredNote}</div>' . "\n" );
     
     //Traduction de champs requis
@@ -2547,8 +2547,8 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     //champs texte pour entrer les mots cles
     $HTML_QuickForm = new HTML_QuickForm();
     $groupe_rech[]  = $HTML_QuickForm->createElement( 'html', '<div class="control-group form-group">
-        <label class="control-label col-lg-3"></label>
-        <div class="controls col-lg-8">
+        <label class="control-label col-xs-3"></label>
+        <div class="controls col-xs-8">
             <div class="input-group input-prepend input-append">
                 <span class="add-on input-group-addon"><i class="icon-search"></i></span><input type="text" value="'.((isset($_REQUEST['recherche_mots_cles']) && $_REQUEST['recherche_mots_cles'] != '') ? $_REQUEST['recherche_mots_cles'] : '').'" name="recherche_mots_cles" placeholder="' . _t( 'BAZ_MOT_CLE' ) . '" maxlength="255" class="form-control">
                 <span class="input-group-btn"><input type="submit" value="' . _t( 'BAZ_RECHERCHER' ) . '" name="rechercher" class="btn btn-primary" /></span>
