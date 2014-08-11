@@ -283,6 +283,7 @@ $tous_les_formulaires=baz_valeurs_tous_les_formulaires();
 
 $tableau_resultat=array();
 $jointure=array();
+$tabclick=array();
 foreach ($id_typeannonce as $annonce) { // Pour chaque annonce : 
 
     // Fusion des resultats 
@@ -479,36 +480,36 @@ $GLOBALS['points_carto']=$tab_points_carto;
 
 
 echo
-    '<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7/leaflet.css" />
+    '<link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.css" />
     <!--[if lte IE 8]>
     <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" />
     <![endif]-->
-    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/label/leaflet.label.css" />
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/label/leaflet.label.css" />'."\n";
     
-    <script src="http://cdn.leafletjs.com/leaflet-0.7/leaflet.js"></script>
-    <script src="http://maps.google.com/maps/api/js?v=3&sensor=false"></script>
-    <script src="tools/bazar/libs/vendor/leaflet/layer/tile/Google.js"></script>
-    <script src="tools/bazar/libs/vendor/leaflet/label/leaflet.label.js"></script>';
+$this->AddJavascriptFile('http://maps.google.com/maps/api/js?v=3&amp;sensor=false');
+$this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+$this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/layer/tile/Google.js');
+$this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/label/leaflet.label.js');
+
 
 if ($spider=="true") {
-    echo 
-    '<script src="tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js"></script>';
+    $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js');
 }
 
 
 if ($cluster=="true") {
     echo '
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css" />
-    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.Default.css" />
-    <script src="tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster-src.js"></script>';
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.Default.css" />'."\n";
+    $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster-src.js');
     
 }
 
 
 
 echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div> <ul id="markers"></ul>';
-echo 
-    '<script type="text/javascript">
+$script = 
+    '
 // Specifique facette javascript
     var layers=Array();
     var groups = '.json_encode($groups).';
@@ -517,7 +518,7 @@ echo
 
     var markers = Array();';
 
-echo '
+$script .= '
 //tableau des points des fiches bazar
     var places = [
         '.$points_carto.'
@@ -527,10 +528,10 @@ echo '
 
 
 if ($spider=="true") {
-    echo 
+    $script .= 
     'var popups = Array();';
 }
-echo 
+$script .=  
 
     'var map;
      var oms;
@@ -567,7 +568,7 @@ echo
         map.addLayer('.$layercarto.');';
 
     
-        echo '
+        $script .=  '
         if (choixcarte) {
             map.addControl(new L.Control.Layers( {"OSM":osm, "Google":ggl}, {}));
         }';
@@ -576,7 +577,7 @@ echo
 
 
         if ($spider=="true") {
-        echo '
+        $script .=  '
             oms = new OverlappingMarkerSpiderfier(map);
 
             $.each(places, function(i, item){
@@ -617,7 +618,7 @@ echo
 
             if ($cluster=="true") {
 
-                echo '
+                $script .=  '
 
                     var markerscluster = new L.MarkerClusterGroup();
 
@@ -653,7 +654,7 @@ echo
 
 
 
-        echo '
+        $script .=  '
   
 
 
@@ -678,14 +679,11 @@ echo
             ';
             }
         }
-        echo '
+        $script .=  '
         }
     ';
 
-
-echo 
-    '
-    </script>';
+$this->AddJavascript($script);
 
 if (($listepoint=="true") && count($tablinktitle)>0) {
     //asort($tablinktitle);
