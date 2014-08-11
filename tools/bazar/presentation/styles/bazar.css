@@ -254,7 +254,11 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 	vertical-align: top;
     width: 240px;
 }
-
+.entries-list {
+	height:200px;
+	overflow: auto;
+}
+.entries-list .yeswiki-checkbox {width:100% !important;}
  /*
   Datepicker for Bootstrap
   Copyright 2012 Stefan Petre
