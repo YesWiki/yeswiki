@@ -60,4 +60,6 @@ if((!file_exists($fullFilename))||($fullFilename=='')){
     //return;
 }
 
-echo '<div class="background-image" style="'.(!empty($height) ? 'height:'.$height.'px; ' : '').'background-image:url('.$fullFilename.');">'."\n".'<div class="container">'."\n";
+echo '<div class="background-image" style="'.(!empty($height) ? 'height:'.$height.'px; ' : '').'background-image:url('.$fullFilename.');">'."\n";
+$nocontainer = $this->GetParameter('nocontainer');
+if (empty($nocontainer)) echo '<div class="container">'."\n"; else echo '<div>';
