@@ -47,6 +47,8 @@ if (!empty($query)) {
     $tabquery = '';
 }
 
+$minical = $this->GetParameter('minical');
+
 $tableau_resultat = baz_requete_recherche_fiches($tabquery, '', $GLOBALS['_BAZAR_']['id_typeannonce'], $GLOBALS['_BAZAR_']['categorie_nature']);
 $js = '';
 foreach ($tableau_resultat as $fiche) {
@@ -90,7 +92,22 @@ $script = "$(document).ready(function() {
             week: '"._t('BAZ_WEEK')."',
             day: '"._t('BAZ_DAY')."'
         },
-        firstDay : 1,
+        firstDay : 1";
+
+if (!empty($minical) && $minical==1) {
+    $scriptminical = 'function init_calendar_tooltip() {
+        $(".minical a.fc-event").each(function() {
+            texte = $(this).find(".fc-event-title").html();
+            $(this).tooltip({\'title\':texte, \'html\':true});
+        });
+
+    }
+
+    setTimeout(init_calendar_tooltip,1000);';
+    $this->AddJavascript($scriptminical);
+}
+else {
+    $script .= "',
         eventClick: function(event) {
             if (event.url) {
                 $('<div>').attr('id', 'dateModal' ).addClass('modal fade').appendTo($('body'));
@@ -103,7 +120,9 @@ $script = "$(document).ready(function() {
 
                 return false;
             }
-        }
+        }";
+}
+$script .= "
     });
 });\n";
 $this->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.js');
