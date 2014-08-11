@@ -77,7 +77,13 @@ class attach {
 		if (empty($this->attachConfig['fmRestore_symbole'])) $this->attachConfig['fmRestore_symbole'] = 'Rest';
 		if (empty($this->attachConfig['fmTrash_symbole'])) $this->attachConfig['fmTrash_symbole'] = 'Corbeille';
 		
-		$this->isSafeMode = ini_get("safe_mode");
+		// le safe_mode n'existe que pour php < 5.3
+		if (version_compare(phpversion(), '5.3', '<')) {
+			$this->isSafeMode = ini_get("safe_mode");
+		} 
+		else {
+			$this->isSafeMode = true;
+		}
 
 	}
 /******************************************************************************
