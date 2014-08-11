@@ -71,7 +71,7 @@ $wikiClassesContent [] = '
 		if (!isset($GLOBALS[\'js\'])) {
 			$GLOBALS[\'js\'] = \'\';
 		}
-		if (!strpos($GLOBALS[\'js\'], \'<script src="\'.$file.\'"></script>\') && !empty($file) && file_exists($file)) {
+		if (!strpos($GLOBALS[\'js\'], \'<script src="\'.$file.\'"></script>\') && !empty($file) && (file_exists($file) || strpos($file, "http://") === 0)) {
 			$GLOBALS[\'js\'] .= \'  <script src="\'.$file.\'"></script>\'."\n";
 		}
 		return;
