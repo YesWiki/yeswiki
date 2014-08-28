@@ -419,6 +419,12 @@ class Wiki
 				. " WHERE tag = '".mysql_real_escape_string($tag)."' AND "
 				. ($time ? "time = '".mysql_real_escape_string($time)."'" : "latest = 'Y'") . " LIMIT 1";
 			$page = $this->LoadSingle($sql);
+
+			// the database is in ISO-8859-15, it must be converted
+			if (isset($page['body'])) {
+				$page['body'] = _convert($page['body'], "ISO-8859-15");
+			} 
+			
 			// cache result
 			if (!$time) $this->CachePage($page, $tag);
 		}
