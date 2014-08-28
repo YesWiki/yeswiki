@@ -28,12 +28,12 @@
 * Description : fichier de configuration de bazar
 *
 *@package wkbazar
-//Auteur original :
-*@author        Florian SCHMITT <florian.schmitt@laposte.net>
-//Autres auteurs :
-*@copyright     outils-reseaux-coop.org 2008
+*
+*@author        Florian SCHMITT <florian@outils-reseaux.org>
+*
+*@copyright     outils-reseaux.org 2008
 *@version       $Revision: 1.12 $ $Date: 2010-12-01 17:01:38 $
-// +------------------------------------------------------------------------------------------------------+
+*  +------------------------------------------------------------------------------------------------------+
 */
 
 if (!defined("WIKINI_VERSION")) {
@@ -79,7 +79,7 @@ if (preg_match('`^' . '(' . "[A-Za-z0-9]+" . ')/(' . "[A-Za-z0-9_-]" . '*)' . '$
 } elseif (preg_match('`^' . "[A-Za-z0-9]+" . '$`', $wikireq)) {
     $GLOBALS['_BAZAR_']['pagewiki'] = $wikireq;
 }
-$methode = ($method == 'bazarframe') ? '/bazarframe' : '';
+$methode = ($method == 'iframe') ? '/iframe' : '';
 
 // Variable d'url
 $GLOBALS['_BAZAR_']['url'] = new Net_URL($wakkaConfig['base_url'].$GLOBALS['_BAZAR_']['pagewiki'].$methode);

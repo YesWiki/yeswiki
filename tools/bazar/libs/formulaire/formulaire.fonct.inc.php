@@ -2098,16 +2098,16 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'html') {
-        if ($GLOBALS['wiki']->GetMethod()=='bazarframe') {
+        if ($GLOBALS['wiki']->GetMethod()=='iframe') {
             return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
         }
     } elseif ($mode == 'saisie') {
-        if ($GLOBALS['wiki']->GetMethod()!='bazarframe') {
+        if ($GLOBALS['wiki']->GetMethod()!='iframe') {
             $url_bookmarklet = clone($GLOBALS['_BAZAR_']['url']);
             $url_bookmarklet->removeQueryString('id_fiche');
             $url_bookmarklet->addQueryString('vue', BAZ_VOIR_SAISIR);
             $url_bookmarklet->addQueryString('action', BAZ_ACTION_NOUVEAU);
-            $url_bookmarklet->addQueryString('wiki', $GLOBALS['_BAZAR_']['pagewiki'].'/bazarframe');
+            $url_bookmarklet->addQueryString('wiki', $GLOBALS['_BAZAR_']['pagewiki'].'/iframe');
             $url_bookmarklet->addQueryString('id_typeannonce', $GLOBALS['_BAZAR_']['id_typeannonce']);
             $htmlbookmarklet = "<div class=\"BAZ_info\">
                 <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('".str_replace('&', '&amp;', $url_bookmarklet->getUrl())."&amp;bf_titre='+escape(document.title)+'&amp;url='+encodeURIComponent(location.href)+'&amp;description='+escape(document.getSelection()), '".$tableau_template[1]."', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\">".$tableau_template[1]."</a> << ".$tableau_template[2]."</div>";
