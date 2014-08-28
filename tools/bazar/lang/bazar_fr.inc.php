@@ -142,6 +142,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_AU' => 'au',
 'BAZ_ANONYME' => 'Anonyme',
 'BAZ_IDENTIFIEZ_VOUS_POUR_VOIR_VOS_FICHES' => 'Pour voir vos fiches, veuillez vous identifier.',
+'BAZ_ONLY_REGISTERED_USERS_CAN_ACCESS' => 'Seuls les utilisateurs identifiés peuvent accèder à cette partie',
 'VERIFIER_MON_ADRESSE' => 'Mettre le marqueur sur la carte grace &agrave; l\'adresse saisie',
 'VERIFIER_MON_ADRESSE_CLIENT' => 'Grace &agrave; votre acc&egrave;s Internet',
 'TEXTE_POINT_DEPLACABLE' => 'Si ce point ne correspond pas &agrave; votre adresse, vous pouvez le d&eacute;placer en cliquant gauche dessus et en laissant appuy&eacute;, afin de le faire correspondre parfaitement &agrave; votre adresse.',

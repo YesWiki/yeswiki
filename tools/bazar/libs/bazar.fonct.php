@@ -1757,83 +1757,88 @@ function baz_formulaire_des_listes( $mode, $valeursliste = '' )
  */
 function baz_gestion_formulaire()
 {
-    $res = '<h2>' . _t( 'BAZ_MODIFIER_FORMULAIRES' ) . '</h2>' . "\n";
-    
-    // il y a un formulaire a modifier
-    if ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'modif' ) {
-        //recuperation des informations du type de formulaire
-        $ligne      = baz_valeurs_formulaire( $_GET['idformulaire'] );
-        $formulaire = baz_formulaire_des_formulaires( 'modif_v' );
-        $formulaire->setDefaults( $ligne );
-        $res .= $formulaire->toHTML();
+    // la gestion des formulaires est réservée aux identifiés
+    if ($GLOBALS['wiki']->GetUser()) {
+        $res = '<h2>' . _t( 'BAZ_MODIFIER_FORMULAIRES' ) . '</h2>' . "\n";
         
-        //il y a un nouveau formulaire a saisir
-    } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'new' ) {
-        $formulaire = baz_formulaire_des_formulaires( 'new_v' );
-        $res .= $formulaire->toHTML();
-        
-        //il y a des donnees pour ajouter un nouveau formulaire
-    } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'new_v' ) {
-        $requete  = 'INSERT INTO ' . BAZ_PREFIXE . 'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)' . ' VALUES (' . baz_nextId( BAZ_PREFIXE . 'nature', 'bn_id_nature', $GLOBALS['wiki'] ) . ', "fr-FR", "' . addslashes( _convert( $_POST["bn_label_nature"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_template"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_description"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_condition"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_label_class"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_type_fiche"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '")';
-        $resultat = $GLOBALS['wiki']->query( $requete );
-        
-        $res .= '<div class="alert alert-success">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' ) . '</div>' . "\n";
-        
-        //il y a des donnees pour modifier un formulaire
-    } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'modif_v' && baz_a_le_droit( 'saisie_formulaire' ) ) {
-        $requete  = 'UPDATE ' . BAZ_PREFIXE . 'nature SET `bn_label_nature`="' . addslashes( _convert( $_POST["bn_label_nature"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_template`="' . addslashes( _convert( $_POST["bn_template"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_description`="' . addslashes( _convert( $_POST["bn_description"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_condition`="' . addslashes( _convert( $_POST["bn_condition"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_label_class`="' . addslashes( _convert( $_POST["bn_label_class"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_type_fiche`="' . addslashes( _convert( $_POST["bn_type_fiche"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '"' . ' WHERE `bn_id_nature`=' . $_POST["bn_id_nature"];
-        $resultat = $GLOBALS['wiki']->query( $requete );
-        
-        $res .= '<div class="alert alert-success">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_FORMULAIRE_MODIFIE' ) . '</div>' . "\n";
-        
-        // il y a un id de formulaire a supprimer
-    } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'delete' && baz_a_le_droit( 'saisie_formulaire' ) ) {
-        //suppression de l'entree dans '.BAZ_PREFIXE.'nature
-        $requete  = 'DELETE FROM ' . BAZ_PREFIXE . 'nature WHERE bn_id_nature=' . $_GET['idformulaire'];
-        $resultat = $GLOBALS['wiki']->query( $requete );
-        
-        //TODO : suppression des fiches associees au formulaire
-        
-        $res .= '<div class="alert alert-success">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES' ) . '</div>' . "\n";
-    }
-    
-    // affichage de la liste des templates a modifier ou supprimer (on l'affiche dans tous les cas, sauf cas de modif de formulaire)
-    if ( !isset( $_GET['action_formulaire'] ) || ( $_GET['action_formulaire'] != 'modif' && $_GET['action_formulaire'] != 'new' ) ) {
-        $formulaires = baz_valeurs_tous_les_formulaires();
-        
-        $liste           = '';
-        $type_formulaire = '';
-        foreach ( $formulaires as $cat => $form ) {
-            $liste .= '<h3>' . $cat . '</h3>' . "\n" . '<ul class="list-unstyled unstyled">' . "\n";
-            foreach ( $form as $key => $ligne ) {
-                $lien_formulaire = clone ( $GLOBALS['_BAZAR_']['url'] );
-                $liste .= '<li>';
-                $lien_formulaire->addQueryString( 'idformulaire', $ligne['bn_id_nature'] );
-                $lien_formulaire->addQueryString( 'action_formulaire', 'modif' );
-                if ( baz_a_le_droit( 'saisie_formulaire' ) ) {
-                    $liste .= '<a class="btn btn-default" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="icon-pencil"></i> ' . $ligne['bn_label_nature'] . '</a>' . "\n";
-                } else {
-                    $liste .= $ligne['bn_label_nature'] . "\n";
-                }
-                $lien_formulaire->removeQueryString( 'action_formulaire' );
-                $lien_formulaire->addQueryString( 'action_formulaire', 'delete' );
-                if ( baz_a_le_droit( 'saisie_formulaire' ) ) {
-                    $liste .= '<a class="btn btn-danger btn-mini btn-xs" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"  onclick="javascript:return confirm(\'' . _t( 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' ) . ' ?\');"><i class="icon-trash icon-white"></i></a>' . "\n";
-                }
-                $lien_formulaire->removeQueryString( 'action_formulaire' );
-                $lien_formulaire->removeQueryString( 'idformulaire' );
-                
-                $liste .= '</li>' . "\n";
-            }
+        // il y a un formulaire a modifier
+        if ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'modif' ) {
+            //recuperation des informations du type de formulaire
+            $ligne      = baz_valeurs_formulaire( $_GET['idformulaire'] );
+            $formulaire = baz_formulaire_des_formulaires( 'modif_v' );
+            $formulaire->setDefaults( $ligne );
+            $res .= $formulaire->toHTML();
+            
+            //il y a un nouveau formulaire a saisir
+        } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'new' ) {
+            $formulaire = baz_formulaire_des_formulaires( 'new_v' );
+            $res .= $formulaire->toHTML();
+            
+            //il y a des donnees pour ajouter un nouveau formulaire
+        } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'new_v' ) {
+            $requete  = 'INSERT INTO ' . BAZ_PREFIXE . 'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)' . ' VALUES (' . baz_nextId( BAZ_PREFIXE . 'nature', 'bn_id_nature', $GLOBALS['wiki'] ) . ', "fr-FR", "' . addslashes( _convert( $_POST["bn_label_nature"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_template"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_description"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_condition"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_label_class"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '", "' . addslashes( _convert( $_POST["bn_type_fiche"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '")';
+            $resultat = $GLOBALS['wiki']->query( $requete );
+            
+            $res .= '<div class="alert alert-success">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' ) . '</div>' . "\n";
+            
+            //il y a des donnees pour modifier un formulaire
+        } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'modif_v' && baz_a_le_droit( 'saisie_formulaire' ) ) {
+            $requete  = 'UPDATE ' . BAZ_PREFIXE . 'nature SET `bn_label_nature`="' . addslashes( _convert( $_POST["bn_label_nature"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_template`="' . addslashes( _convert( $_POST["bn_template"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_description`="' . addslashes( _convert( $_POST["bn_description"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_condition`="' . addslashes( _convert( $_POST["bn_condition"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_label_class`="' . addslashes( _convert( $_POST["bn_label_class"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '" ,`bn_type_fiche`="' . addslashes( _convert( $_POST["bn_type_fiche"], TEMPLATES_DEFAULT_CHARSET, TRUE ) ) . '"' . ' WHERE `bn_id_nature`=' . $_POST["bn_id_nature"];
+            $resultat = $GLOBALS['wiki']->query( $requete );
+            
+            $res .= '<div class="alert alert-success">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_FORMULAIRE_MODIFIE' ) . '</div>' . "\n";
+            
+            // il y a un id de formulaire a supprimer
+        } elseif ( isset( $_GET['action_formulaire'] ) && $_GET['action_formulaire'] == 'delete' && baz_a_le_droit( 'saisie_formulaire' ) ) {
+            //suppression de l'entree dans '.BAZ_PREFIXE.'nature
+            $requete  = 'DELETE FROM ' . BAZ_PREFIXE . 'nature WHERE bn_id_nature=' . $_GET['idformulaire'];
+            $resultat = $GLOBALS['wiki']->query( $requete );
+            
+            //TODO : suppression des fiches associees au formulaire
+            
+            $res .= '<div class="alert alert-success">' . "\n" . '<a data-dismiss="alert" class="close" type="button">&times;</a>' . _t( 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES' ) . '</div>' . "\n";
         }
-        if ( $liste != '' )
-            $res .= $liste . '</ul><br />' . "\n";
         
-        //ajout du lien pour creer un nouveau formulaire
-        $lien_formulaire = clone ( $GLOBALS['_BAZAR_']['url'] );
-        $lien_formulaire->addQueryString( 'action_formulaire', 'new' );
-        $res .= '<a class="btn btn-primary" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="icon-plus icon-white"></i> ' . _t( 'BAZ_NOUVEAU_FORMULAIRE' ) . '</a>' . "\n";
-        
+        // affichage de la liste des templates a modifier ou supprimer (on l'affiche dans tous les cas, sauf cas de modif de formulaire)
+        if ( !isset( $_GET['action_formulaire'] ) || ( $_GET['action_formulaire'] != 'modif' && $_GET['action_formulaire'] != 'new' ) ) {
+            $formulaires = baz_valeurs_tous_les_formulaires();
+            
+            $liste           = '';
+            $type_formulaire = '';
+            foreach ( $formulaires as $cat => $form ) {
+                $liste .= '<h3>' . $cat . '</h3>' . "\n" . '<ul class="list-unstyled unstyled">' . "\n";
+                foreach ( $form as $key => $ligne ) {
+                    $lien_formulaire = clone ( $GLOBALS['_BAZAR_']['url'] );
+                    $liste .= '<li>';
+                    $lien_formulaire->addQueryString( 'idformulaire', $ligne['bn_id_nature'] );
+                    $lien_formulaire->addQueryString( 'action_formulaire', 'modif' );
+                    if ( baz_a_le_droit( 'saisie_formulaire' ) ) {
+                        $liste .= '<a class="btn btn-default" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="icon-pencil"></i> ' . $ligne['bn_label_nature'] . '</a>' . "\n";
+                    } else {
+                        $liste .= $ligne['bn_label_nature'] . "\n";
+                    }
+                    $lien_formulaire->removeQueryString( 'action_formulaire' );
+                    $lien_formulaire->addQueryString( 'action_formulaire', 'delete' );
+                    if ( baz_a_le_droit( 'saisie_formulaire' ) ) {
+                        $liste .= '<a class="btn btn-danger btn-mini btn-xs" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"  onclick="javascript:return confirm(\'' . _t( 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' ) . ' ?\');"><i class="icon-trash icon-white"></i></a>' . "\n";
+                    }
+                    $lien_formulaire->removeQueryString( 'action_formulaire' );
+                    $lien_formulaire->removeQueryString( 'idformulaire' );
+                    
+                    $liste .= '</li>' . "\n";
+                }
+            }
+            if ( $liste != '' )
+                $res .= $liste . '</ul><br />' . "\n";
+            
+            // ajout du lien pour creer un nouveau formulaire
+            $lien_formulaire = clone ( $GLOBALS['_BAZAR_']['url'] );
+            $lien_formulaire->addQueryString( 'action_formulaire', 'new' );
+            $res .= '<a class="btn btn-primary" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="icon-plus icon-white"></i> ' . _t( 'BAZ_NOUVEAU_FORMULAIRE' ) . '</a>' . "\n";
+        }
+    }
+    else {
+        $res = '<div class="alert alert-danger alert-error">'._t('BAZ_ONLY_REGISTERED_USERS_CAN_ACCESS').'.</div>'."\n";
     }
     
     return $res;
