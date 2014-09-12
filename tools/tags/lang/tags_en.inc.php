@@ -79,9 +79,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_EBOOK_TITLE' => 'Book title',
 'TAGS_EBOOK_DESC' => 'Description',
 'TAGS_EBOOK_AUTHOR' => 'The author\'s first name then surname',
-'TAGS_EXAMPLE_AUTHOR' => 'Ex: William Shakespear',
+'TAGS_EXAMPLE_AUTHOR' => 'Ex: William Shakespeare',
 'TAGS_EBOOK_BIBLIO_AUTHOR' => 'The author\'s name, coma first name',
-'TAGS_EXAMPLE_BIBLIO_AUTHOR' => 'Ex: Shakespear, William',
+'TAGS_EXAMPLE_BIBLIO_AUTHOR' => 'Ex: Shakespeare, William',
 'TAGS_EBOOK_COVER_IMAGE' => 'Link to your Ebook\'s cover
 ',
 'TAGS_NO_TITLE_FOUND' => 'ERROR : no title entered.',
