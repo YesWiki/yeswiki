@@ -107,7 +107,7 @@ if (!empty($minical) && $minical==1) {
     $this->AddJavascript($scriptminical);
 }
 else {
-    $script .= "',
+    $script .= ",
         eventClick: function(event) {
             if (event.url) {
                 $('<div>').attr('id', 'dateModal' ).addClass('modal fade').appendTo($('body'));
