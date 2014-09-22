@@ -20,7 +20,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -34,9 +34,10 @@ if ($this->HasAccess("read"))
 	}
 	else
 	{
-		header("Content-type: text/plain");
+
+		header("Content-type: text/plain; charset=".TEMPLATES_DEFAULT_CHARSET);
 		// display raw page
-		echo $this->page["body"];
+		echo _convert($this->page["body"], TEMPLATES_DEFAULT_CHARSET);
 	}
 }
 else
