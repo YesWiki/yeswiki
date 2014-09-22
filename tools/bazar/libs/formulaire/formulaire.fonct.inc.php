@@ -601,23 +601,25 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         sort($response);
         $tagsexistants = '\''.implode('\',\'', $response).'\'';
 
-        $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').'
-            <script src="tools/tags/libs/jquery-ui-1.9.2.custom.min.js"></script>
-            <script src="tools/tags/libs/tag-it.js"></script>
-            <script>
-            $(function(){
-                    var tagsexistants = ['.$tagsexistants.'];
+        $script = '$(function(){
+    var tagsexistants = ['.$tagsexistants.'];
+    var pagetag = $(\'#formulaire .yeswiki-input-pagetag\');
+    pagetag.tagsinput({
+        typeahead: {
+            source: tagsexistants
+        },
+        confirmKeys: [13, 188]
+    });
+    
+    //bidouille antispam
+    $(".antispam").attr(\'value\', \'1\');
 
-                    $(\'.input_tags\').each(function() {
-                        $(this).tagit({
-availableTags: tagsexistants
-});
-                        });
-
-                    //bidouille antispam
-                    $(".antispam").attr(\'value\', \'1\');
-                    });
-</script>';
+    $("#formulaire").on(\'submit\', function() {
+        pagetag.tagsinput(\'add\', pagetag.tagsinput(\'input\').val());
+    });
+});'."\n";
+  $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
+  $GLOBALS['wiki']->AddJavascript($script);
 
 //gestion des valeurs par defaut : d'abord on regarde s'il y a une valeur a modifier,
 //puis s'il y a une variable passee en GET,
@@ -630,7 +632,7 @@ if (isset($valeurs_fiche[$tableau_template[1]])) {
     $defauts = stripslashes($tableau_template[5]);
 }
 
-$option=array('size'=>$tableau_template[3],'maxlength'=>$tableau_template[4], 'id' => $tableau_template[1], 'value' => $defauts, 'class' => 'form-control input_tags');
+$option=array('size'=>$tableau_template[3],'maxlength'=>$tableau_template[4], 'id' => $tableau_template[1], 'value' => $defauts, 'class' => 'form-control yeswiki-input-pagetag');
 $bulledaide = '';
 if (isset($tableau_template[10]) && $tableau_template[10]!='') $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'.htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET).'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
 $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bulledaide, $option) ;
@@ -660,17 +662,15 @@ $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2].$bu
         $html = '<div class="BAZ_rubrique tags_'.$tableau_template[1].'" data-id="'.$tableau_template[1].'">'."\n".
             '<span class="BAZ_label">'.$tableau_template[2].'&nbsp;:</span>'."\n";
         $html .= '<div class="BAZ_texte"> ';
-        $tabtagsexistants = explode(',',htmlentities($valeurs_fiche[$tableau_template[1]], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET));
+        $tabtagsexistants = explode(',', $valeurs_fiche[$tableau_template[1]]);
 
         if (count($tabtagsexistants)>0) {
             sort($tabtagsexistants);
-            $tagsexistants = '<ul class="tagit ui-widget ui-widget-content ui-corner-all show">'."\n";
+            $tagsexistants = '';
             foreach ($tabtagsexistants as $tag) {
-                $tagsexistants .= '<li class="tagit-tag ui-widget-content ui-state-default ui-corner-all">
-                    <a href="'.$GLOBALS['wiki']->href('listpages',$GLOBALS['wiki']->GetPageTag(),'tags='.$tag).'" title="Voir toutes les pages contenant ce mot cl&eacute;">'.$tag.'</a>
+                $tagsexistants .= '<a class="tag-label label label-info" href="'.$GLOBALS['wiki']->href('listpages',$GLOBALS['wiki']->GetPageTag(),'tags='.urlencode(trim($tag))).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'">'.$tag.'</a>
                     </li>'."\n";
             }
-            $tagsexistants .= '</ul>'."\n";
             $html .= $tagsexistants."\n";
         }
 

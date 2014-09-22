@@ -63,10 +63,10 @@ if (is_array($tab_tous_les_tags)) {
 	foreach ($tab_tous_les_tags as $tag) {
 		$tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
 		if (in_array($tag['value'], $tab_selected_tags)) {
-			$tab_tag[] = '&nbsp;<a class="tag-label label label-primary label-active" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag['value']).'">'.$tag['value'].'</a>'."\n";
+			$tab_tag[] = '&nbsp;<a class="tag-label label label-primary label-active" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.urlencode($tag['value'])).'">'.$tag['value'].'</a>'."\n";
 		} 
 		else {
-			$tab_tag[] = '&nbsp;<a class="tag-label label label-info" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.$tag['value']).'">'.$tag['value'].'</a>'."\n";
+			$tab_tag[] = '&nbsp;<a class="tag-label label label-info" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.urlencode($tag['value'])).'">'.$tag['value'].'</a>'."\n";
 		}
 	}
 	$outputselecttag = '';

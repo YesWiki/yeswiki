@@ -1322,6 +1322,13 @@ function baz_requete_bazar_fiche( $valeur )
     unset( $valeur["MAX_FILE_SIZE"] );
     unset( $valeur["antispam"] );
     
+    // si l'on a pas la valeur de l'identifiant de la fiche, on la genere
+    if ( !isset( $valeur['id_fiche'] ) ) {
+        // l'identifiant (sous forme de NomWiki) est genere a partir du titre
+        $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki( $valeur['bf_titre'] );
+        $valeur['id_fiche']             = $GLOBALS['_BAZAR_']['id_fiche'];
+    }
+
     // Champ sendmail positionne : on envoi un mail ...
     if ( isset( $valeur["sendmail"] ) ) {
         if ( $valeur[$valeur["sendmail"]] != '' )
@@ -1346,11 +1353,6 @@ function baz_requete_bazar_fiche( $valeur )
     }
     $valeur['date_maj_fiche'] = date( 'Y-m-d H:i:s', time() );
     
-    if ( !isset( $valeur['id_fiche'] ) ) {
-        // l'identifiant (sous forme de NomWiki) est genere a partir du titre
-        $GLOBALS['_BAZAR_']['id_fiche'] = genere_nom_wiki( $valeur['bf_titre'] );
-        $valeur['id_fiche']             = $GLOBALS['_BAZAR_']['id_fiche'];
-    }
     
     // si un mail d envoie de la fiche est present, on envoie!
     if ( isset( $destmail ) ) {
@@ -2474,8 +2476,14 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
 {
     $res = '';
     
+    //parametres complémentaires de l'url
+    $urlparams = BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_DEFAUT . '&' . BAZ_VARIABLE_ACTION . '=' . BAZ_MOTEUR_RECHERCHE;
+    if (isset($_GET['query']) && !empty($_GET['query'])) {
+        $urlparams .= '&query='.$_GET['query'];
+    }
+
     //creation du lien pour le formulaire de recherche
-    $lien_formulaire = $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_DEFAUT . '&' . BAZ_VARIABLE_ACTION . '=' . BAZ_MOTEUR_RECHERCHE, 0 );
+    $lien_formulaire = $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), $urlparams, 0 );
     $formtemplate    = new HTML_QuickForm( 'formulaire', 'post', $lien_formulaire );
     
     $squelette =& $formtemplate->defaultRenderer();
@@ -2659,7 +2667,19 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
             }
         }
     }
-    
+
+    // cas des criteres passés en parametres get 
+    if (isset($_GET['query'])) {
+        $query = $_GET['query'];
+        $tableau = array();
+        $tab = explode('|', $query); //découpe la requete autour des |
+        foreach ($tab as $req) {
+            $tabdecoup = explode('=', $req, 2);
+            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+        }
+        $tableau_criteres = array_merge($tableau_criteres, $tableau);
+    }
+
     if ( $motcles == true ) {
         reset( $tableau_criteres );
         
