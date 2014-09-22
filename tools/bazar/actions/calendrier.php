@@ -92,23 +92,32 @@ $script = "$(document).ready(function() {
             week: '"._t('BAZ_WEEK')."',
             day: '"._t('BAZ_DAY')."'
         },
-        firstDay : 1";
+        firstDay : 1,
+        eventClick : calendar_click
+    });
+});\n";
 
 if (!empty($minical) && $minical==1) {
-    $scriptminical = 'function init_calendar_tooltip() {
-        $(".minical a.fc-event").each(function() {
-            texte = $(this).find(".fc-event-title").html();
-            $(this).tooltip({\'title\':texte, \'html\':true});
-        });
-
+    $script .= '
+    function calendar_click(event) {
+        if (event.url) {
+            var left = (screen.width/2)-(600/2);
+            var top = (screen.height/2)-(400/2);
+            window.open(event.url+\'/iframe\', \'_blank\',"toolbar=no, directories=no, resizable=no, location=no, width=600, height=400, top="+top+", left="+left+", menubar=no, status=no, scrollbars=yes");
+        }
+        return false;
     }
 
-    setTimeout(init_calendar_tooltip,1000);';
-    $this->AddJavascript($scriptminical);
-}
-else {
-    $script .= ",
-        eventClick: function(event) {
+    function init_calendar_tooltip() {
+        $(".fc-event-title").each(function() {
+            texte = $(this).html();
+            $(this).parents(\'.fc-event\').tooltip({\'title\':texte, \'html\':true});
+        });
+    }
+    setTimeout(init_calendar_tooltip,2000);';
+} else {
+    $script .= "
+    function calendar_click(event) {
             if (event.url) {
                 $('<div>').attr('id', 'dateModal' ).addClass('modal fade').appendTo($('body'));
                 var modal = $('#dateModal');
@@ -122,9 +131,7 @@ else {
             }
         }";
 }
-$script .= "
-    });
-});\n";
+
 $this->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.js');
 $this->AddJavascript($script);
 echo "<div id='calendar'></div>\n";
