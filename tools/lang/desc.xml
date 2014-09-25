@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <plugin name="wklang" version="0.1" active="1">
-  <author>David Delon </author>
+  <author>David Delon</author>
   <label>Gestion des traductions d'une page</label>
   <desc>Gestion des traductions d'une page</desc>
 </plugin>
