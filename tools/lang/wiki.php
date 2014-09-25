@@ -16,8 +16,10 @@ function Href($method = "", $tag = "", $params = "", $htmlspchars = true) {
     if ($params) {
         $href .= ($this->config["rewrite_mode"] ? "?" : ($htmlspchars ? "&amp;" : "&")).$params;
     }
-    $href .= "&lang='.$GLOBALS["prefered_language"].'";
-
+    if (isset($_GET[\'lang\']) && $_GET[\'lang\']!="") {
+    	$href .= "&lang='.$GLOBALS["prefered_language"].'";
+    }
+    
     return $href;
 }    
 
