@@ -55,7 +55,7 @@ if ($incPageName == 'PageMenuHaut' && !strstr($class, 'horizontal-dropdown-menu'
     } 
 
 	$dom = new DOMDocument();
-	$dom->loadHTML($plugin_output_new);
+	@$dom->loadHTML($plugin_output_new);
 	$xpath = new DOMXpath($dom);
 
 	$dropdowns = $xpath->query("*/div/ul/li/ul");
