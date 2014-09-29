@@ -1,23 +1,28 @@
-qsfsqdfsqdfd
-Wakka
+http://yeswiki.net
 
-A Wiki-esque website toolkit by Hendrik Mans.
+YesWiki is a software made for creating and managing your website, in a collaborative way.
 
-Not much to read here. For some quick installation instructions, please
-check out INSTALL.
+YesWiki is Free Software under the GPL licence, used for creating and managing an internet or intranet website.
+YesWiki is written in PHP language, and is designed to be light, fast and to support extensions.
 
-Most of the Wakka documentation is available online only. Please visit
-the official Wakka homepage at <http://www.wakkawiki.com>. You'll
-find everything else there.
+YesWiki grew out of a French language version of WakkaWiki, Wikini, and hence has strong French language support.
 
-- Hendrik Mans <hendrik@mans.de>, 2002-09-04
+YesWiki allows any web user, online, with any browser, to :
 
-Wikini, a fork of Wakka.
+ - create, delete, edit or comment on the pages of a site, with any number of editors or pages.
+ - manage access rights to each page (read, write, or comment) for a user or a user group.
+ - layout a page content in a very intuitive and visual way, using formatting rules which require no technical skills.
+ - publish immediately any creation or modification of a page.
+ - analyze and manage the whole site through simple functions : site map, list of users, most recently modified or commented pages, etc.
 
-The original code and derived work is under modified BSD license (see header).
-New code is either under modified BSD licence or GPL license (see header of each program).
 
-Please visit the official Wikini homepage at <http://www/wikini.net>.
+YesWiki, it's also :
 
-- Wikini Team : David Delon, Charles Nepote, Patrick Paul, Eric Feldstein,
-Jean-Christophe Andre. 2004-02-17
+ - a set of templates to suit any site need in term of presentation
+ - ability for each part of a site to act as Wiki page : title, header, menus, footer etc. can be easily edited from a browser.
+ - a light but strong anti-spam solution.
+ - the possibility to embed documents in a page : picture, mp3, video, freemind mind map etc.
+ - a plugin manager and numerous extension : user oriented database manager, tags, microblog etc.
+
+
+YesWiki can be installed in about ten minutes on a server which supports PHP5 and a MySQL database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
