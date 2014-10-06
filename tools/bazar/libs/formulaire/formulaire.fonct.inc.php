@@ -1471,9 +1471,10 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
     if ($mode == 'saisie') {
         $formtemplate->addElement('hidden', 'bf_titre', $template, array ('id' => 'bf_titre')) ;
-    } elseif ($mode == 'requete') {
+    } 
+    elseif ($mode == 'requete') {
 
-	   if ( isset($GLOBALS['_BAZAR_']['provenance'])  &&  $GLOBALS['_BAZAR_']['provenance']=='import') {
+	    if ( isset($GLOBALS['_BAZAR_']['provenance'])  &&  $GLOBALS['_BAZAR_']['provenance']=='import') {
 		        $GLOBALS['_BAZAR_']['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
 		        return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $GLOBALS['_BAZAR_']['id_fiche']);
 		}
@@ -2176,6 +2177,7 @@ function extension_autorisee($ext)
             'csv' => 'Comma Separated Values',
             'deb' => 'Debian',
             'doc' => 'Word',
+            'docx' => 'Word',
             'djvu' => 'DjVu',
             'dvi' => 'LaTeX DVI',
             'eps' => 'PostScript',
@@ -2188,6 +2190,7 @@ function extension_autorisee($ext)
             'pdf' => 'PDF',
             'pgn' => 'Portable Game Notation',
             'ppt' => 'PowerPoint',
+            'pptx' => 'PowerPoint',
             'ps' => 'PostScript',
             'psd' => 'Photoshop',
             'rpm' => 'RedHat/Mandrake/SuSE',
@@ -2207,6 +2210,7 @@ function extension_autorisee($ext)
             'xcf' => 'GIMP multi-layer',
             'xspf' => 'XSPF',
             'xls' => 'Excel',
+            'xlsx' => 'Excel',
             'xml' => 'XML',
             'zip' => 'Zip',
 

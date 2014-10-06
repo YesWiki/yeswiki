@@ -41,7 +41,7 @@
 if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
-
+//error_reporting(E_ALL);
 // recuperation des parametres
 $action = $this->GetParameter(BAZ_VARIABLE_ACTION);
 if (!empty($action)) {
@@ -162,8 +162,8 @@ if ($GLOBALS['_BAZAR_']['affiche_menu']!='0') {
 
 if (isset($_GET['message'])) {
     $output .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>';
-    if ($_GET['message']=='ajout_ok') $output.= _t('BAZ_FICHE_ENREGISTREE');
-    if ($_GET['message']=='modif_ok') $output.= _t('BAZ_FICHE_MODIFIEE');
+    if ($_GET['message']=='ajout_ok') $output.= _t('BAZ_FICHE_ENREGISTREE').'  <a href="'.$GLOBALS['wiki']->href('', $this->getPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR.'&idtypeannonce='.$GLOBALS['_BAZAR_']['id_typeannonce']).'" class="btn-sm btn btn-primary">'._t('BAZ_ADD_NEW_ENTRY').'</a>';
+    if ($_GET['message']=='modif_ok') $output.= _t('BAZ_FICHE_MODIFIEE').'  <a href="'.'#'.'" class="btn-sm btn btn-primary">'._t('BAZ_ADD_MODIFY_ENTRY_AGAIN').'</a>';
     if ($_GET['message']=='delete_ok') $output.= _t('BAZ_FICHE_SUPPRIMEE');
     $output .= '</div>'."\n";
 }
