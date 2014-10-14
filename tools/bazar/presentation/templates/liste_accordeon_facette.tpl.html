@@ -1,5 +1,5 @@
-<div class="row">
-	<div class="span3">
+<div class="row row-fluid">
+	<div class="span3 col-md-3">
 	<?php echo $open;?>
 
 	<?php if( count($checkboxes)>0 ) :?>
@@ -19,7 +19,7 @@
 	<?php endif; ?>
 	<?php echo $close;?>
 	</div> <!-- /.span3 -->
-	<div class="span9">
+	<div class="span9 col-md-9">
 		<?php echo $info_res;?>
 		<?php if (isset($fiches) && count($fiches)>0 ) : ?>
 			<?php if( isset($GLOBALS['numaccordion'])) { $GLOBALS['numaccordion']++; } else { $GLOBALS['numaccordion'] = 1; }; ?>
@@ -33,8 +33,19 @@
 				  </div> <!-- /.accordion-heading -->
 				  <div class="accordion-body collapse" id="collapse<?php echo $fiche['id_fiche']; ?>">
 				    <div class="accordion-inner">
-				      <?php echo $fiche['html'];?><br />
-				      <?php echo $GLOBALS['wiki']->Format('{{barreredaction page="'.$fiche['id_fiche'].'" template="barreredaction_buttons_ecorem.tpl.html" }}');?>
+				      	<?php echo $fiche['html'];?>
+				      	<div class="footer-buttons">
+							<a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>" class="btn btn-primary"><i class="icon-eye-open icon-white"></i>&nbsp;<?php echo _t('TEMPLATE_VIEW_PAGE');?></a>
+							<div class="pull-right">
+								<?php if ($GLOBALS['wiki']->HasAccess("write")) : ?>
+								<a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>" class="btn btn-default"><i class="icon-pencil"></i></a>
+								<?php endif; ?>
+								<?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+								<a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>" class="btn btn-danger"><i class="icon-trash icon-white"></i></a>
+								<?php endif; ?>
+							</div>
+							<div class="clearfix"></div>
+				        </div> <!-- /.footer-buttons -->
 				    </div> <!-- /.accordion-inner -->
 				  </div> <!-- /.accordion-body -->
 				</div> <!-- /.accordion-group -->
