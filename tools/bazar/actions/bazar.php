@@ -113,7 +113,7 @@ else {
             $GLOBALS['_BAZAR_']['appropriation'] = $tab_nature['bn_appropriation'];
             $GLOBALS['_BAZAR_']['class'] = $tab_nature['bn_label_class'];
             $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
-
+            $GLOBALS['_BAZAR_']['choix_categorie'] = false;
         }
         // on met sur "toutes" sinon
         else {
@@ -126,9 +126,8 @@ else {
             else {
                 $GLOBALS['_BAZAR_']['categorie_nature'] = 'toutes';
             }
-
+            $GLOBALS['_BAZAR_']['choix_categorie'] = true;
         }
-        $GLOBALS['_BAZAR_']['choix_categorie'] = true;
     } else {
         $GLOBALS['_BAZAR_']['choix_categorie'] = false;
     }
@@ -162,7 +161,7 @@ if ($GLOBALS['_BAZAR_']['affiche_menu']!='0') {
 
 if (isset($_GET['message'])) {
     $output .= '<div class="alert alert-success">'."\n".'<a data-dismiss="alert" class="close" type="button">&times;</a>';
-    if ($_GET['message']=='ajout_ok') $output.= _t('BAZ_FICHE_ENREGISTREE').'  <a href="'.$GLOBALS['wiki']->href('', $this->getPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR.'&idtypeannonce='.$GLOBALS['_BAZAR_']['id_typeannonce']).'" class="btn-sm btn btn-primary">'._t('BAZ_ADD_NEW_ENTRY').'</a>';
+    if ($_GET['message']=='ajout_ok') $output.= _t('BAZ_FICHE_ENREGISTREE').'  <a href="'.$GLOBALS['wiki']->href('', $this->getPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR.'&id_typeannonce='.$GLOBALS['_BAZAR_']['id_typeannonce']).'" class="btn-sm btn btn-primary">'._t('BAZ_ADD_NEW_ENTRY').'</a>';
     if ($_GET['message']=='modif_ok') $output.= _t('BAZ_FICHE_MODIFIEE').'  <a href="'.'#'.'" class="btn-sm btn btn-primary">'._t('BAZ_ADD_MODIFY_ENTRY_AGAIN').'</a>';
     if ($_GET['message']=='delete_ok') $output.= _t('BAZ_FICHE_SUPPRIMEE');
     $output .= '</div>'."\n";

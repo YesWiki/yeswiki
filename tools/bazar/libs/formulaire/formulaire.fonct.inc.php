@@ -509,17 +509,25 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if (isset($tableau_template[8]) && $tableau_template[8]==1) {
             $date_html .= '<span class="symbole_obligatoire">*&nbsp;</span>'."\n";
         }
-        $date_html .= $tableau_template[2].$bulledaide.' : </div>'."\n".'<div class="controls col-xs-8">'."\n".'<input type="date" name="'.$tableau_template[1].'" ';
+        $date_html .= $tableau_template[2].$bulledaide.' : </div>'."\n".'<div class="controls col-xs-8">'."\n".'<div class="input-prepend input-group">
+<span class="add-on input-group-addon"><i class="icon-calendar glyphicon glyphicon-calendar"></i></span><input type="date" name="'.$tableau_template[1].'" ';
 
-        $date_html .= ' class="bazar-date" id="'.$tableau_template[1].'"';
+        $date_html .= ' class="form-control bazar-date" id="'.$tableau_template[1].'"';
 
         if (isset($tableau_template[8]) && $tableau_template[8]==1) {
             $date_html .= ' required="required"';
         }
 
+        $hashour = false; $tabtime = array(0 => '00', 1 => '00');
         //gestion des valeurs par defaut pour modification
         if (isset($valeurs_fiche[$tableau_template[1]])) {
-            $date_html .= ' value="'.$valeurs_fiche[$tableau_template[1]].'" />';
+            $date_html .= ' value="'.date("Y-m-d", strtotime($valeurs_fiche[$tableau_template[1]])).'" />';
+            $hashour = (strlen($valeurs_fiche[$tableau_template[1]])>10);
+            if ($hashour) {
+                $tab = explode('T', $valeurs_fiche[$tableau_template[1]]);
+                $tabtime = explode(':', $tab[1]);
+
+            }
         } else {
             //gestion des valeurs par defaut (date du jour)
             if (isset($tableau_template[5]) && $tableau_template[5]!='') {
@@ -527,24 +535,88 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if ($tableau_template[5]='today') {
                     $date_html .= ' value="'.date("Y-m-d").'" />';
                 }
-                else $date_html .= ' value="'.$tableau_template[5].'" />';
+                else $date_html .= ' value="'.date("Y-m-d", strtotime($tableau_template[5])).'" />';
             } else {
                 $date_html .= ' value="" />';
             }
         }
-        $date_html .= '</div>'."\n".'</div>'."\n";
+
+        $date_html .= '<select class="form-control select-allday" name="'.$tableau_template[1].'_allday">
+        <option value="1"'.(($hashour) ? '':' selected').'>'._t('BAZ_ALL_DAY').'</option>
+        <option value="0"'.(($hashour) ? ' selected':'').'>'._t('BAZ_ENTER_HOUR').'</option>
+        </select></div> 
+        <div class="select-time'.(($hashour) ? '':' hide').' input-prepend input-group">
+        <span class="add-on input-group-addon">
+        <i class="icon-time glyphicon glyphicon-time"></i></span>
+        <select class="form-control select-hour" name="'.$tableau_template[1].'_hour">
+        <option value="00"'.(($hashour) ? '':' selected').(($tabtime[0]== '00') ? 'selected':'').'>00</option>
+        <option value="01"'.(($tabtime[0]== '01') ? 'selected':'').'>01</option>
+        <option value="02"'.(($tabtime[0]== '02') ? 'selected':'').'>02</option>
+        <option value="03"'.(($tabtime[0]== '03') ? 'selected':'').'>03</option>
+        <option value="04"'.(($tabtime[0]== '04') ? 'selected':'').'>04</option>
+        <option value="05"'.(($tabtime[0]== '05') ? 'selected':'').'>05</option>
+        <option value="06"'.(($tabtime[0]== '06') ? 'selected':'').'>06</option>
+        <option value="07"'.(($tabtime[0]== '07') ? 'selected':'').'>07</option>
+        <option value="08"'.(($tabtime[0]== '08') ? 'selected':'').'>08</option>
+        <option value="09"'.(($tabtime[0]== '09') ? 'selected':'').'>09</option>
+        <option value="10"'.(($tabtime[0]== '10') ? 'selected':'').'>10</option>
+        <option value="11"'.(($tabtime[0]== '11') ? 'selected':'').'>11</option>
+        <option value="12"'.(($tabtime[0]== '12') ? 'selected':'').'>12</option>
+        <option value="13"'.(($tabtime[0]== '13') ? 'selected':'').'>13</option>
+        <option value="14"'.(($tabtime[0]== '14') ? 'selected':'').'>14</option>
+        <option value="15"'.(($tabtime[0]== '15') ? 'selected':'').'>15</option>
+        <option value="16"'.(($tabtime[0]== '16') ? 'selected':'').'>16</option>
+        <option value="17"'.(($tabtime[0]== '17') ? 'selected':'').'>17</option>
+        <option value="18"'.(($tabtime[0]== '18') ? 'selected':'').'>18</option>
+        <option value="19"'.(($tabtime[0]== '19') ? 'selected':'').'>19</option>
+        <option value="20"'.(($tabtime[0]== '20') ? 'selected':'').'>20</option>
+        <option value="21"'.(($tabtime[0]== '21') ? 'selected':'').'>21</option>
+        <option value="22"'.(($tabtime[0]== '22') ? 'selected':'').'>22</option>
+        <option value="23"'.(($tabtime[0]== '23') ? 'selected':'').'>23</option>
+        </select>
+        <select class="form-control select-minutes" name="'.$tableau_template[1].'_minutes">
+        <option value="00"'.(($hashour) ? ' ':' selected').(($tabtime[1]== '00') ? 'selected':'').'>00</option>
+        <option value="05"'.(($tabtime[1]== '05') ? 'selected':'').'>05</option>
+        <option value="10"'.(($tabtime[1]== '10') ? 'selected':'').'>10</option>
+        <option value="15"'.(($tabtime[1]== '15') ? 'selected':'').'>15</option>
+        <option value="20"'.(($tabtime[1]== '20') ? 'selected':'').'>20</option>
+        <option value="25"'.(($tabtime[1]== '25') ? 'selected':'').'>25</option>
+        <option value="30"'.(($tabtime[1]== '30') ? 'selected':'').'>30</option>
+        <option value="35"'.(($tabtime[1]== '35') ? 'selected':'').'>35</option>
+        <option value="40"'.(($tabtime[1]== '40') ? 'selected':'').'>40</option>
+        <option value="45"'.(($tabtime[1]== '45') ? 'selected':'').'>45</option>
+        <option value="50"'.(($tabtime[1]== '50') ? 'selected':'').'>50</option>
+        <option value="55"'.(($tabtime[1]== '55') ? 'selected':'').'>55</option>
+        </select>
+        </div>
+        </div>'."\n".'</div>'."\n";
 
         $formtemplate->addElement('html', $date_html) ;
 
     } elseif ($mode == 'requete') {
-        return array($tableau_template[1] => $_POST[$tableau_template[1]]);
+        if (isset($_POST[$tableau_template[1].'_allday']) && $_POST[$tableau_template[1].'_allday'] == 0) {
+            if (isset($_POST[$tableau_template[1].'_hour']) && isset($_POST[$tableau_template[1].'_minutes'])) {
+                 return array($tableau_template[1] => date("c", strtotime($_POST[$tableau_template[1]].' '.$_POST[$tableau_template[1].'_hour'].':'.$_POST[$tableau_template[1].'_minutes'])));
+            }
+            else {
+                return array($tableau_template[1] => $_POST[$tableau_template[1]]);
+            }
+        } 
+        else {
+            return array($tableau_template[1] => $_POST[$tableau_template[1]]);
+        }
     } elseif ($mode == 'recherche') {
 
     } elseif ($mode == 'html') {
         if ($valeurs_fiche[$tableau_template[1]]!="") {
             $res = '<div class="BAZ_rubrique" data-id="'.$tableau_template[1].'">'."\n".
             '<span class="BAZ_label">'.$tableau_template[2].'&nbsp;:</span>'."\n";
-            $res .= '<span class="BAZ_texte">'.strftime('%d.%m.%Y',strtotime($valeurs_fiche[$tableau_template[1]])).'</span>'."\n".'</div> <!-- /.BAZ_rubrique -->'."\n";
+            if (strlen($valeurs_fiche[$tableau_template[1]])>10) {
+                $res .= '<span class="BAZ_texte">'.strftime('%d.%m.%Y - %H:%M',strtotime($valeurs_fiche[$tableau_template[1]])).'</span>'."\n".'</div> <!-- /.BAZ_rubrique -->'."\n";
+            }
+            else {
+                $res .= '<span class="BAZ_texte">'.strftime('%d.%m.%Y',strtotime($valeurs_fiche[$tableau_template[1]])).'</span>'."\n".'</div> <!-- /.BAZ_rubrique -->'."\n";
+            }
         }
 
         return $res;

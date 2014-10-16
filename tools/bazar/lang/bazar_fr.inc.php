@@ -215,6 +215,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_TODAY' => 'Aujourd\\\'hui',
 'BAZ_MONTH' => 'Mois',
 'BAZ_WEEK' => 'Semaine',
-'BAZ_DAY' => 'Jour'
+'BAZ_DAY' => 'Jour',
+
+'BAZ_ALL_DAY' => 'Toute la journ&eacute;e',
+'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
 
 ));

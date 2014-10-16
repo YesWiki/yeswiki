@@ -259,6 +259,9 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 	overflow: auto;
 }
 .entries-list .yeswiki-checkbox {width:100% !important;}
+
+.bazar-date, .select-allday {width: 150px !important;}
+.select-hour, .select-minutes {width: 76px !important;}
  /*
   Datepicker for Bootstrap
   Copyright 2012 Stefan Petre
