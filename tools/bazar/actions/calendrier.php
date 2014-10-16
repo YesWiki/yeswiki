@@ -96,7 +96,7 @@ $script = "$(document).ready(function() {
             day: '"._t('BAZ_DAY')."'
         },
         firstDay : 1,
-        timeFormat: 'H(:mm)',
+        timeFormat: 'HH:mm{ - HH:mm}',
         eventClick : calendar_click
     });
 });\n";
