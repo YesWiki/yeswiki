@@ -67,6 +67,16 @@ $(document).ready(function () {
 		$("div[id^='"+id+"']").hide();
 		$("div[id='"+id+'_'+$(this).val()+"']").show();
 	});
+
+	//choix de l'heure pour une date
+	$(".select-allday").change( function() {
+		if ($(this).val()==='0') {
+			$(this).parent().next('.select-time').removeClass('hide');
+		} 
+		else if ($(this).val()==='1') {
+			$(this).parent().next('.select-time').addClass('hide');
+		}
+	});
 	
 	
 	//============longueur maximale d'un champs textarea

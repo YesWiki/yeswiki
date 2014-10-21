@@ -48,7 +48,7 @@ if ($this->HasAccess("read"))
 		// javascript pour gerer les liens (ouvrir vers l'exterieur) dans les iframes
 		$scripts_iframe = '<script>
 		$(document).ready(function () {
-			$("a[href^=\'http://\']:not(a[href$=\'/slide_show\'], a[href$=\'/iframe\'], a.modalbox)").click(function() {
+			$("a[href^=\'http://\']:not(a[href$=\'/slide_show\'], a[href$=\'/iframe\'], a.modalbox, a.fc-event, a[target])").click(function() {
 				if (window.location != window.parent.location)
 				{
 					if (!($(this).hasClass("bouton_annuler")))

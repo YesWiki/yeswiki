@@ -97,6 +97,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_VEUILLEZ_CORRIGER' => 'Veuillez corriger',
 'BAZ_MODIFIER' => 'Modifier',
 'BAZ_MODIFIER_LA_FICHE' => 'Modifier la fiche',
+'BAZ_MODIFy_ENTRY_AGAIN' => 'Modifier la fiche à nouveau',
+'BAZ_ADD_NEW_ENTRY' => 'Ajouter une nouvelle fiche',
 'BAZ_SUPPRIMER' => 'Supprimer',
 'BAZ_SUPPRIMER_IMAGE' => 'Supprimer l\'image',
 'BAZ_CONFIRMATION_SUPPRESSION_IMAGE' => 'Etes vous s&ucirc;rs de vouloir supprimer cette image?',
@@ -213,6 +215,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_TODAY' => 'Aujourd\\\'hui',
 'BAZ_MONTH' => 'Mois',
 'BAZ_WEEK' => 'Semaine',
-'BAZ_DAY' => 'Jour'
+'BAZ_DAY' => 'Jour',
+
+'BAZ_ALL_DAY' => 'Toute la journ&eacute;e',
+'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
 
 ));

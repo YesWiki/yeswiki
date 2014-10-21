@@ -916,9 +916,14 @@ function baz_afficher_formulaire_export()
         $tab_champs = array();
         foreach ( $tableau as $ligne ) {
             if ( $ligne[0] != 'labelhtml' ) {
+                // listes
                 if ( $ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche' ) {
                     $tab_champs[] = $ligne[0] . '|' . $ligne[1] . '|' . $ligne[6];
                     $csv .= '"' . str_replace( '"', '""', $ligne[2] ) . ( ( isset( $ligne[9] ) && $ligne[9] == 1 ) ? ' *' : '' ) . '",';
+                }
+                // image et fichiers
+                elseif ($ligne[0] == 'image' || $ligne[0] == 'fichier') {
+                    $tab_champs[] = $ligne[0].$ligne[1];
                 }
                 // cas de la carto
                 elseif ( $ligne[0] == 'carte_google' ) {
@@ -982,6 +987,8 @@ function baz_afficher_formulaire_export()
                     $tabhtml             = explode( '</span>', $html );
                     $tab_valeurs[$index] = html_entity_decode( trim( strip_tags( $tabhtml[1] ) ) );
                 }
+
+                // si la valeur existe, on l'affiche
                 if ( isset( $tab_valeurs[$index] ) ) {
                     if ( $index == "mot_de_passe_wikini" ) {
                         $tab_valeurs[$index] = md5( $tab_valeurs[$index] );
@@ -1321,6 +1328,12 @@ function baz_requete_bazar_fiche( $valeur )
     unset( $valeur["valider"] );
     unset( $valeur["MAX_FILE_SIZE"] );
     unset( $valeur["antispam"] );
+    
+    // test pour les titres formatés à partir d'autres champs
+    preg_match_all  ('#{{(.*)}}#U'  , $valeur['bf_titre']  , $matches);
+    if (count($matches[0])>0) {
+        $valeur = array_merge($valeur, titre($formtemplate, array('titre',$valeur['bf_titre']), 'requete', $valeur ));
+    }
     
     // si l'on a pas la valeur de l'identifiant de la fiche, on la genere
     if ( !isset( $valeur['id_fiche'] ) ) {
@@ -2635,7 +2648,8 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
     //preparation de la requete pour trouver les mots cles
     if ( isset( $searchstring ) && $searchstring != '' && $searchstring != _t( 'BAZ_MOT_CLE' ) ) {
 
-        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $searchstring = utf8_encode( $searchstring );
+        $searchstring = _convert($searchstring , TEMPLATES_DEFAULT_CHARSET, true);
+        
         //decoupage des mots cles
         //:      mysql_query('SET NAMES utf8');
         $recherche = explode( ' ', $searchstring );
@@ -2699,7 +2713,7 @@ function baz_requete_recherche_fiches( $tableau_criteres = '', $tri = '', $id_ty
                 if ( strcmp( substr( $nom, 0, 5 ), "liste" ) == 0 )
                     $requeteSQL .= ' AND (body REGEXP \'"' . $nom . '":"' . $val . '"\')';
                 else
-                    $requeteSQL .= ' AND (body REGEXP \'"' . $nom . '":"[^"]*' . $val . '[^"]*"\')';
+                    $requeteSQL .= ' AND (body REGEXP \'"' . $nom . '":("' . $val . '"|"[^"]*,' . $val . '"|"' . $val . ',[^"]*"|"[^"]*,' . $val . ',[^"]*")\')';
             }
         }
     }

@@ -57,9 +57,12 @@ foreach ($tableau_resultat as $fiche) {
     if (isset($valeurs_fiche['bf_date_debut_evenement']) && isset($valeurs_fiche['bf_date_fin_evenement'])) {
         $js .= '        {
                     title: "'.addslashes($valeurs_fiche['bf_titre']).'",
-                    start: new Date('.date('Y', strtotime($valeurs_fiche['bf_date_debut_evenement'])).','.(date('n', strtotime($valeurs_fiche['bf_date_debut_evenement']))-1).','.date('d', strtotime($valeurs_fiche['bf_date_debut_evenement'])).'),
-                    end: new Date('.date('Y', strtotime($valeurs_fiche['bf_date_fin_evenement'])).','.(date('n', strtotime($valeurs_fiche['bf_date_fin_evenement']))-1).','.date('d', strtotime($valeurs_fiche['bf_date_fin_evenement'])).'),
-                    url:"'.$GLOBALS['wiki']->config['base_url'].$valeurs_fiche['id_fiche'].'"
+                    /*start: new Date('.date('Y', strtotime($valeurs_fiche['bf_date_debut_evenement'])).','.(date('n', strtotime($valeurs_fiche['bf_date_debut_evenement']))-1).','.date('d', strtotime($valeurs_fiche['bf_date_debut_evenement'])).'),
+                    end: new Date('.date('Y', strtotime($valeurs_fiche['bf_date_fin_evenement'])).','.(date('n', strtotime($valeurs_fiche['bf_date_fin_evenement']))-1).','.date('d', strtotime($valeurs_fiche['bf_date_fin_evenement'])).'),*/
+                    start:"'.$valeurs_fiche['bf_date_debut_evenement'].'",
+                    end:"'.$valeurs_fiche['bf_date_fin_evenement'].'",
+                    url:"'.$GLOBALS['wiki']->config['base_url'].$valeurs_fiche['id_fiche'].'",
+                    allDay: '.((strlen($valeurs_fiche['bf_date_debut_evenement'])>10) ? 'false':'true').'
         },';
     }
 }
@@ -93,6 +96,7 @@ $script = "$(document).ready(function() {
             day: '"._t('BAZ_DAY')."'
         },
         firstDay : 1,
+        timeFormat: 'HH:mm{ - HH:mm}',
         eventClick : calendar_click
     });
 });\n";
