@@ -79,6 +79,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TEMPLATE_SEARCH_INPUT_TITLE' => 'Rechercher dans YesWiki [alt-shift-C]',
 'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Rechercher les pages comportant ce texte.',
 'TEMPLATE_SEARCH_PLACEHOLDER' => 'Rechercher...',
+'TEMPLATE_SEARCH' => 'Rechercher',
 
 // handler widget
 'TEMPLATE_WIDGET_TITLE' => 'Widget : int&eacute;grer le contenu de cette page ailleurs',
