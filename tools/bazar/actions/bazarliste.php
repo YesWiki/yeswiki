@@ -53,6 +53,9 @@ $nb = $this->GetParameter("nb");
 if (empty($nb)) {
     $nb = '';
 }
+// le parametre correspondance transfere les valeurs d'un champs vers un autre, afin d'être affiché dans un template par exemple
+$correspondance = $this->GetParameter("correspondance");  
+
 //on recupere les parameres pour une requete specifique
 if (isset($_GET['query'])) {
     $query = $this->GetParameter("query");
@@ -109,6 +112,22 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche['body'], true);  //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
     if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);  //permet de voir la fiche
+
+    if ( !empty($correspondance) ) {
+        $tabcorrespondance = explode("=", trim($correspondance));
+        if (isset($tabcorrespondance[0])) {
+            if (isset($tabcorrespondance[1]) && isset($valeurs_fiche[$tabcorrespondance[1]]) ) {
+                $valeurs_fiche[$tabcorrespondance[0]] = $valeurs_fiche[$tabcorrespondance[1]];
+            }
+            else {
+                $valeurs_fiche[$tabcorrespondance[0]] = '';
+            }
+        }
+        else {
+            exit('action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2"');
+        }
+    }
+
     if (baz_a_le_droit('supp_fiche', $valeurs_fiche['createur'])) {  //lien de suppression visible pour le super admin
         $valeurs_fiche['lien_suppression'] = '<a class="BAZ_lien_supprimer" href="'.$this->href('deletepage', $valeurs_fiche['id_fiche']).'"></a>'."\n";
     }
