@@ -155,10 +155,10 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 	    // Horizontal line and links
     	toolbar.append(	'<div class="btn-group">' +
 							'<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="<?php echo _t('ACEDITOR_LINE'); ?>">' +
-								'<i class="icon-minus"></i>' +
+								'<i class="glyphicon glyphicon-minus icon-minus"></i>' +
 							'</a>' +
 							'<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="<?php echo addslashes(_t('ACEDITOR_LINK_PROMPT')); ?>" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="<?php echo _t('ACEDITOR_LINK_TITLE'); ?>" class="btn">' +
-								'<i class="icon-share-alt"></i>&nbsp;<?php echo _t('ACEDITOR_LINK'); ?></a>' +
+								'<i class="glyphicon glyphicon-share-alt icon-share-alt"></i>&nbsp;<?php echo _t('ACEDITOR_LINK'); ?></a>' +
 						'</div>');
 
     	var lastFocus;
@@ -186,6 +186,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 				//if (lastFocus) {
 			    //    setTimeout(function() {lastFocus.focus()}, 10);
 			    //}
+			    $(this).parents('.btn-group').removeClass('open');
 			    return false;
     		})
     	});
