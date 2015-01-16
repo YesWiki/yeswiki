@@ -691,8 +691,8 @@ class attach {
 
     	$method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
     	$output = '<ul id="fmtab'.$this->wiki->tag.'" class="nav nav-tabs">
-				<li'.(($trash) ? '' : ' class="active"').'><a href="'.$this->wiki->href($method, $this->wiki->tag.'#fmtab'.$this->wiki->tag).'" title="Gestion des fichiers"><i class="icon-file"></i>&nbsp;Gestion des fichiers</a></li>
-				<li'.(($trash) ? ' class="active"' : '').'><a href="'.$this->wiki->href($method, $this->wiki->GetPageTag(),'do=trash').'" title="Corbeille"><i class="icon-trash"></i>&nbsp;Corbeille</a></li>
+				<li'.(($trash) ? '' : ' class="active"').'><a href="'.$this->wiki->href($method, $this->wiki->tag.'#fmtab'.$this->wiki->tag).'" title="Gestion des fichiers"><i class="glyphicon glyphicon-file icon-file"></i>&nbsp;Gestion des fichiers</a></li>
+				<li'.(($trash) ? ' class="active"' : '').'><a href="'.$this->wiki->href($method, $this->wiki->GetPageTag(),'do=trash').'" title="Corbeille"><i class="glyphicon glyphicon-trash icon-trash"></i>&nbsp;Corbeille</a></li>
             </ul>';
 
         $files = $this->fmGetFiles($trash);
@@ -720,17 +720,17 @@ class attach {
 	            //lien de suppression
 	            if ($trash){
 	                $url = $this->wiki->href('',$this->wiki->GetPageTag(),'do=erase&file='.$file['realname']);
-	                $icon = 'icon-remove';
+	                $icon = 'glyphicon glyphicon-remove icon-remove';
 	            }else{
 	                $url = $this->wiki->href('',$this->wiki->GetPageTag(),'do=del&file='.$file['realname']);
-	                $icon = 'icon-trash';
+	                $icon = 'glyphicon glyphicon-trash icon-trash';
 	            }
 	            $dellink = '<a class="btn btn-mini btn-danger" href="'.$url.'" title="Supprimer"><i class="'.$icon.' icon-white"></i></a>';
 	            //lien de restauration
 	            $restlink = '';
 	            if ($trash){
 	                $url = $this->wiki->href('',$this->wiki->GetPageTag(),'do=restore&file='.$file['realname']);
-	                $restlink = '<a class="btn btn-mini btn-success" href="'.$url.'" title="Restaurer"><i class="icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
+	                $restlink = '<a class="btn btn-mini btn-success" href="'.$url.'" title="Restaurer"><i class="glyphicon glyphicon-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
 	            }
 
 	            //lien pour downloader le fichier
@@ -754,7 +754,7 @@ class attach {
 	        $output .= '<table class="fmtable table table-condensed table-hover table-striped">'."\n".$fmHeadTable.$fmBodyTable.'</table>'."\n";
 	        if($trash){
 	            //Avertissement
-	           	$output .= '<div class="alert alert-danger"><a href="'.$this->wiki->href($method, $this->wiki->tag,'do=emptytrash').'" class="btn btn-danger pull-right"><i class="icon-remove icon-white"></i>&nbsp;Vider la corbeille</a><strong>Attention :</strong> les fichiers effac&eacute;s &agrave; partir de la corbeille le seront d&eacute;finitivement.<div class="clearfix"></div></div>';
+	           	$output .= '<div class="alert alert-danger"><a href="'.$this->wiki->href($method, $this->wiki->tag,'do=emptytrash').'" class="btn btn-danger pull-right"><i class="glyphicon glyphicon-remove icon-remove icon-white"></i>&nbsp;Vider la corbeille</a><strong>Attention :</strong> les fichiers effac&eacute;s &agrave; partir de la corbeille le seront d&eacute;finitivement.<div class="clearfix"></div></div>';
 	        }
         }
         echo $output;
@@ -939,7 +939,9 @@ class attach {
 
 
     function redimensionner_image($image_src, $image_dest, $largeur, $hauteur) {
-        require_once 'tools/attach/libs/class.imagetransform.php';
+    	if (!class_exists('imageTransform')) {
+    		require_once 'tools/attach/libs/class.imagetransform.php';
+    	}
         $imgTrans = new imageTransform();
         $imgTrans->sourceFile = $image_src;
         $imgTrans->targetFile = $image_dest;

@@ -205,9 +205,15 @@ box-shadow: 2px 2px 15px 0px #444;
 /*background image */
 .background-image {
   -webkit-background-size:cover;-moz-background-size:cover;-o-background-size:cover;background-size:cover;
-      /*background-attachment:fixed;*/
-      background-clip:border-box;
-      background-origin:padding-box;
-      background-position:center center;
+  background-clip:border-box;
+  background-origin:padding-box;
+  background-position:0 0;
+  background-repeat: no-repeat;
+}
+.background-image-fixed {
+  background-attachment:fixed;
+}
+.background-image-center {
+  background-position:center center;
 }
 .headerpage .background-image { margin:-20px; padding:20px;}

@@ -38,6 +38,9 @@ if (!in_array($ext, $supported_image_extensions)) {
 	return;
 }
 
+// container class
+$class = $this->GetParameter('class'); 
+
 // image size
 $height = $this->GetParameter('height');
 $width = $this->GetParameter('width');
@@ -60,6 +63,6 @@ if((!file_exists($fullFilename))||($fullFilename=='')){
     //return;
 }
 
-echo '<div class="background-image" style="'.(!empty($height) ? 'height:'.$height.'px; ' : '').'background-image:url('.$fullFilename.');">'."\n";
+echo '<div class="background-image'.(!empty($class) ? ' '.$class : '').'" style="'.(!empty($height) ? 'height:'.$height.'px; ' : '').'background-image:url('.$fullFilename.');">'."\n";
 $nocontainer = $this->GetParameter('nocontainer');
 if (empty($nocontainer)) echo '<div class="container">'."\n"; else echo '<div>';

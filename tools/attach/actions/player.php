@@ -96,9 +96,9 @@ if (!empty($url)) {
 				<div id="jquery_jplayer_'.$GLOBALS['jplayer'].'" class="jp-jplayer"></div>
 				<div id="jp_container_'.$GLOBALS['jplayer'].'" class="jp-audio">
 					<div class="btn-group btn-group-sm no-dblclick">
-						<a href="#" class="jp-play btn btn-default btn-primary btn-small"><i class="icon-play icon-white"></i></a>
-						<a href="#" class="jp-pause btn btn-default btn-primary btn-small" style="display:none"><i class="icon-pause icon-white"></i></a>
-						<a href="#" class="jp-stop btn btn-default btn-small"><i class="icon-stop"></i></a>
+						<a href="#" class="jp-play btn btn-default btn-primary btn-small"><i class="glyphicon glyphicon-play icon-play icon-white"></i></a>
+						<a href="#" class="jp-pause btn btn-default btn-primary btn-small" style="display:none"><i class="glyphicon glyphicon-pause icon-pause icon-white"></i></a>
+						<a href="#" class="jp-stop btn btn-default btn-small"><i class="glyphicon glyphicon-stop icon-stop"></i></a>
 						<span class="btn btn-default btn-small" style="width:140px; position:relative;">
 							<span style="width:100%; text-align:center; z-index:2; position:absolute; left:0;">
 								<span class="jp-current-time">00:00</span> / <span class="jp-duration">00:00</span>
@@ -107,9 +107,9 @@ if (!empty($url)) {
 						    	<div class="bar extra-play-info" style="width: 0%;"></div>
 						    </div>
 					    </span>
-					    <a href="#" class="jp-mute btn btn-default btn-small"><i class="icon-volume-off"></i></a>
-						<a href="#" class="jp-unmute btn btn-default btn-small" style="display: none;"><i class="icon-volume-up"></i></a>
-						<a href="'.$url.'" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="icon-download-alt"></i></a>
+					    <a href="#" class="jp-mute btn btn-default btn-small"><i class="glyphicon glyphicon-volume-off icon-volume-off"></i></a>
+						<a href="#" class="jp-unmute btn btn-default btn-small" style="display: none;"><i class="glyphicon glyphicon-volume-up icon-volume-up"></i></a>
+						<a href="'.$url.'" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="glyphicon glyphicon-download-alt icon-download-alt"></i></a>
 					</div>
 				</div>';
 			echo $output;

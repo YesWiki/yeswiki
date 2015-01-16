@@ -6,7 +6,7 @@ $(document).ready(function () {
 
 	$pointimagecontainers.each(function( index ) {
 		if ($(this).data('readonly') === false) {
-			$(this).find('.pointimage-image').append('<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="icon-plus"></i> '+labeladdpoint+'</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="'+$(this).data('pagetag')+'/edit"><i class="icon-edit"></i></a>');
+			$(this).find('.pointimage-image').append('<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="glyphicon glyphicon-plus icon-plus"></i> '+labeladdpoint+'</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="'+$(this).data('pagetag')+'/edit"><i class="glyphicon glyphicon-edit icon-edit"></i></a>');
 		}
 	});
 
@@ -31,7 +31,7 @@ $(document).ready(function () {
 		return false;
 	})
 	.on( "click", ".btn-cancel", function() {
-		$(this).removeClass('btn-cancel').removeClass('btn-danger').addClass('btn-add-point').addClass('btn-primary').html('<i class="icon-plus"></i> '+labeladdpoint+'</a>');
+		$(this).removeClass('btn-cancel').removeClass('btn-danger').addClass('btn-add-point').addClass('btn-primary').html('<i class="glyphicon glyphicon-plus icon-plus"></i> '+labeladdpoint+'</a>');
 		$(this).parents('.pointimage-container').find("img").css('cursor', 'default');
 		return false;
 	})
@@ -49,7 +49,7 @@ $(document).ready(function () {
 			});
 			$formpointimage.find('input[type=radio][name=color]:first').attr('checked',true);
 			$formpointimage.append('<input type="hidden" name="image_x" value="'+relX+'" /><input type="hidden" name="image_y" value="'+relY+'" /><input type="hidden" name="pagetag" value="'+data.pagetag+'" />');
-			$this.find('.btn-cancel').removeClass('btn-cancel').removeClass('btn-danger').addClass('btn-add-point').addClass('btn-primary').html('<i class="icon-plus"></i> '+labeladdpoint+'</a>');
+			$this.find('.btn-cancel').removeClass('btn-cancel').removeClass('btn-danger').addClass('btn-add-point').addClass('btn-primary').html('<i class="glyphicon glyphicon-plus icon-plus"></i> '+labeladdpoint+'</a>');
 			$this.css('cursor', 'default');
 			$('.modal-pointimage').modal('show');
 			return false;
