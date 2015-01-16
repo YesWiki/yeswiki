@@ -49,7 +49,7 @@ if ($GLOBALS["open_comments"][$tag]) {
 
 		// display comments!
 		include_once('tools/tags/libs/tags.functions.php');
-		$gestioncommentaire = '<div id="yeswiki-comments-'.$tag.'" class="yeswiki-page-comments accordion">
+		$gestioncommentaire = '<div id="yeswiki-comments-'.$tag.'" class="yeswiki-page-comments accordion hide">
 	<div class="accordion-group">
 		<div class="accordion-heading">';
 		if (($this->UserIsOwner()) || ($this->UserIsAdmin())) {
@@ -72,7 +72,7 @@ else //commentaire pas ouverts
 	if (($this->UserIsOwner()) || ($this->UserIsAdmin()))
 	{
 		//TODO: le rajouter aux droits acls wiki plutot que les afficher ici
-		$output .= '<div class="well well-small"><i class="icon-comment"></i>&nbsp;'._t('TAGS_COMMENTS_DESACTIVATED').' '."\n".'<a class="btn btn-success pull-right" href="'.$this->href('opencomments').'" title="'._t('TAGS_ACTIVATE_COMMENTS_ON_THIS_PAGE').'">'._t('TAGS_ACTIVATE_COMMENTS').'</a><div class="clearfix"></div></div>'."\n";
+		$output .= '<div class="well well-small hide"><i class="icon-comment"></i>&nbsp;'._t('TAGS_COMMENTS_DESACTIVATED').' '."\n".'<a class="btn btn-success pull-right" href="'.$this->href('opencomments').'" title="'._t('TAGS_ACTIVATE_COMMENTS_ON_THIS_PAGE').'">'._t('TAGS_ACTIVATE_COMMENTS').'</a><div class="clearfix"></div></div>'."\n";
 	}
 }
 
