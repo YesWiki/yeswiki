@@ -26,7 +26,7 @@ if (!isset($GLOBALS['check_'.$pagetag]['col'])) {
 	$GLOBALS['check_'.$pagetag ]['col'] = check_graphical_elements('col', $pagetag, $this->page['body']);
 }
 if ($GLOBALS['check_'.$pagetag]['col']) {
-	echo '<div class="span'.$size.' col-lg-'.$size.(isset($class) ? ' '.$class : '').'"> <!-- start of col -->'."\n";
+	echo '<div class="span'.$size.' col-md-'.$size.(isset($class) ? ' '.$class : '').'"> <!-- start of col -->'."\n";
 } else {
 	echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_COL').'</strong> : '._t('TEMPLATE_ELEM_COL_NOT_CLOSED').'.</div>'."\n";
 	return;
