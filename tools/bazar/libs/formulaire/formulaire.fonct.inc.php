@@ -107,7 +107,9 @@ function afficher_image($nom_image, $label, $class, $largeur_vignette, $hauteur_
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur)
 {
     if (file_exists($image_dest)) unlink($image_dest);
-    require_once 'tools'.DIRECTORY_SEPARATOR.'bazar'.DIRECTORY_SEPARATOR.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'class.imagetransform.php';
+    if (!class_exists('imageTransform')) {
+        require_once 'tools'.DIRECTORY_SEPARATOR.'bazar'.DIRECTORY_SEPARATOR.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'class.imagetransform.php';
+    }    
     $imgTrans = new imageTransform();
     $imgTrans->sourceFile = $image_src;
     $imgTrans->targetFile = $image_dest;
@@ -318,6 +320,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $select= new HTML_QuickForm_select($tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2], $select, $option);
             if ($tableau_template[4] != '') $select->setSize($tableau_template[4]);
             $select->setMultiple(0);
+            echo 'request '.$_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]].'<br>';
             $nb = (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]])? $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] : 0);
             $select->setValue($nb);
             $formtemplate->addElement($select) ;
@@ -1427,7 +1430,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $html_image = afficher_image($valeurs_fiche[$type.$identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
                 $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="'.str_replace('&', '&amp;', $lien_supprimer).'" onclick="javascript:return confirm(\''.
-                    _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE').'\');" ><i class="icon-trash icon-white"></i>&nbsp;'._t('BAZ_SUPPRIMER_IMAGE').'</a>'."\n";
+                    _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE').'\');" ><i class="glyphicon glyphicon-trash icon-trash icon-white"></i>&nbsp;'._t('BAZ_SUPPRIMER_IMAGE').'</a>'."\n";
                 if ($html_image!='') $formtemplate->addElement('html', $html_image) ;
                 //gestion du champs obligatoire
                 $option = '';
@@ -2108,10 +2111,16 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if (!isset($tableau_template[1])) {
         return $GLOBALS['wiki']->Format('//Erreur sur listefiches : pas d\'identifiant de type de fiche passé...//');
     }
+    if (isset($tableau_template[6]) && $tableau_template[6] == 'checkbox') {
+        $typefiche = 'checkboxfiche';
+    }
+    else {
+        $typefiche = 'listefiche';
+    }
     if (isset($tableau_template[2]) && $tableau_template[2] != '' ) {
-        $query = $tableau_template[2].'|listefiche'.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];
+        $query = $tableau_template[2].'|'.$typefiche.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];
     } elseif (isset($valeurs_fiche) && $valeurs_fiche != '') {
-        $query = 'listefiche'.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];
+        $query = $typefiche.$valeurs_fiche['id_typeannonce'].'='.$valeurs_fiche['id_fiche'];
     }
     if (isset($tableau_template[3])) {
         $ordre = $tableau_template[3];
@@ -2172,7 +2181,7 @@ function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'html') {
         if ($GLOBALS['wiki']->GetMethod()=='iframe') {
-            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
+            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="glyphicon glyphicon-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
         }
     } elseif ($mode == 'saisie') {
         if ($GLOBALS['wiki']->GetMethod()!='iframe') {

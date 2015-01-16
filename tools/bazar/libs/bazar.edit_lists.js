@@ -44,10 +44,10 @@ $(document).ready(function () {
 	$('.ajout_label_liste').on('click', function() {	
 		var nb = $("#bazar_form_lists .list-sortables input[name^='label']").length + 1;	
 		$("#bazar_form_lists .list-sortables").append('<li id="row'+nb+'" class="liste_ligne input-prepend input-append">'+
-			'<a title="D&eacute;placer l\'&eacute;l&eacute;ment" class="handle-listitems add-on"><i class="icon-move"></i></a>'+
+			'<a title="D&eacute;placer l\'&eacute;l&eacute;ment" class="handle-listitems add-on"><i class="glyphicon glyphicon-move icon-move"></i></a>'+
 			'<input required type="text" placeholder="Cl&eacute;" name="id['+nb+']" class="input-mini" />' +
 			'<input required type="text" placeholder="Texte" name="label['+nb+']" />' +
-			'<a class="add-on suppression_label_liste"><i class="icon-trash"></i></a>'+
+			'<a class="add-on suppression_label_liste"><i class="glyphicon glyphicon-trash icon-trash"></i></a>'+
 			'</li>');
 		$("#bazar_form_lists input[name='id["+nb+"]']").focus();	
 		return false;

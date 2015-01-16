@@ -252,9 +252,9 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 .yeswiki-checkbox {
 	display: inline-block;
 	vertical-align: top;
-    width: 240px;
+    width: 235px;
 }
-.entries-list {
+.entries-list, .list-bazar-entries {
 	height:200px;
 	overflow: auto;
 }

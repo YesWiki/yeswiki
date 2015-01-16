@@ -383,7 +383,7 @@ function baz_afficher_liste_fiches_utilisateur()
     }
     $GLOBALS['_BAZAR_']['url']->removeQueryString( BAZ_VARIABLE_ACTION );
     $GLOBALS['_BAZAR_']['url']->addQueryString( BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR );
-    $res .= '<a class="btn btn-primary" href="' . str_replace( '&', '&amp;', $GLOBALS['_BAZAR_']['url']->getURL() ) . '" title="' . _t( 'BAZ_SAISIR_UNE_NOUVELLE_FICHE' ) . '"><i class="icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_SAISIR_UNE_NOUVELLE_FICHE' ) . '</a></li></ul>';
+    $res .= '<a class="btn btn-primary" href="' . str_replace( '&', '&amp;', $GLOBALS['_BAZAR_']['url']->getURL() ) . '" title="' . _t( 'BAZ_SAISIR_UNE_NOUVELLE_FICHE' ) . '"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_SAISIR_UNE_NOUVELLE_FICHE' ) . '</a></li></ul>';
     $GLOBALS['_BAZAR_']['url']->removeQueryString( BAZ_VARIABLE_ACTION );
     $GLOBALS['_BAZAR_']['url']->removeQueryString( BAZ_VARIABLE_VOIR );
     
@@ -1731,13 +1731,13 @@ function baz_formulaire_des_listes( $mode, $valeursliste = '' )
         $i                             = 0;
         foreach ( $elements as $id => $label ) {
             $i++;
-            $html_valeurs_listes .= '<li class="liste_ligne input-prepend input-append" id="row' . $i . '">' . '<a title="' . _t( 'BAZ_DEPLACER_L_ELEMENT' ) . '" class="handle-listitems add-on"><i class="icon-move"></i></a>' . '<input required type="text" placeholder="' . _t( 'BAZ_KEY' ) . '" name="id[' . $i . ']" value="' . htmlspecialchars( $id ) . '" class="input-mini" />' . '<input required type="text" placeholder="' . _t( 'BAZ_TEXT' ) . '" name="label[' . $i . ']" value="' . htmlspecialchars( $label ) . '" />' . '<input type="hidden" name="ancienid[' . $i . ']" value="' . htmlspecialchars( $id ) . '" />' . '<input type="hidden" name="ancienlabel[' . $i . ']" value="' . htmlspecialchars( $label ) . '" />' . '<a class="add-on suppression_label_liste"><i class="icon-trash"></i></a>' . '</li>' . "\n";
+            $html_valeurs_listes .= '<li class="liste_ligne input-prepend input-append" id="row' . $i . '">' . '<a title="' . _t( 'BAZ_DEPLACER_L_ELEMENT' ) . '" class="handle-listitems add-on"><i class="glyphicon glyphicon-move icon-move"></i></a>' . '<input required type="text" placeholder="' . _t( 'BAZ_KEY' ) . '" name="id[' . $i . ']" value="' . htmlspecialchars( $id ) . '" class="input-mini" />' . '<input required type="text" placeholder="' . _t( 'BAZ_TEXT' ) . '" name="label[' . $i . ']" value="' . htmlspecialchars( $label ) . '" />' . '<input type="hidden" name="ancienid[' . $i . ']" value="' . htmlspecialchars( $id ) . '" />' . '<input type="hidden" name="ancienlabel[' . $i . ']" value="' . htmlspecialchars( $label ) . '" />' . '<a class="add-on suppression_label_liste"><i class="glyphicon glyphicon-trash icon-trash"></i></a>' . '</li>' . "\n";
         }
     } else {
-        $html_valeurs_listes .= '<li class="liste_ligne input-prepend input-append" id="row1">' . '<a title="' . _t( 'BAZ_DEPLACER_L_ELEMENT' ) . '" class="handle-listitems add-on"><i class="icon-move"></i></a>' . '<input required type="text" placeholder="' . _t( 'BAZ_KEY' ) . '" name="id[1]" class="input-mini" />' . '<input required type="text" placeholder="' . _t( 'BAZ_TEXT' ) . '" name="label[1]" />' . '<a class="add-on suppression_label_liste"><i class="icon-trash"></i></a>' . '</li>' . "\n";
+        $html_valeurs_listes .= '<li class="liste_ligne input-prepend input-append" id="row1">' . '<a title="' . _t( 'BAZ_DEPLACER_L_ELEMENT' ) . '" class="handle-listitems add-on"><i class="glyphicon glyphicon-move icon-move"></i></a>' . '<input required type="text" placeholder="' . _t( 'BAZ_KEY' ) . '" name="id[1]" class="input-mini" />' . '<input required type="text" placeholder="' . _t( 'BAZ_TEXT' ) . '" name="label[1]" />' . '<a class="add-on suppression_label_liste"><i class="glyphicon glyphicon-trash icon-trash"></i></a>' . '</li>' . "\n";
     }
     
-    $html_valeurs_listes .= '</ul>' . "\n" . '<a class="controls col-xs-8 btn btn-primary ajout_label_liste" title="' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '"><i class="icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '</a>' . "\n" . '</div>' . "\n";
+    $html_valeurs_listes .= '</ul>' . "\n" . '<a class="controls col-xs-8 btn btn-primary ajout_label_liste" title="' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_AJOUTER_LABEL_LISTE' ) . '</a>' . "\n" . '</div>' . "\n";
     
     //on rajoute une variable globale pour mettre le javascript en plus a la fin
     $GLOBALS['js']                    = ( ( isset( $GLOBALS['js'] ) ) ? $GLOBALS['js'] : '' ) . '<script src="tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js"></script>
@@ -1828,14 +1828,14 @@ function baz_gestion_formulaire()
                     $lien_formulaire->addQueryString( 'idformulaire', $ligne['bn_id_nature'] );
                     $lien_formulaire->addQueryString( 'action_formulaire', 'modif' );
                     if ( baz_a_le_droit( 'saisie_formulaire' ) ) {
-                        $liste .= '<a class="btn btn-default" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="icon-pencil"></i> ' . $ligne['bn_label_nature'] . '</a>' . "\n";
+                        $liste .= '<a class="btn btn-default" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="glyphicon glyphicon-pencil icon-pencil"></i> ' . $ligne['bn_label_nature'] . '</a>' . "\n";
                     } else {
                         $liste .= $ligne['bn_label_nature'] . "\n";
                     }
                     $lien_formulaire->removeQueryString( 'action_formulaire' );
                     $lien_formulaire->addQueryString( 'action_formulaire', 'delete' );
                     if ( baz_a_le_droit( 'saisie_formulaire' ) ) {
-                        $liste .= '<a class="btn btn-danger btn-mini btn-xs" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"  onclick="javascript:return confirm(\'' . _t( 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' ) . ' ?\');"><i class="icon-trash icon-white"></i></a>' . "\n";
+                        $liste .= '<a class="btn btn-danger btn-mini btn-xs" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"  onclick="javascript:return confirm(\'' . _t( 'BAZ_CONFIRM_SUPPRIMER_FORMULAIRE' ) . ' ?\');"><i class="glyphicon glyphicon-trash icon-trash icon-white"></i></a>' . "\n";
                     }
                     $lien_formulaire->removeQueryString( 'action_formulaire' );
                     $lien_formulaire->removeQueryString( 'idformulaire' );
@@ -1849,7 +1849,7 @@ function baz_gestion_formulaire()
             // ajout du lien pour creer un nouveau formulaire
             $lien_formulaire = clone ( $GLOBALS['_BAZAR_']['url'] );
             $lien_formulaire->addQueryString( 'action_formulaire', 'new' );
-            $res .= '<a class="btn btn-primary" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="icon-plus icon-white"></i> ' . _t( 'BAZ_NOUVEAU_FORMULAIRE' ) . '</a>' . "\n";
+            $res .= '<a class="btn btn-primary" href="' . str_replace( '&', '&amp;', $lien_formulaire->getURL() ) . '"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> ' . _t( 'BAZ_NOUVEAU_FORMULAIRE' ) . '</a>' . "\n";
         }
     }
     else {
@@ -1884,7 +1884,7 @@ function baz_gestion_listes()
             
             
             if ( $GLOBALS['wiki']->HasAccess( 'write', $ligne['resource'] ) ) {
-                $liste[$valeursliste['titre_liste']] .= '<a class="btn btn-default" href="' . $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES . '&amp;' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste=' . $ligne['resource'] ) . '"><i class="icon-pencil"></i> ' . $valeursliste['titre_liste'] . '</a>' . "\n";
+                $liste[$valeursliste['titre_liste']] .= '<a class="btn btn-default" href="' . $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES . '&amp;' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste=' . $ligne['resource'] ) . '"><i class="glyphicon glyphicon-pencil icon-pencil"></i> ' . $valeursliste['titre_liste'] . '</a>' . "\n";
             } else {
                 $liste[$valeursliste['titre_liste']] .= $valeursliste['titre_liste'] . "\n";
             }
@@ -1898,7 +1898,7 @@ function baz_gestion_listes()
             }
             
             if ( $GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner( $ligne['resource'] ) ) {
-                $liste[$valeursliste['titre_liste']] .= '<a class="btn btn-danger btn-mini btn-xs" href="' . $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES . '&amp;' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste=' . $ligne['resource'] ) . '"  onclick="javascript:return confirm(\'' . _t( 'BAZ_CONFIRM_SUPPRIMER_LISTE' ) . ' ?\');"><i class="icon-trash icon-white"></i></a>' . "\n";
+                $liste[$valeursliste['titre_liste']] .= '<a class="btn btn-danger btn-mini btn-xs" href="' . $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES . '&amp;' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste=' . $ligne['resource'] ) . '"  onclick="javascript:return confirm(\'' . _t( 'BAZ_CONFIRM_SUPPRIMER_LISTE' ) . ' ?\');"><i class="glyphicon glyphicon-trash icon-trash icon-white"></i></a>' . "\n";
             }
             
             $liste[$valeursliste['titre_liste']] .= '</li>' . "\n";
@@ -1917,7 +1917,7 @@ function baz_gestion_listes()
         
         //ajout du lien pour creer une nouvelle liste
         $lien_formulaire = $GLOBALS['wiki']->href( '', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_LISTES . '&amp;' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_NOUVELLE_LISTE );
-        $res .= '<a href="' . $lien_formulaire . '" class="btn btn-primary"><i class="icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_NOUVELLE_LISTE' ) . '</a>' . "\n";
+        $res .= '<a href="' . $lien_formulaire . '" class="btn btn-primary"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i>&nbsp;' . _t( 'BAZ_NOUVELLE_LISTE' ) . '</a>' . "\n";
     }    
     // il y a une liste a modifier
     elseif ( $_GET['action'] == BAZ_ACTION_MODIFIER_LISTE ) {
@@ -2500,7 +2500,7 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     $formtemplate    = new HTML_QuickForm( 'formulaire', 'post', $lien_formulaire );
     
     $squelette =& $formtemplate->defaultRenderer();
-    $squelette->setFormTemplate( "\n" . '<div class="row">' . "\n" . '<div class="col-xs-8">' . "\n" . '<form {attributes} class="form-horizontal">' . "\n" . '{content}' . "\n" . '</form>' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
+    $squelette->setFormTemplate( "\n" . '<form {attributes} class="form-horizontal">' . "\n" . '{content}' . "\n" . '</form>' . "\n" );
     $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="control-label col-xs-3">' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->' . "\n" . '{label} :</div>' . "\n" . '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '<!-- BEGIN error --><span class="erreur">{error}</span><!-- END error -->' . "\n" . '</div>' . "\n" . '</div>' . "\n" );
     $squelette->setElementTemplate( '<div class="control-group form-group">' . "\n" . '<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n" . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</div>' . "\n" . '</div>' . "\n", 'accept_condition' );
     $squelette->setElementTemplate( '<div class="control-group form-group">{label}{element}</div>' . "\n", 'groupe_recherche' );
@@ -2572,15 +2572,9 @@ function baz_rechercher( $typeannonce = 'toutes', $categorienature = 'toutes' )
     
     //champs texte pour entrer les mots cles
     $HTML_QuickForm = new HTML_QuickForm();
-    $groupe_rech[]  = $HTML_QuickForm->createElement( 'html', '<div class="control-group form-group">
-        <label class="control-label col-xs-3"></label>
-        <div class="controls col-xs-8">
-            <div class="input-group input-prepend input-append">
-                <span class="add-on input-group-addon"><i class="icon-search"></i></span><input type="text" value="'.((isset($_REQUEST['recherche_mots_cles']) && $_REQUEST['recherche_mots_cles'] != '') ? $_REQUEST['recherche_mots_cles'] : '').'" name="recherche_mots_cles" placeholder="' . _t( 'BAZ_MOT_CLE' ) . '" maxlength="255" class="form-control">
-                <span class="input-group-btn"><input type="submit" value="' . _t( 'BAZ_RECHERCHER' ) . '" name="rechercher" class="btn btn-primary" /></span>
-            </div>
-            
-        </div>
+    $groupe_rech[]  = $HTML_QuickForm->createElement( 'html', '<div class="input-group input-prepend input-append">
+                <span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span><input type="text" value="'.((isset($_REQUEST['recherche_mots_cles']) && $_REQUEST['recherche_mots_cles'] != '') ? $_REQUEST['recherche_mots_cles'] : '').'" name="recherche_mots_cles" placeholder="' . _t( 'BAZ_MOT_CLE' ) . '" maxlength="255" class="form-control input-lg">
+                <span class="input-group-btn"><input type="submit" value="' . _t( 'BAZ_RECHERCHER' ) . '" name="rechercher" class="btn btn-primary btn-lg" /></span>
     </div>' );
     
     $formtemplate->addGroup( $groupe_rech, 'groupe_recherche', null, '&nbsp;', 0 );
