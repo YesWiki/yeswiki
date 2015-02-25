@@ -46,7 +46,7 @@ $plugin_output_new = str_replace('<div class="include ', '<div'.$actiondblclic.'
 $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 
 // on ajoute pour le menu du haut la classe nav de bootstrap
-if ($incPageName == 'PageMenuHaut' && !strstr($class, 'horizontal-dropdown-menu')) {
+if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr($class, 'horizontal-dropdown-menu')) {
 	$plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
 
 	//TODO: a faire pour toutes les pages ou juste le menu???
