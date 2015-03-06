@@ -112,7 +112,8 @@ foreach ($tableau_resultat as $fiche) {
 usort($fiches['fiches'], 'champ_compare');
 
 // Limite le nombre de résultat au nombre de fiches demandées
-$fiches['fiches'] = array_slice($fiches['fiches'], 0, $nb);
+if ($nb != '')
+    $fiches['fiches'] = array_slice($fiches['fiches'], 0, $nb);
 
 //on recupere le nombre d'entrees avant pagination
 $pagination = $this->GetParameter("pagination");
