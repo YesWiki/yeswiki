@@ -1,6 +1,8 @@
-=====Les pages d'aide sur [[http://www.wikini.net WikiNi]]=====
+=====Les pages d'aide=====
 
 	- [[CoursUtilisationYesWiki Cours sur l'utilisation de YesWiki]]
-	- ReglesDeFormatage : résumé des syntaxes ""WikNi"" permettant la mise en forme du texte.
-	- ListeDesActionsWikini : liste des actions disponible dans [[http://www.wikini.net WikiNi]].
-	- ControlerLAccesAuxPages : explique comment gérer les droits d'accès aux page de [[http://www.wikini.net WikiNi]].
+	- ReglesDeFormatage : rÃ©sumÃ© des syntaxes permettant la mise en forme du texte.
+	- ListeDesActionsWikini : liste des actions disponible
+	- ControlerLAccesAuxPages : explique comment gÃ©rer les droits d'accÃ¨s aux page
+
+""<iframe class="yeswiki_frame" width="100%" height="3000" frameborder="0" src="http://yeswiki.net/wakka.php?wiki=CodeExemple/iframe"></iframe>""
