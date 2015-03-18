@@ -108,7 +108,7 @@ if ($_REQUEST["action"] == "logout") {
 }
 
 // cas de l'identification
-if ($_REQUEST["action"] == "login") {	
+if ($_REQUEST["action"] == "login") {
 	// si l'utilisateur existe, on vérifie son mot de passe
 	if (isset($_POST["name"]) && $_POST["name"]!='' && $existingUser = $this->LoadUser($_POST["name"])) {
 		// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
@@ -129,31 +129,35 @@ if ($_REQUEST["action"] == "login") {
 			$this->Redirect($_POST['incomingurl']);
 		}
 	}
-	else { 
-	 if (isset($_POST["email"]) && $_POST["email"] !='' && $existingUser = LoadUserbyEmail($_POST["email"])) {
-		// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-		if ($existingUser["password"] == md5($_POST["password"])) {
-			$this->SetUser($existingUser, $_POST["remember"]);
-			// si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-			if ( $userpage=='user' && $this->LoadPage($existingUser["name"]) ) {
-				$this->Redirect($this->href('', $existingUser["name"], ''));
-			}
-			// on va sur la page d'ou on s'est identifie sinon
-			else {
-				$this->Redirect($_POST['incomingurl']);
-			}			
+	else {
+		// si le nomWiki est un mail
+		if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
+			$_POST["email"] = $_POST["name"];
 		}
-		// on affiche une erreur sur le mot de passe sinon
+		 if (isset($_POST["email"]) && $_POST["email"] !='' && $existingUser = LoadUserbyEmail($_POST["email"])) {
+			// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
+			if ($existingUser["password"] == md5($_POST["password"])) {
+				$this->SetUser($existingUser, $_POST["remember"]);
+				// si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
+				if ( $userpage=='user' && $this->LoadPage($existingUser["name"]) ) {
+					$this->Redirect($this->href('', $existingUser["name"], ''));
+				}
+				// on va sur la page d'ou on s'est identifie sinon
+				else {
+					$this->Redirect($_POST['incomingurl']);
+				}			
+			}
+			// on affiche une erreur sur le mot de passe sinon
+			else {
+				$this->SetMessage("Identification impossible : mauvais mot de passe.");
+				$this->Redirect($_POST['incomingurl']);
+			}
+		 }
+		// on affiche une erreur sur le NomWiki sinon
 		else {
-			$this->SetMessage("Identification impossible : mauvais mot de passe.");
+			$this->SetMessage("Identification impossible : Identifiant non reconnu.");
 			$this->Redirect($_POST['incomingurl']);
 		}
-	 }
-	// on affiche une erreur sur le NomWiki sinon
-	else {
-		$this->SetMessage("Identification impossible : Identifiant non reconnu.");
-		$this->Redirect($_POST['incomingurl']);
-	}
 	}
 }
 
