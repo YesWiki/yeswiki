@@ -230,7 +230,7 @@ define ('BAZ_VAR_URL_LANGUE', 'lang') ; //Nom de la variable GET qui sera passee
 }*/
 
 // Option concernant la division des resultats en pages
-define ('BAZ_NOMBRE_RES_PAR_PAGE', 15);
+define ('BAZ_NOMBRE_RES_PAR_PAGE', 50);
 define ('BAZ_MODE_DIVISION', 'Jumping'); 	// 'Jumping' ou 'Sliding' voir http://pear.php.net/manual/fr/package.html.pager.compare.php
 define ('BAZ_DELTA', 12);		// Le nombre de page a afficher avant le 'next';
 

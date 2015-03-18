@@ -15,30 +15,63 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-$width = $this->GetParameter("width");
-if (empty($width)) {
-    $width = '100%';
+$cartowidth = $this->GetParameter("width");
+if (empty($cartowidth)) {
+    $cartowidth = BAZ_GOOGLE_IMAGE_LARGEUR;
 }
 
-$height = $this->GetParameter("height");
-if (empty($height)) {
-    $height = '700px';
+$cartoheight = $this->GetParameter("height");
+if (empty($cartoheight)) {
+    $cartoheight = BAZ_GOOGLE_IMAGE_HAUTEUR;
 }
 
+/*
+* lat : latitude point central en degres WGS84 (exemple : 46.22763) , sinon parametre par defaut
+*
+*/
 $latitude = $this->GetParameter("lat");
 if (empty($latitude)) {
-    $latitude = '21';
+    $latitude = BAZ_MAP_CENTER_LAT;
 }
 
+/*
+* lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
+*
+*/
 $longitude = $this->GetParameter("lon");
 if (empty($longitude)) {
-    $longitude = '7';
+    $longitude = BAZ_MAP_CENTER_LON;
 }
 
+
+/*
+* niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
+*
+*/
 $zoom = $this->GetParameter("zoom");
 if (empty($zoom)) {
-    $zoom = '3';
+    $zoom = BAZ_GOOGLE_ALTITUDE;
 }
+
+
+/*
+* Zoom sur molette : true or false, par defaut false
+*
+*/
+$zoom_molette = $this->GetParameter("zoommolette");
+if (empty($zoom_molette)) {
+    $zoom_molette = BAZ_PERMETTRE_ZOOM_MOLETTE;
+}
+
+/*
+* Outil de navigation , sinon parametre par defaut true
+*
+*/
+$navigation = $this->GetParameter("navigation"); // true or false
+if (empty($navigation)) {
+    $navigation = BAZ_AFFICHER_NAVIGATION;
+}
+
 
 $markersjs = '';
 $tablinktitle = array();
@@ -103,18 +136,19 @@ echo '<link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.css" 
 <!--[if lte IE 8]>
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.ie.css" />
 <![endif]-->
-<div id="osmmap" style="width:'.$width.'; height:'.$height.'"></div>'."\n";
+<div id="osmmap" style="width:'.$cartowidth.'; height:'.$cartoheight.'"></div>'."\n";
 
 
 $js = '<script src="tools/bazar/libs/vendor/leaflet/leaflet.js"></script>
 <script>
-    var map = new L.Map(\'osmmap\');
+    var map = new L.Map(\'osmmap\', {
+        scrollWheelZoom:'.$zoom_molette.',
+        zoomControl:'.$navigation.'
+    });
 
-    var cloudmadeUrl = \'http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png\',
-        cloudmadeAttribution = \'Donn&eacute;es OpenStreetMap\',
-        cloudmade = new L.TileLayer(cloudmadeUrl, {maxZoom: 18, attribution: cloudmadeAttribution});
+    var OsmLayer = new L.TileLayer(\'http://{s}.tile.osm.org/{z}/{x}/{y}.png\', {maxZoom: 18, attribution: \'\'});
 
-    map.setView(new L.LatLng('.$latitude.', '.$longitude.'), '.$zoom.').addLayer(cloudmade);
+    map.setView(new L.LatLng('.$latitude.', '.$longitude.'), '.$zoom.').addLayer(OsmLayer);
 
     var i = 0;
     var marker = Array();

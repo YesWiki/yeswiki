@@ -17,12 +17,14 @@
 	   -moz-user-select: none;
 	    -ms-user-select: none;
 	        user-select: none;
+	pointer-events: none;
 	white-space: nowrap;
 	z-index: 6;
 }
 
 .leaflet-label.leaflet-clickable {
 	cursor: pointer;
+	pointer-events: auto;
 }
 
 .leaflet-label:before,

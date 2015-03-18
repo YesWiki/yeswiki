@@ -170,6 +170,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_TEXT' => 'Text',
 'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Bad file extension for an image (should be .jpg or .png or .gif)',
 'BAZ_IMAGE_FILE_NOT_FOUND' => 'Image file not found',
+'BAZAR_CHECKALL' => 'Check all',
+'BAZAR_FILTER' => 'Filter',
 
 
 //================ Calendrier Bazar =======================================

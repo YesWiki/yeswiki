@@ -75,11 +75,11 @@ if (!empty($query)) {
 } else {
     $tabquery = '';
 }
-$tableau_resultat = baz_requete_recherche_fiches($tabquery, 'alphabetique', $id_typeannonce, $categorie_nature, 1, '', $nb);
+$tableau_resultat = baz_requete_recherche_fiches($tabquery, 'alphabetique', $id_typeannonce, $categorie_nature, 1, '', '');
 //on recupere le nombre d'entrees avant pagination
 $pagination = $this->GetParameter("pagination");
 if (!empty($pagination)) {
-    $fiches['info_res'] = '<div class="info_box">'._t('BAZ_IL_Y_A');
+    $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
     $nb_result = count($tableau_resultat);
     if ($nb_result<=1) {
         $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHE').'</div>'."\n";
@@ -124,7 +124,7 @@ foreach ($tableau_resultat as $fiche) {
             }
         }
         else {
-            exit('action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2"');
+            exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2"</div>');
         }
     }
 
@@ -139,18 +139,20 @@ foreach ($tableau_resultat as $fiche) {
     $fiches['fiches'][] = $valeurs_fiche;  //tableau qui contient le contenu de touts les fiches
 }
 usort($fiches['fiches'], 'champ_compare');
+
+// on ne prend que les nb premiers résultats
+if (!empty($nb)) {
+    $fiches['fiches'] = array_chunk($fiches['fiches'], $nb, true);
+    $fiches['fiches'] = $fiches['fiches'][0];
+}
+
 include_once 'tools/bazar/libs/squelettephp.class.php';
-
-
-  // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
-
+// On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
 $templatetoload='themes/tools/bazar/templates/'.$template;
 
 if (!is_file($templatetoload)) {
-	$templatetoload='tools/bazar/presentation/templates/'.$template;
+    $templatetoload='tools/bazar/presentation/templates/'.$template;
 }
-
-		
 
 $squelcomment = new SquelettePhp($templatetoload);    //gere les templates
 $squelcomment->set($fiches);   //on passe le tableau de fiches en parametres

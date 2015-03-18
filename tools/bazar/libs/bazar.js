@@ -121,13 +121,18 @@ $( document ).ready( function () {
 
 
 
+  /* swap open/close side menu icons */
+  $('.yeswiki-list-category[data-toggle=collapse]').click(function(){
+      // toggle icon
+      $(this).find("i").toggleClass("glyphicon-chevron-right glyphicon-chevron-down");
+  });
 
   //============validation formulaire=======================================================================
   //============gestion des dates=======================================================================
 
 
   //validation formulaire de saisie
-  var inputsreq = $( "#formulaire input[required=required], #formulaire select[required=required], #formulaire textarea[required=required]" ).not( '#formulaire input.bazar-date[required=required]' );
+  var inputsreq = $( "#formulaire input[required=required]:visible, #formulaire select[required=required]:visible, #formulaire textarea[required=required]:visible" ).not( '#formulaire input.bazar-date[required=required]' );
   $( '.bouton_sauver' ).click( function () {
     var atleastonefieldnotvalid = false;
     var atleastonemailfieldnotvalid = false;
