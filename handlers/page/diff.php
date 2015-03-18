@@ -118,8 +118,8 @@ if ($this->HasAccess("read"))
 		$pageB = $this->LoadPageById($_REQUEST["a"]);
 	
 		// extract text from bodies
-		$textA = $pageA["body"];
-		$textB = $pageB["body"];
+		$textA = _convert($pageA["body"], "ISO-8859-15");
+		$textB = _convert($pageB["body"], "ISO-8859-15");
 	
 		$sideA = new Side($textA);
 		$sideB = new Side($textB);
@@ -131,7 +131,7 @@ if ($this->HasAccess("read"))
 		$sideB->split_file_into_words($bodyB);
 	
 		// diff on these two file
-		$diff = new Diff(split("\n",$bodyA),split("\n",$bodyB));
+		$diff = new Diff(explode("\n",$bodyA),explode("\n",$bodyB));
 	
 		// format output
 		$fmt = new DiffFormatter();

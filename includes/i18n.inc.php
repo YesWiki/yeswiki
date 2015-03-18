@@ -69,15 +69,14 @@ function _t($textkey)
  * @param bool is it for the database ?
  * @return string the encoded text
  */
-function _convert($text, $fromencoding, $database = FALSE)
+function _convert($text, $fromencoding, $database = false)
 {
     if (is_array($text)) {
         foreach ($text as $key => $value) {
             $arraytext[$key] = _convert($value, $fromencoding, $database);
         }
         return $arraytext;
-    } 
-    else {
+    } else {
         $cp1252_map = array(
             "\xc2\x80" => "\xe2\x82\xac", /* EURO SIGN */
             "\xc2\x82" => "\xe2\x80\x9a", /* SINGLE LOW-9 QUOTATION MARK */
@@ -99,7 +98,6 @@ function _convert($text, $fromencoding, $database = FALSE)
             "\xc2\x95" => "\xe2\x80\xa2", /* BULLET */
             "\xc2\x96" => "\xe2\x80\x93", /* EN DASH */
             "\xc2\x97" => "\xe2\x80\x94", /* EM DASH */
-
             "\xc2\x98" => "\xcb\x9c",    /* SMALL TILDE */
             "\xc2\x99" => "\xe2\x84\xa2", /* TRADE MARK SIGN */
             "\xc2\x9a" => "\xc5\xa1",    /* LATIN SMALL LETTER S WITH CARON */
@@ -109,19 +107,24 @@ function _convert($text, $fromencoding, $database = FALSE)
             "\xc2\x9f" => "\xc5\xb8"      /* LATIN CAPITAL LETTER Y WITH DIAERESIS*/
         );
 
-        if ($database) { 
+        if ($database) {
             if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
-                return  utf8_decode( strtr($text, array_flip($cp1252_map)) );
-            } 
-            else {
+                return mb_convert_encoding(
+                    $text,
+                    TEMPLATES_DEFAULT_CHARSET,
+                    mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
+                );
+            } else {
                 return $text;
             }
-        }
-        else {
+        } else {
             if ($fromencoding != TEMPLATES_DEFAULT_CHARSET) {
-                return strtr(utf8_encode($text), $cp1252_map);
-            } 
-            else {
+                return mb_convert_encoding(
+                    $text,
+                    "UTF-8",
+                    mb_detect_encoding($text, "UTF-8, ".TEMPLATES_DEFAULT_CHARSET.", ISO-8859-1, ISO-8859-15", true)
+                );
+            } else {
                 return $text;
             }
         }
@@ -137,8 +140,9 @@ function detectAvailableLanguages()
     $available_languages = array();
     if ($d = @opendir('lang')) {
         while (($f = readdir($d)) !== false) {
-            if (preg_match(',^yeswiki_([a-z_]+)\.php[3]?$,', $f, $regs))
+            if (preg_match(',^yeswiki_([a-z_]+)\.php[3]?$,', $f, $regs)) {
                 $available_languages[] = $regs[1];
+            }
         }
         closedir($d);
         sort($available_languages);
@@ -151,10 +155,11 @@ function detectAvailableLanguages()
  *  copied from http://php.net/manual/en/function.http-negotiate-language.php#example-4353
  * 
  *  @array $available_languages        array with language-tag-strings (must be lowercase) that are available
- *  @string $http_accept_language    a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
+ *  @string $http_accept_language a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
  *  @string $page    name of WikiPage to check for informations on language
  */
-function detectPreferedLanguage($available_languages, $http_accept_language="auto", $page = '') {
+function detectPreferedLanguage($available_languages, $http_accept_language = "auto", $page = '') 
+{
     // first choice : if lang changed in url
     if (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) {
         return $_GET['lang'];
