@@ -76,37 +76,7 @@ if (!empty($query)) {
     $tabquery = '';
 }
 $tableau_resultat = baz_requete_recherche_fiches($tabquery, 'alphabetique', $id_typeannonce, $categorie_nature, 1, '', '');
-//on recupere le nombre d'entrees avant pagination
-$pagination = $this->GetParameter("pagination");
-if (!empty($pagination)) {
-    $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
-    $nb_result = count($tableau_resultat);
-    if ($nb_result<=1) {
-        $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHE').'</div>'."\n";
-    } else {
-        $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHES').'</div>'."\n";
-    }
-    // Mise en place du Pager
-    require_once 'Pager/Pager.php';
-    $params = array(
-        'mode'       => BAZ_MODE_DIVISION,
-        'perPage'    => $pagination,
-        'delta'      => BAZ_DELTA,
-        'httpMethod' => 'GET',
-        'extraVars' => array_merge($_POST, $_GET),
-        'altNext' => _t('BAZ_SUIVANT'),
-        'altPrev' => _t('BAZ_PRECEDENT'),
-        'nextImg' => _t('BAZ_SUIVANT'),
-        'prevImg' => _t('BAZ_PRECEDENT'),
-        'itemData'   => $tableau_resultat
-    );
-    $pager = & Pager::factory($params);
-    $tableau_resultat = $pager->getPageData();
-    $fiches['pager_links'] = '<div class="bazar_numero">'.$pager->links.'</div>'."\n";
-} else {
-    $fiches['info_res'] = '';
-    $fiches['pager_links'] = '';
-}
+
 $fiches['fiches'] = array();
 foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche['body'], true);  //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
@@ -138,15 +108,49 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche"></a>'."\n";
     $fiches['fiches'][] = $valeurs_fiche;  //tableau qui contient le contenu de touts les fiches
 }
+
 usort($fiches['fiches'], 'champ_compare');
 
-// on ne prend que les nb premiers résultats
-if (!empty($nb)) {
-    $fiches['fiches'] = array_chunk($fiches['fiches'], $nb, true);
-    $fiches['fiches'] = $fiches['fiches'][0];
+// Limite le nombre de résultat au nombre de fiches demandées
+if ($nb != '')
+    $fiches['fiches'] = array_slice($fiches['fiches'], 0, $nb);
+
+//on recupere le nombre d'entrees avant pagination
+$pagination = $this->GetParameter("pagination");
+if (!empty($pagination)) {
+    $fiches['info_res'] = '<div class="info_box">'._t('BAZ_IL_Y_A');
+
+    $nb_result = count($fiches['fiches']);
+
+    if ($nb_result<=1) {
+        $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHE').'</div>'."\n";
+    } else {
+        $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHES').'</div>'."\n";
+    }
+    // Mise en place du Pager
+    require_once 'Pager/Pager.php';
+    $params = array(
+        'mode'       => BAZ_MODE_DIVISION,
+        'perPage'    => $pagination,
+        'delta'      => BAZ_DELTA,
+        'httpMethod' => 'GET',
+        'extraVars' => array_merge($_POST, $_GET),
+        'altNext' => _t('BAZ_SUIVANT'),
+        'altPrev' => _t('BAZ_PRECEDENT'),
+        'nextImg' => _t('BAZ_SUIVANT'),
+        'prevImg' => _t('BAZ_PRECEDENT'),
+        'itemData'   => $fiches['fiches']
+    );
+    $pager = & Pager::factory($params);
+    $fiches['fiches'] = $pager->getPageData();
+    $fiches['pager_links'] = '<div class="bazar_numero">'.$pager->links.'</div>'."\n";
+} else {
+    $fiches['info_res'] = '';
+    $fiches['pager_links'] = '';
 }
 
 include_once 'tools/bazar/libs/squelettephp.class.php';
+
 // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
 $templatetoload='themes/tools/bazar/templates/'.$template;
 
