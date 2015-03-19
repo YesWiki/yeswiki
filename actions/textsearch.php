@@ -54,21 +54,22 @@ if (!$phrase && isset($_GET['phrase'])) $phrase = $_GET['phrase'];
 if (!$paramPhrase)
 {
 	echo $this->FormOpen('', '', 'get');
-	if ($label)
-	{
-		echo $this->Format($label), ' ';
-	}
-	echo '<input name="phrase" size="', htmlspecialchars($size, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" value="', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" />';
-	if ($button)
-	{
-		echo '&nbsp;<input type="submit" value="', htmlspecialchars($button, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" />';
-	}
+	echo '<div class="input-prepend input-append input-group input-group-lg">
+			<span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
+      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" >
+      <span class="input-group-btn">
+        <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />
+      </span>
+    </div><!-- /input-group --><br>';
 	echo "\n", $this->FormClose();
 }
 
 if ($phrase)
 {
-	if ($results = $this->FullTextSearch($phrase))
+	// on cherche sur le mot avec entités html, le mot encodé par le wiki, ou le mot encodé par bazar en json
+	$search = $phrase.','.utf8_decode($phrase).','.substr(json_encode($phrase),1,-1);
+	$results = $this->FullTextSearch($search);
+	if ($results)
 	{
 	    if ($separator)
 	    {
@@ -102,7 +103,7 @@ if ($phrase)
 	{
 	    if (!$paramPhrase)
 	    {
-		echo "<p>"._t('NO_RESULT_FOR')." \"", htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "\". :-(</p>";
+		echo "<div class=\"alert alert-info\">"._t('NO_RESULT_FOR')." \"", htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "\". :-(</div>\n";
 	    }
 	}
 }
