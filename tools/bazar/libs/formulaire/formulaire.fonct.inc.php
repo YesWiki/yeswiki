@@ -113,7 +113,9 @@ function afficher_image($nom_image, $label, $class, $largeur_vignette, $hauteur_
 
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
-    if (!file_exists($image_dest) || (file_exists($image_dest) && ((time()-filemtime($image_dest) > 2 * 3600) || isset($_GET['refreshimg']) && $_GET['refreshimg']==1))) {
+    if (!file_exists($image_src)) {
+        echo '<div class="alert alert-danger">Image non trouvée : '.$image_src.'</div>'."\n";
+    } elseif (!file_exists($image_dest) || (file_exists($image_dest) && ((time()-filemtime($image_dest) > 2 * 3600) || isset($_GET['refreshimg']) && $_GET['refreshimg']==1))) {
         if (file_exists($image_dest)) {
             unlink($image_dest);
         }
