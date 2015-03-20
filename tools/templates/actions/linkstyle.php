@@ -8,7 +8,7 @@ if (!defined("WIKINI_VERSION"))
 $styles = "\n".'	<!-- CSS files -->'."\n";
 
 // si pas le mot yeswiki. ou yw. dans les css, on charge les styles par defaut de yeswiki
-if (!strstr($this->config['favorite_style'], 'yeswiki.') && !strstr($this->config['favorite_style'], 'yw.') ) {
+if (!strstr($this->config['favorite_style'], 'yw.')) {
 	$styles .= '	<link rel="stylesheet" href="tools/templates/presentation/styles/yeswiki-base.css" />'."\n";
 }
 
