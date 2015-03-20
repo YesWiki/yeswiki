@@ -82,7 +82,7 @@ class attach {
 			$this->isSafeMode = ini_get("safe_mode");
 		} 
 		else {
-			$this->isSafeMode = true;
+			$this->isSafeMode = false;
 		}
 
 	}
