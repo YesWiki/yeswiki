@@ -1,3 +1,0 @@
-Un NomWiki est un nom qui est écrit ""CommeCela"".
-
-Un NomWiki est transformé automatiquement en lien. Si la page correspondante n'existe pas, un '?' est affiché à côté du mot.

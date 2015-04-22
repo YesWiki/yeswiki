@@ -1,5 +1,0 @@
-L'action ""{{WantedPages}}"" liste tous les MotWiki du site qui n'ont pas vu la création d'une page.
-Cette page est visible en action sur les PagesACreer.
-
-----
-{{trail toc="ListeDesActionsWikini"}}

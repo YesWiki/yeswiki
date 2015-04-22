@@ -1,0 +1,13 @@
+====== Administration du Wiki ======
+==== Gestion des groupes ====
+{{editgroups}}
+------
+==== Gestion des commentaires ====
+{{erasespamedcomments}}
+------
+==== Gestion des fichiers attachés ====
+{{filemanager}}
+------
+==== Gestion des tags ====
+{{admintag}}
+------

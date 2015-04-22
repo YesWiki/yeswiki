@@ -1,0 +1,17 @@
+======Tablean de bord======
+
+==== 8 derniers comptes utilisateurs ====
+{{Listusers last="8"}}
+------
+==== 8 dernières pages modifiées ====
+{{recentchanges max="8"}}
+------
+==== 5 dernières pages commentées ====
+{{RecentlyCommented max="5"}}
+------
+==== Index des pages ====
+{{pageindex}}
+------
+==== Pages orphelines ====
+{{OrphanedPages}}
+------
