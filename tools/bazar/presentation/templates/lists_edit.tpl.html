@@ -1,0 +1,53 @@
+<form action="<?php echo $form_link; ?>" method="post" id="bazar_form_lists" class="form-horizontal">
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><span class="required_symbol">*&nbsp;</span><?php echo _t('BAZ_LIST_NAME');?></label>
+		<div class="controls col-sm-9">
+			<input name="titre_liste" type="text" value="<?php echo (isset($titre_liste) ? $titre_liste : '');?>" required="required" placeholder="<?php echo _t('BAZ_LIST_NAME'); ?>" class="form-control" />
+		</div>
+	</div>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><?php echo _t('BAZ_VALEURS_LISTE'); ?></label>
+		<ul class="list-sortables controls col-sm-9">
+    <?php if (is_array($valeursliste)) : $i = 0;?>
+    <?php foreach ($valeursliste['label'] as $id => $label) : $i++; ?>
+        <li class="liste_ligne input-prepend input-append input-group" id="row<?php echo $i; ?>">
+        	<a title="<?php echo _t('BAZ_DEPLACER_L_ELEMENT'); ?>" class="handle-listitems add-on input-group-addon"><i class="glyphicon glyphicon-move icon-move"></i></a>
+	        <input required type="text" placeholder="<?php echo _t('BAZ_KEY'); ?>" name="id[<?php echo $i; ?>]" value="<?php echo htmlspecialchars($id); ?>" class="input-key form-control" />
+	        <input required type="text" placeholder="<?php echo _t('BAZ_TEXT'); ?>" name="label[<?php echo $i; ?>]" value="<?php echo htmlspecialchars($label); ?>" class="input-label form-control" />
+	        <input type="hidden" name="ancienid[<?php echo $i; ?>]" value="<?php echo htmlspecialchars($id); ?>" />
+	        <input type="hidden" name="ancienlabel[<?php echo $i; ?>]" value="<?php echo htmlspecialchars($label); ?>" />
+	        <a class="add-on suppression_label_liste input-group-addon"><i class="glyphicon glyphicon-trash icon-trash"></i></a>
+	      </li>
+    <?php endforeach; ?>
+    <?php else : ?>
+        <li class="liste_ligne input-prepend input-append input-group" id="row1">
+	        <a title="<?php echo _t('BAZ_DEPLACER_L_ELEMENT'); ?>" class="handle-listitems add-on input-group-addon"><i class="glyphicon glyphicon-move icon-move"></i></a>
+	        <input required type="text" placeholder="<?php echo _t('BAZ_KEY'); ?>" name="id[1]" class="input-key form-control" />
+	        <input required type="text" placeholder="<?php echo  _t('BAZ_TEXT'); ?>" name="label[1]" class="input-label form-control" />
+	        <a class="add-on suppression_label_liste input-group-addon"><i class="glyphicon glyphicon-trash icon-trash"></i></a>
+        </li>
+    <?php endif; ?>
+    </ul>
+    <div class="col-sm-9 col-sm-offset-3">
+    	<a class="controls btn btn-primary ajout_label_liste" title="<?php echo _t('BAZ_AJOUTER_LABEL_LISTE'); ?>"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> <?php echo _t('BAZ_AJOUTER_LABEL_LISTE'); ?></a>
+    </div>
+  </div>
+
+	
+	<input name="NomWiki" type="hidden" value="<?php echo $NomWiki;?>" />
+
+	<div class="form-actions form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			<button class="btn btn-success btn-save-list" name="valider" type="submit"><?php echo _t('BAZ_SAVE'); ?></button>
+			<a class="btn btn-danger btn-cancel-list btn-mini btn-xs" name="annuler" href="<?php echo $cancel_link;?>"><?php echo _t('BAZ_ANNULER'); ?></a>
+		</div>
+	</div>
+</form>
+<div id="empty-new-item" class="hide">
+	<li class="liste_ligne input-prepend input-append input-group" id="row@nb@">
+	  <a title="<?php echo _t('BAZ_DEPLACER_L_ELEMENT'); ?>" class="handle-listitems add-on input-group-addon"><i class="glyphicon glyphicon-move icon-move"></i></a>
+	  <input required type="text" placeholder="<?php echo _t('BAZ_KEY'); ?>" name="id[@nb@]" class="input-key form-control" />
+	  <input required type="text" placeholder="<?php echo  _t('BAZ_TEXT'); ?>" name="label[@nb@]" class="input-label form-control" />
+	  <a class="add-on suppression_label_liste input-group-addon"><i class="glyphicon glyphicon-trash icon-trash"></i></a>
+	</li>
+</div>

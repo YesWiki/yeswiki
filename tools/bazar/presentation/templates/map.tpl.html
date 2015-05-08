@@ -1,0 +1,61 @@
+<?php echo $info_res; ?>
+<?php 
+if(count($fiches)>0) :
+    $GLOBALS['nb_map'] = isset($GLOBALS['nb_map']) ? $GLOBALS['nb_map']++ : 1; ?>
+    <?php echo $pager_links;?>
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.css" />
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/leaflet.ie.css" />
+    <![endif]-->
+    <div id="osmmap<?php echo $GLOBALS['nb_map']; ?>"
+         class="no-dblclick"
+         style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
+    <?php
+    $tablinktitle = array();
+    $markersjs = '';
+    $i = 0;
+    foreach($fiches as $fiche): ?>
+        <?php 
+        $tab = explode('|', $fiche['carte_google']);
+        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+            // on genere le point marqueur sur la carte
+            $markersjs .= '
+            i++;
+            var markerLocation = new L.LatLng('.$tab[0].', '.$tab[1].');
+            marker[i] = new L.Marker(
+                markerLocation,
+                {
+                    icon: L.divIcon({
+                        className: \'bazar-marker\',
+                        html: \'<div class="bazar-entry" '.$fiche['html_data'].'></div>\'
+                    }),
+                    title: \''.addslashes($fiche['bf_titre']).'\'
+                });
+            map.addLayer(marker[i]);
+            marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes($fiche['html'])).'\');
+            ';
+            $i++;
+        }
+    endforeach; ?>
+    <?php 
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+    $GLOBALS['wiki']->AddJavascript(
+        '// Init leaflet map
+    var map = new L.Map(\'osmmap'.$GLOBALS['nb_map'].'\', {
+        scrollWheelZoom:'.$param['zoom_molette'].',
+        zoomControl:'.$param['navigation'].',
+        iconAnchor:   [6, 20]
+    });
+
+    var OsmLayer = new L.TileLayer(\'http://{s}.tile.osm.org/{z}/{x}/{y}.png\', {maxZoom: 18, attribution: \'\'});
+    map.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].').addLayer(OsmLayer);
+
+    var i = 0;
+    var marker = Array();
+    '.$markersjs
+    );
+    echo $pager_links;
+    ?>
+    <?php
+endif;

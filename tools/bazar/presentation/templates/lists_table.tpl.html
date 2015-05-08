@@ -1,0 +1,69 @@
+<?php if (count($lists)>0) : ?>
+<table id="existing-lists-table" class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
+    <thead>
+        <tr>
+            <th><?php echo _t('BAZ_TITLE'); ?></th>
+            <th><?php echo _t('BAZ_VALEURS_LISTE'); ?></th>
+            <th style="width:180px;"><?php echo _t('BAZ_ID'); ?></th>
+            <th style="width:140px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+    		<?php foreach ($lists as $key => $list) : ?>
+        <tr>
+            <td><?php echo $list['titre_liste']; ?></td>
+            <td><?php echo $list['values']; ?></td>
+            <td><?php echo $key; ?></td>
+            <td>
+            <?php if ($list['can_edit']) :?>
+                <a class="btn btn-default btn-mini btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="glyphicon glyphicon-pencil icon-pencil"></i> <?php echo _t('BAZ_MODIFIER'); ?></a>
+            <?php endif; ?>
+            <?php if ($list['can_delete']) :?>
+                <a class="btn btn-danger btn-mini btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste='.$key); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_LISTE'); ?> ?');"><i class="glyphicon glyphicon-trash icon-trash icon-white"></i></a>
+            <?php endif; ?>
+            </td>
+        </tr>
+                <?php endforeach; ?>
+    </tbody>
+</table>
+<?php else : ?>
+<div class="alert alert-info">
+	<a data-dismiss="alert" class="close">&times;</a><?php echo _t('BAZ_INTRO_AJOUT_LISTE'); ?>
+</div>
+<?php endif; ?>
+
+<a href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&amp;'.BAZ_VARIABLE_ACTION.'='.BAZ_ACTION_NOUVELLE_LISTE); ?>" class="btn btn-primary"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVELLE_LISTE'); ?></a>
+<hr>
+<strong><?php echo _t('BAZ_IMPORT_LISTS_FROM_URL'); ?></strong>
+<form action="javascript:undefined" class="form-horizontal">
+	<div class="input-prepend input-append input-group">
+		<span class="add-on input-group-addon"><i class="glyphicon glyphicon-link icon-globe"></i></span>
+		<input id="url-import-lists" class="form-control input-xxlarge" placeholder="<?php echo _t('BAZ_URL_IMPORT_LISTS_INFO'); ?>" type="url">
+		<span class="input-group-btn">
+		    <button id="btn-import-lists" class="btn btn-primary" type="submit"><?php echo _t('BAZ_GO'); ?> !</button>
+        </span>
+	</div>
+</form>
+<br>
+<div id="import-lists-result"></div>
+<form id="import-lists-form" action="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES); ?>" class="hide" method="post">
+<table id="import-lists-table" class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
+    <thead>
+        <tr>
+            <th style="width:25px;"><input data-target="#import-lists-table tbody" type="checkbox" class="selectall"></th>
+            <th><?php echo _t('BAZ_ID'); ?></th>
+            <th><?php echo _t('BAZ_TITLE'); ?></th>
+            <th><?php echo _t('BAZ_VALEURS_LISTE'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<div class="checkbox">
+	<label class="checkbox">
+		<input data-target="#import-lists-table tbody" type="checkbox" class="selectall"> <?php echo _t('BAZ_SELECT_ALL'); ?>
+	</label>
+</div>
+<button id="btn-import-selection" type="submit" class="btn btn-primary"><?php echo _t('BAZ_IMPORT_SELECTION'); ?></button>
+</form>
+<div id="list-translations" data-nblistsfound="<?php echo _t('BAZ_NBLISTSFOUND'); ?>" data-noanswers="<?php echo _t('BAZ_NOANSWERS'); ?>" data-notvalidurl="<?php echo _t('BAZ_NOTVALIDURL'); ?>" data-choose="<?php echo _t('BAZ_CHOISIR'); ?>" data-recuperation="<?php echo _t('BAZ_RECUPERATION'); ?>" data-loading="<?php echo _t('BAZ_LOADING'); ?>" data-existingmessage="<?php echo _t('BAZ_EXISTINGMESSAGE'); ?>"></div>
