@@ -38,7 +38,7 @@ if ($this->HasAccess('write')) {
         //dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
         if (isset($_POST['bf_titre'])) {
             $GLOBALS['_BAZAR_']['id_fiche'] = $this->GetPageTag();
-            $tab_nature = baz_valeurs_type_de_fiche($_POST['id_typeannonce']);
+            $tab_nature = baz_valeurs_formulaire($_POST['id_typeannonce']);
             $GLOBALS['_BAZAR_']['id_typeannonce']=$tab_nature['bn_id_nature'];
             $GLOBALS['_BAZAR_']['typeannonce']=$tab_nature['bn_label_nature'];
             $GLOBALS['_BAZAR_']['condition']=$tab_nature['bn_condition'];
@@ -51,7 +51,7 @@ if ($this->HasAccess('write')) {
         } else {
             $tab_valeurs = baz_valeurs_fiche($this->GetPageTag());
             $GLOBALS['_BAZAR_']['id_fiche'] = $tab_valeurs['id_fiche'];
-            $tab_nature = baz_valeurs_type_de_fiche($tab_valeurs['id_typeannonce']);
+            $tab_nature = baz_valeurs_formulaire($tab_valeurs['id_typeannonce']);
             $GLOBALS['_BAZAR_']['id_typeannonce']=$tab_nature['bn_id_nature'];
             $GLOBALS['_BAZAR_']['typeannonce']=$tab_nature['bn_label_nature'];
             $GLOBALS['_BAZAR_']['condition']=$tab_nature['bn_condition'];

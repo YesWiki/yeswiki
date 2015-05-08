@@ -1,33 +1,52 @@
 <?php echo $info_res; ?>
-<?php if( count($fiches)>0 ) : $GLOBALS['nb_accordion'] = isset($GLOBALS['nb_accordion']) ? $GLOBALS['nb_accordion']++ : 1; ?>
-<?php echo $pager_links;?>
-<div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $GLOBALS['nb_accordion']; ?>">
-<?php foreach($fiches as $fiche): ?>
-  <div class="panel panel-default">
-    <div class="panel-heading collapsed" data-target="#collapse<?php echo $fiche['id_fiche']; ?>" data-toggle="collapse">
-      <h4 class="panel-title">
-        <?php echo $fiche['bf_titre']; ?>
-      </h4>
-    </div>
-    <div id="collapse<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
-      <div class="panel-body">
-        <?php echo $fiche['html']; ?>
-        <div class="footer-buttons">
-          <a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>" class="btn btn-primary"><i class="glyphicon glyphicon-eye-open icon-eye-open icon-white"></i>&nbsp;<?php echo _t('TEMPLATE_VIEW_PAGE');?></a>
-          <div class="pull-right">
-            <?php if ($GLOBALS['wiki']->HasAccess("write")) : ?>
-            <a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>" class="btn btn-default"><i class="glyphicon glyphicon-pencil icon-pencil"></i></a>
-            <?php endif; ?>
-            <?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
-            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>" class="btn btn-danger"><i class="glyphicon glyphicon-trash icon-trash icon-white"></i></a>
-            <?php endif; ?>
+<?php 
+if(count($fiches)>0) :
+    $GLOBALS['nb_accordion'] = isset($GLOBALS['nb_accordion']) ? $GLOBALS['nb_accordion']++ : 1; ?>
+    <?php echo $pager_links;?>
+    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $GLOBALS['nb_accordion']; ?>">
+    <?php
+    foreach($fiches as $fiche): ?>
+        <div class="bazar-entry panel panel-default" <?php echo $fiche['html_data'];?>>
+          <div class="panel-heading collapsed" 
+            data-target="#collapse<?php echo $fiche['id_fiche']; ?>" 
+            data-toggle="collapse">
+            <h4 class="panel-title">
+              <?php echo $fiche['bf_titre']; ?>
+            </h4>
           </div>
-          <div class="clearfix"></div>
-        </div> <!-- /.footer-buttons -->
-      </div>
+          <div id="collapse<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
+            <div class="panel-body">
+              <?php echo $fiche['html']; ?>
+              <div class="footer-buttons">
+                <a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']);?>" class="btn btn-primary">
+                  <i class="glyphicon glyphicon-eye-open icon-eye-open icon-white"></i>&nbsp;
+                  <?php echo _t('TEMPLATE_VIEW_PAGE'); ?>
+                </a>
+                <div class="pull-right">
+                  <?php 
+        if ($GLOBALS['wiki']->HasAccess("write")) : ?>
+                  <a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>" class="btn btn-default">
+                    <i class="glyphicon glyphicon-pencil icon-pencil"></i>
+                  </a>
+                  <?php
+        endif; ?>
+                  <?php
+        if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+                  <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>"
+                     class="btn btn-danger">
+                    <i class="glyphicon glyphicon-trash icon-trash icon-white"></i>
+                  </a>
+                  <?php
+        endif; ?>
+                </div>
+                <div class="clearfix"></div>
+              </div> <!-- /.footer-buttons -->
+            </div>
+          </div>
+        </div>
+        <?php
+    endforeach; ?>
     </div>
-  </div>
-<?php endforeach; ?>
-</div>
-<?php echo $pager_links; ?>
-<?php endif; ?>
+    <?php echo $pager_links; ?>
+    <?php
+endif;

@@ -1,7 +1,0 @@
-<span class="message_identification">Votre fiche : <a href="<?php echo  $urllogin; ?>&amp;id_fiche=<?php echo  $id; ?>&amp;action=voir_fiche" title="Voir ma fiche"><?php echo  $nom; ?></a></span>
-<form class="formulaire_identification" action="<?php echo  $urldepart; ?>" method="post">
-<input type="hidden" name="action" value="update" />
-<input type="hidden" name="urldepart" value="<?php echo  $urldepart; ?>" />
-<input class="bouton_iden" type="button" value="D&eacute;connexion" onclick="document.location='<?php echo  $urldepart; ?>&amp;action=logout'" />
-<span class="modif_inscription_iden"><a href="<?php echo  $urllogin; ?>&amp;id_fiche=<?php echo  $id; ?>&amp;action=modif_fiche" title="Modifier mon inscription">Modifier</a></span>
-</form>

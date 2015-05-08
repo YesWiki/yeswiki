@@ -119,7 +119,7 @@ $jointure=array();
 foreach ($id_typeannonce as $annonce) {
     $tableau_resultat = array_merge($tableau_resultat, baz_requete_recherche_fiches($tabquery, $ordre, $annonce, $categorie_nature, 1, '', '', true, '', $facettejointure));
  /*   // Detection jointure avec autre fiche
-     $val_formulaire = baz_valeurs_type_de_fiche($annonce);
+     $val_formulaire = baz_valeurs_formulaire($annonce);
      $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
      foreach ($tableau as $ligne) {
         if ($ligne[0]=="listefiche") { // jointure 

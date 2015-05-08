@@ -292,7 +292,7 @@ foreach ($id_typeannonce as $annonce) { // Pour chaque annonce :
 
     // Detection jointure avec autre fiche
 /*
-     $val_formulaire = baz_valeurs_type_de_fiche($annonce);
+     $val_formulaire = baz_valeurs_formulaire($annonce);
      $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
      //print_r($tableau);
 

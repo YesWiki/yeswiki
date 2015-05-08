@@ -1,14 +1,33 @@
-<?php if( count($fiches)>0 ) : ?>
-<?php echo $info_res;?>
-<?php echo $pager_links;?>
-<ul class="BAZ_liste">
-<?php foreach($fiches as $fiche): ?>
-<li class="BAZ_titre_fiche">
-<?php if( isset($fiche['lien_suppression']) ) : ?><?php echo $fiche['lien_suppression'];?><?php endif; ?>
-<?php if( isset($fiche['lien_edition']) ) : ?><?php echo $fiche['lien_edition'];?><?php endif; ?>
-<?php echo $fiche['lien_voir_titre'];?>
-</li>
-<?php endforeach; ?>
-</ul>
-<?php echo $pager_links;?>
-<?php endif; ?>
+<?php
+if(count($fiches)>0) : ?>
+    <?php echo $info_res;?>
+    <?php echo $pager_links;?>
+    <ul class="BAZ_liste">
+    <?php
+    foreach($fiches as $fiche): ?>
+        <li class="bazar-entry" <?php echo $fiche['html_data'];?>>
+          <a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+            <?php echo $fiche['bf_titre']; ?>
+          </a>
+          <?php 
+        if ($GLOBALS['wiki']->HasAccess("write")) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>"
+               class="btn btn-default btn-xs btn-mini">
+              <i class="glyphicon glyphicon-pencil icon-pencil"></i>
+            </a>
+            <?php
+        endif; ?>
+        <?php
+        if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>"
+               class="btn btn-danger btn-xs btn-mini">
+              <i class="glyphicon glyphicon-trash icon-trash icon-white"></i>
+            </a>
+            <?php
+        endif; ?>
+        <?php
+    endforeach; ?>
+    </ul>
+    <?php echo $pager_links;?>
+    <?php
+endif;

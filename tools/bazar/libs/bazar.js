@@ -46,14 +46,12 @@ $( document ).ready( function () {
   } );
 
 
-  // initialise les tooltips d'aide
-  $( "img.tooltip_aide[title]" ).each( function () {
+  // initialise les tooltips pour l'aide et pour les cartes leaflet
+  $( "img.tooltip_aide[title], .bazar-marker" ).each( function () {
     $( this ).tooltip( {
-      effect: 'fade',
-      fadeOutSpeed: 100,
-      predelay: 0,
-      position: "top center",
-      opacity: 0.7
+      animation: true,
+      delay: 0,
+      position: "top"
     } );
   } );
 
@@ -301,17 +299,82 @@ $( document ).ready( function () {
 
 
   // cocher / decocher tous
-  $( '.selectall' ).click( function ( event ) {
+  var checkboxselectall = $( '.selectall' );
+  checkboxselectall.click( function ( event ) {
+    var $this = $(this);
+    var target = $this.parent().siblings('.yeswiki-checkbox');
+    if ($this.data('target')) {
+      target = $($this.data('target'));
+    }
     if ( this.checked ) { // check select status
-      $( this ).parent().siblings( '.yeswiki-checkbox' ).each( function () {
+      target.each( function () {
         $( this ).find( ":checkbox" ).prop( 'checked', true );
+        checkboxselectall.prop( 'checked', true );
       } );
     } else {
-      $( this ).parent().siblings( '.yeswiki-checkbox' ).each( function () {
+      target.each( function () {
         $( this ).find( ":checkbox" ).prop( 'checked', false );
+        checkboxselectall.prop( 'checked', false );
       } );
     }
-  } );
+  });
 
+  // facettes
+  
+  // process changes on visible entries according to filters
+  function handleFilterClick(selector) {
 
-} );
+    $(selector).each(function() {
+        var $container = $(this);
+        var $nbresults = $(".nb-results", $container);
+        var $filters = $(".filter-checkbox", $container);
+        var $filterboxes = $(".filter-box", $container);
+        var $entries = $(".bazar-entry", $container);
+        var select;
+        $filters.on('click', function() {
+          var tabfilters = Array();
+          var i = 0;
+          // on filtre les resultat par boite de filtre pour faire l'intersection apres
+          $filterboxes.each(function() {
+            select = '';
+            var first = true;
+            var filterschk = $(this).find('.filter-checkbox:checked');
+            $.each(filterschk, function(index, checkbox) {
+                if (first) {
+                  select += '[data-' + $(checkbox).attr('name').toLowerCase() + '*=' + $(checkbox).attr('value') + ']';
+                  first = false;
+                } else {
+                  select += ',[data-' + $(checkbox).attr('name').toLowerCase() + '*=' + $(checkbox).attr('value') + ']';
+                }
+            });
+            var res = $entries.filter(select);
+
+            if (res.length > 0) {
+              tabfilters[i] = res;
+              i = i + 1;
+            }
+          });
+
+          // au moins un filtre à actionner
+          if (tabfilters[0]) {
+            // un premier résultat pour le tableau
+            var tabres = tabfilters[0].toArray();
+            // pour chaque boite de filtre, on fait l'intersection avec la suivante
+            $.each(tabfilters, function(index, tab) {
+                tabres = tabres.filter(function(n) {
+                    return tab.toArray().indexOf(n) != -1;
+                });
+            });
+            
+            $entries.hide().filter(tabres).show();
+          } else {
+            // pas de filtres: on affiche tout les résultats
+            $entries.show();
+          }
+          // on compte les résultats visibles
+          $nbresults.html($entries.filter(':visible').length);
+      });
+    });
+  }
+  handleFilterClick('.facette-container');
+});
