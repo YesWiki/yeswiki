@@ -6,11 +6,11 @@
     $percent = 75;
     
     if (!empty($_GET['height']))   
-        $height = intval($_GET['height']);/**/
+        $height = intval($_GET['height']);
     if (!empty($_GET['width']))   
-        $width = intval($_GET['width']);/**/
+        $width = intval($_GET['width']);
     if (!empty($_GET['percent']))   
-        $percent = intval($_GET['percent']);/**/
+        $percent = intval($_GET['percent']);
     
     if ($percent > 100) $percent = 100;
     
@@ -28,6 +28,4 @@
     
     
     imagepng($image);
-    destroyimage($image);
-    
-?>
+    imagedestroy($image);

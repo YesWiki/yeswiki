@@ -268,7 +268,7 @@ overflow: auto;
 }
 
 /* barres de progression */
-.progressbar {width:100px; float:left; clear:both; margin:0 5px 0 0 !important;}
+.progressbar {float:left; clear:both; margin:0 5px 0 0 !important;}
 
 /* page wiki en format boite modale */
 #YesWikiModal .page { min-height:auto;}
