@@ -59,7 +59,7 @@ if (!empty($query)) {
 // ordre du tri (asc ou desc)
 $GLOBALS['ordre'] = $this->GetParameter("ordre");
 if (empty($GLOBALS['ordre'])) {
-    $GLOBAL['ordre'] = 'asc';
+    $GLOBALS['ordre'] = 'asc';
 }
 
 // champ du formulaire utilisé pour le tri
