@@ -1,6 +1,1 @@
-""<div class="pull-right">
-<div class="btn-toolbar">
-<a href="wakka.php?wiki=DerniersChangementsRss/xml" class="btn" title="S'abonner au flux RSS des derniers changements"><img width="12" height="12" src="tools/templates/presentation/images/rss-icon12-black.png" alt="rss" /></a>
-<div class="btn-group">""{{moteurrecherche}}""</div>
-</div>
-</div>""{{button nobtn="1" icon="home" link="PagePrincipale"}} [[AidE Aide]] [[TableauDeBordDeCeWiki Tableau de bord]]
+""<div class="btn-group pull-right"> <button type="button" class="yeswiki-menu-btn navbar-btn btn btn-default  dropdown-toggle" data-toggle="dropdown"><span class="glyphicon  glyphicon-cog icon-cog"></span></button> <ul class="dropdown-menu" role="menu">  <li><a href="wakka.php?wiki=ParametresUtilisateur"><i  class="glyphicon glyphicon-user icon-user"></i> Se Connecter</a></li>    <li class="divider"></li>     <li><a href="wakka.php?wiki=GestionSite"><i  class="glyphicon glyphicon-wrench icon-wrench"></i> Gestion du site</a></li> <li><a href="wakka.php?wiki=BazaR"><i  class="glyphicon glyphicon-lock glyphicon-lock"></i> Base de données</a></li> </ul> </div> ""{{moteurrecherche template="moteurrecherche_navbar.tpl.html" class="pull-right"}}  ""<div class="clearfix"></div>""
