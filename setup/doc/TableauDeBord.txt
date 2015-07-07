@@ -1,5 +1,6 @@
-======Tablean de bord======
-
+======Tableau de bord======
+{{grid}}
+{{col size="6"}} 
 ==== 8 derniers comptes utilisateurs ====
 {{Listusers last="8"}}
 ------
@@ -9,9 +10,13 @@
 ==== 5 dernières pages commentées ====
 {{RecentlyCommented max="5"}}
 ------
+{{end elem="col"}} 
+{{col size="6"}} 
 ==== Index des pages ====
 {{pageindex}}
 ------
 ==== Pages orphelines ====
 {{OrphanedPages}}
 ------
+{{end elem="col"}}
+{{end elem="grid"}}
