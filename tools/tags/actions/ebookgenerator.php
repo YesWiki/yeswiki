@@ -69,10 +69,10 @@ if (isset($_POST["page"])) {
 	if (isset($_POST['antispam']) && $_POST['antispam'] == 1) {
 		if (isset($_POST["ebook-title"]) && $_POST["ebook-title"] != '') {
 			if (isset($_POST["ebook-description"]) && $_POST["ebook-description"] != '') {
-				if (isset($_POST["ebook-author"]) && $_POST["ebook-author"] != '') {	
-					if (isset($_POST["ebook-biblio-author"]) && $_POST["ebook-biblio-author"] != '') {	
+				if (isset($_POST["ebook-author"]) && $_POST["ebook-author"] != '') {
+					if (isset($_POST["ebook-biblio-author"]) && $_POST["ebook-biblio-author"] != '') {
 						if (isset($_POST["ebook-cover-image"]) && $_POST["ebook-biblio-author"] != '') {
-							if (preg_match("/.(jpg)$/i", $_POST["ebook-cover-image"])==1) {	
+							if (preg_match("/.(jpg)$/i", $_POST["ebook-cover-image"])==1) {
 								if (isset($ebookpagename) && !empty($ebookpagename)) {
 									$pagename = $ebookpagename;
 								}
