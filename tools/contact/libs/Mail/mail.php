@@ -134,7 +134,8 @@ class Mail_mail extends Mail {
         // If the mail() function returned failure, we need to create a
         // PEAR_Error object and return it instead of the boolean result.
         if ($result === false) {
-            $result = PEAR::raiseError('mail() returned failure');
+            $pear = new PEAR();
+            $result = $pear->raiseError('mail() returned failure');
         }
 
         return $result;
