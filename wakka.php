@@ -196,7 +196,7 @@ class Wiki
 	 * @param string $property The property of the triple to retrieve or null
 	 * @param string $res_op The operator of comparison between the effective resource and $resource (default: 'LIKE')
 	 * @param string $prop_op The operator of comparison between the effective property and $property (default: '=')
-	 * @return array The list of all the triples that match the asked criteria 
+	 * @return array The list of all the triples that match the asked criteria
 	 */
 	function GetMatchingTriples($resource, $property = null, $res_op = 'LIKE', $prop_op = '=')
 	{
@@ -233,7 +233,7 @@ class Wiki
 			. 'WHERE resource = "' . addslashes($re_prefix . $resource) . '" '
 			. 'AND property = "' . addslashes($prop_prefix . $property) . '" ';
 		return $this->LoadAll($sql);
-	} 
+	}
 
 	/**
 	 * Retrieves a single value for a given couple (resource, property)
@@ -258,7 +258,7 @@ class Wiki
 	 * @param string $value The value of the triple to find
 	 * @param string $re_prefix The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
 	 * @param string $prop_prefix The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-	 * @param int The id of the found triple or 0 if there is no such triple. 
+	 * @param int The id of the found triple or 0 if there is no such triple.
 	 */
 	function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
 	{
@@ -340,27 +340,27 @@ class Wiki
 	// inclusions
 	/**
 	 * Enregistre une nouvelle inclusion dans la pile d'inclusions.
-	 * 
+	 *
 	 * @param string $pageTag Le nom de la page qui va etre inclue
 	 * @return int Le nombre d'elements dans la pile
 	 */
 	function RegisterInclusion($pageTag)
 	{
 		return array_unshift($this->inclusions, strtolower(trim($pageTag)));
-	} 
+	}
 	/**
 	 * Retire le dernier element de la pile d'inclusions.
-	 * 
+	 *
 	 * @return string Le nom de la page dont l'inclusion devrait se terminer.
 	 * null s'il n'y a plus d'inclusion dans la pile.
 	 */
 	function UnregisterLastInclusion()
 	{
 		return array_shift($this->inclusions);
-	} 
+	}
 	/**
 	 * Renvoie le nom de la page en cours d'inclusion.
-	 * 
+	 *
 	 * @example // dans le cas d'une action comme l'ActionEcrivezMoi
 	 * if($inc = $this->CurrentInclusion() && strtolower($this->GetPageTag()) != $inc)
 	 * 	echo 'Cette action ne peut etre appelee depuis une page inclue';
@@ -370,30 +370,30 @@ class Wiki
 	function GetCurrentInclusion()
 	{
 		return isset($this->inclusions[0]) ? $this->inclusions[0]: false ;
-	} 
+	}
 	/**
 	 * Verifie si on est a l'interieur d'une inclusion par $pageTag (sans tenir compte de la casse)
-	 * 
+	 *
 	 * @param string $pageTag Le nom de la page a verifier
 	 * @return bool True si on est a l'interieur d'une inclusion par $pageTag (false sinon)
 	 */
 	function IsIncludedBy($pageTag)
 	{
 		return in_array(strtolower($pageTag), $this->inclusions);
-	} 
+	}
 	/**
-	 * 
+	 *
 	 * @return array La pile d'inclusions
 	 * L'element 0 sera la derniere inclusion, l'element 1 sera son parent et ainsi de suite.
 	 */
 	function GetAllInclusions()
 	{
 		return $this->inclusions;
-	} 
+	}
 	/**
 	 * Remplace la pile des inclusions par une nouvelle pile (par defaut une pile vide)
 	 * Permet de formatter une page sans tenir compte des inclusions precedentes.
-	 * 
+	 *
 	 * @param array $ La nouvelle pile d'inclusions.
 	 * L'element 0 doit representer la derniere inclusion, l'element 1 son parent et ainsi de suite.
 	 * @return array L'ancienne pile d'inclusions, avec les noms des pages en minuscules.
@@ -403,7 +403,7 @@ class Wiki
 		$temp = $this->inclusions;
 		$this->inclusions = $pile;
 		return $temp;
-	} 
+	}
 
 	// PAGES
 	function LoadPage($tag, $time = "", $cache = 1)
@@ -423,8 +423,8 @@ class Wiki
 			// the database is in ISO-8859-15, it must be converted
 			if (isset($page['body'])) {
 				$page['body'] = _convert($page['body'], "ISO-8859-15");
-			} 
-			
+			}
+
 			// cache result
 			if (!$time) $this->CachePage($page, $tag);
 		}
@@ -499,7 +499,7 @@ class Wiki
 	 * @param string $comment_on Indication si c'est un commentaire
 	 * @param boolean $bypass_acls Indication si on bypasse les droits d'ecriture
 	 * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
-	 */	
+	 */
 	function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
 	{
 		// get current user
@@ -507,7 +507,7 @@ class Wiki
 
 		// check bypass of rights or write privilege
 		$rights = $bypass_acls || ($comment_on ? $this->HasAccess("comment", $comment_on) : $this->HasAccess("write", $tag));
-			
+
 		if ($rights)
 		{
 			// is page new?
@@ -548,14 +548,13 @@ class Wiki
 				"user = '".mysql_real_escape_string($user)."', ".
 				"latest = 'Y', ".
 				"body = '".mysql_real_escape_string(chop($body))."'");
-
 			unset($this->pageCache[$tag]);
 			return 0;
 		}
 		else return 1;
 	}
 
-	
+
 	/**
 	 * AppendContentToPage
 	 * Ajoute du contenu a la fin d'une page
@@ -584,7 +583,7 @@ class Wiki
 			// -- Sauvegarde de la page
 			// TODO : que se passe-t-il si la page est pleine ou si l'utilisateur n'a pas les droits ?
 			$this->SavePage($page, $body, "", $bypass_acls);
-			
+
 			// now we render it internally so we can write the updated link table.
 			$this->ClearLinkTable();
 			$this->StartLinkTracking();
@@ -609,14 +608,14 @@ class Wiki
 		}
 		else return 1;
 	}
-	
+
 	/**
 	 * LogAdministrativeAction($user, $content, $page = "")
-	 * 
+	 *
 	 * @param string $user Utilisateur
 	 * @param string $content Contenu de l'enregistrement
 	 * @param string $page Page de log
-	 * 
+	 *
 	 * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
 	 */
 	function LogAdministrativeAction($user, $content, $page = "")
@@ -629,7 +628,7 @@ class Wiki
 		return $this->AppendContentToPage($contentToAppend, $page, true);
 	}
 
-	
+
 	/**
 	 * Make the purge of page versions that are older than the last version older than 3 "pages_purge_time"
 	 * This method permits to allways keep a version that is older than that period.
@@ -1025,7 +1024,7 @@ class Wiki
 	 * else // action was not found
 	 * {
 	 * 		// rescue from inexising action or sth
-	 * } 
+	 * }
 	 */
 	function &GetActionObject($name)
 	{
@@ -1116,7 +1115,7 @@ class Wiki
 		return $this->IncludeBuffered($methodLocation, "<i>"._t('UNKNOWN_METHOD')." \"$methodLocation\"</i>", "", $this->config["handler_path"]);
 	}
 	function Format($text, $formatter = "wakka") {
-		return $this->IncludeBuffered("formatters/".$formatter.".php", "<i>"._t('FORMATTER_NOT_FOUND')." \"$formatter\"</i>", compact("text")); 
+		return $this->IncludeBuffered("formatters/".$formatter.".php", "<i>"._t('FORMATTER_NOT_FOUND')." \"$formatter\"</i>", compact("text"));
 	}
 
 
@@ -1135,7 +1134,7 @@ class Wiki
 	// COMMENTS
 	/**
 	 * Charge les commentaires relatifs a une page.
-	 * 
+	 *
 	 * @param string $tag Nom de la page. Ex : "PagePrincipale"
 	 * @return array Tableau contenant tous les commentaires et leurs
 	 * proprietes correspondantes.
@@ -1151,7 +1150,7 @@ class Wiki
 	}
 	/**
 	 * Charge les derniers commentaires de toutes les pages.
-	 * 
+	 *
 	 * @param int $limit Nombre de commentaires charges.
 	 *                   0 par d?faut (ie tous les commentaires).
 	 * @return array Tableau contenant chaque commentaire et ses
@@ -1161,7 +1160,7 @@ class Wiki
 	 */
 	function LoadRecentComments($limit = 0)
 	{
-		// The part of the query which limit the number of comments  
+		// The part of the query which limit the number of comments
 		if(is_numeric($limit) && $limit > 0) $lim = " limit ".$limit;
 		else $lim = "";
 
@@ -1210,7 +1209,7 @@ class Wiki
 				}
 			}
 		}
-		// load tags of pages 
+		// load tags of pages
 		//return $this->LoadAll("select comment_on as tag, max(time) as time, tag as comment_tag, user from ".$this->config["table_prefix"]."pages where comment_on != '' group by comment_on order by time desc");
 		return $pages;
 	}
@@ -1337,7 +1336,7 @@ class Wiki
 
 	/**
 	 * @param string $group The name of a group
-	 * @return boolean true iff the user is in the given $group 
+	 * @return boolean true iff the user is in the given $group
 	 */
 	function UserIsInGroup($group, $user = null, $admincheck = true)
 	{
@@ -1440,7 +1439,7 @@ class Wiki
 				case "*": // everyone
 					return !$negate;
 				case "+": // registered users
-					if (!$this->LoadUser($user)) 
+					if (!$this->LoadUser($user))
 					{
 						return $negate;
 					}
@@ -1474,7 +1473,7 @@ class Wiki
 	 * @param string $module The name of the module
 	 * @param string $module_type The type of module: 'action' or 'handler'
 	 * @return mixed The ACL for the given module or <tt>null</tt> if no such
-	 * ACL was found (which should probably be interpreted as '*'). 
+	 * ACL was found (which should probably be interpreted as '*').
 	 */
 	function GetModuleACL($module, $module_type)
 	{
@@ -1564,7 +1563,7 @@ class Wiki
 
 	// THE BIG EVIL NASTY ONE!
 	function Run($tag, $method = "") {
-		if(!($this->GetMicroTime()%9)) $this->Maintenance(); 
+		if(!($this->GetMicroTime()%9)) $this->Maintenance();
 
 		$this->ReadInterWikiConfig();
 
@@ -1660,7 +1659,7 @@ unset($_rewrite_mode);
 if (!$configfile = GetEnv("WAKKA_CONFIG")) $configfile = "wakka.config.php";
 if (file_exists($configfile)) {
 	include($configfile);
-} 
+}
 else {
 	// we must init language file without loading the page's settings.. to translate some default config settings
 	$wakkaDefaultConfig["root_page"] =_t('HOMEPAGE_WIKINAME');
