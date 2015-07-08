@@ -95,15 +95,15 @@ figcaption *:last-child {
 
 
 /* fichiers attaches */
-.attach_left, .left { 
+.attached_file.attach_left, .attached_file.left { 
 float:left; 
 margin:0 18px 18px 0 !important; 
 } 
-.attach_right, .right { 
+.attached_file.attach_right, .attached_file.right { 
 float:right; 
 margin:0 0 18px 18px !important;
 }  
-.attach_center, .center  { 
+.attached_file.attach_center, .attached_file.center  { 
 display:table; 
 clear:both; 
 text-align:center; 
@@ -226,5 +226,6 @@ box-shadow: 2px 2px 15px 0px #444;
 }
 .background-image.center {
   background-position:center top;
+  margin: 0 !important;
 }
 .headerpage .background-image { margin:-20px; padding:20px;}

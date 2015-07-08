@@ -64,11 +64,11 @@ class attach {
 	function attach(&$wiki){
    	$this->wiki = $wiki;
 		$this->attachConfig = $this->wiki->GetConfigValue("attach_config");
-		if (empty($this->attachConfig["ext_images"])) $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg";
+		if (empty($this->attachConfig["ext_images"])) $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg";
 		if (empty($this->attachConfig["ext_audio"])) $this->attachConfig["ext_audio"] = "mp3";
 		if (empty($this->attachConfig["ext_wma"])) $this->attachConfig["ext_wma"] = "wma";
 		if (empty($this->attachConfig["ext_freemind"])) $this->attachConfig["ext_freemind"] = "mm";
-		if (empty($this->attachConfig["ext_flashvideo"])) $this->attachConfig["ext_flashvideo"] = "flv";
+    if (empty($this->attachConfig["ext_flashvideo"])) $this->attachConfig["ext_flashvideo"] = "flv";
 		if (empty($this->attachConfig["ext_script"])) $this->attachConfig["ext_script"] = "php|php3|asp|asx|vb|vbs|js";
 		if (empty($this->attachConfig['upload_path'])) $this->attachConfig['upload_path'] = 'files';
 		if (empty($this->attachConfig['update_symbole'])) $this->attachConfig['update_symbole'] = '';
@@ -206,12 +206,12 @@ class attach {
 	function isFlashvideo(){
 		return preg_match("/.(".$this->attachConfig["ext_flashvideo"].")$/i",$this->file)==1;
 	}
-	/**
-	* Test si le fichier est un fichier wma
-	*/
-	function isWma(){
-		return preg_match("/.(".$this->attachConfig["ext_wma"].")$/i",$this->file)==1;
-	}
+  /**
+  * Test si le fichier est un fichier wma
+  */
+  function isWma(){
+    return preg_match("/.(".$this->attachConfig["ext_wma"].")$/i",$this->file)==1;
+  }
 
 	/**
 	* Renvoie la date courante au format utilise par les fichiers
@@ -354,17 +354,24 @@ class attach {
         // Generation d'une vignette si absente ou si changement de dimension  , TODO : suupprimer ancienne vignette ?
 
         $image_redimensionnee=0;
-        if ((!empty($this->height)) && (!empty($this->width))) { // Si des parametres width ou height present : redimensionnement
-            if (!file_exists($image_dest=$this->calculer_nom_fichier_vignette($fullFilename,$this->width,$this->height))) {
-                $this->redimensionner_image($fullFilename, $image_dest,$this->width ,$this->height);
-            }
-            $img_name=$image_dest;
-            if (empty($this->nofullimagelink)) $image_redimensionnee=1;
+        if (!preg_match("/.(svg)$/i", $this->file)==1) {
+          if ((!empty($this->height)) && (!empty($this->width))) { // Si des parametres width ou height present : redimensionnement
+              if (!file_exists($image_dest=$this->calculer_nom_fichier_vignette($fullFilename,$this->width,$this->height))) {
+                  $this->redimensionner_image($fullFilename, $image_dest,$this->width ,$this->height);
+              }
+              $img_name=$image_dest;
+              if (empty($this->nofullimagelink)) $image_redimensionnee=1;
+          }
+          else {
+              $img_name=$fullFilename;
+          }
+          list($width, $height, $type, $attr) = getimagesize($img_name);
+        } else {
+          // valeurs par défaut pour le svg
+          $width = $this->width;
+          $height = $this->height;
+          $img_name=$fullFilename;
         }
-        else {
-            $img_name=$fullFilename;
-        }
-        list($width, $height, $type, $attr) = getimagesize($img_name);
         // pour l'image avec bordure on enleve la taille de la bordure!
         if(strstr($this->classes, 'whiteborder')) {
         	$width = $width - 20;
@@ -516,7 +523,7 @@ class attach {
     function showUploadForm(){
         $this->file = $_GET['file'];
         echo "<h3>"._t('ATTACH_UPLOAD_FORM_FOR_FILE')." ".$this->file."</h3>\n";
-        echo "<form enctype=\"multipart/form-data\" name=\"frmUpload\" method=\"POST\" action=\"".$_SERVER["PHP_SELF"]."\">\n"
+        echo "<form enctype=\"multipart/form-data\" name=\"frmUpload\" method=\"POST\" action=\"".$this->wiki->href('upload', $this->wiki->GetPageTag())."\">\n"
             ."	<input type=\"hidden\" name=\"wiki\" value=\"".$this->wiki->GetPageTag()."/upload\" />\n"
             ."	<input type=\"hidden\" name=\"MAX_FILE_SIZE\" value=\"".$this->attachConfig['max_file_size']."\" />\n"
             ."	<input type=\"hidden\" name=\"file\" value=\"$this->file\" />\n"
@@ -545,7 +552,6 @@ class attach {
                     chmod($destFile,0644);
                     header("Location: ".$this->wiki->href("",$this->wiki->GetPageTag(),""));
                 }else{
-                    echo $this->wiki->Format("//Erreur lors du d&eacute;placement du fichier temporaire//---");
                     echo "<div class=\"alert alert-error alert-danger\">"._t('ERROR_MOVING_TEMPORARY_FILE')."</div>\n";
                 }
                 break;
