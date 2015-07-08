@@ -26,7 +26,7 @@ if ( ! Modernizr.mq('only all') ) {
         $placeholders.each(function()
         {
             var $placeholder = $(this);
-            if ($placeholder.val() == '') // if field is empty
+            if ($placeholder.val() === '') // if field is empty
             {
                 $placeholder.val( $placeholder.attr('placeholder') ).addClass('placeholder');
             }
@@ -44,7 +44,7 @@ if ( ! Modernizr.mq('only all') ) {
         }).blur(function()
         {
             var $placeholder = $(this);
-            if ($placeholder.val() == '' || $placeholder.val() == $placeholder.attr('placeholder'))
+            if ($placeholder.val() === '' || $placeholder.val() == $placeholder.attr('placeholder'))
             {
                 $placeholder.val($placeholder.attr('placeholder'));
                 $placeholder.addClass('placeholder');
@@ -62,7 +62,7 @@ if ( ! Modernizr.mq('only all') ) {
                 {
                     $this.val('');
                 }
-            })
+            });
         });
     }
 
@@ -96,7 +96,7 @@ if ( ! Modernizr.mq('only all') ) {
 		modal.find('.modal-body').load($this.attr('href') + ' .page', function(response, status, xhr) {
 			modal.modal({
 				keyboard: false
-			}).modal('show').on('hidden', function () {
+			}).modal('show').on('hidden hidden.bs.modal', function () {
 				modal.remove();
 			});
 			return false;
@@ -137,17 +137,18 @@ if ( ! Modernizr.mq('only all') ) {
 
 			// s'il y a des sous menus
 			if ($list.find("ul").length > 0) {
+        var arrow;
 				// selon la hierarchie des menu, on change le sens et la forme de la fleche
 				if ($list.parents("ul").length <= 1) {
-					var arrow = $("<span>").addClass('arrow arrow-level1').html("&#9660;");
+					arrow = $("<span>").addClass('arrow arrow-level1').html("&#9660;");
 				}
 				else {
-					var arrow = $("<span>").addClass('arrow arrow-level'+$list.parents("ul").length).html("&#9658;");
+					arrow = $("<span>").addClass('arrow arrow-level'+$list.parents("ul").length).html("&#9658;");
 				}
 				
 				var firstsublist = $list.find('ul:first');
 				if (firstsublist.length > 0) { 
-					if ($list.find('>a').length==0) {
+					if ($list.find('>a').length===0) {
 						$list.contents().first().wrap('<a />');
 						$list.find('a:not([href])').attr('href', '#');
 					}
@@ -155,7 +156,7 @@ if ( ! Modernizr.mq('only all') ) {
 				}
 				else { 
 					$list.prev().prepend(arrow); 
-				};
+				}
 				
 				$list.hoverIntent(confighorizontal);
 			}
@@ -223,14 +224,15 @@ if ( ! Modernizr.mq('only all') ) {
 			var val = $(this).val();
 			// pour vider la liste
 			var squelette = $("#changesquelette")[0];
-			squelette.options.length=0
-			for (var i=0; i<tab1[val].length; i++){
+			squelette.options.length=0;
+      var i;
+			for (i=0; i<tab1[val].length; i++){
 				o = new Option(tab1[val][i],tab1[val][i]);
 				squelette.options[squelette.options.length] = o;				
 			}
 			var style = $("#changestyle")[0];
-			style.options.length=0
-			for (var i=0; i<tab2[val].length; i++){
+			style.options.length=0;
+			for (i=0; i<tab2[val].length; i++){
 				o = new Option(tab2[val][i],tab2[val][i]);
 				style.options[style.options.length]=o;				
 			}
@@ -251,5 +253,18 @@ if ( ! Modernizr.mq('only all') ) {
 		var topoffset = topnav.offset().top;
 		topnav.affix({'offset':topoffset});
 	}
+
+  // moteur de recherche utilisé dans un template 
+  $('a[href="#search"]').on('click', function(event) {
+      event.preventDefault();
+      $('#search').addClass('open');
+      $('#search .search-query').focus();
+  });
+
+  $('#search, #search button.close-search').on('click keyup', function(event) {
+      if (event.target == this || $(event.target).hasClass('close-search') || event.keyCode == 27) {
+          $(this).removeClass('open');
+      }
+  });
 	
 })(jQuery);

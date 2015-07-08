@@ -30,10 +30,10 @@ function check_graphical_elements($element, $pagetag, $pagecontent) {
  * 
  */
 function search_template_files($directory) {
-	$tab_themes = array();	
+	$tab_themes = array();
 	$dir = opendir($directory);
-	while ($dir && ($file = readdir($dir)) !== false) {    	
-		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) { 
+	while ($dir && ($file = readdir($dir)) !== false) {
+		if  ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
 			if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles') && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
 				$dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
 			    while (false !== ($file2 = readdir($dir2))) {
@@ -132,7 +132,7 @@ function replace_missingpage_links($output) {
 						'&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).				
 						((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '').
 						'&amp;newpage=1';
-		$replacement = '<a class="yeswiki-editable" href="'.$GLOBALS['wiki']->href("edit", $values[2], $query_string).'"><i class="icon-pencil"></i>&nbsp;'.
+		$replacement = '<a class="yeswiki-editable" href="'.$GLOBALS['wiki']->href("edit", $values[2], $query_string).'"><i class="glyphicon glyphicon-pencil icon-pencil"></i>&nbsp;'.
 						$values[1].'</a>';
 		$output = str_replace_once( $values[0], $replacement, $output );
 	}

@@ -1,0 +1,45 @@
+<?php 
+if(count($pages)>0) : ?>
+    <table class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
+		    <thead>
+		        <tr>
+		            <th><?php echo _t('TEMPLATE_PAGE'); ?></th>
+		            <th style="width:220px;"><?php echo _t('TEMPLATE_LAST_MODIFIED'); ?></th>
+		            <th style="width:200px;"><?php echo _t('TEMPLATE_OWNER'); ?></th>
+		            <th style="width:140px;"><?php echo _t('TEMPLATE_ACTIONS'); ?></th>
+		        </tr>
+		    </thead>
+		    <tbody>
+		    		<?php 
+    foreach ($pages as $key => $page) : ?>
+		        <tr>
+		            <td><?php echo $GLOBALS['wiki']->Format('[['.$page['tag'].' '.$page['tag'].']]'); ?></td>
+		            <td><?php echo date("d-m-Y H:i:s", strtotime($page['time'])); ?></td>
+		            <td><?php echo $GLOBALS['wiki']->Format('[['.$page['owner'].' '.$page['owner'].']]'); ?></td>
+		            <td>
+		            <?php 
+        if ($GLOBALS['wiki']->HasAccess("write", $page['tag'])) :?>
+		                <a class="btn btn-default btn-mini btn-xs" href="<?php 
+            echo $GLOBALS['wiki']->href('edit', $page['tag']); ?>">
+            					  <i class="glyphicon glyphicon-pencil icon-pencil"></i> <?php 
+            echo _t('TEMPLATE_MODIFY'); ?>
+            				</a>
+		            <?php 
+        endif; ?>
+		            <?php 
+        if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) :?>
+		                <a class="btn btn-danger btn-mini btn-xs" href="<?php
+            echo $GLOBALS['wiki']->href('deletepage', $page['tag']); ?>"  onclick="javascript:return confirm('<?php
+            echo _t('TEMPLATE_CONFIRM_DELETE_PAGE'); ?> ?');">
+            					  <i class="glyphicon glyphicon-trash icon-trash icon-white"></i>
+            				</a>
+		            <?php 
+        endif; ?>
+		            </td>
+		        </tr>
+		        <?php 
+    endforeach; ?>
+		    </tbody>
+    </table>
+		<?php
+endif;

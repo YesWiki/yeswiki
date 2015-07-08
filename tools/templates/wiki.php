@@ -29,28 +29,28 @@
 */
 
 if (!defined("WIKINI_VERSION")) {
-	die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 require_once 'tools/templates/libs/templates.functions.php';
 
 // Theme par défaut
-define ('THEME_PAR_DEFAUT', 'yeswiki');
+define('THEME_PAR_DEFAUT', 'yeswiki');
 
 // Style par défaut
-define ('CSS_PAR_DEFAUT','gray.css');
+define('CSS_PAR_DEFAUT', 'gray.css');
 
 // Squelette par défaut
-define ('SQUELETTE_PAR_DEFAUT', 'responsive-1col.tpl.html');
+define('SQUELETTE_PAR_DEFAUT', 'responsive-1col.tpl.html');
 
 // Image de fond par défaut
-define ('BACKGROUND_IMAGE_PAR_DEFAUT', '');
+define('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 
 // Pour que seul le propriétaire et l'admin puissent changer de theme
-define ('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
+define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
 // Indique un encodage de caractères par defaut
-define ('TEMPLATES_DEFAULT_CHARSET', 'UTF-8') ; 
+define('TEMPLATES_DEFAULT_CHARSET', 'UTF-8');
 
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses [] = 'Template';

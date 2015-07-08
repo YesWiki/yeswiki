@@ -139,4 +139,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Action {{buttondropdown ...}}',
 'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'l\'action {{buttondropdown ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="buttondropdown"}}',
 
-));
+// actions/adminpages.php
+'TEMPLATE_ACTION_FOR_ADMINS_ONLY' => 'action réservée aux administrateurs',
+'TEMPLATE_CONFIRM_DELETE_PAGE' => 'Etes vous sûr(e) de vouloir supprimer définitivement cette page ?',
+'TEMPLATE_PAGE' => 'Page',
+'TEMPLATE_LAST_MODIFIED' => 'Dernière modification',
+'TEMPLATE_OWNER' => 'Propriétaire',
+'TEMPLATE_ACTIONS' => 'Actions',
+'TEMPLATE_MODIFY' => 'Modifier',
+)
+);
