@@ -31,7 +31,7 @@ if(count($fiches)>0) :
                   <?php
         endif; ?>
                   <?php
-        if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+        if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner($fiche['id_fiche'])) : ?>
                   <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>"
                      class="btn btn-danger">
                     <i class="glyphicon glyphicon-trash icon-trash icon-white"></i>

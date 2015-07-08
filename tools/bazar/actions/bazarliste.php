@@ -336,21 +336,43 @@ if (count($facettevalue)>0) {
         }
         unset($facettevalue['id_typeannonce']);
     }
+    $i = 0;
+    $first = true;
     foreach ($facettevalue as $key => $value) {
         if (count($facettevalue[$key])>1) {
             $tabkey = explode('|', $key);
             $list = baz_valeurs_liste($tabkey[0]);
-            $output .=  '<div class="filter-box panel panel-default" data-id="'.htmlspecialchars($tabkey[1]).'">'."\n";
-            $output .=  '<div class="panel-heading">'.$list['titre_liste'].'</div>'."\n";
-            $output .=  '<div class="panel-body">'."\n";
-            foreach ($value as $val => $nb) {
-                $output .=  '<div class="checkbox"><label>
-                <input class="filter-checkbox" type="checkbox" name="'.htmlspecialchars($tabkey[1]).'" 
-                value="'.htmlspecialchars($val).'"> '.$list['label'][$val].' (<span class="nb">'.$nb.'</span>)
-                </label></div>'."\n";
+            $output .=  '<div class="filter-box panel panel-default '.htmlspecialchars($tabkey[1]).
+                '" data-id="'.htmlspecialchars($tabkey[1]).'">'."\n";
+            if (isset($titles[$i]) && !empty($titles[$i])) {
+                $titlefilterbox = $titles[$i];
+            } else {
+                $titlefilterbox = $list['titre_liste'];
             }
-            $output .=  '</div></div><!-- /.filter-box -->'."\n";
+            $output .=  '<div class="panel-heading';
+            if (!$first) {
+                $output .= ' collapsed';
+            }
+            $output .= '" data-toggle="collapse" href="#collapse'.
+                htmlspecialchars($tabkey[1]).'" >'.$titlefilterbox.'</div>'."\n";
+            $output .= '<div id="collapse'.htmlspecialchars($tabkey[1]).'" class="panel-collapse';
+            if ($first) {
+                $output .= ' in';
+            }
+            $output .= ' collapse">'."\n";
+            $output .= '<div class="panel-body">'."\n";
+            foreach ($value as $val => $nb) {
+                if (!empty($val)) {
+                    $output .=  '<div class="checkbox"><label>
+                    <input class="filter-checkbox" type="checkbox" name="'.htmlspecialchars($tabkey[1]).'" 
+                    value="'.htmlspecialchars($val).'"> '.$list['label'][$val].' (<span class="nb">'.$nb.'</span>)
+                    </label></div>'."\n";
+                }
+            }
+            $output .=  '</div></div></div><!-- /.filter-box -->'."\n";
         }
+        $i++;
+        $first = false;
     }
     $output .= '</div><!-- /.filters.col-xs-3 -->'."\n";
 

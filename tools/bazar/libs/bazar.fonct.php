@@ -1902,6 +1902,30 @@ function getHtmlDataAttributes($fiche)
 }
 
 
+/**  show() - Formatte un paragraphe champs d'une fiche seulement si la valeur est renseignée
+ * @global string champ de la fiche (au format html)
+ * @global string Label du champs (facultatif)
+ * @global string classe CSS du paragraphe (facultatif "field" par défaut)
+ * @global string balise HTML du paragraphe (facultatif "field" par défaut)
+ *
+ * @return   string  HTML
+ */
+function show($val, $label = '', $class = 'field', $tag = 'p')
+{
+    if (!empty($val)) {
+        echo '<'.$tag;
+        if (!empty($class)) {
+            echo ' class="'.$class.'"';
+        }
+        echo '>'."\n";
+        if (!empty($label)) {
+            echo '<strong>'.$label.'</strong>'."\n";
+        }
+        echo $val.'</'.$tag.'>'."\n";
+    }
+}
+
+
 /**  baz_voir_fiche() - Permet de visualiser en detail une fiche  au format XHTML
  * @global boolean Rajoute des informations et la barre d'édition si true
  * @global integer Identifiant de la fiche a afficher ou mixed un tableau avec toutes les valeurs stockees pour la fiche
@@ -1943,14 +1967,68 @@ function baz_voir_fiche($danslappli, $idfiche)
     // check if user is owner
     //if ($page["owner"] == $wiki->GetUserName()) return true;
 
-    for ($i = 0; $i < count($fichebazar['form']['template']); $i++) {
-        if (isset($fichebazar['form']['template'][$i][11]) && $fichebazar['form']['template'][$i][11] != '') {
+    if (file_exists('themes/tools/bazar/templates/fiche-'.$fichebazar['values']['id_typeannonce'].'.tpl.html')) {
+        // un template fiche existe
+        include_once 'tools/bazar/libs/squelettephp.class.php';
+        $templatetoload = 'themes/tools/bazar/templates/fiche-'.$fichebazar['values']['id_typeannonce'].'.tpl.html';
+        $squelfiche = new SquelettePhp($templatetoload);
+        $html = '';
+        for ($i = 0; $i < count($fichebazar['form']['template']); $i++) {
             // Champ  acls  present
-            if (!$GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+            if (isset($fichebazar['form']['template'][$i][11]) && $fichebazar['form']['template'][$i][11] != '' &&
+                !$GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
                 // Non autorise : non ne fait rien
-                $res .= '';
             } else {
                 // Mauvais style de programmation ...
+                if ($fichebazar['form']['template'][$i][0]!='labelhtml' &&
+                    function_exists($fichebazar['form']['template'][$i][0])) {
+                    if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
+                        $fichebazar['form']['template'][$i][0] == 'liste' ||
+                        $fichebazar['form']['template'][$i][0] == 'checkboxfiche' ||
+                        $fichebazar['form']['template'][$i][0] == 'listefiche') {
+                        $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1].
+                            $fichebazar['form']['template'][$i][6];
+                    } else {
+                        $id = $fichebazar['form']['template'][$i][1];
+                    }
+                    $html[$id] = $fichebazar['form']['template'][$i][0](
+                        $formtemplate,
+                        $fichebazar['form']['template'][$i],
+                        'html',
+                        $fichebazar['values']
+                        );
+                    preg_match_all('/<div.*class="BAZ_rubrique".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div>/Uim', $html[$id], $matches);
+                    if (isset($matches[1][0]) && $matches[1][0] != '') {
+                        $html[$id] = $matches[1][0];
+                    }
+
+                }
+            }
+        }
+        $fiches['html'] = $html;
+        $fiches['fiche'] = $fichebazar['values'];
+        $fiches['form']  = $fichebazar['form'];
+        $squelfiche->set($fiches);
+        $res .= $squelfiche->analyser();
+    } else {
+        for ($i = 0; $i < count($fichebazar['form']['template']); $i++) {
+            if (isset($fichebazar['form']['template'][$i][11]) && $fichebazar['form']['template'][$i][11] != '') {
+                // Champ  acls  present
+                if (!$GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                    // Non autorise : non ne fait rien
+                    $res .= '';
+                } else {
+                    // Mauvais style de programmation ...
+                    if (function_exists($fichebazar['form']['template'][$i][0])) {
+                        $res .= $fichebazar['form']['template'][$i][0](
+                            $formtemplate,
+                            $fichebazar['form']['template'][$i],
+                            'html',
+                            $fichebazar['values']
+                            );
+                    }
+                }
+            } else {
                 if (function_exists($fichebazar['form']['template'][$i][0])) {
                     $res .= $fichebazar['form']['template'][$i][0](
                         $formtemplate,
@@ -1959,15 +2037,6 @@ function baz_voir_fiche($danslappli, $idfiche)
                         $fichebazar['values']
                         );
                 }
-            }
-        } else {
-            if (function_exists($fichebazar['form']['template'][$i][0])) {
-                $res .= $fichebazar['form']['template'][$i][0](
-                    $formtemplate,
-                    $fichebazar['form']['template'][$i],
-                    'html',
-                    $fichebazar['values']
-                    );
             }
         }
     }

@@ -1933,7 +1933,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
     //on teste la presence de filtres pour les valeurs
     $tabquery = array();
-    if (isset($_GET["query"])) {
+    if (isset($_GET["query"]) && !empty($_GET["query"])) {
         $tableau = array();
         $tab = explode('|', $_GET["query"]);
          //découpe la requete autour des |
@@ -2101,8 +2101,9 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     if (count($tabquery) > 0) {
                         $match = false;
                         foreach ($tabquery as $key => $value) {
-                            if (strstr($val_fiche[$key], $value)) $match = true;
-                            else {
+                            if (strstr($val_fiche[$key], $value)) {
+                                $match = true;
+                            } else {
                                 $match = false;
                                 break;
                             }
@@ -2114,7 +2115,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         } else {
                             $first = false;
                         }
-                        $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . $val_fiche['bf_titre'] . '">' . $val_fiche['bf_titre'] . '</a>' . "\n";
+                        $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a>' . "\n";
                     }
                 }
             }
@@ -2196,7 +2197,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
         }
     } elseif ($mode == 'html') {
         $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
-        $html = $GLOBALS['wiki']->Format($actionbazarliste);
+        $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
 
         return $html;
     }

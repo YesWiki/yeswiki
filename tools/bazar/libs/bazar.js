@@ -356,7 +356,7 @@ $( document ).ready( function () {
           });
 
           // au moins un filtre à actionner
-          if (tabfilters[0]) {
+          if (tabfilters.length>0) {
             // un premier résultat pour le tableau
             var tabres = tabfilters[0].toArray();
             // pour chaque boite de filtre, on fait l'intersection avec la suivante
@@ -367,9 +367,13 @@ $( document ).ready( function () {
             });
             
             $entries.hide().filter(tabres).show();
+            $entries.parent('.bazar-marker').hide();
+            $entries.filter(tabres).parent('.bazar-marker').show();
+
           } else {
             // pas de filtres: on affiche tout les résultats
             $entries.show();
+            $entries.parent('.bazar-marker').show();
           }
           // on compte les résultats visibles
           $nbresults.html($entries.filter(':visible').length);

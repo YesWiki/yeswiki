@@ -34,6 +34,9 @@ class Image
         if (file_exists($image)) {
             $this->image = $image;
             $this->readImageInfo();
+            if ($this->imageInfo["width"] == 0 || $this->imageInfo["height"] == 0) {
+                throw new Exception("File seems to be an empty image: " . $image);
+            }
         } else {
             throw new Exception("File does not exist: " . $image);
         }

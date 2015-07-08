@@ -143,6 +143,7 @@ if (empty($list)) {
     $output = '';
     $first = true;
     foreach ($fiches['fiches'] as $fiche) {
+        $fiche['multipleid'] = htmlspecialchars($fiche[$id].$fiche['id_fiche']);
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat)>0) {
