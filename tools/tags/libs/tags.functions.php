@@ -172,12 +172,12 @@ function get_title_from_body($page){
 	else {
 		preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
 		if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
-			$title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+			$title = $GLOBALS['wiki']->Format(_convert(trim($titles[1][0]), 'ISO-8859-15'));
 		}
 		else {
 			preg_match_all("/={5}(.*)={5}/U", $page['body'], $titles);
 			if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0]!='') {
-				$title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+				$title = $GLOBALS['wiki']->Format(_convert(trim($titles[1][0]), 'ISO-8859-15'));
 			}
 			else {
 				$title = $page['tag'];
