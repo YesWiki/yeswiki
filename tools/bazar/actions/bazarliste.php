@@ -1,186 +1,44 @@
 <?php
+
 /**
-* bazarliste : programme affichant les fiches du bazar sous forme de liste accordeon (ou autre template)
-*
-*
-*@package Bazar
-*
-*@author        Florian SCHMITT <florian@outils-reseaux.org>
-*@version       $Revision: 1.5 $ $Date: 2010/03/04 14:19:03 $
-*
-*
-**/
+ * bazarliste : programme affichant les fiches du bazar sous forme de liste accordeon (ou autre template).
+ *
+ *
+ *
+ *@author        Florian SCHMITT <florian@outils-reseaux.org>
+ *
+ *@version       $Revision: 1.5 $ $Date: 2010/03/04 14:19:03 $
+ **/
 
-// test de sÈcuritÈ pour vÈrifier si on passe par wiki
-if (!defined("WIKINI_VERSION")) {
-        die ("acc&egrave;s direct interdit");
+// test de s√©curit√© pour v√©rifier si on passe par wiki
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
-// recuperation des parametres
-$categorie_nature = $this->GetParameter("categorienature");
-// par exemple ici {{bazarliste categorienature="actus"}} va mettre dans la variable $categorie_nature la valeur "actus"
-if (empty($categorie_nature)) { // dans le cas ou il n'y a pas de valeur prÈcisÈe, alors il les prend toutes
-    $categorie_nature = 'toutes';
+// on compte le nombre de fois que l'action bazarliste est appel√©e afin de diff√©rencier les instances
+if (!isset($GLOBALS['nbbazarliste'])) {
+    $GLOBALS['nbbazarliste'] = 0;
 }
+++$GLOBALS['nbbazarliste'];
 
-// identifiant du formulaire (plusieures valuers possibles, sÈparÈes par des virgules)
-$id_typeannonce = $this->GetParameter("idtypeannonce");
-if (empty($id_typeannonce)) {
-    $id_typeannonce = array();
-} else {
-    $id_typeannonce = explode(",", $id_typeannonce);
-    $id_typeannonce = array_map('trim', $id_typeannonce);
-}
-
-//on recupere les parameres pour une requete specifique
-if (isset($_GET['query'])) {
-    $query = $this->GetParameter("query");
-    if (!empty($query)) {
-        $query .= '|'.$_GET['query'];
-    } else {
-        $query = $_GET['query'];
-    }
-} else {
-    $query = $this->GetParameter("query");
-}
-if (!empty($query)) {
-    $tabquery = array();
-    $tableau = array();
-    $tab = explode('|', $query); //dÈcoupe la requete autour des |
-    foreach ($tab as $req) {
-        $tabdecoup = explode('=', $req, 2);
-        $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-    }
-    $tabquery = array_merge($tabquery, $tableau);
-} else {
-    $tabquery = '';
-}
-
-// ordre du tri (asc ou desc)
-$GLOBALS['ordre'] = $this->GetParameter("ordre");
-if (empty($GLOBALS['ordre'])) {
-    $GLOBALS['ordre'] = 'asc';
-}
-
-// champ du formulaire utilisÈ pour le tri
-$GLOBALS['champ']   = $this->GetParameter("champ");
-if (empty($GLOBALS['champ'])) {
-    $GLOBALS['champ'] = 'bf_titre';  // si pas de champ prÈcisÈ, on triera par le titre
-}
-
-// template utilisÈ pour l'affichage
-$template = $this->GetParameter("template");
-if (empty($template)) {
-    $template = BAZ_TEMPLATE_LISTE_DEFAUT;
-}
-
-// nombre maximal de rÈsultats ‡ afficher
-$nb = $this->GetParameter("nb");
-if (empty($nb)) {
-    $nb = '';
-}
-
-// facette : identifiants servant de filtres 
-//    plusieures valeurs possibles, sÈparÈes par des virgules,
-//    "all" pour toutes les facette possibles)
-//    exemple : {{bazarliste groups="bf_ce_titre,bf_ce_pays,etc."..}}
-$groups = $this->GetParameter("groups");
-if (empty($groups)) {
-    $groups = array();
-} else {
-    $groups = explode(",", $groups);
-    $groups = array_map('trim', $groups);
-}
-
-// facette: titres des boite de filtres correspondants au parametre groups
-//    plusieures valeurs possibles, sÈparÈes par des virgules, le meme nombre que "groups"
-//    exemple : {{bazarliste titles="Titre,Pays,etc."..}}
-$titles = $this->GetParameter("titles");
-if (empty($titles)) {
-    $titles = array();
-} else {
-    $titles = explode(",", $titles);
-    $titles = array_map('trim', $titles);
-}
-
-// nombre de rÈsultats affichÈes avant pagination
-$pagination = $this->GetParameter("pagination");
-
-// correspondance transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
-$correspondance = $this->GetParameter("correspondance");
-
-// tableau des fiches correspondantes aux critËres 
-$tableau_resultat = array();
-foreach ($id_typeannonce as $annonce) {
-    $tableau_resultat = array_merge(
-        $tableau_resultat,
-        baz_requete_recherche_fiches($tabquery, 'alphabetique', $annonce, '', 1, '', '', true, '')
-    );
-}
-
-// parametres pour bazarliste avec carto
-$param = array();
-
-/*
- * width : largeur de la carte ‡ l'Ècran en pixels ou pourcentage
- */
-$param['width'] = $this->GetParameter("width");
-if (empty($param['width'])) {
-    $param['width'] = BAZ_GOOGLE_IMAGE_LARGEUR;
-}
-
-/*
- * height : hauteur de la carte ‡ l'Ècran en pixels ou pourcentage
- */
-$param['height'] = $this->GetParameter("height");
-if (empty($param['height'])) {
-    $param['height'] = BAZ_GOOGLE_IMAGE_HAUTEUR;
-}
-
-/*
- * lat : latitude point central en degres WGS84 (exemple : 46.22763) , sinon parametre par defaut
- */
-$param['latitude'] = $this->GetParameter("lat");
-if (empty($param['latitude'])) {
-    $param['latitude'] = BAZ_MAP_CENTER_LAT;
-}
-
-/*
- * lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
- */
-$param['longitude'] = $this->GetParameter("lon");
-if (empty($param['longitude'])) {
-    $param['longitude'] = BAZ_MAP_CENTER_LON;
-}
-
-/*
- * niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
- */
-$param['zoom'] = $this->GetParameter("zoom");
-if (empty($param['zoom'])) {
-    $param['zoom'] = BAZ_GOOGLE_ALTITUDE;
-}
-
-/*
- * Outil de navigation , sinon parametre par defaut true
- */
-$param['navigation'] = $this->GetParameter("navigation"); // true or false
-if (empty($param['navigation'])) {
-    $param['navigation'] = BAZ_AFFICHER_NAVIGATION;
-}
-
-/*
- * Zoom sur molette : true or false, par defaut false
- */
-$param['zoom_molette'] = $this->GetParameter("zoommolette");
-if (empty($param['zoom_molette'])) {
-    $param['zoom_molette'] = BAZ_PERMETTRE_ZOOM_MOLETTE;
-}
-
-
+// Recuperation de tous les parametres
+$params = getAllParameters($this);
 
 // Recuperation de tous les formulaires
 $allforms = baz_valeurs_tous_les_formulaires();
+
+// tableau des fiches correspondantes aux crit√®res
+if (is_array($params['idtypeannonce'])) {
+    $tableau_resultat = array();
+    foreach ($params['idtypeannonce'] as $formid) {
+        $tableau_resultat = array_merge(
+            $tableau_resultat,
+            baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+        );
+    }
+} else {
+    $tableau_resultat = baz_requete_recherche_fiches($params['query'], 'alphabetique', '', '', 1, '', '', true, '');
+}
 
 // tableau des valeurs "facettables" avec leur nombres
 $facettevalue = array();
@@ -188,58 +46,59 @@ $facettevalue = array();
 // tableau qui contiendra les fiches
 $fiches['fiches'] = array();
 foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche['body'], true);
+    $fiche = json_decode($fiche['body'], true);
     if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
-        $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
+        $fiche = array_map('utf8_decode', $fiche);
     }
-    $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche);
-    $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);  //permet de voir la fiche
+    $fiche['html_data'] = getHtmlDataAttributes($fiche);
+    $fiche['html'] = baz_voir_fiche(0, $fiche);  //permet de voir la fiche
 
     if (!empty($correspondance)) {
-        $tabcorrespondance = explode("=", trim($correspondance));
+        $tabcorrespondance = explode('=', trim($correspondance));
         if (isset($tabcorrespondance[0])) {
-            if (isset($tabcorrespondance[1]) && isset($valeurs_fiche[$tabcorrespondance[1]])) {
-                $valeurs_fiche[$tabcorrespondance[0]] = $valeurs_fiche[$tabcorrespondance[1]];
+            if (isset($tabcorrespondance[1]) && isset($fiche[$tabcorrespondance[1]])) {
+                $fiche[$tabcorrespondance[0]] = $fiche[$tabcorrespondance[1]];
             } else {
-                $valeurs_fiche[$tabcorrespondance[0]] = '';
+                $fiche[$tabcorrespondance[0]] = '';
             }
         } else {
             exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli :
              il doit etre de la forme correspondance="identifiant_1=identifiant_2"</div>');
         }
     }
-    $valeurs_fiche['datastr'] = getHtmlDataAttributes($valeurs_fiche);
+    $fiche['datastr'] = getHtmlDataAttributes($fiche);
 
     // on scanne tous les champs qui pourraient faire des filtres pour les facettes
-    if (count($groups) > 0) {
-        foreach ($valeurs_fiche as $key => $value) {
+    if (count($params['groups']) > 0) {
+        foreach ($fiche as $key => $value) {
             if (!empty($value)) {
-                $facetteasked = (isset($groups[0]) && $groups[0]=='all') || in_array($key, $groups);
-                // champs gÈnÈriques des mÈtadonnÈes
-                if (in_array($key, array('id_typeannonce', "createur")) && $facetteasked) {
+                $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
+                    || in_array($key, $params['groups']);
+                // champs g√©n√©riques des m√©tadonn√©es
+                if (in_array($key, array('id_typeannonce', 'createur')) && $facetteasked) {
                     if ($key == 'id_typeannonce') {
-                        $value = $valeurs_fiche["id_typeannonce"].'|'.
-                          $allforms[$valeurs_fiche["categorie_fiche"]][$valeurs_fiche["id_typeannonce"]]['bn_label_nature'];
+                        $value = $fiche['id_typeannonce'].'|'.
+                          $allforms[$fiche['categorie_fiche']][$fiche['id_typeannonce']]['bn_label_nature'];
                     }
                     if (isset($facettevalue[$key][$value])) {
-                        $facettevalue[$key][$value]++;
+                        ++$facettevalue[$key][$value];
                     } else {
                         $facettevalue[$key][$value] = 1;
                     }
                 } else { // champs type liste ou checkbox
-                    $templatef = $allforms[$valeurs_fiche["categorie_fiche"]][$valeurs_fiche["id_typeannonce"]]['template'];
+                    $templatef = $allforms[$fiche['categorie_fiche']][$fiche['id_typeannonce']]['template'];
                     if (is_array($templatef)) {
                         foreach ($templatef as $id => $val) {
-                            if ($val[1] === $key || (isset($val[6]) && $val[0] . $val[1] . $val[6] === $key)) {
+                            if ($val[1] === $key || (isset($val[6]) && $val[0].$val[1].$val[6] === $key)) {
                                 $islist = in_array(
                                     $templatef[$id][0],
-                                    array('checkbox', 'liste', 'checkboxfiche', 'listefiche')
+                                    array('checkbox', 'liste', 'checkboxfiche', 'listefiche', 'scope')
                                 );
                                 if ($islist && $facetteasked) {
                                     $tabval = explode(',', $value);
                                     foreach ($tabval as $val) {
                                         if (isset($facettevalue[$templatef[$id][1].'|'.$key][$val])) {
-                                            $facettevalue[$templatef[$id][1].'|'.$key][$val]++;
+                                            ++$facettevalue[$templatef[$id][1].'|'.$key][$val];
                                         } else {
                                             $facettevalue[$templatef[$id][1].'|'.$key][$val] = 1;
                                         }
@@ -253,43 +112,44 @@ foreach ($tableau_resultat as $fiche) {
         }
     }
     // tableau qui contient le contenu de toutes les fiches
-    $fiches['fiches'][$valeurs_fiche['id_fiche']] = $valeurs_fiche;
+    $fiches['fiches'][$fiche['id_fiche']] = $fiche;
 }
 
+// tri des fiches
+$GLOBALS['ordre'] = $params['ordre'];
+$GLOBALS['champ'] = $params['champ'];
 usort($fiches['fiches'], 'champCompare');
 
-// Limite le nombre de rÈsultat au nombre de fiches demandÈes
-if ($nb != '') {
-    $fiches['fiches'] = array_slice($fiches['fiches'], 0, $nb);
+// Limite le nombre de r√©sultat au nombre de fiches demand√©es
+if ($params['nb'] != '') {
+    $fiches['fiches'] = array_slice($fiches['fiches'], 0, $params['nb']);
 }
 
-//on recupere le nombre d'entrees avant pagination
-$pagination = $this->GetParameter("pagination");
-if (!empty($pagination)) {
+if (!empty($params['pagination'])) {
     $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
 
     $nb_result = count($fiches['fiches']);
 
-    if ($nb_result<=1) {
+    if ($nb_result <= 1) {
         $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHE').'</div>'."\n";
     } else {
         $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHES').'</div>'."\n";
     }
     // Mise en place du Pager
     require_once 'Pager/Pager.php';
-    $params = array(
-        'mode'       => BAZ_MODE_DIVISION,
-        'perPage'    => $pagination,
-        'delta'      => BAZ_DELTA,
+    $param = array(
+        'mode' => BAZ_MODE_DIVISION,
+        'perPage' => $params['pagination'],
+        'delta' => BAZ_DELTA,
         'httpMethod' => 'GET',
         'extraVars' => array_merge($_POST, $_GET),
         'altNext' => _t('BAZ_SUIVANT'),
         'altPrev' => _t('BAZ_PRECEDENT'),
         'nextImg' => _t('BAZ_SUIVANT'),
         'prevImg' => _t('BAZ_PRECEDENT'),
-        'itemData'   => $fiches['fiches']
+        'itemData' => $fiches['fiches'],
     );
-    $pager = & Pager::factory($params);
+    $pager = &Pager::factory($param);
     $fiches['fiches'] = $pager->getPageData();
     $fiches['pager_links'] = '<div class="bazar_numero">'.$pager->links.'</div>'."\n";
 } else {
@@ -300,84 +160,124 @@ if (!empty($pagination)) {
 // affichage des resultats
 include_once 'tools/bazar/libs/squelettephp.class.php';
 // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-$templatetoload = 'themes/tools/bazar/templates/' . $template;
+$templatetoload = 'themes/tools/bazar/templates/'.$params['template'];
 if (!is_file($templatetoload)) {
-    $templatetoload = 'tools/bazar/presentation/templates/' . $template;
+    $templatetoload = 'tools/bazar/presentation/templates/'.$params['template'];
 }
 $squelfacette = new SquelettePhp($templatetoload);
-$fiches['param'] = $param;
+$fiches['param'] = $params;
 $squelfacette->set($fiches);
 $output = $squelfacette->analyser();
 
-// affichage spÈcifique pour facette
-if (count($facettevalue)>0) {
-    // affichage des resultats et filtres
-    $output = '<div class="facette-container row row-fluid">'."\n".
-          '<div class="results col-xs-9 span9">
-        <div class="alert alert-info">'._t('BAZ_IL_Y_A').'<span class="nb-results">'.count($fiches['fiches']).
-        '</span> '._t('BAZ_FICHES_CORRESPONDANTES_FILTRES').'.</div>'."\n".
-        $output."\n".'</div><!-- /.results.col-xs-9 -->';
+// affichage sp√©cifique pour facette
+if (count($facettevalue) > 0) {
+    // affichage des resultats et filtres dans une grille
+    $outputfacette = '<div class="facette-container row row-fluid">'."\n";
+
+    // calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
+    $resultcolsize = 12 - intval($params['filtercolsize']);
+
+    // colonne des resultats
+    $outputresult = '<div class="col-xs-'.$resultcolsize.' span'.$resultcolsize.'">'."\n".
+        '<div class="results">'."\n".
+        '<div class="alert alert-info">'."\n".
+        _t('BAZ_IL_Y_A').
+        '<span class="nb-results">'.count($fiches['fiches']).'</span> '._t('BAZ_FICHES_CORRESPONDANTES_FILTRES')."\n".
+        '.</div>'."\n".
+        $output."\n".
+        '</div> <!-- /.results -->'."\n".
+        '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
 
     // colonne des filtres
-    $output .= '<div class="filters col-xs-3 span3">'."\n";
+    $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].' span'.$params['filtercolsize'].'">'."\n".
+                    '<div class="filters no-dblclick">'."\n";
     if (isset($facettevalue['id_typeannonce'])) {
-        if (count($facettevalue['id_typeannonce'])>1) {
-            $output .=  '<div class="filter-box panel panel-default" data-id="id_typeannonce">'."\n";
-            $output .=  '<div class="panel-heading">'._t('BAZ_TYPE_FICHE').'</div>'."\n";
-            $output .=  '<div class="panel-body">'."\n";
+        if (count($facettevalue['id_typeannonce']) > 1) {
+            $outputfilter .=  '<div class="filter-box panel panel-default" data-id="id_typeannonce">'."\n";
+            $outputfilter .=  '<div class="panel-heading">'._t('BAZ_TYPE_FICHE').'</div>'."\n";
+            $outputfilter .=  '<div class="panel-body">'."\n";
             foreach ($facettevalue['id_typeannonce'] as $id => $nb) {
                 $infotypef = explode('|', $id);
-                $output .=  '<div class="checkbox"><label>
+                $outputfilter .=  '<div class="checkbox"><label>
                 <input class="filter-checkbox" type="checkbox" name="id_typeannonce" 
                 value="'.htmlspecialchars($infotypef[0]).'"> '.$infotypef[1].' (<span class="nb">'.$nb.'</span>)
                 </label></div>'."\n";
             }
-            $output .=  '</div></div><!-- /.filter-box -->'."\n";
+            $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
         }
         unset($facettevalue['id_typeannonce']);
+    }
+    if (isset($facettevalue['createur'])) {
+        if (count($facettevalue['createur']) > 1) {
+            $outputfilter .=  '<div class="filter-box panel panel-default" data-id="createur">'."\n";
+            $outputfilter .=  '<div class="panel-heading">'._t('BAZ_CREATOR').'</div>'."\n";
+            $outputfilter .=  '<div class="panel-body">'."\n";
+            foreach ($facettevalue['createur'] as $id => $nb) {
+                $outputfilter .=  '<div class="checkbox"><label>
+                <input class="filter-checkbox" type="checkbox" name="createur" 
+                value="'.htmlspecialchars($id).'"> '.$id.' (<span class="nb">'.$nb.'</span>)
+                </label></div>'."\n";
+            }
+            $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
+        }
+        unset($facettevalue['createur']);
     }
     $i = 0;
     $first = true;
     foreach ($facettevalue as $key => $value) {
-        if (count($facettevalue[$key])>1) {
+        if (count($facettevalue[$key]) > 0) {
             $tabkey = explode('|', $key);
             $list = baz_valeurs_liste($tabkey[0]);
-            $output .=  '<div class="filter-box panel panel-default '.htmlspecialchars($tabkey[1]).
-                '" data-id="'.htmlspecialchars($tabkey[1]).'">'."\n";
-            if (isset($titles[$i]) && !empty($titles[$i])) {
-                $titlefilterbox = $titles[$i];
+            $idkey = htmlspecialchars($tabkey[1]);
+            $outputfilter .=  '<div class="filter-box panel panel-default '.$idkey.'" data-id="'.$idkey.'">'."\n";
+            $titlefilterbox = '';
+            if (isset($params['groupicons'][$i]) && !empty($params['groupicons'][$i])) {
+                $titlefilterbox .= '<i class="'.$params['groupicons'][$i].'"></i> ';
+            }
+            if (isset($params['titles'][$i]) && !empty($params['titles'][$i])) {
+                $titlefilterbox .= $params['titles'][$i];
             } else {
-                $titlefilterbox = $list['titre_liste'];
+                $titlefilterbox .= $list['titre_liste'];
             }
-            $output .=  '<div class="panel-heading';
+            $outputfilter .=  '<div class="panel-heading';
             if (!$first) {
-                $output .= ' collapsed';
+                $outputfilter .= ' collapsed';
             }
-            $output .= '" data-toggle="collapse" href="#collapse'.
-                htmlspecialchars($tabkey[1]).'" >'.$titlefilterbox.'</div>'."\n";
-            $output .= '<div id="collapse'.htmlspecialchars($tabkey[1]).'" class="panel-collapse';
+            $outputfilter .= '" data-toggle="collapse" href="#collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" >'.
+                $titlefilterbox.'</div>'."\n";
+            $outputfilter .= '<div id="collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" class="panel-collapse';
             if ($first) {
-                $output .= ' in';
+                $outputfilter .= ' in';
             }
-            $output .= ' collapse">'."\n";
-            $output .= '<div class="panel-body">'."\n";
+            $outputfilter .= ' collapse">'."\n";
+            $outputfilter .= '<div class="panel-body">'."\n";
+            ksort($value);
             foreach ($value as $val => $nb) {
                 if (!empty($val)) {
-                    $output .=  '<div class="checkbox"><label>
-                    <input class="filter-checkbox" type="checkbox" name="'.htmlspecialchars($tabkey[1]).'" 
-                    value="'.htmlspecialchars($val).'"> '.$list['label'][$val].' (<span class="nb">'.$nb.'</span>)
+                    $outputfilter .=  '<div class="checkbox"><label>
+                    <input class="filter-checkbox" type="checkbox" name="'.$idkey.'" 
+                    value="'.htmlspecialchars($val).'"> '.(isset($list['label'][$val]) ?
+                        $list['label'][$val] : $val) .' (<span class="nb">'.$nb.'</span>)
                     </label></div>'."\n";
                 }
             }
-            $output .=  '</div></div></div><!-- /.filter-box -->'."\n";
+            $outputfilter .=  '</div></div></div><!-- /.filter-box -->'."\n";
         }
-        $i++;
+        ++$i;
         $first = false;
     }
-    $output .= '</div><!-- /.filters.col-xs-3 -->'."\n";
+    $outputfilter .= '</div> <!-- /.filters -->'."\n".
+        '</div> <!-- /.col-xs-3 -->'."\n";
 
-    $output .= '</div><!-- /.row -->';
+    // disposition des filtres (gauche ou droite)
+    if ($params['filterposition'] == 'right') {
+        $outputfacette .= $outputresult.$outputfilter;
+    } else {
+        $outputfacette .= $outputfilter.$outputresult;
+    }
+
+    $output = $outputfacette.'</div><!-- /.facette-container.row -->';
 }
 
-// affichage ‡ l'Ècran
+// affichage √† l'√©cran
 echo $output;

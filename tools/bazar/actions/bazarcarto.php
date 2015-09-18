@@ -1,15 +1,15 @@
 <?php
+
 /**
-*  Programme gerant les fiches bazar depuis une interface de type geographique
-*
-**/
+ *  Programme gerant les fiches bazar depuis une interface de type geographique.
+ **/
 
 // +------------------------------------------------------------------------------------------------------+
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-if (!defined("WIKINI_VERSION")) {
-        die ("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
 //recuperation des parametres wikini
@@ -20,7 +20,7 @@ if (!defined("WIKINI_VERSION")) {
 *
 */
 
-$categorie_nature = $this->GetParameter("categorienature");
+$categorie_nature = $this->GetParameter('categorienature');
 if (empty($categorie_nature)) {
     $categorie_nature = 'toutes';
 }
@@ -30,12 +30,11 @@ if (empty($categorie_nature)) {
 * @testok
 *
 */
-$id_typeannonce = $this->GetParameter("idtypeannonce");
+$id_typeannonce = $this->GetParameter('idtypeannonce');
 if (empty($id_typeannonce)) {
     $id_typeannonce = array();
-}
-else {
-    $id_typeannonce=explode(",",$id_typeannonce);
+} else {
+    $id_typeannonce = explode(',', $id_typeannonce);
 }
 
 /*
@@ -44,7 +43,7 @@ else {
 *
 */
 
-$ordre = $this->GetParameter("ordre");
+$ordre = $this->GetParameter('ordre');
 if (empty($ordre)) {
     $ordre = 'alphabetique';
 }
@@ -55,7 +54,7 @@ if (empty($ordre)) {
 *
 */
 
-$latitude = $this->GetParameter("lat");
+$latitude = $this->GetParameter('lat');
 if (empty($latitude)) {
     $latitude = BAZ_MAP_CENTER_LAT;
 }
@@ -66,11 +65,10 @@ if (empty($latitude)) {
 *
 */
 
-$longitude = $this->GetParameter("lon");
+$longitude = $this->GetParameter('lon');
 if (empty($longitude)) {
     $longitude = BAZ_MAP_CENTER_LON;
 }
-
 
 /*
 * niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
@@ -78,19 +76,17 @@ if (empty($longitude)) {
 *
 */
 
-$zoom = $this->GetParameter("zoom");
+$zoom = $this->GetParameter('zoom');
 if (empty($zoom)) {
     $zoom = BAZ_GOOGLE_ALTITUDE;
 }
-
-
 
 /*
 * Layer pour la carto : osm (leaflet) ou ggl (google), par defaut osm
 * @atester
 *
 */
-$layercarto = $this->GetParameter("layercarto");
+$layercarto = $this->GetParameter('layercarto');
 if (empty($layercarto)) {
     $layercarto = BAZ_LAYER_CARTO;
 }
@@ -98,15 +94,13 @@ if ($layercarto == 'google' || $layercarto == 'googlemap') {
     $layercarto = 'ggl';
 }
 
-
-
 /*
 * Type de carto google : ROADMAP ou SATELLITE ou HYBRID ou TERRAIN , sinon parametre par defaut TERRAIN
 * @atester
 *
 */
 
-$typecarto = $this->GetParameter("typecarto");
+$typecarto = $this->GetParameter('typecarto');
 if (empty($typecarto)) {
     $typecarto = BAZ_TYPE_CARTO;
 } else {
@@ -119,12 +113,10 @@ if (empty($typecarto)) {
 *
 */
 
-$navigation = $this->GetParameter("navigation"); // true or false
+$navigation = $this->GetParameter('navigation'); // true or false
 if (empty($navigation)) {
     $navigation = BAZ_AFFICHER_NAVIGATION;
 }
-
-
 
 /*
 * Bouton choix carte : true or false, par defaut true
@@ -132,11 +124,10 @@ if (empty($navigation)) {
 *
 */
 
-$choix_carte= $this->GetParameter("choixcarte"); //
+$choix_carte = $this->GetParameter('choixcarte'); //
 if (empty($choix_carte)) {
     $choix_carte = BAZ_AFFICHER_CHOIX_CARTE;
 }
-
 
 /*
 * Zoom sur molette : true or false, par defaut false
@@ -144,12 +135,10 @@ if (empty($choix_carte)) {
 *
 */
 
-
-$zoom_molette= $this->GetParameter("zoommolette");
+$zoom_molette = $this->GetParameter('zoommolette');
 if (empty($zoom_molette)) {
-    $zoom_molette= BAZ_PERMETTRE_ZOOM_MOLETTE;
+    $zoom_molette = BAZ_PERMETTRE_ZOOM_MOLETTE;
 }
-
 
 /*
 * Barre de gestion de fiches bazar affiche sous un point : true or false, par defaut true
@@ -158,13 +147,11 @@ if (empty($zoom_molette)) {
 *
 */
 
-
-$barregestion= $this->GetParameter("barregestion");
+$barregestion = $this->GetParameter('barregestion');
 
 if (empty($barregestion)) {
-    $barregestion= "true";
+    $barregestion = 'true';
 }
-
 
 /*
 * Affichage detail des points en dessous de la carte : true or false, par defaut true
@@ -173,11 +160,10 @@ if (empty($barregestion)) {
 *
 */
 
-$listepoint= $this->GetParameter("liste"); // true or false
+$listepoint = $this->GetParameter('liste'); // true or false
 if (empty($listepoint)) {
-    $listepoint= "true";
+    $listepoint = 'true';
 }
-
 
 /*
 *
@@ -185,11 +171,10 @@ if (empty($listepoint)) {
 *
 */
 
-$spider= $this->GetParameter("spider"); // true or false
+$spider = $this->GetParameter('spider'); // true or false
 if (empty($spider)) {
-    $spider= "false";
+    $spider = 'false';
 }
-
 
 /*
 *
@@ -197,25 +182,26 @@ if (empty($spider)) {
 *
 */
 
-$cluster= $this->GetParameter("cluster"); // true or false
+$cluster = $this->GetParameter('cluster'); // true or false
 if (empty($cluster)) {
-    $cluster= "false";
+    $cluster = 'false';
 }
 
-
-
-$cartowidth = $this->GetParameter("width");
+$cartowidth = $this->GetParameter('width');
 if (empty($cartowidth)) {
     $cartowidth = BAZ_GOOGLE_IMAGE_LARGEUR;
 }
-$cartoheight = $this->GetParameter("height");
+$cartoheight = $this->GetParameter('height');
 if (empty($cartoheight)) {
     $cartoheight = BAZ_GOOGLE_IMAGE_HAUTEUR;
 }
 
 //on recupere les parametres pour une requete specifique
-if (isset($_GET['query'])) {$query = $_GET['query'];}
-else $query = $this->GetParameter("query");
+if (isset($_GET['query'])) {
+    $query = $_GET['query'];
+} else {
+    $query = $this->GetParameter('query');
+}
 if (!empty($query)) {
     $tabquery = array();
     $tableau = array();
@@ -229,66 +215,53 @@ if (!empty($query)) {
     $tabquery = '';
 }
 
-
-
 // Filtres
 
-$groups = $this->GetParameter("groups"); // parametre groups="bf_ce_titre,bf_ce_pays,etc."
+$groups = $this->GetParameter('groups'); // parametre groups="bf_ce_titre,bf_ce_pays,etc."
 
 
 if (empty($groups)) {
     $groups = array();
+} else {
+    $groups = explode(',', $groups);
 }
-else {
-    $groups=explode(",",$groups);
-}
-
 
 // Titres des filtres
 
-$titles = $this->GetParameter("titles"); // parametre titles="bf_ce_titre,bf_ce_pays,etc."
+$titles = $this->GetParameter('titles'); // parametre titles="bf_ce_titre,bf_ce_pays,etc."
 
 if (empty($titles)) {
     $titles = array();
+} else {
+    $titles = explode(',', $titles);
 }
-else {
-    $titles=explode(",",$titles);
-}
-
 
 // Detection des parametres de type liste
-$grouplist=array();
+$grouplist = array();
 foreach ($groups as $group) {
     if (is_liste($group)) {
-        $groupfix=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
-        $grouplist[$groupfix]=liste_to_array($group); // On charge les valeurs de la liste
-    }
-    else {
-        $grouplist[$group]=false;
+        $groupfix = preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
+        $grouplist[$groupfix] = liste_to_array($group); // On charge les valeurs de la liste
+    } else {
+        $grouplist[$group] = false;
     }
 }
 
-
-$facette = $this->GetParameter("facette"); // true or false
+$facette = $this->GetParameter('facette'); // true or false
 if (empty($facette)) {
     $facette = false;
 }
 
-
-
-
 // Recuperation de tous les formulaires
-$tous_les_formulaires=baz_valeurs_tous_les_formulaires();
+$tous_les_formulaires = baz_valeurs_tous_les_formulaires();
 
-
-$tableau_resultat=array();
-$jointure=array();
-$tabclick=array();
+$tableau_resultat = array();
+$jointure = array();
+$tabclick = array();
 foreach ($id_typeannonce as $annonce) { // Pour chaque annonce :
 
     // Fusion des resultats
     $tableau_resultat = array_merge($tableau_resultat, baz_requete_recherche_fiches($tabquery, $ordre, $annonce, $categorie_nature));
-
 
     // Detection jointure avec autre fiche
 /*
@@ -318,11 +291,7 @@ foreach ($id_typeannonce as $annonce) { // Pour chaque annonce :
             }
         }
     }*/
-
 }
-
-
-
 
 // Recherche de l'ensemble des fiches liee supplementaires
 /*
@@ -335,14 +304,14 @@ foreach ($jointure as $cible=>$origine) {
 $tab_points_carto = array();
 $tab_layers_carto = array();
 
-
 $tablinktitle = array();
 $i = 0;
 
 foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche["body"], true);
-    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
-
+    $valeurs_fiche = json_decode($fiche['body'], true);
+    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+        $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
+    }
 
 // Recherche des fiches liees supplementaires :
 /*
@@ -367,51 +336,43 @@ foreach ($tableau_resultat as $fiche) {
     }
 */
 
-
-
     $tab = explode('|', $valeurs_fiche['carte_google']);
-    if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
-        if ($barregestion=="true") {
-            $contenu_fiche=baz_voir_fiche(1,$valeurs_fiche);
-        }
-        else {
-            $contenu_fiche=baz_voir_fiche(0,$valeurs_fiche);
+    if (count($tab) > 1 && $tab[0] != '' && $tab[1] != '' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+        if ($barregestion == 'true') {
+            $contenu_fiche = baz_voir_fiche(1, $valeurs_fiche);
+        } else {
+            $contenu_fiche = baz_voir_fiche(0, $valeurs_fiche);
         }
 
-        $categories=Array();
+        $categories = array();
 
         foreach ($groups as $group) {
-            $group=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
+            $group = preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
             if (!$grouplist[$group]) {
-                if ($valeurs_fiche[$group]!="") {
-                    $categories[$group][]=trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group]))));
+                if ($valeurs_fiche[$group] != '') {
+                    $categories[$group][] = trim(preg_replace('/\W+/', '', strtolower(strip_tags($valeurs_fiche[$group]))));
                 }
-            }
-            else { // C'est une  liste !
-                $index_liste=explode(",",$valeurs_fiche['checkbox'.$group]);
+            } else { // C'est une  liste !
+                $index_liste = explode(',', $valeurs_fiche['checkbox'.$group]);
                 if (empty($index_liste[0])) {
-                    $index_liste=explode(",",$valeurs_fiche['liste'.$group]);
+                    $index_liste = explode(',', $valeurs_fiche['liste'.$group]);
                 }
                 if (!empty($index_liste[0])) {
                     foreach ($index_liste as $element_liste) {
-                        if ($grouplist[$group][$element_liste]!="") {
-                           $categories[$grouplist[$group][$element_liste]][]=trim(preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste]))));
+                        if ($grouplist[$group][$element_liste] != '') {
+                            $categories[$grouplist[$group][$element_liste]][] = trim(preg_replace('/\W+/', '', strtolower(strip_tags($grouplist[$group][$element_liste]))));
                         }
                     }
                 }
             }
-
-
-
         }
 
-
-        if ($facette=="true") {
+        if ($facette == 'true') {
 
 // TODO : a revoir
 // "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" >'.$valeurs_fiche['bf_titre'].'</a>",
 //            "description": "<a href=\"#'.$valeurs_fiche['id_fiche'].'\" onclick=\"(\"#'.$valeurs_fiche['id_fiche'].'.collapse(\"show\")\")\">'.'Voir la fiche'.'</a>",
-            $tab_points_carto[]= '{
+            $tab_points_carto[] = '{
             "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
             "description": "<a onclick=\"jQuery(\'#collapse'.$valeurs_fiche['id_fiche'].'\').collapse(\'show\');\" href=\"#collapse'.$valeurs_fiche['id_fiche'].'\" >Voir la fiche</a>",
             "descriptionlongue": \'<div class="BAZ_cadre_map">'.
@@ -423,10 +384,8 @@ foreach ($tableau_resultat as $fiche) {
 
 
         }';
-
-        }
-        else  {
-            $tab_points_carto[]= '{
+        } else {
+            $tab_points_carto[] = '{
             "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
             "description": \'<div class="BAZ_cadre_map">'.
             preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.$contenu_fiche)).'\',
@@ -436,27 +395,23 @@ foreach ($tableau_resultat as $fiche) {
 
 
         }';
-
-
         }
 
         // Preparation tableau affiche sous la carte.
-        if ($spider=="true") {
+        if ($spider == 'true') {
             $tablinktitle[$i] = '<li class="markerlist"><a class="markerlink" href="#" onclick="popups['.$i.'].setContent(markers['.$i.'].desc);popups['.$i.'].setLatLng(markers['.$i.'].getLatLng());map.openPopup(popups['.$i.']);map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;">'.$valeurs_fiche['bf_titre'].'</a></li>'."\n";
             $tabclick[$i] = 'popups['.$i.'].setContent(markers['.$i.'].desc);popups['.$i.'].setLatLng(markers['.$i.'].getLatLng());map.openPopup(popups['.$i.']);map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;';
-        }
-        else {
+        } else {
             $tablinktitle[$i] = '<li class="markerlist"><a class="markerlink" href="#" onclick="markers['.$i.'].openPopup();map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;">'.$valeurs_fiche['bf_titre'].'</a></li>'."\n";
             $tabclick[$i] = 'markers['.$i.'].openPopup();map.panTo(new L.LatLng('.$tab[0].', '.$tab[1].'));return false;';
         }
 
-        $i++;
+        ++$i;
     }
 }
 
 // Un tableau qui peut servir pour actioner l'ouverture d'une fenetre sur un clic
-$GLOBALS['tabclick']=$tabclick;
-
+$GLOBALS['tabclick'] = $tabclick;
 
  // print_r ($tab_points_carto);
 
@@ -466,17 +421,14 @@ $GLOBALS['tabclick']=$tabclick;
         //var cities = L.layerGroup([littleton, denver, aurora, golden]);
 
 
-$points_carto = implode(',',$tab_points_carto);
+$points_carto = implode(',', $tab_points_carto);
 
-$GLOBALS['points_carto']=$tab_points_carto;
+$GLOBALS['points_carto'] = $tab_points_carto;
 
 // Leaflet + plugins :
 // Google : add Google layer.
 // Label : add a label to markers
 // Spiderfier : Spiderfy multiple markers on a same point.
-
-
-
 
 
 echo
@@ -491,21 +443,16 @@ $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
 $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/layer/tile/Google.js');
 $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/label/leaflet.label.js');
 
-
-if ($spider=="true") {
+if ($spider == 'true') {
     $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js');
 }
 
-
-if ($cluster=="true") {
+if ($cluster == 'true') {
     echo '
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css" />
     <link rel="stylesheet" href="tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.Default.css" />'."\n";
     $this->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster-src.js');
-
 }
-
-
 
 echo '<div id="map" style="width: '.$cartowidth.'; height: '.$cartoheight.'"></div> <ul id="markers"></ul>';
 $script =
@@ -525,9 +472,7 @@ $script .= '
     ];
 ';
 
-
-
-if ($spider=="true") {
+if ($spider == 'true') {
     $script .=
     'var popups = Array();';
 }
@@ -567,17 +512,13 @@ $script .=
 
         map.addLayer('.$layercarto.');';
 
-
         $script .=  '
         if (choixcarte) {
             map.addControl(new L.Control.Layers( {"OSM":osm, "Google":ggl}, {}));
         }';
 
-
-
-
-        if ($spider=="true") {
-        $script .=  '
+        if ($spider == 'true') {
+            $script .=  '
             oms = new OverlappingMarkerSpiderfier(map);
 
             $.each(places, function(i, item){
@@ -612,12 +553,8 @@ $script .=
 
             });
         ';
-        }
-        else {
-
-
-            if ($cluster=="true") {
-
+        } else {
+            if ($cluster == 'true') {
                 $script .=  '
 
                     var markerscluster = new L.MarkerClusterGroup();
@@ -646,12 +583,7 @@ $script .=
 
 
                 ';
-
-
-            }
-
-            else {   // Pas de spider ni de cluster: option a privilegier si autre plugin a charger
-
+            } else {   // Pas de spider ni de cluster: option a privilegier si autre plugin a charger
 
 
         $script .=  '
@@ -685,7 +617,7 @@ $script .=
 
 $this->AddJavascript($script);
 
-if (($listepoint=="true") && count($tablinktitle)>0) {
+if (($listepoint == 'true') && count($tablinktitle) > 0) {
     //asort($tablinktitle);
     echo '<ol class="listofmarkers" style="-moz-column-count:4; -webkit-column-count:4; column-count:4;">'."\n";
     foreach ($tablinktitle as $key => $value) {
@@ -693,6 +625,3 @@ if (($listepoint=="true") && count($tablinktitle)>0) {
     }
     echo '</ol>'."\n";
 }
-
-
-?>

@@ -1,20 +1,20 @@
 <?php echo $info_res; ?>
 <?php 
 if(count($fiches)>0) :
-    $GLOBALS['nb_accordion'] = isset($GLOBALS['nb_accordion']) ? $GLOBALS['nb_accordion']++ : 1; ?>
+    $GLOBALS['nbbazarliste'] = isset($GLOBALS['nbbazarliste']) ? ($GLOBALS['nbbazarliste'] + 1) : 1; ?>
     <?php echo $pager_links;?>
-    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $GLOBALS['nb_accordion']; ?>">
+    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $GLOBALS['nbbazarliste']; ?>">
     <?php
     foreach($fiches as $fiche): ?>
         <div class="bazar-entry panel panel-default" <?php echo $fiche['html_data'];?>>
           <div class="panel-heading collapsed" 
-            data-target="#collapse<?php echo $fiche['id_fiche']; ?>" 
+            data-target="#collapse<?php echo $GLOBALS['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>" 
             data-toggle="collapse">
             <h4 class="panel-title">
               <?php echo $fiche['bf_titre']; ?>
             </h4>
           </div>
-          <div id="collapse<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
+          <div id="collapse<?php echo $GLOBALS['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
             <div class="panel-body">
               <?php echo $fiche['html']; ?>
               <div class="footer-buttons">

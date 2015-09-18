@@ -16,7 +16,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 // url de la fiche bazar
-$url = $this->GetParameter("url"); 
+$url = $this->GetParameter("url");
 if (empty($url) && isset($this->config['source_url']) && !empty($this->config['source_url'])) $url = $this->config['source_url'];
 if (!empty($url)) {
     // parameter of this action
@@ -55,7 +55,7 @@ if (!empty($url)) {
                     echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">'.trim($texte).'</a>', trim(array_shift($matches[1])));
                 } 
                 else if (!empty($texte) && $texte=="lien") {
-                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1]));
+                    echo urlencode(preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1])));
                 }
                 else if ($image == '1') {
                     echo '<img class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">';

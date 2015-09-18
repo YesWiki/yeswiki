@@ -72,6 +72,7 @@ function _t($textkey)
 function _convert($text, $fromencoding, $database = false)
 {
     if (is_array($text)) {
+        $arraytext = array();
         foreach ($text as $key => $value) {
             $arraytext[$key] = _convert($value, $fromencoding, $database);
         }

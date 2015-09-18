@@ -7,29 +7,26 @@
 color:#E9322D;
 }
 
-#BAZ_menu {
-display:block;
-margin:10px auto;
-padding:0;
+.BAZ_menu .nav, .bazar-search {
+  margin-bottom:20px;
 }
 
-#BAZ_menu ul {
-display:block;
-width:100%;
-list-style-type:none;
-margin:0;
-padding:0;
+.bazar-table {
+  table-layout:fixed;
+  word-wrap:break-word;
 }
 
-#BAZ_menu li {
-display:inline;
-list-style-type:none;
-margin:0 10px 0 0;
-padding:0;
+.precsv {
+   height:125px;
+   white-space:pre;
+   padding:5px;
+   word-wrap:break-word;
+   border:1px solid #999;
+   overflow:auto; "
 }
 
 .BAZ_fiche_info {
-font-size:.9em;
+  font-size:.9em;
 }
 
 .BAZ_actions_fiche ul {
@@ -92,6 +89,8 @@ padding:0;
 	margin: 0 0 10px 0;
 }
 
+
+/** CARTO */
 .leaflet-popup .BAZ_cadre_fiche, .BAZ_cadre_map {
 	font-size:12px;
 	height: 320px;
@@ -122,19 +121,216 @@ height:auto;
 margin:0 1px 0 0;
 padding:3px;
 }
+
 .bazar-marker .bazar-entry {
- display: block;
- width:12px;
- height:20px;
- background:url(../images/marker.png) no-repeat top left;
+  background: url('../images/markers-xs-soft.png') no-repeat 0 0;
+  width: 15px;
+  height: 20px;
+  display: block;
+  text-align: center;
+  position:relative;
+  z-index: 2;
+  opacity: 1;
+}
+
+.bazar-marker .bazar-entry::after {
+  content:' ';
+  background: url('../images/markers-xs-shadow.png') no-repeat 0 0;
+  width: 18px;
+  height: 8px;
+  display: block;
+  position:absolute;
+  bottom: 0;
+  right: -7px;
+  z-index: 1;
+}
+
+.bazar-marker.xl .bazar-entry::after {
+  content:' ';
+  background: url('../images/markers-xl-shadow.png') no-repeat 0 0;
+  width: 35px;
+  height: 16px;
+  display: block;
+  position:absolute;
+  bottom: 0;
+  right: -9px;
+  z-index: 1;
+}
+
+.bazar-marker.xl .bazar-entry {
+  width: 35px;
+  height: 46px;
+  display: block;
+  text-align: center;
+  position:relative;
+  background:url(../images/markers-xl-matte.png) no-repeat 0 0;
+  opacity: 1;
+  z-index: 2;
 } 
 
+/* Colors */
+.bazar-marker .bazar-entry.icon-red {
+  background-position: 0 0;
+}
+
+.bazar-marker .bazar-entry.icon-darkred {
+  background-position: -180px 0;
+}
+
+.bazar-marker .bazar-entry.icon-lightred {
+  background-position: -360px 0;
+}
+
+.bazar-marker .bazar-entry.icon-orange {
+  background-position: -36px 0;
+}
+
+.bazar-marker .bazar-entry.icon-beige {
+  background-position: -396px 0;
+}
+
+.bazar-marker .bazar-entry.icon-green {
+  background-position: -72px 0;
+}
+
+.bazar-marker .bazar-entry.icon-darkgreen {
+  background-position: -252px 0;
+}
+
+.bazar-marker .bazar-entry.icon-lightgreen {
+  background-position: -432px 0;
+}
+
+.bazar-marker .bazar-entry.icon-blue {
+  background-position: -108px 0;
+}
+
+.bazar-marker .bazar-entry.icon-darkblue {
+  background-position: -216px 0;
+}
+
+.bazar-marker .bazar-entry.icon-lightblue {
+  background-position: -468px 0;
+}
+
+.bazar-marker .bazar-entry.icon-purple {
+  background-position: -144px 0;
+}
+
+.bazar-marker .bazar-entry.icon-darkpurple {
+  background-position: -288px 0;
+}
+
+.bazar-marker .bazar-entry.icon-pink {
+  background-position: -504px 0;
+}
+
+.bazar-marker .bazar-entry.icon-cadetblue {
+  background-position: -324px 0;
+}
+
+.bazar-marker .bazar-entry.icon-white {
+  background-position: -574px 0;
+}
+
+.bazar-marker .bazar-entry.icon-gray {
+  background-position: -648px 0;
+}
+
+.bazar-marker .bazar-entry.icon-lightgray {
+  background-position: -612px 0;
+}
+
+.bazar-marker .bazar-entry.icon-black {
+  background-position: -682px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-red {
+  background-position: 0 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-darkred {
+  background-position: -180px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-lightred {
+  background-position: -360px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-orange {
+  background-position: -36px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-beige {
+  background-position: -396px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-green {
+  background-position: -72px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-darkgreen {
+  background-position: -252px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-lightgreen {
+  background-position: -432px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-blue {
+  background-position: -108px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-darkblue {
+  background-position: -216px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-lightblue {
+  background-position: -468px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-purple {
+  background-position: -144px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-darkpurple {
+  background-position: -288px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-pink {
+  background-position: -504px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-cadetblue {
+  background-position: -324px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-white {
+  background-position: -574px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-gray {
+  background-position: -648px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-lightgray {
+  background-position: -612px 0;
+}
+
+.bazar-marker.xl .bazar-entry.icon-black {
+  background-position: -682px 0;
+}
+
+
+/* end carto */
+
+
+
+/* accordion pane */
 .accordion {
 	background:transparent;
 	width: 100%;
 }
-
-/* accordion pane */
 .pane {
 	display:none;
 	padding:15px;

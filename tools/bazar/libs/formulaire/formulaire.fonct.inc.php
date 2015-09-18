@@ -135,8 +135,8 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
  * @param    string  Template du formulaire
  * @return   mixed   Le tableau des elements du formulaire et options pour l'element liste
  */
-function formulaire_valeurs_template_champs($template) {
-
+function formulaire_valeurs_template_champs($template)
+{
     //Parcours du template, pour mettre les champs du formulaire avec leurs valeurs specifiques
     $tableau_template = array();
     $nblignes = 0;
@@ -189,8 +189,8 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             $ob.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
             $optionrequired.= ' radio_required';
         }
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-            $def = $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]];
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $def = $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
         } else {
             $def = $tableau_template[5];
         }
@@ -201,11 +201,11 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
         if (is_array($valliste['label'])) {
             foreach ($valliste['label'] as $key => $label) {
                 $radio_html.= '<div class="bazar_radio">';
-                $radio_html.= '<input type="radio" id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . $key . '" value="' . $key . '" name="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '" class="element_radio"';
+                $radio_html.= '<input type="radio" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$key . '" value="' . $key . '" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'" class="element_radio"';
                 if ($def != '' && strstr($key, $def)) {
                     $radio_html.= ' checked';
                 }
-                $radio_html.= ' /><label for="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . $key . '">' . $label . '</label>';
+                $radio_html.= ' /><label for="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$key . '">' . $label . '</label>';
                 $radio_html.= '</div>';
             }
         }
@@ -216,10 +216,10 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
     } elseif ($mode == 'formulaire_recherche') {
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
-            $tabresult = explode(',', $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+            $tabresult = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
             if (is_array($tabresult)) {
                 $labels_result = '';
                 foreach ($tabresult as $id) if (isset($valliste["label"][$id])) {
@@ -227,7 +227,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                     else $labels_result.= ', ' . $valliste["label"][$id];
                 }
             } {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -266,15 +266,15 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                 $selectnametab = '';
             }
 
-            $select_attributes.= ' class="form-control" id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '" name="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . $selectnametab . '"';
+            $select_attributes.= ' class="form-control" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab . '"';
 
             if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                 $select_attributes.= ' required="required"';
             }
             $select_html.= $select_attributes . '>' . "\n";
 
-            if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-                $def = $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]];
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+                $def = $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
             } else {
                 $def = $tableau_template[5];
             }
@@ -305,12 +305,12 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                 $select = $select + $valliste['label'];
             }
 
-            $option = array('id' => $tableau_template[0] . $tableau_template[1] . $tableau_template[6], 'class' => 'form-control');
-            require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'HTML/QuickForm/select.php';
-            $select = new HTML_QuickForm_select($tableau_template[0] . $tableau_template[1] . $tableau_template[6], $tableau_template[2], $select, $option);
+            $option = array('id' => $tableau_template[0].$tableau_template[1].$tableau_template[6], 'class' => 'form-control');
+            require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/select.php';
+            $select = new HTML_QuickForm_select($tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2], $select, $option);
             if ($tableau_template[4] != '') $select->setSize($tableau_template[4]);
             $select->setMultiple(0);
-            $nb = (isset($_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) ? $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] : 0);
+            $nb = (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) ? $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] : 0);
             $select->setValue($nb);
             $formtemplate->addElement($select);
         }
@@ -318,7 +318,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
         //on affiche la liste sous forme de checkbox
         if ($tableau_template[9] == 2) {
             $valliste = baz_valeurs_liste($tableau_template[1]);
-            require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'HTML/QuickForm/checkbox.php';
+            require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/checkbox.php';
             $i = 0;
             $optioncheckbox = array('class' => 'checkbox');
 
@@ -330,23 +330,23 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             }
 
             $squelette_checkbox = & $formtemplate->defaultRenderer();
-            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
-            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
+            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
 
-            $formtemplate->addGroup($checkbox, $tableau_template[0] . $tableau_template[1] . $tableau_template[6], $tableau_template[2], "\n");
+            $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2], "\n");
         }
     } elseif ($mode == 'requete_recherche') {
-        if ($tableau_template[9] == 1 && isset($_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != 0) {
+        if ($tableau_template[9] == 1 && isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != 0) {
 
             /*return ' AND bf_id_fiche IN (SELECT bfvt_ce_fiche FROM '.BAZ_PREFIXE.'fiche_valeur_texte WHERE bfvt_id_element_form="'.$tableau_template[0].$tableau_template[1].$tableau_template[6].'" AND bfvt_texte="'.$_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]].'") ';*/
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
-            if (isset($valliste["label"][$valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]])) {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $valliste["label"][$valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]] . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            if (isset($valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]])) {
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]] . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -364,20 +364,23 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
     if ($mode == 'saisie') {
         $bulledaide = '';
-        if (isset($tableau_template[10]) && $tableau_template[10] != '') $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+        if (isset($tableau_template[10]) && $tableau_template[10] != '') {
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
+            .htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+            .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+        }
+
         $valliste = baz_valeurs_liste($tableau_template[1]);
-
         if ($valliste) {
-
             $choixcheckbox = $valliste['label'];
 
-            require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'HTML/QuickForm/checkbox.php';
+            require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/checkbox.php';
             $i = 0;
             $optioncheckbox = array('class' => 'element_checkbox');
 
             //valeurs par defauts
-            if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]])) {
-                $tab = explode(',', $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) {
+                $tab = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
             } else {
                 $tab = explode(',', $tableau_template[5]);
             }
@@ -391,15 +394,18 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 
                 //teste si la valeur de la liste doit etre cochee par defaut
                 if (in_array($id, $tab)) {
-                    $defaultValues[$tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '[' . $id . ']'] = true;
-
-                    //echo 'a cocher '.$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'.'<br />';
-
+                    $defaultValues[$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'] = true;
                 } else {
-                    $defaultValues[$tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '[' . $id . ']'] = false;
+                    $defaultValues[$tableau_template[0].$tableau_template[1].$tableau_template[6].'['.$id.']'] = false;
                 }
 
-                $checkbox[$i] = $formtemplate->createElement($tableau_template[0], $id, $tab_chkbox, $label, $optioncheckbox);
+                $checkbox[$i] = $formtemplate->createElement(
+                    $tableau_template[0],
+                    $id,
+                    $tab_chkbox,
+                    $label,
+                    $optioncheckbox
+                );
                 $i++;
             }
 
@@ -407,31 +413,47 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             $classrequired = '';
             $req = '';
             if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-                $classrequired.= ' chk_required';
+                $classrequired .= ' chk_required';
                 $req = '<span class="symbole_obligatoire">&nbsp;*</span> ';
             }
 
-            //$squelette_checkbox->setElementTemplate( '<fieldset class="bazar_fieldset'.$classrequired.'">'."\n".'<legend>'."\n".'{label}'."\n".
-            //        '</legend>'."\n".'{element}'."\n".'</fieldset> '."\n"."\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
-            $formtemplate->addGroup($checkbox, $tableau_template[0] . $tableau_template[1] . $tableau_template[6], $req . $tableau_template[2] . $bulledaide, "\n");
+            $squelette_checkbox->setGroupElementTemplate(
+                '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n",
+                $tableau_template[0].$tableau_template[1].$tableau_template[6]
+            );
+            $formtemplate->addGroup(
+                $checkbox,
+                $tableau_template[0].$tableau_template[1].$tableau_template[6],
+                $req . $tableau_template[2] . $bulledaide,
+                "\n"
+            );
 
             $formtemplate->setDefaults($defaultValues);
         }
     } elseif ($mode == 'requete') {
-        return array($tableau_template[0] . $tableau_template[1] . $tableau_template[6] => $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+        return array(
+            $tableau_template[0].$tableau_template[1].$tableau_template[6] =>
+                $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]
+        );
     } elseif ($mode == 'formulaire_recherche') {
         if ($tableau_template[9] == 1) {
             $valliste = baz_valeurs_liste($tableau_template[1]);
-            require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'HTML/QuickForm/checkbox.php';
+            require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/checkbox.php';
             $i = 0;
             $optioncheckbox = array('class' => 'element_checkbox');
 
             foreach ($valliste['label'] as $id => $label) {
-                if ($i == 0) $tab_chkbox = $tableau_template[2];
-                else $tab_chkbox = '&nbsp;';
+                if ($i == 0) {
+                    $tab_chkbox = $tableau_template[2];
+                } else {
+                    $tab_chkbox = '&nbsp;';
+                }
 
-                if (isset($_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && array_key_exists($id, $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]])) {
+                if (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]])
+                        && array_key_exists(
+                            $id,
+                            $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]
+                        )) {
                     $optioncheckbox['checked'] = 'checked';
                 } else {
                     unset($optioncheckbox['checked']);
@@ -443,17 +465,17 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             }
 
             $squelette_checkbox = & $formtemplate->defaultRenderer();
-            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
-            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
+            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
 
-            $formtemplate->addGroup($checkbox, $tableau_template[0] . $tableau_template[1] . $tableau_template[6], $tableau_template[2], "\n");
+            $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2], "\n");
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
-            $tabresult = explode(',', $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+            $tabresult = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
             if (is_array($tabresult)) {
                 $labels_result = '';
                 foreach ($tabresult as $id) if (isset($valliste["label"][$id])) {
@@ -461,7 +483,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                     else $labels_result.= ', ' . $valliste["label"][$id];
                 }
             } {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -485,22 +507,23 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 
         $date_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $date_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+            $date_html .= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
         }
-        $date_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<div class="input-prepend input-group">
-<span class="add-on input-group-addon"><i class="icon-calendar glyphicon glyphicon-calendar"></i></span><input type="date" name="' . $tableau_template[1] . '" ';
-
-        $date_html.= ' class="form-control bazar-date" id="' . $tableau_template[1] . '"';
+        $date_html .= $tableau_template[2] . $bulledaide . ' : </label>' . "\n"
+            .'<div class="controls col-sm-9">' . "\n"
+            .'<div class="input-prepend input-group"><span class="add-on input-group-addon">'
+            .'<i class="icon-calendar glyphicon glyphicon-calendar"></i></span>'
+            .'<input type="date" name="'.$tableau_template[1].'"'
+            .' class="form-control bazar-date" id="'.$tableau_template[1].'"';
 
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $date_html.= ' required="required"';
+            $date_html .= ' required="required"';
         }
 
         $hashour = false;
         $tabtime = array(0 => '00', 1 => '00');
-
         //gestion des valeurs par defaut pour modification
-        if (isset($valeurs_fiche[$tableau_template[1]])) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && !empty($valeurs_fiche[$tableau_template[1]])) {
             $date_html.= ' value="' . date("Y-m-d", strtotime($valeurs_fiche[$tableau_template[1]])) . '" />';
             $hashour = (strlen($valeurs_fiche[$tableau_template[1]]) > 10);
             if ($hashour) {
@@ -508,14 +531,15 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                 $tabtime = explode(':', $tab[1]);
             }
         } else {
-
             //gestion des valeurs par defaut (date du jour)
             if (isset($tableau_template[5]) && $tableau_template[5] != '') {
 
                 // si la valeur par defaut est today, on ajoute la date du jour
                 if ($tableau_template[5] = 'today') {
                     $date_html.= ' value="' . date("Y-m-d") . '" />';
-                } else $date_html.= ' value="' . date("Y-m-d", strtotime($tableau_template[5])) . '" />';
+                } else {
+                    $date_html.= ' value="' . date("Y-m-d", strtotime($tableau_template[5])) . '" />';
+                }
             } else {
                 $date_html.= ' value="" />';
             }
@@ -573,14 +597,22 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 
         $formtemplate->addElement('html', $date_html);
     } elseif ($mode == 'requete') {
-        if (isset($valeurs_fiche[$tableau_template[1] . '_allday']) && $valeurs_fiche[$tableau_template[1] . '_allday'] == 0) {
-            if (isset($valeurs_fiche[$tableau_template[1] . '_hour']) && isset($valeurs_fiche[$tableau_template[1] . '_minutes'])) {
-                return array($tableau_template[1] => date("c", strtotime($valeurs_fiche[$tableau_template[1]] . ' ' . $valeurs_fiche[$tableau_template[1] . '_hour'] . ':' . $valeurs_fiche[$tableau_template[1] . '_minutes'])));
+        if (!empty($valeurs_fiche[$tableau_template[1]]) && isset($valeurs_fiche[$tableau_template[1] . '_allday'])
+                && $valeurs_fiche[$tableau_template[1] . '_allday'] == 0) {
+            if (isset($valeurs_fiche[$tableau_template[1] . '_hour'])
+                    && isset($valeurs_fiche[$tableau_template[1] . '_minutes'])) {
+                return array(
+                    $tableau_template[1] => date("c", strtotime(
+                        $valeurs_fiche[$tableau_template[1]] . ' ' . $valeurs_fiche[$tableau_template[1] . '_hour']
+                        . ':' . $valeurs_fiche[$tableau_template[1] . '_minutes']
+                    ))
+                );
             } else {
                 return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
             }
         } else {
-            return array($tableau_template[1] => isset($valeurs_fiche[$tableau_template[1]]) ? $valeurs_fiche[$tableau_template[1]] : '');
+            return array($tableau_template[1] => isset($valeurs_fiche[$tableau_template[1]]) ?
+                $valeurs_fiche[$tableau_template[1]] : '');
         }
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {
@@ -681,13 +713,15 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 
         $option = array('size' => $tableau_template[3], 'maxlength' => $tableau_template[4], 'id' => $tableau_template[1], 'value' => $defauts, 'class' => 'form-control yeswiki-input-pagetag');
         $bulledaide = '';
-        if (isset($tableau_template[10]) && $tableau_template[10] != '') $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+        if (isset($tableau_template[10]) && $tableau_template[10] != '') {
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+                .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+        }
         $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2] . $bulledaide, $option);
     } elseif ($mode == 'requete') {
-
         //on supprime les tags existants
         if (!isset($GLOBALS['delete_tags'])) {
-            $GLOBALS['wiki']->DeleteTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', NULL, '', '');
+            $GLOBALS['wiki']->DeleteTriple($valeurs_fiche['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }
 
@@ -698,7 +732,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                $GLOBALS['wiki']->InsertTriple($GLOBALS['_BAZAR_']['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, TEMPLATES_DEFAULT_CHARSET, true), '', '');
+                $GLOBALS['wiki']->InsertTriple($valeurs_fiche['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, TEMPLATES_DEFAULT_CHARSET, true), '', '');
             }
         }
 
@@ -747,6 +781,16 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             $bulledaide = '';
         }
 
+        //si la valeur de nb_max_car est vide, on la mets au maximum
+        if ($nb_max_car == '') {
+            $nb_max_car = 255;
+        }
+
+        //par defaut il s'agit d'input html de type "text" (on precise si cela n'a pas ete entre)
+        if ($type_input == '') {
+            $type_input = 'text';
+        }
+
         //gestion des valeurs par defaut : d'abord on regarde s'il y a une valeur a modifier,
         //puis s'il y a une variable passee en GET,
         //enfin on prend la valeur par defaut du formulaire sinon
@@ -754,29 +798,33 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             $defauts = $valeurs_fiche[$identifiant];
         } elseif (isset($_GET[$identifiant])) {
             $defauts = stripslashes($_GET[$identifiant]);
+        } elseif ($type_input == 'range') {
+            $defauts = '0';
         } else {
             $defauts = stripslashes($valeur_par_defaut);
         }
-
-        //si la valeur de nb_max_car est vide, on la mets au maximum
-        if ($nb_max_car == '') $nb_max_car = 255;
-
-        //par defaut il s'agit d'input html de type "text" (on precise si cela n'a pas ete entre)
-        if ($type_input == '') $type_input = 'text';
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
         $input_html.= $label . $bulledaide . ' : </label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
+        $input_html.= '<div class="input-group">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
-        $input_html.= ($defauts != '') ? ' value="' . htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '"' : '';
+        $input_html.= ($defauts != '') ?
+            ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'"' : '';
         $input_html.= ' name="' . $identifiant . '" class="form-control input-xxlarge" id="' . $identifiant . '"';
-        $input_html.= ' maxlength="' . $nb_max_car . '" size="' . $nb_max_car . '"';
-        $input_html.= ($type_input == 'number' && $nb_min_car != '') ? ' min="' . $nb_min_car . '"' : '';
-        $input_html.= ($type_input == 'number') ? ' max="' . $nb_max_car . '"' : '';
+        $input_html.= (($type_input == 'number' || $type_input == 'range') && $nb_min_car != '') ?
+            ' min="' . $nb_min_car . '"' :
+            ' maxlength="' . $nb_max_car . '" size="' . $nb_max_car . '"';
+        $input_html.= ($type_input == 'number' || $type_input == 'range') ? ' max="' . $nb_max_car . '"' : '';
+        $input_html.= ($type_input == 'range') ? ' oninput="this.form.'.$identifiant.'number.value=this.value"' : '';
         $input_html.= ($regexp != '') ? ' pattern="' . $regexp . '"' : '';
         $input_html.= ($obligatoire == 1) ? ' required="required"' : '';
-        $input_html.= '>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
+        $input_html.= '>' . "\n";
+        $input_html.= ($type_input == 'range') ?
+            '<output class="input-group-addon" name="'.$identifiant.'number">'.$defauts.'</output>' :
+            '';
+        $input_html.= '</div>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
 
         $formtemplate->addElement('html', $input_html);
     } elseif ($mode == 'requete') {
@@ -1362,11 +1410,11 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                 unset($valeurs_fiche[$type . $identifiant]);
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                $valeur['id_fiche'] = $GLOBALS['_BAZAR_']['id_fiche'];
+                $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
                 $valeur = json_encode(array_map("utf8_encode", $valeur));
 
                 //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-                $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
+                $GLOBALS["wiki"]->SavePage($valeurs_fiche['id_fiche'], $valeur);
 
                 //on affiche les infos sur l'effacement du fichier, et on reinitialise la variable pour le fichier pour faire apparaitre le formulaire d'ajout par la suite
                 $info = '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $nomimg . _t('BAZ_A_ETE_EFFACE') . '</div>' . "\n";
@@ -1388,7 +1436,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             //il y a bien le fichier image, on affiche l'image, avec possibilite de la supprimer ou de la modifier
             if (file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
 
-                require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'HTML/QuickForm/html.php';
+                require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n" . '<fieldset class="bazar_fieldset">' . "\n" . '<legend>' . $label . '</legend>' . "\n"));
 
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
@@ -1413,11 +1461,11 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                 unset($valeurs_fiche[$type . $identifiant]);
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                $valeur['id_fiche'] = $GLOBALS['_BAZAR_']['id_fiche'];
+                $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
                 $valeur = json_encode(array_map("utf8_encode", $valeur));
 
                 //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-                $GLOBALS["wiki"]->SavePage($GLOBALS['_BAZAR_']['id_fiche'], $valeur);
+                $GLOBALS["wiki"]->SavePage($valeurs_fiche['id_fiche'], $valeur);
             }
         }
 
@@ -1495,7 +1543,7 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
     list($type, $texte_saisie, $texte_recherche, $texte_fiche) = $tableau_template;
 
     if ($mode == 'saisie') {
-        require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'HTML/QuickForm/html.php';
+        require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
         $formtemplate->addElement(new HTML_QuickForm_html("\n" . $texte_saisie . "\n"));
     } elseif ($mode == 'requete') {
         return;
@@ -1521,8 +1569,8 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
     } elseif ($mode == 'requete') {
 
         if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
-            $GLOBALS['_BAZAR_']['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
-            return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $GLOBALS['_BAZAR_']['id_fiche']);
+            $valeurs_fiche['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
+            return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $valeurs_fiche['id_fiche']);
         }
 
         preg_match_all('#{{(.*)}}#U', $valeurs_fiche['bf_titre'], $matches);
@@ -1549,8 +1597,8 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
                 }
             }
         }
-        $GLOBALS['_BAZAR_']['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
-        return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $GLOBALS['_BAZAR_']['id_fiche']);
+        $valeurs_fiche['id_fiche'] = (isset($valeurs_fiche['id_fiche']) ? $valeurs_fiche['id_fiche'] : genere_nom_wiki($valeurs_fiche['bf_titre']));
+        return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $valeurs_fiche['id_fiche']);
     } elseif ($mode == 'html') {
 
         // Le titre
@@ -1844,17 +1892,17 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             $selectnametab = '';
         }
 
-        $select_attributes.= ' class="form-control" id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '" name="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . $selectnametab . '"';
+        $select_attributes.= ' class="form-control" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab . '"';
 
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $select_attributes.= ' required="required"';
         }
         $select_html.= $select_attributes . '>' . "\n";
 
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-            $def = $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]];
-        } elseif (isset($_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-            $def = $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]];
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $def = $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
+        } elseif (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $def = $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
         } else {
             $def = $tableau_template[5];
         }
@@ -1896,20 +1944,20 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 
         $formtemplate->addElement('html', $select_html);
     } elseif ($mode == 'requete') {
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != 0)) {
-            return array($tableau_template[0] . $tableau_template[1] . $tableau_template[6] => $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != 0)) {
+            return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
 
             if ($tableau_template[3] == 'fiche') {
-                $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+                $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
             } else {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
                 $html.= '<span class="BAZ_texte">';
-                $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
-                $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]])) . '" class="voir_fiche ouvrir_overlay" title="Voir la fiche ' . $val_fiche['bf_titre'] . '" rel="#overlay-link">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="voir_fiche ouvrir_overlay" title="Voir la fiche ' . $val_fiche['bf_titre'] . '" rel="#overlay-link">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -1960,12 +2008,12 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
         $checkbox_html.= '>' . "\n";
 
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) &&
-                  $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-            $def = explode(',', $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
-        } elseif (isset($_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) &&
-                        $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-            $def = explode(',', $_REQUEST[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) &&
+                  $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $def = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+        } elseif (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) &&
+                        $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $def = explode(',', $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
         } else {
             $def = explode(',', $tableau_template[5]);
         }
@@ -2080,18 +2128,18 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $formtemplate->addElement('html', $checkbox_html);
     } elseif ($mode == 'requete') {
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != 0)) {
-            return array($tableau_template[0] . $tableau_template[1] . $tableau_template[6] => $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != 0)) {
+            return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]) && $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]] != '') {
-            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0] . $tableau_template[1] . $tableau_template[6] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
-            $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0] . $tableau_template[1] . $tableau_template[6]]);
+            $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
 
-            $first = true;
             foreach ($tab_fiche as $fiche) {
+                $html .= '<ul>';
                 if ($tableau_template[3] == 'fiche') {
                     $html.= baz_voir_fiche(0, $fiche);
                 } else {
@@ -2110,14 +2158,10 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         }
                     }
                     if (!isset($match) || $match == true) {
-                        if (!$first) {
-                            $html.= ', ';
-                        } else {
-                            $first = false;
-                        }
-                        $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a>' . "\n";
+                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
                     }
                 }
+                $html .= '</ul>';
             }
             $html.= '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
         }
@@ -2191,9 +2235,9 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             }
 
             $squelette_checkbox = & $formtemplate->defaultRenderer();
-            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
-            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0] . $tableau_template[1] . $tableau_template[6]);
-            $formtemplate->addGroup($checkbox, $tableau_template[0] . $tableau_template[1] . $tableau_template[6], $tableau_template[2] . $bulledaide, "\n");
+            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
+            $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2] . $bulledaide, "\n");
         }
     } elseif ($mode == 'html') {
         $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';

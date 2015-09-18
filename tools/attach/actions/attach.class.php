@@ -64,6 +64,7 @@ class attach {
 	function attach(&$wiki){
    	$this->wiki = $wiki;
 		$this->attachConfig = $this->wiki->GetConfigValue("attach_config");
+    if (empty($this->attachConfig["php53_safe_mode"])) $this->attachConfig["php53_safe_mode"] = true;
 		if (empty($this->attachConfig["ext_images"])) $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg";
 		if (empty($this->attachConfig["ext_audio"])) $this->attachConfig["ext_audio"] = "mp3";
 		if (empty($this->attachConfig["ext_wma"])) $this->attachConfig["ext_wma"] = "wma";
@@ -82,7 +83,7 @@ class attach {
 			$this->isSafeMode = ini_get("safe_mode");
 		} 
 		else {
-			$this->isSafeMode = false;
+			$this->isSafeMode = $this->attachConfig["php53_safe_mode"];
 		}
 
 	}
