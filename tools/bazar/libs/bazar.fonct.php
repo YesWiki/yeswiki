@@ -3957,6 +3957,20 @@ function getAllParameters($wiki)
     // parametres pour bazarliste avec carto
 
     /*
+     * markercolor : couleur des marqueurs
+     */
+    $colors = array('red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue', 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black');
+    $param['markercolor'] = $wiki->GetParameter('markercolor');
+    if (!empty($param['markercolor'])) {
+        //$param['markercolor'] = explode(',', $param['markercolor']);
+        if (!in_array($param['markercolor'], $colors)) {
+            $param['markercolor'] = 'green';
+        }
+    } else {
+        $param['markercolor'] = 'green';
+    }
+
+    /*
      * smallmarker : mettre des puces petites ? non par defaut
      */
     $param['smallmarker'] = $wiki->GetParameter('smallmarker');

@@ -133,6 +133,19 @@ padding:3px;
   opacity: 1;
 }
 
+.bazar-marker .bazar-entry .glyphicon {
+  color:#FFF;
+  font-size: 8px;
+  top: -2px;
+  left: 1px;
+}
+.bazar-marker.xl .bazar-entry .glyphicon {
+  font-size: 16px;
+  top: 10px;
+  left: 1px;
+}
+
+
 .bazar-marker .bazar-entry::after {
   content:' ';
   background: url('../images/markers-xs-shadow.png') no-repeat 0 0;
@@ -163,7 +176,8 @@ padding:3px;
   display: block;
   text-align: center;
   position:relative;
-  background:url(../images/markers-xl-matte.png) no-repeat 0 0;
+  /*background:url(../images/markers-xl-matte.png) no-repeat 0 0;*/
+  background:url(../images/markers-xl-soft.png) no-repeat 0 0;
   opacity: 1;
   z-index: 2;
 } 

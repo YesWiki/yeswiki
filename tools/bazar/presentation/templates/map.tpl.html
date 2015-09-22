@@ -13,7 +13,7 @@ if (count($fiches)>0) :
     $tablinktitle = array();
     $markersjs = '';
     $i = 0;
-    foreach ($fiches as $fiche) : ?>
+    foreach ($fiches as $fiche) :?>
         <?php
         $tab = explode('|', $fiche['carte_google']);
         if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
@@ -29,7 +29,8 @@ if (count($fiches)>0) :
                         iconAnchor: '.$param['iconAnchor'].',
                         popupAnchor: '.$param['popupAnchor'].',
                         className: \'bazar-marker'.$param['smallmarker'].'\',
-                        html: \'<div class="bazar-entry" '.$fiche['html_data'].'><i class="glyphicon glyphicon-record"></i></div>\'
+                        html: \'<div class="bazar-entry icon-'.$param['markercolor'].'" '
+                        .$fiche['html_data'].'><i class="glyphicon glyphicon-star"></i></div>\'
                     }),
                     title: \''.addslashes($fiche['bf_titre']).'\'
                 });
