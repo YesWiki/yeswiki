@@ -107,7 +107,7 @@ else if(!isset($_POST['clean']))
 	$buffer->str(	"<table>\n");
 	foreach ($pagesFromSpammer as $i => $page)
 	{
-		$revisions=$wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where tag = '".mysql_real_escape_string($page["tag"])."' order by time desc"); 
+		$revisions=$wiki->LoadAll("select * from ".$wiki->config["table_prefix"]."pages where tag = '".mysqli_real_escape_string($wiki->dblink, ($page["tag"])."' order by time desc"); 
 		$buffer->str(	"<tr>\n".
 			"<td>".
 			$page["tag"]. " ".
@@ -192,7 +192,7 @@ else if(isset($_POST['clean']))
 		{
 			$buffer->str( $rev_id."<br>");
 			// S?lectionne la r?vision
-			$revision = $wiki->LoadSingle("select * from ".$wiki->config["table_prefix"]."pages where id = '".mysql_real_escape_string($rev_id)."' limit 1"); 
+			$revision = $wiki->LoadSingle("select * from ".$wiki->config["table_prefix"]."pages where id = '".mysqli_real_escape_string($wiki->dblink, ($rev_id)."' limit 1"); 
 			
 	
 			// Fait de la derni?re version de cette r?vision
@@ -208,12 +208,12 @@ else if(isset($_POST['clean']))
 	
              // add new revision
               $wiki->Query("insert into ".$wiki->config["table_prefix"]."pages set ".
-             "tag = '".mysql_real_escape_string($revision['tag'])."', ".
+             "tag = '".mysqli_real_escape_string($wiki->dblink, ($revision['tag'])."', ".
              "time = now(), ".
-	         "owner = '".mysql_real_escape_string($revision['owner'] )."', ".
-             "user = '".mysql_real_escape_string("despam")."', ".
+	         "owner = '".mysqli_real_escape_string($wiki->dblink, ($revision['owner'] )."', ".
+             "user = '".mysqli_real_escape_string($wiki->dblink, ("despam")."', ".
              "latest = 'Y', ".
-             "body = '".mysql_real_escape_string(chop($revision['body']))."'");
+             "body = '".mysqli_real_escape_string($wiki->dblink, (chop($revision['body']))."'");
         }
 	
 		}

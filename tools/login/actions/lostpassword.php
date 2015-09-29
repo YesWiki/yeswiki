@@ -22,7 +22,7 @@ function checkUNEmail($uname, $email) {
 	$error = array('status' => false, 'userID' => 0);
 	if (isset($email) && trim($email) != '') {
 		//email was entered
-		$existingEmail = $wiki->LoadSingle("select * from " . $wiki->config["table_prefix"] . "users where email = '" . mysql_real_escape_string($email) . "' limit 1");
+		$existingEmail = $wiki->LoadSingle("select * from " . $wiki->config["table_prefix"] . "users where email = '" . mysqli_real_escape_string($wiki->dblink, ($email) . "' limit 1");
 		if ($existingEmail) {
 			return array('status' => true, 'userID' => $existingEmail['name']);
 		} else {
@@ -195,13 +195,13 @@ switch ($step) {
 		echo $this->FormClose();
 		break;
 	case 'successPage': 
-		 echo $this->Format("Un message vous a été envoyé avec les instructions pour re-initialiser votre mot de passe");
+		 echo $this->Format("Un message vous a Ã©tÃ© envoyÃ© avec les instructions pour re-initialiser votre mot de passe");
 		 break;
 	case 'recoverForm': 
 		echo $this->Format("Bienvenue ".$securityUser."---"); 
 		echo $this->Format("Saisir votre nouveau mot de passe dans les champs ci-dessous"); 
 		if ($error == true) {
-			echo $this->Format("Les nouveaux mots de passe doivent être identiques et non vides");
+			echo $this->Format("Les nouveaux mots de passe doivent Ãªtre identiques et non vides");
 		}
 		echo $this->FormOpen();
 		?>
@@ -219,7 +219,7 @@ switch ($step) {
 		echo $this->Format("Clef de validation incorrecte");
 		break;
 	case 'recoverSuccess': 
-		echo $this->Format("Mot de passe mis à jour !");
+		echo $this->Format("Mot de passe mis Ã  jour !");
 		break;
 }
 ?>

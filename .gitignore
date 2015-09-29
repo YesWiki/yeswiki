@@ -1,5 +1,4 @@
-vvv-hosts
-vvv-nginx.conf
+.DS_Store
 wakka.config.php
 info.php
 tools/hashcash/secret/wp-hashcash.key

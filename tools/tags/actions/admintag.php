@@ -10,7 +10,7 @@ if ($this->UserIsAdmin())
 
 	if (isset($_GET['delete_tag']))
 	{		
-		$sql = 'DELETE FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" and id IN ('.mysql_real_escape_string($_GET['delete_tag']).')';
+		$sql = 'DELETE FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" and id IN ('.mysqli_real_escape_string($this->dblink, $_GET['delete_tag']).')';
 		$this->Query($sql);
 	}
 

@@ -32,7 +32,7 @@ $wikiClassesContent [] = '
 
 	function SaveTags($page, $liste_tags)
     {
-		$tags = explode(",", mysql_real_escape_string(_convert($liste_tags, TEMPLATES_DEFAULT_CHARSET, TRUE)));
+		$tags = explode(",", mysqli_real_escape_string($this->dblink, _convert($liste_tags, TEMPLATES_DEFAULT_CHARSET, TRUE)));
 		
 		
 		//on recupere les anciens tags de la page courante
@@ -92,7 +92,7 @@ $wikiClassesContent [] = '
 			$tab_tags = explode(",", $tags);
 			$nbdetags = count($tab_tags);
 			$tags = implode(",", $tab_tags);
-			$tags = \'"\'.str_replace(\',\',\'","\',_convert(mysql_real_escape_string(addslashes($tags)), TEMPLATES_DEFAULT_CHARSET, true)).\'"\';
+			$tags = \'"\'.str_replace(\',\',\'","\',_convert(mysqli_real_escape_string($this->dblink, addslashes($tags)), TEMPLATES_DEFAULT_CHARSET, true)).\'"\';
 			$req = \' AND tags.value IN (\'.$tags.\') \';
 			$req .= \' AND tags.property="http://outils-reseaux.org/_vocabulary/tag" AND tags.resource=tag \';
 			$req_having = \' HAVING COUNT(tag)=\'.$nbdetags.\' \';
