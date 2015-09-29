@@ -1,6 +1,6 @@
 /**
  *
- * javascript and query tools for Bazar
+ * javascript for bazar
  *
  * */
 

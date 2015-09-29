@@ -29,18 +29,7 @@ color:#E9322D;
   font-size:.9em;
 }
 
-.BAZ_actions_fiche ul {
-	margin:0;
-	padding: 0;
-}
-
-.BAZ_actions_fiche li {
-display:inline;
-list-style-type:none;
-margin:0 10px 0 0;
-padding:0;
-}
-
+/*
 .btn_adresse,.btn_client {
 display:inline;
 width:215px;
@@ -49,11 +38,10 @@ color:#000;
 border:1px solid #AAA;
 background:#CCC;
 margin:0 0 5px;
-}
+}*/
 
-.coordonnees_google {
-float:right;
-width:180px;
+#bf_latitude, #bf_longitude {
+width: 130px;
 }
 
 .coordonnees_google .formulaire_ligne {
@@ -136,9 +124,15 @@ padding:3px;
 .bazar-marker .bazar-entry .glyphicon {
   color:#FFF;
   font-size: 8px;
-  top: -2px;
+  top: -1px;
   left: 1px;
 }
+.bazar-marker .bazar-entry.icon-lightgreen .glyphicon,
+.bazar-marker .bazar-entry.icon-white .glyphicon
+{
+ color:#000;
+}
+
 .bazar-marker.xl .bazar-entry .glyphicon {
   font-size: 16px;
   top: 10px;
@@ -146,7 +140,7 @@ padding:3px;
 }
 
 
-.bazar-marker .bazar-entry::after {
+.bazar-marker::after {
   content:' ';
   background: url('../images/markers-xs-shadow.png') no-repeat 0 0;
   width: 18px;
@@ -155,10 +149,9 @@ padding:3px;
   position:absolute;
   bottom: 0;
   right: -7px;
-  z-index: 1;
 }
 
-.bazar-marker.xl .bazar-entry::after {
+.bazar-marker.xl::after {
   content:' ';
   background: url('../images/markers-xl-shadow.png') no-repeat 0 0;
   width: 35px;
@@ -167,7 +160,6 @@ padding:3px;
   position:absolute;
   bottom: 0;
   right: -9px;
-  z-index: 1;
 }
 
 .bazar-marker.xl .bazar-entry {
@@ -188,75 +180,75 @@ padding:3px;
 }
 
 .bazar-marker .bazar-entry.icon-darkred {
-  background-position: -180px 0;
+  background-position: -78px 0px;
 }
 
 .bazar-marker .bazar-entry.icon-lightred {
-  background-position: -360px 0;
+  background-position: -235px 0;
 }
 
 .bazar-marker .bazar-entry.icon-orange {
-  background-position: -36px 0;
+  background-position: -16px 0;
 }
 
 .bazar-marker .bazar-entry.icon-beige {
-  background-position: -396px 0;
+  background-position: -172px 0;
 }
 
 .bazar-marker .bazar-entry.icon-green {
-  background-position: -72px 0;
+  background-position: -31px 0;
 }
 
 .bazar-marker .bazar-entry.icon-darkgreen {
-  background-position: -252px 0;
+  background-position: -109px 0;
 }
 
 .bazar-marker .bazar-entry.icon-lightgreen {
-  background-position: -432px 0;
+  background-position: -188px 0;
 }
 
 .bazar-marker .bazar-entry.icon-blue {
-  background-position: -108px 0;
+  background-position: -47px 0;
 }
 
 .bazar-marker .bazar-entry.icon-darkblue {
-  background-position: -216px 0;
+  background-position: -94px 0;
 }
 
 .bazar-marker .bazar-entry.icon-lightblue {
-  background-position: -468px 0;
+  background-position: -203px 0;
 }
 
 .bazar-marker .bazar-entry.icon-purple {
-  background-position: -144px 0;
+  background-position: -62px 0;
 }
 
 .bazar-marker .bazar-entry.icon-darkpurple {
-  background-position: -288px 0;
+  background-position: -125px 0;
 }
 
 .bazar-marker .bazar-entry.icon-pink {
-  background-position: -504px 0;
+  background-position: -219px 0;
 }
 
 .bazar-marker .bazar-entry.icon-cadetblue {
-  background-position: -324px 0;
+  background-position: -140px 0;
 }
 
 .bazar-marker .bazar-entry.icon-white {
-  background-position: -574px 0;
+  background-position: -250px 0;
 }
 
 .bazar-marker .bazar-entry.icon-gray {
-  background-position: -648px 0;
+  background-position: -282px 0;
 }
 
 .bazar-marker .bazar-entry.icon-lightgray {
-  background-position: -612px 0;
+  background-position: -266px 0;
 }
 
 .bazar-marker .bazar-entry.icon-black {
-  background-position: -682px 0;
+  background-position: -296px 0;
 }
 
 .bazar-marker.xl .bazar-entry.icon-red {
@@ -320,7 +312,7 @@ padding:3px;
 }
 
 .bazar-marker.xl .bazar-entry.icon-white {
-  background-position: -574px 0;
+  background-position: -576px 0;
 }
 
 .bazar-marker.xl .bazar-entry.icon-gray {

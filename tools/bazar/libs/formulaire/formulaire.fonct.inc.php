@@ -658,7 +658,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
 
         //gestion des mots cles deja entres
         if (isset($valeurs_fiche[$tableau_template[1]])) {
-            $tags = explode(",", mysql_real_escape_string($valeurs_fiche[$tableau_template[1]]));
+            $tags = explode(",", mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[1]]));
             if (is_array($tags)) {
                 sort($tags);
                 foreach ($tags as $tag) {
@@ -726,7 +726,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
         }
 
         //on decoupe les tags pour les mettre dans un tableau
-        $tags = explode(",", mysql_real_escape_string($valeurs_fiche[$tableau_template[1]]));
+        $tags = explode(",", mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[1]]));
 
         //on ajoute les tags postés
         foreach ($tags as $tag) {
@@ -887,7 +887,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         $GLOBALS['utilisateur_wikini'] = $nomwiki;
 
         if (!$GLOBALS['wiki']->LoadUser($nomwiki)) {
-            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysql_real_escape_string($nomwiki) . "', " . "email = '" . mysql_real_escape_string($valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysql_real_escape_string($valeurs_fiche['mot_de_passe_wikini']) . "')";
+            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
             $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini);
         }   
 
@@ -1619,7 +1619,7 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) 
     list($type, $lat, $lon, $classe, $obligatoire) = $tableau_template;
 
     if ($mode == 'saisie') {
-        $scriptgoogle = '
+     /*   $scriptgoogle = '
 //-----------------------------------------------------------------------------------------------------------
 //--------------------TODO : ATTENTION CODE FACTORISABLE-----------------------------------------------------
 //-----------------------------------------------------------------------------------------------------------
@@ -1832,29 +1832,108 @@ function showAddress()
         };
         $GLOBALS['wiki']->AddJavascriptFile('http://maps.google.com/maps/api/js?v=3&amp;sensor=false');
         $GLOBALS['wiki']->AddJavascriptFile('http://www.google.com/jsapi');
-        $GLOBALS['wiki']->AddJavascript($scriptgoogle);
+        $GLOBALS['wiki']->AddJavascript($scriptgoogle);*/
+
+        $initmapscript = '// Init leaflet map
+    var map = new L.Map(\'osmmapform\', {
+        scrollWheelZoom:'.BAZ_PERMETTRE_ZOOM_MOLETTE.',
+        zoomControl:'.BAZ_AFFICHER_NAVIGATION.'
+    });
+    var geocodedmarker;
+    var OsmLayer = new L.TileLayer(\'http://{s}.tile.osm.org/{z}/{x}/{y}.png\', {maxZoom: 18, attribution: \'\'});
+    map.setView(new L.LatLng('.BAZ_MAP_CENTER_LAT.', '.BAZ_MAP_CENTER_LON.'), '.BAZ_GOOGLE_ALTITUDE.').addLayer(OsmLayer);
+
+    $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
+      var pattern = /^-?[\d]{1,3}[.][\d]+$/;
+      var thisVal = $(this).val();
+      if(!thisVal.match(pattern)) $(this).val($(this).val().replace(/[^\d.]/g,\'\'));
+    });
+    $("body").on("blur", "#bf_latitude, #bf_longitude", function() {
+        var point = L.latLng($("#bf_latitude").val(), $("#bf_longitude").val());
+        geocodedmarker.setLatLng(point);
+        map.panTo( point, {animate:true});
+    });
+';
+        $geocodingscript = 'function showAddress() {
+            var address = "";
+            if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
+            if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
+            if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
+            if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
+            if (document.getElementById("listeListePays")) address += document.getElementById("listeListePays").value + \' \';
+            address = address.replace(/\\("|\'|\\)/g, " ").trim();
+
+            // requete ajax chez osm pour geolocaliser l adresse
+            var jqxhr = $.get(\'http://nominatim.openstreetmap.org/search?q=\'+address+\'&format=json\')
+              .done(function(data) {
+                if (geocodedmarker) map.removeLayer(geocodedmarker);
+                if (data.length>0) {
+                    // marqueur representant le premier resultat trouvé
+                    var point = L.latLng(data[0].lat, data[0].lon);
+                } else {
+                    //marqueur au centre par defaut au centre
+                    alert(\'Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées\');
+                    var point = map.getCenter();
+                }
+                geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
+                geocodedmarker.bindPopup("<div class=\"input-group input-group-sm\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i></span><input type=\"text\" class=\"form-control\" placeholder=\"Latitude\" id=\"bf_latitude\" name=\"bf_latitude\" value=\""+point.lat+"\"><input type=\"text\" class=\"form-control\" placeholder=\"Longitude\" id=\"bf_longitude\" name=\"bf_longitude\" value=\""+point.lng+"\"></div><br>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+                    map.panTo( geocodedmarker.getLatLng(), {animate:true});
+                geocodedmarker.on("dragend",function(ev){
+                    this.openPopup();
+                    var changedPos = ev.target.getLatLng();
+                    $(\'#bf_latitude\').val(changedPos.lat);
+                    $(\'#bf_longitude\').val(changedPos.lng);
+                });
+              })
+              .fail(function(error) {
+                console.log(error);
+              })
+              .always(function() {
+                //console.log( "GetLocations finished" );
+              });
+        }'."\n";
+         
         $deflat = '';
         $deflon = '';
         if (isset($valeurs_fiche['carte_google'])) {
             $tab = explode('|', $valeurs_fiche['carte_google']);
-            if (count($tab) > 1) {
-                $deflat = ' value="' . $tab[0] . '"';
-                $deflon = ' value="' . $tab[1] . '"';
+            if (count($tab) > 1 && !empty($tab[0]) && !empty($tab[1]) ) {
+                $geocodingscript .= 'var point = L.latLng('.$tab[0].', '.$tab[1].');
+                geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
+                map.panTo( geocodedmarker.getLatLng(), {animate:true});
+                geocodedmarker.bindPopup("<div class=\"input-group input-group-sm\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i></span><input type=\"text\" class=\"form-control\" placeholder=\"Latitude\" id=\"bf_latitude\" name=\"bf_latitude\" value=\""+point.lat+"\"><input type=\"text\" class=\"form-control\" placeholder=\"Longitude\" id=\"bf_longitude\" name=\"bf_longitude\" value=\""+point.lng+"\"></div><br>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false});
+                    
+                geocodedmarker.on("dragend",function(ev){
+                    this.openPopup();
+                    var changedPos = ev.target.getLatLng();
+                    $(\'#bf_latitude\').val(changedPos.lat);
+                    $(\'#bf_longitude\').val(changedPos.lng);
+                });';
             }
         }
+        $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
+        $GLOBALS['wiki']->AddCSSFile(
+            'tools/bazar/libs/vendor/leaflet/leaflet.ie.css',
+            '<!--[if lte IE 8]>',
+            '<![endif]-->'
+        );
+        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+        $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
+       
         $required = (($obligatoire == 1) ? ' required="required"' : '');
         $symbole_obligatoire = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
 
         $formtemplate->addElement(
             'html',
-            $symbole_obligatoire . '
-        <input class="btn btn-primary btn_adresse" onclick="showAddress();" name="chercher_sur_carte" value="'.
-            _t('VERIFIER_MON_ADRESSE') . '" type="button" /><div class="form-inline pull-right">'."\n".
-            'Lat : <input type="text" name="'.$lat.'" class="input-mini" id="latitude"'.$deflat.$required.' />'."\n".
-            'Lon : <input type="text" name="'.$lon.'" class="input-mini" id="longitude"'.$deflon.$required.' />'."\n".
-            '</div>'."\n".
-            '<div id="map" style="clear:right; margin-top:8px; width:'.BAZ_GOOGLE_IMAGE_LARGEUR.'; height:'.
-            BAZ_GOOGLE_IMAGE_HAUTEUR.';"></div>'
+            '<div class="control-group form-group">
+                <label class="control-label col-sm-3"></label>
+                <div class="controls col-sm-9">
+                    <input class="btn btn-primary btn_adresse" onclick="showAddress();" value="'.
+                        _t('BAZ_VERIFIER_MON_ADRESSE') . '" type="button">'.
+                    '<div id="osmmapform" style="margin-top:5px; width:'.BAZ_GOOGLE_IMAGE_LARGEUR.'; height:'.
+                        BAZ_GOOGLE_IMAGE_HAUTEUR.';"></div>
+                </div>
+        </div>'
         );
     } elseif ($mode == 'requete') {
         return array('carte_google' => $valeurs_fiche[$lat] . '|' . $valeurs_fiche[$lon]);

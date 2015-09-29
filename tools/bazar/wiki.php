@@ -304,6 +304,18 @@ define(
 define('BAZ_GOOGLE_CENTRE_LAT', BAZ_MAP_CENTER_LAT);
 define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
 
+// prefixe des classes CSS pour les icones du marqueur
+define('BAZ_MARKER_ICON_PREFIX', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'glyphicon');
+
+// icone du marqueur de base
+define('BAZ_MARKER_ICON', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'record');
+
+// couleur du marqueur de base
+define('BAZ_MARKER_COLOR', (isset($wakkaConfig['baz_marker_color'])) ? $wakkaConfig['baz_marker_color'] : 'darkred');
+
+// petit marqueur (par defaut : non)
+define('BAZ_SMALL_MARKER', (isset($wakkaConfig['baz_small_marker'])) ? $wakkaConfig['baz_small_marker'] : '');
+
 // niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
 define('BAZ_GOOGLE_ALTITUDE', (isset($wakkaConfig['baz_google_altitude'])) ? $wakkaConfig['baz_google_altitude'] : '5');
 
@@ -318,7 +330,7 @@ define('BAZ_TYPE_CARTO', (isset($wakkaConfig['baz_type_carto'])) ? $wakkaConfig[
 // taille de la carte a l'ecran
 define('BAZ_GOOGLE_IMAGE_LARGEUR', '100%');
  // valeur de l'attribut css width de la carte
-define('BAZ_GOOGLE_IMAGE_HAUTEUR', '600px');
+define('BAZ_GOOGLE_IMAGE_HAUTEUR', '400px');
  // valeur de l'attribut css height de la carte
 
 // image marqueur
@@ -363,8 +375,8 @@ define('BAZ_JS_INIT_MAP', '');
 define(
     'BAZ_TEMPLATE_LISTE_DEFAUT',
     (isset($wakkaConfig['default_bazar_template'])) ?
-    $wakkaConfig['default_bazar_template']
-    :'liste_accordeon.tpl.html'
+      $wakkaConfig['default_bazar_template']
+      :'liste_accordeon.tpl.html'
 );
 
 if (!function_exists('CheckBazarOwner')) {
@@ -452,8 +464,8 @@ $wikiClassesContent[] = '
     else // load page
     {
       $sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
-        . " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
-        . ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
+        . " WHERE tag = \'".mysqli_real_escape_string($this->dblink, $tag)."\' AND "
+        . ($time ? "time = \'".mysqli_real_escape_string($this->dblink, $time)."\'" : "latest = \'Y\'") . " LIMIT 1";
       $page = $this->LoadSingle($sql);
       // si la page existe, on charge les meta-donnees
       if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);

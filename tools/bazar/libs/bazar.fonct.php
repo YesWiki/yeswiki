@@ -361,7 +361,7 @@ function baz_afficher_formulaire_import()
                                     if (($type_champ[$c]) == 'image' &&
                                         isset($data[$c]) && !empty($data[$c])) {
                                         $imageorig =
-                                        trim(utf8_decode($data[$c]));
+                                        trim($valeur[$nom_champ[$c]]);
 
                                         //on enleve les accents sur les noms de fichiers, et les espaces
                                         $nomimage =
@@ -965,6 +965,7 @@ function baz_afficher_formulaire_export()
 function baz_formulaire($mode, $url = '', $valeurs = '')
 {
     $res = '';
+
     if ($url == '') {
         $lien_formulaire = $GLOBALS['_BAZAR_']['url'];
         $lien_formulaire->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR);
@@ -1014,18 +1015,74 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         }
     }
 
+        // contruction du squelette du formulaire
+    $formtemplate = new HTML_QuickForm(
+        'formulaire',
+        'post',
+        preg_replace('/&amp;/', '&', ($url ? $url : $lien_formulaire
+                ->getURL()))
+    );
+    $squelette = &$formtemplate->defaultRenderer();
+
+    $squelette
+        ->setFormTemplate('<form {attributes} class="form-horizontal" novalidate="novalidate">' . "\n"
+            .'{content}'."\n"
+            .'</form>'."\n");
+
+    $squelette
+        ->setElementTemplate('<div class="control-group form-group">'."\n"
+            .'<label class="control-label col-sm-3">'."\n"
+            .'<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->'."\n"
+            .'{label} :</label>'."\n"
+            .'<div class="controls col-sm-9"> '."\n".'{element}'."\n"
+            .'<!-- BEGIN error --><span class="alert alert-error alert-danger">{error}</span><!-- END error -->'
+            ."\n".'</div>'."\n".'</div>'."\n");
+
+    $squelette
+        ->setElementTemplate('<div class="control-group form-group">'."\n"
+            .'<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n"
+            .'<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->'
+            ."\n".'</div>'."\n".'</div>'."\n",
+            'accept_condition');
+
+    $squelette
+        ->setElementTemplate('<div class="form-actions form-group">'."\n"
+            .'<div class="col-sm-9 col-sm-offset-3">{label}{element}</div></div>'."\n",
+            'groupe_boutons');
+
+    $squelette
+        ->setElementTemplate('<div class="control-group form-group">' .
+            "\n"
+            . '<div class="control-label col-sm-3">' . "\n" .
+            '{label} :</div>' . "\n"
+
+            . '<div class="controls col-sm-9"> ' . "\n" . '{element}' .
+            "\n" . '</div>' . "\n" . '</div>', 'select');
+
+    $squelette->setRequiredNoteTemplate(
+        '<div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">* {requiredNote}</div>'."\n"
+    );
+
+    //Traduction de champs requis
+    $formtemplate->setRequiredNote(_t('BAZ_CHAMPS_REQUIS'));
+    $formtemplate->setJsWarnings(_t('BAZ_ERREUR_SAISIE'),
+        _t('BAZ_VEUILLEZ_CORRIGER'));
+
+    //antispam
+    $formtemplate->addElement('hidden', 'antispam', 0);
+
+
     //------------------------------------------------------------------------------------------------
     // CHOIX DU TYPE DE FICHE
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_CHOISIR_TYPE_FICHE) {
         if (isset($_REQUEST['id_typeannonce']) &&
             !empty($_REQUEST['id_typeannonce'])) {
+            $GLOBALS['params']['idtypeannonce'] = $_REQUEST['id_typeannonce'];
             $mode = BAZ_ACTION_NOUVEAU;
         } else {
             $resultat = array();
-            $tabform  =
-
-            baz_valeurs_tous_les_formulaires($GLOBALS['params']['categorienature']);
+            $tabform  = baz_valeurs_tous_les_formulaires($GLOBALS['params']['categorienature']);
 
             foreach ($tabform as $cat => $form) {
                 foreach ($form as $key => $value) {
@@ -1033,15 +1090,13 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 }
             }
             if (count($resultat) == 0) {
-                $res =
-                '<div class="alert alert-info">' . _t('BAZ_NO_FORMS_FOUND') .
+                $res .= '<div class="alert alert-info">' . _t('BAZ_NO_FORMS_FOUND') .
                 '.</div>' . "\n";
             } elseif (count($resultat) == 1) {
-                $res                        = '';
                 $ligne                      = reset($resultat);
                 $_REQUEST['id_typeannonce'] = $ligne['bn_id_nature'];
+                $GLOBALS['params']['idtypeannonce'] = $ligne['bn_id_nature'];
                 $mode                       = BAZ_ACTION_NOUVEAU;
-
                 //on remplace l'attribut action du formulaire par l'action adequate
                 $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
                     BAZ_ACTION_NOUVEAU_V);
@@ -1091,148 +1146,70 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 </table>' . "\n";
             }
         }
-    } else {
-        // contruction du squelette du formulaire
-        $formtemplate = new HTML_QuickForm(
-            'formulaire',
-            'post',
-            preg_replace('/&amp;/', '&', ($url ? $url : $lien_formulaire
-                    ->getURL()))
-        );
-        $squelette = &$formtemplate->defaultRenderer();
+    }
 
-        $squelette
+    //------------------------------------------------------------------------------------------------
+    // AFFICHAGE DU FORMULAIRE CORRESPONDANT AU TYPE DE FICHE CHOISI PAR L'UTILISATEUR
+    //------------------------------------------------------------------------------------------------
+    if ($mode == BAZ_ACTION_NOUVEAU) {
+        // Affichage du modele de formulaire
+        $res .= baz_afficher_formulaire_fiche('saisie', $formtemplate,
+            $url);
+    }
 
-            ->setFormTemplate('<form {attributes} class="form-horizontal" novalidate="novalidate">' . "\n"
-                . '{content}' . "\n" . '</form>' . "\n");
+    //------------------------------------------------------------------------------------------------
+    // CAS DE LA MODIFICATION D'UNE FICHE (FORMULAIRE DE MODIFICATION)
+    //------------------------------------------------------------------------------------------------
+    if ($mode == BAZ_ACTION_MODIFIER) {
+        $res .= baz_afficher_formulaire_fiche('modification',
+            $formtemplate, $url, $valeurs);
+    }
 
-        $squelette
-            ->setElementTemplate('<div class="control-group form-group">' .
-                "\n"
-                . '<label class="control-label col-sm-3">' . "\n"
-
-                .
-
-                '<!-- BEGIN required --><span class="symbole_obligatoire">*&nbsp;</span><!-- END required -->' . "\n"
-
-                . '{label} :</label>' . "\n" .
-                '<div class="controls col-sm-9"> ' . "\n" . '{element}' . "\n"
-
-                .
-
-                '<!-- BEGIN error --><span class="alert alert-error alert-danger">{error}</span><!-- END error -->'
-                . "\n" . '</div>' . "\n" . '</div>' . "\n");
-
-        $squelette
-            ->setElementTemplate('<div class="control-group form-group">' .
-                "\n"
-
-                .
-
-                '<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n"
-
-                .
-
-                '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->'
-                . "\n" . '</div>' . "\n" . '</div>' . "\n",
-                'accept_condition');
-
-        $squelette
-            ->setElementTemplate("\n" .
-                '<div class="form-actions form-group">' . "\n"
-
-                .
-
-                '<div class="col-sm-9 col-sm-offset-3">{label}{element}</div></div>' . "\n",
-                'groupe_boutons');
-
-        $squelette
-            ->setElementTemplate('<div class="control-group form-group">' .
-                "\n"
-                . '<div class="control-label col-sm-3">' . "\n" .
-                '{label} :</div>' . "\n"
-
-                . '<div class="controls col-sm-9"> ' . "\n" . '{element}' .
-                "\n" . '</div>' . "\n" . '</div>', 'select');
-
-        $squelette->setRequiredNoteTemplate(
-
-            "\n" .
-
-            '<div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">* {requiredNote}</div>' . "\n"
-        );
-
-        //Traduction de champs requis
-        $formtemplate->setRequiredNote(_t('BAZ_CHAMPS_REQUIS'));
-        $formtemplate->setJsWarnings(_t('BAZ_ERREUR_SAISIE'),
-            _t('BAZ_VEUILLEZ_CORRIGER'));
-
-        //antispam
-        $formtemplate->addElement('hidden', 'antispam', 0);
-
-        //------------------------------------------------------------------------------------------------
-        // AFFICHAGE DU FORMULAIRE CORRESPONDANT AU TYPE DE FICHE CHOISI PAR L'UTILISATEUR
-        //------------------------------------------------------------------------------------------------
-        if ($mode == BAZ_ACTION_NOUVEAU) {
-            // Affichage du modele de formulaire
-            $res .= baz_afficher_formulaire_fiche('saisie', $formtemplate,
-                $url);
+    //------------------------------------------------------------------------------------------------
+    // CAS DE L'AJOUT D'UNE FICHE
+    //------------------------------------------------------------------------------------------------
+    if ($mode == BAZ_ACTION_NOUVEAU_V) {
+        if ($formtemplate->validate() && $_POST['antispam'] == 1) {
+            $formtemplate->process('baz_insertion_fiche');
+            // Redirection pour eviter la revalidation du formulaire
+            $GLOBALS['_BAZAR_']['url']->addQueryString('message',
+                'ajout_ok');
+            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
+                BAZ_VOIR_CONSULTER);
+            $GLOBALS['_BAZAR_']['url']
+                ->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
+            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
+                $_POST['id_fiche']);
+            header('Location: ' . $GLOBALS['_BAZAR_']['url']->getURL());
+            exit;
         }
+    }
 
-        //------------------------------------------------------------------------------------------------
-        // CAS DE LA MODIFICATION D'UNE FICHE (FORMULAIRE DE MODIFICATION)
-        //------------------------------------------------------------------------------------------------
-        if ($mode == BAZ_ACTION_MODIFIER) {
-            $res .= baz_afficher_formulaire_fiche('modification',
-                $formtemplate, $url, $valeurs);
-        }
+    //------------------------------------------------------------------------------------------------
+    // CAS DE LA MODIFICATION D'UNE FICHE (VALIDATION ET MAJ)
+    //------------------------------------------------------------------------------------------------
+    if ($mode == BAZ_ACTION_MODIFIER_V) {
+        if ($formtemplate->validate() && $_POST['antispam'] == 1
+            && baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']
+                ->GetPageOwner($_POST['id_fiche']))) {
+            baz_mise_a_jour_fiche($_POST);
 
-        //------------------------------------------------------------------------------------------------
-        // CAS DE L'AJOUT D'UNE FICHE
-        //------------------------------------------------------------------------------------------------
-        if ($mode == BAZ_ACTION_NOUVEAU_V) {
-            if ($formtemplate->validate() && $_POST['antispam'] == 1) {
-                $formtemplate->process('baz_insertion_fiche');
+            if ($GLOBALS['wiki']->GetPageTag() != $_POST['id_fiche']) {
                 // Redirection pour eviter la revalidation du formulaire
                 $GLOBALS['_BAZAR_']['url']->addQueryString('message',
-                    'ajout_ok');
-                $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
-                    BAZ_VOIR_CONSULTER);
+                    'modif_ok');
+                $GLOBALS['_BAZAR_']['url']
+                    ->addQueryString(BAZ_VARIABLE_VOIR,
+                        BAZ_VOIR_CONSULTER);
                 $GLOBALS['_BAZAR_']['url']
                     ->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
                 $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
                     $_POST['id_fiche']);
-                header('Location: ' . $GLOBALS['_BAZAR_']['url']->getURL());
-                exit;
-            }
-        }
-
-        //------------------------------------------------------------------------------------------------
-        // CAS DE LA MODIFICATION D'UNE FICHE (VALIDATION ET MAJ)
-        //------------------------------------------------------------------------------------------------
-        if ($mode == BAZ_ACTION_MODIFIER_V) {
-            if ($formtemplate->validate() && $_POST['antispam'] == 1
-                && baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']
-                    ->GetPageOwner($_POST['id_fiche']))) {
-                baz_mise_a_jour_fiche($_POST);
-
-                if ($GLOBALS['wiki']->GetPageTag() != $_POST['id_fiche']) {
-                    // Redirection pour eviter la revalidation du formulaire
-                    $GLOBALS['_BAZAR_']['url']->addQueryString('message',
-                        'modif_ok');
-                    $GLOBALS['_BAZAR_']['url']
-                        ->addQueryString(BAZ_VARIABLE_VOIR,
-                            BAZ_VOIR_CONSULTER);
-                    $GLOBALS['_BAZAR_']['url']
-                        ->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
-                    $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
-                        $_POST['id_fiche']);
-                    header('Location: ' . $GLOBALS['_BAZAR_']['url']
-                            ->getURL());
-                } else {
-                    header('Location: ' . $GLOBALS['wiki']->href('',
-                        $GLOBALS['wiki']->GetPageTag()));
-                }
+                header('Location: ' . $GLOBALS['_BAZAR_']['url']
+                        ->getURL());
+            } else {
+                header('Location: ' . $GLOBALS['wiki']->href('',
+                    $GLOBALS['wiki']->GetPageTag()));
             }
         }
     }
@@ -3806,6 +3783,36 @@ function baz_afficher_flux_RSS()
             ENT_QUOTES, 'UTF-8'));
 }
 
+// pour verifier la presence d une valeur dasn une fiche, en vue de lui faire une icone ou couleur personnalisee
+function getCustomValueForEntry($parameter, $field, $entry, $default)
+{
+    if (is_array($parameter) && !empty($field)) {
+        if (isset($entry[$field])) {
+            // pour les checkbox, on teste les differentes valeurs et on renvoie la premiere qui va bien
+            if (0 === strpos($field, 'checkbox')) {
+                $tab = explode(',', $entry[$field]);
+                foreach ($tab as $value) {
+                    if (isset($parameter[$value])) {
+                        // on retourne la premiere valeur trouvee
+                        return $parameter[$value];
+                    }
+                }
+                // on n a pas trouve de valeur, on renvoie la valeur par defaut
+                return $default;
+            } else {
+                return (isset($parameter[$entry[$field]]) ? 
+                    $parameter[$entry[$field]] : $default);
+            }
+        } else {
+            // si la valeur n existe pas, on met l icone par defaut
+            return $default;
+        } 
+    } else {
+        // si le parametre n'est pas un tableau, il contient la valeur par defaut
+        return $parameter;
+    }
+}
+
 // tri par ordre desire
 function champCompare($a, $b)
 {
@@ -3955,6 +3962,58 @@ function getAllParameters($wiki)
     $param['correspondance'] = $wiki->GetParameter('correspondance');
 
     // parametres pour bazarliste avec carto
+    
+    /*
+     * markericonprefix : designe le prefixe des classes CSS utilisees pour la carto
+     */
+    $param['markericonprefix'] = $wiki->GetParameter('markericonprefix');
+    if (empty($param['markericonprefix'])) {
+        if (defined('BAZ_MARKER_ICON_PREFIX') && BAZ_MARKER_ICON_PREFIX) {
+            $param['markericonprefix'] = BAZ_MARKER_ICON_PREFIX.' '.BAZ_MARKER_ICON_PREFIX.'-';
+        } else {
+            $param['markericonprefix'] = '';
+        }
+        
+    } else {
+        $param['markericonprefix'] = trim($param['markericonprefix']).' '.trim($param['markericonprefix']).'-';
+    }
+    /*
+     * markericonfield : designe le champ utilise pour la couleur des marqueurs
+     */
+    $param['markericonfield'] = $wiki->GetParameter('markericonfield');
+
+    /*
+     * markericon : couleur des marqueurs
+     */
+    $param['markericon'] = $wiki->GetParameter('markericon');
+    if (!empty($param['markericon'])) {
+        $iconparam = explode(',', $param['markericon']);
+        if (count($iconparam) > 1 && !empty($param['markericonfield'])) {
+            $iconparam = array_map('trim', $iconparam);
+
+            // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
+            foreach ($iconparam as $value) {
+                $tab = explode('=', $value);
+                $tab = array_map('trim', $tab);
+                if (count($tab)>0) {
+                    $tabparam[$tab[1]] = $tab[0];
+                } else {
+                    exit('<div class"alert alert-error">markericon : erreur de formatage:<br>"'.
+                        '<br>syntaxe: markericon="classe icone1=valeur,classe icone2=valeur2"</div>');
+                }
+            }
+            $param['markericon'] = $tabparam;
+        } else {
+            $param['markericon'] = trim($iconparam[0]);
+        }
+    } else {
+        $param['markericon'] = BAZ_MARKER_ICON;
+    }
+
+    /*
+     * markercolorfield : designe le champ utilise pour la couleur des marqueurs
+     */
+    $param['markercolorfield'] = $wiki->GetParameter('markercolorfield');
 
     /*
      * markercolor : couleur des marqueurs
@@ -3962,19 +4021,40 @@ function getAllParameters($wiki)
     $colors = array('red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue', 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black');
     $param['markercolor'] = $wiki->GetParameter('markercolor');
     if (!empty($param['markercolor'])) {
-        //$param['markercolor'] = explode(',', $param['markercolor']);
-        if (!in_array($param['markercolor'], $colors)) {
-            $param['markercolor'] = 'green';
+        $colorsparam = explode(',', $param['markercolor']);
+        if (count($colorsparam) > 1 && !empty($param['markercolorfield'])) {
+            $colorsparam = array_map('trim', $colorsparam);
+
+            // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
+            foreach ($colorsparam as $value) {
+                $tab = explode('=', $value);
+                $tab = array_map('trim', $tab);
+                if (in_array($tab[0], $colors)) {
+                    $tabparam[$tab[1]] = $tab[0];
+                } else {
+                    exit('<div class"alert alert-error">markercolor : la couleur indiquée doit etre choisie parmis :<br>"'.
+                        implode('", "', $colors).'"<br>syntaxe: markercolor="couleur=valeur,couleur2=valeur2"</div>');
+                }
+            }
+            $param['markercolor'] = $tabparam;
+        } else {
+            $param['markercolor'] = trim($colors[0]);
+            if (!in_array($param['markercolor'], $colors)) {
+                $param['markercolor'] = BAZ_MARKER_COLOR;
+            } 
         }
     } else {
-        $param['markercolor'] = 'green';
+        $param['markercolor'] = BAZ_MARKER_COLOR;
     }
 
     /*
      * smallmarker : mettre des puces petites ? non par defaut
      */
     $param['smallmarker'] = $wiki->GetParameter('smallmarker');
-    if (!empty($param['smallmarker']) && $param['smallmarker'] == "1") {
+    if (empty($param['smallmarker'])) {
+        $param['smallmarker'] = BAZ_SMALL_MARKER;
+    }
+    if (!empty($param['smallmarker']) && $param['smallmarker'] == "1" ) {
         $param['smallmarker'] = '';
         $param['iconSize'] = '[15, 20]';
         $param['iconAnchor'] = '[8, 19]';
