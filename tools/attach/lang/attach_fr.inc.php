@@ -23,6 +23,10 @@ $GLOBALS['translations'] = array_merge(
         // actions/filemanager.php
         'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'Il faut avoir acc&egrave; en &eacute;criture &agrave; la page pour acc&eacute;der au gestionnaire des fichiers attach&eacute;s',
 
+        // actions/backgroundimage.php
+        'ATTACH_ACTION_BACKGROUNDIMAGE' => 'Action {{backgroundimage ...}}',
+        'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'il faut indiquer soit une image avec le paramètre "file" ou une couleur de fond avec le paramètre "bgcolor"',
+
         // actions/player.php
         'ATTACH_ACTION_PLAYER' => 'Action {{player ...}}',
         'ATTACH_DOWNLOAD_THE_FILE' => 'T&eacute;l&eacute;charger le fichier',

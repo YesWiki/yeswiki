@@ -23,56 +23,61 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 // Get the action's parameters :
 
+// image's background color
+$bgcolor = $this->GetParameter('bgcolor');
+
 // image's filename
 $file = $this->GetParameter('file');
-if (empty($file)) {
+if (empty($file) && empty($bgcolor)) {
     echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
-          . _t('ATTACH_PARAM_FILE_NOT_FOUND') . '.</div>' . "\n";
+          . _t('ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND') . '.</div>' . "\n";
     return;
 }
 
-// test of image extension
-$supported_image_extensions = array('svg', 'gif', 'jpg', 'jpeg', 'png');
-$ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
- // Using strtolower to overcome case sensitive
-if (!in_array($ext, $supported_image_extensions)) {
-    echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
-          . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
-    return;
+if (!empty($file)) {
+    // test of image extension
+    $supported_image_extensions = array('svg', 'gif', 'jpg', 'jpeg', 'png');
+    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+     // Using strtolower to overcome case sensitive
+    if (!in_array($ext, $supported_image_extensions)) {
+        echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
+              . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";
+        return;
+    }
+    // image size
+    $height = $this->GetParameter('height');
+    $width = $this->GetParameter('width');
+    if (empty($width)) {
+        $width = 1920;
+    }
+
+    if (!class_exists('attach')) {
+        include ('tools/attach/actions/attach.class.php');
+    }
+    $att = new attach($this);
+
+    //recuperation des parametres necessaire
+    $att->file = $file;
+    $att->desc = 'background image ' . $file;
+    $att->height = $height;
+    $att->width = $width;
+    $fullFilename = $att->GetFullFilename();
+
+    //test d'existance du fichier
+    if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
+        $att->showFileNotExits();
+        //return; 
+    }
 }
 
 // container class
 $class = $this->GetParameter('class');
 
-// image size
-$height = $this->GetParameter('height');
-$width = $this->GetParameter('width');
-if (empty($width)) {
-    $width = 1920;
-}
-
-if (!class_exists('attach')) {
-    include ('tools/attach/actions/attach.class.php');
-}
-$att = new attach($this);
-
-//recuperation des parametres necessaire
-$att->file = $file;
-$att->desc = 'background image ' . $file;
-$att->height = $height;
-$att->width = $width;
-$fullFilename = $att->GetFullFilename();
-
-//test d'existance du fichier
-if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
-    $att->showFileNotExits();
-    
-    //return;
-    
-}
-
 echo '<div class="background-image' . (!empty($class) ? ' ' . $class : '') . '" style="'
-      .(!empty($height) ? 'height:' . $height . 'px; ' : '') . 'background-image:url(' . $fullFilename . ');">' . "\n";
+    .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
+    .(!empty($height) ? 'height:' . $height . 'px; ' : '')
+    .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '')
+    .'">' . "\n";
 $nocontainer = $this->GetParameter('nocontainer');
 if (empty($nocontainer)) {
     echo '<div class="container">' . "\n";
