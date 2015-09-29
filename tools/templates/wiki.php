@@ -56,7 +56,29 @@ define('TEMPLATES_DEFAULT_CHARSET', 'UTF-8');
 $wikiClasses [] = 'Template';
 
 
-$wikiClassesContent [] = ' 
+$wikiClassesContent [] = '
+	function AddCSS($style) {	
+		if (!isset($GLOBALS[\'css\'])) {
+			$GLOBALS[\'css\'] = \'\';
+		}
+		if (!empty($style) && !strpos($GLOBALS[\'css\'], \'<style>\'."\n".$style.\'</style>\')) {
+			$GLOBALS[\'css\'] .= \'  <style>\'."\n".$style.\'</style>\'."\n";
+		}
+		return;
+	}
+
+	function AddCSSFile($file, $conditionstart=\'\', $conditionend=\'\') {	
+		if (!isset($GLOBALS[\'css\'])) {
+			$GLOBALS[\'css\'] = \'\';
+		}
+		if (!strpos($GLOBALS[\'css\'], \'<link rel="stylesheet" href="\'.$file.\'">\') && (!empty($file) && (file_exists($file) || strpos($file, "http://") === 0))) {
+			$GLOBALS[\'css\'] .= \'  \'.$conditionstart."\n"
+				.\'    <link rel="stylesheet" href="\'.$file.\'">\'."\n"
+				.\'  \'.$conditionend."\n";
+		}
+		return;
+	}
+
 	function AddJavascript($script) {	
 		if (!isset($GLOBALS[\'js\'])) {
 			$GLOBALS[\'js\'] = \'\';
@@ -231,7 +253,10 @@ if (
 		 file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
 		)
 	   ) {
-		$GLOBALS['template-error'] = '<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a>'._t('TEMPLATE_NO_THEME_FILES').' :<br />(themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'].'<br />themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'].')<br /><br />'._t('TEMPLATE_DEFAULT_THEME_USED').'.</div>';
+		$GLOBALS['template-error']['type'] = 'theme-not-found';
+		$GLOBALS['template-error']['theme'] = $wakkaConfig['favorite_theme'];
+		$GLOBALS['template-error']['style'] = $wakkaConfig['favorite_style'];
+		$GLOBALS['template-error']['squelette'] = $wakkaConfig['favorite_squelette'];
 		$wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
 		$wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
 		$wakkaConfig['favorite_squelette']= SQUELETTE_PAR_DEFAUT;

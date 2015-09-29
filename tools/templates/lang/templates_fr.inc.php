@@ -33,12 +33,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/button.php
 'TEMPLATE_ACTION_BUTTON' => 'Action {{button ...}}',
 'TEMPLATE_LINK_PARAMETER_REQUIRED' => 'param&egrave;tre "link" obligatoire',
-
 'TEMPLATE_RSS_LAST_CHANGES' => 'Flux RSS des derni&egrave;res pages modifi&eacute;es',
 'TEMPLATE_RSS_LAST_COMMENTS' => 'Flux RSS des derniers commentaires',
-
-'TEMPLATE_DEFAULT_THEME_USED' => 'Le template par d&eacute;faut est donc utilis&eacute;',
-'TEMPLATE_NO_THEME_FILES' => 'Certains (ou tous les) fichiers du template ont disparu',
 'TEMPLATE_NO_DEFAULT_THEME' => 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site',
 'TEMPLATE_CUSTOM_GRAPHICS' => 'Apparence de la page',
 'TEMPLATE_SAVE' => 'Sauver',
@@ -118,8 +114,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/yeswikiversion.php
 'RUNNING_WITH' => 'Galope sous',
 
-'TEMPLATE_NO_THEME_FILES' => 'Fichiers du thème manquants',
-'TEMPLATE_DEFAULT_THEME_USED' => 'Le theme par défaut sera utilisé',
+'TEMPLATE_NO_THEME_FILES' => 'Fichiers du th&egrave;me manquants',
+'TEMPLATE_DEFAULT_THEME_USED' => 'Le th&egrave;me par défaut est donc utilisé',
 
 // actions/end.php
 'TEMPLATE_ACTION_END' => 'Action {{end ...}}',
