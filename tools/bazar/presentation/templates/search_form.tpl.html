@@ -23,6 +23,9 @@
                 </select>
             </span>
             <?php
+            elseif (!empty($idform)) : ?>
+                <input type="hidden" name="id_typeannonce" value="<?php echo $idform; ?>">
+            <?php   
             endif; ?>
             <span class="input-group-btn">
                 <input value="<?php echo _t('BAZ_RECHERCHER'); ?>" name="rechercher"

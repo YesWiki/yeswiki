@@ -92,7 +92,7 @@ foreach ($tableau_resultat as $fiche) {
                             if ($val[1] === $key || (isset($val[6]) && $val[0].$val[1].$val[6] === $key)) {
                                 $islist = in_array(
                                     $templatef[$id][0],
-                                    array('checkbox', 'liste', 'checkboxfiche', 'listefiche', 'scope')
+                                    array('checkbox', 'liste', 'scope')
                                 );
                                 if ($islist && $facetteasked) {
                                     $tabval = explode(',', $value);
@@ -224,9 +224,11 @@ if (count($facettevalue) > 0) {
     }
     $i = 0;
     $first = true;
-    foreach ($facettevalue as $key => $value) {
-        if (count($facettevalue[$key]) > 0) {
-            $tabkey = explode('|', $key);
+    
+    foreach ($params['groups'] as $id) {
+        $index = preg_replace('/^(liste|checkbox)/U', '', $id).'|'.$id;
+        if (count($facettevalue[$index]) > 0) {
+            $tabkey = explode('|', $index);
             $list = baz_valeurs_liste($tabkey[0]);
             $idkey = htmlspecialchars($tabkey[1]);
             $outputfilter .=  '<div class="filter-box panel panel-default '.$idkey.'" data-id="'.$idkey.'">'."\n";
@@ -251,20 +253,18 @@ if (count($facettevalue) > 0) {
             }
             $outputfilter .= ' collapse">'."\n";
             $outputfilter .= '<div class="panel-body">'."\n";
-            ksort($value);
-            foreach ($value as $val => $nb) {
-                if (!empty($val)) {
+            foreach ($list['label'] as $listkey => $label) {
+                if (isset($facettevalue[$index][$listkey]) && !empty($facettevalue[$index][$listkey])) {
                     $outputfilter .=  '<div class="checkbox"><label>
                     <input class="filter-checkbox" type="checkbox" name="'.$idkey.'" 
-                    value="'.htmlspecialchars($val).'"> '.(isset($list['label'][$val]) ?
-                        $list['label'][$val] : $val) .' (<span class="nb">'.$nb.'</span>)
+                    value="'.htmlspecialchars($listkey).'"> '. $label .' (<span class="nb">'.$facettevalue[$index][$listkey].'</span>)
                     </label></div>'."\n";
                 }
             }
             $outputfilter .=  '</div></div></div><!-- /.filter-box -->'."\n";
-        }
-        ++$i;
-        $first = false;
+            ++$i;
+            $first = false;
+        } 
     }
     $outputfilter .= '</div> <!-- /.filters -->'."\n".
         '</div> <!-- /.col-xs-3 -->'."\n";

@@ -2033,10 +2033,13 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
             if ($tableau_template[3] == 'fiche') {
                 $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
             } else {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
-                $html.= '<span class="BAZ_texte">';
                 $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-                $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="voir_fiche ouvrir_overlay" title="Voir la fiche ' . $val_fiche['bf_titre'] . '" rel="#overlay-link">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $html = '';
+                if (is_array($val_fiche)) {
+                    $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                    $html.= '<span class="BAZ_texte">';
+                    $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="voir_fiche ouvrir_overlay" title="Voir la fiche ' . $val_fiche['bf_titre'] . '" rel="#overlay-link">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                }
             }
         }
 
@@ -2171,7 +2174,9 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 if (is_array($def) && count($def)>0 && !empty($def[0])) {
                     foreach ($def as $id) {
-                        $script .= 'pagetag.tagsinput(\'add\', '.$tabfiches[$id].');'."\n";
+                        if (isset($tabfiches[$id])) {
+                            $script .= 'pagetag.tagsinput(\'add\', '.$tabfiches[$id].');'."\n"; 
+                        }
                     }
                 }
                 $script .= '});' . "\n";
@@ -2236,7 +2241,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                             }
                         }
                     }
-                    if (!isset($match) || $match == true) {
+                    if (is_array($val_fiche) && (!isset($match) || $match == true)) {
                         $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
                     }
                 }

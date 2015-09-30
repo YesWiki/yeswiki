@@ -1082,7 +1082,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             $mode = BAZ_ACTION_NOUVEAU;
         } else {
             $resultat = array();
-            $tabform  = baz_valeurs_tous_les_formulaires($GLOBALS['params']['categorienature']);
+            $tabform  = baz_valeurs_tous_les_formulaires($GLOBALS['params']['categorienature'], 'html', $GLOBALS['params']['idtypeannonce']);
 
             foreach ($tabform as $cat => $form) {
                 foreach ($form as $key => $value) {
@@ -3106,7 +3106,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $_REQUEST['recherche_mots_cles'] : '';
 
     //on recupere la liste des formulaires, a afficher dans une liste deroulante pour la recherche
-    $tab_formulaires = baz_valeurs_tous_les_formulaires($categorienature);
+    $tab_formulaires = baz_valeurs_tous_les_formulaires($categorienature, 'html', $typeannonce);
 
     //on recupere le nb de types de fiches, pour plus tard
     $nb_type_de_fiches          = 0;
@@ -3121,7 +3121,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             }
         }
     }
-
     if ($nb_type_de_fiches > 1) {
         $data['forms'] = $type_formulaire_select;
     } else {
@@ -3131,6 +3130,8 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     if (isset($_REQUEST['id_typeannonce']) &&
         !empty($_REQUEST['id_typeannonce'])) {
         $data['idform'] = $_REQUEST['id_typeannonce'];
+    } elseif (is_array($typeannonce) && count($typeannonce) == 1) {
+        $data['idform'] = $typeannonce[0];
     } else {
         $data['idform'] = '';
     }
@@ -3348,27 +3349,39 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '',
  *
  * @return   array
  */
-function baz_valeurs_tous_les_formulaires($categorie = '', $format = 'html')
+function baz_valeurs_tous_les_formulaires($categorie = '', $format = 'html', $idtypeannonce = '')
 {
-
-    //requete pour obtenir toutes les PageWiki de type formulaire
-    $requete_sql =
-    'SELECT bn_id_nature FROM `' . BAZ_PREFIXE . 'nature` WHERE ' .
-    (($categorie == '') ? '1' : 'bn_type_fiche="' . $categorie . '"');
-    $idformulaire               = $GLOBALS['wiki']->LoadAll($requete_sql);
-    $valeurs_formulaire         = array();
-    $valeurs_formulaire_rangees = array();
-    foreach ($idformulaire as $id) {
-        $tab_formulaire = baz_valeurs_formulaire($id['bn_id_nature']);
-
-        $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$id['bn_id_nature']] = $tab_formulaire;
-
-        $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$id['bn_id_nature']]['template'] =
-        formulaire_valeurs_template_champs($tab_formulaire['bn_template']);
+    $valeurs_formulaire = array();
+    if ($idtypeannonce == '') {
+        //requete pour obtenir toutes les PageWiki de type formulaire
+        $requete_sql =
+        'SELECT bn_id_nature FROM `' . BAZ_PREFIXE . 'nature` WHERE ' .
+        (($categorie == '') ? '1' : 'bn_type_fiche="' . $categorie . '"');
+        $idformulaire               = $GLOBALS['wiki']->LoadAll($requete_sql);
+        
+        foreach ($idformulaire as $id) {
+            $tab_formulaire = baz_valeurs_formulaire($id['bn_id_nature']);
+            $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$id['bn_id_nature']] = $tab_formulaire;
+            $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$id['bn_id_nature']]['template'] =
+            formulaire_valeurs_template_champs($tab_formulaire['bn_template']);
+        }
+    } elseif (is_array($idtypeannonce)) {
+        foreach ($idtypeannonce as $id) {
+            $tab_formulaire = baz_valeurs_formulaire($id);
+            $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$id] = $tab_formulaire;
+            $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$id]['template'] =
+                formulaire_valeurs_template_champs($tab_formulaire['bn_template']);
+        }
+    } else {
+        $tab_formulaire = baz_valeurs_formulaire($idtypeannonce);
+        $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$idtypeannonce] = $tab_formulaire;
+        $valeurs_formulaire[$tab_formulaire['bn_type_fiche']][$idtypeannonce]['template'] =
+                formulaire_valeurs_template_champs($tab_formulaire['bn_template']);
     }
 
     // on trie d'abord par categorie de formulaire
     ksort($valeurs_formulaire);
+    $valeurs_formulaire_rangees = array();
     foreach ($valeurs_formulaire as $type => $formulaires_de_la_categorie) {
         // on trie ensuite par nom du formulaire
         ksort($formulaires_de_la_categorie);
@@ -3846,7 +3859,7 @@ function getAllParameters($wiki)
 
     // afficher le menu de vues bazar ?
     $param['voirmenu'] = $wiki->GetParameter('voirmenu');
-    if (empty($param['voirmenu'])) {
+    if (empty($param['voirmenu']) && $param['voirmenu']!='0') {
         $param['voirmenu'] = BAZ_VOIR_AFFICHER;
     }
 
@@ -3909,7 +3922,7 @@ function getAllParameters($wiki)
     // template utilisé pour l'affichage
     $param['template'] = $wiki->GetParameter('template');
     if (empty($param['template']) ||
-        (!is_file('templates/bazar/' . $param['template']) &&
+        (!is_file('themes/tools/bazar/templates/' . $param['template']) &&
             !is_file('tools/bazar/presentation/templates/' .
                 $param['template']))) {
         $param['template'] = BAZ_TEMPLATE_LISTE_DEFAUT;
