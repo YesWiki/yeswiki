@@ -302,6 +302,7 @@ if (!(
  */
 function isExtension($filename, $ext)
 {
+
     if (substr($filename, -strlen($ext), strlen($filename)) === $ext) {
         return true;
     }
