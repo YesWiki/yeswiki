@@ -126,21 +126,35 @@ $wikiClassesContent[] = '
 ';
 
 //on récupère les metadonnées de la page
-$metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+$metadatas = $wiki->GetTripleValue(
+    $page,
+    'http://outils-reseaux.org/_vocabulary/metadata',
+    '',
+    '',
+    ''
+);
+
 if (!empty($metadatas)) {
     if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
         $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
     } else {
         $metadatas = json_decode($metadatas, true);
     }
-
 }
 
-if (isset($metadatas['charset'])) {$wakkaConfig['charset'] = $metadatas['charset'];} elseif (!isset($wakkaConfig['charset'])) {$wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET;}
+if (isset($metadatas['charset'])) {
+    $wakkaConfig['charset'] = $metadatas['charset'];
+} elseif (!isset($wakkaConfig['charset'])) {
+    $wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET;
+}
+
 header('Content-Type: text/html; charset=' . TEMPLATES_DEFAULT_CHARSET);
 
-// Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
-if (isset($wakkaConfig['hide_action_template']) && '1' == $wakkaConfig['hide_action_template']) {
+// Premier cas le template par défaut est forcé : on ajoute ce qui est présent
+// dans le fichier de configuration, ou le theme par defaut précisé ci dessus
+if (isset($wakkaConfig['hide_action_template'])
+    and '1' == $wakkaConfig['hide_action_template']
+) {
     if (!isset($wakkaConfig['favorite_theme'])) {
         $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
     }
@@ -156,13 +170,37 @@ if (isset($wakkaConfig['hide_action_template']) && '1' == $wakkaConfig['hide_act
     if (!isset($wakkaConfig['favorite_background_image'])) {
         $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
     }
-
-}
-// Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
-else {
-    if (isset($_REQUEST['theme']) && (is_dir('themes/' . $_REQUEST['theme']) || is_dir('tools/templates/themes/' . $_REQUEST['theme'])) &&
-        isset($_REQUEST['style']) && (is_file('themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style']) || is_file('tools/templates/themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style'])) &&
-        isset($_REQUEST['squelette']) && (is_file('themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']) || is_file('tools/templates/themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']))
+} else {
+    // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou
+    // deuxièmement les métasdonnées présentes pour la page, ou troisièmement
+    // les valeurs du fichier de configuration
+    if (isset($_REQUEST['theme'])
+        and (
+            is_dir('themes/' . $_REQUEST['theme'])
+            or is_dir('tools/templates/themes/' . $_REQUEST['theme'])
+        )
+        and isset($_REQUEST['style'])
+        and (
+            is_file('themes/'
+                . $_REQUEST['theme']
+                . '/styles/'
+                . $_REQUEST['style'])
+            or is_file('tools/templates/themes/'
+                . $_REQUEST['theme']
+                . '/styles/'
+                . $_REQUEST['style'])
+        )
+        and isset($_REQUEST['squelette'])
+        and (
+            is_file('themes/'
+                . $_REQUEST['theme']
+                . '/squelettes/'
+                . $_REQUEST['squelette'])
+            or is_file('tools/templates/themes/'
+                . $_REQUEST['theme']
+                . '/squelettes/'
+                . $_REQUEST['squelette'])
+        )
     ) {
         $wakkaConfig['favorite_theme'] = $_REQUEST['theme'];
         $wakkaConfig['favorite_style'] = $_REQUEST['style'];
@@ -176,7 +214,10 @@ else {
 
     } else {
         // si les metas sont présentes on les utilise
-        if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette'])) {
+        if (isset($metadatas['theme'])
+            and isset($metadatas['style'])
+            and isset($metadatas['squelette'])
+        ) {
             $wakkaConfig['favorite_theme'] = $metadatas['theme'];
             $wakkaConfig['favorite_style'] = $metadatas['style'];
             $wakkaConfig['favorite_squelette'] = $metadatas['squelette'];
@@ -185,10 +226,8 @@ else {
             } else {
                 $wakkaConfig['favorite_background_image'] = '';
             }
-
-        }
-        //on récupére les valeurs du template associées à la page de l'ancienne version de templates
-        else {
+            //on récupére les valeurs du template associées à la page de l'ancienne version de templates
+        } else {
             //on récupère le contenu de la page
             $contenu = $wiki->LoadPage($page);
             if ($act = preg_match_all("/" . '(\\{\\{template)' . '(.*?)' . '(\\}\\})' . "/is", $contenu["body"], $matches)) {
@@ -211,7 +250,16 @@ else {
             }
         }
         // des valeurs ont été trouvées, on les utilise
-        if ((isset($vars["theme"]) && "" != $vars["theme"]) && (isset($vars["style"]) && "" != $vars["style"]) && (isset($vars["squelette"]) && "" != $vars["squelette"])) {
+        if ((
+            isset($vars["theme"])
+            and "" != $vars["theme"]
+        ) and (
+            isset($vars["style"])
+            and "" != $vars["style"]
+        ) and (
+            isset($vars["squelette"])
+            and "" != $vars["squelette"]
+        )) {
             $wakkaConfig['favorite_theme'] = $vars["theme"];
             $wakkaConfig['favorite_style'] = $vars["style"];
             $wakkaConfig['favorite_squelette'] = $vars["squelette"];
@@ -248,10 +296,10 @@ $style_file = $wakkaConfig['favorite_theme']
 
 if (!(
     isExtension($squelette_file, '.tpl.html')
-    and templateFileExist($squelette_file)
+    and fileInSiteRoot($squelette_file)
 ) or !(
     isExtension($style_file, '.css')
-    and templateFileExist($style_file)
+    and fileInSiteRoot($style_file)
 )) {
     $default_squelette_file = THEME_PAR_DEFAUT
         . '/squelettes/'
@@ -302,21 +350,39 @@ if (!(
  */
 function isExtension($filename, $ext)
 {
-
-    if (substr($filename, -strlen($ext), strlen($filename)) === $ext) {
-        return true;
-    }
-    return false;
+    return (substr($filename, -strlen($ext), strlen($filename)) === $ext);
 }
 
 /**
  * Vérifie si un fichier template existe dans le repertoire theme du tools ou
  * de la racine
- * @param  $string $filename nom du fichier relatif au repertoire theme
- * @return bool           Vrai si le fichier existe.
+ * @param  string $filename nom du fichier relatif au repertoire theme
+ * @return string Si le fichier existe retourne le chemin vers le fichier sinon
+ * retourne faux
  */
 function templateFileExist($filename)
 {
-    return file_exists('themes/' . $filename)
-    or file_exists('tools/templates/themes/' . $filename);
+    if (file_exists('themes/' . $filename)) {
+        return 'themes/' . $filename;
+    } elseif (file_exists('tools/templates/themes/' . $filename)) {
+        return 'tools/templates/themes/' . $filename;
+    }
+    return false;
+}
+
+/**
+ * Vérifie si je le chemin existe et si il fait bien partie de l'arborescence
+ * du site
+ * @param  $string $path nom du fichier relatif au repertoire theme
+ * @return boolean Vrai si le chemin est dans l'arborescence du wiki.
+ */
+function fileInSiteRoot($filename)
+{
+    if ($filename = templateFileExist($filename)) {
+        $real_path = realpath($filename);
+        if (strstr($real_path, getcwd())) {
+            return true;
+        }
+    }
+    return false;
 }
