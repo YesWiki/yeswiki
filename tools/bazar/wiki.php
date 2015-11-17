@@ -308,6 +308,9 @@ define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
 define('BAZ_MARKER_ICON_PREFIX', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'glyphicon');
 
 // icone du marqueur de base
+define('BAZ_PROVIDER', (isset($wakkaConfig['baz_provider'])) ? $wakkaConfig['baz_provider'] : 'OpenStreetMap.Mapnik');
+
+// icone du marqueur de base
 define('BAZ_MARKER_ICON', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'record');
 
 // couleur du marqueur de base

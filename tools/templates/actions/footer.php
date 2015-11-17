@@ -30,12 +30,6 @@ if ($act=preg_match_all ("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_foot
 
 echo $template_footer;
 
-// TODO CSS a ajouter ailleurs?
-if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
-	echo $GLOBALS['css'];
-	$GLOBALS['css'] = '';
-} 
-
 // on affiche les requetes SQL et le temps de chargement en mode debug
 
 if ($this->GetConfigValue("debug")=="yes")

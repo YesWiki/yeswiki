@@ -212,7 +212,7 @@ if ( ! Modernizr.mq('only all') ) {
 	});
 
 	//on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
-	$(".no-dblclick, form, a:not(.navbar-brand), button, .dropdown-menu").on('dblclick', function(e) {
+	$(".no-dblclick, form, .page a, button, .dropdown-menu").on('dblclick', function(e) {
 		return false;
 	});
 
@@ -266,5 +266,44 @@ if ( ! Modernizr.mq('only all') ) {
           $(this).removeClass('open');
       }
   });
+
+      // double clic
+    $('.navbar').on('dblclick', function(e) {
+        e.stopPropagation();
+        $('body').append('<div class="modal fade" id="YesWikiModal">'+
+                            '<div class="modal-dialog">'+
+                                '<div class="modal-content">'+
+                                    '<div class="modal-header">'+
+                                    '<button type="button" class="close" data-dismiss="modal">&times;</button>'+
+                                    '<h3>Editer une zone du menu horizontal</h3>' +
+                                    '</div>'+
+                                    '<div class="modal-body">'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</div>');
+        
+        var editmodal = $('#YesWikiModal');
+        $(this).find('.include').each(function() {
+            var href = $(this).attr('ondblclick')
+              .replace("document.location='", '')
+              .replace("';", '');
+            var pagewiki = href.replace("/edit", '').replace("http://yeswiki.dev/wakka.php?wiki=", '');
+            editmodal.find('.modal-body').append('<a href="'+href+'" class="btn btn-default btn-block"><i class="glyphicon glyphicon-pencil"></i> Editer la page '+pagewiki+'</a>');
+           
+        });
+        editmodal.find('.modal-body').append('<a href="#" data-dismiss="modal" class="btn btn-warning btn-xs btn-block">En fait, je ne voulais pas double-cliquer...</a>');
+
+        editmodal.modal({
+            keyboard: true
+        })
+        .modal('show')
+        .on('hidden hidden.bs.modal', function () {
+            editmodal.remove();
+        });
+        
+        return false;
+        
+    });
 	
 })(jQuery);

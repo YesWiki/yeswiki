@@ -55,75 +55,106 @@ if (version_compare(phpversion(), '5.0') < 0) {
  * @param    int        hauteur en pixel de l'image redimensionnee
  * @return   void
  */
-function afficher_image($nom_image, $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image) {
-
-    //l'image initiale existe t'elle et est bien avec une extension jpg ou png
-    if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image) && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
-
-        //faut il creer la vignette?
+function afficher_image(
+    $nom_image,
+    $label,
+    $class,
+    $largeur_vignette,
+    $hauteur_vignette,
+    $largeur_image,
+    $hauteur_image,
+    $method = 'fit'
+) {
+    // l'image initiale existe t'elle et est bien avec une extension jpg ou png
+    if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image)
+        && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
+        // faut il creer la vignette?
         if ($hauteur_vignette != '' && $largeur_vignette != '') {
             //la vignette n'existe pas, on la genere
             if (!file_exists('cache/vignette_' . $nom_image)) {
-                $adr_img = redimensionner_image(BAZ_CHEMIN_UPLOAD . $nom_image, 'cache/vignette_' . $nom_image, $largeur_vignette, $hauteur_vignette);
+                $adr_img = redimensionner_image(
+                    BAZ_CHEMIN_UPLOAD . $nom_image,
+                    'cache/vignette_' . $nom_image,
+                    $largeur_vignette,
+                    $hauteur_vignette,
+                    $method
+                );
             } else {
                 list($width, $height, $type, $attr) = getimagesize('cache/vignette_' . $nom_image);
             }
 
             //faut il redimensionner l'image?
             if ($hauteur_image != '' && $largeur_image != '') {
-
                 //l'image redimensionnee n'existe pas, on la genere
-                if (!file_exists('cache/image_' . $nom_image) || (isset($_GET['regenerate']) && $_GET['regenerate'] == 1)) {
-                    $adr_img = redimensionner_image(BAZ_CHEMIN_UPLOAD . $nom_image, 'cache/image_' . $nom_image, $largeur_image, $hauteur_image);
+                if (!file_exists('cache/image_' . $nom_image)
+                    || (isset($_GET['regenerate']) && $_GET['regenerate'] == 1)) {
+                    $adr_img = redimensionner_image(
+                        BAZ_CHEMIN_UPLOAD . $nom_image,
+                        'cache/image_' . $nom_image,
+                        $largeur_image,
+                        $hauteur_image,
+                        $method
+                    );
                 }
 
                 //on renvoit l'image en vignette, avec quand on clique, l'image redimensionnee
                 $url_base = str_replace('wakka.php?wiki=', '', $GLOBALS['wiki']->config['base_url']);
 
-                return '<a data-id="' . $nom_image . '" class="triggerimage ' . $class . '" href="' . $url_base . 'cache/image_' . $nom_image . '">' . "\n" . '<img src="' . $url_base . 'cache/vignette_' . $nom_image . '" alt="' . $nom_image . '"' . ' />' . "\n" . '</a> <!-- ' . $nom_image . ' -->' . "\n";
+                return '<a data-id="' . $nom_image . '" class="triggerimage ' . $class
+                    .'" href="' . $url_base . 'cache/image_' . $nom_image . '">' . "\n"
+                    .'<img src="' . $url_base . 'cache/vignette_' . $nom_image . '" alt="' . $nom_image . '"'.' />'."\n"
+                    .'</a> <!-- ' . $nom_image . ' -->' . "\n";
             } else {
-
                 //on renvoit l'image en vignette, avec quand on clique, l'image originale
-                return '<a data-id="' . $nom_image . '" class="triggerimage ' . $class . '" rel="#overlay-link" href="' . $url_base . BAZ_CHEMIN_UPLOAD . $nom_image . '">' . "\n" . '<img class="img-responsive" src="' . $url_base . 'cache/vignette_' . $nom_image . '" alt="' . $nom_image . '"' . ' rel="' . $url_base . 'cache/image_' . $nom_image . '" />' . "\n" . '</a> <!-- ' . $nom_image . ' -->' . "\n";
+                return '<a data-id="' . $nom_image . '" class="triggerimage ' . $class
+                    . '" rel="#overlay-link" href="' . $url_base . BAZ_CHEMIN_UPLOAD . $nom_image . '">' . "\n"
+                    . '<img class="img-responsive" src="' . $url_base . 'cache/vignette_' . $nom_image
+                    . '" alt="' . $nom_image . '"' . ' rel="' . $url_base . 'cache/image_' . $nom_image . '" />' . "\n"
+                    . '</a> <!-- ' . $nom_image . ' -->' . "\n";
             }
         } elseif ($hauteur_image != '' && $largeur_image != '') {
             //pas de vignette, mais faut il redimensionner l'image?
             if (!file_exists('cache/image_' . $nom_image)) {
-                $adr_img = redimensionner_image(BAZ_CHEMIN_UPLOAD . $nom_image, 'cache/image_' . $nom_image, $largeur_image, $hauteur_image);
+                $adr_img = redimensionner_image(
+                    BAZ_CHEMIN_UPLOAD . $nom_image,
+                    'cache/image_' . $nom_image,
+                    $largeur_image,
+                    $hauteur_image,
+                    $method
+                );
             }
-
-            return '<img src="cache/image_' . $nom_image . '" class="img-responsive ' . $class . '" alt="' . $nom_image . '"' . ' />' . "\n";
+            return '<img src="cache/image_' . $nom_image . '" class="img-responsive ' . $class
+                . '" alt="' . $nom_image . '"' . ' />' . "\n";
         } else {
             //on affiche l'image originale sinon
-            return '<img src="' . BAZ_CHEMIN_UPLOAD . $nom_image . '" class="img-responsive ' . $class . '" alt="' . $nom_image . '"' . ' />' . "\n";
+            return '<img src="' . BAZ_CHEMIN_UPLOAD . $nom_image . '" class="img-responsive ' . $class
+                . '" alt="' . $nom_image . '"' . ' />' . "\n";
         }
     }
 }
 
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
-    if (!file_exists($image_src)) {
-        echo '<div class="alert alert-danger">Image non trouvée : '.$image_src.'</div>'."\n";
-    } elseif (!file_exists($image_dest) || isset($_GET['refreshimg']) && $_GET['refreshimg']==1) {
-        if (file_exists($image_dest)) {
-            unlink($image_dest);
-        }
+    if (file_exists($image_src)) {
+        if (!file_exists($image_dest) || (isset($_GET['refreshimg']) && $_GET['refreshimg']==1)) {
+            if (file_exists($image_dest)) {
+                unlink($image_dest);
+            }
+            if (!class_exists('Image')) {
+                include_once('tools/bazar/libs/vendor/class.Images.php');
+            }
+            $image = new Image($image_src);
+            $image->resize($largeur, $hauteur, $method);
+            $ext = explode('.', $image_dest);
+            $ext = end($ext);
+            $image_dest = str_replace(array('cache/', '.'.$ext), '', $image_dest);
+            $image->save($image_dest, "cache", $ext);
 
-        if (!class_exists('Image')) {
-            include_once('tools/bazar/libs/vendor/class.Images.php');
+            return 'cache/'.$image_dest.'.'.$ext;
+        } else {
+            return $image_dest;
         }
-        $image = new Image($image_src);
-        $image->resize($largeur, $hauteur, $method);
-        $ext = explode('.', $image_dest);
-        $ext = end($ext);
-        $image_dest = str_replace(array('cache/', '.'.$ext), '', $image_dest);
-        $image->save($image_dest, "cache", $ext);
-
-        return 'cache/'.$image_dest.'.'.$ext;
-    } else {
-        return $image_dest;
     }
-
 }
 
 //-------------------FONCTIONS DE TRAITEMENT DU TEMPLATE DU FORMULAIRE
@@ -1073,15 +1104,38 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
  * @return   void
  */
 function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche) {
+    list($type, $identifiant, $label, , , $valeur_par_defaut, , , $obligatoire, , $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
-        $formtemplate->addElement('password', 'mot_de_passe', $tableau_template[2], array('size' => $tableau_template[3]));
-        $formtemplate->addElement('password', 'mot_de_passe_repete', $tableau_template[7], array('size' => $tableau_template[3]));
 
-        /*$formtemplate->addRule('mot_de_passe', $tableau_template[5], 'required', '', 'client') ;
-          $formtemplate->addRule('mot_de_passe_repete', $tableau_template[5], 'required', '', 'client') ;
-          $formtemplate->addRule(array ('mot_de_passe', 'mot_de_passe_repete'), $tableau_template[5], 'compare', '', 'client') ;*/
+        // on prepare le html de la bulle d'aide, si elle existe
+        if ($bulle_d_aide != '') {
+            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+        } else {
+            $bulledaide = '';
+        }
+
+        $nb_max_car = 255;
+        $type_input = 'password';
+
+        $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
+        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
+        $input_html.= $label . $bulledaide . ' : </label>' . "\n";
+        $input_html.= '<div class="controls col-sm-9">' . "\n";
+        $input_html.= '<input type="' . $type_input . '"';
+        $input_html.= ' name="' . $identifiant . '" class="form-control" id="' . $identifiant . '"';
+        $input_html.= ' maxlength="' . $nb_max_car . '" size="' . $nb_max_car . '"';
+        $input_html.= ($obligatoire == 1) ? ' required' : '';
+        $input_html.= '>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
+        if (isset($valeurs_fiche[$identifiant])) {
+            $input_html.= '<input type="hidden" value="'.$valeurs_fiche[$identifiant].'" name="'.$identifiant.'-previous">' . "\n";
+        }
+        $formtemplate->addElement('html', $input_html);
     } elseif ($mode == 'requete') {
-        return array($tableau_template[1] => md5($valeurs_fiche['mot_de_passe']));
+        if (!empty($valeurs_fiche[$identifiant])) {
+            return array($tableau_template[1] => md5($valeurs_fiche[$identifiant]));
+        } else if (isset($valeurs_fiche[$identifiant.'-previous']) && !empty($valeurs_fiche[$identifiant.'-previous'])) {
+            return array($tableau_template[1] => $valeurs_fiche[$identifiant.'-previous']);
+        }
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {
     }
@@ -1860,7 +1914,6 @@ function showAddress()
             if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
             if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
             if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
-            if (document.getElementById("listeListePays")) address += document.getElementById("listeListePays").value + \' \';
             address = address.replace(/\\("|\'|\\)/g, " ").trim();
 
             // requete ajax chez osm pour geolocaliser l adresse

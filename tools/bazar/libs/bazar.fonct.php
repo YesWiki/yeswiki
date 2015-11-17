@@ -1039,16 +1039,20 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             ."\n".'</div>'."\n".'</div>'."\n");
 
     $squelette
-        ->setElementTemplate('<div class="control-group form-group">'."\n"
+        ->setElementTemplate(
+            '<div class="control-group form-group">'."\n"
             .'<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n"
             .'<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->'
             ."\n".'</div>'."\n".'</div>'."\n",
-            'accept_condition');
+            'accept_condition'
+        );
 
     $squelette
-        ->setElementTemplate('<div class="form-actions form-group">'."\n"
+        ->setElementTemplate(
+            '<div class="form-actions form-group">'."\n"
             .'<div class="col-sm-9 col-sm-offset-3">{label}{element}</div></div>'."\n",
-            'groupe_boutons');
+            'groupe_boutons'
+        );
 
     $squelette
         ->setElementTemplate('<div class="control-group form-group">' .
@@ -1065,8 +1069,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
 
     //Traduction de champs requis
     $formtemplate->setRequiredNote(_t('BAZ_CHAMPS_REQUIS'));
-    $formtemplate->setJsWarnings(_t('BAZ_ERREUR_SAISIE'),
-        _t('BAZ_VEUILLEZ_CORRIGER'));
+    $formtemplate->setJsWarnings(_t('BAZ_ERREUR_SAISIE'), _t('BAZ_VEUILLEZ_CORRIGER'));
 
     //antispam
     $formtemplate->addElement('hidden', 'antispam', 0);
@@ -1098,19 +1101,17 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $GLOBALS['params']['idtypeannonce'] = $ligne['bn_id_nature'];
                 $mode                       = BAZ_ACTION_NOUVEAU;
                 //on remplace l'attribut action du formulaire par l'action adequate
-                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                    BAZ_ACTION_NOUVEAU_V);
+                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU_V);
                 $formtemplate->updateAttributes(
-                    array('action' => str_replace('&amp;', '&',
-                        $lien_formulaire->getURL()))
+                    array('action' => str_replace('&amp;', '&', $lien_formulaire->getURL()))
                 );
             } else {
                 $res .= '<table id="add-entry-table" class="bazar-table table table-condensed table-striped">
                     <thead>
                         <tr>
                             <th>' . _t('BAZ_FORMULAIRE') . '</th>
+                            <th style="width:190px;">' . _t('BAZ_ACTIONS') . '</th>
                             <th>' . _t('BAZ_CATEGORIE') . '</th>
-                            <th style="width:180px;">' . _t('BAZ_ACTIONS') . '</th>
                         </tr>
                     </thead>
                     <tbody>' . "\n";
@@ -1118,7 +1119,6 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                     $newurl = $GLOBALS['wiki']->href(
                         '',
                         $GLOBALS['wiki']->GetPageTag(),
-
                         BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_SAISIR . '&amp;' .
                         BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_NOUVEAU
                         . '&amp;id_typeannonce=' . $ligne['bn_id_nature']
@@ -1132,14 +1132,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                         '<br>' . $ligne['bn_description'] :
                         '') . '
                             </td>
-                            <td>' . $ligne['bn_label_nature'] . '</td>
                             <td>
-                            <a class="btn btn-mini btn-xs btn-default" href="'
-                    . $newurl . '">'
+                            <a class="btn btn-mini btn-xs btn-primary" href="'
+                            . $newurl . '">'
 
-                    . '<i class="glyphicon glyphicon-plus icon-plus"></i> '
-                    . _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') . '</a>' . "\n"
-                    . '</td>
+                            . '<i class="glyphicon glyphicon-plus icon-plus"></i> '
+                            . _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') . '</a>&nbsp;&nbsp;' . "\n"
+                            . '</td>
+                            <td>' . $ligne['bn_label_nature'] . '</td>
                         </tr>';
                 }
                 $res .= '</tbody>
@@ -1170,16 +1170,13 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_NOUVEAU_V) {
         if ($formtemplate->validate() && $_POST['antispam'] == 1) {
-            $formtemplate->process('baz_insertion_fiche');
+            $valeur = baz_insertion_fiche($_POST);
             // Redirection pour eviter la revalidation du formulaire
-            $GLOBALS['_BAZAR_']['url']->addQueryString('message',
-                'ajout_ok');
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
-                BAZ_VOIR_CONSULTER);
+            $GLOBALS['_BAZAR_']['url']->addQueryString('message', 'ajout_ok');
+            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
             $GLOBALS['_BAZAR_']['url']
                 ->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
-            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
-                $_POST['id_fiche']);
+            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $valeur['id_fiche']);
             header('Location: ' . $GLOBALS['_BAZAR_']['url']->getURL());
             exit;
         }
@@ -1192,24 +1189,20 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         if ($formtemplate->validate() && $_POST['antispam'] == 1
             && baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']
                 ->GetPageOwner($_POST['id_fiche']))) {
-            baz_mise_a_jour_fiche($_POST);
+            $valeur = baz_mise_a_jour_fiche($_POST);
 
-            if ($GLOBALS['wiki']->GetPageTag() != $_POST['id_fiche']) {
+            if ($GLOBALS['wiki']->GetPageTag() != $valeur['id_fiche']) {
                 // Redirection pour eviter la revalidation du formulaire
-                $GLOBALS['_BAZAR_']['url']->addQueryString('message',
-                    'modif_ok');
+                $GLOBALS['_BAZAR_']['url']->addQueryString('message', 'modif_ok');
                 $GLOBALS['_BAZAR_']['url']
-                    ->addQueryString(BAZ_VARIABLE_VOIR,
-                        BAZ_VOIR_CONSULTER);
+                    ->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
                 $GLOBALS['_BAZAR_']['url']
                     ->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
-                $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
-                    $_POST['id_fiche']);
+                $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $valeur['id_fiche']);
                 header('Location: ' . $GLOBALS['_BAZAR_']['url']
                         ->getURL());
             } else {
-                header('Location: ' . $GLOBALS['wiki']->href('',
-                    $GLOBALS['wiki']->GetPageTag()));
+                header('Location: ' . $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag()));
             }
         }
     }
@@ -1518,8 +1511,7 @@ function baz_insertion_fiche($valeur)
         }
 
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
-        $saved = $GLOBALS['wiki']->SavePage($valeur['id_fiche'],
-            json_encode($valeur));
+        $saved = $GLOBALS['wiki']->SavePage($valeur['id_fiche'], json_encode($valeur));
 
         // on cree un triple pour specifier que la page wiki creee est une fiche bazar
         if ($saved == 0) {
@@ -1548,25 +1540,18 @@ function baz_insertion_fiche($valeur)
                     ->config['base_url']);
                 $sujet = remove_accents('[' . str_replace('http://', '', $lien)
                 . '] nouvelle fiche ajoutee : ' . $valeur['bf_titre']);
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
-                BAZ_VOIR_CONSULTER);
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION,
-                BAZ_VOIR_FICHE);
-            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
-                $valeur['id_fiche']);
+            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
+            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
+            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $valeur['id_fiche']);
             $text =
             'Voir la fiche sur le site pour l\'administrer : ' .
             $GLOBALS['_BAZAR_']['url']->getUrl();
             $texthtml = '<br /><br /><a href="' . $GLOBALS['_BAZAR_']['url']
                 ->getUrl()
-
-            .
-
-            '" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
+            .'" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
             $fichier = 'tools/bazar/presentation/styles/bazar.css';
             $style   = file_get_contents($fichier);
-            $style   = str_replace('url(',
-                'url(' . $lien . '/tools/bazar/presentation/', $style);
+            $style   = str_replace('url(', 'url(' . $lien . '/tools/bazar/presentation/', $style);
             $fiche = str_replace(
                 'src="tools',
                 'src="' . $lien . '/tools',
@@ -1579,23 +1564,18 @@ function baz_insertion_fiche($valeur)
             //on va chercher les admins
             $requeteadmins = 'SELECT value FROM ' . $GLOBALS['wiki']
                 ->config['table_prefix'] . 'triples '
-
-            .
-
-            'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
+            .'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
             $ligne    = $GLOBALS['wiki']->LoadSingle($requeteadmins);
             $tabadmin = explode("\n", $ligne['value']);
             foreach ($tabadmin as $line) {
                 $admin = $GLOBALS['wiki']->LoadUser(trim($line));
-                send_mail(BAZ_ADRESSE_MAIL_ADMIN, BAZ_ADRESSE_MAIL_ADMIN,
-                    $admin['email'], $sujet, $text, $html);
+                send_mail(BAZ_ADRESSE_MAIL_ADMIN, BAZ_ADRESSE_MAIL_ADMIN, $admin['email'], $sujet, $text, $html);
             }
         }
 
         return $valeur;
     } else {
         // sinon on met un message d'erreur
-
         die('<div class="alert alert-danger">' .
             _t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . '</div>');
     }
@@ -1659,7 +1639,7 @@ function baz_mise_a_jour_fiche($valeur)
         }
     }
 
-    return;
+    return $valeur;
 }
 
 /** baz_suppression() - Supprime une fiche
@@ -3976,6 +3956,30 @@ function getAllParameters($wiki)
 
     // parametres pour bazarliste avec carto
     
+    /*
+     * provider : designe le fond de carte utilisé pour la carte
+     * cf. https://github.com/leaflet-extras/leaflet-providers
+     */
+    $param['provider'] = $wiki->GetParameter('provider');
+    if (empty($param['provider'])) {
+        $param['provider'] = BAZ_PROVIDER;
+    }
+    // on recupere d eventuels id et token pour les providers en ayant besoin
+    $param['providerid'] = $wiki->GetParameter('providerid');
+    $param['providerpass'] = $wiki->GetParameter('providerpass');
+    if (!empty($param['providerid']) && !empty($param['providerpass'])) {
+        if ($param['provider'] == 'MapBox') {
+            $param['provider_credentials'] = ', {id: \''.$param['providerid'].'\', accessToken: \''.$param['providerpass'].'\'}';
+        } else {
+            $param['provider_credentials'] = ', {
+                app_id: \''.$param['providerid'].'\',
+                app_code: \''.$param['providerpass'].'\'
+            }'; 
+        }
+    } else {
+        $param['provider_credentials'] = '';
+    }
+
     /*
      * markericonprefix : designe le prefixe des classes CSS utilisees pour la carto
      */

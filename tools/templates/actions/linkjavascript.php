@@ -69,5 +69,12 @@ $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 // on vide la variable globale pour le javascript
 $GLOBALS['js'] = '';
 
+
+// TODO: CSS a ajouter ailleurs?
+if (isset($GLOBALS['css']) && !empty($GLOBALS['css'])) {
+    $yeswiki_javascripts .=  $GLOBALS['css'];
+    $GLOBALS['css'] = '';
+}
+
 // on affiche
 echo $yeswiki_javascripts;

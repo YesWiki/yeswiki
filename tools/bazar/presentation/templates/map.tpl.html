@@ -53,6 +53,7 @@ if (count($fiches)>0) :
     <?php
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
     $GLOBALS['wiki']->AddJavascript(
         '// Init leaflet map
     var map = new L.Map(\'osmmap'.$GLOBALS['nbbazarliste'].'\', {
@@ -61,8 +62,8 @@ if (count($fiches)>0) :
         iconAnchor:   [6, 20]
     });
 
-    var OsmLayer = new L.TileLayer(\'http://{s}.tile.osm.org/{z}/{x}/{y}.png\', {maxZoom: 18, attribution: \'\'});
-    map.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].').addLayer(OsmLayer);
+    var provider = L.tileLayer.provider(\''.$param['provider'].'\''.$param['provider_credentials'].').addTo(map);
+    map.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
 
     var i = 0;
     var marker = Array();

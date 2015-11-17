@@ -85,6 +85,7 @@ if ($this->HasAccess("read"))
 				text-align : left;
 				width : auto;
 				min-width : 0;
+				padding-top : 0;
 			}
 		</style>'."\n";
 

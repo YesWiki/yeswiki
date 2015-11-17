@@ -24,9 +24,6 @@ if (!isset($GLOBALS['nbbazarliste'])) {
 // Recuperation de tous les parametres
 $params = getAllParameters($this);
 
-// Recuperation de tous les formulaires
-$allforms = baz_valeurs_tous_les_formulaires();
-
 // tableau des fiches correspondantes aux critères
 if (is_array($params['idtypeannonce'])) {
     $tableau_resultat = array();
@@ -70,6 +67,7 @@ foreach ($tableau_resultat as $fiche) {
 
     // on scanne tous les champs qui pourraient faire des filtres pour les facettes
     if (count($params['groups']) > 0) {
+        $valform = baz_valeurs_formulaire($fiche['id_typeannonce']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
                 $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
@@ -78,7 +76,7 @@ foreach ($tableau_resultat as $fiche) {
                 if (in_array($key, array('id_typeannonce', 'createur')) && $facetteasked) {
                     if ($key == 'id_typeannonce') {
                         $value = $fiche['id_typeannonce'].'|'.
-                          $allforms[$fiche['categorie_fiche']][$fiche['id_typeannonce']]['bn_label_nature'];
+                          $valform['bn_label_nature'];
                     }
                     if (isset($facettevalue[$key][$value])) {
                         ++$facettevalue[$key][$value];
@@ -86,7 +84,7 @@ foreach ($tableau_resultat as $fiche) {
                         $facettevalue[$key][$value] = 1;
                     }
                 } else { // champs type liste ou checkbox
-                    $templatef = $allforms[$fiche['categorie_fiche']][$fiche['id_typeannonce']]['template'];
+                    $templatef = $valform['template'];
                     if (is_array($templatef)) {
                         foreach ($templatef as $id => $val) {
                             if ($val[1] === $key || (isset($val[6]) && $val[0].$val[1].$val[6] === $key)) {
@@ -198,10 +196,11 @@ if (count($facettevalue) > 0) {
             $outputfilter .=  '<div class="panel-body">'."\n";
             foreach ($facettevalue['id_typeannonce'] as $id => $nb) {
                 $infotypef = explode('|', $id);
-                $outputfilter .=  '<div class="checkbox"><label>
+                $outputfilter .=  '<div class="checkbox">
                 <input class="filter-checkbox" type="checkbox" name="id_typeannonce" 
-                value="'.htmlspecialchars($infotypef[0]).'"> '.$infotypef[1].' (<span class="nb">'.$nb.'</span>)
-                </label></div>'."\n";
+                value="'.htmlspecialchars($infotypef[0]).'">
+                <label for="id_typeannonce"> '.$infotypef[1].' (<span class="nb">'.$nb.'</span>)</label>
+                </div>'."\n";
             }
             $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
         }
@@ -213,9 +212,9 @@ if (count($facettevalue) > 0) {
             $outputfilter .=  '<div class="panel-heading">'._t('BAZ_CREATOR').'</div>'."\n";
             $outputfilter .=  '<div class="panel-body">'."\n";
             foreach ($facettevalue['createur'] as $id => $nb) {
-                $outputfilter .=  '<div class="checkbox"><label>
+                $outputfilter .=  '<div class="checkbox">
                 <input class="filter-checkbox" type="checkbox" name="createur" 
-                value="'.htmlspecialchars($id).'"> '.$id.' (<span class="nb">'.$nb.'</span>)
+                value="'.htmlspecialchars($id).'"><label for="createur"> '.$id.' (<span class="nb">'.$nb.'</span>)
                 </label></div>'."\n";
             }
             $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
@@ -227,44 +226,46 @@ if (count($facettevalue) > 0) {
     
     foreach ($params['groups'] as $id) {
         $index = preg_replace('/^(liste|checkbox)/U', '', $id).'|'.$id;
+        $tabkey = explode('|', $index);
+        $list = baz_valeurs_liste($tabkey[0]);
+        $idkey = htmlspecialchars($tabkey[1]);
+        $outputfilter .=  '<div class="filter-box panel panel-default '.$idkey.'" data-id="'.$idkey.'">'."\n";
+        $titlefilterbox = '';
+        if (isset($params['groupicons'][$i]) && !empty($params['groupicons'][$i])) {
+            $titlefilterbox .= '<i class="'.$params['groupicons'][$i].'"></i> ';
+        }
+        if (isset($params['titles'][$i]) && !empty($params['titles'][$i])) {
+            $titlefilterbox .= $params['titles'][$i];
+        } else {
+            $titlefilterbox .= $list['titre_liste'];
+        }
+        $outputfilter .=  '<div class="panel-heading';
+        if (!$first) {
+            $outputfilter .= ' collapsed';
+        }
+        $outputfilter .= '" data-toggle="collapse" href="#collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" >'.
+            $titlefilterbox.'</div>'."\n";
+        $outputfilter .= '<div id="collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" class="panel-collapse';
+        if ($first) {
+            $outputfilter .= ' in';
+        }
+        $outputfilter .= ' collapse">'."\n";
+        $outputfilter .= '<div class="panel-body">'."\n";
         if (count($facettevalue[$index]) > 0) {
-            $tabkey = explode('|', $index);
-            $list = baz_valeurs_liste($tabkey[0]);
-            $idkey = htmlspecialchars($tabkey[1]);
-            $outputfilter .=  '<div class="filter-box panel panel-default '.$idkey.'" data-id="'.$idkey.'">'."\n";
-            $titlefilterbox = '';
-            if (isset($params['groupicons'][$i]) && !empty($params['groupicons'][$i])) {
-                $titlefilterbox .= '<i class="'.$params['groupicons'][$i].'"></i> ';
-            }
-            if (isset($params['titles'][$i]) && !empty($params['titles'][$i])) {
-                $titlefilterbox .= $params['titles'][$i];
-            } else {
-                $titlefilterbox .= $list['titre_liste'];
-            }
-            $outputfilter .=  '<div class="panel-heading';
-            if (!$first) {
-                $outputfilter .= ' collapsed';
-            }
-            $outputfilter .= '" data-toggle="collapse" href="#collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" >'.
-                $titlefilterbox.'</div>'."\n";
-            $outputfilter .= '<div id="collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" class="panel-collapse';
-            if ($first) {
-                $outputfilter .= ' in';
-            }
-            $outputfilter .= ' collapse">'."\n";
-            $outputfilter .= '<div class="panel-body">'."\n";
             foreach ($list['label'] as $listkey => $label) {
                 if (isset($facettevalue[$index][$listkey]) && !empty($facettevalue[$index][$listkey])) {
-                    $outputfilter .=  '<div class="checkbox"><label>
-                    <input class="filter-checkbox" type="checkbox" name="'.$idkey.'" 
-                    value="'.htmlspecialchars($listkey).'"> '. $label .' (<span class="nb">'.$facettevalue[$index][$listkey].'</span>)
+                    $outputfilter .=  '<div class="checkbox">
+                    <input class="filter-checkbox" type="checkbox" id="'.$idkey.$listkey.'" name="'.$idkey.'" 
+                    value="'.htmlspecialchars($listkey).'">
+                    <label for="'.$idkey.$listkey.'"> '. $label .' (<span class="nb">'
+                    .$facettevalue[$index][$listkey].'</span>)
                     </label></div>'."\n";
                 }
             }
-            $outputfilter .=  '</div></div></div><!-- /.filter-box -->'."\n";
-            ++$i;
-            $first = false;
-        } 
+        }
+        $outputfilter .=  '</div></div></div><!-- /.filter-box -->'."\n";
+        ++$i;
+        $first = false;
     }
     $outputfilter .= '</div> <!-- /.filters -->'."\n".
         '</div> <!-- /.col-xs-3 -->'."\n";
