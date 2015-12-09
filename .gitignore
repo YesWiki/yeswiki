@@ -7,4 +7,5 @@ cache/*
 files/*
 themes/*
 !themes/bootstrap/
+.phpintel/
 tools/wkhtmltopdf/*
