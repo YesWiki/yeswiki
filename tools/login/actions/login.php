@@ -50,14 +50,17 @@ if (empty($signupurl) && $signupurl != "0") {
 // url du profil
 $profileurl = $this->GetParameter('profileurl');
 
-$incomingurl =
-    'http' . ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's':'').
-    '://' . (($_SERVER['SERVER_PORT'] != '80') ? $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT'].
-    $_SERVER['SCRIPT_NAME'] : $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME']).
-    (($_SERVER['QUERY_STRING'] > ' ') ?'?' . $_SERVER['QUERY_STRING'] : '');
+// sauvegarde de l'url d'ou on vient
+$incomingurl = $this->GetParameter('incomingurl');
+if (empty($incomingurl)) {
+    $incomingurl = 'http'
+        .((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's':'')
+        .'://' . (($_SERVER['SERVER_PORT'] != '80') ? $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT']
+        .$_SERVER['SCRIPT_NAME'] : $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])
+        .(($_SERVER['QUERY_STRING'] > ' ') ?'?' . $_SERVER['QUERY_STRING'] : '');
+}
 
 $userpage = $this->GetParameter("userpage");
-
 // si pas d'url de page de sortie renseignée, on retourne sur la page courante
 if (empty($userpage)) {
     $userpage = $incomingurl;
@@ -100,10 +103,8 @@ if ($_REQUEST["action"] == "logout") {
 
 // cas de l'identification
 if ($_REQUEST["action"] == "login") {
-    
     // si l'utilisateur existe, on vérifie son mot de passe
     if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
-        
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
         if ($existingUser["password"] == md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);
@@ -121,13 +122,11 @@ if ($_REQUEST["action"] == "login") {
             $this->Redirect($_POST['incomingurl']);
         }
     } else {
-        
         // si le nomWiki est un mail
         if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
             $_POST["email"] = $_POST["name"];
         }
         if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
-            
             // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
             if ($existingUser["password"] == md5($_POST["password"])) {
                 $this->SetUser($existingUser, $_POST["remember"]);

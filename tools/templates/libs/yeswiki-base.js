@@ -70,7 +70,8 @@ if ( ! Modernizr.mq('only all') ) {
 	$("a.active-link").parent().addClass('active-list').parents("ul").prev("a").addClass('active-parent-link').parent().addClass('active-list');
 
 	// fenetres modales
-	$('a.modalbox').on('click', function(e) {
+	$('a.modalbox, .modalbox a').on('click', function(e) {
+        console.log($(this));
 		e.stopPropagation();
 		var $this = $(this);
 		var text = $this.attr('title');

@@ -123,6 +123,7 @@ $(document).ready(function() {
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;
     var atleastonecheckboxfieldnotvalid = false;
+    var atleastonetagfieldnotvalid = false;
 
     // il y a des champs requis, on teste la validite champs par champs
     if (inputsreq.length > 0) {
@@ -181,6 +182,17 @@ $(document).ready(function() {
       }
     });
 
+    // les checkbox des tags
+    $('#formulaire [required] .bootstrap-tagsinput').each(function() {
+      var nbtag = $(this).find('.tag');
+      if (nbtag.length === 0) {
+        atleastonetagfieldnotvalid = true;
+        $(this).addClass('invalid');
+      } else {
+        $(this).removeClass('invalid');
+      }
+    });
+    
     // affichage des erreurs de validation
     if (atleastonefieldnotvalid === true) {
       alert('Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)');
@@ -206,7 +218,13 @@ $(document).ready(function() {
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80
       }, 800);
-    }
+    } else if (atleastonetagfieldnotvalid === true) {
+      alert('Il faut saisir au moins une entrée pour le champs en autocomplétion');
+      //on remonte en haut du formulaire
+      $('html, body').animate({
+        scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80
+      }, 800);
+    } 
     // formulaire validé, on soumet le formulaire
     else {
       $('#formulaire').submit();
@@ -256,7 +274,7 @@ $(document).ready(function() {
           weekStart: 1,
           autoclose: true,
           language: 'fr'
-        });
+        }).attr('autocomplete', 'off');
       }
     }
   }]);
@@ -358,4 +376,22 @@ $(document).ready(function() {
     });
   }
   handleFilterClick('.facette-container');
+
+  // Tags
+  //bidouille pour les typeahead des champs tags
+  $(".bootstrap-tagsinput input").on('keypress', function(){
+    $(this).attr("size", $(this).val().length + 1);
+  });
+  $(".bootstrap-tagsinput").on('change', function(){
+    $(this).find('input').val('');
+  });
+  $.extend($.fn.typeahead.Constructor.prototype, {
+      val: function(){}
+  });
+  // on envoie la valeur au submit
+  $("#formulaire").on('submit', function() {
+      $(this)>find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function(){
+          $(this).tagsinput('add', $(this).tagsinput('input').val());
+      });
+  });
 });

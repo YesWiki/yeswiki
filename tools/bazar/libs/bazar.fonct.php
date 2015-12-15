@@ -171,7 +171,7 @@ function baz_afficher_liste_fiches_utilisateur()
             $nomwiki['name'],
             10
         );
-        $res .= baz_afficher_liste_resultat($tableau_dernieres_fiches, false);
+        $res .= displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], false);
     } else {
         $res .= '<div class="alert alert-info">' . "\n"
         . '<a data-dismiss="alert" class="close" type="button">&times;</a>'
@@ -1139,7 +1139,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                             . '<i class="glyphicon glyphicon-plus icon-plus"></i> '
                             . _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') . '</a>&nbsp;&nbsp;' . "\n"
                             . '</td>
-                            <td>' . $ligne['bn_label_nature'] . '</td>
+                            <td>' . $ligne['bn_type_fiche'] . '</td>
                         </tr>';
                 }
                 $res .= '</tbody>
@@ -3069,16 +3069,20 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $res = '';
 
     // parametres complémentaires de l'url
-    $urlparam =
-    BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_DEFAUT . '&' . BAZ_VARIABLE_ACTION .
+    $urlparam = BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_DEFAUT . '&' . BAZ_VARIABLE_ACTION .
     '=' . BAZ_MOTEUR_RECHERCHE;
+
     if (isset($_GET['query']) && !empty($_GET['query'])) {
         $urlparam .= '&query=' . $_GET['query'];
     }
 
     // creation du lien pour le formulaire de recherche
-    $data['url'] = $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(),
-        $urlparam, 0);
+    $data['url'] = $GLOBALS['wiki']->href(
+        '',
+        $GLOBALS['wiki']->GetPageTag(),
+        $urlparam,
+        0
+    );
 
     // y a t'il des mots clés pour le moteur de recherche
     $data['search'] = isset($_REQUEST['recherche_mots_cles']) &&
@@ -3127,9 +3131,16 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     if (!isset($_REQUEST['id_typeannonce'])) {
         // la recherche n'a pas encore ete effectuee, on affiche les 10 dernieres fiches
         $res .= '<h4>' . _t('BAZ_DERNIERES_FICHES') . '</h4>';
-        $tableau_dernieres_fiches = baz_requete_recherche_fiches('', '',
-            $typeannonce, $categorienature, 1, '', 10);
-        $res .= baz_afficher_liste_resultat($tableau_dernieres_fiches, false);
+        $tableau_dernieres_fiches = baz_requete_recherche_fiches(
+            '',
+            '',
+            $typeannonce,
+            $categorienature,
+            1,
+            '',
+            10
+        );
+        $res .= displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], false);
     } else {
         // la recherche a ete effectuee, on etablie la requete SQL
         $tableau_fiches = baz_requete_recherche_fiches(
@@ -3144,7 +3155,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             (isset($_REQUEST['recherche_mots_cles'])) ?
             $_REQUEST['recherche_mots_cles'] : ''
         );
-        $res .= baz_afficher_liste_resultat($tableau_fiches);
+        $res .= displayResultList($tableau_fiches, $GLOBALS['params']);
     }
 
     return $res;
@@ -3153,17 +3164,19 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 /**
  * Cette fonction recupere tous les parametres passes pour la recherche, et retourne un tableau de valeurs des fiches.
  */
-function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '',
-    $id_typeannonce = '', $categorie_fiche = '', $statut = 1, $personne = '',
-    $nb_limite = '', $motcles = true, $searchstring = '', $facettesearch =
-    'OR') {
-    $nb_jointures = 0;
-
+function baz_requete_recherche_fiches(
+    $tableau_criteres = '',
+    $tri = '',
+    $id_typeannonce = '',
+    $categorie_fiche = '',
+    $statut = 1,
+    $personne = '',
+    $nb_limite = '',
+    $motcles = true,
+    $searchstring = '',
+    $facettesearch = 'OR'
+) {
     //si les parametres ne sont pas rentres, on prend les variables globales
-    /*if ($id_typeannonce == '' && isset($GLOBALS['params']['idtypeannonce'])) {
-    if isset()
-    $id_typeannonce = $GLOBALS['params']['idtypeannonce'];
-    } elseif (!empty($id_typeannonce) && ) {}*/
     if ($categorie_fiche == '' &&
         !empty($GLOBALS['params']['categorienature'])) {
         $categorie_fiche = $GLOBALS['params']['categorienature'];
@@ -3211,8 +3224,7 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '',
     //preparation de la requete pour trouver les mots cles
     if (isset($searchstring) && $searchstring != '' && $searchstring !=
         _t('BAZ_MOT_CLE')) {
-        $searchstring = _convert($searchstring, TEMPLATES_DEFAULT_CHARSET,
-            true);
+        $searchstring = _convert($searchstring, TEMPLATES_DEFAULT_CHARSET, true);
 
         //decoupage des mots cles
         //:      mysql_query('SET NAMES utf8');
@@ -3295,7 +3307,59 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '',
         }
     }
 
-    if ($requeteSQL != '') {
+    // requete de jointure : reprend la requete precedente et ajoute des criteres
+    if (isset($_GET['joinquery'])) {
+        $joinrequeteSQL = '';
+        $tableau = array();
+        $tab     = explode('|', $_GET['joinquery']);
+        //découpe la requete autour des |
+        foreach ($tab as $req) {
+            $tabdecoup              = explode('=', $req, 2);
+            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+        }
+        $first = true;
+        while (list($nom, $val) = each($tableau)) {
+            if (!empty($nom) && !empty($val)) {
+                $valcrit = explode(',', $val);
+                if (is_array($valcrit) && count($valcrit) > 1) {
+                    if (!$first) {
+                        $joinrequeteSQL .= ' AND ';
+                    } else {
+                        $first = false;
+                    }
+                    foreach ($valcrit as $critere) {
+                        $joinrequeteSQL .=
+                        '(body REGEXP \'"' . $nom . '":"[^"]*' . $critere .
+                        '[^"]*"\')';
+                        
+                    }
+                    $joinrequeteSQL .= ')';
+                } else {
+                    if (!$first) {
+                        $joinrequeteSQL .= ' AND ';
+                    } else {
+                        $first = false;
+                    }
+                    if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                        $joinrequeteSQL .=
+                        '(body REGEXP \'"' . $nom . '":"' . $val . '"\')';
+                    } else {
+                        $joinrequeteSQL .=
+                        '(body REGEXP \'"' . $nom . '":("' . $val .
+                        '"|"[^"]*,' . $val . '"|"' . $val . ',[^"]*"|"[^"]*,'
+                        . $val . ',[^"]*")\')';
+                    }
+                }
+            }
+        }
+        if ($requeteSQL != '') {
+            $requeteSQL .= ' UNION
+            '.$requete.' AND ('.$joinrequeteSQL.')';
+        } else {
+            $requeteSQL .= ' AND ('.$joinrequeteSQL.')';
+        }
+        $requete .= $requeteSQL;
+    } elseif ($requeteSQL != '') {
         $requete .= $requeteSQL;
     }
 
@@ -3307,15 +3371,15 @@ function baz_requete_recherche_fiches($tableau_criteres = '', $tri = '',
     //     $requete .= ' AND (bf_date_debut_validite_fiche<=NOW() or bf_date_debut_validite_fiche="0000-00-00") AND (bf_date_fin_validite_fiche>=NOW() or bf_date_fin_validite_fiche="0000-00-00") ';
     // }
 
-    if ($tri == 'alphabetique') {
-        $requete .= ' ORDER BY tag ASC';
-    } else {
-        $requete .= ' ORDER BY time DESC';
-    }
+    // if ($tri == 'alphabetique') {
+    //     $requete .= ' ORDER BY tag ASC';
+    // } else {
+    //     $requete .= ' ORDER BY time DESC';
+    // }
 
-    if ($nb_limite != '') {
-        $requete .= ' LIMIT 0,' . $nb_limite;
-    }
+    // if ($nb_limite != '') {
+    //     $requete .= ' LIMIT 0,' . $nb_limite;
+    // }
 
     // debug
     //echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea>';
@@ -3381,9 +3445,9 @@ function baz_valeurs_tous_les_formulaires($categorie = '', $format = 'html', $id
  * @param $tableau_fiches : tableau de fiches provenant du resultat de la recherche
  * @param $info_nb : booleen pour afficher ou non le nombre  du resultat de la recherche (vrai par defaut)
  */
-function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
+function displayResultList($tableau_fiches, $params, $info_nb = true)
 {
-    $res                = '';
+  /*  $res                = '';
     $fiches['info_res'] = '';
     if ($info_nb) {
         $fiches['info_res'] .=
@@ -3491,7 +3555,258 @@ function baz_afficher_liste_resultat($tableau_fiches, $info_nb = true)
     $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
     $GLOBALS['_BAZAR_']['url']->removeQueryString('recherche_avancee');
 
-    return $res;
+    return $res;*/
+
+
+
+    // tableau des valeurs "facettables" avec leur nombres
+    $facettevalue = array();
+
+    // tableau qui contiendra les fiches
+    $fiches['fiches'] = array();
+    foreach ($tableau_fiches as $fiche) {
+        $fiche = json_decode($fiche['body'], true);
+        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+            $fiche = array_map('utf8_decode', $fiche);
+        }
+
+        // champs correspondants
+        if (!empty($param['correspondance'])) {
+            $tabcorrespondance = explode('=', trim($param['correspondance']));
+            if (isset($tabcorrespondance[0])) {
+                if (isset($tabcorrespondance[1]) && isset($fiche[$tabcorrespondance[1]])) {
+                    $fiche[$tabcorrespondance[0]] = $fiche[$tabcorrespondance[1]];
+                } else {
+                    $fiche[$tabcorrespondance[0]] = '';
+                }
+            } else {
+                exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli :
+                 il doit etre de la forme correspondance="identifiant_1=identifiant_2"</div>');
+            }
+        }
+        $fiche['html_data'] = getHtmlDataAttributes($fiche);
+        $fiche['html'] = baz_voir_fiche(0, $fiche);  //permet de voir la fiche
+        $fiche['datastr'] = getHtmlDataAttributes($fiche);
+
+        // on scanne tous les champs qui pourraient faire des filtres pour les facettes
+        if (count($params['groups']) > 0) {
+            $valform = baz_valeurs_formulaire($fiche['id_typeannonce']);
+            foreach ($fiche as $key => $value) {
+                if (!empty($value)) {
+                    $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
+                        || in_array($key, $params['groups']);
+                    // champs génériques des métadonnées
+                    if (in_array($key, array('id_typeannonce', 'createur')) && $facetteasked) {
+                        if ($key == 'id_typeannonce') {
+                            $value = $fiche['id_typeannonce'].'|'.
+                              $valform['bn_label_nature'];
+                        }
+                        if (isset($facettevalue[$key][$value])) {
+                            ++$facettevalue[$key][$value];
+                        } else {
+                            $facettevalue[$key][$value] = 1;
+                        }
+                    } else { // champs type liste ou checkbox
+                        $templatef = $valform['template'];
+                        if (is_array($templatef)) {
+                            foreach ($templatef as $id => $val) {
+                                if ($val[1] === $key || (isset($val[6]) && $val[0].$val[1].$val[6] === $key)) {
+                                    $islist = in_array(
+                                        $templatef[$id][0],
+                                        array('checkbox', 'liste', 'scope')
+                                    );
+                                    if ($islist && $facetteasked) {
+                                        $tabval = explode(',', $value);
+                                        foreach ($tabval as $val) {
+                                            if (isset($facettevalue[$templatef[$id][1].'|'.$key][$val])) {
+                                                ++$facettevalue[$templatef[$id][1].'|'.$key][$val];
+                                            } else {
+                                                $facettevalue[$templatef[$id][1].'|'.$key][$val] = 1;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // tableau qui contient le contenu de toutes les fiches
+        $fiches['fiches'][$fiche['id_fiche']] = $fiche;
+    }
+
+    // tri des fiches
+    $GLOBALS['ordre'] = $params['ordre'];
+    $GLOBALS['champ'] = $params['champ'];
+    usort($fiches['fiches'], 'champCompare');
+
+    // Limite le nombre de résultat au nombre de fiches demandées
+    if ($params['nb'] != '') {
+        $fiches['fiches'] = array_slice($fiches['fiches'], 0, $params['nb']);
+    }
+
+    if ($info_nb) {
+        $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
+
+        $nb_result = count($fiches['fiches']);
+
+        if ($nb_result <= 1) {
+            $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHE').'</div>'."\n";
+        } else {
+            $fiches['info_res'] .= $nb_result.' '._t('BAZ_FICHES').'</div>'."\n";
+        }
+    } else {
+        $fiches['info_res'] = '';
+    }
+    if (!empty($params['pagination'])) {
+        // Mise en place du Pager
+        require_once 'Pager/Pager.php';
+        $param = array(
+            'mode' => BAZ_MODE_DIVISION,
+            'perPage' => $params['pagination'],
+            'delta' => BAZ_DELTA,
+            'httpMethod' => 'GET',
+            'extraVars' => array_merge($_POST, $_GET),
+            'altNext' => _t('BAZ_SUIVANT'),
+            'altPrev' => _t('BAZ_PRECEDENT'),
+            'nextImg' => _t('BAZ_SUIVANT'),
+            'prevImg' => _t('BAZ_PRECEDENT'),
+            'itemData' => $fiches['fiches'],
+        );
+        $pager = &Pager::factory($param);
+        $fiches['fiches'] = $pager->getPageData();
+        $fiches['pager_links'] = '<div class="bazar_numero">'.$pager->links.'</div>'."\n";
+    } else {
+        $fiches['pager_links'] = '';
+    }
+
+    // affichage des resultats
+    include_once 'tools/bazar/libs/squelettephp.class.php';
+    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
+    $templatetoload = 'themes/tools/bazar/templates/'.$params['template'];
+    if (!is_file($templatetoload)) {
+        $templatetoload = 'tools/bazar/presentation/templates/'.$params['template'];
+    }
+    $squelfacette = new SquelettePhp($templatetoload);
+    $fiches['param'] = $params;
+    $squelfacette->set($fiches);
+    $output = $squelfacette->analyser();
+
+    // affichage spécifique pour facette
+    if (count($facettevalue) > 0) {
+        // affichage des resultats et filtres dans une grille
+        $outputfacette = '<div class="facette-container row row-fluid">'."\n";
+
+        // calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
+        $resultcolsize = 12 - intval($params['filtercolsize']);
+
+        // colonne des resultats
+        $outputresult = '<div class="col-xs-'.$resultcolsize.' span'.$resultcolsize.'">'."\n".
+            '<div class="results">'."\n".
+            '<div class="alert alert-info">'."\n".
+            _t('BAZ_IL_Y_A').
+            '<span class="nb-results">'.count($fiches['fiches']).'</span> '
+            ._t('BAZ_FICHES_CORRESPONDANTES_FILTRES')."\n".
+            '.</div>'."\n".
+            $output."\n".
+            '</div> <!-- /.results -->'."\n".
+            '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
+
+        // colonne des filtres
+        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].' span'.$params['filtercolsize'].'">'."\n".
+                        '<div class="filters no-dblclick">'."\n";
+        if (isset($facettevalue['id_typeannonce'])) {
+            if (count($facettevalue['id_typeannonce']) > 1) {
+                $outputfilter .=  '<div class="filter-box panel panel-default" data-id="id_typeannonce">'."\n";
+                $outputfilter .=  '<div class="panel-heading">'._t('BAZ_TYPE_FICHE').'</div>'."\n";
+                $outputfilter .=  '<div class="panel-body">'."\n";
+                foreach ($facettevalue['id_typeannonce'] as $id => $nb) {
+                    $infotypef = explode('|', $id);
+                    $outputfilter .=  '<div class="checkbox">
+                    <input class="filter-checkbox" type="checkbox" name="id_typeannonce" 
+                    value="'.htmlspecialchars($infotypef[0]).'">
+                    <label for="id_typeannonce"> '.$infotypef[1].' (<span class="nb">'.$nb.'</span>)</label>
+                    </div>'."\n";
+                }
+                $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
+            }
+            unset($facettevalue['id_typeannonce']);
+        }
+        if (isset($facettevalue['createur'])) {
+            if (count($facettevalue['createur']) > 1) {
+                $outputfilter .=  '<div class="filter-box panel panel-default" data-id="createur">'."\n";
+                $outputfilter .=  '<div class="panel-heading">'._t('BAZ_CREATOR').'</div>'."\n";
+                $outputfilter .=  '<div class="panel-body">'."\n";
+                foreach ($facettevalue['createur'] as $id => $nb) {
+                    $outputfilter .=  '<div class="checkbox">
+                    <input class="filter-checkbox" type="checkbox" name="createur" 
+                    value="'.htmlspecialchars($id).'"><label for="createur"> '.$id.' (<span class="nb">'.$nb.'</span>)
+                    </label></div>'."\n";
+                }
+                $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
+            }
+            unset($facettevalue['createur']);
+        }
+        $i = 0;
+        $first = true;
+        
+        foreach ($params['groups'] as $id) {
+            $index = preg_replace('/^(liste|checkbox)/U', '', $id).'|'.$id;
+            $tabkey = explode('|', $index);
+            $list = baz_valeurs_liste($tabkey[0]);
+            $idkey = htmlspecialchars($tabkey[1]);
+            $outputfilter .=  '<div class="filter-box panel panel-default '.$idkey.'" data-id="'.$idkey.'">'."\n";
+            $titlefilterbox = '';
+            if (isset($params['groupicons'][$i]) && !empty($params['groupicons'][$i])) {
+                $titlefilterbox .= '<i class="'.$params['groupicons'][$i].'"></i> ';
+            }
+            if (isset($params['titles'][$i]) && !empty($params['titles'][$i])) {
+                $titlefilterbox .= $params['titles'][$i];
+            } else {
+                $titlefilterbox .= $list['titre_liste'];
+            }
+            $outputfilter .=  '<div class="panel-heading';
+            if (!$first) {
+                $outputfilter .= ' collapsed';
+            }
+            $outputfilter .= '" data-toggle="collapse" href="#collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" >'.
+                $titlefilterbox.'</div>'."\n";
+            $outputfilter .= '<div id="collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" class="panel-collapse';
+            if ($first) {
+                $outputfilter .= ' in';
+            }
+            $outputfilter .= ' collapse">'."\n";
+            $outputfilter .= '<div class="panel-body">'."\n";
+            if (count($facettevalue[$index]) > 0) {
+                foreach ($list['label'] as $listkey => $label) {
+                    if (isset($facettevalue[$index][$listkey]) && !empty($facettevalue[$index][$listkey])) {
+                        $outputfilter .=  '<div class="checkbox">
+                        <input class="filter-checkbox" type="checkbox" id="'.$idkey.$listkey.'" name="'.$idkey.'" 
+                        value="'.htmlspecialchars($listkey).'">
+                        <label for="'.$idkey.$listkey.'"> '. $label .' (<span class="nb">'
+                        .$facettevalue[$index][$listkey].'</span>)
+                        </label></div>'."\n";
+                    }
+                }
+            }
+            $outputfilter .=  '</div></div></div><!-- /.filter-box -->'."\n";
+            ++$i;
+            $first = false;
+        }
+        $outputfilter .= '</div> <!-- /.filters -->'."\n".
+            '</div> <!-- /.col-xs-3 -->'."\n";
+
+        // disposition des filtres (gauche ou droite)
+        if ($params['filterposition'] == 'right') {
+            $outputfacette .= $outputresult.$outputfilter;
+        } else {
+            $outputfacette .= $outputfilter.$outputresult;
+        }
+
+        $output = $outputfacette.'</div><!-- /.facette-container.row -->';
+    }
+    return $output;
 }
 
 function encoder_en_utf8($txt)
@@ -3770,13 +4085,15 @@ function baz_afficher_flux_RSS()
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
     $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
 
-    echo str_replace('</image>',
+    echo str_replace(
+        '</image>',
         '</image>' . "\n" . '<atom:link href="' . $urlrss .
-        '" rel="self" type="application/rss+xml" />', html_entity_decode($xml,
-            ENT_QUOTES, 'UTF-8'));
+        '" rel="self" type="application/rss+xml" />',
+        html_entity_decode($xml, ENT_QUOTES, 'UTF-8')
+    );
 }
 
-// pour verifier la presence d une valeur dasn une fiche, en vue de lui faire une icone ou couleur personnalisee
+// pour verifier la presence d une valeur dans une fiche, en vue de lui faire une icone ou couleur personnalisee
 function getCustomValueForEntry($parameter, $field, $entry, $default)
 {
     if (is_array($parameter) && !empty($field)) {
@@ -3793,13 +4110,13 @@ function getCustomValueForEntry($parameter, $field, $entry, $default)
                 // on n a pas trouve de valeur, on renvoie la valeur par defaut
                 return $default;
             } else {
-                return (isset($parameter[$entry[$field]]) ? 
+                return (isset($parameter[$entry[$field]]) ?
                     $parameter[$entry[$field]] : $default);
             }
         } else {
             // si la valeur n existe pas, on met l icone par defaut
             return $default;
-        } 
+        }
     } else {
         // si le parametre n'est pas un tableau, il contient la valeur par defaut
         return $parameter;
@@ -3844,24 +4161,49 @@ function getAllParameters($wiki)
     }
 
     // autoriser qu'une catégorie de formulaire
-    $param['categorienature'] = $wiki->GetParameter('categorienature');
+    $param['categorienature'] = $wiki->GetParameter('cat');
     if ($param['categorienature'] == 'toutes') {
         $param['categorienature'] = '';
     }
+    // retrocompatibilite avec le parametre categorienature
+    if (empty($param['categorienature'])) {
+        $param['categorienature'] = $wiki->GetParameter('categorienature');
+        if ($param['categorienature'] == 'toutes') {
+            $param['categorienature'] = '';
+        }
+    }
 
-    if (isset($_REQUEST['id_typeannonce']) &&
-        !empty($_REQUEST['id_typeannonce'])) {
-        $param['idtypeannonce'] = $_REQUEST['id_typeannonce'];
+    // identifiant du/des formulaire/s
+    if (isset($_REQUEST['id']) &&
+        !empty($_REQUEST['id'])) {
+        $param['idtypeannonce'] = $_REQUEST['id'];
     } else {
-        // identifiant du formulaire (plusieures valuers possibles, séparées par des virgules)
-        $param['idtypeannonce'] = $wiki->GetParameter('idtypeannonce');
-        if (empty($param['idtypeannonce'])) {
+        // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
+        $param['idtypeannonce'] = $wiki->GetParameter('id');
+        if (empty($param['id'])) {
             $param['idtypeannonce'] = '';
         } else {
             $param['idtypeannonce'] = explode(',', $param['idtypeannonce']);
             $param['idtypeannonce'] = array_map('trim', $param['idtypeannonce']);
         }
     }
+    // retrocompatibilite avec le parametre idtypeannonce
+    if (empty($param['id_typeannonce'])) {
+        if (isset($_REQUEST['id_typeannonce']) &&
+            !empty($_REQUEST['id_typeannonce'])) {
+            $param['idtypeannonce'] = $_REQUEST['id_typeannonce'];
+        } else {
+            // identifiant du formulaire (plusieures valuers possibles, séparées par des virgules)
+            $param['idtypeannonce'] = $wiki->GetParameter('idtypeannonce');
+            if (empty($param['idtypeannonce'])) {
+                $param['idtypeannonce'] = '';
+            } else {
+                $param['idtypeannonce'] = explode(',', $param['idtypeannonce']);
+                $param['idtypeannonce'] = array_map('trim', $param['idtypeannonce']);
+            }
+        }
+    }
+
     //on recupere les parameres pour une requete specifique
     if (isset($_GET['query'])) {
         $param['query'] = $wiki->GetParameter('query');
@@ -3969,43 +4311,44 @@ function getAllParameters($wiki)
     $param['providerpass'] = $wiki->GetParameter('providerpass');
     if (!empty($param['providerid']) && !empty($param['providerpass'])) {
         if ($param['provider'] == 'MapBox') {
-            $param['provider_credentials'] = ', {id: \''.$param['providerid'].'\', accessToken: \''.$param['providerpass'].'\'}';
+            $param['provider_credentials'] = ', {id: \''.$param['providerid']
+                .'\', accessToken: \''.$param['providerpass'].'\'}';
         } else {
             $param['provider_credentials'] = ', {
                 app_id: \''.$param['providerid'].'\',
                 app_code: \''.$param['providerpass'].'\'
-            }'; 
+            }';
         }
     } else {
         $param['provider_credentials'] = '';
     }
 
     /*
-     * markericonprefix : designe le prefixe des classes CSS utilisees pour la carto
+     * iconprefix : designe le prefixe des classes CSS utilisees pour la carto
      */
-    $param['markericonprefix'] = $wiki->GetParameter('markericonprefix');
-    if (empty($param['markericonprefix'])) {
+    $param['iconprefix'] = $wiki->GetParameter('iconprefix');
+    if (empty($param['iconprefix'])) {
         if (defined('BAZ_MARKER_ICON_PREFIX') && BAZ_MARKER_ICON_PREFIX) {
-            $param['markericonprefix'] = BAZ_MARKER_ICON_PREFIX.' '.BAZ_MARKER_ICON_PREFIX.'-';
+            $param['iconprefix'] = BAZ_MARKER_ICON_PREFIX.' '.BAZ_MARKER_ICON_PREFIX.'-';
         } else {
-            $param['markericonprefix'] = '';
+            $param['iconprefix'] = '';
         }
         
     } else {
-        $param['markericonprefix'] = trim($param['markericonprefix']).' '.trim($param['markericonprefix']).'-';
+        $param['iconprefix'] = trim($param['iconprefix']).' '.trim($param['iconprefix']).'-';
     }
     /*
-     * markericonfield : designe le champ utilise pour la couleur des marqueurs
+     * iconfield : designe le champ utilise pour la couleur des marqueurs
      */
-    $param['markericonfield'] = $wiki->GetParameter('markericonfield');
+    $param['iconfield'] = $wiki->GetParameter('iconfield');
 
     /*
-     * markericon : couleur des marqueurs
+     * icon : couleur des marqueurs
      */
-    $param['markericon'] = $wiki->GetParameter('markericon');
-    if (!empty($param['markericon'])) {
-        $iconparam = explode(',', $param['markericon']);
-        if (count($iconparam) > 1 && !empty($param['markericonfield'])) {
+    $param['icon'] = $wiki->GetParameter('icon');
+    if (!empty($param['icon'])) {
+        $iconparam = explode(',', $param['icon']);
+        if (count($iconparam) > 1 && !empty($param['iconfield'])) {
             $iconparam = array_map('trim', $iconparam);
 
             // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
@@ -4015,31 +4358,34 @@ function getAllParameters($wiki)
                 if (count($tab)>0) {
                     $tabparam[$tab[1]] = $tab[0];
                 } else {
-                    exit('<div class"alert alert-error">markericon : erreur de formatage:<br>"'.
-                        '<br>syntaxe: markericon="classe icone1=valeur,classe icone2=valeur2"</div>');
+                    exit('<div class"alert alert-error">icon : erreur de formatage:<br>"'.
+                        '<br>syntaxe: icon="classe icone1=valeur,classe icone2=valeur2"</div>');
                 }
             }
-            $param['markericon'] = $tabparam;
+            $param['icon'] = $tabparam;
         } else {
-            $param['markericon'] = trim($iconparam[0]);
+            $param['icon'] = trim($iconparam[0]);
         }
     } else {
-        $param['markericon'] = BAZ_MARKER_ICON;
+        $param['icon'] = BAZ_MARKER_ICON;
     }
 
     /*
-     * markercolorfield : designe le champ utilise pour la couleur des marqueurs
+     * colorfield : designe le champ utilise pour la couleur des marqueurs
      */
-    $param['markercolorfield'] = $wiki->GetParameter('markercolorfield');
+    $param['colorfield'] = $wiki->GetParameter('colorfield');
 
     /*
-     * markercolor : couleur des marqueurs
+     * color : couleur des marqueurs
      */
-    $colors = array('red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue', 'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black');
-    $param['markercolor'] = $wiki->GetParameter('markercolor');
-    if (!empty($param['markercolor'])) {
-        $colorsparam = explode(',', $param['markercolor']);
-        if (count($colorsparam) > 1 && !empty($param['markercolorfield'])) {
+    $colors = array(
+        'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+        'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black'
+    );
+    $param['color'] = $wiki->GetParameter('color');
+    if (!empty($param['color'])) {
+        $colorsparam = explode(',', $param['color']);
+        if (count($colorsparam) > 1 && !empty($param['colorfield'])) {
             $colorsparam = array_map('trim', $colorsparam);
 
             // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
@@ -4049,19 +4395,19 @@ function getAllParameters($wiki)
                 if (in_array($tab[0], $colors)) {
                     $tabparam[$tab[1]] = $tab[0];
                 } else {
-                    exit('<div class"alert alert-error">markercolor : la couleur indiquée doit etre choisie parmis :<br>"'.
-                        implode('", "', $colors).'"<br>syntaxe: markercolor="couleur=valeur,couleur2=valeur2"</div>');
+                    exit('<div class"alert alert-error">color : la couleur indiquée doit etre choisie parmis :<br>"'.
+                        implode('", "', $colors).'"<br>syntaxe: color="couleur=valeur,couleur2=valeur2"</div>');
                 }
             }
-            $param['markercolor'] = $tabparam;
+            $param['color'] = $tabparam;
         } else {
-            $param['markercolor'] = trim($colors[0]);
-            if (!in_array($param['markercolor'], $colors)) {
-                $param['markercolor'] = BAZ_MARKER_COLOR;
-            } 
+            $param['color'] = trim($colors[0]);
+            if (!in_array($param['color'], $colors)) {
+                $param['color'] = BAZ_MARKER_COLOR;
+            }
         }
     } else {
-        $param['markercolor'] = BAZ_MARKER_COLOR;
+        $param['color'] = BAZ_MARKER_COLOR;
     }
 
     /*
@@ -4071,7 +4417,7 @@ function getAllParameters($wiki)
     if (empty($param['smallmarker'])) {
         $param['smallmarker'] = BAZ_SMALL_MARKER;
     }
-    if (!empty($param['smallmarker']) && $param['smallmarker'] == "1" ) {
+    if (!empty($param['smallmarker']) && $param['smallmarker'] == "1") {
         $param['smallmarker'] = '';
         $param['iconSize'] = '[15, 20]';
         $param['iconAnchor'] = '[8, 19]';

@@ -377,10 +377,11 @@ define('BAZ_JS_INIT_MAP', '');
 // Choix du look du template par défaut
 define(
     'BAZ_TEMPLATE_LISTE_DEFAUT',
-    (isset($wakkaConfig['default_bazar_template'])) ?
-      $wakkaConfig['default_bazar_template']
-      :'liste_accordeon.tpl.html'
+    isset($wakkaConfig['default_bazar_template']) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html'
 );
+
+// les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
+$wakkaConfig['global_query'] = isset($wakkaConfig['global_query']) ? $wakkaConfig['global_query'] : true ;
 
 if (!function_exists('CheckBazarOwner')) {
     function CheckBazarOwner($page, $tag)
