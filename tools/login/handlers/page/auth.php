@@ -70,7 +70,6 @@ if (isset($_POST["logout"]) && $_POST["logout"] == '1') {
         $_POST["email"] = $_POST["name"];
     }
     if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
-        
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
         if ($existingUser["password"] == md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);
@@ -86,4 +85,3 @@ if (isset($_POST["logout"]) && $_POST["logout"] == '1') {
         echo json_encode(array('error' => _t('LOGIN_WRONG_USER')));
     }
 }
-
