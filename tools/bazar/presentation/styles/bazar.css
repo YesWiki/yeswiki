@@ -429,10 +429,15 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 
 .link-csv-file {background:url(../images/csv-file.png) no-repeat left center; display:block; font-size:20px; padding:5px 0 5px 35px; margin:10px 0;}
 
-.yeswiki-checkbox {
+/*.yeswiki-checkbox {
 	display: inline-block;
 	vertical-align: top;
     width: 235px;
+}*/ 
+.bazar-checkbox-cols {
+    -webkit-column-count: 3; /* Chrome, Safari, Opera */
+    -moz-column-count: 3; /* Firefox */
+    column-count: 3;
 }
 .entries-list, .list-bazar-entries {
 	height:200px;

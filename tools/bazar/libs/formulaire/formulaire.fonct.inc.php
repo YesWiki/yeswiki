@@ -426,8 +426,8 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $checkbox_html.= ' required="required"';
                 }
                 $checkbox_html.= '>' . "\n";
-                foreach ($choixcheckbox as $id => $title) {
-                    $tabfiches[$id] = '{"id":"'.$id.'", "title":"'.str_replace('"', '\"', $title).'"}';
+                foreach ($choixcheckbox as $key => $title) {
+                    $tabfiches[$key] = '{"id":"'.$key.'", "title":"'.str_replace('"', '\"', $title).'"}';
                 }
                 $script = '$(function(){
                     var tagsexistants = [' . implode(',', $tabfiches) . '];
@@ -445,9 +445,9 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     });'."\n";
 
                 if (is_array($tab) && count($tab)>0 && !empty($tab[0])) {
-                    foreach ($tab as $id) {
-                        if (isset($tabfiches[$id])) {
-                            $script .= 'bazartag["'.$id.'"].tagsinput(\'add\', '.$tabfiches[$id].');'."\n";
+                    foreach ($tab as $defid) {
+                        if (isset($tabfiches[$defid])) {
+                            $script .= 'bazartag["'.$id.'"].tagsinput(\'add\', '.$tabfiches[$defid].');'."\n";
                         }
                     }
                 }
@@ -478,8 +478,8 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     }
 
                     $checkbox[$i] = $formtemplate->createElement(
-                        $tableau_template[0],
-                        $id,
+                        'checkbox',
+                        $key,
                         $tab_chkbox,
                         $label,
                         $optioncheckbox
@@ -497,6 +497,10 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $squelette_checkbox->setGroupElementTemplate(
                     '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n",
+                    $id
+                );
+                $squelette_checkbox->setGroupTemplate(
+                    '<div class="bazar-checkbox-cols">' . "\n" . '{content}' . "\n" . '</div>' . "\n",
                     $id
                 );
                 $formtemplate->addGroup(
@@ -1549,7 +1553,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if ($html_image != '') $formtemplate->addElement('html', $html_image);
 
                 //gestion du champs obligatoire
-                $option = '';
+                $option = array('accept' => ".jpeg, .jpg, .gif, .png");
                 $formtemplate->addElement('file', $type . $identifiant, $lien_supprimer_image . _t('BAZ_MODIFIER_IMAGE'), $option);
                 $formtemplate->addElement('hidden', 'oldimage_' . $type . $identifiant, $valeurs_fiche[$type . $identifiant]);
                 $formtemplate->addElement(new HTML_QuickForm_html("\n" . '</fieldset>' . "\n"));
@@ -1575,9 +1579,9 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         else {
 
             //gestion du champs obligatoire
-            $option = '';
+            $option = array('accept' => ".jpeg, .jpg, .gif, .png");
             if (isset($obligatoire) && $obligatoire == 1) {
-                $option = array('required' => 'required');
+                $option['required'] = 'required';
             }
             $formtemplate->addElement('file', $type . $identifiant, $label, $option);
 
@@ -1621,10 +1625,15 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 echo '<div class="alert alert-danger">Fichier non autoris&eacute;.</div>';
             }
+            if (isset($valeurs_fiche['oldimage_' . $type . $identifiant])) {
+                unset($valeurs_fiche['oldimage_' . $type . $identifiant]);
+            }
 
             return array($type . $identifiant => $nomimage);
         } elseif (isset($valeurs_fiche['oldimage_' . $type . $identifiant]) && $valeurs_fiche['oldimage_' . $type . $identifiant] != '') {
-            return array($type . $identifiant => $valeurs_fiche['oldimage_' . $type . $identifiant]);
+            $tabimg = array($type . $identifiant => $valeurs_fiche['oldimage_' . $type . $identifiant]);
+            unset($valeurs_fiche['oldimage_' . $type . $identifiant]);
+            return $tabimg;
         }
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {

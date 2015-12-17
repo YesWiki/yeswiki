@@ -1,330 +1,40 @@
 <?php
+
 /**
-* bazarcarto : programme affichant les fiches du bazar sous forme de Cartographie Google
-*
-*
-*@package Bazar
-//Auteur original :
-*@author        Florian SCHMITT <florian@outils-reseaux.org>
-*@version       $Revision: 1.10 $ $Date: 2010-12-15 14:23:19 $
-// +------------------------------------------------------------------------------------------------------+
-*/
+ *  Programme gerant les fiches bazar depuis une interface de type geographique.
+ **/
 
 // +------------------------------------------------------------------------------------------------------+
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-if (!defined("WIKINI_VERSION")) {
-        die ("acc&egrave;s direct interdit");
+// test de sÃ©curitÃ© pour vÃ©rifier si on passe par wiki
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
-//récupération des paramètres wikini
-$categorie_nature = $this->GetParameter("categorienature");
-if (empty($categorie_nature)) {
-    $categorie_nature = 'toutes';
+// on compte le nombre de fois que l'action bazarliste est appelÃ©e afin de diffÃ©rencier les instances
+if (!isset($GLOBALS['nbbazarliste'])) {
+    $GLOBALS['nbbazarliste'] = 0;
 }
+++$GLOBALS['nbbazarliste'];
 
-$id_typeannonce = $this->GetParameter("idtypeannonce");
-if (empty($id_typeannonce)) {
-    $id_typeannonce = 'toutes';
-}
+// Recuperation de tous les parametres
+$params = getAllParameters($this);
+$params['template'] = 'map.tpl.html';
 
-$ordre = $this->GetParameter("ordre");
-if (empty($ordre)) {
-    $ordre = 'alphabetique';
-}
-
-$latitude = $this->GetParameter("lat");
-if (empty($latitude)) {
-    $latitude = BAZ_GOOGLE_CENTRE_LAT;
-}
-
-$longitude = $this->GetParameter("lon");
-if (empty($longitude)) {
-    $longitude = BAZ_GOOGLE_CENTRE_LON;
-}
-
-$zoom = $this->GetParameter("zoom");
-if (empty($zoom)) {
-    $zoom = BAZ_GOOGLE_ALTITUDE;
-}
-
-$champcoul = $this->GetParameter("champcoul");
-if (empty($champcoul)) {
-    $couleur = 'ListeCouleur';
-}
-
-$typecarto = $this->GetParameter("typecarto");
-if (empty($typecarto)) {
-    $typecarto = BAZ_TYPE_CARTO;
-} else {
-    $typecarto = strtoupper($typecarto);
-}
-
-//on récupère les paramètres pour une requête spécifique
-$query = $this->GetParameter("query");
-if (!empty($query)) {
-    $tabquery = array();
-    $tableau = array();
-    $tab = explode('|', $query);
-    foreach ($tab as $req) {
-        $tabdecoup = explode('=', $req, 2);
-        $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+// tableau des fiches correspondantes aux critÃ¨res
+if (is_array($params['idtypeannonce'])) {
+    $results = array();
+    foreach ($params['idtypeannonce'] as $formid) {
+        $results = array_merge(
+            $results,
+            baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+        );
     }
-    $tabquery = array_merge($tabquery, $tableau);
 } else {
-    $tabquery = '';
+    $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', '', '', 1, '', '', true, '');
 }
 
-$tableau_resultat = baz_requete_recherche_fiches($tabquery, $ordre, $id_typeannonce, $categorie_nature);
-$tab_points_carto = array();
-
-foreach ($tableau_resultat as $fiche) {
-    $valeurs_fiche = json_decode($fiche["body"], true);
-    $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
-    if (isset($valeurs_fiche['carte_google'])) {
-        $tab = explode('|', $valeurs_fiche['carte_google']);
-        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='') {
-            $tab_points_carto[]= '{
-                    "title": "'.addslashes($valeurs_fiche['bf_titre']).'",
-                    "couleur": "'.addslashes($valeurs_fiche[$champcoul]).'",
-                    "description": \'<div class="BAZ_cadre_map">'.
-                    preg_replace("(\r\n|\n|\r|)", '', addslashes('<ul class="css-tabs"></ul>'.baz_voir_fiche(1, $valeurs_fiche))).'\',
-                    "lat": '.$tab[0].',
-                    "lng": '.$tab[1].'
-            }';
-        }
-    }
-}
-$points_carto = implode(',',$tab_points_carto);
-
-echo '<div id="mapcol" style="width: '.BAZ_GOOGLE_IMAGE_LARGEUR.'; height: '.BAZ_GOOGLE_IMAGE_HAUTEUR.'"></div>'."\n".'<ul id="markers"></ul>'."\n";
-$js = 
-'    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
-    <script src="http://www.google.com/jsapi"></script>
-
-    <script>
-    //variable pour la carte google
-    var map;
-
-    //tableau des marqueurs google
-    var arrMarkers = [];
-
-    //tableau des infobox google
-    var arrInfoWindows = [];
-
-    //image du marqueur ;
-    var image ;
-    image = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_noir.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imagejaune ;
-    imagejaune = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_jaune.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imagerouge ;
-    imagerouge = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_rouge.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imagevert ;
-    imagevert = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_vert.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imagebleu ;
-    imagebleu = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_bleu.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imageviolet ;
-    imageviolet = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_violet.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imageblanc ;
-    imageblanc = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_blanc.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-    var imageorange ;
-    imageorange = new google.maps.MarkerImage(\''.'tools/bazar/presentation/images/marker_orange.png'.'\',
-            //taille, point d\'origine, point d\'arrivee de l\'image
-            new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_MARQUEUR.'),
-            new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR.'));
-
-
-    //ombre du marqueur
-    var shadow = new google.maps.MarkerImage(\''.BAZ_IMAGE_OMBRE_MARQUEUR.'\',
-    // taille, point d\'origine, point d\'arrivee de l\'image de l\'ombre
-    new google.maps.Size('.BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR.'),
-    new google.maps.Point('.BAZ_COORD_ORIGINE_IMAGE_OMBRE_MARQUEUR.'),
-    new google.maps.Point('.BAZ_COORD_ARRIVEE_IMAGE_OMBRE_MARQUEUR.'));
-
-    //initialise la carte google
-    function initialize_cartocoul()
-    {
-        var myLatlng = new google.maps.LatLng('.$latitude.', '.$longitude.');
-        var myOptions = {
-          zoom: '.$zoom.',
-          center: myLatlng,
-          mapTypeId: google.maps.MapTypeId.'.$typecarto.',
-          navigationControl: '.BAZ_AFFICHER_NAVIGATION.',
-          navigationControlOptions: {style: google.maps.NavigationControlStyle.'.BAZ_STYLE_NAVIGATION.'},
-          mapTypeControl: '.BAZ_AFFICHER_CHOIX_CARTE.',
-          mapTypeControlOptions: {style: google.maps.MapTypeControlStyle.'.BAZ_STYLE_CHOIX_CARTE.'},
-          scaleControl: '.BAZ_AFFICHER_ECHELLE.',
-          scrollwheel: '.BAZ_PERMETTRE_ZOOM_MOLETTE.'
-        }
-        map = new google.maps.Map(document.getElementById("mapcol"), myOptions);
-
-        if ($("#markers li") != undefined) {
-            //tableau des points des fiches bazar
-            var places = [
-                '.$points_carto.'
-            ];
-            $.each(places, function(i, item){
-                $("#markers").append(\'<li><a href="#" rel="\' + i + \'">&nbsp;\' + (i+1) + \'&nbsp;-&nbsp;\' +item.title + \'</a></li>\');
-                var marker;
-                $couleur = item.couleur ;
-                switch ($couleur) {
-                    case "RED":
-                        {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: imagerouge,
-                                shadow: shadow,
-                                title: item.title
-                                });
-                        break;
-                        }
-                    case "BLU":
-                    {
-                    marker = new google.maps.Marker({
-                            position: new google.maps.LatLng(item.lat, item.lng),
-                            map: map,
-                            icon: imagebleu,
-                            shadow: shadow,
-                            title: item.title
-                            });
-                    break;
-                    }
-                    case "GRE":
-                        {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: imagevert,
-                                shadow: shadow,
-                                title: item.title
-                                });
-                        break;
-                        }
-                    case "YEL":
-                        {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: imagejaune,
-                                shadow: shadow,
-                                title: item.title
-                                });
-                        break;
-                        }
-                    case "PURP":
-                        {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: imageviolet,
-                                shadow: shadow,
-                                title: item.title
-                                });
-                        break;
-                        }
-                    case "ORA":
-                        {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: imageorange,
-                                shadow: shadow,
-                                title: item.title
-                                });
-                        break;
-                        }
-                    case "WHI":
-                        {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: imageblanc,
-                                shadow: shadow,
-                                title: item.title
-                                });
-                        break;
-                        }
-                    default: {
-                        marker = new google.maps.Marker({
-                                position: new google.maps.LatLng(item.lat, item.lng),
-                                map: map,
-                                icon: image,
-                                shadow: shadow,
-                                title: item.couleur
-                                });
-                    }
-                }
-
-
-
-                arrMarkers[i] = marker;
-                var infowindow = new google.maps.InfoWindow({
-                    content: item.description
-                });
-                arrInfoWindows[i] = infowindow;
-                    google.maps.event.addListener(marker, \'click\', function() {
-                    infowindow.open(map, marker);
-                    $("ul.css-tabs li").remove();
-                    $("fieldset.tab").each(function(i) {
-                                    $(this).parent(\'div.BAZ_cadre_fiche\').prev(\'ul.css-tabs\').append("<li class=\'liste" + i + "\'><a href=\"#\">"+$(this).find("legend:first").hide().html()+"</a></li>");
-                    });
-                    $("ul.css-tabs").tabs("fieldset.tab", { onClick: function(){} } );
-                });
-
-            });
-        }
-        ';
-
-    if ( defined('BAZ_JS_INIT_MAP') && BAZ_JS_INIT_MAP != '' && file_exists(BAZ_JS_INIT_MAP) ) {
-        $handle = fopen(BAZ_JS_INIT_MAP, "r");
-        $js .=  fread($handle, filesize(BAZ_JS_INIT_MAP));
-        fclose($handle);
-        $js .=  'var poly = createPolygon( Coords, "#002F0F");
-        poly.setMap(map);
-
-        ';
-    };
-
-    $js .=  '   }
-    initialize_cartocoul();
-    </script>'."\n";
-
-$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').$js;
+// affichage Ã  l'Ã©cran
+echo displayResultList($results, $params, false);

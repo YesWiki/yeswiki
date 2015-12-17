@@ -380,7 +380,7 @@ $(document).ready(function() {
   // Tags
   //bidouille pour les typeahead des champs tags
   $(".bootstrap-tagsinput input").on('keypress', function(){
-    $(this).attr("size", $(this).val().length + 1);
+    $(this).attr("size", $(this).val().length + 2);
   });
   $(".bootstrap-tagsinput").on('change', function(){
     $(this).find('input').val('');
@@ -390,7 +390,7 @@ $(document).ready(function() {
   });
   // on envoie la valeur au submit
   $("#formulaire").on('submit', function() {
-      $(this)>find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function(){
+      $(this).find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function(){
           $(this).tagsinput('add', $(this).tagsinput('input').val());
       });
   });

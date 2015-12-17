@@ -17,11 +17,11 @@ if (count($fiches)>0) :
         <?php
 
         // couleur de marqueur
-        $markercolor = getCustomValueForEntry($param['markercolor'], $param['markercolorfield'], $fiche, BAZ_MARKER_COLOR);
+        $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, BAZ_MARKER_COLOR);
         
         //icone de marqueur
-        $markericon = $param['markericonprefix']
-            .getCustomValueForEntry($param['markericon'], $param['markericonfield'], $fiche, BAZ_MARKER_ICON);
+        $icon = $param['iconprefix']
+            .getCustomValueForEntry($param['icon'], $param['iconfield'], $fiche, BAZ_MARKER_ICON);
 
         $tab = explode('|', $fiche['carte_google']);
         if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
@@ -37,9 +37,9 @@ if (count($fiches)>0) :
                         iconAnchor: '.$param['iconAnchor'].',
                         popupAnchor: '.$param['popupAnchor'].',
                         className: \'bazar-marker'.$param['smallmarker'].'\',
-                        html: \'<div class="bazar-entry icon-'.$markercolor.'" '
+                        html: \'<div class="bazar-entry icon-'.$color.'" '
                         .$fiche['html_data'].'>'
-                        .(!empty($markericon) ? '<i class="'.$markericon.'"></i>' : '')
+                        .(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
                         .'</div>\'
                     }),
                     title: \''.addslashes($fiche['bf_titre']).'\'

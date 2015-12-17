@@ -3571,8 +3571,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
         }
 
         // champs correspondants
-        if (!empty($param['correspondance'])) {
-            $tabcorrespondance = explode('=', trim($param['correspondance']));
+        if (!empty($params['correspondance'])) {
+            $tabcorrespondance = explode('=', trim($params['correspondance']));
             if (isset($tabcorrespondance[0])) {
                 if (isset($tabcorrespondance[1]) && isset($fiche[$tabcorrespondance[1]])) {
                     $fiche[$tabcorrespondance[0]] = $fiche[$tabcorrespondance[1]];
@@ -3778,18 +3778,18 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
             }
             $outputfilter .= ' collapse">'."\n";
             $outputfilter .= '<div class="panel-body">'."\n";
-            if (count($facettevalue[$index]) > 0) {
-                foreach ($list['label'] as $listkey => $label) {
-                    if (isset($facettevalue[$index][$listkey]) && !empty($facettevalue[$index][$listkey])) {
-                        $outputfilter .=  '<div class="checkbox">
-                        <input class="filter-checkbox" type="checkbox" id="'.$idkey.$listkey.'" name="'.$idkey.'" 
-                        value="'.htmlspecialchars($listkey).'">
-                        <label for="'.$idkey.$listkey.'"> '. $label .' (<span class="nb">'
-                        .$facettevalue[$index][$listkey].'</span>)
-                        </label></div>'."\n";
-                    }
+
+            foreach ($list['label'] as $listkey => $label) {
+                if (isset($facettevalue[$index][$listkey]) && !empty($facettevalue[$index][$listkey])) {
+                    $outputfilter .=  '<div class="checkbox">
+                    <input class="filter-checkbox" type="checkbox" id="'.$idkey.$listkey.'" name="'.$idkey.'" 
+                    value="'.htmlspecialchars($listkey).'">
+                    <label for="'.$idkey.$listkey.'"> '. $label .' (<span class="nb">'
+                    .$facettevalue[$index][$listkey].'</span>)
+                    </label></div>'."\n";
                 }
             }
+
             $outputfilter .=  '</div></div></div><!-- /.filter-box -->'."\n";
             ++$i;
             $first = false;
