@@ -68,8 +68,7 @@ switch ($GLOBALS['params']['vue']) {
         switch ($GLOBALS['params']['action']) {
             case BAZ_MOTEUR_RECHERCHE:
                 $output .= baz_rechercher(
-                    isset($_REQUEST['id_typeannonce']) ?
-                    $_REQUEST['id_typeannonce'] : $GLOBALS['params']['idtypeannonce'],
+                    $GLOBALS['params']['idtypeannonce'],
                     $GLOBALS['params']['categorienature']
                 );
                 break;

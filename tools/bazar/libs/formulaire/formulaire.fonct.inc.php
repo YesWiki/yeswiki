@@ -458,59 +458,33 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $checkbox_html.= "</div>\n</div>\n";
                 $formtemplate->addElement('html', $checkbox_html);
             } else {
-                require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/checkbox.php';
-                $i = 0;
-                $optioncheckbox = array('class' => 'element_checkbox');
-
-
-                foreach ($choixcheckbox as $key => $label) {
-                    if ($i == 0) {
-                        $tab_chkbox = $tableau_template[2];
-                    } else {
-                        $tab_chkbox = '&nbsp;';
-                    }
-
-                    //teste si la valeur de la liste doit etre cochee par defaut
-                    if (in_array($key, $tab)) {
-                        $defaultValues[$id.'['.$key.']'] = true;
-                    } else {
-                        $defaultValues[$id.'['.$key.']'] = false;
-                    }
-
-                    $checkbox[$i] = $formtemplate->createElement(
-                        'checkbox',
-                        $key,
-                        $tab_chkbox,
-                        $label,
-                        $optioncheckbox
-                    );
-                    $i++;
-                }
-
-                $squelette_checkbox = & $formtemplate->defaultRenderer();
-                $classrequired = '';
-                $req = '';
                 if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $classrequired .= ' chk_required';
                     $req = '<span class="symbole_obligatoire">&nbsp;*</span> ';
                 }
+                $checkbox_html = '<div class="control-group form-group">
+<label class="control-label col-sm-3">
+'.$req . $tableau_template[2] . $bulledaide.' :</label>
+<div class="controls col-sm-9"> 
+<div class="bazar-checkbox-cols'.$classrequired.'">';
+                foreach ($choixcheckbox as $key => $label) {
+                    //teste si la valeur de la liste doit etre cochee par defaut
+                    if (in_array($key, $tab)) {
+                        $chk = ' checked';
+                    } else {
+                        $chk = '';
+                    }
+                    $checkbox_html .= '<div class="checkbox">
+                <input class="element_checkbox" name="'.$id.'['.$key.']'.'" value="1"'
+                    .$chk.' id="'.$id.'['.$key.']'.'" type="checkbox">
+                <label for="'.$id.'['.$key.']'.'">'.$label.'</label>
+                </div>';
+                }
 
-                $squelette_checkbox->setGroupElementTemplate(
-                    '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n",
-                    $id
-                );
-                $squelette_checkbox->setGroupTemplate(
-                    '<div class="bazar-checkbox-cols">' . "\n" . '{content}' . "\n" . '</div>' . "\n",
-                    $id
-                );
-                $formtemplate->addGroup(
-                    $checkbox,
-                    $id,
-                    $req . $tableau_template[2] . $bulledaide,
-                    "\n"
-                );
-
-                $formtemplate->setDefaults($defaultValues);
+                $checkbox_html .= '</div>
+</div>
+</div>';
+                $formtemplate->addElement('html', $checkbox_html);
             }
         }
     } elseif ($mode == 'requete') {

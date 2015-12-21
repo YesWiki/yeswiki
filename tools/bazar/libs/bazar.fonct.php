@@ -974,11 +974,9 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         if ($mode == BAZ_CHOISIR_TYPE_FICHE) {
             if ($GLOBALS['params']['vue'] == BAZ_VOIR_SAISIR &&
                 isset($_REQUEST['id_typeannonce'])) {
-                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                    BAZ_ACTION_NOUVEAU_V);
+                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU_V);
             } else {
-                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                    BAZ_ACTION_NOUVEAU);
+                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU);
             }
         }
         if ($mode == BAZ_ACTION_NOUVEAU) {
@@ -986,11 +984,9 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 if (!isset($_POST['bf_titre'])
                     || (!isset($_POST['accept_condition']) &&
                         $GLOBALS['_BAZAR_']['condition'] != null)) {
-                    $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                        BAZ_ACTION_NOUVEAU);
+                    $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU);
                 } else {
-                    $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                        BAZ_ACTION_NOUVEAU_V);
+                    $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU_V);
                 }
             } else {
                 $mode = BAZ_CHOISIR_TYPE_FICHE;
@@ -1000,17 +996,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             if (!isset($_POST['bf_titre'])
                 || (!isset($_POST['accept_condition']) &&
                     $GLOBALS['_BAZAR_']['condition'] != null)) {
-                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                    BAZ_ACTION_MODIFIER);
+                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_MODIFIER);
             } else {
-                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                    BAZ_ACTION_MODIFIER_V);
+                $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_MODIFIER_V);
             }
             $lien_formulaire->addQueryString('id_fiche', $valeurs['id_fiche']);
         }
         if ($mode == BAZ_ACTION_MODIFIER_V) {
-            $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION,
-                BAZ_ACTION_MODIFIER_V);
+            $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_MODIFIER_V);
             $lien_formulaire->addQueryString('id_fiche', $valeurs['id_fiche']);
         }
     }
@@ -1153,16 +1146,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_NOUVEAU) {
         // Affichage du modele de formulaire
-        $res .= baz_afficher_formulaire_fiche('saisie', $formtemplate,
-            $url);
+        $res .= baz_afficher_formulaire_fiche('saisie', $formtemplate, $url);
     }
 
     //------------------------------------------------------------------------------------------------
     // CAS DE LA MODIFICATION D'UNE FICHE (FORMULAIRE DE MODIFICATION)
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_MODIFIER) {
-        $res .= baz_afficher_formulaire_fiche('modification',
-            $formtemplate, $url, $valeurs);
+        $res .= baz_afficher_formulaire_fiche('modification', $formtemplate, $url, $valeurs);
     }
 
     //------------------------------------------------------------------------------------------------
@@ -1217,11 +1208,13 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
  *
  * @return   string  code HTML avec formulaire
  */
-function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '',
-    $valeurs = '') {
+function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs = '')
+{
     $res = '';
     if (isset($valeurs['id_typeannonce'])) {
         $form = baz_valeurs_formulaire($valeurs['id_typeannonce']);
+    } elseif (isset($_GET['id_typeannonce'])) {
+        $form = baz_valeurs_formulaire($_GET['id_typeannonce']);
     } else {
         $form = baz_valeurs_formulaire($GLOBALS['params']['idtypeannonce']);
     }
@@ -3084,15 +3077,10 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
         0
     );
 
-    // y a t'il des mots clés pour le moteur de recherche
-    $data['search'] = isset($_REQUEST['recherche_mots_cles']) &&
-    !empty($_REQUEST['recherche_mots_cles']) ?
-    $_REQUEST['recherche_mots_cles'] : '';
-
-    //on recupere la liste des formulaires, a afficher dans une liste deroulante pour la recherche
+    // on recupere la liste des formulaires, a afficher dans une liste deroulante pour la recherche
     $tab_formulaires = baz_valeurs_tous_les_formulaires($categorienature, 'html', $typeannonce);
 
-    //on recupere le nb de types de fiches, pour plus tard
+    // on recupere le nb de types de fiches, pour plus tard
     $nb_type_de_fiches          = 0;
     $type_formulaire_select[''] = _t('BAZ_TOUS_TYPES_FICHES');
     if (is_array($tab_formulaires)) {
@@ -3105,12 +3093,12 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             }
         }
     }
+
     if ($nb_type_de_fiches > 1) {
         $data['forms'] = $type_formulaire_select;
     } else {
         $data['forms'] = '';
     }
-
     if (isset($_REQUEST['id_typeannonce']) &&
         !empty($_REQUEST['id_typeannonce'])) {
         $data['idform'] = $_REQUEST['id_typeannonce'];
@@ -3118,6 +3106,13 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
         $data['idform'] = $typeannonce[0];
     } else {
         $data['idform'] = '';
+    }
+
+    // y a t'il des mots clés pour le moteur de recherche
+    $data['search'] = '';
+    if (isset($_REQUEST['recherche_mots_cles']) && !empty($_REQUEST['recherche_mots_cles'])) {
+        $data['search'] = $_REQUEST['recherche_mots_cles'];
+        $_REQUEST['id_typeannonce'] = '';
     }
 
     // affichage du formulaire
@@ -3146,7 +3141,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
         $tableau_fiches = baz_requete_recherche_fiches(
             '',
             '',
-            $GLOBALS['params']['idtypeannonce'],
+            $data['idform'],
             $categorienature,
             1,
             '',
@@ -3155,7 +3150,8 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             (isset($_REQUEST['recherche_mots_cles'])) ?
             $_REQUEST['recherche_mots_cles'] : ''
         );
-        $res .= displayResultList($tableau_fiches, $GLOBALS['params']);
+        $shownbres = count($GLOBALS['params']['groups'])==0 || count($tableau_fiches)==0;
+        $res .= displayResultList($tableau_fiches, $GLOBALS['params'], $shownbres);
     }
 
     return $res;
@@ -3185,7 +3181,6 @@ function baz_requete_recherche_fiches(
     //requete pour recuperer toutes les PageWiki etant des fiches bazar
     $requete_pages_wiki_bazar_fiches =
     'SELECT DISTINCT resource FROM ' . BAZ_PREFIXE . 'triples ' .
-
     'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
     'ORDER BY resource ASC';
 
@@ -3447,118 +3442,6 @@ function baz_valeurs_tous_les_formulaires($categorie = '', $format = 'html', $id
  */
 function displayResultList($tableau_fiches, $params, $info_nb = true)
 {
-  /*  $res                = '';
-    $fiches['info_res'] = '';
-    if ($info_nb) {
-        $fiches['info_res'] .=
-        '<div class="alert alert-info">' . "\n" . _t('BAZ_IL_Y_A');
-        $nb_result = count($tableau_fiches);
-        if ($nb_result <= 1) {
-            $fiches['info_res'] .=
-            $nb_result . ' ' . _t('BAZ_FICHE_CORRESPONDANTE') . '</div>' .
-            "\n";
-        } else {
-            $fiches['info_res'] .=
-            $nb_result . ' ' . _t('BAZ_FICHES_CORRESPONDANTES') . '</div>' .
-            "\n";
-        }
-    }
-
-    $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
-
-    // Mise en place du Pager
-    require_once
-    BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR
-    . 'Pager/Pager.php';
-    $param = array('mode' => BAZ_MODE_DIVISION, 'perPage'          =>
-        BAZ_NOMBRE_RES_PAR_PAGE,
-        'delta'               => BAZ_DELTA,
-        'httpMethod'          => 'GET',
-        'extraVars'           => array_merge($_POST, $_GET), 'altNext' =>
-        _t('BAZ_SUIVANT'),
-        'altPrev'             => _t('BAZ_PRECEDENT'), 'nextImg'        =>
-        _t('BAZ_SUIVANT'), 'prevImg' =>
-        _t('BAZ_PRECEDENT'),
-        'itemData'            => $tableau_fiches);
-    $pager                 = &Pager::factory($param);
-    $data                  = $pager->getPageData();
-    $links                 = $pager->getLinks();
-    $fiches['pager_links'] = '<div class="bazar_numero">' . $pager
-        ->links . '</div>' . "\n";
-
-    $fiches['fiches'] = array();
-    foreach ($data as $fiche) {
-        $tab_valeurs_fiche = json_decode($fiche['body'], true);
-        $valeurs_fiche     = array();
-        foreach ($tab_valeurs_fiche as $key => $value) {
-            $valeurs_fiche[$key] = _convert($value, 'UTF-8');
-        }
-        $valeurs_fiche['html']      = baz_voir_fiche(0, $valeurs_fiche);
-        $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche);
-        if (baz_a_le_droit('supp_fiche', (isset($valeurs_fiche['createur']) ?
-            $valeurs_fiche['createur'] : ''))) {
-            $valeurs_fiche['lien_suppression'] = '<a href="' . $GLOBALS['wiki']
-                ->href('deletepage',
-                    $valeurs_fiche['id_fiche']) .
-
-            '" class="BAZ_lien_supprimer" onclick="javascript:return confirm(\'' .
-            _t('BAZ_CONFIRM_SUPPRIMER_FICHE') . ' ?\');"></a>' . "\n";
-        }
-        if (baz_a_le_droit('modif_fiche', (isset($valeurs_fiche['createur']) ?
-            $valeurs_fiche['createur'] : ''))) {
-            $valeurs_fiche['lien_edition'] = '<a href="' . $GLOBALS['wiki']
-                ->href('edit', $valeurs_fiche['id_fiche']) .
-            '" class="BAZ_lien_modifier"></a>' . "\n";
-        }
-        $valeurs_fiche['lien_voir_titre'] = '<a href="' . $GLOBALS['wiki']
-            ->href('',
-                $valeurs_fiche['id_fiche']) .
-        '" class="BAZ_lien_voir" title="Voir la fiche">' .
-        stripslashes($valeurs_fiche['bf_titre']) . '</a>' . "\n" . '</li>' .
-        "\n";
-        $valeurs_fiche['lien_voir'] = '<a href="' . $GLOBALS['wiki']->href('',
-            $valeurs_fiche['id_fiche']) .
-        '" class="BAZ_lien_voir" title="Voir la fiche"></a>' . "\n" . '</li>'
-        . "\n";
-
-        $fiches['fiches'][] = $valeurs_fiche;
-
-        //reinitialisation de l'url
-        $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
-        $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
-    }
-    include_once 'tools/bazar/libs/squelettephp.class.php';
-
-    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $template = (isset($_GET['template']) &&
-        (is_file('templates/bazar/' . $_GET['template'])
-            || is_file('tools/bazar/presentation/templates/' .
-                $_GET['template'])
-            || is_file('themes/tools/bazar/templates/' . $_GET['template']))) ?
-    $_GET['template'] : $GLOBALS['params']['template'];
-
-    if (is_file('themes/tools/bazar/templates/' . $template)) {
-        $template = 'themes/tools/bazar/templates/' . $template;
-    } else {
-        if (is_file('templates/bazar/' . $template)) {
-            $template = 'templates/bazar/' . $template;
-        } else {
-            $template = 'tools/bazar/presentation/templates/' . $template;
-        }
-    }
-    $squelcomment = new SquelettePhp($template);
-    $squelcomment->set($fiches);
-    $res .= $squelcomment->analyser();
-
-    // Nettoyage de l'url
-    $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
-    $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
-    $GLOBALS['_BAZAR_']['url']->removeQueryString('recherche_avancee');
-
-    return $res;*/
-
-
-
     // tableau des valeurs "facettables" avec leur nombres
     $facettevalue = array();
 
@@ -3595,8 +3478,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
                 if (!empty($value)) {
                     $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
                         || in_array($key, $params['groups']);
-                    // champs génériques des métadonnées
                     if (in_array($key, array('id_typeannonce', 'createur')) && $facetteasked) {
+                        // champs génériques des métadonnées
                         if ($key == 'id_typeannonce') {
                             $value = $fiche['id_typeannonce'].'|'.
                               $valform['bn_label_nature'];
@@ -3606,7 +3489,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
                         } else {
                             $facettevalue[$key][$value] = 1;
                         }
-                    } else { // champs type liste ou checkbox
+                    } else {
+                        // liste, checkbox, listefiche ou checkboxfiche
                         $templatef = $valform['template'];
                         if (is_array($templatef)) {
                             foreach ($templatef as $id => $val) {
@@ -3615,13 +3499,32 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
                                         $templatef[$id][0],
                                         array('checkbox', 'liste', 'scope')
                                     );
+                                    $islistforeign = in_array(
+                                        $templatef[$id][0],
+                                        array('checkboxfiche', 'listefiche')
+                                    );
                                     if ($islist && $facetteasked) {
+                                        // liste ou checkbox
                                         $tabval = explode(',', $value);
                                         foreach ($tabval as $val) {
-                                            if (isset($facettevalue[$templatef[$id][1].'|'.$key][$val])) {
-                                                ++$facettevalue[$templatef[$id][1].'|'.$key][$val];
+                                            $facettevalue[$key]['type'] = 'liste';
+                                            $facettevalue[$key]['source'] = $templatef[$id][1];
+                                            if (isset($facettevalue[$key][$val])) {
+                                                ++$facettevalue[$key][$val];
                                             } else {
-                                                $facettevalue[$templatef[$id][1].'|'.$key][$val] = 1;
+                                                $facettevalue[$key][$val] = 1;
+                                            }
+                                        }
+                                    } elseif ($islistforeign && $facetteasked) {
+                                        // listefiche ou checkboxfiche
+                                        $facettevalue[$key]['type'] = 'fiche';
+                                        $facettevalue[$key]['source'] = $templatef[$id][1];
+                                        $tabval = explode(',', $value);
+                                        foreach ($tabval as $val) {
+                                            if (isset($facettevalue[$key][$val])) {
+                                                ++$facettevalue[$key][$val];
+                                            } else {
+                                                $facettevalue[$key][$val] = 1;
                                             }
                                         }
                                     }
@@ -3752,10 +3655,21 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
         $first = true;
         
         foreach ($params['groups'] as $id) {
-            $index = preg_replace('/^(liste|checkbox)/U', '', $id).'|'.$id;
-            $tabkey = explode('|', $index);
-            $list = baz_valeurs_liste($tabkey[0]);
-            $idkey = htmlspecialchars($tabkey[1]);
+            // on formatte la liste des resultats en fonction de la source
+            if ($facettevalue[$id]['type'] == 'liste') {
+                $list = baz_valeurs_liste($facettevalue[$id]['source']);
+            } elseif ($facettevalue[$id]['type'] == 'fiche') {
+                $form = baz_valeurs_formulaire($facettevalue[$id]['source']);
+                $list['titre_liste'] = $form['bn_label_nature'];
+                foreach ($facettevalue[$id] as $idfiche => $nb) {
+                    if ($idfiche != 'source' && $idfiche != 'type') {
+                        $f = baz_valeurs_fiche($idfiche);
+                        $list['label'][$idfiche] = $f['bf_titre'];
+                    }
+                }
+            }
+            
+            $idkey = htmlspecialchars($id);
             $outputfilter .=  '<div class="filter-box panel panel-default '.$idkey.'" data-id="'.$idkey.'">'."\n";
             $titlefilterbox = '';
             if (isset($params['groupicons'][$i]) && !empty($params['groupicons'][$i])) {
@@ -3780,12 +3694,12 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
             $outputfilter .= '<div class="panel-body">'."\n";
 
             foreach ($list['label'] as $listkey => $label) {
-                if (isset($facettevalue[$index][$listkey]) && !empty($facettevalue[$index][$listkey])) {
+                if (isset($facettevalue[$id][$listkey]) && !empty($facettevalue[$id][$listkey])) {
                     $outputfilter .=  '<div class="checkbox">
                     <input class="filter-checkbox" type="checkbox" id="'.$idkey.$listkey.'" name="'.$idkey.'" 
                     value="'.htmlspecialchars($listkey).'">
                     <label for="'.$idkey.$listkey.'"> '. $label .' (<span class="nb">'
-                    .$facettevalue[$index][$listkey].'</span>)
+                    .$facettevalue[$id][$listkey].'</span>)
                     </label></div>'."\n";
                 }
             }
@@ -4173,34 +4087,23 @@ function getAllParameters($wiki)
         }
     }
 
-    // identifiant du/des formulaire/s
-    if (isset($_REQUEST['id']) &&
-        !empty($_REQUEST['id'])) {
-        $param['idtypeannonce'] = $_REQUEST['id'];
+    // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
+    $param['idtypeannonce'] = $wiki->GetParameter('id');
+    if (empty($param['id'])) {
+        $param['idtypeannonce'] = '';
     } else {
-        // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-        $param['idtypeannonce'] = $wiki->GetParameter('id');
-        if (empty($param['id'])) {
+        $param['idtypeannonce'] = explode(',', $param['idtypeannonce']);
+        $param['idtypeannonce'] = array_map('trim', $param['idtypeannonce']);
+    }
+    // retrocompatibilite avec le parametre idtypeannonce
+    if (empty($param['id_typeannonce'])) {
+        // identifiant du formulaire (plusieures valuers possibles, séparées par des virgules)
+        $param['idtypeannonce'] = $wiki->GetParameter('idtypeannonce');
+        if (empty($param['idtypeannonce'])) {
             $param['idtypeannonce'] = '';
         } else {
             $param['idtypeannonce'] = explode(',', $param['idtypeannonce']);
             $param['idtypeannonce'] = array_map('trim', $param['idtypeannonce']);
-        }
-    }
-    // retrocompatibilite avec le parametre idtypeannonce
-    if (empty($param['id_typeannonce'])) {
-        if (isset($_REQUEST['id_typeannonce']) &&
-            !empty($_REQUEST['id_typeannonce'])) {
-            $param['idtypeannonce'] = $_REQUEST['id_typeannonce'];
-        } else {
-            // identifiant du formulaire (plusieures valuers possibles, séparées par des virgules)
-            $param['idtypeannonce'] = $wiki->GetParameter('idtypeannonce');
-            if (empty($param['idtypeannonce'])) {
-                $param['idtypeannonce'] = '';
-            } else {
-                $param['idtypeannonce'] = explode(',', $param['idtypeannonce']);
-                $param['idtypeannonce'] = array_map('trim', $param['idtypeannonce']);
-            }
         }
     }
 
