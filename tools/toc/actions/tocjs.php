@@ -1,20 +1,25 @@
 <?php
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+        die("acc&egrave;s direct interdit");
 }
 
 $tag = $this->GetPageTag();
 $class = $this->GetParameter("class");
 $offset = $this->GetParameter("offset");
-if (empty($offset)) $offset = '70';
+if (empty($offset)) {
+    $offset = '70';
+}
 $align = $this->GetParameter("align");
-if (empty($align) || $align != 'left') $align = 'right';
+if (empty($align) || $align != 'left') {
+    $align = 'right';
+}
 $size = $this->GetParameter("size");
-if (empty($size)) $size = '3';
-$contentsize = 12 - intval($size); 
+if (empty($size)) {
+    $size = '3';
+}
+$contentsize = 12 - intval($size);
 
 $script = '
 var align = "'.$align.'";
@@ -50,6 +55,7 @@ $.gajus
     var $window = $(window)
     var $body = $(document.body)
     var pagestartHeight = page.offset().top;
+    console.log(\'pagestartHeight\', pagestartHeight);
     var $sideBar = $(\'#tocjs-'.$tag.'\');
 
     $body.scrollspy({
@@ -87,8 +93,8 @@ $.gajus
             }
         })
         $sideBar.on(\'affixed.bs.affix\', function (e) {
-            console.log($sideBar.css(\'width\'));
-          //$sideBar.css(\'top\', '.$offset.');
+            //console.log($sideBar.css(\'width\'));
+          $sideBar.css(\'top\', pagestartHeight);
         })
         $sideBar.on(\'affix-top.bs.affix\', function (e) {
           $sideBar.css(\'top\', 0);

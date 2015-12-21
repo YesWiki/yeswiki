@@ -70,7 +70,10 @@ if (empty($list)) {
     // on recupere les parameres pour une requete specifique
     if (isset($_GET['query'])) {
         $query = $_GET['query'];
+    } else {
+        $query = '';
     }
+    unset($_GET['query']);
     if (!empty($query)) {
         $tabquery = array();
         $tableau = array();
@@ -143,7 +146,7 @@ if (empty($list)) {
     $output = '';
     $first = true;
     foreach ($fiches['fiches'] as $fiche) {
-        $fiche['multipleid'] = htmlspecialchars($fiche[$id].$fiche['id_fiche']);
+        $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])).$fiche['id_fiche']);
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat)>0) {
@@ -157,10 +160,11 @@ if (empty($list)) {
             } else {
                 $first = false;
             }
-            $output .=  '<h3 class="collapsed yeswiki-list-category" data-target="#collapse_'.trim($fiche[$id]).
-                '" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i> '.
-                $listvalues['label'][$fiche[$id]].'</h3>
-                <div id="collapse_'.trim($fiche[$id]).'" class="collapse">';
+            $output .=  '<h3 class="collapsed yeswiki-list-category" '
+                .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
+                .'" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i> '
+                .$listvalues['label'][$fiche[$id]].'</h3>
+                <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }
         $currentlabel = $fiche[$id];
         // on rétablit les valeurs multiples
@@ -178,4 +182,7 @@ if (empty($list)) {
     // it's not the first time in the loop so we must close previously opened div
     $output .=  '</div>'."\n";
     echo $output;
+
+    $$_GET['query'] = $query;
+
 }

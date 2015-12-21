@@ -9,7 +9,7 @@ if (!$this->HasAccess('read')) {
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->Header());
         $output .= $header[0] . "<body>\n<div class=\"container\">\n";
-        $output .= $this->Format($contenu["body"]);
+        $output .= $this->Format($contenu["body"]).'</div>';
         // on recupere juste les javascripts et la fin des balises body et html
         $output .= $this->Footer();
         $plugin_output_new = $output;
@@ -25,3 +25,4 @@ if (!$this->HasAccess('read')) {
         );
     }
 }
+

@@ -208,12 +208,6 @@ box-shadow: 2px 2px 15px 0px #444;
   background-origin:padding-box;
   background-position:0 0;
   background-repeat: no-repeat;
-  width:100%;
-  display: table;
-}
-.background-image .container {
-    display: table-cell;
-    vertical-align: middle;
 }
 .background-image.full-height {
   height: 100vh !important;

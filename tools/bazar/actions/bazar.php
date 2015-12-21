@@ -26,14 +26,14 @@
 
 
 /**
- * bazar.php
+ * bazar.php.
  *
  * Description :
  *
- *@package wkbazar
  *
  *@author        Florian SCHMITT <florian@outils-reseaux.org>
  *@copyright     Florian SCHMITT 2008
+ *
  *@version       $Revision: 1.13 $ $Date: 2010-12-15 11:15:45 $
  *  +------------------------------------------------------------------------------------------------------+
  */
@@ -42,235 +42,129 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
-//error_reporting(E_ALL);
 // recuperation des parametres
-$action = $this->GetParameter(BAZ_VARIABLE_ACTION);
-if (!empty($action)) {
-    $_GET[BAZ_VARIABLE_ACTION] = $action;
-}
+$GLOBALS['params'] = getAllParameters($this);
 
-$vue = $this->GetParameter(BAZ_VARIABLE_VOIR);
-if (!empty($vue) && !isset($_GET[BAZ_VARIABLE_VOIR])) {
-    $_GET[BAZ_VARIABLE_VOIR] = $vue;
-} elseif (!isset($_GET[BAZ_VARIABLE_VOIR])) {
-    // si rien n'est donne, on met la vue de consultation
-    $_GET[BAZ_VARIABLE_VOIR] = BAZ_VOIR_CONSULTER;
-}
-
-// ordre d'affichage des fiches : chronologique ou alphabetique
-$GLOBALS['_BAZAR_']['tri'] = $this->GetParameter('tri');
-if (empty($GLOBALS['_BAZAR_']['tri'])) {
-    $GLOBALS['_BAZAR_']['tri'] = 'chronologique';
-}
-
-// afficher le menu de vues bazar ?
-$GLOBALS['_BAZAR_']['affiche_menu'] = $this->GetParameter("voirmenu");
-
-// template a utiliser pour afficher les resultats de la recherche
-$GLOBALS['_BAZAR_']['templates'] = $this->GetParameter("template");
-
-if (empty($GLOBALS['_BAZAR_']['templates']) || (!is_file('templates/bazar/' . $GLOBALS['_BAZAR_']['templates']) &&
-    is_file('tools/bazar/presentation/templates/' . $GLOBALS['_BAZAR_']['templates']) &&
-    !is_file('themes/tools/bazar/templates/' . $GLOBALS['_BAZAR_']['templates']))) {
-    $GLOBALS['_BAZAR_']['templates'] = BAZ_TEMPLATE_LISTE_DEFAUT;
-}
-
-// si un identifiant fiche est renseigné, on récupère toutes les valeurs associées
-if (isset($_REQUEST['id_fiche'])) {
-    $GLOBALS['_BAZAR_']['id_fiche'] = $_REQUEST['id_fiche'];
-    
-    // on récupère les valeurs de la fiche
-    $GLOBALS['_BAZAR_']['valeurs_fiche'] = baz_valeurs_fiche($GLOBALS['_BAZAR_']['id_fiche']);
-    if ($GLOBALS['_BAZAR_']['valeurs_fiche']) {
-        $GLOBALS['_BAZAR_']['id_typeannonce'] = $GLOBALS['_BAZAR_']['valeurs_fiche']['id_typeannonce'];
-        
-        // on récupère aussi les valeurs générales du type de fiche aussi
-        $tab_nature = baz_valeurs_formulaire($GLOBALS['_BAZAR_']['id_typeannonce']);
-        $GLOBALS['_BAZAR_']['typeannonce'] = $tab_nature['bn_label_nature'];
-        $GLOBALS['_BAZAR_']['condition'] = $tab_nature['bn_condition'];
-        $GLOBALS['_BAZAR_']['template'] = $tab_nature['bn_template'];
-        $GLOBALS['_BAZAR_']['commentaire'] = $tab_nature['bn_commentaire'];
-        $GLOBALS['_BAZAR_']['appropriation'] = $tab_nature['bn_appropriation'];
-        $GLOBALS['_BAZAR_']['class'] = $tab_nature['bn_label_class'];
-        $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
-    } else {
-        $GLOBALS['_BAZAR_']['id_fiche'] = null;
-        exit('<div class="alert alert-danger">'._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').'</div>');
-    }
-} else {
-    // sinon on récupère les paramètres passés par l'action
-    $GLOBALS['_BAZAR_']['id_fiche'] = null;
-    $GLOBALS['_BAZAR_']['id_typeannonce'] = $this->GetParameter("idtypeannonce");
-    
-    if (empty($GLOBALS['_BAZAR_']['id_typeannonce'])) {
-        
-        // si la valeur n'est pas passée en paramètre, on vérifie si l'application ne l'a pas initialisé
-        if (isset($_REQUEST['id_typeannonce']) && $_REQUEST['id_typeannonce'] != 'toutes' &&
-            $_REQUEST['id_typeannonce'] != '') {
-            $GLOBALS['_BAZAR_']['id_typeannonce'] = $_REQUEST['id_typeannonce'];
-            $tab_nature = baz_valeurs_formulaire($GLOBALS['_BAZAR_']['id_typeannonce']);
-            $GLOBALS['_BAZAR_']['typeannonce'] = $tab_nature['bn_label_nature'];
-            $GLOBALS['_BAZAR_']['condition'] = $tab_nature['bn_condition'];
-            $GLOBALS['_BAZAR_']['template'] = $tab_nature['bn_template'];
-            $GLOBALS['_BAZAR_']['commentaire'] = $tab_nature['bn_commentaire'];
-            $GLOBALS['_BAZAR_']['appropriation'] = $tab_nature['bn_appropriation'];
-            $GLOBALS['_BAZAR_']['class'] = $tab_nature['bn_label_class'];
-            $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
-            $GLOBALS['_BAZAR_']['choix_categorie'] = false;
-        } else {
-            // on met sur "toutes" sinon
-            $GLOBALS['_BAZAR_']['id_typeannonce'] = 'toutes';
-            $categorie_nature = $this->GetParameter("categorienature");
-            if (!empty($categorie_nature)) {
-                $GLOBALS['_BAZAR_']['categorie_nature'] = $categorie_nature;
-            } else {
-                //si rien n'est donne, on affiche toutes les categories
-                $GLOBALS['_BAZAR_']['categorie_nature'] = 'toutes';
-            }
-            $GLOBALS['_BAZAR_']['choix_categorie'] = true;
-        }
-    } else {
-        $GLOBALS['_BAZAR_']['choix_categorie'] = false;
-    }
-    
-    // si l'on connait le type de fiche, on prend toutes les infos
-    if ($GLOBALS['_BAZAR_']['id_typeannonce'] != 'toutes') {
-        $_REQUEST['id_typeannonce'] = $GLOBALS['_BAZAR_']['id_typeannonce'];
-        $tab_nature = baz_valeurs_formulaire($GLOBALS['_BAZAR_']['id_typeannonce']);
-        $GLOBALS['_BAZAR_']['typeannonce'] = $tab_nature['bn_label_nature'];
-        $GLOBALS['_BAZAR_']['condition'] = $tab_nature['bn_condition'];
-        $GLOBALS['_BAZAR_']['template'] = $tab_nature['bn_template'];
-        $GLOBALS['_BAZAR_']['commentaire'] = $tab_nature['bn_commentaire'];
-        $GLOBALS['_BAZAR_']['appropriation'] = $tab_nature['bn_appropriation'];
-        $GLOBALS['_BAZAR_']['class'] = $tab_nature['bn_label_class'];
-        $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
-    }
-}
-
-// utilisateur
-$GLOBALS['_BAZAR_']['nomwiki'] = $GLOBALS['wiki']->GetUser();
-
-// variable d'affichage du bazar
+// variable d'affichage à l'écran
 $output = '';
 
 // +------------------------------------------------------------------------------------------------------+
 // |                                            CORPS du PROGRAMME                                        |
 // +------------------------------------------------------------------------------------------------------+
 
-if ($GLOBALS['_BAZAR_']['affiche_menu'] != '0') {
-    $output.= baz_afficher_menu();
+// si c'est demandé, on affiche le menu
+if ($GLOBALS['params']['voirmenu'] != '0') {
+    $menuitems = array_map('trim', explode(',', $GLOBALS['params']['voirmenu']));
+    $output .= baz_afficher_menu($menuitems);
 }
 
-if (isset($_GET['message'])) {
-    $output .= '<div class="alert alert-success">'."\n".
-        '<a data-dismiss="alert" class="close" type="button">&times;</a>'."\n";
-    if ($_GET['message'] == 'ajout_ok') {
-        $output .= _t('BAZ_FICHE_ENREGISTREE') . '  <a href="' . $GLOBALS['wiki']->href(
-            '',
-            $this->getPageTag(),
-            BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_SAISIR . '&id_typeannonce=' . $GLOBALS['_BAZAR_']['id_typeannonce']
-        ).'" class="btn-sm btn btn-primary">' . _t('BAZ_ADD_NEW_ENTRY') . '</a>';
-    }
-    if ($_GET['message'] == 'modif_ok') {
-        $output .= _t('BAZ_FICHE_MODIFIEE').'  <a href="' . '#' . '" class="btn-sm btn btn-primary">'.
-        _t('BAZ_ADD_MODIFY_ENTRY_AGAIN') . '</a>';
-    }
-    if ($_GET['message'] == 'delete_ok') {
-        $output .= _t('BAZ_FICHE_SUPPRIMEE');
-    }
-    $output .= '</div>' . "\n";
-}
-
-if (isset($_GET[BAZ_VARIABLE_VOIR])) {
-    switch ($_GET[BAZ_VARIABLE_VOIR]) {
-        case BAZ_VOIR_CONSULTER:
-            if (isset($_GET[BAZ_VARIABLE_ACTION])) {
-                switch ($_GET[BAZ_VARIABLE_ACTION]) {
-                    case BAZ_MOTEUR_RECHERCHE:
-                        $output .= baz_rechercher(
-                            $GLOBALS['_BAZAR_']['id_typeannonce'],
-                            $GLOBALS['_BAZAR_']['categorie_nature']
-                        );
-                        break;
-                    case BAZ_VOIR_FICHE:
-                        $output.= (isset($GLOBALS['_BAZAR_']['valeurs_fiche']) ?
-                            baz_voir_fiche(1, $GLOBALS['_BAZAR_']['valeurs_fiche']) :
-                            baz_voir_fiche(1, $GLOBALS['_BAZAR_']['id_fiche']));
-                        break;
-                }
-            } else {
-                $output.= baz_rechercher(
-                    $GLOBALS['_BAZAR_']['id_typeannonce'],
-                    $GLOBALS['_BAZAR_']['categorie_nature']
+// on affiche les infos correspondantes à la vue
+switch ($GLOBALS['params']['vue']) {
+    case BAZ_VOIR_CONSULTER:
+        switch ($GLOBALS['params']['action']) {
+            case BAZ_MOTEUR_RECHERCHE:
+                $output .= baz_rechercher(
+                    $GLOBALS['params']['idtypeannonce'],
+                    $GLOBALS['params']['categorienature']
                 );
-            }
-            break;
-        case BAZ_VOIR_MES_FICHES:
-            $output.= baz_afficher_liste_fiches_utilisateur();
-            break;
-        case BAZ_VOIR_S_ABONNER:
-            if (isset($_GET[BAZ_VARIABLE_ACTION])) {
-                switch ($_GET[BAZ_VARIABLE_ACTION]) {
-                    case BAZ_LISTE_RSS:
-                        $output.= baz_liste_rss();
-                        break;
-                    case BAZ_VOIR_FLUX_RSS:
-                        exit(baz_afficher_flux_rss());
-                        break;
+                break;
+            case BAZ_VOIR_FICHE:
+                if (isset($_REQUEST['id_fiche'])) {
+                    $fiche = baz_valeurs_fiche($_REQUEST['id_fiche']);
+                    if (!is_array($fiche)) {
+                        $output .= '<div class="alert alert-danger">'
+                            ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '.$_REQUEST['id_fiche'].'</div>';
+                    } else {
+                        $output .= baz_voir_fiche(1, $fiche);
+                    }
+                } else {
+                    $output = '<div class="alert alert-danger">'._t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE').'</div>';
                 }
-            } else {
-                $output.= baz_liste_rss();
-            }
-            break;
-        case BAZ_VOIR_SAISIR:
-            if (isset($_GET[BAZ_VARIABLE_ACTION])) {
-                switch ($_GET[BAZ_VARIABLE_ACTION]) {
-                    case BAZ_ACTION_SUPPRESSION:
-                        $output.= baz_suppression($_GET['id_fiche']);
-                        break;
-                    case BAZ_ACTION_PUBLIER:
-                        $output.= publier_fiche(1) . baz_voir_fiche(1, $GLOBALS['_BAZAR_']['id_fiche']);
-                        break;
-                    case BAZ_ACTION_PAS_PUBLIER:
-                        $output.= publier_fiche(0) . baz_voir_fiche(1, $GLOBALS['_BAZAR_']['id_fiche']);
-                        break;
-                    default:
-                        $output.= baz_formulaire($_GET[BAZ_VARIABLE_ACTION]);
-                        break;
-                }
-            } else {
-                $_GET[BAZ_VARIABLE_ACTION] = BAZ_CHOISIR_TYPE_FICHE;
-                $output.= baz_formulaire($_GET[BAZ_VARIABLE_ACTION]);
-            }
-            break;
-        case BAZ_VOIR_FORMULAIRE:
-            $output.= baz_gestion_formulaire();
-            break;
-        case BAZ_VOIR_LISTES:
-            $output.= baz_gestion_listes();
-            break;
-        case BAZ_VOIR_ADMIN:
-            if (isset($_GET[BAZ_VARIABLE_ACTION])) {
-                $output.= baz_formulaire($_GET[BAZ_VARIABLE_ACTION]);
-            }
-            break;
-        case BAZ_VOIR_GESTION_DROITS:
-            $output.= baz_gestion_droits();
-            break;
-        case BAZ_VOIR_IMPORTER:
-            $output.= baz_afficher_formulaire_import();
-            break;
-        case BAZ_VOIR_EXPORTER:
-            $output.= baz_afficher_formulaire_export();
-            break;
-        default:
-            $output.= baz_rechercher($GLOBALS['_BAZAR_']['id_typeannonce']);
-    }
+                break;
+            default:
+                $output .= baz_rechercher(
+                    isset($_REQUEST['id_typeannonce']) ?
+                    $_REQUEST['id_typeannonce'] : $GLOBALS['params']['idtypeannonce'],
+                    $GLOBALS['params']['categorienature']
+                );
+                break;
+        }
+        break;
+    case BAZ_VOIR_MES_FICHES:
+        $output .= baz_afficher_liste_fiches_utilisateur();
+        break;
+    case BAZ_VOIR_S_ABONNER:
+        switch ($GLOBALS['params']['action']) {
+            case BAZ_LISTE_RSS:
+                $output .= baz_liste_rss();
+                break;
+            case BAZ_VOIR_FLUX_RSS:
+                exit(baz_afficher_flux_rss());
+                break;
+            default:
+                $output .= baz_liste_rss();
+                break;
+        }
+        break;
+    case BAZ_VOIR_SAISIR:
+        switch ($GLOBALS['params']['action']) {
+            case BAZ_ACTION_SUPPRESSION:
+                $output .= baz_suppression($_REQUEST['id_fiche']);
+                break;
+            case BAZ_ACTION_PUBLIER:
+                $output .= publier_fiche(1).baz_voir_fiche(1, $_REQUEST['id_fiche']);
+                break;
+            case BAZ_ACTION_PAS_PUBLIER:
+                $output .= publier_fiche(0).baz_voir_fiche(1, $_REQUEST['id_fiche']);
+                break;
+            case BAZ_ACTION_NOUVEAU:
+                // Affichage du formulaire du saisie d'une' fiche
+                $output .= baz_formulaire(BAZ_ACTION_NOUVEAU);
+                break;
+            case BAZ_ACTION_MODIFIER:
+                // Affichage du formulaire de modification d'une fiche
+                $output .= baz_formulaire(BAZ_ACTION_MODIFIER);
+                break;
+            case BAZ_ACTION_NOUVEAU_V:
+                // Affichage du formulaire du saisie d'une' fiche
+                $output .= baz_formulaire(BAZ_ACTION_NOUVEAU_V);
+                break;
+            case BAZ_ACTION_MODIFIER_V:
+                // Affichage du formulaire de modification d'une fiche
+                $output .= baz_formulaire(BAZ_ACTION_MODIFIER_V);
+                break;
+            default:
+                // Choix du type de fiche à saisir
+                $output .= baz_formulaire(BAZ_CHOISIR_TYPE_FICHE);
+                break;
+        }
+        break;
+    case BAZ_VOIR_FORMULAIRE:
+        $output .= baz_gestion_formulaire();
+        break;
+    case BAZ_VOIR_LISTES:
+        $output .= baz_gestion_listes();
+        break;
+    case BAZ_VOIR_GESTION_DROITS:
+        $output .= baz_gestion_droits();
+        break;
+    case BAZ_VOIR_IMPORTER:
+        $output .= baz_afficher_formulaire_import();
+        break;
+    case BAZ_VOIR_EXPORTER:
+        $output .= baz_afficher_formulaire_export();
+        break;
+    default:
+        $output .= baz_rechercher(
+            isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : $GLOBALS['params']['idtypeannonce']
+        );
+        break;
 }
+
 
 // affichage de la page
 echo $output;

@@ -1,0 +1,36 @@
+<form action="<?php echo $url; ?>" method="post" name="search-form" id="search-form" class="form-horizontal">
+    <div class="bazar-search control-group">
+        <div class="input-group input-prepend input-append">
+            <span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
+            <input type="text" value="<?php echo $search; ?>" name="recherche_mots_cles"
+                    placeholder="<?php echo _t('BAZ_MOT_CLE'); ?>" maxlength="255" class="form-control input-lg">
+            <?php
+            if (!empty($forms)) : ?>
+            <span class="input-group-btn" style="width:auto;max-width:240px;">
+                <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id_typeannonce">
+                    <?php
+                    foreach ($forms as $key => $form) : ?>
+                    <option 
+                        value="<?php echo $key; ?>" 
+                        <?php
+                        if ($idform == $key) {
+                            echo 'selected';
+                        } ?>>
+                        <?php echo $form; ?>
+                    </option>
+                    <?php
+                    endforeach; ?>
+                </select>
+            </span>
+            <?php
+            elseif (!empty($idform)) : ?>
+                <input type="hidden" name="id_typeannonce" value="<?php echo $idform; ?>">
+            <?php   
+            endif; ?>
+            <span class="input-group-btn">
+                <input value="<?php echo _t('BAZ_RECHERCHER'); ?>" name="rechercher"
+                    class="btn btn-primary btn-lg" type="submit">
+            </span>
+        </div>
+    </div>
+</form> <!-- /#search-form -->

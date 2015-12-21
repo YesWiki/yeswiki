@@ -51,18 +51,18 @@ if (!defined("WIKINI_VERSION")) {
 //error_reporting(E_ALL & E_STRICT);
 
 //chemin relatif d'acces au bazar
-define('BAZ_CHEMIN', 'tools' . DIRECTORY_SEPARATOR . 'bazar' . DIRECTORY_SEPARATOR);
-define('BAZ_CHEMIN_UPLOAD', 'files' . DIRECTORY_SEPARATOR);
+define('BAZ_CHEMIN', 'tools/bazar/');
+define('BAZ_CHEMIN_UPLOAD', 'files/');
 
 //bouh! c'est pas propre! c'est a cause de PEAR et de ses includes
-set_include_path(BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . PATH_SEPARATOR . get_include_path());
+set_include_path(BAZ_CHEMIN.'libs/vendor/'.PATH_SEPARATOR.get_include_path());
 
 //librairies PEAR
 //require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
-require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR . 'Net' . DIRECTORY_SEPARATOR . 'URL.php';
+require_once BAZ_CHEMIN.'libs/vendor/Net/URL.php';
 
 //principales fonctions de bazar
-require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'bazar.fonct.php';
+require_once BAZ_CHEMIN.'libs/bazar.fonct.php';
 
 //prefixe des tables bazar
 define('BAZ_PREFIXE', $wakkaConfig['table_prefix']);
@@ -116,8 +116,9 @@ $resultat = $GLOBALS['wiki']->query($req);
 define('BAZ_VARIABLE_VOIR', 'vue');
 define('BAZ_VARIABLE_ACTION', 'action');
 
-// Indique les onglets de vues a afficher.
-define('BAZ_VOIR_AFFICHER', 'mes_fiches,consulter,rss,saisir,formulaire,listes,importer,exporter');
+// Indique les onglets de vues a afficher. 
+// possibilités : mes_fiches,consulter,rss,saisir,formulaire,listes,importer,exporter
+define('BAZ_VOIR_AFFICHER', 'consulter,saisir,formulaire,listes,importer,exporter');
 
 // Permet d'indiquer la vue par defaut si la variable vue n'est pas defini
 
@@ -193,16 +194,36 @@ define('BAZ_NB_ENTREES_FLUX_RSS', 20);
  //nombre maximum d'articles présents dans le flux rss
 
 //Logo du site indique dans les flux rss
-define('BAZ_RSS_LOGOSITE', (isset($wakkaConfig['baz_rss_logosite'])) ? $wakkaConfig['baz_rss_logosite'] : 'http://outils-reseaux.org/tools/templates/themes/outils-reseaux/images/Puce-titre.gif');
+define(
+    'BAZ_RSS_LOGOSITE',
+    (isset($wakkaConfig['baz_rss_logosite'])) ?
+    $wakkaConfig['baz_rss_logosite']
+    : 'http://outils-reseaux.org/tools/templates/themes/outils-reseaux/images/Puce-titre.gif'
+);
 
 //Managing editor du site
-define('BAZ_RSS_MANAGINGEDITOR', (isset($wakkaConfig['baz_rss_managingeditor'])) ? $wakkaConfig['baz_rss_managingeditor'] : 'accueil@outils-reseaux.org (association Outils-Reseaux)');
+define(
+    'BAZ_RSS_MANAGINGEDITOR',
+    (isset($wakkaConfig['baz_rss_managingeditor'])) ?
+    $wakkaConfig['baz_rss_managingeditor']
+    : 'accueil@outils-reseaux.org (association Outils-Reseaux)'
+);
 
 //Mail Webmaster du site
-define('BAZ_RSS_WEBMASTER', (isset($wakkaConfig['baz_rss_webmaster'])) ? $wakkaConfig['baz_rss_webmaster'] : 'accueil@outils-reseaux.org (association Outils-Reseaux)');
+define(
+    'BAZ_RSS_WEBMASTER',
+    (isset($wakkaConfig['baz_rss_webmaster'])) ?
+    $wakkaConfig['baz_rss_webmaster']
+    :'accueil@outils-reseaux.org (association Outils-Reseaux)'
+);
 
 //categorie du flux RSS
-define('BAZ_RSS_CATEGORIE', (isset($wakkaConfig['baz_rss_categorie'])) ? $wakkaConfig['baz_rss_categorie'] : 'Economie Sociale et Solidaire');
+define(
+    'BAZ_RSS_CATEGORIE',
+    (isset($wakkaConfig['baz_rss_categorie'])) ?
+    $wakkaConfig['baz_rss_categorie']
+    : 'Economie Sociale et Solidaire'
+);
 
 //==================================== PARAMETRAGE =================================
 // Pour regler certaines fonctionnalites de l'application
@@ -272,10 +293,31 @@ define('BAZ_AFFICHER_FILTRE_MOTEUR', true);
 //==================================================================================
 
 // coordonnees du centre de la carte
-define('BAZ_MAP_CENTER_LAT', (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '46.22763');
-define('BAZ_MAP_CENTER_LON', (isset($wakkaConfig['baz_google_centre_lon'])) ? $wakkaConfig['baz_google_centre_lon'] : '2.213749');
+define(
+    'BAZ_MAP_CENTER_LAT',
+    (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '46.22763'
+);
+define(
+    'BAZ_MAP_CENTER_LON',
+    (isset($wakkaConfig['baz_google_centre_lon'])) ? $wakkaConfig['baz_google_centre_lon'] : '2.213749'
+);
 define('BAZ_GOOGLE_CENTRE_LAT', BAZ_MAP_CENTER_LAT);
 define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
+
+// prefixe des classes CSS pour les icones du marqueur
+define('BAZ_MARKER_ICON_PREFIX', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'glyphicon');
+
+// icone du marqueur de base
+define('BAZ_PROVIDER', (isset($wakkaConfig['baz_provider'])) ? $wakkaConfig['baz_provider'] : 'OpenStreetMap.Mapnik');
+
+// icone du marqueur de base
+define('BAZ_MARKER_ICON', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'record');
+
+// couleur du marqueur de base
+define('BAZ_MARKER_COLOR', (isset($wakkaConfig['baz_marker_color'])) ? $wakkaConfig['baz_marker_color'] : 'darkred');
+
+// petit marqueur (par defaut : non)
+define('BAZ_SMALL_MARKER', (isset($wakkaConfig['baz_small_marker'])) ? $wakkaConfig['baz_small_marker'] : '');
 
 // niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
 define('BAZ_GOOGLE_ALTITUDE', (isset($wakkaConfig['baz_google_altitude'])) ? $wakkaConfig['baz_google_altitude'] : '5');
@@ -291,7 +333,7 @@ define('BAZ_TYPE_CARTO', (isset($wakkaConfig['baz_type_carto'])) ? $wakkaConfig[
 // taille de la carte a l'ecran
 define('BAZ_GOOGLE_IMAGE_LARGEUR', '100%');
  // valeur de l'attribut css width de la carte
-define('BAZ_GOOGLE_IMAGE_HAUTEUR', '600px');
+define('BAZ_GOOGLE_IMAGE_HAUTEUR', '400px');
  // valeur de l'attribut css height de la carte
 
 // image marqueur
@@ -333,18 +375,26 @@ define('BAZ_GOOGLE_FOND_KML', '');
 define('BAZ_JS_INIT_MAP', '');
 
 // Choix du look du template par défaut
-define('BAZ_TEMPLATE_LISTE_DEFAUT', (isset($wakkaConfig['default_bazar_template'])) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html');
+define(
+    'BAZ_TEMPLATE_LISTE_DEFAUT',
+    isset($wakkaConfig['default_bazar_template']) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html'
+);
+
+// les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
+$wakkaConfig['global_query'] = isset($wakkaConfig['global_query']) ? $wakkaConfig['global_query'] : true ;
 
 if (!function_exists('CheckBazarOwner')) {
-    
-    function CheckBazarOwner($page, $tag) {
+    function CheckBazarOwner($page, $tag)
+    {
         global $wiki;
-        
         // check if user is logged in
-        if (!$wiki->GetUser()) return false;
-        
+        if (!$wiki->GetUser()) {
+            return false;
+        }
         // check if user is owner
-        if ($page["owner"] == $wiki->GetUserName()) return true;
+        if ($page["owner"] == $wiki->GetUserName()) {
+            return true;
+        }
     }
 }
 
@@ -352,7 +402,6 @@ if (!function_exists('CheckBazarOwner')) {
 // Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
 // Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
 // Introduction du droit % : seul le proprietaire peut acceder
-
 if (!function_exists('checkBazarAcls')) {
     function checkBazarAcls($page, $tag)
     {
@@ -371,28 +420,30 @@ if (!function_exists('checkBazarAcls')) {
             $valjson = $page["body"];
             $valeur = json_decode($valjson, true);
             $valeur = array_map('utf8_decode', $valeur);
-            $val_formulaire = baz_valeurs_formulaire($valeur['id_typeannonce']);
-            $fieldname = array();
-            foreach ($val_formulaire['template'] as $line) {
-                if (isset($line[11]) && $line[11] != '') {
-                    if ($wiki->CheckAcl($line[11]) == "%") {
-                        $line[11] = $wiki->GetUserName();
-                    }
-                    if (!$wiki->CheckACL($line[11])) {
-                         // On memorise les champs non autorise
-                        $fieldname[] = $line[1];
+            if ($valeur) {
+                $val_formulaire = baz_valeurs_formulaire($valeur['id_typeannonce']);
+                $fieldname = array();
+                foreach ($val_formulaire['template'] as $line) {
+                    if (isset($line[11]) && $line[11] != '') {
+                        if ($wiki->CheckAcl($line[11]) == "%") {
+                            $line[11] = $wiki->GetUserName();
+                        }
+                        if (!$wiki->CheckACL($line[11])) {
+                             // On memorise les champs non autorise
+                            $fieldname[] = $line[1];
+                        }
                     }
                 }
-            }
-            if (count($fieldname) > 0) {
-                 //
-                foreach ($fieldname as $field) {
-                    $valeur[$field] = "";
-                     // on vide le champ
-                    
+                if (count($fieldname) > 0) {
+                     //
+                    foreach ($fieldname as $field) {
+                        $valeur[$field] = "";
+                         // on vide le champ
+                        
+                    }
+                    $valeur = array_map("utf8_encode", $valeur);
+                    $page["body"] = json_encode($valeur);
                 }
-                $valeur = array_map("utf8_encode", $valeur);
-                $page["body"] = json_encode($valeur);
             }
         }
         return $page;
@@ -402,8 +453,8 @@ if (!function_exists('checkBazarAcls')) {
 $wikiClasses[] = 'Bazar';
 
 //  Gestion des droits sur les champs d'une fiche Bazar, suppose que Bazar soit toujours integre a Yeswiki puisque cette
-//  Gestion est supprimee de template. Trouver un moyen de tester l'existence de la fonction Loadpage dans le wiki.php de template et
-// la charger si elle est non presente ?
+//  Gestion est supprimee de template. Trouver un moyen de tester l'existence de la fonction Loadpage dans le wiki.php 
+// de template et la charger si elle est non presente ?
 
 $wikiClassesContent[] = ' 
 
@@ -417,8 +468,8 @@ $wikiClassesContent[] = '
     else // load page
     {
       $sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
-        . " WHERE tag = \'".mysql_real_escape_string($tag)."\' AND "
-        . ($time ? "time = \'".mysql_real_escape_string($time)."\'" : "latest = \'Y\'") . " LIMIT 1";
+        . " WHERE tag = \'".mysqli_real_escape_string($this->dblink, $tag)."\' AND "
+        . ($time ? "time = \'".mysqli_real_escape_string($this->dblink, $time)."\'" : "latest = \'Y\'") . " LIMIT 1";
       $page = $this->LoadSingle($sql);
       // si la page existe, on charge les meta-donnees
       if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);

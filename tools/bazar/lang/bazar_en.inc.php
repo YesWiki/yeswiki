@@ -23,8 +23,8 @@
 *
 * English translation of Bazar extension
 *
-*@package 		bazar
-*@author        Florian Schmitt <florian@outils-reseaux.org>
+*@package bazar
+*@author Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     Outils-Réseaux
 *
 */
@@ -135,8 +135,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_CHAMPS_REQUIS' => 'Required field',
 'BAZ_FICHES' => 'entries.',
 'BAZ_FICHE' => 'entry.',
-'BAZ_FICHES_CORRESPONDANTES' => 'entries corresponding to your search',
-'BAZ_FICHE_CORRESPONDANTE' => 'entry corresponding to your search',
+'BAZ_FICHES_CORRESPONDANTES_FILTRES' => 'item(s) corresponding to your filters',
+'BAZ_FICHES_CORRESPONDANTES' => 'items corresponding to your search',
+'BAZ_FICHE_CORRESPONDANTE' => 'item corresponding to your search',
 'BAZ_DESCRIPTION' => 'Description',
 'BAZ_DU' => 'from',
 'BAZ_AU' => 'to',
@@ -211,6 +212,5 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_MONTH' => 'Month',
 'BAZ_WEEK' => 'Week',
 'BAZ_DAY' => 'Day'
-
 
 ));

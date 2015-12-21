@@ -44,6 +44,7 @@ $GLOBALS['translations'] = array_merge(
         'LOGIN_NOT_AUTORIZED' => 'Vous n\'&ecirc;tes pas autoris&eacute; &agrave; lire cette page',
         'LOGIN_WRONG_PASSWORD' => 'Identification impossible : mauvais mot de passe.',
         'LOGIN_WRONG_USER' => 'Identification impossible : Identifiant non reconnu.',
+        'LOGIN_NO_CONNECTED_USER' => 'Pas d\'utilisateur connecté.',
         'LOGIN_NEW_MEMBER' => 'Nouveau membre',
         'LOGIN_ALREADY_MEMBER' => 'Déjà membre',
         'LOGIN_PLEASE_REGISTER' => 'veuillez vous identifier',

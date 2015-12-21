@@ -46,7 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
     $_POST = json_decode(file_get_contents('php://input'), true);
 }
 
-if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
+if (isset($_POST["logout"]) && $_POST["logout"] == '1') {
+    // cas de la déconnexion
+    if ($user = $this->GetUser()) {
+        $this->LogoutUser();
+        echo json_encode(array('userlogout' => $user['name']));
+    } else {
+        echo json_encode(array('error' => _t('LOGIN_NO_CONNECTED_USER')));
+    }
+} elseif (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
     // si l'utilisateur existe, on vérifie son mot de passe
     if ($existingUser["password"] == md5($_POST["password"])) {
         $this->SetUser($existingUser, $_POST["remember"]);
@@ -62,7 +70,6 @@ if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->Load
         $_POST["email"] = $_POST["name"];
     }
     if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
-        
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
         if ($existingUser["password"] == md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);

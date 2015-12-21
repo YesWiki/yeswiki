@@ -28,10 +28,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 if ($type == 'fiche_bazar') {
-    $plugin_output_new = preg_replace ('/(<div class="page">.*<hr class="hr_clear" \/>)/Uis',
-    '<div class="page">'."\n".$pageeditionfiche."\n".'<hr class="hr_clear" />', $plugin_output_new);
+    $plugin_output_new = preg_replace(
+        '/(<div class="page">.*<hr class="hr_clear" \/>)/Uis',
+        '<div class="page">'."\n".$pageeditionfiche."\n".'<hr class="hr_clear" />',
+        $plugin_output_new
+    );
 }

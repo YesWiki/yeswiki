@@ -26,40 +26,20 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// V?rification de s?curit?
+// Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 if ($this->HasAccess('write')) {
-
     $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
     if ($type == 'fiche_bazar') {
-        //dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
+        // dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
         if (isset($_POST['bf_titre'])) {
-            $GLOBALS['_BAZAR_']['id_fiche'] = $this->GetPageTag();
-            $tab_nature = baz_valeurs_formulaire($_POST['id_typeannonce']);
-            $GLOBALS['_BAZAR_']['id_typeannonce']=$tab_nature['bn_id_nature'];
-            $GLOBALS['_BAZAR_']['typeannonce']=$tab_nature['bn_label_nature'];
-            $GLOBALS['_BAZAR_']['condition']=$tab_nature['bn_condition'];
-            $GLOBALS['_BAZAR_']['template']=$tab_nature['bn_template'];
-            $GLOBALS['_BAZAR_']['commentaire']=$tab_nature['bn_commentaire'];
-            $GLOBALS['_BAZAR_']['appropriation']=$tab_nature['bn_appropriation'];
-            $GLOBALS['_BAZAR_']['class']=$tab_nature['bn_label_class'];
-            baz_formulaire(BAZ_ACTION_MODIFIER_V);
-            $this->Redirect($this->Href());
+            baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href(), $_POST);
         } else {
-            $tab_valeurs = baz_valeurs_fiche($this->GetPageTag());
-            $GLOBALS['_BAZAR_']['id_fiche'] = $tab_valeurs['id_fiche'];
-            $tab_nature = baz_valeurs_formulaire($tab_valeurs['id_typeannonce']);
-            $GLOBALS['_BAZAR_']['id_typeannonce']=$tab_nature['bn_id_nature'];
-            $GLOBALS['_BAZAR_']['typeannonce']=$tab_nature['bn_label_nature'];
-            $GLOBALS['_BAZAR_']['condition']=$tab_nature['bn_condition'];
-            $GLOBALS['_BAZAR_']['template']=$tab_nature['bn_template'];
-            $GLOBALS['_BAZAR_']['commentaire']=$tab_nature['bn_commentaire'];
-            $GLOBALS['_BAZAR_']['appropriation']=$tab_nature['bn_appropriation'];
-            $GLOBALS['_BAZAR_']['class']=$tab_nature['bn_label_class'];
-            $pageeditionfiche = baz_formulaire(BAZ_ACTION_MODIFIER, $this->href('edit'), $tab_valeurs);
+            $fiche = baz_valeurs_fiche($this->GetPageTag());
+            $pageeditionfiche = baz_formulaire(BAZ_ACTION_MODIFIER, $this->href('edit'), $fiche);
         }
     }
 }

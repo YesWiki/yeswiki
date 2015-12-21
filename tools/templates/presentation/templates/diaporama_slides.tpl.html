@@ -1,70 +1,68 @@
 <div class="reveal">
-	<!-- Any section element inside of this container is displayed as a slide -->
-	<div class="slides">	
-<?php $i=0; foreach($slides as $slide): $i++; ?>
-    <section id="slidenumber<?php echo $i; ?>" >
-		<?php if (isset($slide['title'])) : ?>
-		<h2><?php echo $slide['title']; ?></h2>
-		<?php endif; ?>
-		<?php echo $slide['html']; ?>
-	  </section>
+    <!-- Any section element inside of this container is displayed as a slide -->
+    <div class="slides">    
+<?php
+$i=0;
+foreach ($slides as $slide) :
+    $i++;
+    if (isset($slide['closesection']) && $slide['closesection']) {
+        echo '</section> <!-- end vertical section -->'."\n";
+    }
+    if (isset($slide['opensection']) && $slide['opensection']) {
+        echo '<section> <!-- vertical section -->'."\n";
+    }
+?>
+    
+    <section id="slide<?php echo $i; ?>" >
+        <?php
+        if (isset($slide['title'])) : ?>
+        <h2><?php echo $slide['title']; ?></h2>
+        <?php
+        endif; ?>
+        <?php echo $slide['html']; ?>
+      </section>
 <?php endforeach; ?>
-	</div> <!-- /div.slides -->
+    </div> <!-- /div.slides -->
 </div> <!-- /div.reveal -->
 
 <?php
-	// parameters for sockets
-	if (isset($_GET['id'])) {
-		$multiplex = true;
-	}
-	else {
-		$multiplex = false;
-	}
+// parameters for sockets
+if (isset($_GET['id'])) {
+    $multiplex = true;
+} else {
+    $multiplex = false;
+}
 
-	//on prepare le javascript du diaporama, qui sera ajoute par l'action footer de template, a la fin du html
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').
-	'<link rel="stylesheet" href="tools/templates/libs/vendor/reveal.js-2.6.1/css/reveal.min.css">'."\n".
-	//'<link rel="stylesheet" href="tools/templates/libs/vendor/reveal.js-2.6.1/css/theme/default.css" id="theme">'."\n".
-	'<script src="tools/templates/libs/vendor/reveal.js-2.6.1/lib/js/head.min.js"></script>
-	<script src="tools/templates/libs/vendor/reveal.js-2.6.1/js/reveal.min.js"></script>
+$GLOBALS['wiki']->AddJavascriptFile('tools/templates/libs/vendor/reveal.js/lib/js/head.min.js');
+$GLOBALS['wiki']->AddJavascriptFile('tools/templates/libs/vendor/reveal.js/js/reveal.js');
+$GLOBALS['wiki']->AddCSSFile('tools/templates/libs/vendor/reveal.js/css/reveal.css');
+$GLOBALS['wiki']->AddCSSFile('tools/templates/libs/vendor/reveal.js/css/theme/black.css');
 
-	<script>
+$js = '// Full list of configuration options available at:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    '.($multiplex ? 'multiplex: {        
+        '.((isset($_GET['secret'])) ? 'secret: \''.$_GET['secret'].'\',' : 'secret: null,')."\n".
+        'id: \''.$_GET['id'].'\', // Obtained from socket.io server
+        url: \'revealjs.jit.su:80\' // Location of socket.io server
+    },' : '').'
 
-	// Full list of configuration options available here:
-	// https://github.com/hakimel/reveal.js#configuration
-	Reveal.initialize({
-		controls: true,
-		progress: true,
-		history: true,
-		center: true,
-		maxScale: 1.5,
+    transition: \'slide\', // none/fade/slide/convex/concave/zoom
 
-		theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-		transition: Reveal.getQueryHash().transition || \'default\', // default/cube/page/concave/zoom/linear/fade/none
-
-		// Parallax scrolling
-		// parallaxBackgroundImage: \'https://s3.amazonaws.com/hakim-static/reveal-js/reveal-parallax-1.jpg\',
-		// parallaxBackgroundSize: \'2100px 900px\','."\n".
-	($multiplex ? 'multiplex: {	    
-		    '.((isset($_GET['secret'])) ? 'secret: \''.$_GET['secret'].'\',' : 'secret: null,')."\n".
-		    'id: \''.$_GET['id'].'\', // Obtained from socket.io server
-		    url: \'revealjs.jit.su:80\' // Location of socket.io server
-	    },' : '').
-		
-'
-		// Optional libraries used to extend on reveal.js
-		dependencies: [
-			{ src: \'tools/templates/libs/vendor/reveal.js-2.6.1/lib/js/classList.js\', condition: function() { return !document.body.classList; } },
-			//{ src: \'tools/templates/libs/vendor/reveal.js-2.6.1/plugin/markdown/marked.js\', condition: function() { return !!document.querySelector( \'[data-markdown]\' ); } },
-			//{ src: \'tools/templates/libs/vendor/reveal.js-2.6.1/plugin/markdown/markdown.js\', condition: function() { return !!document.querySelector( \'[data-markdown]\' ); } },
-			//{ src: \'tools/templates/libs/vendor/reveal.js-2.6.1/plugin/highlight/highlight.js\', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-			//{ src: \'tools/templates/libs/vendor/reveal.js-2.6.1/plugin/notes/notes.js\', async: true, condition: function() { return !!document.body.classList; } }
-			{ src: \'tools/templates/libs/vendor/reveal.js-2.6.1/plugin/zoom-js/zoom.js\', async: true, condition: function() { return !!document.body.classList; } },'."\n".
-	($multiplex ? ' { src: \'//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.10/socket.io.min.js\', async: true },
-        { src: \'tools/templates/libs/vendor/reveal.js-2.6.1/plugin/multiplex/'.((isset($_GET['secret'])) ? 'master' : 'client').'.js\', async: true }' : '')."\n".'
-
-		]
-	});
-
-	</script>'."\n";
-?>
+    // Optional reveal.js plugins
+    dependencies: [
+        { src: \'tools/templates/libs/vendor/reveal.js/lib/js/classList.js\', condition: function() {
+            return !document.body.classList;
+        } 
+    }'.($multiplex ? ',
+        { src: \'//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.10/socket.io.min.js\', async: true },
+    { src: \'tools/templates/libs/vendor/reveal.js/plugin/multiplex/'
+    .((isset($_GET['secret'])) ? 'master' : 'client').'.js\', async: true }' : '')
+    .'
+    ]
+});';
+$GLOBALS['wiki']->AddJavascript($js);

@@ -12,6 +12,7 @@
 /* Web: www.sprain.ch
 /* ------------------------------------------------------------------------ */
 
+
 class Image
 {
     
@@ -162,7 +163,6 @@ class Image
         
         //Want to fit in the area?
         if ($method == "fit") {
-            
             if ($ratioOfMaxSizes >= $this->getRatioWidthToHeight()) {
                 $max_width = round($max_height * $this->getRatioWidthToHeight());
             } else {
@@ -218,7 +218,6 @@ class Image
             $newImage = $image_create_func($this->image);
             
             if ($image_save_func == 'ImagePNG') {
-                
                 //http://www.akemapa.com/2008/07/10/php-gd-resize-transparent-image-png-gif/
                 imagealphablending($imageC, false);
                 imagesavealpha($imageC, true);
@@ -248,9 +247,10 @@ class Image
             if ($srcX == 0 && $srcY == 0) {
                 exec("convert -resize ".$newImage_width."x".$newImage_height." '".$this->image."' ".$this->tmpfile);
             } else {
-                exec("convert -crop ".$newImage_width."x".$newImage_height."+".$srcX."x".$srcY." '".$this->image."' ".$this->tmpfile);
+                exec("convert -resize ".$newImage_width."x".$newImage_height."^ "
+                    ."-gravity center -extent ".$newImage_width."x".$newImage_height
+                    ." '".$this->image."' ".$this->tmpfile);
             }
-
             //Set new main image
             $this->setNewMainImage($this->tmpfile);
         }
@@ -283,8 +283,13 @@ class Image
      *               c = center
      *               b = bottom
      */
-    public function writeWatermark($opacity = 50, $marginH = 0, $marginV = 0, $positionWatermarkLeftRight = "c", $positionWatermarkTopBottom = "c")
-    {
+    public function writeWatermark(
+        $opacity = 50,
+        $marginH = 0,
+        $marginV = 0,
+        $positionWatermarkLeftRight = "c",
+        $positionWatermarkTopBottom = "c"
+    ) {
         
         //add Watermark
         list($image_create_func, $image_save_func) = $this->Watermark->getFunctionNames();
@@ -569,7 +574,8 @@ class Image
             $image_create_func = 'imagemagick';
             $image_save_func = 'imagemagick';
         } elseif (!function_exists($image_create_func) || !function_exists($image_save_func)) {
-            throw new Exception('PHP function ' . $image_create_func . ' or ' . $image_save_func . ' unavailable. Is GD installed?');
+            throw new Exception('PHP function ' . $image_create_func
+                . ' or ' . $image_save_func . ' unavailable. Is GD installed?');
         }
         
         return array($image_create_func, $image_save_func);

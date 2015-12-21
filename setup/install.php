@@ -50,6 +50,7 @@ $config = $config2 = $_POST["config"];
 
 // merge existing (or default) configuration with new one
 $config = array_merge($wakkaConfig, $config);
+
 if (!$version = trim($wakkaConfig["wikini_version"])) $version = "0";
 
 if ($version)
@@ -59,18 +60,18 @@ if ($version)
 		_t('INCORRECT_MYSQL_PASSWORD').' !');
 }
 test(_t('TEST_MYSQL_CONNECTION')." ...",
-	$dblink = @mysql_connect($config["mysql_host"], $config["mysql_user"], $config["mysql_password"]));
+	$dblink = mysqli_connect($config["mysql_host"], $config["mysql_user"], $config["mysql_password"]));
 $testdb = test(_t('SEARCH_FOR_DATABASE')." ...",
-	@mysql_select_db($config["mysql_database"], $dblink),
+	@mysqli_select_db($dblink, $config["mysql_database"]),
 	_t('NO_DATABASE_FOUND_TRY_TO_CREATE').".",
 	0);
 if($testdb == 1)
 {
 	test(_t('TRYING_TO_CREATE_DATABASE')." ...",
-		@mysql_query("CREATE DATABASE ".$config["mysql_database"], $dblink),
+		@mysqli_query($dblink, "CREATE DATABASE ".$config["mysql_database"]),
 		_t('DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY')." !");
 	test(_t('SEARCH_FOR_DATABASE')." ...",
-		@mysql_select_db($config["mysql_database"], $dblink),
+		@mysqli_select_db($dblink, $config["mysql_database"]),
 		_t('DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT')." !",
 		1);
 }
@@ -103,7 +104,7 @@ switch ($version)
 case "0":
 	echo "<br /><b>"._t('DATABASE_INSTALLATION')."</b><br>\n";
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."pages ...",
-		@mysql_query(
+		@mysqli_query($dblink,
 			"CREATE TABLE ".$config["table_prefix"]."pages (".
   			"id int(10) unsigned NOT NULL auto_increment,".
   			"tag varchar(50) NOT NULL default '',".
@@ -121,35 +122,35 @@ case "0":
   			"KEY idx_time (time),".
   			"KEY idx_latest (latest),".
   			"KEY idx_comment_on (comment_on)".
-			") ENGINE=MyISAM;", $dblink), _t('ALREADY_CREATED')." ?", 0);
+			") ENGINE=MyISAM;"), _t('ALREADY_CREATED')." ?", 0);
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."acls ...",
-		@mysql_query(
+		@mysqli_query($dblink,
 			"CREATE TABLE ".$config["table_prefix"]."acls (".
   			"page_tag varchar(50) NOT NULL default '',".
 			"privilege varchar(20) NOT NULL default '',".
   			"list text NOT NULL,".
  			"PRIMARY KEY  (page_tag,privilege)".
-			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+			") ENGINE=MyISAM"), _t('ALREADY_CREATED')." ?", 0);
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."links ...",
-		@mysql_query(
+		@mysqli_query($dblink,
 			"CREATE TABLE ".$config["table_prefix"]."links (".
 			"from_tag char(50) NOT NULL default '',".
   			"to_tag char(50) NOT NULL default '',".
   			"UNIQUE KEY from_tag (from_tag,to_tag),".
   			"KEY idx_from (from_tag),".
   			"KEY idx_to (to_tag)".
-			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+			") ENGINE=MyISAM"), _t('ALREADY_CREATED')." ?", 0);
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."referrers ...",
-		@mysql_query(
+		@mysqli_query($dblink,
 			"CREATE TABLE ".$config["table_prefix"]."referrers (".
   			"page_tag char(50) NOT NULL default '',".
   			"referrer char(150) NOT NULL default '',".
   			"time datetime NOT NULL default '0000-00-00 00:00:00',".
   			"KEY idx_page_tag (page_tag),".
   			"KEY idx_time (time)".
-			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+			") ENGINE=MyISAM"), _t('ALREADY_CREATED')." ?", 0);
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."users ...",
-		@mysql_query(
+		@mysqli_query($dblink,
 			"CREATE TABLE ".$config["table_prefix"]."users (".
   			"name varchar(80) NOT NULL default '',".
   			"password varchar(32) NOT NULL default '',".
@@ -163,9 +164,9 @@ case "0":
   			"PRIMARY KEY  (name),".
   			"KEY idx_name (name),".
   			"KEY idx_signuptime (signuptime)".
-			") ENGINE=MyISAM", $dblink), _t('ALREADY_CREATED')." ?", 0);
+			") ENGINE=MyISAM"), _t('ALREADY_CREATED')." ?", 0);
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."triples ...",
-		@mysql_query(
+		@mysqli_query($dblink,
 			'CREATE TABLE `' .$config['table_prefix'] . 'triples` (' . 
 			'  `id` int(10) unsigned NOT NULL auto_increment,' . 
 			'  `resource` varchar(255) NOT NULL default \'\',' . 
@@ -174,14 +175,14 @@ case "0":
 			'  PRIMARY KEY  (`id`),' . 
 			'  KEY `resource` (`resource`),' . 
 			'  KEY `property` (`property`)' . 
-			') ENGINE=MyISAM', $dblink), _t('ALREADY_CREATED')." ?", 0);
+			') ENGINE=MyISAM'), _t('ALREADY_CREATED')." ?", 0);
 	test(_t('ADMIN_ACCOUNT_CREATION')." ...",
-		@mysql_query(
+		@mysqli_query($dblink, 
 			"insert into ".$config["table_prefix"]."users set ".
 					"signuptime = now(), ".
-					"name = '".mysql_real_escape_string($admin_name)."', ".
-					"email = '".mysql_real_escape_string($admin_email)."', ".
-					"password = md5('".mysql_real_escape_string($admin_password)."')"), _t('ALREADY_EXISTING').".", 0);
+					"name = '".mysqli_real_escape_string($dblink, $admin_name)."', ".
+					"email = '".mysqli_real_escape_string($dblink, $admin_email)."', ".
+					"password = md5('".mysqli_real_escape_string($dblink, $admin_password)."')"), _t('ALREADY_EXISTING').".", 0);
 	$wiki = new Wiki($config);
 	$wiki->SetGroupACL("admins", $admin_name);
 				
@@ -200,17 +201,17 @@ case "0":
 		$sql = "Select tag from ".$config["table_prefix"]."pages where tag='$pagename'";
 		
 		// Insert documentation page if not present (a previous failed installation ?)
-		if (($r=@mysql_query($sql, $dblink)) && (mysql_num_rows($r)==0)) {
+		if (($r=@mysqli_query($dblink, $sql)) && (mysqli_num_rows($r)==0)) {
 			
 			$sql = "Insert into ".$config["table_prefix"]."pages ".
 				"set tag = '$pagename', ".
-				"body = '".mysql_real_escape_string($pagecontent)."', ".
-				"user = '" . mysql_real_escape_string($admin_name) . "', ".
-				"owner = '" . mysql_real_escape_string($admin_name) . "', " .
+				"body = '".mysqli_real_escape_string($dblink, $pagecontent)."', ".
+				"user = '" . mysqli_real_escape_string($dblink, $admin_name) . "', ".
+				"owner = '" . mysqli_real_escape_string($dblink, $admin_name) . "', " .
 				"time = now(), ".
 				"latest = 'Y'";
 
-			test(_t('INSERTION_OF_PAGE')." $pagename ...", @mysql_query($sql, $dblink),"?",0);
+			test(_t('INSERTION_OF_PAGE')." $pagename ...", @mysqli_query($dblink, $sql),"?",0);
 
 			// update table_links 
 			$wiki->SetPage($wiki->LoadPage($pagename,"",0));
@@ -236,7 +237,7 @@ case "0":
 case "0.1":
 	echo "<b>"._t('UPDATING_FROM_WIKINI_0_1')."</b><br>\n";
 	test(_t('TINY_MODIFICATION_OF_PAGES_TABLE')." ...", 
-		@mysql_query("alter table ".$config["table_prefix"]."pages add body_r text not null default '' after body", $dblink), _t('ALREADY_DONE'), 0);
+		@mysqli_query($dblink, "alter table ".$config["table_prefix"]."pages add body_r text not null default '' after body"), _t('ALREADY_DONE'), 0);
 	// continue through the upgrading process to create the triple's table
 case '0.4.0':
 case '0.4.1':
@@ -245,7 +246,7 @@ case '0.4.3':
 case '0.4.4':
 case '0.5.0': // TODO remove this line (idem)
 	test(_t('CREATION_OF_TABLE')." ".$config["table_prefix"]."triples ...",
-		@mysql_query('CREATE TABLE `' .$config['table_prefix'] . 'triples` (' . 
+		@mysqli_query($dblink, 'CREATE TABLE `' .$config['table_prefix'] . 'triples` (' . 
 			'  `id` int(10) unsigned NOT NULL auto_increment,' . 
 			'  `resource` varchar(255) NOT NULL default \'\',' . 
 			'  `property` varchar(255) NOT NULL default \'\',' . 
@@ -253,16 +254,16 @@ case '0.5.0': // TODO remove this line (idem)
 			'  PRIMARY KEY  (`id`),' . 
 			'  KEY `resource` (`resource`),' . 
 			'  KEY `property` (`property`)' . 
-			') ENGINE=MyISAM', $dblink), _t('ALREADY_CREATED')." ?", 0);
+			') ENGINE=MyISAM'), _t('ALREADY_CREATED')." ?", 0);
 	if (!empty($admin_password))
 	{
 		test(_t('ADMIN_ACCOUNT_CREATION')." ...",
-			@mysql_query(
+			@mysqli_query($dblink,
 				"insert into ".$config["table_prefix"]."users set ".
 				"signuptime = now(), ".
-				"name = '".mysql_real_escape_string($admin_name)."', ".
-				"email = '".mysql_real_escape_string($admin_email)."', ".
-				"password = md5('".mysql_real_escape_string($admin_password)."')"), 0);
+				"name = '".mysqli_real_escape_string($dblink, $admin_name)."', ".
+				"email = '".mysqli_real_escape_string($dblink, $admin_email)."', ".
+				"password = md5('".mysqli_real_escape_string($dblink, $admin_password)."')"), 0);
 	}
 	$wiki = new Wiki($config);
 	test(_t('INSERTION_OF_USER_IN_ADMIN_GROUP')." ...",
