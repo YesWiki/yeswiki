@@ -20,25 +20,26 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 
 // Security check
-if (!defined("WIKINI_VERSION")) { 
-    die ("acc&egrave;s direct interdit"); 
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 // Compatibility with php versions without json functions
 if (!function_exists('json_decode')) {
-    function json_decode($content, $assoc=false) {
+    function json_decode($content, $assoc = false)
+    {
         require_once 'includes/JSON.php';
         if ($assoc) {
             $json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
-        }
-        else {
+        } else {
             $json = new Services_JSON;
         }
         return $json->decode($content);
     }
 }
 if (!function_exists('json_encode')) {
-    function json_encode($content) {
+    function json_encode($content)
+    {
         require_once 'includes/JSON.php';
         $json = new Services_JSON;
         return $json->encode($content);
@@ -55,8 +56,7 @@ function _t($textkey)
 {
     if (isset($GLOBALS['translations'][$textkey])) {
         return $GLOBALS['translations'][$textkey];
-    }
-    else {
+    } else {
         return $textkey;
     }
 }
@@ -152,33 +152,31 @@ function detectAvailableLanguages()
 }
 
 /**
- *  Determine which language out of an available set the user prefers most 
+ *  Determine which language out of an available set the user prefers most
  *  copied from http://php.net/manual/en/function.http-negotiate-language.php#example-4353
- * 
+ *
  *  @array $available_languages        array with language-tag-strings (must be lowercase) that are available
  *  @string $http_accept_language a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
  *  @string $page    name of WikiPage to check for informations on language
  */
-function detectPreferedLanguage($available_languages, $http_accept_language = "auto", $page = '') 
+function detectPreferedLanguage($available_languages, $http_accept_language = "auto", $page = '')
 {
     // first choice : if lang changed in url
     if (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) {
         return $_GET['lang'];
-    }
-    // just for installation
-    elseif (isset($_POST["config"])) {
+    } elseif (isset($_POST["config"])) {
+        // just for installation
         if (count($_POST["config"])==1) {
             $conf = unserialize($_POST["config"]);
             if (isset($conf['default_language']) && in_array($conf['default_language'], $available_languages)) {
                 return $conf['default_language'];
             }
-        } 
-        elseif (isset($_POST["config"]['default_language']) && in_array($_POST["config"]['default_language'], $available_languages) ) {
+        } elseif (isset($_POST["config"]['default_language'])
+            && in_array($_POST["config"]['default_language'], $available_languages)) {
             return $_POST["config"]['default_language'];
         }
-    }
-    // page's metadata lang
-    elseif ($page!='') {
+    } elseif ($page!='') {
+        // page's metadata lang
         $GLOBALS['wiki']->metadatas = $GLOBALS['wiki']->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
         if (!empty($GLOBALS['wiki']->metadatas)) {
             $GLOBALS['wiki']->metadatas =  array_map('utf8_decode', json_decode($GLOBALS['wiki']->metadatas, true));
@@ -190,10 +188,10 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
         if (isset($GLOBALS['wiki']->config['default_language']) && in_array($GLOBALS['wiki']->config['default_language'], $available_languages)) {
             return $GLOBALS['wiki']->config['default_language'];
         }
+    } elseif ($http_accept_language == "auto") {
+        // if $http_accept_language was left out, read it from the HTTP-Header of the browser
+        $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
     }
-    
-    // if $http_accept_language was left out, read it from the HTTP-Header of the browser
-    elseif ($http_accept_language == "auto") $http_accept_language = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
 
     // standard  for HTTP_ACCEPT_LANGUAGE is defined under
     // http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
@@ -203,9 +201,13 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
     //    language-range  = ( ( 1*8ALPHA *( "-" 1*8ALPHA ) ) | "*" )
     //    qvalue         = ( "0" [ "." 0*3DIGIT ] )
     //            | ( "1" [ "." 0*3("0") ] )
-    preg_match_all("/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?" .
-                   "(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
-                   $http_accept_language, $hits, PREG_SET_ORDER);
+    preg_match_all(
+        "/([[:alpha:]]{1,8})(-([[:alpha:]|-]{1,8}))?"
+        ."(\s*;\s*q\s*=\s*(1\.0{0,3}|0\.\d{0,3}))?\s*(,|$)/i",
+        $http_accept_language,
+        $hits,
+        PREG_SET_ORDER
+    );
 
     // default language (in case of no hits) is french, like the devs speak
     $bestlang = 'fr';
@@ -213,28 +215,30 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
 
     foreach ($hits as $arr) {
         // read data from the array of this hit
-        $langprefix = strtolower ($arr[1]);
+        $langprefix = strtolower($arr[1]);
         if (!empty($arr[3])) {
-            $langrange = strtolower ($arr[3]);
+            $langrange = strtolower($arr[3]);
             $language = $langprefix . "-" . $langrange;
+        } else {
+            $language = $langprefix;
         }
-        else $language = $langprefix;
         $qvalue = 1.0;
-        if (!empty($arr[5])) $qvalue = floatval($arr[5]);
-     
-        // find q-maximal language 
-        if (in_array($language,$available_languages) && ($qvalue > $bestqval)) {
+        if (!empty($arr[5])) {
+            $qvalue = floatval($arr[5]);
+        }
+
+        // find q-maximal language
+        if (in_array($language, $available_languages) && ($qvalue > $bestqval)) {
             $bestlang = $language;
             $bestqval = $qvalue;
-        }
-        // if no direct hit, try the prefix only but decrease q-value by 10% (as http_negotiate_language does)
-        else if (in_array($langprefix,$available_languages) && (($qvalue*0.9) > $bestqval)) {
+        } else if (in_array($langprefix, $available_languages) && (($qvalue*0.9) > $bestqval)) {
+            // if no direct hit, try the prefix only but decrease q-value by 10% (as http_negotiate_language does)
             $bestlang = $langprefix;
             $bestqval = $qvalue*0.9;
         }
     }
     return $bestlang;
-} 
+}
 
 /**
  * Initialize the table of translation, based on the information gathered in the page
@@ -278,5 +282,3 @@ function loadpreferredI18n($page = '')
 
 // default init
 initI18n();
-
-?>
