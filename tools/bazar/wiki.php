@@ -48,8 +48,6 @@ if (!defined("WIKINI_VERSION")) {
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-//error_reporting(E_ALL & E_STRICT);
-
 //chemin relatif d'acces au bazar
 define('BAZ_CHEMIN', 'tools/bazar/');
 define('BAZ_CHEMIN_UPLOAD', 'files/');

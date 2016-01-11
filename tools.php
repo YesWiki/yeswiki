@@ -27,10 +27,9 @@ require_once ('tools/libs/Container.php');
 
 class CustomAuthContainer extends Auth_Container
 {
-     
     var $mysql_user;
     var $mysql_password;
-    
+
     function CustomAuthContainer($mysql_user, $mysql_password )
     {
     	$this->mysql_user=$mysql_user;
@@ -47,7 +46,7 @@ class CustomAuthContainer extends Auth_Container
 }
 
 
-$auth_container = new CustomAuthContainer($wakkaConfig['mysql_user'],$wakkaConfig['mysql_password']); 
+$auth_container = new CustomAuthContainer($wakkaConfig['mysql_user'],$wakkaConfig['mysql_password']);
 
 $params = array(
             "advancedsecurity" => "true"
@@ -66,7 +65,7 @@ if (isset($_GET['tools_action']) && $_GET['tools_action'] == "logout" && $a->che
 
 
 if($a->checkAuth()) {
- 		
+
 }
 else {
 	exit;
@@ -90,7 +89,7 @@ if ((!empty($_REQUEST['p']) && !empty($plugins_list[$_REQUEST['p']])
 	include $plugins_root.$p.'/index.php';
 	$PLUGIN_BODY = $buffer->getContent();
 	$buffer->clean();
-	
+
 }
 
 ?>
@@ -135,30 +134,30 @@ else
 	}
 	else
 	{
-		
+
 		# Tri des plugins par leur nom
 		uasort($plugins_list,create_function('$a,$b','return strcmp($a["label"],$b["label"]);'));
-		
+
 		# Liste des plugins
 		echo '<h1>';
 		echo '<a href="'.$tools_url.'">'._t('LIST_OF_ACTIVE_TOOLS').'</a>';
 		echo '</h1>';
-		
+
 		echo '<dl class="plugin-list">';
 		foreach ($plugins_list as $k => $v)
 		{
 			$plink = '<a href="tools.php?p='.$k.'">%s</a>';
 			$plabel = (!empty($v['label'])) ? $v['label'] : $v['name'];
-			
+
 			echo '<dt>';
 			if (file_exists($plugins_root.$k.'/icon.png')) {
 				printf($plink,'<img alt="" src="tools/'.$k.'/icon.png" />');
 				echo ' ';
 			}
-			
+
 			printf($plink,$plabel);
 			echo '</dt>';
-			
+
 			echo '<dd>'.$v['desc'].'</dd>';
 		}
 		echo '</dl>';

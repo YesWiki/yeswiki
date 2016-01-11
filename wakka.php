@@ -4,11 +4,11 @@ $Id: wakka.php 864 2007-11-28 12:44:52Z nepote $
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
 Copyright 2003 Carlo Zottmann
 Copyright 2002, 2003, 2005 David DELON
-Copyright 2002, 2003, 2004, 2006 Charles N?POTE
+Copyright 2002, 2003, 2004, 2006 Charles NEPOTE
 Copyright 2002, 2003 Patrick PAUL
 Copyright 2003 Eric DELORD
 Copyright 2003 Eric FELDSTEIN
-Copyright 2004-2006 Jean-Christophe ANDR?
+Copyright 2004-2006 Jean-Christophe ANDRE
 Copyright 2005-2006 Didier LOISEAU
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -594,7 +594,8 @@ class Wiki
                 "owner = '" . mysqli_real_escape_string($this->dblink, $owner) . "', " .
                 "user = '" . mysqli_real_escape_string($this->dblink, $user) . "', " .
                 "latest = 'Y', " .
-                "body = '" . mysqli_real_escape_string($this->dblink, chop($body)) . "'");
+                "body = '" . mysqli_real_escape_string($this->dblink, chop($body)) . "', ".
+                "body_r = ''");
             unset($this->pageCache[$tag]);
             return 0;
         } else {

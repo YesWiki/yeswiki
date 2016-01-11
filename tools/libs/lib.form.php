@@ -22,116 +22,119 @@
 
 class form
 {
-	function combo($name,$arryData,$default='',$class='',$id='',$tabindex='')
-	{
-		$res = '<select name="'.$name.'" ';
-		
-		if($class != '')
-			$res .= 'class="'.$class.'" ';
-		
-		if($tabindex != '')
-			$res .= 'tabindex="'.$tabindex.'" ';
-		
-		if($id != '')
-			$res .= 'id="'.$id.'" ';
-		else
-			$res .= 'id="'.$name.'" ';
-		
-		$res .= '>'."\n";
-		
-		foreach($arryData as $k => $v)
-		{
-			$res .= '<option value="'.$v.'"';
-			
-			if($v == $default)
-				$res .= ' selected="selected"';
-			
-			$res .= '>'.$k.'</option>'."\n";
-		}
-		
-		$res .= '</select>'."\n";
-		
-		return $res;
-	}
-	
-	function radio($name, $value, $checked='', $class='', $id='')
-	{
-		$res = '<input type="radio" name="'.$name.'" value="'.$value.'" ';
-		
-		if($class != '') {
-			$res .= 'class="'.$class.'" ';
-		}
-		
-		if($id != '') {
-			$res .= 'id="'.$id.'" ';
-		}
-		
-		if (($checked === 0) or $checked >= 1) {
-			$res .= 'checked="checked" ';
-		}
-		
-		$res .= '/>'."\n";
-		
-		return $res;	
-	}
+    public function combo($name, $arryData, $default='', $class='', $id='', $tabindex='')
+    {
+        $res = '<select name="'.$name.'" ';
+        
+        if ($class != '') {
+            $res .= 'class="'.$class.'" ';
+        }
+        
+        if ($tabindex != '') {
+            $res .= 'tabindex="'.$tabindex.'" ';
+        }
+        
+        if ($id != '') {
+            $res .= 'id="'.$id.'" ';
+        } else {
+            $res .= 'id="'.$name.'" ';
+        }
+        
+        $res .= '>'."\n";
+        
+        foreach ($arryData as $k => $v) {
+            $res .= '<option value="'.$v.'"';
+            
+            if ($v == $default) {
+                $res .= ' selected="selected"';
+            }
+            
+            $res .= '>'.$k.'</option>'."\n";
+        }
+        
+        $res .= '</select>'."\n";
+        
+        return $res;
+    }
+    
+    public function radio($name, $value, $checked='', $class='', $id='')
+    {
+        $res = '<input type="radio" name="'.$name.'" value="'.$value.'" ';
+        
+        if ($class != '') {
+            $res .= 'class="'.$class.'" ';
+        }
+        
+        if ($id != '') {
+            $res .= 'id="'.$id.'" ';
+        }
+        
+        if (($checked === 0) or $checked >= 1) {
+            $res .= 'checked="checked" ';
+        }
+        
+        $res .= '/>'."\n";
+        
+        return $res;
+    }
 
-	function checkbox($name, $value, $checked='', $class='', $id='')
-	{
-		$res = '<input type="checkbox" name="'.$name.'" value="'.$value.'"';
-		
-		if($class != '')
-			$res .= 'class="'.$class.'" ';
-		
-		if($id != '') {
-			$res .= 'id="'.$id.'" ';
-		}
+    public function checkbox($name, $value, $checked='', $class='', $id='')
+    {
+        $res = '<input type="checkbox" name="'.$name.'" value="'.$value.'"';
+        
+        if ($class != '') {
+            $res .= 'class="'.$class.'" ';
+        }
+        
+        if ($id != '') {
+            $res .= 'id="'.$id.'" ';
+        }
 
-		if($checked != '') {
-			$res.='checked="checked"';
-		}
-		
-		$res .= ' />'."\n";
+        if ($checked != '') {
+            $res.='checked="checked"';
+        }
+        
+        $res .= ' />'."\n";
 
-		return $res;
-	}
+        return $res;
+    }
 
-	function field($id,$size,$max,$default='',$tabindex='',$html='')
-	{
-		if (is_array($id)) {
-			$name = $id[0];
-			$id = isset($id[1]) ? $id[1] : '';
-		} else {
-			$name = $id;
-		}
-		
-		$res = '<input type="text" size="'.$size.'" name="'.$name.'" ';
-		
-		$res .= ($id != '') ? 'id="'.$id.'" ' : '';		
-		$res .= ($max != '') ? 'maxlength="'.$max.'" ' : '';
-		$res .= ($tabindex != '') ? 'tabindex="'.$tabindex.'" ' : '';
-		$res .= ($default != '') ? 'value="'.$default.'" ' : '';
-		$res .= $html;
-		
-		$res .= ' />';
-		
-		return $res;
-	}
-	
-	function textArea($id,$cols,$rows,$default='',$tabindex='',$html='')
-	{
-		$res = '<textarea cols="'.$cols.'" rows="'.$rows.'" ';
-		$res .= 'name="'.$id.'" id="'.$id.'" ';
-		$res .= ($tabindex != '') ? 'tabindex="'.$tabindex.'" ' : '';
-		$res .= $html.'>';
-		$res .= $default;
-		$res .= '</textarea>';
-		
-		return $res;
-	}
-	
-	function hidden($id,$value)
-	{
-		return '<input type="hidden" name="'.$id.'" value="'.$value.'" />';
-	}
+    public function field($id, $size, $max, $default='', $tabindex='', $html='')
+    {
+        if (is_array($id)) {
+            $name = $id[0];
+            $id = isset($id[1]) ? $id[1] : '';
+        } else {
+            $name = $id;
+        }
+        
+        $res = '<input type="text" size="'.$size.'" name="'.$name.'" ';
+        
+        $res .= ($id != '') ? 'id="'.$id.'" ' : '';
+        $res .= ($max != '') ? 'maxlength="'.$max.'" ' : '';
+        $res .= ($tabindex != '') ? 'tabindex="'.$tabindex.'" ' : '';
+        $res .= ($default != '') ? 'value="'.$default.'" ' : '';
+        $res .= $html;
+        
+        $res .= ' />';
+        
+        return $res;
+    }
+    
+    public function textArea($id, $cols, $rows, $default='', $tabindex='', $html='')
+    {
+        $res = '<textarea cols="'.$cols.'" rows="'.$rows.'" ';
+        $res .= 'name="'.$id.'" id="'.$id.'" ';
+        $res .= ($tabindex != '') ? 'tabindex="'.$tabindex.'" ' : '';
+        $res .= $html.'>';
+        $res .= $default;
+        $res .= '</textarea>';
+        
+        return $res;
+    }
+    
+    public function hidden($id, $value)
+    {
+        return '<input type="hidden" name="'.$id.'" value="'.$value.'" />';
+    }
 }
-?>
