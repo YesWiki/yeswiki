@@ -3,7 +3,7 @@
 /*
 backgroundimage.php
 
-2014 Florian Schmitt 
+2014 Florian Schmitt
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ if (!empty($file)) {
     //test d'existance du fichier
     if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
         $att->showFileNotExits();
-        //return; 
+        //return;
     }
 }
 
@@ -77,7 +77,8 @@ echo '<div class="background-image' . (!empty($class) ? ' ' . $class : '') . '" 
     .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
     .(!empty($height) ? 'height:' . $height . 'px; ' : '')
     .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '')
-    .'">' . "\n";
+    .'">' . "\n"
+    .'<div class="table-center">'."\n";
 $nocontainer = $this->GetParameter('nocontainer');
 if (empty($nocontainer)) {
     echo '<div class="container">' . "\n";

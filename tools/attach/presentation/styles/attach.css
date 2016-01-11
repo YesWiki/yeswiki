@@ -34,7 +34,7 @@
 
 /**************************Les classes effets graphiques pour les images**************************************************************************/
 
- 
+
  /* Style the figures */
 
 .attached_file {
@@ -95,18 +95,18 @@ figcaption *:last-child {
 
 
 /* fichiers attaches */
-.attached_file.attach_left, .attached_file.left { 
-float:left; 
-margin:0 18px 18px 0 !important; 
-} 
-.attached_file.attach_right, .attached_file.right { 
-float:right; 
+.attached_file.attach_left, .attached_file.left {
+float:left;
+margin:0 18px 18px 0 !important;
+}
+.attached_file.attach_right, .attached_file.right {
+float:right;
 margin:0 0 18px 18px !important;
-}  
-.attached_file.attach_center, .attached_file.center  { 
-display:table; 
-clear:both; 
-text-align:center; 
+}
+.attached_file.attach_center, .attached_file.center  {
+display:table;
+clear:both;
+text-align:center;
 margin:0 auto 18px auto !important;
 width:auto;
 }
@@ -123,13 +123,13 @@ background:#FFF;
  -moz-box-shadow: 1px 1px 2px #444;
  box-shadow: 1px 1px 2px #444;
 }
- 
+
  .lightshadow {
  -webkit-box-shadow: 1px 1px 2px #444;
  -moz-box-shadow: 1px 1px 2px #444;
  box-shadow: 1px 1px 2px #444;
- } 
- 
+ }
+
 .zoom {
 -moz-transition: -moz-transform .2s ease-out;
 -o-transition: -o-transform .2s ease-out;
@@ -165,7 +165,7 @@ box-shadow: 2px 2px 15px 0px #444;
 .img-marker {
   position:absolute;
   display:block;
-  height:10px; 
+  height:10px;
   width:10px;
   -webkit-border-radius:50%;
   border-radius:50%;
@@ -208,7 +208,15 @@ box-shadow: 2px 2px 15px 0px #444;
   background-origin:padding-box;
   background-position:0 0;
   background-repeat: no-repeat;
+  display: table;
+  width:100%;
 }
+
+.table-center {
+    display: table-cell;
+    vertical-align: middle;
+}
+
 .background-image.full-height {
   height: 100vh !important;
 }
