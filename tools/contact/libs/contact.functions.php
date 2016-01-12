@@ -20,32 +20,32 @@ function ValidateEmail($email)
 function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver, $subject, $messagebody)
 {
     $message['message'] = '';
-    $message['class'] = 'error';
+    $message['class'] = 'danger';
 
     // Check sender's name
     if ($type == 'contact' && !$name_sender) {
-        $message['message'] .= CONTACT_ENTER_NAME . '<br />';
+        $message['message'] .= _t('CONTACT_ENTER_NAME') . '<br />';
     }
 
     // Check sender's email
     if (!$mail_sender) {
-        $message['message'] .= CONTACT_ENTER_SENDER_MAIL . '<br />';
+        $message['message'] .= _t('CONTACT_ENTER_SENDER_MAIL') . '<br />';
     }
     if ($mail_sender && !ValidateEmail($mail_sender)) {
-        $message['message'] .= CONTACT_SENDER_MAIL_INVALID . '<br />';
+        $message['message'] .= _t('CONTACT_SENDER_MAIL_INVALID') . '<br />';
     }
 
     // Check the receiver's email
     if (!$mail_receiver) {
-        $message['message'] .= CONTACT_ENTER_RECEIVER_MAIL . '<br />';
+        $message['message'] .= _t('CONTACT_ENTER_RECEIVER_MAIL') . '<br />';
     }
     if ($mail_receiver && !ValidateEmail($mail_receiver)) {
-        $message['message'] .= CONTACT_RECEIVER_MAIL_INVALID . '<br />';
+        $message['message'] .= _t('CONTACT_RECEIVER_MAIL_INVALID') . '<br />';
     }
 
     // Check message (length)
     if ($type == 'contact' && (!$messagebody || strlen($messagebody) < 10)) {
-        $message['message'] .= CONTACT_ENTER_MESSAGE . '<br />';
+        $message['message'] .= _t('CONTACT_ENTER_MESSAGE') . '<br />';
     }
 
     // If no errors, we inform of success!

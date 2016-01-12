@@ -16,11 +16,11 @@
       if (inputsreq.length > 0) {
         inputsreq.each(function() {
           if (!($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
-            $(this).parents('.control-group').removeClass('has-error');
+            $(this).parents('.form-group').removeClass('has-error');
           } else {
             atleastonefieldnotvalid = true;
-            $(this).parents('.control-group').addClass('has-error');
-            $('<span>').addClass('help-block').text('La saisie de ce champ est obligatoire.').appendTo($(this).parents('.controls'));
+            $(this).parents('.form-group').addClass('has-error');
+            $('<span>').addClass('help-block').text('La saisie de ce champ est obligatoire.').appendTo($(this).parents('.form-group'));
           }
         });
       }
@@ -31,10 +31,10 @@
         var address = $(this).val();
         if (reg.test(address) == false && !(address === '' &&  $(this).attr('required') !== 'required')) {
           atleastonemailfieldnotvalid = true;
-          $(this).parents('.control-group').addClass('has-error');
-          $('<span>').addClass('help-block').text('L\'email saisi n\'est pas valide.').appendTo($(this).parents('.controls'));
+          $(this).parents('.form-group').addClass('has-error');
+          $('<span>').addClass('help-block').text('L\'email saisi n\'est pas valide.').appendTo($(this).parents('.form-group'));
         } else {
-          $(this).parents('.control-group').removeClass('has-error');
+          $(this).parents('.form-group').removeClass('has-error');
         }
       });
 
