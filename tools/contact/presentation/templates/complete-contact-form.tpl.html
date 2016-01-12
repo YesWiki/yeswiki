@@ -1,44 +1,44 @@
-<form id="ajax-contact-form<?php echo $nbactionmail; ?>" class="ajax-mail-form form-inline <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
-	<div class="control-group">
-		<div class="controls">
+<form id="ajax-contact-form<?php echo $nbactionmail; ?>" class="form-horizontal ajax-mail-form <?php echo $class; ?>" action="<?php echo $mailerurl; ?>">
+	<div class="control-group form-group">
+		<div class="controls col-sm-6">
 			<div class="input-prepend">
 		    	<span class="add-on"><i class="icon-user"></i></span>
-				<input required class="input-medium" type="text" name="name" value="" placeholder="<?php echo _t('CONTACT_YOUR_NAME'); ?>" />
+				<input required class="form-control" type="text" name="name" value="" placeholder="<?php echo _t('CONTACT_YOUR_NAME'); ?>" />
 			</div>
 		</div>
 	</div>
 
-	<div class="control-group">
-		<div class="controls">
+	<div class="control-group form-group">
+		<div class="controls col-sm-6">
 			<div class="input-prepend">
 		    	<span class="add-on"><i class="icon-envelope"></i></span>
-				<input required class="input-medium" type="email" name="email" value="" placeholder="<?php echo _t('CONTACT_YOUR_MAIL'); ?>" />
+				<input required class="form-control" type="email" name="email" value="" placeholder="<?php echo _t('CONTACT_YOUR_MAIL'); ?>" />
 			</div>
 		</div>
 	</div>
 
-	<div class="control-group">
-		<div class="controls">
+	<div class="control-group form-group">
+		<div class="controls col-sm-6">
 			<div class="input-prepend">
-				<input required class="contact-subject" type="text" name="subject" value="" placeholder="<?php echo _t('CONTACT_SUBJECT'); ?>" />
+				<input required class="form-control contact-subject" type="text" name="subject" value="" placeholder="<?php echo _t('CONTACT_SUBJECT'); ?>" />
 			</div>
 		</div>
 	</div>
 
-	<div class="control-group">
-		<div class="controls">
+	<div class="control-group form-group">
+		<div class="controls col-sm-6">
 			<div class="input-prepend">
-				<textarea required class="contact-message" name="message" placeholder="<?php echo _t('CONTACT_YOUR_MESSAGE'); ?>"></textarea>
+				<textarea required rows="8" class="form-control contact-message" name="message" placeholder="<?php echo _t('CONTACT_YOUR_MESSAGE'); ?>"></textarea>
 			</div>
 		</div>
 	</div>
 
-	<div class="control-group">
-		<div class="controls">
-			<button class="btn btn-primary mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo _t('CONTACT_SEND_MESSAGE'); ?></button>
+	<div class="control-group form-group">
+		<div class="controls col-sm-6">
+			<button class="btn btn-primary btn-block mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;<?php echo _t('CONTACT_SEND_MESSAGE'); ?></button>
 		</div>
 	</div>
 	<input type="hidden" name="nbactionmail" value="<?php echo $nbactionmail; ?>" />
-	<input type="hidden" name="entete" value="<?php echo $entete; ?>" />	
-	<input type="hidden" name="type" value="contact" />	
+	<input type="hidden" name="entete" value="<?php echo $entete; ?>" />
+	<input type="hidden" name="type" value="contact" />
 </form>
