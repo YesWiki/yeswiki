@@ -52,7 +52,7 @@ if (!empty($file)) {
     }
 
     if (!class_exists('attach')) {
-        include ('tools/attach/actions/attach.class.php');
+        include('tools/attach/actions/attach.class.php');
     }
     $att = new attach($this);
 
