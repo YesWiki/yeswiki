@@ -161,12 +161,9 @@ function baz_afficher_liste_fiches_utilisateur()
         . _t('BAZ_IDENTIFIEZ_VOUS_POUR_VOIR_VOS_FICHES') . '</div>' . "\n";
     }
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
-    $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
-        BAZ_VOIR_SAISIR);
-    $res .= '<a class="btn btn-primary" href="' . str_replace('&', '&amp;',
-        $GLOBALS['_BAZAR_']['url']->getURL())
+    $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR);
+    $res .= '<a class="btn btn-primary" href="' . str_replace('&', '&amp;', $GLOBALS['_BAZAR_']['url']->getURL())
     . '" title="' . _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE')
-
     . '"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i>&nbsp;'
     . _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') . '</a></li></ul>';
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
@@ -1208,11 +1205,9 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
     //si le type de formulaire requiert une acceptation des conditions on affiche les conditions
     if ($form['bn_condition'] != '' && !isset($_POST['accept_condition']) &&
         !isset($_POST['bf_titre'])) {
-        $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION,
-            BAZ_ACTION_NOUVEAU);
+        $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU);
         if (!empty($valeurs['id_fiche'])) {
-            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche',
-                $valeurs['id_fiche']);
+            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $valeurs['id_fiche']);
         }
         $formtemplate->updateAttributes(
             array(
@@ -1227,12 +1222,9 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
         HTML_QuickForm_html('<tr><td colspan="2">' . $form['bn_condition'] .
             '</td>' . "\n" . '</tr>' . "\n");
         $formtemplate->addElement($conditions);
-        $formtemplate->addElement('checkbox', 'accept_condition',
-            _t('BAZ_ACCEPTE_CONDITIONS'));
-        $formtemplate->addElement('hidden', 'id_typeannonce',
-            $form['bn_id_nature']);
-        $formtemplate->addRule('accept_condition',
-            _t('BAZ_ACCEPTE_CONDITIONS_REQUIS'), 'required', '', 'client');
+        $formtemplate->addElement('checkbox', 'accept_condition', _t('BAZ_ACCEPTE_CONDITIONS'));
+        $formtemplate->addElement('hidden', 'id_typeannonce', $form['bn_id_nature']);
+        $formtemplate->addRule('accept_condition', _t('BAZ_ACCEPTE_CONDITIONS_REQUIS'), 'required', '', 'client');
 
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
@@ -1282,21 +1274,17 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
         for ($i = 0; $i < count($tableau); $i++) {
             $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
         }
-        $formtemplate->addElement('hidden', 'id_typeannonce',
-            $form['bn_id_nature']);
+        $formtemplate->addElement('hidden', 'id_typeannonce', $form['bn_id_nature']);
 
         //si on a passe une url, on est dans le cas d'une page de type fiche_bazar, il nous faut le nom
         if ($url != '') {
-            $formtemplate->addElement('hidden', 'id_fiche',
-                $valeurs['id_fiche']);
+            $formtemplate->addElement('hidden', 'id_fiche', $valeurs['id_fiche']);
         }
 
         // Bouton d annulation : on retourne a la visualisation de la fiche saisie en cas de modification
         if ($mode == 'modification') {
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION,
-                BAZ_VOIR_FICHE);
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
-                BAZ_VOIR_CONSULTER);
+            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
+            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
 
             // Bouton d annulation : on retourne a la page wiki sans aucun choix par defaut sinon
         } else {
@@ -4343,6 +4331,26 @@ function getAllParameters($wiki)
     $param['zoom_molette'] = $wiki->GetParameter('zoommolette');
     if (empty($param['zoom_molette'])) {
         $param['zoom_molette'] = BAZ_PERMETTRE_ZOOM_MOLETTE;
+    }
+
+    /*
+    *
+    * Affichage en eclate des points superposes : true or false, par defaut false
+    *
+    */
+    $param['spider'] = $wiki->GetParameter('spider'); // true or false
+    if (empty($param['spider'])) {
+        $param['spider'] = 'false';
+    }
+
+    /*
+    *
+    * Affichage en cluster : true or false, par defaut false
+    *
+    */
+    $param['cluster'] = $wiki->GetParameter('cluster'); // true or false
+    if (empty($param['cluster'])) {
+        $param['cluster'] = 'false';
     }
 
     /*

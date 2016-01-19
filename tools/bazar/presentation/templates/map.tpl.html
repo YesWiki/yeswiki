@@ -4,6 +4,9 @@ if (count($fiches)>0) :
     echo $pager_links;
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.ie.css', '<!--[if lte IE 8]>', '<![endif]-->');
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
     ?>
 
     <div id="osmmap<?php echo $GLOBALS['nbbazarliste']; ?>"
@@ -11,14 +14,31 @@ if (count($fiches)>0) :
          style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
     <?php
     $tablinktitle = array();
-    $markersjs = '';
+    if ($param['spider'] == 'true' or $param['spider'] == '1') {
+        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js');
+        $markersjs = 'var popups = Array();'."\n".'oms = new OverlappingMarkerSpiderfier(map'.$GLOBALS['nbbazarliste'].');'."\n".
+        'var popup = new L.Popup();
+        oms.addListener("click", function(marker) {
+            marker.openPopup();
+        });
+        oms.addListener(\'spiderfy\', function(markers) {
+          map'.$GLOBALS['nbbazarliste'].'.closePopup();
+        });'."\n";
+    } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
+      $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/markercluster/MarkerCluster.css');
+      $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/markercluster/leaflet.markercluster.js');
+      $markersjs = 'var markerscluster = new L.MarkerClusterGroup();'."\n";
+    } else {
+        $markersjs = '';
+    }
+
     $i = 0;
     foreach ($fiches as $fiche) :?>
         <?php
 
         // couleur de marqueur
         $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, BAZ_MARKER_COLOR);
-        
+
         //icone de marqueur
         $icon = $param['iconprefix']
             .getCustomValueForEntry($param['icon'], $param['iconfield'], $fiche, BAZ_MARKER_ICON);
@@ -44,26 +64,32 @@ if (count($fiches)>0) :
                     }),
                     title: \''.addslashes($fiche['bf_titre']).'\'
                 });
-            map.addLayer(marker[i]);
             marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes($fiche['html'])).'\');
             ';
+            if ($param['spider'] == 'true' or $param['spider'] == '1') {
+                $markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
+            } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
+                $markersjs .= 'markerscluster.addLayer(marker[i]);'."\n";
+            } else {
+                $markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n";
+            }
             $i++;
         }
     endforeach; ?>
     <?php
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
+    if ($param['cluster'] == 'true' or $param['cluster'] == '1') {
+        $markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(markerscluster);'."\n";
+    }
     $GLOBALS['wiki']->AddJavascript(
         '// Init leaflet map
-    var map = new L.Map(\'osmmap'.$GLOBALS['nbbazarliste'].'\', {
+    var map'.$GLOBALS['nbbazarliste'].' = new L.Map(\'osmmap'.$GLOBALS['nbbazarliste'].'\', {
         scrollWheelZoom:'.$param['zoom_molette'].',
         zoomControl:'.$param['navigation'].',
         iconAnchor:   [6, 20]
     });
 
-    var provider = L.tileLayer.provider(\''.$param['provider'].'\''.$param['provider_credentials'].').addTo(map);
-    map.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
+    var provider = L.tileLayer.provider(\''.$param['provider'].'\''.$param['provider_credentials'].').addTo(map'.$GLOBALS['nbbazarliste'].');
+    map'.$GLOBALS['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
 
     var i = 0;
     var marker = Array();
