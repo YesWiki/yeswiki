@@ -1762,13 +1762,15 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     var point = map.getCenter();
                 }
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup("<div class=\"input-group input-group-sm\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i></span><input type=\"text\" class=\"form-control\" placeholder=\"Latitude\" id=\"bf_latitude\" name=\"bf_latitude\" value=\""+point.lat+"\"><input type=\"text\" class=\"form-control\" placeholder=\"Longitude\" id=\"bf_longitude\" name=\"bf_longitude\" value=\""+point.lng+"\"></div><br>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. :<span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
                     map.panTo( geocodedmarker.getLatLng(), {animate:true});
                 geocodedmarker.on("dragend",function(ev){
                     this.openPopup();
                     var changedPos = ev.target.getLatLng();
                     $(\'#bf_latitude\').val(changedPos.lat);
                     $(\'#bf_longitude\').val(changedPos.lng);
+                    $(\'.bf_latitude\').html(changedPos.lat);
+                    $(\'.bf_longitude\').html(changedPos.lng);
                 });
               })
               .fail(function(error) {
@@ -1778,23 +1780,26 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 //console.log( "GetLocations finished" );
               });
         }'."\n";
-
         $deflat = '';
         $deflon = '';
         if (isset($valeurs_fiche['carte_google'])) {
             $tab = explode('|', $valeurs_fiche['carte_google']);
             if (count($tab) > 1 && !empty($tab[0]) && !empty($tab[1])) {
-                $geocodingscript .= 'var point = L.latLng('.$tab[0].', '.$tab[1].');
+                $deflat = $tab[0];
+                $deflon = $tab[1];
+                $geocodingscript .= 'var point = L.latLng('.$deflat.', '.$deflon.');
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
                 map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                geocodedmarker.bindPopup("<div class=\"input-group input-group-sm\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i></span><input type=\"text\" class=\"form-control\" placeholder=\"Latitude\" id=\"bf_latitude\" name=\"bf_latitude\" value=\""+point.lat+"\"><input type=\"text\" class=\"form-control\" placeholder=\"Longitude\" id=\"bf_longitude\" name=\"bf_longitude\" value=\""+point.lng+"\"></div><br>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false});
-
+                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false});
                 geocodedmarker.on("dragend",function(ev){
-                    this.openPopup();
+                    this.openPopup(point);
                     var changedPos = ev.target.getLatLng();
                     $(\'#bf_latitude\').val(changedPos.lat);
                     $(\'#bf_longitude\').val(changedPos.lng);
-                });';
+                    $(\'.bf_latitude\').html(changedPos.lat);
+                    $(\'.bf_longitude\').html(changedPos.lng);
+                });
+                ';
             }
         }
         $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
@@ -1815,7 +1820,10 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 <label class="control-label col-sm-3"></label>
                 <div class="controls col-sm-9">
                     <input class="btn btn-primary btn_adresse" onclick="showAddress();" value="'
-            ._t('BAZ_VERIFIER_MON_ADRESSE') . '" type="button">'
+            ._t('BAZ_VERIFIER_MON_ADRESSE') . '" type="button">
+            <input type="hidden" value="'.$deflat.'" id="bf_latitude" name="bf_latitude">
+            <input type="hidden" value="'.$deflon.'" id="bf_longitude" name="bf_longitude">
+            '
             .'<div id="osmmapform" style="margin-top:5px; width:'.BAZ_GOOGLE_IMAGE_LARGEUR.'; height:'
             .BAZ_GOOGLE_IMAGE_HAUTEUR.';"></div>
                 </div>
