@@ -231,3 +231,7 @@ box-shadow: 2px 2px 15px 0px #444;
   margin: 0 !important;
 }
 .headerpage .background-image { margin:-20px; padding:20px;}
+
+.white, .white h1, .white h2, .white h3, .white h4, .white h5, .white h6, .white a, .white a:hover {
+  color:#fff !important;
+}
