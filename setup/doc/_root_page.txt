@@ -1,6 +1,12 @@
-======Bienvenue !======
+======Félicitations, votre wiki est installé ! ======
 
-Cliquez sur le lien "Editer cette page" au bas de la page pour d�marrer,
-ou bien apprenez � faire vos PremiersPasSurLeWiki.
+Pour vous approprier votre nouvel outil, voici quelques éléments pour pour démarrer :
 
-Pages utiles : PagesOrphelines, PagesACreer, RechercheTexte, ReglesDeFormatage, AideWikiNi, TableauDeBordDeCeWiki, AdministrationDeWikiNi.
+ - pour modifier une page de votre Yeswiki, le double-clic est votre ami !
+  - essayez ainsi de modifier la page présente (page d'accueil). Un double clic n'importe ou dans la partie centrale de la page vous permettra d'atteindre le mode édition
+  - vous souhaitez modifier le menu horizontal général ? Double cliquez gauche sur ce menu (en dehors des onglets), et vous aurez accès à l'édition de ce menu. Utiliser les tirets (" - ") pour créer de nouvelles entrées.
+
+ - le menu d'administration en haut à droite, accessible depuis la roue crantée (clic gauche) vous permettra :
+  - de [[WikiAdmin gérer le site (pages, comptes et groupes utilisateurs,..)]]
+  - d’administrer la [[BazaR base de données Bazar]]
+  - de consulter les [[TableauDeBord dernières modifications sur le wiki]]

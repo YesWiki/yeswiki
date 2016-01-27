@@ -2,7 +2,7 @@
 
 	- [[CoursUtilisationYesWiki Cours sur l'utilisation de YesWiki]]
 	- ReglesDeFormatage : résumé des syntaxes permettant la mise en forme du texte.
-	- ListeDesActionsWikini : liste des actions disponible
-	- ControlerLAccesAuxPages : explique comment gérer les droits d'accès aux page
+	- ListeDesActions : liste des actions disponibles
+	- ControlerLAccesAuxPages : explique comment gérer les droits d'accès aux pages
 
-""<iframe class="yeswiki_frame" width="100%" height="3000" frameborder="0" src="http://yeswiki.net/wakka.php?wiki=CodeExemple/iframe"></iframe>""
+""<a onclick="var iframe = document.getElementById('yeswiki-doc');iframe.src = 'http://yeswiki.net/cercopitheque/wakka.php?wiki=DocumentatioN/iframe';" class="btn btn-default"><i class="fa fa-home"></i> Accueil de la documentation</a><iframe id="yeswiki-doc" width="100%" height="1000" frameborder="0" src="http://yeswiki.net/cercopitheque/wakka.php?wiki=DocumentatioN/iframe"></iframe>""

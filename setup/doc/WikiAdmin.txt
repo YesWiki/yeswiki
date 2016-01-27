@@ -1,21 +1,28 @@
 {{grid}}
-{{col size="6"}} 
+{{col size="6"}}
 ===Gérer les menus de ce wiki===
  - [[PageMenuHaut Editer menu horizontal d'en haut]]
  - [[PageTitre Editer le titre]]
  - [[PageRapideHaut Editer le menu roue crantée]]
  - [[PageHeader Editer le bandeau]]
  - [[PageFooter Editer le footer]]
-
+------
+===Gérer les droits des pages===
+{{gererdroits}}
+------
+===Gérer les thèmes des pages===
+{{gererthemes}}
+------
+{{end elem="col"}}
+{{col size="6"}}
 ===Gérer les groupes d'utilisateurs===
 nécessite une connexion admin
 {{editgroups}}
-{{end elem="col"}} 
-{{col size="6"}} 
-=== Gestion des tags ===
+------
+===Gestion des tags ===
 {{admintag}}
 ------
-=== Gestion des commentaires ===
+===Gestion des commentaires ===
 {{erasespamedcomments}}
 ------
 {{end elem="col"}}

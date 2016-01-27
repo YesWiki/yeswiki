@@ -1,1 +1,1 @@
- - [[PagePrincipale Accueil]]
+ - [[{{root_page}} Accueil]]
