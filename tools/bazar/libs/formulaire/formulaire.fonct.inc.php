@@ -1762,8 +1762,10 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     var point = map.getCenter();
                 }
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. :<span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
                     map.panTo( geocodedmarker.getLatLng(), {animate:true});
+                $(\'#bf_latitude\').val(point.lat);
+                $(\'#bf_longitude\').val(point.lng);  
                 geocodedmarker.on("dragend",function(ev){
                     this.openPopup();
                     var changedPos = ev.target.getLatLng();
