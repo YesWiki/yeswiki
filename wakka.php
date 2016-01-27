@@ -44,11 +44,11 @@ to look as small as what it does. Basically. Oh, I just suck. :)
 define("WAKKA_VERSION", "0.1.1");
 define("WIKINI_VERSION", "0.5.0");
 define("YESWIKI_VERSION", "Cercopitheque");
-define("YESWIKI_RELEASE", "2013.12.25");
+define("YESWIKI_RELEASE", "2016.01.25");
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
 include 'includes/i18n.inc.php';
-
+//error_reporting(E_ALL);
 // start the compute time
 list($g_usec, $g_sec) = explode(" ", microtime());
 define("t_start", (float) $g_usec + (float) $g_sec);
@@ -80,7 +80,7 @@ class Wiki
     public $_actionsAclsCache = array();
 
     // constructor
-    public function Wiki($config)
+    public function __construct($config)
     {
         $this->config = $config;
         // some host do not allow mysql_pconnect
@@ -1787,20 +1787,21 @@ if (file_exists("locked")) {
 }
 
 // compare versions, start installer if necessary
-if ($wakkaConfig["wakka_version"] && (!$wakkaConfig["wikini_version"])) {$wakkaConfig["wikini_version"] = $wakkaConfig["wakka_version"];}
+if ($wakkaConfig["wakka_version"] && (!$wakkaConfig["wikini_version"])) {
+    $wakkaConfig["wikini_version"] = $wakkaConfig["wakka_version"];
+}
 if (($wakkaConfig["wakka_version"] != WAKKA_VERSION) || ($wakkaConfig["wikini_version"] != WIKINI_VERSION)) {
+
     // start installer
     if (!isset($_REQUEST["installAction"]) or !$installAction = trim($_REQUEST["installAction"])) {
         $installAction = "default";
     }
-
     include "setup/header.php";
     if (file_exists("setup/" . $installAction . ".php")) {
         include "setup/" . $installAction . ".php";
     } else {
         echo "<em>" . _t("INVALID_ACTION") . "</em>";
     }
-
     include "setup/footer.php";
     exit;
 }
