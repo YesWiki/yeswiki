@@ -1458,89 +1458,102 @@ function baz_requete_bazar_fiche($valeur)
  */
 function baz_insertion_fiche($valeur)
 {
-    //on teste au moins l'existence du titre car sans titre ca peut bugguer serieusement
-    if (isset($valeur['bf_titre'])) {
-        $valeur = baz_requete_bazar_fiche($valeur);
-
-        // on change provisoirement d'utilisateur
-        if (isset($GLOBALS['utilisateur_wikini'])) {
-            $olduser = $GLOBALS['wiki']->GetUser();
-            $GLOBALS['wiki']->LogoutUser();
-
-            // On s'identifie de facon a attribuer la propriete de la fiche a l'utilisateur qui vient d etre cree
-            $user = $GLOBALS['wiki']->LoadUser($GLOBALS['utilisateur_wikini']);
-            $GLOBALS['wiki']->SetUser($user);
-        }
-
-        // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
-        $saved = $GLOBALS['wiki']->SavePage($valeur['id_fiche'], json_encode($valeur));
-
-        // on cree un triple pour specifier que la page wiki creee est une fiche bazar
-        if ($saved == 0) {
-            $GLOBALS['wiki']->InsertTriple(
-                $valeur['id_fiche'],
-                'http://outils-reseaux.org/_vocabulary/type',
-                'fiche_bazar',
-                '',
-                ''
-            );
-        }
-
-        // on remet l'utilisateur initial
-        if (isset($GLOBALS['utilisateur_wikini'])) {
-            $GLOBALS['wiki']->LogoutUser();
-            if (!empty($olduser)) {
-                $GLOBALS['wiki']->SetUser($olduser, 1);
-            }
-        }
-
-        // Envoi d un mail aux administrateurs
-        if (BAZ_ENVOI_MAIL_ADMIN) {
-            include_once 'tools/contact/libs/contact.functions.php';
-
-            $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
-                    ->config['base_url']);
-                $sujet = remove_accents('[' . str_replace('http://', '', $lien)
-                . '] nouvelle fiche ajoutee : ' . $valeur['bf_titre']);
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
-            $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
-            $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $valeur['id_fiche']);
-            $text =
-            'Voir la fiche sur le site pour l\'administrer : ' .
-            $GLOBALS['_BAZAR_']['url']->getUrl();
-            $texthtml = '<br /><br /><a href="' . $GLOBALS['_BAZAR_']['url']
-                ->getUrl()
-            .'" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-            $fichier = 'tools/bazar/presentation/styles/bazar.css';
-            $style   = file_get_contents($fichier);
-            $style   = str_replace('url(', 'url(' . $lien . '/tools/bazar/presentation/', $style);
-            $fiche = str_replace(
-                'src="tools',
-                'src="' . $lien . '/tools',
-                baz_voir_fiche(0, $valeur['id_fiche'])
-            ) . $texthtml;
-            $html =
-            '<html><head><style type="text/css">' . $style .
-            '</style></head><body>' . $fiche . '</body></html>';
-
-            //on va chercher les admins
-            $requeteadmins = 'SELECT value FROM ' . $GLOBALS['wiki']
-                ->config['table_prefix'] . 'triples '
-            .'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-            $ligne    = $GLOBALS['wiki']->LoadSingle($requeteadmins);
-            $tabadmin = explode("\n", $ligne['value']);
-            foreach ($tabadmin as $line) {
-                $admin = $GLOBALS['wiki']->LoadUser(trim($line));
-                send_mail(BAZ_ADRESSE_MAIL_ADMIN, BAZ_ADRESSE_MAIL_ADMIN, $admin['email'], $sujet, $text, $html);
-            }
-        }
-
-        return $valeur;
-    } else {
+    // On teste au moins l'existence du titre car sans titre ça peut bugguer
+    // sérieusement
+    if (!isset($valeur['bf_titre'])){
         // sinon on met un message d'erreur
         die('<div class="alert alert-danger">' .
             _t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . '</div>');
     }
+
+    $valeur = baz_requete_bazar_fiche($valeur);
+
+    // on change provisoirement d'utilisateur
+    if (isset($GLOBALS['utilisateur_wikini'])) {
+        $olduser = $GLOBALS['wiki']->GetUser();
+        $GLOBALS['wiki']->LogoutUser();
+
+        // On s'identifie de facon a attribuer la propriete de la fiche a
+        // l'utilisateur qui vient d etre cree
+        $user = $GLOBALS['wiki']->LoadUser($GLOBALS['utilisateur_wikini']);
+        $GLOBALS['wiki']->SetUser($user);
+    }
+
+    $ignoreAcls = true;
+    if (isset($GLOBALS['wiki']->config['bazarIgnoreAcls'])) {
+        $ignoreAcls = $GLOBALS['wiki']->config['bazarIgnoreAcls'];
+    }
+
+    // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
+    $saved = $GLOBALS['wiki']->SavePage(
+        $valeur['id_fiche'],
+        json_encode($valeur),
+        "",
+        $ignoreAcls // Ignore les ACLs
+    );
+
+    // on cree un triple pour specifier que la page wiki creee est une fiche
+    // bazar
+    if ($saved == 0) {
+        $GLOBALS['wiki']->InsertTriple(
+            $valeur['id_fiche'],
+            'http://outils-reseaux.org/_vocabulary/type',
+            'fiche_bazar',
+            '',
+            ''
+        );
+    }
+
+    // on remet l'utilisateur initial
+    if (isset($GLOBALS['utilisateur_wikini'])) {
+        $GLOBALS['wiki']->LogoutUser();
+        if (!empty($olduser)) {
+            $GLOBALS['wiki']->SetUser($olduser, 1);
+        }
+    }
+
+    // Envoi d un mail aux administrateurs
+    if (BAZ_ENVOI_MAIL_ADMIN) {
+        include_once 'tools/contact/libs/contact.functions.php';
+
+        $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
+                ->config['base_url']);
+            $sujet = remove_accents('[' . str_replace('http://', '', $lien)
+            . '] nouvelle fiche ajoutee : ' . $valeur['bf_titre']);
+        $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
+        $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
+        $GLOBALS['_BAZAR_']['url']->addQueryString('id_fiche', $valeur['id_fiche']);
+        $text =
+        'Voir la fiche sur le site pour l\'administrer : ' .
+        $GLOBALS['_BAZAR_']['url']->getUrl();
+        $texthtml = '<br /><br /><a href="' . $GLOBALS['_BAZAR_']['url']
+            ->getUrl()
+        .'" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
+        $fichier = 'tools/bazar/presentation/styles/bazar.css';
+        $style   = file_get_contents($fichier);
+        $style   = str_replace('url(', 'url(' . $lien . '/tools/bazar/presentation/', $style);
+        $fiche = str_replace(
+            'src="tools',
+            'src="' . $lien . '/tools',
+            baz_voir_fiche(0, $valeur['id_fiche'])
+        ) . $texthtml;
+        $html =
+        '<html><head><style type="text/css">' . $style .
+        '</style></head><body>' . $fiche . '</body></html>';
+
+        //on va chercher les admins
+        $requeteadmins = 'SELECT value FROM ' . $GLOBALS['wiki']
+            ->config['table_prefix'] . 'triples '
+        .'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
+        $ligne    = $GLOBALS['wiki']->LoadSingle($requeteadmins);
+        $tabadmin = explode("\n", $ligne['value']);
+        foreach ($tabadmin as $line) {
+            $admin = $GLOBALS['wiki']->LoadUser(trim($line));
+            send_mail(BAZ_ADRESSE_MAIL_ADMIN, BAZ_ADRESSE_MAIL_ADMIN, $admin['email'], $sujet, $text, $html);
+        }
+    }
+
+    return $valeur;
 }
 
 /** baz_mise_a_jour() - Mettre a jour une fiche
