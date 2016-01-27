@@ -24,7 +24,7 @@ $yeswikijs = false;
 $dir = (is_dir($repertoire) ? opendir($repertoire) : false);
 while ($dir && ($file = readdir($dir)) !== false) {
     if (substr($file, -3, 3) == '.js') {
-        $scripts[] = '  <script src="' . $repertoire . '/' . $file . '"></script>' . "\n";
+        $scripts[] = '  <script async src="' . $repertoire . '/' . $file . '"></script>' . "\n";
         if (strstr($file, 'bootstrap.min.') || strstr($file, 'bs.')) {
             // le theme contient deja le js de bootstrap
             $bootstrapjs = true;
@@ -33,7 +33,7 @@ while ($dir && ($file = readdir($dir)) !== false) {
             // le theme contient deja le js de yeswiki
             $yeswikijs = true;
         }
-        
+
     }
 }
 if (is_dir($repertoire)) {
@@ -52,7 +52,7 @@ if (isset($scripts) && is_array($scripts)) {
 
 // s'il n'y a pas le javascript de bootstrap dans le theme, on le rajoute
 if (!$bootstrapjs) {
-    $yeswiki_javascripts .= '    <script src="tools/templates/libs/vendor/bootstrap-2.3.2.min.js"></script>' . "\n";
+    $yeswiki_javascripts .= '    <script defer src="tools/templates/libs/vendor/bootstrap.min.js"></script>' . "\n";
 }
 
 // on ajoute les javascripts du theme
@@ -60,7 +60,7 @@ $yeswiki_javascripts .= $yeswiki_javascripts_dir;
 
 // s'il n'y a pas le javascript de yeswiki dans le theme, on le rajoute
 if (!$yeswikijs) {
-    $yeswiki_javascripts .= '    <script src="tools/templates/libs/yeswiki-base.js"></script>' . "\n";
+    $yeswiki_javascripts .= '    <script defer src="tools/templates/libs/yeswiki-base.js"></script>' . "\n";
 }
 
 // si quelque chose est passée dans la variable globale pour le javascript, on l'intègre

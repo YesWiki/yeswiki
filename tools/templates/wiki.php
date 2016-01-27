@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
  * Fichier de lancement et de configuration de l'extension Templates
  *
@@ -57,7 +57,7 @@ $wikiClasses[] = 'Template';
 
 
 $wikiClassesContent [] = '
-    function AddCSS($style) {    
+    function AddCSS($style) {
         if (!isset($GLOBALS[\'css\'])) {
             $GLOBALS[\'css\'] = \'\';
         }
@@ -67,7 +67,7 @@ $wikiClassesContent [] = '
         return;
     }
 
-    function AddCSSFile($file, $conditionstart=\'\', $conditionend=\'\') {    
+    function AddCSSFile($file, $conditionstart=\'\', $conditionend=\'\') {
         if (!isset($GLOBALS[\'css\'])) {
             $GLOBALS[\'css\'] = \'\';
         }
@@ -79,22 +79,22 @@ $wikiClassesContent [] = '
         return;
     }
 
-    function AddJavascript($script) {    
+    function AddJavascript($script) {
         if (!isset($GLOBALS[\'js\'])) {
             $GLOBALS[\'js\'] = \'\';
         }
         if (!empty($script) && !strpos($GLOBALS[\'js\'], \'<script>\'."\n".$script.\'</script>\')) {
-            $GLOBALS[\'js\'] .= \'  <script>\'."\n".$script.\'</script>\'."\n";
+            $GLOBALS[\'js\'] .= \'  <script defer>\'."\n".$script.\'</script>\'."\n";
         }
         return;
     }
 
-    function AddJavascriptFile($file) {    
+    function AddJavascriptFile($file) {
         if (!isset($GLOBALS[\'js\'])) {
             $GLOBALS[\'js\'] = \'\';
         }
-        if (!strpos($GLOBALS[\'js\'], \'<script src="\'.$file.\'"></script>\') && !empty($file) && (file_exists($file) || strpos($file, "http://") === 0)) {
-            $GLOBALS[\'js\'] .= \'  <script src="\'.$file.\'"></script>\'."\n";
+        if (!strpos($GLOBALS[\'js\'], \'<script defer src="\'.$file.\'"></script>\') && !empty($file) && (file_exists($file) || strpos($file, "http://") === 0)) {
+            $GLOBALS[\'js\'] .= \'  <script defer src="\'.$file.\'"></script>\'."\n";
         }
         return;
     }
@@ -106,22 +106,22 @@ $wikiClassesContent [] = '
                 {
                         return $pages;
                 }
-        }    
-        
-        
+        }
+
+
     function GetMethod() {
           if ($this->method==\'iframe\')
           {
             return \'show\';
-        } 
+        }
         else
         {
             return Wiki::GetMethod();
         }
     }
-    
-    
-    function GetMetaDatas($pagetag) {    
+
+
+    function GetMetaDatas($pagetag) {
         $metadatas = $this->GetTripleValue($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', \'\', \'\', \'\');
         if (!empty($metadatas)) {
             if (TEMPLATES_DEFAULT_CHARSET != \'UTF-8\') return array_map(\'utf8_decode\', json_decode($metadatas, true));
@@ -131,8 +131,8 @@ $wikiClassesContent [] = '
             return false;
         }
     }
-    
-    
+
+
     function SaveMetaDatas($pagetag, $metadatas) {
         $former_metadatas = $this->GetMetaDatas($pagetag);
 
@@ -145,7 +145,7 @@ $wikiClassesContent [] = '
         else $metadatas = json_encode($metadatas);
         return $this->InsertTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', $metadatas, \'\', \'\');
     }
-    
+
 ';
 
 //on récupère les metadonnées de la page
@@ -174,8 +174,8 @@ header('Content-Type: text/html; charset=' . TEMPLATES_DEFAULT_CHARSET);
 if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_template']=='1' ) {
     if (!isset($wakkaConfig['favorite_theme'])) $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
     if (!isset($wakkaConfig['favorite_style'])) $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-    if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT; 
-    if (!isset($wakkaConfig['favorite_background_image'])) $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT; 
+    if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+    if (!isset($wakkaConfig['favorite_background_image'])) $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
 }
 // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
 else {
@@ -204,7 +204,7 @@ else {
             } else {
                 $wakkaConfig['favorite_background_image'] = '';
             }
-            
+
         }
         //on récupére les valeurs du template associées à la page de l'ancienne version de templates
         else {

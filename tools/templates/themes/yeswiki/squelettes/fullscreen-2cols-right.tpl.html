@@ -4,53 +4,70 @@
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="{{configuration param="lang"}}"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="{{configuration param="lang"}}"> <!--<![endif]-->
 <head>
-	<!-- HTML Metas -->
-	<meta charset="{{configuration param="charset"}}">
-	{{metarobots}}
-	<meta name="keywords" content="{{configuration param="meta_keywords"}}" />
-	<meta name="description" content="{{configuration param="meta_description"}}" />
-	<meta name="viewport" content="width=device-width" />
+  <!-- HTML Metas -->
+  <meta charset="{{configuration param="charset"}}">
+  {{metarobots}}
+  <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+  <meta name="description" content="{{configuration param="meta_description"}}" />
+  <meta name="viewport" content="width=device-width" />
 
-	<!-- Title of the page -->
-	<title>{{configuration param="wakka_name"}} : {{currentpage}}</title>
-	
-	<!-- Favicons -->
-	<link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico" />
-	<link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png" />
-	<link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
-	
-	{{linkstyle othercss="bootstrap/bootstrap-responsive.min.css"}}
-	{{linkrss}}
+  <!-- Title of the page -->
+  <title>{{configuration param="wakka_name"}} : {{currentpage}}</title>
+
+  <!-- Favicons -->
+  <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico" />
+  <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
+
+  {{linkstyle}}
+  {{linkrss}}
 </head>
 
 <body {{parambody}}>
-	<div id="fullcontainer">
-		<header>
-			{{include page="PageRapideHaut" class="topbarpage" doubleclic="1"}}
-			{{include page="PageHeader" class="headerpage" doubleclic="1"}}
-		</header><!-- end of header -->
+  <div id="yw-container" class="yw-fullscreen">
+    <header id="yw-header">
+      {{include page="PageHeader" class="yw-headerpage" doubleclic="1"}}
+    </header><!-- /#yw-header -->
 
-		<nav id="topnav" class="fixable">
-			{{include page="PageMenuHaut" class="topnavpage horizontal-dropdown-menu" doubleclic="1" actif="1"}}
-		</nav><!-- end of #topnav -->
-		 
-		<div id="main" role="main">
-			<div class="row-fluid">
-				<div class="span9" {{doubleclic}}>
-					{WIKINI_PAGE}
-				</div>
-				<div class="span3">
-					{{include page="PageMenu" class="menupage vertical-dropdown-menu" doubleclic="1" actif="1"}}
-				</div>
-			</div><!-- end of .row-fluid -->
-		</div><!-- end of #main -->
-		{{barreredaction}}
+    <nav id="yw-topnav" class="navbar navbar-default fixable" role="navigation">
+      <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{include page="PageTitre" doubleclic="1"}}</a>
+          </div> <!-- /.navbar-header -->
+          <div class="navbar-collapse collapse">
+            {{include page="PageMenuHaut" class="yw-topnav topnavpage" doubleclic="1" actif="1"}}
+            {{include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclic="1" actif="1"}}
+          </div> <!-- /.navbar-collapse -->
+        </div> <!-- /.container -->
+    </nav><!-- /#yw-topnav -->
 
-		<footer>
-			{{include page="PageFooter" class="footerpage" doubleclic="1"}}
-		</footer><!-- end of footer -->
-	</div> <!-- end of #container -->
+    <div id="yw-main" role="main" {{doubleclic}}>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-9" {{doubleclic}}>
+            {WIKINI_PAGE}
+          </div>
+          <div class="col-md-3">
+            {{include page="PageMenu" class="menupage vertical-dropdown-menu" doubleclic="1" actif="1"}}
+          </div>
+        </div><!-- /.row -->
+        {{barreredaction}}
+      </div> <!-- /.container -->
+    </div><!-- /#yw-main -->
 
-	{{linkjavascript}}
+    <footer id="yw-footer">
+      <div class="container">
+        {{include page="PageFooter" class="footerpage" doubleclic="1"}}
+      </div> <!-- /.container -->
+    </footer><!-- /#yw-footer -->
+  </div> <!-- /#yw-container -->
+
+  {{linkjavascript}}
 </body>
 </html>
