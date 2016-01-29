@@ -25,7 +25,7 @@
 
 *@package 		yeswiki
 *@author        Louise Didier <louise@quincaillere.org>
-*@copyright     2014 Outils-Réseaux
+*@copyright     2016 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array(
