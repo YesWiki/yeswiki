@@ -192,7 +192,7 @@ $(document).ready(function() {
         $(this).removeClass('invalid');
       }
     });
-    
+
     // affichage des erreurs de validation
     if (atleastonefieldnotvalid === true) {
       alert('Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)');
@@ -224,7 +224,7 @@ $(document).ready(function() {
       $('html, body').animate({
         scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80
       }, 800);
-    } 
+    }
     // formulaire validé, on soumet le formulaire
     else {
       $('#formulaire').submit();
@@ -280,7 +280,7 @@ $(document).ready(function() {
   }]);
 
   // Onglets
-  $('.nav-tabs a').click(function(e) {
+  $('.BAZ_cadre_fiche .nav-tabs a').click(function(e) {
     e.preventDefault();
     $(this).tab('show');
   });

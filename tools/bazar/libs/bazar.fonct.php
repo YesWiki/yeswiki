@@ -1414,14 +1414,14 @@ function baz_requete_bazar_fiche($valeur)
         include_once 'tools/contact/libs/contact.functions.php';
         $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
                 ->config['base_url']);
-            $sujet = remove_accents('[' . str_replace('http://', '',
+            $sujet = removeAccents('[' . str_replace('http://', '',
             $lien) . '] Votre fiche : ' . $_POST['bf_titre']);
         $lienfiche = $GLOBALS['wiki']->config['base_url'] .
         $valeur['id_fiche'];
-        $texthtml = 'Bienvenue sur ' . remove_accents(str_replace('http://',
+        $texthtml = 'Bienvenue sur ' . removeAccents(str_replace('http://',
             '',
             $lien) . ' , ');
-        $text = 'Bienvenue sur ' . remove_accents(str_replace('http://', '',
+        $text = 'Bienvenue sur ' . removeAccents(str_replace('http://', '',
             $lien) . ' , ');
         $text .=
         'allez sur le site pour gérer votre inscription  : ' . $lienfiche;
@@ -1518,7 +1518,7 @@ function baz_insertion_fiche($valeur)
 
         $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
                 ->config['base_url']);
-            $sujet = remove_accents('[' . str_replace('http://', '', $lien)
+            $sujet = removeAccents('[' . str_replace('http://', '', $lien)
             . '] nouvelle fiche ajoutee : ' . $valeur['bf_titre']);
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_CONSULTER);
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
@@ -1571,7 +1571,7 @@ function baz_mise_a_jour_fiche($valeur)
         include_once 'tools/contact/libs/contact.functions.php';
         $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
                 ->config['base_url']);
-            $sujet = remove_accents('[' . str_replace('http://', '',
+            $sujet = removeAccents('[' . str_replace('http://', '',
             $lien) . '] fiche modifiee : ' . $_POST['bf_titre']);
         $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_VOIR,
             BAZ_VOIR_CONSULTER);
@@ -2380,7 +2380,7 @@ function baz_gestion_listes()
             include_once 'tools/contact/libs/contact.functions.php';
             $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
                     ->config['base_url']);
-                $sujet = remove_accents('[' . str_replace('http://', '',
+                $sujet = removeAccents('[' . str_replace('http://', '',
                 $lien) . '] liste supprimee : ' . $_GET['idliste']);
 
             $text =
@@ -2425,11 +2425,10 @@ function baz_gestion_listes()
  *
  * @return   array   Valeurs enregistrees pour cette fiche
  */
-function baz_valeurs_fiche($idfiche = '')
+function baz_valeurs_fiche($idfiche = '', $formtab = '')
 {
     if ($idfiche != '') {
-        $type_page = $GLOBALS['wiki']->GetTripleValue($idfiche,
-            'http://outils-reseaux.org/_vocabulary/type', '', '');
+        $type_page = $GLOBALS['wiki']->GetTripleValue($idfiche, 'http://outils-reseaux.org/_vocabulary/type', '', '');
         //on verifie que la page en question est bien une page wiki
         if ($type_page == 'fiche_bazar') {
             $valjson           = $GLOBALS['wiki']->LoadPage($idfiche);
@@ -2449,7 +2448,7 @@ function baz_valeurs_fiche($idfiche = '')
 
             // on ajoute des attributs html pour tous les champs qui pourraient faire des filtres)
             $valeurs_fiche['html_data'] =
-            getHtmlDataAttributes($valeurs_fiche);
+            getHtmlDataAttributes($valeurs_fiche, $formtab);
             return $valeurs_fiche;
         } else {
             return false;
@@ -2544,11 +2543,11 @@ function baz_titre_wiki($nom)
     return $titre;
 }
 
-function getHtmlDataAttributes($fiche)
+function getHtmlDataAttributes($fiche, $formtab = '')
 {
     $datastr = '';
     if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-        $form = baz_valeurs_formulaire($fiche['id_typeannonce']);
+        $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
                 if (in_array(
@@ -2927,22 +2926,18 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
     }
 }
 
-/** remove_accents() Renvoie une chaine de caracteres avec les accents en moins
+/** removeAccents() Renvoie une chaine de caracteres avec les accents en moins
  *   @param  string  chaine de caracteres avec de potentiels accents a enlever
  *
  *   return  string chaine de caracteres, sans accents
  */
-function remove_accents($str)
+function removeAccents($str, $charset = TEMPLATES_DEFAULT_CHARSET)
 {
-    $str = htmlentities($str, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
-    $str =
+    $str = htmlentities($str, ENT_NOQUOTES, $charset);
+    $str = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
+    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
+    $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractères
 
-    preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1',
-        $str);
-    $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str);
-    // pour les ligatures e.g. '&oelig;'
-    $str = preg_replace('#&[^;]+;#', '', $str);
-    // supprime les autres caractères
     return $str;
 }
 
@@ -2966,7 +2961,7 @@ function genere_nom_wiki($nom, $occurence = 1)
         // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents et ponctuation
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $temp = remove_accents(mb_substr(preg_replace('/[[:punct:]]/', ' ',
+        $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ',
             $nom), 0, 47, TEMPLATES_DEFAULT_CHARSET));
         $temp = explode(' ', ucwords(strtolower($temp)));
         $nom  = '';
@@ -3088,7 +3083,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 
     if (!isset($_REQUEST['id_typeannonce'])) {
         // la recherche n'a pas encore ete effectuee, on affiche les 10 dernieres fiches
-        $res .= '<h4>' . _t('BAZ_DERNIERES_FICHES') . '</h4>';
         $tableau_dernieres_fiches = baz_requete_recherche_fiches(
             '',
             '',
@@ -3096,9 +3090,9 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             $categorienature,
             1,
             '',
-            10
+            ''
         );
-        $res .= displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], false);
+        $res .= displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], true);
     } else {
         // la recherche a ete effectuee, on etablie la requete SQL
         $tableau_fiches = baz_requete_recherche_fiches(
@@ -3182,8 +3176,7 @@ function baz_requete_recherche_fiches(
     //preparation de la requete pour trouver les mots cles
     if (isset($searchstring) && $searchstring != '' && $searchstring !=
         _t('BAZ_MOT_CLE')) {
-        $searchstring = _convert($searchstring, TEMPLATES_DEFAULT_CHARSET, true);
-
+        $searchstring = removeAccents($searchstring);
         //decoupage des mots cles
         //:      mysql_query('SET NAMES utf8');
         $recherche = explode(' ', $searchstring);
@@ -3403,7 +3396,7 @@ function baz_valeurs_tous_les_formulaires($categorie = '', $format = 'html', $id
  * @param $tableau_fiches : tableau de fiches provenant du resultat de la recherche
  * @param $info_nb : booleen pour afficher ou non le nombre  du resultat de la recherche (vrai par defaut)
  */
-function displayResultList($tableau_fiches, $params, $info_nb = true)
+function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab = '')
 {
     // tableau des valeurs "facettables" avec leur nombres
     $facettevalue = array();
@@ -3411,9 +3404,11 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
     // tableau qui contiendra les fiches
     $fiches['fiches'] = array();
     foreach ($tableau_fiches as $fiche) {
-        $fiche = json_decode($fiche['body'], true);
-        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
-            $fiche = array_map('utf8_decode', $fiche);
+        if (isset($fiche['body'])) {
+            $fiche = json_decode($fiche['body'], true);
+            if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                $fiche = array_map('utf8_decode', $fiche);
+            }
         }
 
         // champs correspondants
@@ -3430,13 +3425,13 @@ function displayResultList($tableau_fiches, $params, $info_nb = true)
                  il doit etre de la forme correspondance="identifiant_1=identifiant_2"</div>');
             }
         }
-        $fiche['html_data'] = getHtmlDataAttributes($fiche);
+        $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
+        $fiche['datastr'] = $fiche['html_data'];
         $fiche['html'] = baz_voir_fiche(0, $fiche);  //permet de voir la fiche
-        $fiche['datastr'] = getHtmlDataAttributes($fiche);
 
         // on scanne tous les champs qui pourraient faire des filtres pour les facettes
         if (count($params['groups']) > 0) {
-            $valform = baz_valeurs_formulaire($fiche['id_typeannonce']);
+            $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
             foreach ($fiche as $key => $value) {
                 if (!empty($value)) {
                     $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
