@@ -44,6 +44,16 @@ if (version_compare(phpversion(), '5.0') < 0) {
     eval('function clone($object) { return $object; }');
 }
 
+function sanitizeFilename($string = '')
+{
+    // our list of "dangerous characters", add/remove characters if necessary
+    $dangerous_characters = array(" ", '"', "'", "&", "/", "\\", "?", "#");
+    // every forbidden character is replace by an underscore
+    $string = str_replace($dangerous_characters, '-', removeAccents($string));
+    // Only allow one dash separator at a time (and make string lowercase)
+    return mb_strtolower(preg_replace('/--+/u', '-', $string), TEMPLATES_DEFAULT_CHARSET);
+}
+
 /** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut
  *
  * @param    string nom du fichier image
@@ -65,32 +75,36 @@ function afficher_image(
     $hauteur_image,
     $method = 'fit'
 ) {
-    // l'image initiale existe t'elle et est bien avec une extension jpg ou png
+    // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
+    $destimg = sanitizeFilename($nom_image);
     if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image)
         && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
+
         // faut il creer la vignette?
         if ($hauteur_vignette != '' && $largeur_vignette != '') {
             //la vignette n'existe pas, on la genere
-            if (!file_exists('cache/vignette_' . $nom_image)) {
+            if (!file_exists('cache/vignette_' . $destimg)) {
                 $adr_img = redimensionner_image(
                     BAZ_CHEMIN_UPLOAD . $nom_image,
-                    'cache/vignette_' . $nom_image,
+                    'cache/vignette_' . $destimg,
                     $largeur_vignette,
                     $hauteur_vignette,
                     $method
                 );
             } else {
-                list($width, $height, $type, $attr) = getimagesize('cache/vignette_' . $nom_image);
+                list($width, $height, $type, $attr) = getimagesize('cache/vignette_' . $destimg);
             }
+
+            $url_base = str_replace('wakka.php?wiki=', '', $GLOBALS['wiki']->config['base_url']);
 
             //faut il redimensionner l'image?
             if ($hauteur_image != '' && $largeur_image != '') {
                 //l'image redimensionnee n'existe pas, on la genere
-                if (!file_exists('cache/image_' . $nom_image)
+                if (!file_exists('cache/image_' . $destimg)
                     || (isset($_GET['regenerate']) && $_GET['regenerate'] == 1)) {
                     $adr_img = redimensionner_image(
                         BAZ_CHEMIN_UPLOAD . $nom_image,
-                        'cache/image_' . $nom_image,
+                        'cache/image_' . $destimg,
                         $largeur_image,
                         $hauteur_image,
                         $method
@@ -98,37 +112,35 @@ function afficher_image(
                 }
 
                 //on renvoit l'image en vignette, avec quand on clique, l'image redimensionnee
-                $url_base = str_replace('wakka.php?wiki=', '', $GLOBALS['wiki']->config['base_url']);
-
-                return '<a data-id="' . $nom_image . '" class="triggerimage ' . $class
-                    .'" href="' . $url_base . 'cache/image_' . $nom_image . '">' . "\n"
-                    .'<img src="' . $url_base . 'cache/vignette_' . $nom_image . '" alt="' . $nom_image . '"'.' />'."\n"
+                return '<a data-id="' . $nom_image . '" class="modalbox ' . $class
+                    .'" href="' . $url_base . 'cache/image_' . $destimg . '" title="' . htmlentities($nom_image) . '">' . "\n"
+                    .'<img src="' . $url_base . 'cache/vignette_' . $destimg . '" alt="' . $destimg . '"'.' />'."\n"
                     .'</a> <!-- ' . $nom_image . ' -->' . "\n";
             } else {
                 //on renvoit l'image en vignette, avec quand on clique, l'image originale
-                return '<a data-id="' . $nom_image . '" class="triggerimage ' . $class
-                    . '" rel="#overlay-link" href="' . $url_base . BAZ_CHEMIN_UPLOAD . $nom_image . '">' . "\n"
-                    . '<img class="img-responsive" src="' . $url_base . 'cache/vignette_' . $nom_image
-                    . '" alt="' . $nom_image . '"' . ' rel="' . $url_base . 'cache/image_' . $nom_image . '" />' . "\n"
+                return '<a data-id="' . $nom_image . '" class="modalbox ' . $class
+                    . '" href="' . $url_base . BAZ_CHEMIN_UPLOAD . $nom_image . '" title="' . htmlentities($nom_image) . '">' . "\n"
+                    . '<img class="img-responsive" src="' . $url_base . 'cache/vignette_' . $destimg
+                    . '" alt="' . $nom_image . '"' . ' rel="' . $url_base . 'cache/image_' . $destimg . '" />' . "\n"
                     . '</a> <!-- ' . $nom_image . ' -->' . "\n";
             }
         } elseif ($hauteur_image != '' && $largeur_image != '') {
             //pas de vignette, mais faut il redimensionner l'image?
-            if (!file_exists('cache/image_' . $nom_image)) {
+            if (!file_exists('cache/image_' . $destimg)) {
                 $adr_img = redimensionner_image(
                     BAZ_CHEMIN_UPLOAD . $nom_image,
-                    'cache/image_' . $nom_image,
+                    'cache/image_' . $destimg,
                     $largeur_image,
                     $hauteur_image,
                     $method
                 );
             }
-            return '<img src="cache/image_' . $nom_image . '" class="img-responsive ' . $class
-                . '" alt="' . $nom_image . '"' . ' />' . "\n";
+            return '<img src="cache/image_' . $destimg . '" class="img-responsive ' . $class
+                . '" alt="' . $destimg . '"' . ' />' . "\n";
         } else {
             //on affiche l'image originale sinon
-            return '<img src="' . BAZ_CHEMIN_UPLOAD . $nom_image . '" class="img-responsive ' . $class
-                . '" alt="' . $nom_image . '"' . ' />' . "\n";
+            return '<img src="' . BAZ_CHEMIN_UPLOAD . $destimg . '" class="img-responsive ' . $class
+                . '" alt="' . $destimg . '"' . ' />' . "\n";
         }
     }
 }
@@ -145,6 +157,20 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
             }
             $image = new Image($image_src);
             $image->resize($largeur, $hauteur, $method);
+            // Fix Orientation
+            $exif = exif_read_data($image_src);
+            $orientation = $exif['Orientation'];
+            switch ($orientation) {
+                case 3:
+                    $image->rotate(180);
+                    break;
+                case 6:
+                    $image->rotate(-90);
+                    break;
+                case 8:
+                    $image->rotate(90);
+                    break;
+            }
             $ext = explode('.', $image_dest);
             $ext = end($ext);
             $image_dest = str_replace(array('cache/', '.'.$ext), '', $image_dest);
@@ -1514,7 +1540,10 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
                 $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
-                $valeur = json_encode(array_map("utf8_encode", $valeur));
+                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                    $valeur = array_map('utf8_encode', $valeur);
+                }
+                $valeur = json_encode($valeur);
 
                 //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
                 $GLOBALS["wiki"]->SavePage($valeurs_fiche['id_fiche'], $valeur);
@@ -1546,8 +1575,8 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'suppr_image=' . $valeurs_fiche[$type . $identifiant];
-
                 $html_image = afficher_image($valeurs_fiche[$type . $identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+
                 $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash icon-trash icon-white"></i>&nbsp;' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
                 if ($html_image != '') {
                     $formtemplate->addElement('html', $html_image);
@@ -1567,8 +1596,10 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
                 $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
-                $valeur = json_encode(array_map("utf8_encode", $valeur));
-
+                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                    $valeur = array_map('utf8_encode', $valeur);
+                }
+                $valeur = json_encode($valeur);
                 //on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
                 $GLOBALS["wiki"]->SavePage($valeurs_fiche['id_fiche'], $valeur);
             }
@@ -1589,8 +1620,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         if (isset($_FILES[$type . $identifiant]['name']) && $_FILES[$type . $identifiant]['name'] != '') {
             //on enleve les accents sur les noms de fichiers, et les espaces
-            $nomimage = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities($identifiant . $_FILES[$type . $identifiant]['name'], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET));
-            $nomimage = str_replace(' ', '_', $nomimage);
+            $nomimage = $valeurs_fiche['id_fiche'].'_'.sanitizeFilename($_FILES[$type . $identifiant]['name']);
             if (preg_match("/(gif|jpeg|png|jpg)$/i", $nomimage)) {
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
@@ -1765,7 +1795,7 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
                     map.panTo( geocodedmarker.getLatLng(), {animate:true});
                 $(\'#bf_latitude\').val(point.lat);
-                $(\'#bf_longitude\').val(point.lng);  
+                $(\'#bf_longitude\').val(point.lng);
                 geocodedmarker.on("dragend",function(ev){
                     this.openPopup();
                     var changedPos = ev.target.getLatLng();

@@ -15,7 +15,7 @@
 
 class Image
 {
-    
+
     //Set variables
     protected $image = "";
     protected $imageInfo = array();
@@ -24,7 +24,7 @@ class Image
     protected $pathToTempFiles = "";
     protected $Watermark;
     protected $newFileType;
-    
+
     /**
      * Constructor of this class
      * @param string $image (path to image)
@@ -42,7 +42,7 @@ class Image
             throw new Exception("File does not exist: " . $image);
         }
     }
-    
+
     /**
      * Destructor of this class
      * @param string $image (path to image)
@@ -53,16 +53,16 @@ class Image
             unlink($this->tmpfile);
         }
     }
-    
+
     /**
      * Read and set some basic info about the image
      * @param string $image (path to image)
      */
     protected function readImageInfo()
     {
-        
+
         $data = getimagesize($this->image);
-        
+
         $this->imageInfo["width"] = $data[0];
         $this->imageInfo["height"] = $data[1];
         $this->imageInfo["imagetype"] = $data[2];
@@ -70,28 +70,28 @@ class Image
         $this->imageInfo["mime"] = $data["mime"];
         $this->imageInfo["channels"] = (isset($data["channels"]) ? $data["channels"] : null);
         $this->imageInfo["bits"] = $data["bits"];
-        
+
         return true;
     }
-    
+
     /************************************
      * SETTERS
      ************************************/
-    
+
     /**
      * Sets path to temp files
      * @param string $path
     */
     public function setPathToTempFiles($path)
     {
-        
+
         //$path = realpath($path).DIRECTORY_SEPARATOR;
         $this->pathToTempFiles = $path;
         $this->tmpfile = $this->pathToTempFiles . "/classImagePhp_tempimage.img";
-        
+
         return true;
     }
-    
+
     /**
      * Sets new image type
      * @param string $newFileType (jpeg, png, bmp, gif, vnd.wap.wbmp, xbm)
@@ -99,10 +99,10 @@ class Image
     public function setNewFileType($newFileType)
     {
         $this->newFileType = strtolower($newFileType);
-        
+
         return true;
     }
-    
+
     /**
      * Sets new main image
      * @param string $pathToImage
@@ -111,14 +111,14 @@ class Image
     {
         $this->image = $pathToImage;
         $this->readImageInfo();
-        
+
         return true;
     }
-    
+
     /************************************
      * ACTIONS
      ************************************/
-    
+
     /**
      * Resizes an image
      * Some portions of this function as found on
@@ -152,15 +152,15 @@ class Image
     ) {
         $width = $this->getWidth();
         $height = $this->getHeight();
-        
+
         $newImage_width = $max_width;
         $newImage_height = $max_height;
         $srcX = 0;
         $srcY = 0;
-        
+
         //Get ratio of max_width : max_height
         $ratioOfMaxSizes = $max_width / $max_height;
-        
+
         //Want to fit in the area?
         if ($method == "fit") {
             if ($ratioOfMaxSizes >= $this->getRatioWidthToHeight()) {
@@ -168,13 +168,13 @@ class Image
             } else {
                 $max_height = round($max_width * $this->getRatioHeightToWidth());
             }
-            
+
             //set image data again
             $newImage_width = $max_width;
             $newImage_height = $max_height;
-            
+
             //or want to crop it?
-            
+
         } elseif ($method == "crop") {
             //set new max height or width
             if ($ratioOfMaxSizes > $this->getRatioWidthToHeight()) {
@@ -182,7 +182,7 @@ class Image
             } else {
                 $max_width = round($max_height * $this->getRatioWidthToHeight());
             }
-            
+
             //which area to crop?
             if (is_array($cropAreaLeftRight)) {
                 $srcX = $cropAreaLeftRight[0];
@@ -196,7 +196,7 @@ class Image
             } elseif ($cropAreaLeftRight == "c") {
                 $srcX = round($width / 2) - round((($newImage_width / $max_width) * $width) / 2);
             }
-            
+
             if (is_array($cropAreaBottomTop)) {
                 $srcY = $cropAreaBottomTop[0];
                 if ($ratioOfMaxSizes > $this->getRatioWidthToHeight()) {
@@ -210,7 +210,7 @@ class Image
                 $srcY = round($height / 2) - round((($newImage_height / $max_height) * $height) / 2);
             }
         }
-        
+
         //Let's get it on, create image!
         list($image_create_func, $image_save_func) = $this->getFunctionNames();
         if ($image_create_func != 'imagemagick') {
@@ -225,7 +225,8 @@ class Image
                 imagefilledrectangle($imageC, 0, 0, $newImage_width, $newImage_height, $transparent);
             }
             imagecopyresampled($imageC, $newImage, 0, 0, $srcX, $srcY, $max_width, $max_height, $width, $height);
-            
+
+
             //Set image
             if ($image_save_func == "imageJPG" || $image_save_func == "ImageJPEG") {
                 if (!$image_save_func($imageC, $this->tmpfile, $jpgQuality)) {
@@ -239,7 +240,7 @@ class Image
 
             //Set new main image
             $this->setNewMainImage($this->tmpfile);
-            
+
             //Free memory!
             imagedestroy($imageC);
         } else {
@@ -255,7 +256,7 @@ class Image
             $this->setNewMainImage($this->tmpfile);
         }
     }
-    
+
     /**
      * Adds a watermark
      */
@@ -263,10 +264,10 @@ class Image
     {
         $this->Watermark = new self($imageWatermark);
         $this->Watermark->setPathToTempFiles($this->pathToTempFiles);
-        
+
         return $this->Watermark;
     }
-    
+
     /**
      * Writes Watermark to the File
      * @param int $oapcity
@@ -290,78 +291,78 @@ class Image
         $positionWatermarkLeftRight = "c",
         $positionWatermarkTopBottom = "c"
     ) {
-        
+
         //add Watermark
         list($image_create_func, $image_save_func) = $this->Watermark->getFunctionNames();
         $watermark = $image_create_func($this->Watermark->getImage());
-        
+
         //get base image
         list($image_create_func, $image_save_func) = $this->getFunctionNames();
         $baseImage = $image_create_func($this->image);
-        
+
         //Calculate margins
         if ($positionWatermarkLeftRight == "r") {
             $marginH = imagesx($baseImage) - imagesx($watermark) - $marginH;
         }
-        
+
         if ($positionWatermarkLeftRight == "c") {
             $marginH = (imagesx($baseImage) / 2) - (imagesx($watermark) / 2) - $marginH;
         }
-        
+
         if ($positionWatermarkTopBottom == "b") {
             $marginV = imagesy($baseImage) - imagesy($watermark) - $marginV;
         }
-        
+
         if ($positionWatermarkTopBottom == "c") {
             $marginV = (imagesy($baseImage) / 2) - (imagesy($watermark) / 2) - $marginV;
         }
-        
+
         //****************************
         //Add watermark and keep alpha channel of pngs.
         //The following lines are based on the code found on
         //http://ch.php.net/manual/en/function.imagecopymerge.php#92787
         //****************************
-        
+
         // creating a cut resource
         $cut = imagecreatetruecolor(imagesx($watermark), imagesy($watermark));
-        
+
         // copying that section of the background to the cut
         imagecopy($cut, $baseImage, 0, 0, $marginH, $marginV, imagesx($watermark), imagesy($watermark));
-        
+
         // placing the watermark now
         imagecopy($cut, $watermark, 0, 0, 0, 0, imagesx($watermark), imagesy($watermark));
         imagecopymerge($baseImage, $cut, $marginH, $marginV, 0, 0, imagesx($watermark), imagesy($watermark), $opacity);
-        
+
         //****************************
         //****************************
-        
+
         //Set image
         if (!$image_save_func($baseImage, $this->tmpfile)) {
             throw new Exception("Cannot save file " . $this->tmpfile);
         }
-        
+
         //Set new main image
         $this->setNewMainImage($this->tmpfile);
-        
+
         //Free memory!
         imagedestroy($baseImage);
         unset($Watermark);
     }
-    
+
     /**
      * Roates an image
      */
     public function rotate($degrees, $jpgQuality = 75)
     {
         list($image_create_func, $image_save_func) = $this->getFunctionNames();
-        
+
         $source = $image_create_func($this->image);
         if (function_exists("imagerotate")) {
             $imageRotated = imagerotate($source, $degrees, 0, true);
         } else {
             $imageRotated = $this->rotateImage($source, $degrees);
         }
-        
+
         if ($image_save_func == "ImageJPEG") {
             if (!$image_save_func($imageRotated, $this->tmpfile, $jpgQuality)) {
                 throw new Exception("Cannot save file " . $this->tmpfile);
@@ -371,13 +372,13 @@ class Image
                 throw new Exception("Cannot save file " . $this->tmpfile);
             }
         }
-        
+
         //Set new main image
         $this->setNewMainImage($this->tmpfile);
-        
+
         return true;
     }
-    
+
     /**
      * Sends image data to browser
      */
@@ -387,7 +388,7 @@ class Image
         header("Content-Type: " . $mime);
         readfile($this->image);
     }
-    
+
     /**
      * Prints html code to display image
      */
@@ -395,14 +396,14 @@ class Image
     {
         print $this->getHTML($alt, $title, $class, $id, $extras);
     }
-    
+
     /**
      * Creates html code to display image
      */
     public function getHTML($alt = false, $title = false, $class = false, $id = false, $extras = false)
     {
         $path = str_replace($_SERVER["DOCUMENT_ROOT"], "", $this->image);
-        
+
         $code = '<img src="' . $path . '" width="' . $this->getWidth() . '" height="' . $this->getHeight() . '"';
         if ($alt) {
             $code.= ' alt="' . $alt . '"';
@@ -420,46 +421,46 @@ class Image
             $code.= ' ' . $extras;
         }
         $code.= ' />';
-        
+
         return $code;
     }
-    
+
     /**
      * Saves image to file
      */
     public function save($filename, $path = "", $extension = "")
     {
-        
+
         //add extension
         if ($extension == "") {
             $filename.= $this->getExtension(true);
         } else {
             $filename.= "." . $extension;
         }
-        
+
         //add trailing slash if necessary
         if ($path != "") {
             $path = realpath($path) . DIRECTORY_SEPARATOR;
         }
-        
+
         //create full path
         $fullPath = $path . $filename;
-        
+
         //Copy file
         if (!copy($this->image, $fullPath)) {
             throw new Exception("Cannot save file " . $fullPath);
         }
-        
+
         //Set new main image
         $this->setNewMainImage($fullPath);
-        
+
         return true;
     }
-    
+
     /************************************
      * CHECKERS
      ************************************/
-    
+
     /**
      * Checks whether image is RGB
      * @return bool
@@ -471,7 +472,7 @@ class Image
         }
         return false;
     }
-    
+
     /**
      * Checks whether image is RGB
      * @return bool
@@ -483,7 +484,7 @@ class Image
         }
         return false;
     }
-    
+
     /**
      * Checks ratio width:height
      * Examples:
@@ -495,23 +496,23 @@ class Image
     {
         $actualRatioWidthToHeight = $this->getRatioWidthToHeight();
         $shouldBeRatio = $ratio1 / $ratio2;
-        
+
         if ($actualRatioWidthToHeight == $shouldBeRatio) {
             return true;
         }
-        
+
         $actualRatioHeightToWidth = $this->getRatioHeightToWidth();
         if ($ignoreOrientation && $actualRatioHeightToWidth == $shouldBeRatio) {
             return true;
         }
-        
+
         return false;
     }
-    
+
     /************************************
      * GETTERS
      ************************************/
-    
+
     /**
      * Returns function names
     */
@@ -520,7 +521,7 @@ class Image
         if (null == $this->newFileType) {
             $this->setNewFileType($this->getType());
         }
-        
+
         switch ($this->getType()) {
             case 'jpg':
             case 'jpeg':
@@ -544,7 +545,7 @@ class Image
             default:
                 $image_create_func = 'ImageCreateFromJPEG';
         }
-        
+
         switch ($this->newFileType) {
             case 'jpg':
             case 'jpeg':
@@ -577,10 +578,10 @@ class Image
             throw new Exception('PHP function ' . $image_create_func
                 . ' or ' . $image_save_func . ' unavailable. Is GD installed?');
         }
-        
+
         return array($image_create_func, $image_save_func);
     }
-    
+
     /**
      * returns the image
      */
@@ -588,7 +589,7 @@ class Image
     {
         return $this->image;
     }
-    
+
     /**
      * return info about the image
      */
@@ -596,7 +597,7 @@ class Image
     {
         return $this->imageInfo;
     }
-    
+
     /**
      * return info about the file
      */
@@ -604,7 +605,7 @@ class Image
     {
         return $this->fileInfo;
     }
-    
+
     /**
      * Gets width of image
      * @return int
@@ -613,7 +614,7 @@ class Image
     {
         return $this->imageInfo["width"];
     }
-    
+
     /**
      * Gets height of image
      * @return int
@@ -622,7 +623,7 @@ class Image
     {
         return $this->imageInfo["height"];
     }
-    
+
     /**
      * Gets type of image
      * @return string
@@ -634,10 +635,10 @@ class Image
         if (!$withDot) {
             $extension = substr($extension, 1);
         }
-        
+
         return $extension;
     }
-    
+
     /**
      * Gets mime type of image
      * @return string
@@ -646,7 +647,7 @@ class Image
     {
         return $this->imageInfo["mime"];
     }
-    
+
     /**
      * Gets mime type of image
      * @return string
@@ -655,7 +656,7 @@ class Image
     {
         return substr(strrchr($this->imageInfo["mime"], '/'), 1);
     }
-    
+
     /**
      * Get filesize
      * @return string
@@ -664,7 +665,7 @@ class Image
     {
         return filesize($this->image);
     }
-    
+
     /**
      * Get filesize
      * @return string
@@ -674,7 +675,7 @@ class Image
         $size = $this->getFileSizeInBytes();
         return $size / 1024;
     }
-    
+
     /**
      * Returns a human readable filesize
      * @author      wesman20 (php.net)
@@ -686,23 +687,23 @@ class Image
     public function getFileSize()
     {
         $size = $this->getFileSizeInBytes();
-        
+
         $mod = 1024;
         $units = explode(' ', 'B KB MB GB TB PB');
         for ($i = 0; $size > $mod; $i++) {
             $size/= $mod;
         }
-        
+
         //round differently depending on unit to use
         if ($i < 2) {
             $size = round($size);
         } else {
             $size = round($size, 2);
         }
-        
+
         return $size . ' ' . $units[$i];
     }
-    
+
     /**
      * Gets ratio width:height
      * @return float
@@ -711,7 +712,7 @@ class Image
     {
         return $this->imageInfo["width"] / $this->imageInfo["height"];
     }
-    
+
     /**
      * Gets ratio height:width
      * @return float
@@ -720,11 +721,11 @@ class Image
     {
         return $this->imageInfo["height"] / $this->imageInfo["width"];
     }
-    
+
     /************************************
      * OTHER STUFF
      ************************************/
-    
+
     /**
      * Replacement for imagerotate if it doesn't exist
      * As found on http://www.php.net/manual/de/function.imagerotate.php#93692
@@ -750,7 +751,7 @@ class Image
                 return $img;
                 break;
         }
-        
+
         if ($newimg) {
             for ($i = 0; $i < $width; $i++) {
                 for ($j = 0; $j < $height; $j++) {
