@@ -297,10 +297,11 @@ $(document).ready(function() {
   var checkboxselectall = $('.selectall');
   checkboxselectall.click(function(event) {
     var $this = $(this);
-    var target = $this.parent().siblings('.yeswiki-checkbox');
+    var target = $this.parents('.controls').find('.yeswiki-checkbox');
     if ($this.data('target')) {
       target = $($this.data('target'));
     }
+
     if (this.checked) { // check select status
       target.each(function() {
         $(this).find(':checkbox').prop('checked', true);

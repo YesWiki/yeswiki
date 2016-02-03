@@ -2114,12 +2114,14 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     '<ul class="list-bazar-entries list-unstyled">';
                 foreach ($checkboxtab as $key => $label) {
                     $checkbox_html.= '<div class="yeswiki-checkbox checkbox">
+                                        <label for="ckbx_'.$key.'">
                                         <input type="checkbox" id="ckbx_' . $key . '" value="1" name="' .
                                         $id.'['.$key.']"';
                     if ($def != '' && in_array($key, $def)) {
                         $checkbox_html.= ' checked="checked"';
                     }
-                    $checkbox_html.= ' class="element_checkbox"><label for="ckbx_'.$key.'">'.$label.'</label></div>';
+                    $checkbox_html.= ' class="element_checkbox">'.$label.'
+                    </label></div>';
                 }
                 $checkbox_html.= "\n".'</ul>'."\n";
                 // javascript additions
