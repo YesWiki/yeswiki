@@ -31,15 +31,21 @@
       '</div>' +
     '</div>');
 
+    var link = $this.attr('href');
+    console.log('modalbox', link, link.match('/(?i)\.(jpe?g|png|gif)$/').length > 0);
     var modal = $('#YesWikiModal');
-    modal.find('.modal-body').load($this.attr('href') + ' .page', function(response, status, xhr) {
-      modal.modal({
-        keyboard: false,
-      }).modal('show').on('hidden hidden.bs.modal', function() {
-        modal.remove();
+    if (link.match('/(?i)\.(jpe?g|png|gif)$/').length > 0) {
+      modal.find('.modal-body').html('<img src="' + link + '" alt="image">');
+    } else {
+      modal.find('.modal-body').load(link + ' .page', function(response, status, xhr) {
+        return false;
       });
+    }
 
-      return false;
+    modal.modal({
+      keyboard: false,
+    }).modal('show').on('hidden hidden.bs.modal', function() {
+      modal.remove();
     });
 
     return false;

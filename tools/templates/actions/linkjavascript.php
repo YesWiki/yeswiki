@@ -24,7 +24,7 @@ $yeswikijs = false;
 $dir = (is_dir($repertoire) ? opendir($repertoire) : false);
 while ($dir && ($file = readdir($dir)) !== false) {
     if (substr($file, -3, 3) == '.js') {
-        $scripts[] = '  <script async src="' . $repertoire . '/' . $file . '"></script>' . "\n";
+        $scripts[] = '  <script src="' . $repertoire . '/' . $file . '"></script>' . "\n";
         if (strstr($file, 'bootstrap.min.') || strstr($file, 'bs.')) {
             // le theme contient deja le js de bootstrap
             $bootstrapjs = true;

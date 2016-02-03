@@ -84,7 +84,7 @@ $wikiClassesContent [] = '
             $GLOBALS[\'js\'] = \'\';
         }
         if (!empty($script) && !strpos($GLOBALS[\'js\'], \'<script>\'."\n".$script.\'</script>\')) {
-            $GLOBALS[\'js\'] .= \'  <script defer>\'."\n".$script.\'</script>\'."\n";
+            $GLOBALS[\'js\'] .= \'  <script>\'."\n".$script.\'</script>\'."\n";
         }
         return;
     }
@@ -93,8 +93,8 @@ $wikiClassesContent [] = '
         if (!isset($GLOBALS[\'js\'])) {
             $GLOBALS[\'js\'] = \'\';
         }
-        if (!strpos($GLOBALS[\'js\'], \'<script defer src="\'.$file.\'"></script>\') && !empty($file) && (file_exists($file) || strpos($file, "http://") === 0)) {
-            $GLOBALS[\'js\'] .= \'  <script defer src="\'.$file.\'"></script>\'."\n";
+        if (!strpos($GLOBALS[\'js\'], \'<script src="\'.$file.\'"></script>\') && !empty($file) && (file_exists($file) || strpos($file, "http://") === 0)) {
+            $GLOBALS[\'js\'] .= \'  <script src="\'.$file.\'"></script>\'."\n";
         }
         return;
     }
