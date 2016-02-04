@@ -136,7 +136,7 @@ overflow: auto;
 #yw-topnav.affix {
   position: fixed;
   top: 0;
-  z-index:2;
+  z-index:2000;
   right: 0;
   left: 0;
 }
