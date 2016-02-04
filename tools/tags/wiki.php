@@ -1,11 +1,10 @@
 <?php
 
 // Partie publique
-
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+        die("acc&egrave;s direct interdit");
 }
+
 //CONFIGURATION
 //si 0 les admins ou le proprietaire d'une page doivent ouvrir les commentaires
 //si 1 ils sont ouverts par defaut
@@ -33,8 +32,8 @@ $wikiClassesContent [] = '
 	function SaveTags($page, $liste_tags)
     {
 		$tags = explode(",", mysqli_real_escape_string($this->dblink, _convert($liste_tags, TEMPLATES_DEFAULT_CHARSET, TRUE)));
-		
-		
+
+
 		//on recupere les anciens tags de la page courante
 		$tabtagsexistants = $this->GetAllTriplesValues($page, \'http://outils-reseaux.org/_vocabulary/tag\', \'\', \'\');
 		if (is_array($tabtagsexistants))
@@ -44,7 +43,7 @@ $wikiClassesContent [] = '
 				$tags_restants_a_effacer[] = $tab["value"];
 			}
 		}
-		
+
 		//on ajoute le tag s il n existe pas déjà
 		foreach ($tags as $tag)
 		{
@@ -57,7 +56,7 @@ $wikiClassesContent [] = '
 				}
 				//on supprime ce tag du tableau des tags restants a effacer
 				if (isset($tags_restants_a_effacer)) unset($tags_restants_a_effacer[array_search($tag, $tags_restants_a_effacer)]);
-			}			
+			}
 		}
 
 		//on supprime les tags restants a effacer
@@ -86,7 +85,7 @@ $wikiClassesContent [] = '
 
 	function PageList($tags=\'\', $type=\'\', $nb=\'\', $tri=\'\')
 	{
-		if (isset($tags) && $tags!=  \'\') {
+		if (!empty($tags)) {
 			$req_from = ", ".$this->config["table_prefix"]."triples tags ";
 			$tags=trim($tags);
 			$tab_tags = explode(",", $tags);
@@ -110,14 +109,27 @@ $wikiClassesContent [] = '
 				$req .= \' ORDER BY time DESC \';
 			}
 
-			$requete = "SELECT DISTINCT tag, time, user, owner, body FROM ".$this->config["table_prefix"]."pages".$req_from." WHERE latest = \'Y\' and comment_on = \'\' ".$req;
-
+			$requete = "SELECT * FROM ".$this->config["table_prefix"]."pages".$req_from." WHERE latest = \'Y\' and comment_on = \'\' ".$req;
 			return $this->LoadAll($requete);
 		}
 		else {
-			return false;
+      // recuperation des pages wikis
+      $sql = \'SELECT * FROM \' . $this->GetConfigValue(\'table_prefix\') . \'pages\';
+      if (!empty($taglist)) {
+          $sql .= \', \' . $this->config[\'table_prefix\'] . \'triples tags\';
+      }
+      $sql .= \' WHERE latest="Y"
+  				AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" \';
+
+      if ($type == \'wiki\') {
+          $sql .= \' AND tag NOT IN (SELECT resource FROM \' . $this->GetConfigValue(\'table_prefix\') . \'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") \';
+      } elseif ($type == \'bazar\') {
+          $sql .= \' AND tag IN (SELECT resource FROM \' . $this->GetConfigValue(\'table_prefix\') . \'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")\';
+      }
+
+      $sql .= \' ORDER BY tag ASC\';
+			return $this->LoadAll($sql);
 		}
-		
+
 	}
 ';
-?>
