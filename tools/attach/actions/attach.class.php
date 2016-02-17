@@ -60,7 +60,7 @@ if (!class_exists('attach')) {
         /**
          * Constructeur. Met les valeurs par defaut aux parametres de configuration
          */
-        public function attach(&$wiki)
+        public function __construct(&$wiki)
         {
             $this->wiki = $wiki;
             $this->attachConfig = $this->wiki->GetConfigValue("attach_config");
@@ -596,11 +596,14 @@ if (!class_exists('attach')) {
             $HasAccessWrite = $this->wiki->HasAccess("write");
             if ($HasAccessWrite) {
                 switch ($_SERVER["REQUEST_METHOD"]) {
-                    case 'GET':$this->showUploadForm();
+                    case 'GET':
+                        $this->showUploadForm();
                         break;
-                    case 'POST':$this->performUpload();
+                    case 'POST':
+                        $this->performUpload();
                         break;
-                    default:echo "<div class=\"alert alert-error alert-danger\">" . _t('INVALID_REQUEST_METHOD') . "</div>\n";
+                    default:
+                        echo "<div class=\"alert alert-error alert-danger\">" . _t('INVALID_REQUEST_METHOD') . "</div>\n";
                 }
             } else {
                 echo "<div class=\"alert alert-error alert-danger\">" . _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE') . "</div>\n";
@@ -1071,6 +1074,6 @@ if (!class_exists('attach')) {
                 return $imgTrans->targetFile;
             }
         }
-
     }
+
 }
