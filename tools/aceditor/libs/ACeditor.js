@@ -27,7 +27,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
         savebtn: false,
         syntax: 'yeswiki'
       },
-    syntax = { 
+    syntax = {
         yeswiki : {
           'TITLE1_LFT'      : '======',
           'TITLE1_RGT'      : '======',
@@ -42,7 +42,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
           'LEAD_LFT'        : '&quot;&quot;<div class=&quot;lead&quot;>&quot;&quot;',
           'LEAD_RGT'        : '&quot;&quot;</div>&quot;&quot;',
           'HIGHLIGHT_LFT'     : '&quot;&quot;<div class=&quot;well&quot;>&quot;&quot;',
-          'HIGHLIGHT_RGT'     : '&quot;&quot;</div>&quot;&quot;',         
+          'HIGHLIGHT_RGT'     : '&quot;&quot;</div>&quot;&quot;',
           'CODE_LFT'        : '%%',
           'CODE_RGT'        : '%%',
           'BOLD_LFT'        : '**',
@@ -72,7 +72,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
           'LEAD_LFT'        : '<div class=&quot;lead&quot;>',
           'LEAD_RGT'        : '</div>',
           'HIGHLIGHT_LFT'     : '<div class=&quot;well&quot;>',
-          'HIGHLIGHT_RGT'     : '</div>',         
+          'HIGHLIGHT_RGT'     : '</div>',
           'CODE_LFT'        : '<pre>',
           'CODE_RGT'        : '</pre>',
           'BOLD_LFT'        : '<strong>',
@@ -90,18 +90,19 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
         }
     };
 
-  
+
 
   // The actual plugin constructor
   function Plugin( element, options ) {
     this.element = element;
+    this.lang = aceditorlang;
 
-    // jQuery has an extend method which merges the contents of two or 
+    // jQuery has an extend method which merges the contents of two or
     // more objects, storing the result in the first object. The first object
     // is generally empty as we don't want to alter the default options for
     // future instances of the plugin
     this.options = $.extend( {}, defaults, options) ;
-    
+
     this.syntax = syntax;
 
     this._defaults = defaults;
@@ -112,53 +113,59 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 
   Plugin.prototype.init = function () {
     // Place initialization logic here
-    // You already have access to the DOM element and the options via the instance, 
+    // You already have access to the DOM element and the options via the instance,
     // e.g., this.element and this.options
     if (this.element.tagName === 'TEXTAREA') {
       var toolbar = $('<div>').addClass("btn-toolbar aceditor-toolbar");
       if (this.options.savebtn) {
-        toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary"><?php echo _t('ACEDITOR_SAVE'); ?></button></div>'));
+        toolbar.append($('<div class="btn-group"><button type="submit" name="submit" value="Sauver" class="aceditor-btn-save btn btn-primary">'+this.lang['ACEDITOR_SAVE']+'</button></div>'));
       }
 
       // Text formatting
       toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#"><?php echo _t('ACEDITOR_FORMAT'); ?>&nbsp;&nbsp;<span class="caret"></span></a>' +
+              '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_FORMAT']+'  <span class="caret"></span></a>' +
               '<ul class="dropdown-menu">' +
-                '<li><a title="<?php echo _t('ACEDITOR_TITLE1'); ?>" class="aceditor-btn aceditor-btn-title1" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1><?php echo _t('ACEDITOR_TITLE1'); ?></h1></a></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_TITLE2'); ?>" class="aceditor-btn aceditor-btn-title2" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2><?php echo _t('ACEDITOR_TITLE2'); ?></h2></a></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_TITLE3'); ?>" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3><?php echo _t('ACEDITOR_TITLE3'); ?></h3></a></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_TITLE4'); ?>" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4><?php echo _t('ACEDITOR_TITLE4'); ?></h4></a></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_TITLE5'); ?>" class="aceditor-btn aceditor-btn-title5" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5><?php echo _t('ACEDITOR_TITLE5'); ?></h5></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_TITLE1']+'" class="aceditor-btn aceditor-btn-title1" data-lft="'+this.syntax[this.options.syntax]['TITLE1_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE1_RGT']+'"><h1>'+this.lang['ACEDITOR_TITLE1']+'</h1></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_TITLE2']+'" class="aceditor-btn aceditor-btn-title2" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2>'+this.lang['ACEDITOR_TITLE2']+'</h2></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_TITLE3']+'" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3>'+this.lang['ACEDITOR_TITLE3']+'</h3></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_TITLE4']+'" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4>'+this.lang['ACEDITOR_TITLE4']+'</h4></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_TITLE5']+'" class="aceditor-btn aceditor-btn-title5" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5>'+this.lang['ACEDITOR_TITLE5']+'</h5></a></li>' +
                 '<li class="divider"></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_BIGGER_TEXT'); ?>" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead"><?php echo _t('ACEDITOR_BIGGER_TEXT'); ?></div></a></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_HIGHLIGHT_TEXT'); ?>" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well"><?php echo _t('ACEDITOR_HIGHLIGHT_TEXT'); ?></div></a></li>' +
-                '<li><a title="<?php echo _t('ACEDITOR_SOURCE_CODE'); ?>" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre><?php echo _t('ACEDITOR_SOURCE_CODE'); ?></pre></div></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax[this.options.syntax]['CODE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['CODE_RGT']+'"><div class="code"><pre>'+this.lang['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
               '</ul>' +
             '</div>');
-      
+
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="<?php echo _t('ACEDITOR_BOLD_TEXT'); ?>">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang['ACEDITOR_BOLD_TEXT']+'">' +
                 '<span style="font-family:serif;font-weight:bold;">B</span>' +
               '</a>' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-italic" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="<?php echo _t('ACEDITOR_ITALIC_TEXT'); ?>">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-italic" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="'+this.lang['ACEDITOR_ITALIC_TEXT']+'">' +
                 '<span style="font-family:serif;font-style:italic;">I</span>' +
               '</a>' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-underline" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="<?php echo _t('ACEDITOR_UNDERLINE_TEXT'); ?>">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-underline" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="'+this.lang['ACEDITOR_UNDERLINE_TEXT']+'">' +
                 '<span style="font-family:serif;text-decoration:underline;">U</span>' +
               '</a>' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-strike" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="<?php echo _t('ACEDITOR_STRIKE_TEXT'); ?>">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-strike" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="'+this.lang['ACEDITOR_STRIKE_TEXT']+'">' +
                 '<span style="font-family:serif;text-decoration:line-through;">S</span>' +
               '</a>' +
             '</div>');
 
       // Horizontal line and links
       toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="<?php echo _t('ACEDITOR_LINE'); ?>">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang['ACEDITOR_LINE']+'">' +
                 '<i class="glyphicon glyphicon-minus icon-minus"></i>' +
               '</a>' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="<?php echo addslashes(_t('ACEDITOR_LINK_PROMPT')); ?>" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="<?php echo _t('ACEDITOR_LINK_TITLE'); ?>" class="btn">' +
-                '<i class="glyphicon glyphicon-share-alt icon-share-alt"></i>&nbsp;<?php echo _t('ACEDITOR_LINK'); ?></a>' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="'+this.lang['ACEDITOR_LINK_PROMPT']+'" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="'+this.lang['ACEDITOR_LINK_TITLE']+'" class="btn">' +
+                '<i class="glyphicon glyphicon-share-alt icon-share-alt"></i> '+this.lang['ACEDITOR_LINK']+'</a>' +
+            '</div>');
+
+      // help
+      toolbar.append( '<div class="btn-group pull-right">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
+                '<i class="glyphicon glyphicon-question-sign"></i> '+this.lang['ACEDITOR_HELP']+'</a>' +
             '</div>');
 
       var lastFocus;
@@ -167,9 +174,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
         $(this).on('click', function(e){
           e.preventDefault();
           e.stopPropagation();
-          //if (lastFocus) {
-          //    setTimeout(function() {lastFocus.focus()}, 10);
-          //}
+
           return(false);
         }).on('mousedown', function(e){
           e.preventDefault();
@@ -177,15 +182,12 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
           if ($(this).data('prompt')) {
             var prompt = window.prompt($(this).data('prompt'), $(this).data('prompt-val'));
             if (prompt != null) {
-            textarea.surroundSelectedText($(this).data('lft') + prompt + " ", $(this).data('rgt'), true);
-          } 
+              textarea.surroundSelectedText($(this).data('lft') + prompt + " ", $(this).data('rgt'), true);
+            }
+          } else {
+            textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'), true);
           }
-        else {
-          textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'), true);
-        }
-        //if (lastFocus) {
-          //    setTimeout(function() {lastFocus.focus()}, 10);
-          //}
+
           $(this).parents('.btn-group').removeClass('open');
           return false;
         })
@@ -234,7 +236,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
         } else {
           isShift = false;
         }
-        
+
         if (isCtrl === true && isAlt === false) {
           // title 1
           if (keyCode == 49 && isShift === true) {
@@ -283,7 +285,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 
   };
 
-  // A really lightweight plugin wrapper around the constructor, 
+  // A really lightweight plugin wrapper around the constructor,
   // preventing against multiple instantiations
   $.fn[pluginName] = function ( options ) {
     return this.each(function () {
