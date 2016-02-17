@@ -2,19 +2,7 @@
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
-//
-// //on inclue Magpie le parser RSS
-// if (!defined('MAGPIE_OUTPUT_ENCODING')) {
-//     define('MAGPIE_OUTPUT_ENCODING', TEMPLATES_DEFAULT_CHARSET);
-// }
-// if (!defined('MAGPIE_DIR')) {
-//     define('MAGPIE_DIR', 'tools/syndication/libs/');
-// }
-// require_once (MAGPIE_DIR . 'rss_fetch.inc');
-//
-// //pour cacher les erreurs Warning de Magpie
-// error_reporting(0);
-//
+
 include_once('tools/syndication/libs/syndication.lib.php');
 include_once('tools/syndication/libs/simplepie_1.3.1.compiled.php');
 
