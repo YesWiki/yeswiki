@@ -52,7 +52,7 @@ if (isset($scripts) && is_array($scripts)) {
 
 // s'il n'y a pas le javascript de bootstrap dans le theme, on le rajoute
 if (!$bootstrapjs) {
-    $yeswiki_javascripts .= '    <script defer src="tools/templates/libs/vendor/bootstrap.min.js"></script>' . "\n";
+    $yeswiki_javascripts .= '    <script src="tools/templates/libs/vendor/bootstrap.min.js"></script>' . "\n";
 }
 
 // on ajoute les javascripts du theme
@@ -60,7 +60,7 @@ $yeswiki_javascripts .= $yeswiki_javascripts_dir;
 
 // s'il n'y a pas le javascript de yeswiki dans le theme, on le rajoute
 if (!$yeswikijs) {
-    $yeswiki_javascripts .= '    <script defer src="tools/templates/libs/yeswiki-base.js"></script>' . "\n";
+    $yeswiki_javascripts .= '    <script src="tools/templates/libs/yeswiki-base.js"></script>' . "\n";
 }
 
 // si quelque chose est passée dans la variable globale pour le javascript, on l'intègre

@@ -1,4 +1,5 @@
 <?php
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -21,15 +22,13 @@
 // +------------------------------------------------------------------------------------------------------+
 //
 /**
- * Fichier de lancement et de configuration de l'extension Templates
+ * Fichier de lancement et de configuration de l'extension Templates.
  *
- *@package         templates
  *@author        Florian Schmitt <florian@outils-reseaux.org>
  *@copyright     2012 Outils-Réseaux
  */
-
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
 require_once 'tools/templates/libs/templates.functions.php';
@@ -54,7 +53,6 @@ define('TEMPLATES_DEFAULT_CHARSET', 'UTF-8');
 
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses[] = 'Template';
-
 
 $wikiClassesContent [] = '
     function AddCSS($style) {
@@ -158,8 +156,11 @@ $metadatas = $wiki->GetTripleValue(
 );
 
 if (!empty($metadatas)) {
-    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
-    else $metadatas = json_decode($metadatas, true);
+    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+        $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
+    } else {
+        $metadatas = json_decode($metadatas, true);
+    }
 }
 
 if (isset($metadatas['charset'])) {
@@ -168,17 +169,24 @@ if (isset($metadatas['charset'])) {
     $wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET;
 }
 
-header('Content-Type: text/html; charset=' . TEMPLATES_DEFAULT_CHARSET);
+header('Content-Type: text/html; charset='.TEMPLATES_DEFAULT_CHARSET);
 
 // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
-if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_template']=='1' ) {
-    if (!isset($wakkaConfig['favorite_theme'])) $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
-    if (!isset($wakkaConfig['favorite_style'])) $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-    if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-    if (!isset($wakkaConfig['favorite_background_image'])) $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-}
-// Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
-else {
+if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_template'] == '1') {
+    if (!isset($wakkaConfig['favorite_theme'])) {
+        $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+    }
+    if (!isset($wakkaConfig['favorite_style'])) {
+        $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+    }
+    if (!isset($wakkaConfig['favorite_squelette'])) {
+        $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+    }
+    if (!isset($wakkaConfig['favorite_background_image'])) {
+        $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+    }
+} else {
+    // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
     if (isset($_REQUEST['theme']) && (is_dir('themes/'.$_REQUEST['theme']) || is_dir('tools/templates/themes/'.$_REQUEST['theme'])) &&
         isset($_REQUEST['style']) && (is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
         isset($_REQUEST['squelette']) && (is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
@@ -187,12 +195,11 @@ else {
         $wakkaConfig['favorite_style'] = $_REQUEST['style'];
         $wakkaConfig['favorite_squelette'] = $_REQUEST['squelette'];
 
-        if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']) )) {
+        if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
             $wakkaConfig['favorite_background_image'] = $_REQUEST['bgimg'];
         } else {
             $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
         }
-
     } else {
         // si les metas sont présentes on les utilise
         if (isset($metadatas['theme']) && isset($metadatas['style']) && isset($metadatas['squelette'])) {
@@ -204,58 +211,66 @@ else {
             } else {
                 $wakkaConfig['favorite_background_image'] = '';
             }
-
-        }
-        //on récupére les valeurs du template associées à la page de l'ancienne version de templates
-        else {
+        } else {
+            //on récupére les valeurs du template associées à la page de l'ancienne version de templates
             //on récupère le contenu de la page
             $contenu = $wiki->LoadPage($page);
-            if ($act = preg_match_all("/".'(\\{\\{template)'.'(.*?)'.'(\\}\\})'."/is", $contenu["body"], $matches)) {
+            if ($act = preg_match_all('/'.'(\\{\\{template)'.'(.*?)'.'(\\}\\})'.'/is', $contenu['body'], $matches)) {
                 $i = 0;
                 $j = 0;
                 foreach ($matches as $valeur) {
                     foreach ($valeur as $val) {
-                        if (isset($matches[2][$j]) && $matches[2][$j]!='') {
-                            $action= $matches[2][$j];
-                            if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $action, $params)) {
-                                for ($a = 0; $a < count($params[1]); $a++) {
+                        if (isset($matches[2][$j]) && $matches[2][$j] != '') {
+                            $action = $matches[2][$j];
+                            if (preg_match_all('/([a-zA-Z0-9]*)="(.*)"/U', $action, $params)) {
+                                for ($a = 0; $a < count($params[1]); ++$a) {
                                     $vars[$params[1][$a]] = $params[2][$a];
                                 }
                             }
                         }
-                        $j++;
+                        ++$j;
                     }
-                    $i++;
+                    ++$i;
                 }
             }
         }
         // des valeurs ont été trouvées, on les utilise
-        if ((isset($vars["theme"]) && $vars["theme"]!="") && (isset($vars["style"]) && $vars["style"]!="") && (isset($vars["squelette"]) && $vars["squelette"]!="")) {
-            $wakkaConfig['favorite_theme'] = $vars["theme"];
-            $wakkaConfig['favorite_style'] = $vars["style"];
-            $wakkaConfig['favorite_squelette'] = $vars["squelette"];
+        if ((isset($vars['theme']) && $vars['theme'] != '') && (isset($vars['style']) && $vars['style'] != '') && (isset($vars['squelette']) && $vars['squelette'] != '')) {
+            $wakkaConfig['favorite_theme'] = $vars['theme'];
+            $wakkaConfig['favorite_style'] = $vars['style'];
+            $wakkaConfig['favorite_squelette'] = $vars['squelette'];
             $wakkaConfig['favorite_background_image'] = '';
         } else {
-            if (!isset($wakkaConfig['favorite_theme'])) $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
-            if (!isset($wakkaConfig['favorite_style'])) $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-            if (!isset($wakkaConfig['favorite_squelette'])) $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-            if (!isset($wakkaConfig['favorite_background_image'])) $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+            if (!isset($wakkaConfig['favorite_theme'])) {
+                $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+            }
+            if (!isset($wakkaConfig['favorite_style'])) {
+                $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+            }
+            if (!isset($wakkaConfig['favorite_squelette'])) {
+                $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+            }
+            if (!isset($wakkaConfig['favorite_background_image'])) {
+                $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+            }
         }
     }
 }
 
 /**
- * vérifie l'extension d'un fichier
+ * vérifie l'extension d'un fichier.
  *
  * Compare l'extension du fichier dont le nom est passé en paramètre à une
  * extension. Retourne vrai si l'extension correspond sinon retourne faux.
- * @param  string $filename Nom du fichier dont l'extension est a vérifer
- * @param  string $ext      extension attendue
+ *
+ * @param string $filename Nom du fichier dont l'extension est a vérifer
+ * @param string $ext      extension attendue
+ *
  * @return bool
  */
 function isExtension($filename, $ext)
 {
-    return (substr($filename, -strlen($ext), strlen($filename)) === $ext);
+    return substr($filename, -strlen($ext), strlen($filename)) === $ext;
 }
 
 // Test existence du template, on utilise le template par defaut sinon=============================================
@@ -265,22 +280,22 @@ if ((!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squ
     || (!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
     && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
     && !preg_match('/\.css$/', $wakkaConfig['favorite_style']))) {
-        if ((file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT) ||
+    if ((file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT) ||
              file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
             ) &&
             (file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT) ||
              file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
             )
            ) {
-            $GLOBALS['template-error']['type'] = 'theme-not-found';
-            $GLOBALS['template-error']['theme'] = $wakkaConfig['favorite_theme'];
-            $GLOBALS['template-error']['style'] = $wakkaConfig['favorite_style'];
-            $GLOBALS['template-error']['squelette'] = $wakkaConfig['favorite_squelette'];
-            $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
-            $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-            $wakkaConfig['favorite_squelette']= SQUELETTE_PAR_DEFAUT;
-            $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-        } else {
-            exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
-        }
+        $GLOBALS['template-error']['type'] = 'theme-not-found';
+        $GLOBALS['template-error']['theme'] = $wakkaConfig['favorite_theme'];
+        $GLOBALS['template-error']['style'] = $wakkaConfig['favorite_style'];
+        $GLOBALS['template-error']['squelette'] = $wakkaConfig['favorite_squelette'];
+        $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+        $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+        $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+        $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+    } else {
+        exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
+    }
 }

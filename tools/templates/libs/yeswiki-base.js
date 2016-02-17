@@ -10,8 +10,11 @@
   // fenetres modales
   $('a.modalbox, .modalbox a').on('click', function(e) {
     e.stopPropagation();
+    e.preventDefault();
     var $this = $(this);
     var text = $this.attr('title');
+    var size = ' ' + $this.data('size');
+    var iframe = $this.data('iframe');
     if (text.length > 0) {
       text = '<h3>' + $.trim(text) + '</h3>';
     } else {
@@ -19,7 +22,7 @@
     }
 
     $('body').append('<div class="modal fade" id="YesWikiModal">' +
-      '<div class="modal-dialog">' +
+      '<div class="modal-dialog' + size + '">' +
         '<div class="modal-content">' +
           '<div class="modal-header">' +
           '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
@@ -32,10 +35,14 @@
     '</div>');
 
     var link = $this.attr('href');
-    console.log('modalbox', link, link.match('/(?i)\.(jpe?g|png|gif)$/').length > 0);
     var modal = $('#YesWikiModal');
-    if (link.match('/(?i)\.(jpe?g|png|gif)$/').length > 0) {
-      modal.find('.modal-body').html('<img src="' + link + '" alt="image">');
+    if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(link)) {
+      modal.find('.modal-body').html('<img class="center-block img-responsive" src="' + link + '" alt="image" />');
+    } else if (iframe === 1) {
+      modal.find('.modal-body').html('<span id="yw-modal-loading" style="position: absolute; top: 30vh; left: 48%;" class="throbber"></span><iframe id="yw-modal-iframe" style="width:100%; height:70vh; border:0;" src="' + link + '""></iframe>');
+      $('#yw-modal-iframe').on('load', function() {
+        $('#yw-modal-loading').hide();
+      });
     } else {
       modal.find('.modal-body').load(link + ' .page', function(response, status, xhr) {
         return false;
