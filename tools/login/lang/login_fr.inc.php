@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en francais de l'extension Login
 *
@@ -49,6 +49,7 @@ $GLOBALS['translations'] = array_merge(
         'LOGIN_ALREADY_MEMBER' => 'Déjà membre',
         'LOGIN_PLEASE_REGISTER' => 'veuillez vous identifier',
         'LOGIN_CONNECTED_AS' => 'Connect&eacute; en tant que',
-        'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute; !'
+        'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute; !',
+        'LOGIN_LOST_PASSWORD' => 'Mot de passe perdu?'
     )
 );
