@@ -5,16 +5,16 @@
  */
 class WikiniAction {
 	var $wiki;
-	
+
 	/**
 	 * Creates a WikiniAction object associated with the given
 	 * wiki object.
 	 */
-	function WikiniAction(&$wiki)
+	function __construct(&$wiki)
 	{
 		$this->wiki = &$wiki;
 	}
-	
+
 	/**
 	 * Performs an action asked by a user in a wiki page.
 	 * @param array $argz An array containing the value of each parameter
@@ -33,7 +33,7 @@ class WikiniAction {
 	{
 		return '';
 	}
-	
+
 	/**
 	 * @return string The default ACL for this action (usually '*', '+' or '@'.ADMIN_GROUP)
 	 */
@@ -45,7 +45,7 @@ class WikiniAction {
 
 /**
  * This class is intended to be extended by each administration action.
- * 
+ *
  * This will help access rights management. Currently its only particularity is to have a its
  * default ACL set to @admins.
  */
