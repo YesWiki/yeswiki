@@ -23,11 +23,23 @@ if (!isset($GLOBALS['nbbazarliste'])) {
 
 $url = $this->getParameter('url');
 if (empty($url)) {
-    exit('<div class="alert alert-danger">action bazarlisteexterne : parametre url obligatoire.</div>');
+    exit('<div class="alert alert-danger">Action bazarlisteexterne : parametre url obligatoire.</div>');
 }
+$arr = explode("/wakka.php", $url, 2);
+$url = $arr[0];
 
 // Recuperation de tous les parametres
 $params = getAllParameters($this);
+$querystring = '';
+if (is_array($params['query'])) {
+    foreach ($params['query'] as $key => $value) {
+        if (is_array($value)) {
+            $value = implode(',', $value);
+        }
+        $querystring .= $key.'='.$value.'|';
+    }
+    $querystring = '&query='.htmlspecialchars(substr($querystring, 0, -1));
+}
 
 // tableau des fiches correspondantes aux critères
 $i = 0;
@@ -37,21 +49,21 @@ if (is_array($params['idtypeannonce'])) {
     foreach ($params['idtypeannonce'] as $formid) {
         // requete pour obtenir le formulaire et les listes
         if (!isset($form[$formid])) {
-            $json = file_get_contents($url.'/wakka.php?wiki=BazaR/json&demand=forms&form='.$formid);
+            $json = getCachedUrlContent($url.'/wakka.php?wiki=BazaR/json&demand=forms');
             $form = $form + json_decode($json, true);
         }
 
         // requete pour obtenir les fiches
-        $json = file_get_contents($url.'/wakka.php?wiki=BazaR/json&demand=entries&form='.$formid);
+        $json = getCachedUrlContent($url.'/wakka.php?wiki=BazaR/json&demand=entries&form='.$formid.$querystring);
         $results = json_decode($json, true);
     }
 } else {
     // requete pour obtenir le formulaire et les listes
     if (!isset($form[$formid])) {
-        $json = file_get_contents($url.'/wakka.php?wiki=BazaR/json&demand=forms&form='.$formid);
+        $json = getCachedUrlContent($url.'/wakka.php?wiki=BazaR/json&demand=forms');
         $form = $form + json_decode($json, true);
     }
-    $json = file_get_contents($url.'/wakka.php?wiki=BazaR/json&demand=entries&form='.$formid);
+    $json = getCachedUrlContent($url.'/wakka.php?wiki=BazaR/json&demand=entries&form='.$formid.$querystring);
     $results = json_decode($json, true);
 }
 

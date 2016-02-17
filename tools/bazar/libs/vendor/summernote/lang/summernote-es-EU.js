@@ -7,7 +7,9 @@
         underline: 'Azpimarratua',
         clear: 'Estiloa kendu',
         height: 'Lerro altuera',
-        name: 'Tipografia'
+        name: 'Tipografia',
+        strikethrough: 'Marratua',
+        size: 'Letren neurria'
       },
       image: {
         image: 'Irudia',
@@ -21,6 +23,13 @@
         dragImageHere: 'Irudi bat ezarri hemen',
         selectFromFiles: 'Zure fitxategi bat aukeratu',
         url: 'Irudiaren URL helbidea'
+      },
+      video: {
+        video: 'Bideoa',
+        videoLink: 'Bideorako esteka',
+        insert: 'Bideo berri bat txertatu',
+        url: 'Bideoaren URL helbidea',
+        providers: '(YouTube, Vimeo, Vine, Instagram, edo DailyMotion)'
       },
       link: {
         link: 'Esteka',

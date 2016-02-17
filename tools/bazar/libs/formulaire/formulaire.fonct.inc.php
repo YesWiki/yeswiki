@@ -1225,8 +1225,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
         $langfile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langpref.'.js';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-fontstyle.js');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-well.js');
+        //$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-fontstyle.js');
+        //$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-well.js');
         if (file_exists($langfile)) {
             $GLOBALS['wiki']->AddJavascriptFile($langfile);
             $langoptions = 'lang: "'.$langpref.'",';
@@ -1242,7 +1242,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             focus: false,                   // set focus to editable area after initializing summernote
             toolbar: [
                 //[groupname, [button list]]
-                [\'style\', [\'style\', \'textboxwell\']],
+                //[\'style\', [\'style\', \'well\']],
+                [\'style\', [\'style\']],
                 [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
@@ -1250,7 +1251,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'misc\', [\'fullscreen\'/*, \'codeview\'*/]]
             ],
             oninit: function() {
-              $(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
+              //$(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
             }
           });
         });';
@@ -1682,6 +1683,22 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $formtemplate->addElement('html', $texte_recherche);
     } elseif ($mode == 'html') {
         return $texte_fiche . "\n";
+    }
+}
+
+/** metadatas() - Ajoute un look par defaut aux fiches
+ *
+ * @param    mixed   L'objet QuickForm du formulaire
+ * @param    mixed   Le tableau des valeurs des différentes options des metadatas
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
+ * @return   void
+ */
+function metadatas(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
+{
+    list($type, $theme, $squelette, $style, $bgimg, $lang, $pages) = $tableau_template;
+    // TODO : gerer la langue par defaut et les pages associées
+    if ($mode == 'requete') {
+        $GLOBALS['wiki']->SaveMetaDatas($valeurs_fiche['id_fiche'], array('theme' => $theme, 'style' => $style, 'squelette' => $squelette, 'bgimg' => $bgimg));
     }
 }
 

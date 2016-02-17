@@ -7,7 +7,11 @@
         underline: 'Souligné',
         clear: 'Effacer la mise en forme',
         height: 'Interligne',
-        name: 'Famille de police'
+        name: 'Famille de police',
+        strikethrough: 'Barré',
+        superscript: 'Exposant',
+        subscript: 'Indice',
+        size: 'Taille de police'
       },
       image: {
         image: 'Image',
@@ -18,10 +22,24 @@
         floatLeft: 'Aligné à gauche',
         floatRight: 'Aligné à droite',
         floatNone: 'Pas d\'alignement',
-        dragImageHere: 'Faites glisser une image avec la souris dans ce cadre',
+        shapeRounded: 'Forme: Rectangle arrondie',
+        shapeCircle: 'Forme: Cercle',
+        shapeThumbnail: 'Forme: Vignette',
+        shapeNone: 'Forme: Aucune',
+        dragImageHere: 'Faites glisser une image ou un texte dans ce cadre',
+        dropImage: 'Lachez l\'image ou le texte',
         selectFromFiles: 'Choisir un fichier',
+        maximumFileSize: 'Taille de fichier maximale',
+        maximumFileSizeError: 'Taille maximale du fichier dépassée',
         url: 'URL de l\'image',
         remove: 'Supprimer l\'image'
+      },
+      video: {
+        video: 'Vidéo',
+        videoLink: 'Lien vidéo',
+        insert: 'Insérer une vidéo',
+        url: 'URL de la vidéo',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion ou Youku)'
       },
       link: {
         link: 'Lien',
@@ -36,7 +54,7 @@
         table: 'Tableau'
       },
       hr: {
-        insert: 'Insérer une ligne horizontale de séparation'
+        insert: 'Insérer une ligne horizontale'
       },
       style: {
         style: 'Style',
@@ -84,7 +102,8 @@
         textFormatting: 'Mise en forme du texte',
         action: 'Action',
         paragraphFormatting: 'Mise en forme des paragraphes',
-        documentStyle: 'Style du document'
+        documentStyle: 'Style du document',
+        extraKeys: 'Touches supplémentaires'
       },
       history: {
         undo: 'Annuler la dernière action',

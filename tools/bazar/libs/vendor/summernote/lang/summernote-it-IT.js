@@ -7,7 +7,9 @@
         underline: 'Testo sottolineato',
         clear: 'Elimina la formattazione del testo',
         height: 'Altezza della linea di testo',
-        name: 'Famiglia Font'
+        name: 'Famiglia Font',
+        strikethrough: 'Testo barrato',
+        size: 'Dimensione del carattere'
       },
       image: {
         image: 'Immagine',
@@ -22,6 +24,13 @@
         selectFromFiles: 'Scegli dai Documenti',
         url: 'URL dell\'immagine',
         remove: 'Rimuovi immagine'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Collegamento ad un Video',
+        insert: 'Inserisci Video',
+        url: 'URL del Video',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion o Youku)'
       },
       link: {
         link: 'Collegamento',

@@ -7,7 +7,9 @@
         underline: 'میان خط',
         clear: 'پاک کردن فرمت فونت',
         height: 'فاصله ی خطی',
-        name: 'اسم فونت'
+        name: 'اسم فونت',
+        strikethrough: 'Strike',
+        size: 'اندازه ی فونت'
       },
       image: {
         image: 'تصویر',
@@ -22,6 +24,13 @@
         selectFromFiles: 'فایل ها را انتخاب کنید',
         url: 'آدرس تصویر',
         remove: 'حذف تصویر'
+      },
+      video: {
+        video: 'ویدیو',
+        videoLink: 'لینک ویدیو',
+        insert: 'افزودن ویدیو',
+        url: 'آدرس ویدیو ؟',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, یا Youku)'
       },
       link: {
         link: 'لینک',

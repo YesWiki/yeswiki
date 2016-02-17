@@ -6,7 +6,9 @@
         italic: 'Kursiv',
         underline: 'Unterstreichen',
         clear: 'Zurücksetzen',
-        height: 'Zeilenhöhe'
+        height: 'Zeilenhöhe',
+        strikethrough: 'Durchgestrichen',
+        size: 'Schriftgröße'
       },
       image: {
         image: 'Grafik',
@@ -17,10 +19,23 @@
         floatLeft: 'Linksbündig',
         floatRight: 'Rechtsbündig',
         floatNone: 'Kein Textfluss',
+        shapeRounded: 'Rahmen: Abgerundet',
+        shapeCircle: 'Rahmen: Kreisförmig',
+        shapeThumbnail: 'Rahmen: Thumbnail',
+        shapeNone: 'Kein Rahmen',
         dragImageHere: 'Ziehen Sie ein Bild mit der Maus hierher',
         selectFromFiles: 'Wählen Sie eine Datei aus',
+        maximumFileSize: 'Maximale Dateigröße',
+        maximumFileSizeError: 'Maximale Dateigröße überschritten',
         url: 'Grafik URL',
         remove: 'Grafik entfernen'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Video Link',
+        insert: 'Video einfügen',
+        url: 'Video URL?',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, oder Youku)'
       },
       link: {
         link: 'Link',

@@ -7,7 +7,9 @@
         underline: '下線',
         clear: 'クリア',
         height: '文字高',
-        name: 'フォント'
+        name: 'フォント',
+        strikethrough: '取り消し線',
+        size: '大きさ'
       },
       image: {
         image: '画像',
@@ -22,6 +24,13 @@
         selectFromFiles: '画像ファイルを選ぶ',
         url: 'URLから画像を挿入する',
         remove: '画像を削除する'
+      },
+      video: {
+        video: '動画',
+        videoLink: '動画リンク',
+        insert: '動画挿入',
+        url: '動画のURL',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, Youku)'
       },
       link: {
         link: 'リンク',

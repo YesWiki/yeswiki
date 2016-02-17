@@ -7,7 +7,11 @@
         underline: 'קו תחתון',
         clear: 'נקה עיצוב',
         height: 'גובה',
-        name: 'גופן'
+        name: 'גופן',
+        strikethrough: 'קו חוצה',
+        subscript: 'כתב תחתי',
+        superscript: 'כתב עילי',
+        size: 'גודל גופן'
       },
       image: {
         image: 'תמונה',
@@ -22,6 +26,13 @@
         selectFromFiles: 'בחר מתוך קבצים',
         url: 'נתיב לתמונה',
         remove: 'הסר תמונה'
+      },
+      video: {
+        video: 'סרטון',
+        videoLink: 'קישור לסרטון',
+        insert: 'הוסף סרטון',
+        url: 'קישור לסרטון',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion או Youku)'
       },
       link: {
         link: 'קישור',

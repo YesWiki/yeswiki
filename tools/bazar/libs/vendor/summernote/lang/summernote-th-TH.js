@@ -7,7 +7,11 @@
 				underline: 'ขีดเส้นใต้',
 				clear: 'ล้างรูปแบบตัวอักษร',
 				height: 'ความสูงบรรทัด',
-				name: 'แบบตัวอักษร'
+				name: 'แบบตัวอักษร',
+				strikethrough: 'ขีดฆ่า',
+				subscript: 'ตัวห้อย',
+				superscript: 'ตัวยก',
+				size: 'ขนาดตัวอักษร'
 			},
 			image: {
 				image: 'รูปภาพ',
@@ -22,6 +26,13 @@
 				selectFromFiles: 'เลือกไฟล์รูปภาพ',
 				url: 'ที่อยู่ URL ของรูปภาพ',
 				remove: 'ลบรูปภาพ'
+			},
+			video: {
+				video: 'วีดีโอ',
+				videoLink: 'ลิงก์ของวีดีโอ',
+				insert: 'แทรกวีดีโอ',
+				url: 'ที่อยู่ URL ของวีดีโอ?',
+				providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion หรือ Youku)'
 			},
 			link: {
 				link: 'ตัวเชื่อมโยง',

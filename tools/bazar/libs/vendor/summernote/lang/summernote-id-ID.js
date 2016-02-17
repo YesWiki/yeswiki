@@ -6,7 +6,9 @@
         italic: 'Miring',
         underline: 'Garis bawah',
         clear: 'Bersihkan gaya',
-        height: 'Jarak baris'
+        height: 'Jarak baris',
+        strikethrough: 'Coret',
+        size: 'Ukuran font'
       },
       image: {
         image: 'Gambar',
@@ -21,6 +23,13 @@
         selectFromFiles: 'Pilih gambar dari berkas',
         url: 'URL gambar',
         remove: 'Hapus Gambar'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Link video',
+        insert: 'Sisipkan video',
+        url: 'Tautan video',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, atau Youku)'
       },
       link: {
         link: 'Tautan',

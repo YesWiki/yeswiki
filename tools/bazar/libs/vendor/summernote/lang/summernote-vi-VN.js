@@ -7,7 +7,9 @@
         underline: 'Gạch Dưới',
         clear: 'Bỏ Định Dạng',
         height: 'Khoảng Cách Hàng',
-        name: 'Phông Chữ'
+        name: 'Phông Chữ',
+        strikethrough: 'Gạch Ngang',
+        size: 'Cỡ Chữ'
       },
       image: {
         image: 'Hình Ảnh',
@@ -22,6 +24,13 @@
         selectFromFiles: 'Chọn Từ Files',
         url: 'URL',
         remove: 'Ghỡ Bỏ'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Đường Dẫn đến Video',
+        insert: 'Chèn Video',
+        url: 'URL',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion và Youku)'
       },
       link: {
         link: 'Đường Dẫn',

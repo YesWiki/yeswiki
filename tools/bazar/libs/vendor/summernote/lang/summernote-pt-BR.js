@@ -7,7 +7,9 @@
         underline: 'Sublinhado',
         clear: 'Remover estilo da fonte',
         height: 'Altura da linha',
-        name: 'Fonte'
+        name: 'Fonte',
+        strikethrough: 'Riscado',
+        size: 'Tamanho da fonte'
       },
       image: {
         image: 'Imagem',
@@ -21,6 +23,13 @@
         dragImageHere: 'Arraste uma imagem para cá',
         selectFromFiles: 'Selecione a partir dos arquivos',
         url: 'URL da image'
+      },
+      video: {
+        video: 'Vídeo',
+        videoLink: 'Link para vídeo',
+        insert: 'Inserir vídeo',
+        url: 'URL do vídeo?',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion, ou Youku)'
       },
       link: {
         link: 'Link',

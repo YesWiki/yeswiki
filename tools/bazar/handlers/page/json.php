@@ -34,7 +34,7 @@ if (isset($_REQUEST['demand'])) {
            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT' )) {
-                 header("Access-Control-Allow-Credentials: true");
+                 header('Access-Control-Allow-Credentials: true');
                  header('Access-Control-Allow-Headers: X-Requested-With');
                  header('Access-Control-Allow-Headers: Content-Type');
                  header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
@@ -45,7 +45,7 @@ if (isset($_REQUEST['demand'])) {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
         $_POST = json_decode(file_get_contents('php://input'), true);
     }
-    
+
     // preparation des parametres passés
     $page = (isset($_REQUEST['page']) ? $_REQUEST['page'] : '');
     $form = (isset($_REQUEST['form']) ? $_REQUEST['form'] : '');
@@ -133,7 +133,7 @@ if (isset($_REQUEST['demand'])) {
                         } else {
                             $nom_champ = $tableau[$i][1];
                         }
-                        
+
                         if ($tableau[$i][0] == 'titre' || $nom_champ == 'bf_titre') {
                             $res.= '<h2 class="entry-title">{{{bf_titre}}}</h2>' . "\n\n";
                         } elseif ($tableau[$i][0] == 'image') {
@@ -176,7 +176,7 @@ if (isset($_REQUEST['demand'])) {
                     echo $res;
                 } elseif ($type == 'form') { // template d'un formulaire bazar
                     $url = $this->href('json', $this->GetPageTag(), 'demand=save_entry');
-                    
+
                     //contruction du squelette du formulaire
                     $formtemplate = new HTML_QuickForm('formulaire', 'post', preg_replace('/&amp;/', '&', $url));
                     $squelette = & $formtemplate->defaultRenderer();
@@ -216,14 +216,14 @@ if (isset($_REQUEST['demand'])) {
                         'select'
                     );
                     $squelette->setRequiredNoteTemplate("<div class=\"symbole_obligatoire\">* {requiredNote}</div>\n");
-                    
+
                     //Traduction de champs requis
                     $formtemplate->setRequiredNote(_t('BAZ_CHAMPS_REQUIS'));
                     $formtemplate->setJsWarnings(_t('BAZ_ERREUR_SAISIE'), _t('BAZ_VEUILLEZ_CORRIGER'));
-                    
+
                     //antispam
                     $formtemplate->addElement('hidden', 'antispam', 1);
-                    
+
                     // generation du formulaire
                     $form = baz_afficher_formulaire_fiche('saisie', $formtemplate, $url, '', true);
                     $form = preg_replace(
@@ -247,295 +247,7 @@ if (isset($_REQUEST['demand'])) {
                 $i = 0;
                 $prepared = array();
                 $form['template'] = _convert($form['template'], 'ISO-8859-15');
-                foreach ($form['template'] as $formelem) {
-                    if (in_array($formelem[0], array('radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'))) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = $formelem[0].$formelem[1].$formelem[6];
-
-                        // type de champ
-                        if (in_array($formelem[0], array('listefiche', 'liste'))) {
-                            $prepared[$i]['type'] = 'select';
-                        } elseif (in_array($formelem[0], array('checkboxfiche', 'checkbox'))) {
-                            $prepared[$i]['type'] = 'checkbox';
-                        } else {
-                            $prepared[$i]['type'] = 'radio';
-                        }
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = $formelem[2];
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        
-                        // champs obligatoire
-                        if ($formelem[8]==1) {
-                            $prepared[$i]['required'] = true;
-                        } else {
-                            $prepared[$i]['required'] = false;
-                        }
-
-                        // valeurs associées
-                        if (in_array($formelem[0], array('radio', 'liste', 'checkbox'))) {
-                            $prepared[$i]['values'] = baz_valeurs_liste($formelem[1]);
-                        } else {
-                            $tabquery = array();
-                            if (!empty($formelem[12])) {
-                                $tableau = array();
-                                $tab = explode('|', $formelem[12]);
-                                 //découpe la requete autour des |
-                                foreach ($tab as $req) {
-                                    $tabdecoup = explode('=', $req, 2);
-                                    $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-                                }
-                                $tabquery = array_merge($tabquery, $tableau);
-                            } else {
-                                $tabquery = '';
-                            }
-                            $result = baz_requete_recherche_fiches(
-                                $tabquery,
-                                $order,
-                                $formelem[1],
-                                '',
-                                1,
-                                '',
-                                '',
-                                false,
-                                (!empty($formelem[13])) ? $formelem[13] : ''
-                            );
-                            $prepared[$i]['values']['titre_liste'] = $formelem[2];
-                            foreach ($result as $res) {
-                                $valeurs_fiche = json_decode($res['body'], true);
-                                $prepared[$i]['values']['label'][$valeurs_fiche['id_fiche']] = $valeurs_fiche['bf_titre'];
-                            }
-                        }
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = $formelem[10];
-
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('texte', 'textelong', 'jour', 'listedatedeb', 'listedatefin', 'mot_de_passe', 'lien_internet', 'champs_mail')
-                    )) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = $formelem[1];
-
-                        // type de champ
-                        if (!empty($formelem[7]) && in_array(
-                            $formelem[7],
-                            array('text', 'date', 'email', 'url', 'range', 'password', 'number')
-                        )) {
-                            $prepared[$i]['type'] = $formelem[7];
-                        } elseif (in_array($formelem[0], array('texte'))) {
-                            $prepared[$i]['type'] = 'text';
-                        } elseif (in_array($formelem[0], array('textelong'))) {
-                            $prepared[$i]['type'] = 'textarea';
-                        } elseif (in_array($formelem[0], array('jour', 'listedatedeb', 'listedatefin'))) {
-                            $prepared[$i]['type'] = 'date';
-                        } elseif (in_array($formelem[0], array('champs_mail'))) {
-                            $prepared[$i]['type'] = 'email';
-                        } elseif (in_array($formelem[0], array('lien_internet'))) {
-                            $prepared[$i]['type'] = 'url';
-                        } elseif (in_array($formelem[0], array('mot_de_passe'))) {
-                            $prepared[$i]['type'] = 'password';
-                        }
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = $formelem[2];
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        if (in_array($formelem[0], array('texte'))) {
-                            if (in_array($formelem[7], array('range', 'number'))) {
-                                $prepared[$i]['attributes'] .= ($formelem[3] != '') ? ' min="'.$formelem[3].'"' : '';
-                                $prepared[$i]['attributes'] .= ' max="'.$formelem[4].'"';
-                            } else {
-                                $prepared[$i]['attributes'] .= ' maxlength="'.$formelem[4].'" size="'.$formelem[4].'"';
-                            };
-                        } elseif (in_array($formelem[0], array('textelong'))) {
-                            $prepared[$i]['attributes'] .= ' rows="' . $formelem[4] . '"';
-                        }
-                        $prepared[$i]['attributes'] .= ($formelem[6] != '') ? ' pattern="' . $formelem[6] . '"' : '';
-                        
-                        // champs obligatoire
-                        if ($formelem[8]==1) {
-                            $prepared[$i]['required'] = true;
-                        } else {
-                            $prepared[$i]['required'] = false;
-                        }
-
-                        // valeurs associées
-                        $prepared[$i]['values'] = '';
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = $formelem[10];
-                        
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('fichier', 'image')
-                    )) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = $formelem[0].$formelem[1];
-
-                        // type de champ
-                        $prepared[$i]['type'] = 'file';
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = $formelem[2];
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        if (in_array($formelem[0], array('image'))) {
-                            $prepared[$i]['attributes'] .= ' accept="image/*"';
-                        }
-                        // champs obligatoire
-                        if ($formelem[8]==1) {
-                            $prepared[$i]['required'] = true;
-                        } else {
-                            $prepared[$i]['required'] = false;
-                        }
-
-                        // valeurs associées
-                        $prepared[$i]['values'] = '';
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = $formelem[10];
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('champs_cache', 'titre')
-                    )) {
-                        //identifiant dans la base
-                        if ($formelem[0] == 'titre') {
-                            $prepared[$i]['id'] = 'bf_titre';
-                        } else {
-                            $prepared[$i]['id'] = $formelem[1];
-                        }
-                        
-                        // type de champ
-                        $prepared[$i]['type'] = 'hidden';
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = '';
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        
-                        // champs obligatoire
-                        $prepared[$i]['required'] = '';
-                        
-                        // valeurs associées
-                        if ($formelem[0] == 'titre') {
-                            $prepared[$i]['values'] = $formelem[1];
-                        } else {
-                            $prepared[$i]['values'] = $formelem[2];
-                        }
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = '';
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('labelhtml')
-                    )) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = '';
-
-                        // type de champ
-                        $prepared[$i]['type'] = 'html';
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = $formelem[1];
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        
-                        // champs obligatoire
-                        $prepared[$i]['required'] = '';
-                        
-                        // valeurs associées
-                        $prepared[$i]['values'] = $formelem[3];
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = '';
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('carte_google')
-                    )) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = '';
-
-                        // type de champ
-                        $prepared[$i]['type'] = 'map';
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = '';
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        
-                        // champs obligatoire
-                        if ($formelem[8]==1) {
-                            $prepared[$i]['required'] = true;
-                        } else {
-                            $prepared[$i]['required'] = false;
-                        }
-                        
-                        // valeurs associées
-                        $prepared[$i]['values'] = '';
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = '';
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('inscriptionliste')
-                    )) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = str_replace(array('@', '.'), array('', ''), $formelem[1]);
-
-                        // type de champ
-                        $prepared[$i]['type'] = 'listsubscribe';
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = $formelem[2];
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        
-                        // champs obligatoire
-                        $prepared[$i]['required'] = '';
-                        
-                        // valeurs associées
-                        $prepared[$i]['values'] = $formelem[1];
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = '';
-                    } elseif (in_array(
-                        $formelem[0],
-                        array('utilisateur_wikini')
-                    )) {
-                        //identifiant dans la base
-                        $prepared[$i]['id'] = $formelem[1];
-
-                        // type de champ
-                        $prepared[$i]['type'] = 'wikiuser';
-                        
-                        // texte d'invitation à la saisie
-                        $prepared[$i]['label'] = '';
-                        
-                        // attributs html du champs
-                        $prepared[$i]['attributes'] = '';
-                        
-                        // champs obligatoire
-                        $prepared[$i]['required'] = '';
-                        
-                        // valeurs associées
-                        $prepared[$i]['values'] = '';
-
-                        // texte d'aide
-                        $prepared[$i]['helper'] = $formelem[1];
-                    }
-
-                    $i++;
-                }
-                $form['prepared'] = $prepared;
+                $form['prepared'] = bazPrepareFormData($form);
                 $formval[$idform] = $form;
             }
             echo json_encode($formval);

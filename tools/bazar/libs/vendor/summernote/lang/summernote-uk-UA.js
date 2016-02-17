@@ -7,7 +7,11 @@
         underline: 'Підкреслений',
         clear: 'Прибрати стилі шрифту',
         height: 'Висота лінії',
-        name: 'Шрифт'
+        name: 'Шрифт',
+        strikethrough: 'Закреслений',
+        subscript: 'Нижній індекс',
+        superscript: 'Верхній індекс',
+        size: 'Розмір шрифту'
       },
       image: {
         image: 'Картинка',
@@ -18,10 +22,22 @@
         floatLeft: 'Розташувати ліворуч',
         floatRight: 'Розташувати праворуч',
         floatNone: 'Початкове розташування',
+        shapeRounded: 'Форма: Заокруглена',
+        shapeCircle: 'Форма: Коло',
+        shapeThumbnail: 'Форма: Мініатюра',
+        shapeNone: 'Форма: Немає',
         dragImageHere: 'Перетягніть сюди картинку',
+        dropImage: 'Перетягніть картинку',
         selectFromFiles: 'Вибрати з файлів',
         url: 'URL картинки',
         remove: 'Видалити картинку'
+      },
+      video: {
+        video: 'Відео',
+        videoLink: 'Посилання на відео',
+        insert: 'Вставити відео',
+        url: 'URL відео',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion чи Youku)'
       },
       link: {
         link: 'Посилання',

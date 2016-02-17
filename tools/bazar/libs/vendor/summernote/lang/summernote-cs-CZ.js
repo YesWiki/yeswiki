@@ -6,7 +6,9 @@
         italic: 'Kurzíva',
         underline: 'Podtržené',
         clear: 'Odstranit styl písma',
-        height: 'Výška řádku'
+        height: 'Výška řádku',
+        strikethrough: 'Přeškrtnuté',
+        size: 'Velikost písma'
       },
       image: {
         image: 'Obrázek',
@@ -20,6 +22,13 @@
         dragImageHere: 'Přetáhnout sem obrázek',
         selectFromFiles: 'Vybrat soubor',
         url: 'URL obrázku'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Odkaz videa',
+        insert: 'Vložit video',
+        url: 'URL videa?',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion nebo Youku)'
       },
       link: {
         link: 'Odkaz',

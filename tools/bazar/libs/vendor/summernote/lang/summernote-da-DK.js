@@ -7,7 +7,11 @@
         underline: 'Understreget',
         clear: 'Fjern formatering',
         height: 'Højde',
-        name: 'Skrifttype'
+        name: 'Skrifttype',
+        strikethrough: 'Gennemstreget',
+        subscript: 'Sænket skrift',
+        superscript: 'Hævet skrift',
+        size: 'Skriftstørrelse'
       },
       image: {
         image: 'Billede',
@@ -29,6 +33,13 @@
         maximumFileSizeError: 'Filen er større end maks tilladte fil størrelse!',
         url: 'Billede URL',
         remove: 'Fjern billede'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Video Link',
+        insert: 'Indsæt Video',
+        url: 'Video URL?',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion eller Youku)'
       },
       link: {
         link: 'Link',

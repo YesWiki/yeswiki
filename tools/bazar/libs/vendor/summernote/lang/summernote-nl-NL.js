@@ -7,7 +7,9 @@
         underline: 'Onderstrepen',
         clear: 'Stijl verwijderen',
         height: 'Regelhoogte',
-        name: 'Lettertype'
+        name: 'Lettertype',
+        strikethrough: 'Doorhalen',
+        size: 'Tekstgrootte'
       },
       image: {
         image: 'Afbeelding',
@@ -22,6 +24,13 @@
         selectFromFiles: 'Selecteer een bestand',
         url: 'URL van de afbeelding',
         remove: 'Verwijder afbeelding'
+      },
+      video: {
+        video: 'Video',
+        videoLink: 'Video link',
+        insert: 'Video invoegen',
+        url: 'URL van de video',
+        providers: '(YouTube, Vimeo, Vine, Instagram, DailyMotion of Youku)'
       },
       link: {
         link: 'Link',
