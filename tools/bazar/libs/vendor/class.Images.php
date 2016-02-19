@@ -216,7 +216,7 @@ class Image
         if ($image_create_func != 'imagemagick') {
             $imageC = ImageCreateTrueColor($newImage_width, $newImage_height);
             $newImage = $image_create_func($this->image);
-            
+
             if ($image_save_func == 'ImagePNG') {
                 //http://www.akemapa.com/2008/07/10/php-gd-resize-transparent-image-png-gif/
                 imagealphablending($imageC, false);
@@ -569,8 +569,20 @@ class Image
             default:
                 $image_save_func = 'ImageJPEG';
         }
+        // test if exec function is autorised
+        $rcode=1;
+        if (!ini_get('safe_mode') ) {
+            $disabled = ini_get('disable_functions');
+            if ($disabled) {
+                $disabled = explode(',', $disabled);
+                $disabled = array_map('trim', $disabled);
+                if (!in_array('exec', $disabled)) {
+                    exec("convert -version", $out, $rcode);
+                }
+            }
+        }
+
         // use imagemagick
-        exec("convert -version", $out, $rcode);
         if ($rcode==0) {
             $image_create_func = 'imagemagick';
             $image_save_func = 'imagemagick';
