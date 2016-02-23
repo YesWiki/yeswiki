@@ -50,6 +50,10 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
 
     // si pas d'erreur on envoie
     if ($message['class'] == 'success') {
+        // test de presence d'ezmlm, qui necessite de reformater le mail envoyé
+        if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'ezmlm') {
+            $mail_receiver = str_replace('@', '-'.str_replace('@', '=', $mail_sender).'@', $mail_receiver);
+        }
         if (send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html)) {
             if ($_POST['type'] == 'contact' || $_POST['type'] == 'mail') {
                 $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
@@ -87,7 +91,7 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
                     <div class="controls">
                         <div class="input-prepend">
                             <span class="add-on"><i class="icon-envelope"></i></span>
-                            <input required class="input-large" type="email" name="mail" 
+                            <input required class="input-large" type="email" name="mail"
                             value="" placeholder="Adresse mail du destinataire" />
                         </div>
                     </div>

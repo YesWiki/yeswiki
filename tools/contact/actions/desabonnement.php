@@ -54,14 +54,20 @@ else {
 	else {
 		$GLOBALS['nbactionmail'] = 1;
 	}
-	$listelements['nbactionmail'] = $GLOBALS['nbactionmail']; 
+	$listelements['nbactionmail'] = $GLOBALS['nbactionmail'];
 
 	// on choisit le template utilisé
-	$template = $this->GetParameter('template'); 
+	$template = $this->GetParameter('template');
 	if (empty($template)) {
 		$template = 'subscribe-form.tpl.html';
 	}
-
+  
+  $listelements['hiddeninputs'] = '';
+  // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee
+  $mailinglist = $this->GetParameter('mailinglist');
+  if (!empty($mailinglist) and $mailinglist == 'ezmlm') {
+     $listelements['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="ezmlm">';
+  }
 	// on peut ajouter des classes à la classe par défaut
 	$listelements['class'] = ($this->GetParameter('class') ? 'form-desabonnement '.$this->GetParameter('class') : 'form-desabonnement');
 
