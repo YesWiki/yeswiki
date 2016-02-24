@@ -21,34 +21,34 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Fichier de traduction en francais de l'extension Login
+* Fichier de traduction en espagnol de l'extension Login
 *
 *@package 		login
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@author        Louise Didier <louise@quincaillere.org>
+*@copyright     2016 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge(
     $GLOBALS['translations'],
     array(
-        'LOGIN_SIGNUP' => 'S\'inscrire',
-        'LOGIN_LOGIN' => 'Se connecter',
-        'LOGIN_WIKINAME' => 'NomWiki',
+        'LOGIN_SIGNUP' => 'Inscribirse',
+        'LOGIN_LOGIN' => 'Conectarse',
+        'LOGIN_WIKINAME' => 'NombreWiki',
         'LOGIN_EMAIL' => 'Email',
-        'LOGIN_PASSWORD' => 'Mot de passe',
-        'LOGIN_MODIFY' => 'Modifier',
-        'LOGIN_MODIFY_USER' => 'Modifier mon inscription',
-        'LOGIN_REMEMBER_ME' => 'Se souvenir de moi',
-        'LOGIN_LOGOUT' => 'D&eacute;connexion',
-        'LOGIN_NEW_MEMBER' => 'Nouveau membre',
-        'LOGIN_NOT_AUTORIZED' => 'Vous n\'&ecirc;tes pas autoris&eacute; &agrave; lire cette page',
-        'LOGIN_WRONG_PASSWORD' => 'Identification impossible : mauvais mot de passe.',
-        'LOGIN_WRONG_USER' => 'Identification impossible : Identifiant non reconnu.',
-        'LOGIN_NO_CONNECTED_USER' => 'Pas d\'utilisateur connecté.',
-        'LOGIN_NEW_MEMBER' => 'Nouveau membre',
-        'LOGIN_ALREADY_MEMBER' => 'Déjà membre',
-        'LOGIN_PLEASE_REGISTER' => 'veuillez vous identifier',
-        'LOGIN_CONNECTED_AS' => 'Connect&eacute; en tant que',
-        'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute; !'
+        'LOGIN_PASSWORD' => 'Contraseña',
+        'LOGIN_MODIFY' => 'Modificar',
+        'LOGIN_MODIFY_USER' => 'Modificar mi inscripción',
+        'LOGIN_REMEMBER_ME' => 'Accordarse de mi',
+        'LOGIN_LOGOUT' => 'Desconexión',
+        'LOGIN_NEW_MEMBER' => 'Nuevo miembro',
+        'LOGIN_NOT_AUTORIZED' => 'No tienes permiso para leer esta página',
+        'LOGIN_WRONG_PASSWORD' => 'Identificación imposible : mala contraseña.',
+        'LOGIN_WRONG_USER' => 'Identificación imposible : nombre de usuario desconocido.',
+        'LOGIN_NO_CONNECTED_USER' => 'Ningun usuario conectado.',
+        'LOGIN_NEW_MEMBER' => 'Nuevo miembro',
+        'LOGIN_ALREADY_MEMBER' => 'Ya eres miembro',
+        'LOGIN_PLEASE_REGISTER' => 'identificate por favor',
+        'LOGIN_CONNECTED_AS' => 'Conectado como',
+        'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Ya estas desconectado !'
     )
 );
