@@ -21,11 +21,11 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Fichier de traduction en francais de l'extension syndication
+* Fichier de traduction en espagnol de l'extension syndication
 *
 *@package 		toc
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2013 Outils-Réseaux
+*@author        Louise Didier <louise@quincaillere.org>
+*@copyright     2016 Outils-Réseaux
 */
 
-$GLOBALS['translations']['TOC_TABLE_OF_CONTENTS'] = 'Table des mati&egrave;res';
+$GLOBALS['translations']['TOC_TABLE_OF_CONTENTS'] = 'índice';
