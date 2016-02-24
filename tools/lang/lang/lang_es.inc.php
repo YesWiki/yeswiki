@@ -1,7 +1,7 @@
 <?php
 if (!defined("WIKINI_VERSION"))
 {
-  die ("acc&egrave;s direct interdit");
+  die ("acceso directo prohibido");
 }
 
 
@@ -9,8 +9,8 @@ if (!defined("WIKINI_VERSION"))
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 // Action translation
-'LANG_DESTINATION_REQUIRED' => 'Le param&egrave;tre destination (langue destination), obligatoire, est manquant.',
-'LANG_FLAG_FILE_MISSING' => 'Drapeau absent pour ce pays'
+'LANG_DESTINATION_REQUIRED' => 'Falta el parámetro destinación (idioma destinación) obligatorio.',
+'LANG_FLAG_FILE_MISSING' => 'Falta la bandera para este país'
 
 
 
