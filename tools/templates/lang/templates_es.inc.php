@@ -21,127 +21,127 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Fichier de traduction en francais de l'extension Templates
+* Fichier de traduction en espagnol de l'extension Templates
 *
 *@package 		templates
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@author        Louise Didier <louise@quincaillere.org>
+*@copyright     2016 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 // actions/button.php
-'TEMPLATE_ACTION_BUTTON' => 'Action {{button ...}}',
-'TEMPLATE_LINK_PARAMETER_REQUIRED' => 'param&egrave;tre "link" obligatoire',
-'TEMPLATE_RSS_LAST_CHANGES' => 'Flux RSS des derni&egrave;res pages modifi&eacute;es',
-'TEMPLATE_RSS_LAST_COMMENTS' => 'Flux RSS des derniers commentaires',
-'TEMPLATE_NO_DEFAULT_THEME' => 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site',
-'TEMPLATE_CUSTOM_GRAPHICS' => 'Apparence de la page',
-'TEMPLATE_SAVE' => 'Sauver',
-'TEMPLATE_APPLY' => 'Appliquer',
-'TEMPLATE_CANCEL' => 'Annuler',
-'TEMPLATE_THEME' => 'Th&egrave;me',
-'TEMPLATE_SQUELETTE' => 'Squelette',
-'TEMPLATE_STYLE' => 'Style',
-'TEMPLATE_BG_IMAGE' => 'Image de fond',
-'TEMPLATE_ERROR_NO_DATA' => 'ERREUR : rien &agrave; ajouter dans les meta-donn&eacute;es.',
-'TEMPLATE_ERROR_NO_ACCESS' => 'ERREUR : pas les droits d\'acc&eacute;s.',
+'TEMPLATE_ACTION_BUTTON' => 'Acción {{button ...}}',
+'TEMPLATE_LINK_PARAMETER_REQUIRED' => 'parámetro "link" obligatorio',
+'TEMPLATE_RSS_LAST_CHANGES' => 'Flujo RSS de las última páginas modificadas',
+'TEMPLATE_RSS_LAST_COMMENTS' => 'Flujo RSS de los últimos comentarios',
+'TEMPLATE_NO_DEFAULT_THEME' => 'Los archivos del template por defecto han desaparecido, el uso de los templates es imposible.<br />Por favor, reinstala el tools template o contactar el administrador del sitio',
+'TEMPLATE_CUSTOM_GRAPHICS' => 'Apariencia de la página',
+'TEMPLATE_SAVE' => 'Guardar',
+'TEMPLATE_APPLY' => 'Aplicar',
+'TEMPLATE_CANCEL' => 'Cancelar',
+'TEMPLATE_THEME' => 'Tema',
+'TEMPLATE_SQUELETTE' => 'Esqueleto',
+'TEMPLATE_STYLE' => 'Estilo',
+'TEMPLATE_BG_IMAGE' => 'Imagen de fondo',
+'TEMPLATE_ERROR_NO_DATA' => 'ERROR : no hay nada que añadir en los metadatos.',
+'TEMPLATE_ERROR_NO_ACCESS' => 'ERROR : no tienes los derechos de acceso.',
 
 // barre de redaction
-'TEMPLATE_VIEW_PAGE' => 'Voir la page',
-'TEMPLATE_EDIT' => '&Eacute;diter',
-'TEMPLATE_EDIT_THIS_PAGE' => '&Eacute;diter la page',
-'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Les derni&egrave;res modifications de la page',
-'TEMPLATE_LAST_UPDATE' => 'Modifi&eacute;e le',
-'TEMPLATE_OWNER' => 'Propri&eacute;taire',
-'TEMPLATE_YOU' => 'vous',
-'TEMPLATE_NO_OWNER' => 'Pas de propri&eacute;taire',
-'TEMPLATE_CLAIM' => 'Appropriation',
-'TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS' => '&Eacute;diter les permissions de la page',
-'TEMPLATE_PERMISSIONS' => 'Permissions',
-'TEMPLATE_DELETE' => 'Supprimer',
-'TEMPLATE_DELETE_PAGE' => 'Supprimer la page',
-'TEMPLATE_CLICK_TO_SEE_REFERENCES' => 'Les URLs faisant r&eacute;f&eacute;rence &agrave; la page',
-'TEMPLATE_REFERENCES' => 'R&eacute;f&eacute;rences',
-'TEMPLATE_SLIDESHOW_MODE' => 'Lancer cette page en mode diaporama.',
+'TEMPLATE_VIEW_PAGE' => 'Ver la página',
+'TEMPLATE_EDIT' => 'Editar',
+'TEMPLATE_EDIT_THIS_PAGE' => 'Editar la página',
+'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Las última modificaciones de la página',
+'TEMPLATE_LAST_UPDATE' => 'Modificado el',
+'TEMPLATE_OWNER' => 'Proprietario',
+'TEMPLATE_YOU' => 'tu',
+'TEMPLATE_NO_OWNER' => 'No proprietario',
+'TEMPLATE_CLAIM' => 'Apropriación',
+'TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS' => 'Editar las permisiones de la página',
+'TEMPLATE_PERMISSIONS' => 'Permisiones',
+'TEMPLATE_DELETE' => 'Suprimir',
+'TEMPLATE_DELETE_PAGE' => 'Suprimir la página',
+'TEMPLATE_CLICK_TO_SEE_REFERENCES' => 'Las URLs que se refieren a la página',
+'TEMPLATE_REFERENCES' => 'Referencias',
+'TEMPLATE_SLIDESHOW_MODE' => 'Abrir esta página en modo diaporama.',
 'TEMPLATE_SLIDESHOW' => 'Diaporama',
-'TEMPLATE_SEE_SHARING_OPTIONS' => 'Partager la page',
-'TEMPLATE_SHARE' => 'Partager',
+'TEMPLATE_SEE_SHARING_OPTIONS' => 'Compartir la página',
+'TEMPLATE_SHARE' => 'Compartir',
 
 // formatage des dates
-'TEMPLATE_DATE_FORMAT' => 'd.m.Y \&\a\g\r\a\v\e; H:i:s',
+'TEMPLATE_DATE_FORMAT' => 'd.m.Y \a \l\a\s H:i:s',
 
 // recherche
-'TEMPLATE_SEARCH_INPUT_TITLE' => 'Rechercher dans YesWiki [alt-shift-C]',
-'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Rechercher les pages comportant ce texte.',
-'TEMPLATE_SEARCH_PLACEHOLDER' => 'Rechercher...',
-'TEMPLATE_SEARCH' => 'Rechercher',
+'TEMPLATE_SEARCH_INPUT_TITLE' => 'Buscar en YesWiki [alt-shift-C]',
+'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Buscar las páginas con este texto.',
+'TEMPLATE_SEARCH_PLACEHOLDER' => 'Buscar...',
+'TEMPLATE_SEARCH' => 'Buscar',
 
 // handler widget
-'TEMPLATE_WIDGET_TITLE' => 'Widget : int&eacute;grer le contenu de cette page ailleurs',
-'TEMPLATE_WIDGET_COPY_PASTE' => 'Copier-collez le code HTML ci-dessus pour int&eacute;grer le contenu tel qu\'il apparait ci dessous.',
+'TEMPLATE_WIDGET_TITLE' => 'Widget : integrar el contenido de esta página en otra parte',
+'TEMPLATE_WIDGET_COPY_PASTE' => 'Copiar-pegar el codigo HTML más arriba para integrar le contenido tal como aparece más abajo.',
 
 // handler share
-'TEMPLATE_SHARE_INCLUDE_CODE' => 'Code d\'int&eacute;gration de contenu dans une page HTML',
-'TEMPLATE_SHARE_MUST_READ' => 'A lire : ',
-'TEMPLATE_SHARE_FACEBOOK' => 'Partager sur Facebook',
-'TEMPLATE_SHARE_TWITTER' => 'Partager sur Twitter',
-'TEMPLATE_SHARE_NETVIBES' => 'Partager sur Netvibes',
-'TEMPLATE_SHARE_DELICIOUS' => 'Partager sur Delicious',
-'TEMPLATE_SHARE_GOOGLEREADER' => 'Partager sur Google Reader',
-'TEMPLATE_SHARE_MAIL' => 'Envoyer le contenu de cette page par mail',
-'TEMPLATE_ADD_SHARE_BUTTON' => 'Ajouter un bouton de partage en haut &agrave; droite de la page',
-'TEMPLATE_ADD_EDIT_BAR' => 'Ajouter la barre d\'&eacute;dition en bas de page',
+'TEMPLATE_SHARE_INCLUDE_CODE' => 'Codigo de integración de contenido en una página HTML',
+'TEMPLATE_SHARE_MUST_READ' => 'Para leer : ',
+'TEMPLATE_SHARE_FACEBOOK' => 'Compartir en Facebook',
+'TEMPLATE_SHARE_TWITTER' => 'Compartir en Twitter',
+'TEMPLATE_SHARE_NETVIBES' => 'Compartir en Netvibes',
+'TEMPLATE_SHARE_DELICIOUS' => 'Compartir en Delicious',
+'TEMPLATE_SHARE_GOOGLEREADER' => 'Compartir en Google Reader',
+'TEMPLATE_SHARE_MAIL' => 'Enviar el contenido de esta página por mail',
+'TEMPLATE_ADD_SHARE_BUTTON' => 'Añadir en la parte superior derecha un botón para compartir la página',
+'TEMPLATE_ADD_EDIT_BAR' => 'Añadir la barra de edición abajo de la página',
 
 // handler diaporama
-'TEMPLATE_NO_ACCESS_TO_PAGE' => 'Vous n\'avez pas le droit d\'acc&eacute;der &agrave; cette page.',
-'TEMPLATE_PAGE_DOESNT_EXIST' => 'Page non existante',
-'PAGE_CANNOT_BE_SLIDESHOW' => 'La page ne peut pas &ecirc;tre d&eacute;coup&eacute;e en diapositives (pas de titres niveau 2)',
+'TEMPLATE_NO_ACCESS_TO_PAGE' => 'Nos tienes los derechos de acceso a esta página.',
+'TEMPLATE_PAGE_DOESNT_EXIST' => 'No existe esta página',
+'PAGE_CANNOT_BE_SLIDESHOW' => 'La página no se puede cortar en diapositives (no hay títulos de nivel 2)',
 
 // handler edit
-'TEMPLATE_CUSTOM_PAGE' => 'Pr&eacute;f&eacute;rences de la page',
-'TEMPLATE_PAGE_PREFERENCES' => 'Param&egrave;tres de la page',
-'PAGE_LANGUAGE' => 'Langue de la page',
-'CHOOSE_PAGE_FOR' => 'Choisir une page pour',
-'HORIZONTAL_MENU_PAGE' => 'le menu horizontal',
-'FAST_ACCESS_RIGHT_PAGE' => 'les raccourcis en haut &agrave; droite',
-'HEADER_PAGE' => 'l\'ent&ecirc;te (bandeau)',
-'FOOTER_PAGE' => 'le pied de page',
-'FOR_2_OR_3_COLUMN_THEMES' => 'Pour les th&egrave;mes &agrave; 2 ou 3 colonnes',
-'VERTICAL_MENU_PAGE' => 'le menu vertical',
-'RIGHT_COLUMN_PAGE' => 'la colonne de droite',
+'TEMPLATE_CUSTOM_PAGE' => 'Preferencias de la página',
+'TEMPLATE_PAGE_PREFERENCES' => 'Parámetros de la página',
+'PAGE_LANGUAGE' => 'Idioma de la página',
+'CHOOSE_PAGE_FOR' => 'Elegir una página para',
+'HORIZONTAL_MENU_PAGE' => 'el menú horizontal',
+'FAST_ACCESS_RIGHT_PAGE' => 'acceso rapido en la parte superior derecha',
+'HEADER_PAGE' => 'la cabecera (bandera)',
+'FOOTER_PAGE' => 'el pie de página',
+'FOR_2_OR_3_COLUMN_THEMES' => 'Para los temas con 2 o 3 columnas',
+'VERTICAL_MENU_PAGE' => 'el menú vertical',
+'RIGHT_COLUMN_PAGE' => 'la columna de derecha',
 
 // actions/yeswikiversion.php
-'RUNNING_WITH' => 'Galope sous',
+'RUNNING_WITH' => 'Disfruta con',
 
-'TEMPLATE_NO_THEME_FILES' => 'Fichiers du th&egrave;me manquants',
-'TEMPLATE_DEFAULT_THEME_USED' => 'Le th&egrave;me par défaut est donc utilisé',
+'TEMPLATE_NO_THEME_FILES' => 'Archivo de los temas que faltan',
+'TEMPLATE_DEFAULT_THEME_USED' => 'El tema por defecto est donc utilisé',
 
 // actions/end.php
-'TEMPLATE_ACTION_END' => 'Action {{end ...}}',
-'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'param&egrave;tre "elem" obligatoire',
+'TEMPLATE_ACTION_END' => 'Acción {{end ...}}',
+'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'parámetro "elem" obligatorio',
 
 // actions/col.php
-'TEMPLATE_ACTION_COL' => 'Action {{col ...}}',
-'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'param&egrave;tre "size" obligatoire',
-'TEMPLATE_SIZE_PARAMETER_MUST_BE_INTEGER_FROM_1_TO_12' => 'le param&egrave;tre "size" doit &ecirc;tre un entier compris entre 1 et 12',
-'TEMPLATE_ELEM_COL_NOT_CLOSED' => 'l\'action {{col ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="col"}}',
+'TEMPLATE_ACTION_COL' => 'Acción {{col ...}}',
+'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'parámetro "size" obligatorio',
+'TEMPLATE_SIZE_PARAMETER_MUST_BE_INTEGER_FROM_1_TO_12' => 'el parámetro "size" tiene que ser un número entero entre 1 y 12',
+'TEMPLATE_ELEM_COL_NOT_CLOSED' => 'la acción {{col ...}} tiene que ser cerrada por una acción {{end elem="col"}}',
 
 // actions/grid.php
-'TEMPLATE_ACTION_GRID' => 'Action {{grid ...}}',
-'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'l\'action {{grid ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="grid"}}',
+'TEMPLATE_ACTION_GRID' => 'Acción {{grid ...}}',
+'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'la acción {{grid ...}} tiene que ser cerrada por una acción {{end elem="grid"}}',
 
 // actions/buttondropdown.php
-'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Action {{buttondropdown ...}}',
-'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'l\'action {{buttondropdown ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="buttondropdown"}}',
+'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Acción {{buttondropdown ...}}',
+'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'la acción {{buttondropdown ...}} tiene que ser cerrada por una acción {{end elem="buttondropdown"}}',
 
 // actions/adminpages.php
-'TEMPLATE_ACTION_FOR_ADMINS_ONLY' => 'action réservée aux administrateurs',
-'TEMPLATE_CONFIRM_DELETE_PAGE' => 'Etes vous sûr(e) de vouloir supprimer définitivement cette page ?',
-'TEMPLATE_PAGE' => 'Page',
-'TEMPLATE_LAST_MODIFIED' => 'Dernière modification',
-'TEMPLATE_OWNER' => 'Propriétaire',
-'TEMPLATE_ACTIONS' => 'Actions',
-'TEMPLATE_MODIFY' => 'Modifier',
+'TEMPLATE_ACTION_FOR_ADMINS_ONLY' => 'acción reservada a los administradores',
+'TEMPLATE_CONFIRM_DELETE_PAGE' => 'Estas seguro de querer suprimir definitivamente esta página ?',
+'TEMPLATE_PAGE' => 'Página',
+'TEMPLATE_LAST_MODIFIED' => 'última modificación',
+'TEMPLATE_OWNER' => 'Proprietario',
+'TEMPLATE_ACTIONS' => 'Acciones',
+'TEMPLATE_MODIFY' => 'Modificar',
 )
 );
