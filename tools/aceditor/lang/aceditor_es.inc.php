@@ -21,32 +21,32 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* French translation for ACeditor extension
+* Spanich translation for ACeditor extension
 *
-*@package 		aceditor
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2014 Outils-Réseaux
+*@package 		login
+*@author        Louise Didier <louise@quincaillere.org>
+*@copyright     2016 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-'ACEDITOR_SAVE'				=> 'Sauver',
-'ACEDITOR_FORMAT'			=> 'Format',
-'ACEDITOR_TITLE1'			=> 'En-t&ecirc;te &eacute;norme',
-'ACEDITOR_TITLE2'			=> 'En-t&ecirc;te tr&egrave;s gros',
-'ACEDITOR_TITLE3'			=> 'En-t&ecirc;te gros',
-'ACEDITOR_TITLE4'			=> 'En-t&ecirc;te normal',
-'ACEDITOR_TITLE5'			=> 'Petit en-t&ecirc;te',
-'ACEDITOR_BIGGER_TEXT'		=> 'Texte agrandi',
-'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Texte mis en valeur',
-'ACEDITOR_SOURCE_CODE'		=> 'Code source',
-'ACEDITOR_BOLD_TEXT'		=> 'Passe le texte s&eacute;lectionn&eacute; en gras  ( Ctrl-b )',
-'ACEDITOR_ITALIC_TEXT'		=> 'Passe le texte s&eacute;lectionn&eacute; en italique ( Ctrl-i )',
-'ACEDITOR_UNDERLINE_TEXT'	=> 'Souligne le texte s&eacute;lectionn&eacute; ( Ctrl-u )',
-'ACEDITOR_STRIKE_TEXT'		=> 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
-'ACEDITOR_LINE'				=> 'Ins&egrave;re une ligne horizontale',
-'ACEDITOR_LINK'				=> 'Lien',
-'ACEDITOR_LINK_PROMPT'		=> 'Entrez l\'adresse URL',
-'ACEDITOR_LINK_TITLE'		=> 'Ajoute un lien au texte s&eacute;lectionn&eacute;'
+'ACEDITOR_SAVE'				=> 'Guardar',
+'ACEDITOR_FORMAT'			=> 'Formato',
+'ACEDITOR_TITLE1'			=> 'Nivel de título enorme',
+'ACEDITOR_TITLE2'			=> 'Nivel de título muy grande',
+'ACEDITOR_TITLE3'			=> 'Nivel de título grande',
+'ACEDITOR_TITLE4'			=> 'Nivel de título normal',
+'ACEDITOR_TITLE5'			=> 'Nivel de título pequeño',
+'ACEDITOR_BIGGER_TEXT'		=> 'Texto ampliado',
+'ACEDITOR_HIGHLIGHT_TEXT'	=> 'Texto puesto de relieve',
+'ACEDITOR_SOURCE_CODE'		=> 'Código fuente',
+'ACEDITOR_BOLD_TEXT'		=> 'Pone el texto selectionado en negrita ( Ctrl-b )',
+'ACEDITOR_ITALIC_TEXT'		=> 'Pone el texto selectionado en cursiva ( Ctrl-i )',
+'ACEDITOR_UNDERLINE_TEXT'	=> 'Subraya el texto selectionado ( Ctrl-u )',
+'ACEDITOR_STRIKE_TEXT'		=> 'Tacha el texto selectionado ( Ctrl-y )',
+'ACEDITOR_LINE'				=> 'Integra una linea horizontal',
+'ACEDITOR_LINK'				=> 'Enlace',
+'ACEDITOR_LINK_PROMPT'		=> 'Entra la dirección URL',
+'ACEDITOR_LINK_TITLE'		=> 'Añadir un enlace al texto selectionado'
 
 ));
