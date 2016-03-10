@@ -56,7 +56,7 @@ if (!class_exists('attach')) {
         public $classes = 'attached_file'; //classe pour afficher une image
         public $attachErr = ''; //message d'erreur
         public $pageId = 0; //identifiant de la page
-        public $isSafeMode = false; //indicateur du safe mode de PHP
+        public $isSafeMode = true; //indicateur du safe mode de PHP
         /**
          * Constructeur. Met les valeurs par defaut aux parametres de configuration
          */
@@ -64,9 +64,6 @@ if (!class_exists('attach')) {
         {
             $this->wiki = $wiki;
             $this->attachConfig = $this->wiki->GetConfigValue("attach_config");
-            if (empty($this->attachConfig["php53_safe_mode"])) {
-                $this->attachConfig["php53_safe_mode"] = true;
-            }
 
             if (empty($this->attachConfig["ext_images"])) {
                 $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg";
@@ -116,12 +113,18 @@ if (!class_exists('attach')) {
                 $this->attachConfig['fmTrash_symbole'] = 'Corbeille';
             }
 
-            // le safe_mode n'existe que pour php < 5.3
-            if (version_compare(phpversion(), '5.3', '<')) {
-                $this->isSafeMode = ini_get("safe_mode");
+            $safemode = $this->wiki->GetConfigValue("no_safe_mode");
+            if (empty($safemode)) {
+                if (version_compare(phpversion(), '5.3', '<')) {
+                    // le safe_mode n'existe que pour php < 5.3
+                    $this->isSafeMode = ini_get("safe_mode");
+                } else {
+                    $this->isSafeMode = true;
+                }
             } else {
-                $this->isSafeMode = $this->attachConfig["php53_safe_mode"];
+                $this->isSafeMode = false;
             }
+
 
         }
 /******************************************************************************
