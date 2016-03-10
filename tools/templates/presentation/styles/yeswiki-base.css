@@ -39,7 +39,7 @@ span.missingpage, .list-inline, .list-inline li {display:inline;}
 .code { margin: 3px 0; }
 .revisioninfo { color: #AAAAAA; padding-bottom: 20px; }
 .searchbox { background: #FFFFF8; border: 0px; border-bottom: 1px solid #CCCCAA; padding: 0px; margin: 0px; }
-.debug { font-size: 11px; color: #888; background:#FFF; border: 1px dotted #888; width:940px; padding:10px; margin:0 auto;}
+.debug { font-size: 11px; color: #888; background:#FFF; border: 1px dotted #888; padding:10px; margin:0 auto;}
 /* Fin divers mise en forme */
 
 /* Les 3 colonnes potentielles de la page centrale */
