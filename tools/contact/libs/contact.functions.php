@@ -82,14 +82,14 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         $mail->Username = $GLOBALS['wiki']->config['contact_smtp_user'];
         //Password to use for SMTP authentication
         $mail->Password = $GLOBALS['wiki']->config['contact_smtp_pass'];
-    } elseif ($GLOBALS['wiki']->config['contact_mail_func'] == 'snedmail') {
+    } elseif ($GLOBALS['wiki']->config['contact_mail_func'] == 'sendmail') {
         // Set PHPMailer to use the sendmail transport
         $mail->isSendmail();
     }
 
     //Set who the message is to be sent from
     if (empty($name_sender)) {
-      $name_sender = $mail_sender;
+        $name_sender = $mail_sender;
     }
     $mail->setFrom($mail_sender, $name_sender);
     //Set an alternative reply-to address
