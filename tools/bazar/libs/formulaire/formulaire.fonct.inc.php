@@ -159,17 +159,19 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
             $image->resize($largeur, $hauteur, $method);
             // Fix Orientation
             $exif = exif_read_data($image_src);
-            $orientation = $exif['Orientation'];
-            switch ($orientation) {
-                case 3:
-                    $image->rotate(180);
-                    break;
-                case 6:
-                    $image->rotate(-90);
-                    break;
-                case 8:
-                    $image->rotate(90);
-                    break;
+            if (isset($exif['Orientation'])) {
+                $orientation = $exif['Orientation'];
+                switch ($orientation) {
+                    case 3:
+                        $image->rotate(180);
+                        break;
+                    case 6:
+                        $image->rotate(-90);
+                        break;
+                    case 8:
+                        $image->rotate(90);
+                        break;
+                }
             }
             $ext = explode('.', $image_dest);
             $ext = end($ext);
@@ -1023,12 +1025,20 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
     $id = str_replace(array('@', '.'), array('', ''), $tableau_template[1]);
     $valsub = str_replace('@', '-subscribe@', $tableau_template[1]);
     $valunsub = str_replace('@', '-unsubscribe@', $tableau_template[1]);
+
+    // test de presence d'ezmlm, qui necessite de reformater le mail envoyé
+    if (isset($tableau_template[4]) and $tableau_template[4] == 'ezmlm') {
+        $valsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valsub);
+        $valunsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valunsub);
+    }
+
     if ($mode == 'saisie') {
         $input_html = '<div class="control-group form-group">
                     <div class="controls col-sm-9">
                         <div class="checkbox">
-                          <input id="' . $id . '" type="checkbox"' . ((isset($valeurs_fiche[$id]) && $valeurs_fiche[$id] == $valsub) ? ' checked="checked"' : '') . ' value="' . $tableau_template[1] . '" name="' . $id . '" class="element_checkbox">
-                          <label for="' . $id . '">' . $tableau_template[2] . '</label>
+                          <label for="' . $id . '">'."\n"
+                          .'<input id="' . $id . '" type="checkbox"' . ((!isset($valeurs_fiche[$id]) or isset($valeurs_fiche[$id]) && $valeurs_fiche[$id] == $valsub) ? ' checked="checked"' : '') . ' value="' . $tableau_template[1] . '" name="' . $id . '" class="element_checkbox">'
+                          . $tableau_template[2] . '</label>
                         </div>
                     </div>
                 </div>';

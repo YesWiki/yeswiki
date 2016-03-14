@@ -1,36 +1,43 @@
-<form action="<?php echo $url; ?>" method="post" name="search-form" id="search-form" class="form-horizontal">
-    <div class="bazar-search control-group">
-        <div class="input-group input-prepend input-append">
-            <span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
-            <input type="text" value="<?php echo $search; ?>" name="recherche_mots_cles"
-                    placeholder="<?php echo _t('BAZ_MOT_CLE'); ?>" maxlength="255" class="form-control input-lg">
+<form action="<?php echo $url; ?>" method="get" name="search-form" id="search-form" class="form-horizontal">
+  <input type="hidden" name="wiki" value="<?php echo $wiki; ?>">
+  <input type="hidden" name="vue" value="<?php echo $vue; ?>">
+  <input type="hidden" name="action" value="<?php echo $action; ?>">
+  <div class="bazar-search control-group">
+    <div class="input-group input-prepend input-append">
+      <span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
+      <input type="text" value="<?php echo $search; ?>" name="q" placeholder="<?php echo _t('BAZ_MOT_CLE'); ?>" class="form-control input-lg">
+      <?php if (!empty($forms)) : ?>
+        <span class="input-group-btn" style="width:auto;max-width:240px;">
+          <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id_typeannonce">
             <?php
-            if (!empty($forms)) : ?>
-            <span class="input-group-btn" style="width:auto;max-width:240px;">
-                <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id_typeannonce">
-                    <?php
-                    foreach ($forms as $key => $form) : ?>
-                    <option 
-                        value="<?php echo $key; ?>" 
-                        <?php
-                        if ($idform == $key) {
-                            echo 'selected';
-                        } ?>>
-                        <?php echo $form; ?>
-                    </option>
-                    <?php
-                    endforeach; ?>
-                </select>
-            </span>
+            foreach ($forms as $key => $form) : ?>
+            <option
+                value="<?php echo $key; ?>"
+                <?php
+                if ($idform == $key) {
+                    echo 'selected';
+                } ?>>
+                <?php echo $form; ?>
+            </option>
             <?php
+            endforeach; ?>
+          </select>
+        </span>
+        <?php
             elseif (!empty($idform)) : ?>
-                <input type="hidden" name="id_typeannonce" value="<?php echo $idform; ?>">
-            <?php   
+          <input type="hidden" name="id_typeannonce" value="<?php echo $idform; ?>">
+          <?php
             endif; ?>
+            <?php if (!empty($query)) : ?>
+            <input type="hidden" name="query" value="<?php echo $query; ?>">
+            <?php endif; ?>
+
+            <input type="hidden" name="facette" value="<?php echo $facette; ?>">
+
             <span class="input-group-btn">
-                <input value="<?php echo _t('BAZ_RECHERCHER'); ?>" name="rechercher"
-                    class="btn btn-primary btn-lg" type="submit">
+                <input value="<?php echo _t('BAZ_RECHERCHER'); ?>" class="btn btn-primary btn-lg" type="submit">
             </span>
-        </div>
     </div>
-</form> <!-- /#search-form -->
+  </div>
+</form>
+<!-- /#search-form -->

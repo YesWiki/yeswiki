@@ -26,7 +26,7 @@ if (empty($facettejointure)) {
 
 /*
 * ordre : ordre affichage detail des points
-* 
+*
 */
 
 $ordre = $this->GetParameter("ordre");
@@ -43,7 +43,7 @@ if (empty($latitude)) {
 /*
 * lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
 * @atester
-* 
+*
 */
 
 $longitude = $this->GetParameter("lon");
@@ -110,7 +110,7 @@ foreach ($groups as $group) {
 
 
 // Recuperation de tous les formulaires
-$tous_les_formulaires=baz_valeurs_tous_les_formulaires();
+$tous_les_formulaires=baz_valeurs_formulaire();
 
 $tabquery=array();
 $tableau_resultat=array();
@@ -122,29 +122,26 @@ foreach ($id_typeannonce as $annonce) {
      $val_formulaire = baz_valeurs_formulaire($annonce);
      $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
      foreach ($tableau as $ligne) {
-        if ($ligne[0]=="listefiche") { // jointure 
+        if ($ligne[0]=="listefiche") { // jointure
             $jointure[$annonce]=$ligne[1]; // il y a une fiche liee
         }
-        
+
     }
 */
      // Detection autre fiche contenant une reference à cette fiche.
-    foreach ($tous_les_formulaires as $formulaire => $templates) {
-        foreach ($templates as $numformulaire => $val_formulaire) {
-            $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
-            foreach ($tableau as $ligne) {
-               if ($ligne[0]=="listefiche") { // jointure 
-                    if ($ligne[1]==$annonce) {
-                       $jointure[$numformulaire]=$ligne[1]; // numero de fiche liee
-                    }
+    foreach ($tous_les_formulaires as $numformulaire => $val_formulaire) {
+        $tableau = formulaire_valeurs_template_champs($val_formulaire['bn_template']);
+        foreach ($tableau as $ligne) {
+           if ($ligne[0]=="listefiche") { // jointure
+                if ($ligne[1]==$annonce) {
+                   $jointure[$numformulaire]=$ligne[1]; // numero de fiche liee
                 }
-        
             }
         }
     }
 }
 
-// Recherche de l'ensemble des fiches liee supplementaires 
+// Recherche de l'ensemble des fiches liee supplementaires
 
 $tableau_resultat_lie=array();
 foreach ($jointure as $cible=>$origine) {
@@ -166,7 +163,7 @@ foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = _convert($valeurs_fiche, 'UTF-8');
     $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
 
-  
+
 
 
 // Recherche des fiches liees supplementaires :
@@ -178,14 +175,14 @@ foreach ($tableau_resultat as $fiche) {
         foreach ($tableau_resultat_lie[$valeurs_fiche['id_typeannonce']] as $formulaire_lies) {
 
             foreach ($formulaire_lies as $fiche_lies) {
-            
+
              $valeurs_fiche_liee = json_decode($fiche_lies["body"], true);
              $valeurs_fiche_liee = array_map('utf8_decode', $valeurs_fiche_liee);
              $valeurs_fiche_liee['html'] = baz_voir_fiche(0, $valeurs_fiche_liee);
              //$valeurs_fiche_liee['bf_titre'] = $valeurs_fiche_liee['bf_titre'];
 
 
-            
+
              if ($valeurs_fiche_liee['listefiche'.$valeurs_fiche['id_typeannonce']]==$valeurs_fiche['id_fiche']) { // clef  : listefiche+idtypannonce cible
                     $valeurs_fiche['ficheliees'][$valeurs_fiche_liee['id_fiche']]=$valeurs_fiche_liee;
              }
@@ -196,9 +193,9 @@ foreach ($tableau_resultat as $fiche) {
 
 
     $fiche_resultat[]= $valeurs_fiche;
-    
-    
-    
+
+
+
     // Stockage pour comptage des groupes
     foreach ($groups as $group) {
         $group=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
@@ -211,20 +208,20 @@ foreach ($tableau_resultat as $fiche) {
             }
         }
         else { // C'est une  liste !
-            $index_liste=explode(",",$valeurs_fiche['checkbox'.$group]); 
+            $index_liste=explode(",",$valeurs_fiche['checkbox'.$group]);
             if (empty($index_liste[0])) {
                 $index_liste=explode(",",$valeurs_fiche['liste'.$group]);
             }
-            foreach ($index_liste as $element_liste) { 
+            foreach ($index_liste as $element_liste) {
                 $comptage_groupe[$group][$grouplist[$group][$element_liste]][$valeurs_fiche['id_fiche']]=$grouplist[$group][$element_liste];
             }
             if (isset($valeurs_fiche['ficheliees'])) {
                 foreach ($valeurs_fiche['ficheliees'] as $valeurs_fiche_liee) {
-                    $index_liste=explode(",",$valeurs_fiche_liee['checkbox'.$group]); 
+                    $index_liste=explode(",",$valeurs_fiche_liee['checkbox'.$group]);
                     if (empty($index_liste[0])) {
                         $index_liste=explode(",",$valeurs_fiche_liee['liste'.$group]);
                     }
-                    foreach ($index_liste as $element_liste) { 
+                    foreach ($index_liste as $element_liste) {
                             $comptage_groupe[$group][$grouplist[$group][$element_liste]][$valeurs_fiche_liee['id_fiche']]=$grouplist[$group][$element_liste];
                     }
                 }
@@ -251,7 +248,7 @@ foreach ($groups as $group) {
 }
 
 include_once 'tools/bazar/libs/squelettephp.class.php';
-// On cherche un template personnalise dans le repertoire themes/tools/bazar/templates 
+// On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
 
 $templatetoload='themes/tools/bazar/templates/'.$template;
 
@@ -265,12 +262,12 @@ $squelcomment = new SquelettePhp($templatetoload);
 
 
 $facettes=array();
-$checkboxes=array(); 
-$titles_html=array(); 
+$checkboxes=array();
+$titles_html=array();
 $facettes['open']=$this->Formopen('','','get');
 foreach ($groups as $kg=>$group) {
     $group=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
-    $checkboxes[$group][]=array('title'=>$titles[$kg]);     
+    $checkboxes[$group][]=array('title'=>$titles[$kg]);
     if (!$grouplist[$group]) {
         foreach ($somme_par_groupe[$group] as $key_somme_par_groupe=>$valeur_somme_par_groupe) {
             if ($key_somme_par_groupe!='') {
@@ -309,13 +306,13 @@ $facettes['groups']= $groups;
 $facettes['checkboxes']= $checkboxes;
 $facettes['close']=$this->Formclose();
 
-//Resultats 
+//Resultats
 
-// Affichage resultats 
-foreach ($fiche_resultat as $valeurs_fiche) { 
+// Affichage resultats
+foreach ($fiche_resultat as $valeurs_fiche) {
     // On n'affiche que les valeurs selectionnees
     if (count($selections)>0) {
-        foreach ($selections as $key_selection=>$valeur_selection) { 
+        foreach ($selections as $key_selection=>$valeur_selection) {
             if (!$grouplist[$key_selection]) {
                 if ((in_arrayi($valeurs_fiche[$key_selection],$valeur_selection))) {
                     $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'. $this->href('', $valeurs_fiche['id_fiche']) .'" title="Voir la fiche">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
@@ -324,8 +321,8 @@ foreach ($fiche_resultat as $valeurs_fiche) {
 
                 }
                 if (isset($valeurs_fiche['ficheliees'])) {
-                foreach ($valeurs_fiche['ficheliees'] as $valeurs_fiche_liee) {                    
-                    $facettes['fiches'][$valeurs_fiche['id_fiche']]['ficheliees'][$valeurs_fiche_liee['id_fiche']]= $valeurs_fiche_liee;                    
+                foreach ($valeurs_fiche['ficheliees'] as $valeurs_fiche_liee) {
+                    $facettes['fiches'][$valeurs_fiche['id_fiche']]['ficheliees'][$valeurs_fiche_liee['id_fiche']]= $valeurs_fiche_liee;
                 }
             }
             }
@@ -373,9 +370,9 @@ foreach ($fiche_resultat as $valeurs_fiche) {
         foreach ($groups as $group) {
             $group=preg_replace('/\*/', '', $group); // liste utilise plusieurs fois
             if (!$grouplist[$group]) {
-                // string compatible css 
+                // string compatible css
                 $valeurs_fiche['categorie']=$valeurs_fiche['categorie']." ".trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche[$group]))));
-                
+
                 if (isset($valeurs_fiche['ficheliees'])) {
                     foreach ($valeurs_fiche['ficheliees'] as $valeurs_fiche_liee) {
                         $valeurs_fiche['categorie']=$valeurs_fiche['categorie']." ".trim(preg_replace('/\W+/','',strtolower(strip_tags($valeurs_fiche_liee[$group]))));
@@ -383,22 +380,22 @@ foreach ($fiche_resultat as $valeurs_fiche) {
                 }
             }
             else { // C'est une  liste !
-                $index_liste=explode(",",$valeurs_fiche['checkbox'.$group]); 
+                $index_liste=explode(",",$valeurs_fiche['checkbox'.$group]);
                 if (empty($index_liste[0])) {
                     $index_liste=explode(",",$valeurs_fiche['liste'.$group]);
                 }
-                foreach ($index_liste as $element_liste) { 
-                    // string compatible css 
+                foreach ($index_liste as $element_liste) {
+                    // string compatible css
                     $valeurs_fiche['categorie']=$valeurs_fiche['categorie']." ".trim(preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste]))));
                 }
                 if (isset($valeurs_fiche['ficheliees'])) {
                     foreach ($valeurs_fiche['ficheliees'] as $valeurs_fiche_liee) {
-                        $index_liste=explode(",",$valeurs_fiche_liee['checkbox'.$group]); 
+                        $index_liste=explode(",",$valeurs_fiche_liee['checkbox'.$group]);
                         if (empty($index_liste[0])) {
                             $index_liste=explode(",",$valeurs_fiche_liee['liste'.$group]);
                         }
-                        foreach ($index_liste as $element_liste) { 
-                            // string compatible css 
+                        foreach ($index_liste as $element_liste) {
+                            // string compatible css
                             $valeurs_fiche['categorie']=$valeurs_fiche['categorie']." ".trim(preg_replace('/\W+/','',strtolower(strip_tags($grouplist[$group][$element_liste]))));
                         }
                     }
@@ -408,8 +405,8 @@ foreach ($fiche_resultat as $valeurs_fiche) {
             }
         }
 
-        $valeurs_fiche['categorie']=trim(preg_replace('/[ ][ ]*/', ' ', $valeurs_fiche['categorie'])); 
- 
+        $valeurs_fiche['categorie']=trim(preg_replace('/[ ][ ]*/', ' ', $valeurs_fiche['categorie']));
+
         $facettes['fiches'][$valeurs_fiche['id_fiche']] = $valeurs_fiche;
         $facettes['html'] = baz_voir_fiche(0, $valeurs_fiche);
 
@@ -427,7 +424,7 @@ if (!empty($pagination)) {
         $facettes['info_res'] .= $nb_result.' fiche '."</div>\n";
     } else {
         $facettes['info_res'] .= $nb_result.' fiches '."</div>\n";
-    }   
+    }
 
     // Mise en place du Pager
     require_once 'Pager/Pager.php';
@@ -442,13 +439,13 @@ if (!empty($pagination)) {
             'nextImg' => '>',
             'prevImg' => '<',
             'itemData'   => $facettes['fiches']
-            );  
+            );
     $pager = & Pager::factory($params);
     $facettes['fiches'] = $pager->getPageData();
     $facettes['pager_links'] = '<div class="bazar_numero">'.$pager->links.'</div>'."\n";
 } else {
-    $facettes['info_res'] = ''; 
-    $facettes['pager_links'] = ''; 
+    $facettes['info_res'] = '';
+    $facettes['pager_links'] = '';
 }
 
 
@@ -495,7 +492,7 @@ function in_arrayi($needle, $haystack) {
 function is_liste($idliste = '') {
     if ($idliste != '') {
         list($idliste,$suffixe)=explode( '*', $idliste);
-    
+
 
         if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
             return true;
@@ -528,5 +525,3 @@ function liste_to_array($idliste = '') {
         return false;
     }
 }
-
-
