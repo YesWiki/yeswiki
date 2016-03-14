@@ -76,10 +76,10 @@ if (!empty($tags)) {
             } else {
                 $page["body"] = _convert($page["body"], 'ISO-8859-1');
             }
-            $texteformat = htmlspecialchars($this->Format($page['body']), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+            $texteformat = htmlspecialchars($this->Format($page['body']), ENT_COMPAT, YW_CHARSET);
             
             $items.= $texteformat . "]]></description>\r\n";
-            $items.= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).
+            $items.= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET).
                      "</dc:creator>\r\n";
             $items.= "<pubDate>" . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\r\n";
             $itemurl = $this->href(false, $page["tag"]);

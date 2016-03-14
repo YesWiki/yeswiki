@@ -6,7 +6,7 @@
   <?php if ($nb == 1) { echo '<ul class="thumbnails">'."\n"; } ?>
   <li class="span3">
     <a class="thumbnail" href="wakka.php?wiki=<?php echo $fiche['id_fiche'];?>">
-      <img alt="<?php echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);?>" src="<?php if (!file_exists('cache/image_260x180_'.$fiche['imagebf_image'])) echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_260x180_'.$fiche['imagebf_image'], 260, 180); else echo 'cache/image_260x180_'.$fiche['imagebf_image'];  ?>" />
+      <img alt="<?php echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET);?>" src="<?php if (!file_exists('cache/image_260x180_'.$fiche['imagebf_image'])) echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_260x180_'.$fiche['imagebf_image'], 260, 180); else echo 'cache/image_260x180_'.$fiche['imagebf_image'];  ?>" />
     </a>
   </li>
   <?php if ($nb == 4) {echo '</ul> <!-- /.thumbnails -->'."\n"; $nb = 0;} ?>

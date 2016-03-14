@@ -12,7 +12,7 @@
 			<form class="login-form" action="<?php echo $incomingurl; ?>" method="post">
 				<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo _t('LOGIN_ALREADY_MEMBER'); ?></h5><?php endif; ?>
 				<div class="controls">
-					<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>" />
+					<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
 				</div>
 				<div class="controls">
 					<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />

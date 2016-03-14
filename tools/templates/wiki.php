@@ -48,9 +48,6 @@ define('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 // Pour que seul le propriétaire et l'admin puissent changer de theme
 define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
-// Indique un encodage de caractères par defaut
-define('TEMPLATES_DEFAULT_CHARSET', 'UTF-8');
-
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses[] = 'Template';
 
@@ -122,7 +119,7 @@ $wikiClassesContent [] = '
     function GetMetaDatas($pagetag) {
         $metadatas = $this->GetTripleValue($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', \'\', \'\', \'\');
         if (!empty($metadatas)) {
-            if (TEMPLATES_DEFAULT_CHARSET != \'UTF-8\') return array_map(\'utf8_decode\', json_decode($metadatas, true));
+            if (YW_CHARSET != \'UTF-8\') return array_map(\'utf8_decode\', json_decode($metadatas, true));
             else return json_decode($metadatas, true);
         }
         else {
@@ -139,7 +136,7 @@ $wikiClassesContent [] = '
             $metadatas = array_merge($former_metadatas, $metadatas);
             $this->DeleteTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', null, \'\', \'\');
         }
-        if (TEMPLATES_DEFAULT_CHARSET != \'UTF-8\') $metadatas = json_encode(array_map("utf8_encode", $metadatas));
+        if (YW_CHARSET != \'UTF-8\') $metadatas = json_encode(array_map("utf8_encode", $metadatas));
         else $metadatas = json_encode($metadatas);
         return $this->InsertTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', $metadatas, \'\', \'\');
     }
@@ -156,7 +153,7 @@ $metadatas = $wiki->GetTripleValue(
 );
 
 if (!empty($metadatas)) {
-    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+    if (YW_CHARSET != 'UTF-8') {
         $metadatas = array_map('utf8_decode', json_decode($metadatas, true));
     } else {
         $metadatas = json_decode($metadatas, true);
@@ -166,10 +163,10 @@ if (!empty($metadatas)) {
 if (isset($metadatas['charset'])) {
     $wakkaConfig['charset'] = $metadatas['charset'];
 } elseif (!isset($wakkaConfig['charset'])) {
-    $wakkaConfig['charset'] = TEMPLATES_DEFAULT_CHARSET;
+    $wakkaConfig['charset'] = YW_CHARSET;
 }
 
-header('Content-Type: text/html; charset='.TEMPLATES_DEFAULT_CHARSET);
+header('Content-Type: text/html; charset='.YW_CHARSET);
 
 // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
 if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_template'] == '1') {

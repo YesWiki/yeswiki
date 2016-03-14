@@ -22,7 +22,7 @@ if (!empty($param)) {
 	  	case 'favorite_squelette':
 	  	case 'default_language':
 	  	case 'charset':
-	  		echo htmlentities($this->config[$param], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+	  		echo htmlentities($this->config[$param], ENT_QUOTES, YW_CHARSET);
 			break;
 		case 'lang':
 			echo $GLOBALS['prefered_language'];

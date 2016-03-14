@@ -283,7 +283,7 @@ if (!class_exists('WikiniFormatter'))
 					if (preg_match('/^\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+$/', $thing))
 					{
 						// Retrieve url and transform it into valid HTML (htmlspecialchars)
-						$url = htmlspecialchars($thing, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+						$url = htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
 						return "<a href=\"$url\">$url</a>";
 					}
 					// escaped text
@@ -293,7 +293,7 @@ if (!class_exists('WikiniFormatter'))
 						{
 							return $matches[1];
 						}
-						$res = htmlspecialchars($matches[1], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+						$res = htmlspecialchars($matches[1], ENT_COMPAT, YW_CHARSET);
 						return preg_replace('/&amp;(\\#[xX][a-fA-F0-9]+|\\#[0-9]+|[a-zA-Z0-9]+);/', '&$1;', $res);
 					}
 					// code text
@@ -347,7 +347,7 @@ if (!class_exists('WikiniFormatter'))
 						}
 						else
 						{
-							return htmlspecialchars($text, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+							return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 						}
 					}
 					// forced links
@@ -377,7 +377,7 @@ if (!class_exists('WikiniFormatter'))
 						}
 						else
 						{ // if there is no URL, return at least the text
-							return htmlspecialchars($text, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+							return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 						}
 					}
 					// indented text
@@ -414,7 +414,7 @@ if (!class_exists('WikiniFormatter'))
 						return "<hr />\n";
 					}
 					// if we reach this point, it must have been an accident.
-					return htmlspecialchars($thing, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+					return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
 			} // switch($thing)
 		} // function callback
 

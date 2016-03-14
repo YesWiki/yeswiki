@@ -120,8 +120,8 @@ $listofmarkers = '';
 if (count($markers)>0) {
 	foreach ($markers as $nb => $marker ) {		
 		// all informations must be written in one line and escaped from html chars
-		$marker['title'] = htmlspecialchars('<button type="button" class="btn-close-popover pull-right close">&times;</button>'.str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['title']), ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
-		$marker['description'] = htmlspecialchars(str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['description']), ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+		$marker['title'] = htmlspecialchars('<button type="button" class="btn-close-popover pull-right close">&times;</button>'.str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['title']), ENT_QUOTES, YW_CHARSET);
+		$marker['description'] = htmlspecialchars(str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['description']), ENT_QUOTES, YW_CHARSET);
 	
 		$listofmarkers .= "<a data-toggle=\"popover\" class=\"img-marker\" style=\"height:".$point_size."px;width:".$point_size."px;left:".($marker['x']-round($point_size/2))."px; top:".($marker['y']-round($point_size/2))."px;background:".$marker['color'].";\" data-original-title=\"".$marker['title']."\" data-content=\"".$marker['description']."\" href=\"#\"></a>\n";
 	}

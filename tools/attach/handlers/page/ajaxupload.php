@@ -192,5 +192,5 @@ $result = $uploader->handleUpload($att->attachConfig['upload_path']);
 unset($att);
 
 // to pass data through iframe you will need to encode all html tags
-echo htmlspecialchars(json_encode($result), ENT_NOQUOTES, TEMPLATES_DEFAULT_CHARSET);
+echo htmlspecialchars(json_encode($result), ENT_NOQUOTES, YW_CHARSET);
 ?>

@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 if (!defined("WIKINI_VERSION"))
 {
-	die ("accès direct interdit");
+	die ("accï¿½s direct interdit");
 }
 
 class ActionEditgroups extends WikiniAdminAction
@@ -37,9 +37,9 @@ class ActionEditgroups extends WikiniAdminAction
 		$res .= _t('DEFINITION_OF_THE_GROUP').'<select name="groupname">';
 		foreach ($list as $group)
 		{
-			$res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '"';
+			$res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) . '"';
 			if (!empty($_GET['groupname']) && $_GET['groupname'] == $group) $res .= ' selected="selected"';
-			$res .= '>' . htmlspecialchars($group, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) .  '</option>';
+			$res .= '>' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) .  '</option>';
 		}
 		$res .= '</select>'."\n".'<input class="btn btn-default" type="submit" value="'._t('SEE').'" />'."\n" . $wiki->FormClose();
 		$res .= $wiki->FormOpen('', '', 'get', 'form-inline') . _t('CREATE_NEW_GROUP').': <input type="text" required="required" name="groupname" />';
@@ -84,7 +84,7 @@ class ActionEditgroups extends WikiniAdminAction
 			if (!preg_match('/[^A-Za-z0-9]/', $name))
 			{
 				$res .= $wiki->FormOpen();
-				$res .= '<br />'._t('EDIT_GROUP').' <strong>' . htmlspecialchars($name, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '</strong>: <br />';
+				$res .= '<br />'._t('EDIT_GROUP').' <strong>' . htmlspecialchars($name, ENT_COMPAT, YW_CHARSET) . '</strong>: <br />';
 				$res .= '<input type="hidden" name="groupname" value="'. $name . '" />';
 				$res .= '<textarea name="acl" rows="3" class="form-control">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />'; 
 				$res .= '<input type="submit" value="'._t('SAVE').'" class="btn btn-primary" accesskey="s" />';

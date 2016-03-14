@@ -40,7 +40,7 @@
         <div class="modal-body">
           <form action="'.$incomingurl.'" method="post">
             <div class="form-group">
-              <input type="text" name="name" class="form-control" value="'.($user ? htmlspecialchars($user, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) : '').'" required placeholder="'._t('LOGIN_WIKINAME').'">
+              <input type="text" name="name" class="form-control" value="'.($user ? htmlspecialchars($user, ENT_COMPAT, YW_CHARSET) : '').'" required placeholder="'._t('LOGIN_WIKINAME').'">
             </div>
             <div class="form-group">
               <input type="password" class="form-control" name="password" required placeholder="'._t('LOGIN_PASSWORD').'">

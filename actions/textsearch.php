@@ -4,7 +4,7 @@ textsearch.php
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
 Copyright 2002, 2003 David DELON
 Copyright 2002  Patrick PAUL
-Copyright 2004  Jean Christophe ANDRÉ
+Copyright 2004  Jean Christophe ANDRï¿½
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,34 +29,34 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// label à afficher devant la zone de saisie
+// label ï¿½ afficher devant la zone de saisie
 $label = $this->GetParameter('label', _t('WHAT_YOU_SEARCH').'&nbsp;: ');
 // largeur de la zone de saisie
 $size = $this->GetParameter('size', '40');
 // texte du bouton
 $button = $this->GetParameter('button', _t('SEARCH'));
-// texte à chercher
+// texte ï¿½ chercher
 $phrase = $this->GetParameter('phrase', false);
-// séparateur entre les éléments trouvés
+// sï¿½parateur entre les ï¿½lï¿½ments trouvï¿½s
 $separator = $this->GetParameter('separator', false);
 
-// se souvenir si c'était :
-// -- un paramètre de l'action : {{textsearch phrase="Test"}}
+// se souvenir si c'ï¿½tait :
+// -- un paramï¿½tre de l'action : {{textsearch phrase="Test"}}
 // -- ou du CGI http://example.org/wakka.php?wiki=RechercheTexte&phrase=Test
 //
-// récupérer le paramètre de l'action
+// rï¿½cupï¿½rer le paramï¿½tre de l'action
 $paramPhrase = $phrase;
-// ou, le cas échéant, récupérer le paramètre du CGI
+// ou, le cas ï¿½chï¿½ant, rï¿½cupï¿½rer le paramï¿½tre du CGI
 if (!$phrase && isset($_GET['phrase'])) $phrase = $_GET['phrase'];
 
-// s'il y a un paramètre d'action "phrase", on affiche uniquement le résultat
-// dans le cas contraire, présenter une zone de saisie
+// s'il y a un paramï¿½tre d'action "phrase", on affiche uniquement le rï¿½sultat
+// dans le cas contraire, prï¿½senter une zone de saisie
 if (!$paramPhrase)
 {
 	echo $this->FormOpen('', '', 'get');
 	echo '<div class="input-prepend input-append input-group input-group-lg">
 			<span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
-      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '" >
+      <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '" >
       <span class="input-group-btn">
         <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />
       </span>
@@ -66,17 +66,17 @@ if (!$paramPhrase)
 
 if ($phrase)
 {
-	// on cherche sur le mot avec entités html, le mot encodé par le wiki, ou le mot encodé par bazar en json
+	// on cherche sur le mot avec entitï¿½s html, le mot encodï¿½ par le wiki, ou le mot encodï¿½ par bazar en json
 	$search = $phrase.','.utf8_decode($phrase).','.substr(json_encode($phrase),1,-1);
 	$results = $this->FullTextSearch($search);
 	if ($results)
 	{
 	    if ($separator)
 	    {
-		$separator = htmlspecialchars($separator, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+		$separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
 		if (!$paramPhrase)
 		{
-			echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;: ';
+			echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
 		}
 		foreach ($results as $i => $page)
 		{
@@ -90,7 +90,7 @@ if ($phrase)
 	    }
 	    else
 	    {
-		echo	'<p><strong>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '"&nbsp;:</strong></p>', "\n",
+		echo	'<p><strong>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;:</strong></p>', "\n",
 			'<ol>', "\n";
 		foreach ($results as $i => $page)
 		{
@@ -103,7 +103,7 @@ if ($phrase)
 	{
 	    if (!$paramPhrase)
 	    {
-		echo "<div class=\"alert alert-info\">"._t('NO_RESULT_FOR')." \"", htmlspecialchars($phrase, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "\". :-(</div>\n";
+		echo "<div class=\"alert alert-info\">"._t('NO_RESULT_FOR')." \"", htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), "\". :-(</div>\n";
 	    }
 	}
 }

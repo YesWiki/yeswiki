@@ -1,34 +1,34 @@
 <?php
 /**
  * Action permettant d'effacer facilement les spams de commentaires
- * (pour WikiNi 0.5 et supérieurs)
+ * (pour WikiNi 0.5 et supï¿½rieurs)
  * 
- * Cette action accepte les paramètres :
- * -- "max" permettant de limiter le nombre de commentaires affichés
- * -- "logpage" permettant de spécifier la page où sont enregistrées
- *    les suppressions effectuées
+ * Cette action accepte les paramï¿½tres :
+ * -- "max" permettant de limiter le nombre de commentaires affichï¿½s
+ * -- "logpage" permettant de spï¿½cifier la page oï¿½ sont enregistrï¿½es
+ *    les suppressions effectuï¿½es
  * Exemple d'utilisation : {{erasespamedcomments max="50"}}
  * 
  * @version $Id: erasespamedcomments.class.php 859 2007-11-22 01:07:26Z nepote $
- * @author Charles Népote <charles@nepote.org>
- * @author Didier Loiseau <l.farquaad@gmail.com>
- * @copyright Copyright &copy; 2006, 2007 Charles Népote
+ * @author Charles Nï¿½pote <charles@nepote.org>
+ * @author Didierï¿½Loiseau <l.farquaad@gmail.com>
+ * @copyright Copyright &copy; 2006, 2007 Charles Nï¿½pote
  * @license License GPL.
  * 
  * @todo
- * -- pour garantir une certaine transparence, option d'envoi par mail des contenus effacés (?)
- *    (via une méthode appelée NotifyAdmin())
- * -- idéalement la dernière page affiche les résultats mais ne renettoie
- *    pas les commentaires si elle est rechargée
- * -- test pour savoir si quelque chose a bien été effacé
- * -- la présentation (style, paramétrage de limite du nombre de commentaires affichés,
- *    paramétrage de la longueur des contenus affichés, etc.)
+ * -- pour garantir une certaine transparence, option d'envoi par mail des contenus effacï¿½s (?)
+ *    (via une mï¿½thode appelï¿½e NotifyAdmin())
+ * -- idï¿½alement la derniï¿½re page affiche les rï¿½sultats mais ne renettoie
+ *    pas les commentaires si elle est rechargï¿½e
+ * -- test pour savoir si quelque chose a bien ï¿½tï¿½ effacï¿½
+ * -- la prï¿½sentation (style, paramï¿½trage de limite du nombre de commentaires affichï¿½s,
+ *    paramï¿½trage de la longueur des contenus affichï¿½s, etc.)
  * 
  * 
 */
 
 
-// Vérification de sécurité
+// Vï¿½rification de sï¿½curitï¿½
 if (!defined('WIKINI_VERSION'))
 {
 	die ('acc&egrave;s direct interdit');
@@ -72,7 +72,7 @@ class ActionErasespamedcomments extends WikiniAdminAction
 						"<li><input name=\"suppr[]\" value=\"" . $comment["tag"] . "\" type=\"checkbox\" /> [Suppr.!] ".
 						$comment["tag"].
 						" (",$comment["time"],") <code>".
-						htmlspecialchars(substr($comment['body'], 0, 25), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)."</code> ".
+						htmlspecialchars(substr($comment['body'], 0, 25), ENT_COMPAT, YW_CHARSET)."</code> ".
 						"<a href=\"",$wiki->href("", $comment["comment_on"], "show_comments=1")."#".$comment["tag"]."\">".
 						$comment["comment_on"],"</a> . . . . ".
 						$wiki->Format($comment["user"]),"</li>\n" ;
@@ -94,15 +94,15 @@ class ActionErasespamedcomments extends WikiniAdminAction
 			$deletedPages = "";
 
 
-			// -- 3.1 Si des pages ont été sélectionnées : effacement ---
-			// On efface chaque élément du tableau suppr[]
-			// Pour chaque page sélectionnée
+			// -- 3.1 Si des pages ont ï¿½tï¿½ sï¿½lectionnï¿½es : effacement ---
+			// On efface chaque ï¿½lï¿½ment du tableau suppr[]
+			// Pour chaque page sï¿½lectionnï¿½e
 			if (!empty($_POST['suppr']))
 			{
 				foreach ($_POST['suppr'] as $page)
 				{
-					// Effacement de la page en utilisant la méthode adéquate
-					// (si DeleteOrphanedPage ne convient pas, soit on créé
+					// Effacement de la page en utilisant la mï¿½thode adï¿½quate
+					// (si DeleteOrphanedPage ne convient pas, soit on crï¿½ï¿½
 					// une autre, soit on la modifie
 					echo "Effacement de : " . $page . "<br />\n";
 					$wiki->DeleteOrphanedPage($page);
@@ -112,26 +112,26 @@ class ActionErasespamedcomments extends WikiniAdminAction
 				echo "<p><a href=\"".$wiki->Href()."\">Retour au formulaire.</a></p>";
 			}
 
-			// -- 3.2 Si aucune page n'a été sélectionné : message
+			// -- 3.2 Si aucune page n'a ï¿½tï¿½ sï¿½lectionnï¿½ : message
 			else
 			{
-				echo "<p>Aucun commentaire n'a été sélectionné pour être effacé.</p>";
+				echo "<p>Aucun commentaire n'a ï¿½tï¿½ sï¿½lectionnï¿½ pour ï¿½tre effacï¿½.</p>";
 				echo "<p><a href=\"".$wiki->Href()."\">Retour au formulaire.</a></p>";
 			}
 
-			// -- 3.3 Écriture du journal des actions ---
-			//        S'il y a eu des pages nettoyées,
+			// -- 3.3 ï¿½criture du journal des actions ---
+			//        S'il y a eu des pages nettoyï¿½es,
 			//        on enregistre dans une page choisie qui a fait quoi
 			if ($deletedPages)
 			{
-				// -- Détermine quelle est la page de log :
-				//    -- passée en paramètre
-				//    -- ou la page de log par défaut
+				// -- Dï¿½termine quelle est la page de log :
+				//    -- passï¿½e en paramï¿½tre
+				//    -- ou la page de log par dï¿½faut
 				$reportingPage = isset($args["logpage"]) ? $args["logpage"] : "";
 
 				// -- Ajout de la ligne de log
 				$wiki->LogAdministrativeAction($wiki->GetUserName(),
-					"Commentaire(s) effacé(s)" .
+					"Commentaire(s) effacï¿½(s)" .
 					/*" [" .*/ /*$_POST['comment'] .*/ /* "]".*/
 					"&nbsp;: " .
 					"\"\"".

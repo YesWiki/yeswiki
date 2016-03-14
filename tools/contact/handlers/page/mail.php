@@ -24,17 +24,17 @@ if (isset($_POST['type']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if ($_POST['type'] == 'mail') {
         $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
-        $message_html = html_entity_decode(_convert($this->Format($this->page["body"]), TEMPLATES_DEFAULT_CHARSET));
-        $message_txt = strip_tags(_convert($message_html, TEMPLATES_DEFAULT_CHARSET));
+        $message_html = html_entity_decode(_convert($this->Format($this->page["body"]), YW_CHARSET));
+        $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
     } else {
         // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
-            ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], TEMPLATES_DEFAULT_CHARSET))
+            ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET))
                : false) .
             (($name_sender) ? ' ' . _t('CONTACT_FROM') . ' ' . $name_sender : '');
         $message_html = '';
         $message_txt = (isset($_POST['message'])) ? stripslashes(
-            _convert($_POST['message'], TEMPLATES_DEFAULT_CHARSET)
+            _convert($_POST['message'], YW_CHARSET)
         ) : '';
     }
 

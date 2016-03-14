@@ -42,21 +42,21 @@ if ($pages = $this->LoadRecentlyChanged($max))
 	$output .= "<channel>\n";
 	$output .= "<title> "._t('LATEST_CHANGES_ON')." ". $this->GetConfigValue("wakka_name")  . "</title>\n";
 	$output .= "<link>" . $this->Href(false, $link) . "</link>\n";
-	$output .= "<description> "._t('LATEST_CHANGES_ON')." " . htmlspecialchars($this->GetConfigValue("wakka_name"), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . " </description>\n";
+	$output .= "<description> "._t('LATEST_CHANGES_ON')." " . htmlspecialchars($this->GetConfigValue("wakka_name"), ENT_COMPAT, YW_CHARSET) . " </description>\n";
 	$output .= "<language>fr</language>\n";
 	$output .= '<generator>YesWiki ' . YESWIKI_VERSION . "</generator>\n";
 	foreach ($pages as $i => $page)
 	{
 		$output .= "<item>\n";
-		$output .= "<title>" . htmlspecialchars($page["tag"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . "</title>\n";
-		$output .= '<dc:creator>' . htmlspecialchars($page["user"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . "</dc:creator>\n";
+		$output .= "<title>" . htmlspecialchars($page["tag"], ENT_COMPAT, YW_CHARSET) . "</title>\n";
+		$output .= '<dc:creator>' . htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET) . "</dc:creator>\n";
 		$output .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\n";
 		$output .= "<description>" . htmlspecialchars(
 				'Modification de ' . $this->ComposeLinkToPage($page["tag"])
 				. ' (' . $this->ComposeLinkToPage($page["tag"], 'revisions', 'historique') . ')'
 				. " --- "._t('BY')." " .$page["user"])
 				. "</description>\n";
-		$itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET));
+		$itemurl = $this->href(false, $page["tag"], "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT, YW_CHARSET));
 		$output .= '<guid>' . $itemurl . "</guid>\n";
 		$output .= "</item>\n";
 	}

@@ -260,7 +260,7 @@ function baz_afficher_formulaire_import()
                             // on ne traite pas la premiere ligne qui contient les titres des colonnes
                             if ($row > 1) {
                                 for ($c = 0; $c < $num; ++$c) {
-                                    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                                    if (YW_CHARSET != 'UTF-8') {
                                         $valeur[$nom_champ[$c]] =
                                         utf8_decode($data[$c], ENT_QUOTES, 'ISO-8859-15');
                                     } else {
@@ -593,46 +593,46 @@ function baz_afficher_formulaire_import()
                             'checkboxfiche') {
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                         } elseif ($ligne[0] == 'carte_google') {
                             // cas de la carto
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', $ligne[1]).((isset($ligne[4]) && $ligne[4] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[4]) && $ligne[4] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                             ++$nb;
                         } elseif ($ligne[0] == 'titre') {
                             // Champ titre aggregeant plusieurs champs
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', 'Titre calculé').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                         } elseif ($ligne[0] == 'utilisateur_wikini') {
                             // utilisateur et mot de passe
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', 'NomWiki').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', 'Mot de passe').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                             ++$nb;
                         } elseif ($ligne[0] == 'inscriptionliste') {
                             // Nom de la liste et etat de l'abonnement
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', $ligne[1]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                         } else {
                             $csv .= _convert(
                                 '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *': '').'",',
-                                TEMPLATES_DEFAULT_CHARSET
+                                YW_CHARSET
                             );
                         }
                         ++$nb;
@@ -1403,7 +1403,7 @@ function baz_requete_bazar_fiche($valeur)
     }
 
     // on encode en utf-8 pour reussir a encoder en json
-    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+    if (YW_CHARSET != 'UTF-8') {
         $valeur = array_map('utf8_encode', $valeur);
     }
 
@@ -2244,12 +2244,12 @@ function baz_gestion_formulaire()
             'INSERT INTO '.BAZ_PREFIXE.
 
             'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)'.' VALUES ('.baz_nextId(BAZ_PREFIXE.'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
-            .addslashes(_convert($_POST['bn_label_nature'], TEMPLATES_DEFAULT_CHARSET, true)).'","'
-            .addslashes(_convert($_POST['bn_template'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_description'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_condition'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_label_class'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_type_fiche'], TEMPLATES_DEFAULT_CHARSET, true)).'")';
+            .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
+            .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_label_class'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_type_fiche'], YW_CHARSET, true)).'")';
             $resultat = $GLOBALS['wiki']->query($requete);
 
             $res .=
@@ -2262,12 +2262,12 @@ function baz_gestion_formulaire()
             //il y a des donnees pour modifier un formulaire
             $requete =
             'UPDATE '.BAZ_PREFIXE.'nature SET '
-            .'`bn_label_nature`="'.addslashes(_convert($_POST['bn_label_nature'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-            .'`bn_template`="'.addslashes(_convert($_POST['bn_template'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-            .'`bn_description`="'.addslashes(_convert($_POST['bn_description'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-            .'`bn_condition`="'.addslashes(_convert($_POST['bn_condition'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-            .'`bn_label_class`="'.addslashes(_convert($_POST['bn_label_class'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-            .'`bn_type_fiche`="'.addslashes(_convert($_POST['bn_type_fiche'], TEMPLATES_DEFAULT_CHARSET, true)).'"'
+            .'`bn_label_nature`="'.addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'" ,'
+            .'`bn_template`="'.addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'" ,'
+            .'`bn_description`="'.addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'" ,'
+            .'`bn_condition`="'.addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'" ,'
+            .'`bn_label_class`="'.addslashes(_convert($_POST['bn_label_class'], YW_CHARSET, true)).'" ,'
+            .'`bn_type_fiche`="'.addslashes(_convert($_POST['bn_type_fiche'], YW_CHARSET, true)).'"'
             .' WHERE `bn_id_nature`='.$_POST['bn_id_nature'];
             $resultat = $GLOBALS['wiki']->query($requete);
 
@@ -2311,12 +2311,12 @@ function baz_gestion_formulaire()
                         $requete =
                         'UPDATE '.BAZ_PREFIXE.
                         'nature SET '
-                        .'`bn_label_nature`="'.addslashes(_convert($value['bn_label_nature'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-                        .'`bn_template`="'.addslashes(_convert($value['bn_template'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-                        .'`bn_description`="'.addslashes(_convert($value['bn_description'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-                        .'`bn_condition`="'.addslashes(_convert($value['bn_condition'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-                        .'`bn_label_class`="'.addslashes(_convert($value['bn_label_class'], TEMPLATES_DEFAULT_CHARSET, true)).'" ,'
-                        .'`bn_type_fiche`="'.addslashes(_convert($value['bn_type_fiche'], TEMPLATES_DEFAULT_CHARSET, true)).'"'
+                        .'`bn_label_nature`="'.addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'" ,'
+                        .'`bn_template`="'.addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'" ,'
+                        .'`bn_description`="'.addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'" ,'
+                        .'`bn_condition`="'.addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'" ,'
+                        .'`bn_label_class`="'.addslashes(_convert($value['bn_label_class'], YW_CHARSET, true)).'" ,'
+                        .'`bn_type_fiche`="'.addslashes(_convert($value['bn_type_fiche'], YW_CHARSET, true)).'"'
                         .' WHERE `bn_id_nature`='.$value['bn_id_nature'];
 
                         $forms[$value['bn_type_fiche']][$value['bn_id_nature']] = $value;
@@ -2329,12 +2329,12 @@ function baz_gestion_formulaire()
                         $requete =
                         'INSERT INTO '.BAZ_PREFIXE.
                         'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)'.' VALUES ('.$id.', "fr-FR", "'
-                        .addslashes(_convert($value['bn_label_nature'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-                        .addslashes(_convert($value['bn_template'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-                        .addslashes(_convert($value['bn_description'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-                        .addslashes(_convert($value['bn_condition'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-                        .addslashes(_convert($value['bn_label_class'], TEMPLATES_DEFAULT_CHARSET, true)).'", "'
-                        .addslashes(_convert($value['bn_type_fiche'], TEMPLATES_DEFAULT_CHARSET, true)).'")';
+                        .addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'", "'
+                        .addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'", "'
+                        .addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'", "'
+                        .addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'", "'
+                        .addslashes(_convert($value['bn_label_class'], YW_CHARSET, true)).'", "'
+                        .addslashes(_convert($value['bn_type_fiche'], YW_CHARSET, true)).'")';
                         // on ajoute le formulaire à la liste des formulaires existants
                         $forms[$value['bn_type_fiche']][$id] = $value;
                     }
@@ -2479,7 +2479,7 @@ function baz_gestion_listes()
                 ++$i;
             }
         }
-        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+        if (YW_CHARSET != 'UTF-8') {
             $valeur['label'] = array_map('utf8_encode', $valeur['label']);
             $valeur['titre_liste'] = utf8_encode($_POST['titre_liste']);
         } else {
@@ -2512,7 +2512,7 @@ function baz_gestion_listes()
                 ++$i;
             }
         }
-        if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+        if (YW_CHARSET != 'UTF-8') {
             $valeur['label'] = array_map('utf8_encode', $valeur['label']);
             $valeur['titre_liste'] = utf8_encode($_POST['titre_liste']);
         } else {
@@ -2551,7 +2551,7 @@ function baz_gestion_listes()
         $sql = 'DELETE FROM '.$GLOBALS['wiki']
             ->config['table_prefix'].'triples '.'WHERE resource = "'.
         htmlspecialchars($_GET['idliste'], ENT_COMPAT |
-            ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'" ';
+            ENT_HTML401, YW_CHARSET).'" ';
         $GLOBALS['wiki']->Query($sql);
 
         // Envoie d un mail aux administrateurs
@@ -2648,7 +2648,7 @@ function baz_valeurs_liste($idliste = '')
             if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
                 $valjson = $GLOBALS['wiki']->LoadPage($idliste);
                 $valeurs_fiche = json_decode($valjson['body'], true);
-                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                if (YW_CHARSET != 'UTF-8') {
                     $GLOBALS['_BAZAR_']['lists'][$idliste]['titre_liste'] = utf8_decode($valeurs_fiche['titre_liste']);
                     if (!isset($_GET['action']) or $_GET['action'] != 'modif_liste') {
                         foreach ($valeurs_fiche['label'] as $key => $val) {
@@ -3119,7 +3119,7 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
  *
  *   return  string chaine de caracteres, sans accents
  */
-function removeAccents($str, $charset = TEMPLATES_DEFAULT_CHARSET)
+function removeAccents($str, $charset = YW_CHARSET)
 {
     $str = htmlentities($str, ENT_NOQUOTES, $charset);
     $str = preg_replace('#&([A-za-z])(?:acute|cedil|caron|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
@@ -3149,7 +3149,7 @@ function genere_nom_wiki($nom, $occurence = 1)
         // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents et ponctuation
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $nom), 0, 47, TEMPLATES_DEFAULT_CHARSET));
+        $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $nom), 0, 47, YW_CHARSET));
         $temp = explode(' ', ucwords(strtolower($temp)));
         $nom = '';
         foreach ($temp as $mot) {
@@ -3556,7 +3556,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     foreach ($tableau_fiches as $fiche) {
         if (isset($fiche['body'])) {
             $fiche = json_decode($fiche['body'], true);
-            if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+            if (YW_CHARSET != 'UTF-8') {
                 $fiche = array_map('utf8_decode', $fiche);
             }
         }

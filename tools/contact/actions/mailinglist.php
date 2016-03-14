@@ -83,7 +83,7 @@ elseif ($this->UserIsAdmin()) {
 			<div class="well" style="width:600px; height:150px; overflow:auto; ">';
 			
 			foreach($emails[0] as $email) {
-				echo $email.'<br /><input name="mails[]" type="hidden" value="'.htmlspecialchars($email, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'" />';
+				echo $email.'<br /><input name="mails[]" type="hidden" value="'.htmlspecialchars($email, ENT_COMPAT, YW_CHARSET).'" />';
 				$emails[] = $email;
 			}
 			echo '</div>

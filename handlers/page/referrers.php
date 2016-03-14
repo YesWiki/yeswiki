@@ -30,7 +30,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// Vï¿½rification de sï¿½curitï¿½
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -40,9 +40,9 @@ ob_start();
 ?>
 <div class="page">
 <?php
-// Valeur par défaut du paramètre "global"
+// Valeur par dï¿½faut du paramï¿½tre "global"
 $global = isset($_REQUEST["global"]) && $_REQUEST["global"];
-// Si le paramètre "global" a été spécifié
+// Si le paramï¿½tre "global" a ï¿½tï¿½ spï¿½cifiï¿½
 if ($global)
 {
 	$title = "Sites faisant r&eacute;f&eacute;rence &agrave; ce wiki (<a href=\"".$this->href("referrers_sites", "", "global=1")."\">voir la liste des domaines</a>)&nbsp;:";
@@ -65,7 +65,7 @@ if ($referrers)
 		{
 			echo "<tr>" ;
 			echo "<td width=\"30\" align=\"right\" valign=\"top\" style=\"padding-right: 10px\">",$referrer["num"],"</td>" ;
-			echo "<td valign=\"top\"><a href=\"",htmlspecialchars($referrer["referrer"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET),"\">",htmlspecialchars($referrer["referrer"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET),"</a></td>" ;
+			echo "<td valign=\"top\"><a href=\"",htmlspecialchars($referrer["referrer"], ENT_COMPAT, YW_CHARSET),"\">",htmlspecialchars($referrer["referrer"], ENT_COMPAT, YW_CHARSET),"</a></td>" ;
 			echo "</tr>\n" ;
 		}
 		echo "</table>\n" ;

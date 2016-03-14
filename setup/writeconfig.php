@@ -96,7 +96,7 @@ else
 	echo "\n<pre><xmp>",$configCode,"</xmp></pre>\n";
 	?>
 	<form action="<?php echo  myLocation() ?>?installAction=writeconfig" method="POST">
-	<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config2), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) ?>">
+	<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config2), ENT_COMPAT, YW_CHARSET) ?>">
 	<div class="form-actions">
 		<input type="submit" class="btn btn-large btn-primary continuer" value="<?php echo _t('TRY_AGAIN'); ?>">
 	</div>

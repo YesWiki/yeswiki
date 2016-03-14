@@ -26,11 +26,11 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// Vï¿½rification de sï¿½curitï¿½
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 if (isset($valjson)) {
     $plugin_output_new = preg_replace ('/(<input type="hidden" name="body" value=".*" \/>)/Uis',
-        '<input type="hidden" name="body" value="'.htmlspecialchars($valjson, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET).'" />', $plugin_output_new);
+        '<input type="hidden" name="body" value="'.htmlspecialchars($valjson, ENT_COMPAT, YW_CHARSET).'" />', $plugin_output_new);
 }

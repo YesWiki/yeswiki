@@ -16,14 +16,14 @@ if (count($fiches) > 0): ?>
                 450
             ); ?>"
               alt="<?php
-            echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>">
+            echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET); ?>">
             <?php
         elseif (empty($fiche['imagebf_image']) || !is_file($fiche['imagebf_image'])) : ?>
             <img class="img-responsive" 
                  src="tools/bazar/libs/vendor/placeholder.php?size=600x450&amp;bg=666&amp;fg=444&amp;text=<?php
             echo urlencode($fiche['bf_titre']); ?>"
                 alt="<?php
-            echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET); ?>">
+            echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET); ?>">
             <?php
         endif;?>
             <div class="text-right" style="overflow: hidden;">

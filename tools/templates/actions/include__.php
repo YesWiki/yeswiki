@@ -62,7 +62,7 @@ if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr(
     $plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
     
     //TODO: a faire pour toutes les pages ou juste le menu???
-    if (TEMPLATES_DEFAULT_CHARSET != "ISO-8859-1" && TEMPLATES_DEFAULT_CHARSET != "ISO-8859-15") {
+    if (YW_CHARSET != "ISO-8859-1" && YW_CHARSET != "ISO-8859-15") {
         $plugin_output_new = mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8');
     }
     

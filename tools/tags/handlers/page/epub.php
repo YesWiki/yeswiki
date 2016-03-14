@@ -59,7 +59,7 @@ if (isset($metadatas["ebook-title"]) && isset($metadatas["ebook-description"]) &
 	foreach ($matches[1] as $nb => $pageWiki) {
 		$page = $this->LoadPage($pageWiki);
 		$url = explode('wakka.php', $this->config['base_url']);
-		if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $contentpage = utf8_encode($content_start . str_replace('<img src="'.$url[0], '<img src="', $this->Format('{{include page="'.$pageWiki.'" class="'.$matches[2][$nb].'"}}')) . $bookEnd);
+		if (YW_CHARSET != 'UTF-8') $contentpage = utf8_encode($content_start . str_replace('<img src="'.$url[0], '<img src="', $this->Format('{{include page="'.$pageWiki.'" class="'.$matches[2][$nb].'"}}')) . $bookEnd);
 		else $contentpage = $content_start . str_replace('<img src="'.$url[0], '<img src="', $this->Format('{{include page="'.$pageWiki.'" class="'.$matches[2][$nb].'"}}')) . $bookEnd;
 		$book->addChapter(get_title_from_body($page), $pageWiki.".html", $contentpage, false, EPub::EXTERNAL_REF_ADD);
 	}

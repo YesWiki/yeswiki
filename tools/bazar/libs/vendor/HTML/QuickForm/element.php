@@ -236,7 +236,7 @@ class HTML_QuickForm_element extends HTML_Common
     {
         $value = $this->getValue();
 
-        return (strlen($value)? htmlspecialchars($value, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET): '&nbsp;') .
+        return (strlen($value)? htmlspecialchars($value, ENT_COMPAT, YW_CHARSET): '&nbsp;') .
                $this->_getPersistantData();
     } //end func getFrozenHtml
 

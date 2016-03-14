@@ -247,7 +247,7 @@ if (!defined('WIKINI_VERSION'))
 		<?php
 				foreach ($users as $user)
 				{
-					echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET), "</option>\n";
+					echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), "</option>\n";
 				}
 		?>
 			</select>

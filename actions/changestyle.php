@@ -1,30 +1,30 @@
 <?php
 
 // Action changesstyle.php version 0.2 du 16/03/2004
-// pour WikiNi 0.4.1rc (=> à la version du 200403xx) et supérieurs
-// Par Charles Népote (c) 2004
+// pour WikiNi 0.4.1rc (=> ï¿½ la version du 200403xx) et supï¿½rieurs
+// Par Charles Nï¿½pote (c) 2004
 // Licence GPL
 
 
-// Cette action permet de sélectionner une feuille de stye CSS
-// alternative à la feuille "wakka.css".
+// Cette action permet de sï¿½lectionner une feuille de stye CSS
+// alternative ï¿½ la feuille "wakka.css".
 //
-// Le nom de la feuille de style (spécifié dans le paramètre "link")
+// Le nom de la feuille de style (spï¿½cifiï¿½ dans le paramï¿½tre "link")
 // peut contenir des lettres et des chiffres, mais pas de point. Il
-// doit être spécifié sans l'extension finale ".css".
+// doit ï¿½tre spï¿½cifiï¿½ sans l'extension finale ".css".
 //
-// Insérée dans une page, cette action affichera un lien permettant de
-// basculer vers le thème spécifié.
+// Insï¿½rï¿½e dans une page, cette action affichera un lien permettant de
+// basculer vers le thï¿½me spï¿½cifiï¿½.
 //
 // Fonctionnement
 //
-// . si ce nom n'est pas constitué uniquement de caractères alphanumériques,
-//   une erreur est retournée
+// . si ce nom n'est pas constituï¿½ uniquement de caractï¿½res alphanumï¿½riques,
+//   une erreur est retournï¿½e
 // . si ce nom est valide et que la feuille de style existe :
 //   . on change le cookie utilisateur
-//   . on redirige dans la foulée l'utilisateur vers la page en cours ;
-//     cela permet de ne pas avoir à lui demander d'actualiser
-//     lui-même la page
+//   . on redirige dans la foulï¿½e l'utilisateur vers la page en cours ;
+//     cela permet de ne pas avoir ï¿½ lui demander d'actualiser
+//     lui-mï¿½me la page
 
 
 // Usage :
@@ -38,11 +38,11 @@
 //    Ouragan
 
 
-// Fonctionnalités restant à ajouter :
+// Fonctionnalitï¿½s restant ï¿½ ajouter :
 //
 // -- {{changestyle}}
 //    donne un formulaire :
-//    Entrer l'adresse de la feuille de style désirée : [     ]
+//    Entrer l'adresse de la feuille de style dï¿½sirï¿½e : [     ]
 //
 // -- {{changestyle choice="Toto;Titi;Tata"}}
 //	[] Feuille de style Toto
@@ -69,6 +69,6 @@ if (preg_match("/^[[:alnum:]][[:alnum:]]+$/", $set))
 }
 else if ($set)
 {
-	$this->SetMessage("Le nom '".htmlspecialchars($set, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)."' n'est pas conforme à la r&egrave;gle de nommage impos&eacute;e par l'action ChangeStyle. Reportez-vous &agrave; la documentation de cette action pour plus de pr&eacute;cisions.");
+	$this->SetMessage("Le nom '".htmlspecialchars($set, ENT_COMPAT, YW_CHARSET)."' n'est pas conforme ï¿½ la r&egrave;gle de nommage impos&eacute;e par l'action ChangeStyle. Reportez-vous &agrave; la documentation de cette action pour plus de pr&eacute;cisions.");
 }
 ?>

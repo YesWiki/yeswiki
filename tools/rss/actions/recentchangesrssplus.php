@@ -58,7 +58,7 @@ if ($pages = $this->LoadAll("select tag, time, user, owner, LEFT(body,500) as bo
 		
 		$items .= "<item>\n";
 		$items .= "<title>" . $page["tag"] . " --- par " .$page["user"] . " le " . $day ." - ". $hh .":". $mm . "</title>\n";
-		$items .= "<description> Modification de " . $page["tag"] . " --- par " .$page["user"] . " le " . $day ." - ". $hh .":". $mm . htmlspecialchars($this->Format($page['body']), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET). "</description>\n";
+		$items .= "<description> Modification de " . $page["tag"] . " --- par " .$page["user"] . " le " . $day ." - ". $hh .":". $mm . htmlspecialchars($this->Format($page['body']), ENT_COMPAT, YW_CHARSET). "</description>\n";
 		$items .= "<dc:format>text/html</dc:format>";
 		$items .= "<link>" . $this->config["base_url"] . $page["tag"] . "&amp;time=" . rawurlencode($page["time"]) . "</link>\n";
 		$items .= "</item>\n";

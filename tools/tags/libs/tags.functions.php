@@ -38,7 +38,7 @@ function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vi
 
 function sanitizeEntity($string)
 {
-    return preg_replace('~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml|caron);~i', '$1', htmlentities(html_entity_decode($string), ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET));
+    return preg_replace('~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml|caron);~i', '$1', htmlentities(html_entity_decode($string), ENT_QUOTES, YW_CHARSET));
 }
 
 function tokenTruncate($string, $your_desired_width)
@@ -262,7 +262,7 @@ function generatePageName($nom, $occurence = 1)
         // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48, histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $str = htmlentities(mb_substr($nom, 0, 47, TEMPLATES_DEFAULT_CHARSET), ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+        $str = htmlentities(mb_substr($nom, 0, 47, YW_CHARSET), ENT_QUOTES, YW_CHARSET);
         $str = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
         $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
         $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caract�res

@@ -53,7 +53,7 @@ $tableau_resultat = baz_requete_recherche_fiches($tabquery, '', $GLOBALS['_BAZAR
 $js = '';
 foreach ($tableau_resultat as $fiche) {
     $valeurs_fiche = json_decode($fiche["body"], true);
-    if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
+    if (YW_CHARSET != 'UTF-8') $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
     if (isset($valeurs_fiche['bf_date_debut_evenement']) && isset($valeurs_fiche['bf_date_fin_evenement'])) {
         $js .= '        {
                     title: "'.addslashes($valeurs_fiche['bf_titre']).'",

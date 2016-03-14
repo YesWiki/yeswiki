@@ -135,7 +135,7 @@ if ($tree)
         $sql .= ' WHERE a.tag = "' . AddSlashes($tree) . '" AND a.latest = "Y" LIMIT 1';
         if (!$rootData = $this->LoadSingle($sql))
         {
-            echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' ListPages</strong> : '._('THE_PAGE').' ' . htmlspecialchars($tree, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . ' '._t('DOESNT_EXIST').' !</div>';
+            echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' ListPages</strong> : '._('THE_PAGE').' ' . htmlspecialchars($tree, ENT_COMPAT, YW_CHARSET) . ' '._t('DOESNT_EXIST').' !</div>';
             return;
         }
         $links[$tree] = $rootData;
@@ -536,7 +536,7 @@ else
                 }
                 else
                 {
-                    echo htmlspecialchars($page['user'], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+                    echo htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);
                 }
             }
         }

@@ -38,7 +38,7 @@ if (!isset($GLOBALS['check_'.$pagetag]['buttondropdown'])) {
 }
 if ($GLOBALS['check_'.$pagetag]['buttondropdown']) {
   echo '<div class="btn-group'.(!empty($class) ? ' '.$class : '').'"> <!-- start of buttondropdown -->
-  <button type="button" class="'.$btnclass.' dropdown-toggle" data-toggle="dropdown" title="'.htmlentities($title, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET).'">
+  <button type="button" class="'.$btnclass.' dropdown-toggle" data-toggle="dropdown" title="'.htmlentities($title, ENT_COMPAT,YW_CHARSET).'">
     '.$icon.$text.(($caret=="1") ? ' <span class="caret"></span>' : '').'
   </button>'."\n";
 }

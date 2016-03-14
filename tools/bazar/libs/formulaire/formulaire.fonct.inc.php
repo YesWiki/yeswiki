@@ -51,7 +51,7 @@ function sanitizeFilename($string = '')
     // every forbidden character is replace by an underscore
     $string = str_replace($dangerous_characters, '-', removeAccents($string));
     // Only allow one dash separator at a time (and make string lowercase)
-    return mb_strtolower(preg_replace('/--+/u', '-', $string), TEMPLATES_DEFAULT_CHARSET);
+    return mb_strtolower(preg_replace('/--+/u', '-', $string), YW_CHARSET);
 }
 
 /** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut
@@ -241,7 +241,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide.= ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide.= ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
         $ob = '';
         $optionrequired = '';
@@ -314,7 +314,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($valliste) {
             $bulledaide = '';
             if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-                $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+                $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
 
             $select_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
@@ -437,7 +437,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
-            .htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+            .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
             .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
@@ -606,7 +606,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $date_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
@@ -812,7 +812,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $option = array('size' => $tableau_template[3], 'maxlength' => $tableau_template[4], 'id' => $tableau_template[1], 'value' => $defauts, 'class' => 'form-control yeswiki-input-pagetag');
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                 .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
         $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2] . $bulledaide, $option);
@@ -830,7 +830,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                $GLOBALS['wiki']->InsertTriple($valeurs_fiche['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, TEMPLATES_DEFAULT_CHARSET, true), '', '');
+                $GLOBALS['wiki']->InsertTriple($valeurs_fiche['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, YW_CHARSET, true), '', '');
             }
         }
 
@@ -874,7 +874,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -909,7 +909,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= '<div class="input-group">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ($defauts != '') ?
-            ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET).'"' : '';
+            ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET).'"' : '';
         $input_html.= ' name="' . $identifiant . '" class="form-control input-xxlarge" id="' . $identifiant . '"';
         $input_html.= (($type_input == 'number' || $type_input == 'range') && $nb_min_car != '') ?
             ' min="' . $nb_min_car . '"' :
@@ -963,7 +963,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             $bulledaide = '';
             if (isset($tableau_template[10]) && $tableau_template[10] != '') {
                 $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
-                    .htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+                    .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                     .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
             $option = array('size' => $tableau_template[3], 'class' => 'form-control');
@@ -1115,7 +1115,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -1186,7 +1186,7 @@ function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -1271,7 +1271,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $longueurmaxlabel = ($longueurmax ? ' (<span class="charsRemaining">' . $longueurmax . '</span> caract&egrave;res restants)' : '');
         $bulledaide = '';
         if ($bulle_d_aide != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $options = array('id' => $identifiant, 'class' => 'form-control input-xxlarge '.(($formatage == 'html') ? 'summernote' : $formatage));
@@ -1328,7 +1328,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $GLOBALS['wiki']->page = $oldpagearray;
                 }
             } elseif ($formatage == 'nohtml') {
-                $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET);
+                $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, YW_CHARSET);
             } elseif ($formatage == 'html') {
                 $html .= $valeurs_fiche[$identifiant];
             }
@@ -1361,7 +1361,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -1456,7 +1456,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $formtemplate->addElement('hidden', $type . $identifiant, $valeurs_fiche[$type . $identifiant]);
             } else {
                 if ($bulle_d_aide != '') {
-                    $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+                    $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
                 }
 
                 //gestion du champs obligatoire
@@ -1469,7 +1469,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             if ($bulle_d_aide != '') {
                 $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
-                    . htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+                    . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET)
                     . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
 
@@ -1483,7 +1483,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         if (isset($_FILES[$type . $identifiant]['name']) && $_FILES[$type . $identifiant]['name'] != '') {
             //on enleve les accents sur les noms de fichiers, et les espaces
-            $nomfichier = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities($identifiant . '_' . $_FILES[$type . $identifiant]['name'], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET));
+            $nomfichier = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities($identifiant . '_' . $_FILES[$type . $identifiant]['name'], ENT_QUOTES, YW_CHARSET));
             $nomfichier = str_replace(' ', '_', $nomfichier);
             $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomfichier;
 
@@ -1513,7 +1513,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $html = '';
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '') {
             $html = '<div class="BAZ_rubrique" data-id="'.
-                        htmlentities($type.$identifiant, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET).'">'."\n".
+                        htmlentities($type.$identifiant, ENT_QUOTES, YW_CHARSET).'">'."\n".
                     '   <span class="BAZ_label">'._t('BAZ_DOWNLOAD_FILE').' :</span>'."\n".
                     '   <span class="BAZ_texte"><a href="'.BAZ_CHEMIN_UPLOAD.$valeurs_fiche[$type.$identifiant].'">'.
                             $valeurs_fiche[$type . $identifiant] . '</a></span>'."\n".
@@ -1551,7 +1551,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
                 $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
-                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                if (YW_CHARSET != 'UTF-8') {
                     $valeur = array_map('utf8_encode', $valeur);
                 }
                 $valeur = json_encode($valeur);
@@ -1573,7 +1573,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         if ($bulle_d_aide != '') {
             $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
-                .htmlentities($bulle_d_aide, ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET)
+                .htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET)
                 .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
@@ -1607,7 +1607,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
                 $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
-                if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+                if (YW_CHARSET != 'UTF-8') {
                     $valeur = array_map('utf8_encode', $valeur);
                 }
                 $valeur = json_encode($valeur);
@@ -1755,7 +1755,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return array('bf_titre' => $valeurs_fiche['bf_titre'], 'id_fiche' => $valeurs_fiche['id_fiche']);
     } elseif ($mode == 'html') {
         // Le titre
-        return '<h1 class="BAZ_fiche_titre">' . htmlentities($valeurs_fiche['bf_titre'], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '</h1>' . "\n";
+        return '<h1 class="BAZ_fiche_titre">' . htmlentities($valeurs_fiche['bf_titre'], ENT_QUOTES, YW_CHARSET) . '</h1>' . "\n";
     } elseif ($mode == 'formulaire_recherche') {
         return;
     }
@@ -1907,7 +1907,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie' || ($mode == 'formulaire_recherche' && $tableau_template[9] == 1)) {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $select_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
@@ -1962,7 +1962,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $select = '';
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche["body"], true);
-            if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+            if (YW_CHARSET != 'UTF-8') {
                 $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
             }
             $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
@@ -1996,7 +1996,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if (is_array($val_fiche)) {
                     $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
                     $html.= '<span class="BAZ_texte">';
-                    $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                    $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
                 }
             }
         }
@@ -2034,7 +2034,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie' || ($mode == 'formulaire_recherche' && $tableau_template[9] == 1)) {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $checkbox_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
@@ -2098,7 +2098,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $checkboxtab = '';
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche["body"], true);
-            if (TEMPLATES_DEFAULT_CHARSET != 'UTF-8') {
+            if (YW_CHARSET != 'UTF-8') {
                 $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
             }
             $checkboxtab[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
@@ -2194,7 +2194,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         }
                     }
                     if (is_array($val_fiche) && (!isset($match) || $match == true)) {
-                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, TEMPLATES_DEFAULT_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
+                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
                     }
                 }
                 $html .= '</ul>';
@@ -2252,7 +2252,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $url_checkboxfiche->addQueryString('wiki', $_GET['wiki'] . '/iframe');
         $url_checkboxfiche->addQueryString('id_typeannonce', $tableau_template[1]);
         $url_checkboxfiche->addQueryString('ce_fiche_liee', $_GET['id_fiche']);
-        $html.= '<a class="ajout_fiche ouvrir_overlay" href="' . str_replace('&', '&amp;', $url_checkboxfiche->getUrl()) . '" rel="#overlay-link" title="' . htmlentities($tableau_template[4], ENT_QUOTES, TEMPLATES_DEFAULT_CHARSET) . '">' . $tableau_template[4] . '</a>' . "\n";
+        $html.= '<a class="ajout_fiche ouvrir_overlay" href="' . str_replace('&', '&amp;', $url_checkboxfiche->getUrl()) . '" rel="#overlay-link" title="' . htmlentities($tableau_template[4], ENT_QUOTES, YW_CHARSET) . '">' . $tableau_template[4] . '</a>' . "\n";
         $formtemplate->addElement('html', $html);
     } elseif ($mode == 'requete') {
     } elseif ($mode == 'formulaire_recherche') {

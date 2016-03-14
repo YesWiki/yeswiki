@@ -767,11 +767,11 @@ class Wiki
         // is this an interwiki link?
         if (preg_match('/^' . WN_INTERWIKI_CAPTURE . '$/', $tag, $matches)) {
             if ($tagInterWiki = $this->GetInterWikiUrl($matches[1], $matches[2])) {
-                return '<a href="' . htmlspecialchars($tagInterWiki, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '">'
-                . htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . ' (interwiki)</a>';
+                return '<a href="' . htmlspecialchars($tagInterWiki, ENT_COMPAT, YW_CHARSET) . '">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . ' (interwiki)</a>';
             } else {
-                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '">'
-                . htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . ' (interwiki inconnu)</a>';
+                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . ' (interwiki inconnu)</a>';
             }
 
         }
@@ -799,22 +799,22 @@ class Wiki
                 // There is a high risk that $tag is just XSS (bad
                 // javascript: code) or anything nasty. So we must not
                 // produce any link at all.
-                return htmlspecialchars($tag . ($text ? ' ' . $text : ''), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+                return htmlspecialchars($tag . ($text ? ' ' . $text : ''), ENT_COMPAT, YW_CHARSET);
             }
             // Important: Here, we know that $tag is not something bad
             // and that we must produce a link with it
 
             // An inline image? (text!=tag and url ends by png,gif,jpeg)
             if ($text and preg_match("/\.(gif|jpeg|png|jpg)$/i", $tag)) {
-                return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)
-                . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '"/>';
+                return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
+                . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '"/>';
             } else {
                 // Even if we know $tag is harmless, we MUST encode it
                 // in HTML with htmlspecialchars() before echoing it.
                 // This is not about being paranoiac. This is about
                 // being compliant to the HTML standard.
-                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '">'
-                . htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '</a>';
+                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
             }
         } else {
             // it's a Wiki link!
@@ -823,11 +823,11 @@ class Wiki
             }
 
             if ($this->LoadPage($tag)) {
-                return '<a href="' . htmlspecialchars($this->href($method, $tag), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '">'
-                . htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '</a>';
+                return '<a href="' . htmlspecialchars($this->href($method, $tag), ENT_COMPAT, YW_CHARSET) . '">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
             } else {
-                return '<span class="missingpage">' . htmlspecialchars($displayText, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET)
-                . '</span><a href="' . htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '">?</a>';
+                return '<span class="missingpage">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
+                . '</span><a href="' . htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, YW_CHARSET) . '">?</a>';
             }
 
         }
@@ -838,7 +838,7 @@ class Wiki
             $text = $tag;
         }
 
-        $text = htmlspecialchars($text, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET);
+        $text = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
         if ($track) {
             $this->TrackLinkTo($tag);
         }
@@ -1037,7 +1037,7 @@ class Wiki
         $cmd = trim($action);
         // extract $action and $vars_temp ("raw" attributes)
         if (!preg_match("/^([a-zA-Z-0-9]+)\/?(.*)$/", $cmd, $matches)) {
-            return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) . '&quot;</div>' . "\n";
+            return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
         }
         list(, $action, $vars_temp) = $matches;
         $vars[$vars_temp] = $vars_temp; // usefull for {{action/vars_temp}}

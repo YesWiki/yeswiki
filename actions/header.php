@@ -52,7 +52,7 @@ else
 }
 $meta_keywords = $this->GetConfigValue("meta_keywords");
 $meta_description = $this->GetConfigValue("meta_description");
-$imported_style = isset($_COOKIE["sitestyle"]) ? htmlspecialchars($_COOKIE["sitestyle"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET) : 'wakka';
+$imported_style = isset($_COOKIE["sitestyle"]) ? htmlspecialchars($_COOKIE["sitestyle"], ENT_COMPAT, YW_CHARSET) : 'wakka';
 
 // Page contents
 $body_attr = ($message = $this->GetMessage()) ? "onLoad=\"alert('".addslashes($message)."');\" " : "";

@@ -44,6 +44,6 @@ if (empty($link)) {
         echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_BUTTON').'</strong> : '._t('TEMPLATE_LINK_PARAMETER_REQUIRED').'.</div>'."\n";
 }
 else {
-	echo '<a href="'.$link.'" class="'.$class.'"'.(!empty($title) ? ' title="'.htmlentities($title, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET).'"' : (!empty($text) ? ' title="'.htmlentities($text, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET).'"' : '') ).'>'.$icon.(!empty($text)? htmlentities($text, ENT_COMPAT,TEMPLATES_DEFAULT_CHARSET) : '').'</a>'."\n";
+	echo '<a href="'.$link.'" class="'.$class.'"'.(!empty($title) ? ' title="'.htmlentities($title, ENT_COMPAT,YW_CHARSET).'"' : (!empty($text) ? ' title="'.htmlentities($text, ENT_COMPAT,YW_CHARSET).'"' : '') ).'>'.$icon.(!empty($text)? htmlentities($text, ENT_COMPAT,YW_CHARSET) : '').'</a>'."\n";
 }
 ?>

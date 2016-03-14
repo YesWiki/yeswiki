@@ -112,18 +112,18 @@ function _convert($text, $fromencoding, $database = false)
             if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
                 return mb_convert_encoding(
                     $text,
-                    TEMPLATES_DEFAULT_CHARSET,
+                    YW_CHARSET,
                     mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
                 );
             } else {
                 return $text;
             }
         } else {
-            if ($fromencoding != TEMPLATES_DEFAULT_CHARSET) {
+            if ($fromencoding != YW_CHARSET) {
                 return mb_convert_encoding(
                     $text,
                     "UTF-8",
-                    mb_detect_encoding($text, "UTF-8, ".TEMPLATES_DEFAULT_CHARSET.", ISO-8859-1, ISO-8859-15", true)
+                    mb_detect_encoding($text, "UTF-8, ".YW_CHARSET.", ISO-8859-1, ISO-8859-15", true)
                 );
             } else {
                 return $text;
@@ -246,6 +246,12 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
  */
 function initI18n()
 {
+    // initialize charset
+    define(
+        'YW_CHARSET',
+        isset($GLOBALS['wiki']->config['charset']) ? $GLOBALS['wiki']->config['charset'] : 'UTF-8'
+    );
+
     // get the language list
     require_once 'lang/languages_list.php';
 

@@ -6,7 +6,7 @@ Copyright 2002, 2003 David DELON
 Copyright 2002, 2003 Charles NEPOTE
 Copyright  2003  Eric FELDSTEIN
 Copyright  2003  Jean-Pascal MILCENT
-Copyright  2004  Jean Christophe ANDRÉ
+Copyright  2004  Jean Christophe ANDRï¿½
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// Vï¿½rification de sï¿½curitï¿½
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -105,7 +105,7 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin()))
 						{
 							foreach($users as $user)
 							{
-								echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, TEMPLATES_DEFAULT_CHARSET),"\">",$user["name"],"</option>\n";
+								echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
 							}
 						}
 						?>
