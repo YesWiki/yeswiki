@@ -71,12 +71,12 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_USER_NOT_LOGGED_IN' => 'il faut &ecirc;tre identifi&eacute; pour acc&eacute;der aux actions possibles.',
 'CONTACT_USER_NO_EMAIL' => 'il faut &ecirc;tre identifi&eacute; pour acc&eacute;der aux actions possibles.',
 
-'CONTACT_ENTER_NAME' => 'Vous devez entrer un nom.',
-'CONTACT_ENTER_SENDER_MAIL' => 'Vous devez entrer une adresse mail pour l\'exp&eacute;diteur.',
+'CONTACT_ENTER_NAME' => 'Tienes que entrar un nombre.',
+'CONTACT_ENTER_SENDER_MAIL' => 'Tienes que entrar una dirección de correo electrónico vàlida para el expedidor.',
 'CONTACT_SENDER_MAIL_INVALID' => 'Vous devez entrer une adresse mail valide pour l\'exp&eacute;diteur.',
-'CONTACT_ENTER_RECEIVER_MAIL' => 'Vous devez entrer une adresse mail pour le destinataire.',
-'CONTACT_RECEIVER_MAIL_INVALID' => 'Vous devez entrer une adresse mail valide pour le destinataire.',
-'CONTACT_ENTER_MESSAGE' => 'Veuillez entrer un message. Il doit faire au minimum 10 caract&egrave;res.',
+'CONTACT_ENTER_RECEIVER_MAIL' => 'Tienes que entrar una dirección de correo electrónico para el destinatorio.',
+'CONTACT_RECEIVER_MAIL_INVALID' => 'Tienes que entrar una dirección de correo electrónico vàlida para el destinatorio.',
+'CONTACT_ENTER_MESSAGE' => 'Entra tu mensaje. Tiene que componerse de 10 caracteres como minimo.',
 
 'CONTACT_MESSAGE_SUCCESSFULLY_SENT' => 'Tu mensaje ha sido enviado. Gracias!',
 'CONTACT_MESSAGE_NOT_SENT' => 'El mensaje no ha sido enviado... Problema en la configuración del servidor?',
