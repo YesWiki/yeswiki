@@ -1,4 +1,4 @@
-# YesWiki I=installation
+# YesWiki installation
 Not much to it (as long as it works, ahem). Unpack/upload the distribution files
 into a directory that can be accessed via the web. Then go to the corresponding URL.  
 A web-based installer will walk you through the rest.
