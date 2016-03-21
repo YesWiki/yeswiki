@@ -21,7 +21,9 @@ if (!isset($GLOBALS['nbbazarliste'])) {
 
 // Recuperation de tous les parametres
 $params = getAllParameters($this);
-$params['template'] = 'map.tpl.html';
+if (empty($this->GetParameter('template'))) {
+    $params['template'] = 'map.tpl.html';
+}
 
 // tableau des fiches correspondantes aux critères
 if (is_array($params['idtypeannonce'])) {
