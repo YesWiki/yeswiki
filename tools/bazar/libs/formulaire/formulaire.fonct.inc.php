@@ -1712,6 +1712,32 @@ function metadatas(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
+/** acls() - change les droits par defaut de la fiche
+ *
+ * @param    mixed   L'objet QuickForm du formulaire
+ * @param    mixed   Le tableau des valeurs des différentes options des acls (* : tous, + : les identifiés, @groupes, user,...)
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
+ * @return   void
+ */
+function acls(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
+{
+    list($type, $read, $write, $comment) = $tableau_template;
+    if ($read=='user') {
+        $read = $valeurs_fiche['nomwiki'];
+    }
+    if ($write=='user') {
+        $write = $valeurs_fiche['nomwiki'];
+    }
+    if ($comment=='user') {
+        $comment = $valeurs_fiche['nomwiki'];
+    }
+    if ($mode == 'requete') {
+        $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'read', $read);
+        $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'write', $write);
+        $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'comment', $comment);
+    }
+}
+
 /** titre() - Action qui camouffle le titre et le génére a  partir d'autres champs au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
