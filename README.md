@@ -17,7 +17,7 @@
 ## Installation
 YesWiki can be installed in about ten minutes on a server which supports PHP>5.0 and a MySQL database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
 
-See https://github.com/YesWiki/yeswiki/blob/cercopitheque/INSTALL for detailled install instructions.
+See https://github.com/YesWiki/yeswiki/blob/cercopitheque/INSTALL.md for detailled install instructions.
 
 ## History
 YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedia.org/wiki/WakkaWiki) called [Wikini](http://wikini.net), and hence has strong French language support.
