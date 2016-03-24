@@ -21,7 +21,7 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Fichier de traduction en francais de l'extension Contact
+* Fichier de traduction en espagnol de l'extension Contact
 *
 *@package 		login
 *@author        Louise Didier <louise@quincaillere.org>
@@ -56,35 +56,35 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_FOR_ALL_THOSE_EMAILS' => 'Para todas estas direcciónes de correo electrónico',
 'CONTACT_TRY_WITH_OTHER_EMAILS' => 'Intentar con otras direcciónes de correo electrónico en el texto',
 'CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT' => 'Ningun e-mail encontrado en el texto',
-'CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE' => 'Entrez un texte contenant des mails dedans pour les extraire, qu\'importe les s&eacute;parateurs (virgules, point-virgules, deux points, espaces, tabulations, retours &agrave; la ligne) ou le texte entre',
-'CONTACT_YOUR_EMAIL_LIST' => 'Votre liste d\'adresses mails',
-'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'Extraire les mails de ce texte',
-'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'il faut &ecirc;tre dans le groupe admins pour utiliser cette action',
+'CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE' => 'Entra un texto que contiene las direcciónes de correo electrónico, para extraerlas, no importa lo que les separa (comas, punto-comas, dos puntos, espacios, tabuladores, punto y aparte) o el texto entre',
+'CONTACT_YOUR_EMAIL_LIST' => 'Tu lista de direcciónes de correo electrónico',
+'CONTACT_EXTRACT_EMAILS_FROM_TEXT' => 'Extraer las direcciónes de correo electrónicode este texto',
+'CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION' => 'Tienes que pertenecer al grupo admins para usar esta acción',
 
 
 'CONTACT_YOUR_NAME' => 'Tu nombre',
-'CONTACT_YOUR_MAIL' => 'Tu dirección de correo electrónico ',
+'CONTACT_YOUR_MAIL' => 'Tu dirección de correo electrónico',
 'CONTACT_SUBJECT' => 'Objeto del mensaje',
 'CONTACT_YOUR_MESSAGE' => 'Tu mensaje',
 'CONTACT_SEND_MESSAGE' => 'Enviar el mensaje',
-'CONTACT_LISTSUBSCRIBE_REQUIRED' => 'le param&egrave;tre "list", contenant l\'adresse &eacute;lectronique de la liste, du type nomliste@domaine.ext, est obligatoire',
-'CONTACT_USER_NOT_LOGGED_IN' => 'il faut &ecirc;tre identifi&eacute; pour acc&eacute;der aux actions possibles.',
-'CONTACT_USER_NO_EMAIL' => 'il faut &ecirc;tre identifi&eacute; pour acc&eacute;der aux actions possibles.',
+'CONTACT_LISTSUBSCRIBE_REQUIRED' => 'el parámetro "list", con la dirección de la lista, tipo nombrelista@dominio.ext, es obligatorio',
+'CONTACT_USER_NOT_LOGGED_IN' => 'te tienes que identificar para acceder a las acciones posibles.',
+'CONTACT_USER_NO_EMAIL' => 'te tienes que identificar para acceder a las acciones posibles.',
 
 'CONTACT_ENTER_NAME' => 'Tienes que entrar un nombre.',
-'CONTACT_ENTER_SENDER_MAIL' => 'Tienes que entrar una dirección de correo electrónico vàlida para el expedidor.',
-'CONTACT_SENDER_MAIL_INVALID' => 'Vous devez entrer une adresse mail valide pour l\'exp&eacute;diteur.',
+'CONTACT_ENTER_SENDER_MAIL' => 'Tienes que entrar una dirección de correo electrónico para el expedidor.',
+'CONTACT_SENDER_MAIL_INVALID' => 'Tienes que entrar una dirección de correo electrónico vàlida para el expedidor.',
 'CONTACT_ENTER_RECEIVER_MAIL' => 'Tienes que entrar una dirección de correo electrónico para el destinatorio.',
 'CONTACT_RECEIVER_MAIL_INVALID' => 'Tienes que entrar una dirección de correo electrónico vàlida para el destinatorio.',
 'CONTACT_ENTER_MESSAGE' => 'Entra tu mensaje. Tiene que componerse de 10 caracteres como minimo.',
 
 'CONTACT_MESSAGE_SUCCESSFULLY_SENT' => 'Tu mensaje ha sido enviado. Gracias!',
 'CONTACT_MESSAGE_NOT_SENT' => 'El mensaje no ha sido enviado... Problema en la configuración del servidor?',
-'CONTACT_SUBSCRIBE_ORDER_SENT' => 'Votre demande concernant votre abonnement a bien &eacute;t&eacute; prise en compte. Merci!',
-'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'Votre demande concernant votre d&eacute;sabonnement a bien &eacute;t&eacute; prise en compte. Merci!',
+'CONTACT_SUBSCRIBE_ORDER_SENT' => 'Tu petición de abono ha sido enviada. Gracias!',
+'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'Tu petición de desabono ha sido enviada. Gracias!',
 
-'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs.',
-'CONTACT_LOGIN_IF_ADMIN' => 'Si vous faites parti ce groupe, veuillez vous identifier.',
+'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'El handler /mail es reservado al grup de los administradores.',
+'CONTACT_LOGIN_IF_ADMIN' => 'Si formas parte de este grupo, te tienes que identificar.',
 
 'CONTACT_SUBSCRIBE' => 'Suscribir',
 'CONTACT_UNSUBSCRIBE' => 'Desabonarse',

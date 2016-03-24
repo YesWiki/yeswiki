@@ -21,31 +21,31 @@
 // +------------------------------------------------------------------------------------------------------+
 // 
 /**
-* Fichier de traduction en francais de l'extension syndication
+* Fichier de traduction en espagnol de l'extension syndication
 *
 *@package 		syndication
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2013 Outils-Réseaux
+*@author        Louise Didier <louise@quincaillere.org>
+*@copyright     2016 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 // actions/syndication.php
-'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
-'SYNDICATION_PARAM_URL_REQUIRED' => 'il faut entrer obligatoirement le param&egrave;tre "url" pour syndiquer un flux RSS',
-'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'le r&eacute;pertoire "cache" n\'a pas les droits d\'acc&egrave;s en &eacute;criture',
-'SYNDICATION_CREATE_CACHE_FOLDER' => 'il faut cr&eacute;er un r&eacute;pertoire "cache" dans le r&eacute;pertoire principal',
-'SYNDICATION_TEMPLATE_NOT_FOUND' => 'n\'existe pas, on utilise le fichier template par d&eacute;faut.',
-'SYNDICATION_READ_MORE' => 'Lire la suite',
+'SYNDICATION_ACTION_SYNDICATION' => 'Acción {{syndication ...}}',
+'SYNDICATION_PARAM_URL_REQUIRED' => 'hay que entrar el parámetro "url" para sindicar un flujo RSS',
+'SYNDICATION_WRITE_ACCESS_TO_CACHE_FOLDER' => 'el repertorio "cache" no tiene los derechos de accesso para escribir',
+'SYNDICATION_CREATE_CACHE_FOLDER' => 'hay que crear un repertorio "cache" en el repertorio principal',
+'SYNDICATION_TEMPLATE_NOT_FOUND' => 'no existe, se usa el archivo patrón por defecto.',
+'SYNDICATION_READ_MORE' => 'Leer más',
 
 // actions/twitter.php
-'SYNDICATION_ACTION_TWITTER' => 'Action {{twitter ...}}',
-'SYNDICATION_PARAM_USER_REQUIRED' => 'param&egrave;tre "user" manquant, il est obligatoire pour sp&eacute;fifier l\'utilisateur twitter choisi',
+'SYNDICATION_ACTION_TWITTER' => 'Acción {{twitter ...}}',
+'SYNDICATION_PARAM_USER_REQUIRED' => 'falta el parámetro "user". Es obligatorio para precisar el usuario twitter elegido',
 
 // actions/twittersearch.php
-'SYNDICATION_ACTION_TWITTERSEARCH' => 'Action {{twittersearch ...}}',
-'SYNDICATION_PARAM_QUERY_REQUIRED' => 'param&egrave;tre "query" manquant, il est obligatoire pour sp&eacute;cifier votre recherche',
-'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'Le fichier template',
-'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'n\'existe pas, on utilise le template par d&eacute;faut'
+'SYNDICATION_ACTION_TWITTERSEARCH' => 'Acción {{twittersearch ...}}',
+'SYNDICATION_PARAM_QUERY_REQUIRED' => 'falta el parámetro "query". Es obligatorio para precisar tu búsqueda',
+'SYNDICATION_TEMPLATE_DOESNT_EXISTS' => 'El archivo template',
+'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'no existe, se usa el patrón por defecto.'
 
 ));
