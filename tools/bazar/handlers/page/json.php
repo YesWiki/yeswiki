@@ -50,7 +50,7 @@ if (isset($_REQUEST['demand'])) {
     $page = (isset($_REQUEST['page']) ? $_REQUEST['page'] : '');
     $form = (isset($_REQUEST['form']) ? $_REQUEST['form'] : '');
     $tags = (isset($_REQUEST['tags']) ? $_REQUEST['tags'] : '');
-    $order = (isset($_REQUEST['order']) && $_REQUEST['order'] == 'alphabetique' ? $_REQUEST['order'] : '');
+    $order = (isset($_REQUEST['order']) ? $_REQUEST['order'] : 'alphabetique');
     $html = (isset($_REQUEST['html']) && $_REQUEST['html'] == '1' ? $_REQUEST['html'] : '');
     $list = (isset($_REQUEST['list']) ? $_REQUEST['list'] : '');
     $idfiche = (isset($_REQUEST['id_fiche']) ? $_REQUEST['id_fiche'] : '');
@@ -237,23 +237,24 @@ if (isset($_REQUEST['demand'])) {
             }
             break;
         case "forms":
-        // les formulaires bazar
+            // les formulaires bazar
             $formval = baz_valeurs_formulaire($form);
             // si un seul formulaire, on cree un tableau à une entrée
             if (!empty($form)) {
                 $formval = array($formval['bn_id_nature'] => $formval);
             }
-            foreach ($formval as $idform => $form) {
-                $i = 0;
-                $prepared = array();
-                $form['template'] = _convert($form['template'], 'ISO-8859-15');
-                $form['prepared'] = bazPrepareFormData($form);
-                $formval[$idform] = $form;
+            if (!function_exists('sortByLabel')) {
+                function sortByLabel($a, $b)
+                {
+                    return $a['bn_label_nature'] - $b['bn_label_nature'];
+                }
             }
+
+            usort($formval, 'sortByLabel');
             echo json_encode($formval);
             break;
         case "entries":
-        // liste de fiches bazar
+            // liste de fiches bazar
             $results = baz_requete_recherche_fiches($tabquery, $order, $form, '', 1, '', '');
             foreach ($results as $wikipage) {
                 $decoded_entry = json_decode($wikipage['body'], true);
@@ -271,15 +272,26 @@ if (isset($_REQUEST['demand'])) {
                 }
                 $tab_entries[$decoded_entry['id_fiche']] = $decoded_entry;
             }
+            ksort($tab_entries);
             echo json_encode($tab_entries);
             break;
         case "pages":
-            // les pages wiki
-            echo json_encode(baz_utf8_encode_recursive($this->LoadAllPages()));
+            // recuperation des pages wikis
+            $sql = 'SELECT * FROM '.$this->GetConfigValue('table_prefix').'pages';
+            $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
+            $sql .= ' AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
+            $sql .= ' ORDER BY tag ASC';
+            $pages = _convert($this->LoadAll($sql), 'ISO-8859-15');
+            $pagesindex = array();
+            foreach ($pages as $page) {
+                $pagesindex[$page["tag"]] = $page;
+            }
+            echo json_encode($pagesindex);
+            //echo array_map('json_encode', );
             break;
         case "comments":
             // les commentaires wiki
-            echo json_encode(baz_utf8_encode_recursive($this->LoadRecentComments()));
+            echo json_encode($this->LoadRecentComments());
             break;
     }
 }

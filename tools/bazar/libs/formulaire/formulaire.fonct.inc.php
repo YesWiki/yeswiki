@@ -56,8 +56,9 @@ function sanitizeFilename($string = '')
 
 /** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut
  *
+ * @param    string champ de la base
  * @param    string nom du fichier image
- * @param   string  label pour l'image
+ * @param    string  label pour l'image
  * @param    string classes html supplementaires
  * @param    int        largeur en pixel de la vignette
  * @param    int        hauteur en pixel de la vignette
@@ -66,6 +67,7 @@ function sanitizeFilename($string = '')
  * @return   void
  */
 function afficher_image(
+    $champ,
     $nom_image,
     $label,
     $class,
@@ -112,13 +114,13 @@ function afficher_image(
                 }
 
                 //on renvoit l'image en vignette, avec quand on clique, l'image redimensionnee
-                return '<a data-id="' . $nom_image . '" class="modalbox ' . $class
+                return '<a data-id="' . $champ . '" class="modalbox ' . $class
                     .'" href="' . $url_base . 'cache/image_' . $destimg . '" title="' . htmlentities($nom_image) . '">' . "\n"
                     .'<img src="' . $url_base . 'cache/vignette_' . $destimg . '" alt="' . $destimg . '"'.' />'."\n"
                     .'</a> <!-- ' . $nom_image . ' -->' . "\n";
             } else {
                 //on renvoit l'image en vignette, avec quand on clique, l'image originale
-                return '<a data-id="' . $nom_image . '" class="modalbox ' . $class
+                return '<a data-id="' . $champ . '" class="modalbox ' . $class
                     . '" href="' . $url_base . BAZ_CHEMIN_UPLOAD . $nom_image . '" title="' . htmlentities($nom_image) . '">' . "\n"
                     . '<img class="img-responsive" src="' . $url_base . 'cache/vignette_' . $destimg
                     . '" alt="' . $nom_image . '"' . ' rel="' . $url_base . 'cache/image_' . $destimg . '" />' . "\n"
@@ -989,23 +991,23 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         if (!$GLOBALS['wiki']->LoadUser($nomwiki)) {
             $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
             $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini);
-        }
-
-        if ($sendmail) {
-            //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
-            $lien = str_replace("/wakka.php?wiki=", "", $GLOBALS['wiki']->config["base_url"]);
-            $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
-            $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre email : ".$valeurs_fiche[$tableau_template[2]]."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
-            $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
+            if ($sendmail) {
+                //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
+                $lien = str_replace("/wakka.php?wiki=", "", $GLOBALS['wiki']->config["base_url"]);
+                $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
+                $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre email : ".$valeurs_fiche[$tableau_template[2]]."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
+                $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
                 'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
-                    'X-Mailer: PHP/' . phpversion();
-            mail($valeurs_fiche[$tableau_template[2]], removeAccents($objetmail), $messagemail, $headers);
-            // ajout dans la liste de mail
-            if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]] != '') {
-                $headers = 'From: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'Reply-To: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-                mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
+                'X-Mailer: PHP/' . phpversion();
+                mail($valeurs_fiche[$tableau_template[2]], removeAccents($objetmail), $messagemail, $headers);
+                // ajout dans la liste de mail
+                if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]] != '') {
+                    $headers = 'From: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'Reply-To: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+                    mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
+                }
             }
         }
+
         return array('nomwiki' => $nomwiki);
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {
@@ -1586,7 +1588,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'suppr_image=' . $valeurs_fiche[$type . $identifiant];
-                $html_image = afficher_image($valeurs_fiche[$type . $identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+                $html_image = afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
 
                 $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash icon-trash icon-white"></i>&nbsp;' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
                 if ($html_image != '') {
@@ -1668,7 +1670,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
-            return afficher_image($valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+            return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
         }
     }
 }
