@@ -62,12 +62,6 @@ if (!empty($file)) {
     $att->height = $height;
     $att->width = $width;
     $fullFilename = $att->GetFullFilename();
-
-    //test d'existance du fichier
-    if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
-        $att->showFileNotExits();
-        //return;
-    }
 }
 
 // container class
@@ -77,11 +71,15 @@ echo '<div class="background-image' . (!empty($class) ? ' ' . $class : '') . '" 
     .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
     .(!empty($height) ? 'height:' . $height . 'px; ' : '')
     .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '')
-    .'">' . "\n"
-    .'<div class="table-center">'."\n";
+    .'">' . "\n";
 $nocontainer = $this->GetParameter('nocontainer');
 if (empty($nocontainer)) {
     echo '<div class="container">' . "\n";
 } else {
     echo '<div>';
+}
+//test d'existance du fichier
+if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
+    $att->showFileNotExits();
+    //return;
 }

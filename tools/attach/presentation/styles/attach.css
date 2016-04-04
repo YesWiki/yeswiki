@@ -208,18 +208,32 @@ box-shadow: 2px 2px 15px 0px #444;
   background-origin:padding-box;
   background-position:0 0;
   background-repeat: no-repeat;
-  display: table;
+  display: flex;
+  align-items: center;
   width:100%;
+  min-height: 15px;
+  height:auto;
 }
 
-.table-center {
-    display: table-cell;
-    vertical-align: middle;
+.one-quarter-height {
+  height: 25vh !important;
 }
-
-.background-image.full-height {
+.one-third-height {
+  height: 33vh !important;
+}
+.half-height {
+  height: 50vh !important;
+}
+.two-third-height {
+  height: 66vh !important;
+}
+.three-quarter-height {
+  height: 75vh !important;
+}
+.full-height {
   height: 100vh !important;
 }
+
 .background-image.cover {
   -webkit-background-size:cover;-moz-background-size:cover;-o-background-size:cover;background-size:cover;
 }
