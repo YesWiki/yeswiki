@@ -111,7 +111,7 @@ switch ($version) {
                 'CREATE TABLE '.$config['table_prefix'].'pages ('.
                 'id int(10) unsigned NOT NULL auto_increment,'.
                 "tag varchar(50) NOT NULL default '',".
-                "time datetime NOT NULL default '2016-01-01 00:00:00',".
+                "time datetime NOT NULL,".
                 'body longtext NOT NULL,'.
                 'body_r text NOT NULL,'.
                 "owner varchar(50) NOT NULL default '',".
@@ -166,7 +166,7 @@ switch ($version) {
                 'CREATE TABLE '.$config['table_prefix'].'referrers ('.
                 "page_tag char(50) NOT NULL default '',".
                 "referrer char(150) NOT NULL default '',".
-                "time datetime NOT NULL default '2016-01-01 00:00:00',".
+                "time datetime NOT NULL,".
                 'KEY idx_page_tag (page_tag),'.
                 'KEY idx_time (time)'.
                 ') ENGINE=MyISAM'
@@ -186,7 +186,7 @@ switch ($version) {
                 "revisioncount int(10) unsigned NOT NULL default '20',".
                 "changescount int(10) unsigned NOT NULL default '50',".
                 "doubleclickedit enum('Y','N') NOT NULL default 'Y',".
-                "signuptime datetime NOT NULL default '2016-01-01 00:00:00',".
+                "signuptime datetime NOT NULL,".
                 "show_comments enum('Y','N') NOT NULL default 'N',".
                 'PRIMARY KEY  (name),'.
                 'KEY idx_name (name),'.
