@@ -28,3 +28,5 @@ body {padding-top: 51px;}
     border-radius: 14px 0 0 14px !important;
     padding-bottom: 3px;
 }
+#UploadModal {display:none;}
+#body { width:100%}
