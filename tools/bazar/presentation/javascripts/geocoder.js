@@ -11,8 +11,7 @@
  */
 function geocodage( address, callbackOk, callbackError )
 {
-  // TODO: automatically retrieving the protocol's scheme
-  var http = 'http' ;
+  var http = window.location.protocol ;
 
   address = address.replace(/\\("|\'|\\)/g, " ").trim();
 
@@ -20,7 +19,7 @@ function geocodage( address, callbackOk, callbackError )
 
   // async call to find the full address
   asyncCalls.push(
-    $.get(http+'://nominatim.openstreetmap.org/search?q='+encodeURIComponent(address)+'&format=json')
+    $.get(http+'//nominatim.openstreetmap.org/search?q='+encodeURIComponent(address)+'&format=json')
   );
 
   if( found = address.match( /^\d+(.*)/i ) )
@@ -28,7 +27,7 @@ function geocodage( address, callbackOk, callbackError )
     var address2 = found[1] ;
     // async call to find without address street number
     asyncCalls.push(
-      $.get(http+'://nominatim.openstreetmap.org/search?q='+encodeURIComponent(address2)+'&format=json')
+      $.get(http+'//nominatim.openstreetmap.org/search?q='+encodeURIComponent(address2)+'&format=json')
     );
   }
 
