@@ -38,17 +38,14 @@ function geocodage( address, callbackOk, callbackError )
     if( typeof(c2) == 'string' && c1.length > 0 )
     {
       // case: only one query
-      console.log("c1 found");
       callbackOk( c1[0].lon, c1[0].lat );
     }
     else if( typeof(c2) != 'string' && c1[0].length > 0 )
     {
-      console.log("c1 found");
       callbackOk( c1[0][0].lon, c1[0][0].lat );
     }
     else if( typeof(c2) != 'string' && c2[0].length > 0 )
     {
-      console.log("c2 found");
       callbackOk( c2[0][0].lon, c2[0][0].lat );
     }
     else
