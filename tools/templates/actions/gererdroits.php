@@ -24,7 +24,7 @@ if ($this->UserIsAdmin()) {
     include_once 'tools/templates/libs/templates.functions.php';
 
     $table = $this->config["table_prefix"];
- 
+
     //Récupère les droits de la page désignée en argument et renvoie un tableau
     function recup_droits($page)
     {
@@ -37,9 +37,9 @@ if ($this->UserIsAdmin()) {
         $requete_comment = "SELECT * FROM " . $table . "acls WHERE page_tag='"
         . $page . "' AND privilege='comment' ORDER BY " . $table . "acls.page_tag ASC";
 
-        $droits_lire = mysqli_fetch_array(mysqli_query($requete_lire));
-        $droits_ecrire = mysqli_fetch_array(mysqli_query($requete_ecrire));
-        $droits_comment = mysqli_fetch_array(mysqli_query($requete_comment));
+        $droits_lire = $GLOBALS['wiki']->loadAcl($page, 'read');
+        $droits_ecrire = $GLOBALS['wiki']->loadAcl($page, 'write');
+        $droits_comment = $GLOBALS['wiki']->loadAcl($page, 'comment');
 
         return array('page' => $page,
             'droits_lire' => $droits_lire["list"],
@@ -185,4 +185,3 @@ echo $this->FormClose();
     </div>';
 }
 ?>
-
