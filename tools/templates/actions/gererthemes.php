@@ -76,6 +76,9 @@ if ($this->UserIsAdmin()) {
     function theme_selector()
     {
 
+    	if( ! isset($formclass) )
+    		$formclass = '' ;
+
         $id = 'select_theme';
 
         $selecteur = '		<form class="' . $formclass . '" id="' . $id . '">' . "\n";
@@ -185,7 +188,7 @@ if ($this->UserIsAdmin()) {
 
 </table>
 
-<br><input name="modifier" class="btn <?php if ($btnclass != '') {
+<br><input name="modifier" class="btn <?php if (isset($btnclass) && $btnclass != '') {
         echo ' ' . $btnclass;
     }
     ?>" value="Mettre &agrave; jour" type="submit">
