@@ -151,9 +151,24 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 	<i>Seuls les pages et les droits coch&eacute;s seront modifi&eacute;s</i>
 	<table class="table">
 		<tr cellpadding="3">
-			<td><input type="checkbox" name="modiflire" value="modiflire"> Lecture</td>
-			<td><input type="checkbox" name="modifecrire" value="modifecrire"> Ecriture</td>
-			<td><input type="checkbox" name="modifcomment" value="modifcomment"> Commentaires</td>
+			<td>
+				<div class="control-group form-group">
+					<input type="checkbox" name="modiflire" id="modiflire" class="form-control" value="modiflire">
+					<label for="modiflire" class="control-label">Lecture</label>
+				</div>
+			</td>
+			<td>
+				<div class="control-group form-group">
+					<input type="checkbox" name="modifecrire" id="modifecrire" class="form-control" value="modifecrire">
+					<label for="modifecrire" class="control-label">Ecriture</label>
+				</div>
+			</td>
+			<td>
+				<div class="control-group form-group">
+					<input type="checkbox" name="modifcomment" id="modifcomment" value="modifcomment">
+					<label for="modifcomment" class="control-label">Commentaires</label>
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<td>
