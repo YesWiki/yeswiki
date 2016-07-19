@@ -25,21 +25,37 @@ if ($this->UserIsAdmin()) {
 
     $table = $this->config["table_prefix"];
  
-    //Récupère les droits de la page désignée en argument et renvoie un tableau
-    function recup_droits($page)
+    /**
+     * Récupère les droits de la page désignée en argument et renvoie un tableau
+     * @param string $page
+     * @return unknown[]|NULL[]
+     */
+    function recup_droits( $page )
     {
+
         $table = $GLOBALS['wiki']->config["table_prefix"];
+        $dblink = $GLOBALS['wiki']->dblink ;
 
-        $requete_lire = "SELECT * FROM " . $table . "acls WHERE page_tag='"
-        . $page . "' AND privilege='read' ORDER BY " . $table . "acls.page_tag ASC";
-        $requete_ecrire = "SELECT * FROM " . $table . "acls WHERE page_tag='"
-        . $page . "' AND privilege='write' ORDER BY " . $table . "acls.page_tag ASC";
-        $requete_comment = "SELECT * FROM " . $table . "acls WHERE page_tag='"
-        . $page . "' AND privilege='comment' ORDER BY " . $table . "acls.page_tag ASC";
+        $res = mysqli_query( $dblink, 'SELECT * FROM ' . $table . 'acls WHERE page_tag="'
+			. $page . '" AND privilege="read" ORDER BY ' . $table . 'acls.page_tag ASC');
+        if( $res != null )
+        	$droits_lire = mysqli_fetch_array( $res );
+        else
+        	$droits_lire['list'] = null ;
 
-        $droits_lire = mysqli_fetch_array(mysqli_query($requete_lire));
-        $droits_ecrire = mysqli_fetch_array(mysqli_query($requete_ecrire));
-        $droits_comment = mysqli_fetch_array(mysqli_query($requete_comment));
+       	$res = mysqli_query( $dblink, 'SELECT * FROM ' . $table . 'acls WHERE page_tag="'
+       			. $page . '" AND privilege="write" ORDER BY ' . $table . 'acls.page_tag ASC');
+       	if( $res != null )
+        	$droits_ecrire = mysqli_fetch_array( $res );
+       	else
+       		$droits_ecrire['list'] = null ;
+
+		$res = mysqli_query( $dblink, 'SELECT * FROM ' . $table . 'acls WHERE page_tag="'
+			. $page . '" AND privilege="comment" ORDER BY ' . $table . 'acls.page_tag ASC' );
+		if( $res != null )
+        	$droits_comment = mysqli_fetch_array( $res );
+		else
+			$droits_comment['list'] = null ;
 
         return array('page' => $page,
             'droits_lire' => $droits_lire["list"],
@@ -140,30 +156,24 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 		</tr>
 		<tr>
 			<td>
-            <textarea name="newlire" rows=4 cols=10 >
-            <?php
+            <textarea name="newlire" rows=4 cols=10 ><?php
             if (isset($_POST["newlire"])) {
                 echo $_POST["newlire"];
             }
-            ?>
-            </textarea>
+            ?></textarea>
             </td>
 			<td>
-            <textarea name="newecrire" rows=4 cols=10 >
-            <?php
+            <textarea name="newecrire" rows=4 cols=10 ><?php
             if (isset($_POST["newecrire"])) {
                 echo $_POST["newecrire"];
             }
-            ?>
-            </textarea>
+            ?></textarea>
             </td>
-			<td><textarea name="newcomment" rows=4 cols=10 >
-            <?php
+			<td><textarea name="newcomment" rows=4 cols=10 ><?php
             if (isset($_POST["newcomment"])) {
                 echo $_POST["newcomment"];
             }
-            ?>
-            </textarea>
+            ?></textarea>
             </td>
 		</tr>
 	</table>
