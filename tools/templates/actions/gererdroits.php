@@ -65,7 +65,8 @@ if ($this->UserIsAdmin()) {
     }
 
     //Modification de droits
-    if (isset($_POST["modifier"])) {
+    if( isset($_POST["modifier"]) && ( isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment'] ) ) )
+    {
         if (!isset($_POST["selectpage"])) {
             $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
         } else {

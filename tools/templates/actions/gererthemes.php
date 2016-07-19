@@ -136,11 +136,16 @@ if ($this->UserIsAdmin()) {
         return $selecteur;
     }
 
-    if (isset($_POST["modifier"])) {
-        if (!isset($_POST["selectpage"])) {
+    if( isset($_POST["modifier"]) && (isset($_POST['theme_select']) || isset($_POST['style_select']) || isset($_POST['squelette_select'])) )
+    {
+        if (!isset($_POST["selectpage"]))
+        {
             $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
-        } else {
-            foreach ($_POST['selectpage'] as $page_cochee) {
+        }
+        else
+        {
+            foreach( $_POST['selectpage'] as $page_cochee )
+            {
                 $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
             }
         }
