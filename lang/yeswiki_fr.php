@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en francais de YesWiki
 *
@@ -215,7 +215,7 @@ $GLOBALS['translations'] = array(
 'NEW_ACCOUNT' => 'Nouveau compte',
 
 
-// actions/wantedpages.php 
+// actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'Aucune page &agrave; cr&eacute;er',
 
 // setup/header.php
@@ -232,6 +232,7 @@ $GLOBALS['translations'] = array(
 'FILL_THE_FORM_BELOW' => 'Veuillez compl&eacute;ter le formulaire suivant',
 'DEFAULT_LANGUAGE' => 'Langue par d&eacute;faut',
 'DEFAULT_LANGUAGE_INFOS' => 'Langue utilis&eacute;e par d&eacute;faut pour l\'interface de YesWiki, il sera toujours possible de changer de langue pour chacune des pages cr&eacute;&eacute;es',
+'GENERAL_CONFIGURATION' => 'Configuration générale',
 'DATABASE_CONFIGURATION' => 'Configuration de la base de donn&eacute;es',
 'MORE_INFOS' => '+ Infos',
 'MYSQL_SERVER' => 'Machine MySQL',

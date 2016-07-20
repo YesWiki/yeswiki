@@ -1,4 +1,4 @@
-{{backgroundimage height="150" bgcolor="#009688" class="white text-center"}}
+{{backgroundimage height="150" bgcolor="transparent" class="white text-center"}}
 ======Description de mon wiki======
 Double cliquer ici pour changer le texte.
 {{endbackgroundimage}}

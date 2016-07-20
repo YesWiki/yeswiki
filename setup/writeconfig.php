@@ -38,7 +38,7 @@ if (empty($_POST['config']))
 	die (_t('PROBLEM_WHILE_INSTALLING'));
 }
 ?>
-		<div class="hero-unit">
+		<div class="jumbotron">
 			<h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></h1>
 			<h4>(<?php echo YESWIKI_VERSION." - ".YESWIKI_RELEASE; ?>)</h4>
 			<p><?php echo _t('WRITING_CONFIGURATION_FILE'); ?></p>
@@ -83,7 +83,7 @@ if ($fp)
 	fwrite($fp, $configCode);
 	// write
 	fclose($fp);
-	
+
 	echo	"<br />\n<div class=\"alert alert-success\"><strong>"._t('FINISHED_CONGRATULATIONS')." !</strong><br />" ._t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE')." <tt>wakka.config.php</tt> ("._t('THIS_COULD_BE_UNSECURE').").</div>";
 	echo "<div class=\"form-actions\">\n<a class=\"btn btn-primary btn-large continuer\" href=\"",$config["base_url"],"\">"._t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE')."</a>\n</div>\n";
 }
@@ -100,9 +100,9 @@ else
 	<div class="form-actions">
 		<input type="submit" class="btn btn-large btn-primary continuer" value="<?php echo _t('TRY_AGAIN'); ?>">
 	</div>
-	</form>	
+	</form>
 	<?php
-	
+
 }
 
 ?>
