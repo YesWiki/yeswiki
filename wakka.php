@@ -1035,7 +1035,7 @@ class Wiki
     public function Action($action, $forceLinkTracking = 0, $vars = array())
     {
         $cmd = trim($action);
-        $cmd = str_replace("\n",'',$cmd);
+        $cmd = str_replace("\n",' ',$cmd);
 
         // extract $action and $vars_temp ("raw" attributes)
         if (!preg_match("/^([a-zA-Z-0-9]+)\/?(.*)$/", $cmd, $matches)) {
