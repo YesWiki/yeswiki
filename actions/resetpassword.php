@@ -28,8 +28,8 @@ if (($user = $this->GetUser()) && ($user["name"]==$this->GetConfigValue("admin")
 	{
 			
 		$this->Query("update ".$this->config["table_prefix"]."users set ".
-					"password = md5('".mysql_escape_string($_POST["password"])."') ".
-					"where name = '".mysql_escape_string($_POST["name"])."' limit 1");				
+					"password = md5('".mysqli_real_escape_string($this->dblink, $_POST["password"])."') ".
+					"where name = '".mysqli_real_escape_string($this->dblink, $_POST["name"])."' limit 1");				
 					
 				$this->SetMessage(_t('PASSWORD_UPDATED')." !");
 				$this->Redirect($this->href());
