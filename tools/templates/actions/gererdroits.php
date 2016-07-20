@@ -25,21 +25,37 @@ if ($this->UserIsAdmin()) {
 
     $table = $this->config["table_prefix"];
  
-    //Récupère les droits de la page désignée en argument et renvoie un tableau
-    function recup_droits($page)
+    /**
+     * Récupère les droits de la page désignée en argument et renvoie un tableau
+     * @param string $page
+     * @return unknown[]|NULL[]
+     */
+    function recup_droits( $page )
     {
+
         $table = $GLOBALS['wiki']->config["table_prefix"];
+        $dblink = $GLOBALS['wiki']->dblink ;
 
-        $requete_lire = "SELECT * FROM " . $table . "acls WHERE page_tag='"
-        . $page . "' AND privilege='read' ORDER BY " . $table . "acls.page_tag ASC";
-        $requete_ecrire = "SELECT * FROM " . $table . "acls WHERE page_tag='"
-        . $page . "' AND privilege='write' ORDER BY " . $table . "acls.page_tag ASC";
-        $requete_comment = "SELECT * FROM " . $table . "acls WHERE page_tag='"
-        . $page . "' AND privilege='comment' ORDER BY " . $table . "acls.page_tag ASC";
+        $res = mysqli_query( $dblink, 'SELECT * FROM ' . $table . 'acls WHERE page_tag="'
+			. $page . '" AND privilege="read" ORDER BY ' . $table . 'acls.page_tag ASC');
+        if( $res != null )
+        	$droits_lire = mysqli_fetch_array( $res );
+        else
+        	$droits_lire['list'] = null ;
 
-        $droits_lire = mysqli_fetch_array(mysqli_query($requete_lire));
-        $droits_ecrire = mysqli_fetch_array(mysqli_query($requete_ecrire));
-        $droits_comment = mysqli_fetch_array(mysqli_query($requete_comment));
+       	$res = mysqli_query( $dblink, 'SELECT * FROM ' . $table . 'acls WHERE page_tag="'
+       			. $page . '" AND privilege="write" ORDER BY ' . $table . 'acls.page_tag ASC');
+       	if( $res != null )
+        	$droits_ecrire = mysqli_fetch_array( $res );
+       	else
+       		$droits_ecrire['list'] = null ;
+
+		$res = mysqli_query( $dblink, 'SELECT * FROM ' . $table . 'acls WHERE page_tag="'
+			. $page . '" AND privilege="comment" ORDER BY ' . $table . 'acls.page_tag ASC' );
+		if( $res != null )
+        	$droits_comment = mysqli_fetch_array( $res );
+		else
+			$droits_comment['list'] = null ;
 
         return array('page' => $page,
             'droits_lire' => $droits_lire["list"],
@@ -49,7 +65,8 @@ if ($this->UserIsAdmin()) {
     }
 
     //Modification de droits
-    if (isset($_POST["modifier"])) {
+    if( isset($_POST["modifier"]) && ( isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment'] ) ) )
+    {
         if (!isset($_POST["selectpage"])) {
             $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
         } else {
@@ -134,36 +151,45 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 	<i>Seuls les pages et les droits coch&eacute;s seront modifi&eacute;s</i>
 	<table class="table">
 		<tr cellpadding="3">
-			<td><input type="checkbox" name="modiflire" value="modiflire"> Lecture</td>
-			<td><input type="checkbox" name="modifecrire" value="modifecrire"> Ecriture</td>
-			<td><input type="checkbox" name="modifcomment" value="modifcomment"> Commentaires</td>
+			<td>
+				<div class="control-group form-group">
+					<input type="checkbox" name="modiflire" id="modiflire" class="form-control" value="modiflire">
+					<label for="modiflire" class="control-label">Lecture</label>
+				</div>
+			</td>
+			<td>
+				<div class="control-group form-group">
+					<input type="checkbox" name="modifecrire" id="modifecrire" class="form-control" value="modifecrire">
+					<label for="modifecrire" class="control-label">Ecriture</label>
+				</div>
+			</td>
+			<td>
+				<div class="control-group form-group">
+					<input type="checkbox" name="modifcomment" id="modifcomment" value="modifcomment">
+					<label for="modifcomment" class="control-label">Commentaires</label>
+				</div>
+			</td>
 		</tr>
 		<tr>
 			<td>
-            <textarea name="newlire" rows=4 cols=10 >
-            <?php
+            <textarea name="newlire" rows=4 cols=10 ><?php
             if (isset($_POST["newlire"])) {
                 echo $_POST["newlire"];
             }
-            ?>
-            </textarea>
+            ?></textarea>
             </td>
 			<td>
-            <textarea name="newecrire" rows=4 cols=10 >
-            <?php
+            <textarea name="newecrire" rows=4 cols=10 ><?php
             if (isset($_POST["newecrire"])) {
                 echo $_POST["newecrire"];
             }
-            ?>
-            </textarea>
+            ?></textarea>
             </td>
-			<td><textarea name="newcomment" rows=4 cols=10 >
-            <?php
+			<td><textarea name="newcomment" rows=4 cols=10 ><?php
             if (isset($_POST["newcomment"])) {
                 echo $_POST["newcomment"];
             }
-            ?>
-            </textarea>
+            ?></textarea>
             </td>
 		</tr>
 	</table>

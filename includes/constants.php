@@ -3,6 +3,9 @@
 // operational constants
 define('WAKKA_ENGINE', 'wakka.php');
 
+// YesWiki Charset
+// YW_CHARSET définie dans includes/i18n.inc.php:initI18n()
+
 // constant for parsing rules
 define("WN_UPPER", "[A-Z]"); // \xC0-\xD6\xD8-\xDE]");
 define("WN_LOWER", "[a-z]"); // \xDF-\xF6\xF8-\xFF]");
@@ -35,5 +38,3 @@ define('WIKINI_VOC_HANDLERS_PREFIX', WIKINI_VOC_PREFIX . 'handler/');
 // standard properties
 define('WIKINI_VOC_ACLS', 'acls');
 define('WIKINI_VOC_ACLS_URI', WIKINI_VOC_PREFIX . WIKINI_VOC_ACLS);
-
-?>
