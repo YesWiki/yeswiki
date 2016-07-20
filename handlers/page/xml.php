@@ -29,7 +29,7 @@ if( ! defined('WIKINI_VERSION') )
 	die ('acc&egrave;s direct interdit');
 }
 
-header('Content-type: text/xml; charset='.WN_CHARSET);
+header('Content-type: text/xml; charset='.YW_CHARSET);
 
 if( $HasAccessRead=$this->HasAccess('read') )
 {
@@ -40,7 +40,7 @@ if( $HasAccessRead=$this->HasAccess('read') )
 	if( $this->page )
 	{
 		// display page
-		echo '<?xml version="1.0" encoding="'.WN_CHARSET.'"?>';
+		echo '<?xml version="1.0" encoding="'.YW_CHARSET.'"?>';
 		echo $this->Format( $this->page['body'], 'action' );
 	}
 }

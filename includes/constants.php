@@ -3,7 +3,8 @@
 // operational constants
 define('WAKKA_ENGINE', 'wakka.php');
 
-define('WN_CHARSET', 'UTF-8');
+// YesWiki Charset
+// YW_CHARSET définie dans includes/i18n.inc.php:initI18n()
 
 // constant for parsing rules
 define("WN_UPPER", "[A-Z]"); // \xC0-\xD6\xD8-\xDE]");
