@@ -1,9 +1,9 @@
 <?php
 
-// V?rification de s?curit?
-if (!defined("WIKINI_VERSION"))
+// Vérification de sécurité
+if (!defined('WIKINI_VERSION'))
 {
-        die ("acc&egrave;s direct interdit");
+        die ('acc&egrave;s direct interdit');
 }
 
 
@@ -14,34 +14,33 @@ if (!defined("WIKINI_VERSION"))
 
 require_once('libs/class.plugins.php');
 
-
 Class WikiTools extends Wiki {
-	function Format($text, $formatter = "wakka") {
-		return $this->IncludeBuffered($formatter.".php", "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text"),$this->config['formatter_path']); 
-		
+
+	function Format($text, $formatter = 'wakka') {
+		return $this->IncludeBuffered($formatter.'.php', "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text"),$this->config['formatter_path']); 
 	}
-	
-	function IncludeBuffered($filename, $notfoundText = "", $vars = "", $path = "") {
-		if ($path) $dirs = explode(":", $path);
-		else $dirs = array("");
-		
+
+	function IncludeBuffered($filename, $notfoundText = '', $vars = '', $path = '') {
+
+		if ($path) $dirs = explode(':', $path);
+		else $dirs = array('');
+
 		$included['before']=array();
 		$included['new']=array();
 		$included['after']=array();
-	
+
 		foreach($dirs as $dir) {
-			if ($dir) $dir .= "/";
+			if ($dir) $dir .= '/';
 			$fullfilename = $dir.$filename;
 			if (strstr($filename,'page/')) {
-				list($file,$extension) = explode("page/", $filename);
+				list($file,$extension) = explode('page/', $filename);
 				$beforefullfilename = $dir.$file.'page/__'.$extension;
 			}
 			else {
 				$beforefullfilename = $dir.'__'.$filename;
 			}
-			
-			
-			list($file,$extension) = explode(".", $filename);
+
+			list($file,$extension) = explode('.', $filename);
 			$afterfullfilename = $dir.$file.'__.'.$extension;
 			
 			if (file_exists($beforefullfilename)) {
@@ -145,27 +144,29 @@ $wikiClasses [] = 'WikiTools';
 $wikiClassesContent [] = '';
 
 foreach ($plugins_list as $k => $v) {
-	if (file_exists($plugins_root.$k.'/wiki.php')) {
-		include($plugins_root.$k.'/wiki.php');
+
+	$pluginBase = $plugins_root .$k .'/';
+
+	if (file_exists($pluginBase.'wiki.php')) {
+		include($pluginBase.'wiki.php');
 	}
 
 	// language files : first default language, then preferred language
-	if (file_exists($plugins_root.$k.'/lang/'.$k.'_fr.inc.php')) {
-		include($plugins_root.$k.'/lang/'.$k.'_fr.inc.php');
+	if (file_exists($pluginBase.'lang/'.$k.'_fr.inc.php')) {
+		include($pluginBase.'lang/'.$k.'_fr.inc.php');
 	}
-	if ($GLOBALS['prefered_language'] != 'fr' && file_exists($plugins_root.$k.'/lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php')) {
-		include($plugins_root.$k.'/lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php');
+	if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase.'lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php')) {
+		include($pluginBase.'lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php');
 	}
-}
-foreach ($plugins_list as $k => $v) {
-	if (file_exists($plugins_root.$k.'/actions')) {
-		$wakkaConfig['action_path']=$plugins_root.$k.'/actions/'.':'.$wakkaConfig['action_path'];
+
+	if (file_exists($pluginBase.'actions')) {
+		$wakkaConfig['action_path']=$pluginBase.'actions/'.':'.$wakkaConfig['action_path'];
 	}
-	if (file_exists($plugins_root.$k.'/handlers')) {
-		$wakkaConfig['handler_path']=$plugins_root.$k.'/handlers/'.':'.$wakkaConfig['handler_path'];
+	if (file_exists($pluginBase.'handlers')) {
+		$wakkaConfig['handler_path']=$pluginBase.'handlers/'.':'.$wakkaConfig['handler_path'];
 	}
-	if (file_exists($plugins_root.$k.'/formatters')) {
-		$wakkaConfig['formatter_path']=$plugins_root.$k.'/formatters/'.':'.$wakkaConfig['formatter_path'];
+	if (file_exists($pluginBase.'formatters')) {
+		$wakkaConfig['formatter_path']=$pluginBase.'formatters/'.':'.$wakkaConfig['formatter_path'];
 	}
 }
 
@@ -178,4 +179,3 @@ for ($iw=0;$iw<count($wikiClasses);$iw++) {
 //$wiki  = new WikiTools($wakkaConfig);
 eval ('$wiki  = new '.$wikiClasses[count($wikiClasses)-1]. '($wakkaConfig);');
 
-?>
