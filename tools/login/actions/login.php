@@ -180,7 +180,7 @@ if ($user = $this->GetUser()) {
 
 // on affiche le template
 if (!class_exists('SquelettePhp')) {
-    include_once('tools/login/libs/squelettephp.class.php');
+    include_once('tools/libs/squelettephp.class.php');
 }
 
 // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates

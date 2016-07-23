@@ -258,9 +258,9 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
         }
         
         //on affiche le template
-        if (!class_exists('SquelettePhp')) {
-            include_once('tools/templates/libs/squelettephp.class.php');
-        }
+
+        include_once('tools/libs/squelettephp.class.php');
+
         $squel = new SquelettePhp('tools/templates/presentation/templates/'.$template);
         $squel->set(array(
             "pagetag" => $pagetag,
