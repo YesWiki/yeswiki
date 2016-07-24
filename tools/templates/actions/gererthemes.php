@@ -154,7 +154,7 @@ if (! $this->UserIsAdmin()) {
             {
                 if( isset($_POST['theme_reset']) )
                 {
-                    $this->SaveMetaDatas($page_cochee, array('theme' => '', 'style' => '', 'squelette' => ''));
+                    $this->SaveMetaDatas($page_cochee, array('theme' => null, 'style' => null, 'squelette' => null));
                 }
                 else
                 {
