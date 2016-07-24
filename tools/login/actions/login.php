@@ -1,8 +1,26 @@
 <?php
-
-/*
-login.php
-Copyright 2010  Florian SCHMITT
+/**
+ * login.php
+ * 
+ * parameters (GetParameter):
+ * - signupurl
+ * - profileurl
+ * - incomingurl
+ * - userpage
+ * - template
+ * - class
+ * - btnclass
+ * $_REQUEST :
+ * - action : login|logout|checklogged
+ * $_POST :
+ * - incomingurl
+ * - name
+ * - email
+ * - password
+ * - remember
+ *
+ * Copyright 2010  Florian SCHMITT
+ * 
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -178,10 +196,11 @@ if ($user = $this->GetUser()) {
     }
 }
 
+//
 // on affiche le template
-if (!class_exists('SquelettePhp')) {
-    include_once('tools/libs/squelettephp.class.php');
-}
+//
+
+include_once('tools/libs/squelettephp.class.php');
 
 // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
 $templatetoload = 'themes/tools/login/templates/' . $template;
