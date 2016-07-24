@@ -4,6 +4,8 @@ Cette action à pour but de gérer massivement les droits sur les pages d'un wik
 Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
 -->
 
+<a name="gererthemes"></a>
+
 <?php
 //action réservée aux admins
 if (! $this->UserIsAdmin()) {
@@ -140,17 +142,24 @@ if (! $this->UserIsAdmin()) {
         return $selecteur;
     }
 
-    if( isset($_POST["modifier"]) && (isset($_POST['theme_select']) || isset($_POST['style_select']) || isset($_POST['squelette_select'])) )
+    if( isset($_POST['theme_modifier']) )
     {
-        if (!isset($_POST["selectpage"]))
+        if (!isset($_POST['selectpage']))
         {
-            $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
+            $this->SetMessage('Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.');
         }
         else
         {
             foreach( $_POST['selectpage'] as $page_cochee )
             {
-                $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
+                if( isset($_POST['theme_reset']) )
+                {
+                    $this->SaveMetaDatas($page_cochee, array('theme' => '', 'style' => '', 'squelette' => ''));
+                }
+                else
+                {
+                    $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
+                }
             }
         }
     }
@@ -160,16 +169,31 @@ if (! $this->UserIsAdmin()) {
 
     $num_page = 0;
     while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
-        $page_et_themes[$num_page] = recup_meta($tab_liste_pages["tag"]);
+        $page_et_themes[$num_page] = recup_meta($tab_liste_pages['tag']);
         $num_page++;
     }
 
-    echo $this->FormOpen();
+?>
 
-    echo theme_selector();
+<p class="alert alert-info"><?php echo $num_page;?> pages trouv&eacute;es </p>
+
+<?php
+
+echo $this->FormOpen();
+echo theme_selector();
 
 ?>
-<div class="alert alert-info"><?php echo $num_page;?> pages trouv&eacute;es </div>
+
+<div class="clearfix"></div>
+<div class="checkbox">
+  <label>
+	<input type="checkbox" value="1" name="theme_reset" />
+	Utiliser thème par défaut
+	<span class="help-block">(effacer données de thème et style dans la base de données).</span>
+  </label>
+</div>
+
+
 	<table class="table table-striped table-condensed">
 		<tr>
 			<td><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"></td>
@@ -195,9 +219,13 @@ for ($x = 0; $x < $num_page; $x++) {
 
 </table>
 
-<br/><input name="modifier" class="btn <?php echo ' ' . $btnclass;?>" value="Mettre &agrave; jour" type="submit" />
+<p>
+	<input name="theme_modifier" type="submit"
+		value="Mettre &agrave; jour"
+		class="btn <?php echo (isset($btnclass) ? ' '.$btnclass : '') ?>"
+		onclick="this.form.action+='#gererthemes'; return true;" />
+</p>
 
 <?php
     echo $this->FormClose();
 ?>
-
