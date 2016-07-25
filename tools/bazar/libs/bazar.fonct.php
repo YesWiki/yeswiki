@@ -3586,16 +3586,20 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         } else {
             $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
         }
-        $fiche['html'] = baz_voir_fiche(0, $fiche);  // fiche entiere au format html
+        $fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
 
         // tableau qui contient le contenu de toutes les fiches
         $fiches['fiches'][$fiche['id_fiche']] = $fiche;
     }
 
     // tri des fiches
-    $GLOBALS['ordre'] = $params['ordre'];
-    $GLOBALS['champ'] = $params['champ'];
-    usort($fiches['fiches'], 'champCompare');
+    if (!empty($params['random']) and $params['random'] == '1') {
+        shuffle($fiches['fiches']);
+    } else {
+        $GLOBALS['ordre'] = $params['ordre'];
+        $GLOBALS['champ'] = $params['champ'];
+        usort($fiches['fiches'], 'champCompare');
+    }
 
     // Limite le nombre de résultat au nombre de fiches demandées
     if ($params['nb'] != '') {
@@ -4279,6 +4283,20 @@ function getAllParameters($wiki)
     // classe css a ajouter en rendu des templates
     $param['class'] = $wiki->GetParameter('class');
 
+    // ajout des options pour gerer la fiche (modifier, droits, etc,.. )
+    $param['barregestion'] = $wiki->GetParameter('barregestion');
+    if (empty($param['barregestion'])) {
+        $param['barregestion'] = '1'; // presente par defaut
+    } elseif ($param['barregestion'] == '0'
+      or $param['barregestion'] == 'no'
+      or $param['barregestion'] == 'non') {
+        $param['barregestion'] = '0';
+    } else {
+        $param['barregestion'] = '1';
+    }
+
+    // possibilité d'avoir un ordre aléatoire des fiches
+    $param['random'] = $wiki->GetParameter('random');
 
     // facette : identifiants servant de filtres
     //    plusieures valeurs possibles, séparées par des virgules,
