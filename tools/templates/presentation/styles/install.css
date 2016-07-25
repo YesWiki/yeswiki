@@ -1,6 +1,6 @@
  /* Styles for yeswiki's install
   * Author: Francois Labastie <francois@outils-reseaux.org>
-  * under GNU General Public License 
+  * under GNU General Public License
   * 10/12/2013
   */
 
@@ -12,20 +12,12 @@ p, li{
     font-family: "DejaVu Sans", Arial, Helvetica, sans-serif;
 }
 
-a:active, a:focus{ 
-	outline:none; 
+a:active, a:focus{
+	outline:none;
 }
 
 .ok { color: #008800; font-weight: bold; }
 .failed { color: #880000; font-weight: bold; }
-
-.form-horizontal .control-label {
-    float: left;
-    padding-top: 5px;
-    padding-right: 10px;
-    text-align: right;
-    width: 250px;
-}
 
 legend {
     color: #18657f;
@@ -40,24 +32,16 @@ legend {
     margin-bottom: -20px;
 }
 
-.hero-unit h1 {
+.jumbotron h1 {
     display:inline;
     color: #ffb500;
     font-size: 32px;
     margin-bottom: 20px;
 }
 
-h4 {
+.jumbotron h4 {
     display:inline;
     color: #ffb500;
-}
-
-
-.hero-unit {
-    padding: 18px;
-    line-height: 25px;
-    margin-bottom: 22px;
-    padding-bottom: 10px;
 }
 
 .accordion-group {

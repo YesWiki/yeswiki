@@ -41,6 +41,32 @@ if ($this->HasAccess("read")) {
         $scripts_iframe = '<script>
 
 		$(document).ready(function () {
+      // Get height of the main element in the iframe document
+      var documentHeight = document.getElementsByClassName("page-widget")[0].scrollHeight
+
+      // Add some unique identifier to the string being passed
+      var message = "documentHeight:"+documentHeight+"&urlIframe:"+window.location.href;
+
+      // Pass message to (any*) parent document
+      parent.postMessage(message,"*");
+
+
+      // On resize of the window, recalculate the height of the main element, and pass to the parent document again
+      window.onresize = function(event) {
+        //console.log(document.getElementsByClassName("page-widget")[0]);
+      	var newDocumentHeight = document.getElementsByClassName("page-widget")[0].scrollHeight;
+      	var heightDiff = documentHeight - newDocumentHeight;
+
+      	// If difference between current height and new height is more than 10px
+      	if ( heightDiff > 10 | heightDiff < -10 ) {
+
+      		documentHeight = newDocumentHeight;
+      		message = "documentHeight:"+documentHeight+"&urlIframe:"+window.location.href;
+      		parent.postMessage(message,"*");
+      	}
+
+      }
+
 			$("iframe").load(function() {
 				this.scroll(0,0);
 				$(window.parent.document).scroll(0,0);

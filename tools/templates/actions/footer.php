@@ -43,8 +43,8 @@ if ($this->GetConfigValue("debug")=="yes") {
     list($g2_usec, $g2_sec) = explode(" ", microtime());
     define("T_END", (float)$g2_usec + (float)$g2_sec);
     $debug_log = "<div class=\"debug\">\n<h4>Query log</h4>\n";
-    $debug_log .= "<strong>".round(T_END-t_start, 4)." s total time<br />\n";
-    $debug_log .= round($t_SQL, 4)." s total SQL time</strong> (".round((($t_SQL/(T_END-t_start))*100), 2)."% of total time)<br />\n";
+    $debug_log .= "<strong>".round(T_END-T_START, 4)." s total time<br />\n";
+    $debug_log .= round($t_SQL, 4)." s total SQL time</strong> (".round((($t_SQL/(T_END-T_START))*100), 2)."% of total time)<br />\n";
     $debug_log .= "<strong>".count($this->queryLog)." queries :</strong><br />\n";
     $debug_log .= $debug_log_sql_queries;
     $debug_log .= "</div>\n";

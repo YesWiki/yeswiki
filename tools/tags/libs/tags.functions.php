@@ -227,7 +227,7 @@ function get_image_from_body($page)
                     $image[1][0]
                 )
             );
-            $image = afficher_image('files/'.$imagefile, 'cache/'.$imagefile, 'filtered-image img-responsive', '', '', 300, 225);
+            $image = afficher_image('bf_image', 'files/'.$imagefile, 'cache/'.$imagefile, 'filtered-image img-responsive', '', '', 300, 225);
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {

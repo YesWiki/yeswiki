@@ -24,7 +24,7 @@ if (!function_exists('checkUNEmail')) {
         $error = array('status' => false, 'userID' => 0);
         if (isset($email) && trim($email) != '') {
             //email was entered
-            $existingEmail = $wiki->LoadSingle("select * from " . $wiki->config["table_prefix"]
+            $existingEmail = $wiki->LoadSingle("select * from " . $wiki->getUserTablePrefix()
                 . "users where email = '" . mysqli_real_escape_string($wiki->dblink, $email) . "' limit 1");
             if ($existingEmail) {
                 return array('status' => true, 'userID' => $existingEmail['name']);
@@ -64,7 +64,7 @@ function sendPasswordEmail($userID) {
             $domain = parse_url($domain);
             $domain = $domain["host"];
             $subject = "Mot de passe perdu pour ".$domain;
-            send_mail("noreply@".$domain, "WikiAdmin", $existingUser['email'], $subject, $message); 
+            send_mail("noreply@".$domain, "WikiAdmin", $existingUser['email'], $subject, $message);
     }
 }
 }
@@ -89,7 +89,7 @@ function updateUserPassword($userID, $password, $key) {
     if (checkEmailKey($key, $userID) === false)
         return false;
 
-         $wiki->Query("update ".$wiki->config["table_prefix"]."users ".  "set ".  "password = '".MD5($password)."' ".  "where name = '".$userID."' limit 1");
+         $wiki->Query("update ".$wiki->getUserTablePrefix()."users ".  "set ".  "password = '".MD5($password)."' ".  "where name = '".$userID."' limit 1");
 
      $res=$wiki->DeleteTriple($userID, 'http://outils-reseaux.org/_vocabulary/key',$key);
      return true;
@@ -99,35 +99,7 @@ function updateUserPassword($userID, $password, $key) {
 }
 
 if (!function_exists('send_mail')) {
-function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '') {
-    require_once('tools/login/libs/Mail.php');
-    require_once('tools/login/libs/Mail/mime.php');
-    $headers['From']    = $mail_sender;
-    $headers['To']      = $mail_sender;
-    $headers['Subject'] = $subject;
-    $headers["Return-path"] = $mail_sender; 
-    
-    if ($message_html == '') {
-        $message_html == $message_txt;
-    }
-    $mime = new Mail_mime("\n");
-
-    $mimeparams = array();
-    $mimeparams['text_encoding']="7bit";
-    $mimeparams['text_charset']="UTF-8";
-    $mimeparams['html_charset']="UTF-8"; 
-    $mimeparams['head_charset']="UTF-8";  
-
-    $mime->setTXTBody(utf8_encode($message_txt));
-    $mime->setHTMLBody(utf8_encode($message_html));
-    $message = $mime->get($mimeparams);
-    $headers = $mime->headers($headers);
-    
-    // Creer un objet mail en utilisant la methode Mail::factory.
-    $object_mail = & Mail::factory(CONTACT_MAIL_FACTORY);
-
-    return $object_mail->send($mail_receiver, $headers, $message);
-}
+    require_once('tools/contact/libs/contact.functions.php');
 }
 
 

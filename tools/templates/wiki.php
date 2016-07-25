@@ -1,5 +1,7 @@
 <?php
 
+# namespace YesWiki;
+
 /*vim: set expandtab tabstop=4 shiftwidth=4: */
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
@@ -51,97 +53,11 @@ define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 // Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
 $wikiClasses[] = 'Template';
 
-$wikiClassesContent [] = '
-    function AddCSS($style) {
-        if (!isset($GLOBALS[\'css\'])) {
-            $GLOBALS[\'css\'] = \'\';
-        }
-        if (!empty($style) && !strpos($GLOBALS[\'css\'], \'<style>\'."\n".$style.\'</style>\')) {
-            $GLOBALS[\'css\'] .= \'  <style>\'."\n".$style.\'</style>\'."\n";
-        }
-        return;
-    }
-
-    function AddCSSFile($file, $conditionstart=\'\', $conditionend=\'\') {
-        if (!isset($GLOBALS[\'css\'])) {
-            $GLOBALS[\'css\'] = \'\';
-        }
-        if (!strpos($GLOBALS[\'css\'], \'<link rel="stylesheet" href="\'.$file.\'">\') && (!empty($file) && (file_exists($file) || strpos($file, "http://") === 0))) {
-            $GLOBALS[\'css\'] .= \'  \'.$conditionstart."\n"
-                .\'    <link rel="stylesheet" href="\'.$file.\'">\'."\n"
-                .\'  \'.$conditionend."\n";
-        }
-        return;
-    }
-
-    function AddJavascript($script) {
-        if (!isset($GLOBALS[\'js\'])) {
-            $GLOBALS[\'js\'] = \'\';
-        }
-        if (!empty($script) && !strpos($GLOBALS[\'js\'], \'<script>\'."\n".$script.\'</script>\')) {
-            $GLOBALS[\'js\'] .= \'  <script>\'."\n".$script.\'</script>\'."\n";
-        }
-        return;
-    }
-
-    function AddJavascriptFile($file) {
-        if (!isset($GLOBALS[\'js\'])) {
-            $GLOBALS[\'js\'] = \'\';
-        }
-        if (!strpos($GLOBALS[\'js\'], \'<script src="\'.$file.\'"></script>\') && !empty($file) && (file_exists($file) || strpos($file, "http://") === 0)) {
-            $GLOBALS[\'js\'] .= \'  <script src="\'.$file.\'"></script>\'."\n";
-        }
-        return;
-    }
-
-    function LoadRecentlyChanged($limit=50)
-        {
-                $limit= (int) $limit;
-                if ($pages = $this->LoadAll("select id, tag, time, user, owner from ".$this->config["table_prefix"]."pages where latest = \'Y\' and comment_on =  \'\' order by time desc limit $limit"))
-                {
-                        return $pages;
-                }
-        }
-
-
-    function GetMethod() {
-          if ($this->method==\'iframe\')
-          {
-            return \'show\';
-        }
-        else
-        {
-            return Wiki::GetMethod();
-        }
-    }
-
-
-    function GetMetaDatas($pagetag) {
-        $metadatas = $this->GetTripleValue($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', \'\', \'\', \'\');
-        if (!empty($metadatas)) {
-            if (YW_CHARSET != \'UTF-8\') return array_map(\'utf8_decode\', json_decode($metadatas, true));
-            else return json_decode($metadatas, true);
-        }
-        else {
-            return false;
-        }
-    }
-
-
-    function SaveMetaDatas($pagetag, $metadatas) {
-        $former_metadatas = $this->GetMetaDatas($pagetag);
-
-        if ($former_metadatas)
-        {
-            $metadatas = array_merge($former_metadatas, $metadatas);
-            $this->DeleteTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', null, \'\', \'\');
-        }
-        if (YW_CHARSET != \'UTF-8\') $metadatas = json_encode(array_map("utf8_encode", $metadatas));
-        else $metadatas = json_encode($metadatas);
-        return $this->InsertTriple($pagetag, \'http://outils-reseaux.org/_vocabulary/metadata\', $metadatas, \'\', \'\');
-    }
-
-';
+// fonctions supplementaires a ajouter la classe wiki
+$fp = @fopen('tools/templates/libs/templates.class.inc.php', 'r');
+$contents = fread($fp, filesize('tools/templates/libs/templates.class.inc.php'));
+fclose($fp);
+$wikiClassesContent [] = str_replace('<?php', '', $contents);
 
 //on récupère les metadonnées de la page
 $metadatas = $wiki->GetTripleValue(
@@ -252,22 +168,6 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
             }
         }
     }
-}
-
-/**
- * vérifie l'extension d'un fichier.
- *
- * Compare l'extension du fichier dont le nom est passé en paramètre à une
- * extension. Retourne vrai si l'extension correspond sinon retourne faux.
- *
- * @param string $filename Nom du fichier dont l'extension est a vérifer
- * @param string $ext      extension attendue
- *
- * @return bool
- */
-function isExtension($filename, $ext)
-{
-    return substr($filename, -strlen($ext), strlen($filename)) === $ext;
 }
 
 // Test existence du template, on utilise le template par defaut sinon=============================================

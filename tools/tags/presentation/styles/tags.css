@@ -97,8 +97,7 @@ color:#e13728;
   background-color: transparent;
   padding: 0 6px;
   margin: 0;
-  width: auto;
-  max-width: inherit;
+  min-width: 300px;
 }
 .bootstrap-tagsinput.form-control input::-moz-placeholder {
   color: #777;

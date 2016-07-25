@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en francais de l'extension Hashcash
 *
@@ -39,7 +39,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_DELETE_MINUSCULE' => 'supprimer',
 'TAGS_CANCEL' => 'Annuler',
 'TAGS_MODIFY' => 'Modifier',
-'TAGS_ADD_TAGS' => 'Ajouter mots cl&eacute;s',
+'TAGS_ADD_TAGS' => 'Ajouter mots cl&eacute;s en utilisant la touche entrée',
 'TAGS_COMMENTS_ACTIVATED' => 'Les commentaires de cette page ont &eacute;t&eacute; activ&eacute;s.',
 'TAGS_ACTIVATE_COMMENTS' => 'Activer les commentaires',
 'TAGS_ACTIVATE_COMMENTS_ON_THIS_PAGE' => 'Activer les commentaires sur cette page',
