@@ -76,6 +76,9 @@ if ($this->UserIsAdmin()) {
     function theme_selector()
     {
 
+    	if( ! isset($formclass) )
+    		$formclass = '' ;
+
         $id = 'select_theme';
 
         $selecteur = '		<form class="' . $formclass . '" id="' . $id . '">' . "\n";
@@ -133,11 +136,16 @@ if ($this->UserIsAdmin()) {
         return $selecteur;
     }
 
-    if (isset($_POST["modifier"])) {
-        if (!isset($_POST["selectpage"])) {
+    if( isset($_POST["modifier"]) && (isset($_POST['theme_select']) || isset($_POST['style_select']) || isset($_POST['squelette_select'])) )
+    {
+        if (!isset($_POST["selectpage"]))
+        {
             $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
-        } else {
-            foreach ($_POST['selectpage'] as $page_cochee) {
+        }
+        else
+        {
+            foreach( $_POST['selectpage'] as $page_cochee )
+            {
                 $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
             }
         }
@@ -185,7 +193,7 @@ if ($this->UserIsAdmin()) {
 
 </table>
 
-<br><input name="modifier" class="btn <?php if ($btnclass != '') {
+<br><input name="modifier" class="btn <?php if (isset($btnclass) && $btnclass != '') {
         echo ' ' . $btnclass;
     }
     ?>" value="Mettre &agrave; jour" type="submit">

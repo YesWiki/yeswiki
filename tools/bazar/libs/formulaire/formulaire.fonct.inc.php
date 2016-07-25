@@ -1834,39 +1834,47 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
             address = address.replace(/\\("|\'|\\)/g, " ").trim();
 
-            // requete ajax chez osm pour geolocaliser l adresse
-            var jqxhr = $.get(\''.$http.'://nominatim.openstreetmap.org/search?q=\'+address+\'&format=json\')
-              .done(function(data) {
-                if (geocodedmarker) map.removeLayer(geocodedmarker);
-                if (data.length>0) {
-                    // marqueur representant le premier resultat trouvé
-                    var point = L.latLng(data[0].lat, data[0].lon);
-                } else {
-                    //marqueur au centre par defaut au centre
-                    alert(\'Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées\');
-                    var point = map.getCenter();
-                }
-                geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
-                    map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                $(\'#bf_latitude\').val(point.lat);
-                $(\'#bf_longitude\').val(point.lng);
-                geocodedmarker.on("dragend",function(ev){
-                    this.openPopup();
-                    var changedPos = ev.target.getLatLng();
-                    $(\'#bf_latitude\').val(changedPos.lat);
-                    $(\'#bf_longitude\').val(changedPos.lng);
-                    $(\'.bf_latitude\').html(changedPos.lat);
-                    $(\'.bf_longitude\').html(changedPos.lng);
-                });
-              })
-              .fail(function(error) {
-                console.log(error);
-              })
-              .always(function() {
-                //console.log( "GetLocations finished" );
-              });
-        }'."\n";
+        	geocodage( address, showAddressOk, showAddressError );
+        }
+
+        function showAddressOk( lon, lat )
+        {
+        	console.log("showAddressOk: "+lon+", "+lat);
+           	geocodedmarkerRefresh( L.latLng( lat, lon ) );
+        }
+
+        function showAddressError( msg )
+        {
+        	console.log("showAddressError: "+msg);
+        	if( msg == "not found" ) {
+				alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
+            	geocodedmarkerRefresh( map.getCenter() );
+    		} else {
+            	alert("Une erreur est survenue: " + msg );
+            }
+    	}
+
+        function geocodedmarkerRefresh( point )
+        {
+			if (geocodedmarker) map.removeLayer(geocodedmarker);
+            geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
+            geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+            map.panTo( geocodedmarker.getLatLng(), {animate:true});
+            $(\'#bf_latitude\').val(point.lat);
+            $(\'#bf_longitude\').val(point.lng);
+            geocodedmarker.on("dragend",function(ev){
+            	this.openPopup();
+            	var changedPos = ev.target.getLatLng();
+            	$(\'#bf_latitude\').val(changedPos.lat);
+            	$(\'#bf_longitude\').val(changedPos.lng);
+            	$(\'.bf_latitude\').html(changedPos.lat);
+            	$(\'.bf_longitude\').html(changedPos.lng);
+            });
+    	}
+
+        '."\n";
+        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
+
         $deflat = '';
         $deflon = '';
         if (isset($valeurs_fiche['carte_google'])) {
