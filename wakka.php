@@ -1613,9 +1613,58 @@ class Wiki
         $this->Query('update ' . $this->config['table_prefix'] . "pages set owner = '" . mysqli_real_escape_string($this->dblink, $user) . "' where tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and latest = 'Y' limit 1");
     }
 
+    /**
+     * Caching page ACLs (sql query on yeswiki_acls table).
+     * Filled in LoadAcl().
+     * Updated in SaveAcl().
+     * @var array
+     */
+    protected $aclsCache = array() ;
+
     public function LoadAcl($tag, $privilege, $useDefaults = 1)
     {
-        if ((! $acl = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "acls where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1")) && $useDefaults) {
+        if( isset($this->aclsCache[$tag][$privilege]) )
+        {
+            return $this->aclsCache[$tag][$privilege] ;
+        }
+
+        if( $useDefaults )
+        {
+            $this->aclsCache[$tag] = [
+                'read' => array(
+                    'page_tag' => $tag,
+                    'privilege' => 'read',
+                    'list' => $this->GetConfigValue('default_read_acl')
+                ),
+                'write' => array(
+                    'page_tag' => $tag,
+                    'privilege' => 'write',
+                    'list' => $this->GetConfigValue('default_write_acl')
+                ),
+                'comment' => array(
+                    'page_tag' => $tag,
+                    'privilege' => 'comment',
+                    'list' => $this->GetConfigValue('default_comment_acl')
+                ),
+            ];
+        }
+        else
+        {
+            $this->aclsCache[$tag] = [];
+        }
+
+        $res = $this->LoadAll('SELECT * FROM '.$this->config['table_prefix'].'acls'.' WHERE page_tag = "'.mysqli_real_escape_string($this->dblink, $tag).'"');
+        foreach( $res as $acl )
+        {
+            $this->aclsCache[$tag][$acl['privilege']] = $acl;
+        }
+
+        return $this->aclsCache[$tag][$privilege] ;
+
+        /* previous code
+        if (
+            (! $acl = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "acls where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1"))
+            && $useDefaults) {
             $acl = array(
                 'page_tag' => $tag,
                 'privilege' => $privilege,
@@ -1623,18 +1672,33 @@ class Wiki
             );
         }
         return $acl;
+        */
+
     }
 
+    /**
+     * 
+     * @param string $tag the page's tag
+     * @param string $privilege the privilege
+     * @param string $list the multiline string describing the acl
+     */
     public function SaveAcl($tag, $privilege, $list)
     {
         if ($this->LoadAcl($tag, $privilege, 0)) {
-            $this->Query('update ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", "", $list))) . "' where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1");
+            $this->Query('update ' . $this->config['table_prefix'] . 'acls set list = "' . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . '" where page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '" and privilege = "' . mysqli_real_escape_string($this->dblink, $privilege) . '"');
         } else {
-            $this->Query('insert into ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", "", $list))) . "', page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "'");
+            $this->Query('insert into ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . "', page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "'");
         }
+        // update the acls cache
+        $this->aclsCache[$tag][$privilege] = array(
+            'page_tag' => $tag,
+            'privilege' => $privilege,
+            'list' => $list
+        );
     }
+
     // returns true if $user (defaults to current user) has access to $privilege on $page_tag (defaults to current page)
-    public function HasAccess($privilege, $tag = "", $user = "")
+    public function HasAccess($privilege, $tag = '', $user = '')
     {
         // set defaults
         if (! $tag = trim($tag)) {
@@ -1658,7 +1722,7 @@ class Wiki
         $acl = $this->LoadAcl($tag, $privilege);
         
         // fine fine... now go through acl
-        return $this->CheckACL($acl["list"], $user);
+        return $this->CheckACL($acl['list'], $user);
     }
 
     /**
@@ -1856,6 +1920,7 @@ class Wiki
             session_unregister('redirects');
         }
     }
+
 }
 
 // stupid version check
@@ -2045,4 +2110,3 @@ if (! (preg_match('#^[A-Za-z0-9_]*$#', $method))) {
 include 'tools/prepend.php';
 
 $wiki->Run($page, $method);
-
