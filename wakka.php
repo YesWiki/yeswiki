@@ -43,8 +43,9 @@
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
-define("YESWIKI_VERSION", "Cercopitheque");
-define("YESWIKI_RELEASE", "2016.01.25");
+define("YESWIKI_VERSION", 'Cercopitheque');
+define("YESWIKI_RELEASE", '2016.07.25');
+
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
 include 'includes/i18n.inc.php';
