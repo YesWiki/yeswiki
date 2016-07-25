@@ -55,7 +55,7 @@ else {
 		}
 	}
 
-	include_once 'tools/tags/libs/squelettephp.class.php';
+	include_once 'tools/libs/squelettephp.class.php';
 	$templateelements = new SquelettePhp('tools/tags/presentation/templates/'.$template);
 	$templateelements->set(array('elements' => $element));
 	$output .= $templateelements->analyser();

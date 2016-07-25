@@ -1,9 +1,7 @@
 <?php
 
-# namespace YesWiki;
-
-// Verification de securite
-if (!defined('WIKINI_VERSION')) {
+// Vérification de sécurité
+if (! defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
@@ -11,73 +9,73 @@ if (!defined('WIKINI_VERSION')) {
 // _Meme nom : avant
 // Meme nom : _apres
 
-require_once 'libs/class.plugins.php';
+require_once ('libs/class.plugins.php');
 
 class WikiTools extends Wiki
 {
-    public function format($text, $formatter = 'wakka')
+
+    function Format($text, $formatter = 'wakka')
     {
-        return $this->IncludeBuffered($formatter.'.php', "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact('text'), $this->config['formatter_path']);
+        return $this->IncludeBuffered($formatter . '.php', "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text"), $this->config['formatter_path']);
     }
 
-    public function includeBuffered($filename, $notfoundText = '', $vars = '', $path = '')
+    function IncludeBuffered($filename, $notfoundText = '', $vars = '', $path = '')
     {
-        if ($path) {
+        if ($path)
             $dirs = explode(':', $path);
-        } else {
-            $dirs = array('');
-        }
-
+        else
+            $dirs = array(
+                ''
+            );
+        
         $included['before'] = array();
         $included['new'] = array();
         $included['after'] = array();
-
+        
         foreach ($dirs as $dir) {
-            if ($dir) {
+            if ($dir)
                 $dir .= '/';
-            }
-            $fullfilename = $dir.$filename;
+            $fullfilename = $dir . $filename;
             if (strstr($filename, 'page/')) {
-                list($file, $extension) = explode('page/', $filename);
-                $beforefullfilename = $dir.$file.'page/__'.$extension;
+                list ($file, $extension) = explode('page/', $filename);
+                $beforefullfilename = $dir . $file . 'page/__' . $extension;
             } else {
-                $beforefullfilename = $dir.'__'.$filename;
+                $beforefullfilename = $dir . '__' . $filename;
             }
-
-            list($file, $extension) = explode('.', $filename);
-            $afterfullfilename = $dir.$file.'__.'.$extension;
-
+            
+            list ($file, $extension) = explode('.', $filename);
+            $afterfullfilename = $dir . $file . '__.' . $extension;
+            
             if (file_exists($beforefullfilename)) {
                 $included['before'][] = $beforefullfilename;
             }
-
+            
             if (file_exists($fullfilename)) {
                 $included['new'][] = $fullfilename;
             }
-
+            
             if (file_exists($afterfullfilename)) {
                 $included['after'][] = $afterfullfilename;
             }
         }
-
+        
         $plugin_output_new = '';
         $found = 0;
-
-        if (is_array($vars)) {
+        
+        if (is_array($vars))
             extract($vars);
-        }
-
+        
         foreach ($included['before'] as $before) {
             $found = 1;
             ob_start();
-            include $before;
+            include ($before);
             $plugin_output_new .= ob_get_contents();
             ob_end_clean();
         }
         foreach ($included['new'] as $new) {
             $found = 1;
             ob_start();
-            require $new;
+            require ($new);
             $plugin_output_new = ob_get_contents();
             ob_end_clean();
             break;
@@ -85,29 +83,27 @@ class WikiTools extends Wiki
         foreach ($included['after'] as $after) {
             $found = 1;
             ob_start();
-            include $after;
+            include ($after);
             $plugin_output_new .= ob_get_contents();
             ob_end_clean();
         }
-        if ($found) {
+        if ($found)
             return $plugin_output_new;
-        }
-        if ($notfoundText) {
+        if ($notfoundText)
             return $notfoundText;
-        } else {
+        else
             return false;
-        }
     }
 
     /**
-     * Retrieves the list of existing actions.
+     * Retrieves the list of existing actions
      *
      * @return array An unordered array of all the available actions.
      */
-    public function getActionsList()
+    function GetActionsList()
     {
         $action_path = $this->GetConfigValue('action_path');
-        $dirs = explode(':', $action_path);
+        $dirs = explode(":", $action_path);
         $list = array();
         foreach ($dirs as $dir) {
             if ($dh = opendir($dir)) {
@@ -118,19 +114,19 @@ class WikiTools extends Wiki
                 }
             }
         }
-
+        
         return array_unique($list);
     }
 
     /**
-     * Retrieves the list of existing handlers.
+     * Retrieves the list of existing handlers
      *
      * @return array An unordered array of all the available handlers.
      */
-    public function getHandlersList()
+    function GetHandlersList()
     {
         $handler_path = $this->GetConfigValue('handler_path');
-        $dirs = explode(':', $handler_path);
+        $dirs = explode(":", $handler_path);
         $list = array();
         foreach ($dirs as $dir) {
             $dir .= '/page';
@@ -142,7 +138,6 @@ class WikiTools extends Wiki
                 }
             }
         }
-
         return array_unique($list);
     }
 }
@@ -154,39 +149,42 @@ $objPlugins->getPlugins(true);
 $plugins_list = $objPlugins->getPluginsList();
 
 $wakkaConfig['formatter_path'] = 'formatters';
-$wikiClasses [] = 'WikiTools';
-$wikiClassesContent [] = '';
+$wikiClasses[] = 'WikiTools';
+$wikiClassesContent[] = '';
 
 foreach ($plugins_list as $k => $v) {
-    if (file_exists($plugins_root.$k.'/wiki.php')) {
-        include $plugins_root.$k.'/wiki.php';
+    
+    $pluginBase = $plugins_root . $k . '/';
+    
+    if (file_exists($pluginBase . 'wiki.php')) {
+        include ($pluginBase . 'wiki.php');
     }
-
+    
     // language files : first default language, then preferred language
-    if (file_exists($plugins_root.$k.'/lang/'.$k.'_fr.inc.php')) {
-        include $plugins_root.$k.'/lang/'.$k.'_fr.inc.php';
+    if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
+        include ($pluginBase . 'lang/' . $k . '_fr.inc.php');
     }
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists($plugins_root.$k.'/lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php')) {
-        include $plugins_root.$k.'/lang/'.$k.'_'.$GLOBALS['prefered_language'].'.inc.php';
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
+        include ($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php');
     }
-}
-foreach ($plugins_list as $k => $v) {
-    if (file_exists($plugins_root.$k.'/actions')) {
-        $wakkaConfig['action_path'] = $plugins_root.$k.'/actions/'.':'.$wakkaConfig['action_path'];
+    
+    if (file_exists($pluginBase . 'actions')) {
+        $wakkaConfig['action_path'] = $pluginBase . 'actions/' . ':' . $wakkaConfig['action_path'];
     }
-    if (file_exists($plugins_root.$k.'/handlers')) {
-        $wakkaConfig['handler_path'] = $plugins_root.$k.'/handlers/'.':'.$wakkaConfig['handler_path'];
+    if (file_exists($pluginBase . 'handlers')) {
+        $wakkaConfig['handler_path'] = $pluginBase . 'handlers/' . ':' . $wakkaConfig['handler_path'];
     }
-    if (file_exists($plugins_root.$k.'/formatters')) {
-        $wakkaConfig['formatter_path'] = $plugins_root.$k.'/formatters/'.':'.$wakkaConfig['formatter_path'];
+    if (file_exists($pluginBase . 'formatters')) {
+        $wakkaConfig['formatter_path'] = $pluginBase . 'formatters/' . ':' . $wakkaConfig['formatter_path'];
     }
 }
 
-for ($iw = 0; $iw < count($wikiClasses); ++$iw) {
+for ($iw = 0; $iw < count($wikiClasses); $iw ++) {
     if ($wikiClasses[$iw] != 'WikiTools') {
-        eval('# namespace YesWiki;'."\n\n".'Class '.$wikiClasses[$iw].' extends '.$wikiClasses[$iw - 1].' { '.$wikiClassesContent[$iw].' }; ');
+        eval('Class ' . $wikiClasses[$iw] . ' extends ' . $wikiClasses[$iw - 1] . ' { ' . $wikiClassesContent[$iw] . ' }; ');
     }
 }
 
-//$wiki  = new WikiTools($wakkaConfig);
-eval('# namespace YesWiki;'."\n\n".'$wiki  = new '.$wikiClasses[count($wikiClasses) - 1].'($wakkaConfig);');
+// $wiki = new WikiTools($wakkaConfig);
+eval('$wiki  = new ' . $wikiClasses[count($wikiClasses) - 1] . '($wakkaConfig);');
+

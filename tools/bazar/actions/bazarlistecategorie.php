@@ -133,7 +133,7 @@ if (empty($list)) {
     usort($fiches['fiches'], 'champCompare');
 
     // preparation du template
-    include_once 'tools/bazar/libs/squelettephp.class.php';
+    include_once 'tools/libs/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/'.$template;
     if (!is_file($templatetoload)) {

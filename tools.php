@@ -23,7 +23,7 @@ if (!defined('TOOLS_MANAGER')) {
 }
 
 require_once ('tools/libs/Auth.php');
-require_once ('tools/libs/Container.php');
+require_once ('tools/libs/Auth/Container.php');
 
 class CustomAuthContainer extends Auth_Container
 {
