@@ -15,7 +15,7 @@
 - a plugin manager and numerous extensions : user oriented database manager, tags, contact forms, etc.
 
 ## Installation
-YesWiki can be installed in about ten minutes on a server which supports PHP>5.0 and a MySQL database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
+YesWiki can be installed in about ten minutes on a server which supports PHP >= 5.3 and a MySQL database. Once installed, the YesWiki site is working immediately, and can be managed online from a web browser.
 
 See https://github.com/YesWiki/yeswiki/blob/cercopitheque/INSTALL.md for detailled install instructions.
 
