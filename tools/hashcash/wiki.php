@@ -1,5 +1,5 @@
 <?php
-// Partie publique 
+// Partie publique
 
 if (!defined("WIKINI_VERSION"))
 {
@@ -7,7 +7,7 @@ if (!defined("WIKINI_VERSION"))
 }
 
 // Indique un code langue par defaut
-define ('HASHCASH_DEFAULT_LANG', 'fr') ; 
+define ('HASHCASH_DEFAULT_LANG', 'fr') ;
 
 // Code pour l'inclusion des langues
 if ( isset ($_GET['lang']) && file_exists('tools/hashcash/lang/hashcash_'.$_GET['lang'].'.inc.php')) {
@@ -18,7 +18,7 @@ if ( isset ($_GET['lang']) && file_exists('tools/hashcash/lang/hashcash_'.$_GET[
 
 
 $wikiClasses [] = 'Hashcash';
-$wikiClassesContent [] = ' 
+$wikiClassesContent [] = '
 
 	function FormOpen($method = "", $tag = "", $formMethod = "post", $class="") {
 
@@ -26,6 +26,9 @@ $wikiClassesContent [] = '
 			$result  = "<form id=\"ACEditor\" name=\"ACEditor\" enctype=\"multipart/form-data\" action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\"";
 			$result .= ((!empty($class)) ? " class=\"".$class."\"" : "");
 			$result .= ">\n";
+      if (isset($this->config[\'password_for_editing\']) and !empty($this->config[\'password_for_editing\']) and isset($_POST[\'password_for_editing\'])) {
+        $result .= "<input type=\"hidden\" name=\"password_for_editing\" value=\"".$_POST[\'password_for_editing\']."\" />\n";
+      }
 		} else {
 			$result = "<form action=\"".$this->href($method, $tag)."\" method=\"".$formMethod."\"";
 			$result .= ((!empty($class)) ? " class=\"".$class."\"" : "");
