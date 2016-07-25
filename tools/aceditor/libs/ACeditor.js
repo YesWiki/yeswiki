@@ -164,7 +164,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
 
       // help
       toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
                 '<i class="glyphicon glyphicon-question-sign"></i></a>' +
             '</div>');
 
@@ -184,6 +184,32 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
             if (prompt != null) {
               textarea.surroundSelectedText($(this).data('lft') + prompt + " ", $(this).data('rgt'), true);
             }
+          } else if ($(this).data('help')) {
+              $('body').append('<div class="modal fade" id="YesWikiHelpModal">' +
+                '<div class="modal-dialog modal-lg">' +
+                '<div class="modal-content">' +
+                '<div class="modal-header">' +
+                '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+                '<h3>' + $(this).attr('title') + '</h3>' +
+                '</div>' +
+                '<div class="modal-body" style="min-height:500px">' +
+                '<span id="yw-modal-loading" class="throbber"></span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '</div>');
+
+              var link = 'wakka.php?wiki=ReglesDeFormatage';
+              var $modal = $('#YesWikiHelpModal');
+              $modal.find('.modal-body').load(link + ' .page', function (response, status, xhr) {
+                return false;
+              });
+
+              $modal.modal({
+                keyboard: false,
+              }).modal('show').on('hidden hidden.bs.modal', function () {
+                $modal.remove();
+              });
           } else {
             textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'), true);
           }

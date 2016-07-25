@@ -1,0 +1,113 @@
+{{grid}}
+{{col size="6"}}
+=====Règles de formatage=====
+===Accentuation===
+""<pre>""**""**Gras**""**
+//""//Italique//""//
+__""__Souligné__""__
+@@""@@Barré@@""@@""</pre>""
+
+===Titres===
+""<pre>""======""======Titre 1======""======
+=====""=====Titre 2=====""=====
+====""====Titre 3====""====
+===""===Titre 4===""===
+==""==Titre 5==""==""</pre>""
+
+===Listes===
+""<pre> - Liste à puce niveau 1
+ - Liste à puce niveau 1
+  - Liste à puce niveau 2
+  - Liste à puce niveau 2
+ - Liste à puce niveau 1
+
+ 1. Liste énumérée
+ 2. Liste énumérée
+ 3. Liste énumérée</pre>""
+
+===Liens===
+""<pre>[[http://www.exemple.com Texte à afficher pour le lien externe]]""
+""[[PageDeCeWiki Texte à afficher pour le lien interne]]</pre>""
+
+===Images===
+//Pour télécharger une image, utiliser l'action ""{{attach file="image.jpg" ...}}"".//
+""<pre>[[http://www.exemple.com/image.jpg Texte de remplacement pour l'image]]</pre>""
+
+===Tableaux===
+""<pre>| Colonne 1 | Colonne 2 | Colonne 3 |
+| John     | Doe      | Male     |
+| Mary     | Smith    | Female   |
+</pre>""
+
+===Code source===
+""<pre>""##""##var example = "hello!";
+alert(example);
+##""##""</pre>""
+
+===Ecrire en html===
+""<pre>&quot;&quot;""<strong>""Hello !""</strong>""&quot;&quot;</pre>""
+{{end elem="col"}}
+{{col size="6"}}
+=====Code exemples=====
+===Lien qui force l'ouverture vers une page extérieure===
+%%""<a href="http://exemple.com" target="_blank">ton texte</a>""%%
+
+===Insérer un iframe===
+//Inclure un autre site, ou un pad, ou une vidéo youtube, etc...//
+%%""<iframe width=100% height="1250" src="http://exemple.com" frameborder="0" allowfullscreen></iframe>""%%
+
+===Texte en couleur===
+//Voir les codes hexa des couleurs : [[http://fr.wikipedia.org/wiki/Liste_de_couleurs http://fr.wikipedia.org/wiki/Liste_de_couleurs]]//
+""<pre><span style="color:#446611;">""<span style="color:#446611;">texte coloré</span>""</span></pre>""
+
+===Message d'alerte===
+//Avec une croix pour le fermer.//
+%%""<div class="alert">
+<button type="button" class="close" data-dismiss="alert">×</button>
+Attention ! Voici votre message.
+</div>""%%
+
+===Label "important" ou "info"===
+""<span class="label label-danger">Important</span>"" et ""<span class="label label-info">Info</span>""
+%%""<span class="label label-danger">Important</span>"" et ""<span class="label label-info">Info</span>""%%
+
+===Placer du code en commentaire sur la page===
+%%""<!-- en utilisant ce code on peut mettre du texte qui n'apparait pas sur la page... ce qui permet de laisser des explications par exemple ou même d'écrire du texte en prépa d'une publication future -->""%%
+
+
+====Les actions====
+===Mise en page par colonne===
+%%{{grid}}
+{{col size="6"}}
+===Titre de la colonne 1===
+Texte colonne 1
+{{end elem="col"}}
+{{col size="6"}}
+===Titre de la colonne 2===
+Texte colonne 2
+{{end elem="col"}}
+{{end elem="grid"}}%%
+
+===Boutons===
+""<pre>{{button}}</pre>""
+
+===Formulaires de contact===
+""<pre>{{contact mail="adresse.mail@exemple.com"}}</pre>""
+
+===Bases de données===
+""<pre>{{bazar}}</pre>""
+
+===Inclure une page dans une autre===
+%%{{include page="NomPageAInclure"}} %%
+Pour inclure une page d'un autre yeswiki : ( Noter le pipe ""|"" après les premiers ""[["" ) %%[[|http://lesite.org/nomduwiki PageAInclure]]%%
+
+===Image de fond===
+//Avec possibilité de mettre du texte par dessus//
+%%{{backgroundimage height="150" file="monbandeau.jpg" class="white text-center doubletitlesize"}}
+
+=====Texte du titre=====
+description
+
+{{endbackgroundimage}}%%
+{{end elem="col"}}
+{{end elem="grid"}}
