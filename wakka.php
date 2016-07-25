@@ -1982,7 +1982,8 @@ $wakkaDefaultConfig = array(
     'default_read_acl' => '*',
     'default_comment_acl' => '@admins',
     'preview_before_save' => 0,
-    'allow_raw_html' => false
+    'allow_raw_html' => false,
+    'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
 );
 unset($_rewrite_mode);
 
@@ -2000,6 +2001,14 @@ if (file_exists($configfile)) {
 }
 $wakkaConfigLocation = $configfile;
 $wakkaConfig = array_merge($wakkaDefaultConfig, $wakkaConfig);
+
+// give a default timezone to avoid error
+if( $wakkaConfig['timezone']!=$wakkaDefaultConfig['timezone'] )
+{
+    date_default_timezone_set( $wakkaConfig['timezone']);
+}else if (!ini_get('date.timezone')) {
+    date_default_timezone_set( $wakkaDefaultConfig['timezone']);
+}
 
 // check for locking
 if (file_exists('locked')) {
