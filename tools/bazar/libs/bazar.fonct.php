@@ -4345,6 +4345,27 @@ function getAllParameters($wiki)
     // correspondance transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
     $param['correspondance'] = $wiki->GetParameter('correspondance');
 
+    /*
+     * Facette : filtres à gauche ou droite (droite par défaut)
+     */
+    $param['filterposition'] = $wiki->GetParameter('filterposition');
+    if (empty($param['filterposition']) || (!empty($param['filterposition'])
+        && $param['filterposition'] != 'left')) {
+            $param['filterposition'] = 'right';
+        }
+
+    /*
+     * Facette : largeur colonne
+     */
+    $param['filtercolsize'] = $wiki->GetParameter('filtercolsize');
+    if (empty($param['filtercolsize'])
+        || (!empty($param['filtercolsize'])
+            && (!(ctype_digit($param['filtercolsize'])
+                && intval($param['filtercolsize']) >= 1 && intval($param['filtercolsize']) <= 12))))
+    {
+        $param['filtercolsize'] = '3';
+    }
+
     // parametres pour bazarliste avec carto
 
     /*
@@ -4551,27 +4572,6 @@ function getAllParameters($wiki)
     $param['cluster'] = $wiki->GetParameter('cluster'); // true or false
     if (empty($param['cluster'])) {
         $param['cluster'] = 'false';
-    }
-
-    /*
-     * Facette : filtres à gauche ou droite (droite par défaut)
-     */
-    $param['filterposition'] = $wiki->GetParameter('filterposition');
-    if (empty($param['filterposition']) || (!empty($param['filterposition'])
-        && $param['filterposition'] != 'left')) {
-        $param['filterposition'] = 'right';
-    }
-
-    /*
-     * Facette : largeur colonne
-     */
-    $param['filtercolsize'] = $wiki->GetParameter('filtercolsize');
-    if (empty($param['filtercolsize']) ||
-        (!empty($param['filtercolsize']) &&
-            (!(ctype_digit($param['filtercolsize']) &&
-                intval($param['filtercolsize']) >= 1 &&
-                intval($param['filtercolsize']) <= 12)))) {
-        $param['filtercolsize'] = '3';
     }
 
     return $param;
