@@ -32,19 +32,18 @@ if ($act = preg_match_all("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_foo
 echo $template_footer;
 
 // on affiche les requetes SQL et le temps de chargement en mode debug
-if ($this->GetConfigValue("debug")=="yes") {
+if ($this->GetConfigValue('debug')=='yes') {
     $debug_log_sql_queries = '';
-    $t_SQL=0;
+    $T_SQL=0;
     foreach ($this->queryLog as $query) {
-        $debug_log_sql_queries .= $query["query"]." (".round($query["time"], 4).")<br />\n";
-        $t_SQL = $t_SQL + $query["time"];
+        $debug_log_sql_queries .= $query['query'].' ('.round($query['time'], 4).")<br />\n";
+        $T_SQL = $T_SQL + $query['time'];
     }
 
-    list($g2_usec, $g2_sec) = explode(" ", microtime());
-    define("T_END", (float)$g2_usec + (float)$g2_sec);
+    define('T_END', microtime(true));
     $debug_log = "<div class=\"debug\">\n<h4>Query log</h4>\n";
     $debug_log .= "<strong>".round(T_END-T_START, 4)." s total time<br />\n";
-    $debug_log .= round($t_SQL, 4)." s total SQL time</strong> (".round((($t_SQL/(T_END-T_START))*100), 2)."% of total time)<br />\n";
+    $debug_log .= round($T_SQL, 4)." s total SQL time</strong> (".round((($T_SQL/(T_END-T_START))*100), 2)."% of total time)<br />\n";
     $debug_log .= "<strong>".count($this->queryLog)." queries :</strong><br />\n";
     $debug_log .= $debug_log_sql_queries;
     $debug_log .= "</div>\n";

@@ -71,21 +71,20 @@ $debug_log = '';
 if ($this->GetConfigValue("debug")=="yes")
 {
 	$debug_log = "<span class=\"debug\"><b>Query log :</b><br />\n";
-	$t_SQL=0;
+	$T_SQL=0;
 	foreach ($this->queryLog as $query)
 	{
 		$debug_log .= $query["query"]." (".round($query["time"],4).")<br />\n";
-		$t_SQL = $t_SQL + $query["time"];
+		$T_SQL = $T_SQL + $query["time"];
 	}
 	$debug_log .= "</span>\n";
 
-	$debug_log .= "<span class=\"debug\">".round($t_SQL, 4)." s (total SQL time)</span><br />\n";
+	$debug_log .= "<span class=\"debug\">".round($T_SQL, 4)." s (total SQL time)</span><br />\n";
 
-	list($g2_usec, $g2_sec) = explode(" ",microtime());
-	define ("t_end", (float)$g2_usec + (float)$g2_sec);
-	$debug_log .= "<span class=\"debug\"><b>".round(t_end-t_start, 4)." s (total time)</b></span><br />\n";
+	define ('T_END', microtime(true));
+	$debug_log .= "<span class=\"debug\"><b>".round(T_END-T_START, 4)." s (total time)</b></span><br />\n";
 
-	$debug_log .= "<span class=\"debug\">SQL time represent : ".round((($t_SQL/(t_end-t_start))*100),2)."% of total time</span>\n";
+	$debug_log .= "<span class=\"debug\">SQL time represent : ".round((($T_SQL/(T_END-T_START))*100),2)."% of total time</span>\n";
 }
 
 ?>
@@ -96,7 +95,7 @@ if ($this->GetConfigValue("debug")=="yes")
 			<?php echo $edit_link, $revisions_link, $owner_info ?>
 			
 			<a href="<?php echo $backlinks ?>" title="Pages faisant r&eacute;f&eacute;rence &agrave; cette page.">R&eacute;tro-liens</a> ::
-			<a href="<?php echo $carto ?>" title="Cartographie des pages liées à cette page (nécessite SVG).">Cartographie</a> ::
+			<a href="<?php echo $carto ?>" title="Cartographie des pages liÃ©es Ã  cette page (nÃ©cessite SVG).">Cartographie</a> ::
 			Recherche : <input name="phrase" size="15" class="searchbox" />
 		</div>
 	</form>
