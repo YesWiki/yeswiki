@@ -5,7 +5,7 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-if (isset($this->config['password_for_editing']) and !empty($this->config['password_for_editing'])) {
+if (isset($this->config['password_for_editing']) and !empty($this->config['password_for_editing']) and !$this->UserIsAdmin()) {
     if (!isset($_POST['password_for_editing'])
         or $_POST['password_for_editing'] != $this->config['password_for_editing']) {
         echo $this->Header();
@@ -15,10 +15,10 @@ if (isset($this->config['password_for_editing']) and !empty($this->config['passw
         }
         echo '<form method="post" action="'.$this->href('edit', $this->GetPageTag()).'" class="form-inline">
   <div class="form-group">
-    <label for="password_for_editing">Entrer le mot de passe général pour l\'édition :</label>
+    <label for="password_for_editing">'._t('HASHCASH_GENERAL_PASSWORD').'</label>
     <input type="password" class="form-control" id="password_for_editing" name="password_for_editing">
   </div>
-  <button type="submit" class="btn btn-default">Envoyer</button>
+  <button type="submit" class="btn btn-default">'._t('HASHCASH_SEND').'</button>
 </form>';
         echo $this->Footer();
         exit;
