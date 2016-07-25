@@ -2,7 +2,7 @@
 /*
 pointimage.php
 
-2006 Laurent Marseault (idea) & David Delon (code) 
+2006 Laurent Marseault (idea) & David Delon (code)
 2013 Florian Schmitt (use of attach, rewriting for bootstrap)
 
 This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ if (empty($file)) {
 	}
 }
 
-// test of image extension 
+// test of image extension
 $supported_image_extensions = array('gif', 'jpg', 'jpeg', 'png');
 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION)); // Using strtolower to overcome case sensitive
 if (!in_array($ext, $supported_image_extensions)) {
@@ -83,7 +83,7 @@ $datapagetag = mysqli_real_escape_string($this->dblink, $this->GetPageTag().'PI'
 if (isset($_POST['title']) && !empty($_POST['title'])
     && isset($_POST['description']) && !empty($_POST['description'])
     && isset($_POST['pagetag']) && !empty($_POST['pagetag'])
-    && isset($_POST['image_x']) && !empty($_POST['image_x']) 
+    && isset($_POST['image_x']) && !empty($_POST['image_x'])
     && isset($_POST['image_y']) && !empty($_POST['image_y'])
     && isset($_POST['color']) && !empty($_POST['color'])) {
 	$pagetag = mysqli_real_escape_string($this->dblink, str_replace($this->config['base_url'], '', $_POST['pagetag']));
@@ -95,7 +95,7 @@ if (isset($_POST['title']) && !empty($_POST['title'])
 
 // get the data for the image
 $donneesbody = $this->LoadSingle("SELECT * FROM ".$this->config["table_prefix"]."pages WHERE tag = '".$datapagetag."'and latest = 'Y' limit 1");
- 
+
 // search for markers info
 preg_match_all('/~~(.*)~~/msU', $donneesbody['body'], $locations);
 $markers = array();
@@ -109,21 +109,29 @@ foreach ($locations[1] as $location){
 		$marker['title'] = $elements[4];
 		$marker['description'] = $this->Format($elements[5]);
 	}
-	
+
 	if (count($marker)==5) {
 		$markers[] = $marker;
 	}
 }
 
-// create markers links 
+// create markers links
 $listofmarkers = '';
 if (count($markers)>0) {
-	foreach ($markers as $nb => $marker ) {		
+	foreach ($markers as $nb => $marker ) {
 		// all informations must be written in one line and escaped from html chars
-		$marker['title'] = htmlspecialchars('<button type="button" class="btn-close-popover pull-right close">&times;</button>'.str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['title']), ENT_QUOTES, YW_CHARSET);
+		$marker['title'] = htmlspecialchars(str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['title']), ENT_QUOTES, YW_CHARSET);
+    $marker['modaltitle'] = htmlspecialchars('<button type="button" class="btn-close-popover pull-right close">&times;</button>', ENT_QUOTES, YW_CHARSET).$marker['title'];
 		$marker['description'] = htmlspecialchars(str_replace(array("\r\n", "\r", "\n", PHP_EOL, chr(10), chr(13), chr(10).chr(13)), "", $marker['description']), ENT_QUOTES, YW_CHARSET);
-	
-		$listofmarkers .= "<a data-toggle=\"popover\" class=\"img-marker\" style=\"height:".$point_size."px;width:".$point_size."px;left:".($marker['x']-round($point_size/2))."px; top:".($marker['y']-round($point_size/2))."px;background:".$marker['color'].";\" data-original-title=\"".$marker['title']."\" data-content=\"".$marker['description']."\" href=\"#\"></a>\n";
+
+		$listofmarkers .= "<a
+    class=\"img-marker\"
+    style=\"height:".$point_size."px;width:".$point_size."px;left:".($marker['x']-round($point_size/2))."px;
+    top:".($marker['y']-round($point_size/2))."px;background:".$marker['color'].";\"
+    data-toggle=\"popover\"
+    data-trigger=\"hover\"
+    data-original-title=\"".$marker['title']."\"
+    data-content=\"".$marker['description']."\" href=\"#\"></a>\n";
 	}
 }
 
