@@ -2,7 +2,7 @@
 	header('content-type:application/x-javascript');
 	// Check if the server is configured to automatically compress the output
 	if (!ini_get('zlib.output_compression') && !ini_get('zlib.output_handler'))
-	{ 
+	{
 		// Check if we can use ob_gzhandler (requires the zlib extension)
 		if (function_exists('ob_gzhandler'))
 		{
@@ -14,12 +14,12 @@
 		elseif (!empty($_SERVER['HTTP_ACCEPT_ENCODING']) && strstr($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') && function_exists('gzencode'))
 		{
 			ob_start ('gzencode');
-			// Tell the browser the content is compressed with gzip 
-			header ("Content-Encoding: gzip"); 
+			// Tell the browser the content is compressed with gzip
+			header ("Content-Encoding: gzip");
 		}
 	}
 	require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
-	
+
 	$field_id = hashcash_random_string(rand(6,18));
 	$fn_enable_name = hashcash_random_string(rand(6,18));
 ?>
@@ -32,7 +32,7 @@ function createHiddenField(){
 	inp.setAttribute('id', '<?php echo $field_id; ?>');
 	inp.setAttribute('name', 'hashcash_value');
 	inp.setAttribute('value', '-1');
-	
+
 	var e = document.getElementById('<?php echo HASHCASH_FORM_ID; ?>');
     if (e) {e.appendChild(inp)};
 }
@@ -41,9 +41,9 @@ function <?php echo $fn_enable_name;?>(){
 	var e = document.getElementById('hashcash-text');
 	createHiddenField();
 	if (e) {e.style.display='block'};
-	loadHashCashKey('<?php 
-	echo $_GET['siteurl']; ?>/tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
-}	
+	loadHashCashKey('<?php
+	echo $_GET['siteurl']; ?>tools/hashcash/wp-hashcash-getkey.php', '<?php echo $field_id; ?>');
+}
 
 function loadHashCashKey(fragment_url, e_id) {
 	var xmlhttp=createXMLHttp();
@@ -80,16 +80,16 @@ function getElementsByClass(searchClass,node,tag) {
 function createXMLHttp() {
 	if (typeof XMLHttpRequest != "undefined")
 		return new XMLHttpRequest();
-	
+
 	var xhrVersion = [ "MSXML2.XMLHttp.5.0", "MSXML2.XMLHttp.4.0","MSXML2.XMLHttp.3.0", "MSXML2.XMLHttp","Microsoft.XMLHttp" ];
-  
+
 	for (var i = 0; i < xhrVersion.length; i++) {
   	try {
 			var xhrObj = new ActiveXObject(xhrVersion[i]);
       return xhrObj;
     } catch (e) { }
   }
-  
+
   return null;
 }
 
