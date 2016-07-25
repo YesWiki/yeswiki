@@ -50,10 +50,7 @@ include 'includes/urlutils.inc.php';
 include 'includes/i18n.inc.php';
 // error_reporting(E_ALL);
 
-// start the compute time
-//list ($g_usec, $g_sec) = explode(" ", microtime());
-//define('t_start', (float) $g_usec + (float) $g_sec);
-define('t_start', microtime(true));
+define('T_START', microtime(true));
 
 $t_SQL = 0;
 
