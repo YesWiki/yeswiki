@@ -1250,6 +1250,13 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
             $formtemplate->addElement('hidden', 'id_fiche', $valeurs['id_fiche']);
         }
 
+        // Ajout du mot de passe général pour Bazar
+        if (isset($GLOBALS['wiki']->config['password_for_editing'])
+            and !empty($GLOBALS['wiki']->config['password_for_editing'])
+            and isset($_POST['password_for_editing']) ) {
+            $formtemplate->addElement('hidden', 'password_for_editing', $_POST['password_for_editing']);
+        }
+
         // Bouton d annulation : on retourne a la visualisation de la fiche saisie en cas de modification
         if ($mode == 'modification') {
             $GLOBALS['_BAZAR_']['url']->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
