@@ -218,7 +218,11 @@ if (!class_exists('WikiniFormatter'))
 			$thing = $things[0];
 			$result = '';
 
-			$wiki = & $this->wiki;
+			/**
+			 * 
+			 * @var Wiki
+			 */
+			$wiki = $this->wiki;
 
 			// convert HTML thingies
 			switch ($thing)

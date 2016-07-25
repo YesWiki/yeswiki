@@ -173,6 +173,7 @@ $GLOBALS['translations'] = array(
 // actions/textsearch.php
 'WHAT_YOU_SEARCH' => 'Ce que vous souhaitez chercher',
 'SEARCH' => 'Chercher',
+//'SEARCH' => 'Rechercher',
 'SEARCH_RESULT_OF' => 'R&eacute;sultat(s) de la recherche de',
 'NO_RESULT_FOR' => 'Aucun r&eacute;sultat pour',
 
@@ -291,7 +292,6 @@ $GLOBALS['translations'] = array(
 'NO_DATABASE_FOUND_TRY_TO_CREATE' => 'La base de donn&eacute;es que vous avez choisie n\'existe pas. Nous allons tenter de la cr&eacute;er',
 'TRYING_TO_CREATE_DATABASE' => 'Tentative de cr&eacute;ation de la base de donn&eacute;es',
 'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Cr&eacute;ation de la base impossible. Vous devez cr&eacute;er cette base manuellement avant d\'installer YesWiki',
-'SEARCH' => 'Rechercher',
 'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'La base de donn&eacute;es que vous avez choisie n\'existe pas, vous devez la cr&eacute;er avant d\'installer YesWiki',
 'CHECKING_THE_ADMIN_PASSWORD' => 'V&eacute;rification du mot de passe Administrateur',
 'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'V&eacute;rification de l\'identit&eacute; des mots de passes administrateurs',

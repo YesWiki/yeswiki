@@ -182,7 +182,7 @@ if (isset($_POST["page"])) {
         $selectedpages = array();
     }
 
-    include_once 'tools/tags/libs/squelettephp.class.php';
+    include_once 'tools/libs/squelettephp.class.php';
     $template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html');
     // charge le templates
     $template_export->set(

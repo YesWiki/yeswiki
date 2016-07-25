@@ -2190,7 +2190,7 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
         $templatetoload =
         'tools/bazar/presentation/templates/lists_edit.tpl.html';
     }
-    include_once 'tools/bazar/libs/squelettephp.class.php';
+    include_once 'tools/libs/squelettephp.class.php';
     $formlistes = new SquelettePhp($templatetoload);
     $formlistes->set($tab_formulaire);
 
@@ -2364,7 +2364,7 @@ function baz_gestion_formulaire()
                 'tools/bazar/presentation/templates/forms_table.tpl.html';
             }
 
-            include_once 'tools/bazar/libs/squelettephp.class.php';
+            include_once 'tools/libs/squelettephp.class.php';
             $templateforms = new SquelettePhp($templatetoload);
             $templateforms->set($tab_forms);
             $res .= $templateforms->analyser();
@@ -2453,7 +2453,7 @@ function baz_gestion_listes()
             'tools/bazar/presentation/templates/lists_table.tpl.html';
         }
 
-        include_once 'tools/bazar/libs/squelettephp.class.php';
+        include_once 'tools/libs/squelettephp.class.php';
         $templatelists = new SquelettePhp($templatetoload);
         $templatelists->set($tab_lists);
         $res .= $templatelists->analyser();
@@ -2879,7 +2879,7 @@ function baz_voir_fiche($danslappli, $idfiche)
     if (file_exists('themes/tools/bazar/templates/fiche-'.
         $fichebazar['values']['id_typeannonce'].'.tpl.html')) {
         // un template fiche existe
-        include_once 'tools/bazar/libs/squelettephp.class.php';
+        include_once 'tools/libs/squelettephp.class.php';
         $templatetoload = 'themes/tools/bazar/templates/fiche-'
             .$fichebazar['values']['id_typeannonce'].'.tpl.html';
         $squelfiche = new SquelettePhp($templatetoload);
@@ -3259,7 +3259,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     }
 
     // affichage du formulaire
-    include_once 'tools/bazar/libs/squelettephp.class.php';
+    include_once 'tools/libs/squelettephp.class.php';
     $templatetoload = 'tools/bazar/presentation/templates/search_form.tpl.html';
     $squelsearch = new SquelettePhp($templatetoload);
     $squelsearch->set($data);
@@ -3711,7 +3711,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
 
     // affichage des resultats
-    include_once 'tools/bazar/libs/squelettephp.class.php';
+    include_once 'tools/libs/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/'.$params['template'];
     if (!is_file($templatetoload)) {

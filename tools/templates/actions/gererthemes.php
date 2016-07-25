@@ -3,6 +3,17 @@ Copyright 2014 Rémi PESQUERS (rp.lefamillien@gmail.com)
 Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
 Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
 -->
+
+<a name="gererthemes"></a>
+
+<?php
+//action réservée aux admins
+if (! $this->UserIsAdmin()) {
+    echo '<div class="alert alert-danger alert-error"><strong>Erreur action {{gererdroits..}}</strong> : cette action est r&eacute;serv&eacute;e aux admins</div>';
+    return ;
+}
+?>
+
 <script>
 	//Fonction pour cocher toutes les cases.
 	function cocherTout(etat)
@@ -15,25 +26,20 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
 
 </script>
 
-
-
 <?php
-//action réservée aux admins
-if ($this->UserIsAdmin()) {
+
     include_once 'tools/templates/libs/templates.functions.php';
 
-    $table = $GLOBALS['wiki']->config["table_prefix"];
+    $table = $GLOBALS['wiki']->config['table_prefix'];
 
-    function recup_meta($page) //Récupère les droits de la page désignée en argument et renvoie un tableau
-
-    {
+    function recup_meta($page) { //Récupère les droits de la page désignée en argument et renvoie un tableau
 
         $metas = $GLOBALS['wiki']->GetMetaDatas($page);
 
         return array('page' => $page,
-            'theme' => $metas["theme"],
-            'squelette' => $metas["squelette"],
-            'style' => $metas["style"],
+            'theme' => $metas['theme'],
+            'squelette' => $metas['squelette'],
+            'style' => $metas['style'],
         );
     }
 
@@ -136,17 +142,24 @@ if ($this->UserIsAdmin()) {
         return $selecteur;
     }
 
-    if( isset($_POST["modifier"]) && (isset($_POST['theme_select']) || isset($_POST['style_select']) || isset($_POST['squelette_select'])) )
+    if( isset($_POST['theme_modifier']) )
     {
-        if (!isset($_POST["selectpage"]))
+        if (!isset($_POST['selectpage']))
         {
-            $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
+            $this->SetMessage('Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.');
         }
         else
         {
             foreach( $_POST['selectpage'] as $page_cochee )
             {
-                $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
+                if( isset($_POST['theme_reset']) )
+                {
+                    $this->SaveMetaDatas($page_cochee, array('theme' => null, 'style' => null, 'squelette' => null));
+                }
+                else
+                {
+                    $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
+                }
             }
         }
     }
@@ -156,16 +169,31 @@ if ($this->UserIsAdmin()) {
 
     $num_page = 0;
     while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
-        $page_et_themes[$num_page] = recup_meta($tab_liste_pages["tag"]);
+        $page_et_themes[$num_page] = recup_meta($tab_liste_pages['tag']);
         $num_page++;
     }
 
-    echo $this->FormOpen();
+?>
 
-    echo theme_selector();
+<p class="alert alert-info"><?php echo $num_page;?> pages trouv&eacute;es </p>
 
-    ?>
-<div class="alert alert-info"><?php echo $num_page;?> pages trouv&eacute;es </div>
+<?php
+
+echo $this->FormOpen();
+echo theme_selector();
+
+?>
+
+<div class="clearfix"></div>
+<div class="checkbox">
+  <label>
+	<input type="checkbox" value="1" name="theme_reset" />
+	Utiliser thème par défaut
+	<span class="help-block">(effacer données de thème et style dans la base de données).</span>
+  </label>
+</div>
+
+
 	<table class="table table-striped table-condensed">
 		<tr>
 			<td><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"></td>
@@ -175,35 +203,29 @@ if ($this->UserIsAdmin()) {
 			<td><div align="center"><b>Style</b></div></td>
 		</tr>
 <?php
-
-    for ($x = 0; $x < $num_page; $x++) {
-        ?>
-		<tr>
-			<td><input type="checkbox" name="selectpage[]" value="<?php echo $page_et_themes[$x]['page'];?>"></td>
-			<td><?php echo $this->Link($page_et_themes[$x]['page']);?></td>
-			<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['theme']));?></div></td>
-			<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['squelette']));?></div></td>
-			<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['style']));?></div></td>
-		</tr>
-
-	<?php
-}
-
-    ?>
-
-</table>
-
-<br><input name="modifier" class="btn <?php if (isset($btnclass) && $btnclass != '') {
-        echo ' ' . $btnclass;
-    }
-    ?>" value="Mettre &agrave; jour" type="submit">
+for ($x = 0; $x < $num_page; $x++) {
+?>
+	<tr>
+		<td><input type="checkbox" name="selectpage[]" value="<?php echo $page_et_themes[$x]['page'];?>"></td>
+		<td><?php echo $this->Link($page_et_themes[$x]['page']);?></td>
+		<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['theme']));?></div></td>
+		<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['squelette']));?></div></td>
+		<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['style']));?></div></td>
+	</tr>
 
 <?php
-
-    echo $this->FormClose();
-
-} else {
-    echo '<div class="alert alert-danger alert-error"><strong>Erreur action {{gererdroits..}}</strong> : cette action est r&eacute;serv&eacute;e aux admins</div>';
 }
 ?>
 
+</table>
+
+<p>
+	<input name="theme_modifier" type="submit"
+		value="Mettre &agrave; jour"
+		class="btn <?php echo (isset($btnclass) ? ' '.$btnclass : '') ?>"
+		onclick="this.form.action+='#gererthemes'; return true;" />
+</p>
+
+<?php
+    echo $this->FormClose();
+?>
