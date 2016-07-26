@@ -411,8 +411,8 @@ $(document).ready(function () {
       }
     } else {
       var s = location.search;
-      console.log('s', s, s !== '', decodeURIComponent(s));
-      console.log('value', value);
+      //console.log('s', s, s !== '', decodeURIComponent(s));
+      //console.log('value', value);
       var urlquery;
       if (value !== '') {
         if (s !== '') {
@@ -420,10 +420,10 @@ $(document).ready(function () {
             new RegExp('&' + name + '=' + '([^&;]+?)(&|#|;|$)'),
             '&' + name + '=' + value
           );
-          console.log('location.search', s, urlquery);
+          //console.log('location.search', s, urlquery);
         } else {
           urlquery = '?' + name + '=' + value;
-        } console.log('location.search vide', s, urlquery);
+        } //console.log('location.search vide', s, urlquery);
       } else {
         urlquery = decodeURIComponent(s).replace(
           new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)'),
