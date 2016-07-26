@@ -4366,6 +4366,14 @@ function getAllParameters($wiki)
         $param['filtercolsize'] = '3';
     }
 
+    /*
+     * Facette: déplier tous les groupes (panels à droite)
+     */
+    $param['groupsexpanded'] = $wiki->GetParameter('groupsexpanded');
+    if (empty($param['groupsexpanded'])) {
+        $param['groupsexpanded'] = 'false';
+    }
+
     // ==================================================
     // Parametres pour Bazarliste avec carto
     //
