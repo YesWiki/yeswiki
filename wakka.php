@@ -1622,7 +1622,14 @@ class Wiki
      */
     protected $aclsCache = array() ;
 
-    public function LoadAcl($tag, $privilege, $useDefaults = 1)
+    /**
+     * 
+     * @param string $tag
+     * @param string $privilege
+     * @param boolean $useDefaults
+     * @return array [page_tag, privilege, list]
+     */
+    public function LoadAcl($tag, $privilege, $useDefaults = true )
     {
         if( isset($this->aclsCache[$tag][$privilege]) )
         {
@@ -1660,7 +1667,11 @@ class Wiki
             $this->aclsCache[$tag][$acl['privilege']] = $acl;
         }
 
-        return $this->aclsCache[$tag][$privilege] ;
+        if( isset($this->aclsCache[$tag][$privilege]) )
+        {
+            return $this->aclsCache[$tag][$privilege] ;
+        }
+        return null ;
 
         /* previous code
         if (
@@ -1683,13 +1694,20 @@ class Wiki
      * @param string $privilege the privilege
      * @param string $list the multiline string describing the acl
      */
-    public function SaveAcl($tag, $privilege, $list)
+    public function SaveAcl($tag, $privilege, $list, $appendAcl = false )
     {
-        if ($this->LoadAcl($tag, $privilege, 0)) {
+        $acl = $this->LoadAcl($tag, $privilege, false );
+
+        if( $acl && $appendAcl ) {
+            $list = $acl['list']."\n".$list ;
+        }
+
+        if ($acl) {
             $this->Query('update ' . $this->config['table_prefix'] . 'acls set list = "' . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . '" where page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '" and privilege = "' . mysqli_real_escape_string($this->dblink, $privilege) . '"');
         } else {
             $this->Query('insert into ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . "', page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "'");
         }
+
         // update the acls cache
         $this->aclsCache[$tag][$privilege] = array(
             'page_tag' => $tag,
@@ -1844,6 +1862,9 @@ class Wiki
         if ($module_type == 'action') {
             $this->_actionsAclsCache[$module] = $acl;
         }
+        
+        // TODO: Updating $this->_actionsAclsCache with new $acl
+
         if ($old === null) {
             return $this->InsertTriple($module, WIKINI_VOC_ACLS, $acl, $voc_prefix);
         } elseif ($old === $acl) {

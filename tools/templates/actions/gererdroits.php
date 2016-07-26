@@ -20,7 +20,11 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
 $btnclass = $this->GetParameter('btnclass');
 
 //action réservée aux admins
-if ($this->UserIsAdmin()) {
+if (! $this->UserIsAdmin()) {
+    echo '<div class="alert alert-danger alert-error"><strong>Erreur action {{gererdroits..}}</strong> : cette action est r&eacute;serv&eacute;e aux admins</div>';
+    return ;
+}
+    
     include_once 'tools/templates/libs/templates.functions.php';
 
     $table = $this->config['table_prefix'];
@@ -34,9 +38,21 @@ if ($this->UserIsAdmin()) {
      */
     function recup_droits($page)
     {
+
+        $readACL = $GLOBALS['wiki']->LoadAcl($page, 'read', false);
+        $writeACL = $GLOBALS['wiki']->LoadAcl($page, 'write', false);
+        $commentACL = $GLOBALS['wiki']->LoadAcl($page, 'comment', false);
+
+        return array('page' => $page,
+            'droits_lire' => isset($readACL['list']) ? $readACL['list'] : null ,
+            'droits_ecrire' =>  isset($writeACL['list']) ? $writeACL['list'] : null ,
+            'droits_comment' =>  isset($commentACL['list']) ? $commentACL['list'] : null ,
+        );
+
+        /* previous code
+         * 
         $table = $GLOBALS['wiki']->config['table_prefix'];
         $dblink = $GLOBALS['wiki']->dblink;
-
         $res = mysqli_query($dblink, 'SELECT * FROM '.$table.'acls WHERE page_tag="'
             .$page.'" AND privilege="read" ORDER BY '.$table.'acls.page_tag ASC');
         if ($res != null) {
@@ -44,7 +60,6 @@ if ($this->UserIsAdmin()) {
         } else {
             $droits_lire['list'] = null;
         }
-
         $res = mysqli_query($dblink, 'SELECT * FROM '.$table.'acls WHERE page_tag="'
                    .$page.'" AND privilege="write" ORDER BY '.$table.'acls.page_tag ASC');
         if ($res != null) {
@@ -52,7 +67,6 @@ if ($this->UserIsAdmin()) {
         } else {
             $droits_ecrire['list'] = null;
         }
-
         $res = mysqli_query($dblink, 'SELECT * FROM '.$table.'acls WHERE page_tag="'
             .$page.'" AND privilege="comment" ORDER BY '.$table.'acls.page_tag ASC');
         if ($res != null) {
@@ -60,12 +74,13 @@ if ($this->UserIsAdmin()) {
         } else {
             $droits_comment['list'] = null;
         }
-
         return array('page' => $page,
             'droits_lire' => $droits_lire['list'],
             'droits_ecrire' => $droits_ecrire['list'],
             'droits_comment' => $droits_comment['list'],
         );
+        */
+        
     }
 
     //Modification de droits
@@ -76,33 +91,33 @@ if ($this->UserIsAdmin()) {
             if ((!isset($_POST['modiflire'])) && (!isset($_POST['modifecrire'])) && !(isset($_POST['modifcomment']))) {
                 $this->SetMessage("Vous n'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.");
             } else {
-                $this->SetMessage('Droit modifi&eacute;s avec succ&egrave;s');
+
+                if ($_POST['typemaj'] == 'ajouter') {
+                    $appendAcl = true ;
+                } else { //if ($_POST['typemaj'] == 'remplacer') {
+                    $appendAcl = false ;
+                }
+
                 foreach ($_POST['selectpage'] as $page_cochee) {
-                    if ($_POST['typemaj'] == 'ajouter') {
-                        $newlire = "concat(list,' ".$_POST['newlire']."')";
-                        $newecrire = "concat(list,' ".$_POST['newecrire']."')";
-                        $newcomment = "concat(list,' ".$_POST['newcomment']."')";
-                    }
-                    if ($_POST['typemaj'] == 'remplacer') {
-                        $newlire = "'".$_POST['newlire']."'";
-                        $newecrire = "'".$_POST['newecrire']."'";
-                        $newcomment = "'".$_POST['newcomment']."'";
-                    }
+
                     if (isset($_POST['modiflire'])) {
-                        $this->Query('UPDATE '.$table.'acls SET list='.$newlire
-                            ." WHERE privilege='read' and page_tag='".$page_cochee."'");
+                        //$this->Query('UPDATE '.$table.'acls SET list='.$newlire." WHERE privilege='read' and page_tag='".$page_cochee."'");
+                        $this->SaveAcl($page_cochee, 'read', $_POST['newlire'], $appendAcl );
                     }
 
                     if (isset($_POST['modifecrire'])) {
-                        $this->Query('UPDATE '.$table.'acls SET list='.$newecrire
-                            ." WHERE privilege='write' and page_tag='".$page_cochee."'");
+                        //$this->Query('UPDATE '.$table.'acls SET list='.$newecrire." WHERE privilege='write' and page_tag='".$page_cochee."'");
+                        $this->SaveAcl($page_cochee, 'write', $_POST['newecrire'], $appendAcl );
                     }
 
                     if (isset($_POST['modifcomment'])) {
-                        $this->Query('UPDATE '.$table.'acls SET list='
-                            .$newcomment." WHERE privilege='comment' and page_tag='".$page_cochee."'");
+                        //$this->Query('UPDATE '.$table.'acls SET list='.$newcomment." WHERE privilege='comment' and page_tag='".$page_cochee."'");
+                        $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment'], $appendAcl );
                     }
                 }
+
+                $this->SetMessage('Droit modifi&eacute;s avec succ&egrave;s');
+
             }
         }
     }
@@ -112,7 +127,7 @@ if ($this->UserIsAdmin()) {
         .$table.'pages.tag ASC');
 
     echo '<form method="post" action="'.$this->href().'" class="form-inline">';
-    ?>
+?>
 
 
 
@@ -213,8 +228,3 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 
 <?php
 echo $this->FormClose();
-} else {
-    echo '<div class="alert alert-danger alert-error">
-    <strong>Erreur action {{gererdroits..}}</strong> : cette action est r&eacute;serv&eacute;e aux admins
-    </div>';
-}
