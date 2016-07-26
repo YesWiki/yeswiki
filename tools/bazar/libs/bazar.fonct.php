@@ -4366,7 +4366,9 @@ function getAllParameters($wiki)
         $param['filtercolsize'] = '3';
     }
 
-    // parametres pour bazarliste avec carto
+    // ==================================================
+    // Parametres pour Bazarliste avec carto
+    //
 
     /*
      * provider : designe le fond de carte utilisé pour la carte
@@ -4555,9 +4557,7 @@ function getAllParameters($wiki)
     }
 
     /*
-    *
     * Affichage en eclate des points superposes : true or false, par defaut false
-    *
     */
     $param['spider'] = $wiki->GetParameter('spider'); // true or false
     if (empty($param['spider'])) {
@@ -4565,13 +4565,21 @@ function getAllParameters($wiki)
     }
 
     /*
-    *
     * Affichage en cluster : true or false, par defaut false
-    *
     */
     $param['cluster'] = $wiki->GetParameter('cluster'); // true or false
     if (empty($param['cluster'])) {
         $param['cluster'] = 'false';
+    }
+
+    /*
+     * Ajout bouton plein écran
+     * fullscreen: true or false
+     * https://github.com/brunob/leaflet.fullscreen
+     */
+    $param['fullscreen'] = $wiki->GetParameter('fullscreen');
+    if (empty($param['fullscreen'])) {
+        $param['fullscreen'] = 'false';
     }
 
     return $param;
