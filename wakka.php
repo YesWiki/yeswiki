@@ -607,6 +607,18 @@ class Wiki
         return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' order by tag");
     }
 
+    public function GetPageCreateTime( $pageTag )
+    {
+        $sql = 'SELECT time FROM '.$this->config['table_prefix'].'pages'
+            .' WHERE tag = "'.mysqli_real_escape_string($this->dblink, $pageTag).'"'
+            .' AND comment_on = ""'
+            .' ORDER BY `time` ASC LIMIT 1';
+        $page = $this->LoadSingle($sql);
+        if( $page )
+            return $page['time'];
+        return null ;
+    }
+    
     public function FullTextSearch($phrase)
     {
         return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and match(tag, body) against('" . mysqli_real_escape_string($this->dblink, $phrase) . "')");
