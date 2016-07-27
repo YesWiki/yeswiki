@@ -487,7 +487,3 @@ $wikiClassesContent[] = '
   }
 ';
 
-// give a default timezone to avoid error
-if (!ini_get('date.timezone')) {
-    date_default_timezone_set('GMT');
-}

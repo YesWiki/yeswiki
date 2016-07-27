@@ -43,8 +43,9 @@
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
-define("YESWIKI_VERSION", "Cercopitheque");
-define("YESWIKI_RELEASE", "2016.01.25");
+define("YESWIKI_VERSION", 'Cercopitheque');
+define("YESWIKI_RELEASE", '2016.07.26');
+
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
 include 'includes/i18n.inc.php';
@@ -606,6 +607,18 @@ class Wiki
         return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' order by tag");
     }
 
+    public function GetPageCreateTime( $pageTag )
+    {
+        $sql = 'SELECT time FROM '.$this->config['table_prefix'].'pages'
+            .' WHERE tag = "'.mysqli_real_escape_string($this->dblink, $pageTag).'"'
+            .' AND comment_on = ""'
+            .' ORDER BY `time` ASC LIMIT 1';
+        $page = $this->LoadSingle($sql);
+        if( $page )
+            return $page['time'];
+        return null ;
+    }
+    
     public function FullTextSearch($phrase)
     {
         return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and match(tag, body) against('" . mysqli_real_escape_string($this->dblink, $phrase) . "')");
@@ -1613,9 +1626,69 @@ class Wiki
         $this->Query('update ' . $this->config['table_prefix'] . "pages set owner = '" . mysqli_real_escape_string($this->dblink, $user) . "' where tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and latest = 'Y' limit 1");
     }
 
-    public function LoadAcl($tag, $privilege, $useDefaults = 1)
+    /**
+     * Caching page ACLs (sql query on yeswiki_acls table).
+     * Filled in LoadAcl().
+     * Updated in SaveAcl().
+     * @var array
+     */
+    protected $aclsCache = array() ;
+
+    /**
+     * 
+     * @param string $tag
+     * @param string $privilege
+     * @param boolean $useDefaults
+     * @return array [page_tag, privilege, list]
+     */
+    public function LoadAcl($tag, $privilege, $useDefaults = true )
     {
-        if ((! $acl = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "acls where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1")) && $useDefaults) {
+        if( isset($this->aclsCache[$tag][$privilege]) )
+        {
+            return $this->aclsCache[$tag][$privilege] ;
+        }
+
+        if( $useDefaults )
+        {
+            $this->aclsCache[$tag] = [
+                'read' => array(
+                    'page_tag' => $tag,
+                    'privilege' => 'read',
+                    'list' => $this->GetConfigValue('default_read_acl')
+                ),
+                'write' => array(
+                    'page_tag' => $tag,
+                    'privilege' => 'write',
+                    'list' => $this->GetConfigValue('default_write_acl')
+                ),
+                'comment' => array(
+                    'page_tag' => $tag,
+                    'privilege' => 'comment',
+                    'list' => $this->GetConfigValue('default_comment_acl')
+                ),
+            ];
+        }
+        else
+        {
+            $this->aclsCache[$tag] = [];
+        }
+
+        $res = $this->LoadAll('SELECT * FROM '.$this->config['table_prefix'].'acls'.' WHERE page_tag = "'.mysqli_real_escape_string($this->dblink, $tag).'"');
+        foreach( $res as $acl )
+        {
+            $this->aclsCache[$tag][$acl['privilege']] = $acl;
+        }
+
+        if( isset($this->aclsCache[$tag][$privilege]) )
+        {
+            return $this->aclsCache[$tag][$privilege] ;
+        }
+        return null ;
+
+        /* previous code
+        if (
+            (! $acl = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "acls where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1"))
+            && $useDefaults) {
             $acl = array(
                 'page_tag' => $tag,
                 'privilege' => $privilege,
@@ -1623,18 +1696,40 @@ class Wiki
             );
         }
         return $acl;
+        */
+
     }
 
-    public function SaveAcl($tag, $privilege, $list)
+    /**
+     * 
+     * @param string $tag the page's tag
+     * @param string $privilege the privilege
+     * @param string $list the multiline string describing the acl
+     */
+    public function SaveAcl($tag, $privilege, $list, $appendAcl = false )
     {
-        if ($this->LoadAcl($tag, $privilege, 0)) {
-            $this->Query('update ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", "", $list))) . "' where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1");
-        } else {
-            $this->Query('insert into ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", "", $list))) . "', page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "'");
+        $acl = $this->LoadAcl($tag, $privilege, false );
+
+        if( $acl && $appendAcl ) {
+            $list = $acl['list']."\n".$list ;
         }
+
+        if ($acl) {
+            $this->Query('update ' . $this->config['table_prefix'] . 'acls set list = "' . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . '" where page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '" and privilege = "' . mysqli_real_escape_string($this->dblink, $privilege) . '"');
+        } else {
+            $this->Query('insert into ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . "', page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "'");
+        }
+
+        // update the acls cache
+        $this->aclsCache[$tag][$privilege] = array(
+            'page_tag' => $tag,
+            'privilege' => $privilege,
+            'list' => $list
+        );
     }
+
     // returns true if $user (defaults to current user) has access to $privilege on $page_tag (defaults to current page)
-    public function HasAccess($privilege, $tag = "", $user = "")
+    public function HasAccess($privilege, $tag = '', $user = '')
     {
         // set defaults
         if (! $tag = trim($tag)) {
@@ -1658,7 +1753,7 @@ class Wiki
         $acl = $this->LoadAcl($tag, $privilege);
         
         // fine fine... now go through acl
-        return $this->CheckACL($acl["list"], $user);
+        return $this->CheckACL($acl['list'], $user);
     }
 
     /**
@@ -1779,6 +1874,9 @@ class Wiki
         if ($module_type == 'action') {
             $this->_actionsAclsCache[$module] = $acl;
         }
+        
+        // TODO: Updating $this->_actionsAclsCache with new $acl
+
         if ($old === null) {
             return $this->InsertTriple($module, WIKINI_VOC_ACLS, $acl, $voc_prefix);
         } elseif ($old === $acl) {
@@ -1856,6 +1954,7 @@ class Wiki
             session_unregister('redirects');
         }
     }
+
 }
 
 // stupid version check
@@ -1917,7 +2016,8 @@ $wakkaDefaultConfig = array(
     'default_read_acl' => '*',
     'default_comment_acl' => '@admins',
     'preview_before_save' => 0,
-    'allow_raw_html' => false
+    'allow_raw_html' => false,
+    'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
 );
 unset($_rewrite_mode);
 
@@ -1935,6 +2035,14 @@ if (file_exists($configfile)) {
 }
 $wakkaConfigLocation = $configfile;
 $wakkaConfig = array_merge($wakkaDefaultConfig, $wakkaConfig);
+
+// give a default timezone to avoid error
+if( $wakkaConfig['timezone']!=$wakkaDefaultConfig['timezone'] )
+{
+    date_default_timezone_set( $wakkaConfig['timezone']);
+}else if (!ini_get('date.timezone')) {
+    date_default_timezone_set( $wakkaDefaultConfig['timezone']);
+}
 
 // check for locking
 if (file_exists('locked')) {
@@ -2045,4 +2153,3 @@ if (! (preg_match('#^[A-Za-z0-9_]*$#', $method))) {
 include 'tools/prepend.php';
 
 $wiki->Run($page, $method);
-

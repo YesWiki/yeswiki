@@ -690,8 +690,7 @@ function baz_afficher_formulaire_export()
 {
     $output = '';
 
-    $id_typeannonce = (isset($_POST['id_typeannonce'])) ?
-    $_POST['id_typeannonce'] : '';
+    $id_typeannonce = (isset($_POST['id_typeannonce'])) ? $_POST['id_typeannonce'] : '';
 
     //On choisit un type de fiches pour parser le csv en consequence
     $resultat = baz_valeurs_formulaire('', $GLOBALS['params']['categorienature']);
@@ -739,161 +738,174 @@ function baz_afficher_formulaire_export()
     }
     $output .= '</div> <!-- /.row -->'."\n".'</form>'."\n";
 
-    if ($id_typeannonce != '') {
-        $val_formulaire = baz_valeurs_formulaire($id_typeannonce);
-
-        //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
-        $tableau = $val_formulaire['template'];
-        $nb = 0;
-        $csv = '';
-        $tab_champs = array();
-
-        foreach ($tableau as $ligne) {
-            if ($ligne[0] != 'labelhtml') {
-                // listes
-                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox'
-                    || $ligne[0] == 'listefiche' || $ligne[0] ==
-                    'checkboxfiche') {
-                    $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.
-                    $ligne[6];
-                    $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                } elseif ($ligne[0] == 'image' || $ligne[0] == 'fichier') {
-                    // image et fichiers
-                    $tab_champs[] = $ligne[0].$ligne[1];
-                    $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                } elseif ($ligne[0] == 'carte_google') {
-                    // cas de la carto
-                    $tab_champs[] = $ligne[1];
-                    // bf_latitude
-                    $tab_champs[] = $ligne[2];
-                    // bf_longitude
-                    $csv .= '"'.str_replace('"', '""', $ligne[1])
-                    .((isset($ligne[4]) && $ligne[4] == 1) ? ' *' : '').
-                    '",';
-                    $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[4]) && $ligne[4] == 1) ? ' *' : '').
-                    '",';
-                } elseif ($ligne[0] == 'titre') {
-                    // Champ titre aggregeant plusieurs champs
-                    $tab_champs[] = 'bf_titre';
-                    $csv .= '"'.str_replace('"', '""', 'Titre calculé')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                } elseif ($ligne[0] == 'utilisateur_wikini') {
-                    // Champ titre aggregeant plusieurs champs
-                    $tab_champs[] = 'nomwiki';
-                    $tab_champs[] = 'mot_de_passe_wikini';
-                    $csv .= '"'.str_replace('"', '""', 'NomWiki')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                    $csv .= '"'.str_replace('"', '""', 'Mot de passe')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                } elseif ($ligne[0] == 'inscriptionliste') {
-                    // Nom de la liste et etat de l'abonnement
-                    $tab_champs[] = str_replace(array('@', '.'), array('',
-                        '', ), $ligne[1]);
-                    // nom de la liste
-                    $csv .= '"'.str_replace('"', '""', $ligne[1])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                } else {
-                    $tab_champs[] = $ligne[1];
-                    $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
-                    '",';
-                }
-                ++$nb;
-            }
-        }
-        $csv = substr(trim($csv), 0, -1)."\r\n";
-
-        // TODO : inscription liste
-        //on recupere toutes les fiches du type choisi et on les met au format csv
-        $tableau_fiches = baz_requete_recherche_fiches(
-            '',
-            'alphabetique',
-            $id_typeannonce,
-            $val_formulaire['bn_type_fiche']
-        );
-        $total = count($tableau_fiches);
-        foreach ($tableau_fiches as $fiche) {
-            $tab_valeurs = json_decode($fiche['body'], true);
-            $tab_csv = array();
-
-            foreach ($tab_champs as $index) {
-                $tabindex = explode('|', $index);
-                $index = str_replace('|', '', $index);
-
-                //ces types de champs necessitent un traitement particulier
-                if ($tabindex[0] == 'liste' || $tabindex[0] == 'checkbox'
-                    || $tabindex[0] == 'listefiche' || $tabindex[0] ==
-                    'checkboxfiche') {
-                    // ???  FIXME ?
-                    $html = $tabindex[0](
-                        $toto,
-                        array(
-                            0 => $tabindex[0],
-                            1 => $tabindex[1],
-                            2 => '',
-                            6 => $tabindex[2],
-                        ),
-                        'html',
-                        array($index => isset($tab_valeurs[$index]) ?
-                            $tab_valeurs[$index] : '', )
-                    );
-                    $tabhtml = explode('</span>', $html);
-                    $tab_valeurs[$index] = isset($tabhtml[1]) ?
-                    html_entity_decode(trim(strip_tags($tabhtml[1]))) : '';
-                }
-
-                // si la valeur existe, on l'affiche
-                if (isset($tab_valeurs[$index])) {
-                    if ($index == 'mot_de_passe_wikini') {
-                        $tab_valeurs[$index] = md5($tab_valeurs[$index]);
-                    }
-                    $tab_csv[] = html_entity_decode(
-                        '"'.str_replace('"', '""', $tab_valeurs[$index]).'"'
-                    );
-                } else {
-                    $tab_csv[] = '';
-                }
-            }
-
-            $csv .= implode(',', $tab_csv)."\r\n";
-        }
-
-        //$csv = _convert( $csv );
-        $output .= '<em>'._t('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER')
-
-        .$val_formulaire['bn_label_nature'].' - '._t('BAZ_TOTAL_FICHES')
-        .' : '.$total.'</em>'."\n";
-        $output .= '<pre class="precsv">'."\n".$csv."\n".'</pre>'.
-        "\n";
-
-        //on genere le fichier
-        $chemin_destination =
-        BAZ_CHEMIN_UPLOAD.'bazar-export-'.$id_typeannonce.'.csv';
-
-        //verification de la presence de ce fichier, s'il existe deja, on le supprime
-        if (file_exists($chemin_destination)) {
-            unlink($chemin_destination);
-        }
-        $fp = fopen($chemin_destination, 'w');
-        fwrite($fp, $csv);
-        fclose($fp);
-        chmod($chemin_destination, 0755);
-
-        //on cree le lien vers ce fichier
-        $output .=
-        '<a href="'.$chemin_destination.'" class="link-csv-file" title="'
-        ._t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'">'.
-        _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
+    if ($id_typeannonce == '') {
+        return $output;
     }
+
+    $val_formulaire = baz_valeurs_formulaire($id_typeannonce);
+
+    //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
+    $tableau = $val_formulaire['template'];
+    $nb = 0;
+    $csv = '';
+    $tab_champs = array();
+
+    foreach ($tableau as $ligne) {
+        if ($ligne[0] != 'labelhtml') {
+            // listes
+            if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox'
+                || $ligne[0] == 'listefiche' || $ligne[0] ==
+                'checkboxfiche') {
+                $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.
+                $ligne[6];
+                $csv .= '"'.str_replace('"', '""', $ligne[2])
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+            } elseif ($ligne[0] == 'image' || $ligne[0] == 'fichier') {
+                // image et fichiers
+                $tab_champs[] = $ligne[0].$ligne[1];
+                $csv .= '"'.str_replace('"', '""', $ligne[2])
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+            } elseif ($ligne[0] == 'carte_google') {
+                // cas de la carto
+                $tab_champs[] = $ligne[1];
+                // bf_latitude
+                $tab_champs[] = $ligne[2];
+                // bf_longitude
+                $csv .= '"'.str_replace('"', '""', $ligne[1])
+                .((isset($ligne[4]) && $ligne[4] == 1) ? ' *' : '').
+                '",';
+                $csv .= '"'.str_replace('"', '""', $ligne[2])
+                .((isset($ligne[4]) && $ligne[4] == 1) ? ' *' : '').
+                '",';
+            } elseif ($ligne[0] == 'titre') {
+                // Champ titre aggregeant plusieurs champs
+                $tab_champs[] = 'bf_titre';
+                $csv .= '"'.str_replace('"', '""', 'Titre calculé')
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+            } elseif ($ligne[0] == 'utilisateur_wikini') {
+                // Champ titre aggregeant plusieurs champs
+                $tab_champs[] = 'nomwiki';
+                $tab_champs[] = 'mot_de_passe_wikini';
+                $csv .= '"'.str_replace('"', '""', 'NomWiki')
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+                $csv .= '"'.str_replace('"', '""', 'Mot de passe')
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+            } elseif ($ligne[0] == 'inscriptionliste') {
+                // Nom de la liste et etat de l'abonnement
+                $tab_champs[] = str_replace(array('@', '.'), array('',
+                    '', ), $ligne[1]);
+                // nom de la liste
+                $csv .= '"'.str_replace('"', '""', $ligne[1])
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+            } else {
+                $tab_champs[] = $ligne[1];
+                $csv .= '"'.str_replace('"', '""', $ligne[2])
+                .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                '",';
+            }
+            ++$nb;
+        }
+    }
+
+    // CSV file headers
+    //$csv = substr(trim($csv), 0, -1)."\r\n";
+    $csv = '"datetime_create","datetime_latest",'.substr(trim($csv), 0, -1)."\n";
+
+    // TODO : inscription liste
+    //on recupere toutes les fiches du type choisi et on les met au format csv
+    $tableau_fiches = baz_requete_recherche_fiches(
+        '',
+        'alphabetique',
+        $id_typeannonce,
+        $val_formulaire['bn_type_fiche']
+    );
+    $total = count($tableau_fiches);
+    foreach ($tableau_fiches as $fiche) {
+
+        // create date and latest date
+        $fiche_time_create = date_create_from_format('Y-m-d H:i:s', $GLOBALS['wiki']->GetPageCreateTime($fiche['tag']));
+        $fiche_time_latest = date_create_from_format('Y-m-d H:i:s', $fiche['time']);
+
+        $tab_valeurs = json_decode($fiche['body'], true);
+        $tab_csv = array();
+
+        foreach ($tab_champs as $index) {
+            $tabindex = explode('|', $index);
+            $index = str_replace('|', '', $index);
+
+            //ces types de champs necessitent un traitement particulier
+            if ($tabindex[0] == 'liste' || $tabindex[0] == 'checkbox'
+                || $tabindex[0] == 'listefiche' || $tabindex[0] ==
+                'checkboxfiche') {
+                // ???  FIXME ?
+                $html = $tabindex[0](
+                    $toto,
+                    array(
+                        0 => $tabindex[0],
+                        1 => $tabindex[1],
+                        2 => '',
+                        6 => $tabindex[2],
+                    ),
+                    'html',
+                    array($index => isset($tab_valeurs[$index]) ?
+                        $tab_valeurs[$index] : '', )
+                );
+                $tabhtml = explode('</span>', $html);
+                $tab_valeurs[$index] = isset($tabhtml[1]) ?
+                html_entity_decode(trim(strip_tags($tabhtml[1]))) : '';
+            }
+
+            // si la valeur existe, on l'affiche
+            if (isset($tab_valeurs[$index])) {
+                if ($index == 'mot_de_passe_wikini') {
+                    $tab_valeurs[$index] = md5($tab_valeurs[$index]);
+                }
+                $tab_csv[] = html_entity_decode(
+                    '"'.str_replace('"', '""', $tab_valeurs[$index]).'"'
+                );
+            } else {
+                $tab_csv[] = '';
+            }
+        }
+
+        //$csv .= implode(',', $tab_csv)."\r\n";
+        $csv.= date_format($fiche_time_create,'d/m/Y H:i:s')
+            .','.date_format($fiche_time_latest,'d/m/Y H:i:s')
+            .','.implode(',', $tab_csv)."\n";
+    }
+
+    //$csv = _convert( $csv );
+    $output .= '<em>'._t('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER')
+
+    .$val_formulaire['bn_label_nature'].' - '._t('BAZ_TOTAL_FICHES')
+    .' : '.$total.'</em>'."\n";
+    $output .= '<pre class="precsv">'."\n".$csv."\n".'</pre>'.
+    "\n";
+
+    //on genere le fichier
+    $chemin_destination =
+    BAZ_CHEMIN_UPLOAD.'bazar-export-'.$id_typeannonce.'.csv';
+
+    //verification de la presence de ce fichier, s'il existe deja, on le supprime
+    if (file_exists($chemin_destination)) {
+        unlink($chemin_destination);
+    }
+    $fp = fopen($chemin_destination, 'w');
+    fwrite($fp, $csv);
+    fclose($fp);
+    chmod($chemin_destination, 0755);
+
+    //on cree le lien vers ce fichier
+    $output .=
+    '<a href="'.$chemin_destination.'" class="link-csv-file" title="'
+    ._t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'">'.
+    _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
 
     return $output;
 }
@@ -3331,9 +3343,13 @@ function baz_requete_recherche_fiches(
     'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
     'ORDER BY resource ASC';
 
-    //requete d'obtention des valeurs d'une fiche
+    /**
+     * Requete d'obtention des valeurs d'une fiche.
+     * 20160726 cyrille: remplace sélection "body" par "*"
+     * @var string
+     */
     $requete =
-    'SELECT DISTINCT body FROM '.BAZ_PREFIXE.
+    'SELECT DISTINCT * FROM '.BAZ_PREFIXE.
     'pages WHERE latest="Y" AND comment_on = \'\'';
 
     // TODO: on limite a la langue choisie
@@ -4345,7 +4361,38 @@ function getAllParameters($wiki)
     // correspondance transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
     $param['correspondance'] = $wiki->GetParameter('correspondance');
 
-    // parametres pour bazarliste avec carto
+    /*
+     * Facette : filtres à gauche ou droite (droite par défaut)
+     */
+    $param['filterposition'] = $wiki->GetParameter('filterposition');
+    if (empty($param['filterposition']) || (!empty($param['filterposition'])
+        && $param['filterposition'] != 'left')) {
+            $param['filterposition'] = 'right';
+        }
+
+    /*
+     * Facette : largeur colonne
+     */
+    $param['filtercolsize'] = $wiki->GetParameter('filtercolsize');
+    if (empty($param['filtercolsize'])
+        || (!empty($param['filtercolsize'])
+            && (!(ctype_digit($param['filtercolsize'])
+                && intval($param['filtercolsize']) >= 1 && intval($param['filtercolsize']) <= 12))))
+    {
+        $param['filtercolsize'] = '3';
+    }
+
+    /*
+     * Facette: déplier tous les groupes (panels à droite)
+     */
+    $param['groupsexpanded'] = $wiki->GetParameter('groupsexpanded');
+    if (empty($param['groupsexpanded'])) {
+        $param['groupsexpanded'] = 'false';
+    }
+
+    // ==================================================
+    // Parametres pour Bazarliste avec carto
+    //
 
     /*
      * provider : designe le fond de carte utilisé pour la carte
@@ -4534,9 +4581,7 @@ function getAllParameters($wiki)
     }
 
     /*
-    *
     * Affichage en eclate des points superposes : true or false, par defaut false
-    *
     */
     $param['spider'] = $wiki->GetParameter('spider'); // true or false
     if (empty($param['spider'])) {
@@ -4544,9 +4589,7 @@ function getAllParameters($wiki)
     }
 
     /*
-    *
     * Affichage en cluster : true or false, par defaut false
-    *
     */
     $param['cluster'] = $wiki->GetParameter('cluster'); // true or false
     if (empty($param['cluster'])) {
@@ -4554,24 +4597,13 @@ function getAllParameters($wiki)
     }
 
     /*
-     * Facette : filtres à gauche ou droite (droite par défaut)
+     * Ajout bouton plein écran
+     * fullscreen: true or false
+     * https://github.com/brunob/leaflet.fullscreen
      */
-    $param['filterposition'] = $wiki->GetParameter('filterposition');
-    if (empty($param['filterposition']) || (!empty($param['filterposition'])
-        && $param['filterposition'] != 'left')) {
-        $param['filterposition'] = 'right';
-    }
-
-    /*
-     * Facette : largeur colonne
-     */
-    $param['filtercolsize'] = $wiki->GetParameter('filtercolsize');
-    if (empty($param['filtercolsize']) ||
-        (!empty($param['filtercolsize']) &&
-            (!(ctype_digit($param['filtercolsize']) &&
-                intval($param['filtercolsize']) >= 1 &&
-                intval($param['filtercolsize']) <= 12)))) {
-        $param['filtercolsize'] = '3';
+    $param['fullscreen'] = $wiki->GetParameter('fullscreen');
+    if (empty($param['fullscreen'])) {
+        $param['fullscreen'] = 'false';
     }
 
     return $param;
