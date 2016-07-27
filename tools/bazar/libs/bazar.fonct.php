@@ -1872,7 +1872,6 @@ function bazPrepareFormData($form)
 
             // texte d'aide
             $prepared[$i]['helper'] = $formelem[10];
-
         } elseif (in_array(
             $formelem[0],
             array('texte', 'textelong', 'jour', 'listedatedeb', 'listedatefin', 'mot_de_passe', 'lien_internet', 'champs_mail')
@@ -1929,7 +1928,6 @@ function bazPrepareFormData($form)
 
             // texte d'aide
             $prepared[$i]['helper'] = $formelem[10];
-
         } elseif (in_array(
             $formelem[0],
             array('fichier', 'image')
@@ -2611,7 +2609,9 @@ function baz_valeurs_fiche($idfiche = '', $formtab = '')
         $type_page = $GLOBALS['wiki']->GetTripleValue($idfiche, 'http://outils-reseaux.org/_vocabulary/type', '', '');
         //on verifie que la page en question est bien une page wiki
         if ($type_page == 'fiche_bazar') {
-            $valjson = $GLOBALS['wiki']->LoadPage($idfiche);
+            // on recupere une autre version en cas de consultation de l'historique
+            $time = isset($_REQUEST['time']) ? $_REQUEST['time'] : '';
+            $valjson = $GLOBALS['wiki']->LoadPage($idfiche, $time);
 
             $tab_valeurs_fiche = json_decode($valjson['body'], true);
 
