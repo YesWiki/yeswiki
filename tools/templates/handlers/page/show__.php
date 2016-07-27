@@ -24,7 +24,5 @@ if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == '
     $GLOBALS['template-error'] = '';
 }
 
-preg_match_all('/\<!-- start of buttondropdown -->.*(\<ul\>).*\<!-- end of buttondropdown --\>/Uis', $plugin_output_new, $dropbtns);
-var_dump(
-    $dropbtns[1]
-);
+
+$plugin_output_new = postFormat($plugin_output_new);

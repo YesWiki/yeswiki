@@ -588,3 +588,17 @@ function isExtension($filename, $ext)
 {
     return substr($filename, -strlen($ext), strlen($filename)) === $ext;
 }
+
+function postFormat($output)
+{
+    // pour les buttondropdown, on ajoute les classes css aux listes
+    $pattern = array(
+       '/(\<!-- start of buttondropdown -->.*)\<ul\>(.*\<!-- end of buttondropdown --\>)/Uis',
+       '/<li>\s*<hr \/>\s*<\/li>/Uis',
+    );
+    $replacement = array(
+        '$1<ul class="dropdown-menu dropdown-menu-right" role="menu">$2',
+        '<li class="divider"></li>',
+    );
+    return preg_replace($pattern, $replacement, $output);
+}
