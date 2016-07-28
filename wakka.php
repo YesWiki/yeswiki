@@ -44,7 +44,7 @@
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
 define("YESWIKI_VERSION", 'Cercopitheque');
-define("YESWIKI_RELEASE", '2016.07.26');
+define("YESWIKI_RELEASE", '2016.07.28');
 
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
