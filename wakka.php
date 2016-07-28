@@ -44,7 +44,7 @@
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
 define("YESWIKI_VERSION", 'Cercopitheque');
-define("YESWIKI_RELEASE", '2016.07.26');
+define("YESWIKI_RELEASE", '2016.07.28');
 
 require 'includes/constants.php';
 include 'includes/urlutils.inc.php';
@@ -220,9 +220,11 @@ class Wiki
         return $this->method;
     }
 
-    public function GetConfigValue($name)
+    public function GetConfigValue($name, $default=null)
     {
-        return isset($this->config[$name]) ? trim($this->config[$name]) : '';
+        return isset($this->config[$name])
+        	? trim($this->config[$name])
+        	: ($default != null ? $default : '') ;
     }
 
     public function GetWakkaName()

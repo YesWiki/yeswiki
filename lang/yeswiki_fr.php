@@ -182,6 +182,7 @@ $GLOBALS['translations'] = array(
 'INDICATE_THE_PARAMETER_TOC' => 'Indiquez le nom de la page sommaire, param&egrave;tre "toc"',
 
 // actions/usersettings.php
+'USER_SETTINGS' => 'Paramètres utilisateur',
 'YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute;',
 'PARAMETERS_SAVED' => 'Param&egrave;tres sauvegard&eacute;s',
 'NO_SPACES_IN_PASSWORD' => 'Les espaces ne sont pas permis dans les mots de passe',
@@ -200,7 +201,7 @@ $GLOBALS['translations'] = array(
 'YOUR_OLD_PASSWORD' => 'Votre ancien mot de passe',
 'NEW_PASSWORD' => 'Nouveau mot de passe',
 'CHANGE' => 'Changer',
-'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur doit &ecirc;tre format&eacute; en NomWiki',
+'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur doit &ecirc;tre format&eacute; en NomWiki (<em>ex: CapitaineHaddock</em>)',
 'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez sp&eacute;cifier une adresse de messagerie &eacute;lectronique',
 'THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci ne ressemble pas &agrave; une adresse de messagerie &eacute;lectronique',
 'PASSWORDS_NOT_IDENTICAL' => 'Les mots de passe n\'&eacute;taient pas identiques',

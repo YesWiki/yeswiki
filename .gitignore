@@ -1,13 +1,38 @@
-Wiki stuff
+
+# Wiki stuff
 
 wakka.config.php
 info.php
-tools/hashcash/secret/wp-hashcash.key
-cache/*
-files/*
-themes/*
+cache/
+!cache/empty.txt
+files/
+!files/empty.txt
+themes/
 !themes/bootstrap/
-tools/wkhtmltopdf/*
+
+# tools
+tools/
+!tools/prepend.php
+!tools/aceditor/
+!tools/attach/
+!tools/bazar/
+!tools/contact/
+!tools/despam/
+!tools/hashcash/
+tools/hashcash/secret/wp-hashcash.key
+!tools/ipblock/
+!tools/lang/
+!tools/libs/
+!tools/login/
+!tools/nospam/
+!tools/progressBar/
+!tools/rss/
+!tools/syndication/
+!tools/tableau/
+!tools/tags/
+!tools/templates/
+!tools/toc/
+!tools/toolsmng/
 
 # Macintosh OS
 

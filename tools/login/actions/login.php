@@ -45,8 +45,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
 include_once 'tools/login/libs/login.functions.php';
@@ -132,12 +132,12 @@ if ($_REQUEST["action"] == "login") {
                 $this->Redirect($this->href('', $_POST["name"], ''));
             } else {
                 // on va sur la page d'ou on s'est identifie sinon
-                $this->Redirect($_POST['incomingurl']);
+                $this->Redirect($incomingurl);
             }
         } else {
             // on affiche une erreur sur le mot de passe sinon
             $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-            $this->Redirect($_POST['incomingurl']);
+            $this->Redirect($incomingurl);
         }
     } else {
         // si le nomWiki est un mail
@@ -154,17 +154,17 @@ if ($_REQUEST["action"] == "login") {
                     $this->Redirect($this->href('', $existingUser["name"], ''));
                 } else {
                     // on va sur la page d'ou on s'est identifie sinon
-                    $this->Redirect($_POST['incomingurl']);
+                    $this->Redirect($incomingurl);
                 }
             } else {
                 // on affiche une erreur sur le mot de passe sinon
                 $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-                $this->Redirect($_POST['incomingurl']);
+                $this->Redirect($incomingurl);
             }
         } else {
             // on affiche une erreur sur le NomWiki sinon
             $this->SetMessage(_t('LOGIN_WRONG_USER'));
-            $this->Redirect($_POST['incomingurl']);
+            $this->Redirect($incomingurl);
         }
     }
 }

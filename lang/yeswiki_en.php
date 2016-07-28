@@ -182,6 +182,7 @@ $GLOBALS['translations'] = array(
 'INDICATE_THE_PARAMETER_TOC' => 'Indicate the WikiPage used as table of content, parameter "toc"',
 
 // actions/usersettings.php
+'USER_SETTINGS' => 'User settings',
 'YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected',
 'PARAMETERS_SAVED' => 'Parameters saved',
 'NO_SPACES_IN_PASSWORD' => 'No spaces allowed in password',
