@@ -3,10 +3,11 @@
 
 wakka.config.php
 info.php
-tools/hashcash/secret/wp-hashcash.key
-cache/*
-files/*
-themes/*
+cache/
+!cache/empty.txt
+files/
+!files/empty.txt
+themes/
 !themes/bootstrap/
 
 # tools
@@ -18,6 +19,7 @@ tools/
 !tools/contact/
 !tools/despam/
 !tools/hashcash/
+tools/hashcash/secret/wp-hashcash.key
 !tools/ipblock/
 !tools/lang/
 !tools/libs/
