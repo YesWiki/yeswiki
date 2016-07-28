@@ -224,7 +224,7 @@ class Wiki
     {
         return isset($this->config[$name])
         	? trim($this->config[$name])
-        	: $default != null ? $default : '' ;
+        	: ($default != null ? $default : '') ;
     }
 
     public function GetWakkaName()

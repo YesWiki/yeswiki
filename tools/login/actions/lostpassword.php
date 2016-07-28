@@ -49,22 +49,26 @@ if (!function_exists('sendPasswordEmail')) {
 function sendPasswordEmail($userID) {
     global $wiki;
     if ($existingUser = $wiki->LoadUser($userID)) {
-        $expFormat = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 3, date("Y"));
-        $expDate = date("Y-m-d H:i:s", $expFormat);
-        $key = md5($userID . '_' . $existingUser['email'] . rand(0, 10000) . $expDate . PW_SALT);
+
+    	//$expFormat = mktime(date("H"), date("i"), date("s"), date("m"), date("d") + 3, date("Y"));
+        //$expDate = date("Y-m-d H:i:s", $expFormat);
+        $key = md5($userID . '_' . $existingUser['email'] . rand(0, 10000) . date('Y-m-d H:i:s') . PW_SALT);
         $res = $wiki->InsertTriple($userID, 'http://outils-reseaux.org/_vocabulary/key', $key);
-            $passwordLink = $wiki->Href()."&a=recover&email=" . $key . "&u=" . urlencode(base64_encode($userID));
-            $message = "Cher $userID,\r\n";
-            $message .= "Cliquez sur le lien suivant pour reinitialiser votre mot de passe:\r\n";
-            $message .= "-----------------------\r\n";
-            $message .= "$passwordLink\r\n";
-            $message .= "-----------------------\r\n";
-            $message .= "Merci\r\n";
-            $domain = $wiki->Href();
-            $domain = parse_url($domain);
-            $domain = $domain["host"];
-            $subject = "Mot de passe perdu pour ".$domain;
-            send_mail( $GLOBALS['wiki']->GetConfigValue('email_from','noreply@'.$domain), 'WikiAdmin', $existingUser['email'], $subject, $message);
+        $passwordLink = $wiki->Href().'&a=recover&email=' . $key . '&u=' . urlencode(base64_encode($userID));
+
+        $domain = $wiki->Href();
+        $domain = parse_url($domain);
+        $domain = $domain['host'];
+
+        $message = 'Cher '.$userID."\n";
+        $message .= 'Cliquez sur le lien suivant pour réinitialiser votre mot de passe:'."\n";
+        $message .= '-----------------------'."\n";
+        $message .= $passwordLink."\n";
+        $message .= '-----------------------'."\n";
+        $message .= 'L\'équipe de '.$domain."\n";
+
+        $subject = 'Mot de passe perdu pour '.$domain;
+        send_mail( $GLOBALS['wiki']->GetConfigValue('email_from','noreply@'.$domain), 'WikiAdmin', $existingUser['email'], $subject, $message);
     }
 }
 }
