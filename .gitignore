@@ -1,4 +1,5 @@
-Wiki stuff
+
+# Wiki stuff
 
 wakka.config.php
 info.php
@@ -7,7 +8,29 @@ cache/*
 files/*
 themes/*
 !themes/bootstrap/
-tools/wkhtmltopdf/*
+
+# tools
+tools/
+!tools/prepend.php
+!tools/aceditor/
+!tools/attach/
+!tools/bazar/
+!tools/contact/
+!tools/despam/
+!tools/hashcash/
+!tools/ipblock/
+!tools/lang/
+!tools/libs/
+!tools/login/
+!tools/nospam/
+!tools/progressBar/
+!tools/rss/
+!tools/syndication/
+!tools/tableau/
+!tools/tags/
+!tools/templates/
+!tools/toc/
+!tools/toolsmng/
 
 # Macintosh OS
 
