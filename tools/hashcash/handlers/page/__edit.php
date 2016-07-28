@@ -17,7 +17,12 @@ if (isset($this->config['password_for_editing']) and !empty($this->config['passw
   <div class="form-group">
     <label for="password_for_editing">'._t('HASHCASH_GENERAL_PASSWORD').'</label>
     <input type="password" class="form-control" id="password_for_editing" name="password_for_editing">
-  </div>
+  </div>';
+        // pour l'edition d'une page de l'historique
+        if (isset($_REQUEST['time'])) {
+            echo '<input type="hidden" name="time" value="'.htmlspecialchars($_REQUEST['time']).'">';
+        }
+        echo '
   <button type="submit" class="btn btn-default">'._t('HASHCASH_SEND').'</button>
 </form>';
         echo $this->Footer();
