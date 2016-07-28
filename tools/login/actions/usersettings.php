@@ -28,17 +28,25 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-if (!isset($_REQUEST['action'])) {
-    $_REQUEST['action'] = '';
+
+if (!defined('WIKINI_VERSION')) {
+	die('acc&egrave;s direct interdit');
 }
-if ($_REQUEST['action'] == 'logout') {
+
+echo $this->Format('====='._t('USER_SETTINGS').'=====');
+
+$action = isset($_REQUEST['usersettings_action']) ? $_REQUEST['usersettings_action'] : '' ;
+
+if ($action == 'logout') {
+
     $this->LogoutUser();
     $this->SetMessage(_t('YOU_ARE_NOW_DISCONNECTED').' !');
     $this->Redirect($this->href());
+
 } elseif ($user = $this->GetUser()) {
 
     // is user trying to update?
-    if ($_REQUEST['action'] == 'update') {
+    if ($action == 'update') {
         $this->Query('update '.$this->getUserTablePrefix().'users set '.
             "email = '".mysqli_real_escape_string($this->dblink, $_POST['email'])."', ".
             "doubleclickedit = '".mysqli_real_escape_string($this->dblink, $_POST['doubleclickedit'])."', ".
@@ -55,7 +63,7 @@ if ($_REQUEST['action'] == 'logout') {
         $this->Redirect($this->href());
     }
 
-    if ($_REQUEST['action'] == 'changepass') {
+    if ($action == 'changepass') {
         // check password
             $password = $_POST['password'];
         if (preg_match('/ /', $password)) {
@@ -75,57 +83,49 @@ if ($_REQUEST['action'] == 'logout') {
     // user is logged in; display config form
     echo $this->FormOpen();
     ?>
-  <input type="hidden" name="action" value="update" />
+  <input type="hidden" name="usersettings_action" value="update" />
   <table>
     <tr>
       <td align="right"></td>
-      <td><?php echo _t('GREETINGS');
-    ?>, <?php echo $this->Link($user['name']) ?>&nbsp;!</td>
+      <td><?php echo _t('GREETINGS');?>, <?php echo $this->Link($user['name']) ?>&nbsp;!</td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('YOUR_EMAIL_ADDRESS');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('YOUR_EMAIL_ADDRESS');?>&nbsp;:</td>
       <td><input name="email" value="<?php echo htmlspecialchars($user['email'], ENT_COMPAT, YW_CHARSET) ?>" size="40" /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('DOUBLE_CLICK_TO_EDIT');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('DOUBLE_CLICK_TO_EDIT');?>&nbsp;:</td>
       <td><input type="hidden" name="doubleclickedit" value="N" /><input type="checkbox" name="doubleclickedit" value="Y" <?php echo $user['doubleclickedit'] == 'Y' ? 'checked="checked"' : '' ?> /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('SHOW_COMMENTS_BY_DEFAULT');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('SHOW_COMMENTS_BY_DEFAULT');?>&nbsp;:</td>
       <td><input type="hidden" name="show_comments" value="N" /><input type="checkbox" name="show_comments" value="Y" <?php echo $user['show_comments'] == 'Y' ? 'checked"checked"' : '' ?> /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('MAX_NUMBER_OF_LASTEST_COMMENTS');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('MAX_NUMBER_OF_LASTEST_COMMENTS');?>&nbsp;:</td>
       <td><input name="changescount" value="<?php echo htmlspecialchars($user['changescount'], ENT_COMPAT, YW_CHARSET) ?>" size="40" /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('MAX_NUMBER_OF_VERSIONS');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('MAX_NUMBER_OF_VERSIONS');?>&nbsp;:</td>
       <td><input name="revisioncount" value="<?php echo htmlspecialchars($user['revisioncount'], ENT_COMPAT, YW_CHARSET) ?>" size="40" /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('YOUR_MOTTO');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('YOUR_MOTTO');?>&nbsp;:</td>
       <td><input name="motto" value="<?php echo htmlspecialchars($user['motto'], ENT_COMPAT, YW_CHARSET) ?>" size="40" /></td>
     </tr>
     <tr>
       <td></td>
-      <td><input type="submit" value="<?php echo _t('UPDATE');
-    ?>" /> <input type="button" value="<?php echo _t('DISCONNECT');
-    ?>" onclick="document.location='<?php echo $this->href('', '', 'action=logout');
-    ?>'" /></td>
+      <td>
+      	<input type="submit" value="<?php echo _t('UPDATE');?>" />
+      	<input type="button" value="<?php echo _t('DISCONNECT');?>" onclick="document.location='<?php echo $this->href('', '', 'usersettings_action=logout');?>'" />
+      </td>
     </tr>
   </table>
-
-    <?php
+	<?php
     echo $this->FormClose();
     echo $this->FormOpen();
-    ?>
-  <input type="hidden" name="action" value="changepass" />
+	?>
+  <input type="hidden" name="usersettings_action" value="changepass" />
   <table>
     <tr>
       <td>&nbsp;</td>
@@ -133,8 +133,7 @@ if ($_REQUEST['action'] == 'logout') {
     </tr>
     <tr>
       <td align="right"></td>
-      <td><?php echo _t('CHANGE_THE_PASSWORD');
-    ?></td>
+      <td><?php echo _t('CHANGE_THE_PASSWORD');?></td>
     </tr>
     <?php
     if (isset($error)) {
@@ -159,30 +158,31 @@ if ($_REQUEST['action'] == 'logout') {
   </table>
     <?php
     echo $this->FormClose();
+    
 } else {
     // user is not logged in
 
     // is user trying to log in or register?
-    if ($_REQUEST['action'] == 'login') {
+    if ($action == 'login') {
         // if user name already exists, check password
         if ($existingUser = $this->LoadUser($_POST['name'])) {
             // check password
             if ($existingUser['password'] == md5($_POST['password'])) {
                 $this->SetUser($existingUser, $_POST['remember']);
-                $this->Redirect($this->href('', '', 'action=checklogged', false));
+                $this->Redirect($this->href('', '', 'usersettings_action=checklogged', false));
             } else {
-                $error = _t('WRONG_PASSWORD').'&nbsp;!';
+            	$error = _t('WRONG_PASSWORD').'&nbsp;!';
             }
         } else {
             // otherwise, create new account
-            $name = trim($_POST['name']);
+        	$name = trim($_POST['name']);
             $email = trim($_POST['email']);
             $password = $_POST['password'];
             $confpassword = $_POST['confpassword'];
 
             // check if name is WikkiName style
             if (!$this->IsWikiName($name)) {
-                $error = _t('USERNAME_MUST_BE_WIKINAME').'.';
+            	$error = _t('USERNAME_MUST_BE_WIKINAME').'.';
             } elseif (!$email) {
                 $error = _t('YOU_MUST_SPECIFY_AN_EMAIL').'.';
             } elseif (!preg_match("/^.+?\@.+?\..+$/", $email)) {
@@ -208,27 +208,21 @@ if ($_REQUEST['action'] == 'logout') {
                 $this->Redirect($this->href());
             }
         }
-    } elseif ($_REQUEST['action'] == 'checklogged') {
+    } elseif ($action == 'checklogged') {
         $error = _t('YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED').'.';
     }
 
     echo $this->FormOpen();
     ?>
-  <input type="hidden" name="action" value="login" />
+  <input type="hidden" name="usersettings_action" value="login" />
   <table>
-    <tr>
-      <td></td>
-      <td><?php echo _t('IF_YOU_ARE_REGISTERED_LOGGIN_HERE');
-    ?></td>
-    </tr>
     <?php
     if (isset($error)) {
         echo '<tr><td></td><td><div class="alert alert-danger">', $error, "</div></td></tr>\n";
     }
     ?>
     <tr>
-      <td align="right"><?php echo _t('YOUR_WIKINAME');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('YOUR_WIKINAME');?>&nbsp;:</td>
       <td><input name="name" size="40" value="<?php
         if (isset($name)) {
             echo htmlspecialchars($name, ENT_COMPAT, YW_CHARSET);
@@ -243,6 +237,10 @@ if ($_REQUEST['action'] == 'logout') {
       <input type="checkbox" name="remember" value="1" />&nbsp;<?php echo _t('REMEMBER_ME');
     ?>.
       </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><?php echo _t('IF_YOU_ARE_REGISTERED_LOGGIN_HERE');?></td>
     </tr>
     <tr>
       <td></td>

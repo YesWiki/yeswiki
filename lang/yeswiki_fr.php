@@ -182,6 +182,7 @@ $GLOBALS['translations'] = array(
 'INDICATE_THE_PARAMETER_TOC' => 'Indiquez le nom de la page sommaire, param&egrave;tre "toc"',
 
 // actions/usersettings.php
+'USER_SETTINGS' => 'Paramètres utilisateur',
 'YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute;',
 'PARAMETERS_SAVED' => 'Param&egrave;tres sauvegard&eacute;s',
 'NO_SPACES_IN_PASSWORD' => 'Les espaces ne sont pas permis dans les mots de passe',
