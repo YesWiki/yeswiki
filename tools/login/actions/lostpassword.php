@@ -158,12 +158,14 @@ if (isset ( $_POST ['subStep'] ) && ! isset ( $_GET ['a'] )) { // Sous-etape
 }
 
 switch ($step) {
+
 	case 'userNotFound' :
 		echo $this->Format ( "Utilisateur ou email inconnus " );
 		break;
+
 	case 'emailForm' :
 		echo $this->FormOpen ();
-		echo $this->Format ( "== R-einitialisation du mot de passe ==" );
+		echo $this->Format ( "== Changer de mot de passe ==" );
 		if ($error == true) {
 			echo $this->Format ( "Veuillez saisir un utilisateur ou un email pour continuer" );
 		}
@@ -181,16 +183,18 @@ switch ($step) {
 	</div>
 </div>
 <input type="hidden" name="subStep" value="1" />
-<div class="fieldGroup">
+<div class="field">
 	<input type="submit" value="Submit" style="margin-left: 150px;" />
 </div>
 <div class="clearfix"></div>
 <?php
 		echo $this->FormClose ();
 		break;
+
 	case 'successPage' :
 		echo $this->Format ( "Un message vous a été envoyé avec les instructions pour re-initialiser votre mot de passe" );
 		break;
+
 	case 'recoverForm' :
 		echo $this->Format ( 'Bienvenue ' . $securityUser . '---' );
 		echo $this->Format ( 'Saisir votre nouveau mot de passe dans les champs ci-dessous' );
