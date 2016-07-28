@@ -58,7 +58,7 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
 
 function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '')
 {
-    require 'tools/contact/libs/vendor/PHPMailer/PHPMailerAutoload.php';
+    require_once('tools/contact/libs/vendor/PHPMailer/PHPMailerAutoload.php');
     //Create a new PHPMailer instance
     $mail = new PHPMailer;
 
