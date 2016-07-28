@@ -60,11 +60,12 @@ if (! function_exists ( 'sendPasswordEmail' )) {
 			$res = $wiki->InsertTriple ( $userID, 'http://outils-reseaux.org/_vocabulary/key', $key );
 			$passwordLink = $wiki->Href () . '&a=recover&email=' . $key . '&u=' . urlencode ( base64_encode ( $userID ) );
 			
-			$domain = $wiki->Href ();
-			$domain = parse_url ( $domain );
-			$domain = $domain ['host'];
-			
-			$message = 'Cher ' . $userID . "\n";
+			//$domain = $wiki->Href ();
+			//$domain = parse_url ( $domain );
+			//$domain = $domain ['host'];
+			$domain = $GLOBALS ['wiki']->GetConfigValue('base_url');
+
+			$message = 'Cher ' . $userID . ",\n";
 			$message .= 'Cliquez sur le lien suivant pour réinitialiser votre mot de passe:' . "\n";
 			$message .= '-----------------------' . "\n";
 			$message .= $passwordLink . "\n";
@@ -72,6 +73,10 @@ if (! function_exists ( 'sendPasswordEmail' )) {
 			$message .= 'L\'équipe de ' . $domain . "\n";
 			
 			$subject = 'Mot de passe perdu pour ' . $domain;
+
+			if (! function_exists ( 'send_mail' )) {
+				require_once ('includes/email.inc.php');
+			}
 			send_mail ( $GLOBALS ['wiki']->GetConfigValue ( 'email_from', 'noreply@' . $domain ), 'WikiAdmin', $existingUser ['email'], $subject, $message );
 		}
 	}
@@ -104,10 +109,6 @@ if (! function_exists ( 'updateUserPassword' )) {
 		$res = $wiki->DeleteTriple ( $userID, 'http://outils-reseaux.org/_vocabulary/key', $key );
 		return true;
 	}
-}
-
-if (! function_exists ( 'send_mail' )) {
-	require_once ('tools/contact/libs/contact.functions.php');
 }
 
 $error = false;
