@@ -141,19 +141,16 @@ if ($action == 'logout') {
     }
     ?>
     <tr>
-      <td align="right"><?php echo _t('YOUR_OLD_PASSWORD');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('YOUR_OLD_PASSWORD');?>&nbsp;:</td>
       <td><input type="password" name="oldpass" size="40" /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('NEW_PASSWORD');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('NEW_PASSWORD');?>&nbsp;:</td>
       <td><input type="password" name="password" size="40" /></td>
     </tr>
     <tr>
       <td></td>
-      <td><input type="submit" value="<?php echo _t('CHANGE');
-    ?>" size="40" /></td>
+      <td><input type="submit" value="<?php echo _t('CHANGE');?>" size="40" /></td>
     </tr>
   </table>
     <?php
@@ -229,13 +226,11 @@ if ($action == 'logout') {
         } ?>" /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('PASSWORD_5_CHARS_MINIMUM');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('PASSWORD_5_CHARS_MINIMUM');?>&nbsp;:</td>
       <td>
       <input type="password" name="password" size="40" />
       <input type="hidden" name="remember" value="0" />
-      <input type="checkbox" name="remember" value="1" />&nbsp;<?php echo _t('REMEMBER_ME');
-    ?>.
+      <input type="checkbox" name="remember" value="1" />&nbsp;<?php echo _t('REMEMBER_ME');?>.
       </td>
     </tr>
     <tr>
@@ -244,22 +239,18 @@ if ($action == 'logout') {
     </tr>
     <tr>
       <td></td>
-      <td><input type="submit" value="<?php echo _t('IDENTIFICATION');
-    ?>" size="40" /></td>
+      <td><input type="submit" value="<?php echo _t('IDENTIFICATION');?>" size="40" /></td>
     </tr>
     <tr>
       <td></td>
-      <td><?php echo _t('FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER');
-    ?></td>
+      <td><?php echo _t('FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER');?></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('PASSWORD_CONFIRMATION');
-    ?>&nbsp;:</td>
+      <td align="right"><?php echo _t('PASSWORD_CONFIRMATION');?>&nbsp;:</td>
       <td><input type="password" name="confpassword" size="40" /></td>
     </tr>
     <tr>
-      <td align="right"><?php echo _t('YOUR_EMAIL_ADDRESS');
-    ?>.&nbsp;:</td>
+      <td align="right"><?php echo _t('YOUR_EMAIL_ADDRESS');?>.&nbsp;:</td>
       <td><input name="email" size="40" value="<?php
         if (isset($email)) {
             echo htmlspecialchars($email, ENT_COMPAT, YW_CHARSET);
@@ -268,8 +259,7 @@ if ($action == 'logout') {
     </tr>
     <tr>
       <td></td>
-      <td><input type="submit" value="<?php echo _t('NEW_ACCOUNT');
-    ?>" size="40" /></td>
+      <td><input type="submit" value="<?php echo _t('NEW_ACCOUNT');?>" size="40" /></td>
     </tr>
   </table>
     <?php echo $this->FormClose();
