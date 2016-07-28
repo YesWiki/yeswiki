@@ -220,9 +220,11 @@ class Wiki
         return $this->method;
     }
 
-    public function GetConfigValue($name)
+    public function GetConfigValue($name, $default=null)
     {
-        return isset($this->config[$name]) ? trim($this->config[$name]) : '';
+        return isset($this->config[$name])
+        	? trim($this->config[$name])
+        	: $default != null ? $default : '' ;
     }
 
     public function GetWakkaName()

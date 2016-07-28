@@ -64,7 +64,7 @@ function sendPasswordEmail($userID) {
             $domain = parse_url($domain);
             $domain = $domain["host"];
             $subject = "Mot de passe perdu pour ".$domain;
-            send_mail("noreply@".$domain, "WikiAdmin", $existingUser['email'], $subject, $message);
+            send_mail( $GLOBALS['wiki']->GetConfigValue('email_from','noreply@'.$domain), 'WikiAdmin', $existingUser['email'], $subject, $message);
     }
 }
 }
