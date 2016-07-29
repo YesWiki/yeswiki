@@ -13,25 +13,44 @@ themes/
 # tools
 tools/*
 !tools/prepend.php
+!tools/aceditor
 !tools/aceditor/*
+!tools/attach
 !tools/attach/*
+!tools/bazar
 !tools/bazar/*
+!tools/contact
 !tools/contact/*
+!tools/despam
 !tools/despam/*
+!tools/hashcash
 !tools/hashcash/*
 tools/hashcash/secret/wp-hashcash.key
+!tools/ipblock
 !tools/ipblock/*
+!tools/lang
 !tools/lang/*
+!tools/libs
 !tools/libs/*
+!tools/login
 !tools/login/*
+!tools/nospam
 !tools/nospam/*
+!tools/progressBar
 !tools/progressBar/*
+!tools/rss
 !tools/rss/*
+!tools/syndication
 !tools/syndication/*
+!tools/tableau
 !tools/tableau/*
+!tools/tags
 !tools/tags/*
+!tools/templates
 !tools/templates/*
+!tools/toc
 !tools/toc/*
+!tools/toolsmng
 !tools/toolsmng/*
 
 # Macintosh OS
