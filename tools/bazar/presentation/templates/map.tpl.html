@@ -1,7 +1,10 @@
 <?php echo $info_res; ?>
 <?php
 if (count($fiches)>0) :
-    echo $pager_links;
+
+	// TODO: y-a-t'il pagination en mode carto ?
+	echo $pager_links;
+
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.ie.css', '<!--[if lte IE 8]>', '<![endif]-->');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
@@ -45,80 +48,144 @@ if (count($fiches)>0) :
 		$param['fullscreen'] = 'false' ;
 	}
 
-    $i = 0;
-    foreach ($fiches as $fiche) :?>
-        <?php
+	$i = 0;
+	foreach ($fiches as $fiche) :?>
+			<?php
 
-        // couleur de marqueur
-        $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, BAZ_MARKER_COLOR);
+			// couleur de marqueur
+			$color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, BAZ_MARKER_COLOR);
 
-        //icone de marqueur
-        $icon = $param['iconprefix']
-            .getCustomValueForEntry($param['icon'], $param['iconfield'], $fiche, BAZ_MARKER_ICON);
+			//icone de marqueur
+			$icon = $param['iconprefix']
+					.getCustomValueForEntry($param['icon'], $param['iconfield'], $fiche, BAZ_MARKER_ICON);
 
-        $tab = explode('|', isset($fiche['carte_google']) ? $fiche['carte_google'] : '');
-        if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
-            // on genere le point marqueur sur la carte
-            $markersjs .= '
-            i++;
-            var markerLocation = new L.LatLng('.$tab[0].', '.$tab[1].');
-            marker[i] = new L.Marker(
-                markerLocation,
-                {
-                    icon: L.divIcon({
-                        iconSize: '.$param['iconSize'].',
-                        iconAnchor: '.$param['iconAnchor'].',
-                        popupAnchor: '.$param['popupAnchor'].',
-                        className: \'bazar-marker'.$param['smallmarker'].'\',
-                        html: \'<div class="bazar-entry icon-'.$color.'" '
-                        .$fiche['html_data'].'>'
-                        .(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
-                        .'</div>\'
-                    }),
-                    title: \''.addslashes($fiche['bf_titre']).'\'
-                });
-            marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes($fiche['html'])).'\');
-            ';
-            if ($param['spider'] == 'true' or $param['spider'] == '1') {
-                $markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
-            } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
-                $markersjs .= 'markerscluster.addLayer(marker[i]);'."\n";
-            } else {
-                $markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n";
-            }
-            $i++;
-        }
-    endforeach; ?>
-    <?php
-    if ($param['cluster'] == 'true' or $param['cluster'] == '1') {
-        $markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(markerscluster);'."\n";
-    }
-    $GLOBALS['wiki']->AddJavascript(
-        '// Init leaflet map
-    	var map'.$GLOBALS['nbbazarliste'].' = new L.Map(\'osmmap'.$GLOBALS['nbbazarliste'].'\', {
-        	scrollWheelZoom:'.$param['zoom_molette'].',
-        	zoomControl:'.$param['navigation'].',
-			fullscreenControl:'.$param['fullscreen'].',
-        	iconAnchor:   [6, 20]
-    	});
+			$tab = explode('|', isset($fiche['carte_google']) ? $fiche['carte_google'] : '');
+			if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+					// on genere le point marqueur sur la carte
+					$markersjs .= '
+					i++;
+					var markerLocation = new L.LatLng('.$tab[0].', '.$tab[1].');
+					marker[i] = new L.Marker(
+							markerLocation,
+							{
+									icon: L.divIcon({
+											iconSize: '.$param['iconSize'].',
+											iconAnchor: '.$param['iconAnchor'].',
+											popupAnchor: '.$param['popupAnchor'].',
+											className: \'bazar-marker'.$param['smallmarker'].'\',
+											html: \'<div class="bazar-entry icon-'.$color.'" '
+											.$fiche['html_data'].'>'
+											.(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
+											.'</div>\'
+									}),
+									title: \''.addslashes($fiche['bf_titre']).'\'
+							});
+					marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes($fiche['html'])).'\');
+					';
+					if ($param['spider'] == 'true' or $param['spider'] == '1') {
+							$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
+					} elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
+							$markersjs .= 'markerscluster.addLayer(marker[i]);'."\n";
+					} else {
+							$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n";
+					}
+					$i++;
+			}
+	endforeach; ?>
 
-		var provider = L.tileLayer.provider(\''.$param['provider'].'\''.$param['provider_credentials'].').addTo(map'.$GLOBALS['nbbazarliste'].');
-		map'.$GLOBALS['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
+	<?php
+	if ($param['cluster'] == 'true' or $param['cluster'] == '1') {
+			$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(markerscluster);'."\n";
+	}
+	$GLOBALS['wiki']->AddJavascript(
+			'// Init leaflet map
+		var map'.$GLOBALS['nbbazarliste'].' = new L.Map(\'osmmap'.$GLOBALS['nbbazarliste'].'\', {
+				scrollWheelZoom:'.$param['zoom_molette'].',
+				zoomControl:'.$param['navigation'].',
+		fullscreenControl:'.$param['fullscreen'].',
+				iconAnchor:   [6, 20]
+		});');
 
-		var i = 0;
-		var marker = Array();
-    	'.$markersjs
-    );
 
-    if ($param['groupsexpanded'] == 'true' or $param['groupsexpanded'] == '1') {
-		$GLOBALS['wiki']->AddJavascript('
- 			$(function(){
- 				$("div.facette-container div.panel-collapse").collapse("show");
-	 		});
+	// Pas de L.control.layers
+	if( empty($param['providers']) && empty($param['layers']) ) {
+	    $GLOBALS['wiki']->AddJavascript(
+			'
+			var provider = L.tileLayer.provider("'.$param['provider'].'"'.$param['provider_credentials'].');
+			');
+	} else {
+		// Avec un L.control.layers
+		// Si param['provider'] existe, ce sera le baseLayer activé par défaut, sinon ce sera le 1er de la liste $params['providers'].
+
+		$js = 'var provider; var baseLayers = {};' ;
+		/*if( ! empty($param['provider']) ){
+			$js.= 'provider = L.tileLayer.provider("'.$param['provider'].'");' ;
+			$js.= 'baseLayers["'.$param['provider'].'"] = provider ;' ;
+		}*/
+		if( ! is_array($param['providers']) ){
+			$param['providers'] = array($param['provider']);
+		}
+		foreach( $param['providers'] as $provider ) {
+			$js.= 'baseLayers["'.$provider.'"] = L.tileLayer.provider("'.$provider.'");' ;
+			if( empty($param['provider']) ){
+				$js.= 'if(provider==null) provider=baseLayers["'.$provider.'"];' ;
+			} else if( $provider==$param['provider']) {
+				$js.= 'provider=baseLayers["'.$provider.'"];' ;
+			}
+		}
+		$GLOBALS['wiki']->AddJavascript( $js );
+
+		$js = 'var layers = {};' ;
+		if( is_array($param['layers']) ){
+			$leafletajaxIncluded = false ;
+			foreach( $param['layers'] as $layer ) {
+				list( $layerLabel, $layerType, $layerUrl ) = explode('|', $layer);
+				$layerType = strtolower($layerType);
+				if( ! in_array($layerType, array('tiles','geojson') ) ){
+					$js.= 'alert("Erreur paramètre \\"layers\\": le type \\"'.$layerType.'\\" est inconnu")';
+				}
+				switch($layerType)
+				{
+					case 'tiles':
+						$js.= 'layers["'.$layerLabel.'"] = L.tileLayer("'.$layerUrl.'");' ;
+						break;
+					case 'geojson':
+						// URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
+						// Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
+						if( ! $leafletajaxIncluded ) {
+							$leafletajaxIncluded = true ;
+							$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/ajax/dist/leaflet.ajax.min.js');
+						}
+						$js.= 'layers["'.$layerLabel.'"] = L.geoJson.ajax("'.$layerUrl.'");' ;
+						break;
+				}
+			}
+		}
+	
+		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$GLOBALS['nbbazarliste'].');' ;
+		// N'ajoute pas un doublon de layer, mais active la sélection du layer.
+		$js.= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(provider);' ;
+		$js.= 'map'.$GLOBALS['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');' ;
+
+		$GLOBALS['wiki']->AddJavascript( $js );
+		$GLOBALS['wiki']->AddJavascript( '
+			var i = 0;
+			var marker = Array();
+			' . $markersjs
+		);
+
+	} // else Avec un L.control.layers
+
+	if ($param['groupsexpanded'] == 'true' or $param['groupsexpanded'] == '1') {
+	$GLOBALS['wiki']->AddJavascript('
+		$(function(){
+			$("div.facette-container div.panel-collapse").collapse("show");
+		});
 		');
 	}
 
-    echo $pager_links;
+	// TODO: y-a-t'il pagination en mode carto ?
+	echo $pager_links;
 
 endif;
 ?>

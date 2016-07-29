@@ -4429,6 +4429,38 @@ function getAllParameters_carto($wiki, Array &$param)
     } else {
         $param['provider_credentials'] = '';
     }
+
+    /*
+     * "providers" : une liste de fonds de carte.
+     * 
+     * Exemple:
+     * provider="OpenStreetMap.France" providers="OpenStreetMap.Mapnik,OpenStreetMap.France"
+     *      
+     * TODO: ajouter gestion "providers_credentials"
+     */
+    $param['providers'] = $wiki->GetParameter('providers');
+    if( ! empty($param['providers']) )
+    {
+        $param['providers'] = explode(',', $param['providers']);
+    }
+
+    /*
+     * "layers" : une liste de layers (couches).
+     * Exemple:
+     * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|wakka.php?wiki=geojsonCUCS2014/raw"
+     * 
+     * format pour chaque layer : NOM|TYPE|URL
+     * - TYPE: Tiles ou GeoJson
+     * - URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
+     *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
+     * 
+     * TODO: ajouter gestion "layers_credentials"
+     */
+    $param['layers'] = $wiki->GetParameter('layers');
+    if( ! empty($param['layers']) )
+    {
+        $param['layers'] = explode(',', $param['layers']);
+    }
     
     /*
      * iconprefix : designe le prefixe des classes CSS utilisees pour la carto
@@ -4443,6 +4475,7 @@ function getAllParameters_carto($wiki, Array &$param)
     } else {
         $param['iconprefix'] = trim($param['iconprefix']).' '.trim($param['iconprefix']).'-';
     }
+
     /*
      * iconfield : designe le champ utilise pour la couleur des marqueurs
      */
