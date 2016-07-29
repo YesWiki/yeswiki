@@ -4390,9 +4390,20 @@ function getAllParameters($wiki)
         $param['groupsexpanded'] = 'false';
     }
 
-    // ==================================================
     // Parametres pour Bazarliste avec carto
-    //
+    getAllParameters_carto($wiki, $param);
+
+    return $param;
+}
+
+/**
+ * Juste pour alléger la fonction getAllParameters(), regroupe les paramètres pour la cartographie.
+ *  
+ * @param unknown $wiki
+ * @param array $param
+ */
+function getAllParameters_carto($wiki, Array &$param)
+{
 
     /*
      * provider : designe le fond de carte utilisé pour la carte
@@ -4408,7 +4419,7 @@ function getAllParameters($wiki)
     if (!empty($param['providerid']) && !empty($param['providerpass'])) {
         if ($param['provider'] == 'MapBox') {
             $param['provider_credentials'] = ', {id: \''.$param['providerid']
-                .'\', accessToken: \''.$param['providerpass'].'\'}';
+            .'\', accessToken: \''.$param['providerpass'].'\'}';
         } else {
             $param['provider_credentials'] = ', {
                 app_id: \''.$param['providerid'].'\',
@@ -4418,7 +4429,7 @@ function getAllParameters($wiki)
     } else {
         $param['provider_credentials'] = '';
     }
-
+    
     /*
      * iconprefix : designe le prefixe des classes CSS utilisees pour la carto
      */
@@ -4436,7 +4447,7 @@ function getAllParameters($wiki)
      * iconfield : designe le champ utilise pour la couleur des marqueurs
      */
     $param['iconfield'] = $wiki->GetParameter('iconfield');
-
+    
     /*
      * icon : couleur des marqueurs
      */
@@ -4482,7 +4493,7 @@ function getAllParameters($wiki)
         $colorsparam = explode(',', $param['color']);
         if (count($colorsparam) > 1 && !empty($param['colorfield'])) {
             $colorsparam = array_map('trim', $colorsparam);
-
+    
             // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
             foreach ($colorsparam as $value) {
                 $tab = explode('=', $value);
@@ -4523,7 +4534,7 @@ function getAllParameters($wiki)
         $param['iconAnchor'] = '[18, 45]';
         $param['popupAnchor'] = '[0, -45]';
     }
-
+   
     /*
      * width : largeur de la carte à l'écran en pixels ou pourcentage
      */
@@ -4531,7 +4542,7 @@ function getAllParameters($wiki)
     if (empty($param['width'])) {
         $param['width'] = BAZ_GOOGLE_IMAGE_LARGEUR;
     }
-
+    
     /*
      * height : hauteur de la carte à l'écran en pixels ou pourcentage
      */
@@ -4539,7 +4550,7 @@ function getAllParameters($wiki)
     if (empty($param['height'])) {
         $param['height'] = BAZ_GOOGLE_IMAGE_HAUTEUR;
     }
-
+    
     /*
      * lat : latitude point central en degres WGS84 (exemple : 46.22763) , sinon parametre par defaut
      */
@@ -4547,7 +4558,7 @@ function getAllParameters($wiki)
     if (empty($param['latitude'])) {
         $param['latitude'] = BAZ_MAP_CENTER_LAT;
     }
-
+    
     /*
      * lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
      */
@@ -4555,7 +4566,7 @@ function getAllParameters($wiki)
     if (empty($param['longitude'])) {
         $param['longitude'] = BAZ_MAP_CENTER_LON;
     }
-
+    
     /*
      * niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
      */
@@ -4563,7 +4574,7 @@ function getAllParameters($wiki)
     if (empty($param['zoom'])) {
         $param['zoom'] = BAZ_GOOGLE_ALTITUDE;
     }
-
+    
     /*
      * Outil de navigation , sinon parametre par defaut true
      */
@@ -4579,23 +4590,23 @@ function getAllParameters($wiki)
     if (empty($param['zoom_molette'])) {
         $param['zoom_molette'] = BAZ_PERMETTRE_ZOOM_MOLETTE;
     }
-
+    
     /*
-    * Affichage en eclate des points superposes : true or false, par defaut false
-    */
+     * Affichage en eclate des points superposes : true or false, par defaut false
+     */
     $param['spider'] = $wiki->GetParameter('spider'); // true or false
     if (empty($param['spider'])) {
         $param['spider'] = 'false';
     }
-
+    
     /*
-    * Affichage en cluster : true or false, par defaut false
-    */
+     * Affichage en cluster : true or false, par defaut false
+     */
     $param['cluster'] = $wiki->GetParameter('cluster'); // true or false
     if (empty($param['cluster'])) {
         $param['cluster'] = 'false';
     }
-
+    
     /*
      * Ajout bouton plein écran
      * fullscreen: true or false
@@ -4606,5 +4617,4 @@ function getAllParameters($wiki)
         $param['fullscreen'] = 'false';
     }
 
-    return $param;
 }
