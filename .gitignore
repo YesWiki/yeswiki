@@ -11,28 +11,28 @@ themes/
 !themes/bootstrap/
 
 # tools
-tools/
+tools/*
 !tools/prepend.php
-!tools/aceditor/
-!tools/attach/
-!tools/bazar/
-!tools/contact/
-!tools/despam/
-!tools/hashcash/
+!tools/aceditor/*
+!tools/attach/*
+!tools/bazar/*
+!tools/contact/*
+!tools/despam/*
+!tools/hashcash/*
 tools/hashcash/secret/wp-hashcash.key
-!tools/ipblock/
-!tools/lang/
-!tools/libs/
-!tools/login/
-!tools/nospam/
-!tools/progressBar/
-!tools/rss/
-!tools/syndication/
-!tools/tableau/
-!tools/tags/
-!tools/templates/
-!tools/toc/
-!tools/toolsmng/
+!tools/ipblock/*
+!tools/lang/*
+!tools/libs/*
+!tools/login/*
+!tools/nospam/*
+!tools/progressBar/*
+!tools/rss/*
+!tools/syndication/*
+!tools/tableau/*
+!tools/tags/*
+!tools/templates/*
+!tools/toc/*
+!tools/toolsmng/*
 
 # Macintosh OS
 
