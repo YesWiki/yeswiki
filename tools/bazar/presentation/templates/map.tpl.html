@@ -109,10 +109,12 @@ if (count($fiches)>0) :
 
 	// Pas de L.control.layers
 	if( empty($param['providers']) && empty($param['layers']) ) {
+
 	    $GLOBALS['wiki']->AddJavascript(
 			'
 			var provider = L.tileLayer.provider("'.$param['provider'].'"'.$param['provider_credentials'].');
 			');
+
 	} else {
 		// Avec un L.control.layers
 		// Si param['provider'] existe, ce sera le baseLayer activé par défaut, sinon ce sera le 1er de la liste $params['providers'].
@@ -163,18 +165,20 @@ if (count($fiches)>0) :
 		}
 	
 		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$GLOBALS['nbbazarliste'].');' ;
-		// N'ajoute pas un doublon de layer, mais active la sélection du layer.
-		$js.= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(provider);' ;
-		$js.= 'map'.$GLOBALS['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');' ;
 
 		$GLOBALS['wiki']->AddJavascript( $js );
-		$GLOBALS['wiki']->AddJavascript( '
-			var i = 0;
-			var marker = Array();
-			' . $markersjs
-		);
 
 	} // else Avec un L.control.layers
+
+
+	$GLOBALS['wiki']->AddJavascript( '
+		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
+		map'.$GLOBALS['nbbazarliste'].'.addLayer(provider);
+		map'.$GLOBALS['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
+		var i = 0;
+		var marker = Array();
+		' . $markersjs
+	);
 
 	if ($param['groupsexpanded'] == 'true' or $param['groupsexpanded'] == '1') {
 	$GLOBALS['wiki']->AddJavascript('
