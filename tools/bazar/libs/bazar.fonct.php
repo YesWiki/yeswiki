@@ -4446,10 +4446,13 @@ function getAllParameters_carto($wiki, Array &$param)
 
     /*
      * "layers" : une liste de layers (couches).
-     * Exemple:
+     * Exemple avec 1 layer tiles, 1 layer geojson:
      * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|wakka.php?wiki=geojsonCUCS2014/raw"
+     * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|color:'red';opacity:0.3|wakka.php?wiki=geojsonCUCS2014/raw"
      * 
-     * format pour chaque layer : NOM|TYPE|URL
+     * format pour chaque layer : NOM|TYPE|URL ou NOM|TYPE|OPTIONS|URL
+     * - OPTIONS: facultatif ex: "color:red; opacity:0.3"
+     * nota bene: le séparateur d'options est le ';' et pas la ',' qui est déjà utilisée pour séparer les LAYERS.
      * - TYPE: Tiles ou GeoJson
      * - URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
      *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
