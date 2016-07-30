@@ -172,12 +172,49 @@ if (count($fiches)>0) :
 							$layerOptions = str_replace(';',',',$layerOptions);
 							$styleJs.='
 							style: function (feature, latlng) {
+								// pour les lignes et polygones
+								if( feature.geometry.type=="Point" )
+									return ;
 								return {'.$layerOptions.'};
 							},
 							pointToLayer: function (feature, latlng) {
-								// TODO : parser les options pour construire un L.icon
-								// http://leafletjs.com/reference.html#icon
-								return L.marker(latlng, {'.$layerOptions.'});
+								// pour les points
+								// parsing de layerOptions pour distinguer les options de marker et celles pour construire un icon pour le marker.
+								var layerOptions = "'.$layerOptions.'".split(",");
+								var markerOptions = {} , iconClass=null, color=null ;
+								for( opt in layerOptions )
+								{
+									opt = layerOptions[opt].split(":");
+									switch(opt[0].trim()) {
+										case "opacity":
+										case "clickable":
+											// les options pour le marker http://leafletjs.com/reference.html#marker
+											markerOptions[opt[0].trim()] = opt[1].trim();
+											break;
+										case "icon":
+											// pour le html du L.divIcon http://leafletjs.com/reference.html#divicon
+											// supprimer les éventuels apostrhophes
+											iconClass = opt[1].trim().replace(/\'/g, "");
+											break;											
+										case "color":
+											// pour le html du L.divIcon
+											color = opt[1].trim();
+											break;
+									}
+								}
+
+								if( iconClass!=null || color!=null ) {
+									// Construit un L.divIcon pour le marker, sinon ce sera par défaut la goutte bleu.
+									markerOptions["icon"] = L.divIcon({
+											iconSize: '.$param['iconSize'].',
+											iconAnchor: '.$param['iconAnchor'].',
+											popupAnchor: '.$param['popupAnchor'].',
+											className: "bazar-marker'.$param['smallmarker'].'",
+											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" >" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
+									});
+								}
+
+								return L.marker(latlng, markerOptions);
 							},
 							';
 						}
@@ -204,7 +241,6 @@ if (count($fiches)>0) :
 		$GLOBALS['wiki']->AddJavascript( $js );
 
 	} // else Avec un L.control.layers
-
 
 	$GLOBALS['wiki']->AddJavascript( '
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
