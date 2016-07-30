@@ -158,7 +158,20 @@ if (count($fiches)>0) :
 							$leafletajaxIncluded = true ;
 							$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/ajax/dist/leaflet.ajax.min.js');
 						}
-						$js.= 'layers["'.$layerLabel.'"] = L.geoJson.ajax("'.$layerUrl.'");' ;
+						$js.= 'layers["'.$layerLabel.'"] = L.geoJson.ajax("'.$layerUrl.'",
+						{
+							/* style: function (feature) {
+									return {color: feature.properties.color};
+							},*/
+							onEachFeature: function (feature, layer) {
+								//layer.bindPopup(feature.properties.NOM + feature.properties.NOM_QP);
+								var str = "" ;
+								for( var prop in feature.properties){
+									str+= prop +": "+ feature.properties[prop] +"<br/>";
+								}
+								layer.bindPopup( str );
+							}
+						} );' ;
 						break;
 				}
 			}
