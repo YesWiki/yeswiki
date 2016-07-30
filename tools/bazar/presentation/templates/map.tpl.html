@@ -141,7 +141,11 @@ if (count($fiches)>0) :
 		if( is_array($param['layers']) ){
 			$leafletajaxIncluded = false ;
 			foreach( $param['layers'] as $layer ) {
-				list( $layerLabel, $layerType, $layerUrl ) = explode('|', $layer);
+				@list( $layerLabel, $layerType, $layerOptions, $layerUrl ) = explode('|', $layer);
+				if( $layerUrl == null ) {
+					$layerUrl = $layerOptions ;
+					$layerOptions = null ;
+				}
 				$layerType = strtolower($layerType);
 				if( ! in_array($layerType, array('tiles','geojson') ) ){
 					$js.= 'alert("Erreur paramètre \\"layers\\": le type \\"'.$layerType.'\\" est inconnu")';
@@ -154,11 +158,42 @@ if (count($fiches)>0) :
 					case 'geojson':
 						// URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
 						// Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
+						// STYLE:
+						//	http://leafletjs.com/reference.html#path-options
+						//	http://leafletjs.com/reference.html#marker-options
+
 						if( ! $leafletajaxIncluded ) {
 							$leafletajaxIncluded = true ;
 							$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/ajax/dist/leaflet.ajax.min.js');
 						}
-						$js.= 'layers["'.$layerLabel.'"] = L.geoJson.ajax("'.$layerUrl.'");' ;
+
+						$styleJs = '' ;
+						if( $layerOptions!=null ){
+							$layerOptions = str_replace(';',',',$layerOptions);
+							$styleJs.='
+							style: function (feature, latlng) {
+								return {'.$layerOptions.'};
+							},
+							pointToLayer: function (feature, latlng) {
+								// TODO : parser les options pour construire un L.icon
+								// http://leafletjs.com/reference.html#icon
+								return L.marker(latlng, {'.$layerOptions.'});
+							},
+							';
+						}
+
+						$js.= 'layers["'.$layerLabel.'"] = L.geoJson.ajax("'.$layerUrl.'",
+						{
+							'.$styleJs.'
+							onEachFeature: function (feature, layer) {
+								//layer.bindPopup(feature.properties.NOM + feature.properties.NOM_QP);
+								var str = "" ;
+								for( var prop in feature.properties){
+									str+= prop +": "+ feature.properties[prop] +"<br/>";
+								}
+								layer.bindPopup( str );
+							}
+						} );' ;
 						break;
 				}
 			}
