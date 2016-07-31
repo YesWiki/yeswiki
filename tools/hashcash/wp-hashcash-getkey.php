@@ -6,6 +6,7 @@ header("Pragma: no-cache");
 header("Expires: 0");
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Cache-Control: post-check=0, pre-check=0", false);
+
 $expired = array();
 
 $function_name = hashcash_random_string(rand(6,18));
@@ -20,33 +21,33 @@ switch($type){
 	case 0:
 		$eax = hashcash_random_string(rand(8,10), $expired);
 		$expired [] = $eax;
-		
+
 		$val = hashcash_field_value();
 		$inc = rand($val / 100, $val - 1);
 		$n = floor($val / $inc);
 		$r = $val % $inc;
-		
+
 		$js .= "var $eax = $inc; ";
 		for($i = 0; $i < $n - 1; $i++){
 			$js .= "$eax += $inc; ";
 		}
-	
+
 		$js .= "$eax += $r; ";
 		$js .= "return $eax; ";
 	break;
-	
+
 	/* Conversion from binary:
 	Time guarantee:  log(n) iterations or less */
 	case 1:
 		$eax = hashcash_random_string(rand(8,10), $expired);
 		$expired [] = $eax;
-		
+
 		$ebx = hashcash_random_string(rand(8,10), $expired);
 		$expired [] = $ebx;
-		
+
 		$ecx = hashcash_random_string(rand(8,10), $expired);
 		$expired [] = $ecx;
-		
+
 		$val = hashcash_field_value();
 		$binval = strrev(base_convert($val, 10, 2));
 			$js .= "var $eax = \"$binval\"; ";
@@ -59,9 +60,9 @@ switch($type){
 		$js .= "$ecx++; ";
 		$js .= "} ";
 		$js .= "return $ebx; ";
-		
+
 	break;
-	
+
 	/* Multiplication of square roots:
 	Time guarantee:  constant time */
 	case 2:
@@ -70,7 +71,7 @@ switch($type){
 		$r = $val - ($sqrt * $sqrt);
 		$js .= "return $sqrt * $sqrt + $r; ";
 	break;
-	
+
 	/* Sum of random numbers to the final value:
 	Time guarantee:  log(n) expected value */
 	case 3:
@@ -81,7 +82,7 @@ switch($type){
 		while($val > 0){
 			if($i++ > 0)
 				$js .= "+";
-			
+
 			$temp = rand(1, $val);
 			$val -= $temp;
 			$js .= $temp;
@@ -90,16 +91,16 @@ switch($type){
 		$js .= ";";
 	break;
 }
-	
+
 $js .= "} $function_name ();";
 
 // pack bytes
 function strToLongs($s) {
 	$l = array();
-    
+
 	// pad $s to some multiple of 4
 	$s = preg_split('//', $s, -1, PREG_SPLIT_NO_EMPTY);
-    
+
 	while(count($s) % 4 != 0){
 		$s [] = ' ';
 	}
