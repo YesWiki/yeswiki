@@ -55,7 +55,6 @@ include_once 'tools/login/libs/login.functions.php';
 
 // url d'inscription
 $signupurl = $this->GetParameter('signupurl');
-
 // si pas de pas d'url d'inscription renseignée, on utilise ParametresUtilisateur
 if (empty($signupurl) && $signupurl != "0") {
     $signupurl = $this->href("", "ParametresUtilisateur", "");
@@ -82,7 +81,6 @@ $userpage = $this->GetParameter("userpage");
 // si pas d'url de page de sortie renseignée, on retourne sur la page courante
 if (empty($userpage)) {
     $userpage = $incomingurl;
-    
     // si l'url de sortie contient le passage de parametres de déconnexion, on l'efface
     if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout") {
         $userpage = str_replace('&action=logout', '', $userpage);
@@ -92,6 +90,17 @@ if (empty($userpage)) {
         $userpage = $this->href('', $userpage);
     }
 }
+
+/*
+ * Url "Mot de passe perdu"
+ */
+$lostpasswordurl = $this->GetParameter('lostpasswordurl');
+if (! empty($lostpasswordurl) ) {
+    if ($this->IsWikiName($lostpasswordurl)) {
+        $lostpasswordurl = $this->href('', $lostpasswordurl);
+    }
+}
+
 
 // classes css pour l'action et pour les boutons
 $class = $this->GetParameter("class");
@@ -217,6 +226,7 @@ $squel->set(
         "email" => ((isset($user["email"])) ? $user["email"] : ((isset($_POST["email"])) ? $_POST["email"] : '')),
         "incomingurl" => $incomingurl,
         "signupurl" => $signupurl,
+        'lostpasswordurl' => $lostpasswordurl,
         "profileurl" => $profileurl,
         "userpage" => $userpage,
         "PageMenuUser" => $PageMenuUser,
