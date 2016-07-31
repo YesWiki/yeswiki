@@ -42,5 +42,10 @@
 			<h5><?php echo _t('LOGIN_NEW_MEMBER'); ?></h5>
 			<a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo _t('LOGIN_SIGNUP'); ?></a>
 		<?php endif; ?>
+		<?php if( ! empty($lostpasswordurl) ){ ?>
+			<br/>
+			<a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $lostpasswordurl ?>"><i class="icon-plus"></i>&nbsp;<?php echo _t('LOGIN_LOST_PASSWORD'); ?></a>
+		<?php } ?>
+
 	</form> <!-- /.form-horizontal -->
 <?php endif; ?>
