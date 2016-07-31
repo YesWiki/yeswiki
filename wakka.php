@@ -1735,22 +1735,9 @@ class Wiki
 
         if( isset($this->aclsCache[$tag][$privilege]) )
         {
-            return $this->aclsCache[$tag][$privilege] ;
+            return $this->aclsCache[$tag][$privilege];
         }
         return null ;
-
-        /* previous code
-        if (
-            (! $acl = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "acls where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1"))
-            && $useDefaults) {
-            $acl = array(
-                'page_tag' => $tag,
-                'privilege' => $privilege,
-                'list' => $this->GetConfigValue('default_' . $privilege . '_acl')
-            );
-        }
-        return $acl;
-        */
 
     }
 
@@ -1780,6 +1767,31 @@ class Wiki
             'privilege' => $privilege,
             'list' => $list
         );
+    }
+
+    /**
+     *
+     * @param string $tag The page's WikiName
+     * @param string|array $privileges A privilege or several privileges to delete from database.
+     */
+    public function DeleteAcl( $tag, $privileges=array('read','write','comment') )
+    {
+        if( ! is_array($privileges)) {
+            $privileges = array($privileges);
+        }
+
+        // add '"' at begin and end of each escaped privileges elements.
+        for( $i=0; $i<count($privileges); $i++ )
+            $privileges[$i] = '"'.mysqli_real_escape_string($this->dblink, $privileges[$i]) .'"';
+        // construct a CSV string with privileges elements
+        $privileges = implode(',', $privileges);
+
+        $this->Query('DELETE FROM ' . $this->config['table_prefix'] . 'acls'
+            .' WHERE page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '"'
+            .' AND privilege IN (' . $privileges .')');
+
+        if( isset($this->aclsCache[$tag]))
+            unset($this->aclsCache[$tag]);
     }
 
     /**
