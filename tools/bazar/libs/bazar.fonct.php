@@ -4312,7 +4312,8 @@ function getAllParameters($wiki)
         $param['barregestion'] = '1'; // presente par defaut
     } elseif ($param['barregestion'] == '0'
       or $param['barregestion'] == 'no'
-      or $param['barregestion'] == 'non') {
+      or $param['barregestion'] == 'non'
+      or $param['barregestion'] == 'false') {
         $param['barregestion'] = '0';
     } else {
         $param['barregestion'] = '1';
@@ -4398,7 +4399,7 @@ function getAllParameters($wiki)
 
 /**
  * Juste pour alléger la fonction getAllParameters(), regroupe les paramètres pour la cartographie.
- *  
+ *
  * @param unknown $wiki
  * @param array $param
  */
@@ -4432,10 +4433,10 @@ function getAllParameters_carto($wiki, Array &$param)
 
     /*
      * "providers" : une liste de fonds de carte.
-     * 
+     *
      * Exemple:
      * provider="OpenStreetMap.France" providers="OpenStreetMap.Mapnik,OpenStreetMap.France"
-     *      
+     *
      * TODO: ajouter gestion "providers_credentials"
      */
     $param['providers'] = $wiki->GetParameter('providers');
@@ -4449,14 +4450,14 @@ function getAllParameters_carto($wiki, Array &$param)
      * Exemple avec 1 layer tiles, 1 layer geojson:
      * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|wakka.php?wiki=geojsonCUCS2014/raw"
      * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|color:'red';opacity:0.3|wakka.php?wiki=geojsonCUCS2014/raw"
-     * 
+     *
      * format pour chaque layer : NOM|TYPE|URL ou NOM|TYPE|OPTIONS|URL
      * - OPTIONS: facultatif ex: "color:red; opacity:0.3"
      * nota bene: le séparateur d'options est le ';' et pas la ',' qui est déjà utilisée pour séparer les LAYERS.
      * - TYPE: Tiles ou GeoJson
      * - URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
      *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
-     * 
+     *
      * TODO: ajouter gestion "layers_credentials"
      */
     $param['layers'] = $wiki->GetParameter('layers');
@@ -4464,7 +4465,7 @@ function getAllParameters_carto($wiki, Array &$param)
     {
         $param['layers'] = explode(',', $param['layers']);
     }
-    
+
     /*
      * iconprefix : designe le prefixe des classes CSS utilisees pour la carto
      */
@@ -4483,7 +4484,7 @@ function getAllParameters_carto($wiki, Array &$param)
      * iconfield : designe le champ utilise pour la couleur des marqueurs
      */
     $param['iconfield'] = $wiki->GetParameter('iconfield');
-    
+
     /*
      * icon : couleur des marqueurs
      */
@@ -4529,7 +4530,7 @@ function getAllParameters_carto($wiki, Array &$param)
         $colorsparam = explode(',', $param['color']);
         if (count($colorsparam) > 1 && !empty($param['colorfield'])) {
             $colorsparam = array_map('trim', $colorsparam);
-    
+
             // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
             foreach ($colorsparam as $value) {
                 $tab = explode('=', $value);
@@ -4570,7 +4571,7 @@ function getAllParameters_carto($wiki, Array &$param)
         $param['iconAnchor'] = '[18, 45]';
         $param['popupAnchor'] = '[0, -45]';
     }
-   
+
     /*
      * width : largeur de la carte à l'écran en pixels ou pourcentage
      */
@@ -4578,7 +4579,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['width'])) {
         $param['width'] = BAZ_GOOGLE_IMAGE_LARGEUR;
     }
-    
+
     /*
      * height : hauteur de la carte à l'écran en pixels ou pourcentage
      */
@@ -4586,7 +4587,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['height'])) {
         $param['height'] = BAZ_GOOGLE_IMAGE_HAUTEUR;
     }
-    
+
     /*
      * lat : latitude point central en degres WGS84 (exemple : 46.22763) , sinon parametre par defaut
      */
@@ -4594,7 +4595,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['latitude'])) {
         $param['latitude'] = BAZ_MAP_CENTER_LAT;
     }
-    
+
     /*
      * lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
      */
@@ -4602,7 +4603,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['longitude'])) {
         $param['longitude'] = BAZ_MAP_CENTER_LON;
     }
-    
+
     /*
      * niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
      */
@@ -4610,7 +4611,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['zoom'])) {
         $param['zoom'] = BAZ_GOOGLE_ALTITUDE;
     }
-    
+
     /*
      * Outil de navigation , sinon parametre par defaut true
      */
@@ -4626,7 +4627,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['zoom_molette'])) {
         $param['zoom_molette'] = BAZ_PERMETTRE_ZOOM_MOLETTE;
     }
-    
+
     /*
      * Affichage en eclate des points superposes : true or false, par defaut false
      */
@@ -4634,7 +4635,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['spider'])) {
         $param['spider'] = 'false';
     }
-    
+
     /*
      * Affichage en cluster : true or false, par defaut false
      */
@@ -4642,7 +4643,7 @@ function getAllParameters_carto($wiki, Array &$param)
     if (empty($param['cluster'])) {
         $param['cluster'] = 'false';
     }
-    
+
     /*
      * Ajout bouton plein écran
      * fullscreen: true or false
