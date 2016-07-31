@@ -226,7 +226,11 @@ if (count($fiches)>0) :
 								//layer.bindPopup(feature.properties.NOM + feature.properties.NOM_QP);
 								var str = "" ;
 								for( var prop in feature.properties){
-									str+= prop +": "+ feature.properties[prop] +"<br/>";
+									if( prop.toLowerCase() == "url" ) {
+										str+= prop +": <a href=\""+ feature.properties[prop] + "\" target=\"_blank\" >" + feature.properties[prop] +"<br/>";
+									} else {
+										str+= prop +": "+ feature.properties[prop] +"<br/>";
+									}
 								}
 								layer.bindPopup( str );
 							}

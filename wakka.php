@@ -1704,7 +1704,7 @@ class Wiki
 
         if( $useDefaults )
         {
-            $this->aclsCache[$tag] = [
+            $this->aclsCache[$tag] = array(
                 'read' => array(
                     'page_tag' => $tag,
                     'privilege' => 'read',
@@ -1719,12 +1719,12 @@ class Wiki
                     'page_tag' => $tag,
                     'privilege' => 'comment',
                     'list' => $this->GetConfigValue('default_comment_acl')
-                ),
-            ];
+                )
+            );
         }
         else
         {
-            $this->aclsCache[$tag] = [];
+            $this->aclsCache[$tag] = array();
         }
 
         $res = $this->LoadAll('SELECT * FROM '.$this->config['table_prefix'].'acls'.' WHERE page_tag = "'.mysqli_real_escape_string($this->dblink, $tag).'"');
@@ -1735,22 +1735,9 @@ class Wiki
 
         if( isset($this->aclsCache[$tag][$privilege]) )
         {
-            return $this->aclsCache[$tag][$privilege] ;
+            return $this->aclsCache[$tag][$privilege];
         }
         return null ;
-
-        /* previous code
-        if (
-            (! $acl = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "acls where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "' limit 1"))
-            && $useDefaults) {
-            $acl = array(
-                'page_tag' => $tag,
-                'privilege' => $privilege,
-                'list' => $this->GetConfigValue('default_' . $privilege . '_acl')
-            );
-        }
-        return $acl;
-        */
 
     }
 
@@ -1782,32 +1769,63 @@ class Wiki
         );
     }
 
-    // returns true if $user (defaults to current user) has access to $privilege on $page_tag (defaults to current page)
+    /**
+     *
+     * @param string $tag The page's WikiName
+     * @param string|array $privileges A privilege or several privileges to delete from database.
+     */
+    public function DeleteAcl( $tag, $privileges=array('read','write','comment') )
+    {
+        if( ! is_array($privileges)) {
+            $privileges = array($privileges);
+        }
+
+        // add '"' at begin and end of each escaped privileges elements.
+        for( $i=0; $i<count($privileges); $i++ )
+            $privileges[$i] = '"'.mysqli_real_escape_string($this->dblink, $privileges[$i]) .'"';
+        // construct a CSV string with privileges elements
+        $privileges = implode(',', $privileges);
+
+        $this->Query('DELETE FROM ' . $this->config['table_prefix'] . 'acls'
+            .' WHERE page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '"'
+            .' AND privilege IN (' . $privileges .')');
+
+        if( isset($this->aclsCache[$tag]))
+            unset($this->aclsCache[$tag]);
+    }
+
+    /**
+     * Check if user has a privilege on page.
+     * The page's owner has always access (always return true).
+     *
+     * @param string $privilege The privilege to check (read, write, comment)
+     * @param string $tag The page WikiName. Default to current page
+     * @param string $user The username. Default to current user.
+     * @return boolean true if access granted, false if not.
+     */
     public function HasAccess($privilege, $tag = '', $user = '')
     {
-        // set defaults
+
+        // set default to current page
         if (! $tag = trim($tag)) {
             $tag = $this->GetPageTag();
         }
-
+        // set default to current user
         if (! $user) {
-            // if current user is owner, return true. owner can do anything!
-            if ($this->UserIsOwner($tag)) {
-                return true;
-            }
-
             $user = $this->GetUserName();
         }
 
-        // TODO: we might want to check if a given $user (other than the current user)
-        // has access to a given page. If the $user is the owner of that page,
-        // this method might give a wrong result (because we can't check that)
+        // if current user is owner, return true. owner can do anything!
+        if ($this->UserIsOwner($tag)) {
+            return true;
+        }
 
         // load acl
         $acl = $this->LoadAcl($tag, $privilege);
+        // now check them
+        $access = $this->CheckACL($acl['list'], $user);
 
-        // fine fine... now go through acl
-        return $this->CheckACL($acl['list'], $user);
+        return $access ;
     }
 
     /**
@@ -1831,14 +1849,15 @@ class Wiki
         }
 
         foreach (explode("\n", $acl) as $line) {
+
             $line = trim($line);
 
             // check for inversion character "!"
             if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                $negate = 1;
+                $negate = true ;
                 $line = $matches[1];
             } else {
-                $negate = 0;
+                $negate = false;
             }
 
             // if there's still anything left... lines with just a "!" don't count!

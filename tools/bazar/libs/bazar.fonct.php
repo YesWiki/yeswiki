@@ -2986,29 +2986,32 @@ function baz_voir_fiche($danslappli, $idfiche)
 
     // informations complementaires (id fiche, etat publication,... )
     if ($danslappli === true ) {
+
         $fichebazar['infos'] .=
         '<div class="BAZ_fiche_info well well-sm">'."\n";
 
-        // seul le createur ou un admin peut faire des actions sur la fiche
-        if (baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']
-            ->GetPageOwner($idfiche))) {
-            $fichebazar['infos'] .= '<div class="pull-right BAZ_actions_fiche">'."\n";
-            // lien modifier la fiche
-            $fichebazar['infos'] .= '<a class="btn btn-xs btn-mini btn-default" href="'
-            .$GLOBALS['wiki']->href('edit', $idfiche).'">'
+        // obsolète : seul le createur ou un admin peut faire des actions sur la fiche
+        //if (baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']->GetPageOwner($idfiche))) {
+        //
+        // L'utilisateur a-t-il le droit en écriture ?
+        if( $GLOBALS['wiki']->HasAccess('write', $idfiche) ) {
 
-            .'<i class="glyphicon glyphicon-pencil icon-pencil"></i> '.
-            _t('BAZ_MODIFIER')
-            .'</a>'."\n";
+            $fichebazar['infos'] .=
+                '<div class="pull-right BAZ_actions_fiche">'."\n"
+                // lien modifier la fiche
+                . '<a class="btn btn-xs btn-mini btn-default" href="'
+                . $GLOBALS['wiki']->href('edit', $idfiche).'">'
+                . '<i class="glyphicon glyphicon-pencil icon-pencil"></i> '
+                . _t('BAZ_MODIFIER')
+                .'</a>'."\n";
 
             // lien supprimer la fiche
             $fichebazar['infos'] .=
-            ' <a class="btn btn-xs btn-mini btn-danger" href="'
-            .$GLOBALS['wiki']->href('deletepage', $idfiche).'" onclick="javascript:return confirm(\''
-            ._t('BAZ_CONFIRM_SUPPRIMER_FICHE').'\');">'
-            .
-            '<i class="glyphicon glyphicon-trash icon-trash icon-white"></i> '
-            ._t('BAZ_SUPPRIMER').'</a>'."\n";
+                ' <a class="btn btn-xs btn-mini btn-danger" href="'
+                . $GLOBALS['wiki']->href('deletepage', $idfiche).'" onclick="javascript:return confirm(\''
+                . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'\');">'
+                . '<i class="glyphicon glyphicon-trash icon-trash icon-white"></i> '
+                . _t('BAZ_SUPPRIMER').'</a>'."\n";
 
             // TODO ajouter action de validation (pour les admins)
             // if (baz_a_le_droit('valider_fiche')) {
@@ -3077,7 +3080,11 @@ function baz_voir_fiche($danslappli, $idfiche)
     return $res;
 }
 
-/** baz_a_le_droit() Renvoie true si la personne a le droit d'acceder a la fiche
+/**
+ * TODO: remove this method and use Wakka::HasAccess()
+ * @deprecated: use Wakka::HasAccess()
+ *
+ * baz_a_le_droit() Renvoie true si la personne a le droit d'acceder a la fiche
  *   @param  string  type de demande (voir, saisir, modifier)
  *   @param  string  identifiant, soit d'un formulaire, soit d'une fiche, soit d'un type de fiche
  *
