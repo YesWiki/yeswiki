@@ -2985,7 +2985,7 @@ function baz_voir_fiche($danslappli, $idfiche)
     $fichebazar['infos'] = '';
 
     // informations complementaires (id fiche, etat publication,... )
-    if ($danslappli == 1) {
+    if ($danslappli === true ) {
         $fichebazar['infos'] .=
         '<div class="BAZ_fiche_info well well-sm">'."\n";
 
@@ -3616,7 +3616,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
 
     // tri des fiches
-    if (!empty($params['random']) and $params['random'] == '1') {
+    if ( $params['random'] ) {
         shuffle($fiches['fiches']);
     } else {
         $GLOBALS['ordre'] = $params['ordre'];
@@ -4194,6 +4194,30 @@ function champCompare($a, $b)
     }
 }
 
+/**
+ * Construit un boolean à partir des valeurs "0","no","non","false" pour false,
+ * sinon retourne true.
+ * @param string $parameterName
+ * @param boolean $default
+ * @return boolean
+ */
+function getParameter_boolean( $wiki, $parameterName, $default=true )
+{
+    $p = $wiki->GetParameter($parameterName);
+    if (empty($p)) {
+        $p = $default ;
+    } elseif ($p == '0'
+        || $p == 'no'
+        || $p == 'non'
+        || $p == 'false'
+    ) {
+        $p = false ;
+    } else {
+        $p = true ;
+    }
+    return $p ;
+}
+
 /** getAllParameters() - récupère tous les parametres possible pour une action de bazar
  * @return array tableau des parametres avec les valeurs par défaut
  */
@@ -4307,19 +4331,10 @@ function getAllParameters($wiki)
     $param['class'] = $wiki->GetParameter('class');
 
     // ajout des options pour gerer la fiche (modifier, droits, etc,.. )
-    $param['barregestion'] = $wiki->GetParameter('barregestion');
-    if (empty($param['barregestion'])) {
-        $param['barregestion'] = '1'; // presente par defaut
-    } elseif ($param['barregestion'] == '0'
-      or $param['barregestion'] == 'no'
-      or $param['barregestion'] == 'non') {
-        $param['barregestion'] = '0';
-    } else {
-        $param['barregestion'] = '1';
-    }
+    $param['barregestion'] = getParameter_boolean( $wiki, 'barregestion', true );
 
     // possibilité d'avoir un ordre aléatoire des fiches
-    $param['random'] = $wiki->GetParameter('random');
+    $param['random'] = getParameter_boolean( $wiki, 'random', false );
 
     // facette : identifiants servant de filtres
     //    plusieures valeurs possibles, séparées par des virgules,
