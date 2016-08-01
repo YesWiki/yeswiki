@@ -77,6 +77,9 @@
     return false;
   });
 
+  // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
+  $('.modal').appendTo(document.body);
+
   // Pour l'apercu des themes, on recharge la page avec le theme selectionne
   $('#form_theme_selector select').on('change', function () {
     if ($(this).attr('id') === 'changetheme') {

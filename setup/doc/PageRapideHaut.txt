@@ -1,6 +1,6 @@
 {{moteurrecherche template="moteurrecherche_button.tpl.html"}}
 {{buttondropdown icon="glyphicon glyphicon-cog" caret="0"}}
- - {{button nobtn="1" icon="glyphicon glyphicon-user" text="Se Connecter" link="ParametresUtilisateur"}}
+ - {{login template="modal.tpl.html" nobtn="1"}}
  - ------
  - {{button nobtn="1" icon="glyphicon glyphicon-question-sign" text="Aide" link="AidE"}}
  - ------

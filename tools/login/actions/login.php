@@ -1,7 +1,7 @@
 <?php
 /**
  * login.php
- * 
+ *
  * parameters (GetParameter):
  * - signupurl
  * - profileurl
@@ -20,7 +20,7 @@
  * - remember
  *
  * Copyright 2010  Florian SCHMITT
- * 
+ *
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -70,11 +70,7 @@ $profileurl = $this->GetParameter('profileurl');
 // sauvegarde de l'url d'ou on vient
 $incomingurl = $this->GetParameter('incomingurl');
 if (empty($incomingurl)) {
-    $incomingurl = 'http'
-        .((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's':'')
-        .'://' . (($_SERVER['SERVER_PORT'] != '80') ? $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT']
-        .$_SERVER['SCRIPT_NAME'] : $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])
-        .(($_SERVER['QUERY_STRING'] > ' ') ?'?' . $_SERVER['QUERY_STRING'] : '');
+    $incomingurl = 'http'.((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 }
 
 $userpage = $this->GetParameter("userpage");
@@ -95,16 +91,25 @@ if (empty($userpage)) {
  * Url "Mot de passe perdu"
  */
 $lostpasswordurl = $this->GetParameter('lostpasswordurl');
-if (! empty($lostpasswordurl) ) {
+if (!empty($lostpasswordurl)) {
     if ($this->IsWikiName($lostpasswordurl)) {
         $lostpasswordurl = $this->href('', $lostpasswordurl);
     }
+} else {
+    // TODO : voir pour gerer les pages dans d'autres langues
+    $lostpasswordurl = $this->href('', 'MotDePassePerdu');
 }
 
 
-// classes css pour l'action et pour les boutons
+// classe css pour l'action
 $class = $this->GetParameter("class");
+
+// classe css pour les boutons
 $btnclass = $this->GetParameter("btnclass");
+if (empty($btnclass)) {
+    $btnclass = 'btn-default';
+}
+$nobtn = $this->GetParameter("nobtn");
 
 // template par défaut
 $template = $this->GetParameter("template");
@@ -135,7 +140,7 @@ if ($_REQUEST["action"] == "login") {
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
         if ($existingUser["password"] == md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);
-            
+
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
                 $this->Redirect($this->href('', $_POST["name"], ''));
@@ -157,7 +162,7 @@ if ($_REQUEST["action"] == "login") {
             // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
             if ($existingUser["password"] == md5($_POST["password"])) {
                 $this->SetUser($existingUser, $_POST["remember"]);
-                
+
                 // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
                 if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
                     $this->Redirect($this->href('', $existingUser["name"], ''));
@@ -184,7 +189,7 @@ if ($user = $this->GetUser()) {
     if ($this->LoadPage("PageMenuUser")) {
         $PageMenuUser.= $this->Format("{{include page=\"PageMenuUser\"}}");
     }
-    
+
     // si pas de pas d'url de profil renseignée, on utilise ParametresUtilisateur
     if (empty($profileurl)) {
         $profileurl = $this->href("", "ParametresUtilisateur", "");
@@ -198,7 +203,7 @@ if ($user = $this->GetUser()) {
 } else {
     // cas d'une personne non connectée
     $connected = false;
-    
+
     // si l'authentification passe mais la session n'est pas créée, on a un problème de cookie
     if ($_REQUEST['action'] == 'checklogged') {
         $error = 'Vous devez accepter les cookies pour pouvoir vous connecter.';
@@ -231,6 +236,7 @@ $squel->set(
         "userpage" => $userpage,
         "PageMenuUser" => $PageMenuUser,
         "btnclass" => $btnclass,
+        "nobtn" => $nobtn,
         "error" => $error
     )
 );
