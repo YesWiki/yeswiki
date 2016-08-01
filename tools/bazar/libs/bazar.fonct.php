@@ -3005,13 +3005,15 @@ function baz_voir_fiche($danslappli, $idfiche)
                 . _t('BAZ_MODIFIER')
                 .'</a>'."\n";
 
-            // lien supprimer la fiche
-            $fichebazar['infos'] .=
+            if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
+                // lien supprimer la fiche
+                $fichebazar['infos'] .=
                 ' <a class="btn btn-xs btn-mini btn-danger" href="'
                 . $GLOBALS['wiki']->href('deletepage', $idfiche).'" onclick="javascript:return confirm(\''
                 . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'\');">'
                 . '<i class="glyphicon glyphicon-trash icon-trash icon-white"></i> '
                 . _t('BAZ_SUPPRIMER').'</a>'."\n";
+            }
 
             // TODO ajouter action de validation (pour les admins)
             // if (baz_a_le_droit('valider_fiche')) {
