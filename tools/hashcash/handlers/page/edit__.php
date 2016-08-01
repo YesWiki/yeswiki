@@ -9,7 +9,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
     // Edition
     if (!isset($_POST['submit']) || (isset($_POST['submit']) && $_POST['submit'] != 'Sauver')) {
         require_once 'tools/hashcash/secret/wp-hashcash.lib';
-
+        if (!file_exists(HASHCASH_SECRET_FILE)) {
+            $handle = fopen(HASHCASH_SECRET_FILE, 'w');
+            fclose($handle);
+        }
         // UPDATE RANDOM SECRET
         $curr = @file_get_contents(HASHCASH_SECRET_FILE);
         if (empty($curr) || (time() - @filemtime(HASHCASH_SECRET_FILE)) > HASHCASH_REFRESH) {

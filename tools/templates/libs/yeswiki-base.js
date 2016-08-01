@@ -72,7 +72,7 @@
     }
   });
 
-  //on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
+  // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
   $('.no-dblclick, form, .page a, button, .dropdown-menu').on('dblclick', function (e) {
     return false;
   });
