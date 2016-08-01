@@ -1,9 +1,3 @@
-/* bug bootstrap 2.1.1 */
-.nav-tabs > .active > a > [class^="icon-"],.nav-tabs>.active>a>[class*=" icon-"] { background-image:url("../../../templates/presentation/images/glyphicons-halflings.png") !important; }
-
-/* fin fichiers attaches */
-
-
 .qq-uploader, .qq-uploader:hover, .qq-upload-button:hover, .qq-upload-button {cursor: pointer;}
 
 
@@ -27,24 +21,17 @@
 .qq-upload-failed-text {display:none;}
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
 
-/*.label-image-size {
-	width:130px;
-}
-*/
-
-/**************************Les classes effets graphiques pour les images**************************************************************************/
-
+/*
+ * Les classes effets graphiques pour les images
+ */
 
  /* Style the figures */
 
 .attached_file {
-cursor: pointer;
 text-decoration: none;
-text-align:center;
 position:relative;
 margin:0;
 padding:0;
-position: relative;
 display: inline-block;
 }
 
