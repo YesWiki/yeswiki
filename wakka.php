@@ -1893,19 +1893,24 @@ class Wiki
     }
 
     /**
-     * Loads the module ACL for a certain module
+     * Loads the module (handlers) ACL for a certain module.
+     * 
+     * Database example row :
+     *  resource = http://www.wikini.net/_vocabulary/handler/addcomment
+     *  property = 'http://www.wikini.net/_vocabulary/acls'
+     *  value = +
      *
      * @param string $module
      *            The name of the module
      * @param string $module_type
      *            The type of module: 'action' or 'handler'
-     * @return mixed The ACL for the given module or <tt>null</tt> if no such
-     *         ACL was found (which should probably be interpreted as '*').
+     * @return string The ACL string  for the given module or "*" if not found.
      */
     public function GetModuleACL($module, $module_type)
     {
         $module = strtolower($module);
         switch ($module_type) {
+
             case 'action':
                 if (array_key_exists($module, $this->_actionsAclsCache)) {
                     $acl = $this->_actionsAclsCache[$module];
@@ -1919,6 +1924,7 @@ class Wiki
                     }
                 }
                 break;
+
             case 'handler':
                 $acl = $this->GetTripleValue($module, WIKINI_VOC_ACLS, WIKINI_VOC_HANDLERS_PREFIX);
                 break;
@@ -1944,11 +1950,10 @@ class Wiki
         $module = strtolower($module);
         $voc_prefix = $module_type == 'action' ? WIKINI_VOC_ACTIONS_PREFIX : WIKINI_VOC_HANDLERS_PREFIX;
         $old = $this->GetTripleValue($module, WIKINI_VOC_ACLS, $voc_prefix);
+
         if ($module_type == 'action') {
             $this->_actionsAclsCache[$module] = $acl;
         }
-
-        // TODO: Updating $this->_actionsAclsCache with new $acl
 
         if ($old === null) {
             return $this->InsertTriple($module, WIKINI_VOC_ACLS, $acl, $voc_prefix);
