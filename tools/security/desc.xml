@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="wksecurity" version="0.1" active="1">
+  <author>Florian Schmitt</author>
+  <label>Security</label>
+  <desc>Ensemble de gris gris pour améliorer la sécurité de YesWiki</desc>
+</plugin>

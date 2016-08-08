@@ -40,6 +40,8 @@ tools/hashcash/secret/wp-hashcash.key
 !tools/progressBar/*
 !tools/rss
 !tools/rss/*
+!tools/security
+!tools/security/*
 !tools/syndication
 !tools/syndication/*
 !tools/tableau
@@ -66,4 +68,3 @@ tools/hashcash/secret/wp-hashcash.key
 # Other
 
 .phpintel/
-
