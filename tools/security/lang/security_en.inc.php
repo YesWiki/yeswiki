@@ -23,7 +23,7 @@
 /**
 * English translation for Hashcash extension
 *
-*@package 		hashcash
+*@package       security
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     2012 Outils-Réseaux
 */
@@ -34,6 +34,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'HASHCASH_ANTISPAM_ACTIVATED' => 'Antispam protection activated',
 'HASHCASH_GENERAL_PASSWORD' => 'Global password for editing',
 'HASHCASH_SEND' => 'Send',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.'
+'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Your comment was not saved, maybe you are a robot.',
+'CAPTCHA_ERROR_PAGE_UNSAVED' => 'This page was not saved because you didn\'t enter the verification word.',
+'CAPTCHA_ERROR_WRONG_WORD' => 'This page was not saved because the verification word was wrong...',
+'CAPTCHA_VERIFICATION' => 'V&eacute;rification for saving page',
+'CAPTCHA_WRITE' => 'Type the word written in the picture',
 
 ));

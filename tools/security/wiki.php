@@ -18,6 +18,10 @@ if (!isset($wakkaConfig['use_hashcash'])) {
 if (!isset($wakkaConfig['use_nospam'])) {
     $wakkaConfig['use_nospam'] = false;
 }
+// recaptcha
+if (!isset($wakkaConfig['use_captcha'])) {
+    $wakkaConfig['use_captcha'] = false;
+}
 
 $wikiClasses [] = 'Hashcash';
 $wikiClassesContent [] = '

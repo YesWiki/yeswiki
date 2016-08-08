@@ -23,7 +23,7 @@
 /**
 * Fichier de traduction en francais de l'extension Hashcash
 *
-*@package 		hashcash
+*@package       security
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     2012 Outils-Réseaux
 */
@@ -34,6 +34,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'HASHCASH_ANTISPAM_ACTIVATED' => 'Protection anti-spam active',
 'HASHCASH_GENERAL_PASSWORD' => 'Mot de passe général pour l\'édition',
 'HASHCASH_SEND' => 'Envoyer',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Votre commentaire n\'a pas &eacute;t&eacute; enregistr&eacute;, le wiki pense que vous êtes un robot.'
-
+'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Votre commentaire n\'a pas &eacute;t&eacute; enregistr&eacute;, le wiki pense que vous êtes un robot.',
+'CAPTCHA_ERROR_PAGE_UNSAVED' => 'Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car vous n\'avez pas entr&eacute; le mot de v&eacute;rification.',
+'CAPTCHA_ERROR_WRONG_WORD' => 'Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car le mot entr&eacute; ne correspond pas...',
+'CAPTCHA_VERIFICATION' => 'V&eacute;rification pour sauvegarder la page',
+'CAPTCHA_WRITE' => '&Eacute;crire le mot pr&eacute;sent dans l\'image',
 ));
