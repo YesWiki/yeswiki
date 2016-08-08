@@ -589,6 +589,35 @@ function isExtension($filename, $ext)
     return substr($filename, -strlen($ext), strlen($filename)) === $ext;
 }
 
+
+/**
+ * recupere le parametre data sous forme d'un tableau
+ *
+ *
+ * @return array or null if not result
+ */
+function getDataParameter()
+{
+    // container data attributes
+    $data = $GLOBALS['wiki']->GetParameter('data');
+    if (!empty($data)) {
+        $datas = array();
+        $tab = explode(',', $data);
+        foreach ($tab as $req) {
+            $tabdecoup = explode('=', $req, 2);
+            $key = htmlspecialchars($tabdecoup[0]);
+            $datas[$key] = htmlspecialchars(trim($tabdecoup[1]));
+        }
+        if (is_array($datas)) {
+            return $datas;
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+}
+
 function postFormat($output)
 {
     // pour les buttondropdown, on ajoute les classes css aux listes
