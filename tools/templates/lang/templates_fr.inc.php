@@ -69,6 +69,8 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_REFERENCES' => 'R&eacute;f&eacute;rences',
     'TEMPLATE_SLIDESHOW_MODE' => 'Lancer cette page en mode diaporama.',
     'TEMPLATE_SLIDESHOW' => 'Diaporama',
+    'TEMPLATE_DYNAMIC_SLIDESHOW' => 'Diaporama dynamique',
+    'TEMPLATE_CLASSIC_SLIDESHOW' => 'Diaporama classique',
     'TEMPLATE_SEE_SHARING_OPTIONS' => 'Partager la page',
     'TEMPLATE_SHARE' => 'Partager',
 

@@ -18,10 +18,9 @@ if (!defined("WIKINI_VERSION")) {
 $header =  explode('<body', $this->Header());
 echo str_replace('<html', '<html class="slideshow-html"', $header[0])."<body class=\"slideshow-body\">\n";
 
-
 // on regarde si un template est passe en parametre GET, on passe celui par defaut sinon
-if (isset($_GET['template']) && file_exists('tools/templates/presentation/templates/'.realpath($_GET['template']))) {
-    $template = realpath($_GET['template']);
+if (isset($_GET['template']) && file_exists(realpath('tools/templates/presentation/templates/'.$_GET['template']))) {
+    $template = basename(realpath('tools/templates/presentation/templates/'.$_GET['template']));
 } else {
     $template = 'diaporama_slides.tpl.html';
 }
