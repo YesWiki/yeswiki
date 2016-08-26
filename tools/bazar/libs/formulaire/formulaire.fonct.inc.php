@@ -2399,7 +2399,7 @@ function obtenir_extension($filename)
          // dot is not found in the filename
         return ''; // no extension
     } else {
-        $extension = substr($filename, $pos + 1);S
+        $extension = substr($filename, $pos + 1);
         return $extension;
     }
 }
