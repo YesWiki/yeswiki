@@ -114,7 +114,7 @@ class TheCaptcha
         $black = imagecolorallocate($this->image, 0, 0, 0);
 
         imagefilledrectangle($this->image, 0, 0, $this->size, 50, $white);
-        $font = 'agenda__.ttf';
+        $font = __DIR__.'/agenda__.ttf';
 
         // dessinons quelques eclipses ;)
         for ($t = 0; $t <= 20; $t++) {
