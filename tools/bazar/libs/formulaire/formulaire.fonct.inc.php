@@ -80,8 +80,7 @@ function afficher_image(
     // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
     $destimg = sanitizeFilename($nom_image);
     if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image)
-        && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
-
+      && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
         // faut il creer la vignette?
         if ($hauteur_vignette != '' && $largeur_vignette != '') {
             //la vignette n'existe pas, on la genere
@@ -160,7 +159,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
             $image = new Image($image_src);
             $image->resize($largeur, $hauteur, $method);
             // Fix Orientation
-            $exif = exif_read_data($image_src);
+            $exif = @exif_read_data($image_src);
             if (isset($exif['Orientation'])) {
                 $orientation = $exif['Orientation'];
                 switch ($orientation) {
@@ -1113,7 +1112,7 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
+    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $showform, $type_input, $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
@@ -1167,8 +1166,17 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
             $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
-            $html.= '<span class="BAZ_texte"><a href="mailto:' . $valeurs_fiche[$tableau_template[1]] . '" class="BAZ_lien_mail">';
-            $html.= $valeurs_fiche[$tableau_template[1]] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            if ($showform == 'form') {
+                // js necessaire pour valider le formulaire et faire l'envoi ajax
+                $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
+                $title = 'Contacter par mail '.htmlspecialchars($valeurs_fiche['bf_titre']);
+                $html .= '<span class="BAZ_texte"><a class="btn btn-default modalbox" title="'.$title.'" href="'
+                  .$GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$tableau_template[1]).'"><i class="glyphicon glyphicon-envelope"></i> '.$title;
+                $html .=  '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            } else {
+                $html.= '<span class="BAZ_texte"><a href="mailto:' . $valeurs_fiche[$tableau_template[1]] . '" class="BAZ_lien_mail">';
+                $html.= $valeurs_fiche[$tableau_template[1]] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            }
         }
 
         return $html;
@@ -2389,13 +2397,9 @@ function obtenir_extension($filename)
     $pos = strrpos($filename, '.');
     if ($pos === false) {
          // dot is not found in the filename
-
-        return '';
-         // no extension
-
+        return ''; // no extension
     } else {
-        $extension = substr($filename, $pos + 1);
-
+        $extension = substr($filename, $pos + 1);S
         return $extension;
     }
 }
