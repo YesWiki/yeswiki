@@ -114,15 +114,15 @@ $resultat = $GLOBALS['wiki']->query($req);
 define('BAZ_VARIABLE_VOIR', 'vue');
 define('BAZ_VARIABLE_ACTION', 'action');
 
-// Indique les onglets de vues a afficher. 
+// Indique les onglets de vues a afficher.
 // possibilités : mes_fiches,consulter,rss,saisir,formulaire,listes,importer,exporter
-define('BAZ_VOIR_AFFICHER', 'consulter,saisir,formulaire,listes,importer,exporter');
+define('BAZ_VOIR_AFFICHER', 'formulaire,consulter,saisir,listes,importer,exporter');
 
 // Permet d'indiquer la vue par defaut si la variable vue n'est pas defini
 
 // Premier niveau d'action : pour toutes les fiches
 
-define('BAZ_VOIR_DEFAUT', 'consulter');
+define('BAZ_VOIR_DEFAUT', 'formulaire');
  // Recherche
 define('BAZ_VOIR_CONSULTER', 'consulter');
  // Recherche
@@ -331,7 +331,7 @@ define('BAZ_TYPE_CARTO', (isset($wakkaConfig['baz_type_carto'])) ? $wakkaConfig[
 // taille de la carte a l'ecran
 define('BAZ_GOOGLE_IMAGE_LARGEUR', '100%');
  // valeur de l'attribut css width de la carte
-define('BAZ_GOOGLE_IMAGE_HAUTEUR', '400px');
+define('BAZ_GOOGLE_IMAGE_HAUTEUR', '600px');
  // valeur de l'attribut css height de la carte
 
 // image marqueur
@@ -381,109 +381,11 @@ define(
 // les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
 $wakkaConfig['global_query'] = isset($wakkaConfig['global_query']) ? $wakkaConfig['global_query'] : true ;
 
-if (!function_exists('CheckBazarOwner')) {
-    function CheckBazarOwner($page, $tag)
-    {
-        global $wiki;
-        // check if user is logged in
-        if (!$wiki->GetUser()) {
-            return false;
-        }
-        // check if user is owner
-        if ($page["owner"] == $wiki->GetUserName()) {
-            return true;
-        }
-    }
-}
-
-// Teste les droits d'acces champ par champ du contenu d'un fiche bazar
-// Si utilisateur connecte est  proprietaire ou adminstrateur : acces a tous les champs
-// Sinon ne sont retournes que les champs dont les droits d'acces sont compatibles.
-// Introduction du droit % : seul le proprietaire peut acceder
-if (!function_exists('checkBazarAcls')) {
-    function checkBazarAcls($page, $tag)
-    {
-        global $wiki;
-        
-        // TODO :
-        // loadpagebyid
-        // bazarliste ...
-        // champ mot de passe ?
-        //
-        if (checkBazarOwner($page, $tag)) {
-             // Pas de controle si proprietaire
-            return $page;
-        }
-        if ($page) {
-            $valjson = $page["body"];
-            $valeur = json_decode($valjson, true);
-            $valeur = array_map('utf8_decode', $valeur);
-            if ($valeur) {
-                $val_formulaire = baz_valeurs_formulaire($valeur['id_typeannonce']);
-                $fieldname = array();
-                foreach ($val_formulaire['template'] as $line) {
-                    if (isset($line[11]) && $line[11] != '') {
-                        if ($wiki->CheckAcl($line[11]) == "%") {
-                            $line[11] = $wiki->GetUserName();
-                        }
-                        if (!$wiki->CheckACL($line[11])) {
-                             // On memorise les champs non autorise
-                            $fieldname[] = $line[1];
-                        }
-                    }
-                }
-                if (count($fieldname) > 0) {
-                     //
-                    foreach ($fieldname as $field) {
-                        $valeur[$field] = "";
-                         // on vide le champ
-                        
-                    }
-                    $valeur = array_map("utf8_encode", $valeur);
-                    $page["body"] = json_encode($valeur);
-                }
-            }
-        }
-        return $page;
-    }
-}
-
+// Fonctions ajoutées par bazar a la classe Wiki
 $wikiClasses[] = 'Bazar';
 
-//  Gestion des droits sur les champs d'une fiche Bazar, suppose que Bazar soit toujours integre a Yeswiki puisque cette
-//  Gestion est supprimee de template. Trouver un moyen de tester l'existence de la fonction Loadpage dans le wiki.php 
-// de template et la charger si elle est non presente ?
-
-$wikiClassesContent[] = ' 
-
-  function LoadPage($tag, $time = "", $cache = 1)
-  {
-    // retrieve from cache
-    if (!$time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false) && isset($cachedPage["metadatas"]))
-    {
-      $page = $cachedPage;
-    }
-    else // load page
-    {
-      $sql = "SELECT * FROM ".$this->config["table_prefix"]."pages"
-        . " WHERE tag = \'".mysqli_real_escape_string($this->dblink, $tag)."\' AND "
-        . ($time ? "time = \'".mysqli_real_escape_string($this->dblink, $time)."\'" : "latest = \'Y\'") . " LIMIT 1";
-      $page = $this->LoadSingle($sql);
-      // si la page existe, on charge les meta-donnees
-      if ($page) $page["metadatas"] = $this->GetMetaDatas($tag);
-      
-      $type = $this->GetTripleValue($tag, \'http://outils-reseaux.org/_vocabulary/type\', \'\', \'\');
-      if ($type == \'fiche_bazar\') {
-        $page=checkBazarAcls($page,$tag);
-      }
-      // the database is in ISO-8859-15, it must be converted
-      if (isset($page[\'body\'])) {
-        $page[\'body\'] = _convert($page[\'body\'], "ISO-8859-15");
-      } 
-      // cache result
-      if (!$time) $this->CachePage($page, $tag);
-    }
-    return $page;
-  }
-';
-
+// fonctions supplementaires a ajouter la classe wiki
+$fp = @fopen('tools/bazar/libs/bazar.class.inc.php', 'r');
+$contents = fread($fp, filesize('tools/bazar/libs/bazar.class.inc.php'));
+fclose($fp);
+$wikiClassesContent [] = str_replace('<?php', '', $contents);

@@ -15,6 +15,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --
 */
+var_dump($GLOBALS['wiki']->config['captcha_words']);
 
 if (isset($GLOBALS['wiki']->config['captcha_words']) and is_array($GLOBALS['wiki']->config['captcha_words'])) {
     $textes = $GLOBALS['wiki']->config['captcha_words'];

@@ -5,7 +5,7 @@
         <tr>
             <th><?php echo _t('BAZ_FORMULAIRE'); ?></th>
             <th style="width:100px;"><?php echo _t('BAZ_ACTIONS_FICHES'); ?></th>
-            <th><?php echo _t('BAZ_CATEGORIE'); ?></th>
+            <th><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
             <th style="width:40px;"><?php echo _t('BAZ_ID'); ?></th>
             <th style="width:80px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
         </tr>
@@ -30,17 +30,45 @@
                     href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR
                     .'='.BAZ_VOIR_SAISIR . '&amp;action='.BAZ_ACTION_NOUVEAU.'&amp;id_typeannonce='.$key); ?>">
                 <i class="glyphicon glyphicon-plus icon-plus"></i></a>
-                <a class="btn btn-default btn-mini btn-xs"
-                    data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_RSS'); ?>"
-                    href="<?php
-                    echo $GLOBALS['wiki']->href(
-                        'rss',
-                        $GLOBALS['wiki']->getPageTag(),
-                        'id_typeannonce='.$key
-                    ); ?>">
-                <i class="glyphicon glyphicon-signal icon-signal"></i></a>
             </td>
-            <td><?php echo $form['category']; ?></td>
+            <td>
+              <a class="btn btn-default btn-mini btn-xs"
+              data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_RSS'); ?>"
+              href="<?php
+              echo $GLOBALS['wiki']->href(
+              'rss',
+              $GLOBALS['wiki']->getPageTag(),
+              'id='.$key
+              ); ?>">
+              <i class="glyphicon glyphicon-signal icon-signal"></i></a>
+              <a class="btn btn-default btn-mini btn-xs"
+              data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_CSV'); ?>"
+              href="<?php
+              echo $GLOBALS['wiki']->href(
+              '',
+              $GLOBALS['wiki']->getPageTag(),
+              'vue=exporter&id='.$key
+              ); ?>">
+              CSV</a>
+              <a class="btn btn-default btn-mini btn-xs"
+              data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON'); ?>"
+              href="<?php
+              echo $GLOBALS['wiki']->href(
+              'json',
+              $GLOBALS['wiki']->getPageTag(),
+              'demand=entries&id='.$key
+              ); ?>">
+              JSON</a>
+              <a class="btn btn-default btn-mini btn-xs"
+              data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_WIDGET'); ?>"
+              href="<?php
+              echo $GLOBALS['wiki']->href(
+              'widget',
+              $GLOBALS['wiki']->getPageTag(),
+              'id='.$key
+              ); ?>">
+              <?php echo _t('BAZ_WIDGET'); ?></a>
+            </td>
             <td><?php echo $key; ?></td>
             <td>
             <?php

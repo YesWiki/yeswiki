@@ -1,5 +1,5 @@
 <?php if ($connected) : ?>
-  <a href="#LoginModal" role="button" class="<?php if (empty($nobtn)) { echo 'btn btn-default '.$btnclass.' '; } ?>dropdown-toggle" data-toggle="modal">
+  <a href="#LoginModal" role="button" class="<?php if (empty($nobtn)) { echo 'btn btn-default '.$btnclass.' '; } ?>" data-toggle="modal">
     <i class="glyphicon glyphicon-user"></i> <?php echo $user; ?>
   </a>
   <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
@@ -22,7 +22,7 @@
     </div><!-- /.modal-dialog -->
   </div> <!-- /#LoginModal-->
   <?php else : ?>
-  <a href="#LoginModal" role="button" class="<?php if (empty($nobtn)) { echo 'btn btn-default '.$btnclass.' '; } ?>dropdown-toggle" data-toggle="modal">
+  <a href="#LoginModal" role="button" class="<?php if (empty($nobtn)) { echo 'btn btn-default '.$btnclass.' '; } ?>" data-toggle="modal">
     <i class="glyphicon glyphicon-user"></i> <?php echo _t('LOGIN_LOGIN'); ?>
   </a>
   <div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">

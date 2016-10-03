@@ -65,19 +65,33 @@ $(document).ready(function () {
   });
 
   //permet de gerer des affichages conditionnels, en fonction de balises div
-  $('select[id^=\'liste\']').each(function () {
+  function handleConditionnalListChoice() {
     var id = $(this).attr('id');
-    id = id.replace('liste', '');
-    $('div[id^=\'' + id + '\']').hide();
-    $('div[id=\'' + id + '_' + $(this).val() + '\']').show();
-  });
+    $('div[id^=\'' + id + '\'], div[id^=\'' + id.replace('liste', '') + '\']')
+      .not('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').hide()
+     .find(':input').val('').removeProp('checked');
+    $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show();
+  }
+  function handleConditionnalCheckboxChoice() {
+    var id = $(this).attr('id');
+    var re = /^([a-zA-Z0-9-_]+)\[([a-zA-Z0-9-_]+)\]$/;
+    var m;
 
-  $('select[id^=\'liste\']').change(function () {
-    var id = $(this).attr('id');
-    id = id.replace('liste', '');
-    $('div[id^=\'' + id + '\']').hide();
-    $('div[id=\'' + id + '_' + $(this).val() + '\']').show();
-  });
+    if ((m = re.exec(id)) !== null) {
+        if (m.index === re.lastIndex) {
+            re.lastIndex++;
+        }
+    }
+    if ($(this).prop('checked') == true) {
+      $('div[id=\'' + m[1] + '_' + m[2] + '\']').show();
+    } else {
+      $('div[id=\'' + m[1] + '_' + m[2] + '\']').hide()
+        .find(':input').val('').removeProp('checked');
+    }
+  }
+
+  $('select[id^=\'liste\']').each(handleConditionnalListChoice).change(handleConditionnalListChoice);
+  $('.element_checkbox[id^=\'checkboxListe\']').each(handleConditionnalCheckboxChoice).change(handleConditionnalCheckboxChoice);
 
   //choix de l'heure pour une date
   $('.select-allday').change(function () {
@@ -218,14 +232,14 @@ $(document).ready(function () {
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     } else if (atleastonemailfieldnotvalid === true) {
       alert('L\'email saisi n\'est pas valide');
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
 
     } else if (atleastoneurlfieldnotvalid === true) {
       alert('L\'url saisie n\'est pas valide, elle doit commencer par http:// '
@@ -234,21 +248,21 @@ $(document).ready(function () {
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     } else if (atleastonecheckboxfieldnotvalid === true) {
       alert('Il faut cocher au moins une case a cocher');
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     } else if (atleastonetagfieldnotvalid === true) {
       alert('Il faut saisir au moins une entrée pour le champs en autocomplétion');
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     }
 
     // formulaire validé, on soumet le formulaire
@@ -343,19 +357,26 @@ $(document).ready(function () {
   ]);
 
   // Onglets
-  $('.BAZ_cadre_fiche .nav-tabs a').click(function (e) {
-    e.preventDefault();
-    $(this).tab('show');
+  // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
+  $('.bazar-entry').each(function (i) {
+    $(this).find('[data-toggle="tab"]').each(function () {
+      $(this).attr('href', $(this).attr('href') + '-' + i);
+    });
+
+    $(this).find('.tab-pane').each(function () {
+      $(this).attr('id', $(this).attr('id') + '-' + i);
+    });
   });
 
-  // code pour les boutons suivant / precedent
-  $('.tab-content .pager a').click(function (e) {
-    e.preventDefault();
-    var lientab = $(this).attr('href');
-    $('.nav-tabs a[href="' + lientab + '"]').tab('show'); // Select tab by name
+  // hack pour les boutons suivant precedent dans le formulaire bazar
+  $('#formulaire .tab-content [data-toggle="tab"]').click(function () {
+     $('#formulaire .nav-tabs .active').removeClass('active');
+     $('#formulaire .nav-tabs').find('[href="' + $(this).attr('href') + '"]').parent().addClass('active');
+     $('#formulaire .nav-tabs a[href="' + $(this).attr('href') + '"]').tab('show');
+     $('html, body').animate({
+       scrollTop: $('#formulaire').offset().top - 80,
+     }, 500);
   });
-
-  $('.tab-pane').removeAttr('style');
 
   // cocher / decocher tous
   var $checkboxselectall = $('.selectall');

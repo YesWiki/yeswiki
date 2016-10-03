@@ -15,8 +15,10 @@
 ------
 {{end elem="col"}}
 {{col size="6"}}
+===Mises à jour de ""YesWiki""===
+{{update}}
+------
 ===Gérer les groupes d'utilisateurs===
-nécessite une connexion admin
 {{editgroups}}
 ------
 ===Gestion des tags ===

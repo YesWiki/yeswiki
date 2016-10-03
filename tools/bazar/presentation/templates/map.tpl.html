@@ -80,7 +80,7 @@ if (count($fiches)>0) :
 									}),
 									title: \''.addslashes($fiche['bf_titre']).'\'
 							});
-					marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes($fiche['html'])).'\');
+					marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche(true, $fiche))).'\');
 					';
 					if ($param['spider'] == 'true' or $param['spider'] == '1') {
 							$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
@@ -195,7 +195,7 @@ if (count($fiches)>0) :
 											// pour le html du L.divIcon http://leafletjs.com/reference.html#divicon
 											// supprimer les éventuels apostrhophes
 											iconClass = opt[1].trim().replace(/\'/g, "");
-											break;											
+											break;
 										case "color":
 											// pour le html du L.divIcon
 											color = opt[1].trim();
@@ -239,7 +239,7 @@ if (count($fiches)>0) :
 				}
 			}
 		}
-	
+
 		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$GLOBALS['nbbazarliste'].');' ;
 
 		$GLOBALS['wiki']->AddJavascript( $js );

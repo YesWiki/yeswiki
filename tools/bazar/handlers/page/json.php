@@ -48,12 +48,13 @@ if (isset($_REQUEST['demand'])) {
 
     // preparation des parametres passés
     $page = (isset($_REQUEST['page']) ? $_REQUEST['page'] : '');
-    $form = (isset($_REQUEST['form']) ? $_REQUEST['form'] : '');
+    $form = (isset($_REQUEST['id']) ? $_REQUEST['id'] : (isset($_REQUEST['form']) ? $_REQUEST['form'] : ''));
     $tags = (isset($_REQUEST['tags']) ? $_REQUEST['tags'] : '');
     $order = (isset($_REQUEST['order']) ? $_REQUEST['order'] : 'alphabetique');
     $html = (isset($_REQUEST['html']) && $_REQUEST['html'] == '1' ? $_REQUEST['html'] : '');
     $list = (isset($_REQUEST['list']) ? $_REQUEST['list'] : '');
     $idfiche = (isset($_REQUEST['id_fiche']) ? $_REQUEST['id_fiche'] : '');
+    $pagetag = (isset($_REQUEST['pagetag']) ? $_REQUEST['pagetag'] : '');
     //on recupere les parametres query pour une requete specifique
     $query = (isset($_REQUEST['query']) ? $_REQUEST['query'] : '');
     if (!empty($query)) {

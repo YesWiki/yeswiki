@@ -24,5 +24,5 @@ if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == '
     $GLOBALS['template-error'] = '';
 }
 
-
-$plugin_output_new = postFormat($plugin_output_new);
+// TODO : make it work with big buffers
+//$plugin_output_new = postFormat($plugin_output_new);

@@ -57,6 +57,10 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_ID' => 'ID',
         'BAZ_TITLE' => 'Titre',
         'BAZ_ACTIONS' => 'Actions',
+        'BAZ_DATA_FORMAT' => 'Formats de données',
+        'BAZ_WIDGET' => 'Widget',
+        'BAZ_CSV' => 'CSV',
+        'BAZ_JSON' => 'JSON',
         'BAZ_ACTIONS_FICHES' => 'Fiches',
 
         'BAZ_LOADING' => 'Chargement',
@@ -213,6 +217,9 @@ $GLOBALS['translations'] = array_merge(
         'BAZAR_URL_ERROR' => 'l\'url n\'a pas pu être chargée',
         'BAZAR_CHECKALL' => 'Cocher tout',
         'BAZAR_FILTER' => 'Filtrer',
+        'BAZ_GIVEN_ID' => 'Identifiant attribué',
+        'BAZ_EDIT_MY_ENTRY' => 'Editer ma fiche',
+        'BAZ_CHANGE_PWD' => 'Changer de mot de passe',
 
         //================ Calendrier Bazar =======================================
         'BAZ_AFFICHE_TITRES_COMPLETS' => 'Afficher les titres complets des &eacute;v&eacute;nements',

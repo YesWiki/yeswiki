@@ -109,7 +109,7 @@ if ($this->HasAccess("read")) {
 		</style>' . "\n";
 
         $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '') . $scripts_iframe;
-
+        $this->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
         // on recupere juste les javascripts et la fin des balises body et html
         $output .= preg_replace('/^.+<script/Us', $styleiframe . '<script', $this->Footer());
         echo $output;

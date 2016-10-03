@@ -43,8 +43,8 @@
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
-define("YESWIKI_VERSION", 'Cercopitheque');
-define("YESWIKI_RELEASE", '2016.07.28');
+define("YESWIKI_VERSION", 'cercopitheque');
+define("YESWIKI_RELEASE", '2016-01-25-1');
 
 require_once 'includes/constants.php';
 include_once 'includes/urlutils.inc.php';
@@ -1665,7 +1665,7 @@ class Wiki
             $tag = $this->GetPageTag();
         }
         if ($page = $this->LoadPage($tag, $time)) {
-            return $page["owner"];
+            return isset($page["owner"]) ? $page["owner"] : null;
         }
     }
 
@@ -1894,7 +1894,7 @@ class Wiki
 
     /**
      * Loads the module (handlers) ACL for a certain module.
-     * 
+     *
      * Database example row :
      *  resource = http://www.wikini.net/_vocabulary/handler/addcomment
      *  property = 'http://www.wikini.net/_vocabulary/acls'
