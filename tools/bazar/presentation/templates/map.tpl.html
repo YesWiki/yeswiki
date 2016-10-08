@@ -74,7 +74,7 @@ if (count($fiches)>0) :
 											popupAnchor: '.$param['popupAnchor'].',
 											className: \'bazar-marker'.$param['smallmarker'].'\',
 											html: \'<div class="bazar-entry icon-'.$color.'" '
-											.$fiche['html_data'].'>'
+											.str_replace('\'', '', $fiche['html_data']).'>'
 											.(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
 											.'</div>\'
 									}),
