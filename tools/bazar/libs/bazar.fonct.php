@@ -2131,6 +2131,10 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
                 $GLOBALS['_BAZAR_']['form'][$id] = baz_valeurs_formulaire($id);
             }
         }
+        if (count($idformulaire) == 1) {
+            $id = array_shift(array_values($idformulaire));
+            return array($id => $GLOBALS['_BAZAR_']['form'][$id]);
+        }
     } elseif ($idformulaire != '') {
         if (!isset($GLOBALS['_BAZAR_']['form'][$idformulaire])) {
             $requete = 'SELECT * FROM '.BAZ_PREFIXE.'nature WHERE bn_id_nature='.$idformulaire;
@@ -4192,7 +4196,7 @@ function baz_afficher_flux_RSS()
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('item');
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('title', null, html_entity_decode(stripslashes($ligne['bf_titre']), ENT_QUOTES, 'UTF-8'));
+            $xml .= XML_Util::createTag('title', null, stripslashes($ligne['bf_titre']));
             $xml .= "\r\n        ";
             $lien = $GLOBALS['_BAZAR_']['url'];
             $lien->addQueryString(BAZ_VARIABLE_ACTION, BAZ_VOIR_FICHE);
