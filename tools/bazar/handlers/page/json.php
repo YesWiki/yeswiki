@@ -252,7 +252,7 @@ if (isset($_REQUEST['demand'])) {
             }
 
             usort($formval, 'sortByLabel');
-            echo json_encode($formval);
+            echo json_encode(_convert($formval));
             break;
         case "entries":
             // liste de fiches bazar
