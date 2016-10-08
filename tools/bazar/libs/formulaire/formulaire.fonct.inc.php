@@ -2481,7 +2481,7 @@ function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $url_bookmarklet->addQueryString('vue', BAZ_VOIR_SAISIR);
             $url_bookmarklet->addQueryString('action', BAZ_ACTION_NOUVEAU);
             $url_bookmarklet->addQueryString('wiki', $GLOBALS['_BAZAR_']['pagewiki'] . '/iframe');
-            $url_bookmarklet->addQueryString('id_typeannonce', $valeurs_fiche['id_typeannonce']);
+            $url_bookmarklet->addQueryString('id_typeannonce', $GLOBALS['params']['idtypeannonce']);
             $htmlbookmarklet = "<div class=\"BAZ_info\">
                 <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('" . str_replace('&', '&amp;', $url_bookmarklet->getUrl()) . "&amp;bf_titre='+escape(document.title)+'&amp;url='+encodeURIComponent(location.href)+'&amp;description='+escape(document.getSelection()), '" . $tableau_template[1] . "', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\">" . $tableau_template[1] . "</a> << " . $tableau_template[2] . "</div>";
             $formtemplate->addElement('html', $htmlbookmarklet);
