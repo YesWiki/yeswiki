@@ -82,11 +82,13 @@ $(document).ready(function () {
             re.lastIndex++;
         }
     }
-    if ($(this).prop('checked') == true) {
-      $('div[id=\'' + m[1] + '_' + m[2] + '\']').show();
-    } else {
-      $('div[id=\'' + m[1] + '_' + m[2] + '\']').hide()
+    if (m) {
+      if ($(this).prop('checked') == true) {
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']').show();
+      } else {
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']').hide()
         .find(':input').val('').removeProp('checked');
+      }
     }
   }
 
