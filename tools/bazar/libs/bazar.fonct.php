@@ -1872,19 +1872,22 @@ function bazPrepareFormData($form)
                 } else {
                     $tabquery = '';
                 }
-                $result = baz_requete_recherche_fiches(
-                    $tabquery,
-                    '',
-                    $formelem[1],
-                    '',
-                    1,
-                    '',
-                    '',
-                    false,
-                    (!empty($formelem[13])) ? $formelem[13] : ''
-                );
+                $hash = md5($formelem[1].serialize($tabquery));
+                if (!isset($result[$hash])) {
+                    $result[$hash] = baz_requete_recherche_fiches(
+                        $tabquery,
+                        '',
+                        $formelem[1],
+                        '',
+                        1,
+                        '',
+                        '',
+                        false,
+                        (!empty($formelem[13])) ? $formelem[13] : ''
+                    );
+                }
                 $prepared[$i]['values']['titre_liste'] = $formelem[2];
-                foreach ($result as $res) {
+                foreach ($result[$hash] as $res) {
                     $valeurs_fiche = json_decode($res['body'], true);
                     $prepared[$i]['values']['label'][$valeurs_fiche['id_fiche']] = $valeurs_fiche['bf_titre'];
                 }
@@ -2155,8 +2158,11 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
           formulaire_valeurs_template_champs(
               $GLOBALS['_BAZAR_']['form'][$idformulaire]['bn_template']
           );
-        $GLOBALS['_BAZAR_']['form'][$idformulaire]['prepared'] =
-          bazPrepareFormData($GLOBALS['_BAZAR_']['form'][$idformulaire]);
+        if (!isset($GLOBALS['_BAZAR_']['form'][$idformulaire]['prepared'])) {
+            $GLOBALS['_BAZAR_']['form'][$idformulaire]['prepared'] =
+              bazPrepareFormData($GLOBALS['_BAZAR_']['form'][$idformulaire]);
+        }
+
         return $GLOBALS['_BAZAR_']['form'][$idformulaire];
     } else {
         $requete = 'SELECT * FROM '.BAZ_PREFIXE.'nature';
@@ -2172,8 +2178,10 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
               formulaire_valeurs_template_champs(
                   $value['bn_template']
               );
-            $GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]['prepared'] =
-              bazPrepareFormData($GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]);
+            if (!isset($GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]['prepared'])) {
+                $GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]['prepared'] =
+                  bazPrepareFormData($GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]);
+            }
         }
     }
     return isset($GLOBALS['_BAZAR_']['form']) ? $GLOBALS['_BAZAR_']['form'] : null;
