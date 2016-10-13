@@ -2100,7 +2100,6 @@ function bazPrepareFormData($form)
  */
 function baz_valeurs_formulaire($idformulaire = '', $category = '')
 {
-    $GLOBALS['_BAZAR_']['form'] = array();
     if (is_array($idformulaire)) {
         foreach ($idformulaire as $id) {
             if (!isset($GLOBALS['_BAZAR_']['form'][$id])) {
