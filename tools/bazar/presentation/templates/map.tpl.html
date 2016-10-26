@@ -1,7 +1,6 @@
 <?php echo $info_res; ?>
 <?php
 if (count($fiches)>0) :
-
 	// TODO: y-a-t'il pagination en mode carto ?
 	echo $pager_links;
 
@@ -80,7 +79,7 @@ if (count($fiches)>0) :
 									}),
 									title: \''.addslashes($fiche['bf_titre']).'\'
 							});
-					marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche(true, $fiche))).'\');
+					marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($param['barregestion'], $fiche))).'\');
 					';
 					if ($param['spider'] == 'true' or $param['spider'] == '1') {
 							$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
