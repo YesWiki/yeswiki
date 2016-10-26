@@ -11,10 +11,10 @@ body {
   background-color: #333;
 }
 a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
-  color: #b71c1c;
+  color: #f44336;
 }
 .well, .jumbotron {
-  background-color: #ffebee;
+  background-color: #ff8a80;
 }
 
 /* Conteneur principal de la page Wiki */
@@ -43,7 +43,7 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 
 /* Bandeau d'entete */
 #yw-header {
-  background-color: #ef5350;
+  background-color: #d50000;
 }
 .yw-fixed #yw-header, .yw-responsive #yw-header {
   margin: 0 -15px; /*marge negative pour compenser le conteneur principal*/
@@ -76,10 +76,11 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 #yw-topnav .navbar-nav > .open > a, #yw-topnav .navbar-nav > .open > a:focus, #yw-topnav .navbar-nav > .open > a:hover,
 #yw-topnav .dropdown-menu > li > a:focus, #yw-topnav .dropdown-menu > li > a:hover {
     color: #333;
-    background-color: #ffebee;
+    background-color: #ff8a80;
 }
 #yw-topnav .active-link, #yw-topnav .active a, #yw-topnav .active-list a {
-  background: #ef5350 !important;
+  background:  #ff8a80 !important;
+  color: #333;
 }
 
 /* le menu devient fixe qunad on scrolle plus bas dans la page */
@@ -120,12 +121,12 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 
 /* Pied de page */
 #yw-footer {
-  background-color: #ef5350;
-  color: #fff;
+  background-color: #ff8a80;
+  color: #212121;
   padding: 30px 0;
 }
 #yw-footer a, #yw-footer a:hover {
-  color: #fff;
+  color: #212121;
   font-weight: bold;
 }
 .yw-fixed #yw-footer, .yw-responsive #yw-footer {

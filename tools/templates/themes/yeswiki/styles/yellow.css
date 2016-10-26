@@ -12,10 +12,7 @@ body {
   background-color: #fafafa;
 }
 a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
-  color: #ffeb3b;
-}
-.page a, .page a:hover, .page .btn-link, .page .btn-link:active, .page .btn-link:focus, .page .btn-link:hover {
-  font-weight: bold;
+  color: #ffc400;
 }
 
 .well, .jumbotron {
@@ -44,7 +41,7 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 
 /* Bandeau d'entete */
 #yw-header {
-  background-color: #757575;
+  background-color: #ffc400;
 }
 .yw-fixed #yw-header, .yw-responsive #yw-header {
   margin: 0 -15px; /*marge negative pour compenser le conteneur principal*/

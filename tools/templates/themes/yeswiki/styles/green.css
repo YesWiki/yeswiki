@@ -16,6 +16,8 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 }
 .well, .jumbotron {
   background-color: #e0f2f1;
+  box-shadow: none;
+  border: none;
 }
 
 /* Conteneur principal de la page Wiki */
@@ -40,7 +42,7 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 
 /* Bandeau d'entete */
 #yw-header {
-  background-color: #757575;
+  background-color: #004d40;
 }
 .yw-fixed #yw-header, .yw-responsive #yw-header {
   margin: 0 -15px; /*marge negative pour compenser le conteneur principal*/
