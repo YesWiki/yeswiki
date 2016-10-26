@@ -80,20 +80,25 @@
                         '',
                         $GLOBALS['wiki']->GetPageTag(),
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=modif&amp;idformulaire='.$key
-                    ); ?>"><i class="glyphicon glyphicon-pencil icon-pencil"></i></a>
+                    ); ?>"><i class="glyphicon glyphicon-pencil"></i></a>
+            <?php
+            else : ?>
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="glyphicon glyphicon-pencil"></i></button>
           	<?php
             endif; ?>
             <?php
             if ($form['can_delete']) :?>
-            	<a class="btn btn-danger btn-mini btn-xs"
+            	<a class="btn btn-danger btn-xs"
                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_SUPPRIMER_FORMULAIRE'); ?>"
                 href="<?php
                     echo $GLOBALS['wiki']->href(
                         '',
                         $GLOBALS['wiki']->GetPageTag(),
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=delete&amp;idformulaire='.$key
-                    ); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE'); ?> ?');"><i class="glyphicon glyphicon-trash icon-trash icon-white"></i></a>
-          	<?php
+                    ); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE'); ?> ?');"><i class="glyphicon glyphicon-trash"></i></a>
+            <?php else : ?>
+                      <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="glyphicon glyphicon-trash"></i></button>
+            <?php
             endif; ?>
             </td>
         </tr>
