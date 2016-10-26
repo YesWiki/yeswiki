@@ -151,7 +151,7 @@ $(document).ready(function () {
     + '#formulaire textarea[required=required]:visible')
     .not('#formulaire input.bazar-date[required=required]');
 
-  $('.bouton_sauver').click(function () {
+  $('#formulaire').submit(function(e) {
     var atleastonefieldnotvalid = false;
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;
@@ -171,7 +171,7 @@ $(document).ready(function () {
     }
 
     // les dates
-    $('#formulaire input.bazar-date[required=required]').each(function () {
+    $('#formulaire input.bazar-date[required=required]:visible').each(function () {
       if ($(this).val() === '') {
         atleastonefieldnotvalid = true;
         $(this).addClass('invalid');
@@ -181,7 +181,7 @@ $(document).ready(function () {
     });
 
     // les emails
-    $('#formulaire input[type=email]').each(function () {
+    $('#formulaire input[type=email]:visible').each(function () {
       var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
       var address = $(this).val();
       if (reg.test(address) === false
@@ -194,7 +194,7 @@ $(document).ready(function () {
     });
 
     // les urls
-    $('#formulaire input[type=url]').each(function () {
+    $('#formulaire input[type=url]:visible').each(function () {
       var reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
       var url = $(this).val();
       if (reg.test(url) === false && !(url === '' && $(this).attr('required') !== 'required')) {
@@ -206,7 +206,7 @@ $(document).ready(function () {
     });
 
     // les checkbox chk_required
-    $('#formulaire fieldset.chk_required').each(function () {
+    $('#formulaire fieldset.chk_required:visible').each(function () {
       var nbchkbox = $(this).find(':checked');
       if (nbchkbox.length === 0) {
         atleastonecheckboxfieldnotvalid = true;
@@ -217,7 +217,7 @@ $(document).ready(function () {
     });
 
     // les checkbox des tags
-    $('#formulaire [required] .bootstrap-tagsinput').each(function () {
+    $('#formulaire [required] .bootstrap-tagsinput:visible').each(function () {
       var nbtag = $(this).find('.tag');
       if (nbtag.length === 0) {
         atleastonetagfieldnotvalid = true;
@@ -269,9 +269,9 @@ $(document).ready(function () {
 
     // formulaire validé, on soumet le formulaire
     else {
-      $('#formulaire').submit();
+      return true;
     }
-
+    e.preventDefault();
     return false;
   });
 
@@ -482,23 +482,29 @@ $(document).ready(function () {
       var first = true;
       var filterschk = $(this).find('.filter-checkbox:checked');
       $.each(filterschk, function (index, checkbox) {
+        // les valeurs sont mis en cache
+        var name = $(checkbox).attr('name');
+        var val = $(checkbox).attr('value');
+        var attr = 'data-' + name.toLowerCase();
         if (first) {
           // si ce n'est pas le premier appel, on ajoute un | pour separer les query
           if (newquery !== '') {
             newquery += '|';
           }
-
-          newquery += $(checkbox).attr('name') + '=' + $(checkbox).attr('value');
-          select += '[data-' + $(checkbox).attr('name').toLowerCase()
-            + '*=' + $(checkbox).attr('value') + ']';
+          newquery += name + '=' + val;
           first = false;
         } else {
-          newquery += ',' + $(checkbox).attr('value');
-          select += ',[data-' + $(checkbox).attr('name').toLowerCase()
-            + '*=' + $(checkbox).attr('value') + ']';
+          newquery += ',' + val;
+          select += ',';
         }
+        // La requete de selection prend pour les champs non multiples :
+        // - exactement la valeur de l'attribut html
+        // Pour les champs multiples :
+        // - soit les attributs commencant par la valeur suivie d'une virgule
+        // - soit les attributs finissant par la valeur avec une virgule avant
+        // - soit les attributs contenant la valeur entouree de virgules
+        select += '[' + attr + '~="' + val + '"],[' + attr + '$=",' + val + '"],[' + attr + '^="' + val + ',"],[' + attr + '*=",' + val + ',"]';
       });
-
       var res = e.data.$entries.filter(select);
 
       if (res.length > 0) {
@@ -550,8 +556,8 @@ $(document).ready(function () {
   });
 
   // gestion de l'historique : on reapplique les filtres
-  window.onpopstate = function (e) {
-    if (e.state.filter) {
+  window.onpopstate = function(e) {
+    if (e.state && e.state.filter) {
       $('.facette-container').each(function () {
         var $this = $(this);
         $(this).find('input:checkbox').prop('checked', false);
