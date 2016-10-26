@@ -3,33 +3,36 @@
  * under GNU General Public License
  */
 
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700");
+@import url("https://fonts.googleapis.com/css?family=RobotoDraft:400,500,700,400italic");
 body {
-  font-family:'Open Sans',Helvetica,Arial,sans-serif;;
-  font-size: 14px;
+  font-family: "RobotoDraft","Roboto",sans-serif;
+  font-size: 16px;
   line-height: 1.42857143;
-  color: #333;
-  background-color: #121212;
+  color: #212121;
+  background-color: #fafafa;
 }
 a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
-  color: #ffc107;
+  color: #ffeb3b;
 }
+.page a, .page a:hover, .page .btn-link, .page .btn-link:active, .page .btn-link:focus, .page .btn-link:hover {
+  font-weight: bold;
+}
+
 .well, .jumbotron {
-  background-color: #0F0F0F;
-  border: 2px solid #000;
-  box-shadow: 3px 5px 0px rgba(0, 0, 0, 0.3);
+  background-color: #fffde7;
 }
 
 /* Conteneur principal de la page Wiki */
 #yw-container {
-  background: #1C1C1C;
-  color: #fff;
+  background: #FFF;
+  color: #212121;
 }
 #yw-container.yw-fixed, #yw-container.yw-responsive {
   margin-top: 15px;
   margin-bottom: 15px;
-  border: 2px solid #000;
-  box-shadow: 3px 5px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.26);
+  -webkit-box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.26);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.26);
 }
 
 /* on limite la taille des conteneurs pour les squelettes fixed */
@@ -41,7 +44,7 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 
 /* Bandeau d'entete */
 #yw-header {
-  background-color: transparent;
+  background-color: #757575;
 }
 .yw-fixed #yw-header, .yw-responsive #yw-header {
   margin: 0 -15px; /*marge negative pour compenser le conteneur principal*/
@@ -53,14 +56,15 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
   -webkit-border-radius: 0;
   border-radius: 0;
   border: 0;
-  background: #ffc107;
-  color: #000;
+  background: #ffeb3b;
+  color: #fff;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.26);
 }
 .yw-fixed #yw-topnav, .yw-responsive #yw-topnav {
   margin: 0 -15px 15px; /*marge negative pour compenser le conteneur principal*/
 }
 #yw-topnav .navbar-brand, #yw-topnav .navbar-nav a {
-  color: #000;
+  color: #212121;
 }
 #yw-topnav .dropdown-menu a {
   color: #212121;
@@ -68,11 +72,11 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 #yw-topnav .navbar-nav > .open > a, #yw-topnav .navbar-nav > .open > a:focus, #yw-topnav .navbar-nav > .open > a:hover,
 #yw-topnav .dropdown-menu > li > a:focus, #yw-topnav .dropdown-menu > li > a:hover {
     color: #212121;
-    background-color: #fff9c4;
+    background-color: #fffde7;
 }
 #yw-topnav .active-parent-link, #yw-topnav .active-link, #yw-topnav .active a, #yw-topnav .active-list a {
-  background: #ef6c00 !important;
-  color:#fff;
+  background: #fffde7 !important;
+  color:#212121;
 }
 
 /* le menu devient fixe qunad on scrolle plus bas dans la page */
@@ -113,12 +117,12 @@ a, a:hover, .btn-link, .btn-link:active, .btn-link:focus, .btn-link:hover {
 
 /* Pied de page */
 #yw-footer {
-  background-color: #ffc107;
-  color: #000;
+  background-color: #fffde7;
+  color: #212121;
   padding: 30px 0;
 }
 #yw-footer a, #yw-footer a:hover {
-  color: #000;
+  color: #212121;
   font-weight: bold;
 }
 .yw-fixed #yw-footer, .yw-responsive #yw-footer {
