@@ -105,6 +105,8 @@ class Wiki
                 @mysqli_close($this->dblink);
                 $this->dblink = false;
             }
+            // necessaire pour les versions de mysql qui sont en utf8 par defaut
+            mysqli_set_charset($this->dblink, "latin1");
         }
         $this->VERSION = WAKKA_VERSION;
 
