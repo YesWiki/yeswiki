@@ -1267,7 +1267,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
         $langfile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langpref.'.js';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
-        //$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-fontstyle.js');
+        $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
         //$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-well.js');
         if (file_exists($langfile)) {
             $GLOBALS['wiki']->AddJavascriptFile($langfile);
@@ -1289,9 +1289,10 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                [\'insert\', [\'hr\', \'link\', \'table\']],
-                [\'misc\', [\'fullscreen\'/*, \'codeview\'*/]]
+                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\']],
+                [\'misc\', [\'fullscreen\', /*, \'codeview\'*/]]
             ],
+            styleTags: [\'h1\', \'h2\', \'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
             oninit: function() {
               //$(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
             }
@@ -1599,8 +1600,9 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 
         function handleFileSelect(evt) {
-          var id = evt.srcElement.id;
-          var files = evt.target.files; // FileList object
+          var target = evt.target || evt.srcElement;
+          var id = target.id;
+          var files = target.files; // FileList object
 
           // Loop through the FileList and render image files as thumbnails.
           for (var i = 0, f; f = files[i]; i++) {
@@ -1635,7 +1637,9 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                   } else {
                     css = \'\';
                   }
-                  console.log(\'orientation: \' + css);
+                  // TODO: rotate image
+                  //console.log(\'orientation: \' + css);
+                  css = \'\';
                   // Render thumbnail.
                   var span = document.createElement(\'span\');
                   span.innerHTML = [\'<img class="img-responsive" style="\', css, \'" src="\', e.target.result,
@@ -1687,7 +1691,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $formtemplate->addElement(new HTML_QuickForm_html("\n" . $info . "\n"));
                 $valeurs_fiche[$type . $identifiant] = '';
             } else {
-                $info = '<div class="alert">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
+                $info = '<div class="alert alert-danger">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n" . $info . "\n"));
             }
@@ -1704,30 +1708,29 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             //il y a bien le fichier image, on affiche l'image, avec possibilite de la supprimer ou de la modifier
             if (file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
                 require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
-                $formtemplate->addElement(new HTML_QuickForm_html("\n" . '<fieldset class="bazar_fieldset">' . "\n" . '<legend>' . $label . '</legend>' . "\n"));
+
+                $formtemplate->addElement(new HTML_QuickForm_html("\n" . '<div class="control-group form-group">'."\n"
+                .'<label class="control-label col-sm-3">' . "\n" . $label . '</label>' . "\n"));
+
+
+
+                $inputhtml = '<div class="controls col-sm-9">';
+                // apercu de l'image
+                $inputhtml .= '<div class="row"><div class="col-xs-3">';
 
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'suppr_image=' . $valeurs_fiche[$type . $identifiant];
-                $html_image = afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+                $lien_supprimer_image = '<a class="btn btn-sm btn-block btn-danger" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash"></i> ' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
+                $inputhtml .= '<label class="btn btn-block btn-default"><i class="glyphicon glyphicon-pencil"></i>
+                '. _t('BAZ_MODIFIER_IMAGE').'<input type="file" style="display: none;" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png">
+            </label>'.$lien_supprimer_image;
 
-                $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash icon-trash icon-white"></i>&nbsp;' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
-                if ($html_image != '') {
-                    $formtemplate->addElement('html', $html_image);
-                }
 
-                $label = $lien_supprimer_image . _t('BAZ_MODIFIER_IMAGE');
-
-                $inputhtml = '<div class="control-group form-group">
-  <label class="control-label col-sm-3">'.$label.'</label>
-  <div class="controls col-sm-9">
-    <input type="file" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png" '.((isset($obligatoire) && $obligatoire == 1) ? 'required': '').'>
-    <output id="img-'.$type . $identifiant.'" class="col-xs-6"></output>
-    <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">
-  </div>
-</div>' . "\n";
+                $inputhtml .= '</div>'."\n";
+                $inputhtml .= '<output id="img-'.$type . $identifiant.'" class="col-xs-9">'.afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, 'img-responsive', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image).'</output>
+              <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n".'</div>'."\n".'</div>'."\n";
                 $formtemplate->addElement('html', $inputhtml);
                 $formtemplate->addElement('hidden', 'oldimage_' . $type . $identifiant, $valeurs_fiche[$type . $identifiant]);
-                $formtemplate->addElement('html', "\n" . '</fieldset>' . "\n");
             } else {
                 //le fichier image n'existe pas, du coup on efface l'entree dans la base de donnees
                 echo '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $valeurs_fiche[$type . $identifiant] . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>' . "\n";
@@ -1965,31 +1968,32 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     });
     ';
         $geocodingscript = 'function showAddress() {
-            var address = "";
-            if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
-            if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
-            if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
-            if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
-            address = address.replace(/\\("|\'|\\)/g, " ").trim();
-
+          var address = "";
+          if (document.getElementById("bf_adresse")) address += document.getElementById("bf_adresse").value + \' \';
+          if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
+          if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
+          if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
+          if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
+          address = address.replace(/\\("|\'|\\)/g, " ").trim();
         	geocodage( address, showAddressOk, showAddressError );
+          return false;
         }
 
         function showAddressOk( lon, lat )
         {
-        	console.log("showAddressOk: "+lon+", "+lat);
-           	geocodedmarkerRefresh( L.latLng( lat, lon ) );
+        	//console.log("showAddressOk: "+lon+", "+lat);
+          geocodedmarkerRefresh( L.latLng( lat, lon ) );
         }
 
         function showAddressError( msg )
         {
-        	console.log("showAddressError: "+msg);
-        	if( msg == "not found" ) {
-				alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
-            	geocodedmarkerRefresh( map.getCenter() );
-    		} else {
-            	alert("Une erreur est survenue: " + msg );
-            }
+        	//console.log("showAddressError: "+msg);
+        	if ( msg == "not found" ) {
+				    alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
+            geocodedmarkerRefresh( map.getCenter() );
+    		  } else {
+            alert("Une erreur est survenue: " + msg );
+          }
     	}
 
         function geocodedmarkerRefresh( point )
@@ -2052,8 +2056,9 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             '<div class="control-group form-group">
                 <label class="control-label col-sm-3"></label>
                 <div class="controls col-sm-9">
-                    <input class="btn btn-primary btn_adresse" onclick="showAddress();" value="'
-            ._t('BAZ_VERIFIER_MON_ADRESSE') . '" type="button">
+                    <a class="btn btn-primary" onclick="showAddress();">'
+                    ._t('BAZ_VERIFIER_MON_ADRESSE')
+                    .'</a>
             <input type="hidden" value="'.$deflat.'" id="bf_latitude" name="bf_latitude">
             <input type="hidden" value="'.$deflon.'" id="bf_longitude" name="bf_longitude">
             '

@@ -999,13 +999,6 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         );
 
     $squelette
-        ->setElementTemplate(
-            '<div class="form-actions form-group">'."\n"
-            .'<div class="col-sm-9 col-sm-offset-3">{label}{element}</div></div>'."\n",
-            'groupe_boutons'
-        );
-
-    $squelette
         ->setElementTemplate('<div class="control-group form-group">'.
             "\n"
             .'<div class="control-label col-sm-3">'."\n".
@@ -1199,8 +1192,7 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
                     $GLOBALS['_BAZAR_']['url']->getURL())),
             )
         );
-        require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.
-        DIRECTORY_SEPARATOR.'HTML/QuickForm/html.php';
+        require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
         $conditions = new
         HTML_QuickForm_html('<tr><td colspan="2">'.$form['bn_condition'].
             '</td>'."\n".'</tr>'."\n");
@@ -1211,24 +1203,11 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
 
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
-        $buttons[] = &HTML_QuickForm::createElement(
-            'link',
-            'valider',
-            _t('BAZ_VALIDER'),
-            '#',
-            _t('BAZ_VALIDER'),
-            array('class' => 'btn btn-success bouton_sauver')
-        );
-        $buttons[] = &HTML_QuickForm::createElement(
-            'link',
-            'annuler',
-            _t('BAZ_ANNULER'),
-            str_replace('&amp;', '&', ($url ? str_replace('/edit', '', $url) :
-                $GLOBALS['_BAZAR_']['url']->getURL())),
-            _t('BAZ_ANNULER'),
-            array('class' => 'btn btn-mini btn-xs btn-danger')
-        );
-        $formtemplate->addGroup($buttons, 'groupe_boutons', null, '&nbsp;', 0);
+
+        $buttons = new HTML_QuickForm_html('<div class="form-group">'."\n"
+          .'<div class="col-sm-9 col-sm-offset-3"><button type="submit" class="btn btn-success">'._t('BAZ_VALIDER').'</button> <a class="btn btn-xs btn-danger" href="'.str_replace('&amp;', '&', ($url ? str_replace('/edit', '', $url) :
+              $GLOBALS['_BAZAR_']['url']->getURL())).'">'._t('BAZ_ANNULER').'</a></div></div>'."\n");
+        $formtemplate->addElement($buttons);
     } else {
         //affichage du formulaire si conditions acceptees
         if (!empty($valeurs['id_fiche'])) {
@@ -1280,24 +1259,11 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_typeannonce');
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
         }
-        $buttons[] = &HTML_QuickForm::createElement(
-            'link',
-            'valider',
-            _t('BAZ_VALIDER'),
-            '#',
-            _t('BAZ_VALIDER'),
-            array('class' => 'btn btn-success bouton_sauver')
-        );
-        $buttons[] = &HTML_QuickForm::createElement(
-            'link',
-            'annuler',
-            _t('BAZ_ANNULER'),
-            str_replace('&amp;', '&', ($url ? str_replace('/edit', '', $url) :
-                $GLOBALS['_BAZAR_']['url']->getURL())),
-            _t('BAZ_ANNULER'),
-            array('class' => 'btn btn-mini btn-xs btn-danger bouton_annuler')
-        );
-        $formtemplate->addGroup($buttons, 'groupe_boutons', null, '&nbsp;', 0);
+        require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
+        $buttons = new HTML_QuickForm_html('<div class="form-group">'."\n"
+          .'<div class="col-sm-9 col-sm-offset-3"><button type="submit" class="btn btn-success">'._t('BAZ_VALIDER').'</button> <a class="btn btn-xs btn-danger" href="'.str_replace('&amp;', '&', ($url ? str_replace('/edit', '', $url) :
+              $GLOBALS['_BAZAR_']['url']->getURL())).'">'._t('BAZ_ANNULER').'</a></div></div>'."\n");
+        $formtemplate->addElement($buttons);
     }
 
     //Affichage a l'ecran
@@ -1740,11 +1706,6 @@ function baz_formulaire_des_formulaires($mode, $valeursformulaire = '')
             '<!-- BEGIN error --><span class="erreur">{error}</span><!-- END error -->'.
             "\n"
             .'</div>'."\n".'</div>'."\n");
-    $squelette->setElementTemplate('<div class="form-actions form-group">'.
-        "\n"
-
-        .'<div class="col-sm-9 col-sm-offset-3">{label}{element}</div></div>'
-        ."\n", 'groupe_boutons');
     $squelette->setRequiredNoteTemplate("\n".'<div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">* {requiredNote}</div>'."\n");
 
     //traduction de champs requis
@@ -1798,22 +1759,10 @@ function baz_formulaire_des_formulaires($mode, $valeursformulaire = '')
 
     // Nettoyage de l'url avant les return
     $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
-    $HTML_QuickForm = new HTML_QuickForm();
-    $buttons[] = $HTML_QuickForm->createElement(
-        'submit',
-        'valider',
-        _t('BAZ_VALIDER'),
-        array('class' => 'btn btn-success')
-    );
-    $buttons[] = $HTML_QuickForm->createElement(
-        'link',
-        'annuler',
-        _t('BAZ_ANNULER'),
-        str_replace('&amp;', '&', $GLOBALS['_BAZAR_']['url']->getURL()),
-        _t('BAZ_ANNULER'),
-        array('class' => 'btn btn-mini btn-xs btn-danger')
-    );
-    $formtemplate->addGroup($buttons, 'groupe_boutons', null, '&nbsp;', 0);
+    require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
+    $buttons = new HTML_QuickForm_html('<div class="form-group">'."\n"
+      .'<div class="col-sm-9 col-sm-offset-3"><button type="submit" class="btn btn-success">'._t('BAZ_VALIDER').'</button> <a class="btn btn-xs btn-danger" href="'.str_replace('&amp;', '&', $GLOBALS['_BAZAR_']['url']->getURL()).'">'._t('BAZ_ANNULER').'</a></div></div>'."\n");
+    $formtemplate->addElement($buttons);
 
     return $formtemplate;
 }
@@ -2654,8 +2603,7 @@ function baz_valeurs_fiche($idfiche = '', $formtab = '')
             }
 
             // on ajoute des attributs html pour tous les champs qui pourraient faire des filtres)
-            $valeurs_fiche['html_data'] =
-            getHtmlDataAttributes($valeurs_fiche, $formtab);
+            $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche, $formtab);
 
             return $valeurs_fiche;
         } else {
@@ -2805,6 +2753,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                                     'tags',
                                     'jour',
                                     'scope',
+                                    'texte'
                                 )
                             )) {
                                 $datastr .=
@@ -3624,9 +3573,11 @@ function getCachedUrlContent($url, $cache_life = '60')
  */
 function filterByValue($array, $index, $value)
 {
+    $newarray = array();
     if (is_array($array) && count($array)>0) {
         foreach (array_keys($array) as $key) {
-            $temp[$key] = $array[$key][$index];
+          //var_dump($array[$key], $array[$key][$index]);
+            $temp[$key] = isset($array[$key][$index]) ? $array[$key][$index] : null;
             if (is_array($value)) {
                 if (in_array($temp[$key], $value)) {
                     $newarray[$key] = $array[$key];
@@ -3665,63 +3616,55 @@ function scanAllFacettable($fiches, $params, $formtab = '')
 {
     $facettevalue = array();
     foreach ($fiches as $fiche) {
+        // on recupere les valeurs du formulaire si elles n'existaient pas
         $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-        $templatef[$fiche['id_typeannonce']] = filterByValue(
-            $valform['template'],
-            '0',
-            array('checkbox', 'liste', 'scope','checkboxfiche', 'listefiche')
+        $templatef[$fiche['id_typeannonce']] = isset($templatef[$fiche['id_typeannonce']]) ? $templatef[$fiche['id_typeannonce']] : filterByValue(
+            $valform['prepared'],
+            'id',
+            $params['groups']
         );
         foreach ($fiche as $key => $value) {
-            if ((startsWith($key, 'liste') or startsWith($key, 'checkbox') or startsWith($key, 'scope') ) and !empty($value)) {
-                $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
-                    || in_array($key, $params['groups']);
-                if (in_array($key, array('id_typeannonce', 'createur')) && $facetteasked) {
-                    // champs génériques des métadonnées
-                    if ($key == 'id_typeannonce') {
-                        $value = $fiche['id_typeannonce'];
+            $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
+              || in_array($key, $params['groups']);
+            if (!empty($value) and is_array($templatef[$fiche['id_typeannonce']]) && $facetteasked) {
+                $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
+                $val = array_shift($val);
+                $islist = in_array($val['type'], array('checkbox', 'select', 'scope'));
+                $islistforeign = in_array($val['type'], array('checkboxfiche', 'listefiche'));
+                $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
+                if ($islist) {
+                    $facettevalue[$val['id']]['type'] = 'liste';
+                    $facettevalue[$val['id']]['source'] = str_replace(array('checkbox', 'liste'), '', $key);
+                    // liste ou checkbox
+                    $tabval = explode(',', $value);
+                    foreach ($tabval as $tval) {
+                        if (isset($facettevalue[$val['id']][$tval])) {
+                            ++$facettevalue[$val['id']][$tval];
+                        } else {
+                            $facettevalue[$val['id']][$tval] = 1;
+                        }
                     }
+                } elseif ($islistforeign) {
+                    // listefiche ou checkboxfiche
+                    $facettevalue[$val['id']]['type'] = 'fiche';
+                    $facettevalue[$val['id']]['source'] = $key;
+                    $tabval = explode(',', $value);
+                    foreach ($tabval as $tval) {
+                        if (isset($facettevalue[$val['id']][$tval])) {
+                            ++$facettevalue[$val['id']][$tval];
+                        } else {
+                            $facettevalue[$val['id']][$tval] = 1;
+                        }
+                    }
+                } elseif ($istext) {
+                    // texte
                     $facettevalue[$key]['type'] = 'form';
-                    $facettevalue[$key]['source'] = 'form';
+                    $facettevalue[$key]['source'] = $key;
                     if (isset($facettevalue[$key][$value])) {
                         ++$facettevalue[$key][$value];
                     } else {
                         $facettevalue[$key][$value] = 1;
-                    }
-                } else {
-                    if (is_array($templatef[$fiche['id_typeannonce']])) {
-                        foreach ($templatef[$fiche['id_typeannonce']] as $id => $val) {
-                          //echo $val[1] .' '. $key .'<br>';
-                            if ($val[1] === $key or (isset($val[6]) && $val[0].$val[1].$val[6] === $key)) {
-                                $islist = in_array($val[0], array('checkbox', 'liste', 'scope'));
-                                $islistforeign = in_array($val[0], array('checkboxfiche', 'listefiche'));
-                                if ($islist) {
-                                    $facettevalue[$key]['type'] = 'liste';
-                                    $facettevalue[$key]['source'] = $val[1];
-                                    // liste ou checkbox
-                                    $tabval = explode(',', $value);
-                                    foreach ($tabval as $tval) {
-                                        if (isset($facettevalue[$key][$tval])) {
-                                            ++$facettevalue[$key][$tval];
-                                        } else {
-                                            $facettevalue[$key][$tval] = 1;
-                                        }
-                                    }
-                                } elseif ($islistforeign) {
-                                    // listefiche ou checkboxfiche
-                                    $facettevalue[$key]['type'] = 'fiche';
-                                    $facettevalue[$key]['source'] = $val[1];
-                                    $tabval = explode(',', $value);
-                                    foreach ($tabval as $tval) {
-                                        if (isset($facettevalue[$key][$tval])) {
-                                            ++$facettevalue[$key][$tval];
-                                        } else {
-                                            $facettevalue[$key][$tval] = 1;
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -3876,22 +3819,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         // colonne des filtres
         $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].' span'.$params['filtercolsize'].'">'."\n".
                         '<div class="filters no-dblclick">'."\n";
-        if (isset($facettevalue['createur'])) {
-            if (count($facettevalue['createur']) > 1) {
-                $outputfilter .= '<div class="filter-box panel panel-default" data-id="createur">'."\n";
-                $outputfilter .= '<div class="panel-heading">'._t('BAZ_CREATOR').'</div>'."\n";
-                $outputfilter .= '<div class="panel-body">'."\n";
-                foreach ($facettevalue['createur'] as $id => $nb) {
-                    $outputfilter .=  '<div class="checkbox">
-                    <label for="createur">
-                    <input class="filter-checkbox" type="checkbox" name="createur"
-                    value="'.htmlspecialchars($id).'"> '.$id.' (<span class="nb">'.$nb.'</span>)
-                    </label></div>'."\n";
-                }
-                $outputfilter .=  '</div></div><!-- /.filter-box -->'."\n";
-            }
-            unset($facettevalue['createur']);
-        }
         $i = 0;
         $first = true;
 
@@ -3933,10 +3860,26 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                         }
                     }
                 } elseif ($facettevalue[$id]['type'] == 'form') {
-                    $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
-                    foreach ($facettevalue[$id] as $idf => $nb) {
-                        if ($idf != 'source' && $idf != 'type') {
-                            $list['label'][$idf] = $allform[$idf]['bn_label_nature'];
+                    if ($facettevalue[$id]['source'] == 'id_typeannonce') {
+                        $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
+                        foreach ($facettevalue[$id] as $idf => $nb) {
+                            if ($idf != 'source' && $idf != 'type') {
+                                $list['label'][$idf] = $allform[$idf]['bn_label_nature'];
+                            }
+                        }
+                    } elseif ($facettevalue[$id]['source'] == 'createur') {
+                        $list['titre_liste'] = _t('BAZ_CREATOR');
+                        foreach ($facettevalue[$id] as $idf => $nb) {
+                            if ($idf != 'source' && $idf != 'type') {
+                                $list['label'][$idf] = $idf;
+                            }
+                        }
+                    } else {
+                        $list['titre_liste'] = $id;
+                        foreach ($facettevalue[$id] as $idf => $nb) {
+                            if ($idf != 'source' && $idf != 'type') {
+                                $list['label'][$idf] = $idf;
+                            }
                         }
                     }
                 }
@@ -4514,7 +4457,7 @@ function getAllParameters($wiki)
      */
     $param['groupsexpanded'] = isset($_GET['groupsexpanded']) ? $_GET['groupsexpanded'] : $wiki->GetParameter('groupsexpanded');
     if (empty($param['groupsexpanded'])) {
-        $param['groupsexpanded'] = 'false';
+        $param['groupsexpanded'] = 'true';
     }
 
     // Parametres pour Bazarliste avec carto
@@ -4745,7 +4688,7 @@ function getAllParameters_carto($wiki, array &$param)
     }
 
     /*
-     * Zoom sur molette : true or false, par defaut false
+     * Zoom sur molette : true or false (defaut)
      */
     $param['zoom_molette'] = $wiki->GetParameter('zoommolette');
     if (empty($param['zoom_molette'])) {
@@ -4753,7 +4696,7 @@ function getAllParameters_carto($wiki, array &$param)
     }
 
     /*
-     * Affichage en eclate des points superposes : true or false, par defaut false
+     * Affichage en eclate des points superposes : true or false (defaut)
      */
     $param['spider'] = $wiki->GetParameter('spider'); // true or false
     if (empty($param['spider'])) {
@@ -4775,7 +4718,6 @@ function getAllParameters_carto($wiki, array &$param)
      */
     $param['fullscreen'] = $wiki->GetParameter('fullscreen');
     if (empty($param['fullscreen'])) {
-        $param['fullscreen'] = 'false';
+        $param['fullscreen'] = 'true';
     }
-
 }
