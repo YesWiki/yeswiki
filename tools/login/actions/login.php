@@ -128,6 +128,13 @@ if (!isset($_REQUEST["action"])) {
 // cas de la déconnexion
 if ($_REQUEST["action"] == "logout") {
     $this->LogoutUser();
+
+	if($this->config['use_sso']) {
+		require_once('tools/login/libs/identificationsso.class.php');
+		$sso = new identificationSso($this);
+		$sso->deconnecterUtilisateur(str_replace('&action=logout', '', $incomingurl));
+	}
+
     $this->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
     $this->Redirect(str_replace('&action=logout', '', $incomingurl));
     exit;
@@ -135,52 +142,67 @@ if ($_REQUEST["action"] == "logout") {
 
 // cas de l'identification
 if ($_REQUEST["action"] == "login") {
-    // si l'utilisateur existe, on vérifie son mot de passe
-    if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
-        // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-        if ($existingUser["password"] == md5($_POST["password"])) {
-            $this->SetUser($existingUser, $_POST["remember"]);
+	// login sso
+	if ($this->config['use_sso']) {
+		// identification.php analyse les cookies, header etc... afin de déterminer la présence d'un jeton
+		require_once('tools/login/libs/identificationsso.class.php');
+		$sso = new identificationSso($this);
+		$sso->connecterUtilisateur($_POST["name"], $_POST["password"], $_POST['incomingurl']);
+	} else {
+		// login normal
+		// si l'utilisateur existe, on vérifie son mot de passe
+		if (isset($_POST["name"]) && $_POST["name"] != '' && $existingUser = $this->LoadUser($_POST["name"])) {
+			// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
+			if ($existingUser["password"] == md5($_POST["password"])) {
+				$this->SetUser($existingUser, $_POST["remember"]);
 
-            // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-            if ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
-                $this->Redirect($this->href('', $_POST["name"], ''));
-            } else {
-                // on va sur la page d'ou on s'est identifie sinon
-                $this->Redirect($incomingurl);
-            }
-        } else {
-            // on affiche une erreur sur le mot de passe sinon
-            $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-            $this->Redirect($incomingurl);
-        }
-    } else {
-        // si le nomWiki est un mail
-        if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
-            $_POST["email"] = $_POST["name"];
-        }
-        if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
-            // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-            if ($existingUser["password"] == md5($_POST["password"])) {
-                $this->SetUser($existingUser, $_POST["remember"]);
+				// si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
+				if ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
+					$this->Redirect($this->href('', $_POST["name"], ''));
+				} else {
+					// on va sur la page d'ou on s'est identifie sinon
+					$this->Redirect($_POST['incomingurl']);
+				}
+			} else {
+				// on affiche une erreur sur le mot de passe sinon
+				$this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
+				$this->Redirect($_POST['incomingurl']);
+			}
+		} else {
+			// si le nomWiki est un mail
+			if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
+				$_POST["email"] = $_POST["name"];
+			}
+			if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
+				// si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
+				if ($existingUser["password"] == md5($_POST["password"])) {
+					$this->SetUser($existingUser, $_POST["remember"]);
 
-                // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
-                if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
-                    $this->Redirect($this->href('', $existingUser["name"], ''));
-                } else {
-                    // on va sur la page d'ou on s'est identifie sinon
-                    $this->Redirect($incomingurl);
-                }
-            } else {
-                // on affiche une erreur sur le mot de passe sinon
-                $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-                $this->Redirect($incomingurl);
-            }
-        } else {
-            // on affiche une erreur sur le NomWiki sinon
-            $this->SetMessage(_t('LOGIN_WRONG_USER'));
-            $this->Redirect($incomingurl);
-        }
-    }
+					// si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
+					if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
+						$this->Redirect($this->href('', $existingUser["name"], ''));
+					} else {
+						// on va sur la page d'ou on s'est identifie sinon
+						$this->Redirect($_POST['incomingurl']);
+					}
+				} else {
+					// on affiche une erreur sur le mot de passe sinon
+					$this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
+					$this->Redirect($_POST['incomingurl']);
+				}
+			} else {
+				// on affiche une erreur sur le NomWiki sinon
+				$this->SetMessage(_t('LOGIN_WRONG_USER'));
+				$this->Redirect($_POST['incomingurl']);
+			}
+		}
+	}
+}
+
+if($this->config['use_sso']) {
+    require_once('tools/login/libs/identificationsso.class.php');
+    $sso = new identificationSso($this);
+    $sso->recupererIdentiteConnectee();
 }
 
 // cas d'une personne connectée déjà
