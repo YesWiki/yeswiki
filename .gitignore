@@ -14,7 +14,7 @@ tools/wkhtmltopdf/*
 
 .DS_Store
 
-# Eclipse IDe
+# Eclipse IDE
 
 .buildpath
 .project
@@ -24,3 +24,6 @@ tools/wkhtmltopdf/*
 
 .phpintel/
 
+# Netbeans IDE
+
+/nbproject/
