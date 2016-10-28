@@ -1745,7 +1745,11 @@ $wakkaDefaultConfig = array(
     "default_read_acl" => "*",
     "default_comment_acl" => "@admins",
     "preview_before_save" => 0,
-    'allow_raw_html' => false);
+    'allow_raw_html' => false,
+    'use_sso' => '1',
+    'sso_url' => 'https://www.tela-botanica.org/service:annuaire:auth/',
+    'sso_auth_header' => 'Auth'
+);
 unset($_rewrite_mode);
 
 // load config
