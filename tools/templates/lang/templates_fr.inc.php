@@ -137,6 +137,11 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_ACTION_GRID' => 'Action {{grid ...}}',
     'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'l\'action {{grid ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="grid"}}',
 
+    // action/panel.php
+
+    // acion/accordion.php
+    'TEMPLATE_TITLE_PARAMETER_REQUIRED' => "Param&egrave;tre title obligatoire",
+
     // actions/buttondropdown.php
     'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Action {{buttondropdown ...}}',
     'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'l\'action {{buttondropdown ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="buttondropdown"}}',
