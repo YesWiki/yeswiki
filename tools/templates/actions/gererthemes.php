@@ -73,7 +73,7 @@ if ($this->UserIsAdmin()) {
         return $js;
     }
 
-    function theme_selector()
+    function theme_selector($formclass = 'form-horizontal')
     {
 
         $id = 'select_theme';
@@ -185,10 +185,7 @@ if ($this->UserIsAdmin()) {
 
 </table>
 
-<br><input name="modifier" class="btn <?php if ($btnclass != '') {
-        echo ' ' . $btnclass;
-    }
-    ?>" value="Mettre &agrave; jour" type="submit">
+<br><input name="modifier" class="btn<?php echo(isset($btnclass))?' '.$btnclass:'';?>" value="Mettre &agrave; jour" type="submit">
 
 <?php
 
