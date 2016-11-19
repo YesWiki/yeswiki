@@ -82,7 +82,7 @@ if (!defined('YW_CHARSET')) {
 header("Content-Type: text/html; charset=$charset");
 ob_start();
 ?>
-<!doctype html>
+<!DOCTYPE HTML>
 <html lang="<?php echo $GLOBALS['prefered_language']; ?>">
 <head>
   <meta charset="<?php echo $charset; ?>">
