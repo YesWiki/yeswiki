@@ -28,6 +28,7 @@ if ($this->UserIsAdmin()) {
     //Récupère les droits de la page désignée en argument et renvoie un tableau
     function recup_droits($page)
     {
+        $lnk = $GLOBALS['wiki']->dblink;
         $table = $GLOBALS['wiki']->config["table_prefix"];
 
         $requete_lire = "SELECT * FROM " . $table . "acls WHERE page_tag='"
@@ -37,9 +38,9 @@ if ($this->UserIsAdmin()) {
         $requete_comment = "SELECT * FROM " . $table . "acls WHERE page_tag='"
         . $page . "' AND privilege='comment' ORDER BY " . $table . "acls.page_tag ASC";
 
-        $droits_lire = mysqli_fetch_array(mysqli_query($requete_lire));
-        $droits_ecrire = mysqli_fetch_array(mysqli_query($requete_ecrire));
-        $droits_comment = mysqli_fetch_array(mysqli_query($requete_comment));
+        $droits_lire = mysqli_fetch_array(mysqli_query($lnk,$requete_lire));
+        $droits_ecrire = mysqli_fetch_array(mysqli_query($lnk,$requete_ecrire));
+        $droits_comment = mysqli_fetch_array(mysqli_query($lnk,$requete_comment));
 
         return array('page' => $page,
             'droits_lire' => $droits_lire["list"],
