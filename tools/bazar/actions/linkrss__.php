@@ -13,7 +13,7 @@ if (is_array($resultat) && count($resultat)>0) {
           .'title="'.htmlspecialchars($form['bn_label_nature']).'" '
           .'href="'.$this->href('rss', $this->getPageTag(), 'id_typeannonce='.$form['bn_id_nature']).'">'."\n";
     }
+    echo '  <link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars(_t('BAZ_FLUX_RSS_GENERAL')).'" '
+      .'href="'.$this->href('rss').'">'."\n".$liste;
 }
 
-echo '  <link rel="alternate" type="application/rss+xml" title="'.htmlspecialchars(_t('BAZ_FLUX_RSS_GENERAL')).'" '
-  .'href="'.$this->href('rss').'">'."\n".$liste;

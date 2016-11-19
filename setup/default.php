@@ -72,9 +72,9 @@ if (!defined('WIKINI_VERSION'))
 					<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
 				</div>
 				
-				<div class="accordion" id="accordion2">
+				<div class="accordion" id="accordion1">
 					<div class="accordion-group">
-						<div id="collapseTwo" class="accordion-body collapse">
+						<div id="collapseOne" class="accordion-body collapse">
 							<div class="accordion-inner">
 								<dl class="dl-horizontal">
 	    							<dt><?php echo _t('DEFAULT_LANGUAGE'); ?></dt>
@@ -145,12 +145,12 @@ if (!defined('WIKINI_VERSION'))
 			<legend><?php echo _t('DATABASE_CONFIGURATION'); ?></legend>
 				
 				<div class="accordion-heading">
-					<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
+					<a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseTwo"><?php echo _t('MORE_INFOS'); ?></a>
 				</div>
 				
-				<div class="accordion" id="accordion1">
+				<div class="accordion" id="accordion2">
 					<div class="accordion-group">
-						<div id="collapseOne" class="accordion-body collapse">
+						<div id="collapseTwo" class="accordion-body collapse">
 							<div class="accordion-inner">
 								<dl class="dl-horizontal">
 	    							<dt><?php echo _t('MYSQL_SERVER'); ?> </dt>

@@ -79,18 +79,18 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin()))
 		<?php echo  $this->FormOpen("acls") ?>
 		<table border="0" cellspacing="0" cellpadding="0">
 			<tr>
-				<td valign="top" style="padding-right: 20px">
+				<td valign="top" style="padding-right: 9px">
 					<b>Droits de lecture :</b><br /><!-- Read ACL:-->
-					<textarea name="read_acl" rows="4" cols="20"><?php echo  $readACL["list"] ?></textarea>
+					<textarea name="read_acl" rows="4" cols="18"><?php echo  $readACL["list"] ?></textarea>
 				</td>
-				<td valign="top" style="padding-right: 20px">
+				<td valign="top" style="padding-right: 9px">
 					<b>Droits d'&eacute;criture :</b><br /><!-- Write ACL:-->
-					<textarea name="write_acl" rows="4" cols="20"><?php echo  $writeACL["list"] ?></textarea>
+					<textarea name="write_acl" rows="4" cols="18"><?php echo  $writeACL["list"] ?></textarea>
 				</td>
 <?php if (!$this->page['comment_on']) { ?>
-				<td valign="top" style="padding-right: 20px">
+				<td valign="top" style="padding-right: 9px">
 					<b>Droits des commentaires :</b><br /><!-- Comments ACL:-->
-					<textarea name="comment_acl" rows="4" cols="20"><?php echo  $commentACL["list"] ?></textarea>
+					<textarea name="comment_acl" rows="4" cols="18"><?php echo  $commentACL["list"] ?></textarea>
 				</td>
 <?php } ?>
 			</tr>
@@ -116,7 +116,7 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin()))
 				<td colspan="3">
 					<br />
 					<input type="submit" value="Enregistrer" style="width: 120px" accesskey="s" /><!-- Store ACLs-->
-					<input type="button" value="Annuler" onclick="history.back();" style="width: 120px" /><!-- Cancel -->
+					<input type="button" value="Annuler" data-dismiss="modal" style="width: 120px" /><!-- Cancel -->
 				</td>
 			</tr>
 		</table>

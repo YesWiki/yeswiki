@@ -1031,10 +1031,10 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $GLOBALS['params']['idtypeannonce'],
                 $GLOBALS['params']['categorienature']
             );
-
-            foreach ($tabform as $key => $value) {
-                $resultat[$value['bn_id_nature']] = $value;
-            }
+            if (is_array($tabform))
+                foreach ($tabform as $key => $value) {
+                    $resultat[$value['bn_id_nature']] = $value;
+                }
             if (count($resultat) == 0) {
                 $res .= '<div class="alert alert-info">'._t('BAZ_NO_FORMS_FOUND').
                 '.</div>'."\n";
@@ -2147,7 +2147,7 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
               bazPrepareFormData($GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]);
         }
     }
-    return $GLOBALS['_BAZAR_']['form'];
+    return isset($GLOBALS['_BAZAR_']['form'])?$GLOBALS['_BAZAR_']['form']:null;
 }
 
 /** baz_formulaire_des_listes() retourne le formulaire de saisie des listes
@@ -2345,14 +2345,14 @@ function baz_gestion_formulaire()
                 '<div class="alert alert-success">'.
                 _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
             }
-
-            foreach ($forms as $key => $ligne) {
-                $tab_forms['forms'][$ligne['bn_id_nature']]['title'] = $ligne['bn_label_nature'];
-                $tab_forms['forms'][$ligne['bn_id_nature']]['description'] = $ligne['bn_description'];
-                $tab_forms['forms'][$ligne['bn_id_nature']]['category'] = $ligne['bn_type_fiche'];
-                $tab_forms['forms'][$ligne['bn_id_nature']]['can_edit'] = baz_a_le_droit('saisie_formulaire');
-                $tab_forms['forms'][$ligne['bn_id_nature']]['can_delete'] = $GLOBALS['wiki']->UserIsAdmin();
-            }
+            if (is_array($forms))
+                foreach ($forms as $key => $ligne) {
+                    $tab_forms['forms'][$ligne['bn_id_nature']]['title'] = $ligne['bn_label_nature'];
+                    $tab_forms['forms'][$ligne['bn_id_nature']]['description'] = $ligne['bn_description'];
+                    $tab_forms['forms'][$ligne['bn_id_nature']]['category'] = $ligne['bn_type_fiche'];
+                    $tab_forms['forms'][$ligne['bn_id_nature']]['can_edit'] = baz_a_le_droit('saisie_formulaire');
+                    $tab_forms['forms'][$ligne['bn_id_nature']]['can_delete'] = $GLOBALS['wiki']->UserIsAdmin();
+                }
 
             // on rajoute les bibliothèques js nécéssaires
             $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
