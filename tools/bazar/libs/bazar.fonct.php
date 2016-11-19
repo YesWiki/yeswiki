@@ -1031,10 +1031,10 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $GLOBALS['params']['idtypeannonce'],
                 $GLOBALS['params']['categorienature']
             );
-
-            foreach ($tabform as $key => $value) {
-                $resultat[$value['bn_id_nature']] = $value;
-            }
+            if (is_array($tabform))
+                foreach ($tabform as $key => $value) {
+                    $resultat[$value['bn_id_nature']] = $value;
+                }
             if (count($resultat) == 0) {
                 $res .= '<div class="alert alert-info">'._t('BAZ_NO_FORMS_FOUND').
                 '.</div>'."\n";
