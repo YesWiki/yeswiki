@@ -2147,7 +2147,7 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
               bazPrepareFormData($GLOBALS['_BAZAR_']['form'][$value['bn_id_nature']]);
         }
     }
-    return $GLOBALS['_BAZAR_']['form'];
+    return isset($GLOBALS['_BAZAR_']['form'])?$GLOBALS['_BAZAR_']['form']:null;
 }
 
 /** baz_formulaire_des_listes() retourne le formulaire de saisie des listes
