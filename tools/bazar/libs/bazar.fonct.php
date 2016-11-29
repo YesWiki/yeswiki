@@ -3260,7 +3260,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             ((!empty($type_fiche)) ? ' ('.$type_fiche.')' : '');
         }
     }
-
     if ($nb_type_de_fiches > 1 and !in_array("id_typeannonce", $GLOBALS['params']['groups'])) {
         $data['forms'] = $type_formulaire_select;
     } else {
@@ -3303,7 +3302,8 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             ''
         );
         $shownbres = count($GLOBALS['params']['groups']) == 0 || count($tableau_dernieres_fiches) == 0;
-        return $res.displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], $shownbres);
+        $res .= displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], $shownbres);
+        return $res;
     } else {
         // la recherche a ete effectuee, on etablie la requete SQL
         $tableau_fiches = baz_requete_recherche_fiches(
@@ -3366,10 +3366,27 @@ function baz_requete_recherche_fiches(
     //on limite au type de fiche
     if (!empty($id_typeannonce)) {
         if (is_array($id_typeannonce)) {
-            $id_typeannonce = array_shift($id_typeannonce);
+            if (count($id_typeannonce) == 1) {
+                // on a qu'un id dans le tableau
+                $id_typeannonce = array_shift($id_typeannonce);
+                $requete .= ' AND body LIKE \'%"id_typeannonce":"'.$id_typeannonce.'"%\'';
+            } else {
+                // on a plusieurs id dans le tableau
+                $requete .= ' AND ';
+                $first = true;
+                foreach ($id_typeannonce as $id) {
+                    if ($first) {
+                        $first = false;
+                    } else {
+                        $requete .= ' OR ';
+                    }
+                    $requete .= 'body LIKE \'%"id_typeannonce":"'.$id.'"%\'';
+                }
+            }
+        } else {
+            // on a une chaine de caractere pour l'id plutot qu'un tableau
+            $requete .= ' AND body LIKE \'%"id_typeannonce":"'.$id_typeannonce.'"%\'';
         }
-        $requete .=
-        ' AND body LIKE \'%"id_typeannonce":"'.$id_typeannonce.'"%\'';
     }
 
     //statut de validation
@@ -3531,7 +3548,7 @@ function baz_requete_recherche_fiches(
     $reqid = 'bazar-search-'.md5($requete);
     if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
         // debug
-        // echo '<textarea style="width:100%;height:100px;">'.$requete.'</textarea><hr>';
+        // echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
         $GLOBALS['_BAZAR_'][$reqid] = $GLOBALS['wiki']->LoadAll($requete);
     }
     return $GLOBALS['_BAZAR_'][$reqid];
@@ -3727,6 +3744,13 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
  */
 function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab = '')
 {
+    // on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances
+    if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
+        $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
+    }
+    ++$GLOBALS['_BAZAR_']['nbbazarliste'];
+    $params['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
+
     $fiches['fiches'] = searchResultstoArray($tableau_fiches, $params, $formtab);
     // tri des fiches
     if ($params['random']) {
@@ -3900,9 +3924,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             if (!$first and $params['groupsexpanded'] == 'false') {
                 $outputfilter .= ' collapsed';
             }
-            $outputfilter .= '" data-toggle="collapse" href="#collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" >'.
+            $outputfilter .= '" data-toggle="collapse" href="#collapse'.$GLOBALS['_BAZAR_']['nbbazarliste'].'_'.$idkey.'" >'.
                 $titlefilterbox.'</div>'."\n";
-            $outputfilter .= '<div id="collapse'.$GLOBALS['nbbazarliste'].'_'.$idkey.'" class="panel-collapse';
+            $outputfilter .= '<div id="collapse'.$GLOBALS['_BAZAR_']['nbbazarliste'].'_'.$idkey.'" class="panel-collapse';
             if ($first or $params['groupsexpanded'] !== 'false') {
                 $outputfilter .= ' in';
             }
@@ -3938,7 +3962,30 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
         $output = $outputfacette.'</div><!-- /.facette-container.row -->';
     }
-
+    // affiche les possibilités d'export
+    if (!preg_match('/\/iframe/U', $_GET['wiki'])) {
+        if (is_array($GLOBALS['params']['idtypeannonce'])) {
+            $key = implode($GLOBALS['params']['idtypeannonce'], ',');
+        } else {
+            $key = $GLOBALS['params']['idtypeannonce'];
+        }
+        $output .= '<div class="export-links pull-right"><a class="btn btn-default btn-mini btn-xs"
+        data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_RSS').'"
+        href="'.$GLOBALS['wiki']->href('rss', $GLOBALS['wiki']->getPageTag(), 'id='.$key).'">
+        <i class="glyphicon glyphicon-signal icon-signal"></i></a>
+        <a class="btn btn-default btn-mini btn-xs"
+        data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_CSV').'"
+        href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), 'vue=exporter&id='.$key).'">
+        CSV</a>
+        <a class="btn btn-default btn-mini btn-xs"
+        data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_JSON').'"
+        href="'.$GLOBALS['wiki']->href('json', $GLOBALS['wiki']->getPageTag(), 'demand=entries&id='.$key).'">
+        JSON</a>
+        <a class="btn btn-default btn-mini btn-xs"
+        data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_WIDGET').'"
+        href="'.$GLOBALS['wiki']->href('widget', $GLOBALS['wiki']->getPageTag(), 'id='.$key).'">
+        '._t('BAZ_WIDGET').'</a></div>';
+    }
     return $output;
 }
 
@@ -4081,6 +4128,14 @@ function baz_afficher_flux_RSS()
     if (isset($_GET['query'])) {
         $query = $_GET['query'];
         $urlrss .= '&amp;query='.$query;
+        $tabquery = array();
+        $tableau = array();
+        $tab = explode('|', $query); //découpe la requete autour des |
+        foreach ($tab as $req) {
+            $tabdecoup = explode('=', $req, 2);
+            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+        }
+        $query = array_merge($tabquery, $tableau);
     } else {
         $query = '';
     }

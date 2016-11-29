@@ -16,10 +16,10 @@ if (!defined('WIKINI_VERSION')) {
 }
 
 // on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances
-if (!isset($GLOBALS['nbbazarliste'])) {
-    $GLOBALS['nbbazarliste'] = 0;
+if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
+    $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
 }
-++$GLOBALS['nbbazarliste'];
+++$GLOBALS['_BAZAR_']['nbbazarliste'];
 
 $url = $this->getParameter('url');
 if (empty($url)) {

@@ -18,10 +18,10 @@ if ($type == 'fiche_bazar') {
     // si le parametre id est passé, on souhaite afficher une liste bazar
     // TODO : factoriser avec bazarliste?
     // on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances
-    if (!isset($GLOBALS['nbbazarliste'])) {
-        $GLOBALS['nbbazarliste'] = 0;
+    if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
+        $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
     }
-    ++$GLOBALS['nbbazarliste'];
+    ++$GLOBALS['_BAZAR_']['nbbazarliste'];
     // Recuperation de tous les parametres
     $params = getAllParameters($this);
     // tableau des fiches correspondantes aux critères

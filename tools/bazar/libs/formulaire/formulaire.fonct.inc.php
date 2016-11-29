@@ -1289,8 +1289,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\']],
-                [\'misc\', [\'fullscreen\', /*, \'codeview\'*/]]
+                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\', \'video\']],
+                [\'misc\', [\'fullscreen\', \'codeview\']]
             ],
             styleTags: [\'h1\', \'h2\', \'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
             oninit: function() {
@@ -1338,7 +1338,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         // En html, pour la sécurité, on n'autorise qu'un certain nombre de balises
         if ($formatage == 'html') {
-            $acceptedtags = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption>';
+            $acceptedtags = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
             $valeurs_fiche[$identifiant] = strip_tags($valeurs_fiche[$identifiant], $acceptedtags);
         }
         return array($identifiant => $valeurs_fiche[$identifiant]);
@@ -2414,13 +2414,18 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } else {
         $ordre = 'alphabetique';
     }
+    if (!empty($tableau_template[4])) {
+        $nb = $tableau_template[4];
+    } else {
+        $nb = '';
+    }
     if (isset($tableau_template[5])) {
         $template = $tableau_template[5];
     } else {
         $template = BAZ_TEMPLATE_LISTE_DEFAUT;
     }
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
+        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ordre="' . $ordre . '" template="' . $template . '"}}';
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
 
         //ajout lien nouvelle saisie
