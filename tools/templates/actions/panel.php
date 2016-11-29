@@ -11,8 +11,11 @@ if (empty($size)) {
     return;
 }
 
-// classe css additionnelle
+// classe css pour la couleur du panel ou autre
 $class = $this->GetParameter('class');
+if (empty($class)) {
+    $class = 'panel-default';
+}
 
 // data attributes
 $data = getDataParameter();
@@ -27,10 +30,10 @@ if (!isset($GLOBALS['check_' . $pagetag]['panel'])) {
 
 
 if ($GLOBALS['check_' . $pagetag]['panel']) {
-    $headingID = uniqid( 'heading');
-    $collapseID = uniqid( 'collapse');
+    $headingID = uniqid('heading');
+    $collapseID = uniqid('collapse');
 
-    if(isset($GLOBALS['check_'.$pagetag ]['accordion_uniqueID'])) {
+    if (isset($GLOBALS['check_'.$pagetag ]['accordion_uniqueID'])) {
         $accordionID = $GLOBALS['check_'.$pagetag ]['accordion_uniqueID'];
     }
 
@@ -42,18 +45,14 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     }
 
     echo "<!-- start of panel -->"
-    . "<div class=\"panel panel-default\">
-      <div class=\"panel-heading\" role=\"tab\" id=\"$headingID\">
-        <h4 class=\"panel-title $class\">
-          <a role=\"button\" data-toggle=\"collapse\" data-parent=\"#$accordionID\" href=\"#$collapseID\" aria-expanded=\"true\" aria-controls=\"$collapseID\" $data>
-            $title
-          </a>
-        </h4>
+    . "<div class=\"panel $class\"  $data>
+      <div class=\"panel-heading\" role=\"tab\" id=\"$headingID\" role=\"button\" data-toggle=\"collapse\" data-parent=\"#$accordionID\" href=\"#$collapseID\" aria-expanded=\"true\" aria-controls=\"$collapseID\">
+          <h4 class=\"panel-title\">
+           $title
+          </h4>
       </div>
       <div id=\"$collapseID\" class=\"panel-collapse collapse\" role=\"tabpanel\" aria-labelledby=\"$headingID\">
         <div class=\"panel-body\">";
-
-
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
         . _t('TEMPLATE_ELEM_COL_NOT_CLOSED') . '.</div>' . "\n";
