@@ -1,6 +1,4 @@
-
-# Wiki stuff
-
+# YesWiki stuff
 wakka.config.php
 info.php
 cache/
@@ -56,15 +54,12 @@ tools/hashcash/secret/wp-hashcash.key
 !tools/toolsmng/*
 
 # Macintosh OS
-
 .DS_Store
 
 # Eclipse IDe
-
 .buildpath
 .project
 .settings/
 
 # Other
-
 .phpintel/

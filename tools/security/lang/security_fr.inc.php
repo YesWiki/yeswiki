@@ -21,22 +21,15 @@
 // +------------------------------------------------------------------------------------------------------+
 //
 /**
-* Fichier de traduction en francais de l'extension Hashcash
+* Fichier de traduction en espagnol de l'extension Hashcash
 *
-*@package       security
-*@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     2012 Outils-Réseaux
+*@package 		hashcash
+*@author        Louise Didier <louise@quincaillere.org>
+*@copyright     2016 Outils-Réseaux
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
-
-'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>La page ne peut pas &ecirc;tre enregistr&eacute;e.</strong><br />Vous avez peut-&ecirc;tre double cliqu&eacute; sur le bouton "Sauver", entrainant 2 sauvegardes cons&eacute;cutives trop rapproch&eacute;es, ou laiss&eacute; la page ouverte en mode &eacute;dition trop longtemps.<br />Pour enregistrer vos modifications, veuillez copier le contenu, rafraichir la page et coller votre page modifi&eacute;e &agrave; nouveau.',
-'HASHCASH_ANTISPAM_ACTIVATED' => 'Protection anti-spam active',
-'HASHCASH_GENERAL_PASSWORD' => 'Mot de passe général pour l\'édition',
-'HASHCASH_SEND' => 'Envoyer',
-'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Votre commentaire n\'a pas &eacute;t&eacute; enregistr&eacute;, le wiki pense que vous êtes un robot.',
-'CAPTCHA_ERROR_PAGE_UNSAVED' => 'Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car vous n\'avez pas entr&eacute; le mot de v&eacute;rification.',
-'CAPTCHA_ERROR_WRONG_WORD' => 'Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car le mot entr&eacute; ne correspond pas...',
-'CAPTCHA_VERIFICATION' => 'V&eacute;rification pour sauvegarder la page',
-'CAPTCHA_WRITE' => '&Eacute;crire le mot pr&eacute;sent dans l\'image',
+    'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>La página no se puede registrar.</strong><br />Quizas has hecho clic dos veces al botón "Guardar" en un intervalo demasiado corto, o has dejado la página abierta en modo edición demasiado tiempo.<br />Para guardar tus modificaciones, copia su contenido, actualiza la página en tu navigador y pega tu página modificada de nuevo.',
+    'HASHCASH_ANTISPAM_ACTIVATED' => 'Protección anti-spam activada',
+    'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Tu comentario no ha sido registrado, el wiki piensa que eres un robot.'
 ));
