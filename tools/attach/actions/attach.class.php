@@ -443,10 +443,6 @@ if (!class_exists('attach')) {
                         $this->redimensionner_image($fullFilename, $image_dest, $this->width, $this->height);
                     }
                     $img_name = $image_dest;
-                    if (empty($this->nofullimagelink)) {
-                        $image_redimensionnee = 1;
-                    }
-
                 } else {
                     $img_name = $fullFilename;
                 }
@@ -478,7 +474,7 @@ if (!class_exists('attach')) {
                 $output = $this->wiki->Format('[[' . $this->link . " $this->file]]");
                 $output = preg_replace("/\>$this->file\</iU", ">$img<", $output); //insertion du tag <img...> dans le lien
             } else {
-                if ($image_redimensionnee) {
+                if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
                     $output = '<a href="' . $this->GetScriptPath() . $fullFilename . '">' . $img . '</a>';
                 } else {
                     $output = $img;
@@ -493,7 +489,7 @@ if (!class_exists('attach')) {
             $output = "<figure class=\"$this->classes\">$output</figure>";
 
             echo $output;
-            $this->showUpdateLink();
+            //$this->showUpdateLink();
         }
         /**
          * Affiche le fichier li&eacute; comme un lien

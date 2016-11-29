@@ -31,11 +31,12 @@ class Image
      */
     public function __construct($image)
     {
+        //ini_set('gd.jpeg_ignore_warning', 1);
         $this->setPathToTempFiles("cache");
         if (file_exists($image)) {
             $this->image = $image;
             $this->readImageInfo();
-            if ($this->imageInfo["width"] == 0 || $this->imageInfo["height"] == 0) {
+            if (!filesize($image) || $this->imageInfo["width"] == 0 || $this->imageInfo["height"] == 0) {
                 throw new Exception("File seems to be an empty image: " . $image);
             }
         } else {
@@ -61,15 +62,15 @@ class Image
     protected function readImageInfo()
     {
 
-        $data = getimagesize($this->image);
+        $data = @getimagesize($this->image);
 
-        $this->imageInfo["width"] = $data[0];
-        $this->imageInfo["height"] = $data[1];
-        $this->imageInfo["imagetype"] = $data[2];
-        $this->imageInfo["htmlWidthAndHeight"] = $data[3];
-        $this->imageInfo["mime"] = $data["mime"];
-        $this->imageInfo["channels"] = (isset($data["channels"]) ? $data["channels"] : null);
-        $this->imageInfo["bits"] = $data["bits"];
+        $this->imageInfo["width"] = isset($data[0]) ? $data[0] : null;
+        $this->imageInfo["height"] = isset($data[1]) ? $data[1] : null;
+        $this->imageInfo["imagetype"] = isset($data[2]) ? $data[2] : null;
+        $this->imageInfo["htmlWidthAndHeight"] = isset($data[3]) ? $data[3] : null;
+        $this->imageInfo["mime"] = isset($data["mime"]) ? $data["mime"] : null;
+        $this->imageInfo["channels"] = isset($data["channels"]) ? $data["channels"] : null;
+        $this->imageInfo["bits"] = isset($data["bits"]) ? $data["bits"] : null;
 
         return true;
     }
@@ -174,7 +175,6 @@ class Image
             $newImage_height = $max_height;
 
             //or want to crop it?
-
         } elseif ($method == "crop") {
             //set new max height or width
             if ($ratioOfMaxSizes > $this->getRatioWidthToHeight()) {
@@ -215,6 +215,7 @@ class Image
         list($image_create_func, $image_save_func) = $this->getFunctionNames();
         if ($image_create_func != 'imagemagick') {
             $imageC = ImageCreateTrueColor($newImage_width, $newImage_height);
+            echo $this->image."<br>";
             $newImage = $image_create_func($this->image);
 
             if ($image_save_func == 'ImagePNG') {
@@ -355,22 +356,29 @@ class Image
     public function rotate($degrees, $jpgQuality = 75)
     {
         list($image_create_func, $image_save_func) = $this->getFunctionNames();
+        if ($image_create_func != 'imagemagick') {
+            $source = $image_create_func($this->image);
+            if (function_exists("imagerotate")) {
+                $imageRotated = imagerotate($source, $degrees, 0, true);
+            } else {
+                $imageRotated = $this->rotateImage($source, $degrees);
+            }
 
-        $source = $image_create_func($this->image);
-        if (function_exists("imagerotate")) {
-            $imageRotated = imagerotate($source, $degrees, 0, true);
-        } else {
-            $imageRotated = $this->rotateImage($source, $degrees);
-        }
-
-        if ($image_save_func == "ImageJPEG") {
-            if (!$image_save_func($imageRotated, $this->tmpfile, $jpgQuality)) {
-                throw new Exception("Cannot save file " . $this->tmpfile);
+            if ($image_save_func == "ImageJPEG") {
+                if (!$image_save_func($imageRotated, $this->tmpfile, $jpgQuality)) {
+                    throw new Exception("Cannot save file " . $this->tmpfile);
+                }
+            } else {
+                if (!$image_save_func($imageRotated, $this->tmpfile)) {
+                    throw new Exception("Cannot save file " . $this->tmpfile);
+                }
             }
         } else {
-            if (!$image_save_func($imageRotated, $this->tmpfile)) {
-                throw new Exception("Cannot save file " . $this->tmpfile);
+            // imagemagick rotate
+            if ($degrees == '-90') {
+                $degrees = '270';
             }
+            exec("convert -rotate ".$degrees." '".$this->image."' ".$this->tmpfile);
         }
 
         //Set new main image
@@ -571,7 +579,7 @@ class Image
         }
         // test if exec function is autorised
         $rcode=1;
-        if (!ini_get('safe_mode') ) {
+        if (!ini_get('safe_mode')) {
             $disabled = ini_get('disable_functions');
             if ($disabled) {
                 $disabled = explode(',', $disabled);

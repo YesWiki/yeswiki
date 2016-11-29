@@ -1,15 +1,10 @@
-{{moteurrecherche template="moteurrecherche_button.tpl.html"}} ""<div class="btn-group">
-<button type="button" class="yeswiki-menu-btn navbar-btn btn btn-default dropdown-toggle" data-toggle="dropdown">
-<span class="glyphicon glyphicon-cog icon-cog"></span>
-</button>
-
-<ul class="dropdown-menu dropdown-menu-right" role="menu">
-<li><a href="wakka.php?wiki=ParametresUtilisateur"><i  class="glyphicon glyphicon-user icon-user"></i> Se Connecter</a></li>
-<li class="divider"></li>
-<li><a href="wakka.php?wiki=AidE"><i  class="glyphicon glyphicon-question-sign icon-question-sign"></i> Aide</a></li>
-<li class="divider"></li>
-<li><a href="wakka.php?wiki=WikiAdmin"><i  class="glyphicon glyphicon-wrench icon-wrench"></i> Gestion du site</a></li>
-<li><a href="wakka.php?wiki=TableauDeBord"><i  class="glyphicon glyphicon-dashboard icon-list-alt"></i> Tableau de bord</a></li>
-<li><a href="wakka.php?wiki=BazaR"><i  class="glyphicon glyphicon-briefcase icon-briefcase"></i> Base de données</a></li>
-</ul>
-</div>""
+{{moteurrecherche template="moteurrecherche_button.tpl.html"}}
+{{buttondropdown icon="glyphicon glyphicon-cog" caret="0"}}
+ - {{login template="modal.tpl.html" nobtn="1"}}
+ - ------
+ - {{button nobtn="1" icon="glyphicon glyphicon-question-sign" text="Aide" link="AidE"}}
+ - ------
+ - {{button nobtn="1" icon="glyphicon glyphicon-wrench" text="Gestion du site" link="WikiAdmin"}}
+ - {{button nobtn="1" icon="glyphicon glyphicon-dashboard" text="Tableau de bord" link="TableauDeBord"}}
+ - {{button nobtn="1" icon="glyphicon glyphicon-briefcase" text="Base de données" link="BazaR"}}
+{{end elem="buttondropdown"}}

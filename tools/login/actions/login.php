@@ -1,8 +1,26 @@
 <?php
-
-/*
-login.php
-Copyright 2010  Florian SCHMITT
+/**
+ * login.php
+ *
+ * parameters (GetParameter):
+ * - signupurl
+ * - profileurl
+ * - incomingurl
+ * - userpage
+ * - template
+ * - class
+ * - btnclass
+ * $_REQUEST :
+ * - action : login|logout|checklogged
+ * $_POST :
+ * - incomingurl
+ * - name
+ * - email
+ * - password
+ * - remember
+ *
+ * Copyright 2010  Florian SCHMITT
+ *
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -27,8 +45,8 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
 
 include_once 'tools/login/libs/login.functions.php';
@@ -37,7 +55,6 @@ include_once 'tools/login/libs/login.functions.php';
 
 // url d'inscription
 $signupurl = $this->GetParameter('signupurl');
-
 // si pas de pas d'url d'inscription renseignée, on utilise ParametresUtilisateur
 if (empty($signupurl) && $signupurl != "0") {
     $signupurl = $this->href("", "ParametresUtilisateur", "");
@@ -53,18 +70,13 @@ $profileurl = $this->GetParameter('profileurl');
 // sauvegarde de l'url d'ou on vient
 $incomingurl = $this->GetParameter('incomingurl');
 if (empty($incomingurl)) {
-    $incomingurl = 'http'
-        .((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's':'')
-        .'://' . (($_SERVER['SERVER_PORT'] != '80') ? $_SERVER['HTTP_HOST'] . ':' . $_SERVER['SERVER_PORT']
-        .$_SERVER['SCRIPT_NAME'] : $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'])
-        .(($_SERVER['QUERY_STRING'] > ' ') ?'?' . $_SERVER['QUERY_STRING'] : '');
+    $incomingurl = 'http'.((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's' : '') . '://' . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 }
 
 $userpage = $this->GetParameter("userpage");
 // si pas d'url de page de sortie renseignée, on retourne sur la page courante
 if (empty($userpage)) {
     $userpage = $incomingurl;
-    
     // si l'url de sortie contient le passage de parametres de déconnexion, on l'efface
     if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout") {
         $userpage = str_replace('&action=logout', '', $userpage);
@@ -75,9 +87,29 @@ if (empty($userpage)) {
     }
 }
 
-// classes css pour l'action et pour les boutons
+/*
+ * Url "Mot de passe perdu"
+ */
+$lostpasswordurl = $this->GetParameter('lostpasswordurl');
+if (!empty($lostpasswordurl)) {
+    if ($this->IsWikiName($lostpasswordurl)) {
+        $lostpasswordurl = $this->href('', $lostpasswordurl);
+    }
+} else {
+    // TODO : voir pour gerer les pages dans d'autres langues
+    $lostpasswordurl = $this->href('', 'MotDePassePerdu');
+}
+
+
+// classe css pour l'action
 $class = $this->GetParameter("class");
+
+// classe css pour les boutons
 $btnclass = $this->GetParameter("btnclass");
+if (empty($btnclass)) {
+    $btnclass = 'btn-default';
+}
+$nobtn = $this->GetParameter("nobtn");
 
 // template par défaut
 $template = $this->GetParameter("template");
@@ -108,18 +140,18 @@ if ($_REQUEST["action"] == "login") {
         // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
         if ($existingUser["password"] == md5($_POST["password"])) {
             $this->SetUser($existingUser, $_POST["remember"]);
-            
+
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if ($userpage == 'user' && $this->LoadPage($_POST["name"])) {
                 $this->Redirect($this->href('', $_POST["name"], ''));
             } else {
                 // on va sur la page d'ou on s'est identifie sinon
-                $this->Redirect($_POST['incomingurl']);
+                $this->Redirect($incomingurl);
             }
         } else {
             // on affiche une erreur sur le mot de passe sinon
             $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-            $this->Redirect($_POST['incomingurl']);
+            $this->Redirect($incomingurl);
         }
     } else {
         // si le nomWiki est un mail
@@ -130,23 +162,23 @@ if ($_REQUEST["action"] == "login") {
             // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
             if ($existingUser["password"] == md5($_POST["password"])) {
                 $this->SetUser($existingUser, $_POST["remember"]);
-                
+
                 // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
                 if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {
                     $this->Redirect($this->href('', $existingUser["name"], ''));
                 } else {
                     // on va sur la page d'ou on s'est identifie sinon
-                    $this->Redirect($_POST['incomingurl']);
+                    $this->Redirect($incomingurl);
                 }
             } else {
                 // on affiche une erreur sur le mot de passe sinon
                 $this->SetMessage(_t('LOGIN_WRONG_PASSWORD'));
-                $this->Redirect($_POST['incomingurl']);
+                $this->Redirect($incomingurl);
             }
         } else {
             // on affiche une erreur sur le NomWiki sinon
             $this->SetMessage(_t('LOGIN_WRONG_USER'));
-            $this->Redirect($_POST['incomingurl']);
+            $this->Redirect($incomingurl);
         }
     }
 }
@@ -157,7 +189,7 @@ if ($user = $this->GetUser()) {
     if ($this->LoadPage("PageMenuUser")) {
         $PageMenuUser.= $this->Format("{{include page=\"PageMenuUser\"}}");
     }
-    
+
     // si pas de pas d'url de profil renseignée, on utilise ParametresUtilisateur
     if (empty($profileurl)) {
         $profileurl = $this->href("", "ParametresUtilisateur", "");
@@ -171,17 +203,18 @@ if ($user = $this->GetUser()) {
 } else {
     // cas d'une personne non connectée
     $connected = false;
-    
+
     // si l'authentification passe mais la session n'est pas créée, on a un problème de cookie
     if ($_REQUEST['action'] == 'checklogged') {
         $error = 'Vous devez accepter les cookies pour pouvoir vous connecter.';
     }
 }
 
+//
 // on affiche le template
-if (!class_exists('SquelettePhp')) {
-    include_once('tools/login/libs/squelettephp.class.php');
-}
+//
+
+include_once('tools/libs/squelettephp.class.php');
 
 // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
 $templatetoload = 'themes/tools/login/templates/' . $template;
@@ -198,10 +231,12 @@ $squel->set(
         "email" => ((isset($user["email"])) ? $user["email"] : ((isset($_POST["email"])) ? $_POST["email"] : '')),
         "incomingurl" => $incomingurl,
         "signupurl" => $signupurl,
+        'lostpasswordurl' => $lostpasswordurl,
         "profileurl" => $profileurl,
         "userpage" => $userpage,
         "PageMenuUser" => $PageMenuUser,
         "btnclass" => $btnclass,
+        "nobtn" => $nobtn,
         "error" => $error
     )
 );

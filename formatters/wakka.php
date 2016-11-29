@@ -218,7 +218,11 @@ if (!class_exists('WikiniFormatter'))
 			$thing = $things[0];
 			$result = '';
 
-			$wiki = & $this->wiki;
+			/**
+			 * 
+			 * @var Wiki
+			 */
+			$wiki = $this->wiki;
 
 			// convert HTML thingies
 			switch ($thing)
@@ -380,12 +384,8 @@ if (!class_exists('WikiniFormatter'))
 							return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 						}
 					}
-					// indented text
-					elseif (preg_match('`(^|\n)(\t+|([ ]{1})+)(-|([[:alnum:]]+)\))?`s', $thing, $matches))
-					{
-						return $this->indentedText($matches);
-					}
-					// events
+					// events / action
+					// process this regex before "indented text" regex to permits linebreak and space in action tag formatting
 					elseif (preg_match("/^\{\{(.*?)\}\}$/s", $thing, $matches))
 					{
 						if ($matches[1]) {
@@ -394,6 +394,11 @@ if (!class_exists('WikiniFormatter'))
 						}
 						else
 							return "{{}}";
+					}
+					// indented text
+					elseif (preg_match('`(^|\n)(\t+|([ ]{1})+)(-|([[:alnum:]]+)\))?`s', $thing, $matches))
+					{
+						return $this->indentedText($matches);
 					}
 					// interwiki links!
 					elseif (preg_match('`^' . WN_INTERWIKI_LINK . '$`', $thing))

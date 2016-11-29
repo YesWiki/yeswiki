@@ -46,7 +46,7 @@ if (!function_exists("rssdiff")) {
         // TODO : cache ? 
 
         if ($idfirst==$idlast) {
-            $previousdiff=$wiki->LoadSingle("select id from ".$wiki->config["table_prefix"]."pages where tag = '".mysql_escape_string($tag)."' and id < $idfirst order by time desc limit 1"); 
+            $previousdiff=$wiki->LoadSingle("select id from ".$wiki->config["table_prefix"]."pages where tag = '".mysqli_real_escape_string($this->dblink, $tag)."' and id < $idfirst order by time desc limit 1"); 
             if ($previousdiff) {
                 $idlast=$previousdiff['id'];
             }

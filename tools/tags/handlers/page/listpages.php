@@ -23,7 +23,7 @@ if (!defined("WIKINI_VERSION"))
 }
 
 // fonctions a inclure
-include_once('tools/tags/libs/squelettephp.class.php');
+include_once('tools/libs/squelettephp.class.php');
 include_once 'tools/tags/libs/tags.functions.php';
 
 // recuperation de tous les parametres

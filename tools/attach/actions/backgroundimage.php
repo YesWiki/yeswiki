@@ -56,32 +56,41 @@ if (!empty($file)) {
     }
     $att = new attach($this);
 
-    //recuperation des parametres necessaire
+    //recuperation des parametres necessaires
     $att->file = $file;
     $att->desc = 'background image ' . $file;
     $att->height = $height;
     $att->width = $width;
     $fullFilename = $att->GetFullFilename();
-
-    //test d'existance du fichier
-    if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
-        $att->showFileNotExits();
-        //return;
-    }
 }
 
 // container class
 $class = $this->GetParameter('class');
 
-echo '<div class="background-image' . (!empty($class) ? ' ' . $class : '') . '" style="'
+// container id
+$id = $this->GetParameter('id');
+
+// container data attributes
+$data = getDataParameter();
+
+echo '<div' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="background-image' . (!empty($class) ? ' ' . $class : '') . '" style="'
     .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
     .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-    .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '')
-    .'">' . "\n"
-    .'<div class="table-center">'."\n";
+    .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
+if (is_array($data)) {
+    foreach ($data as $key => $value) {
+        echo ' data-'.$key.'="'.$value.'"';
+    }
+}
+echo '>' . "\n";
 $nocontainer = $this->GetParameter('nocontainer');
 if (empty($nocontainer)) {
     echo '<div class="container">' . "\n";
 } else {
     echo '<div>';
+}
+//test d'existance du fichier
+if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
+    $att->showFileNotExits();
+    //return;
 }

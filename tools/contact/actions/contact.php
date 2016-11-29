@@ -70,7 +70,7 @@ else {
 	// adresse url d'envoi du mail
 	$contactelements['mailerurl'] = $this->href('mail');
 
-	include_once('tools/contact/libs/squelettephp.class.php');
+	include_once('tools/libs/squelettephp.class.php');
 	$contacttemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
 	$contacttemplate->set($contactelements);
 	echo $contacttemplate->analyser();

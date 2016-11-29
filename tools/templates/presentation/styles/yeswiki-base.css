@@ -80,6 +80,9 @@ margin: 0;
 /* Sélecteur de fond d'écran */
 #graphical_options {display: none}
 #form_theme_selector {width:530px;}
+#bgCarousel {
+  margin-bottom: 20px;
+}
 #bgCarousel img.bgimg, #bgCarousel div.mozaicimg {
 	float:left;
 	margin:2px;
@@ -97,8 +100,9 @@ margin: 0;
 }
 
 #bgCarousel .item {
+  display: block;
 	height: 162px;
-    margin: 0 53px;
+  margin: 0 53px;
 }
 
 /* lanceur d'accordéon*/
@@ -131,6 +135,8 @@ overflow: auto;
 
 /* page wiki en format boite modale */
 #YesWikiModal .page { min-height:auto;}
+#yw-modal-loading {position: absolute; top: 30vh; left: 48%;}
+#yw-modal-iframe {width:100%; height:70vh; border:0;}
 
 /* menu du haut fixe */
 #yw-topnav.affix {
@@ -197,3 +203,19 @@ overflow: auto;
 
 /* on /iframe page, we use white background, can be overwritten in the theme */
 .yeswiki-page-widget {padding:15px;background:#FFF; background-image: none;}
+
+.cols2 {
+  -webkit-column-count: 2; /* Chrome, Safari, Opera */
+  -moz-column-count: 2; /* Firefox */
+  column-count: 2;
+}
+.cols3 {
+  -webkit-column-count: 3; /* Chrome, Safari, Opera */
+  -moz-column-count: 3; /* Firefox */
+  column-count: 3;
+}
+.cols4 {
+  -webkit-column-count: 4; /* Chrome, Safari, Opera */
+  -moz-column-count: 4; /* Firefox */
+  column-count: 4;
+}

@@ -1,13 +1,13 @@
 <?php
 /*
  * $Id: reseaupagecourante.php 845 2007-08-23 19:10:25Z lordfarquaad $
- * Description : Handler pour l'affichage SVG du réseau de liens d'une page wikini
+ * Description : Handler pour l'affichage SVG du rï¿½seau de liens d'une page wikini
  * auteurs : Yann Le Guennec - Charles Nepote
  * version : 0.0.6
  * 
- * Paramètres utilisateurs :
- * &script=on : active le script de déplacement des mots
- * &subnet=off : desactive le réseau de liens secondaires
+ * Paramï¿½tres utilisateurs :
+ * &script=on : active le script de dï¿½placement des mots
+ * &subnet=off : desactive le rï¿½seau de liens secondaires
  * &center=off : ne centre pas le rectangle de la page courante
  * &style=dark | white (defaut) : styles de couleurs
  * 
@@ -54,7 +54,7 @@ if(isset($_GET['style'])) {
 }
 $affich_param .= "    style : $style\n";
 
-$n = 0; // nombre de pages liées à la page courante
+$n = 0; // nombre de pages liï¿½es ï¿½ la page courante
 $p = array();
 
 //page courante
@@ -70,9 +70,9 @@ if ($pagesFrom = $this->LoadPagesLinkingTo($this->getPageTag()))
     foreach ($pagesFrom as $pageFrom)
     {
         $id = $pageFrom["tag"];
-        if($id != $this->getPageTag())// exclusion des liens de la page vers elle même
+        if($id != $this->getPageTag())// exclusion des liens de la page vers elle mï¿½me
         {
-            if(!array_key_exists($id, $p)) // si le noeud n'est pas deja enregistré
+            if(!array_key_exists($id, $p)) // si le noeud n'est pas deja enregistrï¿½
             {
                 $p[$id]['n'] = $id;
                 $p[$id]['c'] = 'in';
@@ -86,15 +86,15 @@ if ($pagesFrom = $this->LoadPagesLinkingTo($this->getPageTag()))
     }
 }
 //Liens sortants
-$query = "select to_tag as tag from ".$this->config["table_prefix"]."links where from_tag = '".mysql_escape_string($this->getPageTag())."' order by tag";
+$query = "select to_tag as tag from ".$this->config["table_prefix"]."links where from_tag = '".mysqli_real_escape_string($this->dblink, $this->getPageTag())."' order by tag";
 if ($pagesTo = $this->LoadAll($query))
 {
     foreach ($pagesTo as $pageTo)
     {
         $id = $pageTo["tag"];
-        if($id != $this->getPageTag()) //exclusion des liens de la page vers elle même
+        if($id != $this->getPageTag()) //exclusion des liens de la page vers elle mï¿½me
         {
-            if(!array_key_exists($id, $p)) // si le neud n'est pas deja enregistré
+            if(!array_key_exists($id, $p)) // si le neud n'est pas deja enregistrï¿½
             {
                 $p[$id]['n'] = $pageTo["tag"];
                 $p[$id]['c'] = 'out';
@@ -114,7 +114,7 @@ if ($pagesTo = $this->LoadAll($query))
 
 
 // taille de police
-// la taille de police augmente de 1 em à chaque 30 noeuds supplémentaires dans le graphe
+// la taille de police augmente de 1 em ï¿½ chaque 30 noeuds supplï¿½mentaires dans le graphe
 $fontsize = ceil($n/30); 
 
 $styles["white"] = " 
@@ -159,7 +159,7 @@ $vxh = round($vh + 1000/$n);
 
 $viewbox = "0 -10 $vxw $vxh";
 
-// attribution de coordonnées aléatoires
+// attribution de coordonnï¿½es alï¿½atoires
 while(list($k,$v) = each($p))
 {
     $p[$k]['x'] = rand(0, $vw);
@@ -173,7 +173,7 @@ if($center) {
 }
 
 
-// coordonnées du centre du rectangle de la page courante
+// coordonnï¿½es du centre du rectangle de la page courante
 //$p[$this->getPageTag()]['w'] = $n;
 $cur_w = $p[$this->getPageTag()]['w'];
 $cur_x = $p[$this->getPageTag()]['x'];
@@ -182,8 +182,8 @@ $x1 = ($cur_w/2) + $cur_x;
 $y1 = ($cur_w/2) + $cur_y;
 
 
-$svg_head = "";     // début du fichier svg
-$svg_links = "";    // couche de carrés cliquables
+$svg_head = "";     // dï¿½but du fichier svg
+$svg_links = "";    // couche de carrï¿½s cliquables
 $svg_txt = "";      // nom des pages
 $svg_lines = "";    // liaisons avec la page courante
 $svg_rs = "";       // reseau de liens secondaires
@@ -192,8 +192,8 @@ $svg_foot = "";     // fin de fichier
 //ecriture du SVG
 $svg_head =  "<?xml version=\"1.0\"  encoding=\"iso-8859-1\" ?> \r\n";
 $svg_head .= "<!-- 
-    Cartographie des ".$n." pages liées à la page ".$this->getPageTag().". 
-    Généré par svg.php - version 0.0.6.
+    Cartographie des ".$n." pages liï¿½es ï¿½ la page ".$this->getPageTag().". 
+    Gï¿½nï¿½rï¿½ par svg.php - version 0.0.6.
     Le ".date("Y-m-d H:i:s")." 
 $affich_param 
 --> \n";
@@ -259,7 +259,7 @@ function d(evt,i) {
 }
 
 
-//variables pour les identifiants des éléments
+//variables pour les identifiants des ï¿½lï¿½ments
 $i = 0;    
 $j = 0;  
 
@@ -270,7 +270,7 @@ $mouseEvent3 = "";
 
 foreach ($p as $page)
 {
-    // réseau de liens secondaires
+    // rï¿½seau de liens secondaires
     if($subnet)
     {
         $nompage = $page['n'];
@@ -283,10 +283,10 @@ foreach ($p as $page)
                     $id = $retroLien["tag"]; //$p[$id]['n'] est donc une page qui pointe vers p[$nompage]
                     if(array_key_exists($id, $p))
                     {
-                    	if($p[$id]['n'] != $this->getPageTag()) // si le noeud n'est pas deja enregistré
+                    	if($p[$id]['n'] != $this->getPageTag()) // si le noeud n'est pas deja enregistrï¿½
                         {
 	                        $svg_rs .= "<line id=\"l[$i]\" x1=\"".$p[$id]['x']."\" y1=\"".$p[$id]['y']."\" x2=\"".$page['x']."\" y2=\"".$page['y']."\"/>\n";
-	                        $page['w']++; //incrementation de la taille de la page liée
+	                        $page['w']++; //incrementation de la taille de la page liï¿½e
 	                        $i++;
 	                    }
 	                }
@@ -302,7 +302,7 @@ foreach ($p as $page)
       $mouseEvent3 = " onmouseover=\"a(evt,$j)\" ";
     }
     
-    //ajuste les coords de ligne au centre des carrés
+    //ajuste les coords de ligne au centre des carrï¿½s
     $page['cx'] =  ($page['w']/2) + $page['x'];
     $page['cy'] =  ($page['w']/2) + $page['y'];
 

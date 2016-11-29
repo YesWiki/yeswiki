@@ -23,36 +23,41 @@
 
     $('body').append('<div class="modal fade" id="YesWikiModal">' +
       '<div class="modal-dialog' + size + '">' +
-        '<div class="modal-content">' +
-          '<div class="modal-header">' +
-          '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-          text +
-          '</div>' +
-          '<div class="modal-body">' +
-          '</div>' +
-        '</div>' +
+      '<div class="modal-content">' +
+      '<div class="modal-header">' +
+      '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+      text +
       '</div>' +
-    '</div>');
+      '<div class="modal-body">' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>');
 
     var link = $this.attr('href');
-    var modal = $('#YesWikiModal');
+    var $modal = $('#YesWikiModal');
     if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(link)) {
-      modal.find('.modal-body').html('<img class="center-block img-responsive" src="' + link + '" alt="image" />');
+      $modal
+        .find('.modal-body')
+        .html('<img class="center-block img-responsive" src="' + link + '" alt="image" />');
     } else if (iframe === 1) {
-      modal.find('.modal-body').html('<span id="yw-modal-loading" style="position: absolute; top: 30vh; left: 48%;" class="throbber"></span><iframe id="yw-modal-iframe" style="width:100%; height:70vh; border:0;" src="' + link + '""></iframe>');
+      $modal
+        .find('.modal-body')
+        .html('<span id="yw-modal-loading" class="throbber"></span>' +
+          '<iframe id="yw-modal-iframe" src="' + link + '""></iframe>');
       $('#yw-modal-iframe').on('load', function() {
         $('#yw-modal-loading').hide();
       });
     } else {
-      modal.find('.modal-body').load(link + ' .page', function(response, status, xhr) {
+      $modal.find('.modal-body').load(link + ' .page', function(response, status, xhr) {
         return false;
       });
     }
 
-    modal.modal({
+    $modal.modal({
       keyboard: false,
     }).modal('show').on('hidden hidden.bs.modal', function() {
-      modal.remove();
+      $modal.remove();
     });
 
     return false;
@@ -67,10 +72,13 @@
     }
   });
 
-  //on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
+  // on enleve la fonction doubleclic dans des cas ou cela pourrait etre indesirable
   $('.no-dblclick, form, .page a, button, .dropdown-menu').on('dblclick', function(e) {
     return false;
   });
+
+  // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
+  $('.modal').appendTo(document.body);
 
   // Pour l'apercu des themes, on recharge la page avec le theme selectionne
   $('#form_theme_selector select').on('change', function() {
@@ -97,70 +105,121 @@
 
     var url = window.location.toString();
     var urlAux = url.split('&theme=');
-    window.location = urlAux[0] + '&theme=' + $('#changetheme').val() + '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
+    window.location = urlAux[0] + '&theme=' + $('#changetheme').val() +
+      '&squelette=' + $('#changesquelette').val() + '&style=' + $('#changestyle').val();
   });
 
   /* tooltips */
   $('[data-toggle=\'tooltip\']').tooltip();
 
-  // on ajoute un "espion" qui detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
-  var topnav = $('#yw-topnav.fixable');
-  if (topnav.length > 0) {
-    var topoffset = topnav.offset().top;
-    topnav.affix({ offset: topoffset });
+  // detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
+  var $topnav = $('#yw-topnav.fixable');
+  if ($topnav.length > 0) {
+    var topoffset = $topnav.offset().top;
+    $topnav.affix({
+      offset: topoffset,
+    });
   }
 
   // moteur de recherche utilisé dans un template
-  $('a[href="#search"]').on('click', function(event) {
-    event.preventDefault();
+  $('a[href="#search"]').on('click', function(e) {
+    e.preventDefault();
     $('#search').addClass('open');
     $('#search .search-query').focus();
   });
 
-  $('#search, #search button.close-search').on('click keyup', function(event) {
-    if (event.target == this || $(event.target).hasClass('close-search') || event.keyCode == 27) {
+  $('#search, #search button.close-search').on('click keyup', function(e) {
+    if (e.target == this || $(e.target).hasClass('close-search') || e.keyCode == 27) {
       $(this).removeClass('open');
     }
   });
+
+  // se souvenir des tabs navigués
+  $.fn.historyTabs = function() {
+    var that = this;
+    window.addEventListener('popstate', function(event) {
+      if (event.state) {
+        $(that).filter('[href="' + event.state.url + '"]').tab('show');
+      }
+    });
+    return this.each(function(index, element) {
+      $(element).on('show.bs.tab', function() {
+        var stateObject = {
+          'url': $(this).attr('href')
+        };
+
+        if (window.location.hash && stateObject.url !== window.location.hash) {
+          window.history.pushState(stateObject, document.title, window.location.pathname + window.location.search + $(this).attr('href'));
+        } else {
+          window.history.replaceState(stateObject, document.title, window.location.pathname + window.location.search + $(this).attr('href'));
+        }
+      });
+      if (!window.location.hash && $(element).is('.active')) {
+        // Shows the first element if there are no query parameters.
+        $(element).tab('show');
+      } else if ($(this).attr('href') === window.location.hash) {
+        $(element).tab('show');
+      }
+    });
+  };
+  $('a[data-toggle="tab"]').historyTabs();
 
   // double clic
   $('.navbar').on('dblclick', function(e) {
     e.stopPropagation();
     $('body').append('<div class="modal fade" id="YesWikiModal">' +
-                        '<div class="modal-dialog">' +
-                            '<div class="modal-content">' +
-                                '<div class="modal-header">' +
-                                '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-                                '<h3>Editer une zone du menu horizontal</h3>' +
-                                '</div>' +
-                                '<div class="modal-body">' +
-                                '</div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>');
+      '<div class="modal-dialog">' +
+      '<div class="modal-content">' +
+      '<div class="modal-header">' +
+      '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+      '<h3>Editer une zone du menu horizontal</h3>' +
+      '</div>' +
+      '<div class="modal-body">' +
+      '</div>' +
+      '</div>' +
+      '</div>' +
+      '</div>');
 
-    var editmodal = $('#YesWikiModal');
+    var $editmodal = $('#YesWikiModal');
     $(this).find('.include').each(function() {
       var href = $(this).attr('ondblclick')
         .replace('document.location=\'', '')
         .replace('\';', '');
       var pagewiki = href.replace('/edit', '').replace('http://yeswiki.dev/wakka.php?wiki=', '');
-      editmodal.find('.modal-body').append('<a href="' + href + '" class="btn btn-default btn-block"><i class="glyphicon glyphicon-pencil"></i> Editer la page ' + pagewiki + '</a>');
+      $editmodal
+        .find('.modal-body')
+        .append('<a href="' + href + '" class="btn btn-default btn-block">' +
+          '<i class="glyphicon glyphicon-pencil"></i> Editer la page ' + pagewiki + '</a>');
 
     });
 
-    editmodal.find('.modal-body').append('<a href="#" data-dismiss="modal" class="btn btn-warning btn-xs btn-block">En fait, je ne voulais pas double-cliquer...</a>');
+    $editmodal
+      .find('.modal-body')
+      .append('<a href="#" data-dismiss="modal" class="btn btn-warning btn-xs btn-block">' +
+        'En fait, je ne voulais pas double-cliquer...</a>');
 
-    editmodal.modal({
-      keyboard: true,
-    })
-    .modal('show')
-        .on('hidden hidden.bs.modal', function() {
-          editmodal.remove();
-        });
+    $editmodal.modal({
+        keyboard: true,
+      })
+      .modal('show')
+      .on('hidden hidden.bs.modal', function() {
+        $editmodal.remove();
+      });
 
     return false;
 
   });
+
+  // AUTO RESIZE IFRAME
+  var iframes = $('iframe.auto-resize');
+  if (iframes.length > 0) {
+    $.getScript( 'tools/templates/libs/vendor/iframeResizer.min.js' )
+    .done(function( script, textStatus ) {
+      iframes.iFrameResize();
+    })
+    .fail(function( jqxhr, settings, exception ) {
+      console.log('Error getting script tools/templates/libs/vendor/iframeResizer.min.js', exception);
+    });
+  }
 
 })(jQuery);

@@ -1,6 +1,6 @@
 <?php if ($connected) : ?>
 	<div class="btn-group">
-		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
+		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="glyphicon glyphicon-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
 		<ul class="dropdown-menu">
 		  <?php echo $PageMenuUser; ?>
 		  <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
@@ -12,13 +12,18 @@
 		<div class="alert alert-danger"><?php echo  $error; ?></div>
 	<?php endif; ?>
 	<form class="form-inline" action="<?php echo $incomingurl; ?>" method="post">
-		<input id="inputWikiName" class="input-small" required="required" placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
-		<input id="inputPassword" class="input-small" required="required" placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />
-		<label class="checkbox" for="remember-horizontal">
-			<input type="checkbox" id="remember-horizontal" name="remember" value="1" /><?php echo _t('LOGIN_REMEMBER_ME'); ?>
-		</label>
-		<button type="submit" class="btn<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo _t('LOGIN_LOGIN'); ?></button>
-		<?php if ($signupurl != '' && $signupurl != '0') : ?><a class="btn <?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo _t('LOGIN_SIGNUP'); ?></a><?php endif; ?>
+		<input id="inputWikiName" class="form-control" required placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
+		<input id="inputPassword" class="form-control" required="required" placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />
+    <?php if (!empty($lostpasswordurl)) { ?>
+			<small><a href="<?php echo $lostpasswordurl ?>"><?php echo _t('LOGIN_LOST_PASSWORD'); ?></a></small>
+		<?php } ?>
+    <div class="checkbox">
+      <label>
+        <input type="checkbox" id="remember-default" name="remember" value="1"> <?php echo _t('LOGIN_REMEMBER_ME'); ?>
+      </label>
+    </div>
+		<button type="submit" class="btn <?php echo $btnclass; ?> btn-primary"><i class="glyphicon glyphicon-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
+		<?php if ($signupurl != '' && $signupurl != '0') : ?><a class="btn <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="glyphicon glyphicon-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a><?php endif; ?>
 		<input type="hidden" name="action" value="login" />
 		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />

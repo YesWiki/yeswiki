@@ -44,6 +44,19 @@
    border-radius: 4px 4px 0 0;
  }
 
+ .page .background-image {
+    width: calc(100% + 30px);
+    margin-top: -15px;
+    margin-left: -15px;
+}
+.footerpage .background-image {
+  width: calc(100% + 30px);
+  margin: -30px 0 -30px -15px;
+}
+.yw-fullwidth .background-image {
+  width:100%;
+}
+
  /* Menu horizontal principal */
  #yw-topnav {
    margin: 0 0 15px;

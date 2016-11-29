@@ -30,20 +30,20 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 function getURLAbsolutePath($url = null)
 {
     if (!$url) $url = $_SERVER['REQUEST_URI'];
-    
+
     $pieces = @parse_url($url);
     if ($pieces === false) return false;
-    
+
     if (empty($pieces['path'])) return '/';
-    
+
     $path = $pieces['path'];
     $path_len = strlen($path);
-    
+
     if ($path[$path_len - 1] == '/') return $path;
-    
+
     $expl = explode('/', $path); // here $expl[0] should be the empty string
     $expl[count($expl) - 1] = ''; // this makes the path /look/like/this/
-    
+
     return implode('/', $expl);
 }
 
@@ -56,12 +56,29 @@ function getURLAbsolutePath($url = null)
  */
 function computeBaseURL($rewrite_mode = false)
 {
-    $scheme = empty($_SERVER['']) ? 'http' : 'https';
-    $pieces = parse_url($_SERVER['REQUEST_URI']);
-    return $scheme . '://' . $_SERVER["SERVER_NAME"] .
-        ($_SERVER["SERVER_PORT"] != 80 ? ":".$_SERVER["SERVER_PORT"] : "") .
-        $pieces['path'] .
-        ($rewrite_mode ? '' : '?wiki=');
+    $protocol = 'http://';
+    if (!empty($_SERVER['HTTPS'])) {
+        $protocol = 'https://';
+    }
+
+    $urlPieces = parse_url($_SERVER['REQUEST_URI']);
+
+    $port = '';
+    if ($_SERVER["SERVER_PORT"] != 80
+        and $_SERVER["SERVER_PORT"] != 443) {
+        $port = ':' . $_SERVER["SERVER_PORT"];
+    }
+
+    $urlParam = '';
+    if (!$rewrite_mode) {
+        $urlParam = '?wiki=';
+    }
+
+    return $protocol
+        . $_SERVER["HTTP_HOST"]
+        . $port
+        . $urlPieces['path']
+        . $urlParam;
 }
 
 /**
