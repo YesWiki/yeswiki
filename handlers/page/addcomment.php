@@ -4,7 +4,7 @@ $Id: addcomment.php 776 2007-07-12 22:05:45Z lordfarquaad $
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
 Copyright 2002, 2003 David DELON
 Copyright 2003  Eric FELDSTEIN
-Copyright 2004  Jean Christophe ANDRÉ
+Copyright 2004  Jean Christophe ANDRÃ©
 Copyright 2005  Didier LOISEAU
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");

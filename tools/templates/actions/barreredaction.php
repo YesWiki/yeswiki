@@ -4,7 +4,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if ($this->HasAccess("write")) {
-    // on r�cup�re la page et ses valeurs associ�es
+    // on récupére la page et ses valeurs associées
     $page = $this->GetParameter('page');
     if (empty($page)) {
         $page = $this->GetPageTag();
@@ -17,16 +17,16 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['page'] = $page;
     $barreredactionelements['linkpage'] = $this->href('', $page);
 
-    // on choisit le template utilis�
+    // on choisit le template utilisé
     $template = $this->GetParameter('template'); 
     if (empty($template)) {
         $template = 'barreredaction_basic.tpl.html';
     }
 
-    // on peut ajouter des classes � la classe par d�faut .footer
+    // on peut ajouter des classes é la classe par défaut .footer
     $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
 
-    // on ajoute le lien d'�dition si l'action est autoris�e
+    // on ajoute le lien d'édition si l'action est autorisée
     if ( $this->HasAccess("write", $page) ) {
         $barreredactionelements['linkedit'] = $this->href("edit", $page);
     }

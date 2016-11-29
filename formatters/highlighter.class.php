@@ -2,13 +2,13 @@
 /*
 * $Id: highlighter.class.php 797 2007-07-23 22:31:56Z lordfarquaad $
 *
-* Souligneur générique pour colorier la syntaxe de langage de programmation
+* Souligneur gÃ©nÃ©rique pour colorier la syntaxe de langage de programmation
 *
 * copyright Eric Feldstein 2004 mailto:garfield_fr@tiscali.fr
 *
 * Licence : la meme que wikini(voir le fichier LICENCE).
-* Vous êtes libre d'utiliser et de modifier ce code à condition de laisser le copyright 
-* d'origine. Vous pouvez  bien sur vous ajouter à la liste des auteurs.
+* Vous Ã©tes libre d'utiliser et de modifier ce code Ã© condition de laisser le copyright 
+* d'origine. Vous pouvez  bien sur vous ajouter Ã© la liste des auteurs.
 *
 * INSTALLATION : copier le fichier dans le repertoire "formatters" de WikiNi
 * UTILISATION : importer la classe dans le script de coloration
@@ -20,7 +20,7 @@
 *					);
 *	- commentLine : array tableau d'expressions regulieres definissant les commentaires monoligne
 *				ex : array('(//.*\n)'); 		//commentaire //
-*	- commentStyle : string - style CSS inline a utiliser pour la coloration(utilisé dans une
+*	- commentStyle : string - style CSS inline a utiliser pour la coloration(utilisÃ© dans une
 *			balise <SPAN style="..."></SPAN>)
 *	- directive : array - tableau d'expression reguliere pour definir les directive de
 *			compilation
@@ -34,22 +34,22 @@
 *          $oHighlighter->keywords['Liste1']['style'] = 'color: red';
 *          $oHighlighter->keywords['Liste2']['words'] = array('liste2mot1','liste2mot2');
 *          $oHighlighter->keywords['Liste2']['style'] = 'color: yellow';
-*    chaque tableau keywords['...'] DOIT posseder les 2 clé 'words' et 'style'.
+*    chaque tableau keywords['...'] DOIT posseder les 2 clÃ© 'words' et 'style'.
 *	- symboles : array - tableau conteant la liste des symboles
 *	- symbolesStyle : string - style CSS inline a utiliser pour la coloration
 *	- identifier : array - tableau d'expression reguliere pour definir les identifiants
 *	- identStyle : string - style CSS inline a utiliser pour la coloration
 * METHODE PUBLIQUE DE LA CLASSE :
 *	- Analyse($text) : $text string Chaine a analyser
-*		renvoie le texte colorié.
+*		renvoie le texte coloriÃ©.
 *
 * NOTES IMPORTANTES
-*  - Les expressions reguliere doivent être entre parenthèse capturante pour etre utilisé
+*  - Les expressions reguliere doivent Ã©tre entre parenthÃ©se capturante pour etre utilisÃ©
 * dans une fonction de remplacement. Voir le fichier coloration_delphi.php pour un exemple
-*  - Lorsque un style est defini à vide, l'expression reguliere n'est pas prise en compte dans
+*  - Lorsque un style est defini Ã© vide, l'expression reguliere n'est pas prise en compte dans
 * l'analyse.
-*  - L'option de recherche est msU : multiligne, le . peut être un \n et la recherche
-* est 'not greedy' qui inverse la tendance à la gourmandise des expressions régulières.
+*  - L'option de recherche est msU : multiligne, le . peut Ã©tre un \n et la recherche
+* est 'not greedy' qui inverse la tendance Ã© la gourmandise des expressions rÃ©guliÃ©res.
 */
 
 class Highlighter{
@@ -68,16 +68,16 @@ class Highlighter{
 	//nombre
 	var $number = array();
 	var $numberStyle = '';
-	//mots clé
+	//mots clÃ©
 	var $keywords = array();
-	//séparateurs
+	//sÃ©parateurs
 	var $symboles = array();
 	var $symbolesStyle = '';
 	//identifiant
 	var $identifier = array();
 	var $identStyle = '';
 	//*******************************************************
-	// Variable privées
+	// Variable privÃ©es
 	//*******************************************************
 	var $_patOpt = 'msU';		//option de recherche
 	var $_pattern = '';			//modele complet
@@ -118,7 +118,7 @@ class Highlighter{
 		return implode('|',$this->number);
 	}
 	/**
-	* Renvoie le pattern pour les mots clé
+	* Renvoie le pattern pour les mots clÃ©
 	*/
 	function _getKeywordPattern(){
       $aResult = array();
@@ -153,9 +153,9 @@ class Highlighter{
 		return $pattern;
 	}
 	/**
-	* Renvoie le modele a utiliser dans l'expression regulière
+	* Renvoie le modele a utiliser dans l'expression reguliÃ©re
 	*
-	* @return string Modele de l'expression régulière
+	* @return string Modele de l'expression rÃ©guliÃ©re
 	*/
 	function _getPattern(){
 		$this->_separatorPattern = $this->_getSeparatorPattern();
@@ -178,7 +178,7 @@ class Highlighter{
     	return $this->_pattern;
 	}
 	/**
-	* Fonction de remplacement de chaque élement avec leur style.
+	* Fonction de remplacement de chaque Ã©lement avec leur style.
 	*/
 	function replacecallback($match){
 		$text = $match[0];
@@ -208,7 +208,7 @@ class Highlighter{
    			return "<span style=\"$this->numberStyle\">".$match[0].'</span>';
    		}
       }
-		//mot clé
+		//mot clÃ©
       if (count($this->keywords)>0){
          foreach($this->keywords as $key=>$keywords){
             if ($keywords['style']){
@@ -233,10 +233,10 @@ class Highlighter{
 		return $match[0];
 	}
 	/**
-	* renvois le code colorié
+	* renvois le code coloriÃ©
 	*
 	* @param $text string Texte a analyser
-	* @return string texte colorié
+	* @return string texte coloriÃ©
 	*/
 	function Analyse($text){
 		$pattern = '`'.$this->_getPattern()."`$this->_patOpt";

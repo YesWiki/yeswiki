@@ -36,7 +36,7 @@ if (!$this->HasAccess('read')) {
         /*
         Exemple de page :
 
-        (1) Pr�sentation xxxxxxxxxxxxxx
+        (1) Présentation xxxxxxxxxxxxxx
 
         ===== (2) Titre =====
         Diapo 2.
@@ -104,7 +104,7 @@ if (!$this->HasAccess('read')) {
 
         $user = $this->GetUser(); // echo $this->GetUser();
 
-        // On teste toutes les param�tres du handler "slide_show" ; s'il n'y en a pas, c'est le paramètre "slide=1" qui est invoqué par défaut
+        // On teste toutes les paramétres du handler "slide_show" ; s'il n'y en a pas, c'est le paramètre "slide=1" qui est invoqué par défaut
 
         /*
         switch ($_REQUEST["method"])
@@ -168,7 +168,7 @@ if (!$this->HasAccess('read')) {
             echo
             '<body>'."\n";
 
-            // -- Affichage du sommaire [� compl�ter] ----------
+            // -- Affichage du sommaire [é compléter] ----------
             /*
             if ($_REQUEST["sum"] == "on")
             {
@@ -178,7 +178,7 @@ if (!$this->HasAccess('read')) {
                 {
                     $i = $i + 1;
                     $type = gettype($i/2);
-                    // Ne retourne que les 50 premiers caract�res du titre
+                    // Ne retourne que les 50 premiers caractéres du titre
                     $title_sum = substr($title_sum, 0, 50);
                     if ($type == "integer")
                     {

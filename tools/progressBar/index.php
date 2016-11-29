@@ -1,5 +1,5 @@
 <?php
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("TOOLS_MANAGER"))
 {
         die ("acc&egrave;s direct interdit");

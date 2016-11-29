@@ -6,7 +6,7 @@ Copyright 2002, 2003 David DELON
 Copyright 2002, 2003 Charles NEPOTE
 Copyright 2002, 2003 Patrick PAUL
 Copyright 2003  Eric FELDSTEIN
-Copyright 2004  Jean Christophe ANDR�
+Copyright 2004  Jean Christophe ANDRé
 Copyright 2005  Didier Loiseau
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// V�rification de s�curit�
+// Vérification de sécurité
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
@@ -60,8 +60,8 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
     }
 
     switch ($submit) {
-        case 'Aper�u':
-            $temp = $this->SetInclusions(); // a priori, �a ne sert � rien, mais on ne sait jamais...
+        case 'Apercu':
+            $temp = $this->SetInclusions(); // a priori, éa ne sert é rien, mais on ne sait jamais...
             $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
             $output .=
               "<div class=\"page_preview\">\n".
@@ -78,10 +78,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             $this->SetInclusions($temp);
             break;
 
-        // pour les navigateurs n'interpr�tant pas le javascript
+        // pour les navigateurs n'interprétant pas le javascript
         case 'Annulation':
             $this->Redirect($this->Href());
-            exit; // s�curit�
+            exit; // sécurité
 
         // only if saving:
         case 'Sauver':
@@ -93,11 +93,11 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             } else { // store
                 $body = str_replace("\r", '', $body);
 
-                // teste si la nouvelle page est differente de la pr�c�dente
+                // teste si la nouvelle page est differente de la précédente
                 if (rtrim($body) == rtrim($this->page['body'])) {
                     $this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
                     $this->Redirect($this->href());
-                } else { // s�curit�
+                } else { // sécurité
                     // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
                     $body = _convert($body, YW_CHARSET, true);
 
@@ -107,7 +107,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                     // now we render it internally so we can write the updated link table.
                     $this->ClearLinkTable();
                     $this->StartLinkTracking();
-                    $temp = $this->SetInclusions(); // a priori, �a ne sert � rien, mais on ne sait jamais...
+                    $temp = $this->SetInclusions(); // a priori, éa ne sert é rien, mais on ne sait jamais...
                     $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
                     $this->Format($body);
                     $this->SetInclusions($temp);
@@ -129,10 +129,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                     }
                 }
 
-                // s�curit�
+                // sécurité
                 exit;
             }
-        // NB.: en cas d'erreur on arrive ici, donc default sera ex�cut�...
+        // NB.: en cas d'erreur on arrive ici, donc default sera exécuté...
         default:
             // display form
             if (isset($error)) {

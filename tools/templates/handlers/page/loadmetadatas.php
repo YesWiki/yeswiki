@@ -3,7 +3,7 @@
 // +------------------------------------------------------------------------------------------------------+
 // | PHP version 5                                                                                        |
 // +------------------------------------------------------------------------------------------------------+
-// | Copyright (C) 2012 Outils-Réseaux (accueil@outils-reseaux.org)                                       |
+// | Copyright (C) 2012 Outils-RÃ©seaux (accueil@outils-reseaux.org)                                       |
 // +------------------------------------------------------------------------------------------------------+
 // | This library is free software; you can redistribute it and/or                                        |
 // | modify it under the terms of the GNU Lesser General Public                                           |
@@ -22,13 +22,13 @@
 // CVS : $Id: loadmetadatas.php,v 1.10 2010/03/04 14:19:03 mrflos Exp $
 /**
 *
-* Handler AJAX pour récupérer les meta-données
+* Handler AJAX pour rÃ©cupÃ©rer les meta-donnÃ©es
 *
 *
 *@package templates
 *
 *@author        Florian Schmitt <florian@outils-reseaux.org>
-*@copyright     Outils-Réseaux 2012
+*@copyright     Outils-RÃ©seaux 2012
 *@version       $Revision: 0.1 $ $Date: 2010/03/04 14:19:03 $
 */
 
@@ -39,7 +39,7 @@ if (!defined("WIKINI_VERSION"))
 
 header('Content-type: application/json; charset=UTF-8');
 
-// on teste si on a le droit d'accès aux meta-données
+// on teste si on a le droit d'accÃ©s aux meta-donnÃ©es
 if ($this->HasAccess("read")) {
 	echo json_encode(array('result' => $this->GetMetaDatas($this->GetPageTag())));
 } else {

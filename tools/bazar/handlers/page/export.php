@@ -26,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
@@ -49,7 +49,7 @@ if (isset($_POST['submit_export'])) {
             '</label><br />'."\n";
         }
     }
-    echo '<input name="submit_export" type="submit" value="Exporter les pages sélectionnées" />'."\n";
+    echo '<input name="submit_export" type="submit" value="Exporter les pages sÃ©lectionnÃ©es" />'."\n";
     echo $this->FormClose();
 }
 

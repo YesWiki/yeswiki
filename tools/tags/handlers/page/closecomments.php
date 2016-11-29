@@ -1,5 +1,5 @@
 <?php
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined('WIKINI_VERSION')) {
 	die ('acc&egrave;s direct interdit');
 }

@@ -33,7 +33,7 @@ echo $this->Header();
 <div class="page">
 <?php
 
-echo "Liste des plugins installés :";
+echo "Liste des plugins installÃ©s :";
 echo '<dl>';
 foreach ($plugins_list as $k => $v)
 {

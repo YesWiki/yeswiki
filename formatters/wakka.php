@@ -7,7 +7,7 @@ Copyright 2002, 2003 Charles NEPOTE
 Copyright 2002, 2003 Patrick PAUL
 Copyright 2003  Eric DELORD
 Copyright 2003  Eric FELDSTEIN
-Copyright 2004  Jean Christophe ANDR�
+Copyright 2004  Jean Christophe ANDRé
 Copyright 2006  Didier LOISEAU
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -87,7 +87,7 @@ if (!class_exists('WikiniFormatter'))
 				."\"\".*?\"\"|"
 				."\[\[.*?\]\]|"
 				.'\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
-				.'([\*\#@�_\/])\\1|'// attention � la r�f�rence arri�re \1, � changer s'il y a d'autres parenth�ses capturantes
+				.'([\*\#@£_\/])\\1|'// attention à la référence arriére \1, à changer s'il y a d'autres parenthèses capturantes
 				.'[<>"]|'
 				.'&(?!(\#[xX][a-fA-F0-9]+|\#[0-9]+|[a-zA-Z0-9]+);)|'
 				.'={2,6}|'
@@ -219,7 +219,7 @@ if (!class_exists('WikiniFormatter'))
 			$result = '';
 
 			/**
-			 * 
+			 *
 			 * @var Wiki
 			 */
 			$wiki = $this->wiki;
@@ -245,7 +245,7 @@ if (!class_exists('WikiniFormatter'))
 					return $this->inLineTag('tt');
 				case '@@' : // Deleted
 					return $this->inLineTag('span', 'del');
-				case '��' : // Inserted
+				case '££' : // Inserted
 					return $this->inLineTag('span', 'add');
 				case '==' : // header level 5
 					return $this->titleHeader(5);
@@ -371,12 +371,12 @@ if (!class_exists('WikiniFormatter'))
 						if ($url)
 						{
                             // Early start/end of Inserted or Deleted ?
-							if ($url != ($url = (preg_replace("/@@|��|\[\[/", "", $url))))
+							if ($url != ($url = (preg_replace("/@@|££|\[\[/", "", $url))))
 								$result = "</span>";
                             // Same filtering in the text (no need to
                             // filter ]] because there are none here
                             // by construct)
-							$text = isset($text) ? preg_replace("/@@|��|\[\[/", "", $text) : '';
+							$text = isset($text) ? preg_replace("/@@|££|\[\[/", "", $text) : '';
 							return $result.$wiki->Link($url, "", $text);
 						}
 						else
@@ -428,20 +428,20 @@ if (!class_exists('WikiniFormatter'))
 			$result = '';
 			$closeLI = true;
 
-			// S'il n'y a pas de NL avant l'item (c'est le cas o� on
-			// est au debut de la page), alors on emp�che qu'un <br />
+			// S'il n'y a pas de NL avant l'item (c'est le cas oé on
+			// est au debut de la page), alors on empéche qu'un <br />
 			// ne soit produit
 			if (strpos($matches[1], "\n") === false) {
 				$this->br = 0;
 			}
-			// Ajout un saut de ligne si necessaire (c'est le cas o�
-			// on est au debut d'une liste et pas au d�but d'une page,
+			// Ajout un saut de ligne si necessaire (c'est le cas oé
+			// on est au debut d'une liste et pas au début d'une page,
 			// car $this->br vaut encore 1)
 			$result .= ($this->br ? "<br />\n" : "");
 
-			// Les "\n" entre les Item de liste sont "mang�s" par la
-			// regexp des listes, et ceci �vite que le NL de fin de
-			// liste ne soit transform� abusivement en <br />
+			// Les "\n" entre les Item de liste sont "mangés" par la
+			// regexp des listes, et ceci évite que le NL de fin de
+			// liste ne soit transformé abusivement en <br />
 			$this->br = 0;
 
 			//recherche du type de la liste
@@ -467,7 +467,7 @@ if (!class_exists('WikiniFormatter'))
 			}
 			else
 			{
-				// NB: <ol type="..."> est depreci� depuis HTML4.01 -> utilisation d'un style a la place
+				// NB: <ol type="..."> est deprecié depuis HTML4.01 -> utilisation d'un style a la place
 				if (preg_match('`[0-9]+`', $matches[4]))
 					$style = 'style="list-style: decimal;"';
 				if (preg_match('`[a-hj-z]+`', $matches[4]))

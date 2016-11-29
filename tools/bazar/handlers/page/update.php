@@ -23,7 +23,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //UN MAIL EST ENVOYE A CHAQUE UTILISATEUR, POUR LUI RAPPELER SES IDENTIFIANTS, MOTS DE PASSE
 
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
@@ -38,14 +38,14 @@ if ($this->UserIsInGroup('admins')) {
                 echo $nomwikiliste.' '.json_encode($valeur).'<br /><br />';
                 //on sauve les valeurs d'une liste dans une PageWiki, pour garder l'historique
                 $GLOBALS["wiki"]->SavePage($nomwikiliste, json_encode($valeur));
-                //on cree un triple pour spécifier que la page wiki créée est une liste
+                //on cree un triple pour spÃ©cifier que la page wiki crÃ©Ã©e est une liste
                 $GLOBALS["wiki"]->InsertTriple($nomwikiliste, 'http://outils-reseaux.org/_vocabulary/type', 'liste', '', '');
             }
             $valeur = NULL;
             $valeur = array();
 
             $nomwikiliste = genere_nom_wiki($ligne['bl_label_liste']);
-            //on supprime les valeurs vides et on encode en utf-8 pour réussir à encoder en json
+            //on supprime les valeurs vides et on encode en utf-8 pour rÃ©ussir Ã© encoder en json
             $valeur["titre_liste"] = utf8_encode(htmlentities($ligne['bl_label_liste']));
 
             $anciennomliste = $ligne['bl_label_liste'];

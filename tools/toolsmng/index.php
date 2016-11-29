@@ -1,6 +1,6 @@
 <?php
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("TOOLS_MANAGER"))
 {
         die ("acc&egrave;s direct interdit");
@@ -10,7 +10,7 @@ if (!defined("TOOLS_MANAGER"))
 $err = '';
 $tool_url = '';
 
-# Liste des thèmes
+# Liste des thÃ©mes
 $plugins_root = dirname(__FILE__).'/../';
 $plugins = new plugins($plugins_root);
 $plugins->getPlugins(false);
@@ -18,7 +18,7 @@ $plugins_list = $plugins->getPluginsList();
 
 $is_writable = is_writable($plugins_root);
 
-# Installation d'un thème
+# Installation d'un thÃ©me
 if ($is_writable && !empty($_GET['tool_url']))
 {
 	$tool_url = $_GET['tool_url'];
@@ -49,7 +49,7 @@ if ($is_writable && $switch != '' && in_array($switch,array_keys($plugins_list))
 	exit;
 }
 
-# Suppression d'un thème
+# Suppression d'un thÃ©me
 $delete = (!empty($_GET['delete'])) ? $_GET['delete'] : '';
 
 if ($is_writable && $delete != '' && in_array($delete,array_keys($plugins_list)) && $delete != 'toolsmng')
