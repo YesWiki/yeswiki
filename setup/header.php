@@ -39,10 +39,10 @@ if (!defined('WIKINI_VERSION')) {
  * -- affiche un message d'erreur dans le cas contraire
  *
  * @param string $text Label du test
- * @param boolean $condition R�sultat de la condition test�e
+ * @param boolean $condition Résultat de la condition testée
  * @param string $errortext Message en cas d'erreur
- * @param string $stopOnError Si positionn�e � 1 (par d�faut), termine le
- *               script si la condition n'est pas v�rifi�e
+ * @param string $stopOnError Si positionnée é 1 (par défaut), termine le
+ *               script si la condition n'est pas vérifiée
  * @return int 0 si la condition est vraie et 1 si elle est fausse
  */
 function test($text, $condition, $errorText = "", $stopOnError = 1)

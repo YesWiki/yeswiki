@@ -40,9 +40,9 @@ hr { border: 0px; color: Black; /* Internet Explorer */ background-color: Black;
 .debug { font-size: 11px; color: #888888; }
 
 .hr_clear { clear: both; visibility: hidden; }
-.include_right { float: right; width: 17%; } /* bloc flotant à droite */
-.include_left { float: left; width: 17%; } /* bloc flotant à gauche */
-.include_solid_border { border: solid; padding: 2px; } /* encadré noir */
+.include_right { float: right; width: 17%; } /* bloc flotant Ã© droite */
+.include_left { float: left; width: 17%; } /* bloc flotant Ã© gauche */
+.include_solid_border { border: solid; padding: 2px; } /* encadrÃ© noir */
 .include_gray_background { background-color: #DDDDDD; } /* fond gris */
 .include_small_fonts { font-size: 0.8em; } /* petites polices */
 .include_big_fonts { font-size: 1.2em; } /* grandes polices */
@@ -50,11 +50,10 @@ hr { border: 0px; color: Black; /* Internet Explorer */ background-color: Black;
 .include_height15em { height: 15em; overflow: scroll; }
 .include_height30em { height: 30em; overflow: scroll; }
 .include_height60em { height: 60em; overflow: scroll; }
-.include_editlink { float: right; } /* bloc flotant à droite */
+.include_editlink { float: right; } /* bloc flotant Ã  droite */
 .include_editlink { display:none; } /* Inhibe l'affichage du bloc "include_editlink" */
-/*.include_editlink { _display: bloc; }*/ /* Option de compatibilité facultative pour certains navigateurs obsolètes */
+/*.include_editlink { _display: bloc; }*/ /* Option de compatibilitÃ© facultative pour certains navigateurs obsolÃ©tes */
 .include:hover .include_editlink { display: block; } /* Au passage de la souris sur le bloc "include", affiche le bloc "include_editlink" */
 
 .trail_table { line-height: 30px;}
 .trail_button { color: #993333; }
-

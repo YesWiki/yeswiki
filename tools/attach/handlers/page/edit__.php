@@ -8,7 +8,7 @@ if (!defined("WIKINI_VERSION"))
 if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar' && !isset($this->page["metadatas"]["ebook-title"]) )
 {
 	// preview?
-	if (isset($_POST["submit"]) && $_POST["submit"] == "Aperçu") {
+	if (isset($_POST["submit"]) && $_POST["submit"] == "Apercu") {
 		// Rien
 	}
 	else {
@@ -23,7 +23,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 	      <div class="modal-body">
 	      	<form id="form-modal-upload" class="form-horizontal">
 				<input type="hidden" value="" name="filename" class="filename" />
-				
+
 				<div class="control-group file-option">
 					<label class="control-label">'._t('DOWNLOAD_LINK_TEXT').'</label>
 					<div class="controls">
@@ -83,7 +83,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 						<div class="controls">
 						  <input type="text" id="attach_link" name="attach_link" value="" class="attach_link input-xlarge">
 						</div>
-				    </div>	
+				    </div>
 				    <div class="control-group">
 						<label class="control-label">'._t('GRAPHICAL_EFFECTS').'</label>
 						<div class="controls">
@@ -123,7 +123,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 		$plugin_output_new = str_replace('</body>', $js.'</body>', $plugin_output_new);
 
 		$UploadBar =   "<div id=\"attach-file-uploader\" class=\"btn-group\">
-							<noscript>			
+							<noscript>
 								<span class=\"alert alert-danger alert-error\">"._t('ACTIVATE_JS_TO_UPLOAD_FILES').".</span>
 							</noscript>
 							<div class=\"qq-uploader\">
@@ -138,7 +138,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 									<a class=\"qq-upload-cancel\" href=\"#\">"._t('ATTACH_CANCEL')."</a>
 									<span class=\"qq-upload-failed-text\">"._t('FAILED')."</span>
 								</li>
-							</div>    
+							</div>
 						</div>";
 
 		$plugin_output_new = preg_replace ( '/\<div class=\"page\"\>/',

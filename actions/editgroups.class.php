@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 if (!defined("WIKINI_VERSION"))
 {
-	die ("acc�s direct interdit");
+	die ("accés direct interdit");
 }
 
 class ActionEditgroups extends WikiniAdminAction

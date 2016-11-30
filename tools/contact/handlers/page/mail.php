@@ -10,7 +10,7 @@ include_once 'tools/contact/libs/contact.functions.php';
 $output = '';
 
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
-if (isset($_POST['mail']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
     //initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
@@ -102,40 +102,35 @@ if (isset($_POST['mail']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
         //sinon on affiche le formulaire d'envoi de mail
         //si on est identifie
         //on verifie si l'on est bien identifie comme admin, pour eviter le spam
-        if ($this->UserIsAdmin()) {
-            $output .= '<h1>Envoyer la page par mail</h1>
-            <form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail') . '">
-              <div class="form-group">
-                <div class="input-group">
-                  <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
-                  <input required class="form-control" type="email" name="email" value=""
-                        placeholder="' . _t('CONTACT_YOUR_MAIL') . '" />
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="input-group">
-                  <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
-                  <input required class="form-control" type="email" name="mail"
-                            value="" placeholder="Adresse mail du destinataire" />
-                </div>
-              </div>
-              <div class="form-group">
-                <input required class="contact-subject form-control" type="text" name="subject"
-                      value="" placeholder="' . _t('CONTACT_SUBJECT') . '" />
-              </div>
-              <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
-                <i class="glyphicon glyphicon-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
-              </button>
-              <input type="hidden" name="type" value="mail" />
-            </form>';
-        } else {
-            //message d'erreur si pas admin
-            $output .= '<div class="alert alert-danger">' . _t('CONTACT_HANDLER_MAIL_FOR_ADMINS') . '</div>' . "\n";
-        }
+        $output .= '<h1>Envoyer la page par mail</h1>
+        <form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail') . '">
+          <div class="form-group">
+            <div class="input-group">
+              <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
+              <input required class="form-control" type="email" name="email" value=""
+                    placeholder="' . _t('CONTACT_YOUR_MAIL') . '" />
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="input-group">
+              <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
+              <input required class="form-control" type="email" name="mail"
+                        value="" placeholder="Adresse mail du destinataire" />
+            </div>
+          </div>
+          <div class="form-group">
+            <input required class="contact-subject form-control" type="text" name="subject"
+                  value="" placeholder="' . _t('CONTACT_SUBJECT') . '" />
+          </div>
+          <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
+            <i class="glyphicon glyphicon-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
+          </button>
+          <input type="hidden" name="type" value="mail" />
+        </form>';
     } else {
         //on affiche le formulaire d'identification sinon
-        $output .= '<div class="alert alert-danger">' . _t('CONTACT_HANDLER_MAIL_FOR_ADMINS') . '<br />'
-            . _t('CONTACT_LOGIN_IF_ADMIN') . '</div>' . "\n";
+        $output .= '<div class="alert alert-danger">' . _t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') . '<br />'
+            . _t('CONTACT_LOGIN_IF_CONNECTED') . '</div>' . "\n";
         $output .= $this->Format('{{login}}') . "\n";
     }
 

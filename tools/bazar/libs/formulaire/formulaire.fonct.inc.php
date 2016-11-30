@@ -1289,8 +1289,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\']],
-                [\'misc\', [\'fullscreen\', /*, \'codeview\'*/]]
+                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\', \'video\']],
+                [\'misc\', [\'fullscreen\', \'codeview\']]
             ],
             styleTags: [\'h1\', \'h2\', \'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
             oninit: function() {
@@ -1338,7 +1338,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         // En html, pour la sécurité, on n'autorise qu'un certain nombre de balises
         if ($formatage == 'html') {
-            $acceptedtags = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption>';
+            $acceptedtags = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
             $valeurs_fiche[$identifiant] = strip_tags($valeurs_fiche[$identifiant], $acceptedtags);
         }
         return array($identifiant => $valeurs_fiche[$identifiant]);
@@ -1646,6 +1646,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                   \'" title="\', escape(theFile.name), \'"/>\'].join(\'\');
                   document.getElementById(\'img-\'+id).innerHTML = span.innerHTML;
                   document.getElementById(\'data-\'+id).value = e.target.result;
+                  document.getElementById(\'filename-\'+id).value = theFile.name;
                 });
 
               };
@@ -1728,7 +1729,9 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $inputhtml .= '</div>'."\n";
                 $inputhtml .= '<output id="img-'.$type . $identifiant.'" class="col-xs-9">'.afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, 'img-responsive', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image).'</output>
-              <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n".'</div>'."\n".'</div>'."\n";
+              <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n"
+                .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
+                .'</div>'."\n".'</div>'."\n";
                 $formtemplate->addElement('html', $inputhtml);
                 $formtemplate->addElement('hidden', 'oldimage_' . $type . $identifiant, $valeurs_fiche[$type . $identifiant]);
             } else {
@@ -1756,15 +1759,16 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
   <div class="controls col-sm-9">
     <input type="file" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png" '.((isset($obligatoire) && $obligatoire == 1) ? 'required': '').'>
     <output id="img-'.$type . $identifiant.'" class="col-xs-6"></output>
-    <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">
-  </div>
+    <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'
+            .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
+            .'</div>
 </div>' . "\n";
             $formtemplate->addElement('html', $inputhtml);
         }
     } elseif ($mode == 'requete') {
-        if (!empty($_POST[$type . $identifiant]) && !empty($_POST['data-'.$type . $identifiant])) {
+        if (!empty($_POST['data-'.$type . $identifiant]) and !empty($_POST['filename-'.$type . $identifiant])) {
             //on enleve les accents sur les noms de fichiers, et les espaces
-            $nomimage = $valeurs_fiche['id_fiche'].'_'.sanitizeFilename($_POST[$type . $identifiant]);
+            $nomimage = $valeurs_fiche['id_fiche'].'_'.sanitizeFilename($_POST['filename-'.$type . $identifiant]);
             if (preg_match("/(gif|jpeg|png|jpg)$/i", $nomimage)) {
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
@@ -1789,14 +1793,15 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 echo '<div class="alert alert-danger">Fichier non autoris&eacute;.</div>';
             }
 
+
             return array(
                 $type.$identifiant => $nomimage,
-                'fields-to-remove' => array('data-'.$type . $identifiant, 'oldimage_' . $type . $identifiant)
+                'fields-to-remove' => array('filename-'.$type . $identifiant, 'data-'.$type . $identifiant, 'oldimage_' . $type . $identifiant)
             );
         } elseif (isset($valeurs_fiche['oldimage_' . $type . $identifiant]) && $valeurs_fiche['oldimage_' . $type . $identifiant] != '') {
             return array(
                 $type . $identifiant => $valeurs_fiche['oldimage_' . $type . $identifiant],
-                'fields-to-remove' => array('data-'.$type . $identifiant, 'oldimage_' . $type . $identifiant)
+                'fields-to-remove' => array('filename-'.$type . $identifiant, 'data-'.$type . $identifiant, 'oldimage_' . $type . $identifiant)
             );
         }
     } elseif ($mode == 'recherche') {
@@ -2414,13 +2419,18 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } else {
         $ordre = 'alphabetique';
     }
+    if (!empty($tableau_template[4])) {
+        $nb = $tableau_template[4];
+    } else {
+        $nb = '';
+    }
     if (isset($tableau_template[5])) {
         $template = $tableau_template[5];
     } else {
         $template = BAZ_TEMPLATE_LISTE_DEFAUT;
     }
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
+        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ordre="' . $ordre . '" template="' . $template . '"}}';
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
 
         //ajout lien nouvelle saisie

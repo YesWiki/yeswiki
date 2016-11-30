@@ -106,7 +106,7 @@ margin: 0;
 }
 
 /* lanceur d'accordéon*/
-.accordion-trigger {
+.accordion-trigger, .panel-heading {
   cursor:pointer;
 }
 

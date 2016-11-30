@@ -28,7 +28,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -38,9 +38,9 @@ ob_start();
 ?>
 <div class="page">
 <?php
-// Valeur par défaut du paramètre "global"
+// Valeur par dÃ©faut du paramÃ©tre "global"
 $global = !empty($_REQUEST['global']);
-// Si le paramètre "global" a été spécifié
+// Si le paramÃ©tre "global" a Ã©tÃ© spÃ©cifiÃ©
 if ($global)
 {
 	$title = "Domaines faisant r&eacute;f&eacute;rence &agrave; ce wiki (<a href=\"".$this->href("referrers", "", "global=1")."\">voir la liste des pages externes</a>):";

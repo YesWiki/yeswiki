@@ -4,7 +4,7 @@ $Id: pageindex.php 280 2004-12-19 18:58:51Z progfou $
 Copyright (c) 2003, Hendrik Mans <hendrik@mans.de>
 Copyright 2003 David DELON
 Copyright 2004 Didier Loiseau
-Copyright 2004 Jean Christophe ANDRÉ
+Copyright 2004 Jean Christophe ANDRÃ©
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions

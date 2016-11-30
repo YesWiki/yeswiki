@@ -30,7 +30,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// V�rification de s�curit�
+// Vérification de sécurité
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");
@@ -40,9 +40,9 @@ ob_start();
 ?>
 <div class="page">
 <?php
-// Valeur par d�faut du param�tre "global"
+// Valeur par défaut du paramétre "global"
 $global = isset($_REQUEST["global"]) && $_REQUEST["global"];
-// Si le param�tre "global" a �t� sp�cifi�
+// Si le paramétre "global" a été spécifié
 if ($global)
 {
 	$title = "Sites faisant r&eacute;f&eacute;rence &agrave; ce wiki (<a href=\"".$this->href("referrers_sites", "", "global=1")."\">voir la liste des domaines</a>)&nbsp;:";

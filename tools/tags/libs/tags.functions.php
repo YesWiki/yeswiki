@@ -266,7 +266,7 @@ function generatePageName($nom, $occurence = 1)
         $str = htmlentities(mb_substr($nom, 0, 47, YW_CHARSET), ENT_QUOTES, YW_CHARSET);
         $str = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
         $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
-        $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caract�res
+        $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractéres
         $temp = explode(' ', ucwords(strtolower($str)));
         $nom = '';
         foreach ($temp as $mot) {

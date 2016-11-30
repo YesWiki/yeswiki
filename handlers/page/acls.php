@@ -6,7 +6,7 @@ Copyright 2002, 2003 David DELON
 Copyright 2002, 2003 Charles NEPOTE
 Copyright  2003  Eric FELDSTEIN
 Copyright  2003  Jean-Pascal MILCENT
-Copyright  2004  Jean Christophe ANDR�
+Copyright  2004  Jean Christophe ANDRé
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// V�rification de s�curit�
+// Vérification de sécurité
 if (!defined("WIKINI_VERSION"))
 {
 	die ("acc&egrave;s direct interdit");

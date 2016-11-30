@@ -8,8 +8,8 @@
 * copyright Didier Loiseau 2004
 *
 * Licence : la meme que wikini (voir le fichier LICENCE).
-* Vous êtes libre d'utiliser et de modifier ce code à condition de laisser le copyright
-* d'origine. Vous pouvez  bien sur vous ajouter à la liste des auteurs.
+* Vous Ã©tes libre d'utiliser et de modifier ce code Ã© condition de laisser le copyright
+* d'origine. Vous pouvez  bien sur vous ajouter Ã© la liste des auteurs.
 *
 * Installation : copier le fichier dans le repertoire "formatters" de WikiNi
 */
@@ -38,7 +38,7 @@ $DH->directiveStyle = "color: green";			   //style CSS pour balise SPAN
 
 //************* chaines de caracteres *************
 /**
-* @todo correction pour l'échappement des guillemets simples
+* @todo correction pour l'Ã©chappement des guillemets simples
 */
 $DH->string = array("('[^']*')",'(#\d+)');		//chaine = 'xxxxxxxx' ou #23
 $DH->stringStyle = "background: yellow";
@@ -48,7 +48,7 @@ $DH->number[] = '(\b\d+(\.\d*)?([eE][+-]?\d+)?)';	//123 ou 123. ou 123.456 ou 12
 $DH->number[] = '(\$[0-9A-Fa-f]+\b)';				//ajout des nombres hexadecimaux : $AF
 $DH->numberStyle = 'color: blue';
 
-//************* mots clé *************
+//************* mots clÃ© *************
 $DH->keywords['MotCle']['words'] = array('absolute','abstract','and','array','as','asm',
 						'begin',
 						'case','class','const','constructor',

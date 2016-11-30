@@ -9,7 +9,7 @@ $(document).ready(function() {
 		}
 	});
 
-	//nuage de mots clés : tooltip
+	//nuage de mots clÃ©s : tooltip
 	$('.tag-link').popover({html:true,placement:'top',trigger:'click'})
 	$('.nuage').on( "click", ".btn-close-popover",  function() {
 		$(this).parents('.popover').prev('.tag-link').popover('hide'); 
@@ -66,9 +66,9 @@ $(document).ready(function() {
 		return false;
 	});
 	
-	//ajax repondre à un commentaire			
+	//ajax repondre Ã© un commentaire			
 	$("a.repondre_commentaire").on("click", function() {
-		//on cache les formulaires déja ouverts et on reaffiche le contenu
+		//on cache les formulaires dÃ©ja ouverts et on reaffiche le contenu
 		$(".comment_a_editer, .reponsecommentform").remove();
 		$("#comments").show().removeAttr("id");	
 		   
@@ -88,7 +88,7 @@ $(document).ready(function() {
 	 
 	//ajax edition commentaire			
 	$("a.editer_commentaire").on("click", function() {
-		//on cache les formulaires déja ouverts et on reaffiche le contenu
+		//on cache les formulaires dÃ©ja ouverts et on reaffiche le contenu
 		$(".comment_a_editer, .reponsecommentform").remove();
 		$("#comments").show().removeAttr("id");	
 		
@@ -144,7 +144,7 @@ $(document).ready(function() {
 		var urlget = $(this).attr('href').replace('deletepage','ajaxdeletepage')+'&jsonp_callback=?';
 		$(this).parent().parent().attr("id",'commentasupp');
 		
-		if (confirm('Voulez vous vraiment supprimer cette entrée et ses commentaires associés?'))
+		if (confirm('Voulez vous vraiment supprimer cette entrÃ©e et ses commentaires associÃ©s?'))
 		{
 			$.getJSON(urlget, function(data) {				 
 			    if (data.reponse=='succes') {
@@ -162,7 +162,7 @@ $(document).ready(function() {
 		}		      
 	});
 	
-	//on efface tous les écrits restants dans le formulaire du billet microblog
+	//on efface tous les Ã©crits restants dans le formulaire du billet microblog
 	$('.btn_annuler').on("click", function(){
 		$(this).parents("form").clearForm();
 		var max = parseInt($('.info_nb_car_max').html());

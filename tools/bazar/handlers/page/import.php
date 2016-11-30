@@ -26,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
@@ -42,7 +42,7 @@ if (isset($_POST['submit_url'])) {
 
 } else {
     echo $this->FormOpen('import');
-    echo '<label for="urlimport">Entrez l\'URL du YesWiki d\'où vous souhaitez importer des données</label>'."\n";
+    echo '<label for="urlimport">Entrez l\'URL du YesWiki d\'oÃ© vous souhaitez importer des donnÃ©es</label>'."\n";
     echo '<input type="text" name="urlimport" id="urlimport" value="http://" /><input name="submit_url" type="submit" value="Envoyer" /><br /><br />'."\n";
     echo '<label for="fileimport">Ou entrez le fichier de sauvegarde YesWiki</label>'."\n";
     echo '<input type="file" name="fileimport" id="filelimport" /><input name="submit_file" type="submit" value="Importer ce fichier" />'."\n";

@@ -22,17 +22,17 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 if (!function_exists('test'))
 {
-	// fonction récupérée de /setup/header.php
+	// fonction rÃ©cupÃ©rÃ©e de /setup/header.php
 	/**
-	 * Communique le résultat d'un test :
+	 * Communique le rÃ©sultat d'un test :
 	 * -- affiche OK si elle l'est
 	 * -- affiche un message d'erreur dans le cas contraire
 	 * 
 	 * @param string $text Label du test
-	 * @param boolean $condition Résultat de la condition testée
+	 * @param boolean $condition RÃ©sultat de la condition testÃ©e
 	 * @param string $errortext Message en cas d'erreur
-	 * @param string $stopOnError Si positionnée à 1 (par défaut), termine le
-	 *               script si la condition n'est pas vérifiée 
+	 * @param string $stopOnError Si positionnÃ©e Ã© 1 (par dÃ©faut), termine le
+	 *               script si la condition n'est pas vÃ©rifiÃ©e 
 	 * @return int 0 si la condition est vraie et 1 si elle est fausse
 	 */
 	function test($text, $condition, $errorText = "", $stopOnError = 1)
@@ -50,7 +50,7 @@ if (!function_exists('test'))
 			echo "<br />\n";
 			if ($stopOnError)
 			{
-				echo "Fin de l'exécution.<br />\n";
+				echo "Fin de l'exÃ©cution.<br />\n";
 				echo "</body>\n</html>\n";
 				exit;
 			}

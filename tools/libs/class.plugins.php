@@ -24,7 +24,7 @@
 # ***** END LICENSE BLOCK *****
 
 /*
-Classe de gestion des plugins et des th�mes
+Classe de gestion des plugins et des thémes
 */
 
 class Plugins
@@ -186,7 +186,7 @@ class Plugins
         return true;
     }
 
-    /* Lecture d'un r�pertoire � la recherche des desc.xml */
+    /* Lecture d'un répertoire é la recherche des desc.xml */
     public function _readDir()
     {
         if ($this->location === null) {
@@ -197,7 +197,7 @@ class Plugins
 
         $d = dir($this->location);
 
-        # Liste du r�pertoire des plugins
+        # Liste du répertoire des plugins
         while (($entry = $d->read()) !== false) {
             if ($entry != '.' && $entry != '..' &&
             is_dir($this->location.$entry) && file_exists($this->location.$entry.'/desc.xml')) {

@@ -7,61 +7,61 @@
   $('a.active-link').parent().addClass('active-list').parents('ul').prev('a')
     .addClass('active-parent-link').parent().addClass('active-list');
 
-  // fenetres modales
-  $('a.modalbox, .modalbox a').on('click', function(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    var $this = $(this);
-    var text = $this.attr('title');
-    var size = ' ' + $this.data('size');
-    var iframe = $this.data('iframe');
-    if (text.length > 0) {
-      text = '<h3>' + $.trim(text) + '</h3>';
-    } else {
-      text = '<h3></h3>';
-    }
+    // fenetres modales
+    function openModal(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      var $this = $(this);
+      var text = $this.attr('title');
+      var size = ' ' + $this.data('size');
+      var iframe = $this.data('iframe');
+      if (text.length > 0) {
+        text = '<h3>' + $.trim(text) + '</h3>';
+      } else {
+        text = '<h3></h3>';
+      }
 
-    $('body').append('<div class="modal fade" id="YesWikiModal">' +
-      '<div class="modal-dialog' + size + '">' +
-      '<div class="modal-content">' +
-      '<div class="modal-header">' +
-      '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-      text +
-      '</div>' +
-      '<div class="modal-body">' +
-      '</div>' +
-      '</div>' +
-      '</div>' +
-      '</div>');
+      $('body').append('<div class="modal fade" id="YesWikiModal">' +
+        '<div class="modal-dialog' + size + '">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header">' +
+        '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+        text +
+        '</div>' +
+        '<div class="modal-body">' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>');
 
-    var link = $this.attr('href');
-    var $modal = $('#YesWikiModal');
-    if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(link)) {
-      $modal
-        .find('.modal-body')
-        .html('<img class="center-block img-responsive" src="' + link + '" alt="image" />');
-    } else if (iframe === 1) {
-      $modal
-        .find('.modal-body')
-        .html('<span id="yw-modal-loading" class="throbber"></span>' +
-          '<iframe id="yw-modal-iframe" src="' + link + '""></iframe>');
-      $('#yw-modal-iframe').on('load', function() {
-        $('#yw-modal-loading').hide();
+      var link = $this.attr('href');
+      var $modal = $('#YesWikiModal');
+      if ((/\.(gif|jpg|jpeg|tiff|png)$/i).test(link)) {
+        $modal
+          .find('.modal-body')
+          .html('<img class="center-block img-responsive" src="' + link + '" alt="image" />');
+      } else if (iframe === 1) {
+        $modal
+          .find('.modal-body')
+          .html('<span id="yw-modal-loading" class="throbber"></span>' +
+            '<iframe id="yw-modal-iframe" src="' + link + '""></iframe>');
+        $('#yw-modal-iframe').on('load', function() {
+          $('#yw-modal-loading').hide();
+        });
+      } else {
+        $modal.find('.modal-body').load(link + ' .page', function(response, status, xhr) {
+          return false;
+        });
+      }
+      $modal.modal({
+        keyboard: false,
+      }).modal('show').on('hidden hidden.bs.modal', function() {
+        $modal.remove();
       });
-    } else {
-      $modal.find('.modal-body').load(link + ' .page', function(response, status, xhr) {
-        return false;
-      });
+
+      return false;
     }
-
-    $modal.modal({
-      keyboard: false,
-    }).modal('show').on('hidden hidden.bs.modal', function() {
-      $modal.remove();
-    });
-
-    return false;
-  });
+    $(document).on('click', 'a.modalbox, .modalbox a', openModal);
 
   // on change l'icone de l'accordeon
   $('.accordion-trigger').on('click', function() {

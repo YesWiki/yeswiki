@@ -11,7 +11,7 @@ if (count($fiches)>0) :
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
     ?>
 
-    <div id="osmmap<?php echo $GLOBALS['nbbazarliste']; ?>"
+    <div id="osmmap<?php echo $param['nbbazarliste']; ?>"
          class="no-dblclick"
          style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
     <?php
@@ -20,13 +20,13 @@ if (count($fiches)>0) :
     if ($param['spider'] == 'true' or $param['spider'] == '1') {
 
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js');
-        $markersjs = 'var popups = Array();'."\n".'oms = new OverlappingMarkerSpiderfier(map'.$GLOBALS['nbbazarliste'].');'."\n".
+        $markersjs = 'var popups = Array();'."\n".'oms = new OverlappingMarkerSpiderfier(map'.$param['nbbazarliste'].');'."\n".
         'var popup = new L.Popup();
         oms.addListener("click", function(marker) {
             marker.openPopup();
         });
         oms.addListener(\'spiderfy\', function(markers) {
-          map'.$GLOBALS['nbbazarliste'].'.closePopup();
+          map'.$param['nbbazarliste'].'.closePopup();
         });'."\n";
 
     } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
@@ -82,11 +82,11 @@ if (count($fiches)>0) :
 					marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($param['barregestion'], $fiche))).'\');
 					';
 					if ($param['spider'] == 'true' or $param['spider'] == '1') {
-							$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
+							$markersjs .= 'map'.$param['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
 					} elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
 							$markersjs .= 'markerscluster.addLayer(marker[i]);'."\n";
 					} else {
-							$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(marker[i]);'."\n";
+							$markersjs .= 'map'.$param['nbbazarliste'].'.addLayer(marker[i]);'."\n";
 					}
 					$i++;
 			}
@@ -94,11 +94,11 @@ if (count($fiches)>0) :
 
 	<?php
 	if ($param['cluster'] == 'true' or $param['cluster'] == '1') {
-			$markersjs .= 'map'.$GLOBALS['nbbazarliste'].'.addLayer(markerscluster);'."\n";
+			$markersjs .= 'map'.$param['nbbazarliste'].'.addLayer(markerscluster);'."\n";
 	}
 	$GLOBALS['wiki']->AddJavascript(
 			'// Init leaflet map
-		var map'.$GLOBALS['nbbazarliste'].' = new L.Map(\'osmmap'.$GLOBALS['nbbazarliste'].'\', {
+		var map'.$param['nbbazarliste'].' = new L.Map(\'osmmap'.$param['nbbazarliste'].'\', {
 				scrollWheelZoom:'.$param['zoom_molette'].',
 				zoomControl:'.$param['navigation'].',
 		fullscreenControl:'.$param['fullscreen'].',
@@ -239,7 +239,7 @@ if (count($fiches)>0) :
 			}
 		}
 
-		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$GLOBALS['nbbazarliste'].');' ;
+		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$param['nbbazarliste'].');' ;
 
 		$GLOBALS['wiki']->AddJavascript( $js );
 
@@ -247,8 +247,8 @@ if (count($fiches)>0) :
 
 	$GLOBALS['wiki']->AddJavascript( '
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
-		map'.$GLOBALS['nbbazarliste'].'.addLayer(provider);
-		map'.$GLOBALS['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
+		map'.$param['nbbazarliste'].'.addLayer(provider);
+		map'.$param['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
 		var i = 0;
 		var marker = Array();
 		' . $markersjs
