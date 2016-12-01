@@ -30,6 +30,10 @@ if ($GLOBALS['check_'.$pagetag]['accordion']) {
         <div class=\"panel-group $class \" role=\"tablist\" aria-multiselectable=\"true\" id=\"$accordionID\" $data>";
 
 } else {
+<<<<<<< HEAD
     echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_ACCORDION').'</strong> : '._t('TEMPLATE_ELEM_ACCORDION_NOT_CLOSED').'.</div>'."\n";
+=======
+    echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_ACCORDION').'</strong> : '._t('TEMPLATE_ELEM_ACORDION_NOT_CLOSED').'.</div>'."\n";
+>>>>>>> df9b833... Corrige les messages d'erreur panel et accordion
     return;
 }
