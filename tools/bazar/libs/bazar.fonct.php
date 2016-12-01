@@ -1035,10 +1035,11 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 $GLOBALS['params']['idtypeannonce'],
                 $GLOBALS['params']['categorienature']
             );
-            if (is_array($tabform))
+            if (is_array($tabform)) {
                 foreach ($tabform as $key => $value) {
                     $resultat[$value['bn_id_nature']] = $value;
                 }
+            }
             if (count($resultat) == 0) {
                 $res .= '<div class="alert alert-info">'._t('BAZ_NO_FORMS_FOUND').
                 '.</div>'."\n";
@@ -2329,7 +2330,7 @@ function baz_gestion_formulaire()
             '<div class="alert alert-success">'.
             _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
         }
-        if (is_array($forms))
+        if (is_array($forms)) {
             foreach ($forms as $key => $ligne) {
                 $tab_forms['forms'][$ligne['bn_id_nature']]['title'] = $ligne['bn_label_nature'];
                 $tab_forms['forms'][$ligne['bn_id_nature']]['description'] = $ligne['bn_description'];
@@ -2337,7 +2338,7 @@ function baz_gestion_formulaire()
                 $tab_forms['forms'][$ligne['bn_id_nature']]['can_edit'] = baz_a_le_droit('saisie_formulaire');
                 $tab_forms['forms'][$ligne['bn_id_nature']]['can_delete'] = $GLOBALS['wiki']->UserIsAdmin();
             }
-
+        }
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
 
@@ -3648,12 +3649,12 @@ function scanAllFacettable($fiches, $params, $formtab = '')
                 $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
                 $val = array_shift($val);
                 $islist = in_array($val['type'], array('checkbox', 'select', 'scope'));
-                $islistforeign = in_array($val['type'], array('checkboxfiche', 'listefiche'));
+                $islistforeign = (strpos($val['id'], 'listefiche')===0) or (strpos($val['id'], 'checkboxfiche')==0);
                 $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
-                if ($islist) {
-                    $facettevalue[$val['id']]['type'] = 'liste';
-                    $facettevalue[$val['id']]['source'] = str_replace(array('checkbox', 'liste'), '', $key);
-                    // liste ou checkbox
+                if ($islistforeign) {
+                    // listefiche ou checkboxfiche
+                    $facettevalue[$val['id']]['type'] = 'fiche';
+                    $facettevalue[$val['id']]['source'] = $key;
                     $tabval = explode(',', $value);
                     foreach ($tabval as $tval) {
                         if (isset($facettevalue[$val['id']][$tval])) {
@@ -3662,10 +3663,10 @@ function scanAllFacettable($fiches, $params, $formtab = '')
                             $facettevalue[$val['id']][$tval] = 1;
                         }
                     }
-                } elseif ($islistforeign) {
-                    // listefiche ou checkboxfiche
-                    $facettevalue[$val['id']]['type'] = 'fiche';
-                    $facettevalue[$val['id']]['source'] = $key;
+                } elseif ($islist) {
+                    $facettevalue[$val['id']]['type'] = 'liste';
+                    $facettevalue[$val['id']]['source'] = str_replace(array('checkbox', 'liste'), '', $key);
+                    // liste ou checkbox
                     $tabval = explode(',', $value);
                     foreach ($tabval as $tval) {
                         if (isset($facettevalue[$val['id']][$tval])) {
