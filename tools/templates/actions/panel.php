@@ -6,7 +6,7 @@ if (!defined("WIKINI_VERSION")) {
 // taille de la colonne
 $size = $this->GetParameter('title');
 if (empty($size)) {
-    echo '<div><div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
+    echo '<div><div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_PANEL') . '</strong> : '
         . _t('TEMPLATE_TITLE_PARAMETER_REQUIRED') . '.</div>' . "\n";
     return;
 }
@@ -54,7 +54,7 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
       <div id=\"$collapseID\" class=\"panel-collapse collapse\" role=\"tabpanel\" aria-labelledby=\"$headingID\">
         <div class=\"panel-body\">";
 } else {
-    echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
-        . _t('TEMPLATE_ELEM_COL_NOT_CLOSED') . '.</div>' . "\n";
+    echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_PANEL') . '</strong> : '
+        . _t('TEMPLATE_ELEM_PANEL_NOT_CLOSED') . '.</div>' . "\n";
     return;
 }
