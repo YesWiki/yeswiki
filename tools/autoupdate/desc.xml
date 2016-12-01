@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="autoupdate" version="0.1" active="1">
+  <author>Florestan Bredow</author>
+  <label>autoupdate</label>
+  <desc>Mise à jour automatique de YesWiki</desc>
+</plugin>
