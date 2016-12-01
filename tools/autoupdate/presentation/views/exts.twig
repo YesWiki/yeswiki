@@ -48,7 +48,7 @@
                     </a>
                 {% endif %}
 
-                {% if isAdmin and ext.installed %}
+                {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
                         class="btn btn-danger"
                         title="{{ AU_DELETE_EXT }}"
