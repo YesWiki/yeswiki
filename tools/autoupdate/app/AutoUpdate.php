@@ -3,7 +3,7 @@ namespace AutoUpdate;
 
 class AutoUpdate
 {
-    const DEFAULT_REPO = 'http://yeswiki.net/repository/';
+    const DEFAULT_REPO = 'https://repository.yeswiki.net/';
     const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de
                                           // YesWiki
     private $wiki;
