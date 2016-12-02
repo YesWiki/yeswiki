@@ -3219,6 +3219,10 @@ function genere_nom_wiki($nom, $occurence = 1)
  */
 function baz_rechercher($typeannonce = '', $categorienature = '')
 {
+    // pour la recherche, on affiche les possibilites d'export
+    $oldparam = $GLOBALS['params']['showexportbuttons'];
+    $GLOBALS['params']['showexportbuttons'] = true;
+
     $res = '';
 
     // parametres complémentaires de l'url (vont etre passés en GET)
@@ -3319,7 +3323,9 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
             isset($_REQUEST['q']) ? $_REQUEST['q'] : ''
         );
         $shownbres = count($GLOBALS['params']['groups']) == 0 || count($tableau_fiches) == 0;
-        return $res.displayResultList($tableau_fiches, $GLOBALS['params'], $shownbres);
+        $res .= displayResultList($tableau_fiches, $GLOBALS['params'], $shownbres);
+        $GLOBALS['params']['showexportbuttons'] = $oldparam;
+        return $res;
     }
 }
 
@@ -3964,7 +3970,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         $output = $outputfacette.'</div><!-- /.facette-container.row -->';
     }
     // affiche les possibilités d'export
-    if (!preg_match('/\/iframe/U', $_GET['wiki'])) {
+    if (!preg_match('/\/iframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
         if (is_array($GLOBALS['params']['idtypeannonce'])) {
             $key = implode($GLOBALS['params']['idtypeannonce'], ',');
         } else {
@@ -4442,8 +4448,11 @@ function getAllParameters($wiki)
     $param['class'] = $wiki->GetParameter('class');
 
     // ajout des options pour gerer la fiche (modifier, droits, etc,.. )
-
     $param['barregestion'] = getParameter_boolean($wiki, 'barregestion', true);
+
+    // ajout des bouton pour gerer la fiche (modifier, droits, etc,.. )
+    $param['showexportbuttons'] = getParameter_boolean($wiki, 'showexportbuttons', false);
+
 
     // possibilité d'avoir un ordre aléatoire des fiches
     $param['random'] = getParameter_boolean($wiki, 'random', false);
