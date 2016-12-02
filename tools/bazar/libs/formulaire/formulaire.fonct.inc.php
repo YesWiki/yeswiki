@@ -1516,8 +1516,8 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         if (isset($_FILES[$type . $identifiant]['name']) && $_FILES[$type . $identifiant]['name'] != '') {
             //on enleve les accents sur les noms de fichiers, et les espaces
-            $nomfichier = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities($identifiant . '_' . $_FILES[$type . $identifiant]['name'], ENT_QUOTES, YW_CHARSET));
-            $nomfichier = str_replace(' ', '_', $nomfichier);
+            $nomfichier = $valeurs_fiche['id_fiche'].'_'.$identifiant.'_'
+                .sanitizeFilename($_FILES[$type . $identifiant]['name']);
             $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomfichier;
 
             //verification de la presence de ce fichier
