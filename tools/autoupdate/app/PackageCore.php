@@ -4,7 +4,7 @@ namespace AutoUpdate;
 class PackageCore extends Package
 {
     const CORE_NAME = 'yeswiki';
-    const FILE_2_IGNORE = array('.', '..', 'tools', 'files', 'cache', 'themes',
+    public $ignoredFiles = array('.', '..', 'tools', 'files', 'cache', 'themes',
         'wakka.config.php');
 
     public function __construct($release, $address, $desc, $doc)
@@ -26,7 +26,7 @@ class PackageCore extends Package
         if ($res = opendir($this->extractionPath)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
-                if (!in_array($file, $this::FILE_2_IGNORE)) {
+                if (!in_array($file, $this->ignoredFiles)) {
                     $this->copy(
                         $this->extractionPath . '/' . $file,
                         $desPath . '/' . $file
@@ -41,7 +41,7 @@ class PackageCore extends Package
     public function upgradeTools()
     {
         $src = $this->extractionPath . '/tools';
-        $desPath .= $this->localPath . '/tools';
+        $desPath = $this->localPath . '/tools';
         $file2ignore = array('.', '..');
 
         if ($res = opendir($src)) {
