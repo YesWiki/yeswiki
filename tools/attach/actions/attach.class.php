@@ -65,6 +65,10 @@ if (!class_exists('attach')) {
             $this->wiki = $wiki;
             $this->attachConfig = $this->wiki->GetConfigValue("attach_config");
 
+            if (!is_array($this->attachConfig)) {
+                $this->attachConfig = array();
+            }
+
             if (empty($this->attachConfig["ext_images"])) {
                 $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg";
             }
