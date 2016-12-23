@@ -78,7 +78,7 @@ abstract class PackageExt extends Package
         if ($this->installed()) {
             $infos = $this->getInfos();
             if (isset($infos['release'])) {
-                return $infos['release'];
+                return new Release($infos['release']);
             }
         }
         return new Release(Release::UNKNOW_RELEASE);
