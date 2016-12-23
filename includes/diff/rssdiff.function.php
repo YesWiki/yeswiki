@@ -16,7 +16,7 @@ if (!function_exists("rssdiff")) {
                 "select id from "
                 . $wiki->config["table_prefix"]
                 . "pages where tag = '"
-                . mysqli_real_escape_string($this->dblink, $tag)
+                . mysqli_real_escape_string($wiki->dblink, $tag)
                 . "' and id < $idfirst order by time desc limit 1"
             );
             if ($previousdiff) {

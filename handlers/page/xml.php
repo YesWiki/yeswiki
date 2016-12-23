@@ -28,7 +28,7 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-//header('Content-type: text/xml; charset='.YW_CHARSET);
+header('Content-type: text/xml; charset='.YW_CHARSET);
 
 if ($HasAccessRead = $this->HasAccess('read')) {
     // TODO : Return an empty xml ?

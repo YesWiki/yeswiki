@@ -57,7 +57,7 @@ $wakkaName = htmlspecialchars(
 );
 
 $output = "<rss version=\"2.0\" "
-    . "xmlns:dc=\"http://purl.org/dc/elements/1.1/\""
+    . "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" "
     . "xmlns:atom=\"http://www.w3.org/2005/Atom\">\n"
     . "<channel>\n"
     . "<atom:link href='$xmlUrl' rel='self' type='application/rss+xml' />\n"
@@ -89,25 +89,27 @@ for ($i = 0; $i < sizeof($pages); $i++) {
         $page = $firstpage;
         $tag = htmlspecialchars($page["tag"], ENT_COMPAT, YW_CHARSET);
         $user = htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET);
-        $date = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
+        $formatedDate = gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time']));
+        $rawTime =  htmlspecialchars(
+            rawurlencode($page["time"]),
+            ENT_COMPAT,
+            YW_CHARSET
+        );
+        $itemurl = $this->href(false, $tag, "time=$rawTime");
         $description = htmlspecialchars(
             'Modification de ' . $this->ComposeLinkToPage($page["tag"])
             . ' (' . $this->ComposeLinkToPage($page["tag"], 'revisions', 'historique') . ')'
             . " --- par $user"  . rssdiff($page["tag"], $firstpage["id"], $lastpage["id"])
-            . "<item>\n"
-            . "<title>$tag</title>\n"
-            . "<dc:creator>$user</dc:creator>\n"
-            . "<pubDate>$date</pubDate>\n"
-            . "<description>$description</description>\n"
-            . "<dc:format>text/html</dc:format>"
         );
 
-        $itemurl = $this->href(
-            false,
-            $page["tag"],
-            "time=" . htmlspecialchars(rawurlencode($page["time"]), ENT_COMPAT, YW_CHARSET)
-        );
-        $output .= '<guid>' . $itemurl . "</guid>\n";
+        $output .= "<item>\n"
+            . "<title>$tag</title>\n"
+            . "<dc:creator>$user</dc:creator>\n"
+            . "<pubDate>$formatedDate</pubDate>\n"
+            . "<description>$description</description>\n"
+            . "<dc:format>text/html</dc:format>";
+
+        $output .= "<guid>$itemurl</guid>\n";
         $output .= "</item>\n";
     }
 }
