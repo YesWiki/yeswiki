@@ -28,7 +28,7 @@ if ($this->GetMethod() != 'xml') {
     return;
 }
 
-require_once 'includes/diff/rssdiff.function.php';
+require_once 'tools/rss/libs/rssdiff.function.php';
 
 $max = 50;
 if ($user = $this->GetUser()) {
@@ -56,16 +56,17 @@ $wakkaName = htmlspecialchars(
     YW_CHARSET
 );
 
-$output = "<rss version=\"2.0\" "
-    . "xmlns:dc=\"http://purl.org/dc/elements/1.1/\" "
-    . "xmlns:atom=\"http://www.w3.org/2005/Atom\">\n"
-    . "<channel>\n"
-    . "<atom:link href='$xmlUrl' rel='self' type='application/rss+xml' />\n"
-    . "<title>$wakkaName</title>\n"
-    . "<link>" . $this->Href(false, $link) . "</link>\n"
-    . "<description>$wakkaName</description>\n"
-    . "<language>fr</language>\n"
-    . '<generator>WikiNi ' . WIKINI_VERSION . "</generator>\n";
+$output =
+"<rss version=\"2.0\"
+    xmlns:dc=\"http://purl.org/dc/elements/1.1/\"
+    xmlns:atom=\"http://www.w3.org/2005/Atom\">
+    <channel>
+        <atom:link href='$xmlUrl' rel='self' type='application/rss+xml' />
+        <title>$wakkaName</title>
+        <link>" . $this->Href(false, $link) . "</link>
+        <description>$wakkaName</description>
+        <generator>WikiNi " . WIKINI_VERSION . "</generator>
+";
 
 for ($i = 0; $i < sizeof($pages); $i++) {
     $page = $pages[$i];
