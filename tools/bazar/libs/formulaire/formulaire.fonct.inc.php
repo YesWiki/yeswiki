@@ -2415,9 +2415,9 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $query = $typefiche . $valeurs_fiche['id_typeannonce'] . '=' . $valeurs_fiche['id_fiche'];
     }
     if (isset($tableau_template[3])) {
-        $ordre = $tableau_template[3];
+        $otherparams = $tableau_template[3];
     } else {
-        $ordre = 'alphabetique';
+        $otherparams = '';
     }
     if (!empty($tableau_template[4])) {
         $nb = $tableau_template[4];
@@ -2430,9 +2430,9 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $template = BAZ_TEMPLATE_LISTE_DEFAUT;
     }
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
-        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ordre="' . $ordre . '" template="' . $template . '"}}';
-        $html = $GLOBALS['wiki']->Format($actionbazarliste);
-
+        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
+        $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
+        
         //ajout lien nouvelle saisie
         $url_checkboxfiche = clone ($GLOBALS['_BAZAR_']['url']);
         $url_checkboxfiche->removeQueryString('id_fiche');
@@ -2469,7 +2469,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2] . $bulledaide, "\n");
         }
     } elseif ($mode == 'html') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
+        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
         $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
 
         return $html;
