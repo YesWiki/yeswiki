@@ -34,24 +34,24 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *			DOCUMENTATION
 *******************************************************************************
 	RESUME
-L'action {{attach}} permet de lier un fichier à une page, d'uploader ce fichier
-et de downloader ce fichier. Si le fichier est une image, elle est affichée
+L'action {{attach}} permet de lier un fichier Ã© une page, d'uploader ce fichier
+et de downloader ce fichier. Si le fichier est une image, elle est affichÃ©e
 dans la page. Lorsque le fichier est sur le serveur, il est possible de faire
-une mise à jour de celui-ci.
+une mise Ã© jour de celui-ci.
 
 	PARAMETRES DE L'ACTION
-L'action {{attach}} prend les paramètres suivants :
+L'action {{attach}} prend les paramÃ©tres suivants :
  - file ou attachfile: nom du fichier tel qu'il sera sur le serveur. Les
-   espaces sont remplacé par des "_". (OBLIGATOIRE)
- - desc ou attachdesc: description du fichier. C'est le texte qui sera affiché
+   espaces sont remplacÃ© par des "_". (OBLIGATOIRE)
+ - desc ou attachdesc: description du fichier. C'est le texte qui sera affichÃ©
    comme lien vers le fichier ou dans l'attribut alt de la balise <img>. Ce
-   paramètre est obligatoire pour les images pour être conforme au XHTML.
- - delete ou attachdelete: Si ce paramètre est non vide alors le fichier sera
-   effacé sur le serveur.
- - link ou attachlink: URL de lien pour une image sensible. le lien peut être
+   paramÃ©tre est obligatoire pour les images pour Ã©tre conforme au XHTML.
+ - delete ou attachdelete: Si ce paramÃ©tre est non vide alors le fichier sera
+   effacÃ© sur le serveur.
+ - link ou attachlink: URL de lien pour une image sensible. le lien peut Ã©tre
    un nom de page WikiNi, un lien interwiki ou une adresse http
- - class: indique le nom de la ou les classes de style à utiliser pour afficher
-   l'image. les noms des classes sont séparés par un espace.
+ - class: indique le nom de la ou les classes de style Ã© utiliser pour afficher
+   l'image. les noms des classes sont sÃ©parÃ©s par un espace.
 
 	EXEMPLES
  - Attacher un fichier archive:
@@ -66,29 +66,29 @@ L'action {{attach}} prend les paramètres suivants :
  		{{attach file="image.png" desc="voici une image" link="PagePrincipale"}}
  		{{attach file="image.png" desc="voici une image" link="WikiNi:PagePrincipale"}}
  		{{attach file="image.png" desc="voici une image" link="http://www.wikini.net"}}
- - Afficher une image collé sur le bord droit et sans contour:
+ - Afficher une image collÃ© sur le bord droit et sans contour:
  		{{attach file="image.png" desc="voici une image" class="right noborder"}}
 
 	INSTALLATION
-1) Copiez le fichier attach.php dans le répertoire des actions (/actions)
-2) Copiez le fichier attach.class.php dans le répertoire des actions (/actions)
+1) Copiez le fichier attach.php dans le rÃ©pertoire des actions (/actions)
+2) Copiez le fichier attach.class.php dans le rÃ©pertoire des actions (/actions)
 3) Copiez le fichier attachfm.php dans le repertoire des actions (/actions)
-4) Copiez le fichier filamanager.php dans le répertoire des handlers (/handlers/page)
-5) Copiez le fichier upload.php dans le répertoire des handlers (/handlers/page)
-6) Copiez le fichier download.php dans le répertoire des handlers (/handlers/page)
-7) Créez le répertoire racine des uploads sur le site du wiki. Si le SAFE_MODE
-	de PHP est activé, vous devez créer vous même ce répertoire et autoriser
-	l'écriture dans ce répertoire pour l'utilisateur et le groupe.
+4) Copiez le fichier filamanager.php dans le rÃ©pertoire des handlers (/handlers/page)
+5) Copiez le fichier upload.php dans le rÃ©pertoire des handlers (/handlers/page)
+6) Copiez le fichier download.php dans le rÃ©pertoire des handlers (/handlers/page)
+7) CrÃ©ez le rÃ©pertoire racine des uploads sur le site du wiki. Si le SAFE_MODE
+	de PHP est activÃ©, vous devez crÃ©er vous mÃ©me ce rÃ©pertoire et autoriser
+	l'Ã©criture dans ce rÃ©pertoire pour l'utilisateur et le groupe.
 8) Ouvrez le fichier wakka.config.php et ajoutez la configuration de l'action.
-	Tous les paramètres de configuration ont une valeur par défaut.
-	Le configuration par défaut est:
+	Tous les paramÃ©tres de configuration ont une valeur par dÃ©faut.
+	Le configuration par dÃ©faut est:
 
 	$wakkaConfig["attach_config"] = array(
 			"upload_path" => 'files',				//repertoire racine des uploads
 			"ext_images" => 'gif|jpeg|png|jpg',	//extension des fichiers images
-			"ext_script" => 'php|php3|asp|asx|vb|vbs|js',	//extension des script(non utilisé)
+			"ext_script" => 'php|php3|asp|asx|vb|vbs|js',	//extension des script(non utilisÃ©)
 			"update_symbole" => '*',				//symbole pour faire un update du fichier
-			"max_file_size" => 1024*2000,			//taille maximum du fichier en octer (2M par défaut)
+			"max_file_size" => 1024*2000,			//taille maximum du fichier en octer (2M par dÃ©faut)
 			"fmDelete_symbole" => 'Supr',			//symbole a afficher pour le lien "supprimer" dans le gestionnaire de fichier
 			"fmRestore_symbole" => 'Rest',		//symbole a afficher pour le lien "restaurer" dans le gestionnaire de fichier
 			"fmTrash_symbole" => 'Poubelle')		//symbole a afficher pour le lien "Poubelle" dans le gestionnaire de fichier

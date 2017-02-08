@@ -30,7 +30,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Parametres :
  -- theme, style, et squelette
  
- Cette action n'est pas vraiment éxécutée, elle est appelee dans wiki.php
+ Cette action n'est pas vraiment Ã©xÃ©cutÃ©e, elle est appelee dans wiki.php
 
 *******************************************************************************/
 

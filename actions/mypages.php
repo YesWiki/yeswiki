@@ -4,7 +4,7 @@ $Id: mypages.php 293 2005-01-09 15:49:02Z nepote $
 Copyright (c) 2003, Carlo Zottmann -- http://wakkawikki.com/CarloZottmann
 Copyright 2003 David DELON
 Copyright 2003 Jean Pascal MILCENT
-Copyright 2004 Jean Christophe ANDRÉ
+Copyright 2004 Jean Christophe ANDRÃ©
 Copyright 2005 Charles NEPOTE
 All rights reserved.
 Redistribution and use in source and binary forms, with or without

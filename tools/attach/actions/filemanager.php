@@ -35,7 +35,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
-//vérification de sécurité
+//vÃ©rification de sÃ©curitÃ©
 if (!WIKINI_VERSION) {
      die ("acc&egrave;s direct interdit");
 }

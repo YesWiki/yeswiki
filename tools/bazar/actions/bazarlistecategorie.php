@@ -1,6 +1,6 @@
 <?php
 /**
-* bazarlistecategorie : programme affichant les fiches du bazar cat�goris�es par les champs liste
+* bazarlistecategorie : programme affichant les fiches du bazar catégorisées par les champs liste
 * sous forme de liste accordeon (ou autre template)
 *
 *
@@ -14,12 +14,12 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-// test de s�curit� pour v�rifier si on passe par wiki
+// test de sécurité pour vérifier si on passe par wiki
 if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-// initialisation de la fonction de tri , inspir� par http://php.net/manual/fr/function.usort.php
+// initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {
     // tri par ordre desire
     function champCompare($a, $b)
@@ -35,9 +35,9 @@ if (!function_exists('champCompare')) {
 //recuperation des parametres wikini
 $categorie_nature = $this->GetParameter("categorienature");
 
-// permet de reuperer la valeur pass�e en parametres de l'action ici {{bazarliste categorienature="actus"}}
+// permet de reuperer la valeur passée en parametres de l'action ici {{bazarliste categorienature="actus"}}
 // va mettre dans la variable $categorie_nature la valeur "actus"
-if (empty($categorie_nature)) { // dans le cas ou il n'y a pas de valeur pr�cis�e, alors il les prend toutes
+if (empty($categorie_nature)) { // dans le cas ou il n'y a pas de valeur précisée, alors il les prend toutes
     $categorie_nature = 'toutes';
 }
 $id_typeannonce = $this->GetParameter("idtypeannonce");
@@ -54,7 +54,7 @@ if (empty($template)) {
     $template = BAZ_TEMPLATE_LISTE_DEFAUT;
 }
 
-// identifiant de la base de donn�e pour la liste
+// identifiant de la base de donnée pour la liste
 $id = $this->GetParameter("id");
 if (empty($id)) {
     exit('<div class="alert alert-danger">Error action bazarlistecategorie: parameter "id" missing.</div>');
@@ -77,7 +77,7 @@ if (empty($list)) {
     if (!empty($query)) {
         $tabquery = array();
         $tableau = array();
-        $tab = explode('|', $query); //d�coupe la requete autour des |
+        $tab = explode('|', $query); //découpe la requete autour des |
         foreach ($tab as $req) {
             $tabdecoup = explode('=', $req, 2);
             $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
@@ -99,15 +99,15 @@ if (empty($list)) {
     $fiches['pager_links'] = '';
     $fiches['fiches'] = array();
     foreach ($tableau_resultat as $fiche) {
-        //json = norme d'ecriture utilis�e pour les fiches bazar (en utf8)
+        //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
         $valeurs_fiche = json_decode($fiche['body'], true);
         if (YW_CHARSET != 'UTF-8') {
             $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
         }
-        // pour les checkbox, on cr�e une fiche par case coch�e pour apparaitre � diff�rents endroits
+        // pour les checkbox, on crée une fiche par case cochée pour apparaitre é différents endroits
         $tabcheckbox = explode(',', $valeurs_fiche[$id]);
         foreach ($tabcheckbox as $value) {
-            // on sauve les multiples valeurs pour les retablir � l'affichage
+            // on sauve les multiples valeurs pour les retablir é l'affichage
             $multiplecheckbox[$valeurs_fiche['id_fiche']] = $valeurs_fiche[$id];
             $valeurs_fiche[$id] = $value;
 
@@ -133,7 +133,7 @@ if (empty($list)) {
     usort($fiches['fiches'], 'champCompare');
 
     // preparation du template
-    include_once 'tools/bazar/libs/squelettephp.class.php';
+    include_once 'tools/libs/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/'.$template;
     if (!is_file($templatetoload)) {
@@ -152,7 +152,7 @@ if (empty($list)) {
                 if (is_array($fichescat) && count($fichescat)>0) {
                     $squel = new SquelettePhp($templatetoload);
                     $squel->set($fichescat); // on passe le tableau de fiches en parametres
-                    $output .= $squel->analyser(); // affiche les r�sultats
+                    $output .= $squel->analyser(); // affiche les résultats
                 }
                 // it's not the first time in the loop so we must close previously opened div
                 $output .=  '</div>'."\n";
@@ -167,7 +167,7 @@ if (empty($list)) {
                 <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }
         $currentlabel = $fiche[$id];
-        // on r�tablit les valeurs multiples
+        // on rétablit les valeurs multiples
         if (isset($multiplecheckbox[$fiche['id_fiche']])) {
             $fiche[$id] = $multiplecheckbox[$fiche['id_fiche']];
         }
@@ -177,7 +177,7 @@ if (empty($list)) {
     if (is_array($fichescat) && count($fichescat)>0) {
         $squel = new SquelettePhp($templatetoload);
         $squel->set($fichescat); // on passe le tableau de fiches en parametres
-        $output .= $squel->analyser(); // affiche les r�sultats
+        $output .= $squel->analyser(); // affiche les résultats
     }
     // it's not the first time in the loop so we must close previously opened div
     $output .=  '</div>'."\n";

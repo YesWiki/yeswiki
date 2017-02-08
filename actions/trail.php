@@ -21,19 +21,19 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 /*
 * Cette action permet de lier des pages entre elle via une page contenant la liste
-* ordonnées de ces pages. L'action affiche des liens de navigation permettant de
-* passer à la page suivante ou précédente ou de revenir au sommaire.
+* ordonnÃ©es de ces pages. L'action affiche des liens de navigation permettant de
+* passer Ã© la page suivante ou prÃ©cÃ©dente ou de revenir au sommaire.
 *
-* @param toc string nom de la page contenant la liste ordonnée des pages à liées entre elles
+* @param toc string nom de la page contenant la liste ordonnÃ©e des pages Ã© liÃ©es entre elles
 */
 
-/* La page sommaire doit contenir une liste de pages. Le premier mot de chaque élément
-   de la liste doit être le nom d'une page du wiki, donc un mot wiki ou un lien force
+/* La page sommaire doit contenir une liste de pages. Le premier mot de chaque Ã©lÃ©ment
+   de la liste doit Ã©tre le nom d'une page du wiki, donc un mot wiki ou un lien force
    exemple de page sommaire:
 
 ===Sommaire===
 
- IntroductionAuProjet : présentation du projet.
+ IntroductionAuProjet : prÃ©sentation du projet.
  [[AnalyseProjet Analyse]] : analyse des besoins
    -BesoinDesUtilisateurs
    -ContraintesTechniques
@@ -54,13 +54,13 @@ if (!$sommaire) {
    $tocPage = $this->LoadPage($sommaire);
    if (!$tocPage)
    {
-	   echo '<div class="alert alert-danger"><strong>'._t('ERROR_ACTION_TRAIL').'</strong> : '._t('THE_PAGE').' ', $this->Link($sommaire), ' '._t('DOESNT_EXIST').' !</div>'."\n";
+	   echo '<div class="alert alert-danger"><strong>'._t('ERROR_ACTION_TRAIL').'</strong> :Ã©'._t('THE_PAGE').' ', $this->Link($sommaire), ' '._t('DOESNT_EXIST').' !</div>'."\n";
 	   return;
    }
-   //analyse de la page sommaire pour récupérer la liste des pages
+   //analyse de la page sommaire pour rÃ©cupÃ©rer la liste des pages
    //recuperation de la liste
    if (preg_match_all("/\n[\t ]+(.*)/",$tocPage["body"],$tocListe)){
-      //analyse de chaque ligne de la liste pour recupérer la page cible
+      //analyse de chaque ligne de la liste pour recupÃ©rer la page cible
       $currentPageIndex = NULL;
       foreach ($tocListe[1] as $line){
          //suppression d'un signe de liste eventuel
@@ -82,7 +82,7 @@ if (!$sommaire) {
          }
       }//foreach
    }
-   //ecriture des liens Page Précedente/sommaire/page suivante
+   //ecriture des liens Page PrÃ©cedente/sommaire/page suivante
    if ($currentPageIndex>0) {
       $PrevPage = $pages[$currentPageIndex-1];
       $btnPrev = "<li class=\"previous\"><span class=\"trail_button\">".$this->Format("&larr; $PrevPage")."</span></li>\n";

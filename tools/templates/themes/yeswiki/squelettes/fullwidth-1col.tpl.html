@@ -1,0 +1,62 @@
+<!doctype html>
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="{{configuration param="lang"}}"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="{{configuration param="lang"}}"> <!--<![endif]-->
+<head>
+  <!-- HTML Metas -->
+  <meta charset="{{configuration param="charset"}}">
+  {{metarobots}}
+  <meta name="keywords" content="{{configuration param="meta_keywords"}}" />
+  <meta name="description" content="{{configuration param="meta_description"}}" />
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Title of the page -->
+  <title>{{configuration param="wakka_name"}} : {{currentpage}}</title>
+
+  <!-- Favicons -->
+  <link rel="shortcut icon" type="image/x-icon" href="{{configuration param="theme_path"}}images/favicon.ico" />
+  <link rel="apple-touch-icon" href="{{configuration param="theme_path"}}images/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="{{configuration param="theme_path"}}images/favicon.png" />
+
+  {{linkstyle}}
+  {{linkrss}}
+</head>
+
+<body {{parambody}}>
+  <div id="yw-container" class="yw-fullwidth">
+    <header id="yw-header">
+      {{include page="PageHeader" class="yw-headerpage" doubleclic="1"}}
+    </header><!-- /#yw-header -->
+
+    <nav id="yw-topnav" class="navbar navbar-default fixable" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{include page="PageTitre" doubleclic="1"}}</a>
+        </div> <!-- /.navbar-header -->
+        <div class="navbar-collapse collapse">
+          {{include page="PageMenuHaut" class="yw-topnav topnavpage" doubleclic="1" actif="1"}}
+          {{include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclic="1" actif="1"}}
+        </div> <!-- /.navbar-collapse -->
+      </div> <!-- /.container -->
+    </nav><!-- /#yw-topnav -->
+
+    <div id="yw-main" role="main" {{doubleclic}}>
+        {WIKINI_PAGE}
+        {{barreredaction}}
+    </div><!-- /#yw-main -->
+
+    <footer id="yw-footer">
+        {{include page="PageFooter" class="footerpage" doubleclic="1"}}
+    </footer><!-- /#yw-footer -->
+  </div> <!-- /#yw-container -->
+
+  {{linkjavascript}}
+</body>
+</html>

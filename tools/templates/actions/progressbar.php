@@ -9,10 +9,10 @@ $val = $this->GetParameter('val');
 if (empty($val)) {
 	$error = ' param&egrave;tre "val" obligatoire.';
 } elseif (!is_numeric($val) || $val<0 || $val > 100) {
-	$error = ' le param&egrave;tre "val" doit être un chiffre entre 0 et 100.';
+	$error = ' le param&egrave;tre "val" doit Ã©tre un chiffre entre 0 et 100.';
 }
 
-// classe css supplémentaire pour changer le look
+// classe css supplÃ©mentaire pour changer le look
 $class = $this->GetParameter('class');
 $class = 'progressbar progress '.$class;
 

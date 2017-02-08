@@ -47,7 +47,7 @@ if (version_compare(phpversion(), '5.0') < 0) {
 function sanitizeFilename($string = '')
 {
     // our list of "dangerous characters", add/remove characters if necessary
-    $dangerous_characters = array(" ", '"', "'", "&", "/", "\\", "?", "#");
+    $dangerous_characters = array(" ", '"', "'", "&", "/", "\\", "?", "#", "(", ")", "+");
     // every forbidden character is replace by an underscore
     $string = str_replace($dangerous_characters, '-', removeAccents($string));
     // Only allow one dash separator at a time (and make string lowercase)
@@ -56,8 +56,9 @@ function sanitizeFilename($string = '')
 
 /** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut
  *
+ * @param    string champ de la base
  * @param    string nom du fichier image
- * @param   string  label pour l'image
+ * @param    string  label pour l'image
  * @param    string classes html supplementaires
  * @param    int        largeur en pixel de la vignette
  * @param    int        hauteur en pixel de la vignette
@@ -66,6 +67,7 @@ function sanitizeFilename($string = '')
  * @return   void
  */
 function afficher_image(
+    $champ,
     $nom_image,
     $label,
     $class,
@@ -78,8 +80,7 @@ function afficher_image(
     // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
     $destimg = sanitizeFilename($nom_image);
     if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image)
-        && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
-
+      && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
         // faut il creer la vignette?
         if ($hauteur_vignette != '' && $largeur_vignette != '') {
             //la vignette n'existe pas, on la genere
@@ -101,7 +102,7 @@ function afficher_image(
             if ($hauteur_image != '' && $largeur_image != '') {
                 //l'image redimensionnee n'existe pas, on la genere
                 if (!file_exists('cache/image_' . $destimg)
-                    || (isset($_GET['regenerate']) && $_GET['regenerate'] == 1)) {
+                    || (isset($_GET['refresh']) && $_GET['refresh'] == 1)) {
                     $adr_img = redimensionner_image(
                         BAZ_CHEMIN_UPLOAD . $nom_image,
                         'cache/image_' . $destimg,
@@ -112,13 +113,13 @@ function afficher_image(
                 }
 
                 //on renvoit l'image en vignette, avec quand on clique, l'image redimensionnee
-                return '<a data-id="' . $nom_image . '" class="modalbox ' . $class
+                return '<a data-id="' . $champ . '" class="modalbox ' . $class
                     .'" href="' . $url_base . 'cache/image_' . $destimg . '" title="' . htmlentities($nom_image) . '">' . "\n"
                     .'<img src="' . $url_base . 'cache/vignette_' . $destimg . '" alt="' . $destimg . '"'.' />'."\n"
                     .'</a> <!-- ' . $nom_image . ' -->' . "\n";
             } else {
                 //on renvoit l'image en vignette, avec quand on clique, l'image originale
-                return '<a data-id="' . $nom_image . '" class="modalbox ' . $class
+                return '<a data-id="' . $champ . '" class="modalbox ' . $class
                     . '" href="' . $url_base . BAZ_CHEMIN_UPLOAD . $nom_image . '" title="' . htmlentities($nom_image) . '">' . "\n"
                     . '<img class="img-responsive" src="' . $url_base . 'cache/vignette_' . $destimg
                     . '" alt="' . $nom_image . '"' . ' rel="' . $url_base . 'cache/image_' . $destimg . '" />' . "\n"
@@ -148,37 +149,44 @@ function afficher_image(
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
     if (file_exists($image_src)) {
-        if (!file_exists($image_dest) || (isset($_GET['refreshimg']) && $_GET['refreshimg']==1)) {
+        if (!file_exists($image_dest) || (isset($_GET['refresh']) && $_GET['refresh']==1)) {
             if (file_exists($image_dest)) {
                 unlink($image_dest);
             }
             if (!class_exists('Image')) {
                 include_once('tools/bazar/libs/vendor/class.Images.php');
             }
-            $image = new Image($image_src);
-            $image->resize($largeur, $hauteur, $method);
-            // Fix Orientation
-            $exif = exif_read_data($image_src);
-            if (isset($exif['Orientation'])) {
-                $orientation = $exif['Orientation'];
-                switch ($orientation) {
-                    case 3:
-                        $image->rotate(180);
-                        break;
-                    case 6:
-                        $image->rotate(-90);
-                        break;
-                    case 8:
-                        $image->rotate(90);
-                        break;
-                }
-            }
-            $ext = explode('.', $image_dest);
-            $ext = end($ext);
-            $image_dest = str_replace(array('cache/', '.'.$ext), '', $image_dest);
-            $image->save($image_dest, "cache", $ext);
 
-            return 'cache/'.$image_dest.'.'.$ext;
+            try {
+                $image = new Image($image_src);
+                $image->resize($largeur, $hauteur, $method);
+                // Fix Orientation
+                $exif = @exif_read_data($image_src);
+                if (isset($exif['Orientation'])) {
+                    $orientation = $exif['Orientation'];
+                    switch ($orientation) {
+                        case 3:
+                            $image->rotate(180);
+                            break;
+                        case 6:
+                            $image->rotate(-90);
+                            break;
+                        case 8:
+                            $image->rotate(90);
+                            break;
+                    }
+                }
+                $ext = explode('.', $image_dest);
+                $ext = end($ext);
+                $image_dest = str_replace(array('cache/', '.'.$ext), '', $image_dest);
+                $image->save($image_dest, "cache", $ext);
+                return 'cache/'.$image_dest.'.'.$ext;
+            } catch (Exception $e) {
+                echo '<div class="alert alert-danger">Erreur Image :<br>';
+                echo $e->getMessage();
+                echo '</div>';
+                return;
+            }
         } else {
             return $image_dest;
         }
@@ -952,8 +960,6 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
  * @return   void
  */
-
-// TODO : ne pas enregistrer le mot de passe dans la fiche bazar ?
 function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'saisie') {
@@ -966,9 +972,9 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
                     .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                     .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
-            $option = array('size' => $tableau_template[3], 'class' => 'form-control');
-            $formtemplate->addElement('password', 'mot_de_passe_wikini', _t('BAZ_MOT_DE_PASSE') . $bulledaide, $option);
-            $formtemplate->addElement('password', 'mot_de_passe_repete_wikini', _t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')', $option);
+            $option = array('required' => 'required', 'size' => $tableau_template[3], 'class' => 'form-control');
+            $formtemplate->addElement('password', 'mot_de_passe_wikini', '<span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . $bulledaide, $option);
+            $formtemplate->addElement('password', 'mot_de_passe_repete_wikini', '<span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')', $option);
         } else {
             $formtemplate->addElement('hidden', 'nomwiki', $valeurs_fiche['nomwiki']);
         }
@@ -980,35 +986,52 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
 
         $nomwiki = (isset($valeurs_fiche['nomwiki']) && !empty($valeurs_fiche['nomwiki'])) ?
             $valeurs_fiche['nomwiki'] : $valeurs_fiche[$tableau_template[1]];
+
         if (!$GLOBALS['wiki']->IsWikiName($nomwiki)) {
-            $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
+            $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]], 0);
+            // si le user existe, on ajoute un nombre
+            while ($GLOBALS['wiki']->LoadUser($nomwiki)) {
+                $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
+            }
         }
+
         // indicateur pour la gestion des droits associee a la fiche.
         $GLOBALS['utilisateur_wikini'] = $nomwiki;
 
         if (!$GLOBALS['wiki']->LoadUser($nomwiki)) {
             $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
             $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini);
-        }
-
-        if ($sendmail) {
-            //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
-            $lien = str_replace("/wakka.php?wiki=", "", $GLOBALS['wiki']->config["base_url"]);
-            $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
-            $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre email : ".$valeurs_fiche[$tableau_template[2]]."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
-            $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
+            if ($sendmail) {
+                //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
+                $lien = str_replace("/wakka.php?wiki=", "", $GLOBALS['wiki']->config["base_url"]);
+                $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
+                $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre email : ".$valeurs_fiche[$tableau_template[2]]."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
+                $headers =   'From: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
                 'Reply-To: '.BAZ_ADRESSE_MAIL_ADMIN . "\r\n" .
-                    'X-Mailer: PHP/' . phpversion();
-            mail($valeurs_fiche[$tableau_template[2]], removeAccents($objetmail), $messagemail, $headers);
-            // ajout dans la liste de mail
-            if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]] != '') {
-                $headers = 'From: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'Reply-To: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-                mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
+                'X-Mailer: PHP/' . phpversion();
+                mail($valeurs_fiche[$tableau_template[2]], removeAccents($objetmail), $messagemail, $headers);
+                // ajout dans la liste de mail
+                if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]] != '') {
+                    $headers = 'From: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'Reply-To: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+                    mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
+                }
             }
         }
+
         return array('nomwiki' => $nomwiki);
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {
+        $html= '';
+        if (isset($valeurs_fiche['nomwiki']) and !empty($valeurs_fiche['nomwiki'])) {
+            $html .= '<div class="BAZ_rubrique" data-id="nomwiki">' . "\n" . '<span class="BAZ_label">'._t('BAZ_GIVEN_ID').' :</span>' . "\n";
+            $html .= '<span class="BAZ_texte"> ';
+            $html .= $valeurs_fiche['nomwiki'];
+            if ($GLOBALS['wiki']->GetUser() and ($GLOBALS['wiki']->GetUserName() == $valeurs_fiche['nomwiki'])) {
+                $html .= ' <a class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('edit', $valeurs_fiche['nomwiki']).'"><i class="glyphicon glyphicon-pencil"></i> '._t('BAZ_EDIT_MY_ENTRY').'</a> <a  class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('', 'ParametresUtilisateur').'"><i class="glyphicon glyphicon-lock"></i> '._t('BAZ_CHANGE_PWD').'</a>';
+            }
+            $html .= '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+        }
+        return $html;
     }
 }
 
@@ -1111,7 +1134,7 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
+    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $showform, $type_input, $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
@@ -1165,8 +1188,17 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
             $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
-            $html.= '<span class="BAZ_texte"><a href="mailto:' . $valeurs_fiche[$tableau_template[1]] . '" class="BAZ_lien_mail">';
-            $html.= $valeurs_fiche[$tableau_template[1]] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            if ($showform == 'form') {
+                // js necessaire pour valider le formulaire et faire l'envoi ajax
+                $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
+                $title = 'Contacter par mail '.htmlspecialchars($valeurs_fiche['bf_titre']);
+                $html .= '<span class="BAZ_texte"><a class="btn btn-default modalbox" title="'.$title.'" href="'
+                  .$GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$tableau_template[1]).'"><i class="glyphicon glyphicon-envelope"></i> '.$title;
+                $html .=  '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            } else {
+                $html.= '<span class="BAZ_texte"><a href="mailto:' . $valeurs_fiche[$tableau_template[1]] . '" class="BAZ_lien_mail">';
+                $html.= $valeurs_fiche[$tableau_template[1]] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            }
         }
 
         return $html;
@@ -1235,7 +1267,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
         $langfile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langpref.'.js';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
-        //$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-fontstyle.js');
+        $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
         //$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/plugin/summernote-ext-well.js');
         if (file_exists($langfile)) {
             $GLOBALS['wiki']->AddJavascriptFile($langfile);
@@ -1257,9 +1289,10 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                [\'insert\', [\'hr\', \'link\', \'table\']],
-                [\'misc\', [\'fullscreen\'/*, \'codeview\'*/]]
+                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\', \'video\']],
+                [\'misc\', [\'fullscreen\', \'codeview\']]
             ],
+            styleTags: [\'h1\', \'h2\', \'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
             oninit: function() {
               //$(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
             }
@@ -1305,7 +1338,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         // En html, pour la sécurité, on n'autorise qu'un certain nombre de balises
         if ($formatage == 'html') {
-            $acceptedtags = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption>';
+            $acceptedtags = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
             $valeurs_fiche[$identifiant] = strip_tags($valeurs_fiche[$identifiant], $acceptedtags);
         }
         return array($identifiant => $valeurs_fiche[$identifiant]);
@@ -1483,8 +1516,8 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         if (isset($_FILES[$type . $identifiant]['name']) && $_FILES[$type . $identifiant]['name'] != '') {
             //on enleve les accents sur les noms de fichiers, et les espaces
-            $nomfichier = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities($identifiant . '_' . $_FILES[$type . $identifiant]['name'], ENT_QUOTES, YW_CHARSET));
-            $nomfichier = str_replace(' ', '_', $nomfichier);
+            $nomfichier = $valeurs_fiche['id_fiche'].'_'.$identifiant.'_'
+                .sanitizeFilename($_FILES[$type . $identifiant]['name']);
             $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomfichier;
 
             //verification de la presence de ce fichier
@@ -1532,10 +1565,104 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
+    list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide, $maxsize) = $tableau_template;
 
     if ($mode == 'saisie') {
         $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' . $label : $label;
+        // javascript pour gerer la previsualisation
+        $js = 'function getOrientation(file, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+
+    var view = new DataView(e.target.result);
+    if (view.getUint16(0, false) != 0xFFD8) return callback(-2);
+    var length = view.byteLength, offset = 2;
+    while (offset < length) {
+      var marker = view.getUint16(offset, false);
+      offset += 2;
+      if (marker == 0xFFE1) {
+        if (view.getUint32(offset += 2, false) != 0x45786966) return callback(-1);
+        var little = view.getUint16(offset += 6, false) == 0x4949;
+        offset += view.getUint32(offset + 4, little);
+        var tags = view.getUint16(offset, little);
+        offset += 2;
+        for (var i = 0; i < tags; i++)
+          if (view.getUint16(offset + (i * 12), little) == 0x0112)
+            return callback(view.getUint16(offset + (i * 12) + 8, little));
+      }
+      else if ((marker & 0xFF00) != 0xFF00) break;
+      else offset += view.getUint16(offset, false);
+    }
+    return callback(-1);
+  };
+  reader.readAsArrayBuffer(file.slice(0, 64 * 1024));
+}
+
+
+        function handleFileSelect(evt) {
+          var target = evt.target || evt.srcElement;
+          var id = target.id;
+          var files = target.files; // FileList object
+
+          // Loop through the FileList and render image files as thumbnails.
+          for (var i = 0, f; f = files[i]; i++) {
+
+            // Only process image files.
+            if (!f.type.match(\'image.*\')) {
+              continue;
+            }';
+
+        // si une taille maximale est indiquée, on teste
+        if (!empty($maxsize)) {
+            $js .= 'if (f.size>'.$maxsize.') {
+                    alert("L\'image est trop grosse, maximum '.$maxsize.' octets");
+                    document.getElementById(id).type = \'\';
+                    document.getElementById(id).type = \'file\';
+                    continue ;
+                  }';
+        }
+
+        $js .= 'var reader = new FileReader();
+            // Closure to capture the file information.
+            reader.onload = (function(theFile) {
+              return function(e) {
+                getOrientation(theFile, function(orientation) {
+                  var css = \'\';
+                  if (orientation === 6) {
+                    css = \'transform:rotate(90deg);\';
+                  } else if (orientation === 8) {
+                    css = \'transform:rotate(270deg);\';
+                  } else if (orientation === 3) {
+                    css = \'transform:rotate(180deg);\';
+                  } else {
+                    css = \'\';
+                  }
+                  // TODO: rotate image
+                  //console.log(\'orientation: \' + css);
+                  css = \'\';
+                  // Render thumbnail.
+                  var span = document.createElement(\'span\');
+                  span.innerHTML = [\'<img class="img-responsive" style="\', css, \'" src="\', e.target.result,
+                  \'" title="\', escape(theFile.name), \'"/>\'].join(\'\');
+                  document.getElementById(\'img-\'+id).innerHTML = span.innerHTML;
+                  document.getElementById(\'data-\'+id).value = e.target.result;
+                  document.getElementById(\'filename-\'+id).value = theFile.name;
+                });
+
+              };
+            })(f);
+
+            // Read in the image file as a data URL.
+            reader.readAsDataURL(f);
+          }
+        }
+
+        var imageinputs = document.getElementsByClassName(\'yw-image-upload\');
+        for (var i = 0; i < imageinputs.length; i++)
+        {
+           imageinputs.item(i).addEventListener(\'change\', handleFileSelect, false);
+        }';
+        $GLOBALS['wiki']->addJavascript($js);
 
         //on verifie qu'il ne faut supprimer l'image
         if (isset($_GET['suppr_image']) && isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] == $_GET['suppr_image']) {
@@ -1565,7 +1692,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $formtemplate->addElement(new HTML_QuickForm_html("\n" . $info . "\n"));
                 $valeurs_fiche[$type . $identifiant] = '';
             } else {
-                $info = '<div class="alert">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
+                $info = '<div class="alert alert-danger">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 require_once BAZ_CHEMIN . 'libs' . DIRECTORY_SEPARATOR . 'vendor/HTML/QuickForm/html.php';
                 $formtemplate->addElement(new HTML_QuickForm_html("\n" . $info . "\n"));
             }
@@ -1582,28 +1709,39 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             //il y a bien le fichier image, on affiche l'image, avec possibilite de la supprimer ou de la modifier
             if (file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
                 require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
-                $formtemplate->addElement(new HTML_QuickForm_html("\n" . '<fieldset class="bazar_fieldset">' . "\n" . '<legend>' . $label . '</legend>' . "\n"));
+
+                $formtemplate->addElement(new HTML_QuickForm_html("\n" . '<div class="control-group form-group">'."\n"
+                .'<label class="control-label col-sm-3">' . "\n" . $label . '</label>' . "\n"));
+
+
+
+                $inputhtml = '<div class="controls col-sm-9">';
+                // apercu de l'image
+                $inputhtml .= '<div class="row"><div class="col-xs-3">';
 
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'suppr_image=' . $valeurs_fiche[$type . $identifiant];
-                $html_image = afficher_image($valeurs_fiche[$type . $identifiant], $label, '', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+                $lien_supprimer_image = '<a class="btn btn-sm btn-block btn-danger" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash"></i> ' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
+                $inputhtml .= '<label class="btn btn-block btn-default"><i class="glyphicon glyphicon-pencil"></i>
+                '. _t('BAZ_MODIFIER_IMAGE').'<input type="file" style="display: none;" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png">
+            </label>'.$lien_supprimer_image;
 
-                $lien_supprimer_image = '<a class="btn btn-danger btn-mini" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash icon-trash icon-white"></i>&nbsp;' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
-                if ($html_image != '') {
-                    $formtemplate->addElement('html', $html_image);
-                }
 
-                //gestion du champs obligatoire
-                $option = array('accept' => ".jpeg, .jpg, .gif, .png");
-                $formtemplate->addElement('file', $type . $identifiant, $lien_supprimer_image . _t('BAZ_MODIFIER_IMAGE'), $option);
+                $inputhtml .= '</div>'."\n";
+                $inputhtml .= '<output id="img-'.$type . $identifiant.'" class="col-xs-9">'.afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, 'img-responsive', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image).'</output>
+              <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n"
+                .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
+                .'</div>'."\n".'</div>'."\n";
+                $formtemplate->addElement('html', $inputhtml);
                 $formtemplate->addElement('hidden', 'oldimage_' . $type . $identifiant, $valeurs_fiche[$type . $identifiant]);
-                $formtemplate->addElement(new HTML_QuickForm_html("\n" . '</fieldset>' . "\n"));
             } else {
                 //le fichier image n'existe pas, du coup on efface l'entree dans la base de donnees
                 echo '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $valeurs_fiche[$type . $identifiant] . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>' . "\n";
 
                 //on efface une entrée de la base de données
                 unset($valeurs_fiche[$type . $identifiant]);
+                unset($valeurs_fiche['data-'.$type . $identifiant]);
+
                 $valeur = $valeurs_fiche;
                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
                 $valeur['id_fiche'] = $valeurs_fiche['id_fiche'];
@@ -1616,28 +1754,27 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
         } else {
             //cas ou il n'y a pas d'image dans la base de donnees, on affiche le formulaire d'envoi d'image
-            //gestion du champs obligatoire
-            $option = array('accept' => ".jpeg, .jpg, .gif, .png");
-            if (isset($obligatoire) && $obligatoire == 1) {
-                $option['required'] = 'required';
-            }
-            $formtemplate->addElement('file', $type . $identifiant, $label, $option);
-
-            //TODO: la verification du type de fichier ne marche pas
-            $tabmime = array('gif' => 'image/gif', 'jpg' => 'image/jpeg', 'png' => 'image/png');
-
-            /*$formtemplate->addRule($type.$identifiant, 'Vous devez choisir une fichier de type image gif, jpg ou png', 'mimetype', $tabmime );*/
+            $inputhtml = '<div class="control-group form-group">
+  <label class="control-label col-sm-3">'.$label.'</label>
+  <div class="controls col-sm-9">
+    <input type="file" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png" '.((isset($obligatoire) && $obligatoire == 1) ? 'required': '').'>
+    <output id="img-'.$type . $identifiant.'" class="col-xs-6"></output>
+    <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'
+            .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
+            .'</div>
+</div>' . "\n";
+            $formtemplate->addElement('html', $inputhtml);
         }
     } elseif ($mode == 'requete') {
-        if (isset($_FILES[$type . $identifiant]['name']) && $_FILES[$type . $identifiant]['name'] != '') {
+        if (!empty($_POST['data-'.$type . $identifiant]) and !empty($_POST['filename-'.$type . $identifiant])) {
             //on enleve les accents sur les noms de fichiers, et les espaces
-            $nomimage = $valeurs_fiche['id_fiche'].'_'.sanitizeFilename($_FILES[$type . $identifiant]['name']);
+            $nomimage = $valeurs_fiche['id_fiche'].'_'.sanitizeFilename($_POST['filename-'.$type . $identifiant]);
             if (preg_match("/(gif|jpeg|png|jpg)$/i", $nomimage)) {
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
                 //verification de la presence de ce fichier
                 if (!file_exists($chemin_destination)) {
-                    move_uploaded_file($_FILES[$type . $identifiant]['tmp_name'], $chemin_destination);
+                    file_put_contents($chemin_destination, file_get_contents($_POST['data-'.$type . $identifiant]));
                     chmod($chemin_destination, 0755);
 
                     //generation des vignettes
@@ -1655,20 +1792,22 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 echo '<div class="alert alert-danger">Fichier non autoris&eacute;.</div>';
             }
-            if (isset($valeurs_fiche['oldimage_' . $type . $identifiant])) {
-                unset($valeurs_fiche['oldimage_' . $type . $identifiant]);
-            }
 
-            return array($type . $identifiant => $nomimage);
+
+            return array(
+                $type.$identifiant => $nomimage,
+                'fields-to-remove' => array('filename-'.$type . $identifiant, 'data-'.$type . $identifiant, 'oldimage_' . $type . $identifiant)
+            );
         } elseif (isset($valeurs_fiche['oldimage_' . $type . $identifiant]) && $valeurs_fiche['oldimage_' . $type . $identifiant] != '') {
-            $tabimg = array($type . $identifiant => $valeurs_fiche['oldimage_' . $type . $identifiant]);
-            unset($valeurs_fiche['oldimage_' . $type . $identifiant]);
-            return $tabimg;
+            return array(
+                $type . $identifiant => $valeurs_fiche['oldimage_' . $type . $identifiant],
+                'fields-to-remove' => array('filename-'.$type . $identifiant, 'data-'.$type . $identifiant, 'oldimage_' . $type . $identifiant)
+            );
         }
     } elseif ($mode == 'recherche') {
     } elseif ($mode == 'html') {
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
-            return afficher_image($valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+            return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
         }
     }
 }
@@ -1721,17 +1860,26 @@ function metadatas(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function acls(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $read, $write, $comment) = $tableau_template;
-    if ($read=='user') {
-        $read = $valeurs_fiche['nomwiki'];
-    }
-    if ($write=='user') {
-        $write = $valeurs_fiche['nomwiki'];
-    }
-    if ($comment=='user') {
-        $comment = $valeurs_fiche['nomwiki'];
-    }
     if ($mode == 'requete') {
+        list($type, $read, $write, $comment) = array_map('trim', $tableau_template);
+
+        // le signe # ou le mot user indiquent que le createur de la fiche sera utilisé pour les droits
+        if ($read == 'user' or $read == '#') {
+            $read = $valeurs_fiche['nomwiki'];
+        }
+        if ($write == 'user' or $write == '#') {
+            $write = $valeurs_fiche['nomwiki'];
+        }
+        if ($comment == 'user' or $comment == '#') {
+            $comment = $valeurs_fiche['nomwiki'];
+        }
+        // hack pour que SavePage ne re-ecrit pas les droits avec les valeurs par défaut
+        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['body'] = $valeurs_fiche;
+        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['tag'] = $valeurs_fiche['id_fiche'];
+        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['owner'] = $valeurs_fiche['createur'];
+        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['comment_on'] = '';
+
+        // on sauve les acls
         $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'read', $read);
         $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'write', $write);
         $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'comment', $comment);
@@ -1825,46 +1973,55 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     });
     ';
         $geocodingscript = 'function showAddress() {
-            var address = "";
-            if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
-            if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
-            if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
-            if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
-            address = address.replace(/\\("|\'|\\)/g, " ").trim();
+          var address = "";
+          if (document.getElementById("bf_adresse")) address += document.getElementById("bf_adresse").value + \' \';
+          if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
+          if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
+          if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
+          if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
+          address = address.replace(/\\("|\'|\\)/g, " ").trim();
+        	geocodage( address, showAddressOk, showAddressError );
+          return false;
+        }
 
-            // requete ajax chez osm pour geolocaliser l adresse
-            var jqxhr = $.get(\''.$http.'://nominatim.openstreetmap.org/search?q=\'+address+\'&format=json\')
-              .done(function(data) {
-                if (geocodedmarker) map.removeLayer(geocodedmarker);
-                if (data.length>0) {
-                    // marqueur representant le premier resultat trouvé
-                    var point = L.latLng(data[0].lat, data[0].lon);
-                } else {
-                    //marqueur au centre par defaut au centre
-                    alert(\'Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées\');
-                    var point = map.getCenter();
-                }
-                geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
-                    map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                $(\'#bf_latitude\').val(point.lat);
-                $(\'#bf_longitude\').val(point.lng);
-                geocodedmarker.on("dragend",function(ev){
-                    this.openPopup();
-                    var changedPos = ev.target.getLatLng();
-                    $(\'#bf_latitude\').val(changedPos.lat);
-                    $(\'#bf_longitude\').val(changedPos.lng);
-                    $(\'.bf_latitude\').html(changedPos.lat);
-                    $(\'.bf_longitude\').html(changedPos.lng);
-                });
-              })
-              .fail(function(error) {
-                console.log(error);
-              })
-              .always(function() {
-                //console.log( "GetLocations finished" );
-              });
-        }'."\n";
+        function showAddressOk( lon, lat )
+        {
+        	//console.log("showAddressOk: "+lon+", "+lat);
+          geocodedmarkerRefresh( L.latLng( lat, lon ) );
+        }
+
+        function showAddressError( msg )
+        {
+        	//console.log("showAddressError: "+msg);
+        	if ( msg == "not found" ) {
+				    alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
+            geocodedmarkerRefresh( map.getCenter() );
+    		  } else {
+            alert("Une erreur est survenue: " + msg );
+          }
+    	}
+
+        function geocodedmarkerRefresh( point )
+        {
+			if (geocodedmarker) map.removeLayer(geocodedmarker);
+            geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
+            geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+            map.panTo( geocodedmarker.getLatLng(), {animate:true});
+            $(\'#bf_latitude\').val(point.lat);
+            $(\'#bf_longitude\').val(point.lng);
+            geocodedmarker.on("dragend",function(ev){
+            	this.openPopup();
+            	var changedPos = ev.target.getLatLng();
+            	$(\'#bf_latitude\').val(changedPos.lat);
+            	$(\'#bf_longitude\').val(changedPos.lng);
+            	$(\'.bf_latitude\').html(changedPos.lat);
+            	$(\'.bf_longitude\').html(changedPos.lng);
+            });
+    	}
+
+        '."\n";
+        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
+
         $deflat = '';
         $deflon = '';
         if (isset($valeurs_fiche['carte_google'])) {
@@ -1904,8 +2061,9 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             '<div class="control-group form-group">
                 <label class="control-label col-sm-3"></label>
                 <div class="controls col-sm-9">
-                    <input class="btn btn-primary btn_adresse" onclick="showAddress();" value="'
-            ._t('BAZ_VERIFIER_MON_ADRESSE') . '" type="button">
+                    <a class="btn btn-primary" onclick="showAddress();">'
+                    ._t('BAZ_VERIFIER_MON_ADRESSE')
+                    .'</a>
             <input type="hidden" value="'.$deflat.'" id="bf_latitude" name="bf_latitude">
             <input type="hidden" value="'.$deflon.'" id="bf_longitude" name="bf_longitude">
             '
@@ -2257,9 +2415,14 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $query = $typefiche . $valeurs_fiche['id_typeannonce'] . '=' . $valeurs_fiche['id_fiche'];
     }
     if (isset($tableau_template[3])) {
-        $ordre = $tableau_template[3];
+        $otherparams = $tableau_template[3];
     } else {
-        $ordre = 'alphabetique';
+        $otherparams = '';
+    }
+    if (!empty($tableau_template[4])) {
+        $nb = $tableau_template[4];
+    } else {
+        $nb = '';
     }
     if (isset($tableau_template[5])) {
         $template = $tableau_template[5];
@@ -2267,9 +2430,9 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $template = BAZ_TEMPLATE_LISTE_DEFAUT;
     }
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
-        $html = $GLOBALS['wiki']->Format($actionbazarliste);
-
+        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
+        $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
+        
         //ajout lien nouvelle saisie
         $url_checkboxfiche = clone ($GLOBALS['_BAZAR_']['url']);
         $url_checkboxfiche->removeQueryString('id_fiche');
@@ -2306,7 +2469,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2] . $bulledaide, "\n");
         }
     } elseif ($mode == 'html') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
+        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
         $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
 
         return $html;
@@ -2333,9 +2496,11 @@ function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $url_bookmarklet->addQueryString('vue', BAZ_VOIR_SAISIR);
             $url_bookmarklet->addQueryString('action', BAZ_ACTION_NOUVEAU);
             $url_bookmarklet->addQueryString('wiki', $GLOBALS['_BAZAR_']['pagewiki'] . '/iframe');
-            $url_bookmarklet->addQueryString('id_typeannonce', $GLOBALS['_BAZAR_']['id_typeannonce']);
+            $url_bookmarklet->addQueryString('id_typeannonce', $GLOBALS['params']['idtypeannonce']);
+            $urlfield = trim($tableau_template[3]) ? $tableau_template[3] : 'bf_url' ;
+            $descfield = trim($tableau_template[4]) ? $tableau_template[4] : 'bf_description' ;
             $htmlbookmarklet = "<div class=\"BAZ_info\">
-                <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('" . str_replace('&', '&amp;', $url_bookmarklet->getUrl()) . "&amp;bf_titre='+escape(document.title)+'&amp;url='+encodeURIComponent(location.href)+'&amp;description='+escape(document.getSelection()), '" . $tableau_template[1] . "', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\">" . $tableau_template[1] . "</a> << " . $tableau_template[2] . "</div>";
+                <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('" . str_replace('&', '&amp;', $url_bookmarklet->getUrl()) . "&amp;bf_titre='+escape(document.title)+'&amp;$urlfield='+encodeURIComponent(location.href)+'&amp;$descfield='+escape(document.getSelection()), '" . $tableau_template[1] . "', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\" class=\"btn btn-default\">" . $tableau_template[1] . "</a> << " . $tableau_template[2] . "</div>";
             $formtemplate->addElement('html', $htmlbookmarklet);
         }
     }
@@ -2379,13 +2544,9 @@ function obtenir_extension($filename)
     $pos = strrpos($filename, '.');
     if ($pos === false) {
          // dot is not found in the filename
-
-        return '';
-         // no extension
-
+        return ''; // no extension
     } else {
         $extension = substr($filename, $pos + 1);
-
         return $extension;
     }
 }

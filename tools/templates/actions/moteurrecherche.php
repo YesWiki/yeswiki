@@ -20,7 +20,7 @@ $searchelements['url'] = ($this->GetParameter('url') ? $this->GetParameter('url'
 // si une recherche a été effectuée, on garde les mots clés
 $searchelements['phrase'] = (isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : "");
 
-include_once('tools/templates/libs/squelettephp.class.php');
+include_once('tools/libs/squelettephp.class.php');
 $searchtemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
 $searchtemplate->set($searchelements);
 echo $searchtemplate->analyser();

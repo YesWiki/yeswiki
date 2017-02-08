@@ -4,7 +4,7 @@ textsearch.php
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
 Copyright 2002, 2003 David DELON
 Copyright 2002  Patrick PAUL
-Copyright 2004  Jean Christophe ANDR�
+Copyright 2004  Jean Christophe ANDRé
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -29,28 +29,28 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// label � afficher devant la zone de saisie
+// label é afficher devant la zone de saisie
 $label = $this->GetParameter('label', _t('WHAT_YOU_SEARCH').'&nbsp;: ');
 // largeur de la zone de saisie
 $size = $this->GetParameter('size', '40');
 // texte du bouton
 $button = $this->GetParameter('button', _t('SEARCH'));
-// texte � chercher
+// texte é chercher
 $phrase = $this->GetParameter('phrase', false);
-// s�parateur entre les �l�ments trouv�s
+// séparateur entre les éléments trouvés
 $separator = $this->GetParameter('separator', false);
 
-// se souvenir si c'�tait :
-// -- un param�tre de l'action : {{textsearch phrase="Test"}}
+// se souvenir si c'était :
+// -- un paramétre de l'action : {{textsearch phrase="Test"}}
 // -- ou du CGI http://example.org/wakka.php?wiki=RechercheTexte&phrase=Test
 //
-// r�cup�rer le param�tre de l'action
+// récupérer le paramétre de l'action
 $paramPhrase = $phrase;
-// ou, le cas �ch�ant, r�cup�rer le param�tre du CGI
+// ou, le cas échéant, récupérer le paramétre du CGI
 if (!$phrase && isset($_GET['phrase'])) $phrase = $_GET['phrase'];
 
-// s'il y a un param�tre d'action "phrase", on affiche uniquement le r�sultat
-// dans le cas contraire, pr�senter une zone de saisie
+// s'il y a un paramétre d'action "phrase", on affiche uniquement le résultat
+// dans le cas contraire, présenter une zone de saisie
 if (!$paramPhrase)
 {
 	echo $this->FormOpen('', '', 'get');
@@ -66,7 +66,7 @@ if (!$paramPhrase)
 
 if ($phrase)
 {
-	// on cherche sur le mot avec entit�s html, le mot encod� par le wiki, ou le mot encod� par bazar en json
+	// on cherche sur le mot avec entités html, le mot encodé par le wiki, ou le mot encodé par bazar en json
 	$search = $phrase.','.utf8_decode($phrase).','.substr(json_encode($phrase),1,-1);
 	$results = $this->FullTextSearch($search);
 	if ($results)

@@ -50,6 +50,7 @@ if (!empty($_SESSION['redirects']))
 	$tag = $trace[count($trace) - 1];
 	$prevpage = $this->LoadPage($tag);
 	echo '<div class="redirectfrom"><em>(Redirig&eacute; depuis ', $this->Link($prevpage['tag'], 'edit'), ")</em></div>\n";
+  unset($_SESSION['redirects'][count($trace) - 1]);
 }
 
 if ($HasAccessRead=$this->HasAccess("read"))
@@ -106,13 +107,13 @@ if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 {
 	// load comments for this page
 	$comments = $this->LoadComments($this->tag);
-	
+
 	// store comments display in session
 	$tag = $this->GetPageTag();
 
 	if (!isset($_SESSION["show_comments"][$tag]))
 		$_SESSION["show_comments"][$tag] = ($this->UserWantsComments() ? "1" : "0");
-	if (isset($_REQUEST["show_comments"])){	
+	if (isset($_REQUEST["show_comments"])){
 		switch($_REQUEST["show_comments"])
 		{
 		case "0":
@@ -133,7 +134,7 @@ if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 			Commentaires [<a href="<?php echo  $this->href("", "", "show_comments=0") ?>">Cacher commentaires/formulaire</a>]
 		</div>
 		<?php
-		
+
 		// display comments themselves
 		if ($comments)
 		{
@@ -162,7 +163,7 @@ if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 				echo "</div>\n" ;
 			}
 		}
-		
+
 		// display comment form
 		echo "<div class=\"commentform\">\n" ;
 		if ($this->HasAccess("comment"))
@@ -194,7 +195,7 @@ if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
 				echo "Il y a ",count($comments)," commentaires sur cette page." ;
 			}
 		?>
-		
+
 		[<a href="<?php echo  $this->href("", "", "show_comments=1") ?>">Afficher commentaires/formulaire</a>]
 
 		</div>

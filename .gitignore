@@ -1,29 +1,67 @@
-
 # YesWiki stuff
-
 wakka.config.php
 info.php
-tools/hashcash/secret/wp-hashcash.key
-cache/*
-files/*
-themes/*
+cache/
+!cache/empty.txt
+files/
+!files/empty.txt
+themes/
 !themes/bootstrap/
-tools/wkhtmltopdf/*
+
+# tools
+tools/*
+!tools/autoupdate
+!tools/aceditor/*
+!tools/prepend.php
+!tools/aceditor
+!tools/aceditor/*
+!tools/attach
+!tools/attach/*
+!tools/bazar
+!tools/bazar/*
+!tools/contact
+!tools/contact/*
+!tools/despam
+!tools/despam/*
+!tools/hashcash
+!tools/hashcash/*
+tools/hashcash/secret/wp-hashcash.key
+!tools/ipblock
+!tools/ipblock/*
+!tools/lang
+!tools/lang/*
+!tools/libs
+!tools/libs/*
+!tools/login
+!tools/login/*
+!tools/nospam
+!tools/nospam/*
+!tools/progressBar
+!tools/progressBar/*
+!tools/rss
+!tools/rss/*
+!tools/security
+!tools/security/*
+!tools/syndication
+!tools/syndication/*
+!tools/tableau
+!tools/tableau/*
+!tools/tags
+!tools/tags/*
+!tools/templates
+!tools/templates/*
+!tools/toc
+!tools/toc/*
+!tools/toolsmng
+!tools/toolsmng/*
 
 # Macintosh OS
-
 .DS_Store
 
-# Eclipse IDE
-
+# Eclipse IDe
 .buildpath
 .project
 .settings/
 
 # Other
-
 .phpintel/
-
-# Netbeans IDE
-
-/nbproject/

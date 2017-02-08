@@ -1,0 +1,62 @@
+<table class="table table-striped table-condensed">
+    <tr>
+        <th>Nom</th>
+        <th>Version installée</th>
+        <th>Version disponible</th>
+        <th></th>
+        <th></th>
+  </tr>
+      {% for ext in exts %}
+        <tr>
+            <td>
+                <strong>{{ ext.name }}</strong>
+                <a class="small" href="{{ ext.documentation }}">
+                    ({{ AU_DOCUMENTATION_LINK }})
+                </a>
+                <br />
+                <small>{{ ext.description }}</small>
+            </td>
+            <td>
+                {% if ext.installed %}
+                    {{ ext.localRelease }}
+                {% else %}
+                    {{ AU_ABSENT }}
+                {% endif %}
+            </td>
+            <td>
+                {{ ext.release }}
+            </td>
+            <td>
+                {% if isAdmin and ext.updateAvailable and ext.installed %}
+                    <a  href="{{ baseUrl }}{{ ext.updateLink }}"
+                        class="btn btn-success"
+                        title="{{ AU_UPDATE }}"
+                    >
+                        {{ AU_UPDATE }}
+                    </a>
+                {% endif %}
+
+
+            </td>
+            <td>
+                {% if isAdmin and not ext.installed %}
+                    <a  href="{{ baseUrl }}{{ ext.updateLink }}"
+                        class="btn btn-primary"
+                        title="{{ AU_INSTALL }}"
+                    >
+                        {{ AU_INSTALL }}
+                    </a>
+                {% endif %}
+
+                {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
+                    <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
+                        class="btn btn-danger"
+                        title="{{ AU_DELETE_EXT }}"
+                    >
+                        {{ AU_DELETE_EXT }}
+                    </a>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+</table>

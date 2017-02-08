@@ -1,0 +1,15 @@
+{% if showCore %}
+    {% include 'core.twig' %}
+{% endif %}
+
+{% if showThemes %}
+<h2>Thèmes</h2>
+    {% set exts = themes %}
+    {% include 'exts.twig' %}
+{% endif %}
+
+{% if showTools %}
+<h2>Tools (extensions)</h2>
+    {% set exts = tools %}
+    {% include 'exts.twig' %}
+{% endif %}

@@ -26,7 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// V�rification de s�curit�
+// Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }

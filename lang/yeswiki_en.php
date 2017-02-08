@@ -173,6 +173,7 @@ $GLOBALS['translations'] = array(
 // actions/textsearch.php
 'WHAT_YOU_SEARCH' => 'What you search',
 'SEARCH' => 'Search',
+//'SEARCH' => 'Search database',
 'SEARCH_RESULT_OF' => 'Search results for',
 'NO_RESULT_FOR' => 'No result for',
 
@@ -181,6 +182,7 @@ $GLOBALS['translations'] = array(
 'INDICATE_THE_PARAMETER_TOC' => 'Indicate the WikiPage used as table of content, parameter "toc"',
 
 // actions/usersettings.php
+'USER_SETTINGS' => 'User settings',
 'YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected',
 'PARAMETERS_SAVED' => 'Parameters saved',
 'NO_SPACES_IN_PASSWORD' => 'No spaces allowed in password',
@@ -290,7 +292,6 @@ $GLOBALS['translations'] = array(
 'NO_DATABASE_FOUND_TRY_TO_CREATE' => 'No database found with the name you indicated. We will try to create it',
 'TRYING_TO_CREATE_DATABASE' => 'Trying to create database',
 'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Database creation impossible. You must create the database manually before installing YesWiki',
-'SEARCH' => 'Search database',
 'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'The choosen database doesn\'t exist, you must create the database manually before installing YesWiki',
 'CHECKING_THE_ADMIN_PASSWORD' => 'Checking the administrator\'s password',
 'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Checking the administrator\'s password confirmation',

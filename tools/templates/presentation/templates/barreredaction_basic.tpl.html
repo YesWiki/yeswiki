@@ -27,9 +27,8 @@
 			<i class="glyphicon glyphicon-film icon-film"></i>&nbsp;<?php echo _t('TEMPLATE_SLIDESHOW');?> <span class="caret"></span>
 		</a>
 		<ul class="dropdown-menu">
-			<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama','','template=diaporama_slides.tpl.html');?>">Diapositives</a></li> 
-			<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama');?>">Diaporama plein &eacute;cran</a></li> 
-			<li><a href="<?php echo $GLOBALS['wiki']->href('slide_show');?>">Diaporama sobre</a></li> 
+      <li><a href="<?php echo $GLOBALS['wiki']->href('slide_show');?>"><?php echo _t('TEMPLATE_CLASSIC_SLIDESHOW');?></a></li>
+			<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama');?>"><?php echo _t('TEMPLATE_DYNAMIC_SLIDESHOW');?></a></li>
 		</ul>
 	</span>
 	<a title="<?php echo _t('TEMPLATE_SEE_SHARING_OPTIONS').' '.$page;?>" href="<?php echo $linkshare;?>" class="link-share modalbox">

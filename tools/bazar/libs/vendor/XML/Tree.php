@@ -13,7 +13,7 @@
 // | obtain it through the world-wide-web, please send a note to          |
 // | license@php.net so we can mail you a copy immediately.               |
 // +----------------------------------------------------------------------+
-// | Authors: Bernd Römer <berndr@bonn.edu>                               |
+// | Authors: Bernd RÃ©mer <berndr@bonn.edu>                               |
 // |          Sebastian Bergmann <sb@sebastian-bergmann.de>               |
 // |          Tomas V.V.Cox <cox@idecnet.com> (tree mapping from xml file)|
 // +----------------------------------------------------------------------+
@@ -42,7 +42,7 @@ require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.
 *    header('Content-Type: text/xml');
 *    $tree->dump();
 *
-* @author  Bernd Römer <berndr@bonn.edu>
+* @author  Bernd RÃ©mer <berndr@bonn.edu>
 * @package XML
 * @version $Version$ - 1.0
 */

@@ -5,7 +5,7 @@ Permet d'inclure une page Wiki dans un autre page
 
 Copyright 2003  Eric FELDSTEIN
 Copyright 2003, 2004, 2006  Charles NEPOTE
-Copyright 2004  Jean Christophe ANDRÉ
+Copyright 2004  Jean Christophe ANDRÃ©
 Copyright 2005  Didier Loiseau
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,22 +22,22 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-/* Paramètres :
+/* ParamÃ©tres :
  -- page : nom wiki de la page a inclure (obligatoire)
- -- class : nom de la classe de style à inclure (facultatif)
- -- auth : option d'affichage dans le cas d'un utilisateur non autorisé (facultatif)
-    -- par défaut : ne fait rien
+ -- class : nom de la classe de style Ã© inclure (facultatif)
+ -- auth : option d'affichage dans le cas d'un utilisateur non autorisÃ© (facultatif)
+    -- par dÃ©faut : ne fait rien
     -- valeur "noError" : n'affiche aucun message d'erreur
- -- edit : option d'accès en édition à la page incluse (facultatif)
-    -- par défaut : ne fait rien
-    -- valeur "show" :  ajoute un lien "[Édition]" en haut à droite de la boite
+ -- edit : option d'accÃ©s en Ã©dition Ã© la page incluse (facultatif)
+    -- par dÃ©faut : ne fait rien
+    -- valeur "show" :  ajoute un lien "[Ã©dition]" en haut Ã© droite de la boite
 */ 
 
-// récuperation du nom de la page à inclure
+// rÃ©cuperation du nom de la page Ã© inclure
 $incPageName = trim($this->GetParameter('page'));
 
 /**
-* @todo améliorer le traitement des classes css
+* @todo amÃ©liorer le traitement des classes css
 */
 if ($this->GetParameter('class'))
 {
@@ -61,14 +61,14 @@ if (empty($incPageName))
 elseif ($this->IsIncludedBy($incPageName))
 {
 	$inclusions = $this->GetAllInclusions();
-	$pg = strtolower($incPageName); // on l'effectue avant le for sinon il sera recalculé à chaque pas
+	$pg = strtolower($incPageName); // on l'effectue avant le for sinon il sera recalculÃ© Ã© chaque pas
 	$err = '[[' . $pg . ']]';
 	for($i = 0; $inclusions[$i] != $pg; $i++)
 	{
 		$err = '[[' . $inclusions[$i] . ']] > ' . $err;
 	} 
 	echo '<div class="alert alert-danger"><strong>'._t('ERROR').' '._t('ACTION').' Include</strong> : '._t('IMPOSSIBLE_FOR_THIS_PAGE').' '.$incPageName.' '._t('TO_INCLUDE_ITSELF')
-		 . ($i ? ':<br /><strong>'._t('INCLUSIONS_CHAIN').'</strong> : '.$pg.' > '.$err : '').'</div>'."\n"; // si $i = 0, alors c'est une page qui s'inclut elle-même directement...
+		 . ($i ? ':<br /><strong>'._t('INCLUSIONS_CHAIN').'</strong> : '.$pg.' > '.$err : '').'</div>'."\n"; // si $i = 0, alors c'est une page qui s'inclut elle-mÃ©me directement...
 }
 elseif (!$this->HasAccess('read', $incPageName) && $this->GetParameter('auth')!='noError')
 {

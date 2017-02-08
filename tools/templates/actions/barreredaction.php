@@ -4,7 +4,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if ($this->HasAccess("write")) {
-    // on récupère la page et ses valeurs associées
+    // on rÃ©cupÃ©re la page et ses valeurs associÃ©es
     $page = $this->GetParameter('page');
     if (empty($page)) {
         $page = $this->GetPageTag();
@@ -17,16 +17,16 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['page'] = $page;
     $barreredactionelements['linkpage'] = $this->href('', $page);
 
-    // on choisit le template utilisé
+    // on choisit le template utilisÃ©
     $template = $this->GetParameter('template'); 
     if (empty($template)) {
         $template = 'barreredaction_basic.tpl.html';
     }
 
-    // on peut ajouter des classes à la classe par défaut .footer
+    // on peut ajouter des classes Ã© la classe par dÃ©faut .footer
     $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
 
-    // on ajoute le lien d'édition si l'action est autorisée
+    // on ajoute le lien d'Ã©dition si l'action est autorisÃ©e
     if ( $this->HasAccess("write", $page) ) {
         $barreredactionelements['linkedit'] = $this->href("edit", $page);
     }
@@ -67,7 +67,7 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['linkdiaporama'] = $this->href("diaporama", $page);
     $barreredactionelements['linkshare'] = $this->href("share", $page);
 
-    include_once('tools/templates/libs/squelettephp.class.php');
+    include_once('tools/libs/squelettephp.class.php');
     $barreredactiontemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
     $barreredactiontemplate->set($barreredactionelements);
     echo $barreredactiontemplate->analyser().' <!-- /.footer -->'."\n";

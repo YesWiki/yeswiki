@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en francais de l'extension Contact
 *
@@ -83,8 +83,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_SUBSCRIBE_ORDER_SENT' => 'Votre demande concernant votre abonnement a bien &eacute;t&eacute; prise en compte. Merci!',
 'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'Votre demande concernant votre d&eacute;sabonnement a bien &eacute;t&eacute; prise en compte. Merci!',
 
-'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'Le handler /mail est r&eacute;serv&eacute; au groupe des administrateurs.',
-'CONTACT_LOGIN_IF_ADMIN' => 'Si vous faites parti ce groupe, veuillez vous identifier.',
+'CONTACT_HANDLER_MAIL_FOR_CONNECTED' => 'L\'envoi de mail est r&eacute;serv&eacute; aux personnes identifiées.',
+'CONTACT_LOGIN_IF_CONNECTED' => 'Si vous avez un identifiant, veuillez vous identifier.',
 
 'CONTACT_SUBSCRIBE' => 'S\'abonner',
 'CONTACT_UNSUBSCRIBE' => 'Se d&eacute;sabonner',

@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en francais de YesWiki
 *
@@ -173,6 +173,7 @@ $GLOBALS['translations'] = array(
 // actions/textsearch.php
 'WHAT_YOU_SEARCH' => 'Ce que vous souhaitez chercher',
 'SEARCH' => 'Chercher',
+//'SEARCH' => 'Rechercher',
 'SEARCH_RESULT_OF' => 'R&eacute;sultat(s) de la recherche de',
 'NO_RESULT_FOR' => 'Aucun r&eacute;sultat pour',
 
@@ -181,6 +182,7 @@ $GLOBALS['translations'] = array(
 'INDICATE_THE_PARAMETER_TOC' => 'Indiquez le nom de la page sommaire, param&egrave;tre "toc"',
 
 // actions/usersettings.php
+'USER_SETTINGS' => 'Paramètres utilisateur',
 'YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute;',
 'PARAMETERS_SAVED' => 'Param&egrave;tres sauvegard&eacute;s',
 'NO_SPACES_IN_PASSWORD' => 'Les espaces ne sont pas permis dans les mots de passe',
@@ -199,7 +201,7 @@ $GLOBALS['translations'] = array(
 'YOUR_OLD_PASSWORD' => 'Votre ancien mot de passe',
 'NEW_PASSWORD' => 'Nouveau mot de passe',
 'CHANGE' => 'Changer',
-'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur doit &ecirc;tre format&eacute; en NomWiki',
+'USERNAME_MUST_BE_WIKINAME' => 'Votre nom d\'utilisateur doit &ecirc;tre format&eacute; en NomWiki (<em>ex: CapitaineHaddock</em>)',
 'YOU_MUST_SPECIFY_AN_EMAIL' => 'Vous devez sp&eacute;cifier une adresse de messagerie &eacute;lectronique',
 'THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci ne ressemble pas &agrave; une adresse de messagerie &eacute;lectronique',
 'PASSWORDS_NOT_IDENTICAL' => 'Les mots de passe n\'&eacute;taient pas identiques',
@@ -215,7 +217,7 @@ $GLOBALS['translations'] = array(
 'NEW_ACCOUNT' => 'Nouveau compte',
 
 
-// actions/wantedpages.php 
+// actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'Aucune page &agrave; cr&eacute;er',
 
 // setup/header.php
@@ -232,6 +234,7 @@ $GLOBALS['translations'] = array(
 'FILL_THE_FORM_BELOW' => 'Veuillez compl&eacute;ter le formulaire suivant',
 'DEFAULT_LANGUAGE' => 'Langue par d&eacute;faut',
 'DEFAULT_LANGUAGE_INFOS' => 'Langue utilis&eacute;e par d&eacute;faut pour l\'interface de YesWiki, il sera toujours possible de changer de langue pour chacune des pages cr&eacute;&eacute;es',
+'GENERAL_CONFIGURATION' => 'Configuration générale',
 'DATABASE_CONFIGURATION' => 'Configuration de la base de donn&eacute;es',
 'MORE_INFOS' => '+ Infos',
 'MYSQL_SERVER' => 'Machine MySQL',
@@ -290,7 +293,6 @@ $GLOBALS['translations'] = array(
 'NO_DATABASE_FOUND_TRY_TO_CREATE' => 'La base de donn&eacute;es que vous avez choisie n\'existe pas. Nous allons tenter de la cr&eacute;er',
 'TRYING_TO_CREATE_DATABASE' => 'Tentative de cr&eacute;ation de la base de donn&eacute;es',
 'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Cr&eacute;ation de la base impossible. Vous devez cr&eacute;er cette base manuellement avant d\'installer YesWiki',
-'SEARCH' => 'Rechercher',
 'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'La base de donn&eacute;es que vous avez choisie n\'existe pas, vous devez la cr&eacute;er avant d\'installer YesWiki',
 'CHECKING_THE_ADMIN_PASSWORD' => 'V&eacute;rification du mot de passe Administrateur',
 'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'V&eacute;rification de l\'identit&eacute; des mots de passes administrateurs',

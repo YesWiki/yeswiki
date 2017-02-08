@@ -68,7 +68,7 @@ if (isset($_GET['jsonp_callback']))
 			$valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
 			$valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
 			$valcomment['commentaires'][0]['replies'] = '';
-			include_once('tools/tags/libs/squelettephp.class.php');
+			include_once('tools/libs/squelettephp.class.php');
 			$squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
 			$squelcomment->set($valcomment);
 			echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($squelcomment->analyser()))).")";

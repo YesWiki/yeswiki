@@ -1,0 +1,22 @@
+<h2>YesWiki</h2>
+<p>
+    {{ AU_VERSION_WIKI }} : {{ core.localRelease }}
+</p>
+<p>
+    {{ AU_VERSION_REPO }} : {{ core.release }}
+</p>
+
+{% if isAdmin and core.updateAvailable %}
+    <p> {{ AU_WARNING }} </p>
+    <a  href="{{ baseUrl}}{{ core.updateLink }}"
+        class="btn btn-primary" title="{{ AU_UPDATE }}">
+        {{ AU_UPDATE }}
+    </a>
+{% endif %}
+
+{% if isAdmin and not core.updateAvailable %}
+    <a  href="{{ baseUrl }}{{ core.updateLink }}"
+        class="btn btn-warning" title="{{ AU_FORCE_UPDATE }}">
+        {{ AU_FORCE_UPDATE }}
+    </a>
+{% endif %}

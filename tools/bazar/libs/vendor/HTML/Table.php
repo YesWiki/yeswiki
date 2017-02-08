@@ -692,7 +692,7 @@ class HTML_Table extends HTML_Common
      * @param string $type (optional) Cell type either 'th' or 'td'
      * @param bool   $inTR false if attributes are to be applied
      *                                   in TD tags; true if attributes are to
-     *                                  ´be applied in TR tag
+     *                                  Ã©be applied in TR tag
      * @param  int $body (optional) The index of the body to use.
      * @return int
      * @access   public

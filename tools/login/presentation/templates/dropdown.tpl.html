@@ -1,35 +1,38 @@
 <div class="btn-group">
 	<?php if ($connected) : ?>
-		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
+		<button data-toggle="dropdown" class="btn btn-default dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="glyphicon glyphicon-user"></i> <?php echo $user; ?> <span class="caret"></span></button>
 		<ul class="dropdown-menu">
 		  <?php echo $PageMenuUser; ?>
 		  <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
 		  <li><a href="<?php echo $incomingurl; ?>&action=logout" class="login-signout-link" title="<?php echo _t('LOGIN_LOGOUT'); ?>"><?php echo _t('LOGIN_LOGOUT'); ?></a></li>
 		</ul>
 	<?php else : ?>
-		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo _t('LOGIN_LOGIN'); ?>&nbsp;<span class="caret"></span></button>
+		<button data-toggle="dropdown" class="btn btn-default dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="glyphicon glyphicon-user"></i> <?php echo _t('LOGIN_LOGIN'); ?> <span class="caret"></span></button>
 		<div class="dropdown-menu">
-			<form class="login-form" action="<?php echo $incomingurl; ?>" method="post">
+			<form action="<?php echo $incomingurl; ?>" method="post" style="padding:10px;">
 				<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo _t('LOGIN_ALREADY_MEMBER'); ?></h5><?php endif; ?>
-				<div class="controls">
-					<input id="inputWikiName" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
+				<div class="form-group">
+					<input id="inputWikiName" class="form-control" required placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
 				</div>
-				<div class="controls">
-					<input id="inputPassword" class="input-medium" required="required" placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />
+				<div class="form-group">
+					<input id="inputPassword" class="form-control" required placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />
 				</div>
-				<div class="controls">
-					<label class="checkbox" for="remember-dropdown">
-						<input type="checkbox" id="remember-dropdown" name="remember" value="1" /><?php echo _t('LOGIN_REMEMBER_ME'); ?>
-					</label>
-				</div>
-				<button type="submit" class="btn btn-block<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="icon-user"></i>&nbsp;<?php echo _t('LOGIN_LOGIN'); ?></button>
+        <?php if (!empty($lostpasswordurl)) { ?>
+    			<small><a href="<?php echo $lostpasswordurl ?>"><?php echo _t('LOGIN_LOST_PASSWORD'); ?></a></small>
+    		<?php } ?>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" id="remember-default" name="remember" value="1"> <small><?php echo _t('LOGIN_REMEMBER_ME'); ?></small>
+          </label>
+        </div>
+				<button type="submit" class="btn btn-block <?php echo $btnclass; ?> btn-primary"><i class="glyphicon glyphicon-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
 				<input type="hidden" name="action" value="login" />
 				<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 				<input type="hidden" name="remember" value="0" />
 				<?php if ($signupurl != '' && $signupurl != '0') : ?>
-					<br /><br />
+					<hr>
 					<h5><?php echo _t('LOGIN_NEW_MEMBER'); ?></h5>
-					<a class="btn btn-block<?php if ($btnclass!='') echo ' '.$btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="icon-plus"></i>&nbsp;<?php echo _t('LOGIN_SIGNUP'); ?></a>
+					<a class="btn btn-block <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="glyphicon glyphicon-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a>
 				<?php endif; ?>
 			</form> <!-- /.login-form -->
 		</div> <!-- /.dropdown-menu -->

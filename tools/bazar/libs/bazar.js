@@ -65,19 +65,35 @@ $(document).ready(function () {
   });
 
   //permet de gerer des affichages conditionnels, en fonction de balises div
-  $('select[id^=\'liste\']').each(function () {
+  function handleConditionnalListChoice() {
     var id = $(this).attr('id');
-    id = id.replace('liste', '');
-    $('div[id^=\'' + id + '\']').hide();
-    $('div[id=\'' + id + '_' + $(this).val() + '\']').show();
-  });
+    $('div[id^=\'' + id + '\'], div[id^=\'' + id.replace('liste', '') + '\']')
+      .not('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').hide()
+     .find(':input').val('').removeProp('checked');
+    $('div[id=\'' + id + '_' + $(this).val() + '\'], div[id=\'' + id.replace('liste', '') + '_' + $(this).val() + '\']').show();
+  }
+  function handleConditionnalCheckboxChoice() {
+    var id = $(this).attr('id');
+    var re = /^([a-zA-Z0-9-_]+)\[([a-zA-Z0-9-_]+)\]$/;
+    var m;
 
-  $('select[id^=\'liste\']').change(function () {
-    var id = $(this).attr('id');
-    id = id.replace('liste', '');
-    $('div[id^=\'' + id + '\']').hide();
-    $('div[id=\'' + id + '_' + $(this).val() + '\']').show();
-  });
+    if ((m = re.exec(id)) !== null) {
+        if (m.index === re.lastIndex) {
+            re.lastIndex++;
+        }
+    }
+    if (m) {
+      if ($(this).prop('checked') == true) {
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']').show();
+      } else {
+        $('div[id=\'' + m[1] + '_' + m[2] + '\']').hide()
+        .find(':input').val('').removeProp('checked');
+      }
+    }
+  }
+
+  $('select[id^=\'liste\']').each(handleConditionnalListChoice).change(handleConditionnalListChoice);
+  $('.element_checkbox[id^=\'checkboxListe\']').each(handleConditionnalCheckboxChoice).change(handleConditionnalCheckboxChoice);
 
   //choix de l'heure pour une date
   $('.select-allday').change(function () {
@@ -135,7 +151,7 @@ $(document).ready(function () {
     + '#formulaire textarea[required=required]:visible')
     .not('#formulaire input.bazar-date[required=required]');
 
-  $('.bouton_sauver').click(function () {
+  $('#formulaire').submit(function(e) {
     var atleastonefieldnotvalid = false;
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;
@@ -155,7 +171,7 @@ $(document).ready(function () {
     }
 
     // les dates
-    $('#formulaire input.bazar-date[required=required]').each(function () {
+    $('#formulaire input.bazar-date[required=required]:visible').each(function () {
       if ($(this).val() === '') {
         atleastonefieldnotvalid = true;
         $(this).addClass('invalid');
@@ -165,7 +181,7 @@ $(document).ready(function () {
     });
 
     // les emails
-    $('#formulaire input[type=email]').each(function () {
+    $('#formulaire input[type=email]:visible').each(function () {
       var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
       var address = $(this).val();
       if (reg.test(address) === false
@@ -178,7 +194,7 @@ $(document).ready(function () {
     });
 
     // les urls
-    $('#formulaire input[type=url]').each(function () {
+    $('#formulaire input[type=url]:visible').each(function () {
       var reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
       var url = $(this).val();
       if (reg.test(url) === false && !(url === '' && $(this).attr('required') !== 'required')) {
@@ -190,7 +206,7 @@ $(document).ready(function () {
     });
 
     // les checkbox chk_required
-    $('#formulaire fieldset.chk_required').each(function () {
+    $('#formulaire fieldset.chk_required:visible').each(function () {
       var nbchkbox = $(this).find(':checked');
       if (nbchkbox.length === 0) {
         atleastonecheckboxfieldnotvalid = true;
@@ -201,7 +217,7 @@ $(document).ready(function () {
     });
 
     // les checkbox des tags
-    $('#formulaire [required] .bootstrap-tagsinput').each(function () {
+    $('#formulaire [required] .bootstrap-tagsinput:visible').each(function () {
       var nbtag = $(this).find('.tag');
       if (nbtag.length === 0) {
         atleastonetagfieldnotvalid = true;
@@ -218,14 +234,14 @@ $(document).ready(function () {
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     } else if (atleastonemailfieldnotvalid === true) {
       alert('L\'email saisi n\'est pas valide');
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
 
     } else if (atleastoneurlfieldnotvalid === true) {
       alert('L\'url saisie n\'est pas valide, elle doit commencer par http:// '
@@ -234,28 +250,28 @@ $(document).ready(function () {
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     } else if (atleastonecheckboxfieldnotvalid === true) {
       alert('Il faut cocher au moins une case a cocher');
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     } else if (atleastonetagfieldnotvalid === true) {
       alert('Il faut saisir au moins une entrée pour le champs en autocomplétion');
 
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80,
-      }, 800);
+      }, 500);
     }
 
     // formulaire validé, on soumet le formulaire
     else {
-      $('#formulaire').submit();
+      return true;
     }
-
+    e.preventDefault();
     return false;
   });
 
@@ -343,19 +359,26 @@ $(document).ready(function () {
   ]);
 
   // Onglets
-  $('.BAZ_cadre_fiche .nav-tabs a').click(function (e) {
-    e.preventDefault();
-    $(this).tab('show');
+  // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
+  $('.bazar-entry').each(function (i) {
+    $(this).find('[data-toggle="tab"]').each(function () {
+      $(this).attr('href', $(this).attr('href') + '-' + i);
+    });
+
+    $(this).find('.tab-pane').each(function () {
+      $(this).attr('id', $(this).attr('id') + '-' + i);
+    });
   });
 
-  // code pour les boutons suivant / precedent
-  $('.tab-content .pager a').click(function (e) {
-    e.preventDefault();
-    var lientab = $(this).attr('href');
-    $('.nav-tabs a[href="' + lientab + '"]').tab('show'); // Select tab by name
+  // hack pour les boutons suivant precedent dans le formulaire bazar
+  $('#formulaire .tab-content [data-toggle="tab"]').click(function () {
+     $('#formulaire .nav-tabs .active').removeClass('active');
+     $('#formulaire .nav-tabs').find('[href="' + $(this).attr('href') + '"]').parent().addClass('active');
+     $('#formulaire .nav-tabs a[href="' + $(this).attr('href') + '"]').tab('show');
+     $('html, body').animate({
+       scrollTop: $('#formulaire').offset().top - 80,
+     }, 500);
   });
-
-  $('.tab-pane').removeAttr('style');
 
   // cocher / decocher tous
   var $checkboxselectall = $('.selectall');
@@ -411,8 +434,8 @@ $(document).ready(function () {
       }
     } else {
       var s = location.search;
-      console.log('s', s, s !== '', decodeURIComponent(s));
-      console.log('value', value);
+      //console.log('s', s, s !== '', decodeURIComponent(s));
+      //console.log('value', value);
       var urlquery;
       if (value !== '') {
         if (s !== '') {
@@ -420,10 +443,10 @@ $(document).ready(function () {
             new RegExp('&' + name + '=' + '([^&;]+?)(&|#|;|$)'),
             '&' + name + '=' + value
           );
-          console.log('location.search', s, urlquery);
+          //console.log('location.search', s, urlquery);
         } else {
           urlquery = '?' + name + '=' + value;
-        } console.log('location.search vide', s, urlquery);
+        } //console.log('location.search vide', s, urlquery);
       } else {
         urlquery = decodeURIComponent(s).replace(
           new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)'),
@@ -459,23 +482,29 @@ $(document).ready(function () {
       var first = true;
       var filterschk = $(this).find('.filter-checkbox:checked');
       $.each(filterschk, function (index, checkbox) {
+        // les valeurs sont mis en cache
+        var name = $(checkbox).attr('name');
+        var val = $(checkbox).attr('value');
+        var attr = 'data-' + name.toLowerCase();
         if (first) {
           // si ce n'est pas le premier appel, on ajoute un | pour separer les query
           if (newquery !== '') {
             newquery += '|';
           }
-
-          newquery += $(checkbox).attr('name') + '=' + $(checkbox).attr('value');
-          select += '[data-' + $(checkbox).attr('name').toLowerCase()
-            + '*=' + $(checkbox).attr('value') + ']';
+          newquery += name + '=' + val;
           first = false;
         } else {
-          newquery += ',' + $(checkbox).attr('value');
-          select += ',[data-' + $(checkbox).attr('name').toLowerCase()
-            + '*=' + $(checkbox).attr('value') + ']';
+          newquery += ',' + val;
+          select += ',';
         }
+        // La requete de selection prend pour les champs non multiples :
+        // - exactement la valeur de l'attribut html
+        // Pour les champs multiples :
+        // - soit les attributs commencant par la valeur suivie d'une virgule
+        // - soit les attributs finissant par la valeur avec une virgule avant
+        // - soit les attributs contenant la valeur entouree de virgules
+        select += '[' + attr + '~="' + val + '"],[' + attr + '$=",' + val + '"],[' + attr + '^="' + val + ',"],[' + attr + '*=",' + val + ',"]';
       });
-
       var res = e.data.$entries.filter(select);
 
       if (res.length > 0) {
@@ -527,8 +556,8 @@ $(document).ready(function () {
   });
 
   // gestion de l'historique : on reapplique les filtres
-  window.onpopstate = function (e) {
-    if (e.state.filter) {
+  window.onpopstate = function(e) {
+    if (e.state && e.state.filter) {
       $('.facette-container').each(function () {
         var $this = $(this);
         $(this).find('input:checkbox').prop('checked', false);

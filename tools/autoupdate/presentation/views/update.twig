@@ -1,0 +1,15 @@
+<p>Mise à jour :</p>
+<ul class="list-group span4">
+{% for message in messages %}
+    {% set label = "danger" %}
+    {% if message.status == "ok" %}
+        {% set label = "success" %}
+    {% endif %}
+    <li class="list-group-item">
+        <span class="pull-right label label-{{ label }}">{{ message.status }}</span>
+        {{ message.text }}
+    </li>
+{% endfor %}
+</ul>
+
+<a href='{{ baseUrl }}'>Retour</a>

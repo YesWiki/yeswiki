@@ -54,7 +54,7 @@ class files
 		}
 	}
 	
-	# Suppression récursive d'un répertoire (rm -rf)
+	# Suppression rÃ©cursive d'un rÃ©pertoire (rm -rf)
 	function deltree($dir)
 	{
 		$current_dir = opendir($dir);
@@ -181,7 +181,7 @@ class files
 	}
 	
 	
-	# Fonctions de création de packages
+	# Fonctions de crÃ©ation de packages
 	#
 	function getDirList($dirName)
 	{

@@ -15,27 +15,20 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-// on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances
-if (!isset($GLOBALS['nbbazarliste'])) {
-    $GLOBALS['nbbazarliste'] = 0;
-}
-++$GLOBALS['nbbazarliste'];
-
 // Recuperation de tous les parametres
-$params = getAllParameters($this);
-
+$GLOBALS['params'] = getAllParameters($this);
 // tableau des fiches correspondantes aux critères
-if (is_array($params['idtypeannonce'])) {
+if (is_array($GLOBALS['params']['idtypeannonce'])) {
     $results = array();
-    foreach ($params['idtypeannonce'] as $formid) {
+    foreach ($GLOBALS['params']['idtypeannonce'] as $formid) {
         $results = array_merge(
             $results,
-            baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+            baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
         );
     }
 } else {
-    $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', '', '', 1, '', '', true, '');
+    $results = baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', '', '', 1, '', '', true, '');
 }
 
 // affichage à l'écran
-echo displayResultList($results, $params, false);
+echo displayResultList($results, $GLOBALS['params'], false);

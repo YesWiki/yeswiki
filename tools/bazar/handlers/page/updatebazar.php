@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 //CE HANDLER RECUPERE LES VALEURS DE LISTES des tables liste et liste_valeurs, pour les passer en page wiki
 
-// Vérification de sécurité
+// VÃ©rification de sÃ©curitÃ©
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
@@ -39,21 +39,21 @@ if ($this->UserIsInGroup('admins')) {
                     $output .= $nomwikiliste.' '.json_encode($valeur).'<hr />';
                     //on sauve les valeurs d'une liste dans une PageWiki, pour garder l'historique
                     $GLOBALS["wiki"]->SavePage($nomwikiliste, json_encode($valeur));
-                    //on cree un triple pour spécifier que la page wiki créée est une liste
+                    //on cree un triple pour spÃ©cifier que la page wiki crÃ©Ã©e est une liste
                     $GLOBALS["wiki"]->InsertTriple($nomwikiliste, 'http://outils-reseaux.org/_vocabulary/type', 'liste', '', '');
                 }
                 $valeur = NULL;
                 $valeur = array();
 
                 $nomwikiliste = genere_nom_wiki(html_entity_decode('Liste '.$ligne['bl_label_liste']));
-                //on supprime les valeurs vides et on encode en utf-8 pour réussir à encoder en json
+                //on supprime les valeurs vides et on encode en utf-8 pour rÃ©ussir Ã© encoder en json
                 $valeur["titre_liste"] = utf8_encode(html_entity_decode($ligne['bl_label_liste']));
 
                 $anciennomliste = $ligne['bl_label_liste'];
             }
             $valeur["label"][$ligne['blv_valeur']] = utf8_encode(html_entity_decode($ligne['blv_label']));
         }
-        if ($output != '') $output = '<div class="info_box">Ces pages suivantes ont étés rajoutées:</div><div style="overflow:auto;width:100%;height:200px;">'.$output.'</div>'."\n";
+        if ($output != '') $output = '<div class="info_box">Ces pages suivantes ont Ã©tÃ©s rajoutÃ©es:</div><div style="overflow:auto;width:100%;height:200px;">'.$output.'</div>'."\n";
 
         //on efface les tables qui servent plus
         $this->Query('DROP TABLE '.BAZ_PREFIXE.'liste, '.BAZ_PREFIXE.'liste_valeurs');

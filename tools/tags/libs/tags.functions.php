@@ -143,7 +143,8 @@ function afficher_commentaires_recursif($page, $wiki, $premier = true)
         $valcomment['commentform'] .= "<div class=\"clear\"></div></div>\n";
     }
 
-    include_once 'squelettephp.class.php';
+    include_once('tools/libs/squelettephp.class.php');
+
     $squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
     $squelcomment->set($valcomment);
     $output .= $squelcomment->analyser();
@@ -227,7 +228,7 @@ function get_image_from_body($page)
                     $image[1][0]
                 )
             );
-            $image = afficher_image('files/'.$imagefile, 'cache/'.$imagefile, 'filtered-image img-responsive', '', '', 300, 225);
+            $image = afficher_image('bf_image', 'files/'.$imagefile, 'cache/'.$imagefile, 'filtered-image img-responsive', '', '', 300, 225);
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
@@ -265,7 +266,7 @@ function generatePageName($nom, $occurence = 1)
         $str = htmlentities(mb_substr($nom, 0, 47, YW_CHARSET), ENT_QUOTES, YW_CHARSET);
         $str = preg_replace('#&([A-za-z])(?:acute|cedil|circ|grave|orn|ring|slash|th|tilde|uml);#', '\1', $str);
         $str = preg_replace('#&([A-za-z]{2})(?:lig);#', '\1', $str); // pour les ligatures e.g. '&oelig;'
-        $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caract�res
+        $str = preg_replace('#&[^;]+;#', '', $str); // supprime les autres caractéres
         $temp = explode(' ', ucwords(strtolower($str)));
         $nom = '';
         foreach ($temp as $mot) {
