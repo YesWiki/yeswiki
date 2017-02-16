@@ -23,7 +23,7 @@
 /**
 * Fichier de traduction en francais de l'extension Contact
 *
-*@package 		contact
+*@package       contact
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     2012 Outils-Réseaux
 */
@@ -90,5 +90,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_UNSUBSCRIBE' => 'Se d&eacute;sabonner',
 
 'CONTACT_FROM' => 'de',
+'CONTACT_TEMPLATE_NOT_FOUND' => 'Fichier de template non trouvé',
+'CONTACT_MESSAGE_SENT_FROM' => 'Message envoyé à partir de',
 
 ));

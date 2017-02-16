@@ -61,10 +61,11 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     require_once('tools/contact/libs/vendor/PHPMailer/PHPMailerAutoload.php');
     //Create a new PHPMailer instance
     $mail = new PHPMailer;
-
+    $mail->CharSet = 'UTF-8';
     if ($GLOBALS['wiki']->config['contact_mail_func'] == 'smtp') {
         //Tell PHPMailer to use SMTP
         $mail->isSMTP();
+
         //Enable SMTP debugging
         // 0 = off (for production use)
         // 1 = client messages
@@ -104,7 +105,23 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         $message_txt = 'empty email body';
     }
     if (empty($message_html)) {
-        $message_html = $message_txt;
+        $message_html = nl2br($message_txt);
+    }
+    if (!empty($GLOBALS['wiki']->config['mail_template'])) {
+        // affichage des resultats
+        include_once 'tools/libs/squelettephp.class.php';
+        // On cherche un template personnalise dans le repertoire themes/tools
+        $templatetoload = 'themes/tools/contact/templates/'.$GLOBALS['wiki']->config['mail_template'];
+        if (!is_file($templatetoload)) {
+            if (is_file('tools/contact/presentation/templates/'.$GLOBALS['wiki']->config['mail_template'])) {
+                $templatetoload = 'tools/contact/presentation/templates/'.$GLOBALS['wiki']->config['mail_template'];
+            } else {
+                exit('<div class="alert alert-danger">'._t('CONTACT_TEMPLATE_NOT_FOUND').' : '.$GLOBALS['wiki']->config['mail_template'].'</div>');
+            }
+        }
+        $squel = new SquelettePhp($templatetoload);
+        $squel->set(array('message' => $message_html));
+        $message_html = $squel->analyser();
     }
     $mail->Body = $message_html;
     //Replace the plain text body with one created manually
