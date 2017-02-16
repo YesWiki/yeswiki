@@ -8,7 +8,7 @@
       <input type="text" value="<?php echo $search; ?>" name="q" placeholder="<?php echo _t('BAZ_MOT_CLE'); ?>" class="form-control input-lg">
       <?php if (!empty($forms)) : ?>
         <span class="input-group-btn" style="width:auto;max-width:240px;">
-          <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id_typeannonce">
+          <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id">
             <?php
             foreach ($forms as $key => $form) : ?>
             <option
@@ -25,7 +25,7 @@
         </span>
         <?php
             elseif (!empty($idform)) : ?>
-          <input type="hidden" name="id_typeannonce" value="<?php echo $idform; ?>">
+          <input type="hidden" name="id" value="<?php echo $idform; ?>">
           <?php
             endif; ?>
             <?php if (!empty($query)) : ?>

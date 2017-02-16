@@ -1731,7 +1731,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $inputhtml .= '<output id="img-'.$type . $identifiant.'" class="col-xs-9">'.afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, 'img-responsive', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image).'</output>
               <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n"
                 .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
-                .'</div>'."\n".'</div>'."\n";
+                .'</div>'."\n".'</div>'."\n".'</div>'."\n";
                 $formtemplate->addElement('html', $inputhtml);
                 $formtemplate->addElement('hidden', 'oldimage_' . $type . $identifiant, $valeurs_fiche[$type . $identifiant]);
             } else {
@@ -2429,8 +2429,8 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } else {
         $template = BAZ_TEMPLATE_LISTE_DEFAUT;
     }
+    $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
-        $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ordre="' . $ordre . '" template="' . $template . '"}}';
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
 
         //ajout lien nouvelle saisie
@@ -2440,38 +2440,11 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $url_checkboxfiche->addQueryString('action', BAZ_ACTION_NOUVEAU);
         $url_checkboxfiche->addQueryString('wiki', $_GET['wiki'] . '/iframe');
         $url_checkboxfiche->addQueryString('id_typeannonce', $tableau_template[1]);
-        $url_checkboxfiche->addQueryString('ce_fiche_liee', $_GET['id_fiche']);
+        $url_checkboxfiche->addQueryString('ce_fiche_liee', $valeurs_fiche['id_fiche']);
         $html.= '<a class="ajout_fiche ouvrir_overlay" href="' . str_replace('&', '&amp;', $url_checkboxfiche->getUrl()) . '" rel="#overlay-link" title="' . htmlentities($tableau_template[4], ENT_QUOTES, YW_CHARSET) . '">' . $tableau_template[4] . '</a>' . "\n";
         $formtemplate->addElement('html', $html);
-    } elseif ($mode == 'requete') {
-    } elseif ($mode == 'formulaire_recherche') {
-        if ($tableau_template[9] == 1) {
-            $requete = 'SELECT * FROM ' . BAZ_PREFIXE . 'liste_valeurs WHERE blv_ce_liste=' . $tableau_template[1] . ' AND blv_ce_i18n like "' . $GLOBALS['_BAZAR_']['langue'] . '%" ORDER BY blv_label';
-            $resultat = $GLOBALS['wiki']->query($requete);
-
-            require_once 'vendor/HTML/QuickForm/checkbox.php';
-            $i = 0;
-            $optioncheckbox = array('class' => 'element_checkbox');
-
-            while ($ligne = $resultat->fetchRow()) {
-                if ($i == 0) {
-                    $tab_chkbox = $tableau_template[2];
-                } else {
-                    $tab_chkbox = '&nbsp;';
-                }
-                $checkbox[$i] = & HTML_QuickForm::createElement($tableau_template[0], $ligne[1], $tab_chkbox, $ligne[2], $optioncheckbox);
-                $i++;
-            }
-
-            $squelette_checkbox = & $formtemplate->defaultRenderer();
-            $squelette_checkbox->setElementTemplate('<fieldset class="bazar_fieldset">' . "\n" . '<legend>{label}' . '<!-- BEGIN required --><span class="symbole_obligatoire">&nbsp;*</span><!-- END required -->' . "\n" . '</legend>' . "\n" . '{element}' . "\n" . '</fieldset> ' . "\n" . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-            $squelette_checkbox->setGroupElementTemplate("\n" . '<div class="checkbox">' . "\n" . '{element}' . "\n" . '</div>' . "\n", $tableau_template[0].$tableau_template[1].$tableau_template[6]);
-            $formtemplate->addGroup($checkbox, $tableau_template[0].$tableau_template[1].$tableau_template[6], $tableau_template[2] . $bulledaide, "\n");
-        }
     } elseif ($mode == 'html') {
-        $actionbazarliste = '{{bazarliste idtypeannonce="' . $tableau_template[1] . '" query="' . $query . '" ordre="' . $ordre . '" template="' . $template . '"}}';
         $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
-
         return $html;
     }
 }

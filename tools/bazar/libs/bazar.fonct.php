@@ -512,6 +512,7 @@ function baz_afficher_formulaire_import()
                 $valeur = unserialize(base64_decode($valeur));
                 $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
                 $valeur['id_typeannonce'] = $_REQUEST['id_typeannonce'];
+                $valeur = array_map('strval', $valeur);
                 baz_insertion_fiche($valeur);
                 ++$nb;
                 $importlist .=
@@ -817,13 +818,26 @@ function baz_afficher_formulaire_export()
     //$csv = substr(trim($csv), 0, -1)."\r\n";
     $csv = '"datetime_create","datetime_latest",'.substr(trim($csv), 0, -1)."\n";
 
-    // TODO : inscription liste
+    // chaine de recherche
+    $q = '';
+    if (isset($_GET['q']) and !empty($_GET['q'])) {
+        $q = $_GET['q'];
+    }
+
+    // TODO : gerer les queries
+    $query = '';
+
     //on recupere toutes les fiches du type choisi et on les met au format csv
     $tableau_fiches = baz_requete_recherche_fiches(
-        '',
+        $query,
         'alphabetique',
         $id_typeannonce,
-        $val_formulaire['bn_type_fiche']
+        $val_formulaire['bn_type_fiche'],
+        1,
+        '',
+        '',
+        true,
+        $q
     );
     $total = count($tableau_fiches);
     foreach ($tableau_fiches as $fiche) {
@@ -902,8 +916,8 @@ function baz_afficher_formulaire_export()
 
     //on cree le lien vers ce fichier
     $output .=
-    '<a href="'.$chemin_destination.'" class="link-csv-file" title="'
-    ._t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'">'.
+    '<a href="'.$chemin_destination.'" class="btn btn-xl btn-primary" title="'
+    ._t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'"><i class="glyphicon glyphicon-download"></i> '.
     _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
 
     return $output;
@@ -1205,7 +1219,7 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_ACTION);
         $GLOBALS['_BAZAR_']['url']->removeQueryString(BAZ_VARIABLE_VOIR);
 
-        $buttons = new HTML_QuickForm_html('<div class="form-group">'."\n"
+        $buttons = new HTML_QuickForm_html('<div class="form-actions form-group">'."\n"
           .'<div class="col-sm-9 col-sm-offset-3"><button type="submit" class="btn btn-success">'._t('BAZ_VALIDER').'</button> <a class="btn btn-xs btn-danger" href="'.str_replace('&amp;', '&', ($url ? str_replace('/edit', '', $url) :
               $GLOBALS['_BAZAR_']['url']->getURL())).'">'._t('BAZ_ANNULER').'</a></div></div>'."\n");
         $formtemplate->addElement($buttons);
@@ -1261,7 +1275,7 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
             $GLOBALS['_BAZAR_']['url']->removeQueryString('id_fiche');
         }
         require_once BAZ_CHEMIN.'libs/vendor/HTML/QuickForm/html.php';
-        $buttons = new HTML_QuickForm_html('<div class="form-group">'."\n"
+        $buttons = new HTML_QuickForm_html('<div class="form-actions form-group">'."\n"
           .'<div class="col-sm-9 col-sm-offset-3"><button type="submit" class="btn btn-success">'._t('BAZ_VALIDER').'</button> <a class="btn btn-xs btn-danger" href="'.str_replace('&amp;', '&', ($url ? str_replace('/edit', '', $url) :
               $GLOBALS['_BAZAR_']['url']->getURL())).'">'._t('BAZ_ANNULER').'</a></div></div>'."\n");
         $formtemplate->addElement($buttons);
@@ -1371,21 +1385,19 @@ function baz_requete_bazar_fiche($valpost)
         include_once 'tools/contact/libs/contact.functions.php';
         $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
                 ->config['base_url']);
-        $sujet = removeAccents('['.str_replace('http://', '', $lien).'] Votre fiche : '.$valpost['bf_titre']);
-        $lienfiche = $GLOBALS['wiki']->config['base_url'].
-        $valpost['id_fiche'];
+        $sujet = removeAccents('['.str_replace(array('http://', 'https://'), '', $lien).'] Votre fiche : '.$valpost['bf_titre']);
+        $lienfiche = $GLOBALS['wiki']->config['base_url'].$valpost['id_fiche'];
         $texthtml = 'Bienvenue sur '.removeAccents(str_replace('http://', '', $lien).' , ');
         $text = 'Bienvenue sur '.removeAccents(str_replace('http://', '', $lien).' , ');
         $text .= 'allez sur le site pour gérer votre inscription  : '.$lienfiche;
-        $texthtml .= '<br /><br /><a href="'.$lienfiche
-
-        .
-
-        '" title="Voir la fiche">allez sur le site pour gerer votre inscription</a>';
+        $texthtml .= '<br /><br /><a href="'.$lienfiche.'" title="Voir la fiche">Voir la fiche sur le site</a>';
+        if (isset($GLOBALS['wiki']->config['mail_custom_message'])) {
+            $texthtml .= nl2br($GLOBALS['wiki']->config['mail_custom_message']);
+        }
         $fichier = 'tools/bazar/presentation/styles/bazar.css';
         $style = file_get_contents($fichier);
         $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
-        $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $valpost)).$texthtml;
+        $fiche = $texthtml.str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $valpost));
         $html = '<html><head><style type="text/css">'.$style.'</style></head><body>'.$fiche.'</body></html>';
 
         send_mail(BAZ_ADRESSE_MAIL_ADMIN, BAZ_ADRESSE_MAIL_ADMIN, $destmail, $sujet, $text, $html);
@@ -3257,22 +3269,25 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     // on recupere le nb de types de fiches, pour plus tard
     $nb_type_de_fiches = 0;
     $type_formulaire_select[''] = _t('BAZ_TOUS_TYPES_FICHES');
-    if (is_array($tab_formulaires)) {
+    if (is_array($tab_formulaires) and !isset($tab_formulaires["bn_id_nature"])) {
         foreach ($tab_formulaires as $nomwiki => $ligne) {
             ++$nb_type_de_fiches;
             $tableau_typeformulaires[] = $nomwiki;
             $type_formulaire_select[$nomwiki] = $ligne['bn_label_nature'].
             ((!empty($type_fiche)) ? ' ('.$type_fiche.')' : '');
         }
+    } elseif (isset($tab_formulaires["bn_id_nature"])) {
+        $nb_type_de_fiches = 1;
+        unset($type_formulaire_select);
+        $data['forms'] = '';
     }
     if ($nb_type_de_fiches > 1 and !in_array("id_typeannonce", $GLOBALS['params']['groups'])) {
         $data['forms'] = $type_formulaire_select;
     } else {
         $data['forms'] = '';
     }
-    if (isset($_REQUEST['id_typeannonce']) &&
-        !empty($_REQUEST['id_typeannonce'])) {
-        $data['idform'] = $_REQUEST['id_typeannonce'];
+    if (isset($_GET['id']) && !empty($_GET['id'])) {
+        $data['idform'] = $_GET['id'];
     } elseif (is_array($typeannonce) && count($typeannonce) == 1) {
         $data['idform'] = $typeannonce[0];
     } else {
@@ -3285,7 +3300,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $data['search'] = '';
     if (isset($_REQUEST['q']) && !empty($_REQUEST['q'])) {
         $data['search'] = $_REQUEST['q'];
-        $_REQUEST['id_typeannonce'] = '';
+        //$_REQUEST['id_typeannonce'] = '';
     }
 
     // affichage du formulaire
@@ -3295,7 +3310,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $squelsearch->set($data);
     $res .= $squelsearch->analyser();
 
-    if (!isset($_REQUEST['id_typeannonce'])) {
+    if (!isset($_GET['id'])) {
         // la recherche n'a pas encore ete effectuee, on affiche les 10 dernieres fiches
         $tableau_dernieres_fiches = baz_requete_recherche_fiches(
             $GLOBALS['params']['query'],
@@ -3634,11 +3649,13 @@ function endsWith($haystack, $needle)
  * @param  array $fiches tableau des fiches trouvées
  * @param  array $params tableau des parametres passés a l'action
  * @param  array $formtab tableau des formulaires associés aux fiches si dispo (facultatif)
+ * @param  bool  $onlyLists scanne les listes seulement (false par defaut)
  * @return array         tableau des statistiques des données des facettes
  */
-function scanAllFacettable($fiches, $params, $formtab = '')
+function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
 {
     $facettevalue = array();
+
     foreach ($fiches as $fiche) {
         // on recupere les valeurs du formulaire si elles n'existaient pas
         $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
@@ -3657,6 +3674,7 @@ function scanAllFacettable($fiches, $params, $formtab = '')
                 $islist = in_array($val['type'], array('checkbox', 'select', 'scope'));
                 $islistforeign = (strpos($val['id'], 'listefiche')===0) or (strpos($val['id'], 'checkboxfiche')==0);
                 $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
+            //var_dump($key, $istext, $islist, '<br>');
                 if ($islistforeign) {
                     // listefiche ou checkboxfiche
                     $facettevalue[$val['id']]['type'] = 'fiche';
@@ -3681,7 +3699,7 @@ function scanAllFacettable($fiches, $params, $formtab = '')
                             $facettevalue[$val['id']][$tval] = 1;
                         }
                     }
-                } elseif ($istext) {
+                } elseif ($istext and !$onlyLists) {
                     // texte
                     $facettevalue[$key]['type'] = 'form';
                     $facettevalue[$key]['source'] = $key;
@@ -3779,7 +3797,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     if (count($params['groups']) > 0) {
         $facettevalue = scanAllFacettable($fiches['fiches'], $params, $formtab);
     }
-
     if ($info_nb) {
         $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
 
@@ -3971,10 +3988,34 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     // affiche les possibilités d'export
     if (!preg_match('/\/iframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
-        if (is_array($GLOBALS['params']['idtypeannonce'])) {
+        $key = '';
+        if (isset($_GET['id']) and !empty($_GET['id'])) {
+            $key = $_GET['id'];
+        } elseif (is_array($GLOBALS['params']['idtypeannonce'])) {
             $key = implode($GLOBALS['params']['idtypeannonce'], ',');
         } else {
             $key = $GLOBALS['params']['idtypeannonce'];
+        }
+
+        if (isset($_GET['q']) and !empty($_GET['q'])) {
+            $key .= '&q='.$_GET['q'];
+        }
+        if (!empty($params['query'])) {
+            $key .= '&query=';
+            $first = true;
+            $queryurl = '';
+            foreach ($params['query'] as $id => $val) {
+                if ($first) {
+                    $first = false;
+                } else {
+                    $queryurl .= '|';
+                }
+                $queryurl .= $id.'='.$val;
+            };
+            $key.= $queryurl;
+            // on sauve la valeur de query initiale pour des traitement javascripts
+            $output .= '<input type="hidden" id="queryinit" value="'.htmlspecialchars($queryurl).'">'."\n";
+
         }
         $output .= '<div class="export-links pull-right"><a class="btn btn-default btn-mini btn-xs"
         data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_RSS').'"
@@ -4096,10 +4137,6 @@ function baz_afficher_flux_RSS()
     if (isset($_GET['id'])) {
         $id_typeannonce = $_GET['id'];
         $urlrss .= '&amp;id='.$id_typeannonce;
-    }
-    if (isset($_GET['id_typeannonce'])) {
-        $id_typeannonce = $_GET['id_typeannonce'];
-        $urlrss .= '&amp;id_typeannonce='.$id_typeannonce;
     } else {
         $id_typeannonce = '';
     }
@@ -4132,6 +4169,13 @@ function baz_afficher_flux_RSS()
         $statut = 1;
     }
 
+    // chaine de recherche
+    $q = '';
+    if (isset($_GET['q']) and !empty($_GET['q'])) {
+        $q = $_GET['q'];
+        $urlrss .= '&amp;q='.$q;
+    }
+
     if (isset($_GET['query'])) {
         $query = $_GET['query'];
         $urlrss .= '&amp;query='.$query;
@@ -4146,6 +4190,7 @@ function baz_afficher_flux_RSS()
     } else {
         $query = '';
     }
+
     $tableau_flux_rss = baz_requete_recherche_fiches(
         $query,
         '',
@@ -4153,7 +4198,9 @@ function baz_afficher_flux_RSS()
         $categorie_fiche,
         $statut,
         $utilisateur,
-        20
+        20,
+        true,
+        $q
     );
 
     require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR

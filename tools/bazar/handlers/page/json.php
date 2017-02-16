@@ -256,7 +256,29 @@ if (isset($_REQUEST['demand'])) {
             break;
         case "entries":
             // liste de fiches bazar
-            $results = baz_requete_recherche_fiches($tabquery, $order, $form, '', 1, '', '');
+
+            // chaine de recherche
+            $q = '';
+            if (isset($_GET['q']) and !empty($_GET['q'])) {
+                $q = $_GET['q'];
+            }
+
+            // TODO : gerer les queries
+            $query = '';
+
+            //on recupere toutes les fiches du type choisi et on les met au format csv
+            $results = baz_requete_recherche_fiches(
+                $tabquery,
+                $order,
+                $form,
+                '',
+                1,
+                '',
+                '',
+                true,
+                $q
+            );
+
             foreach ($results as $wikipage) {
                 $decoded_entry = json_decode($wikipage['body'], true);
                  //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
@@ -271,7 +293,7 @@ if (isset($_REQUEST['demand'])) {
                         }
                     }
                 }
-                $tab_entries[$decoded_entry['id_fiche']] = $decoded_entry;
+                $tab_entries[$decoded_entry['id_fiche']] = array_map('strval',$decoded_entry);
             }
             ksort($tab_entries);
             echo json_encode($tab_entries);
