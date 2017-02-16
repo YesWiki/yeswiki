@@ -24,17 +24,24 @@ if ($type == 'fiche_bazar') {
     ++$GLOBALS['_BAZAR_']['nbbazarliste'];
     // Recuperation de tous les parametres
     $params = getAllParameters($this);
+
+    // chaine de recherche
+    $q = '';
+    if (isset($_GET['q']) and !empty($_GET['q'])) {
+        $q = $_GET['q'];
+    }
+
     // tableau des fiches correspondantes aux critères
     if (is_array($params['idtypeannonce'])) {
         $results = array();
         foreach ($params['idtypeannonce'] as $formid) {
             $results = array_merge(
                 $results,
-                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, $q)
             );
         }
     } else {
-        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, '');
+        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, $q);
     }
 
     // affichage à l'écran

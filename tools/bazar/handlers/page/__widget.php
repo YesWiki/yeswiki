@@ -34,23 +34,32 @@ if (isset($_GET['id'])) {
     echo $this->Header();
     echo '<h1>Partager les résultats par widget HTML (code embed)</h1>'."\n";
     $params = getAllParameters($this);
+
+    // chaine de recherche
+    $q = '';
+    if (isset($_GET['q']) and !empty($_GET['q'])) {
+        $q = $_GET['q'];
+    }
+
     // tableau des fiches correspondantes aux critères
     if (is_array($params['idtypeannonce'])) {
         $results = array();
         foreach ($params['idtypeannonce'] as $formid) {
             $results = array_merge(
                 $results,
-                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, $q)
             );
         }
     } else {
-        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, '');
+        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, $q);
     }
     $params['groups'][0] = 'all';
     $results = searchResultstoArray($results, $params);
-    $tabfacette = scanAllFacettable($results, $params);
+    $tabfacette = scanAllFacettable($results, $params, '', true);
+  var_dump($tabfacette);
     $urlparams = 'id='.$_GET['id']
       .(isset($_GET['query']) ? '&query='.$_GET['query'] : '')
+      .(!empty($q) ? '&q='.$q : '')
       .'&width='.$params['width']
       .'&height='.$params['height'];
 ?>
@@ -151,11 +160,11 @@ if (isset($_GET['id'])) {
               <label>Champ associé</label>
               <select v-model="markerfieldModel" class="form-control">
                 <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
-                  <?php foreach ($tabfacette as $key => $value) : ?>
+                    <?php foreach ($tabfacette as $key => $value) : ?>
                     <option value="<?php echo $key; ?>">
-                          <?php echo $key; ?>
+                            <?php echo $key; ?>
                     </option>
-                  <?php endforeach; ?>
+                    <?php endforeach; ?>
               </select>
             </div>
           </div>
@@ -220,10 +229,10 @@ if (isset($_GET['id'])) {
       <div class="panel panel-default">
         <div class="panel-heading">Prévisualisation</div>
         <div class="panel-body">
-          <iframe style="border:1px dotted #ccc;" width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" v-bind:src="iframeUrl + '&template=' + templateModel+ '&provider=' + providerModel + '&groups=' + checkedFacette.join(',')"></iframe>
+          <iframe class="iframe-preview" style="border:1px dotted #ccc;" width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" v-bind:src="iframeUrl + '&template=' + templateModel+ '&provider=' + providerModel + '&groups=' + checkedFacette.join(',')"></iframe>
 
           <strong>Code embed a copier coller dans votre site</strong>
-          <pre><code>&lt;iframe width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" src="<?php echo $this->href('iframe', '', $urlparams); ?>&template={{ templateModel }}&provider={{ providerModel }}&groups={{ checkedFacette.join(',') }}"&gt;&lt;/iframe&gt;</code></pre>
+          <pre><code>&lt;iframe width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" allowfullscreen="true" src="<?php echo $this->href('iframe', '', $urlparams); ?>&template={{ templateModel }}&provider={{ providerModel }}&groups={{ checkedFacette.join(',') }}"&gt;&lt;/iframe&gt;</code></pre>
 
           <strong>Code action wiki a copier coller dans une page de ce site</strong>
           <pre><code>&#123;\&#123;bazarliste id="<?php echo $_GET['id']; ?>" width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" template="{{ templateModel }}" provider="{{ providerModel }}" groups="{{ checkedFacette.join(',') }}"&#125;\&#125;</code></pre>
@@ -254,6 +263,7 @@ if (isset($_GET['id'])) {
         },
         removeTodo: function (index) {
         }
+
       }
     })
     // Vue.filter(\'implode\', function (value) {

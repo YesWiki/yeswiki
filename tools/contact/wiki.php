@@ -36,3 +36,8 @@ $wakkaConfig['contact_smtp_port'] = isset($wakkaConfig['contact_smtp_port']) ?
   $wakkaConfig['contact_smtp_pass'] = isset($wakkaConfig['contact_smtp_pass']) ?
     $wakkaConfig['contact_smtp_pass']
     :'';
+
+  // template de base pour les mails html
+  $wakkaConfig['mail_template'] = isset($wakkaConfig['mail_template']) ?
+    $wakkaConfig['mail_template']
+    :'email.tpl.html';

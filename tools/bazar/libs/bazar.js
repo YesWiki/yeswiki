@@ -379,6 +379,12 @@ $(document).ready(function () {
        scrollTop: $('#formulaire').offset().top - 80,
      }, 500);
   });
+  $('.BAZ_cadre_fiche .tab-content [data-toggle="tab"]').click(function () {
+     var $this = $(this);
+     $('.BAZ_cadre_fiche .nav-tabs .active').removeClass('active');
+     $('.BAZ_cadre_fiche .nav-tabs').find('[href="' + $(this).attr('href') + '"]').parent().addClass('active');
+     $('.BAZ_cadre_fiche .nav-tabs a[href="' + $(this).attr('href') + '"]').tab('show');
+  });
 
   // cocher / decocher tous
   var $checkboxselectall = $('.selectall');
@@ -515,6 +521,26 @@ $(document).ready(function () {
 
     // on applique les changements a l'url
     changeURLParameter('facette', newquery);
+
+    // on ajuste les liens vers les formulaires d'export
+    if (newquery !== '') {
+      $('.export-links a').each(
+        function() {
+          var link = $(this).attr('href');
+          var queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null;
+          if (queryexists == null) {
+            $(this).attr('href', link+'&query='+newquery);
+          } else {
+            var queryinit = $('#queryinit').val();
+            if (queryinit) { newquery = queryinit+'|'+newquery}
+            $(this).attr(
+              'href',
+              link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), '&query=' + newquery)
+            );
+          }
+        }
+      );
+    }
 
     // au moins un filtre à actionner
     if (tabfilters.length > 0) {

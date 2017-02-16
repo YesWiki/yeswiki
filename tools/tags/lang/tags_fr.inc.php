@@ -105,6 +105,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TAGS_BY' => 'Par',
 'TAGS_ABOUT_THIS_EBOOK' => 'Information sur cet ouvrage',
 'TAGS_DOWNLOAD_EPUB' => '.epub',
+'TAGS_DOWNLOAD_PDF' => '.pdf',
 'TAGS_DOWNLOAD' => 'Télécharger',
 'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenu en ligne sur la page',
 'TAGS_NO_EBOOK_METADATAS' => 'Cette page ne poss&egrave;de pas les m&eacute;tadonn&eacute;es n&eacute;cessaires pour cr&eacute;er l\'ebook.',

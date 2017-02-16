@@ -177,7 +177,7 @@ $hrefdomain = $wiki->Href();
 $fulldomain = parse_url($hrefdomain);
 $hostdomain = $fulldomain["host"];
 $adminmail = "noreply@" . $hostdomain;
-define('BAZ_ADRESSE_MAIL_ADMIN', $adminmail);
+define('BAZ_ADRESSE_MAIL_ADMIN', isset($wakkaConfig['mail_admin']) ? $wakkaConfig['mail_admin'] : $adminmail);
 
 //==================================== LES FLUX RSS==================================
 // Constantes liees aux flux RSS

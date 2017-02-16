@@ -254,16 +254,4 @@ if (count($fiches)>0) :
 		' . $markersjs
 	);
 
-	if ($param['groupsexpanded'] == 'true' or $param['groupsexpanded'] == '1') {
-	$GLOBALS['wiki']->AddJavascript('
-		$(function(){
-			$("div.facette-container div.panel-collapse").collapse("show");
-		});
-		');
-	}
-
-	// TODO: y-a-t'il pagination en mode carto ?
-	echo $pager_links;
-
 endif;
-?>
