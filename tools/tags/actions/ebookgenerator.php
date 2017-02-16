@@ -82,16 +82,11 @@ if (isset($_POST["page"])) {
                                 } else {
                                     $pagename = generatePageName($ebookpagenamestart . ' ' . $_POST["ebook-title"]);
                                 }
-                                $output .= '//' . _t('TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE') . ' : ' . $this->href('', $pagename) . ' // {{button link="' . $this->href('epub', $pagename) . '" text="' . _t('TAGS_DOWNLOAD_EPUB') . '" class="btn-primary pull-right" icon="book icon-white"}}' . "\n";
-                                /*if ($this->IsWikiName($ebookstart)) {
-                                $output .= '{{include page="'.$ebookstart.'" class=""}}'."\n";
-                                }*/
                                 foreach ($_POST["page"] as $page) {
                                     $output .= '{{include page="' . $page . '" class=""}}' . "\n";
                                 }
-                                /*if ($this->IsWikiName($ebookend)) {
-                                $output .= '{{include page="'.$ebookend.'" class=""}}'."\n";
-                                }*/
+                                $output .= '//' . _t('TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE') . ' : ' . $this->href('', $pagename) . ' // {{button link="' . $this->href('pdf', $pagename) . '" text="' . _t('TAGS_DOWNLOAD_PDF') . '" class="btn-primary pull-right" icon="book"}}' . "\n";
+                              
                                 unset($_POST['page']);
                                 unset($_POST['antispam']);
                                 $this->SaveMetaDatas($pagename, $_POST);
