@@ -70,15 +70,37 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         // 0 = off (for production use)
         // 1 = client messages
         // 2 = client and server messages
-        $mail->SMTPDebug = 0;
+        $mail->SMTPDebug = $GLOBALS['wiki']->config['contact_debug'];
         //Ask for HTML-friendly debug output
         $mail->Debugoutput = 'html';
-        //Set the hostname of the mail server
-        $mail->Host = $GLOBALS['wiki']->config['contact_smtp_host'];
-        //Set the SMTP port number - likely to be 25, 465 or 587
-        $mail->Port = $GLOBALS['wiki']->config['contact_smtp_port'];
+
         //Whether to use SMTP authentication
         $mail->SMTPAuth = true;
+
+        //Set the hostname of the mail server
+        $mail->Host = $GLOBALS['wiki']->config['contact_smtp_host'];
+
+        //Set the SMTP secure protocol - likely to be ssl or tsl
+        if (!empty($GLOBALS['wiki']->config['contact_smtp_secure'])) {
+            $mail->SMTPSecure = $GLOBALS['wiki']->config['contact_smtp_secure'];
+        }
+
+        // allow self signed ssl
+        if (!empty($GLOBALS['wiki']->config['contact_allow_self_signed'])) {
+            $mail->SMTPOptions = array(
+               'ssl' => array(
+                   'verify_peer' => false,
+                   'verify_peer_name' => false,
+                   'allow_self_signed' => true
+               )
+            );
+        }
+
+        //Set the SMTP port number - likely to be 25, 465 or 587
+        if (!empty($GLOBALS['wiki']->config['contact_smtp_port'])) {
+            $mail->Port = $GLOBALS['wiki']->config['contact_smtp_port'];
+        }
+
         //Username to use for SMTP authentication
         $mail->Username = $GLOBALS['wiki']->config['contact_smtp_user'];
         //Password to use for SMTP authentication

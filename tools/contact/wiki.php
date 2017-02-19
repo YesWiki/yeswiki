@@ -41,3 +41,8 @@ $wakkaConfig['contact_smtp_port'] = isset($wakkaConfig['contact_smtp_port']) ?
   $wakkaConfig['mail_template'] = isset($wakkaConfig['mail_template']) ?
     $wakkaConfig['mail_template']
     :'email.tpl.html';
+
+  // debug mode (0 pour rien, 1 pour normal, 2 pour detaille)
+  $wakkaConfig['contact_debug'] = isset($wakkaConfig['contact_debug']) ?
+    $wakkaConfig['contact_debug']
+    : 0;
