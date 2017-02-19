@@ -113,15 +113,17 @@
 </div>
 <?php endif; ?>
 
-<a class="btn btn-primary" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=new'); ?>"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVEAU_FORMULAIRE'); ?></a>
+<a class="btn btn-primary<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?>" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=new'); ?>"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVEAU_FORMULAIRE'); ?></a>
+
+
 <hr>
 <strong><?php echo _t('BAZ_IMPORT_FORMS_FROM_URL'); ?></strong>
 <form action="javascript:undefined" class="form-horizontal">
 	<div class="input-prepend input-append input-group">
 		<span class="add-on input-group-addon"><i class="glyphicon glyphicon-link icon-globe"></i></span>
-		<input id="url-import-forms" class="form-control input-xxlarge" placeholder="<?php echo _t('BAZ_URL_IMPORT_LISTS_INFO'); ?>" type="url">
+		<input id="url-import-forms" class="form-control input-xxlarge"<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?>  placeholder="<?php echo _t('BAZ_URL_IMPORT_LISTS_INFO'); ?>" type="url">
 		<span class="input-group-btn">
-		    <button id="btn-import-forms" class="btn btn-primary" type="submit"><?php echo _t('BAZ_GO'); ?> !</button>
+		    <button id="btn-import-forms"<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?> class="btn btn-primary" type="submit"><?php echo _t('BAZ_GO'); ?> !</button>
         </span>
 	</div>
 </form>

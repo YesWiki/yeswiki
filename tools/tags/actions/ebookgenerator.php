@@ -61,10 +61,36 @@ if (!empty($taglist)) {
     $taglist = '"' . implode('","', $tabtag) . '"';
 }
 
+// template d'affichage personnalisé pour l'ebook
+$template = $this->getParameter('template');
+if (empty($template)) {
+    $template = 'exportpages_table.tpl';
+}
+
 // quels types de pages : fiche bazar, page wiki, ou tout?
 $type = $this->getParameter('type');
 if ($type != 'bazar' && $type != 'wiki' && $type != 'all') {
     $type = 'all';
+}
+
+// id des formulaires bazar
+if ($type != 'wiki') {
+    $id = $this->getParameter('id');
+    if (!empty($id)) {
+        $id = explode(',', $id);
+        $id = array_map('trim', $id);
+        $results = array();
+        foreach ($id as $formid) {
+            $formValues = baz_valeurs_formulaire($formid);
+            $results[$formid]['name'] = $formValues['bn_label_nature'];
+            $results[$formid]['entries'] = baz_requete_recherche_fiches('', 'alphabetique', $formid, '', 1, '', '', true, '');
+            $results[$formid]['entries'] = searchResultstoArray($results[$formid]['entries'], array(), $formValues);
+            // tri des fiches
+            $GLOBALS['ordre'] = 'asc';
+            $GLOBALS['champ'] = 'bf_titre';
+            usort($results[$formid]['entries'], 'champCompare');
+        }
+    }
 }
 
 $output = '';
@@ -86,7 +112,7 @@ if (isset($_POST["page"])) {
                                     $output .= '{{include page="' . $page . '" class=""}}' . "\n";
                                 }
                                 $output .= '//' . _t('TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE') . ' : ' . $this->href('', $pagename) . ' // {{button link="' . $this->href('pdf', $pagename) . '" text="' . _t('TAGS_DOWNLOAD_PDF') . '" class="btn-primary pull-right" icon="book"}}' . "\n";
-                              
+
                                 unset($_POST['page']);
                                 unset($_POST['antispam']);
                                 $this->SaveMetaDatas($pagename, $_POST);
@@ -129,31 +155,27 @@ if (isset($_POST["page"])) {
         }
     }
 
-    // recuperation des pages wikis
-    $sql = 'SELECT DISTINCT tag,body FROM ' . $this->GetConfigValue('table_prefix') . 'pages';
-    if (!empty($taglist)) {
-        $sql .= ', ' . $this->config['table_prefix'] . 'triples tags';
-    }
-    $sql .= ' WHERE latest="Y"
-				AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
+    if ($type == 'all' or $type == 'wiki') {
+        // recuperation des pages wikis
+        $sql = 'SELECT DISTINCT tag,body FROM ' . $this->GetConfigValue('table_prefix') . 'pages';
+        if (!empty($taglist)) {
+            $sql .= ', ' . $this->config['table_prefix'] . 'triples tags';
+        }
+        $sql .= ' WHERE latest="Y"
+    				AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
 
-    if ($type == 'wiki') {
         $sql .= ' AND tag NOT IN (SELECT resource FROM ' . $this->GetConfigValue('table_prefix') . 'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
-    } elseif ($type == 'bazar') {
-        $sql .= ' AND tag IN (SELECT resource FROM ' . $this->GetConfigValue('table_prefix') . 'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")';
+
+        if (!empty($taglist)) {
+            $sql .= ' AND tags.value IN (' . $taglist . ') AND tags.property = "http://outils-reseaux.org/_vocabulary/tag" AND tags.resource = tag';
+        }
+
+        $sql .= ' ORDER BY tag ASC';
+
+        $pages = $this->LoadAll($sql);
+    } else {
+        $pages = array();
     }
-
-    if (!empty($taglist)) {
-        $sql .= ' AND tags.value IN (' . $taglist . ') AND tags.property = "http://outils-reseaux.org/_vocabulary/tag" AND tags.resource = tag';
-    }
-
-    $sql .= ' ORDER BY tag ASC';
-
-    $pages = $this->LoadAll($sql);
-
-    // on prend tous les tags
-    //$sql = 'SELECT DISTINCT value FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
-    //$tags = $this->LoadAll($sql);
 
     if (isset($this->page["metadatas"]["ebook-title"])) {
         $ebookpagename = $this->GetPageTag();
@@ -170,7 +192,6 @@ if (isset($_POST["page"])) {
             if ($key && isset($pages[$key[0]])) {
                 unset($pages[$key[0]]);
             }
-
         }
     } else {
         $ebookpagename = '';
@@ -179,10 +200,9 @@ if (isset($_POST["page"])) {
 
     include_once 'tools/libs/squelettephp.class.php';
     $template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html');
-    // charge le templates
     $template_export->set(
-    	array('pages' => $pages, 'ebookstart' => $ebookstart, 'ebookend' => $ebookend, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'ebookpagename' => $ebookpagename, 'metadatas' => $this->page["metadatas"], 'selectedpages' => $selectedpages, 'url' => $this->href('', $this->GetPageTag()))
-    	); // on passe le tableau de pages en parametres
+        array('pages' => $pages, 'entries' => $results, 'ebookstart' => $ebookstart, 'ebookend' => $ebookend, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'ebookpagename' => $ebookpagename, 'metadatas' => $this->page["metadatas"], 'selectedpages' => $selectedpages, 'url' => $this->href('', $this->GetPageTag()))
+    );
     $output .= $template_export->analyser(); // affiche les resultats
 }
 

@@ -941,18 +941,18 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     if ($url == '') {
         $lien_formulaire = $GLOBALS['_BAZAR_']['url'];
         $lien_formulaire->addQueryString(BAZ_VARIABLE_VOIR, BAZ_VOIR_SAISIR);
-
+        $id = isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
         //Definir le lien du formulaire en fonction du mode de formulaire choisi
         if ($mode == BAZ_CHOISIR_TYPE_FICHE) {
             if ($GLOBALS['params']['vue'] == BAZ_VOIR_SAISIR &&
-                isset($_REQUEST['id_typeannonce'])) {
+                !empty($id)) {
                 $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU_V);
             } else {
                 $lien_formulaire->addQueryString(BAZ_VARIABLE_ACTION, BAZ_ACTION_NOUVEAU);
             }
         }
         if ($mode == BAZ_ACTION_NOUVEAU) {
-            if (isset($_REQUEST['id_typeannonce'])) {
+            if (isset($id)) {
                 if (!isset($_POST['bf_titre'])
                     || (!isset($_POST['accept_condition']) &&
                         $GLOBALS['_BAZAR_']['condition'] != null)) {
@@ -1036,15 +1036,15 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     // CHOIX DU TYPE DE FICHE
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_CHOISIR_TYPE_FICHE) {
-        if (isset($_REQUEST['id_typeannonce']) &&
-            !empty($_REQUEST['id_typeannonce'])) {
-            $GLOBALS['params']['idtypeannonce'] = $_REQUEST['id_typeannonce'];
+        if (!empty($id)) {
+            $GLOBALS['params']['idtypeannonce'] = $id;
             $mode = BAZ_ACTION_NOUVEAU;
         } elseif (is_array($GLOBALS['params']['idtypeannonce']) && count($GLOBALS['params']['idtypeannonce']) == 1) {
             $GLOBALS['params']['idtypeannonce'] = $GLOBALS['params']['idtypeannonce'][0];
             $mode = BAZ_ACTION_NOUVEAU;
         } else {
             $resultat = array();
+
             $tabform = baz_valeurs_formulaire(
                 $GLOBALS['params']['idtypeannonce'],
                 $GLOBALS['params']['categorienature']
@@ -1059,7 +1059,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 '.</div>'."\n";
             } elseif (count($resultat) == 1) {
                 $ligne = reset($resultat);
-                $_REQUEST['id_typeannonce'] = $ligne['bn_id_nature'];
+                $id = $ligne['bn_id_nature'];
                 $GLOBALS['params']['idtypeannonce'] = $ligne['bn_id_nature'];
                 $mode = BAZ_ACTION_NOUVEAU;
                 //on remplace l'attribut action du formulaire par l'action adequate
@@ -1083,7 +1083,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                         $GLOBALS['wiki']->GetPageTag(),
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR.'&amp;'.
                         BAZ_VARIABLE_ACTION.'='.BAZ_ACTION_NOUVEAU
-                        .'&amp;id_typeannonce='.$ligne['bn_id_nature']
+                        .'&amp;id='.$ligne['bn_id_nature']
                     );
                     $res
                     .= '<tr>
@@ -1185,6 +1185,8 @@ function baz_afficher_formulaire_fiche($mode, $formtemplate, $url = '', $valeurs
         $form = baz_valeurs_formulaire($valeurs['id_typeannonce']);
     } elseif (isset($_GET['id_typeannonce'])) {
         $form = baz_valeurs_formulaire($_GET['id_typeannonce']);
+    } elseif (isset($_GET['id'])) {
+        $form = baz_valeurs_formulaire($_GET['id']);
     } else {
         $form = baz_valeurs_formulaire($GLOBALS['params']['idtypeannonce']);
     }
@@ -1300,10 +1302,9 @@ function baz_requete_bazar_fiche($valpost)
     // test pour les titres formatés à partir d'autres champs
     preg_match_all('#{{(.*)}}#U', $valpost['bf_titre'], $matches);
     if (count($matches[0]) > 0) {
-        $valeur = array_merge($valeur, titre($formtemplate, array('titre',
-            $valeur['bf_titre'], ), 'requete', $valpost));
+        $valpost = array_merge($valpost, titre($formtemplate, array('titre',
+            $valpost['bf_titre'], ), 'requete', $valpost));
     }
-
     // si l'on a pas la valeur de l'identifiant de la fiche, on la genere
     if (!isset($valpost['id_fiche'])) {
         // l'identifiant (sous forme de NomWiki) est genere a partir du titre
@@ -1661,7 +1662,7 @@ function baz_liste_rss()
 
     $liste = '';
     foreach ($resultat as $ligne) {
-        $liste .= '<li><a href="'.$GLOBALS['wiki']->href('rss', '', 'id_typeannonce='.$ligne['bn_id_nature'])
+        $liste .= '<li><a href="'.$GLOBALS['wiki']->href('rss', '', 'id='.$ligne['bn_id_nature'])
         .'"><img src="tools/bazar/presentation/images/BAZ_rss.png" alt="'
         ._t('BAZ_RSS').'" /></a>&nbsp;';
         $liste .= $ligne['bn_label_nature'];
@@ -2091,15 +2092,18 @@ function bazPrepareFormData($form)
 function baz_valeurs_formulaire($idformulaire = '', $category = '')
 {
     if (is_array($idformulaire)) {
+        $tabf = array();
         foreach ($idformulaire as $id) {
             if (!isset($GLOBALS['_BAZAR_']['form'][$id])) {
                 $GLOBALS['_BAZAR_']['form'][$id] = baz_valeurs_formulaire($id);
             }
+            $tabf[$id] = $GLOBALS['_BAZAR_']['form'][$id];
         }
         if (count($idformulaire) == 1) {
             $id = array_shift(array_values($idformulaire));
-            return array($id => $GLOBALS['_BAZAR_']['form'][$id]);
+            $tabf[$id] = $GLOBALS['_BAZAR_']['form'][$id];
         }
+        return $tabf;
     } elseif ($idformulaire != '') {
         if (!isset($GLOBALS['_BAZAR_']['form'][$idformulaire])) {
             $requete = 'SELECT * FROM '.BAZ_PREFIXE.'nature WHERE bn_id_nature='.$idformulaire;
@@ -2219,9 +2223,9 @@ function multiArraySearch($array, $key, $value)
 function baz_gestion_formulaire()
 {
     $res = '';
-
-    if (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] ==
-        'modif') {
+    if (!$GLOBALS['wiki']->GetUser()) {
+        $res .= '<div class="alert alert-warning">'._t('BAZ_AUTH_NEEDED').'.</div>';
+    } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'modif') {
         // il y a un formulaire a modifier
 
         // recuperation des informations du type de formulaire
@@ -2293,6 +2297,7 @@ function baz_gestion_formulaire()
     if (!isset($_GET['action_formulaire']) ||
         ($_GET['action_formulaire'] != 'modif' &&
             $_GET['action_formulaire'] != 'new')) {
+        $res = '';
         $tab_forms['forms'] = array();
         $forms = baz_valeurs_formulaire('', $GLOBALS['params']['categorienature']);
 
@@ -2753,25 +2758,28 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                     'data-'.htmlspecialchars($key).'="'.
                     htmlspecialchars($value).'" ';
                 } else {
-                    foreach ($form['template'] as $id => $val) {
-                        if ($val[1] === $key || (isset($val[6]) &&
-                            $val[0].$val[1].$val[6] === $key)) {
-                            if (in_array(
-                                $form['template'][$id][0],
-                                array(
-                                    'checkbox',
-                                    'liste',
-                                    'checkboxfiche',
-                                    'listefiche',
-                                    'tags',
-                                    'jour',
-                                    'scope',
-                                    'texte'
+                    if (is_array($form['template'])) {
+                        foreach ($form['template'] as $id => $val) {
+                            if ($val[1] === $key || (isset($val[6]) &&
+                              $val[0].$val[1].$val[6] === $key)) {
+                                if (in_array(
+                                    $form['template'][$id][0],
+                                    array(
+                                        'checkbox',
+                                        'liste',
+                                        'checkboxfiche',
+                                        'listefiche',
+                                        'tags',
+                                        'jour',
+                                        'scope',
+                                        //'texte'
+                                    )
                                 )
-                            )) {
-                                $datastr .=
-                                'data-'.htmlspecialchars($key).'="'.
-                                htmlspecialchars($value).'" ';
+                                ) {
+                                    $datastr .=
+                                    'data-'.htmlspecialchars($key).'="'.
+                                    htmlspecialchars($value).'" ';
+                                }
                             }
                         }
                     }
@@ -3300,7 +3308,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $data['search'] = '';
     if (isset($_REQUEST['q']) && !empty($_REQUEST['q'])) {
         $data['search'] = $_REQUEST['q'];
-        //$_REQUEST['id_typeannonce'] = '';
     }
 
     // affichage du formulaire
@@ -3310,38 +3317,20 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $squelsearch->set($data);
     $res .= $squelsearch->analyser();
 
-    if (!isset($_GET['id'])) {
-        // la recherche n'a pas encore ete effectuee, on affiche les 10 dernieres fiches
-        $tableau_dernieres_fiches = baz_requete_recherche_fiches(
-            $GLOBALS['params']['query'],
-            '',
-            $typeannonce,
-            $categorienature,
-            1,
-            '',
-            ''
-        );
-        $shownbres = count($GLOBALS['params']['groups']) == 0 || count($tableau_dernieres_fiches) == 0;
-        $res .= displayResultList($tableau_dernieres_fiches, $GLOBALS['params'], $shownbres);
-        return $res;
-    } else {
-        // la recherche a ete effectuee, on etablie la requete SQL
-        $tableau_fiches = baz_requete_recherche_fiches(
-            $GLOBALS['params']['query'],
-            '',
-            $data['idform'],
-            $categorienature,
-            1,
-            '',
-            '',
-            true,
-            isset($_REQUEST['q']) ? $_REQUEST['q'] : ''
-        );
-        $shownbres = count($GLOBALS['params']['groups']) == 0 || count($tableau_fiches) == 0;
-        $res .= displayResultList($tableau_fiches, $GLOBALS['params'], $shownbres);
-        $GLOBALS['params']['showexportbuttons'] = $oldparam;
-        return $res;
-    }
+    $fiches = baz_requete_recherche_fiches(
+        $GLOBALS['params']['query'],
+        '',
+        $data['idform'],
+        $categorienature,
+        1,
+        '',
+        '',
+        true,
+        $data['search']
+    );
+    $shownbres = count($GLOBALS['params']['groups']) == 0 || count($fiches) == 0;
+    $res .= displayResultList($fiches, $GLOBALS['params'], $shownbres);
+    return $res;
 }
 
 /**
@@ -3356,7 +3345,7 @@ function baz_requete_recherche_fiches(
     $personne = '',
     $nb_limite = '',
     $motcles = true,
-    $searchstring = '',
+    $q = '',
     $facettesearch = 'OR'
 ) {
     //si les parametres ne sont pas rentres, on prend les variables globales
@@ -3371,19 +3360,9 @@ function baz_requete_recherche_fiches(
     'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
     'ORDER BY resource ASC';
 
-    /**
-     * Requete d'obtention des valeurs d'une fiche.
-     * 20160726 cyrille: remplace sélection "body" par "*"
-     * @var string
-     */
     $requete =
     'SELECT DISTINCT * FROM '.BAZ_PREFIXE.
     'pages WHERE latest="Y" AND comment_on = \'\'';
-
-    // TODO: on limite a la langue choisie
-    //if (isset($GLOBALS['_BAZAR_']['langue'])) {
-    //$requete .= ' AND body LIKE \'%"langue":"'.utf8_encode($GLOBALS['_BAZAR_']['langue']).'"%\'' ;
-    //}
 
     //on limite au type de fiche
     if (!empty($id_typeannonce)) {
@@ -3423,16 +3402,11 @@ function baz_requete_recherche_fiches(
     $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
 
     $requeteSQL = '';
-
     //preparation de la requete pour trouver les mots cles
-    if (isset($searchstring) && trim($searchstring) != '' && $searchstring !=
-        _t('BAZ_MOT_CLE')) {
+    if (trim($q) != '' && $q !=_t('BAZ_MOT_CLE')) {
         $GLOBALS['wiki']->Query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
-        $searchstring = str_replace(array('["', '"]'), '', json_encode(array($searchstring)));
-        //$searchstring = removeAccents($searchstring);
-        //decoupage des mots cles
-        //:      mysql_query('SET NAMES utf8');
-        $recherche = explode(' ', $searchstring);
+        $search = str_replace(array('["', '"]'), '', json_encode(array(removeAccents($q))));
+        $recherche = explode(' ', $search);
         $nbmots = count($recherche);
         $requeteSQL .= ' AND (';
         for ($i = 0; $i < $nbmots; ++$i) {
@@ -3491,8 +3465,9 @@ function baz_requete_recherche_fiches(
                             $requeteSQL .= ' '.$facettesearch.' ';
                         }
                         $requeteSQL .=
-                        '(body REGEXP \'"'.$nom.'":"[^"]*'.$critere.
-                        '[^"]*"\')';
+                        '(body REGEXP \'"'.$nom.'":("'.$critere.
+                        '"|"[^"]*,'.$critere.'"|"'.$critere.',[^"]*"|"[^"]*,'
+                        .$critere.',[^"]*")\')';
                         $first = false;
                     }
                     $requeteSQL .= ')';
@@ -3615,7 +3590,6 @@ function filterByValue($array, $index, $value)
     $newarray = array();
     if (is_array($array) && count($array)>0) {
         foreach (array_keys($array) as $key) {
-          //var_dump($array[$key], $array[$key][$index]);
             $temp[$key] = isset($array[$key][$index]) ? $array[$key][$index] : null;
             if (is_array($value)) {
                 if (in_array($temp[$key], $value)) {
@@ -4015,7 +3989,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             $key.= $queryurl;
             // on sauve la valeur de query initiale pour des traitement javascripts
             $output .= '<input type="hidden" id="queryinit" value="'.htmlspecialchars($queryurl).'">'."\n";
-
         }
         $output .= '<div class="export-links pull-right"><a class="btn btn-default btn-mini btn-xs"
         data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_RSS').'"
@@ -4648,7 +4621,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * iconprefix : designe le prefixe des classes CSS utilisees pour la carto
      */
-    $param['iconprefix'] = $wiki->GetParameter('iconprefix');
+      $param['iconprefix'] = isset($_GET['iconprefix']) ? $_GET['iconprefix'] : $wiki->GetParameter('iconprefix');
     if (empty($param['iconprefix'])) {
         if (defined('BAZ_MARKER_ICON_PREFIX') && BAZ_MARKER_ICON_PREFIX) {
             $param['iconprefix'] = BAZ_MARKER_ICON_PREFIX.' '.BAZ_MARKER_ICON_PREFIX.'-';
@@ -4662,12 +4635,13 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * iconfield : designe le champ utilise pour la couleur des marqueurs
      */
-    $param['iconfield'] = $wiki->GetParameter('iconfield');
+    $param['iconfield'] = isset($_GET['iconfield']) ? $_GET['iconfield'] : $wiki->GetParameter('iconfield');
 
     /*
      * icon : couleur des marqueurs
      */
-    $param['icon'] = $wiki->GetParameter('icon');
+    $param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
+
     if (!empty($param['icon'])) {
         $iconparam = explode(',', $param['icon']);
         if (count($iconparam) > 1 && !empty($param['iconfield'])) {
@@ -4695,7 +4669,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * colorfield : designe le champ utilise pour la couleur des marqueurs
      */
-    $param['colorfield'] = $wiki->GetParameter('colorfield');
+    $param['colorfield'] = isset($_GET['colorfield']) ? $_GET['colorfield'] : $wiki->GetParameter('colorfield');
 
     /*
      * color : couleur des marqueurs
@@ -4704,7 +4678,7 @@ function getAllParameters_carto($wiki, array &$param)
         'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
         'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
     );
-    $param['color'] = $wiki->GetParameter('color');
+    $param['color'] = isset($_GET['color']) ? $_GET['color'] : $wiki->GetParameter('color');
     if (!empty($param['color'])) {
         $colorsparam = explode(',', $param['color']);
         if (count($colorsparam) > 1 && !empty($param['colorfield'])) {
@@ -4735,9 +4709,14 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * smallmarker : mettre des puces petites ? non par defaut
      */
-    $param['smallmarker'] = $wiki->GetParameter('smallmarker');
+    $param['smallmarker'] = isset($_GET['smallmarker']) ? $_GET['smallmarker'] : $wiki->GetParameter('smallmarker');
     if (empty($param['smallmarker'])) {
-        $param['smallmarker'] = BAZ_SMALL_MARKER;
+        $param['markersize'] = isset($_GET['markersize']) ? $_GET['markersize'] : $wiki->GetParameter('markersize');
+        if (!empty($param['markersize']) and $param['markersize'] == 'small') {
+            $param['smallmarker'] = '1';
+        } else {
+            $param['smallmarker'] = BAZ_SMALL_MARKER;
+        }
     }
     if (!empty($param['smallmarker']) && $param['smallmarker'] == '1') {
         $param['smallmarker'] = '';
@@ -4754,7 +4733,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * width : largeur de la carte à l'écran en pixels ou pourcentage
      */
-    $param['width'] = $wiki->GetParameter('width');
+    $param['width'] = isset($_GET['width']) ? $_GET['width'] : $wiki->GetParameter('width');
     if (empty($param['width'])) {
         $param['width'] = BAZ_GOOGLE_IMAGE_LARGEUR;
     }
@@ -4762,7 +4741,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * height : hauteur de la carte à l'écran en pixels ou pourcentage
      */
-    $param['height'] = $wiki->GetParameter('height');
+    $param['height'] = isset($_GET['height']) ? $_GET['height'] : $wiki->GetParameter('height');
     if (empty($param['height'])) {
         $param['height'] = BAZ_GOOGLE_IMAGE_HAUTEUR;
     }
@@ -4770,7 +4749,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * lat : latitude point central en degres WGS84 (exemple : 46.22763) , sinon parametre par defaut
      */
-    $param['latitude'] = $wiki->GetParameter('lat');
+    $param['latitude'] = isset($_GET['lat']) ? $_GET['lat'] : $wiki->GetParameter('lat');
     if (empty($param['latitude'])) {
         $param['latitude'] = BAZ_MAP_CENTER_LAT;
     }
@@ -4778,7 +4757,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * lon : longitude point central en degres WGS84 (exemple : 3.42313) , sinon parametre par defaut
      */
-    $param['longitude'] = $wiki->GetParameter('lon');
+    $param['longitude'] = isset($_GET['lon']) ? $_GET['lon'] : $wiki->GetParameter('lon');
     if (empty($param['longitude'])) {
         $param['longitude'] = BAZ_MAP_CENTER_LON;
     }
@@ -4786,7 +4765,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * niveau de zoom : de 1 (plus eloigne) a 15 (plus proche) , sinon parametre par defaut 5
      */
-    $param['zoom'] = $wiki->GetParameter('zoom');
+    $param['zoom'] = isset($_GET['zoom']) ? $_GET['zoom'] : $wiki->GetParameter('zoom');
     if (empty($param['zoom'])) {
         $param['zoom'] = BAZ_GOOGLE_ALTITUDE;
     }
@@ -4794,7 +4773,7 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * Outil de navigation , sinon parametre par defaut true
      */
-    $param['navigation'] = $wiki->GetParameter('navigation'); // true or false
+    $param['navigation'] = isset($_GET['navigation']) ? $_GET['navigation'] : $wiki->GetParameter('navigation');
     if (empty($param['navigation'])) {
         $param['navigation'] = BAZ_AFFICHER_NAVIGATION;
     }

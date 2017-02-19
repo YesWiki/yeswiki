@@ -49,6 +49,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_NOUVEAU_FORMULAIRE' => 'Saisir un nouveau formulaire',
         'BAZ_NOUVELLE_LISTE' => 'Saisir une nouvelle liste',
         'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES' => 'Le type de formulaire et ses fiches associ&eacute;es ont bien &eacute;t&eacute; supprim&eacute;s.',
+        'BAZ_AUTH_NEEDED' => 'Il faut être identifié pour éditer ou supprimer un formulaire',
         'BAZ_LISTES_SUPPRIMEES' => 'La liste a bien &eacute;t&eacute; supprim&eacute;e.',
         'BAZ_IMPORT_LISTS_FROM_URL' => 'Importer les listes d\'un autre yeswiki',
         'BAZ_IMPORT_FORMS_FROM_URL' => 'Importer les formulaires d\'un autre yeswiki',

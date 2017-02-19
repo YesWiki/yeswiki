@@ -14,7 +14,7 @@ if ($type == 'fiche_bazar') {
         $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
     }
     $bazaroutput .= baz_voir_fiche(0, $tab_valeurs);
-} elseif (isset($_GET['id'])) {
+} elseif (isset($_GET['id']) and !isset($_GET['action'])) {
     // si le parametre id est passé, on souhaite afficher une liste bazar
     // TODO : factoriser avec bazarliste?
     // on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances
@@ -81,7 +81,12 @@ if (!empty($bazaroutput)) {
     min-width : 0;
     padding-top : 0;
   }
-  .yeswiki-page-widget { padding:0 !important;min-height:auto !important; }
+  .yeswiki-page-widget { padding:0 !important;min-height:auto !important; background-color : transparent;}
+  .yeswiki-page-widget .facette-container {
+      margin: 0;
+      padding:0;
+      background-color : transparent;
+  }
   </style>' . "\n";
 
     // on recupere juste les javascripts et la fin des balises body et html

@@ -141,7 +141,7 @@ if (empty($list)) {
     }
 
     $listvalues = baz_valeurs_liste($list);
-    $currentlabel = '';
+    $currentlabel = 'this is an impossible label';
     $fichescat = '';
     $output = '';
     $first = true;
@@ -163,7 +163,7 @@ if (empty($list)) {
             $output .=  '<h3 class="collapsed yeswiki-list-category" '
                 .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
                 .'" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i> '
-                .$listvalues['label'][$fiche[$id]].'</h3>
+                .(empty($listvalues['label'][$fiche[$id]]) ? 'Non catégorisé' : $listvalues['label'][$fiche[$id]]).'</h3>
                 <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }
         $currentlabel = $fiche[$id];
@@ -183,6 +183,6 @@ if (empty($list)) {
     $output .=  '</div>'."\n";
     echo $output;
 
-    $$_GET['query'] = $query;
+    $_GET['query'] = $query;
 
 }

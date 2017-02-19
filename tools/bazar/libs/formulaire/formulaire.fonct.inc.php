@@ -2152,6 +2152,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
         }
         if (is_array($select)) {
+            asort($select);
             foreach ($select as $key => $label) {
                 $select_html.= '<option value="' . $key . '"';
                 if ($def != '' && strstr($key, $def)) {

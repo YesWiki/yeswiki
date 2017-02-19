@@ -445,6 +445,7 @@ $(document).ready(function () {
       var urlquery;
       if (value !== '') {
         if (s !== '') {
+          console.log(s);
           urlquery = decodeURIComponent(s).replace(
             new RegExp('&' + name + '=' + '([^&;]+?)(&|#|;|$)'),
             '&' + name + '=' + value
@@ -454,6 +455,7 @@ $(document).ready(function () {
           urlquery = '?' + name + '=' + value;
         } //console.log('location.search vide', s, urlquery);
       } else {
+        console.log(s);
         urlquery = decodeURIComponent(s).replace(
           new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)'),
           ''
