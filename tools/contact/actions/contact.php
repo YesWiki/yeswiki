@@ -69,9 +69,9 @@ if (empty($contactelements['mail'])) {
 
     include_once 'tools/libs/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/contact/templates
-    $contactTemplate = 'themes/tools/contact/templates/'.$params['template'];
+    $contactTemplate = 'themes/tools/contact/templates/'.$template;
     if (!is_file($contactTemplate)) {
-        $contactTemplate = 'tools/contact/presentation/templates/'.$params['template'];
+        $contactTemplate = 'tools/contact/presentation/templates/'.$template;
     }
     $squel = new SquelettePhp($contactTemplate);
     $squel->set($contactelements);
