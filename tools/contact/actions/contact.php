@@ -69,12 +69,13 @@ if (empty($contactelements['mail'])) {
 
     include_once 'tools/libs/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/contact/templates
-    $contacttemplate = 'themes/tools/contact/templates/'.$params['template'];
-    if (!is_file($templatetoload)) {
-        $templatetoload = 'tools/contact/presentation/templates/'.$params['template'];
+    $contactTemplate = 'themes/tools/contact/templates/'.$params['template'];
+    if (!is_file($contactTemplate)) {
+        $contactTemplate = 'tools/contact/presentation/templates/'.$params['template'];
     }
-    $contacttemplate->set($contactelements);
-    echo $contacttemplate->analyser();
+    $squel = new SquelettePhp($contactTemplate);
+    $squel->set($contactelements);
+    echo $squel->analyser();
 
     $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
 }
