@@ -33,8 +33,28 @@ function getTemplatesList()
     return $themes;
 }
 
-function showSelectTemplateForm($themes)
+function showSelectTemplateForm($themes, $config)
 {
+    $defTheme = '';
+    if (isset($config->favorite_theme)) {
+        $defTheme = $config->favorite_theme;
+    }
+
+    $defStyle = '';
+    if (isset($config->favorite_style)) {
+        $defStyle = $config->favorite_style;
+    }
+
+    $defSquelette = '';
+    if (isset($config->favorite_squelette)) {
+        $defSquelette = $config->favorite_squelette;
+    }
+
+    $defForceTheme = false;
+    if (isset($config->hide_action_template) and $config->hide_action_template === '1') {
+        $defSquelette = true;
+    }
+
     include('tools/templates/presentation/templates/setwikidefaulttheme.tpl.html');
 }
 
@@ -75,12 +95,13 @@ function checkParamActionSetTemplate($post, $availableThemes)
 }
 
 $themes = getTemplatesList();
+require_once('tools/templates/libs/Configuration.php');
+$config = new Configuration('wakka.config.php');
+$config->load();
+
 if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
     $params = checkParamActionSetTemplate($_POST, $themes);
     if ($params !== false) {
-        require_once('tools/templates/libs/Configuration.php');
-        $config = new Configuration('wakka.config.php');
-        $config->load();
         $config->favorite_theme = $params['theme'];
         $config->favorite_squelette = $params['squelette'];
         $config->favorite_style = $params['style'];
@@ -93,4 +114,4 @@ if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
 }
 
 
-showSelectTemplateForm($themes);
+showSelectTemplateForm($themes, $config);

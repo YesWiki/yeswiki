@@ -7,6 +7,10 @@
       <select id="themeSelect" name='wdtTheme' class="form-control">
         <?php
           foreach (array_keys($themes) as $theme) {
+            if ($theme === $defTheme) {
+              print("<option value='$theme' selected >$theme</option>");
+              continue;
+            }
             print("<option value='$theme'>$theme</option>");
           }
         ?>
@@ -20,6 +24,10 @@
       <select id='squeletteSelect' name='wdtSquelette' class="form-control">
         <?php
           foreach (current($themes)['squelettes'] as $squelette) {
+            if ($squelette === $defSquelette) {
+              print("<option value='$squelette' selected >$squelette</option>");
+              continue;
+            }
             print("<option value='$squelette'>$squelette</option>");
           }
         ?>
@@ -33,6 +41,10 @@
       <select id='styleSelect' name='wdtStyle' class="form-control">
         <?php
           foreach (current($themes)['styles'] as $style) {
+            if ($style === $defStyle) {
+              print("<option value='$style' selected >$style</option>");
+              continue;
+            }
             print("<option value='$style'>$style</option>");
           }
         ?>
@@ -43,7 +55,13 @@
   <div class='control-group form-group'>
     <label class="control-label col-lg-4"></label>
     <div class="controls col-lg-4">
-      <input type='checkbox' name='wdtForceTheme' id='wdtForceTheme'>
+      <?php
+        if ($defForceTheme) {
+          print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme' checked >");
+        } else {
+          print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme'>");
+        }
+      ?>
       <label for='wdtForceTheme'>Forcer le choix pour tout le wiki. </br >(Cache l'action template)</label>
     </div>
   </div>
