@@ -2,7 +2,7 @@
   <input class='hidden' name='action' value='setTemplate'>
 
   <div class='control-group form-group'>
-    <label class="control-label col-lg-4">Thème</label>
+    <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_THEME')); ?></label>
     <div class="controls col-lg-4">
       <select id="themeSelect" name='wdtTheme' class="form-control">
         <?php
@@ -19,7 +19,7 @@
   </div>
 
   <div class='control-group form-group'>
-    <label class="control-label col-lg-4">Squelette</label>
+    <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_SQUELETTE')); ?></label>
     <div class="controls col-lg-4">
       <select id='squeletteSelect' name='wdtSquelette' class="form-control">
         <?php
@@ -36,7 +36,7 @@
   </div>
 
   <div class='control-group form-group'>
-    <label class="control-label col-lg-4">Style</label>
+    <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_STYLE')); ?></label>
     <div class="controls col-lg-4">
       <select id='styleSelect' name='wdtStyle' class="form-control">
         <?php
@@ -62,14 +62,14 @@
           print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme'>");
         }
       ?>
-      <label for='wdtForceTheme'>Forcer le choix pour tout le wiki. </br >(Cache l'action template)</label>
+      <label for='wdtForceTheme'><?php print(_t('TEMPLATE_FORCE_TEMPLATE')); ?></label>
     </div>
   </div>
 
   <div class='control-group form-group'>
     <label class="control-label col-lg-4"></label>
     <div class="controls col-lg-4">
-      <input type='submit' class="btn btn-primary" value='Valider'/>
+      <input type='submit' class="btn btn-primary" value='<?php print(_t('TEMPLATE_APPLY')); ?>'/>
     </div>
   </div>
 </form>

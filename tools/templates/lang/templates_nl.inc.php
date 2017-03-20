@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en francais de l'extension Templates
 *
@@ -119,5 +119,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 'TEMPLATE_NO_THEME_FILES' => 'Bestanden van ontbrekende thema',
 'TEMPLATE_DEFAULT_THEME_USED' => 'Het standaardthema wordt gebruikt'
+
+// actions/setwikidefaultheme.php
+'TEMPLATE_FORCE_TEMPLATE' => 'Force voor het hele wiki',
+)
 
 ));

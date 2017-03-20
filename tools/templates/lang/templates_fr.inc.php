@@ -158,5 +158,8 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_OWNER' => 'Propriétaire',
     'TEMPLATE_ACTIONS' => 'Actions',
     'TEMPLATE_MODIFY' => 'Modifier',
+
+    // actions/setwikidefaultheme.php
+    'TEMPLATE_FORCE_TEMPLATE' => 'Forcer le choix pour tout le wiki.',
     )
 );

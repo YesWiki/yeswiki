@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Arquivo de tradução em português (do Brasil) da extensão templates
 *
@@ -137,5 +137,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // actions/buttondropdown.php
 'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Ação {{buttondropdown ...}}',
 'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'ação {{buttondropdown ...}} deve ser fechada por ação {{end elem="buttondropdown"}}',
+
+// actions/setwikidefaultheme.php
+'TEMPLATE_FORCE_TEMPLATE' => 'Vigor para todo o wiki.',
+)
 
 ));
