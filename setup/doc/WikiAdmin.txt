@@ -10,6 +10,9 @@
 ===Gérer les droits des pages===
 {{gererdroits}}
 ------
+===Gérer le thème par défaut du wiki===
+{{setwikidefaulttheme}}
+------
 ===Gérer les thèmes des pages===
 {{gererthemes}}
 ------
