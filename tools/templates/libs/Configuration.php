@@ -32,13 +32,18 @@ class Configuration
         $this->parameters[$name] = $value;
     }
 
+    public function __unset($name)
+    {
+        unset($this->parameters[$name]);
+    }
+
     public function load()
     {
         if (!is_file($this->file)) {
             return;
         }
 
-        include $this->file;
+        require $this->file;
 
         if (isset($wakkaConfig)) {
             $this->parameters = $wakkaConfig;

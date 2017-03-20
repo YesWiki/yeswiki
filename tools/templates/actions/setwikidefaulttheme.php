@@ -15,7 +15,10 @@ function getTemplatesList()
     //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
     if (is_dir('themes')) {
         $repertoire_racine = 'themes';
-        $GLOBALS['wiki']->config['templates'] = array_merge($GLOBALS['wiki']->config['templates'], search_template_files($repertoire_racine));
+        $GLOBALS['wiki']->config['templates'] = array_merge(
+            $GLOBALS['wiki']->config['templates'],
+            search_template_files($repertoire_racine)
+        );
         if (is_array($GLOBALS['wiki']->config['templates'])) {
             ksort($GLOBALS['wiki']->config['templates']);
         }
@@ -52,7 +55,7 @@ function showSelectTemplateForm($themes, $config)
 
     $defForceTheme = false;
     if (isset($config->hide_action_template) and $config->hide_action_template === '1') {
-        $defSquelette = true;
+        $defForceTheme = true;
     }
 
     include('tools/templates/presentation/templates/setwikidefaulttheme.tpl.html');
@@ -87,31 +90,42 @@ function checkParamActionSetTemplate($post, $availableThemes)
     $params['squelette'] = $post['wdtSquelette'];
 
     $params['forceTheme'] = false;
-    if (isset($post['forceTheme']) and $post['forceTheme'] === 'on') {
+    if (isset($post['wdtForceTheme']) and $post['wdtForceTheme'] === 'on') {
         $params['forceTheme'] = true;
     }
 
     return $params;
 }
 
-$themes = getTemplatesList();
-require_once('tools/templates/libs/Configuration.php');
-$config = new Configuration('wakka.config.php');
-$config->load();
+if (!is_writable('wakka.config.php')) {
+    echo '<div class="alert alert-danger">'
+        . _t('ERROR_NO_ACCESS')
+        . " setwikidefaulttheme, le fichier de configuration est protégé en écriture</div>\n";
+} else {
+    if ($this->UserIsAdmin()) {
+        $themes = getTemplatesList();
+        require_once('tools/templates/libs/Configuration.php');
+        $config = new Configuration('wakka.config.php');
+        $config->load();
 
-if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
-    $params = checkParamActionSetTemplate($_POST, $themes);
-    if ($params !== false) {
-        $config->favorite_theme = $params['theme'];
-        $config->favorite_squelette = $params['squelette'];
-        $config->favorite_style = $params['style'];
-        if ($params['forceTheme']) {
-            $config->hide_action_template = '1';
+        if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
+            $params = checkParamActionSetTemplate($_POST, $themes);
+            if ($params !== false) {
+                $config->favorite_theme = $params['theme'];
+                $config->favorite_squelette = $params['squelette'];
+                $config->favorite_style = $params['style'];
+                unset($config->hide_action_template);
+                if ($params['forceTheme']) {
+                    $config->hide_action_template = '1';
+                }
+                $config->write();
+                $this->Redirect($this->href("", $this->tag));
+            }
         }
-        $config->write();
-        $this->Redirect($this->href("", $this->tag));
+        showSelectTemplateForm($themes, $config);
+    } else {
+        echo '<div class="alert alert-danger">'
+            . _t('ERROR_NO_ACCESS')
+            . " setwikidefaulttheme</div>\n";
     }
 }
-
-
-showSelectTemplateForm($themes, $config);
