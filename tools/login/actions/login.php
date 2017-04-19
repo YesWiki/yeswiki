@@ -199,7 +199,7 @@ if ($_REQUEST["action"] == "login") {
 	}
 }
 
-if($this->config['use_sso']) {
+if(isset($this->config['use_sso']) && $this->config['use_sso']) {
     require_once('tools/login/libs/identificationsso.class.php');
     $sso = new identificationSso($this);
     $sso->recupererIdentiteConnectee();
