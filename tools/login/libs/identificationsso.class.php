@@ -118,15 +118,15 @@ class identificationSso {
 	function verifierEtInsererUtilisateurParJeton($jeton_rafraichi) {
 		if(!empty($jeton_rafraichi['session']) && $jeton_rafraichi['session'] == true) {
 			$token_decode = $this->decoderToken($jeton_rafraichi['token']);
-			
+
 			$nom_wiki = $token_decode['nomWiki'];
 			$courriel = $token_decode['sub'];
-			
+
 			$utilisateur_wiki_existe = $this->wiki->LoadAll("SELECT * FROM  ".$this->wiki->config["table_prefix"]."users ".
 					"WHERE ".
-					"name = '".mysql_escape_string($nom_wiki)."' OR ".
-					"email = '".mysql_escape_string($courriel)."'");
-			
+					"name = '".mysqli_real_escape_string($this->wiki->dblink, $nom_wiki)."' OR ".
+					"email = '".mysqli_real_escape_string($this->wiki->dblink, $courriel)."'");
+
 			// pas inscrit ? on l'ajout à la base de données
 			if(empty($utilisateur_wiki_existe)) {
 				// mot de passe généré à l'arrache, le mieux serait de trouver celui de tela encodé
@@ -134,12 +134,12 @@ class identificationSso {
 				// à s'identifier par le wiki
 				$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 				$pass = substr(str_shuffle(str_repeat($pool, 16)), 0, 16);
-				
+
 				$this->wiki->Query("insert into ".$this->wiki->config["table_prefix"]."users set ".
 						"signuptime = now(), ".
-						"name = '".mysql_escape_string($token_decode['nomWiki'])."', ".
-						"email = '".mysql_escape_string($token_decode['sub'])."', ".
-						"password = md5('".mysql_escape_string($pass)."')");
+						"name = '".mysqli_real_escape_string($this->wiki->dblink, $token_decode['nomWiki'])."', ".
+						"email = '".mysqli_real_escape_string($this->wiki->dblink, $token_decode['sub'])."', ".
+						"password = md5('".mysqli_real_escape_string($this->wiki->dblink, $pass)."')");
 			} else {
 				// Un utilisateur peut déjà s'être inscrit sur le wiki avec un autre nom que son pseudo
 				$nom_wiki = $utilisateur_wiki_existe[0]['name'];
@@ -209,7 +209,7 @@ class identificationSso {
 	function connecterUtilisateur($login, $pass, $url_redirect = null) {
 		if(strpos($login, '@') === false) {
 			$utilisateur_wiki = $this->wiki->LoadSingle("SELECT email FROM  ".$this->wiki->config["table_prefix"]."users ".
-			"WHERE name = '".mysql_escape_string($login)."'");
+			"WHERE name = '".mysqli_real_escape_string($this->wiki->dblink, $login)."'");
 
 			$login = !empty($utilisateur_wiki) ? $utilisateur_wiki['email'] : $login;
 			// TODO: si le courriel a changé dans l'annuaire, on devrait mettre à jour les informations 
