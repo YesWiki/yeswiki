@@ -65,22 +65,25 @@ class identificationSso {
 	}
 
 	function getToken() {
-		// Premier essai, dans le header
+		$token = null;
+
+		// Dans $_REQUEST ?
+		if($token == null) {
+			$token = !empty($_REQUEST['Authorization']) ? $_REQUEST['Authorization'] : null;
+		}
 		$headers = @apache_request_headers();
-		$token = !empty($headers['Authorization']) ? $headers['Authorization'] : null;
 		// Eventuellement, le jeton a pu être passé dans un header non standard, comme dans 
 		// le cas où le header Authorization est supprimé par le mod cgi d'apache
 		// Dans ce cas là on vérifie aussi dans un header alternatif si celui ci a été renseigné
 		if($token == null && $this->auth_header != 'Authorization') {
 			$token = !empty($headers[$this->auth_header]) ? $headers[$this->auth_header] : null;
 		}
-
-		// Sinon dans $_REQUEST ?
-		if($token == null) {
-			$token = !empty($_REQUEST['Authorization']) ? $_REQUEST['Authorization'] : null;
+		// Dans le header Authorization ?
+		// @WARNING peut entrer en conflit avec un jeton BASIC AUTH
+		if ($token == null) {
+			$token = !empty($headers['Authorization']) ? $headers['Authorization'] : null;
 		}
-		
-		// Sinon dans $_COOKIE ?
+		// Dans $_COOKIE ?
 		if($token == null) {
 			$token = !empty($_COOKIE['tb_auth']) ? $_COOKIE['tb_auth'] : null;
 		}
@@ -94,7 +97,11 @@ class identificationSso {
 	}
 
 	function getPage() {
-		return !empty($this->wiki->page) ? $this->wiki->page['tag'] : 'PagePrincipale';
+		$page = 'PagePrincipale';
+		if (! empty($_REQUEST['wiki'])) {
+			$page = $_REQUEST['wiki'];
+		}
+		return $page;
 	}
 
 	// http://stackoverflow.com/questions/1251582/beautiful-way-to-remove-get-variables-with-php?lq=1
@@ -176,7 +183,6 @@ class identificationSso {
 				// On demande à l'annuaire si le jeton est bien valide
 				$jeton_rafraichi = json_decode(file_get_contents($this->wiki->config['sso_url'].'rafraichir?token='.$token), true);
 				$nom_wiki = $this->verifierEtInsererUtilisateurParJeton($jeton_rafraichi);
-				$token_decode = $this->decoderToken($jeton_rafraichi['token']);
 
 				// dans le pire des cas, si on se déconnecte dans une autre application, on sera déconnecté 
 				// lorsque le jeton expirera
