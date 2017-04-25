@@ -51,15 +51,15 @@ else {
 	else {
 		$GLOBALS['nbactionmail'] = 1;
 	}
-	$contactelements['nbactionmail'] = $GLOBALS['nbactionmail']; 
-	
+	$contactelements['nbactionmail'] = $GLOBALS['nbactionmail'];
+
 	$contactelements['entete'] = $this->GetParameter('entete');
 	if (empty($contactelements['entete'])) {
 		$contactelements['entete'] = $this->config['wakka_name'];
 	}
 
 	// on choisit le template utilisé
-	$template = $this->GetParameter('template'); 
+	$template = $this->GetParameter('template');
 	if (empty($template)) {
 		$template = 'complete-contact-form.tpl.html';
 	}
@@ -70,8 +70,15 @@ else {
 	// adresse url d'envoi du mail
 	$contactelements['mailerurl'] = $this->href('mail');
 
-	include_once('tools/libs/squelettephp.class.php');
-	$contacttemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
+    include_once('tools/libs/squelettephp.class.php');
+
+    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
+    $templatetoload = 'themes/tools/contact/templates/'.$template;
+    if (!is_file($templatetoload)) {
+        $templatetoload = 'tools/contact/presentation/templates/'.$template;
+    }
+
+	$contacttemplate = new SquelettePhp($templatetoload);
 	$contacttemplate->set($contactelements);
 	echo $contacttemplate->analyser();
 
