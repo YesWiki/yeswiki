@@ -47,6 +47,7 @@ if (empty($template)) {
     }
 }
 
+$tabsrc = '';
 //recuperation du parametre obligatoire des urls
 $sources = $this->GetParameter('source');
 if (!empty($sources)) {
