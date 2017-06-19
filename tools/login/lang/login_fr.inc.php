@@ -69,5 +69,6 @@ $GLOBALS['translations'] = array_merge(
         'LOGIN_CLICK_FOLLOWING_LINK' => 'Cliquez sur le lien suivant pour ré-initialiser votre mot de passe',
         'LOGIN_THE_TEAM' => 'L\'équipe de',
         'LOGIN_PASSWORD_LOST_FOR' => 'Mot de passe perdu pour',
+        'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'inscription pour cette période.',
     )
 );
