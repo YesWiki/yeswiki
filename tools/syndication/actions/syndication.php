@@ -18,7 +18,7 @@ if (file_exists('cache')) {
 }
 
 // recuperation des parametres
-$titre = $this->GetParameter("titre");
+$titre = $this->GetParameter("title");
 
 $nb = $this->GetParameter("nb");
 
@@ -48,9 +48,16 @@ if (empty($template)) {
 }
 
 //recuperation du parametre obligatoire des urls
+$sources = $this->GetParameter('source');
+if (!empty($sources)) {
+    $tabsrc = array_map('trim', explode(',', $sources));
+}
+
+//recuperation du parametre obligatoire des urls
 $urls = $this->GetParameter("url");
 if (!empty($urls)) {
     $tab_url = array_map('trim', explode(',', $urls));
+    $nburl = 0;
     foreach ($tab_url as $cle => $url) {
         if ($url != '') {
             // Parse it
@@ -72,7 +79,10 @@ if (!empty($urls)) {
                     $aso_page = array();
 
                     // Gestion du titre
-                    if ($titre == 'rss') {
+                    if (empty($titre)) {
+                        $aso_page['titre_site'] = '';
+                    }
+                    elseif ($titre == 'rss') {
                         $aso_page['titre_site'] = $feed->get_title();
                     } else {
                         $aso_page['titre_site'] = $titre;
@@ -80,6 +90,11 @@ if (!empty($urls)) {
 
                     // Gestion de l'url du site
                     $aso_page['url_site'] = $feed->get_link();
+                    if (is_array($tabsrc)) {
+                        $aso_page['source'] = $tabsrc[$nburl];
+                    } else {
+                        $aso_page['source'] = '';
+                    }
 
                     // Ouverture du lien dans une nouvelle fenetre
                     $aso_page['ext'] = $nouvellefenetre;
@@ -100,7 +115,7 @@ if (!empty($urls)) {
                             $aso_page['description'] = truncate(
                                 $aso_page['description'],
                                 $nbchar,
-                                ' [...] <a class="lien_lire_suite" href="' . $aso_page['url']
+                                '... <a class="lien_lire_suite" href="' . $aso_page['url']
                                 .'" '. ($nouvellefenetre ? 'target="_blank" ' : '')
                                 .'title="' . _t('SYNDICATION_READ_MORE') . '">' . _t('SYNDICATION_READ_MORE') . '</a>'
                             );
@@ -132,6 +147,7 @@ if (!empty($urls)) {
                 echo '<p class="alert alert-danger">' . _t('ERROR') . ' ' . magpie_error() . '</p>' . "\n";
             }
         }
+        $nburl = $nburl+1;
     }
 
     // Trie des pages par date
