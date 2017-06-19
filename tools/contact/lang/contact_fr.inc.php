@@ -93,4 +93,15 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_TEMPLATE_NOT_FOUND' => 'Fichier de template non trouvé',
 'CONTACT_MESSAGE_SENT_FROM' => 'Message envoyé à partir de',
 
+'CONTACT_PERIOD' => 'Période',
+'CONTACT_DAILY' => 'Journalière',
+'CONTACT_WEEKLY' => 'Hebdomadaire',
+'CONTACT_MONTHLY' => 'Mensuelle',
+'CONTACT_FOREVER' => 'Toujours',
+'CONTACT_SUBSCRIBE_FOR_THIS_PERIOD' => 'Me notifier par mail sur cette période',
+'CONTACT_UNSUBSCRIBE_FOR_THIS_PERIOD' => 'Me désabonner des notifications de cette période',
+'CONTACT_LOGIN_TO_GET_INFOS' => 'Pour vous abonner à ce contenu, vous devez vous identifier.',
+
+
+
 ));
