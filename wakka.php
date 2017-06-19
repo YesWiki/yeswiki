@@ -47,9 +47,12 @@ define("YESWIKI_VERSION", 'cercopitheque');
 define("YESWIKI_RELEASE", '2016-01-25-1');
 
 // A decommenter pour afficher les erreurs
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL);
+//ini_set("log_errors", 1);
+ini_set("error_log", getcwd()."/cache/yeswiki-error.log");
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+//error_reporting(E_ALL );
+error_reporting(E_ALL & ~E_NOTICE);
 
 require_once 'includes/constants.php';
 include_once 'includes/urlutils.inc.php';
@@ -111,6 +114,8 @@ class Wiki
             }
             // necessaire pour les versions de mysql qui sont en utf8 par defaut
             mysqli_set_charset($this->dblink, "latin1");
+        } else {
+            exit(_t('DB_CONNECT_FAIL'));
         }
         $this->VERSION = WAKKA_VERSION;
 
@@ -651,14 +656,23 @@ class Wiki
         return $this->LoadAll('select from_tag as tag from ' . $this->config['table_prefix'] . "links where to_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' order by tag");
     }
 
-    public function LoadRecentlyChanged($limit = 50)
+    public function LoadRecentlyChanged($limit = 50, $minDate = '')
     {
-        $limit = (int) $limit;
-        if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
-            foreach ($pages as $page) {
-                $this->CachePage($page);
+        if (!empty($minDate)) {
+            if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
+                //foreach ($pages as $page) {
+                //    $this->CachePage($page);
+                //}
+                return $pages;
             }
-            return $pages;
+        } else {
+            $limit = (int) $limit;
+            if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
+                //foreach ($pages as $page) {
+                //    $this->CachePage($page);
+                //}
+                return $pages;
+            }
         }
     }
 

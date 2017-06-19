@@ -46,15 +46,6 @@ function AddJavascriptFile($file)
     return;
 }
 
-function LoadRecentlyChanged($limit = 50)
-{
-    $limit= (int) $limit;
-    if ($pages = $this->LoadAll("select id, tag, time, user, owner from ".$this->config["table_prefix"]."pages where latest = 'Y' and comment_on =  '' order by time desc limit $limit")) {
-        return $pages;
-    }
-}
-
-
 function GetMethod()
 {
     if ($this->method=='iframe') {
