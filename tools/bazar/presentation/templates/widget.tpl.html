@@ -1,4 +1,4 @@
-<div id="widgetapp"
+<div id="widgetapp" v-cloak
   data-formid="<?php echo $_GET['id']; ?>"
   data-templatemodel="<?php echo $params['template']; ?>"
   data-providermodel="<?php echo $params['provider']; ?>"
@@ -123,7 +123,7 @@
         </div>
       </template>
       <template v-if="templatemodel === 'map.tpl.html' || templatemodel === 'carto.tpl.html'">
-        <div class="panel panel-default">
+        <div class="panel panel-default hide">
           <div class="panel-heading">Marqueurs</div>
           <div class="panel-body">
             <div class="form-group">
@@ -141,7 +141,7 @@
         </div>
       </template>
       <template v-if="templatemodel !== 'map.tpl.html' && templatemodel !== 'carto.tpl.html'">
-        <div class="panel panel-default">
+        <div class="panel panel-default hide">
           <div class="panel-heading">Couleurs</div>
           <div class="panel-body">
             <div class="form-group">
@@ -158,7 +158,7 @@
           </div>
         </div>
       </template>
-      <div class="panel panel-default">
+      <div class="panel panel-default hide">
         <div class="panel-heading">Icones</div>
         <div class="panel-body">
           <div class="form-group">
@@ -179,19 +179,26 @@
         <div class="panel-body" style="height:400px;overflow-y:auto;">
           <ul class="list-group">
             <!-- v-sortable="{group: 'facettes'}" -->
-            <script>var facetteval = <?php echo json_encode(array('facettetext' => $facettes)); ?>;</script>
+            <script>
+                //var facetteval = <?php echo json_encode(array('facettetext' => $facettes)); ?>;
+                var facettetext = <?php echo json_encode(array('facettetext' => $facettestext, 'show_tooltip' => $showtooltip)); ?>;
+            </script>
             <?php $i=-1; foreach ($facettes as $key => $value) : $i++ ?>
               <li class="list-group-item" data-id="<?php echo $value['id']; ?>">
                 <div class="checkbox">
                   <label>
                     <input type="checkbox" value="<?php echo $value['id']; ?>" v-model="checkedfacette">
-                    <div class="facette-text" v-cloak v-on:click="hideTooltip(<?php echo $value['id']; ?>)" >
-                        <div class="tooltip" v-on:click.stop v-if="show_tooltip(<?php echo $value['id']; ?>)">
-                            <input type="text" v-model="facettetext[<?php echo $value['id']; ?>]" />
-                        </div>
-                        <p v-on:click.stop="toggleTooltip(<?php echo $value['id']; ?>)">{{text_content[<?php echo $value['id']; ?>]}}</p>
+                    <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['id']; ?>']">
+                        <input class="form-control" type="text" v-model="facettetext['<?php echo $value['id']; ?>']" @keyup.enter="hideTooltip" />
+                        <span class="input-group-btn">
+              			    	<button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="glyphicon glyphicon-check"></i></button>
+              			    </span>
                     </div>
-                    <!-- <i class="handle pull-right glyphicon glyphicon-resize-vertical"></i> -->
+                    <div class="facette-text" v-if="!show_tooltip['<?php echo $value['id']; ?>']">
+                        {{facettetext['<?php echo $value['id']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['id']; ?>')"><i class="glyphicon glyphicon-pencil"></i></button>
+                    </div>
+
+
                   </label>
                 </div>
               </li>
@@ -222,73 +229,5 @@
 </div> <!-- /#widgetapp -->
 <?php
     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/vue.min.js');
-    //$GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/Sortable.min.js');
-    //$GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/vue-sortable.js');
     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/widget.js');
-    $GLOBALS['wiki']->addCSS('
-    .widget-iframe-container {
-      position:relative;
-    }
-    .iframe-preview {
-      z-index:1;
-      border:1px dotted #ccc;
-    }
-    .iframe-blocker {
-      position:absolute;
-      top: 0;
-      left: 0;
-      width:100%;
-      height:100%;
-      background-color:white;
-      opacity:0;
-    }
-
-/*-------------------------
-	The edit tooltip
---------------------------*/
-
-.tooltip{
-	background-color:#5c9bb7;
-
-	background-image:-webkit-linear-gradient(top, #5c9bb7, #5392ad);
-	background-image:-moz-linear-gradient(top, #5c9bb7, #5392ad);
-	background-image:linear-gradient(top, #5c9bb7, #5392ad);
-
-	box-shadow: 0 1px 1px #ccc;
-	border-radius:3px;
-	width: 290px;
-	padding: 10px;
-
-	position: absolute;
-	left:50%;
-	margin-left:-150px;
-	top: 80px;
-}
-
-.tooltip:after{
-	/* The tip of the tooltip */
-	content:\'\';
-	position:absolute;
-	border:6px solid #5190ac;
-	border-color:#5190ac transparent transparent;
-	width:0;
-	height:0;
-	bottom:-12px;
-	left:50%;
-	margin-left:-6px;
-}
-
-.tooltip input{
-	border: none;
-	width: 100%;
-	line-height: 34px;
-	border-radius: 3px;
-	box-shadow: 0 2px 6px #bbb inset;
-	text-align: center;
-	font-size: 16px;
-	font-family: inherit;
-	color: #8d9395;
-	font-weight: bold;
-	outline: none;
-}
-    ');
+    $GLOBALS['wiki']->addCSSFile('tools/bazar/presentation/styles/widget.css');

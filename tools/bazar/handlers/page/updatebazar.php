@@ -27,10 +27,10 @@ if (!defined("WIKINI_VERSION")) {
 $output = '';
 
 if ($this->UserIsInGroup('admins')) {
-    $req = 'SHOW TABLES FROM '.$this->config['mysql_database'].' LIKE "'.BAZ_PREFIXE.'liste%"';
+    $req = 'SHOW TABLES FROM '.$this->config['mysql_database'].' LIKE "'.$GLOBALS['wiki']->config['table_prefix'].'liste%"';
     $tabnature = $this->LoadAll($req);
     if (is_array($tabnature)) {
-        $sql = 'SELECT bl_label_liste, blv_valeur, blv_label  FROM '.BAZ_PREFIXE.'liste, '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste=bl_id_liste AND blv_label!="Choisir..." ORDER BY blv_ce_liste, blv_valeur';
+        $sql = 'SELECT bl_label_liste, blv_valeur, blv_label  FROM '.$GLOBALS['wiki']->config['table_prefix'].'liste, '.$GLOBALS['wiki']->config['table_prefix'].'liste_valeurs WHERE blv_ce_liste=bl_id_liste AND blv_label!="Choisir..." ORDER BY blv_ce_liste, blv_valeur';
         $tab = $this->LoadAll($sql);
         $anciennomliste ='';$valeur = NULL;
         foreach ($tab as $ligne) {
@@ -56,7 +56,7 @@ if ($this->UserIsInGroup('admins')) {
         if ($output != '') $output = '<div class="info_box">Ces pages suivantes ont étés rajoutées:</div><div style="overflow:auto;width:100%;height:200px;">'.$output.'</div>'."\n";
 
         //on efface les tables qui servent plus
-        $this->Query('DROP TABLE '.BAZ_PREFIXE.'liste, '.BAZ_PREFIXE.'liste_valeurs');
+        $this->Query('DROP TABLE '.$GLOBALS['wiki']->config['table_prefix'].'liste, '.$GLOBALS['wiki']->config['table_prefix'].'liste_valeurs');
     }
     $repertoire = 'tools/bazar/install/formulaire/';
     $dir = opendir($repertoire); $tab_formulaire = array();

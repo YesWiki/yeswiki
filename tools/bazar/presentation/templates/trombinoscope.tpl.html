@@ -16,13 +16,17 @@
                 ); ?>">
             <?php
             else : ?>
-             <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>" src="themes/paepardbs3/images/user.png">
+              <img class="img-responsive"
+                 src="tools/bazar/libs/vendor/placeholder.php?size=300x400&amp;bg=666&amp;fg=444&amp;text=<?php
+            echo urlencode($fiche['bf_titre']); ?>"
+                alt="<?php
+            echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET); ?>">
             <?php
             endif; ?>
             <div class="caption">
               <h5><?php echo $fiche['bf_titre'];?></h5>
               <div class="text-mini"><?php echo $fiche['bf_structure'];?></div>
-              <div class="text-mini"><?php echo $fiche['bf_fonction'];?></div>    
+              <div class="text-mini"><?php echo $fiche['bf_fonction'];?></div>
               <p>
                 <a class="btn btn-mini btn-info modalbox"
                   title="<?php echo $fiche['bf_titre'];?>"
@@ -40,11 +44,11 @@
     $js = "
 equalheight = function(container){
     var highestBox = 0;
-        $(container).each(function(){  
-                if($(this).height() > highestBox){  
-                highestBox = $(this).height();  
+        $(container).each(function(){
+                if($(this).height() > highestBox){
+                highestBox = $(this).height();
         }
-    });    
+    });
     $(container).height(highestBox);
 }
 

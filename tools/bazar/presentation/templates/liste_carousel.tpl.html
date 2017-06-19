@@ -3,7 +3,7 @@ if (count($fiches)>0) : $first = true; ?>
     <div id="carousel-bazar" class="carousel slide" data-ride="carousel">
       <!-- Indicators -->
       <ol class="carousel-indicators">
-        <?php 
+        <?php
     for ($i=0; $i<count($fiches); $i++) : ?>
           <li data-target="#carousel-bazar" data-slide-to="<?php echo $i; ?>"
               <?php echo ($i==0 ? ' class="active"' : ''); ?>>
@@ -15,12 +15,12 @@ if (count($fiches)>0) : $first = true; ?>
       <!-- Wrapper for slides -->
       <div class="carousel-inner" role="listbox">
       <?php
-    foreach ($fiches as $fiche): ?>    
+    foreach ($fiches as $fiche): ?>
         <div class="item<?php echo ($first ? ' active' : ''); ?> bazar-entry"
-          <?php echo $fiche['html_data'];?>>  
+          <?php echo $fiche['html_data'];?>>
           <?php $first = false; ?>
           <?php
-        if (!empty($fiche['imagebf_image']) && is_file($fiche['imagebf_image'])) : ?>
+        if (!empty($fiche['imagebf_image']) && is_file('files/'.$fiche['imagebf_image'])) : ?>
             <img class="img-responsive" src="<?php
               echo redimensionner_image(
                   'files/'.$fiche['imagebf_image'],
@@ -32,14 +32,14 @@ if (count($fiches)>0) : $first = true; ?>
             echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET); ?>">
           <?php
         elseif (empty($fiche['imagebf_image']) || !is_file('files/'.$fiche['imagebf_image'])) : ?>
-          <img class="img-responsive" 
+          <img class="img-responsive"
                src="tools/bazar/libs/vendor/placeholder.php?size=1200x450&amp;bg=666&amp;fg=444&amp;text=<?php
             echo urlencode($fiche['bf_titre']); ?>"
               alt="<?php
             echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET); ?>">
           <?php
         endif;?>
-      
+
           <div class="carousel-caption">
               <h4>
                 <a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
@@ -47,8 +47,8 @@ if (count($fiches)>0) : $first = true; ?>
                 </a>
               </h4>
               <?php echo (isset($fiche['bf_description']) ? '<p>'.$fiche['bf_description'].'</p>' : '' );?>
-          </div>    
-        </div>      
+          </div>
+        </div>
         <?php
     endforeach; ?>
       </div>
@@ -63,5 +63,5 @@ if (count($fiches)>0) : $first = true; ?>
         <span class="sr-only">Next</span>
       </a>
     </div> <!-- /#carousel-bazar -->
-    <?php 
+    <?php
 endif;

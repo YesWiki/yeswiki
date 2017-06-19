@@ -47,12 +47,11 @@ define("YESWIKI_VERSION", 'cercopitheque');
 define("YESWIKI_RELEASE", '2016-01-25-1');
 
 // A decommenter pour afficher les erreurs
-//ini_set("log_errors", 1);
-ini_set("error_log", getcwd()."/cache/yeswiki-error.log");
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL );
-error_reporting(E_ALL & ~E_NOTICE);
+// ini_set("log_errors", 1);
+// ini_set("error_log", getcwd()."/cache/yeswiki-error.log");
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL );
 
 require_once 'includes/constants.php';
 include_once 'includes/urlutils.inc.php';

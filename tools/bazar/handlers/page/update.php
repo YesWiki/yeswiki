@@ -29,7 +29,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if ($this->UserIsInGroup('admins')) {
-    $sql = 'SELECT bl_label_liste, blv_label  FROM '.BAZ_PREFIXE.'liste, '.BAZ_PREFIXE.'liste_valeurs WHERE blv_ce_liste=bl_id_liste ORDER BY blv_ce_liste, blv_valeur';
+    $sql = 'SELECT bl_label_liste, blv_label  FROM '.$GLOBALS['wiki']->config['table_prefix'].'liste, '.$GLOBALS['wiki']->config['table_prefix'].'liste_valeurs WHERE blv_ce_liste=bl_id_liste ORDER BY blv_ce_liste, blv_valeur';
     $tab = $this->LoadAll($sql);
     $anciennomliste ='';
     foreach ($tab as $ligne) {

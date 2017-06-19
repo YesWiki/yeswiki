@@ -60,21 +60,26 @@ if (isset($_GET['id'])) {
     $alllists = multiArraySearch($formval["prepared"], 'type', 'select');
     $allcheckboxes = multiArraySearch($formval["prepared"], 'type', 'checkbox');
     $tabfacette = array_merge($alllists, $allcheckboxes);
+    $tabfacettetext = array();
+    foreach ($tabfacette as $key => $fac) {
+        $tabfacettetext[$fac['id']] = $fac['label'];
+        $showtooltip[$fac['id']] = false;
+    }
     $urlparams = 'id='.$_GET['id']
       .(isset($_GET['query']) ? '&query='.$_GET['query'] : '')
       .(!empty($q) ? '&q='.$q : '')
       .'&width='.$params['width']
       .'&height='.$params['height'];
-      // affichage des resultats
-      include_once 'tools/libs/squelettephp.class.php';
-      // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-      $templatetoload = 'themes/tools/bazar/templates/widget.tpl.html';
-      if (!is_file($templatetoload)) {
-          $templatetoload = 'tools/bazar/presentation/templates/widget.tpl.html';
-      }
-      $squelwidget = new SquelettePhp($templatetoload);
-      $squelwidget->set(array('facettes' => $tabfacette, 'params' => $params, 'urlparams' => $urlparams));
-      echo $squelwidget->analyser();
+    // affichage des resultats
+    include_once 'tools/libs/squelettephp.class.php';
+    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
+    $templatetoload = 'themes/tools/bazar/templates/widget.tpl.html';
+    if (!is_file($templatetoload)) {
+        $templatetoload = 'tools/bazar/presentation/templates/widget.tpl.html';
+    }
+    $squelwidget = new SquelettePhp($templatetoload);
+    $squelwidget->set(array('facettes' => $tabfacette, 'showtooltip' => $showtooltip, 'facettestext' => $tabfacettetext, 'params' => $params, 'urlparams' => $urlparams));
+    echo $squelwidget->analyser();
 
     echo $this->Footer();
     exit;

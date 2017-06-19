@@ -51,7 +51,7 @@ if (empty($GLOBALS['ordre'])) {
 
 $template = $this->GetParameter("template");
 if (empty($template)) {
-    $template = BAZ_TEMPLATE_LISTE_DEFAUT;
+    $template = $GLOBALS['wiki']->config['default_bazar_template'];
 }
 
 // identifiant de la base de donnée pour la liste

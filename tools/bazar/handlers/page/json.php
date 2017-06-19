@@ -178,55 +178,8 @@ if (isset($_REQUEST['demand'])) {
                 } elseif ($type == 'form') { // template d'un formulaire bazar
                     $url = $this->href('json', $this->GetPageTag(), 'demand=save_entry');
 
-                    //contruction du squelette du formulaire
-                    $formtemplate = new HTML_QuickForm('formulaire', 'post', preg_replace('/&amp;/', '&', $url));
-                    $squelette = & $formtemplate->defaultRenderer();
-                    $squelette->setFormTemplate(
-                        '<form {attributes} class="form-horizontal content-padded list-spacer" '.
-                        'novalidate="novalidate">' . "\n" . '{content}' . "\n" . '</form>'
-                    );
-                    $squelette->setElementTemplate(
-                        '<div class="control-group form-group">' . "\n" .
-                        '<div class="control-label col-xs-3">' . "\n" .
-                        '<!-- BEGIN required --><span class="symbole_obligatoire">*</span> <!-- END required -->'."\n".
-                        '{label} :</div>' . "\n" .
-                        '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" .
-                        '<!-- BEGIN error -->'.
-                        '<span class="alert alert-error alert-danger">{error}</span>'.
-                        '<!-- END error -->'."\n".
-                        '</div>' . "\n" . '</div>' . "\n"
-                    );
-                    $squelette->setElementTemplate(
-                        '<div class="control-group form-group">' . "\n" .
-                        '<div class="liste_a_cocher"><strong>{label}&nbsp;{element}</strong>' . "\n" .
-                        '<!-- BEGIN required -->'.
-                        '<span class="symbole_obligatoire">&nbsp;*</span>'.
-                        '<!-- END required -->'."\n".
-                        '</div>' . "\n" . '</div>' . "\n",
-                        'accept_condition'
-                    );
-                    $squelette->setElementTemplate(
-                        '<div class="form-actions">{label}{element}</div>' . "\n",
-                        'groupe_boutons'
-                    );
-                    $squelette->setElementTemplate(
-                        '<div class="control-group form-group">' . "\n" .
-                        '<div class="control-label col-xs-3">' . "\n" . '{label} :</div>' . "\n" .
-                        '<div class="controls col-xs-8"> ' . "\n" . '{element}' . "\n" . '</div>' . "\n" .
-                        '</div>',
-                        'select'
-                    );
-                    $squelette->setRequiredNoteTemplate("<div class=\"symbole_obligatoire\">* {requiredNote}</div>\n");
-
-                    //Traduction de champs requis
-                    $formtemplate->setRequiredNote(_t('BAZ_CHAMPS_REQUIS'));
-                    $formtemplate->setJsWarnings(_t('BAZ_ERREUR_SAISIE'), _t('BAZ_VEUILLEZ_CORRIGER'));
-
-                    //antispam
-                    $formtemplate->addElement('hidden', 'antispam', 1);
-
                     // generation du formulaire
-                    $form = baz_afficher_formulaire_fiche('saisie', $formtemplate, $url, '', true);
+                    $form = baz_afficher_formulaire_fiche('saisie', $url, '', true);
                     $form = preg_replace(
                         '~<div class="form-actions">.*</div>~Ui',
                         "\n" . '<a href="#" class="btn btn-block btn-positive btn-save">' . _t('BAZ_SAVE') . '</a>',

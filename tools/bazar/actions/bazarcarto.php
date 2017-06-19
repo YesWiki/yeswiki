@@ -30,7 +30,7 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
 }
 
 // a la place du choix par défaut, on affiche en carte
-if ($GLOBALS['params']['template'] == BAZ_TEMPLATE_LISTE_DEFAUT) {
+if ($GLOBALS['params']['template'] == $GLOBALS['wiki']->config['default_bazar_template']) {
     $GLOBALS['params']['template'] = 'map.tpl.html';
 }
 
