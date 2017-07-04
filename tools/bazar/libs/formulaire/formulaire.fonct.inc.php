@@ -2113,7 +2113,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $tabquery = '';
         }
         $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"], 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : '');
-        $select = '';
+        $select = array();
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche["body"], true);
             if (YW_CHARSET != 'UTF-8') {
@@ -2121,15 +2121,13 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
             $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
         }
-        if (is_array($select)) {
-            asort($select);
-            foreach ($select as $key => $label) {
-                $select_html.= '<option value="' . $key . '"';
-                if ($def != '' && strstr($key, $def)) {
-                    $select_html.= ' selected="selected"';
-                }
-                $select_html.= '>' . $label . '</option>' . "\n";
+        asort($select, SORT_NATURAL | SORT_FLAG_CASE);
+        foreach ($select as $key => $label) {
+            $select_html.= '<option value="' . $key . '"';
+            if ($def != '' && strstr($key, $def)) {
+                $select_html.= ' selected="selected"';
             }
+            $select_html.= '>' . $label . '</option>' . "\n";
         }
 
         $select_html.= "</select>\n</div>\n</div>\n";
