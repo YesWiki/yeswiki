@@ -35,53 +35,51 @@
 *@version       $Revision: 1.2 $ $Date: 2010-10-19 15:59:15 $
 *
 */
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 
 //recuperation des parametres
 $listelements['mail'] = $this->GetParameter('mail');
 if (empty($listelements['mail'])) {
-	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_DESABONNEMENT').' :</strong>&nbsp;'._t('CONTACT_MAIL_REQUIRED').'</div>';
-}
-else {
-	// on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
-	if (isset($GLOBALS['nbactionmail'])) {
-		$GLOBALS['nbactionmail']++;
-	}
-	else {
-		$GLOBALS['nbactionmail'] = 1;
-	}
-	$listelements['nbactionmail'] = $GLOBALS['nbactionmail'];
+    echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_DESABONNEMENT').' :</strong>&nbsp;'._t('CONTACT_MAIL_REQUIRED').'</div>';
+} else {
+    // on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
+    if (isset($GLOBALS['nbactionmail'])) {
+        $GLOBALS['nbactionmail']++;
+    } else {
+        $GLOBALS['nbactionmail'] = 1;
+    }
+    $listelements['nbactionmail'] = $GLOBALS['nbactionmail'];
 
-	// on choisit le template utilisé
-	$template = $this->GetParameter('template');
-	if (empty($template)) {
-		$template = 'subscribe-form.tpl.html';
-	}
-  
-  $listelements['hiddeninputs'] = '';
-  // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee
-  $mailinglist = $this->GetParameter('mailinglist');
-  if (!empty($mailinglist) and $mailinglist == 'ezmlm') {
-     $listelements['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="ezmlm">';
-  }
-	// on peut ajouter des classes à la classe par défaut
-	$listelements['class'] = ($this->GetParameter('class') ? 'form-desabonnement '.$this->GetParameter('class') : 'form-desabonnement');
+    // on choisit le template utilisé
+    $template = $this->GetParameter('template');
+    if (empty($template)) {
+        $template = 'subscribe-form.tpl.html';
+    }
 
-	// adresse url d'envoi du mail
-	$listelements['mailerurl'] = $this->href('mail');
+    $listelements['hiddeninputs'] = '';
+    // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee
+    $mailinglist = $this->GetParameter('mailinglist');
+    if (!empty($mailinglist) and ($mailinglist == 'ezmlm' or $mailinglist == 'sympa')) {
+        $listelements['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="'.$mailinglist.'">';
+    }
 
-	// type de demande et placeholder
-	$listelements['demand'] = 'desabonnement';
-	$listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
+    // on peut ajouter des classes à la classe par défaut
+    $listelements['class'] = ($this->GetParameter('class') ? 'form-desabonnement '.$this->GetParameter('class') : 'form-desabonnement');
 
-	include_once('tools/libs/squelettephp.class.php');
-	$listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
-	$listtemplate->set($listelements);
-	echo $listtemplate->analyser();
+    // adresse url d'envoi du mail
+    $listelements['mailerurl'] = $this->href('mail');
 
-	$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
+    // type de demande et placeholder
+    $listelements['demand'] = 'desabonnement';
+    $listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
+
+    include_once('tools/libs/squelettephp.class.php');
+    $listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
+    $listtemplate->set($listelements);
+    echo $listtemplate->analyser();
+
+    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
 }

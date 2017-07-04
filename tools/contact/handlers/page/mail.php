@@ -59,6 +59,20 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'ezmlm') {
             $mail_receiver = str_replace('@', '-'.str_replace('@', '=', $mail_sender).'@', $mail_receiver);
         }
+        
+        // test de presence de sympa, qui necessite de reformater le mail envoyé
+        if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'sympa') {
+            $tabmail = explode('@', $mail_receiver);
+            $listname = $tabmail[0];
+            $listdomain = $tabmail[1];
+            $mail_receiver = 'sympa@'.$listdomain;
+            if ($_POST['type'] == 'abonnement') {
+                $subject = 'subscribe '.$listname;
+            } elseif ($_POST['type'] == 'desabonnement') {
+                $subject = 'unsubscribe '.$listname;
+            }
+        }
+
         if (send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html)) {
             if (!isset($_POST['type']) or $_POST['type'] == 'contact' or $_POST['type'] == 'mail') {
                 $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
