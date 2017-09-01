@@ -33,12 +33,13 @@ if (isset($_REQUEST['demand'])) {
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
-           $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT' )) {
-                 header('Access-Control-Allow-Credentials: true');
-                 header('Access-Control-Allow-Headers: X-Requested-With');
-                 header('Access-Control-Allow-Headers: Content-Type');
-                 header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
-                 header('Access-Control-Max-Age: 86400');
+           $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
+        )) {
+            header('Access-Control-Allow-Credentials: true');
+            header('Access-Control-Allow-Headers: X-Requested-With');
+            header('Access-Control-Allow-Headers: Content-Type');
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+            header('Access-Control-Max-Age: 86400');
         }
         exit;
     }
@@ -86,8 +87,8 @@ if (isset($_REQUEST['demand'])) {
                     if ($html==1) {
                         echo json_encode(array('html' => baz_voir_fiche(0, $idfiche)));
                     } else {
-                            $decoded_entry = json_decode($wikipage['body'], true);
-                            echo json_encode($decoded_entry);
+                        $decoded_entry = json_decode($wikipage['body'], true);
+                        echo json_encode($decoded_entry);
                     }
                 } else {
                     echo json_encode(array('error' => 'id_fiche '.$idfiche.' not found.'));
@@ -96,11 +97,24 @@ if (isset($_REQUEST['demand'])) {
             break;
         case "save_entry":
         // sauver une fiche bazar
-            if (!isset($_POST['id_typeannonce']) || empty($_POST['id_typeannonce'])) {
-                echo json_encode(array('error' => 'no form id specified.'));
+            if (!isset($form) || empty($form)) {
+                echo json_encode(array('error' => _t('BAZ_NO_FORMS_FOUND')));
             } else {
-                $fiche = baz_insertion_fiche($_POST);
-                echo json_encode($fiche);
+                $_POST['id_typeannonce'] = $form;
+                $formdata = baz_valeurs_formulaire($form);
+                $_POST['categorie_fiche'] = $formdata['bn_type_fiche'];
+                $res = validateForm($_POST);
+                if ($res['result']) {
+                    $fiche = baz_insertion_fiche($_POST);
+                    echo json_encode($fiche);
+                } else {
+                    echo json_encode(
+                        array(
+                            'error' => $res['error'],
+                            'post' => $_POST
+                        )
+                    );
+                }
             }
             break;
         case "template":
@@ -200,10 +214,10 @@ if (isset($_REQUEST['demand'])) {
             if (!function_exists('sortByLabel')) {
                 function sortByLabel($a, $b)
                 {
-                    return $a['bn_label_nature'] - $b['bn_label_nature'];
+                    return $a['bn_label_nature'] < $b['bn_label_nature'];
                 }
             }
-
+//var_dump($formval);
             usort($formval, 'sortByLabel');
             echo json_encode(_convert($formval, 'UTF-8'));
             break;
@@ -234,7 +248,7 @@ if (isset($_REQUEST['demand'])) {
 
             foreach ($results as $wikipage) {
                 $decoded_entry = json_decode($wikipage['body'], true);
-                 //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
+                //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
                 if ($html == '1') {
                     $fichehtml = baz_voir_fiche(0, $decoded_entry);
                     $regexp = '/<div.*data-id="(.*)".*>\s*<span class="BAZ_label.*">.*<\/span>\s*'.
@@ -246,7 +260,7 @@ if (isset($_REQUEST['demand'])) {
                         }
                     }
                 }
-                $tab_entries[$decoded_entry['id_fiche']] = array_map('strval',$decoded_entry);
+                $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
             }
             ksort($tab_entries);
             echo json_encode($tab_entries);

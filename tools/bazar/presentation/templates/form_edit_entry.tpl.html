@@ -4,7 +4,7 @@
    } else {
      echo !empty($idfiche) ? BAZ_ACTION_MODIFIER_V : BAZ_ACTION_NOUVEAU_V;
    }
-   ?>" method="post" name="formulaire" id="formulaire" class="form-horizontal" <?php if (!isset($conditions)) : ?>novalidate<?php endif; ?>>
+   ?>" method="post" name="formulaire" id="formulaire" enctype="multipart/form-data" class="form-horizontal" <?php if (!isset($conditions)) : ?>novalidate<?php endif; ?>>
     <?php echo $content; ?>
     <div class="form-actions form-group">
         <div class="col-sm-9 col-sm-offset-3">
