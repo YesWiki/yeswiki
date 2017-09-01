@@ -540,13 +540,26 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $defauts = stripslashes($tableau_template[5]);
         }
 
-        $option = array('size' => $tableau_template[3], 'maxlength' => $tableau_template[4], 'id' => $tableau_template[1], 'value' => $defauts, 'class' => 'form-control yeswiki-input-pagetag');
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                 .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
-        $formtemplate->addElement('text', $tableau_template[1], $tableau_template[2] . $bulledaide, $option);
+
+        $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
+        $input_html.= ($tableau_template[9] == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
+        $input_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n";
+        $input_html.= '<div class="controls col-sm-9">' . "\n";
+        $input_html.= '<div class="input-group">' . "\n";
+        $input_html.= '<input type="text"';
+        $input_html.= ($defauts != '') ?
+            ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET).'"' : '';
+        $input_html.= ' name="' . $tableau_template[1] . '" size="'.$tableau_template[3].'" class="form-control yeswiki-input-pagetag" id="' . $tableau_template[1] . '"';
+        $input_html.= ($tableau_template[9] == 1) ? ' required' : '';
+        $input_html.= '>' . "\n";
+        $input_html.= '</div>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
+
+        return $input_html;
     } elseif ($mode == 'requete') {
         //on supprime les tags existants
         if (!isset($GLOBALS['delete_tags'])) {
@@ -676,13 +689,18 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** utilisateur_wikini() - Ajoute un élément de type texte pour créer un utilisateur wikini au formulaire
+/** yeswiki_user() - Ajoute un élément de type texte pour créer un utilisateur wikini au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des différentes option pour l'élément texte
  * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
  * @return   void
  */
+function yeswiki_user(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
+{
+    utilisateur_wikini($formtemplate, $tableau_template, $mode, $valeurs_fiche);
+}
+
 function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'saisie') {
