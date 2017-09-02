@@ -563,8 +563,15 @@ input[type="date"]::-webkit-input-placeholder{
 }
 
 
-.minical .fc-button-today, .minical .fc-header-right {display: none;}
-.minical .fc-header-title h2 {font-size: 13px !important;}
+.minical .fc-today-button, .minical .fc-right {display: none;}
+.minical .fc-center h2 {font-size: 13px !important;}
 .minical table {font-size: 10px !important;}
 .minical .fc-event-inner { font-size: 8px !important; line-height: 8px !important;}
-.fc-event:hover {color:white;}
+
+.pellet {
+  display: inline-block;
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}

@@ -3,7 +3,7 @@ if(count($fiches)>0) {
   $js = '';
   foreach ($fiches as $fiche) {
       // couleur de marqueur
-      $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, BAZ_MARKER_COLOR);
+      $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
       if (isset($fiche['bf_date_debut_evenement']) && isset($fiche['bf_date_fin_evenement'])) {
           $js .= '        {
                       title: "'.addslashes($fiche['bf_titre']).'",
@@ -100,5 +100,5 @@ if(count($fiches)>0) {
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/moment.min.js');
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.js');
   $GLOBALS['wiki']->AddJavascript($script);
-  echo "<div id='calendar".$param['nbbazarliste']."'></div>\n";
+  echo '<div id="calendar'.$param['nbbazarliste'].'" class="'.$param['class'].'"></div>'."\n";
 }
