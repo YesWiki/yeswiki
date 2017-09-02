@@ -3550,7 +3550,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
                 $islist = in_array($val['type'], array('checkbox', 'select', 'scope'));
                 $islistforeign = (strpos($val['id'], 'listefiche')===0) or (strpos($val['id'], 'checkboxfiche')==0);
                 $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
-            //var_dump($key, $istext, $islist, '<br>');
+
                 if ($islistforeign) {
                     // listefiche ou checkboxfiche
                     $facettevalue[$val['id']]['type'] = 'fiche';
@@ -4572,7 +4572,7 @@ function getAllParameters_carto($wiki, array &$param)
         $iconparam = explode(',', $param['icon']);
         if (count($iconparam) > 1 && !empty($param['iconfield'])) {
             $iconparam = array_map('trim', $iconparam);
-
+            $tabparam = array();
             // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
             foreach ($iconparam as $value) {
                 $tab = explode('=', $value);
@@ -4600,26 +4600,28 @@ function getAllParameters_carto($wiki, array &$param)
     /*
      * color : couleur des marqueurs
      */
-    $colors = array(
-        'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
-        'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
-    );
+    // $colors = array(
+    //     'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+    //     'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
+    // );
     $param['color'] = isset($_GET['color']) ? $_GET['color'] : $wiki->GetParameter('color');
     if (!empty($param['color'])) {
         $colorsparam = explode(',', $param['color']);
         if (count($colorsparam) > 1 && !empty($param['colorfield'])) {
             $colorsparam = array_map('trim', $colorsparam);
-
+            $tabparam = array();
             // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
             foreach ($colorsparam as $value) {
                 $tab = explode('=', $value);
                 $tab = array_map('trim', $tab);
-                if (in_array($tab[0], $colors)) {
-                    $tabparam[$tab[1]] = $tab[0];
-                } else {
-                    exit('<div class"alert alert-error">color : la couleur indiquée doit etre choisie parmis :<br>"'.
-                        implode('", "', $colors).'"<br>syntaxe: color="couleur=valeur,couleur2=valeur2"</div>');
-                }
+                $tabparam[$tab[1]] = $tab[0];
+                // if (in_array($tab[0], $colors)) {
+                //     $tabparam[$tab[1]] = $tab[0];
+                // } else {
+                //     echo '<div class="alert alert-danger">color : la couleur indiquée doit etre choisie parmis :<br>"'.
+                //         implode('", "', $colors).'"<br>syntaxe: color="couleur=valeur,couleur2=valeur2"</div>';
+                //     return;
+                // }
             }
             $param['color'] = $tabparam;
         } else {
