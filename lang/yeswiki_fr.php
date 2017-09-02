@@ -61,6 +61,17 @@ $GLOBALS['translations'] = array(
 
 // actions/changestyle.php ignoree...
 
+// handlers/page/acls.php
+'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
+'YW_ACLS_UPDATED' => 'Droits d\'acc&egrave;s mis &agrave; jour',
+'YW_NEW_OWNER' => ' et changement du propri&eacute;taire. Nouveau propri&eacute;taire : ',
+'YW_CANCEL' => 'Annuler',
+'YW_ACLS_READ' => 'Droits de lecture',
+'YW_ACLS_WRITE' => 'Droits d\'écriture',
+'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
+'YW_CHANGE_NOTHING' => 'Ne rien modifier',
+'YW_CANNOT_CHANGE_ACLS' => 'Vous ne pouvez pas g&eacute;rer les permissions de cette page',
+
 // actions/editactionsacls.class.php
 'ACTION_RIGHTS' => 'Droits de l\'action',
 'SEE' => 'Voir',
