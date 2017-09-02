@@ -4214,7 +4214,7 @@ function getCustomValueForEntry($parameter, $field, $entry, $default)
         }
     } else {
         // si le parametre n'est pas un tableau, il contient la valeur par defaut
-        return $parameter;
+        return $default;
     }
 }
 

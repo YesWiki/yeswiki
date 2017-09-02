@@ -4,9 +4,23 @@ if(count($fiches)>0) {
   foreach ($fiches as $fiche) {
       // couleur de marqueur
       $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
+
+      // icone
+      $icon = getCustomValueForEntry(
+        $param['icon'],
+        $param['iconfield'],
+        $fiche,
+        ''
+      );
+      $titleprefix = '';
+      if (!empty($icon)) {
+        $titleprefix .= '<i class="glyphicon glyphicon-'.$icon.'"></i> ';
+      }
+
+
       if (isset($fiche['bf_date_debut_evenement']) && isset($fiche['bf_date_fin_evenement'])) {
           $js .= '        {
-                      title: "'.addslashes($fiche['bf_titre']).'",
+                      title: "'.addslashes($titleprefix.$fiche['bf_titre']).'",
                       start:"'.$fiche['bf_date_debut_evenement'].'",
                       end:"'.$fiche['bf_date_fin_evenement'].'",
                       url:"'.$GLOBALS['wiki']->config['base_url'].$fiche['id_fiche'].'",
@@ -39,8 +53,8 @@ if(count($fiches)>0) {
           ],
           eventRender: function(event, element) {
               element.outerHTML(element.outerHTML().replace('<a', '<a ' + event.htmlattributes));
-              console.log(element.outerHTML().replace('<a', '<a ' + event.htmlattributes));
-              //element.attr('data-html', event.htmlattributes);
+              console.log(event.title);
+              element.find('span.fc-title').html(event.title);
           },
           monthNames: ['"._t('BAZ_JANVIER')."','"._t('BAZ_FEVRIER')."','"._t('BAZ_MARS')."','"._t('BAZ_AVRIL')."','"._t('BAZ_MAI')."','"._t('BAZ_JUIN')."','"._t('BAZ_JUILLET')."','"._t('BAZ_AOUT')."','"._t('BAZ_SEPTEMBRE')."','"._t('BAZ_OCTOBRE')."','"._t('BAZ_NOVEMBRE')."','"._t('BAZ_DECEMBRE')."'],
           monthNamesShort: ['Jan','Fev','Mar','Avr','Mai','Juin','Juil','Aug','Sep','Oct','Nov','Dec'],

@@ -11,8 +11,29 @@ if (count($fiches)>0) {
             echo '<strong>'.date('d.m.Y', strtotime($day)).'&nbsp;:</strong><br>'."\n";
             $curday = $day;
         }
+
+        $icon = getCustomValueForEntry(
+          $param['icon'],
+          $param['iconfield'],
+          $fiche,
+          ''
+        );
+        if (!empty($icon)) {
+          $fiche['bf_titre'] = '<i class="'.$icon.'"></i> '.$fiche['bf_titre'];
+        }
+
+        $color = getCustomValueForEntry(
+          $param['color'],
+          $param['colorfield'],
+          $fiche,
+          ''
+        );
+        if (!empty($color)) {
+          $fiche['bf_titre'] = '<span class="pellet" style="background-color:'.$color.';"></span> '.$fiche['bf_titre'];
+        }
+
         // echo entry
-        echo '<small><a href="' . $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> ', $GLOBALS['wiki']->ComposeLinkToPage($fiche['id_fiche'], '', $fiche['bf_titre'], 0),' <small>par ', $GLOBALS['wiki']->Format($fiche['createur']), "</small><br>\n";
+        echo '<div class="bazar-entry" '.$fiche['html_data'].'><small><a href="' . $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> <a href="'.$GLOBALS['wiki']->href('', $fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a> <small>par '.$GLOBALS['wiki']->Format($fiche['createur']).'</small></div>'."\n";
     }
 } else {
    echo 'Il n\'y a pas de fiche pour cette période.';
