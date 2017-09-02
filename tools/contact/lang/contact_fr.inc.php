@@ -102,6 +102,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_UNSUBSCRIBE_FOR_THIS_PERIOD' => 'Me désabonner des notifications de cette période',
 'CONTACT_LOGIN_TO_GET_INFOS' => 'Pour vous abonner à ce contenu, vous devez vous identifier.',
 
+'CONTACT_THIS_MESSAGE' => 'Ce message est envoyé par un visiteur depuis la fiche',
+'CONTACT_FROM_FORM' => 'du formulaire',
+'CONTACT_FROM_WEBSITE' => 'du site',
+
 
 
 ));

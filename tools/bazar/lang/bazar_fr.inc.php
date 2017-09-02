@@ -221,6 +221,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_EDIT_MY_ENTRY' => 'Editer ma fiche',
         'BAZ_CHANGE_PWD' => 'Changer de mot de passe',
         'BAZ_PROTECTION_ANTISPAM' => 'Protection antispam',
+        'BAZ_CONTACT_BY_MAIL' => 'Contacter par mail',
 
         //================ Calendrier Bazar =======================================
         'BAZ_AFFICHE_TITRES_COMPLETS' => 'Afficher les titres complets des événements',

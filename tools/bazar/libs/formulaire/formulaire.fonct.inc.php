@@ -62,30 +62,33 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $ob = '';
         $optionrequired = '';
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $ob.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
-            $optionrequired.= ' radio_required';
+            $ob .= ' <span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+            $optionrequired .= ' radio_required';
         }
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $def = $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
         } else {
             $def = $tableau_template[5];
         }
-
-        $radio_html = '<fieldset class="bazar_fieldset' . $optionrequired . '"><legend>' . $ob . $tableau_template[2] . $bulledaide . '</legend>';
-
+        $radio_html = '<div class="control-group form-group">
+  <label class="control-label col-sm-3">
+  '. $tableau_template[2] . $ob . $bulledaide .' :</label>
+  <div class="controls col-sm-9">';
         $valliste = baz_valeurs_liste($tableau_template[1]);
         if (is_array($valliste['label'])) {
+            $radio_html.= '<div class="bazar-radio">';
             foreach ($valliste['label'] as $key => $label) {
-                $radio_html.= '<div class="bazar_radio">';
-                $radio_html.= '<input type="radio" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$key . '" value="' . $key . '" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'" class="element_radio"';
+                $radio_html.= '<div class="radio"><label for="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$key . '"><input type="radio" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$key . '" value="' . $key . '" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'"';
                 if ($def != '' && strstr($key, $def)) {
                     $radio_html.= ' checked';
                 }
-                $radio_html.= ' /><label for="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$key . '">' . $label . '</label>';
-                $radio_html.= '</div>';
+                $radio_html.= ' />' . $label . '</label></div>';
             }
+            $radio_html.= '</div>';
         }
-        $radio_html.= '</fieldset>';
+        $radio_html.= '
+          </div>
+        </div>';
 
         return $radio_html;
     } elseif ($mode == 'requete') {
@@ -790,13 +793,14 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
     $valunsub = str_replace('@', '-unsubscribe@', $tableau_template[1]);
 
     // test de presence d'ezmlm, qui necessite de reformater le mail envoyé
-    if (isset($tableau_template[4]) and $tableau_template[4] == 'ezmlm') {
+    if (isset($valeurs_fiche[$tableau_template[3]]) and isset($tableau_template[4]) and $tableau_template[4] == 'ezmlm') {
         $valsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valsub);
         $valunsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valunsub);
     }
 
     if ($mode == 'saisie') {
         $input_html = '<div class="control-group form-group">
+      <label class="control-label col-sm-3"></label>
                     <div class="controls col-sm-9">
                         <div class="checkbox">
                           <label for="' . $id . '">'."\n"
@@ -923,7 +927,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if ($showform == 'form') {
                 // js necessaire pour valider le formulaire et faire l'envoi ajax
                 $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
-                $title = 'Contacter par mail '.htmlspecialchars($valeurs_fiche['bf_titre']);
+                $title = _t('BAZ_CONTACT_BY_MAIL').' '.htmlspecialchars($valeurs_fiche['bf_titre']);
                 $html .= '<span class="BAZ_texte"><a class="btn btn-default modalbox" title="'.$title.'" href="'
                   .$GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$tableau_template[1]).'"><i class="glyphicon glyphicon-envelope"></i> '.$title;
                 $html .=  '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -1211,7 +1215,6 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if ($bulle_d_aide != '') {
                     $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
                 }
-
                 return '<div class="control-group form-group">
     <label class="control-label col-sm-3">'.$label.'</label>
     <div class="controls col-sm-9">
@@ -1974,7 +1977,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         );
 
 
-        $checkboxtab = '';
+        $checkboxtab = array();
         foreach ($tab_result as $fiche) {
             $valeurs_fiche_liste = json_decode($fiche["body"], true);
             if (YW_CHARSET != 'UTF-8') {
@@ -1982,7 +1985,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
             $checkboxtab[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
         }
-        if (is_array($checkboxtab)) {
+        if (count($checkboxtab) > 0) {
             asort($checkboxtab, SORT_NATURAL | SORT_FLAG_CASE);
             if ($tableau_template[7] == 'tags') {
                 foreach ($checkboxtab as $key => $title) {
@@ -2152,12 +2155,14 @@ function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="glyphicon glyphicon-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
         }
     } elseif ($mode == 'saisie') {
-        if ($GLOBALS['wiki']->GetMethod() != 'iframe') {
+        if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/iframe') {
             $urlParams = 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$GLOBALS['params']['idtypeannonce'];
             $urlfield = trim($tableau_template[3]) ? $tableau_template[3] : 'bf_url' ;
             $descfield = trim($tableau_template[4]) ? $tableau_template[4] : 'bf_description' ;
-            $htmlbookmarklet = "<div class=\"BAZ_info\">
-                <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('" . $GLOBALS['wiki']->href('iframe', $GLOBALS['wiki']->getPageTag(), $urlParams). "&amp;bf_titre='+escape(document.title)+'&amp;$urlfield='+encodeURIComponent(location.href)+'&amp;$descfield='+escape(document.getSelection()), '" . $tableau_template[1] . "', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\" class=\"btn btn-default\">" . $tableau_template[1] . "</a> << " . $tableau_template[2] . "</div>";
+            $htmlbookmarklet = "<div class=\"control-group form-group\">
+    <label class=\"control-label col-sm-3\"></label>
+    <div class=\"controls col-sm-9\"><div class=\"alert alert-info\">
+                <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('" . $GLOBALS['wiki']->href('iframe', $GLOBALS['wiki']->getPageTag(), $urlParams). "&amp;bf_titre='+escape(document.title)+'&amp;$urlfield='+encodeURIComponent(location.href)+'&amp;$descfield='+escape(document.getSelection()), '" . $tableau_template[1] . "', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\" class=\"btn btn-default\">" . $tableau_template[1] . "</a> << " . $tableau_template[2] . "</div></div></div>";
             return $htmlbookmarklet;
         }
     }

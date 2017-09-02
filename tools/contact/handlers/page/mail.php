@@ -12,6 +12,9 @@ $output = '';
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
 if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
+    // pied de page pour mails envoyés
+    $infomsg = '';
+
     //initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
     if (isset($_GET['field']) and !empty($_GET['field'])) {
@@ -20,6 +23,8 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         if (is_array($val) and isset($val[$_GET['field']])) {
             $mail_receiver = $val[$_GET['field']];
         }
+        $form = baz_valeurs_formulaire($val['id_typeannonce']);
+        $infomsg .= '<i>'._t('CONTACT_THIS_MESSAGE').' "<a href="'.$this->href('', $val['id_fiche']).'">'.$val['bf_titre'].'</a>" '._t('CONTACT_FROM_FORM').' "'.$form['bn_label_nature'].'" '._t('CONTACT_FROM_WEBSITE').' "'.$this->config['wakka_name'].'".</i><br><br>';
     } else {
         $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
     }
@@ -32,15 +37,15 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if (isset($_POST['type']) and $_POST['type'] == 'mail') {
         $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
-        $message_html = html_entity_decode(_convert($this->Format($this->page["body"]), YW_CHARSET));
+        $message_html = $infomsg.html_entity_decode(_convert($this->Format($this->page["body"]), YW_CHARSET));
         $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
     } else {
         // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
           ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false) .
           (($name_sender) ? ' ' . _t('CONTACT_FROM') . ' ' . $name_sender : '');
-        $message_html = '';
-        $message_txt = (isset($_POST['message'])) ? stripslashes(_convert($_POST['message'], YW_CHARSET)) : '';
+        $message_html = (isset($_POST['message'])) ? $infomsg."\n\n".stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
+        $message_txt = (isset($_POST['message'])) ? strip_tags($infomsg)."\n\n".stripslashes(_convert($_POST['message'], YW_CHARSET)) : '';
     }
 
     // on verifie si tous les parametres sont bons
@@ -59,7 +64,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'ezmlm') {
             $mail_receiver = str_replace('@', '-'.str_replace('@', '=', $mail_sender).'@', $mail_receiver);
         }
-        
+
         // test de presence de sympa, qui necessite de reformater le mail envoyé
         if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'sympa') {
             $tabmail = explode('@', $mail_receiver);
