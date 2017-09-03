@@ -123,9 +123,13 @@ Code snippet by maridlcrmn (Follow me on Twitter @maridlcrmn) for Bootsnipp.com
       <div class="hero">
         <hgroup>
             <h1><?php echo $fiche['bf_titre']; ?></h1>
-            <h3><?php echo $fiche['bf_description']; ?></h3>
+            <?php if (isset($fiche['bf_description']) && $fiche['bf_description']!='' ) : ?>
+              <h3><?php echo $fiche['bf_description']; ?></h3>
+            <?php endif; ?> 
         </hgroup>
-        <a class="btn btn-hero btn-lg" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">En savoir plus</a>
+          <?php if (isset($fiche['bf_lien']) && $fiche['bf_lien']!='' ) : ?>
+           <a class="btn btn-hero btn-lg" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">En savoir plus</a>
+          <?php endif; ?> 
       </div>
     </div>
     <?php endforeach; ?>
