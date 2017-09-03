@@ -94,7 +94,8 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     return;
 }
 
-echo '<section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
+echo '<!-- start of section -->
+<section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
     .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
     .(!empty($height) ? 'height:' . $height . 'px; ' : '')
     .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
