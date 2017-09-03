@@ -214,17 +214,23 @@ function filterMonthlyMailGroups($var)
 function sendPeriodicalMailToGroup($period, $groups, $oldjson)
 {
     $newjson = array();
+    $nextday = strtotime("tomorrow");
+    $nextmonday = strtotime('next monday');
+    $nextmonth = strtotime('first day of next month midnight');
+    $sub = '';
     if ($period == 'day') {
-        $d = strtotime("-1 day");
+        $d = $nextday;
+        $sub = ' rapport journalier';
     } elseif ($period == 'week') {
-        $d = strtotime("-1 week");
+        $d = $nextmonday;
+        $sub = ' rapport hebdomadaire';
     } elseif ($period == 'month') {
-        $d = strtotime("-1 month");
+        $d = $nextmonth;
+        $sub = ' rapport mensuel';
     }
-    $dateMin = date("Y-m-d H:i:s", $d);
-    $today = date("Y-m-d H:i:s");
+    $today = time();
     foreach ($groups as $group) {
-        if (true or !isset($oldjson[$group]) or $dateMin <= $oldjson[$group]) {
+        if (!isset($oldjson[$group]) or $today > $d) {
             // get page name
             $page = preg_replace(array('/^Mail/', '/'.ucfirst($period).'$/'), '', $group);
             $page = $GLOBALS['wiki']->LoadPage($page);
@@ -235,9 +241,13 @@ function sendPeriodicalMailToGroup($period, $groups, $oldjson)
             $groupmembers = array_map('trim', $groupmembers);
             $groupmembers = array_filter($groupmembers);
             $mailheader =   '['.str_replace(array('/wakka.php?wiki=', 'http://', 'https://'), '', $GLOBALS['wiki']->config['base_url']).']';
-            $subject = $mailheader.' '.getPageTitle($page).' '.date("d-m-Y");
+            $subject = $mailheader.' '.getPageTitle($page).' '.date("d-m-Y").$sub;
             $message_html = $GLOBALS['wiki']->Format('{{include page="'.$page['tag'].'"}}');
-            $message_html = preg_replace('/(\<\!\-\- mailperiod start \-\-\>.*\<\!\-\- mailperiod end \-\-\>)/Uims', '', $message_html);
+            $message_html = preg_replace(
+                '/(\<\!\-\- mailperiod start \-\-\>.*\<\!\-\- mailperiod end \-\-\>)/Uims',
+                '',
+                $message_html
+            );
             $message_txt = nl2br(strip_tags($message_html));
             foreach ($groupmembers as $member) {
                 $user = $GLOBALS['wiki']->LoadUser($member);
@@ -257,10 +267,12 @@ function sendPeriodicalMailToGroup($period, $groups, $oldjson)
 function sendEmailsToSubscribers()
 {
     $cache_file = 'files/mailcron.json';
-    $cache_life = '600'; //caching time, in seconds, 10 minutes
+    $cache_life = '1'; //caching time, in seconds, 10 minutes
 
     $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
-    if (true or !$filemtime or (time() - $filemtime >= $cache_life)) {
+    $today = time();
+
+    if (!$filemtime or ($today - $filemtime >= $cache_life)) {
         // on recupere les dates des derniers envois
         $cronfile = @file_get_contents($cache_file);
         $oldjson = json_decode($cronfile, true);
@@ -284,7 +296,6 @@ function sendEmailsToSubscribers()
         // envois mensuels
         $monthGroups = array_filter($groups, "filterMonthlyMailGroups");
         $newjson = $newjson + sendPeriodicalMailToGroup('month', $monthGroups, $oldjson);
-
         file_put_contents($cache_file, json_encode($newjson));
     } else {
         readfile($cache_file);
