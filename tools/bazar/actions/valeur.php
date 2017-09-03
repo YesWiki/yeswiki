@@ -53,7 +53,7 @@ if (!empty($url)) {
                 if (!empty($texte) && $texte != 'lien') {
                     echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '<a href="$1">'.trim($texte).'</a>', trim(array_shift($matches[1])));
                 } elseif (!empty($texte) && $texte == 'lien') {
-                    echo urlencode(preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1])));
+                    echo preg_replace('/<a.*href="(.*)".*>.*<\/a>/Ui', '$1', array_shift($matches[1]));
                 } elseif ($image == '1') {
                     echo '<img class="img-responsive" src="'.array_shift($matches[1]).'" alt="image '.$champ.'">';
                 } else {
