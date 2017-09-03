@@ -78,7 +78,8 @@ if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
     $GLOBALS['check_' . $pagetag]['section'] = check_graphical_elements('section', $pagetag, $this->page['body']);
 }
 if ($GLOBALS['check_' . $pagetag]['section']) {
-    echo '<section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
+    echo '<!-- start of section -->
+    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
         .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
@@ -88,31 +89,20 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
         }
     }
     echo '>' . "\n";
+    
+    $nocontainer = $this->GetParameter('nocontainer');
+    if (empty($nocontainer)) {
+        echo '<div class="container">' . "\n";
+    } else {
+        echo '<div>';
+    }
+    //test d'existance du fichier
+    if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
+        $att->showFileNotExits();
+        //return;
+    }
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_SECTION') . '</strong> : '
         . _t('TEMPLATE_ELEM_SECTION_NOT_CLOSED') . '.</div>' . "\n";
     return;
-}
-
-echo '<!-- start of section -->
-<section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
-    .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
-    .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-    .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
-if (is_array($data)) {
-    foreach ($data as $key => $value) {
-        echo ' data-'.$key.'="'.$value.'"';
-    }
-}
-echo '>' . "\n";
-$nocontainer = $this->GetParameter('nocontainer');
-if (empty($nocontainer)) {
-    echo '<div class="container">' . "\n";
-} else {
-    echo '<div>';
-}
-//test d'existance du fichier
-if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
-    $att->showFileNotExits();
-    //return;
 }
