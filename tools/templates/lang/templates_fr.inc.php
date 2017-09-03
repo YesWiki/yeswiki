@@ -120,6 +120,10 @@ $GLOBALS['translations'] = array_merge(
     // actions/yeswikiversion.php
     'RUNNING_WITH' => 'Galope sous',
 
+    'TEMPLATE_ACTION_SECTION' => 'Action {{section ...}}',
+    'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'l\'action {{section ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="section"}}',
+
+
     'TEMPLATE_NO_THEME_FILES' => 'Fichiers du th&egrave;me manquants',
     'TEMPLATE_DEFAULT_THEME_USED' => 'Le th&egrave;me par défaut est donc utilisé',
 
