@@ -34,9 +34,11 @@ __""__Souligné__""__
 ""<pre>[[http://www.exemple.com/image.jpg Texte de remplacement pour l'image]]</pre>""
 
 ===Tableaux===
-""<pre>| Colonne 1 | Colonne 2 | Colonne 3 |
+""<pre>[|
+| Colonne 1 | Colonne 2 | Colonne 3 |
 | John     | Doe      | Male     |
 | Mary     | Smith    | Female   |
+|]
 </pre>""
 
 ===Code source===
@@ -58,7 +60,7 @@ alert(example);
 
 ===Texte en couleur===
 //Voir les codes hexa des couleurs : [[http://fr.wikipedia.org/wiki/Liste_de_couleurs http://fr.wikipedia.org/wiki/Liste_de_couleurs]]//
-""<pre><span style="color:#446611;">""<span style="color:#446611;">texte coloré</span>""</span></pre>""
+%%""<span style="color:#446611;">texte coloré</span>""%%
 
 ===Message d'alerte===
 //Avec une croix pour le fermer.//
