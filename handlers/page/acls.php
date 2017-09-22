@@ -77,7 +77,7 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
 <div class="form-group">
   <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_WRITE');?> : </label>
   <div class="controls col-sm-9">
-    <textarea class="form-control" name="read_acl" rows="3" cols="20"><?php echo  $writeACL["list"] ?></textarea>
+    <textarea class="form-control" name="write_acl" rows="3" cols="20"><?php echo  $writeACL["list"] ?></textarea>
   </div>
 </div>
 
