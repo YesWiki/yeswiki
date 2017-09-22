@@ -113,7 +113,7 @@ switch ($version) {
                 "tag varchar(50) NOT NULL default '',".
                 "time datetime NOT NULL,".
                 'body longtext NOT NULL,'.
-                'body_r text NOT NULL,'.
+                'body_r text NOT NULL default '','.
                 "owner varchar(50) NOT NULL default '',".
                 "user varchar(50) NOT NULL default '',".
                 "latest enum('Y','N') NOT NULL default 'N',".
