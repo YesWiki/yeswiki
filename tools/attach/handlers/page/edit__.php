@@ -11,7 +11,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
     } else {
         $uploadModal = '
 	<div class="modal fade" id="UploadModal">
-	  <div class="modal-dialog">
+	  <div class="modal-dialog modal-lg">
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -24,7 +24,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 				<div class="form-group file-option">
 					<label class="control-label col-sm-3">'._t('DOWNLOAD_LINK_TEXT').'</label>
 					<div class="controls col-sm-9">
-					  <input type="text" name="attach_alt" value="" class="attach_alt form-control">
+					  <input type="text" name="attach_link_text" value="" class="attach_link_text form-control">
 					</div>
 			    </div>
 
