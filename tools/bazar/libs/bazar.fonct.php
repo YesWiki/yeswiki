@@ -1965,7 +1965,8 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
             $tabf[$id] = $GLOBALS['_BAZAR_']['form'][$id];
         }
         if (count($idformulaire) == 1) {
-            $id = array_shift(array_values($idformulaire));
+            $k = array_values($idformulaire);
+            $id = array_shift($k);
             $tabf[$id] = $GLOBALS['_BAZAR_']['form'][$id];
         }
         return $tabf;
@@ -2671,8 +2672,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
             $form = array_shift($form);
             $html = $func($dummy, $form, 'html', $fiche);
             preg_match_all(
-                '/<div.*class="BAZ_rubrique".*>\s*<span class="BAZ_label.*">.*<\/span>\s*'
-                .'<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div>/Uim',
+                '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
                 $html,
                 $matches
             );
@@ -2758,68 +2758,78 @@ function baz_voir_fiche($danslappli, $idfiche)
 
 
     // debut de la fiche
-    $res .=
-    '<div class="BAZ_cadre_fiche '.
+    $res .= '<div class="BAZ_cadre_fiche '.
     htmlspecialchars($fichebazar['form']['bn_label_class']).'">'."\n";
 
+    // si un template specifique pour un type de fiche existe
     if (file_exists('themes/tools/bazar/templates/fiche-'.
-        $fichebazar['values']['id_typeannonce'].'.tpl.html')) {
-        // un template fiche existe
-        include_once 'tools/libs/squelettephp.class.php';
-        $templatetoload = 'themes/tools/bazar/templates/fiche-'
-            .$fichebazar['values']['id_typeannonce'].'.tpl.html';
-        $squelfiche = new SquelettePhp($templatetoload);
-        $html = '';
-        for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
-            // Champ  acls  present
-            if (isset($fichebazar['form']['template'][$i][11]) &&
-                $fichebazar['form']['template'][$i][11] != '' &&
-                !$GLOBALS['wiki']
-                ->CheckACL($fichebazar['form']['template'][$i][11])) {
-                // Non autorise : non ne fait rien
-            } else {
-                // Mauvais style de programmation ...
-                if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
-                    function_exists($fichebazar['form']['template'][$i][0])) {
-                    if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
-                        $fichebazar['form']['template'][$i][0] == 'liste' ||
-                        $fichebazar['form']['template'][$i][0] ==
-                        'checkboxfiche' ||
-                        $fichebazar['form']['template'][$i][0] ==
-                        'listefiche') {
-                        $id =
-                        $fichebazar['form']['template'][$i][0].
-                        $fichebazar['form']['template'][$i][1].
-                        $fichebazar['form']['template'][$i][6];
-                    } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
-                        $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
-                    } else {
-                        $id = $fichebazar['form']['template'][$i][1];
-                    }
-                    $html[$id] = $fichebazar['form']['template'][$i][0](
-                        $formtemplate,
-                        $fichebazar['form']['template'][$i],
-                        'html',
-                        $fichebazar['values']
-                    );
-                    preg_match_all(
-                        '/<div.*class="BAZ_rubrique".*>\s*<span class="BAZ_label.*">.*<\/span>\s*'
-                        .
-                        '<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div>/Uim',
-                        $html[$id],
-                        $matches
-                    );
-                    if (isset($matches[1][0]) && $matches[1][0] != '') {
-                        $html[$id] = $matches[1][0];
-                    }
-                }
-            }
+      $fichebazar['values']['id_typeannonce'].'.tpl.html')) {
+        // on genere un nom unique pour le cache
+        $cacheid = $GLOBALS['wiki']->generateCacheId(
+            'bazar',
+            'fiche-'.$fichebazar['values']['id_typeannonce'].'.tpl.html',
+            strtotime($fichebazar['values']['date_maj_fiche'])
+        );
+
+        if ($GLOBALS['wiki']->isTemplateCached($cacheid)) {
+          $fp = @fopen($cacheid, 'r');
+          $res .= fread($fp, filesize($cacheid));
+          fclose($fp);
+        } else {
+          $html = array();
+          for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
+              // Champ  acls  present
+              if (isset($fichebazar['form']['template'][$i][11]) &&
+                  $fichebazar['form']['template'][$i][11] != '' &&
+                  !$GLOBALS['wiki']
+                  ->CheckACL($fichebazar['form']['template'][$i][11])) {
+                  // Non autorise : non ne fait rien
+              } else {
+                  if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
+                      function_exists($fichebazar['form']['template'][$i][0])) {
+                      if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
+                          $fichebazar['form']['template'][$i][0] == 'liste' ||
+                          $fichebazar['form']['template'][$i][0] ==
+                          'checkboxfiche' ||
+                          $fichebazar['form']['template'][$i][0] ==
+                          'listefiche') {
+                          $id =
+                          $fichebazar['form']['template'][$i][0].
+                          $fichebazar['form']['template'][$i][1].
+                          $fichebazar['form']['template'][$i][6];
+                      } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
+                          $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
+                      } else {
+                          $id = $fichebazar['form']['template'][$i][1];
+                      }
+                      $html[$id] = $fichebazar['form']['template'][$i][0](
+                          $formtemplate,
+                          $fichebazar['form']['template'][$i],
+                          'html',
+                          $fichebazar['values']
+                      );
+                      preg_match_all(
+                          '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
+                          $html[$id],
+                          $matches
+                      );
+                      if (isset($matches[1][0]) && $matches[1][0] != '') {
+                          $html[$id] = $matches[1][0];
+                      }
+                  }
+
+              }
+          }
+          $fiche['html'] = $html;
+          $fiche['fiche'] = $fichebazar['values'];
+          $fiche['form'] = $fichebazar['form'];
+          $res .= $GLOBALS['wiki']->renderTemplate(
+              'bazar',
+              'fiche-'.$fichebazar['values']['id_typeannonce'].'.tpl.html',
+              $fiche,
+              strtotime($fichebazar['values']['date_maj_fiche'])
+          );
         }
-        $fiches['html'] = $html;
-        $fiches['fiche'] = $fichebazar['values'];
-        $fiches['form'] = $fichebazar['form'];
-        $squelfiche->set($fiches);
-        $res .= $squelfiche->analyser();
     } else {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
@@ -3368,7 +3378,10 @@ function baz_requete_recherche_fiches(
                             $requeteSQL .= ' '.$facettesearch.' ';
                         }
                         $requeteSQL .=
-                        '(body REGEXP \'"'.$nom.'":"('.$critere.'|'.$critere.',[^"]*|[^"]*,'.$critere.'|[^"]*,'.$critere.',[^"]*)"\')';
+                        'body LIKE \'%"'.$nom.'":"'.$critere.'"%\' or '
+                        .'body LIKE \'%"'.$nom.'":"'.$critere.',%\' or '
+                        .'body LIKE \'%"'.$nom.'":"%,'.$critere.'%\' or '
+                        .'body LIKE \'%"'.$nom.'":"%,'.$critere.',%\'';
 
                         $first = false;
                     }
@@ -3376,12 +3389,13 @@ function baz_requete_recherche_fiches(
                 } else {
                     if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                         $requeteSQL .=
-                        ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                        ' AND (body LIKE \'"'.$nom.'":"'.$val.'"\')';
                     } else {
                         $requeteSQL .=
-                        ' AND (body REGEXP \'"'.$nom.'":("'.$val.
-                        '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
-                        .$val.',[^"]*")\')';
+                        ' AND (body LIKE \'%"'.$nom.'":"'.$val.'"%\' or '
+                        .'body LIKE \'%"'.$nom.'":"'.$val.',%\' or '
+                        .'body LIKE \'%"'.$nom.'":"%,'.$val.'%\' or '
+                        .'body LIKE \'%"'.$nom.'":"%,'.$val.',%\')';
                     }
                 }
             }
@@ -3707,6 +3721,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     } else {
         $fiches['pager_links'] = '';
     }
+    $fiches['param'] = $params;
 
     // affichage des resultats
     include_once 'tools/libs/squelettephp.class.php';
@@ -3716,9 +3731,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         $templatetoload = 'tools/bazar/presentation/templates/'.$params['template'];
     }
     $squelfacette = new SquelettePhp($templatetoload);
-    $fiches['param'] = $params;
     $squelfacette->set($fiches);
     $output = $squelfacette->analyser();
+    //$output = $GLOBALS['wiki']->renderTemplate('bazar', $params['template'], $fiches);
 
     // affichage spécifique pour facette
     if (count($facettevalue) > 0) {

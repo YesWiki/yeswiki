@@ -1446,8 +1446,8 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $inputhtml .= '<output id="img-'.$type . $identifiant.'" class="col-xs-9">'.afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, 'img-responsive', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image).'</output>
               <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n"
                 .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
-                .'</div>'."\n".'</div>'."\n".'</div>'."\n"
-                .'<input name="'.'oldimage_'.$type.$identifiant.'" value="'.$valeurs_fiche[$type.$identifiant].'" type="hidden">'."\n";
+                .'<input name="'.'oldimage_'.$type.$identifiant.'" value="'.$valeurs_fiche[$type.$identifiant].'" type="hidden">'."\n"
+                .'</div>'."\n".'</div>'."\n".'</div>'."\n";
                 return $inputhtml;
             } else {
                 //le fichier image n'existe pas, du coup on efface l'entree dans la base de donnees
