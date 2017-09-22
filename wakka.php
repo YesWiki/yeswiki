@@ -46,13 +46,6 @@ define('WIKINI_VERSION', '0.5.0');
 define("YESWIKI_VERSION", 'cercopitheque');
 define("YESWIKI_RELEASE", '2016-01-25-1');
 
-// A decommenter pour afficher les erreurs
-// ini_set("log_errors", 1);
-// ini_set("error_log", getcwd()."/cache/yeswiki-error.log");
-// ini_set('display_errors', 1);
-// ini_set('display_startup_errors', 1);
-// error_reporting(E_ALL );
-
 require_once 'includes/constants.php';
 include_once 'includes/urlutils.inc.php';
 include_once 'includes/i18n.inc.php';
@@ -2168,8 +2161,8 @@ if (file_exists('locked')) {
 if ($wakkaConfig['wakka_version'] && (! $wakkaConfig['wikini_version'])) {
     $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
 }
-if (($wakkaConfig['wakka_version'] != WAKKA_VERSION) || ($wakkaConfig['wikini_version'] != WIKINI_VERSION)) {
 
+if (($wakkaConfig['wakka_version'] != WAKKA_VERSION) || ($wakkaConfig['wikini_version'] != WIKINI_VERSION)) {
     // start installer
     if (! isset($_REQUEST['installAction']) or ! $installAction = trim($_REQUEST['installAction'])) {
         $installAction = "default";
@@ -2183,6 +2176,17 @@ if (($wakkaConfig['wakka_version'] != WAKKA_VERSION) || ($wakkaConfig['wikini_ve
     include 'setup/footer.php';
     exit();
 }
+
+
+// Afficher les erreurs en mode debug
+if (strtolower($wakkaConfig['debug']) == 'yes') {
+    ini_set('display_errors', 1);
+    error_reporting(E_ALL);
+} else {
+    ini_set('display_errors', 0);
+    error_reporting(0);
+}
+
 
 // configuration du cookie de session
 // determine le chemin pour les cookies
