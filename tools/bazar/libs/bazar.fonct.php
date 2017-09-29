@@ -3389,7 +3389,7 @@ function baz_requete_recherche_fiches(
                 } else {
                     if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                         $requeteSQL .=
-                        ' AND (body LIKE \'"'.$nom.'":"'.$val.'"\')';
+                        ' AND (body LIKE \'%"'.$nom.'":"'.$val.'"%\')';
                     } else {
                         $requeteSQL .=
                         ' AND (body LIKE \'%"'.$nom.'":"'.$val.'"%\' or '
@@ -3461,7 +3461,9 @@ function baz_requete_recherche_fiches(
     $reqid = 'bazar-search-'.md5($requete);
     if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
         // debug
-        // echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
+        if (isset($_GET['showreq'])) {
+            echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
+        }
         $GLOBALS['_BAZAR_'][$reqid] = $GLOBALS['wiki']->LoadAll($requete);
     }
     return $GLOBALS['_BAZAR_'][$reqid];

@@ -13,6 +13,7 @@
   data-lonmodel="<?php echo $params['longitude']; ?>"
   data-widthmodel="<?php echo $params['width']; ?>"
   data-heightmodel="<?php echo $params['height']; ?>"
+  data-groupsexpandedmodel="false"
 >
   <div class="row"> <!-- start of grid -->
     <div class="col-md-3"> <!-- start of col -->
@@ -205,6 +206,19 @@
             <?php endforeach; ?>
           </ul>
           <!-- <pre>{{ checkedfacette }}</pre> -->
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">Apparence des facettes</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label>Facettes dépliées</label>
+            <select v-model="groupsexpandedmodel" class="form-control">
+                <option selected value="false">Non dépliées</option>
+                <option value="true">Dépliées</option>
+            </select>
+          </div>
         </div>
       </div>
     </div> <!-- end of col -->

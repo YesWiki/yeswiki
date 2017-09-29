@@ -300,63 +300,63 @@ $(document).ready(function () {
 
   // selecteur de dates
   var $dateinputs = $('input.bazar-date');
-  Modernizr.load([{
-    test: $dateinputs.length === 0,
-    nope: 'tools/bazar/libs/vendor/bootstrap-datepicker.js',
-    complete: function () {
-      if ($dateinputs.length > 0) {
-        $.fn.datepicker.dates.fr = {
-          days: [
-            'Dimanche',
-            'Lundi',
-            'Mardi',
-            'Mercredi',
-            'Jeudi',
-            'Vendredi',
-            'Samedi',
-            'Dimanche',
-          ],
-          daysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-          daysMin: ['D', 'L', 'Ma', 'Me', 'J', 'V', 'S', 'D'],
-          months: [
-            'Janvier',
-            'Février',
-            'Mars',
-            'Avril',
-            'Mai',
-            'Juin',
-            'Juillet',
-            'Août',
-            'Septembre',
-            'Octobre',
-            'Novembre',
-            'Décembre',
-          ],
-          monthsShort: [
-            'Jan',
-            'Fév',
-            'Mar',
-            'Avr',
-            'Mai',
-            'Jui',
-            'Jul',
-            'Aou',
-            'Sep',
-            'Oct',
-            'Nov',
-            'Déc',
-          ],
-        };
-        $dateinputs.datepicker({
-          format: 'yyyy-mm-dd',
-          weekStart: 1,
-          autoclose: true,
-          language: 'fr',
-        }).attr('autocomplete', 'off');
-      }
-    },
-  },
-  ]);
+
+  // test pour verifier si le browser gere l'affichage des dates
+  var input = document.createElement('input');
+  input.setAttribute('type','date');
+  var notADateValue = 'not-a-date';
+  input.setAttribute('value', notADateValue);
+
+  if ($dateinputs.length > 0 && (input.value == notADateValue)) {
+    $.fn.datepicker.dates.fr = {
+      days: [
+        'Dimanche',
+        'Lundi',
+        'Mardi',
+        'Mercredi',
+        'Jeudi',
+        'Vendredi',
+        'Samedi',
+        'Dimanche',
+      ],
+      daysShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+      daysMin: ['D', 'L', 'Ma', 'Me', 'J', 'V', 'S', 'D'],
+      months: [
+        'Janvier',
+        'Février',
+        'Mars',
+        'Avril',
+        'Mai',
+        'Juin',
+        'Juillet',
+        'Août',
+        'Septembre',
+        'Octobre',
+        'Novembre',
+        'Décembre',
+      ],
+      monthsShort: [
+        'Jan',
+        'Fév',
+        'Mar',
+        'Avr',
+        'Mai',
+        'Jui',
+        'Jul',
+        'Aou',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Déc',
+      ],
+    };
+    $dateinputs.datepicker({
+      format: 'yyyy-mm-dd',
+      weekStart: 1,
+      autoclose: true,
+      language: 'fr',
+    }).attr('autocomplete', 'off');
+  }
 
   // Onglets
   // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques

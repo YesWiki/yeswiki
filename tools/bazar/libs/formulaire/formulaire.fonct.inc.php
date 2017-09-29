@@ -339,6 +339,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'saisie') {
+        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -1660,7 +1661,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
     });
     var geocodedmarker;
-    var OsmLayer = new L.TileLayer(\''.$http.'://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\', {maxZoom: 18, attribution: \'\'});
+    var OsmLayer = new L.TileLayer(\''.$http.'://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\', {maxZoom: 18});
     map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].').addLayer(OsmLayer);
 
     $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
@@ -1747,11 +1748,6 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
         }
         $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
-        $GLOBALS['wiki']->AddCSSFile(
-            'tools/bazar/libs/vendor/leaflet/leaflet.ie.css',
-            '<!--[if lte IE 8]>',
-            '<![endif]-->'
-        );
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
         $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
         return

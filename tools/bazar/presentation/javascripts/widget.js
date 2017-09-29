@@ -15,16 +15,17 @@ var widgetapp = new Vue({
         facettelabel[index]= facettetext.facettetext[element];
       });
       return this.iframeurl +
-        '&template=' + this.templatemodel +
-        '&width=' + this.widthmodel +
-        '&height=' + this.heightmodel +
-        '&lat=' + this.latmodel +
-        '&lon=' + this.lonmodel +
-        '&markersize=' + this.markersizemodel +
-        '&provider=' + this.providermodel +
-        '&zoom=' + this.zoommodel +
-        '&groups=' + this.checkedfacette.join(',') +
-        '&titles=' + facettelabel.join(',')
+          '&template=' + encodeURIComponent(this.templatemodel) +
+          '&width=' + encodeURIComponent(this.widthmodel) +
+          '&height=' + encodeURIComponent(this.heightmodel) +
+          '&lat=' + encodeURIComponent(this.latmodel) +
+          '&lon=' + encodeURIComponent(this.lonmodel) +
+          '&markersize=' + encodeURIComponent(this.markersizemodel) +
+          '&provider=' + encodeURIComponent(this.providermodel) +
+          '&zoom=' + encodeURIComponent(this.zoommodel) +
+          '&groups=' + encodeURIComponent(this.checkedfacette.join(',')) +
+          '&titles=' + encodeURIComponent(facettelabel.join(',')) +
+          '&groupsexpanded=' + encodeURIComponent(this.groupsexpandedmodel)
     },
     wikiquery: function() {
       var facettelabel = [];
@@ -43,6 +44,7 @@ var widgetapp = new Vue({
         ' zoom="' + this.zoommodel + '"' +
         ' groups="' + this.checkedfacette.join(',') + '"' +
         ' titles="' + facettelabel.join(',') + '"' +
+        ' groupsexpanded="' + this.groupsexpandedmodel + '"' +
         '}}'
     }
   },

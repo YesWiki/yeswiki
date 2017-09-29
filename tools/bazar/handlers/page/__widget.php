@@ -67,9 +67,7 @@ if (isset($_GET['id'])) {
     }
     $urlparams = 'id='.$_GET['id']
       .(isset($_GET['query']) ? '&query='.$_GET['query'] : '')
-      .(!empty($q) ? '&q='.$q : '')
-      .'&width='.$params['width']
-      .'&height='.$params['height'];
+      .(!empty($q) ? '&q='.$q : '');
     // affichage des resultats
     include_once 'tools/libs/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
