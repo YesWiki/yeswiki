@@ -161,6 +161,9 @@ function renderTemplate($tool, $file, $values, $lastModified = false, $extraname
  */
 function isTemplateCached($cacheid)
 {
+    // TODO : make it Work..
+    return false;
+
     if (isset($this->template[$cacheid]["cached"]) && $this->template[$cacheid]["cached"]) {
         return true;
     } elseif (!file_exists($cacheid)) {

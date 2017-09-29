@@ -6,9 +6,9 @@ if (!defined("WIKINI_VERSION")) {
 $yeswiki_javascripts = "\n" . '    <!-- javascripts -->' . "\n";
 
 if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == "1") {
-    $yeswiki_javascripts .= '	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>' . "\n" . '	<script>window.jQuery || document.write(\'<script src="tools/templates/libs/vendor/jquery-1.11.2.min.js"><\/script>\')</script>' . "\n";
+    $yeswiki_javascripts .= '	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>' . "\n" . '	<script>window.jQuery || document.write(\'<script src="tools/templates/libs/vendor/jquery-2.2.4.min.js"><\/script>\')</script>' . "\n";
 } else {
-    $yeswiki_javascripts .= '  <script src="tools/templates/libs/vendor/jquery-1.11.3.min.js"></script>' . "\n";
+    $yeswiki_javascripts .= '  <script src="tools/templates/libs/vendor/jquery-2.2.4.min.js"></script>' . "\n";
 }
 
 // on récupère le bon chemin pour le theme
