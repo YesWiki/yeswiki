@@ -11,7 +11,7 @@ class PackageCore extends Package
     {
         parent::__construct($release, $address, $desc, $doc);
         $this->installed = true;
-        $this->localPath = dirname(dirname(dirname(__DIR__)));
+        $this->localPath = realpath(dirname($_SERVER["SCRIPT_FILENAME"]));
         $this->name = $this::CORE_NAME;
         $this->updateAvailable = $this->updateAvailable();
     }
@@ -40,10 +40,11 @@ class PackageCore extends Package
 
     public function upgradeTools()
     {
-        $src = $this->extractionPath . '/tools';
+        // get branch from repo url
+        $t = explode('/', $this->address);
+        $src = $this->extractionPath . $t[3] . '/tools';
         $desPath = $this->localPath . '/tools';
         $file2ignore = array('.', '..');
-
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste

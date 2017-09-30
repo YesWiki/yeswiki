@@ -46,7 +46,7 @@ class Release
 
     private function checkFormat($release)
     {
-        $pattern = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1}$/";
+        $pattern = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2}$/";
         if (preg_match($pattern, $release) === 1) {
             return true;
         }
