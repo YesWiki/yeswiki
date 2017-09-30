@@ -1,0 +1,22 @@
+{
+    "name": "autoupdate",
+    "description": "Mise à jour automatique de YesWiki",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Florestan Bredow",
+            "email": "florestan.bredow@supagro.fr"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+          "AutoUpdate\\": "app"
+        }
+    },
+    "require": {
+        "twig/twig": "^1.23"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.4"
+    }
+}
