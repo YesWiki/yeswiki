@@ -18,7 +18,7 @@ if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == '
     // on affiche le message d'erreur des templates inexistants
     $plugin_output_new = str_replace(
         '<div class="page" >',
-        '<div class="page">'."\n".'<div class="alert"><a href="#" data-dismiss="alert" class="close">&times;</a><strong>'._t('TEMPLATE_NO_THEME_FILES').' :</strong><br />themes/'.$GLOBALS['template-error']['theme'].'/squelettes/'.$GLOBALS['template-error']['squelette'].'<br />themes/'.$GLOBALS['template-error']['theme'].'/styles/'.$GLOBALS['template-error']['style'].'<br><strong>'._t('TEMPLATE_DEFAULT_THEME_USED').'</strong>.</div>',
+        '<div class="page">'."\n".'<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a><strong>'._t('TEMPLATE_NO_THEME_FILES').' :</strong><br />themes/'.$GLOBALS['template-error']['theme'].'/squelettes/'.$GLOBALS['template-error']['squelette'].'<br />themes/'.$GLOBALS['template-error']['theme'].'/styles/'.$GLOBALS['template-error']['style'].'<br><strong>'._t('TEMPLATE_DEFAULT_THEME_USED').'</strong>.</div>',
         $plugin_output_new
     );
     $GLOBALS['template-error'] = '';

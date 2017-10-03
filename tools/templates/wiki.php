@@ -141,13 +141,12 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
     }
 }
 
-// Test existence du template, on utilise le template par defaut sinon=============================================
+
+// Test existence du template, on utilise le template par defaut sinon==============================
 if ((!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
-    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
-    && !preg_match('/\.tpl\.html$/', $wakkaConfig['favorite_squelette']))
+    and !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette']))
     || (!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
-    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
-    && !preg_match('/\.css$/', $wakkaConfig['favorite_style']))) {
+    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style']))) {
     if ((file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT) ||
              file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
             ) &&
