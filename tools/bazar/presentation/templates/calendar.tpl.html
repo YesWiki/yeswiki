@@ -53,8 +53,7 @@ if(count($fiches)>0) {
           ],
           eventRender: function(event, element) {
               element.outerHTML(element.outerHTML().replace('<a', '<a ' + event.htmlattributes));
-              console.log(event.title);
-              element.find('span.fc-title').html(event.title);
+              element.find('.fc-title').html(event.title);
           },
           monthNames: ['"._t('BAZ_JANVIER')."','"._t('BAZ_FEVRIER')."','"._t('BAZ_MARS')."','"._t('BAZ_AVRIL')."','"._t('BAZ_MAI')."','"._t('BAZ_JUIN')."','"._t('BAZ_JUILLET')."','"._t('BAZ_AOUT')."','"._t('BAZ_SEPTEMBRE')."','"._t('BAZ_OCTOBRE')."','"._t('BAZ_NOVEMBRE')."','"._t('BAZ_DECEMBRE')."'],
           monthNamesShort: ['Jan','Fev','Mar','Avr','Mai','Juin','Juil','Aug','Sep','Oct','Nov','Dec'],
@@ -71,7 +70,8 @@ if(count($fiches)>0) {
               day: '"._t('BAZ_DAY')."'
           },
           firstDay : 1,
-          timeFormat: 'HH:mm{ - HH:mm}',
+          themeSystem: 'bootstrap3',
+          timeFormat: 'HH:mm',
           eventClick : calendar_click
       });
   });\n";
@@ -111,8 +111,9 @@ if(count($fiches)>0) {
           }";
         }
 
+  $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css');
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/moment.min.js');
-  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.js');
+  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js');
   $GLOBALS['wiki']->AddJavascript($script);
-  echo '<div id="calendar'.$param['nbbazarliste'].'" class="'.$param['class'].'"></div>'."\n";
+  echo '<div id="calendar'.$param['nbbazarliste'].'" class="no-dblclick '.$param['class'].'"></div>'."\n";
 }

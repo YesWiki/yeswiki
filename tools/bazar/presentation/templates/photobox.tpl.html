@@ -88,12 +88,13 @@ if (count($fiches) > 0) :
 <?php endforeach; ?>
 </ul>
 <?php echo $pager_links; ?>
-<link rel="stylesheet" href="themes/tools/bazar/styles/photobox.css">
+<link rel="stylesheet" href="tools/bazar/presentation/styles/photobox.css">
 <style>
 .pbgallery {margin:0;padding:0;}
-#gallery<?php echo $GLOBALS['nbgalleries']; ?> li {margin: <?php echo $thumbmargin; ?>px}</style>
+#gallery<?php echo $GLOBALS['nbgalleries']; ?> li {margin: <?php echo $thumbmargin; ?>px}
+</style>
 <?php
-$GLOBALS['wiki']->AddJavascriptFile('themes/tools/bazar/javascripts/jquery.photobox.js');
+$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/jquery.photobox.js');
 $GLOBALS['wiki']->AddJavascript("$('#gallery" . $GLOBALS['nbgalleries'] . "').photobox('a',{ time:0 });\n");
 ?>
 <?php endif; ?>
