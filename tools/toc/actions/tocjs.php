@@ -149,7 +149,7 @@ echo '<style>
         display: none;
         margin-bottom: 8px;
     }
-    #tocjs-'.$tag.' .active ol {
+    #tocjs-'.$tag.' .active > ol {
         display: block;
     }
     #tocjs-'.$tag.' ol ol > li > a {
