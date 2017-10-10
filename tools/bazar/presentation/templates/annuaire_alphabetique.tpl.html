@@ -10,7 +10,7 @@
                 $fiche['bf_titre'] = trim($fiche['bf_titre']);
                 // prend la première lettre de bf_titre et la met en majuscule strtoupper
                 $firstChar = strtoupper($fiche['bf_titre']{0});
-                
+
                 // si on change de lettre dans le parcours alphabétique, on rajoute une ancre avec le titre de la lettre
                 // cette vérif de condition n'est valable que si les fiches sont trièes par ordre alpha préalablement ce qui est le cas dans yeswiki
                 if (empty($curChar) || $firstChar != $curChar) {
@@ -20,9 +20,9 @@
                         $curChar = $firstChar; // on met dans une variable curChar le caractère en cours d'utilsation
                 }
                 $cpt++;
-                
+
 ?>
-        <?php $out .= '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="nom">'.$fiche['bf_titre'].'</a>'; ?>
+        <?php $out .= '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="nom bazar-entry" <?php echo $fiche['html_data'];?>>'.$fiche['bf_titre'].'</a>'; ?>
 <?php endforeach; ?>
 
 <?php
