@@ -22,7 +22,7 @@
                 $cpt++;
 
 ?>
-        <?php $out .= '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="nom bazar-entry" <?php echo $fiche['html_data'];?>>'.$fiche['bf_titre'].'</a>'; ?>
+        <?php $out .= '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="nom bazar-entry" '. $fiche['html_data'].'>'.$fiche['bf_titre'].'</a>'; ?>
 <?php endforeach; ?>
 
 <?php
