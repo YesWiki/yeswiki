@@ -166,3 +166,16 @@ if ((!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squ
         exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
     }
 }
+
+//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
+$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
+$wakkaConfig['templates'] = search_template_files($repertoire_initial);
+
+//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
+if (is_dir('themes')) {
+    $repertoire_racine = 'themes';
+    $wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files($repertoire_racine));
+    if (is_array($wakkaConfig['templates'])) {
+        ksort($wakkaConfig['templates']);
+    }
+}

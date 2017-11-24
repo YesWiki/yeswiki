@@ -445,7 +445,7 @@ $(document).ready(function () {
       var urlquery;
       if (value !== '') {
         if (s !== '') {
-          console.log(s);
+          //console.log(s);
           urlquery = decodeURIComponent(s).replace(
             new RegExp('&' + name + '=' + '([^&;]+?)(&|#|;|$)'),
             '&' + name + '=' + value
@@ -455,7 +455,7 @@ $(document).ready(function () {
           urlquery = '?' + name + '=' + value;
         } //console.log('location.search vide', s, urlquery);
       } else {
-        console.log(s);
+        //console.log(s);
         urlquery = decodeURIComponent(s).replace(
           new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)'),
           ''
@@ -555,7 +555,7 @@ $(document).ready(function () {
           return tab.toArray().indexOf(n) != -1;
         });
       });
-
+      $('body').trigger( 'updatefilters', [ tabres ] );
       e.data.$entries.hide().filter(tabres).show();
       e.data.$entries.parent('.bazar-marker').hide();
       e.data.$entries.filter(tabres).parent('.bazar-marker').show();

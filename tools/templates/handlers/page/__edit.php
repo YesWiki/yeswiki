@@ -13,3 +13,8 @@ if (isset($_GET["newpage"]) && $_GET["newpage"]==1 && isset($_GET["theme"]) && !
 if (isset($_GET["body"]) && !isset($_POST["body"])) {
     $_POST["body"] = '======'.$_GET["body"].'======';
 }
+
+// ajout des scripts necessaires pour le mode edition
+$js = add_templates_list_js();
+$this->addJavascript($js);
+$this->addJavascriptFile('tools/templates/libs/templates_edit.js');

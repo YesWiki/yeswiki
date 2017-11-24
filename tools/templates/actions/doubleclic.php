@@ -1,13 +1,15 @@
 <?php
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
-if ( $this->GetMethod() == 'show' && $this->HasAccess("write") ) {
-	//javascript du double clic (on peux passer en parametre une page wiki au editer en doublecliquant)  
-	$page = $this->GetParameter('page');
-	if (!empty($page)) {
-		echo "ondblclick=\"document.location='".$this->href("edit", $page)."';\" ";
-	} else echo "ondblclick=\"document.location='".$this->href("edit")."';\" ";
-} 
-?>
+$page = $this->GetParameter('page');
+$isIframe = $this->GetParameter('iframe') && (!isset($_GET['iframelinks']) or $_GET['iframelinks'] != '0');
+if ($this->GetMethod() == 'show' && $this->HasAccess('write', $page)) {
+    $method = $isIframe ? 'editiframe' : 'edit';
+    // javascript du double clic (on peut passer en parametre une page wiki au editer en doublecliquant)
+    if (!empty($page)) {
+        echo 'ondblclick="document.location=\''.$this->href($method, $page).'\';" ';
+    } else {
+        echo 'ondblclick="document.location=\''.$this->href($method).'\';" ';
+    }
+}

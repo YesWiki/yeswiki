@@ -369,19 +369,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 
     $selecteur = '      <form class="'.$formclass.'" id="'.$id.'">'."\n";
 
-    //on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-    $repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
-    $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
-
-    //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-    if (is_dir('themes')) {
-        $repertoire_racine = 'themes';
-        $GLOBALS['wiki']->config['templates'] = array_merge($GLOBALS['wiki']->config['templates'], search_template_files($repertoire_racine));
-        if (is_array($GLOBALS['wiki']->config['templates'])) {
-            ksort($GLOBALS['wiki']->config['templates']);
-        }
-    }
-
 
     $selecteur .= '         <div class="control-group form-group">'."\n".
                     '               <label class="control-label col-lg-4">'._t('TEMPLATE_THEME').'</label>'."\n".
@@ -512,8 +499,9 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 
 function add_templates_list_js()
 {
+    var_dump($GLOBALS['wiki']->config['templates']);
     // AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
-    $js = '<script>
+    $js = '
     var tab1 = new Array();
     var tab2 = new Array();'."\n";
     foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
@@ -541,7 +529,6 @@ function add_templates_list_js()
         }
         $js .= ');'."\n";
     }
-    $js .= '</script>'."\n";
 
     return $js;
 }

@@ -1442,5 +1442,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
 }(jQuery, window));
 
-// Initialize the button for upload in Aceditor
-$('#attach-file-uploader').appendTo('#ACEditor .aceditor-toolbar').uploadbutton();
+$(document).ready(function () {
+  // Initialize the button for upload in Aceditor
+  $('#attach-file-uploader').appendTo('#ACEditor .aceditor-toolbar').uploadbutton();
+});

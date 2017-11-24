@@ -119,34 +119,24 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 	    </div><!-- /.modal-content -->
 	  </div><!-- /.modal-dialog -->
 	</div><!-- /.modal /#UploadModal -->'."\n";
-        $plugin_output_new = preg_replace('/<body(.*)>/U', '<body$1>'.$uploadModal, $plugin_output_new);
-
-        $js = '<script src="tools/attach/libs/fileuploader.js"></script>';
-        $plugin_output_new = str_replace('</body>', $js.'</body>', $plugin_output_new);
-
-        $UploadBar =   "<div id=\"attach-file-uploader\" class=\"btn-group\">
-							<noscript>
-								<span class=\"alert alert-danger alert-error\">"._t('ACTIVATE_JS_TO_UPLOAD_FILES').".</span>
-							</noscript>
-							<div class=\"qq-uploader\">
-								<div class=\"qq-upload-button btn btn-default\"><i class=\"glyphicon glyphicon-upload icon-upload\"></i>&nbsp;"._t('UPLOAD_A_FILE')."</div>
-								<ul class=\"qq-upload-list\"></ul>
-							</div>
-							<div class=\"sample-upload-list hide\">
-								<li>
-									<span class=\"qq-upload-file\"></span>
-									<span class=\"qq-upload-spinner\"></span>
-									<span class=\"qq-upload-size\"></span>
-									<a class=\"qq-upload-cancel\" href=\"#\">"._t('ATTACH_CANCEL')."</a>
-									<span class=\"qq-upload-failed-text\">"._t('FAILED')."</span>
-								</li>
-							</div>
-						</div>";
-
-        $plugin_output_new = preg_replace(
-            '/\<div class=\"page\"\>/',
-            '<div class="page">'.$UploadBar,
-            $plugin_output_new
-        );
+    $UploadBar =   "<div id=\"attach-file-uploader\" class=\"btn-group\">
+					<noscript>
+						<span class=\"alert alert-danger alert-error\">"._t('ACTIVATE_JS_TO_UPLOAD_FILES').".</span>
+					</noscript>
+					<div class=\"qq-uploader\">
+						<div class=\"qq-upload-button btn btn-default\"><i class=\"glyphicon glyphicon-upload icon-upload\"></i>&nbsp;"._t('UPLOAD_A_FILE')."</div>
+						<ul class=\"qq-upload-list\"></ul>
+					</div>
+					<div class=\"sample-upload-list hide\">
+						<li>
+							<span class=\"qq-upload-file\"></span>
+							<span class=\"qq-upload-spinner\"></span>
+							<span class=\"qq-upload-size\"></span>
+							<a class=\"qq-upload-cancel\" href=\"#\">"._t('ATTACH_CANCEL')."</a>
+							<span class=\"qq-upload-failed-text\">"._t('FAILED')."</span>
+						</li>
+					</div>
+				</div>";
+        $plugin_output_new = str_replace('<form id="ACEditor"', $UploadBar.$uploadModal.'<form id="ACEditor"', $plugin_output_new);
     }
 }

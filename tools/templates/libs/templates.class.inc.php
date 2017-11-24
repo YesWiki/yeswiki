@@ -50,6 +50,8 @@ function GetMethod()
 {
     if ($this->method=='iframe') {
         return 'show';
+    } elseif ($this->method=='editiframe') {
+        return 'edit';
     } else {
         return Wiki::GetMethod();
     }

@@ -29,8 +29,6 @@ if ($act = preg_match_all("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_foo
     }
 }
 
-echo $template_footer;
-
 // on affiche les requetes SQL et le temps de chargement en mode debug
 if ($this->GetConfigValue('debug')=='yes') {
     $debug_log_sql_queries = '';
@@ -47,5 +45,7 @@ if ($this->GetConfigValue('debug')=='yes') {
     $debug_log .= "<strong>".count($this->queryLog)." queries :</strong><br />\n";
     $debug_log .= $debug_log_sql_queries;
     $debug_log .= "</div>\n";
-    echo $debug_log;
+    $template_footer = str_replace('</body>', $debug_log.'</body>', $template_footer);
 }
+
+echo $template_footer;
