@@ -67,7 +67,7 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['linkdiaporama'] = $this->href("diaporama", $page);
     $barreredactionelements['linkshare'] = $this->href("share", $page);
 
-    include_once('tools/libs/squelettephp.class.php');
+    include_once('includes/squelettephp.class.php');
     $barreredactiontemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
     $barreredactiontemplate->set($barreredactionelements);
     echo $barreredactiontemplate->analyser().' <!-- /.footer -->'."\n";

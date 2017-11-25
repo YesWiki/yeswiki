@@ -69,7 +69,7 @@ if (isset($_GET['id'])) {
       .(isset($_GET['query']) ? '&query='.$_GET['query'] : '')
       .(!empty($q) ? '&q='.$q : '');
     // affichage des resultats
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/widget.tpl.html';
     if (!is_file($templatetoload)) {

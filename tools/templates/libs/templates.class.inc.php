@@ -53,7 +53,7 @@ function GetMethod()
     } elseif ($this->method=='editiframe') {
         return 'edit';
     } else {
-        return Wiki::GetMethod();
+        return \YesWiki\Wiki::GetMethod();
     }
 }
 

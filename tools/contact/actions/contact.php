@@ -67,7 +67,7 @@ if (empty($contactelements['mail'])) {
     // adresse url d'envoi du mail
     $contactelements['mailerurl'] = $this->href('mail');
 
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/contact/templates
     $contactTemplate = 'themes/tools/contact/templates/'.$template;
     if (!is_file($contactTemplate)) {

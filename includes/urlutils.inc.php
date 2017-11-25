@@ -69,15 +69,15 @@ function computeBaseURL($rewrite_mode = false)
         $port = ':' . $_SERVER["SERVER_PORT"];
     }
 
-    $urlParam = '';
-    if (!$rewrite_mode) {
-        $urlParam = '?wiki=';
-    }
+    $urlParam = '/?';
+    $parts = explode('wakka.php', $urlPieces['path']);
+    $parts = explode('index.php', $parts[0]);
+    $parts[0] = preg_replace('/\/$/', '', $parts[0]);
 
     return $protocol
         . $_SERVER["HTTP_HOST"]
         . $port
-        . $urlPieces['path']
+        . $parts[0]
         . $urlParam;
 }
 
@@ -89,6 +89,9 @@ function computeBaseURL($rewrite_mode = false)
 function detectRewriteMode()
 {
     $pieces = parse_url($_SERVER['REQUEST_URI']);
+    if ($pieces['path'] == '/' or $pieces['path'] == '/index.php') {
+        return false;
+    }
     return substr($pieces['path'], - strlen(WAKKA_ENGINE)) != WAKKA_ENGINE;
     // return !preg_match("/".preg_quote(WAKKA_ENGINE)."$/", $_SERVER["REQUEST_URI"]);
 }

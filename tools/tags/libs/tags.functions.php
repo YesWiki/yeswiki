@@ -143,7 +143,7 @@ function afficher_commentaires_recursif($page, $wiki, $premier = true)
         $valcomment['commentform'] .= "<div class=\"clear\"></div></div>\n";
     }
 
-    include_once('tools/libs/squelettephp.class.php');
+    include_once('includes/squelettephp.class.php');
 
     $squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
     $squelcomment->set($valcomment);

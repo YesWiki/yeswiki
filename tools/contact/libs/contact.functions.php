@@ -136,7 +136,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     }
     if (!empty($GLOBALS['wiki']->config['mail_template'])) {
         // affichage des resultats
-        include_once 'tools/libs/squelettephp.class.php';
+        include_once 'includes/squelettephp.class.php';
         // On cherche un template personnalise dans le repertoire themes/tools
         $templatetoload = 'themes/tools/contact/templates/'.$GLOBALS['wiki']->config['mail_template'];
         if (!is_file($templatetoload)) {

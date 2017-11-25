@@ -198,7 +198,7 @@ if (isset($_POST["page"])) {
         $selectedpages = array();
     }
 
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     $template_export = new SquelettePhp('tools/tags/presentation/templates/exportpages_table.tpl.html');
     $template_export->set(
         array('pages' => $pages, 'entries' => $results, 'ebookstart' => $ebookstart, 'ebookend' => $ebookend, 'addinstalledpage' => $addinstalledpage, 'installedpages' => $installpagename, 'coverimageurl' => $coverimageurl, 'ebookpagename' => $ebookpagename, 'metadatas' => $this->page["metadatas"], 'selectedpages' => $selectedpages, 'url' => $this->href('', $this->GetPageTag()))

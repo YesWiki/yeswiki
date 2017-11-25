@@ -1197,7 +1197,7 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
     }
 
     //Affichage a l'ecran
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/form_edit_entry.tpl.html';
     if (!is_file($templatetoload)) {
@@ -1635,7 +1635,7 @@ function baz_formulaire_des_formulaires($mode, $form = '')
     // champs du formulaire
     $data['idformulaire'] = isset($_GET['idformulaire']) ? $_GET['idformulaire'] : '';
 
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/form_edit_form.tpl.html';
     if (!is_file($templatetoload)) {
@@ -2059,7 +2059,7 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
         $templatetoload =
         'tools/bazar/presentation/templates/lists_edit.tpl.html';
     }
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     $formlistes = new SquelettePhp($templatetoload);
     $formlistes->set($tab_formulaire);
 
@@ -2227,7 +2227,7 @@ function baz_gestion_formulaire()
             'tools/bazar/presentation/templates/forms_table.tpl.html';
         }
 
-        include_once 'tools/libs/squelettephp.class.php';
+        include_once 'includes/squelettephp.class.php';
         $templateforms = new SquelettePhp($templatetoload);
         $templateforms->set($tab_forms);
         $res .= $templateforms->analyser();
@@ -2311,7 +2311,7 @@ function baz_gestion_listes()
             'tools/bazar/presentation/templates/lists_table.tpl.html';
         }
 
-        include_once 'tools/libs/squelettephp.class.php';
+        include_once 'includes/squelettephp.class.php';
         $templatelists = new SquelettePhp($templatetoload);
         $templatelists->set($tab_lists);
         $res .= $templatelists->analyser();
@@ -3181,7 +3181,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     }
 
     // affichage du formulaire
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     $templatetoload = 'tools/bazar/presentation/templates/search_form.tpl.html';
     $squelsearch = new SquelettePhp($templatetoload);
     $squelsearch->set($data);
@@ -3726,7 +3726,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     $fiches['param'] = $params;
 
     // affichage des resultats
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/'.$params['template'];
     if (!is_file($templatetoload)) {

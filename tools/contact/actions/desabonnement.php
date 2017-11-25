@@ -76,7 +76,7 @@ if (empty($listelements['mail'])) {
     $listelements['demand'] = 'desabonnement';
     $listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
 
-    include_once('tools/libs/squelettephp.class.php');
+    include_once('includes/squelettephp.class.php');
     $listtemplate = new SquelettePhp('tools/contact/presentation/templates/'.$template);
     $listtemplate->set($listelements);
     echo $listtemplate->analyser();
