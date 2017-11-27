@@ -940,6 +940,14 @@ class Wiki
         return $message;
     }
 
+    public function getBaseUrl()
+    {
+        $url = explode('wakka.php',$this->config['base_url']);
+        $url = explode('index.php', $url[0]);
+        $url = preg_replace(array('/\/\?$/', '/\/$/'), '', $url[0]);
+        return $url;
+    }
+
     public function Redirect($url)
     {
         header("Location: $url");
@@ -1003,7 +1011,7 @@ class Wiki
 
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
                 if ($text and preg_match("/\.(gif|jpeg|png|jpg)$/i", $tag)) {
-                    return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '"/>';
+                    return '<img src="' . $this->getBaseUrl().'/'.htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '"/>';
                 } else {
                     // Even if we know $tag is harmless, we MUST encode it
                     // in HTML with htmlspecialchars() before echoing it.

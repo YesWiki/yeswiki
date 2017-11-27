@@ -54,7 +54,7 @@ function getURLAbsolutePath($url = null)
  * as it affects the resulting url. Defaults to false.
  * @return string The base url of the wiki
  */
-function computeBaseURL($rewrite_mode = false)
+function computeBaseURL($rewrite_mode = false, $urlParam = '/?')
 {
     $protocol = 'http://';
     if (!empty($_SERVER['HTTPS'])) {
@@ -69,7 +69,6 @@ function computeBaseURL($rewrite_mode = false)
         $port = ':' . $_SERVER["SERVER_PORT"];
     }
 
-    $urlParam = '/?';
     $parts = explode('wakka.php', $urlPieces['path']);
     $parts = explode('index.php', $parts[0]);
     $parts[0] = preg_replace('/\/$/', '', $parts[0]);

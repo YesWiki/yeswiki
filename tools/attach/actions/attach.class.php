@@ -157,17 +157,18 @@ if (!class_exists('attach')) {
          */
         public function GetScriptPath()
         {
-            if (preg_match("/.(php)$/i", $_SERVER["PHP_SELF"])) {
-                $a = explode('/', $_SERVER["PHP_SELF"]);
-                $a[count($a) - 1] = '';
-                $path = implode('/', $a);
-            } else {
-                $path = $_SERVER["PHP_SELF"];
-            }
-            $http = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://');
-            return !empty($_SERVER["HTTP_HOST"]) ?
-                $http . $_SERVER["HTTP_HOST"] . $path
-                : $http . $_SERVER["SERVER_NAME"] . $path;
+            return $this->wiki->getBaseUrl().'/';
+            // if (preg_match("/.(php)$/i", $_SERVER["PHP_SELF"])) {
+            //     $a = explode('/', $_SERVER["PHP_SELF"]);
+            //     $a[count($a) - 1] = '';
+            //     $path = implode('/', $a);
+            // } else {
+            //     $path = $_SERVER["PHP_SELF"];
+            // }
+            // $http = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://');
+            // return !empty($_SERVER["HTTP_HOST"]) ?
+            //     $http . $_SERVER["HTTP_HOST"] . $path
+            //     : $http . $_SERVER["SERVER_NAME"] . $path;
         }
         /**
          * Calcul le repertoire d'upload en fonction du safe_mode
@@ -464,7 +465,7 @@ if (!class_exists('attach')) {
                 $width = $width - 20;
                 $height = $height - 20;
             }
-
+echo $this->GetScriptPath();
             //c'est une image : balise <IMG..../>
             $img = "<img class=\"img-responsive\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
             "alt=\"" . $this->desc . ($this->link ? "\nLien vers: $this->link" : "") . "\" width=\"" . $width . "\" height=\"" . $height . "\" />";

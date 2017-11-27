@@ -29,7 +29,18 @@ if (! isset($_REQUEST)) {
 }
 
 $page = $method = '';
-$args = explode('/', key($_GET));
+$protocol = 'http://';
+if (!empty($_SERVER['HTTPS'])) {
+    $protocol = 'https://';
+}
+
+$scriptlocation = str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
+$uri = str_replace($scriptlocation, '', $_SERVER['REQUEST_URI']);
+$uri = preg_replace('~^/\??~', '', $uri);
+$uri = explode('&', $uri);
+$uri = explode('?', $uri[0]);
+$args = explode('/', $uri[0]);
+
 if (!empty($args[0])) {
     if ($args[0] == 'wiki') {
         // old school wiki

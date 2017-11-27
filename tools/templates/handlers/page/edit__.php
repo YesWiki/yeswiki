@@ -71,7 +71,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
     $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$this->config['favorite_background_image'].'" />'."\n";
 
     // on rajoute la personnalisation graphique
-    $plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".$js."\n".'</body>', $plugin_output_new);
+    $plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".'</body>', $plugin_output_new);
     $changetheme = true;
 } else {
     $changetheme = false;

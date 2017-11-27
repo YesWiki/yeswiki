@@ -248,7 +248,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                             source: tagsexistants
                         },
                         freeInput: false,
-                        confirmKeys: [13, 188]
+                        confirmKeys: [13, 186, 188]
                     });'."\n";
 
                 if (is_array($tab) && count($tab)>0 && !empty($tab[0])) {
@@ -527,7 +527,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 afterSelect: function(val) { this.$element.val(""); },
                 source: tagsexistants
             },
-            confirmKeys: [13, 188]
+            confirmKeys: [13, 186, 188]
         });
     });' . "\n";
         $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
@@ -1999,7 +1999,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                             source: tagsexistants
                         },
                         freeInput: false,
-                        confirmKeys: [13, 188]
+                        confirmKeys: [13, 186, 188]
                     });'."\n";
 
                 if (is_array($def) && count($def)>0 && !empty($def[0])) {

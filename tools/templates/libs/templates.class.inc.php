@@ -15,11 +15,18 @@ function AddCSSFile($file, $conditionstart = '', $conditionend = '')
     if (!isset($GLOBALS['css'])) {
         $GLOBALS['css'] = '';
     }
-    if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')
-      && (!empty($file) && (file_exists($file) || strpos($file, "http://") === 0 || strpos($file, "https://") === 0))) {
-        $GLOBALS['css'] .= '  '.$conditionstart."\n"
-            .'    <link rel="stylesheet" href="'.$file.'">'."\n"
-            .'  '.$conditionend."\n";
+    if (!empty($file) && file_exists($file)) {
+        if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">')) {
+            $GLOBALS['css'] .= '  '.$conditionstart."\n"
+              .'  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">'
+              ."\n".'  '.$conditionend."\n";
+        }
+    } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
+        if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
+            $GLOBALS['css'] .= '  '.$conditionstart."\n"
+                .'  <link rel="stylesheet" href="'.$file.'">'."\n"
+                .'  '.$conditionend."\n";
+        }
     }
     return;
 }
@@ -35,13 +42,23 @@ function AddJavascript($script)
     return;
 }
 
-function AddJavascriptFile($file)
+function AddJavascriptFile($file, $first = false)
 {
     if (!isset($GLOBALS['js'])) {
         $GLOBALS['js'] = '';
     }
-    if (!strpos($GLOBALS['js'], '<script src="'.$file.'"></script>') && !empty($file) && (file_exists($file)|| strpos($file, "http://") === 0 || strpos($file, "https://") === 0)) {
-        $GLOBALS['js'] .= '  <script src="'.$file.'"></script>'."\n";
+    if (!empty($file) && file_exists($file)) {
+        if (!strpos($GLOBALS['js'], '<script src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
+            if ($first) {
+                $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n".$GLOBALS['js'];
+            } else {
+                $GLOBALS['js'] .= '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
+            }
+        }
+    } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
+        if (!strpos($GLOBALS['js'], '<script src="'.$file.'"></script>')) {
+            $GLOBALS['js'] .= '  <script src="'.$file.'"></script>'."\n";
+        }
     }
     return;
 }
@@ -72,7 +89,6 @@ function GetMetaDatas($pagetag)
     }
 }
 
-
 function SaveMetaDatas($pagetag, $metadatas)
 {
     $former_metadatas = $this->GetMetaDatas($pagetag);
@@ -88,9 +104,6 @@ function SaveMetaDatas($pagetag, $metadatas)
     }
     return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
 }
-
-// templates avec cache
-var $template = array(); // toutes les infos sur le template en cours de manipulation
 
 /**
  *

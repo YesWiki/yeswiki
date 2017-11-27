@@ -499,7 +499,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 
 function add_templates_list_js()
 {
-    var_dump($GLOBALS['wiki']->config['templates']);
     // AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
     $js = '
     var tab1 = new Array();

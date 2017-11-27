@@ -42,7 +42,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 		typeahead: {
 			source: tagsexistants
 		},
-		confirmKeys: [13, 188]
+		confirmKeys: [13, 186, 188]
 	});
 	
 	//bidouille antispam
