@@ -5,7 +5,7 @@ if (!defined('WIKINI_VERSION')) {
 
 ob_end_flush();
 ?>
-  <script src="tools/templates/libs/vendor/jquery-2.2.4.min.js"></script>
-  <script src="tools/templates/libs/vendor/bootstrap.min.js"></script>
+  <script src="<?php echo computeBaseURL(true); ?>tools/templates/libs/vendor/jquery-2.2.4.min.js"></script>
+  <script src="<?php echo computeBaseURL(true); ?>tools/templates/libs/vendor/bootstrap.min.js"></script>
 </body>
 </html>

@@ -40,26 +40,26 @@ $uri = preg_replace('~^/\??~', '', $uri);
 $uri = explode('&', $uri);
 $uri = explode('?', $uri[0]);
 $args = explode('/', $uri[0]);
-
-if (!empty($args[0])) {
-    if ($args[0] == 'wiki') {
-        // old school wiki
-        $wiki = $_REQUEST['wiki'];
-
+if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
+    // if old school wiki url
+    if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
         // remove leading slash
-        $wiki = preg_replace('/^\//', '', $wiki);
+        $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', $_REQUEST['wiki']);
 
-        // split into page/method, checking wiki name & method name (XSS proof)
-        if (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`', $wiki, $matches)) {
+        if (empty($wiki)) {
+            // this will be redirected to install or to homepage later        
+        } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`', $wiki, $matches)) {
+            // split into page/method, checking wiki name & method name (XSS proof)
             list (, $page, $method) = $matches;
         } elseif (preg_match('`^' . WN_PAGE_TAG . '$`', $wiki)) {
+            // WikiPageName without method
             $page = $wiki;
         } else {
+            // invalid WikiPageName
             echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
             exit();
         }
-    }
-    elseif ($args[0] == 'api') {
+    } elseif ($args[0] == 'api') {
         // call to YesWiki api
         if (isset($args[1]) and !empty($args[1])) {
             $apiFunctionName = ucfirst($_SERVER['REQUEST_METHOD']).ucfirst($args[1]);
@@ -130,11 +130,10 @@ $wakkaConfigLocation = $configfile;
 $wakkaConfig = array_merge($wakkaDefaultConfig, $wakkaConfig);
 
 // give a default timezone to avoid error
-if( $wakkaConfig['timezone']!=$wakkaDefaultConfig['timezone'] )
-{
-    date_default_timezone_set( $wakkaConfig['timezone']);
-}else if (!ini_get('date.timezone')) {
-    date_default_timezone_set( $wakkaDefaultConfig['timezone']);
+if ($wakkaConfig['timezone'] != $wakkaDefaultConfig['timezone']) {
+    date_default_timezone_set($wakkaConfig['timezone']);
+} elseif (!ini_get('date.timezone')) {
+    date_default_timezone_set($wakkaDefaultConfig['timezone']);
 }
 
 // check for locking

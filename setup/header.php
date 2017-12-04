@@ -87,8 +87,8 @@ ob_start();
 <head>
   <meta charset="<?php echo $charset; ?>">
   <title><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></title>
-  <link href="tools/templates/presentation/styles/bootstrap.min.css" rel="stylesheet">
-  <link href="tools/templates/presentation/styles/install.css" rel="stylesheet">
+  <link href="<?php echo computeBaseUrl(true); ?>tools/templates/presentation/styles/bootstrap.min.css" rel="stylesheet">
+  <link href="<?php echo computeBaseUrl(true); ?>tools/templates/presentation/styles/install.css" rel="stylesheet">
 </head>
 
 <body class="container">

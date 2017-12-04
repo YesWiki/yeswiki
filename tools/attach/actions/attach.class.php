@@ -465,7 +465,7 @@ if (!class_exists('attach')) {
                 $width = $width - 20;
                 $height = $height - 20;
             }
-echo $this->GetScriptPath();
+            
             //c'est une image : balise <IMG..../>
             $img = "<img class=\"img-responsive\" src=\"" . $this->GetScriptPath() . $img_name . "\" " .
             "alt=\"" . $this->desc . ($this->link ? "\nLien vers: $this->link" : "") . "\" width=\"" . $width . "\" height=\"" . $height . "\" />";

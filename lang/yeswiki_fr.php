@@ -284,7 +284,7 @@ $GLOBALS['translations'] = array(
 'ADVANCED_CONFIGURATION' => '+ Configuration avanc&eacute;e',
 'URL_REDIRECTION' => 'Redirection d\'URL',
 'NEW_INSTALL_VALUES_CHANGE_ONLY_IF_YOU_KNOW_WHAT_YOU_ARE_DOING' => 'Ceci est une nouvelle installation. Le programme d\'installation va essayer de trouver les valeurs appropri&eacute;es. Changez-les uniquement si vous savez ce que vous faites',
-'PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION' => 'Les noms des pages seront directement rajout&eacute;s &agrave; l\'URL de base de votre site YesWiki. Supprimez la partie "?wiki=" uniquement si vous utilisez la redirection (voir ci apr&egrave;s)',
+'PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION' => 'Les noms des pages seront directement rajout&eacute;s &agrave; l\'URL de base de votre site YesWiki. Supprimez la partie "?" uniquement si vous utilisez la redirection (voir ci apr&egrave;s)',
 'BASE_URL' => 'URL de base',
 'REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI' => 'Le mode "redirection automatique" doit &ecirc;tre s&eacute;lectionn&eacute; uniquement si vous utilisez YesWiki avec la redirection d\'URL (si vous ne savez pas ce qu\'est la redirection d\'URL n\'activez pas cette option)',
 'ACTIVATE_REDIRECTION_MODE' => 'Activation du mode "redirection automatique"',
