@@ -26,7 +26,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             }
 
             $ChampsHashcash =
-            '<script type="text/javascript" src="'.$siteurl.$slash.'tools/security/wp-hashcash-js.php?siteurl='.urlencode($this->getBaseUrl().'/').'"></script><span id="hashcash-text" style="display:none" class="pull-right">'._t('HASHCASH_ANTISPAM_ACTIVATED').'</span>';
+            '<script type="text/javascript" src="'.$this->getBaseUrl().'/tools/security/wp-hashcash-js.php?siteurl='.urlencode($this->getBaseUrl().'/').'"></script><span id="hashcash-text" style="display:none" class="pull-right">'._t('HASHCASH_ANTISPAM_ACTIVATED').'</span>';
 
             $plugin_output_new = preg_replace(
                 '/\<hr class=\"hr_clear\" \/\>/',
