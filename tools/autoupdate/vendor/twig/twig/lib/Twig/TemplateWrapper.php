@@ -3,7 +3,7 @@
 /*
  * This file is part of Twig.
  *
- * (c) 2016 Fabien Potencier
+ * (c) Fabien Potencier
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -129,3 +129,5 @@ final class Twig_TemplateWrapper
         return $this->template->getSourceContext();
     }
 }
+
+class_alias('Twig_TemplateWrapper', 'Twig\TemplateWrapper', false);

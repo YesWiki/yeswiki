@@ -75,12 +75,12 @@ $(document).ready(function() {
               existingmessage = '<br><span class="text-warning">' + formtranslations.existingmessage + '</span>';
             }
 
-            var tablerow = '<tr' + trclass + '><td><input type="checkbox" name="imported-form[' + idform + ']" value="' + JSON.stringify(data[idform]).replace(/"/g, '&quot;') + '"></td><td><strong>' + data[idform].bn_label_nature + '</strong>';
+            var tablerow = '<tr' + trclass + '><td><input type="checkbox" name="imported-form[' + data[idform].bn_id_nature + ']" value="' + JSON.stringify(data[idform]).replace(/"/g, '&quot;') + '"></td><td><strong>' + data[idform].bn_label_nature + '</strong>';
             if (data[idform].bn_description && 0 !== data[idform].bn_description.length) {
               tablerow += '<br>' + data[idform].bn_description;
             }
 
-            tablerow += existingmessage + '</td><td>' + data[idform].bn_type_fiche + '</td><td>' + idform + '</td></tr>';
+            tablerow += existingmessage + '</td><td>' + data[idform].bn_type_fiche + '</td><td>' + data[idform].bn_id_nature + '</td></tr>';
             resultimporttable.find('tbody').append(tablerow);
           }
         }

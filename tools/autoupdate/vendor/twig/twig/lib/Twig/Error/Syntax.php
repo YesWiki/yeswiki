@@ -3,8 +3,8 @@
 /*
  * This file is part of Twig.
  *
- * (c) 2009 Fabien Potencier
- * (c) 2009 Armin Ronacher
+ * (c) Fabien Potencier
+ * (c) Armin Ronacher
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -51,3 +51,5 @@ class Twig_Error_Syntax extends Twig_Error
         return array_keys($alternatives);
     }
 }
+
+class_alias('Twig_Error_Syntax', 'Twig\Error\SyntaxError', false);

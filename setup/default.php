@@ -60,11 +60,11 @@ if (!defined('WIKINI_VERSION')) {
 
     <fieldset>
 
-      <legend><?php echo _t('GENERAL_CONFIGURATION'); ?></legend>
-
+      <legend><?php echo _t('GENERAL_CONFIGURATION'); ?>
         <div class="accordion-heading">
-          <a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
+          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
         </div>
+      </legend>
 
         <div class="accordion" id="accordion1">
           <div class="accordion-group">
@@ -136,11 +136,11 @@ if (!defined('WIKINI_VERSION')) {
           </div>
         </div>
 
-      <legend><?php echo _t('DATABASE_CONFIGURATION'); ?></legend>
-
+      <legend><?php echo _t('DATABASE_CONFIGURATION'); ?>
         <div class="accordion-heading">
-          <a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo"><?php echo _t('MORE_INFOS'); ?></a>
+          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo"><?php echo _t('MORE_INFOS'); ?></a>
         </div>
+      </legend>
 
         <div class="accordion" id="accordion2">
           <div class="accordion-group">
@@ -202,30 +202,28 @@ if (!defined('WIKINI_VERSION')) {
           </div>
         </div>
 
-      <legend><?php echo _t('CREATION_OF_ADMIN_ACCOUNT'); ?></legend>
-
+      <legend><?php echo _t('CREATION_OF_ADMIN_ACCOUNT'); ?>
         <div class="accordion-heading">
-          <a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree"><?php echo _t('MORE_INFOS'); ?></a>
+          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree"><?php echo _t('MORE_INFOS'); ?></a>
         </div>
+      </legend>
 
         <div class="accordion" id="accordion3">
           <div class="accordion-group">
             <div id="collapseThree" class="accordion-body collapse">
               <div class="accordion-inner">
                 <dl class="dl-horizontal">
-                    <dt class="admin"><?php echo _t('ADMIN_ACCOUNT_CAN'); ?></dt>
-                    <dd class="droits-admin">
-                      <ul>
-                        <li><?php echo _t('MODIFY_AND_DELETE_ANY_PAGE'); ?></li>
-                        <li><?php echo _t('MODIFY_ACCESS_RIGHTS_ON_ANY_PAGE'); ?></li>
-                        <li><?php echo _t('GENERATE_ACCESS_RIGHTS_ON_ANY_ACTION_OR_HANDLER'); ?></li>
-                        <li><?php echo _t('GENERATE_GROUPS'); ?></li>
-                      </ul>
-                    </dd>
-                  </dl>
-                <div class="form-group">
-                  <p><?php echo _t('ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE'); ?></p>
-                </div>
+                  <dt class="admin"><?php echo _t('ADMIN_ACCOUNT_CAN'); ?></dt>
+                  <dd class="droits-admin">
+                    <ul>
+                      <li><?php echo _t('MODIFY_AND_DELETE_ANY_PAGE'); ?></li>
+                      <li><?php echo _t('MODIFY_ACCESS_RIGHTS_ON_ANY_PAGE'); ?></li>
+                      <li><?php echo _t('GENERATE_ACCESS_RIGHTS_ON_ANY_ACTION_OR_HANDLER'); ?></li>
+                      <li><?php echo _t('GENERATE_GROUPS'); ?></li>
+                    </ul>
+                  </dd>
+                </dl>
+                <p><?php echo _t('ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE'); ?></p>
               </div>
             </div>
           </div>
@@ -282,7 +280,7 @@ if (!defined('WIKINI_VERSION')) {
          <legend><?php echo _t('MORE_OPTIONS'); ?></legend>
 
         <div class="accordion-heading">
-          <a class="plusinfos btn btn-mini btn-info" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour"><?php echo _t('ADVANCED_CONFIGURATION'); ?></a>
+          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour"><?php echo _t('ADVANCED_CONFIGURATION'); ?></a>
         </div>
 
         <div class="accordion" id="accordion4">

@@ -1,0 +1,247 @@
+<div id="widgetapp" v-cloak
+  data-formid="<?php echo $_GET['id']; ?>"
+  data-templatemodel="<?php echo $params['template']; ?>"
+  data-providermodel="<?php echo $params['provider']; ?>"
+  data-iframeUrl="<?php echo $GLOBALS['wiki']->href('iframe', '', $urlparams, false); ?>"
+  data-checkedFacette="<?php echo '[]'; ?>"
+  data-markerfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"
+  data-colorfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"
+  data-iconfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"
+  data-markersizemodel="<?php echo "big"; ?>"
+  data-zoommodel="<?php echo $params['zoom'];; ?>"
+  data-latmodel="<?php echo $params['latitude']; ?>"
+  data-lonmodel="<?php echo $params['longitude']; ?>"
+  data-widthmodel="<?php echo $params['width']; ?>"
+  data-heightmodel="<?php echo $params['height']; ?>"
+  data-groupsexpandedmodel="false"
+>
+  <div class="row"> <!-- start of grid -->
+    <div class="col-md-3"> <!-- start of col -->
+      <div class="panel panel-default">
+        <div class="panel-heading">Type de visualisation</div>
+        <div class="panel-body">
+          <select v-model="templatemodel" class="form-control">
+            <option value="liste_liens.tpl.html">Liste de lien simple</option>
+            <option value="liste_accordeon.tpl.html">Liste accordéons</option>
+            <option value="carto.tpl.html">Carte avec fiches résumées</option>
+            <option value="map.tpl.html">Carte avec fiches entières</option>
+          </select>
+        </div>
+      </div>
+      <template v-if="templatemodel === 'map.tpl.html' || templatemodel === 'carto.tpl.html'">
+        <div class="panel panel-default">
+          <div class="panel-heading">Options pour la carte</div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label>Fond de carte</label>
+              <select v-model="providermodel" class="form-control">
+                <option value="OpenStreetMap.Mapnik">OpenStreetMap.Mapnik</option>
+                <option value="OpenStreetMap.BlackAndWhite">OpenStreetMap.BlackAndWhite</option>
+                <option value="OpenStreetMap.DE">OpenStreetMap.DE</option>
+                <option value="OpenStreetMap.France">OpenStreetMap.France</option>
+                <option value="OpenStreetMap.HOT">OpenStreetMap.HOT</option>
+                <option value="OpenTopoMap">OpenTopoMap</option>
+                <option value="Thunderforest.OpenCycleMap">Thunderforest.OpenCycleMap</option>
+                <option value="Thunderforest.Transport">Thunderforest.Transport</option>
+                <option value="Thunderforest.TransportDark">Thunderforest.TransportDark</option>
+                <option value="Thunderforest.SpinalMap">Thunderforest.SpinalMap</option>
+                <option value="Thunderforest.Landscape">Thunderforest.Landscape</option>
+                <option value="Thunderforest.Outdoors">Thunderforest.Outdoors</option>
+                <option value="Thunderforest.Pioneer">Thunderforest.Pioneer</option>
+                <option value="OpenMapSurfer.Roads">OpenMapSurfer.Roads</option>
+                <option value="OpenMapSurfer.Grayscale">OpenMapSurfer.Grayscale</option>
+                <option value="Hydda.Full">Hydda.Full</option>
+                <option value="Hydda.Base">Hydda.Base</option>
+                <option value="MapBox">MapBox</option>
+                <option value="Stamen.Toner">Stamen.Toner</option>
+                <option value="Stamen.TonerBackground">Stamen.TonerBackground</option>
+                <option value="Stamen.TonerLite">Stamen.TonerLite</option>
+                <option value="Stamen.Watercolor">Stamen.Watercolor</option>
+                <option value="Stamen.Terrain">Stamen.Terrain</option>
+                <option value="Stamen.TerrainBackground">Stamen.TerrainBackground</option>
+                <option value="Stamen.TopOSMRelief">Stamen.TopOSMRelief</option>
+                <option value="Esri.WorldStreetMap">Esri.WorldStreetMap</option>
+                <option value="Esri.DeLorme">Esri.DeLorme</option>
+                <option value="Esri.WorldTopoMap">Esri.WorldTopoMap</option>
+                <option value="Esri.WorldImagery">Esri.WorldImagery</option>
+                <option value="Esri.WorldTerrain">Esri.WorldTerrain</option>
+                <option value="Esri.WorldShadedRelief">Esri.WorldShadedRelief</option>
+                <option value="Esri.WorldPhysical">Esri.WorldPhysical</option>
+                <option value="Esri.OceanBasemap">Esri.OceanBasemap</option>
+                <option value="Esri.NatGeoWorldMap">Esri.NatGeoWorldMap</option>
+                <option value="Esri.WorldGrayCanvas">Esri.WorldGrayCanvas</option>
+                <option value="HERE.normalDay">HERE.normalDay</option>
+                <option value="HERE.basicMap">HERE.basicMap</option>
+                <option value="HERE.hybridDay">HERE.hybridDay</option>
+                <option value="FreeMapSK">FreeMapSK</option>
+                <option value="MtbMap">MtbMap</option>
+                <option value="CartoDB.Positron">CartoDB.Positron</option>
+                <option value="CartoDB.PositronNoLabels">CartoDB.PositronNoLabels</option>
+                <option value="CartoDB.PositronOnlyLabels">CartoDB.PositronOnlyLabels</option>
+                <option value="CartoDB.DarkMatter">CartoDB.DarkMatter</option>
+                <option value="CartoDB.DarkMatterNoLabels">CartoDB.DarkMatterNoLabels</option>
+                <option value="CartoDB.DarkMatterOnlyLabels">CartoDB.DarkMatterOnlyLabels</option>
+                <option value="HikeBike.HikeBike">HikeBike.HikeBike</option>
+                <option value="HikeBike.HillShading">HikeBike.HillShading</option>
+                <option value="BasemapAT.basemap">BasemapAT.basemap</option>
+                <option value="BasemapAT.grau">BasemapAT.grau</option>
+                <option value="BasemapAT.overlay">BasemapAT.overlay</option>
+                <option value="BasemapAT.highdpi">BasemapAT.highdpi</option>
+                <option value="BasemapAT.orthofoto">BasemapAT.orthofoto</option>
+                <option value="NASAGIBS.ModisTerraTrueColorCR">NASAGIBS.ModisTerraTrueColorCR</option>
+                <option value="NASAGIBS.ModisTerraBands367CR">NASAGIBS.ModisTerraBands367CR</option>
+                <option value="NASAGIBS.ViirsEarthAtNight2012">NASAGIBS.ViirsEarthAtNight2012</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Taille des marqueurs</label>
+              <select v-model="markersizemodel" class="form-control">
+                <option value="small">Petite</option>
+                <option value="big">Grande</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Zoom de la page</label>
+              <input type="range" min="1" max="13" v-model="zoommodel" class="form-control" step="1" value="8">
+            </div>
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" min="-90" max="90" v-model="latmodel" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" min="-180" max="180" v-model="lonmodel" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Hauteur de carte</label>
+              <input type="text" v-model="heightmodel" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Largeur de carte</label>
+              <input type="text" v-model="widthmodel" class="form-control">
+            </div>
+          </div>
+        </div>
+      </template>
+      <template v-if="templatemodel === 'map.tpl.html' || templatemodel === 'carto.tpl.html'">
+        <div class="panel panel-default hide">
+          <div class="panel-heading">Marqueurs</div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label>Champ associé</label>
+              <select v-model="markerfieldmodel" class="form-control">
+                <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
+                    <?php foreach ($facettes as $key => $value) : ?>
+                    <option value="<?php echo $value['id']; ?>">
+                        <?php echo $value['label']; ?>
+                    </option>
+                    <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template v-if="templatemodel !== 'map.tpl.html' && templatemodel !== 'carto.tpl.html'">
+        <div class="panel panel-default hide">
+          <div class="panel-heading">Couleurs</div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label>Champ associé</label>
+              <select v-model="colorfieldmodel" class="form-control">
+                <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
+                  <?php foreach ($facettes as $key => $value) : ?>
+                    <option value="<?php echo $value['id']; ?>">
+                        <?php echo $value['label']; ?>
+                    </option>
+                  <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+        </div>
+      </template>
+      <div class="panel panel-default hide">
+        <div class="panel-heading">Icones</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label>Champ associé</label>
+            <select v-model="iconfieldmodel" class="form-control">
+              <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
+              <?php foreach ($facettes as $key => $value) : ?>
+                <option value="<?php echo $value['id']; ?>">
+                      <?php echo $value['label']; ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">Ajouter des facettes</div>
+        <div class="panel-body" style="height:400px;overflow-y:auto;">
+          <ul class="list-group">
+            <!-- v-sortable="{group: 'facettes'}" -->
+            <script>
+                //var facetteval = <?php echo json_encode(array('facettetext' => $facettes)); ?>;
+                var facettetext = <?php echo json_encode(array('facettetext' => $facettestext, 'show_tooltip' => $showtooltip)); ?>;
+            </script>
+            <?php $i=-1; foreach ($facettes as $key => $value) : $i++ ?>
+              <li class="list-group-item" data-id="<?php echo $value['id']; ?>">
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" value="<?php echo $value['id']; ?>" v-model="checkedfacette">
+                    <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['id']; ?>']">
+                        <input class="form-control" type="text" v-model="facettetext['<?php echo $value['id']; ?>']" @keyup.enter="hideTooltip" />
+                        <span class="input-group-btn">
+              			    	<button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="glyphicon glyphicon-check"></i></button>
+              			    </span>
+                    </div>
+                    <div class="facette-text" v-if="!show_tooltip['<?php echo $value['id']; ?>']">
+                        {{facettetext['<?php echo $value['id']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['id']; ?>')"><i class="glyphicon glyphicon-pencil"></i></button>
+                    </div>
+
+
+                  </label>
+                </div>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+          <!-- <pre>{{ checkedfacette }}</pre> -->
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">Apparence des facettes</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label>Facettes dépliées</label>
+            <select v-model="groupsexpandedmodel" class="form-control">
+                <option selected value="false">Non dépliées</option>
+                <option value="true">Dépliées</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div> <!-- end of col -->
+    <div class="col-md-9"> <!-- start of col -->
+      <div class="panel panel-default">
+        <div class="panel-heading">Prévisualisation <strong>(cette partie est non cliquable, les paramêtres se changent dans la colonne de gauche)</strong></div>
+        <div class="panel-body">
+          <div class="widget-iframe-container">
+            <iframe class="iframe-preview" width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" :src="newiframeurl"></iframe>
+            <div class="iframe-blocker"></div>
+          </div>
+
+          <strong>Code embed a copier coller dans votre site</strong>
+          <pre><code>&lt;iframe width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" allowfullscreen="true" src="{{newiframeurl}}"&gt;&lt;/iframe&gt;</code></pre>
+
+          <strong>Code action wiki a copier coller dans une page de ce site</strong>
+          <pre><code>{{wikiquery}}</code></pre>
+        </div>
+      </div>
+    </div> <!-- end of col -->
+  </div> <!-- end of row -->
+</div> <!-- /#widgetapp -->
+<?php
+    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/vue.min.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/widget.js');
+    $GLOBALS['wiki']->addCSSFile('tools/bazar/presentation/styles/widget.css');

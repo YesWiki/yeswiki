@@ -1,0 +1,129 @@
+    <?php
+$imgwidth=800;
+$imgheight=800;
+?>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+<?php echo $info_res;
+$classes = array('Red', 'Blue-Grey', 'Pink', 'Purple', 'Deep-Purple', 'Indigo', 'Blue', 'Light-Blue', 'Cyan', 'Teal', 'Green', 'Light-Green', 'Lime', 'Yellow', 'Amber', 'Orange', 'Deep-Orange', 'Brown', 'Grey');
+$nbclasses = count($classes);
+?>
+<?php if( count($fiches)>0 ) : ?>
+<div class="row">
+<?php foreach ($fiches as $fiche) : ?>
+    <?php
+    if (isset($fiche['imagebf_image']) && $fiche['imagebf_image'] != '') : ?>
+    <div class="col-md-4 col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
+      <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
+        <h2>
+                    <span><?php echo $fiche['bf_titre']; ?></span>
+                    <strong>
+                        <i class="fa fa-fw fa-star"></i>
+                        <?php echo $fiche['bf_baseline']; ?>
+                    </strong>
+                </h2>
+        <div class="mc-content">
+          <div class="img-container">
+            <img class="img-responsive" src="<?php echo redimensionner_image(
+                'files/' . $fiche['imagebf_image'],
+                'cache/image_800x800_' . $fiche['imagebf_image'],
+                800,
+                800,
+                'crop'
+            ); ?>">
+          </div>
+          <div class="mc-description">
+            <?php echo $GLOBALS['wiki']->Format($fiche['bf_description']); ?>
+          </div>
+        </div>
+        <a class="mc-btn-action">
+          <i class="fa fa-bars"></i>
+        </a>
+        <div class="mc-footer">
+          <h4 class="hide">En savoir plus</h4>
+          <a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>" class="fa fa-fw fa-info-circle"></a>
+          <div class="pull-right">
+            <?php if ($GLOBALS['wiki']->HasAccess("write")) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>" class="fa fa-fw fa-pencil-square-o"></a>
+            <?php endif; ?>
+            <?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>" class="fa fa-fw fa-trash"></a>
+            <?php endif; ?>
+          </div>
+        </div>
+      </article>
+    </div>
+    <?php else : ?>
+    <div class="col-md-4 col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
+      <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
+        <h2>
+                    <span><?php echo $fiche['bf_titre']; ?></span>
+                    <strong>
+                        <i class="fa fa-fw fa-star"></i>
+                        <?php echo $fiche['bf_baseline']; ?>
+                    </strong>
+                </h2>
+        <div class="mc-content">
+          <div class="img-container">
+            <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>" src="http://placehold.it/<?php echo $imgwidth.'x'.$imgheight;?>">
+          </div>
+          <div class="mc-description">
+            <?php echo $GLOBALS['wiki']->Format($fiche['bf_description']); ?>
+          </div>
+        </div>
+        <a class="mc-btn-action">
+          <i class="fa fa-bars"></i>
+        </a>
+        <div class="mc-footer">
+          <h4 class="hide">En savoir plus</h4>
+          <a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>" class="fa fa-fw fa-info-circle"></a>
+          <div class="pull-right">
+            <?php if ($GLOBALS['wiki']->HasAccess("write")) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>" class="fa fa-fw fa-pencil-square-o"></a>
+            <?php endif; ?>
+            <?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
+            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>" class="fa fa-fw fa-trash"></a>
+            <?php endif; ?>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <?php
+    endif; ?>
+<?php endforeach; ?>
+</div>
+<?php echo $pager_links; ?>
+<?php
+$GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/material-card.css');
+$js = "$(function() {
+  $('.material-card > .mc-btn-action').click(function() {
+    var card = $(this).parent('.material-card');
+    var icon = $(this).children('i');
+    icon.addClass('fa-spin-fast');
+
+    if (card.hasClass('mc-active')) {
+      card.removeClass('mc-active');
+
+      window.setTimeout(function() {
+        icon
+          .removeClass('fa-arrow-left')
+          .removeClass('fa-spin-fast')
+          .addClass('fa-bars');
+
+      }, 800);
+    } else {
+      card.addClass('mc-active');
+
+      window.setTimeout(function() {
+        icon
+          .removeClass('fa-bars')
+          .removeClass('fa-spin-fast')
+          .addClass('fa-arrow-left');
+
+      }, 800);
+    }
+  });
+});";
+$GLOBALS['wiki']->AddJavascript($js);
+?>
+<?php endif; ?>

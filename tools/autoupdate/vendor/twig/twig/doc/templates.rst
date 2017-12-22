@@ -611,7 +611,8 @@ exist:
     { 2: 'foo', 4: 'bar' }
 
     {# keys as expressions (the expression must be enclosed into parentheses) -- as of Twig 1.5 #}
-    { (1 + 1): 'foo', (a ~ 'b'): 'bar' }
+    {% set foo = 'foo' %}
+    { (foo): 'foo', (1 + 1): 'bar', (foo ~ 'b'): 'baz' }
 
 * ``true`` / ``false``: ``true`` represents the true value, ``false``
   represents the false value.
@@ -893,7 +894,7 @@ Extension<creating_extensions>` chapter.
 
 .. _`Twig bundle`:                https://github.com/Anomareh/PHP-Twig.tmbundle
 .. _`Jinja syntax plugin`:        http://jinja.pocoo.org/docs/integration/#vim
-.. _`vim-twig plugin`:            https://github.com/evidens/vim-twig
+.. _`vim-twig plugin`:            https://github.com/lumiliet/vim-twig
 .. _`Twig syntax plugin`:         http://plugins.netbeans.org/plugin/37069/php-twig
 .. _`Twig plugin`:                https://github.com/pulse00/Twig-Eclipse-Plugin
 .. _`Twig language definition`:   https://github.com/gabrielcorpse/gedit-twig-template-language

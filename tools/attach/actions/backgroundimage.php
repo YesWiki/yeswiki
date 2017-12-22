@@ -76,7 +76,7 @@ $data = getDataParameter();
 echo '<div' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="background-image' . (!empty($class) ? ' ' . $class : '') . '" style="'
     .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
     .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-    .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
+    .(isset($fullFilename) ? 'background-image:url(' . $this->getBaseUrl().'/'.$fullFilename . ');' : '').'"';
 if (is_array($data)) {
     foreach ($data as $key => $value) {
         echo ' data-'.$key.'="'.$value.'"';

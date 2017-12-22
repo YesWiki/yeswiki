@@ -1,37 +1,41 @@
 [
     {
         "name": "twig/twig",
-        "version": "v1.28.2",
-        "version_normalized": "1.28.2.0",
+        "version": "v1.35.0",
+        "version_normalized": "1.35.0.0",
         "source": {
             "type": "git",
             "url": "https://github.com/twigphp/Twig.git",
-            "reference": "b22ce0eb070e41f7cba65d78fe216de29726459c"
+            "reference": "daa657073e55b0a78cce8fdd22682fddecc6385f"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/twigphp/Twig/zipball/b22ce0eb070e41f7cba65d78fe216de29726459c",
-            "reference": "b22ce0eb070e41f7cba65d78fe216de29726459c",
+            "url": "https://api.github.com/repos/twigphp/Twig/zipball/daa657073e55b0a78cce8fdd22682fddecc6385f",
+            "reference": "daa657073e55b0a78cce8fdd22682fddecc6385f",
             "shasum": ""
         },
         "require": {
-            "php": ">=5.2.7"
+            "php": ">=5.3.3"
         },
         "require-dev": {
+            "psr/container": "^1.0",
             "symfony/debug": "~2.7",
-            "symfony/phpunit-bridge": "~3.2@dev"
+            "symfony/phpunit-bridge": "~3.3@dev"
         },
-        "time": "2016-11-23 18:41:40",
+        "time": "2017-09-27T18:06:46+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "1.28-dev"
+                "dev-master": "1.35-dev"
             }
         },
         "installation-source": "dist",
         "autoload": {
             "psr-0": {
                 "Twig_": "lib/"
+            },
+            "psr-4": {
+                "Twig\\": "src/"
             }
         },
         "notification-url": "https://packagist.org/downloads/",

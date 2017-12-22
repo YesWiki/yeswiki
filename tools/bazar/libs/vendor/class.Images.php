@@ -215,7 +215,6 @@ class Image
         list($image_create_func, $image_save_func) = $this->getFunctionNames();
         if ($image_create_func != 'imagemagick') {
             $imageC = ImageCreateTrueColor($newImage_width, $newImage_height);
-            echo $this->image."<br>";
             $newImage = $image_create_func($this->image);
 
             if ($image_save_func == 'ImagePNG') {

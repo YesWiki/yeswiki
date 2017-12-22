@@ -19,8 +19,8 @@ if (!defined("WIKINI_VERSION")) {
 
 $nomwiki = $GLOBALS['wiki']->getUser();
 if ($nomwiki) {
-    $requetesql = 'SELECT DISTINCT tag FROM '.BAZ_PREFIXE.'pages WHERE latest="Y" AND comment_on = \'\' AND body LIKE \'%"nomwiki":"'.$nomwiki['name'].'"%\' AND body LIKE \'%"statut_fiche":"1"%\'
-        AND tag IN (SELECT DISTINCT resource FROM '.BAZ_PREFIXE.'triples WHERE value = "fiche_bazar"
+    $requetesql = 'SELECT DISTINCT tag FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE latest="Y" AND comment_on = \'\' AND body LIKE \'%"nomwiki":"'.$nomwiki['name'].'"%\' AND body LIKE \'%"statut_fiche":"1"%\'
+        AND tag IN (SELECT DISTINCT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE value = "fiche_bazar"
         AND property = "http://outils-reseaux.org/_vocabulary/type" ORDER BY resource ASC) ORDER BY time DESC';
 
     $results = $GLOBALS['wiki']->LoadAll($requetesql);
@@ -31,7 +31,7 @@ if ($nomwiki) {
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $GLOBALS['_BAZAR_']['templates'] = $this->GetParameter("template");
     if (empty($GLOBALS['_BAZAR_']['templates'])) {
-        $GLOBALS['_BAZAR_']['templates'] = BAZ_TEMPLATE_LISTE_DEFAUT;
+        $GLOBALS['_BAZAR_']['templates'] = $GLOBALS['wiki']->config['default_bazar_template'];
     }
     $tableau_dernieres_fiches = baz_requete_recherche_fiches('', '', '', '', 1, $nomwiki["name"]);
     if (count($tableau_dernieres_fiches)>0) {

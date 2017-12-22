@@ -125,35 +125,6 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
                 $wakkaConfig['favorite_background_image'] = '';
             }
         } else {
-            //on récupére les valeurs du template associées à la page de l'ancienne version de templates
-            //on récupère le contenu de la page
-            $contenu = $wiki->LoadPage($page);
-            if ($act = preg_match_all('/'.'(\\{\\{template)'.'(.*?)'.'(\\}\\})'.'/is', $contenu['body'], $matches)) {
-                $i = 0;
-                $j = 0;
-                foreach ($matches as $valeur) {
-                    foreach ($valeur as $val) {
-                        if (isset($matches[2][$j]) && $matches[2][$j] != '') {
-                            $action = $matches[2][$j];
-                            if (preg_match_all('/([a-zA-Z0-9]*)="(.*)"/U', $action, $params)) {
-                                for ($a = 0; $a < count($params[1]); ++$a) {
-                                    $vars[$params[1][$a]] = $params[2][$a];
-                                }
-                            }
-                        }
-                        ++$j;
-                    }
-                    ++$i;
-                }
-            }
-        }
-        // des valeurs ont été trouvées, on les utilise
-        if ((isset($vars['theme']) && $vars['theme'] != '') && (isset($vars['style']) && $vars['style'] != '') && (isset($vars['squelette']) && $vars['squelette'] != '')) {
-            $wakkaConfig['favorite_theme'] = $vars['theme'];
-            $wakkaConfig['favorite_style'] = $vars['style'];
-            $wakkaConfig['favorite_squelette'] = $vars['squelette'];
-            $wakkaConfig['favorite_background_image'] = '';
-        } else {
             if (!isset($wakkaConfig['favorite_theme'])) {
                 $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
             }
@@ -170,13 +141,12 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
     }
 }
 
-// Test existence du template, on utilise le template par defaut sinon=============================================
+
+// Test existence du template, on utilise le template par defaut sinon==============================
 if ((!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
-    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
-    && !preg_match('/\.tpl\.html$/', $wakkaConfig['favorite_squelette']))
+    and !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette']))
     || (!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
-    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
-    && !preg_match('/\.css$/', $wakkaConfig['favorite_style']))) {
+    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style']))) {
     if ((file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT) ||
              file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
             ) &&
@@ -194,5 +164,18 @@ if ((!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squ
         $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
     } else {
         exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
+    }
+}
+
+//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
+$repertoire_initial = 'tools'.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'themes';
+$wakkaConfig['templates'] = search_template_files($repertoire_initial);
+
+//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
+if (is_dir('themes')) {
+    $repertoire_racine = 'themes';
+    $wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files($repertoire_racine));
+    if (is_array($wakkaConfig['templates'])) {
+        ksort($wakkaConfig['templates']);
     }
 }

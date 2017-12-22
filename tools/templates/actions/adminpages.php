@@ -9,7 +9,7 @@ if ($this->UserIsAdmin()) {
            'ORDER BY tag';
     $pages = $this->LoadAll($sql);
 
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     $template_pages = new SquelettePhp('tools/templates/presentation/templates/pages_table.tpl.html');
     $template_pages->set(array('pages' => $pages)); // on passe le tableau de pages en parametres
     $output = $template_pages->analyser(); // affiche les resultats

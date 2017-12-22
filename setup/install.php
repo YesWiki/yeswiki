@@ -57,7 +57,7 @@ if (!$version = trim($wakkaConfig['wikini_version'])) {
 if ($version) {
     test(_t('VERIFY_MYSQL_PASSWORD').' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD').' !');
 }
-test(_t('TEST_MYSQL_CONNECTION').' ...', $dblink = mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
+test(_t('TEST_MYSQL_CONNECTION').' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
 $testdb = test(
     _t('SEARCH_FOR_DATABASE').' ...',
     @mysqli_select_db($dblink, $config['mysql_database']),
@@ -113,7 +113,7 @@ switch ($version) {
                 "tag varchar(50) NOT NULL default '',".
                 "time datetime NOT NULL,".
                 'body longtext NOT NULL,'.
-                'body_r text NOT NULL,'.
+                'body_r text,'.
                 "owner varchar(50) NOT NULL default '',".
                 "user varchar(50) NOT NULL default '',".
                 "latest enum('Y','N') NOT NULL default 'N',".
@@ -227,7 +227,7 @@ switch ($version) {
             _t('ALREADY_EXISTING').'.',
             0
         );
-        $wiki = new Wiki($config);
+        $wiki = new \YesWiki\Wiki($config);
         $wiki->SetGroupACL('admins', $admin_name);
 
         //insertion des pages de documentation et des pages standards

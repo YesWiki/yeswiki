@@ -19,6 +19,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+// si une date est indiquée
+if (isset($_GET['period']) && in_array($_GET['period'], array('day', 'week', 'month'))) {
+    switch ($_GET['period']) {
+        case 'day':
+            $d = strtotime("-1 day");
+            $dateMin = date("Y-m-d H:i:s", $d);
+            break;
+        case 'week':
+            $d = strtotime("-1 week");
+            $dateMin = date("Y-m-d H:i:s", $d);
+            break;
+        case 'month':
+            $d = strtotime("-1 month");
+            $dateMin = date("Y-m-d H:i:s", $d);
+            break;
+    }
+} else {
+    $dateMin = $this->GetParameter('period');
+}
+
 if ($last = $this->GetParameter('last')) {
     if ($last == 'last') {
         $last = 150;
@@ -26,15 +46,53 @@ if ($last = $this->GetParameter('last')) {
         $last = (int) $last;
     }
     if ($last) {
-        $last_users = $this->LoadAll('select name, signuptime from '.$this->getUserTablePrefix()."users order by signuptime desc limit $last");
-        foreach ($last_users as $user) {
-            echo $this->Format('**""'.$user['name'].'""**'),' . . . ',$user['signuptime'],"<br />\n";
+        $curday = '';
+        $sql = 'SELECT name, signuptime FROM '.$this->config['table_prefix'].'users';
+
+        if (!empty($dateMin)) {
+            $sql .= ' WHERE signuptime >= "'.$dateMin.'"';
         }
+        $sql .= ' ORDER BY signuptime DESC LIMIT '.$last;
+        $last_users = $this->LoadAll($sql);
+        foreach ($last_users as $user) {
+            // day header
+            list($day, $time) = explode(' ', $user['signuptime']);
+            if ($day != $curday) {
+                if ($curday) {
+                    echo "<br>\n";
+                }
+                echo '<strong>'.date('d.m.Y', strtotime($day)).'&nbsp;:</strong><br>'."\n";
+                $curday = $day;
+            }
+            // echo entry
+            echo '<small>'.$time.'</small> '.$user['name']."<br>\n";
+        }
+    } else {
+        echo _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
     }
 } else {
-    if ($last_users = $this->LoadAll('select name, signuptime from '.$this->getUserTablePrefix().'users order by name asc')) {
+    $sql = 'SELECT name, signuptime FROM '.$this->config['table_prefix'].'users';
+
+    if (!empty($dateMin)) {
+        $sql .= ' WHERE signuptime >= "'.$dateMin.'"';
+    }
+    $sql .= ' ORDER BY name ASC';
+    $curday = '';
+    if ($last_users = $this->LoadAll($sql)) {
         foreach ($last_users as $user) {
-            echo $this->Format('**""'.$user['name'].'""**'),' . . . ',$user['signuptime'],"<br />\n";
+            // day header
+            list($day, $time) = explode(' ', $user['signuptime']);
+            if ($day != $curday) {
+                if ($curday) {
+                    echo "<br>\n";
+                }
+                echo '<strong>'.date('d.m.Y', strtotime($day)).'&nbsp;:</strong><br>'."\n";
+                $curday = $day;
+            }
+            // echo entry
+            echo '<small>'.$time.'</small> '.$user['name']."<br>\n";
         }
+    } else {
+        echo _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
     }
 }

@@ -120,6 +120,10 @@ $GLOBALS['translations'] = array_merge(
     // actions/yeswikiversion.php
     'RUNNING_WITH' => 'Galope sous',
 
+    'TEMPLATE_ACTION_SECTION' => 'Action {{section ...}}',
+    'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'l\'action {{section ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="section"}}',
+
+
     'TEMPLATE_NO_THEME_FILES' => 'Fichiers du th&egrave;me manquants',
     'TEMPLATE_DEFAULT_THEME_USED' => 'Le th&egrave;me par défaut est donc utilisé',
 
@@ -142,9 +146,10 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_ELEM_PANEL_NOT_CLOSED' => 'l\'action {{panel ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="panel"}}',
     'TEMPLATE_TITLE_PARAMETER_REQUIRED' => "Param&egrave;tre title obligatoire",
 
-    // acion/accordion.php
+    // action/accordion.php
     'TEMPLATE_ACTION_ACCORDION' => 'Action {{accordion ...}}',
     'TEMPLATE_ELEM_ACORDION_NOT_CLOSED' => 'l\'action {{accordion ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="accordion"}}',
+
 
     // actions/buttondropdown.php
     'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'Action {{buttondropdown ...}}',

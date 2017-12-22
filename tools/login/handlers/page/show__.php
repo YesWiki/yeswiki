@@ -20,7 +20,7 @@ if (!$this->HasAccess('read')) {
             '<div class="alert alert-danger alert-error">'.
             _t('LOGIN_NOT_AUTORIZED').', '._t('LOGIN_PLEASE_REGISTER').'.'.
             '</div>'."\n".
-            $this->Format('{{login template="minimal.tpl.html"}}'),
+            $this->Format('{{login signupurl="0"}}'),
             $plugin_output_new
         );
     }

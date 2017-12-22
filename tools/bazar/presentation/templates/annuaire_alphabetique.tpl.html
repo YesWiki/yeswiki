@@ -1,0 +1,52 @@
+<?php if( count($fiches)>0 ) : //  regarde si il y a des fiches, on part du principe que c'est trié par ordre alphabetique ?>
+<?php $cpt=0; $out = ''; ?>
+<div id="lettres_init" class="text-center">
+<!-- Alphabet cliquable pour aller sur les ancres des différentes lettres -->
+<a href="#lettre_a"> a </a><a href="#lettre_b"> b </a><a href="#lettre_c"> c </a><a href="#lettre_d"> d </a><a href="#lettre_e"> e </a><a href="#lettre_f"> f </a><a href="#lettre_g"> g </a><a href="#lettre_h"> h </a><a href="#lettre_i"> i </a><a href="#lettre_j"> j </a><a href="#lettre_k"> k </a><a href="#lettre_l"> l </a><a href="#lettre_m"> m </a><a href="#lettre_n"> n </a><a href="#lettre_o"> o </a><a href="#lettre_p"> p </a><a href="#lettre_q"> q </a><a href="#lettre_r"> r </a><a href="#lettre_s"> s </a><a href="#lettre_t"> t </a><a href="#lettre_u"> u </a><a href="#lettre_v"> v </a><a href="#lettre_w"> w </a><a href="#lettre_x"> x </a><a href="#lettre_y"> y </a><a href="#lettre_z"> z </a>
+</div>
+
+<?php foreach($fiches as $fiche): // lance la boucle ?>
+<?php
+                $fiche['bf_titre'] = trim($fiche['bf_titre']);
+                // prend la première lettre de bf_titre et la met en majuscule strtoupper
+                $firstChar = strtoupper($fiche['bf_titre']{0});
+
+                // si on change de lettre dans le parcours alphabétique, on rajoute une ancre avec le titre de la lettre
+                // cette vérif de condition n'est valable que si les fiches sont trièes par ordre alpha préalablement ce qui est le cas dans yeswiki
+                if (empty($curChar) || $firstChar != $curChar) {
+                        if (!empty($curChar)) $out .= "<br>\n" ;
+                        $out .= '<div class="clearfix"></div><br><br>';
+                        $out .=  "<b id='lettre_" . strtolower($firstChar) . "'>$firstChar</b><br />\n" ;
+                        $curChar = $firstChar; // on met dans une variable curChar le caractère en cours d'utilsation
+                }
+                $cpt++;
+
+?>
+        <?php $out .= '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="nom bazar-entry" '. $fiche['html_data'].'>'.$fiche['bf_titre'].'</a>'; ?>
+<?php endforeach; ?>
+
+<?php
+        print '<p class="wrapper_nombre_membres"><span class="nombre_membres">' . $cpt . ' membres</span></p>';
+    print $out.'<div class="clearfix"></div>';
+ ?>
+ <!--  // les colonnes se créent ligne par ligne en remplissant le block (il faudra peut-être adapter la largeur du bloc en fonction de la largeur de la page) -->
+ <style>
+  .nom {
+    display:block;
+    float: left;
+    width: 49%;
+    margin-right: 1%;
+}
+.wrapper_nombre_membres {
+    background: none repeat scroll 0 0 #fafafa;
+    margin-top: 4px;
+    text-align: center;
+    font-style:italic;
+}
+#lettres_init a {
+    text-transform:uppercase;
+    display: inline-block;
+    margin: 0 8px;
+}
+ </style>
+<?php endif; ?>

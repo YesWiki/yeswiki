@@ -3,8 +3,8 @@
 /*
  * This file is part of Twig.
  *
- * (c) 2009 Fabien Potencier
- * (c) 2009 Armin Ronacher
+ * (c) Fabien Potencier
+ * (c) Armin Ronacher
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -169,7 +169,7 @@ class Twig_Compiler implements Twig_CompilerInterface
     public function repr($value)
     {
         if (is_int($value) || is_float($value)) {
-            if (false !== $locale = setlocale(LC_NUMERIC, 0)) {
+            if (false !== $locale = setlocale(LC_NUMERIC, '0')) {
                 setlocale(LC_NUMERIC, 'C');
             }
 
@@ -216,6 +216,8 @@ class Twig_Compiler implements Twig_CompilerInterface
             // mb_substr_count() replaces substr_count()
             // but they have different signatures!
             if (((int) ini_get('mbstring.func_overload')) & 2) {
+                @trigger_error('Support for having "mbstring.func_overload" different from 0 is deprecated version 1.29 and will be removed in 2.0.', E_USER_DEPRECATED);
+
                 // this is much slower than the "right" version
                 $this->sourceLine += mb_substr_count(mb_substr($this->source, $this->sourceOffset), "\n");
             } else {
@@ -277,3 +279,6 @@ class Twig_Compiler implements Twig_CompilerInterface
         return sprintf('__internal_%s', hash('sha256', uniqid(mt_rand(), true), false));
     }
 }
+
+class_alias('Twig_Compiler', 'Twig\Compiler', false);
+class_exists('Twig_Node');

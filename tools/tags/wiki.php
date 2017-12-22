@@ -12,8 +12,6 @@ if (!defined("WIKINI_VERSION")) {
 define('COMMENTAIRES_OUVERTS_PAR_DEFAUT', 0);
 define('CACHER_MOTS_CLES', 0);
 
-
-$wiki  = new WikiTools($wakkaConfig);
 $wikiClasses [] = 'Tags';
 
 // fonctions supplementaires a ajouter la classe wiki

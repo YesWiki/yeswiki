@@ -115,7 +115,7 @@
   // detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
   var $topnav = $('#yw-topnav.fixable');
   if ($topnav.length > 0) {
-    var topoffset = $topnav.offset().top;
+    var topoffset = $topnav.data('offset') || $topnav.offset().top;
     $topnav.affix({
       offset: topoffset,
     });

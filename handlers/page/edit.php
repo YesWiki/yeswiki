@@ -91,13 +91,17 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                 "Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu'un d'autre pendant que vous l'&eacute;ditiez.<br />\n".
                 "Veuillez copier vos changements et r&eacute;&eacute;diter cette page.\n";
             } else { // store
+                if (!isset($GLOBALS['inIframe'])) {
+                    $method = '';
+                } else {
+                    $method = 'iframe';
+                }
                 $body = str_replace("\r", '', $body);
-
                 // teste si la nouvelle page est differente de la précédente
                 if (rtrim($body) == rtrim($this->page['body'])) {
                     $this->SetMessage('Cette page n\'a pas &eacute;t&eacute; enregistr&eacute;e car elle n\'a subi aucune modification.');
-                    $this->Redirect($this->href());
-                } else { // sécurité
+                    $this->Redirect($this->href($method));
+                } else {
                     // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
                     $body = _convert($body, YW_CHARSET, true);
 
@@ -123,9 +127,9 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 
                     // forward
                     if ($this->page['comment_on']) {
-                        $this->Redirect($this->href('', $this->page['comment_on']).'#'.$this->tag);
+                        $this->Redirect($this->href($method, $this->page['comment_on']).'#'.$this->tag);
                     } else {
-                        $this->Redirect($this->href());
+                        $this->Redirect($this->href($method));
                     }
                 }
 
@@ -162,6 +166,10 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
     $output .= "<i>Vous n'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !</i>\n";
 }
 
-echo $this->Header();
-echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
-echo $this->Footer();
+if (!isset($GLOBALS['inIframe'])) {
+    echo $this->Header();
+}
+echo '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
+if (!isset($GLOBALS['inIframe'])) {
+    echo $this->Footer();
+}

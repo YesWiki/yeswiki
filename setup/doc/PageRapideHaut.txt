@@ -4,7 +4,7 @@
  - ------
  - {{button nobtn="1" icon="glyphicon glyphicon-question-sign" text="Aide" link="AidE"}}
  - ------
- - {{button nobtn="1" icon="glyphicon glyphicon-wrench" text="Gestion du site" link="WikiAdmin"}}
+ - {{button nobtn="1" icon="glyphicon glyphicon-wrench" text="Gestion du site" link="GererSite"}}
  - {{button nobtn="1" icon="glyphicon glyphicon-dashboard" text="Tableau de bord" link="TableauDeBord"}}
  - {{button nobtn="1" icon="glyphicon glyphicon-briefcase" text="Base de données" link="BazaR"}}
 {{end elem="buttondropdown"}}

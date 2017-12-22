@@ -1,17 +1,18 @@
 ======Tableau de bord======
+{{mailperiod}}
 {{grid}}
-{{col size="6"}} 
-==== 8 derniers comptes utilisateurs ====
-{{Listusers last="8"}}
+{{col size="6"}}
+====Derniers comptes utilisateurs ====
+{{Listusers}}
 ------
-==== 8 dernières pages modifiées ====
-{{recentchanges max="8"}}
+====Dernières pages modifiées ====
+{{recentchanges}}
 ------
 ==== 5 dernières pages commentées ====
-{{RecentlyCommented max="5"}}
+{{RecentlyCommented}}
 ------
-{{end elem="col"}} 
-{{col size="6"}} 
+{{end elem="col"}}
+{{col size="6"}}
 ==== Index des pages ====
 {{pageindex}}
 ------

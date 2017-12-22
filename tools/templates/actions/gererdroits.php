@@ -29,56 +29,6 @@ if (! $this->UserIsAdmin()) {
 
     $table = $this->config['table_prefix'];
 
-    /**
-     * Récupère les droits de la page désignée en argument et renvoie un tableau.
-     *
-     * @param string $page
-     * @return array()
-     */
-    function recup_droits($page)
-    {
-        $wiki = $GLOBALS['wiki'] ;
-
-        $readACL = $wiki->LoadAcl($page, 'read', false);
-        $writeACL = $wiki->LoadAcl($page, 'write', false);
-        $commentACL = $wiki->LoadAcl($page, 'comment', false);
-
-        $acls = array(
-            'page' => $page,
-            'lire' => $wiki->GetConfigValue('default_read_acl'),
-            'lire_default' => true,
-            'ecrire' => $wiki->GetConfigValue('default_write_acl'),
-            'ecrire_default' => true,
-            'comment' => $wiki->GetConfigValue('default_comment_acl'),
-            'comment_default' => true,
-        );
-        if( isset($readACL['list']) )
-        {
-            $acls['lire'] = $readACL['list'] ;
-            $acls['lire_default'] = false ;
-        }
-        if( isset($writeACL['list']) )
-        {
-            $acls['ecrire'] = $writeACL['list'] ;
-            $acls['ecrire_default'] = false ;
-        }
-        if( isset($commentACL['list']) )
-        {
-            $acls['comment'] = $commentACL['list'] ;
-            $acls['comment_default'] = false ;
-        }
-        return $acls ;
-        /*
-        return array('page' => $page,
-            'droits_lire' => isset($readACL['list']) ? $readACL['list'] : $wiki->GetConfigValue('default_read_acl') ,
-            'droits_ecrire' =>  isset($writeACL['list']) ? $writeACL['list'] : $wiki->GetConfigValue('default_write_acl') ,
-            'droits_comment' =>  isset($commentACL['list']) ? $commentACL['list'] : $wiki->GetConfigValue('default_comment_acl') ,
-        );*/
-
-    }
-
-error_log( var_export($_POST,true));
-
     //Modification de droits
     if ( isset($_POST['geredroits_modifier'])
         && ( ($_POST['typemaj']=='default') || isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment']))

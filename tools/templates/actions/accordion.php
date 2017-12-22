@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION")) {
 
 // classe css supplémentaire
 $class = $this->GetParameter('class');
-$class = 'row-fluid row'.((!empty($class)) ? ' '.$class : '');
+$class = ((!empty($class)) ? ' '.$class : '');
 // data attributes
 $data = getDataParameter();
 $pagetag = $this->GetPageTag();

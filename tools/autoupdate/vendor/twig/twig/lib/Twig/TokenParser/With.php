@@ -3,7 +3,7 @@
 /*
  * This file is part of Twig.
  *
- * (c) 2016 Fabien Potencier
+ * (c) Fabien Potencier
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -13,6 +13,8 @@
  * Creates a nested scope.
  *
  * @author Fabien Potencier <fabien@symfony.com>
+ *
+ * @final
  */
 class Twig_TokenParser_With extends Twig_TokenParser
 {
@@ -46,3 +48,5 @@ class Twig_TokenParser_With extends Twig_TokenParser
         return 'with';
     }
 }
+
+class_alias('Twig_TokenParser_With', 'Twig\TokenParser\WithTokenParser', false);

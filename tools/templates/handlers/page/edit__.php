@@ -64,8 +64,6 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
       '  </div>'."\n".
       '</div> <!-- /#graphical_options -->'."\n";
 
-    $js = add_templates_list_js().'<script src="tools/templates/libs/templates_edit.js"></script>'."\n";
-
     //quand le changement des valeurs du template est cache, il faut stocker les valeurs deja entrees pour ne pas retourner au template par defaut
     $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="'.$this->config['favorite_theme'].'" />'."\n";
     $selecteur .= '<input id="hiddensquelette" type="hidden" name="squelette" value="'.$this->config['favorite_squelette'].'" />'."\n";
@@ -73,7 +71,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
     $selecteur .= '<input id="hiddenbgimg" type="hidden" name="bgimg" value="'.$this->config['favorite_background_image'].'" />'."\n";
 
     // on rajoute la personnalisation graphique
-    $plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".$js."\n".'</body>', $plugin_output_new);
+    $plugin_output_new = preg_replace('/<\/body>/', $selecteur."\n".'</body>', $plugin_output_new);
     $changetheme = true;
 } else {
     $changetheme = false;

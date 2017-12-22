@@ -52,41 +52,17 @@ if (!defined("WIKINI_VERSION")) {
 define('BAZ_CHEMIN', 'tools/bazar/');
 define('BAZ_CHEMIN_UPLOAD', 'files/');
 
-//bouh! c'est pas propre! c'est a cause de PEAR et de ses includes
-set_include_path(BAZ_CHEMIN.'libs/vendor/'.PATH_SEPARATOR.get_include_path());
-
-//librairies PEAR
-//require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'DB.php' ;
-require_once BAZ_CHEMIN.'libs/vendor/Net/URL.php';
-
 //principales fonctions de bazar
 require_once BAZ_CHEMIN.'libs/bazar.fonct.php';
+require_once BAZ_CHEMIN.'libs/bazar.fonct.misc.php';
 
-//prefixe des tables bazar
-define('BAZ_PREFIXE', $wakkaConfig['table_prefix']);
 
 // +------------------------------------------------------------------------------------------------------+
 // |                                            CORPS du PROGRAMME                                        |
 // +------------------------------------------------------------------------------------------------------+
 
-$wikireq = $_REQUEST['wiki'];
-
-// remove leading slash
-$wikireq = preg_replace("/^\//", "", $wikireq);
-
-// split into page/method, checking wiki name & method name (XSS proof)
-if (preg_match('`^' . '(' . "[A-Za-z0-9]+" . ')/(' . "[A-Za-z0-9_-]" . '*)' . '$`', $wikireq, $matches)) {
-    list(, $GLOBALS['_BAZAR_']['pagewiki'], $method) = $matches;
-} elseif (preg_match('`^' . "[A-Za-z0-9]+" . '$`', $wikireq)) {
-    $GLOBALS['_BAZAR_']['pagewiki'] = $wikireq;
-}
-$methode = ($method == 'iframe') ? '/iframe' : '';
-
-// Variable d'url
-$GLOBALS['_BAZAR_']['url'] = new Net_URL($wakkaConfig['base_url'] . $GLOBALS['_BAZAR_']['pagewiki'] . $methode);
-
 //test de l'existance des tables de bazar et installation si absentes.
-$req = "CREATE TABLE IF NOT EXISTS `" . BAZ_PREFIXE . "nature` (
+$req = "CREATE TABLE IF NOT EXISTS `" . $wakkaConfig['table_prefix'] . "nature` (
   `bn_id_nature` int(10) unsigned NOT NULL DEFAULT '0',
   `bn_label_nature` varchar(255) DEFAULT NULL,
   `bn_description` text,
@@ -114,14 +90,7 @@ $resultat = $GLOBALS['wiki']->query($req);
 define('BAZ_VARIABLE_VOIR', 'vue');
 define('BAZ_VARIABLE_ACTION', 'action');
 
-// Indique les onglets de vues a afficher.
-// possibilités : mes_fiches,consulter,rss,saisir,formulaire,listes,importer,exporter
-define('BAZ_VOIR_AFFICHER', 'formulaire,consulter,saisir,listes,importer,exporter');
-
-// Permet d'indiquer la vue par defaut si la variable vue n'est pas defini
-
 // Premier niveau d'action : pour toutes les fiches
-
 define('BAZ_VOIR_DEFAUT', 'formulaire');
  // Recherche
 define('BAZ_VOIR_CONSULTER', 'consulter');
@@ -169,59 +138,47 @@ define('BAZ_VOIR_FLUX_RSS', 'affiche_rss');
  // Un flux
 define('BAZ_OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES', 'listes_et_fiches');
 
+// Indique les onglets de vues a afficher.
+// possibilités : mes_fiches,consulter,rss,saisir,formulaire,listes,importer,exporter
+$wakkaConfig['baz_menu'] = getConfigValue('baz_menu', 'formulaire,consulter,saisir,listes,importer,exporter', $wakkaConfig);
+
 // Constante pour l'envoi automatique de mail aux admins
-define('BAZ_ENVOI_MAIL_ADMIN', false);
+$wakkaConfig['BAZ_ENVOI_MAIL_ADMIN'] = getConfigValue('BAZ_ENVOI_MAIL_ADMIN', false, $wakkaConfig);
 
 // Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
 $hrefdomain = $wiki->Href();
 $fulldomain = parse_url($hrefdomain);
 $hostdomain = $fulldomain["host"];
 $adminmail = "noreply@" . $hostdomain;
-define('BAZ_ADRESSE_MAIL_ADMIN', isset($wakkaConfig['mail_admin']) ? $wakkaConfig['mail_admin'] : $adminmail);
+$wakkaConfig['BAZ_ADRESSE_MAIL_ADMIN'] = getConfigValue('BAZ_ADRESSE_MAIL_ADMIN', $adminmail, $wakkaConfig);
 
 //==================================== LES FLUX RSS==================================
-// Constantes liees aux flux RSS
+// Valeurs liees aux flux RSS
 //==================================================================================
-define('BAZ_RSS_NOMSITE', $wakkaConfig['wakka_name']);
- //Nom du site indique dans les flux rss
-define('BAZ_RSS_ADRESSESITE', $wakkaConfig['base_url']);
- //Adresse Internet du site indique dans les flux rss
-define('BAZ_RSS_DESCRIPTIONSITE', $wakkaConfig['meta_description']);
- //Description du site indiquee dans les flux rss
-define('BAZ_NB_ENTREES_FLUX_RSS', 20);
- //nombre maximum d'articles présents dans le flux rss
+
+//Nom du site indique dans les flux rss
+$wakkaConfig['BAZ_RSS_NOMSITE'] = getConfigValue('BAZ_RSS_NOMSITE', $wakkaConfig['wakka_name'], $wakkaConfig);
+
+//Adresse Internet du site indique dans les flux rss
+$wakkaConfig['BAZ_RSS_ADRESSESITE'] = getConfigValue('BAZ_RSS_ADRESSESITE', $wakkaConfig['base_url'], $wakkaConfig);
+
+//Description du site indiquee dans les flux rss
+$wakkaConfig['BAZ_RSS_DESCRIPTIONSITE'] = getConfigValue('BAZ_RSS_DESCRIPTIONSITE', $wakkaConfig['meta_description'], $wakkaConfig);
+
+//nombre maximum d'articles présents dans le flux rss
+$wakkaConfig['BAZ_NB_ENTREES_FLUX_RSS'] = getConfigValue('BAZ_NB_ENTREES_FLUX_RSS', 20, $wakkaConfig);
 
 //Logo du site indique dans les flux rss
-define(
-    'BAZ_RSS_LOGOSITE',
-    (isset($wakkaConfig['baz_rss_logosite'])) ?
-    $wakkaConfig['baz_rss_logosite']
-    : 'http://outils-reseaux.org/tools/templates/themes/outils-reseaux/images/Puce-titre.gif'
-);
+$wakkaConfig['BAZ_RSS_LOGOSITE'] = getConfigValue('BAZ_RSS_LOGOSITE', 'https://yeswiki.net/tools/templates/themes/yeswiki/images/apple-touch-icon.png', $wakkaConfig);
 
 //Managing editor du site
-define(
-    'BAZ_RSS_MANAGINGEDITOR',
-    (isset($wakkaConfig['baz_rss_managingeditor'])) ?
-    $wakkaConfig['baz_rss_managingeditor']
-    : 'accueil@outils-reseaux.org (association Outils-Reseaux)'
-);
+$wakkaConfig['BAZ_RSS_MANAGINGEDITOR'] = getConfigValue('BAZ_RSS_MANAGINGEDITOR', 'contact@yeswiki.net (Mr YesWiki)', $wakkaConfig);
 
 //Mail Webmaster du site
-define(
-    'BAZ_RSS_WEBMASTER',
-    (isset($wakkaConfig['baz_rss_webmaster'])) ?
-    $wakkaConfig['baz_rss_webmaster']
-    :'accueil@outils-reseaux.org (association Outils-Reseaux)'
-);
+$wakkaConfig['BAZ_RSS_WEBMASTER'] = getConfigValue('BAZ_RSS_WEBMASTER', 'contact@yeswiki.net (Mr YesWiki)', $wakkaConfig);
 
 //categorie du flux RSS
-define(
-    'BAZ_RSS_CATEGORIE',
-    (isset($wakkaConfig['baz_rss_categorie'])) ?
-    $wakkaConfig['baz_rss_categorie']
-    : 'Economie Sociale et Solidaire'
-);
+$wakkaConfig['BAZ_RSS_CATEGORIE'] = getConfigValue('BAZ_RSS_CATEGORIE', 'Economie Sociale et Solidaire', $wakkaConfig);
 
 //==================================== PARAMETRAGE =================================
 // Pour regler certaines fonctionnalites de l'application
@@ -230,156 +187,115 @@ define(
 //Valeur par defaut d'etat de la fiche annonce apres saisie
 //Mettre 0 pour 'en attente de validation d'un administrateur'
 //Mettre 1 pour 'directement validee en ligne'
-define('BAZ_ETAT_VALIDATION', "1");
+$wakkaConfig['BAZ_ETAT_VALIDATION'] = getConfigValue('BAZ_ETAT_VALIDATION', '1', $wakkaConfig);
 
 //Valeur maximale en octets pour la taille d'un fichier joint a telecharger
-define('BAZ_TAILLE_MAX_FICHIER', 10000 * 1024);
+$max = file_upload_max_size();
+$wakkaConfig['BAZ_TAILLE_MAX_FICHIER'] = getConfigValue('BAZ_TAILLE_MAX_FICHIER', $max, $wakkaConfig);
 
 //Type d'affichage des dates dans la liste
 //Mettre jma pour jour mois annee, ou jm, ou jmah
-define('BAZ_TYPE_AFFICHAGE_LISTE', 'jma');
+$wakkaConfig['BAZ_TYPE_AFFICHAGE_LISTE'] = getConfigValue('BAZ_TYPE_AFFICHAGE_LISTE', 'jma', $wakkaConfig);
 
-/** Reglage des droits pour deposer des annonces */
-
-// Mettre a true pour limiter le depot aux redacteurs
-//define ('BAZ_RESTREINDRE_DEPOT', false) ;
-
-
-
-/** Reglage de l'affichage de la liste deroulante pour la saisie des dates */
-
-// Mettre a true pour afficher une liste deroulante vide pour la saisie des dates
-define('BAZ_DATE_VIDE', false);
-
-// Mettre a true pour faire apparaitre un champs texte deroulant dans le formulaire
-// de recherche des fiches, pour choisir les emetteurs
-define('BAZ_RECHERCHE_PAR_EMETTEUR', false);
-
-/**Choix de l'affichage (true) ou pas (false) de l'email du redacteur dans la fiche.*/
-define('BAZ_FICHE_REDACTEUR_MAIL', true);
- // true ou false
-
-//==================================== LES LANGUES ==================================
-// Constantes liees a l'utilisation des langues
-//==================================================================================
-$GLOBALS['_BAZAR_']['langue'] = 'fr-FR';
-define('BAZ_LANGUE_PAR_DEFAUT', 'fr');
- //Indique un code langue par defaut
-define('BAZ_VAR_URL_LANGUE', 'lang');
- //Nom de la variable GET qui sera passee dans l'URL (Laisser vide pour les sites monolingues)
+// Reglage de l'affichage de la liste deroulante pour la saisie des dates Mettre a true pour afficher une liste deroulante vide pour la saisie des dates
+$wakkaConfig['BAZ_DATE_VIDE'] = getConfigValue('BAZ_DATE_VIDE', false, $wakkaConfig);
 
 // Option concernant la division des resultats en pages
-define('BAZ_NOMBRE_RES_PAR_PAGE', 50);
-define('BAZ_MODE_DIVISION', 'Jumping');
- // 'Jumping' ou 'Sliding' voir http://pear.php.net/manual/fr/package.html.pager.compare.php
-define('BAZ_DELTA', 12);
- // Le nombre de page a afficher avant le 'next';
+$wakkaConfig['BAZ_NOMBRE_RES_PAR_PAGE'] = getConfigValue('BAZ_NOMBRE_RES_PAR_PAGE', 50, $wakkaConfig);
 
+// 'Jumping' ou 'Sliding' voir http://pear.php.net/manual/fr/package.html.pager.compare.php
+$wakkaConfig['BAZ_MODE_DIVISION'] = getConfigValue('BAZ_MODE_DIVISION', 'Jumping', $wakkaConfig);
 
+// Le nombre de page a afficher avant le 'next';
+$wakkaConfig['BAZ_DELTA'] = getConfigValue('BAZ_DELTA', 12, $wakkaConfig);
 
-/** Reglage de l'affichage du formulaire de recherche avancee */
-
-// Mettre a true pour afficher automatiquement le formulaire de recherche avancee
-// Mettre a false pour avoir un lien afficher la recherche avancee
-define('BAZ_MOTEUR_RECHERCHE_AVANCEE', true);
-
-/** Mettre a 0 pour ne pas proposer de filtre dans le moteur de recherche */
-define('BAZ_AFFICHER_FILTRE_MOTEUR', true);
 
 //=========================== PARAMETRAGE GOOGLE MAP API ===========================
 // parametres pour la carto google
 //==================================================================================
 
-// coordonnees du centre de la carte
-define(
-    'BAZ_MAP_CENTER_LAT',
-    (isset($wakkaConfig['baz_google_centre_lat'])) ? $wakkaConfig['baz_google_centre_lat'] : '46.22763'
-);
-define(
-    'BAZ_MAP_CENTER_LON',
-    (isset($wakkaConfig['baz_google_centre_lon'])) ? $wakkaConfig['baz_google_centre_lon'] : '2.213749'
-);
-define('BAZ_GOOGLE_CENTRE_LAT', BAZ_MAP_CENTER_LAT);
-define('BAZ_GOOGLE_CENTRE_LON', BAZ_MAP_CENTER_LON);
+// coordonnees du centre de la carte : france par defaut
+$wakkaConfig['baz_map_center_lat'] = getConfigValue('baz_map_center_lat', '46.22763', $wakkaConfig);
+$wakkaConfig['baz_map_center_lon'] = getConfigValue('baz_map_center_lon', '2.213749', $wakkaConfig);
 
 // prefixe des classes CSS pour les icones du marqueur
-define('BAZ_MARKER_ICON_PREFIX', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'glyphicon');
+$wakkaConfig['baz_marker_icon_prefix'] = getConfigValue('baz_marker_icon_prefix', 'glyphicon glyphicon-', $wakkaConfig);
 
 // icone du marqueur de base
-define('BAZ_PROVIDER', (isset($wakkaConfig['baz_provider'])) ? $wakkaConfig['baz_provider'] : 'OpenStreetMap.Mapnik');
+$wakkaConfig['baz_provider'] = getConfigValue('baz_provider', 'OpenStreetMap.Mapnik', $wakkaConfig);
 
 // icone du marqueur de base
-define('BAZ_MARKER_ICON', (isset($wakkaConfig['baz_marker_icon'])) ? $wakkaConfig['baz_marker_icon'] : 'record');
+$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'glyphicon glyphicon-record', $wakkaConfig);
 
 // couleur du marqueur de base
-define('BAZ_MARKER_COLOR', (isset($wakkaConfig['baz_marker_color'])) ? $wakkaConfig['baz_marker_color'] : 'darkred');
+$wakkaConfig['baz_marker_color'] = getConfigValue('baz_marker_color', 'darkred', $wakkaConfig);
 
 // petit marqueur (par defaut : non)
-define('BAZ_SMALL_MARKER', (isset($wakkaConfig['baz_small_marker'])) ? $wakkaConfig['baz_small_marker'] : '');
+$wakkaConfig['baz_small_marker'] = getConfigValue('baz_small_marker', '', $wakkaConfig);
 
 // niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
-define('BAZ_GOOGLE_ALTITUDE', (isset($wakkaConfig['baz_google_altitude'])) ? $wakkaConfig['baz_google_altitude'] : '5');
+$wakkaConfig['baz_map_zoom'] = getConfigValue('baz_map_zoom', '5', $wakkaConfig);
 
-// layer pour carte leaflet
-// osm ou google
-define('BAZ_LAYER_CARTO', (isset($wakkaConfig['baz_layer_carto'])) ? $wakkaConfig['baz_layer_carto'] : 'osm');
+// taille de la carte a l'ecran: valeur de l'attribut css width de la carte
+$wakkaConfig['baz_map_width'] = getConfigValue('baz_map_width', '100%', $wakkaConfig);
 
-// type de carto google
-// ROADMAP ou SATELLITE ou HYBRID ou TERRAIN
-define('BAZ_TYPE_CARTO', (isset($wakkaConfig['baz_type_carto'])) ? $wakkaConfig['baz_type_carto'] : 'TERRAIN');
+ // taille de la carte a l'ecran : valeur de l'attribut css height de la carte
+$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '600px', $wakkaConfig);
 
-// taille de la carte a l'ecran
-define('BAZ_GOOGLE_IMAGE_LARGEUR', '100%');
- // valeur de l'attribut css width de la carte
-define('BAZ_GOOGLE_IMAGE_HAUTEUR', '600px');
- // valeur de l'attribut css height de la carte
+// afficher la navigation : true ou false
+$wakkaConfig['baz_show_nav'] = getConfigValue('baz_show_nav', 'true', $wakkaConfig);
+
+// zoom a la roulette de souris : true ou false
+$wakkaConfig['baz_wheel_zoom'] = getConfigValue('baz_wheel_zoom', 'false', $wakkaConfig);
 
 // image marqueur
-define('BAZ_IMAGE_MARQUEUR', 'tools/bazar/presentation/images/marker.png');
-define('BAZ_DIMENSIONS_IMAGE_MARQUEUR', '12, 20');
-define('BAZ_COORD_ORIGINE_IMAGE_MARQUEUR', '0,0');
-define('BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR', '0,20');
+$wakkaConfig['baz_marker_image_file'] = getConfigValue('baz_marker_image_file', 'tools/bazar/presentation/images/marker.png', $wakkaConfig);
 
-// image ombre marqueur
-define('BAZ_IMAGE_OMBRE_MARQUEUR', 'tools/bazar/presentation/images/marker_shadow.png');
-define('BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR', '22, 20');
-define('BAZ_COORD_ORIGINE_IMAGE_OMBRE_MARQUEUR', '0,0');
-define('BAZ_COORD_ARRIVEE_IMAGE_OMBRE_MARQUEUR', '0,20');
+// TODO : verifier si utilisé
+// $wakkaConfig['BAZ_DIMENSIONS_IMAGE_MARQUEUR'] = getConfigValue('BAZ_DIMENSIONS_IMAGE_MARQUEUR', '12, 20', $wakkaConfig);
+//
+// $wakkaConfig['BAZ_COORD_ORIGINE_IMAGE_MARQUEUR'] = getConfigValue('BAZ_COORD_ORIGINE_IMAGE_MARQUEUR', '0,0', $wakkaConfig);
+//
+// $wakkaConfig['BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR'] = getConfigValue('BAZ_COORD_ARRIVEE_IMAGE_MARQUEUR', '0,20', $wakkaConfig);
+//
+// // image ombre marqueur
+// $wakkaConfig['BAZ_IMAGE_OMBRE_MARQUEUR'] = getConfigValue('BAZ_IMAGE_OMBRE_MARQUEUR', 'tools/bazar/presentation/images/marker_shadow.png', $wakkaConfig);
+//
+// $wakkaConfig['BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR'] = getConfigValue('BAZ_DIMENSIONS_IMAGE_OMBRE_MARQUEUR', '22, 20', $wakkaConfig);
+//
+// $wakkaConfig['BAZ_COORD_ORIGINE_IMAGE_OMBRE_MARQUEUR'] = getConfigValue('BAZ_COORD_ORIGINE_IMAGE_OMBRE_MARQUEUR', '0,0', $wakkaConfig);
+//
+// $wakkaConfig['BAZ_COORD_ARRIVEE_IMAGE_OMBRE_MARQUEUR'] = getConfigValue('BAZ_COORD_ARRIVEE_IMAGE_OMBRE_MARQUEUR', '0,20', $wakkaConfig);
+//
 
-// Controles carte
-define('BAZ_AFFICHER_NAVIGATION', 'true');
- // true ou false
-define('BAZ_AFFICHER_CHOIX_CARTE', 'true');
- // true ou false
-define('BAZ_AFFICHER_ECHELLE', 'false');
- // true ou false
-define('BAZ_PERMETTRE_ZOOM_MOLETTE', 'false');
-define('BAZ_STYLE_NAVIGATION', 'ZOOM_PAN');
- // SMALL ou ZOOM_PAN ou ANDROID ou DEFAULT
-define('BAZ_STYLE_CHOIX_CARTE', 'DROPDOWN_MENU');
- // HORIZONTAL_BAR ou DROPDOWN_MENU ou DEFAULT
+// // Controles carte
+// $wakkaConfig['BAZ_AFFICHER_NAVIGATION'] = getConfigValue('BAZ_AFFICHER_NAVIGATION', 'true', $wakkaConfig);
+//
+// // true ou false
+// $wakkaConfig['BAZ_AFFICHER_CHOIX_CARTE'] = getConfigValue('BAZ_AFFICHER_CHOIX_CARTE', 'true', $wakkaConfig);
+//
+// // true ou false
+// $wakkaConfig['BAZ_AFFICHER_ECHELLE'] = getConfigValue('BAZ_AFFICHER_ECHELLE', 'false', $wakkaConfig);
+//
+//
+// // SMALL ou ZOOM_PAN ou ANDROID ou DEFAULT
+// $wakkaConfig['BAZ_STYLE_NAVIGATION'] = getConfigValue('BAZ_STYLE_NAVIGATION', 'ZOOM_PAN', $wakkaConfig);
+//
+// // HORIZONTAL_BAR ou DROPDOWN_MENU ou DEFAULT
+// $wakkaConfig['BAZ_STYLE_CHOIX_CARTE'] = getConfigValue('BAZ_STYLE_CHOIX_CARTE', 'DROPDOWN_MENU', $wakkaConfig);
+//
+// // marqueur de base
+// $wakkaConfig['BAZ_MAP_DEFAULT_MARKER_IMAGE'] = getConfigValue('BAZ_MAP_DEFAULT_MARKER_IMAGE', 'minimarkers/marker_rounded_red.png', $wakkaConfig);
+// $wakkaConfig['BAZ_MAP_DEFAULT_MARKER_SIZE_WIDTH'] = getConfigValue('BAZ_MAP_DEFAULT_MARKER_SIZE_WIDTH', '16', $wakkaConfig);
+// $wakkaConfig['BAZ_MAP_DEFAULT_MARKER_SIZE_HEIGHT'] = getConfigValue('BAZ_MAP_DEFAULT_MARKER_SIZE_HEIGHT', '16', $wakkaConfig);
+// $wakkaConfig['BAZ_MAP_DEFAULT_MARKER_POINTER_X'] = getConfigValue('BAZ_MAP_DEFAULT_MARKER_POINTER_X', '8', $wakkaConfig);
+// $wakkaConfig['BAZ_MAP_DEFAULT_MARKER_POINTER_Y'] = getConfigValue('BAZ_MAP_DEFAULT_MARKER_POINTER_Y', '16', $wakkaConfig);
 
-// marqueur de base
-define('BAZ_MAP_DEFAULT_MARKER_IMAGE', 'minimarkers/marker_rounded_red.png');
-define('BAZ_MAP_DEFAULT_MARKER_SIZE_WIDTH', '16');
-define('BAZ_MAP_DEFAULT_MARKER_SIZE_HEIGHT', '16');
-define('BAZ_MAP_DEFAULT_MARKER_POINTER_X', '8');
-define('BAZ_MAP_DEFAULT_MARKER_POINTER_Y', '16');
-
-// inclure l'url d'un fichier kml (carte google creee precedemment) a afficher sur la carte
-define('BAZ_GOOGLE_FOND_KML', '');
-
-//inclure un fichier js specifique, pour ajouter des polygones a la carte par exemple
-define('BAZ_JS_INIT_MAP', '');
-
-// Choix du look du template par défaut
-define(
-    'BAZ_TEMPLATE_LISTE_DEFAUT',
-    isset($wakkaConfig['default_bazar_template']) ? $wakkaConfig['default_bazar_template'] : 'liste_accordeon.tpl.html'
-);
+// Choix du look du template par défaut $GLOBALS['wiki']->config['default_bazar_template']
+$wakkaConfig['default_bazar_template'] = getConfigValue('default_bazar_template', 'liste_accordeon.tpl.html', $wakkaConfig);
 
 // les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
-$wakkaConfig['global_query'] = isset($wakkaConfig['global_query']) ? $wakkaConfig['global_query'] : true ;
+$wakkaConfig['global_query'] = getConfigValue('global_query', true, $wakkaConfig);
 
 // Fonctions ajoutées par bazar a la classe Wiki
 $wikiClasses[] = 'Bazar';

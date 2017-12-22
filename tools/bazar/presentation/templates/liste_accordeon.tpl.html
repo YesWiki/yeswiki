@@ -9,7 +9,28 @@
             data-target="#collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>"
             data-toggle="collapse">
             <h4 class="panel-title">
-              <?php echo $fiche['bf_titre']; ?>
+              <?php
+              $style = '';
+              $color = getCustomValueForEntry(
+                $param['color'],
+                $param['colorfield'],
+                $fiche,
+                ''
+              );
+              if (!empty($color)) {
+                echo '<span class="pellet" style="background-color:'.$color.';"></span> ';
+              }
+              $icon = getCustomValueForEntry(
+                $param['icon'],
+                $param['iconfield'],
+                $fiche,
+                ''
+              );
+              if (!empty($icon)) {
+                echo '<i class="'.$icon.'"></i> ';
+              }
+
+              echo $fiche['bf_titre']; ?>
             </h4>
           </div>
           <div id="collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">

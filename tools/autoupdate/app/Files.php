@@ -5,7 +5,7 @@ class Files
 {
     protected function tmpdir()
     {
-        $path = tempnam(sys_get_temp_dir(), 'yeswiki_');
+        $path = tempnam(realpath('cache'), 'yeswiki_');
 
         if (is_file($path)) {
             unlink($path);
@@ -67,7 +67,7 @@ class Files
 
     protected function download($sourceUrl)
     {
-        $this->downloadedFile = tempnam(sys_get_temp_dir(), $this::PREFIX_FILENAME);
+        $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
         file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
     }
 
@@ -92,15 +92,19 @@ class Files
     private function deleteFolder($path)
     {
         $file2ignore = array('.', '..');
-        if ($res = opendir($path)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    $this->delete($path . '/' . $file);
+        if (is_link($path)) {
+            unlink($path);
+        } else {
+            if ($res = opendir($path)) {
+                while (($file = readdir($res)) !== false) {
+                    if (!in_array($file, $file2ignore)) {
+                        $this->delete($path . '/' . $file);
+                    }
                 }
+                closedir($res);
             }
-            closedir($res);
+            rmdir($path);
         }
-        rmdir($path);
         return true;
     }
 

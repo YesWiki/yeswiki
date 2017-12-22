@@ -98,9 +98,6 @@ if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_baz
 	}
 }
 
-$plugin_output_new = str_replace('	<script src="tools/tags/libs/tag.js"></script>'."\n", '', $plugin_output_new);
-$plugin_output_new = str_replace('</body>', '	<script src="tools/tags/libs/tag.js"></script>'."\n".'</body>', $plugin_output_new);
-
 $plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/', '<hr class="hr_clear" />'."\n".$output, $plugin_output_new);
 
 ?>

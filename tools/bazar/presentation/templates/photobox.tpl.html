@@ -1,0 +1,100 @@
+<?php
+
+/**************************************************************************************************
+ * parametres du template :
+ * ils peuvent être passés dans l'action bazar ou bazarliste, mais sont spécifiques à ce template
+ **************************************************************************************************/
+
+// largeur vignette
+$thumbwidth = $GLOBALS['wiki']->GetParameter('thumbwidth');
+if (empty($thumbwidth)) {
+    $thumbwidth = 155;
+}
+// hauteur vignette
+$thumbheight = $GLOBALS['wiki']->GetParameter('thumbheight');
+if (empty($thumbheight)) {
+    $thumbheight = 115;
+}
+
+// redimensionnent vignette :
+//   aux dimensions exactes, quitte à rogner l'image (crop)
+//   ou garder dimensions originales à l'intérieur des dimensions (fit)
+$thumbresize = $GLOBALS['wiki']->GetParameter('thumbresize');
+if (empty($thumbresize)) {
+    $thumbresize = 'fit';
+}
+
+// marge entre les images
+$thumbmargin = $GLOBALS['wiki']->GetParameter('thumbmargin');
+if (empty($thumbmargin)) {
+    $thumbmargin = '1';
+}
+
+// largeur image plein écran
+$bigwidth = $GLOBALS['wiki']->GetParameter('bigwidth');
+if (empty($bigwidth)) {
+    $bigwidth = 1600;
+}
+
+// hauteur image plein écran
+$bigheight = $GLOBALS['wiki']->GetParameter('bigheight');
+if (empty($bigheight)) {
+    $bigheight = 1200;
+}
+
+// redimensionnent image plein écran :
+//   aux dimensions exactes, quitte à rogner l'image (crop)
+//   ou garder dimensions originales à l'intérieur des dimensions (fit)
+$bigresize = $GLOBALS['wiki']->GetParameter('bigresize');
+if (empty($bigresize)) {
+    $bigresize = 'fit';
+}
+
+
+/************************************************************************************************
+ * code du template
+ ************************************************************************************************/
+if (count($fiches) > 0) :
+    // un identifiant unique pour chaque appel dans une meme page
+    $GLOBALS['nbgalleries'] = (isset($GLOBALS['nbgalleries']) ? $GLOBALS['nbgalleries'] + 1 : 1);
+?>
+<?php echo $pager_links; ?>
+<ul id='gallery<?php echo $GLOBALS['nbgalleries']; ?>' class="pbgallery">
+<?php foreach ($fiches as $fiche) : ?>
+    <?php
+    if (isset($fiche['imagebf_image']) && $fiche['imagebf_image'] != '') : ?>
+    <li class="bazar-entry" <?php echo $fiche['html_data'];?>>
+        <a class="pbgalery-link" title="<?php echo htmlentities($fiche['bf_titre']); ?>"
+            href="<?php echo redimensionner_image(
+                'files/' . $fiche['imagebf_image'],
+                'cache/image_' . $bigwidth . '_' . $bigheight . '_' . $fiche['imagebf_image'],
+                $bigwidth,
+                $bigheight,
+                $bigresize
+            ); ?>">
+            <img data-pb-captionLink="<?php echo htmlentities($fiche['bf_titre']); ?>[<?php echo htmlentities(
+                $GLOBALS['wiki']->href('iframe', $fiche['id_fiche'])
+            ); ?>]" src="<?php echo redimensionner_image(
+                'files/' . $fiche['imagebf_image'],
+                'cache/image_' . $thumbwidth . '_' . $thumbheight . '_' . $fiche['imagebf_image'],
+                $thumbwidth,
+                $thumbheight,
+                $thumbresize
+            ); ?>">
+        </a>
+    </li>
+    <?php
+    endif; ?>
+<?php endforeach; ?>
+</ul>
+<?php echo $pager_links; ?>
+<link rel="stylesheet" href="tools/bazar/presentation/styles/photobox.css">
+<style>
+.pbgallery {margin:0;padding:0;}
+#gallery<?php echo $GLOBALS['nbgalleries']; ?> li {margin: <?php echo $thumbmargin; ?>px}
+</style>
+<?php
+$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/jquery.photobox.js');
+$GLOBALS['wiki']->AddJavascript("$('#gallery" . $GLOBALS['nbgalleries'] . "').photobox('a',{ time:0 });\n");
+?>
+<?php endif; ?>

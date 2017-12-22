@@ -1,0 +1,133 @@
+<?php
+if(count($fiches)>0) {
+  $js = '';
+  foreach ($fiches as $fiche) {
+      // couleur de marqueur
+      $color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
+
+      // icone
+      $icon = getCustomValueForEntry(
+        $param['icon'],
+        $param['iconfield'],
+        $fiche,
+        ''
+      );
+      $titleprefix = '';
+      if (!empty($icon)) {
+        $titleprefix .= '<i class="glyphicon glyphicon-'.$icon.'"></i> ';
+      }
+
+      if (isset($fiche['bf_date_debut_evenement']) && isset($fiche['bf_date_fin_evenement'])) {
+          $js .= '        {
+                      id: "'.$fiche['id_fiche'].'",
+                      title: "'.addslashes($titleprefix.$fiche['bf_titre']).'",
+                      start:"'.$fiche['bf_date_debut_evenement'].'",
+                      end:"'.$fiche['bf_date_fin_evenement'].'",
+                      url:"'.$GLOBALS['wiki']->config['base_url'].$fiche['id_fiche'].'",
+                      allDay: '.((strlen($fiche['bf_date_debut_evenement'])>10) ? 'false':'true').',
+                      className: "bazar-entry",
+                      color: "'.$color.'",
+                      htmlattributes: "'.addslashes($fiche['html_data']).'"
+          },';
+      }
+  }
+  if (!empty($js)) {
+      $js = substr($js, 0, -1);
+  }
+
+  $script = "$(document).ready(function() {
+      var allEvents =  [".$js."];
+      function initCal(selector, allEvents) {
+        $(selector).fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            editable: false,
+            events: allEvents,
+            eventRender: function(event, element, view) {
+                element.find('.fc-title').html(event.title);
+                $.each($('<div '+ event.htmlattributes + '>').data(), function (index, value) {
+                  element.attr('data-'+index, value);
+                })
+            },
+            monthNames: ['"._t('BAZ_JANVIER')."','"._t('BAZ_FEVRIER')."','"._t('BAZ_MARS')."','"._t('BAZ_AVRIL')."','"._t('BAZ_MAI')."','"._t('BAZ_JUIN')."','"._t('BAZ_JUILLET')."','"._t('BAZ_AOUT')."','"._t('BAZ_SEPTEMBRE')."','"._t('BAZ_OCTOBRE')."','"._t('BAZ_NOVEMBRE')."','"._t('BAZ_DECEMBRE')."'],
+            monthNamesShort: ['Jan','Fev','Mar','Avr','Mai','Juin','Juil','Aug','Sep','Oct','Nov','Dec'],
+            dayNames: ['"._t('BAZ_DIMANCHE')."','"._t('BAZ_LUNDI')."','"._t('BAZ_MARDI')."','"._t('BAZ_MERCREDI')."','"._t('BAZ_JEUDI')."','"._t('BAZ_VENDREDI')."','"._t('BAZ_SAMEDI')."'],
+            dayNamesShort: ['"._t('BAZ_DIMANCHE_COURT')."','"._t('BAZ_LUNDI_COURT')."','"._t('BAZ_MARDI_COURT')."','"._t('BAZ_MERCREDI_COURT')."','"._t('BAZ_JEUDI_COURT')."','"._t('BAZ_VENDREDI_COURT')."','"._t('BAZ_SAMEDI_COURT')."'],
+            buttonText: {
+                prev: ' ◄ ',
+                next: ' ► ',
+                prevYear: ' << ',
+                nextYear: ' >> ',
+                today: '"._t('BAZ_TODAY')."',
+                month: '"._t('BAZ_MONTH')."',
+                week: '"._t('BAZ_WEEK')."',
+                day: '"._t('BAZ_DAY')."'
+            },
+            firstDay : 1,
+            themeSystem: 'bootstrap3',
+            timeFormat: 'HH:mm',
+            eventClick : calendar_click
+        })
+      }
+      initCal('#calendar".$param['nbbazarliste']."', allEvents);
+      $('body').on( 'updatefilters', function( event, elements ) {
+        //$('#calendar".$param['nbbazarliste']."').fullCalendar('removeEvents');
+        var newEvents = new Array();
+        $.each(elements, function (index, value) {
+          $(value).parents('.bazar-entry').show();
+          var idx = $.map(
+            allEvents,
+            function(item, i) {
+              if (item.id==$(value).data('id_fiche'))
+                  return item;
+            }
+          )[0];
+          newEvents.push(idx)
+        });
+        initCal('#calendar".$param['nbbazarliste']."', newEvents);
+      });
+  });\n";
+
+  if (!empty($params['minical']) && $params['minical']==1) {
+      $script .= '
+      function calendar_click(event) {
+          if (event.url) {
+              var left = (screen.width/2)-(600/2);
+              var top = (screen.height/2)-(400/2);
+              window.open(event.url+\'/iframe\', \'_blank\',"toolbar=no, directories=no, resizable=no, location=no, width=600, height=400, top="+top+", left="+left+", menubar=no, status=no, scrollbars=yes");
+          }
+          return false;
+      }
+
+      function init_calendar_tooltip() {
+          $(".fc-event-title").each(function() {
+              texte = $(this).html();
+              $(this).parents(\'.fc-event\').tooltip({\'title\':texte, \'html\':true});
+          });
+      }
+      setTimeout(init_calendar_tooltip,2000);';
+  } else {
+      $script .= "
+      function calendar_click(event) {
+        if (event.url) {
+          $('<div>').attr('id', 'dateModal' ).addClass('modal fade').appendTo($('body'));
+          var modal = $('#dateModal');
+          modal.html('<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button><h3>'+event.title+'</h3></div><div class=\"modal-body\"></div></div></div>').on('hidden', function() {modal.remove()});
+          modal.find('.modal-body').load(event.url + ' .page', function() {
+              $(this).find('.page').append('<a href=\"'+event.url + '/edit' +'\" class=\"btn btn-default pull-right\"><i class=\"glyphicon glyphicon-pencil icon-pencil\"></i> "._t('BAZ_MODIFIER_LA_FICHE')."</a><div class=\"clearfix\"></div>').removeClass('page').find('h1.BAZ_fiche_titre').remove();
+              modal.modal('show');
+          });
+
+          return false;
+        }
+      }";
+  }
+  $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css');
+  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/moment.min.js');
+  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js');
+  $GLOBALS['wiki']->AddJavascript($script);
+  echo '<div id="calendar'.$param['nbbazarliste'].'" class="no-dblclick '.$param['class'].'"></div>'."\n";
+}

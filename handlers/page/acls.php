@@ -32,101 +32,88 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION"))
-{
-	die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 ob_start();
-
 ?>
 <div class="page">
 <?php
+if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
+    if ($_POST) {
+        // store lists
+        $this->SaveAcl($this->GetPageTag(), "read", $_POST["read_acl"]);
+        $this->SaveAcl($this->GetPageTag(), "write", $_POST["write_acl"]);
+        $this->SaveAcl($this->GetPageTag(), "comment", ($this->page['comment_on'] ? "" : $_POST["comment_acl"]));
+        $message = _t('YW_ACLS_UPDATED');
 
-if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin()))
-{
-	if ($_POST)
-	{
-		// store lists
-		$this->SaveAcl($this->GetPageTag(), "read", $_POST["read_acl"]);
-		$this->SaveAcl($this->GetPageTag(), "write", $_POST["write_acl"]);
-		$this->SaveAcl($this->GetPageTag(), "comment", ($this->page['comment_on'] ? "" : $_POST["comment_acl"]));
-		$message = "Droits d\'acc&egrave;s mis &agrave; jour ";//$message = "Access control lists updated";
-		
-		// change owner?
-		if ($newowner = $_POST["newowner"])
-		{
-			$this->SetPageOwner($this->GetPageTag(), $newowner);
-			$message .= " et changement du propri&eacute;taire. Nouveau propri&eacute;taire : ".$newowner;//$message .= " and gave ownership to ".$newowner;
-		}
+        // change owner?
+        if ($newowner = $_POST["newowner"]) {
+            $this->SetPageOwner($this->GetPageTag(), $newowner);
+            $message .= _t('YW_NEW_OWNER').$newowner;
+        }
 
-		// redirect back to page
-		$this->SetMessage($message."!");
-		$this->Redirect($this->Href());
-	}
-	else
-	{
-		// load acls
-		$readACL = $this->LoadAcl($this->GetPageTag(), "read");
-		$writeACL = $this->LoadAcl($this->GetPageTag(), "write");
-		$commentACL = $this->LoadAcl($this->GetPageTag(), "comment");
+        // redirect back to page
+        $this->SetMessage($message.' !');
+        $this->Redirect($this->Href());
+    } else {
+        // load acls
+        $readACL = $this->LoadAcl($this->GetPageTag(), "read");
+        $writeACL = $this->LoadAcl($this->GetPageTag(), "write");
+        $commentACL = $this->LoadAcl($this->GetPageTag(), "comment");
 
-		// show form
-		?>
-		<h3>Liste des droits d'acc&egrave;s de la page  <?php echo  $this->ComposeLinkToPage($this->GetPageTag()) ?></h3><!-- Access Control Lists for-->
-		<br />
-		
-		<?php echo  $this->FormOpen("acls") ?>
-		<table border="0" cellspacing="0" cellpadding="0">
-			<tr>
-				<td valign="top" style="padding-right: 20px">
-					<b>Droits de lecture :</b><br /><!-- Read ACL:-->
-					<textarea name="read_acl" rows="4" cols="20"><?php echo  $readACL["list"] ?></textarea>
-				</td>
-				<td valign="top" style="padding-right: 20px">
-					<b>Droits d'&eacute;criture :</b><br /><!-- Write ACL:-->
-					<textarea name="write_acl" rows="4" cols="20"><?php echo  $writeACL["list"] ?></textarea>
-				</td>
-<?php if (!$this->page['comment_on']) { ?>
-				<td valign="top" style="padding-right: 20px">
-					<b>Droits des commentaires :</b><br /><!-- Comments ACL:-->
-					<textarea name="comment_acl" rows="4" cols="20"><?php echo  $commentACL["list"] ?></textarea>
-				</td>
-<?php } ?>
-			</tr>
-			<tr>
-				<td colspan="3">
-					<b>Changer le propri&eacute;taire :</b><br /><!-- Set Owner:-->
-					<select name="newowner">
-						<option value="">Ne rien modifier</option><!-- Don't change-->
-						<option value="">&nbsp;</option>
-						<?php
-						if ($users = $this->LoadUsers())
-						{
-							foreach($users as $user)
-							{
-								echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
-							}
-						}
-						?>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3">
-					<br />
-					<input type="submit" value="Enregistrer" style="width: 120px" accesskey="s" /><!-- Store ACLs-->
-					<input type="button" value="Annuler" onclick="history.back();" style="width: 120px" /><!-- Cancel -->
-				</td>
-			</tr>
-		</table>
-		<?php
-		echo$this->FormClose();
-	}
+        // show form
+?>
+<h3><?php echo _t('YW_ACLS_LIST').' '.$this->ComposeLinkToPage($this->GetPageTag()) ?></h3><!-- Access Control Lists for-->
+
+<?php echo  $this->FormOpen('acls', '', 'post', 'form-horizontal') ?>
+<div class="form-group">
+  <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_READ');?> : </label>
+  <div class="controls col-sm-9">
+    <textarea class="form-control" name="read_acl" rows="3" cols="20"><?php echo  $readACL["list"] ?></textarea>
+  </div>
+</div>
+<div class="form-group">
+  <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_WRITE');?> : </label>
+  <div class="controls col-sm-9">
+    <textarea class="form-control" name="write_acl" rows="3" cols="20"><?php echo  $writeACL["list"] ?></textarea>
+  </div>
+</div>
+
+<?php if (!$this->page['comment_on']) : ?>
+<input type="hidden" name="comment_acl" value="<?php echo  $commentACL["list"] ?>">
+<?php endif; ?>
+
+<div class="form-group">
+  <label class="control-label col-sm-3"><?php echo _t('YW_CHANGE_OWNER');?> : </label>
+  <div class="controls col-sm-9">
+    <select class="form-control" name="newowner">
+      <option value=""><?php echo _t('YW_CHANGE_NOTHING');?></option><!-- Don't change-->
+      <option value="">&nbsp;</option>
+<?php
+if ($users = $this->LoadUsers()) {
+    foreach ($users as $user) {
+        echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
+    }
 }
-else
-{
-	echo"<i>Vous ne pouvez pas g&eacute;rer les permissions de cette page.</i>";
+?>
+    </select>
+  </div>
+</div>
+
+<div class="form-actions form-group">
+    <div class="col-sm-9 col-sm-offset-3">
+      <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-success" accesskey="s" /><!-- Store ACLs-->
+      <input type="button" value="<?php echo _t('YW_CANCEL') ?>" onclick="history.back();" class="btn btn-danger btn-xs" /><!-- Cancel -->
+    </div>
+</div>
+
+<?php
+echo $this->FormClose();
+    }
+} else {
+    echo '<div class="alert alert-danger">'._t('YW_CANNOT_CHANGE_ACLS').'</div>';
 }
 
 ?>
@@ -137,5 +124,3 @@ $content = ob_get_clean();
 echo $this->Header();
 echo $content;
 echo $this->Footer();
-
-?>

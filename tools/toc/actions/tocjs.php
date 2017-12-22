@@ -38,78 +38,78 @@ if (align === "left") {
 else {
     page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
 }
-$.gajus
-    .contents({
-        where: $(\'#tocjs-'.$tag.'\'),
-        index: $(\'.page h1, .page h2, .page h3, .page h4, .page h5\')
-    }).on(\'change.contents.gajus\', function (event, change) {
-        if (change.previous) {
-            //change.previous.heading.removeClass(\'active\');
-            change.previous.anchor.removeClass(\'active\').parents(\'li\').removeClass(\'active\');
-        }
+$.gajus.contents({
+    where: $(\'#tocjs-'.$tag.'\'),
+    index: $(\'.page h1, .page h2, .page h3, .page h4, .page h5\')
+}).on(\'change.contents.gajus\', function (event, change) {
+    if (change.previous) {
+        change.previous.anchor.removeClass(\'active\').parents(\'li\').removeClass(\'active\');
+    }
+    change.current.anchor.addClass(\'active\').parents(\'li\').addClass(\'active\');
+});
 
-        //change.current.heading.addClass(\'active\');
-        change.current.anchor.addClass(\'active\').parents(\'li\').addClass(\'active\');
-    });
+var $window = $(window)
+var $body = $(document.body)
+var navbarheight = $(\'#yw-topnav\').height();
+var pagestartHeight = page.offset().top - navbarheight;
+var $sideBar = $(\'#tocjs-'.$tag.'\');
 
-    var $window = $(window)
-    var $body = $(document.body)
-    var pagestartHeight = page.offset().top;
-    console.log(\'pagestartHeight\', pagestartHeight);
-    var $sideBar = $(\'#tocjs-'.$tag.'\');
+var pagetitles = $body.find(\'.page h1, .page h2, .page h3, .page h4, .page h5\');
+pagetitles.each(function(i) {
+    $(this).html($(this).text());
+});
 
-    $body.scrollspy({
-        target: \'#tocjs-'.$tag.'\',
-        offset: '.$offset.'
-    });
+$body.scrollspy({
+    target: \'#tocjs-'.$tag.'\',
+    offset: '.$offset.'
+});
 
-    $(\'#tocjs-'.$tag.' a\').click(function (e) {
-        e.preventDefault();
+$(\'#tocjs-'.$tag.' a\').click(function (e) {
+    e.preventDefault();
 
-        var link = $(this).attr(\'href\');
-        
-        $(\'html, body\').animate({
-            scrollTop: $(link).offset().top - '.$offset.'
-        }, 500);
-    })
+    var link = $(this).attr(\'href\');
 
-    $window.on(\'resize\', function () {
-        $body.scrollspy(\'refresh\')
-        // We were resized. Check the position of the nav box
-        $sideBar.affix(\'checkPosition\')
-    })
+    $(\'html, body\').animate({
+        scrollTop: $(link).offset().top - '.$offset.'
+    }, 500);
+})
 
-    $window.on(\'load\', function () {
-        $body.scrollspy(\'refresh\');
-        $sideBar.affix({
-            offset: {
-                top: pagestartHeight,
-                bottom: function () {
-                    // We can\'t cache the height of the footer, since it could change
-                    // when the window is resized. This function will be called every
-                    // time the window is scrolled or resized
-                    return $(\'.footer\').outerHeight(true)
-                }
+$window.on(\'resize\', function () {
+    $body.scrollspy(\'refresh\')
+    // We were resized. Check the position of the nav box
+    $sideBar.affix(\'checkPosition\')
+})
+
+$window.on(\'load\', function () {
+    $body.scrollspy(\'refresh\');
+    $sideBar.affix({
+        offset: {
+            top: pagestartHeight,
+            bottom: function () {
+                // We can\'t cache the height of the footer, since it could change
+                // when the window is resized. This function will be called every
+                // time the window is scrolled or resized
+                return $(\'.footer\').outerHeight(true)
             }
-        })
-        $sideBar.on(\'affixed.bs.affix\', function (e) {
-            //console.log($sideBar.css(\'width\'));
-          $sideBar.css(\'top\', pagestartHeight);
-        })
-        $sideBar.on(\'affix-top.bs.affix\', function (e) {
-          $sideBar.css(\'top\', 0);
-        })
+        }
+    })
+    $sideBar.on(\'affixed.bs.affix\', function (e) {
+      $sideBar.css(\'top\', navbarheight + 20);
+    })
+    $sideBar.on(\'affix-top.bs.affix\', function (e) {
+      $sideBar.css(\'top\', 0);
+    })
 
 
-        setTimeout(function () {
-            // Check the position of the nav box ASAP
-            $sideBar.affix(\'checkPosition\')
-        }, 10);
-        setTimeout(function () {
-            // Check it again after a while (required for IE)
-            $sideBar.affix(\'checkPosition\')
-        }, 100);
-    });
+    setTimeout(function () {
+        // Check the position of the nav box ASAP
+        $sideBar.affix(\'checkPosition\')
+    }, 10);
+    setTimeout(function () {
+        // Check it again after a while (required for IE)
+        $sideBar.affix(\'checkPosition\')
+    }, 100);
+});
 ';
 $this->AddJavascriptFile('tools/toc/libs/vendor/contents.min.js');
 $this->AddJavascript($script);
@@ -149,7 +149,7 @@ echo '<style>
         display: none;
         margin-bottom: 8px;
     }
-    #tocjs-'.$tag.' .active ol {
+    #tocjs-'.$tag.' .active > ol {
         display: block;
     }
     #tocjs-'.$tag.' ol ol > li > a {

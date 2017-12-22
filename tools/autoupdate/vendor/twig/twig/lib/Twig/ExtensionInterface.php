@@ -3,7 +3,7 @@
 /*
  * This file is part of Twig.
  *
- * (c) 2009 Fabien Potencier
+ * (c) Fabien Potencier
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -63,7 +63,7 @@ interface Twig_ExtensionInterface
     /**
      * Returns a list of operators to add to the existing list.
      *
-     * @return array An array of operators
+     * @return array<array> First array of unary operators, second array of binary operators
      */
     public function getOperators();
 
@@ -85,3 +85,6 @@ interface Twig_ExtensionInterface
      */
     public function getName();
 }
+
+class_alias('Twig_ExtensionInterface', 'Twig\Extension\ExtensionInterface', false);
+class_exists('Twig_Environment');

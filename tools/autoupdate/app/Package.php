@@ -111,7 +111,7 @@ abstract class Package extends Files
 
     private function downloadFile($sourceUrl)
     {
-        $this->downloadedFile = tempnam(sys_get_temp_dir(), $this::PREFIX_FILENAME);
+        $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
         file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
     }
 

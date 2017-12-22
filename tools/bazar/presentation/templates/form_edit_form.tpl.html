@@ -1,0 +1,48 @@
+<form action="<?php echo $url ?>&amp;action_formulaire=<?php echo (!empty($idformulaire)) ? 'modif_v' : 'new_v' ?>" method="post" name="formulaire" id="formulaire" class="form-horizontal">
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_NOM_FORMULAIRE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
+        <div class="controls col-sm-9">
+            <input class="form-control input-xxlarge" name="bn_label_nature" type="text" value="<?php echo isset($form['bn_label_nature']) ? $form['bn_label_nature'] : ''; ?>" required>
+        </div>
+    </div>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_CATEGORIE_FORMULAIRE'); ?></label>
+        <div class="controls col-sm-9">
+            <input class="form-control input-xxlarge" name="bn_type_fiche" type="text" value="<?php echo isset($form['bn_type_fiche']) ? $form['bn_type_fiche'] : ''; ?>">
+        </div>
+    </div>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_DESCRIPTION'); ?></label>
+        <div class="controls col-sm-9">
+            <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_description"><?php echo isset($form['bn_description']) ? $form['bn_description'] : ''; ?></textarea>
+        </div>
+    </div>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_CONDITION'); ?></label>
+        <div class="controls col-sm-9">
+            <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_condition"><?php echo isset($form['bn_condition']) ? $form['bn_condition'] : ''; ?></textarea>
+        </div>
+    </div>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_NOM_CLASSE_CSS'); ?></label>
+        <div class="controls col-sm-9">
+            <input class="form-control input-xxlarge" name="bn_label_class" type="text" value="<?php echo isset($form['bn_label_class']) ? $form['bn_label_class'] : ''; ?>">
+        </div>
+    </div>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
+        <div class="controls col-sm-9">
+            <textarea class="form-control input-xxlarge" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-9 col-sm-offset-3">
+          <button type="submit" class="btn btn-success"><?php echo _t('BAZ_VALIDER'); ?></button>
+          <a class="btn btn-xs btn-danger" href="<?php echo $url ?>"><?php echo _t('BAZ_ANNULER'); ?></a>
+        </div>
+    </div>
+    <div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">* <?php echo _t('BAZ_CHAMPS_REQUIS'); ?></div>
+    <?php if (!empty($idformulaire)) : ?>
+    <input type="hidden" name="bn_id_nature" value="<?php echo $idformulaire; ?>">
+    <?php endif; ?>
+</form>

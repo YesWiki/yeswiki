@@ -51,7 +51,7 @@ if (empty($GLOBALS['ordre'])) {
 
 $template = $this->GetParameter("template");
 if (empty($template)) {
-    $template = BAZ_TEMPLATE_LISTE_DEFAUT;
+    $template = $GLOBALS['wiki']->config['default_bazar_template'];
 }
 
 // identifiant de la base de donnée pour la liste
@@ -133,7 +133,7 @@ if (empty($list)) {
     usort($fiches['fiches'], 'champCompare');
 
     // preparation du template
-    include_once 'tools/libs/squelettephp.class.php';
+    include_once 'includes/squelettephp.class.php';
     // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/'.$template;
     if (!is_file($templatetoload)) {
@@ -141,7 +141,7 @@ if (empty($list)) {
     }
 
     $listvalues = baz_valeurs_liste($list);
-    $currentlabel = '';
+    $currentlabel = 'this is an impossible label';
     $fichescat = '';
     $output = '';
     $first = true;
@@ -163,7 +163,7 @@ if (empty($list)) {
             $output .=  '<h3 class="collapsed yeswiki-list-category" '
                 .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
                 .'" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i> '
-                .$listvalues['label'][$fiche[$id]].'</h3>
+                .(empty($listvalues['label'][$fiche[$id]]) ? 'Non catégorisé' : $listvalues['label'][$fiche[$id]]).'</h3>
                 <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }
         $currentlabel = $fiche[$id];
@@ -183,6 +183,6 @@ if (empty($list)) {
     $output .=  '</div>'."\n";
     echo $output;
 
-    $$_GET['query'] = $query;
+    $_GET['query'] = $query;
 
 }

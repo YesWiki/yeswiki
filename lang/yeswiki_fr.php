@@ -23,7 +23,7 @@
 /**
 * Fichier de traduction en francais de YesWiki
 *
-*@package 		yeswiki
+*@package       yeswiki
 *@author        Florian Schmitt <florian@outils-reseaux.org>
 *@copyright     2014 Outils-Réseaux
 */
@@ -41,7 +41,7 @@ $GLOBALS['translations'] = array(
 'NO_REQUEST_FOUND' => '$_REQUEST[] pas trouv&eacute;. Wakka n&eacute;cessite PHP 4.1.0 ou plus r&eacute;cent!',
 'SITE_BEING_UPDATED' => 'Ce site est en cours de mise &agrave; jour. Veuillez essayer plus tard.',
 'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',
-'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible. Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
+'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'acc&egrave;s &agrave; la base de donn&eacute;es a &eacute;chou&eacute;. <br><br>Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
 'LOG_DB_CONNECT_FAIL' => 'YesWiki : la connexion BDD a echouee', // sans accents car commande systeme
 'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',
 'HOMEPAGE_WIKINAME' => 'PagePrincipale',
@@ -60,6 +60,17 @@ $GLOBALS['translations'] = array(
 'NO_PAGES_WITH_LINK_TO' => 'Aucune page n\'a de lien vers',
 
 // actions/changestyle.php ignoree...
+
+// handlers/page/acls.php
+'YW_ACLS_LIST' => 'Liste des droits d\'acc&egrave;s de la page',
+'YW_ACLS_UPDATED' => 'Droits d\'acc&egrave;s mis &agrave; jour',
+'YW_NEW_OWNER' => ' et changement du propri&eacute;taire. Nouveau propri&eacute;taire : ',
+'YW_CANCEL' => 'Annuler',
+'YW_ACLS_READ' => 'Droits de lecture',
+'YW_ACLS_WRITE' => 'Droits d\'écriture',
+'YW_CHANGE_OWNER' => 'Changer le propri&eacute;taire',
+'YW_CHANGE_NOTHING' => 'Ne rien modifier',
+'YW_CANNOT_CHANGE_ACLS' => 'Vous ne pouvez pas g&eacute;rer les permissions de cette page',
 
 // actions/editactionsacls.class.php
 'ACTION_RIGHTS' => 'Droits de l\'action',
@@ -236,7 +247,7 @@ $GLOBALS['translations'] = array(
 'DEFAULT_LANGUAGE_INFOS' => 'Langue utilis&eacute;e par d&eacute;faut pour l\'interface de YesWiki, il sera toujours possible de changer de langue pour chacune des pages cr&eacute;&eacute;es',
 'GENERAL_CONFIGURATION' => 'Configuration générale',
 'DATABASE_CONFIGURATION' => 'Configuration de la base de donn&eacute;es',
-'MORE_INFOS' => '+ Infos',
+'MORE_INFOS' => 'Aide',
 'MYSQL_SERVER' => 'Machine MySQL',
 'MYSQL_SERVER_INFOS' => 'L\'adresse IP ou le nom r&eacute;seau de la machine sur laquelle se trouve votre serveur MySQL',
 'MYSQL_DATABASE' => 'Base de donn&eacute;es MySQL',
@@ -261,7 +272,7 @@ $GLOBALS['translations'] = array(
 'MODIFY_ACCESS_RIGHTS_ON_ANY_PAGE' => 'Modifier les droits d\'acc&egrave;s &agrave; n\'importe quelle page',
 'GENERATE_ACCESS_RIGHTS_ON_ANY_ACTION_OR_HANDLER' => 'G&eacute;rer les droits d\'acc&egrave;s &agrave; n\'importe quelle action ou handler',
 'GENERATE_GROUPS' => 'G&eacute;rer les groupes, ajouter/supprimer des utilisateurs au groupe administrateur (ayant les m&ecirc;mes droits que lui)',
-'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Toutes les t&acirc;ches d\'administration sont d&eacute;crites dans la page "AdministrationDeYesWiki" accessible depuis la page d\'accueil',
+'ALL_ADMIN_TASKS_ARE_DESCRIBED_IN_THE_PAGE' => 'Toutes les t&acirc;ches d\'administration sont accessibles depuis le bouton avec la roue crant&eacute;e',
 'USE_AN_EXISTING_ACCOUNT' => 'Utiliser un compte existant',
 'NO' => 'Non',
 'OR_CREATE_NEW_ACCOUNT' => 'Ou cr&eacute;er un nouveau compte',
@@ -273,7 +284,7 @@ $GLOBALS['translations'] = array(
 'ADVANCED_CONFIGURATION' => '+ Configuration avanc&eacute;e',
 'URL_REDIRECTION' => 'Redirection d\'URL',
 'NEW_INSTALL_VALUES_CHANGE_ONLY_IF_YOU_KNOW_WHAT_YOU_ARE_DOING' => 'Ceci est une nouvelle installation. Le programme d\'installation va essayer de trouver les valeurs appropri&eacute;es. Changez-les uniquement si vous savez ce que vous faites',
-'PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION' => 'Les noms des pages seront directement rajout&eacute;s &agrave; l\'URL de base de votre site YesWiki. Supprimez la partie "?wiki=" uniquement si vous utilisez la redirection (voir ci apr&egrave;s)',
+'PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION' => 'Les noms des pages seront directement rajout&eacute;s &agrave; l\'URL de base de votre site YesWiki. Supprimez la partie "?" uniquement si vous utilisez la redirection (voir ci apr&egrave;s)',
 'BASE_URL' => 'URL de base',
 'REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI' => 'Le mode "redirection automatique" doit &ecirc;tre s&eacute;lectionn&eacute; uniquement si vous utilisez YesWiki avec la redirection d\'URL (si vous ne savez pas ce qu\'est la redirection d\'URL n\'activez pas cette option)',
 'ACTIVATE_REDIRECTION_MODE' => 'Activation du mode "redirection automatique"',

@@ -56,29 +56,22 @@ function getURLAbsolutePath($url = null)
  */
 function computeBaseURL($rewrite_mode = false)
 {
-    $protocol = 'http://';
+$protocol = 'http://';
     if (!empty($_SERVER['HTTPS'])) {
         $protocol = 'https://';
     }
-
-    $urlPieces = parse_url($_SERVER['REQUEST_URI']);
-
     $port = '';
     if ($_SERVER["SERVER_PORT"] != 80
         and $_SERVER["SERVER_PORT"] != 443) {
         $port = ':' . $_SERVER["SERVER_PORT"];
     }
-
-    $urlParam = '';
-    if (!$rewrite_mode) {
-        $urlParam = '?wiki=';
-    }
+    $scriptlocation = str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
 
     return $protocol
         . $_SERVER["HTTP_HOST"]
         . $port
-        . $urlPieces['path']
-        . $urlParam;
+        . $scriptlocation
+        . ($rewrite_mode ? '/' : '/?');
 }
 
 /**
@@ -89,8 +82,10 @@ function computeBaseURL($rewrite_mode = false)
 function detectRewriteMode()
 {
     $pieces = parse_url($_SERVER['REQUEST_URI']);
+    $scriptlocation = str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
+    $path = preg_replace('/\/$/', '', $pieces['path']);
+    if ($path == $scriptlocation or $pieces['path'] == '/' or $pieces['path'] == '/index.php' or $pieces['path'] == '/wakka.php') {
+        return false;
+    }
     return substr($pieces['path'], - strlen(WAKKA_ENGINE)) != WAKKA_ENGINE;
-    // return !preg_match("/".preg_quote(WAKKA_ENGINE)."$/", $_SERVER["REQUEST_URI"]);
 }
-
-?>

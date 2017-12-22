@@ -27,7 +27,6 @@ class Release
         if ((string)$releaseToCompare === $this->release) {
             return 0;
         }
-
         $releaseToCompare = $this->evalRelease($releaseToCompare->release);
         $release = $this->evalRelease($this->release);
 
@@ -46,7 +45,7 @@ class Release
 
     private function checkFormat($release)
     {
-        $pattern = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1}$/";
+        $pattern = "/^[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{1,2}$/";
         if (preg_match($pattern, $release) === 1) {
             return true;
         }

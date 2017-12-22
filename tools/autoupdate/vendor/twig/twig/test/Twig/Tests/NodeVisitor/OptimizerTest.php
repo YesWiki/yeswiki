@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-class Twig_Tests_NodeVisitor_OptimizerTest extends PHPUnit_Framework_TestCase
+class Twig_Tests_NodeVisitor_OptimizerTest extends \PHPUnit\Framework\TestCase
 {
     public function testRenderBlockOptimizer()
     {
@@ -37,7 +37,7 @@ class Twig_Tests_NodeVisitor_OptimizerTest extends PHPUnit_Framework_TestCase
     public function testRenderVariableBlockOptimizer()
     {
         if (PHP_VERSION_ID >= 50400) {
-            return;
+            $this->markTestSkipped('not needed on PHP >= 5.4');
         }
 
         $env = new Twig_Environment($this->getMockBuilder('Twig_LoaderInterface')->getMock(), array('cache' => false, 'autoescape' => false));

@@ -27,9 +27,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // Verification de securite
-if (!defined("WIKINI_VERSION"))
-{
-	die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+	die("acc&egrave;s direct interdit");
 }
 $tag = $this->GetPageTag();
 
@@ -41,4 +40,4 @@ $GLOBALS["open_comments"][$tag] = ((COMMENTAIRES_OUVERTS_PAR_DEFAUT && $pageouve
 $_SESSION["show_comments"][$tag] = false;
 unset($_REQUEST["show_comments"]);
 
-?>
+$this->addJavascriptFile('tools/tags/libs/tag.js');
