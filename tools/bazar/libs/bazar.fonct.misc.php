@@ -77,6 +77,7 @@ function afficher_image(
 ) {
     // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
     $destimg = sanitizeFilename($nom_image);
+    $url_base = $GLOBALS['wiki']->GetBaseUrl().'/';
     if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image)
       && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
         // faut il creer la vignette?
@@ -93,8 +94,6 @@ function afficher_image(
             } else {
                 list($width, $height, $type, $attr) = getimagesize('cache/vignette_' . $destimg);
             }
-
-            $url_base = str_replace('wakka.php?wiki=', '', $GLOBALS['wiki']->config['base_url']);
 
             //faut il redimensionner l'image?
             if ($hauteur_image != '' && $largeur_image != '') {
@@ -134,11 +133,11 @@ function afficher_image(
                     $method
                 );
             }
-            return '<img src="cache/image_' . $destimg . '" class="img-responsive ' . $class
+            return '<img src="' . $url_base . 'cache/image_' . $destimg . '" class="img-responsive ' . $class
                 . '" alt="' . $destimg . '"' . ' />' . "\n";
         } else {
             //on affiche l'image originale sinon
-            return '<img src="' . BAZ_CHEMIN_UPLOAD . $destimg . '" class="img-responsive ' . $class
+            return '<img src="'. $url_base . BAZ_CHEMIN_UPLOAD . $destimg . '" class="img-responsive ' . $class
                 . '" alt="' . $destimg . '"' . ' />' . "\n";
         }
     }

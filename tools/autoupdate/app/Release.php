@@ -27,7 +27,6 @@ class Release
         if ((string)$releaseToCompare === $this->release) {
             return 0;
         }
-
         $releaseToCompare = $this->evalRelease($releaseToCompare->release);
         $release = $this->evalRelease($this->release);
 

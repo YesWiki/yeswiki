@@ -1783,6 +1783,7 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
+    $isUrl = filter_var($tableau_template[1], FILTER_VALIDATE_URL);
     if ($mode == 'saisie') {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
@@ -1803,48 +1804,73 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $selectnametab = '';
         }
+        if ($isUrl === false) {
+            $select_attributes.= ' class="form-control" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab . '"';
 
-        $select_attributes.= ' class="form-control" id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'" name="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].$selectnametab . '"';
+            // valeur par defaut
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+                $def = $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
+            } elseif (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+                $def = $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
+            } else {
+                $def = $tableau_template[5];
+            }
+        } else {
+            $id = removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $tableau_template[1])));
+            $select_attributes.= ' class="form-control" id="' . $tableau_template[0].$id.$tableau_template[6].'" name="' . $tableau_template[0].$id.$tableau_template[6].$selectnametab . '"';
+
+            // valeur par defaut
+            $key = $tableau_template[0].$id.$tableau_template[6];
+            if (isset($valeurs_fiche[$key]) && $valeurs_fiche[$key] != '') {
+                $def = $valeurs_fiche[$key];
+            } elseif (isset($_REQUEST[$key]) && $_REQUEST[$key] != '') {
+                $def = $_REQUEST[$key];
+            } else {
+                $def = $tableau_template[5];
+            }
+        }
 
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $select_attributes.= ' required="required"';
         }
         $select_html.= $select_attributes . '>' . "\n";
 
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-            $def = $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
-        } elseif (isset($_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-            $def = $_REQUEST[$tableau_template[0].$tableau_template[1].$tableau_template[6]];
-        } else {
-            $def = $tableau_template[5];
-        }
+
 
         /*$valliste = baz_valeurs_liste($tableau_template[1]);*/
         if ($def == '' && ($tableau_template[4] == '' || $tableau_template[4] <= 1) || $def == 0) {
             $select_html.= '<option value="" selected="selected">' . _t('BAZ_CHOISIR') . '</option>' . "\n";
         }
-        $val_type = baz_valeurs_formulaire($tableau_template[1]);
-        $tabquery = array();
-        if (!empty($tableau_template[12])) {
-            $tableau = array();
-            $tab = explode('|', $tableau_template[12]);
-             //découpe la requete autour des |
-            foreach ($tab as $req) {
-                $tabdecoup = explode('=', $req, 2);
-                $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-            }
-            $tabquery = array_merge($tabquery, $tableau);
-        } else {
-            $tabquery = '';
-        }
-        $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"], 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : '');
         $select = array();
-        foreach ($tab_result as $fiche) {
-            $valeurs_fiche_liste = json_decode($fiche["body"], true);
-            if (YW_CHARSET != 'UTF-8') {
-                $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
+        if ($isUrl === false) {
+            $val_type = baz_valeurs_formulaire($tableau_template[1]);
+            $tabquery = array();
+            if (!empty($tableau_template[12])) {
+                $tableau = array();
+                $tab = explode('|', $tableau_template[12]);
+                //découpe la requete autour des |
+                foreach ($tab as $req) {
+                    $tabdecoup = explode('=', $req, 2);
+                    $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+                }
+                $tabquery = array_merge($tabquery, $tableau);
+            } else {
+                $tabquery = '';
             }
-            $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
+            $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"], 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : '');
+            foreach ($tab_result as $fiche) {
+                $valeurs_fiche_liste = json_decode($fiche["body"], true);
+                if (YW_CHARSET != 'UTF-8') {
+                    $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
+                }
+                $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
+            }
+        } else {
+            $json = getCachedUrlContent($tableau_template[1]);
+            $results = json_decode($json, true);
+            foreach ($results as $fiche) {
+                $select[$fiche['id_fiche']] = $fiche['bf_titre'];
+            }
         }
         asort($select, SORT_NATURAL | SORT_FLAG_CASE);
         foreach ($select as $key => $label) {
@@ -1864,17 +1890,40 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])
-            && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-            if ($tableau_template[3] == 'fiche') {
-                $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-            } else {
-                $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-                $html = '';
-                if (is_array($val_fiche)) {
-                    $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
-                    $html.= '<span class="BAZ_texte">';
-                    $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+        if ($isUrl === false) {
+            if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])
+                && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+                if ($tableau_template[3] == 'fiche') {
+                    $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                } else {                
+                    $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                    $html = '';
+                    if (is_array($val_fiche)) {
+                        $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                        $html.= '<span class="BAZ_texte">';
+                        $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                    }
+                }
+            }
+        } else {
+            $id = removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $tableau_template[1])));
+            if (isset($valeurs_fiche[$tableau_template[0].$id.$tableau_template[6]])
+                && $valeurs_fiche[$tableau_template[0].$id.$tableau_template[6]] != '') {
+                if ($tableau_template[3] == 'fiche') {
+                    // todo :afficher la fiiche d'ailleurs?
+                    // $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                } else {
+                    $url = explode('demand=entries', $tableau_template[1]);
+                    $url = $url[0].'demand=entry&id_fiche='.$valeurs_fiche[$tableau_template[0].$id.$tableau_template[6]];
+                    $json = getCachedUrlContent($url);
+                    $val_fiche = json_decode($json, true);
+                    $html = '';
+                    if (is_array($val_fiche)) {
+                        $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$id.$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                        $html.= '<span class="BAZ_texte">';
+                        $urlfiche = explode('BazaR/json', $tableau_template[1]);
+                        $html.= '<a href="'.$urlfiche[0].$valeurs_fiche[$tableau_template[0].$id.$tableau_template[6]] . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                    }
                 }
             }
         }
