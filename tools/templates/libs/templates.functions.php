@@ -492,7 +492,8 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 
     $selecteur .=   '</form>'."\n";
 
-    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '').add_templates_list_js()."\n";
+    $js = add_templates_list_js();
+    $GLOBALS['wiki']->addJavascript($js);
     return $selecteur;
 }
 
