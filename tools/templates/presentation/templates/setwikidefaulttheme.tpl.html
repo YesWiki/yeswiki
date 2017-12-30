@@ -1,0 +1,129 @@
+<form method='post' class='form-horizontal'>
+  <input class='hidden' name='action' value='setTemplate'>
+
+  <div class='control-group form-group'>
+    <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_THEME')); ?></label>
+    <div class="controls col-lg-4">
+      <select id="themeSelect" name='wdtTheme' class="form-control">
+        <?php
+          foreach (array_keys($themes) as $theme) {
+            if ($theme === $defTheme) {
+              print("<option value='$theme' selected >$theme</option>");
+              continue;
+            }
+            print("<option value='$theme'>$theme</option>");
+          }
+        ?>
+      </select>
+    </div>
+  </div>
+
+  <div class='control-group form-group'>
+    <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_SQUELETTE')); ?></label>
+    <div class="controls col-lg-4">
+      <select id='squeletteSelect' name='wdtSquelette' class="form-control">
+        <?php
+          foreach (current($themes)['squelettes'] as $squelette) {
+            if ($squelette === $defSquelette) {
+              print("<option value='$squelette' selected >$squelette</option>");
+              continue;
+            }
+            print("<option value='$squelette'>$squelette</option>");
+          }
+        ?>
+      </select>
+    </div>
+  </div>
+
+  <div class='control-group form-group'>
+    <label class="control-label col-lg-4"><?php print(_t('TEMPLATE_STYLE')); ?></label>
+    <div class="controls col-lg-4">
+      <select id='styleSelect' name='wdtStyle' class="form-control">
+        <?php
+          foreach (current($themes)['styles'] as $style) {
+            if ($style === $defStyle) {
+              print("<option value='$style' selected >$style</option>");
+              continue;
+            }
+            print("<option value='$style'>$style</option>");
+          }
+        ?>
+      </select>
+    </div>
+  </div>
+
+  <div class='control-group form-group'>
+    <label class="control-label col-lg-4"></label>
+    <div class="controls col-lg-4">
+      <?php
+        if ($defForceTheme) {
+          print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme' checked >");
+        } else {
+          print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme'>");
+        }
+      ?>
+      <label for='wdtForceTheme'><?php print(_t('TEMPLATE_FORCE_TEMPLATE')); ?></label>
+    </div>
+  </div>
+
+  <div class='control-group form-group'>
+    <label class="control-label col-lg-4"></label>
+    <div class="controls col-lg-4">
+      <input type='submit' class="btn btn-primary" value='<?php print(_t('TEMPLATE_APPLY')); ?>'/>
+    </div>
+  </div>
+</form>
+
+<script>
+  var themeSelect = document.getElementById('themeSelect');
+
+  function clearOption(element)
+  {
+    element.innerHTML = '';
+  }
+
+  function addOption(element, optionValue)
+  {
+    var option = document.createElement("option");
+    option.value = optionValue;
+    option.text = optionValue;
+    element.add(option);
+  }
+
+  function updateStyle(themeName) {
+    var styleSelect = document.getElementById('styleSelect');
+    clearOption(styleSelect);
+    switch(themeName) {
+      <?php
+        foreach($themes as $themeName => $theme) {
+          echo "case '$themeName' :\n";
+          foreach($theme['styles'] as $style) {
+            echo "\taddOption(styleSelect, '$style');\n";
+          }
+          echo "\tbreak;\n";
+        }
+      ?>
+    }
+  }
+
+  function updateSquelette(themeName) {
+    var styleSelect = document.getElementById('squeletteSelect');
+    clearOption(squeletteSelect);
+    switch(themeName) {
+      <?php
+        foreach($themes as $themeName => $theme) {
+          echo "case '$themeName' :\n";
+          foreach($theme['squelettes'] as $squelette) {
+            echo "\taddOption(squeletteSelect, '$squelette');\n";
+          }
+          echo "\tbreak;\n";
+        }
+      ?>
+    }
+  }
+
+  themeSelect.onchange = function() {
+    updateStyle(themeSelect.value);
+    updateSquelette(themeSelect.value);
+  }
+</script>

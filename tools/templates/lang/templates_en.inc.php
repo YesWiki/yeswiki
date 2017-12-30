@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * English translation for the Templates extension
 *
@@ -112,6 +112,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'FOOTER_PAGE' => 'the footer',
 'FOR_2_OR_3_COLUMN_THEMES' => 'For themes with 2 or 3 columns',
 'VERTICAL_MENU_PAGE' => 'the vertical menu',
-'RIGHT_COLUMN_PAGE' => 'the right column'
+'RIGHT_COLUMN_PAGE' => 'the right column',
+
+// actions/setwikidefaultheme.php
+'TEMPLATE_FORCE_TEMPLATE' => 'Force to the whole wiki.',
+)
 
 ));
