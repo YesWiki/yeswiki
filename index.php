@@ -26,4 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-require_once 'includes/init.yeswiki.php';
+require_once 'includes/YesWiki.php';
+$wiki = new \YesWiki\Wiki();
+$wiki = $wiki->loadExtensions();
+$wiki->Run($wiki->tag, $wiki->method);

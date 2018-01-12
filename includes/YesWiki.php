@@ -43,10 +43,14 @@
 
 namespace YesWiki;
 
+require_once 'includes/constants.php';
+require_once 'includes/urlutils.inc.php';
+require_once 'includes/i18n.inc.php';
+require_once 'includes/YesWikiInit.php';
+
  /**
   * Main YesWiki class
   *
-  * @todo     separate methods in smaller classes and and check and init methods to avoid the init.yeswiki.php
   * @category Wiki
   * @package  YesWiki
   * @author   2002, Hendrik Mans <hendrik@mans.de>
@@ -83,8 +87,10 @@ class Wiki
 
     public $inclusions = array();
 
+
+
     /**
-     * an array containing all the actions that are implemented by an object
+     * An array containing all the actions that are implemented by an object
      *
      * @access private
      */
@@ -104,32 +110,14 @@ class Wiki
     /**
      * Constructor
      */
-    public function __construct($config)
+    public function __construct($config = array())
     {
-        $this->config = $config;
-        // some host do not allow mysql_pconnect
-        $this->dblink = @mysqli_connect($this->config['mysql_host'], $this->config['mysql_user'], $this->config['mysql_password']);
-        if ($this->dblink) {
-            if (! @mysqli_select_db($this->dblink, $this->config['mysql_database'])) {
-                @mysqli_close($this->dblink);
-                $this->dblink = false;
-            }
-            // necessaire pour les versions de mysql qui sont en utf8 par defaut
-            mysqli_set_charset($this->dblink, "latin1");
-        } else {
-            exit(_t('DB_CONNECT_FAIL'));
-        }
-        $this->VERSION = WAKKA_VERSION;
-
-        // determine le chemin pour les cookies
-        $a = parse_url($this->GetConfigValue('base_url'));
-        $this->CookiePath = dirname($a['path']);
-        // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
-        $this->CookiePath = str_replace('\\', '/', $this->CookiePath);
-        // ajoute un '/' terminal sauf si on est a la racine web
-        if ($this->CookiePath != '/') {
-            $this->CookiePath .= '/';
-        }
+        $init = new \YesWiki\Init($config); 
+        $this->config = $init->config;
+        $this->tag = $init->page;
+        $this->method = $init->method;
+        $this->dblink = $init->initDb();
+        $this->CookiePath = $init->initCookies();
     }
 
     // DATABASE
@@ -247,7 +235,7 @@ class Wiki
 
     public function GetWakkaVersion()
     {
-        return $this->VERSION;
+        return $this->config['wakka_version'];
     }
 
     public function GetWikiNiVersion()
@@ -1010,8 +998,8 @@ class Wiki
                 // and that we must produce a link with it
 
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
-                if ($text and preg_match("/\.(gif|jpeg|png|jpg)$/i", $tag)) {
-                    return '<img src="' . $this->getBaseUrl().'/'.htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '"/>';
+                if ($text and preg_match("/\.(gif|jpeg|png|jpg|svg)$/i", $tag)) {
+                    return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '"/>';
                 } else {
                     // Even if we know $tag is harmless, we MUST encode it
                     // in HTML with htmlspecialchars() before echoing it.
@@ -2026,7 +2014,7 @@ class Wiki
     }
 
     // THE BIG EVIL NASTY ONE!
-    public function Run($tag, $method = '')
+    public function Run($tag = '', $method = '')
     {
         if (! ($this->GetMicroTime() % 9)) {
             $this->Maintenance();
@@ -2035,6 +2023,9 @@ class Wiki
         $this->ReadInterWikiConfig();
 
         // do our stuff!
+        if ($tag == '') {
+            $tag = $this->tag;
+        }
         if (! $this->method = trim($method)) {
             $this->method = "show";
         }
@@ -2042,6 +2033,9 @@ class Wiki
         if (! $this->tag = trim($tag)) {
             $this->Redirect($this->href("", $this->config['root_page']));
         }
+
+        // load page lang
+        loadpreferredI18n($tag);
 
         if ((! $this->GetUser() && isset($_COOKIE['name'])) && ($user = $this->LoadUser($_COOKIE['name'], $_COOKIE['password']))) {
             $this->SetUser($user, $_COOKIE['remember']);
@@ -2061,5 +2055,76 @@ class Wiki
         if (! empty($_SESSION['redirects'])) {
             session_unregister('redirects');
         }
+    }
+
+    /**
+     * Load all extensions
+     * 
+     * @param mixed $wiki main YesWiki object
+     * 
+     * @return void
+     */
+    public function loadExtensions()
+    {
+        $wakkaConfig = $this->config;
+        $wiki = $this;
+        $page = $this->page;
+
+        // Meme nom : remplace
+        // _Meme nom : avant
+        // Meme nom : _apres
+        
+        $plugins_root = 'tools/';
+        
+        include_once 'includes/YesWikiPlugins.php';
+        $objPlugins = new \YesWiki\Plugins($plugins_root);
+        $objPlugins->getPlugins(true);
+        $plugins_list = $objPlugins->getPluginsList();
+
+        $wikiClasses[] = '\YesWiki\WikiTools';
+        $wikiClassesContent[] = '';
+
+        foreach ($plugins_list as $k => $v) {
+            
+            $pluginBase = $plugins_root . $k . '/';
+
+            if (file_exists($pluginBase . 'wiki.php')) {
+                include $pluginBase . 'wiki.php';
+            }
+            
+            // language files : first default language, then preferred language
+            if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
+                include $pluginBase . 'lang/' . $k . '_fr.inc.php';
+            }
+            if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
+                include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+            }
+            
+            if (file_exists($pluginBase . 'actions')) {
+                $wakkaConfig['action_path'] = $pluginBase . 'actions/' . ':' . $wakkaConfig['action_path'];
+            }
+            if (file_exists($pluginBase . 'handlers')) {
+                $wakkaConfig['handler_path'] = $pluginBase . 'handlers/' . ':' . $wakkaConfig['handler_path'];
+            }
+            if (file_exists($pluginBase . 'formatters')) {
+                $wakkaConfig['formatter_path'] = $pluginBase . 'formatters/' . ':' . $wakkaConfig['formatter_path'];
+            }
+        }
+
+        for ($iw = 0; $iw < count($wikiClasses); $iw ++) {
+            if ($wikiClasses[$iw] != '\YesWiki\WikiTools') {
+                if ($wikiClasses[$iw - 1] == 'Wiki') {
+                    $wikiClasses[$iw - 1] == '\YesWiki\Wiki';
+                }
+                if ($wikiClasses[$iw] == 'Wiki') {
+                    $wikiClasses[$iw] == '\YesWiki\Wiki';
+                }
+                eval('Class ' . $wikiClasses[$iw] . ' extends ' . $wikiClasses[$iw - 1] . ' { ' . $wikiClassesContent[$iw] . ' }; ');
+            }
+        }
+        eval('$wiki  = new ' . $wikiClasses[count($wikiClasses) - 1] . '($wakkaConfig);');
+        $wiki->config = $wakkaConfig;
+       
+        return $wiki;
     }
 }
