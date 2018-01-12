@@ -50,7 +50,7 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 <p class="alert alert-info"><?php echo $num_page;?> pages trouv&eacute;es </p>
 
 <?php
-echo theme_selector();
+echo theme_selector('post');
 ?>
 <div class="control-group form-group">
 	<label class="control-label col-lg-4"></label>

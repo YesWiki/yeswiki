@@ -703,7 +703,7 @@ function add_change_theme_js()
     return $js;
 }
 
-function theme_selector() {
+function theme_selector($method = '') {
 
     if (!isset($formclass)) {
         $formclass = 'form-horizontal' ;
@@ -711,7 +711,7 @@ function theme_selector() {
 
     $id = 'select_theme';
 
-    $selecteur = '		<form class="' . $formclass . '" id="' . $id . '">' . "\n";
+    $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '' ).'class="' . $formclass . '" id="' . $id . '">' . "\n";
 
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
     $repertoire_initial = 'tools' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'themes';
