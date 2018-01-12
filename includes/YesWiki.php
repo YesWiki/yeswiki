@@ -2068,12 +2068,8 @@ class Wiki
     {
         $wakkaConfig = $this->config;
         $wiki = $this;
-        $page = $this->page;
-
-        // Meme nom : remplace
-        // _Meme nom : avant
-        // Meme nom : _apres
-        
+        $page = $wiki->tag;
+    
         $plugins_root = 'tools/';
         
         include_once 'includes/YesWikiPlugins.php';
