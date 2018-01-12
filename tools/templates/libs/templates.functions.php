@@ -674,8 +674,7 @@ function recup_meta($page) {
 function add_change_theme_js()
 {
     // AJOUT DU JAVASCRIPT QUI PERMET DE CHANGER DYNAMIQUEMENT DE TEMPLATES
-    $js = '<script>
-
+    $js = '
 (function($) {
     $("#changetheme").on("change", function(){
 
@@ -700,18 +699,15 @@ function add_change_theme_js()
 
 });
 })(jQuery);
-'
-    ;
-    $js .= '</script>' . "\n";
-
+';
     return $js;
 }
 
-function theme_selector()
-{
+function theme_selector() {
 
-    if( ! isset($formclass) )
-        $formclass = '' ;
+    if (!isset($formclass)) {
+        $formclass = 'form-horizontal' ;
+    }
 
     $id = 'select_theme';
 
@@ -733,21 +729,29 @@ function theme_selector()
 
     $selecteur .= '			<div class="control-group form-group">' . "\n" .
     '				<label class="control-label col-lg-4">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
-        '				<div class="controls col-lg-7">' . "\n" .
+        '				<div class="controls col-lg-4">' . "\n" .
         '					<select class="form-control" id="changetheme" name="theme_select">' . "\n";
     foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
-        $selecteur .= '						<option value="' . $value . '">' . $value . '</option>' . "\n";
+        $selected = '';
+        if ($GLOBALS['wiki']->config['favorite_theme'] == $value) {
+            $selected = ' selected';
+        }
+        $selecteur .= '						<option value="' . $value . '"'.$selected.'>' . $value . '</option>' . "\n";
     }
     $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '			</div>' . "\n";
 
     $selecteur .=
     '			<div class="control-group form-group">' . "\n" .
     '				<label class="control-label col-lg-4">' . _t('TEMPLATE_SQUELETTE') . '</label>' . "\n" .
-        '				<div class="controls col-lg-7">' . "\n" .
+        '				<div class="controls col-lg-4">' . "\n" .
         '					<select class="form-control" id="changesquelette" name="squelette_select">' . "\n";
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
     foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
-        $selecteur .= '						<option value="' . $key . '">' . $value . '</option>' . "\n";
+        $selected = '';
+        if ($GLOBALS['wiki']->config['favorite_squelette'] == $value) {
+            $selected = ' selected';
+        }
+        $selecteur .= '						<option value="' . $key . '"'.$selected.'>' . $value . '</option>' . "\n";
     }
     $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '			</div>' . "\n";
 
@@ -755,17 +759,19 @@ function theme_selector()
     $selecteur .=
     '			<div class="control-group form-group">' . "\n" .
     '				<label class="control-label col-lg-4">' . _t('TEMPLATE_STYLE') . '</label>' . "\n" .
-        '				<div class="controls col-lg-7">' . "\n" .
+        '				<div class="controls col-lg-4">' . "\n" .
         '					<select class="form-control" id="changestyle" name="style_select">' . "\n";
     foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
-        $selecteur .= '						<option value="' . $key . '">' . $value . '</option>' . "\n";
+        $selected = '';
+        if ($GLOBALS['wiki']->config['favorite_style'] == $value) {
+            $selected = ' selected';
+        }
+        $selecteur .= '						<option value="' . $key . '"'.$selected.'>' . $value . '</option>' . "\n";
     }
     $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '				</div>' . "\n";
-
-    // $selecteur .=     '</form>'."\n";
-
-    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '') . add_templates_list_js() . "\n";
-    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? $GLOBALS['js'] : '') . add_change_theme_js() . "\n";
+    
+    $js = add_templates_list_js() . "\n" . add_change_theme_js();
+    $GLOBALS['wiki']->addJavascript($js);
 
     return $selecteur;
 }

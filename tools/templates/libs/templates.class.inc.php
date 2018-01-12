@@ -36,8 +36,8 @@ function AddJavascript($script)
     if (!isset($GLOBALS['js'])) {
         $GLOBALS['js'] = '';
     }
-    if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
-        $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
+    if (!empty($script) && !strpos($GLOBALS['js'], '<script defer>'."\n".$script.'</script>')) {
+        $GLOBALS['js'] .= '  <script defer>'."\n".$script.'</script>'."\n";
     }
     return;
 }
@@ -48,16 +48,16 @@ function AddJavascriptFile($file, $first = false)
         $GLOBALS['js'] = '';
     }
     if (!empty($file) && file_exists($file)) {
-        if (!strpos($GLOBALS['js'], '<script src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
+        if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
             if ($first) {
                 $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n".$GLOBALS['js'];
             } else {
-                $GLOBALS['js'] .= '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
+                $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
             }
         }
     } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-        if (!strpos($GLOBALS['js'], '<script src="'.$file.'"></script>')) {
-            $GLOBALS['js'] .= '  <script src="'.$file.'"></script>'."\n";
+        if (!strpos($GLOBALS['js'], '<script defer src="'.$file.'"></script>')) {
+            $GLOBALS['js'] .= '  <script defer src="'.$file.'"></script>'."\n";
         }
     }
     return;

@@ -23,7 +23,7 @@
     <div class="controls col-lg-4">
       <select id='squeletteSelect' name='wdtSquelette' class="form-control">
         <?php
-          foreach (current($themes)['squelettes'] as $squelette) {
+          foreach ($themes[$defTheme]['squelettes'] as $squelette) {
             if ($squelette === $defSquelette) {
               print("<option value='$squelette' selected >$squelette</option>");
               continue;
@@ -40,7 +40,8 @@
     <div class="controls col-lg-4">
       <select id='styleSelect' name='wdtStyle' class="form-control">
         <?php
-          foreach (current($themes)['styles'] as $style) {
+          foreach ($themes[$defTheme]['styles'] as $style) {
+            
             if ($style === $defStyle) {
               print("<option value='$style' selected >$style</option>");
               continue;
@@ -74,12 +75,13 @@
   </div>
 </form>
 
-<script>
-  var themeSelect = document.getElementById('themeSelect');
+<?php
+$js =
+  'var themeSelect = document.getElementById(\'themeSelect\');
 
   function clearOption(element)
   {
-    element.innerHTML = '';
+    element.innerHTML = \'\';
   }
 
   function addOption(element, optionValue)
@@ -91,39 +93,43 @@
   }
 
   function updateStyle(themeName) {
-    var styleSelect = document.getElementById('styleSelect');
+    var styleSelect = document.getElementById(\'styleSelect\');
     clearOption(styleSelect);
     switch(themeName) {
-      <?php
-        foreach($themes as $themeName => $theme) {
-          echo "case '$themeName' :\n";
-          foreach($theme['styles'] as $style) {
-            echo "\taddOption(styleSelect, '$style');\n";
-          }
-          echo "\tbreak;\n";
-        }
-      ?>
+      ';
+    
+foreach($themes as $themeName => $theme) {
+    $js .= "case '$themeName' :\n";
+    foreach($theme['styles'] as $style) {
+        $js .= "\taddOption(styleSelect, '$style');\n";
+    }
+    $js .= "\tbreak;\n";
+}
+$js .='
     }
   }
 
   function updateSquelette(themeName) {
-    var styleSelect = document.getElementById('squeletteSelect');
+    var styleSelect = document.getElementById(\'squeletteSelect\');
     clearOption(squeletteSelect);
     switch(themeName) {
-      <?php
-        foreach($themes as $themeName => $theme) {
-          echo "case '$themeName' :\n";
-          foreach($theme['squelettes'] as $squelette) {
-            echo "\taddOption(squeletteSelect, '$squelette');\n";
-          }
-          echo "\tbreak;\n";
-        }
-      ?>
+';
+
+foreach($themes as $themeName => $theme) {
+    $js .= "case '$themeName' :\n";
+    foreach($theme['squelettes'] as $squelette) {
+        $js .= "\taddOption(squeletteSelect, '$squelette');\n";
+    }
+    $js .= "\tbreak;\n";
+}
+$js .='
     }
   }
 
   themeSelect.onchange = function() {
     updateStyle(themeSelect.value);
     updateSquelette(themeSelect.value);
-  }
+  }';
+$GLOBALS['wiki']->addJavascript($js);
+?>
 </script>

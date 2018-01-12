@@ -2,8 +2,8 @@
 
 class Configuration
 {
-    private $parameters = array();
-    private $file = "";
+    private $_parameters = array();
+    private $_file = "";
 
     /**
      * [__construct description]
@@ -11,42 +11,42 @@ class Configuration
      */
     public function __construct($file)
     {
-        $this->file = $file;
+        $this->_file = $file;
     }
 
     public function __get($name)
     {
-        if (isset($this->parameters[$name])) {
-            return $this->parameters[$name];
+        if (isset($this->_parameters[$name])) {
+            return $this->_parameters[$name];
         }
         throw new \Exception("Paramètre inconnu Configuration::$name", 1);
     }
 
     public function __isset($name)
     {
-        return isset($this->parameters[$name]);
+        return isset($this->_parameters[$name]);
     }
 
     public function __set($name, $value)
     {
-        $this->parameters[$name] = $value;
+        $this->_parameters[$name] = $value;
     }
 
     public function __unset($name)
     {
-        unset($this->parameters[$name]);
+        unset($this->_parameters[$name]);
     }
 
     public function load()
     {
-        if (!is_file($this->file)) {
+        if (!is_file($this->_file)) {
             return;
         }
 
-        require $this->file;
+        require $this->_file;
 
         if (isset($wakkaConfig)) {
-            $this->parameters = $wakkaConfig;
+            $this->_parameters = $wakkaConfig;
         }
     }
 
@@ -57,10 +57,10 @@ class Configuration
     public function write()
     {
         $content = "<?php\n\$wakkaConfig = ";
-        $test = var_export($this->parameters, true);
+        $test = var_export($this->_parameters, true);
 
-        $content .= var_export($this->parameters, true);
+        $content .= var_export($this->_parameters, true);
         $content .= ";\n";
-        file_put_contents($this->file, $content);
+        file_put_contents($this->_file, $content);
     }
 }
