@@ -1,6 +1,7 @@
 <?php echo $info_res; ?>
 <?php
 if (count($fiches)>0) :
+    $js = '';
 	// TODO: y-a-t'il pagination en mode carto ?
 	echo $pager_links;
 
@@ -95,29 +96,29 @@ if (count($fiches)>0) :
 	if ($param['cluster'] == 'true' or $param['cluster'] == '1') {
 			$markersjs .= 'map'.$param['nbbazarliste'].'.addLayer(markerscluster);'."\n";
 	}
-	$GLOBALS['wiki']->AddJavascript(
+	$js .=
 			'// Init leaflet map
 		var map'.$param['nbbazarliste'].' = new L.Map(\'osmmap'.$param['nbbazarliste'].'\', {
 				scrollWheelZoom:'.$param['zoom_molette'].',
 				zoomControl:'.$param['navigation'].',
 		fullscreenControl:'.$param['fullscreen'].',
 				iconAnchor:   [6, 20]
-		});');
+		});';
 
 
 	// Pas de L.control.layers
 	if( empty($param['providers']) && empty($param['layers']) ) {
 
-	    $GLOBALS['wiki']->AddJavascript(
+		 $js .=
 			'
 			var provider = L.tileLayer.provider("'.$param['provider'].'"'.$param['provider_credentials'].');
-			');
+			';
 
 	} else {
 		// Avec un L.control.layers
 		// Si param['provider'] existe, ce sera le baseLayer activé par défaut, sinon ce sera le 1er de la liste $params['providers'].
 
-		$js = 'var provider; var baseLayers = {};' ;
+		$js .= 'var provider; var baseLayers = {};' ;
 		/*if( ! empty($param['provider']) ){
 			$js.= 'provider = L.tileLayer.provider("'.$param['provider'].'");' ;
 			$js.= 'baseLayers["'.$param['provider'].'"] = provider ;' ;
@@ -133,9 +134,9 @@ if (count($fiches)>0) :
 				$js.= 'provider=baseLayers["'.$provider.'"];' ;
 			}
 		}
-		$GLOBALS['wiki']->AddJavascript( $js );
+		//$GLOBALS['wiki']->AddJavascript( $js );
 
-		$js = 'var layers = {};' ;
+		$js .= 'var layers = {};' ;
 		if( is_array($param['layers']) ){
 			$leafletajaxIncluded = false ;
 			foreach( $param['layers'] as $layer ) {
@@ -240,17 +241,20 @@ if (count($fiches)>0) :
 
 		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$param['nbbazarliste'].');' ;
 
-		$GLOBALS['wiki']->AddJavascript( $js );
+		//$GLOBALS['wiki']->AddJavascript( $js );
 
 	} // else Avec un L.control.layers
 
 	$GLOBALS['wiki']->AddJavascript( '
+	$(document).ready(function() {
+		'.$js.'
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
 		map'.$param['nbbazarliste'].'.addLayer(provider);
 		map'.$param['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
 		var i = 0;
 		var marker = Array();
-		' . $markersjs
+		'. $markersjs .'
+	});'
 	);
 
 endif;

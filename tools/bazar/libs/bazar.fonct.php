@@ -3581,7 +3581,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
                     }
                 } elseif ($islist) {
                     $facettevalue[$val['id']]['type'] = 'liste';
-                    $facettevalue[$val['id']]['source'] = str_replace(array('checkbox', 'liste'), '', $key);
+                    $facettevalue[$val['id']]['source'] = $val['values']['id'];
                     // liste ou checkbox
                     $tabval = explode(',', $value);
                     foreach ($tabval as $tval) {
