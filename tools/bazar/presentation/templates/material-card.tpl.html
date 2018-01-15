@@ -99,7 +99,7 @@ if ( count($fiches)>0 ) : ?>
 <?php endif; ?>
 <?php echo $pager_links; ?>
 <?php
-$GLOBALS['wiki']->AddCSSFile('themes/tools/bazar/styles/material-card.css');
+$GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/material-card.css');
 $js = "$(function() {
   $('.material-card > .mc-btn-action').click(function() {
     var card = $(this).parent('.material-card');
@@ -166,7 +166,7 @@ $GLOBALS['wiki']->AddJavascript($js);
 
 <?php echo $pager_links; ?>
 <?php
-$GLOBALS['wiki']->AddCSSFile('themes/tools/bazar/styles/material-card.css');
+$GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/material-card.css');
 $js = "$(function() {
   $('.material-card > .mc-btn-action').click(function() {
     var card = $(this).parent('.material-card');
