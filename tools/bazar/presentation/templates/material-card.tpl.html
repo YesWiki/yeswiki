@@ -129,7 +129,7 @@ if ( count($fiches)>0 ) : ?>
 </div>
 
 <?php endif; ?>
-<?php endif; ?>
+
 <?php echo $pager_links; ?>
 <?php
 $GLOBALS['wiki']->AddCSSFile('themes/tools/bazar/styles/material-card.css');
@@ -164,3 +164,4 @@ $js = "$(function() {
 });";
 $GLOBALS['wiki']->AddJavascript($js);
 ?>
+<?php endif; ?>
