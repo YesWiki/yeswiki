@@ -19,7 +19,7 @@ if ($GLOBALS['check_'.$pagetag]['accordion']) {
     $accordionID = uniqid('accordion_');
     $GLOBALS['check_'.$pagetag ]['accordion_uniqueID'] = $accordionID;
 
-    $data = "";
+    $data = '';
     if (is_array($data)) {
         foreach ($data as $key => $value) {
             $data .= ' data-'.$key.'="'.$value.'"';
