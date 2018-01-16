@@ -353,7 +353,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             .'<div class="controls col-sm-9">' . "\n"
             .'<div class="input-prepend input-group"><span class="add-on input-group-addon">'
             .'<i class="icon-calendar glyphicon glyphicon-calendar"></i></span>'
-            .'<input type="date" name="'.$tableau_template[1].'"'
+            .'<input type="text" name="'.$tableau_template[1].'"'
             .' class="form-control bazar-date" id="'.$tableau_template[1].'"';
 
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
@@ -1656,8 +1656,8 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $http = 'http';
         }
         $initmapscript = '
-        $(document).ready(function() {
-        // Init leaflet map
+$(document).ready(function() {
+    // Init leaflet map
     var map = new L.Map(\'osmmapform\', {
         scrollWheelZoom:'.$GLOBALS['wiki']->config['baz_wheel_zoom'].',
         zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
@@ -1676,57 +1676,56 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         geocodedmarker.setLatLng(point);
         map.panTo( point, {animate:true});
     });
-    ';
-        $geocodingscript = 'function showAddress() {
-          var address = "";
-          if (document.getElementById("bf_adresse")) address += document.getElementById("bf_adresse").value + \' \';
-          if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
-          if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
-          if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
-          if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
-          address = address.replace(/\\("|\'|\\)/g, " ").trim();
-        	geocodage( address, showAddressOk, showAddressError );
-          return false;
-        }
+    function showAddress(map) {
+        var address = "";
+        if (document.getElementById("bf_adresse")) address += document.getElementById("bf_adresse").value + \' \';
+        if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
+        if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
+        if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
+        if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
+        address = address.replace(/\\("|\'|\\)/g, " ").trim();
+        geocodage( address, showAddressOk, showAddressError );
+        return false;
+    }
+    function showAddressOk( lon, lat )
+    {
+        //console.log("showAddressOk: "+lon+", "+lat);
+        geocodedmarkerRefresh( L.latLng( lat, lon ) );
+    }
 
-        function showAddressOk( lon, lat )
-        {
-        	//console.log("showAddressOk: "+lon+", "+lat);
-          geocodedmarkerRefresh( L.latLng( lat, lon ) );
-        }
-
-        function showAddressError( msg )
-        {
-        	//console.log("showAddressError: "+msg);
-        	if ( msg == "not found" ) {
-				    alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
+    function showAddressError( msg )
+    {
+        //console.log("showAddressError: "+msg);
+        if ( msg == "not found" ) {
+            alert("Adresse non trouvée, veuillez déplacer le point vous meme ou indiquer les coordonnées");
             geocodedmarkerRefresh( map.getCenter() );
-    		  } else {
+        } else {
             alert("Une erreur est survenue: " + msg );
-          }
-    	}
+        }
+    }
 
-        function geocodedmarkerRefresh( point )
-        {
-			if (geocodedmarker) map.removeLayer(geocodedmarker);
-            geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-            geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
-            map.panTo( geocodedmarker.getLatLng(), {animate:true});
-            $(\'#bf_latitude\').val(point.lat);
-            $(\'#bf_longitude\').val(point.lng);
-            geocodedmarker.on("dragend",function(ev){
-            	this.openPopup();
-            	var changedPos = ev.target.getLatLng();
-            	$(\'#bf_latitude\').val(changedPos.lat);
-            	$(\'#bf_longitude\').val(changedPos.lng);
-            	$(\'.bf_latitude\').html(changedPos.lat);
-            	$(\'.bf_longitude\').html(changedPos.lng);
-            });
-    	}
-
-        '."\n";
+    function geocodedmarkerRefresh( point )
+    {
+        if (geocodedmarker) map.removeLayer(geocodedmarker);
+        geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
+        geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+        map.panTo( geocodedmarker.getLatLng(), {animate:true});
+        $(\'#bf_latitude\').val(point.lat);
+        $(\'#bf_longitude\').val(point.lng);
+        geocodedmarker.on("dragend",function(ev){
+            this.openPopup();
+            var changedPos = ev.target.getLatLng();
+            $(\'#bf_latitude\').val(changedPos.lat);
+            $(\'#bf_longitude\').val(changedPos.lng);
+            $(\'.bf_latitude\').html(changedPos.lat);
+            $(\'.bf_longitude\').html(changedPos.lng);
+        });
+    }
+    $(\'.btn-geolocate-address\').on(\'click\', function(){showAddress(map);});
+    ';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
-
+    
+        $geocodingscript = '';
         $deflat = '';
         $deflon = '';
         if (isset($valeurs_fiche['carte_google'])) {
@@ -1757,7 +1756,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             '<div class="control-group form-group">
                 <label class="control-label col-sm-3"></label>
                 <div class="controls col-sm-9">
-                    <a class="btn btn-primary" onclick="showAddress();">'
+                    <a class="btn btn-primary btn-geolocate-address">'
                     ._t('BAZ_VERIFIER_MON_ADRESSE')
                     .'</a>
             <input type="hidden" value="'.$deflat.'" id="bf_latitude" name="bf_latitude">
@@ -2204,7 +2203,8 @@ function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'saisie') {
         if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/iframe') {
-            $urlParams = 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$GLOBALS['params']['idtypeannonce'];
+            $id = isset($GLOBALS['params']['idtypeannonce']) ? $GLOBALS['params']['idtypeannonce'] : $valeurs_fiche['id_typeannonce'];
+            $urlParams = 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$id;
             $urlfield = trim($tableau_template[3]) ? $tableau_template[3] : 'bf_url' ;
             $descfield = trim($tableau_template[4]) ? $tableau_template[4] : 'bf_description' ;
             $htmlbookmarklet = "<div class=\"control-group form-group\">

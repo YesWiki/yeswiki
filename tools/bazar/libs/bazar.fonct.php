@@ -1086,7 +1086,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             // Redirection pour eviter la revalidation du formulaire
             $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
               .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-            header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams, true));
+            header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             exit;
         } else {
             echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
