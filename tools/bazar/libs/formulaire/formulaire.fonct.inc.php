@@ -1655,7 +1655,9 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $http = 'http';
         }
-        $initmapscript = '// Init leaflet map
+        $initmapscript = '
+        $(document).ready(function() {
+        // Init leaflet map
     var map = new L.Map(\'osmmapform\', {
         scrollWheelZoom:'.$GLOBALS['wiki']->config['baz_wheel_zoom'].',
         zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
@@ -1747,6 +1749,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 ';
             }
         }
+        $geocodingscript .= '});';
         $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
         $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
