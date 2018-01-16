@@ -63,24 +63,9 @@ class Init
         $this->getRoute();
         $this->config = $this->getConfig($config);
 
-        // compare versions, start installer if necessary
+        /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
-            // start installer
-            if (! isset($_REQUEST['installAction']) or ! $installAction = trim($_REQUEST['installAction'])) {
-                $installAction = "default";
-            }
-            // default lang
-            loadpreferredI18n('');
-            $wakkaConfig = $this->config;
-            $wakkaConfigLocation = $this->configFile;
-            include_once 'setup/install.helpers.php';
-            include_once 'setup/header.php';
-            if (file_exists('setup/' . $installAction . '.php')) {
-                include_once 'setup/' . $installAction . '.php';
-            } else {
-                echo '<em>', _t("INVALID_ACTION"), '</em>';
-            }
-            include_once 'setup/footer.php';
+            $this->doInstall();
             exit();
         }
     }
@@ -122,18 +107,8 @@ class Init
                     exit();
                 }
             } elseif ($args[0] == 'api') {
-                // call to YesWiki api
-                if (isset($args[1]) and !empty($args[1])) {
-                    array_shift($args);
-                    $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD']).str_replace(' ', '', ucwords(strtolower(implode(' ', $args))));
-                    echo 'YesWiki api - function: '.$apiFunctionName;
-                    //cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
-
-                    exit;
-                } else {
-                    echo 'YesWiki api';
-                    exit;
-                }
+                $this->initApi($args);
+                exit();
             } else {
                 $this->page = $args[0];
                 if (isset($args[1]) and !empty($args[1])) {
@@ -298,5 +273,71 @@ class Init
         session_set_cookie_params($a['lifetime'], $CookiePath);
         unset($a);
         return $CookiePath;
+    }
+
+    /**
+     * Start the install process
+     *
+     * @return void
+     */
+    public function doInstall()
+    {
+        // start installer
+        if (! isset($_REQUEST['installAction']) or ! $installAction = trim($_REQUEST['installAction'])) {
+            $installAction = "default";
+        }
+        // default lang
+        loadpreferredI18n('');
+        $wakkaConfig = $this->config;
+        $wakkaConfigLocation = $this->configFile;
+        include_once 'setup/install.helpers.php';
+        include_once 'setup/header.php';
+        if (file_exists('setup/' . $installAction . '.php')) {
+            include_once 'setup/' . $installAction . '.php';
+        } else {
+            echo '<em>', _t("INVALID_ACTION"), '</em>';
+        }
+        include_once 'setup/footer.php';
+    }
+
+    /**
+     * Initialize the api's parameters
+     *
+     * @param array $args arguments passed by url
+     * 
+     * @return void
+     */
+    public function initApi($args)
+    {
+        header('Content-type: application/json; charset=UTF-8');
+        header('Access-Control-Allow-Origin: *');
+
+        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
+            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
+            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
+            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
+            )) {
+                header('Access-Control-Allow-Credentials: true');
+                header('Access-Control-Allow-Headers: X-Requested-With');
+                header('Access-Control-Allow-Headers: Content-Type');
+                header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+                header('Access-Control-Max-Age: 86400');
+            }
+            exit;
+        }
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
+            $_POST = json_decode(file_get_contents('php://input'), true);
+        }
+
+        // call to YesWiki api
+        if (isset($args[1]) and !empty($args[1])) {
+            array_shift($args);
+            $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD']).str_replace(' ', '', ucwords(strtolower(implode(' ', $args))));
+            echo json_encode('YesWiki api - function: '.$apiFunctionName);
+            //cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
+        } else {
+            echo json_encode('YesWiki api');
+        }
     }
 }
