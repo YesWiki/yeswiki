@@ -455,7 +455,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $res = '';
-        if ($valeurs_fiche[$tableau_template[1]] != "") {
+        if (isset($valeurs_fiche[$tableau_template[1]]) and !empty($valeurs_fiche[$tableau_template[1]])) {
             $res .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
             if (strlen($valeurs_fiche[$tableau_template[1]]) > 10) {
                 $res .= '<span class="BAZ_texte">' . strftime('%d.%m.%Y - %H:%M', strtotime($valeurs_fiche[$tableau_template[1]])) . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -1703,25 +1703,35 @@ $(document).ready(function() {
             alert("Une erreur est survenue: " + msg );
         }
     }
+    function popupHtml( point ) {
+        return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin.";
+    }
 
     function geocodedmarkerRefresh( point )
     {
         if (geocodedmarker) map.removeLayer(geocodedmarker);
         geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-        geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false}).openPopup();
+        geocodedmarker.bindPopup(popupHtml( geocodedmarker.getLatLng() ), {closeButton: false, closeOnClick: false}).openPopup();
         map.panTo( geocodedmarker.getLatLng(), {animate:true});
         $(\'#bf_latitude\').val(point.lat);
         $(\'#bf_longitude\').val(point.lng);
+        
         geocodedmarker.on("dragend",function(ev){
             this.openPopup();
             var changedPos = ev.target.getLatLng();
             $(\'#bf_latitude\').val(changedPos.lat);
             $(\'#bf_longitude\').val(changedPos.lng);
-            $(\'.bf_latitude\').html(changedPos.lat);
-            $(\'.bf_longitude\').html(changedPos.lng);
+            $(\'.bf_latitude\').val(changedPos.lat);
+            $(\'.bf_longitude\').val(changedPos.lng);
         });
     }
     $(\'.btn-geolocate-address\').on(\'click\', function(){showAddress(map);});
+    $(\'body\').on(\'change\', \'.bf_latitude, .bf_longitude\', function(e){
+        $(\'#bf_latitude\').val($(\'.bf_latitude\').val());
+        $(\'#bf_longitude\').val($(\'.bf_longitude\').val());
+        geocodedmarker.setLatLng([$(\'.bf_latitude\').val(), $(\'.bf_longitude\').val()]);
+        map.panTo( geocodedmarker.getLatLng(), {animate:true});
+    });
     ';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
     
@@ -1736,14 +1746,14 @@ $(document).ready(function() {
                 $geocodingscript .= 'var point = L.latLng('.$deflat.', '.$deflon.');
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
                 map.panTo( geocodedmarker.getLatLng(), {animate:true});
-                geocodedmarker.bindPopup("<div class=\"well well-sm\"><i class=\"glyphicon glyphicon-globe\"></i> Lat. : <span class=\"bf_latitude\">"+point.lat+"</span> / Lon. : <span class=\"bf_longitude\">"+point.lng+"</span></div>Déplacer le point pour le mettre a un endroit plus approprié.", {closeButton: false, closeOnClick: false});
+                geocodedmarker.bindPopup(popupHtml( point ), {closeButton: false, closeOnClick: false});
                 geocodedmarker.on("dragend",function(ev){
                     this.openPopup(point);
                     var changedPos = ev.target.getLatLng();
                     $(\'#bf_latitude\').val(changedPos.lat);
                     $(\'#bf_longitude\').val(changedPos.lng);
-                    $(\'.bf_latitude\').html(changedPos.lat);
-                    $(\'.bf_longitude\').html(changedPos.lng);
+                    $(\'.bf_latitude\').val(changedPos.lat);
+                    $(\'.bf_longitude\').val(changedPos.lng);
                 });
                 ';
             }
@@ -1753,7 +1763,12 @@ $(document).ready(function() {
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
         $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
         return
-            '<div class="control-group form-group">
+            '<style>
+            input:invalid {
+                border-color: #DD2C00;
+            }
+            </style>
+            <div class="control-group form-group">
                 <label class="control-label col-sm-3"></label>
                 <div class="controls col-sm-9">
                     <a class="btn btn-primary btn-geolocate-address">'

@@ -4576,12 +4576,12 @@ function getAllParameters_carto($wiki, array &$param)
     }
 
     /*
-     * iconfield : designe le champ utilise pour la couleur des marqueurs
+     * iconfield : designe le champ utilise pour les icones des marqueurs
      */
     $param['iconfield'] = isset($_GET['iconfield']) ? $_GET['iconfield'] : $wiki->GetParameter('iconfield');
 
     /*
-     * icon : couleur des marqueurs
+     * icon : icone des marqueurs
      */
     $param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
 

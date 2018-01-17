@@ -37,7 +37,7 @@ $type = $this->GetTripleValue($incPageName, 'http://outils-reseaux.org/_vocabula
 if ($type == 'fiche_bazar') {
     $valjson = $this->LoadPage($incPageName);
     $tab_valeurs = json_decode($valjson['body'], true);
-    if (YW_CHARSET != 'UTF-8') $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
+    //if (YW_CHARSET != 'UTF-8') $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
     $plugin_output_new = '<div class="'.$class.'">'."\n".baz_voir_fiche(0, $tab_valeurs)."\n".'</div>'."\n";
     //exit;
 } else {

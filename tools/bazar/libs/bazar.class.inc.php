@@ -62,7 +62,7 @@ function checkBazarAcls($page, $tag)
     if ($page) {
         $valjson = $page["body"];
         $valeur = json_decode($valjson, true);
-        $valeur = array_map('utf8_decode', $valeur);
+        //$valeur = array_map('utf8_decode', $valeur);
         if ($valeur) {
             $val_formulaire = baz_valeurs_formulaire($valeur['id_typeannonce']);
             $fieldname = array();
