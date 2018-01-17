@@ -63,11 +63,11 @@ if ($this->userIsAdmin()) {
                     // Printing results in HTML
                     foreach ($data as $line) {
                         //Convert TO String
-                        $transform = \ForceUTF8\Encoding::toUTF8(utf8_decode($line[$row['Field']]));
+                        $transform = \ForceUTF8\Encoding::toUTF8($line[$row['Field']]);
+                        $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                         $transform = mysqli_real_escape_string($this->dblink, $transform);
                         $updateQuery = 'UPDATE '.$table.' SET `'.$row['Field'].'` = "'.$transform.'" WHERE `bn_id_nature`="'.$line['bn_id_nature'].'"';
                         $this->query($updateQuery);
-                        //if ($line['id'] == '161') { $output .= '<h1>'.$transform.'</h1>';}
                     }
                 }
             }
@@ -78,8 +78,19 @@ if ($this->userIsAdmin()) {
     }
 
     $output .=  "<h3>Complete ALL</h3>";
+
+    // ajout du charset utf8mb4 dans wakka.config.php
+    include_once 'tools/templates/libs/Configuration.php';
+    $config = new Configuration('wakka.config.php');
+    $config->load();
+    $config->db_charset = 'utf8mb4';
+    $config->write();
+
+    // affichage a l'ecran
     echo  $this->header()
-     .'<div class="alert alert-success">'._t('handler dbutf8 : toutes les tables de la base de données ont été transformées en utf8.').'</div>'
+     .'<div class="alert alert-success">'
+     ._t('handler dbutf8 : toutes les tables de la base de données ont été transformées en utf8.')
+     .'</div>'
      .$output
      .$this->footer();
 } else {

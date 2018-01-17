@@ -89,12 +89,14 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
                 );
+                //return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }
         } else {         
             if ($fromencoding != YW_CHARSET) {
-                return \ForceUTF8\Encoding::toUTF8(utf8_decode($text));
+                $text = \ForceUTF8\Encoding::toUTF8($text);
+                return \ForceUTF8\Encoding::fixUTF8($text);
             } else {
                 return $text;
             }
@@ -149,7 +151,7 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
         // page's metadata lang
         $GLOBALS['wiki']->metadatas = $GLOBALS['wiki']->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
         if (!empty($GLOBALS['wiki']->metadatas)) {
-            $GLOBALS['wiki']->metadatas =  array_map('utf8_decode', json_decode($GLOBALS['wiki']->metadatas, true));
+            $GLOBALS['wiki']->metadatas =  json_decode($GLOBALS['wiki']->metadatas, true);
         }
         if (isset($GLOBALS['wiki']->metadatas['lang']) && in_array($GLOBALS['wiki']->metadatas['lang'], $available_languages)) {
             return $GLOBALS['wiki']->metadatas['lang'];

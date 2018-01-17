@@ -36,8 +36,8 @@ function AddJavascript($script)
     if (!isset($GLOBALS['js'])) {
         $GLOBALS['js'] = '';
     }
-    if (!empty($script) && !strpos($GLOBALS['js'], '<script defer>'."\n".$script.'</script>')) {
-        $GLOBALS['js'] .= '  <script defer>'."\n".$script.'</script>'."\n";
+    if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
+        $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
     }
     return;
 }

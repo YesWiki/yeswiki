@@ -66,8 +66,8 @@ if (!$paramPhrase)
 
 if ($phrase)
 {
-	// on cherche sur le mot avec entités html, le mot encodé par le wiki, ou le mot encodé par bazar en json
-	$search = $phrase.','.utf8_decode($phrase).','.substr(json_encode($phrase),1,-1);
+	// on cherche sur le mot avec entités html, ou le mot encodé par bazar en json
+	$search = $phrase.','.substr(json_encode($phrase),1,-1);
 	$results = $this->FullTextSearch($search);
 	if ($results)
 	{

@@ -12,7 +12,7 @@ if (!is_writable('wakka.config.php')) {
 } else {
     if ($this->UserIsAdmin()) {
         $themes = getTemplatesList();
-        require_once 'tools/templates/libs/Configuration.php';
+        include_once 'tools/templates/libs/Configuration.php';
         $config = new Configuration('wakka.config.php');
         $config->load();
 
