@@ -152,6 +152,7 @@ $(document).ready(function () {
     .not('#formulaire input.bazar-date[required=required]');
 
   $('#formulaire').submit(function(e) {
+    $(this).addClass('submitted');
     var atleastonefieldnotvalid = false;
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;

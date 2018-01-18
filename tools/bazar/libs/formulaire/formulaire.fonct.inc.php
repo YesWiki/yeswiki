@@ -665,7 +665,8 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= ($type_input == 'number' || $type_input == 'range') ? ' max="' . $nb_max_car . '"' : '';
         $input_html.= ($type_input == 'range') ? ' oninput="this.form.'.$identifiant.'number.value=this.value"' : '';
         $input_html.= ($regexp != '') ? ' pattern="' . $regexp . '"' : '';
-        $input_html.= ($obligatoire == 1) ? ' required="required"' : '';
+        $input_html.= ($obligatoire == 1) ? ' required' : '';
+        $input_html.= ' placeholder="'.htmlspecialchars(strip_tags($label)).'"';
         $input_html.= '>' . "\n";
         $input_html.= ($type_input == 'range') ?
             '<output class="input-group-addon" name="'.$identifiant.'number">'.$defauts.'</output>' :
@@ -911,6 +912,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= ' name="' . $identifiant . '" class="form-control" id="' . $identifiant . '"';
         $input_html.= ' maxlength="' . $nb_max_car . '" size="' . $nb_max_car . '"';
         $input_html.= ($obligatoire == 1) ? ' required="required"' : '';
+        $input_html.= ' placeholder="'.htmlspecialchars(strip_tags($label)).'"';
         $input_html.= '>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
         if ($sendmail == 1) {
             $input_html.= '<input type="hidden" name="sendmail" value="'.$identifiant.'">';
@@ -1063,6 +1065,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= 'class="form-control '.(($formatage == 'html') ? 'summernote' : $formatage).'" ';
         $input_html.= 'rows="'.$nb_lignes.'" cols="'.$nb_colonnes.'" ';
         $input_html.= ($longueurmax != '') ? 'maxlength="'.$longueurmax.'" ' : '';
+        $input_html.= ' placeholder="'.htmlspecialchars(strip_tags($label)).'"';
         $input_html.= '>';
         $input_html.= ($defauts != '') ? htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET) : '';
         $input_html.= '</textarea>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
@@ -1153,6 +1156,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= ($defauts != 'http://') ? ' value="' . $defauts . '"' : ' placeholder="' . $defauts . '"';
         $input_html.= ' name="' . $identifiant . '" class="form-control input-xxlarge" id="' . $identifiant . '"';
         $input_html.= ($obligatoire == 1) ? ' required="required"' : '';
+        $input_html.= ' placeholder="https://"';
         $input_html.= '>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
 
         return $input_html;
@@ -1704,7 +1708,7 @@ $(document).ready(function() {
         }
     }
     function popupHtml( point ) {
-        return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin.";
+        return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin ou modifier les coordonnées GPS.";
     }
 
     function geocodedmarkerRefresh( point )
@@ -1726,11 +1730,17 @@ $(document).ready(function() {
         });
     }
     $(\'.btn-geolocate-address\').on(\'click\', function(){showAddress(map);});
-    $(\'body\').on(\'change\', \'.bf_latitude, .bf_longitude\', function(e){
-        $(\'#bf_latitude\').val($(\'.bf_latitude\').val());
-        $(\'#bf_longitude\').val($(\'.bf_longitude\').val());
-        geocodedmarker.setLatLng([$(\'.bf_latitude\').val(), $(\'.bf_longitude\').val()]);
-        map.panTo( geocodedmarker.getLatLng(), {animate:true});
+    $(\'body\').on(\'change\', \'.bf_latitude, .bf_longitude\', function(e) {
+        if ($(this).is(":invalid")) {
+            $(\'#bf_latitude\').val(\'\');
+            $(\'#bf_longitude\').val(\'\');
+            alert(\'Format de coordonnées GPS non valide (que des chiffres et un point . pour les décimales)\');
+        } else {
+            $(\'#bf_latitude\').val($(\'.bf_latitude\').val());
+            $(\'#bf_longitude\').val($(\'.bf_longitude\').val());
+            geocodedmarker.setLatLng([$(\'.bf_latitude\').val(), $(\'.bf_longitude\').val()]);
+            map.panTo( geocodedmarker.getLatLng(), {animate:true});
+        }
     });
     ';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
@@ -1763,12 +1773,7 @@ $(document).ready(function() {
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
         $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
         return
-            '<style>
-            input:invalid {
-                border-color: #DD2C00;
-            }
-            </style>
-            <div class="control-group form-group">
+            '<div class="control-group form-group">
                 <label class="control-label col-sm-3"></label>
                 <div class="controls col-sm-9">
                     <a class="btn btn-primary btn-geolocate-address">'
