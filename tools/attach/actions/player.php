@@ -32,7 +32,7 @@ if (!defined("WIKINI_VERSION")) {
 
 $url = $this->GetParameter('url');
 if (!empty($url)) {
-	$height = $this->GetParameter('height');
+    $height = $this->GetParameter('height');
 	if (empty($height)) $height = "300px";
 
 	$width = $this->GetParameter('width');
@@ -158,10 +158,7 @@ plugins:  {
 		echo $output;
 	}
 	else echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE').' ('.$url.') '._t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION').'.</div>'."\n";
-}
-else
-{
-	echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_URL_NOT_VALID').'.</div>'."\n";
 } else {
-	echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PARAM_URL_REQUIRED').'.</div>'."\n";
+	echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '
+	  ._t('ATTACH_PARAM_URL_REQUIRED').'.</div>'."\n";
 }
