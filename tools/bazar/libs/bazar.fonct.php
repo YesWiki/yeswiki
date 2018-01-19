@@ -2048,11 +2048,8 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     );
 
     // on rajoute les bibliothèques js nécéssaires
-    $GLOBALS['wiki']
-
-        ->addJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js');
-    $GLOBALS['wiki']
-        ->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
     // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/lists_edit.tpl.html';
     if (!is_file($templatetoload)) {
