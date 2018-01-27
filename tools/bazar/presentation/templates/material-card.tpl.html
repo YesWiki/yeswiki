@@ -52,7 +52,7 @@ if ($type != 'simple') :
 if ( count($fiches)>0 ) : ?>
   <div class="row">
   <?php foreach ($fiches as $fiche) : ?>
-      <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image'] != '') : ?>
+
         <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
         <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
           <h2>
@@ -63,15 +63,24 @@ if ( count($fiches)>0 ) : ?>
                       </strong>
                   </h2>
           <div class="mc-content">
-            <div class="img-container">
-              <img class="img-responsive" src="<?php echo redimensionner_image(
-                  'files/' . $fiche['imagebf_image'],
-                  'cache/image_800x800_' . $fiche['imagebf_image'],
-                  800,
-                  800,
-                  'crop'
-              ); ?>">
-            </div>
+            <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+              <div class="img-container">
+                <img class="img-responsive" src="<?php echo redimensionner_image(
+                    'files/' . $fiche['imagebf_image'],
+                    'cache/image_800x800_' . $fiche['imagebf_image'],
+                    800,
+                    800,
+                    'crop'
+                ); ?>">
+              </div>
+            <?php else : ?>
+              ?php echo bonjour je suis ici; ?>
+              <div class="img-container">
+                <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
+                src="http://lorempixel.com/800/800/nature">
+              </div>
+            <?php endif; ?>
+
             <div class="mc-description">
               <?php echo $GLOBALS['wiki']->Format($fiche['bf_description']); ?>
             </div>
@@ -93,7 +102,6 @@ if ( count($fiches)>0 ) : ?>
           </div>
         </article>
       </div>
-      <?php endif; ?>
   <?php endforeach; ?>
   </div>
 <?php endif; ?>
@@ -137,8 +145,7 @@ $GLOBALS['wiki']->AddJavascript($js);
 <?php if( count($fiches)>0 ) : ?>
 <div class="row">
 <?php foreach ($fiches as $fiche) : ?>
-    <?php
-    if (isset($fiche['imagebf_image']) && $fiche['imagebf_image'] != '') : ?>
+
     <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
       <a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>">
       <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
@@ -146,19 +153,27 @@ $GLOBALS['wiki']->AddJavascript($js);
                     <span><?php echo $fiche['bf_titre']; ?> </span>
         </h2>
         <div class="mc-content">
-          <div class="img-container">
-            <img class="img-responsive" src="<?php echo redimensionner_image(
-                'files/' . $fiche['imagebf_image'],
-                'cache/image_800x800_' . $fiche['imagebf_image'],
-                800,
-                800,
-                'crop'
-            ); ?>">
-          </div>
+          <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+            <div class="img-container">
+              <img class="img-responsive" src="<?php echo redimensionner_image(
+                  'files/' . $fiche['imagebf_image'],
+                  'cache/image_800x800_' . $fiche['imagebf_image'],
+                  800,
+                  800,
+                  'crop'
+              ); ?>">
+            </div>
+          <?php else : ?>
+            ?php echo bonjour je suis ici; ?>
+            <div class="img-container">
+              <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
+              src="http://lorempixel.com/800/800/nature">
+            </div>
+          <?php endif; ?>
         </div>
       </article> </a>
     </div>
-    <?php endif; ?>
+    
 <?php endforeach; ?>
 </div>
 
