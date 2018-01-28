@@ -76,7 +76,7 @@ if ( count($fiches)>0 ) : ?>
             <?php else : ?>
               <div class="img-container">
                 <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
-                src="http://lorempixel.com/800/800/nature">
+                src="<?php echo ('tools/bazar/presentation/images/placeholder-800-800.jpg'); ?>">
               </div>
             <?php endif; ?>
 
@@ -163,16 +163,15 @@ $GLOBALS['wiki']->AddJavascript($js);
               ); ?>">
             </div>
           <?php else : ?>
-            ?php echo bonjour je suis ici; ?>
             <div class="img-container">
               <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
-              src="http://lorempixel.com/800/800/nature">
+              src="<?php echo ('tools/bazar/presentation/images/placeholder-800-800.jpg'); ?>">
             </div>
           <?php endif; ?>
         </div>
       </article> </a>
     </div>
-    
+
 <?php endforeach; ?>
 </div>
 
