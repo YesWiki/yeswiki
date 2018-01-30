@@ -46,9 +46,13 @@ if (empty($_POST['config'])) {
 
 // fetch configuration
 $config = $config2 = $_POST['config'];
-
 // merge existing (or default) configuration with new one
 $config = array_merge($wakkaConfig, $config);
+// set version to current version, yay!
+$config['wikini_version'] = WIKINI_VERSION;
+$config['wakka_version'] = WAKKA_VERSION;
+$config['yeswiki_version'] = YESWIKI_VERSION;
+$config['yeswiki_release'] = YESWIKI_RELEASE;
 
 if (!$version = trim($wakkaConfig['wikini_version'])) {
     $version = '0';
@@ -58,6 +62,7 @@ if ($version) {
     test(_t('VERIFY_MYSQL_PASSWORD').' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD').' !');
 }
 test(_t('TEST_MYSQL_CONNECTION').' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
+
 $testdb = test(
     _t('SEARCH_FOR_DATABASE').' ...',
     @mysqli_select_db($dblink, $config['mysql_database']),
@@ -77,6 +82,7 @@ if ($testdb == 1) {
         1
     );
 }
+
 if (!$version || empty($_POST['admin_login'])) {
     $admin_name = $_POST['admin_name'];
     $admin_email = $_POST['admin_email'];
@@ -98,6 +104,10 @@ if (!$version || empty($_POST['admin_login'])) {
     $admin_name = $_POST['admin_login'];
     unset($admin_password);
 }
+
+// all in utf8mb4
+mysqli_set_charset($dblink, 'utf8mb4');
+mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
 
 // do installation stuff
 switch ($version) {
@@ -125,7 +135,7 @@ switch ($version) {
                 'KEY idx_time (time),'.
                 'KEY idx_latest (latest),'.
                 'KEY idx_comment_on (comment_on)'.
-                ') ENGINE=MyISAM;'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -139,7 +149,7 @@ switch ($version) {
                 "privilege varchar(20) NOT NULL default '',".
                 'list text NOT NULL,'.
                 'PRIMARY KEY  (page_tag,privilege)'.
-                ') ENGINE=MyISAM'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -154,7 +164,7 @@ switch ($version) {
                 'UNIQUE KEY from_tag (from_tag,to_tag),'.
                 'KEY idx_from (from_tag),'.
                 'KEY idx_to (to_tag)'.
-                ') ENGINE=MyISAM'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -169,7 +179,7 @@ switch ($version) {
                 "time datetime NOT NULL,".
                 'KEY idx_page_tag (page_tag),'.
                 'KEY idx_time (time)'.
-                ') ENGINE=MyISAM'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -191,7 +201,7 @@ switch ($version) {
                 'PRIMARY KEY  (name),'.
                 'KEY idx_name (name),'.
                 'KEY idx_signuptime (signuptime)'.
-                ') ENGINE=MyISAM'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -202,13 +212,13 @@ switch ($version) {
                 $dblink,
                 'CREATE TABLE `'.$config['table_prefix'].'triples` ('.
                 '  `id` int(10) unsigned NOT NULL auto_increment,'.
-                '  `resource` varchar(255) NOT NULL default \'\','.
-                '  `property` varchar(255) NOT NULL default \'\','.
+                '  `resource` varchar(191) NOT NULL default \'\','.
+                '  `property` varchar(191) NOT NULL default \'\','.
                 '  `value` text NOT NULL,'.
                 '  PRIMARY KEY  (`id`),'.
                 '  KEY `resource` (`resource`),'.
                 '  KEY `property` (`property`)'.
-                ') ENGINE=MyISAM'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -227,8 +237,21 @@ switch ($version) {
             _t('ALREADY_EXISTING').'.',
             0
         );
-        $wiki = new \YesWiki\Wiki($config);
-        $wiki->SetGroupACL('admins', $admin_name);
+
+        test(
+            _t('INSERTION_OF_USER_IN_ADMIN_GROUP').' ...',
+            @mysqli_query(
+                $dblink,
+                'INSERT INTO '.$config['table_prefix'].'triples SET '.
+                'id = "1", '.
+                'resource = "ThisWikiGroup:admins", '.
+                'property = "http://www.wikini.net/_vocabulary/acls", '.
+                'value = "'.mysqli_real_escape_string($dblink, $admin_name).'"'
+            ),
+            _t('ALREADY_EXISTING').'.',
+            0
+        );
+
 
         //insertion des pages de documentation et des pages standards
         $d = dir('setup/doc/');
@@ -258,16 +281,16 @@ switch ($version) {
                 test(_t('INSERTION_OF_PAGE')." $pagename ...", @mysqli_query($dblink, $sql), '?', 0);
 
                 // update table_links
-                $wiki->SetPage($wiki->LoadPage($pagename, '', 0));
-                $wiki->ClearLinkTable();
-                $wiki->StartLinkTracking();
-                $wiki->TrackLinkTo($pagename);
-                $dummy = $wiki->Header();
-                $dummy .= $wiki->Format($pagecontent);
-                $dummy .= $wiki->Footer();
-                $wiki->StopLinkTracking();
-                $wiki->WriteLinkTable();
-                $wiki->ClearLinkTable();
+                // $wiki->SetPage($wiki->LoadPage($pagename, '', 0));
+                // $wiki->ClearLinkTable();
+                // $wiki->StartLinkTracking();
+                // $wiki->TrackLinkTo($pagename);
+                // $dummy = $wiki->Header();
+                // $dummy .= $wiki->Format($pagecontent);
+                // $dummy .= $wiki->Footer();
+                // $wiki->StopLinkTracking();
+                // $wiki->WriteLinkTable();
+                // $wiki->ClearLinkTable();
             } else {
                 test(_t('INSERTION_OF_PAGE')." $pagename ...", 0, _t('ALREADY_EXISTING').'.', 0);
             }
@@ -294,7 +317,7 @@ switch ($version) {
                 '  PRIMARY KEY  (`id`),'.
                 '  KEY `resource` (`resource`),'.
                 '  KEY `property` (`property`)'.
-                ') ENGINE=MyISAM'
+                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -314,7 +337,7 @@ switch ($version) {
                 0
             );
         }
-        $wiki = new Wiki($config);
+        $wiki = new \Yeswiki\Wiki($config);
         test(_t('INSERTION_OF_USER_IN_ADMIN_GROUP').' ...', !$wiki->SetGroupACL('admins', $admin_name), 0);
 }
 
@@ -323,10 +346,6 @@ switch ($version) {
 <div class="alert alert-info"><?php echo _t('NEXT_STEP_WRITE_CONFIGURATION_FILE'); ?>
 <tt><?php echo  $wakkaConfigLocation ?></tt>.</br>
 <?php echo _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'); ?>.  </div>
-
-<form action="<?php echo  myLocation(); ?>?installAction=writeconfig" method="POST">
-<input type="hidden" name="config" value="<?php echo  htmlspecialchars(serialize($config), ENT_COMPAT, 'ISO-8859-1') ?>">
-<div class="form-actions">
-	<input class="btn btn-large btn-primary continuer" type="submit" value="<?php echo _t('CONTINUE'); ?>" />
-</div>
-</form>
+<?php 
+$_POST['config'] = serialize($config);
+require_once 'setup/writeconfig.php';

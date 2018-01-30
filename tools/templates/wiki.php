@@ -141,7 +141,6 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
     }
 }
 
-
 // Test existence du template, on utilise le template par defaut sinon==============================
 if ((!file_exists('tools/templates/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
     and !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette']))

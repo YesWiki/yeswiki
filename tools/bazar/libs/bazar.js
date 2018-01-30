@@ -152,6 +152,7 @@ $(document).ready(function () {
     .not('#formulaire input.bazar-date[required=required]');
 
   $('#formulaire').submit(function(e) {
+    $(this).addClass('submitted');
     var atleastonefieldnotvalid = false;
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;
@@ -299,15 +300,16 @@ $(document).ready(function () {
   $('#formulaire').removeAttr('onsubmit');
 
   // selecteur de dates
-  var $dateinputs = $('input.bazar-date');
+  var $dateinputs = $('.bazar-date');
 
   // test pour verifier si le browser gere l'affichage des dates
-  var input = document.createElement('input');
-  input.setAttribute('type','date');
-  var notADateValue = 'not-a-date';
-  input.setAttribute('value', notADateValue);
+  // var input = document.createElement('input');
+  // input.setAttribute('type','date');
+  // var notADateValue = 'not-a-date';
+  // input.setAttribute('value', notADateValue);
 
-  if ($dateinputs.length > 0 && (input.value == notADateValue)) {
+  //if ($dateinputs.length > 0 && (input.value == notADateValue)) {
+  if ($dateinputs.length > 0) {
     $.fn.datepicker.dates.fr = {
       days: [
         'Dimanche',

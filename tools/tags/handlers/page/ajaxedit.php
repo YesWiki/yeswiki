@@ -69,7 +69,7 @@ if (isset($_GET['jsonp_callback']))
 				if ($this->page && $this->page['id'] != $_GET['previous'])	{
 					$error = _t('TAGS_ALERT_PAGE_ALREADY_MODIFIED');
 				} else { // store
-					$body = str_replace("\r", '', utf8_decode($body));
+					$body = str_replace("\r", '', $body);
 					
 					// teste si la nouvelle page est differente de la précédente 
 					if(rtrim($body)==rtrim($this->page["body"])) {

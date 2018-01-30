@@ -1,6 +1,5 @@
 <?php
-
-# namespace YesWiki;
+namespace YesWiki;
 
 # ***** BEGIN LICENSE BLOCK *****
 # This file is part of DotClear.

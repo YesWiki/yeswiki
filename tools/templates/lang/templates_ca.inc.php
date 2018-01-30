@@ -19,7 +19,7 @@
 // | License; altrament, escriviu a la Free Software Foundation,                                          |
 // | Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                                        |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fitxer de traducció al català de l'extensió Templates
 *
@@ -113,5 +113,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'FOR_2_OR_3_COLUMN_THEMES' => 'Per a temes amb 2 o 3 columnes',
 'VERTICAL_MENU_PAGE' => 'El menú vertical',
 'RIGHT_COLUMN_PAGE' => 'La columna dreta'
+
+// actions/setwikidefaultheme.php
+'TEMPLATE_FORCE_TEMPLATE' => 'Força per a tot el wiki',
+)
 
 ));

@@ -2,3 +2,6 @@
 
 ===Gérer les thèmes des pages===
 {{gererthemes}}
+-----
+===Gérer le thème par défaut du wiki===
+{{setwikidefaulttheme}}

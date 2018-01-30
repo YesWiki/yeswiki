@@ -32,12 +32,11 @@ if (!isset($GLOBALS['check_' . $pagetag]['panel'])) {
 if ($GLOBALS['check_' . $pagetag]['panel']) {
     $headingID = uniqid('heading');
     $collapseID = uniqid('collapse');
-
-    if (isset($GLOBALS['check_'.$pagetag ]['accordion_uniqueID'])) {
-        $accordionID = $GLOBALS['check_'.$pagetag ]['accordion_uniqueID'];
+    if (isset($GLOBALS['check_'.$pagetag]['accordion_uniqueID'])) {
+        $accordionID = $GLOBALS['check_'.$pagetag]['accordion_uniqueID'];
     }
 
-    $data = "";
+    $data = '';
     if (is_array($data)) {
         foreach ($data as $key => $value) {
             $data .= ' data-'.$key.'="'.$value.'"';

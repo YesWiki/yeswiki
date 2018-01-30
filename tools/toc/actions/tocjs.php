@@ -22,95 +22,96 @@ if (empty($size)) {
 $contentsize = 12 - intval($size);
 
 $script = '
-var align = "'.$align.'";
-var page = $(".page:first");
-var bootstrap3_enabled = (typeof $().emulateTransitionEnd == \'function\');
-if (bootstrap3_enabled) {
-    var rowclass=\'row\';
-    var colclass=\'col-sm-\';
-} else {
-    var rowclass=\'row-fluid\';
-    var colclass=\'span\';
-}
-if (align === "left") {
-    page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().prepend( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
-}
-else {
-    page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
-}
-$.gajus.contents({
-    where: $(\'#tocjs-'.$tag.'\'),
-    index: $(\'.page h1, .page h2, .page h3, .page h4, .page h5\')
-}).on(\'change.contents.gajus\', function (event, change) {
-    if (change.previous) {
-        change.previous.anchor.removeClass(\'active\').parents(\'li\').removeClass(\'active\');
+$(document).ready(function () {
+    var align = "'.$align.'";
+    var page = $(".page:first");
+    var bootstrap3_enabled = (typeof $().emulateTransitionEnd == \'function\');
+    if (bootstrap3_enabled) {
+        var rowclass=\'row\';
+        var colclass=\'col-sm-\';
+    } else {
+        var rowclass=\'row-fluid\';
+        var colclass=\'span\';
     }
-    change.current.anchor.addClass(\'active\').parents(\'li\').addClass(\'active\');
-});
-
-var $window = $(window)
-var $body = $(document.body)
-var navbarheight = $(\'#yw-topnav\').height();
-var pagestartHeight = page.offset().top - navbarheight;
-var $sideBar = $(\'#tocjs-'.$tag.'\');
-
-var pagetitles = $body.find(\'.page h1, .page h2, .page h3, .page h4, .page h5\');
-pagetitles.each(function(i) {
-    $(this).html($(this).text());
-});
-
-$body.scrollspy({
-    target: \'#tocjs-'.$tag.'\',
-    offset: '.$offset.'
-});
-
-$(\'#tocjs-'.$tag.' a\').click(function (e) {
-    e.preventDefault();
-
-    var link = $(this).attr(\'href\');
-
-    $(\'html, body\').animate({
-        scrollTop: $(link).offset().top - '.$offset.'
-    }, 500);
-})
-
-$window.on(\'resize\', function () {
-    $body.scrollspy(\'refresh\')
-    // We were resized. Check the position of the nav box
-    $sideBar.affix(\'checkPosition\')
-})
-
-$window.on(\'load\', function () {
-    $body.scrollspy(\'refresh\');
-    $sideBar.affix({
-        offset: {
-            top: pagestartHeight,
-            bottom: function () {
-                // We can\'t cache the height of the footer, since it could change
-                // when the window is resized. This function will be called every
-                // time the window is scrolled or resized
-                return $(\'.footer\').outerHeight(true)
-            }
+    if (align === "left") {
+        page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().prepend( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
+    }
+    else {
+        page.addClass(colclass+"'.$contentsize.'").wrap( "<div class=\'"+rowclass+"\'></div>" ).parent().append( "<div class=\'"+colclass+"'.$size.' no-dblclick\'><div id=\'tocjs-'.$tag.'\' class=\'bs-sidebar hidden-print\' role=\'complementary\'></div></div>" );
+    }
+    $.gajus.contents({
+        where: $(\'#tocjs-'.$tag.'\'),
+        index: $(\'.page h1, .page h2, .page h3, .page h4, .page h5\')
+    }).on(\'change.contents.gajus\', function (event, change) {
+        if (change.previous) {
+            change.previous.anchor.removeClass(\'active\').parents(\'li\').removeClass(\'active\');
         }
-    })
-    $sideBar.on(\'affixed.bs.affix\', function (e) {
-      $sideBar.css(\'top\', navbarheight + 20);
-    })
-    $sideBar.on(\'affix-top.bs.affix\', function (e) {
-      $sideBar.css(\'top\', 0);
+        change.current.anchor.addClass(\'active\').parents(\'li\').addClass(\'active\');
+    });
+
+    var $window = $(window)
+    var $body = $(document.body)
+    var navbarheight = $(\'#yw-topnav\').height();
+    var pagestartHeight = page.offset().top - navbarheight;
+    var $sideBar = $(\'#tocjs-'.$tag.'\');
+
+    var pagetitles = $body.find(\'.page h1, .page h2, .page h3, .page h4, .page h5\');
+    pagetitles.each(function(i) {
+        $(this).html($(this).text());
+    });
+
+    $body.scrollspy({
+        target: \'#tocjs-'.$tag.'\',
+        offset: '.$offset.'
+    });
+
+    $(\'#tocjs-'.$tag.' a\').click(function (e) {
+        e.preventDefault();
+
+        var link = $(this).attr(\'href\');
+
+        $(\'html, body\').animate({
+            scrollTop: $(link).offset().top - '.$offset.'
+        }, 500);
     })
 
+    $window.on(\'resize\', function () {
+        $body.scrollspy(\'refresh\')
+        // We were resized. Check the position of the nav box
+        $sideBar.affix(\'checkPosition\')
+    })
 
-    setTimeout(function () {
-        // Check the position of the nav box ASAP
-        $sideBar.affix(\'checkPosition\')
-    }, 10);
-    setTimeout(function () {
-        // Check it again after a while (required for IE)
-        $sideBar.affix(\'checkPosition\')
-    }, 100);
-});
-';
+    $window.on(\'load\', function () {
+        $body.scrollspy(\'refresh\');
+        $sideBar.affix({
+            offset: {
+                top: pagestartHeight,
+                bottom: function () {
+                    // We can\'t cache the height of the footer, since it could change
+                    // when the window is resized. This function will be called every
+                    // time the window is scrolled or resized
+                    return $(\'.footer\').outerHeight(true)
+                }
+            }
+        })
+        $sideBar.on(\'affixed.bs.affix\', function (e) {
+        $sideBar.css(\'top\', navbarheight + 20);
+        })
+        $sideBar.on(\'affix-top.bs.affix\', function (e) {
+        $sideBar.css(\'top\', 0);
+        })
+
+
+        setTimeout(function () {
+            // Check the position of the nav box ASAP
+            $sideBar.affix(\'checkPosition\')
+        }, 10);
+        setTimeout(function () {
+            // Check it again after a while (required for IE)
+            $sideBar.affix(\'checkPosition\')
+        }, 100);
+    });
+});';
 $this->AddJavascriptFile('tools/toc/libs/vendor/contents.min.js');
 $this->AddJavascript($script);
 echo '<style>

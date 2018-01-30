@@ -1086,7 +1086,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             // Redirection pour eviter la revalidation du formulaire
             $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
               .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-            header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams, true));
+            header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             exit;
         } else {
             echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
@@ -2048,11 +2048,8 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     );
 
     // on rajoute les bibliothèques js nécéssaires
-    $GLOBALS['wiki']
-
-        ->addJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui-1.9.1.custom.min.js');
-    $GLOBALS['wiki']
-        ->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
     // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
     $templatetoload = 'themes/tools/bazar/templates/lists_edit.tpl.html';
     if (!is_file($templatetoload)) {
@@ -2704,21 +2701,20 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
  *
  * @return string HTML
  */
-function baz_voir_fiche($danslappli, $idfiche)
+function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
     //si c'est un tableau avec les valeurs de la fiche
     if (is_array($idfiche)) {
         // on deplace le tableau et on donne la bonne valeur a id fiche
         $fichebazar['values'] = $idfiche;
         $idfiche = $fichebazar['values']['id_fiche'];
-        $fichebazar['form'] = baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     } else {
         // on recupere les valeurs de la fiche
         $fichebazar['values'] = baz_valeurs_fiche($idfiche);
 
         // on recupere les infos du type de fiche
-        $fichebazar['form'] =
-        baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     }
 
     $res = '';
@@ -3581,7 +3577,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
                     }
                 } elseif ($islist) {
                     $facettevalue[$val['id']]['type'] = 'liste';
-                    $facettevalue[$val['id']]['source'] = str_replace(array('checkbox', 'liste'), '', $key);
+                    $facettevalue[$val['id']]['source'] = $val['values']['id'];
                     // liste ou checkbox
                     $tabval = explode(',', $value);
                     foreach ($tabval as $tval) {
@@ -4576,12 +4572,12 @@ function getAllParameters_carto($wiki, array &$param)
     }
 
     /*
-     * iconfield : designe le champ utilise pour la couleur des marqueurs
+     * iconfield : designe le champ utilise pour les icones des marqueurs
      */
     $param['iconfield'] = isset($_GET['iconfield']) ? $_GET['iconfield'] : $wiki->GetParameter('iconfield');
 
     /*
-     * icon : couleur des marqueurs
+     * icon : icone des marqueurs
      */
     $param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
 

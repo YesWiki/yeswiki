@@ -80,7 +80,7 @@ if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
 if ($GLOBALS['check_' . $pagetag]['section']) {
     echo '<!-- start of section -->
     <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
-        .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
+        .(!empty($bgcolor) ? 'background:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
     if (is_array($data)) {

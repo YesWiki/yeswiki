@@ -63,6 +63,7 @@ function _t($textkey)
 
 /**
  * Convert the text in the page's charset, or in the datadase's charset
+ * deprecated : now all is utf8mb4
  *
  * @param mixed the text
  * @param string the page's encoding
@@ -71,45 +72,16 @@ function _t($textkey)
  */
 function _convert($text, $fromencoding, $database = false)
 {
-    if (is_array($text)) {
+    include_once 'includes/Encoding.php';
+    if (isset($GLOBALS['wiki']->config['db_charset']) and $GLOBALS['wiki']->config['db_charset'] == 'utf8mb4') {
+        return $text;
+    } else if (is_array($text)) {
         $arraytext = array();
         foreach ($text as $key => $value) {
             $arraytext[$key] = _convert($value, $fromencoding, $database);
         }
         return $arraytext;
     } else {
-        /*
-        $cp1252_map = array(
-            "\xc2\x80" => "\xe2\x82\xac", // EURO SIGN 
-            "\xc2\x82" => "\xe2\x80\x9a", // SINGLE LOW-9 QUOTATION MARK 
-            "\xc2\x83" => "\xc6\x92",    // LATIN SMALL LETTER F WITH HOOK 
-            "\xc2\x84" => "\xe2\x80\x9e", // DOUBLE LOW-9 QUOTATION MARK 
-            "\xc2\x85" => "\xe2\x80\xa6", // HORIZONTAL ELLIPSIS 
-            "\xc2\x86" => "\xe2\x80\xa0", // DAGGER 
-            "\xc2\x87" => "\xe2\x80\xa1", // DOUBLE DAGGER 
-            "\xc2\x88" => "\xcb\x86",    // MODIFIER LETTER CIRCUMFLEX ACCENT 
-            "\xc2\x89" => "\xe2\x80\xb0", // PER MILLE SIGN 
-            "\xc2\x8a" => "\xc5\xa0",    // LATIN CAPITAL LETTER S WITH CARON 
-            "\xc2\x8b" => "\xe2\x80\xb9", // SINGLE LEFT-POINTING ANGLE QUOTATION 
-            "\xc2\x8c" => "\xc5\x92",    // LATIN CAPITAL LIGATURE OE 
-            "\xc2\x8e" => "\xc5\xbd",    // LATIN CAPITAL LETTER Z WITH CARON 
-            "\xc2\x91" => "\xe2\x80\x98", // LEFT SINGLE QUOTATION MARK 
-            "\xc2\x92" => "\xe2\x80\x99", // RIGHT SINGLE QUOTATION MARK 
-            "\xc2\x93" => "\xe2\x80\x9c", // LEFT DOUBLE QUOTATION MARK 
-            "\xc2\x94" => "\xe2\x80\x9d", // RIGHT DOUBLE QUOTATION MARK 
-            "\xc2\x95" => "\xe2\x80\xa2", // BULLET 
-            "\xc2\x96" => "\xe2\x80\x93", // EN DASH 
-            "\xc2\x97" => "\xe2\x80\x94", // EM DASH 
-            "\xc2\x98" => "\xcb\x9c",    // SMALL TILDE 
-            "\xc2\x99" => "\xe2\x84\xa2", // TRADE MARK SIGN 
-            "\xc2\x9a" => "\xc5\xa1",    // LATIN SMALL LETTER S WITH CARON 
-            "\xc2\x9b" => "\xe2\x80\xba", // SINGLE RIGHT-POINTING ANGLE QUOTATION
-            "\xc2\x9c" => "\xc5\x93",    // LATIN SMALL LIGATURE OE 
-            "\xc2\x9e" => "\xc5\xbe",    // LATIN SMALL LETTER Z WITH CARON 
-            "\xc2\x9f" => "\xc5\xb8"      // LATIN CAPITAL LETTER Y WITH DIAERESIS
-        );
-        */
-
         if ($database) {
             if ($fromencoding != "ISO-8859-1" && $fromencoding != "ISO-8859-15") {
                 return mb_convert_encoding(
@@ -117,16 +89,14 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
                 );
+                //return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }
-        } else {
+        } else {         
             if ($fromencoding != YW_CHARSET) {
-                return mb_convert_encoding(
-                    $text,
-                    "UTF-8",
-                    mb_detect_encoding($text, "UTF-8, ".YW_CHARSET.", ISO-8859-1, ISO-8859-15", true)
-                );
+                $text = \ForceUTF8\Encoding::toUTF8($text);
+                return \ForceUTF8\Encoding::fixUTF8($text);
             } else {
                 return $text;
             }
@@ -163,8 +133,8 @@ function detectAvailableLanguages()
  */
 function detectPreferedLanguage($available_languages, $http_accept_language = "auto", $page = '')
 {
-    // first choice : if lang changed in url
     if (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) {
+        // first choice : if lang changed in url
         return $_GET['lang'];
     } elseif (isset($_POST["config"])) {
         // just for installation
@@ -181,7 +151,7 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
         // page's metadata lang
         $GLOBALS['wiki']->metadatas = $GLOBALS['wiki']->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
         if (!empty($GLOBALS['wiki']->metadatas)) {
-            $GLOBALS['wiki']->metadatas =  array_map('utf8_decode', json_decode($GLOBALS['wiki']->metadatas, true));
+            $GLOBALS['wiki']->metadatas =  json_decode($GLOBALS['wiki']->metadatas, true);
         }
         if (isset($GLOBALS['wiki']->metadatas['lang']) && in_array($GLOBALS['wiki']->metadatas['lang'], $available_languages)) {
             return $GLOBALS['wiki']->metadatas['lang'];
@@ -271,11 +241,10 @@ function initI18n()
 }
 
 /**
- * Update the table of translation, based on the information gathered in the page, eventually
+ * Update the table of translation, based on the information from current page
  * Must be run once initI18n() was..
  *
  *  @string $page    name of current WikiPage to check for informations on language
- *
  */
 function loadpreferredI18n($page = '')
 {
@@ -283,7 +252,7 @@ function loadpreferredI18n($page = '')
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        require_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
+        include_once 'lang/yeswiki_'.$GLOBALS['prefered_language'].'.php';
     }
     return;
 }

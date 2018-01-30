@@ -54,6 +54,9 @@ $config['wakka_version'] = WAKKA_VERSION;
 $config['yeswiki_version'] = YESWIKI_VERSION;
 $config['yeswiki_release'] = YESWIKI_RELEASE;
 
+// set database encoding : for new installs it's utf8mb4, older wiki will launch an db conversion 
+$config['db_charset'] = 'utf8mb4';
+
 // convert config array into PHP code
 $configCode = "<?php\n// wakka.config.php "._t('CREATED').' '.strftime('%c')."\n// "._t('DONT_CHANGE_YESWIKI_VERSION_MANUALLY')." !\n\n\$wakkaConfig = ";
 if (function_exists('var_export')) {
@@ -79,6 +82,7 @@ if ($fp) {
 
     echo    "<br />\n<div class=\"alert alert-success\"><strong>"._t('FINISHED_CONGRATULATIONS').' !</strong><br />'._t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE').' <tt>wakka.config.php</tt> ('._t('THIS_COULD_BE_UNSECURE').').</div>';
     echo "<div class=\"form-actions\">\n<a class=\"btn btn-primary btn-large continuer\" href=\"",$config['base_url'],'">'._t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE')."</a>\n</div>\n";
+    header('Location: '.$config['base_url'].$config['root_page']);
 } else {
     // complain
     echo    "<br />\n<div class=\"alert alert-danger\"><strong>"._t('WARNING').'</strong> :</span> '._t('CONFIGURATION_FILE').' <tt>',$wakkaConfigLocation,'</tt> '._t('CONFIGURATION_FILE_NOT_CREATED').'.<br />'.

@@ -1,4 +1,10 @@
 <?php
+// do not change this line, you fool. In fact, don't change anything! Ever!
+define('WAKKA_VERSION', '0.1.1');
+define('WIKINI_VERSION', '0.5.0');
+define("YESWIKI_VERSION", 'cercopitheque');
+define("YESWIKI_RELEASE", '2017-11-25-1');
+define('T_START', microtime(true));
 
 // operational constants
 define('WAKKA_ENGINE', 'wakka.php');

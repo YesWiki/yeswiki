@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fichier de traduction en espagnol de l'extension Templates
 *
@@ -143,5 +143,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'TEMPLATE_OWNER' => 'Proprietario',
 'TEMPLATE_ACTIONS' => 'Acciones',
 'TEMPLATE_MODIFY' => 'Modificar',
+
+// actions/setwikidefaultheme.php
+'TEMPLATE_FORCE_TEMPLATE' => 'Fuerza para todo el wiki.',
 )
 );
