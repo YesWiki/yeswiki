@@ -2701,21 +2701,20 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
  *
  * @return string HTML
  */
-function baz_voir_fiche($danslappli, $idfiche)
+function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
     //si c'est un tableau avec les valeurs de la fiche
     if (is_array($idfiche)) {
         // on deplace le tableau et on donne la bonne valeur a id fiche
         $fichebazar['values'] = $idfiche;
         $idfiche = $fichebazar['values']['id_fiche'];
-        $fichebazar['form'] = baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     } else {
         // on recupere les valeurs de la fiche
         $fichebazar['values'] = baz_valeurs_fiche($idfiche);
 
         // on recupere les infos du type de fiche
-        $fichebazar['form'] =
-        baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     }
 
     $res = '';
