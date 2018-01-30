@@ -254,9 +254,10 @@ switch ($version) {
 
 
         //insertion des pages de documentation et des pages standards
-        $d = dir('setup/doc/');
+	$setupDocDir = 'setup/doc/' ;
+        $d = dir($setupDocDir);
         while ($doc = $d->read()) {
-            if (is_dir($doc) || substr($doc, -4) != '.txt') {
+            if (is_dir($setupDocDir.$doc) || substr($doc, -4) != '.txt') {
                 continue;
             }
             $pagecontent = str_replace('{{root_page}}', $config['root_page'], implode('', file("setup/doc/$doc")));
