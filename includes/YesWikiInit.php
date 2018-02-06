@@ -209,9 +209,6 @@ class Init
         if (strtolower($wakkaConfig['debug']) == 'yes') {
             ini_set('display_errors', 1);
             error_reporting(E_ALL);
-        } else {
-            ini_set('display_errors', 0);
-            error_reporting(0);
         }
 
         if ($wakkaConfig['wakka_version'] && (! $wakkaConfig['wikini_version'])) {
