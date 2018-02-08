@@ -540,7 +540,7 @@ class Pager_Common
         $this->linkTags .= $this->_getPrevLinkTag();
         $this->linkTags .= $this->_getNextLinkTag();
         $this->linkTags .= $this->_getLastLinkTag();
-        
+
         $this->linkTagsRaw['first'] = $this->_getFirstLinkTag(true);
         $this->linkTagsRaw['prev']  = $this->_getPrevLinkTag(true);
         $this->linkTagsRaw['next']  = $this->_getNextLinkTag(true);
@@ -838,7 +838,7 @@ class Pager_Common
             if (array_key_exists($this->_urlVar, $this->_linkData)) {
                 $onclick = str_replace('%d', $this->_linkData[$this->_urlVar], $this->_onclick);
             }
-            return sprintf('<a href="%s"%s%s%s%s title="%s">%s</a>',
+            return sprintf('<li><a href="%s"%s%s%s%s title="%s">%s</a></li>',
                            htmlentities($this->_url . $href, ENT_COMPAT, 'UTF-8'),
                            empty($this->_classString) ? '' : ' '.$this->_classString,
                            empty($this->_attributes)  ? '' : ' '.$this->_attributes,

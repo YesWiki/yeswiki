@@ -7,7 +7,7 @@
  * @author   2018 Florian Schmitt <mrflos@lilo.org>
  * @license  GNU/GPL version 3
  * @link     https://yeswiki.net
- * 
+ *
  *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -35,9 +35,9 @@
 
 namespace YesWiki;
 
-/** 
+/**
  * Yeswiki initialization class
- * 
+ *
  * @category Wiki
  * @package  YesWiki
  * @author   2018 Florian Schmitt <mrflos@lilo.org>
@@ -53,7 +53,7 @@ class Init
 
     /**
      * Create a new Init instance.
-     * 
+     *
      * @param array $config initial config array (empty by default)
      *
      * @return void
@@ -117,7 +117,7 @@ class Init
                         $this->method = $args[1];
                     }
                 }
-                $_GET['wiki'] = $this->page.'/'.$this->method;
+                $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
             }
         }
     }
@@ -126,7 +126,7 @@ class Init
      * Check in the config file exists and provide default configuration
      *
      * @param array $wakkaConfig initial config array (empty by default)
-     * 
+     *
      * @return array the configuration
      */
     public function getConfig($wakkaConfig = array())
@@ -162,7 +162,7 @@ class Init
             'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
         );
         unset($_rewrite_mode);
-        
+
         if (file_exists($this->configFile)) {
             include $this->configFile;
         } else {
@@ -171,7 +171,7 @@ class Init
             $yeswikiDefaultConfig['wakka_name'] = _t('MY_YESWIKI_SITE');
         }
         $wakkaConfig = array_merge($yeswikiDefaultConfig, $wakkaConfig);
-        
+
         // give a default timezone to avoid error
         if ($wakkaConfig['timezone'] != $yeswikiDefaultConfig['timezone']) {
             date_default_timezone_set($wakkaConfig['timezone']);
@@ -301,7 +301,7 @@ class Init
      * Initialize the api's parameters
      *
      * @param array $args arguments passed by url
-     * 
+     *
      * @return void
      */
     public function initApi($args)
