@@ -3700,22 +3700,31 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     if (!empty($params['pagination'])) {
         // Mise en place du Pager
-        require_once 'Pager/Pager.php';
+        require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
+        $tab = array_merge($_POST, $_GET);
+        // use wiki get param instead of short camelCase param
+        if (isset($tab[$GLOBALS['wiki']->getPageTag()])) {
+            unset($tab[$GLOBALS['wiki']->getPageTag()]);
+            unset($_GET[$GLOBALS['wiki']->getPageTag()]);
+        }
         $param = array(
-            'mode' => BAZ_MODE_DIVISION,
+            'mode' => $GLOBALS['wiki']->config['BAZ_MODE_DIVISION'],
             'perPage' => $params['pagination'],
-            'delta' => BAZ_DELTA,
+            'delta' => $GLOBALS['wiki']->config['BAZ_DELTA'],
             'httpMethod' => 'GET',
-            'extraVars' => array_merge($_POST, $_GET),
+            'path' => $GLOBALS['wiki']->getBaseUrl(),
+            'extraVars' => $tab,
             'altNext' => _t('BAZ_SUIVANT'),
             'altPrev' => _t('BAZ_PRECEDENT'),
             'nextImg' => _t('BAZ_SUIVANT'),
             'prevImg' => _t('BAZ_PRECEDENT'),
             'itemData' => $fiches['fiches'],
+            'curPageSpanPre' => '<li class="active"><a>',
+            'curPageSpanPost' => '</a></li>'
         );
         $pager = &Pager::factory($param);
         $fiches['fiches'] = $pager->getPageData();
-        $fiches['pager_links'] = '<div class="bazar_numero">'.$pager->links.'</div>'."\n";
+        $fiches['pager_links'] = '<div class="bazar_numero text-center">'."\n".'<ul class="pagination">'."\n".$pager->links.'</ul>'."\n".'</div>'."\n";
     } else {
         $fiches['pager_links'] = '';
     }
