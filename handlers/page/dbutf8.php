@@ -30,7 +30,7 @@ if ($this->userIsAdmin()) {
         $queryConvert="ALTER TABLE `".$table."` CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
         $output .=  '<hr>'.$queryConvert.'<br>';
         $this->query($queryConvert);
-        
+
         //Change Field
         if ($table == $this->config['table_prefix'].'pages') {
             $cols = $this->LoadAll("SHOW COLUMNS FROM ".$table);
@@ -43,8 +43,12 @@ if ($this->userIsAdmin()) {
                 if ($row['Type']=='mediumtext' or $row['Type']=='text' or $row['Type']=='longtext' or $row['Type']=="blob") {
                     // Printing results in HTML
                     foreach ($data as $line) {
-                        //Convert TO String                     
-                        $transform = \ForceUTF8\Encoding::toUTF8(utf8_decode($line[$row['Field']]));
+                        //Convert TO String
+                        $transform = $line[$row['Field']];
+                        if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
+                            $transform = \ForceUTF8\Encoding::toUTF8($transform);
+                        }
+                        $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                         $transform = mysqli_real_escape_string($this->dblink, $transform);
                         $updateQuery = 'UPDATE '.$table.' SET `'.$row['Field'].'` = "'.$transform.'" WHERE `id`="'.$line['id'].'"';
                         $this->query($updateQuery);
@@ -63,7 +67,10 @@ if ($this->userIsAdmin()) {
                     // Printing results in HTML
                     foreach ($data as $line) {
                         //Convert TO String
-                        $transform = \ForceUTF8\Encoding::toUTF8($line[$row['Field']]);
+                        $transform = $line[$row['Field']];
+                        if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
+                            $transform = \ForceUTF8\Encoding::toUTF8($transform);
+                        }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                         $transform = mysqli_real_escape_string($this->dblink, $transform);
                         $updateQuery = 'UPDATE '.$table.' SET `'.$row['Field'].'` = "'.$transform.'" WHERE `bn_id_nature`="'.$line['bn_id_nature'].'"';

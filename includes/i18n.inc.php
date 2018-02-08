@@ -93,12 +93,12 @@ function _convert($text, $fromencoding, $database = false)
             } else {
                 return $text;
             }
-        } else {         
-            if ($fromencoding != YW_CHARSET) {
+        } else {
+            if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
                 $text = \ForceUTF8\Encoding::toUTF8($text);
                 return \ForceUTF8\Encoding::fixUTF8($text);
             } else {
-                return $text;
+                return \ForceUTF8\Encoding::fixUTF8($text);
             }
         }
     }
