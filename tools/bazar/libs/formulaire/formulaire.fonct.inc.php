@@ -1642,7 +1642,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** map() - Ajoute un élément de carte google au formulaire
+/** map() - Ajoute un élément de carte leaflet au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
  * @param    mixed   Le tableau des valeurs des différentes option pour la carte google
@@ -1651,8 +1651,71 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $lat, $lon, $classe, $obligatoire) = $tableau_template;
-
+    list($type, $lat, $lon, $classe, $obligatoire, $autocomplete) = $tableau_template;
+    if ($autocomplete) {
+        $autocomplete = explode(',', $autocomplete);
+        $js = '$(document).ready(function () {
+        $("input[name=\''.$autocomplete[0].'\'],input[name=\''.$autocomplete[1].'\']").attr("autocomplete", "off");
+        var $inputcp = $("input[name=\''.$autocomplete[0].'\']");
+        $inputcp.typeahead({
+          items: \'all\',
+          source: function(input, callback) {
+            var result = [];
+            if (input.length === 5) {
+              $.get("https://geo.api.gouv.fr/communes?codePostal="+input).done(function( data ) {
+                if (data.length > 0) {
+                  $.each(data, function (index, value) {
+                    result[index] = {id: value.codesPostaux[0], name: value.codesPostaux[0]+" "+value.nom, ville: value.nom}
+                  });
+                } else {
+                  result[0] = {id: input, name: \'Pas de ville trouvée pour le code postal \'+input};
+                }
+                callback(result);
+              });
+            } else {
+              result[0] = {id: \'0\', name: \'Veuillez entrer 5 chiffres pour voir les villes associées au code postal\'};
+              callback(result);
+            }
+          },
+          autoSelect: false,
+          afterSelect: function(item) {
+            $inputcp.val(item.id);
+            $inputville.val(item.ville);
+            $(".btn-geolocate-address").click();
+          }
+        });
+        var $inputville = $("input[name=\''.$autocomplete[1].'\']");
+        $inputville.typeahead({
+          items: 12,
+          minLength: 3,
+          source: function(input, callback) {
+            var result = [];
+            if (input.length >= 3) {
+              $.get("https://geo.api.gouv.fr/communes?nom="+input).done(function( data ) {
+                if (data.length > 0) {
+                  $.each(data, function (index, value) {
+                    result[index] = {id: value.codesPostaux[0], name: value.nom+" "+value.codesPostaux[0], ville: value.nom}
+                  });
+                } else {
+                  result[0] = {id: input, name: \'Pas de ville trouvée pour la recherche: \'+input};
+                }
+                callback(result);
+              });
+            } else {
+              result[0] = {id: \'0\', name: \'Veuillez entrer les 3 premieres lettres pour voir les villes associées\'};
+              callback(result);
+            }
+          },
+          autoSelect: false,
+          afterSelect: function(item) {
+            $inputcp.val(item.id);
+            $inputville.val(item.ville);
+            $(".btn-geolocate-address").click();
+          }
+        });
+      });';
+        $GLOBALS['wiki']->AddJavascript($js);
+    }
     if ($mode == 'saisie') {
         if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
             $http = 'https';
@@ -1667,7 +1730,10 @@ $(document).ready(function() {
         zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
     });
     var geocodedmarker;
-    var OsmLayer = new L.TileLayer(\''.$http.'://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\', {maxZoom: 18});
+    var OsmLayer = new L.TileLayer(\''.$http.'://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\', {
+      maxZoom: 18,
+      attribution: \'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors\'
+    });
     map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].').addLayer(OsmLayer);
 
     $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
@@ -1678,7 +1744,7 @@ $(document).ready(function() {
     $("body").on("blur", "#bf_latitude, #bf_longitude", function() {
         var point = L.latLng($("#bf_latitude").val(), $("#bf_longitude").val());
         geocodedmarker.setLatLng(point);
-        map.panTo( point, {animate:true});
+        map.panTo(point, {animate:true}).zoomIn();
     });
     function showAddress(map) {
         var address = "";
@@ -1719,7 +1785,7 @@ $(document).ready(function() {
         map.panTo( geocodedmarker.getLatLng(), {animate:true});
         $(\'#bf_latitude\').val(point.lat);
         $(\'#bf_longitude\').val(point.lng);
-        
+
         geocodedmarker.on("dragend",function(ev){
             this.openPopup();
             var changedPos = ev.target.getLatLng();
@@ -1744,7 +1810,7 @@ $(document).ready(function() {
     });
     ';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
-    
+
         $geocodingscript = '';
         $deflat = '';
         $deflon = '';
@@ -1879,7 +1945,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 $tabquery = '';
             }
-            $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], $val_type["bn_type_fiche"], 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : '');
+            $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], '', 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : '');
             foreach ($tab_result as $fiche) {
                 $valeurs_fiche_liste = json_decode($fiche["body"], true);
                 if (YW_CHARSET != 'UTF-8') {
@@ -2035,7 +2101,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $tabquery,
             'alphabetique',
             $tableau_template[1],
-            $val_type["bn_type_fiche"],
+            '',
             1,
             '',
             '',

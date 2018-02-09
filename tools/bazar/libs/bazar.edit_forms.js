@@ -80,7 +80,7 @@ $(document).ready(function() {
               tablerow += '<br>' + data[idform].bn_description;
             }
 
-            tablerow += existingmessage + '</td><td>' + data[idform].bn_type_fiche + '</td><td>' + data[idform].bn_id_nature + '</td></tr>';
+            tablerow += existingmessage + '</td><td>' + data[idform].bn_id_nature + '</td></tr>';
             resultimporttable.find('tbody').append(tablerow);
           }
         }

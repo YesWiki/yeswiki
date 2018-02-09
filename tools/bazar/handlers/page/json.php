@@ -102,7 +102,6 @@ if (isset($_REQUEST['demand'])) {
             } else {
                 $_POST['id_typeannonce'] = $form;
                 $formdata = baz_valeurs_formulaire($form);
-                $_POST['categorie_fiche'] = $formdata['bn_type_fiche'];
                 $res = validateForm($_POST);
                 if ($res['result']) {
                     $fiche = baz_insertion_fiche($_POST);
@@ -128,10 +127,6 @@ if (isset($_REQUEST['demand'])) {
                 $GLOBALS['_BAZAR_']['typeannonce'] = $tab_nature['bn_label_nature'];
                 $GLOBALS['_BAZAR_']['condition'] = $tab_nature['bn_condition'];
                 $GLOBALS['_BAZAR_']['template'] = $tab_nature['bn_template'];
-                $GLOBALS['_BAZAR_']['commentaire'] = $tab_nature['bn_commentaire'];
-                $GLOBALS['_BAZAR_']['appropriation'] = $tab_nature['bn_appropriation'];
-                $GLOBALS['_BAZAR_']['class'] = $tab_nature['bn_label_class'];
-                $GLOBALS['_BAZAR_']['categorie_nature'] = $tab_nature['bn_type_fiche'];
                 $type = (isset($_REQUEST['type']) ? $_REQUEST['type'] : 'form');
                 if ($type == 'entry') { // template d'une fiche bazar
                     $res = '';
