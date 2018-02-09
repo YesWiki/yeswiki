@@ -20,7 +20,8 @@ if ($this->userIsAdmin()) {
 
     foreach ($tables as $table) {
         if ($table == $this->config['table_prefix'].'triples') {
-            $query = 'ALTER TABLE `'.$this->config['table_prefix'].'triples` CHANGE `resource` `resource` VARCHAR(191), CHANGE `property` `property` VARCHAR(191)';
+            $query = 'ALTER TABLE `'.$this->config['table_prefix'].'triples` CHANGE `resource`'
+              .' `resource` VARCHAR(191), CHANGE `property` `property` VARCHAR(191)';
             $output .=  '<hr>'.$query.'<br>';
             $this->query($query);
         }
@@ -38,8 +39,6 @@ if ($this->userIsAdmin()) {
             $output .=  $dataQuery.'<br>';
             $data = $this->LoadAll($dataQuery);
             foreach ($cols as $row) {
-                // $colQuery = 'ALTER TABLE '.$table.' MODIFY `'.$row['Field'].'` '.$row['Type'].' CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci';
-                // $output .=  $colQuery.'<br>';
                 if ($row['Type']=='mediumtext' or $row['Type']=='text' or $row['Type']=='longtext' or $row['Type']=="blob") {
                     // Printing results in HTML
                     foreach ($data as $line) {
@@ -52,7 +51,6 @@ if ($this->userIsAdmin()) {
                         $transform = mysqli_real_escape_string($this->dblink, $transform);
                         $updateQuery = 'UPDATE '.$table.' SET `'.$row['Field'].'` = "'.$transform.'" WHERE `id`="'.$line['id'].'"';
                         $this->query($updateQuery);
-                        //if ($line['id'] == '161') { $output .= '<h1>'.$transform.'</h1>';}
                     }
                 }
             }
