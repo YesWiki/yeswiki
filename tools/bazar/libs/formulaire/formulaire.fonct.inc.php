@@ -718,11 +718,26 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
                     .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                     .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
-            $option = array('required' => 'required', 'size' => $tableau_template[3], 'class' => 'form-control');
-            $formtemplate->addElement('password', 'mot_de_passe_wikini', '<span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . $bulledaide, $option);
-            $formtemplate->addElement('password', 'mot_de_passe_repete_wikini', '<span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')', $option);
+            $output = '<div class="control-group form-group">
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . $bulledaide.' : </label>
+            <div class="controls col-sm-9">
+            <div class="input-group">
+            <input class="form-control" type="password" required name="mot_de_passe_wikini" size="'.$tableau_template[3].'" />
+            </div>
+            </div>
+            </div>
+            <div class="control-group form-group">
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. $bulledaide.' : </label>
+            <div class="controls col-sm-9">
+            <div class="input-group">
+            <input class="form-control" type="password" required name="mot_de_passe_repete_wikini" size="'.$tableau_template[3].'" />
+            </div>
+            </div>
+            </div>
+            ';
+            return $output;
         } else {
-            $formtemplate->addElement('hidden', 'nomwiki', $valeurs_fiche['nomwiki']);
+            return '<input type="hidden" name="nomwiki" value="'.$valeurs_fiche['nomwiki'].'" />'."\n";
         }
     } elseif ($mode == 'requete') {
         $sendmail = true;
@@ -1673,7 +1688,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 callback(result);
               });
             } else {
-              result[0] = {id: \'0\', name: \'Veuillez entrer 5 chiffres pour voir les villes associées au code postal\'};
+              result[0] = {id: input, name: \'Veuillez entrer 5 chiffres pour voir les villes associées au code postal\'};
               callback(result);
             }
           },
@@ -1702,7 +1717,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 callback(result);
               });
             } else {
-              result[0] = {id: \'0\', name: \'Veuillez entrer les 3 premieres lettres pour voir les villes associées\'};
+              result[0] = {id: input, name: \'Veuillez entrer les 3 premieres lettres pour voir les villes associées\'};
               callback(result);
             }
           },
