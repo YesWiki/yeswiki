@@ -98,6 +98,13 @@ function _convert($text, $fromencoding, $database = false)
                 $text = \ForceUTF8\Encoding::toUTF8($text);
                 return \ForceUTF8\Encoding::fixUTF8($text);
             } else {
+                //return $text;
+// if (strstr($text, 'disposition selon'))  {
+//   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
+//   exit;
+//
+// }
+
                 return \ForceUTF8\Encoding::fixUTF8($text);
             }
         }

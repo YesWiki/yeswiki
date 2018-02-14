@@ -230,14 +230,12 @@ class Init
         $dblink = @mysqli_connect(
             $this->config['mysql_host'],
             $this->config['mysql_user'],
-            $this->config['mysql_password']
+            $this->config['mysql_password'],
+            $this->config['mysql_database'],
+            isset($this->config['mysql_port']) ? $this->config['mysql_port'] : ini_get("mysqli.default_port")
         );
         if ($dblink) {
-            if (! @mysqli_select_db($dblink, $this->config['mysql_database'])) {
-                @mysqli_close($dblink);
-                $dblink = false;
-            }
-            if (isset($this->config['db_charset']) and  $this->config['db_charset'] === 'utf8mb4') {
+            if (isset($this->config['db_charset']) and $this->config['db_charset'] === 'utf8mb4') {
                 // necessaire pour les versions de mysql qui ont un autre encodage par defaut
                 mysqli_set_charset($dblink, 'utf8mb4');
             }

@@ -44,7 +44,7 @@ if ($this->userIsAdmin()) {
                     foreach ($data as $line) {
                         //Convert TO String
                         $transform = $line[$row['Field']];
-                        if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
+                        if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
                             $transform = \ForceUTF8\Encoding::toUTF8($transform);
                         }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
@@ -66,7 +66,7 @@ if ($this->userIsAdmin()) {
                     foreach ($data as $line) {
                         //Convert TO String
                         $transform = $line[$row['Field']];
-                        if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
+                        if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
                             $transform = \ForceUTF8\Encoding::toUTF8($transform);
                         }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
