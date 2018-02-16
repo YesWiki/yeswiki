@@ -212,9 +212,9 @@ if (isset($_REQUEST['demand'])) {
                     return $a['bn_label_nature'] < $b['bn_label_nature'];
                 }
             }
-//var_dump($formval);
             usort($formval, 'sortByLabel');
-            echo json_encode(_convert($formval, 'UTF-8'));
+            $formval = _convert($formval, 'UTF-8');
+            echo json_encode($formval);
             break;
         case "entries":
             // liste de fiches bazar
