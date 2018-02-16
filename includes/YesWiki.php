@@ -1,7 +1,7 @@
 <?php
 /**
  * Yeswiki is a great wiki
- * 
+ *
  * @category Wiki
  * @package  YesWiki
  * @author   2002, Hendrik Mans <hendrik@mans.de>
@@ -16,7 +16,7 @@
  * @author   2009-2018 Florian Schmitt <mrflos@lilo.org>
  * @license  GNU/GPL version 3
  * @link     https://yeswiki.net
- * 
+ *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -112,7 +112,7 @@ class Wiki
      */
     public function __construct($config = array())
     {
-        $init = new \YesWiki\Init($config); 
+        $init = new \YesWiki\Init($config);
         $this->config = $init->config;
         $this->tag = $init->page;
         $this->method = $init->method;
@@ -2034,9 +2034,6 @@ class Wiki
             $this->Redirect($this->href("", $this->config['root_page']));
         }
 
-        // load page lang
-        loadpreferredI18n($tag);
-
         if ((! $this->GetUser() && isset($_COOKIE['name'])) && ($user = $this->LoadUser($_COOKIE['name'], $_COOKIE['password']))) {
             $this->SetUser($user, $_COOKIE['remember']);
         }
@@ -2059,9 +2056,9 @@ class Wiki
 
     /**
      * Load all extensions
-     * 
+     *
      * @param mixed $wiki main YesWiki object
-     * 
+     *
      * @return void
      */
     public function loadExtensions()
@@ -2069,9 +2066,9 @@ class Wiki
         $wakkaConfig = $this->config;
         $wiki = $this;
         $page = $wiki->tag;
-    
+        loadpreferredI18n($page);
         $plugins_root = 'tools/';
-        
+
         include_once 'includes/YesWikiPlugins.php';
         $objPlugins = new \YesWiki\Plugins($plugins_root);
         $objPlugins->getPlugins(true);
@@ -2081,13 +2078,13 @@ class Wiki
         $wikiClassesContent[] = '';
 
         foreach ($plugins_list as $k => $v) {
-            
+
             $pluginBase = $plugins_root . $k . '/';
 
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
             }
-            
+
             // language files : first default language, then preferred language
             if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
                 include $pluginBase . 'lang/' . $k . '_fr.inc.php';
@@ -2095,7 +2092,7 @@ class Wiki
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
                 include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
             }
-            
+
             if (file_exists($pluginBase . 'actions')) {
                 $wakkaConfig['action_path'] = $pluginBase . 'actions/' . ':' . $wakkaConfig['action_path'];
             }
@@ -2120,7 +2117,7 @@ class Wiki
         }
         eval('$wiki  = new ' . $wikiClasses[count($wikiClasses) - 1] . '($wakkaConfig);');
         $wiki->config = $wakkaConfig;
-       
+
         return $wiki;
     }
 }
