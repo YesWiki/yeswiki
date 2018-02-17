@@ -22,8 +22,12 @@ class PackageCore extends Package
         if ($this->extractionPath === null) {
             throw new \Exception("Le paquet n'a pas été décompressé.", 1);
         }
-        $this->extractionPath .= '/';
-        if ($res = opendir($this->extractionPath)) {
+        if (substr($this->extractionPath, -1) != '/') {
+            $this->extractionPath .= '/';
+        }
+        // get the first subfolder extracted from the zip (it contains everything)
+        $dirs = array_filter(glob($this->extractionPath.'*'), 'is_dir');
+        if ($res = opendir($dirs[0])) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
                 if (!in_array($file, $this->ignoredFiles)) {
