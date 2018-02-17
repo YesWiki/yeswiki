@@ -183,14 +183,14 @@ class Encoding {
         $text[$k] = self::toUTF8($v);
       }
       return $text;
-    } 
-    
+    }
+
     if(!is_string($text)) {
       return $text;
     }
-       
+
     $max = self::strlen($text);
-  
+
     $buf = "";
     for($i = 0; $i < $max; $i++){
         $c1 = $text{$i};
@@ -274,12 +274,16 @@ class Encoding {
       return $text;
     }
 
+    //ugly hack by mrflos for visible problems after convertion
+    $text = str_replace(array('â€™', 'Å“'), array('\'', '&oelig;'), $text);
+
     $last = "";
     while($last <> $text){
       $last = $text;
       $text = self::toUTF8(static::utf8_decode($text, $option));
     }
     $text = self::toUTF8(static::utf8_decode($text, $option));
+
     return $text;
   }
 

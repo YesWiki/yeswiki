@@ -1,7 +1,7 @@
 <?php
 /**
  * Yeswiki start file
- * 
+ *
  * Instantiates the main YesWiki class, loads the extensions,
  * and runs the current page
  *

@@ -392,7 +392,6 @@ function baz_afficher_formulaire_import()
                                 $valeur['id_fiche'] =
                                 genere_nom_wiki($valeur['bf_titre']);
                                 $valeur['id_typeannonce'] = $id;
-                                $valeur['categorie_fiche'] = $GLOBALS['params']['categorienature'];
                                 $valeur['date_creation_fiche'] =
                                 date('Y-m-d H:i:s', time());
                                 $valeur['date_maj_fiche'] =
@@ -836,7 +835,7 @@ function baz_afficher_formulaire_export()
         $query,
         'alphabetique',
         $id,
-        $val_formulaire['bn_type_fiche'],
+        '',
         1,
         '',
         '',
@@ -1024,7 +1023,6 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                         <tr>
                             <th>'._t('BAZ_FORMULAIRE').'</th>
                             <th style="width:220px;">'._t('BAZ_ACTIONS').'</th>
-                            <th>'._t('BAZ_CATEGORIE').'</th>
                         </tr>
                     </thead>
                     <tbody>'."\n";
@@ -1052,7 +1050,6 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                             .'<i class="glyphicon glyphicon-plus icon-plus"></i> '
                             ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a>&nbsp;&nbsp;'."\n"
                             .'</td>
-                            <td>'.$ligne['bn_type_fiche'].'</td>
                         </tr>';
                 }
                 $res .= '</tbody>
@@ -1243,7 +1240,6 @@ function baz_requete_bazar_fiche($valpost)
 
     $valpost['id_typeannonce'] = isset($valpost['id_typeannonce']) ? $valpost['id_typeannonce'] : $_REQUEST['id_typeannonce'];
     $form = baz_valeurs_formulaire($valpost['id_typeannonce']);
-    $valpost['categorie_fiche'] = $form['bn_type_fiche'];
 
     // on récupérer la date de création si elle existe déjà, on l'initialise sinon
     $datecreation = $GLOBALS['wiki']->LoadSingle(
@@ -1954,7 +1950,7 @@ function bazPrepareFormData($form)
  *
  * @return array
  */
-function baz_valeurs_formulaire($idformulaire = '', $category = '')
+function baz_valeurs_formulaire($idformulaire = '')
 {
     if (is_array($idformulaire)) {
         $tabf = array();
@@ -1973,9 +1969,6 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
     } elseif ($idformulaire != '') {
         if (!isset($GLOBALS['_BAZAR_']['form'][$idformulaire])) {
             $requete = 'SELECT * FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature WHERE bn_id_nature='.$idformulaire;
-            if (!empty($category)) {
-                $requete .= ' AND bn_type_fiche="'.$category.'"';
-            }
             $tab_resultat = $GLOBALS['wiki']->LoadSingle($requete);
             if ($tab_resultat) {
                 foreach ($tab_resultat as $key => $value) {
@@ -1998,9 +1991,6 @@ function baz_valeurs_formulaire($idformulaire = '', $category = '')
         return $GLOBALS['_BAZAR_']['form'][$idformulaire];
     } else {
         $requete = 'SELECT * FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature';
-        if (!empty($category)) {
-            $requete .= ' WHERE bn_type_fiche="'.$category.'"';
-        }
         $requete .= ' ORDER BY bn_label_nature ASC';
         $tab_resultat = $GLOBALS['wiki']->LoadAll($requete);
         foreach ($tab_resultat as $key => $value) {
@@ -2102,13 +2092,11 @@ function baz_gestion_formulaire()
         // il y a des donnees pour ajouter un nouveau formulaire
         $requete =
         'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix'].
-        'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
+        'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
         .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
         .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
         .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
-        .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'", "'
-        .addslashes(_convert($_POST['bn_label_class'], YW_CHARSET, true)).'", "'
-        .addslashes(_convert($_POST['bn_type_fiche'], YW_CHARSET, true)).'")';
+        .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
         $resultat = $GLOBALS['wiki']->query($requete);
 
         $res .=
@@ -2124,9 +2112,7 @@ function baz_gestion_formulaire()
         .'`bn_label_nature`="'.addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'" ,'
         .'`bn_template`="'.addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'" ,'
         .'`bn_description`="'.addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'" ,'
-        .'`bn_condition`="'.addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'" ,'
-        .'`bn_label_class`="'.addslashes(_convert($_POST['bn_label_class'], YW_CHARSET, true)).'" ,'
-        .'`bn_type_fiche`="'.addslashes(_convert($_POST['bn_type_fiche'], YW_CHARSET, true)).'"'
+        .'`bn_condition`="'.addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'"'
         .' WHERE `bn_id_nature`='.$_POST['bn_id_nature'];
         $resultat = $GLOBALS['wiki']->query($requete);
 
@@ -2157,7 +2143,7 @@ function baz_gestion_formulaire()
             $_GET['action_formulaire'] != 'new')) {
         $res = '';
         $tab_forms['forms'] = array();
-        $forms = baz_valeurs_formulaire('', $GLOBALS['params']['categorienature']);
+        $forms = baz_valeurs_formulaire('');
 
         // il y a des formulaires à importer
         if (isset($_POST['imported-form'])) {
@@ -2174,9 +2160,7 @@ function baz_gestion_formulaire()
                     .'`bn_label_nature`="'.addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'" ,'
                     .'`bn_template`="'.addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'" ,'
                     .'`bn_description`="'.addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'" ,'
-                    .'`bn_condition`="'.addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'" ,'
-                    .'`bn_label_class`="'.addslashes(_convert($value['bn_label_class'], YW_CHARSET, true)).'" ,'
-                    .'`bn_type_fiche`="'.addslashes(_convert($value['bn_type_fiche'], YW_CHARSET, true)).'"'
+                    .'`bn_condition`="'.addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'"'
                     .' WHERE `bn_id_nature`='.$value['bn_id_nature'];
 
                     $forms[$value['bn_id_nature']] = $value;
@@ -2188,13 +2172,11 @@ function baz_gestion_formulaire()
                     }
                     $requete =
                     'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix'].
-                    'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`, `bn_label_class` ,`bn_type_fiche`)'.' VALUES ('.$id.', "fr-FR", "'
+                    'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.$id.', "fr-FR", "'
                     .addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'", "'
                     .addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'", "'
                     .addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_label_class'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_type_fiche'], YW_CHARSET, true)).'")';
+                    .addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'")';
                     // on ajoute le formulaire à la liste des formulaires existants
                     $forms[$id] = $value;
                 }
@@ -2209,7 +2191,6 @@ function baz_gestion_formulaire()
             foreach ($forms as $key => $ligne) {
                 $tab_forms['forms'][$ligne['bn_id_nature']]['title'] = $ligne['bn_label_nature'];
                 $tab_forms['forms'][$ligne['bn_id_nature']]['description'] = $ligne['bn_description'];
-                $tab_forms['forms'][$ligne['bn_id_nature']]['category'] = $ligne['bn_type_fiche'];
                 $tab_forms['forms'][$ligne['bn_id_nature']]['can_edit'] = baz_a_le_droit('saisie_formulaire');
                 $tab_forms['forms'][$ligne['bn_id_nature']]['can_delete'] = $GLOBALS['wiki']->UserIsAdmin();
             }
@@ -2603,7 +2584,6 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                         'bf_longitude',
                         'id_typeannonce',
                         'createur',
-                        'categorie_fiche',
                         'date_creation_fiche',
                         'date_debut_validite_fiche',
                         'date_fin_validite_fiche',
@@ -2708,7 +2688,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         // on deplace le tableau et on donne la bonne valeur a id fiche
         $fichebazar['values'] = $idfiche;
         $idfiche = $fichebazar['values']['id_fiche'];
-        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $fichebazar['form'] = (is_array($form) and is_array($form[$fichebazar['values']['id_typeannonce']])) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     } else {
         // on recupere les valeurs de la fiche
         $fichebazar['values'] = baz_valeurs_fiche($idfiche);
@@ -2754,8 +2734,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
 
 
     // debut de la fiche
-    $res .= '<div class="BAZ_cadre_fiche '.
-    htmlspecialchars($fichebazar['form']['bn_label_class']).'">'."\n";
+    $res .= '<div class="BAZ_cadre_fiche id'.
+    $fichebazar['form']['bn_id_nature'].'">'."\n";
 
     // si un template specifique pour un type de fiche existe
     if (file_exists('themes/tools/bazar/templates/fiche-'.
@@ -3252,12 +3232,6 @@ function baz_requete_recherche_fiches(
     $q = '',
     $facettesearch = 'OR'
 ) {
-    //si les parametres ne sont pas rentres, on prend les variables globales
-    if ($categorie_fiche == '' &&
-        !empty($GLOBALS['params']['categorienature'])) {
-        $categorie_fiche = $GLOBALS['params']['categorienature'];
-    }
-
     //requete pour recuperer toutes les PageWiki etant des fiches bazar
     $requete_pages_wiki_bazar_fiches =
     'SELECT DISTINCT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples '.
@@ -4043,13 +4017,6 @@ function baz_afficher_flux_RSS()
         $id = '';
     }
 
-    if (isset($_GET['categorie_fiche'])) {
-        $categorie_fiche = $_GET['categorie_fiche'];
-        $urlrss .= '&amp;categorie_fiche='.$categorie_fiche;
-    } else {
-        $categorie_fiche = '';
-    }
-
     if (isset($_GET['nbitem'])) {
         $nbitem = $_GET['nbitem'];
         $urlrss .= '&amp;nbitem='.$nbitem;
@@ -4097,7 +4064,7 @@ function baz_afficher_flux_RSS()
         $query,
         '',
         $id,
-        $categorie_fiche,
+        '',
         $statut,
         $utilisateur,
         20,
