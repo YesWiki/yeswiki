@@ -27,7 +27,8 @@ class PackageCore extends Package
         }
         // get the first subfolder extracted from the zip (it contains everything)
         $dirs = array_filter(glob($this->extractionPath.'*'), 'is_dir');
-        if ($res = opendir($dirs[0])) {
+        $this->extractionPath = $dirs[0].'/';
+        if ($res = opendir($this->extractionPath)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
                 if (!in_array($file, $this->ignoredFiles)) {
@@ -44,9 +45,7 @@ class PackageCore extends Package
 
     public function upgradeTools()
     {
-        // get branch from repo url
-        $t = explode('/', $this->address);
-        $src = $this->extractionPath . $t[3] . '/tools';
+        $src = $this->extractionPath . '/tools';
         $desPath = $this->localPath . '/tools';
         $file2ignore = array('.', '..');
         if ($res = opendir($src)) {
