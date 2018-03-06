@@ -1057,6 +1057,13 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             }
         }
     }
+    // test si on est dans une iframe
+    $iframe = strstr($_SERVER["HTTP_REFERER"], '/iframe');
+    if ($iframe) {
+        $iframe = 'iframe';
+    } else {
+        $iframe = '';
+    }
 
     //------------------------------------------------------------------------------------------------
     // AFFICHAGE DU FORMULAIRE CORRESPONDANT AU TYPE DE FICHE CHOISI PAR L'UTILISATEUR
@@ -1083,7 +1090,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             // Redirection pour eviter la revalidation du formulaire
             $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
               .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-            header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams, false));
+            header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             exit;
         } else {
             echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
@@ -1103,14 +1110,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 // Redirection pour eviter la revalidation du formulaire
                 $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
                   .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-                header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams, true));
+                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, true));
             } else {
-                header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag()));
+                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag()));
             }
             exit;
         } else {
-           echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
-       }
+            echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
+        }
     }
 
     return $res;
@@ -4067,10 +4074,18 @@ function baz_afficher_flux_RSS()
         '',
         $statut,
         $utilisateur,
-        20,
+        '',
         true,
         $q
     );
+    $tableau_flux_rss = searchResultstoArray($tableau_flux_rss, array());
+    $GLOBALS['ordre'] = 'desc';
+    $GLOBALS['champ'] = 'date_creation_fiche';
+    usort($tableau_flux_rss, 'champCompare');
+
+    // Limite le nombre de résultat au nombre de fiches demandées
+    $tableau_flux_rss = array_slice($tableau_flux_rss, 0, $nbitem);
+
 
     require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR
     .'XML/Util.php';
@@ -4120,8 +4135,6 @@ function baz_afficher_flux_RSS()
     if (count($tableau_flux_rss) > 0) {
         // Creation des items : titre + lien + description + date de publication
         foreach ($tableau_flux_rss as $ligne) {
-            $ligne = json_decode($ligne['body'], true);
-            $ligne = _convert($ligne, 'UTF-8');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('item');
             $xml .= "\r\n        ";

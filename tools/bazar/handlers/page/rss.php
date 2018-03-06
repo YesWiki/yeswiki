@@ -28,6 +28,6 @@ header('Content-type: text/xml; charset=UTF-8');
 if ($HasAccessRead=$this->HasAccess("read")) {
     if ($this->page) {
         // display rss
-        echo baz_afficher_flux_RSS() ;
+        echo baz_afficher_flux_RSS();
     }
 }
