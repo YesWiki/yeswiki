@@ -5,6 +5,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
+include_once 'includes/email.inc.php';
 include_once 'tools/contact/libs/contact.functions.php';
 
 $output = '';
