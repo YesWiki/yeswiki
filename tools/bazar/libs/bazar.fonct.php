@@ -1306,7 +1306,7 @@ function baz_requete_bazar_fiche($valpost)
 
     // si un mail d envoie de la fiche est present, on envoie!
     if (isset($destmail)) {
-        include_once 'tools/contact/libs/contact.functions.php';
+        include_once 'includes/email.inc.php';
         $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
                 ->config['base_url']);
         $sujet = removeAccents('['.str_replace(array('http://', 'https://'), '', $lien).'] Votre fiche : '.$valpost['bf_titre']);
