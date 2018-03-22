@@ -84,17 +84,17 @@ figcaption *:last-child {
 /* fichiers attaches */
 .attached_file.attach_left, .attached_file.left {
 float:left;
-margin:0 18px 18px 0 !important;
+margin:0 18px 18px 0;
 }
 .attached_file.attach_right, .attached_file.right {
 float:right;
-margin:0 0 18px 18px !important;
+margin:0 0 18px 18px;
 }
 .attached_file.attach_center, .attached_file.center  {
 display:table;
 clear:both;
 text-align:center;
-margin:0 auto 18px auto !important;
+margin:0 auto 18px auto;
 width:auto;
 }
 
