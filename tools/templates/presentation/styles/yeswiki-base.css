@@ -219,3 +219,12 @@ overflow: auto;
   -moz-column-count: 4; /* Firefox */
   column-count: 4;
 }
+
+.full-width {
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
