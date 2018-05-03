@@ -1058,7 +1058,8 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         }
     }
     // test si on est dans une iframe
-    $iframe = strstr($_SERVER["HTTP_REFERER"], '/iframe');
+    $ref = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+    $iframe = strstr($ref, '/iframe');
     if ($iframe) {
         $iframe = 'iframe';
     } else {
@@ -3701,7 +3702,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             'prevImg' => _t('BAZ_PRECEDENT'),
             'itemData' => $fiches['fiches'],
             'curPageSpanPre' => '<li class="active"><a>',
-            'curPageSpanPost' => '</a></li>'
+            'curPageSpanPost' => '</a></li>',
+            'useSessions' => false,
+            'closeSession' => false,
         );
         $pager = &Pager::factory($param);
         $fiches['fiches'] = $pager->getPageData();
@@ -4472,6 +4475,11 @@ function getAllParameters($wiki)
     if (empty($param['groupsexpanded'])) {
         $param['groupsexpanded'] = 'true';
     }
+
+    /*
+     * Agenda : calendrier plus petit
+     */
+    $param['minical'] = $wiki->GetParameter('minical');
 
     // Parametres pour Bazarliste avec carto
     getAllParameters_carto($wiki, $param);

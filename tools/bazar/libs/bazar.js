@@ -582,7 +582,10 @@ $(document).ready(function () {
       $entries: $('.bazar-entry', $container),
     };
     $filters.on('click', data, updateFilters);
-    jQuery(window).on('load', data, updateFilters);
+    jQuery(window).ready(function(e) {
+      e.data = data;
+      updateFilters(e);
+    });
   });
 
   // gestion de l'historique : on reapplique les filtres

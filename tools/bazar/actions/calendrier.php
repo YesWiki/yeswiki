@@ -35,7 +35,6 @@ if ($GLOBALS['params']['template'] == $GLOBALS['wiki']->config['default_bazar_te
     $GLOBALS['params']['template'] = 'calendar.tpl.html';
 }
 
-$GLOBALS['params']['minical'] = $this->GetParameter('minical');
 
 // affichage à l'écran
 echo displayResultList($results, $GLOBALS['params'], false);
