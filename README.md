@@ -20,3 +20,23 @@ YesWiki can be installed in about ten minutes on a server which supports **PHP >
 
 ## History
 YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedia.org/wiki/WakkaWiki) called [Wikini](http://wikini.net), and hence has strong French language support.
+
+## Authors and contributors
+**Initial WakkaWiki**
+2002, 2003 Hendrik Mans <hendrik@mans.de>
+
+**Wikini**
+2003 Carlo ZOTTMANN
+2002, 2003, 2004 David DELON
+2002, 2003, 2004 Charles NEPOTE
+2002, 2003, 2004 Patrick PAUL
+2003  Eric DELORD
+2003, 2004  Eric FELDSTEIN
+2003 Jean-Pascal MILCENT
+2003 Jéréme DESQUILBET
+2003 Erus UMBRAE
+2004 David VANTYGHEM
+2004 Jean Christophe ANDRE
+
+**YesWiki**
+See https://github.com/YesWiki/yeswiki/graphs/contributors

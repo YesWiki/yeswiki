@@ -14,7 +14,7 @@ if (!isset($wakkaConfig['use_alerte'])) {
 if (!isset($wakkaConfig['use_hashcash'])) {
     $wakkaConfig['use_hashcash'] = true;
 }
-// antispam nopspam pour commentaires
+// antispam nospam pour commentaires
 if (!isset($wakkaConfig['use_nospam'])) {
     $wakkaConfig['use_nospam'] = false;
 }

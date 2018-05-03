@@ -30,8 +30,16 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
     }
     if (!$mail_receiver) {
+        //on prend le squelette du theme qui pourrait contenir des actions avec des mails
+        $chemin = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+        if (file_exists($chemin)) {
+            $file_content = file_get_contents($chemin);
+        } else {
+            $file_content = file_get_contents('tools/templates/'.$chemin);
+        }
+        $body = str_replace('{WIKINI_PAGE}', $this->page["body"], $file_content);
         $mail_receiver = (isset($_POST['nbactionmail'])) ?
-            FindMailFromWikiPage($this->page["body"], $_POST['nbactionmail']) : false;
+            FindMailFromWikiPage($body, $_POST['nbactionmail']) : false;
     }
     $name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
 

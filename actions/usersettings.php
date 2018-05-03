@@ -61,8 +61,7 @@ else if ($user = $this->GetUser())
 	{
 			// check password
 			$password = $_POST["password"];			
-			if (preg_match("/ /", $password)) $error = _t('NO_SPACES_IN_PASSWORD').".";
-			else if (strlen($password) < 5) $error = _t('PASSWORD_TOO_SHORT').".";
+			if (strlen($password) < 5) $error = _t('PASSWORD_TOO_SHORT').".";
 			else if ($user["password"] != md5($_POST["oldpass"])) $error = _t('WRONG_PASSWORD')."."; 
 			else
 			{
@@ -184,7 +183,6 @@ else
 			else if (!$email) $error = _t('YOU_MUST_SPECIFY_AN_EMAIL').".";
 			else if (!preg_match("/^.+?\@.+?\..+$/", $email)) $error = _t('THIS_IS_NOT_A_VALID_EMAIL').".";
 			else if ($confpassword != $password) $error = _t('PASSWORDS_NOT_IDENTICAL').".";
-			else if (preg_match("/ /", $password)) $error = _t('NO_SPACES_IN_PASSWORD').".";
 			else if (strlen($password) < 5) $error = _t('PASSWORD_TOO_SHORT').". "._t('PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM').".";
 			else
 			{

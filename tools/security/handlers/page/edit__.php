@@ -43,7 +43,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             $ChampsCaptcha = '
               <div class="media">
                 <div class="media-left">
-                  <img src="tools/security/captcha.php?'. $crypt .'" alt="captcha">
+                  <img src="'.$this->getBaseUrl().'/tools/security/captcha.php?'. $crypt .'" alt="captcha">
                 </div>
                 <div class="media-body">
                   <strong>'._t('CAPTCHA_VERIFICATION').'</strong>

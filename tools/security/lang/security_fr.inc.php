@@ -34,5 +34,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'HASHCASH_ANTISPAM_ACTIVATED' => 'Protection anti-spam active',
 'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'Votre commentaire n\'a pas &eacute;t&eacute; enregistr&eacute;, le wiki pense que vous êtes un robot.',
 'HASHCASH_GENERAL_PASSWORD' => 'Mot de passe général',
-'HASHCASH_SEND' => 'Envoyer'
+'HASHCASH_SEND' => 'Envoyer',
+'CAPTCHA_ERROR_PAGE_UNSAVED' => 'La page n\'a pas été enregistrée car vous n\'avez pas rentré le mot de vérification.',
+'CAPTCHA_ERROR_WRONG_WORD' => 'La page n\'a pas été enregistrée car le mot de vérification rentré n\'est pas correct.',
+'CAPTCHA_VERIFICATION' => 'V&eacute;rification pour sauver la page',
+'CAPTCHA_WRITE' => 'Ecrire ici le mot présent dans l\'image',
 ));

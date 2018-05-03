@@ -1,4 +1,5 @@
 <?php
+include_once 'includes/email.inc.php';
 
 function FindMailFromWikiPage($wikipage, $nbactionmail)
 {
@@ -108,7 +109,7 @@ function sendPeriodicalMailToGroup($period, $groups, $oldjson)
 {
     $newjson = array();
     $nextday = strtotime("tomorrow");
-    $nextmonday = strtotime('next monday');
+    $nextmonday = strtotime('last monday');
     $nextmonth = strtotime('first day of next month midnight');
     $sub = '';
     if ($period == 'day') {
@@ -133,7 +134,7 @@ function sendPeriodicalMailToGroup($period, $groups, $oldjson)
             $groupmembers = explode("\n", $groupmembers);
             $groupmembers = array_map('trim', $groupmembers);
             $groupmembers = array_filter($groupmembers);
-            $mailheader =   '['.str_replace(array('/wakka.php?wiki=', 'http://', 'https://'), '', $GLOBALS['wiki']->config['base_url']).']';
+            $mailheader =   '['.str_replace(array('/wakka.php?wiki=', 'http://', 'https://', '/?'), '', $GLOBALS['wiki']->config['base_url']).']';
             $subject = $mailheader.' '.getPageTitle($page).' '.date("d-m-Y").$sub;
             $message_html = $GLOBALS['wiki']->Format('{{include page="'.$page['tag'].'"}}');
             $message_html = preg_replace(
@@ -160,16 +161,17 @@ function sendPeriodicalMailToGroup($period, $groups, $oldjson)
 function sendEmailsToSubscribers()
 {
     $cache_file = 'files/mailcron.json';
-    $cache_life = '1'; //caching time, in seconds, 10 minutes
+    $cache_life = '600'; //caching time, in seconds, 10 minutes
+//$cache_life = '0'; // POUR TESTER
 
     $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
     $today = time();
-
+    // on fait un systeme de cache pour que traitement du fichier ne soit pas fait a chaque appel
     if (!$filemtime or ($today - $filemtime >= $cache_life)) {
         // on recupere les dates des derniers envois
         $cronfile = @file_get_contents($cache_file);
         $oldjson = json_decode($cronfile, true);
-
+//var_dump($today, $oldjson);
         // on cree un fichier vide pour eviter que les envois soient multiples
         $newjson = array();
         file_put_contents($cache_file, json_encode($newjson));
@@ -190,9 +192,5 @@ function sendEmailsToSubscribers()
         $monthGroups = array_filter($groups, "filterMonthlyMailGroups");
         $newjson = $newjson + sendPeriodicalMailToGroup('month', $monthGroups, $oldjson);
         file_put_contents($cache_file, json_encode($newjson));
-    } else {
-        readfile($cache_file);
-        $cronfile = file_get_contents($cache_file);
-        echo $cache_file;
     }
 }
