@@ -268,12 +268,11 @@ class Init
             $CookiePath .= '/';
         }
 
-        $a = session_get_cookie_params();
-        session_set_cookie_params($a['lifetime'], $CookiePath);
-        unset($a);
-
         // test if session exists, because the wiki object is instanciated for every plugin
         if (!isset($_SESSION)) {
+            $a = session_get_cookie_params();
+            session_set_cookie_params($a['lifetime'], $CookiePath);
+            unset($a);
             session_start();
         }
 
