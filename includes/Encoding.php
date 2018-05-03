@@ -275,7 +275,7 @@ class Encoding {
     }
 
     //ugly hack by mrflos for visible problems after convertion
-    $text = str_replace(array('â€™', 'Å“'), array('\'', '&oelig;'), $text);
+    $text = str_replace(array('â€™', 'Å“', 'Ã?'), array('\'', '&oelig;', 'É'), $text);
 
     $last = "";
     while($last <> $text){

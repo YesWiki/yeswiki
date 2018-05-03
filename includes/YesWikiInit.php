@@ -240,6 +240,12 @@ class Init
             if (isset($this->config['db_charset']) and $this->config['db_charset'] === 'utf8mb4') {
                 // necessaire pour les versions de mysql qui ont un autre encodage par defaut
                 mysqli_set_charset($dblink, 'utf8mb4');
+
+                // dans certains cas (ovh), set_charset ne passe pas, il faut faire une requete sql
+                $charset = mysqli_character_set_name($dblink);
+                if ($charset != 'utf8mb4') {
+                    mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
+                }
             }
         } else {
             exit(_t('DB_CONNECT_FAIL'));
