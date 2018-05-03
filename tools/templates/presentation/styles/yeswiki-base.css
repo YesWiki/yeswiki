@@ -164,11 +164,6 @@ overflow: auto;
 .dropdown-menu .login-form {margin:0;padding:18px;}
 
 .form-search {margin:0;}
-/*.form-search .search-btn {line-height: 20px;}*/
-
-.slideshow-html, .container-slide-basic .carousel {height:100%}
-.slideshow-body {height:90%}
-.container-slide-basic {padding:18px; height:90%;}
 
 .yeswiki-textarea-full {width:100% !important; height:500px !important;}
 
