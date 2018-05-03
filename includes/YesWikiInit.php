@@ -107,8 +107,10 @@ class Init
                     exit();
                 }
             } elseif ($args[0] == 'api') {
-                $this->initApi($args);
-                exit();
+                $tab = $this->initApi($args);
+                $this->page = $_GET['wiki'] = 'api';
+                $this->method = $tab['function'];
+                $GLOBALS['api_args'] = $tab['args'];            
             } else {
                 $this->page = $args[0];
                 if (isset($args[1]) and !empty($args[1])) {
@@ -257,9 +259,11 @@ class Init
         // determine le chemin pour les cookies
         $a = parse_url($this->config['base_url']);
         $CookiePath = dirname($a['path']);
-        // Fixe la gestion des cookie sous les OS utilisant le \ comme s?parteur de chemin
+
+        // Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
-        // ajoute un '/' terminal sauf si on est ? la racine web
+
+        // ajoute un '/' terminal sauf si on est a la racine web
         if ($CookiePath != '/') {
             $CookiePath .= '/';
         }
@@ -267,6 +271,12 @@ class Init
         $a = session_get_cookie_params();
         session_set_cookie_params($a['lifetime'], $CookiePath);
         unset($a);
+
+        // test if session exists, because the wiki object is instanciated for every plugin
+        if (!isset($_SESSION)) {
+            session_start();
+        }
+
         return $CookiePath;
     }
 
@@ -308,11 +318,11 @@ class Init
         header('Access-Control-Allow-Origin: *');
 
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
-            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
-            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
-            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
-            )) {
+            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])
+                && ($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
+                || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
+                || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT')
+            ) {
                 header('Access-Control-Allow-Credentials: true');
                 header('Access-Control-Allow-Headers: X-Requested-With');
                 header('Access-Control-Allow-Headers: Content-Type');
@@ -328,11 +338,12 @@ class Init
         // call to YesWiki api
         if (isset($args[1]) and !empty($args[1])) {
             array_shift($args);
-            $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD']).str_replace(' ', '', ucwords(strtolower(implode(' ', $args))));
-            echo json_encode('YesWiki api - function: '.$apiFunctionName);
-            //cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
+            $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD'])
+              .ucwords(strtolower($args[0]));
+            array_shift($args);
+            return array('function' => $apiFunctionName, 'args' => $args);
         } else {
-            echo json_encode('YesWiki api');
+            return array('function' => 'getApiDocumentation', 'args' => '');
         }
     }
 }

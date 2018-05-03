@@ -114,10 +114,10 @@ class Wiki
     {
         $init = new \YesWiki\Init($config);
         $this->config = $init->config;
+        $this->CookiePath = $init->initCookies();
         $this->tag = $init->page;
         $this->method = $init->method;
         $this->dblink = $init->initDb();
-        $this->CookiePath = $init->initCookies();
     }
 
     // DATABASE
@@ -2026,6 +2026,7 @@ class Wiki
         if ($tag == '') {
             $tag = $this->tag;
         }
+
         if (! $this->method = trim($method)) {
             $this->method = "show";
         }
@@ -2036,6 +2037,21 @@ class Wiki
 
         if ((! $this->GetUser() && isset($_COOKIE['name'])) && ($user = $this->LoadUser($_COOKIE['name'], $_COOKIE['password']))) {
             $this->SetUser($user, $_COOKIE['remember']);
+        }
+
+        if ($tag == 'api') {
+            $func = $this->method;
+            if (function_exists($func)) {
+                echo $func($GLOBALS['api_args']);
+            } else {
+                echo json_encode(
+                    array(
+                    'error' => array('YesWiki api - error - no function: '.$func)
+                    )
+                );
+            }
+            //cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
+            exit();
         }
 
         $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
@@ -2091,6 +2107,10 @@ class Wiki
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
                 include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
+            }
+
+            if (file_exists($pluginBase . 'libs/' . $k . '.api.php')) {
+                include $pluginBase . 'libs/' . $k . '.api.php';
             }
 
             if (file_exists($pluginBase . 'actions')) {
