@@ -1,6 +1,6 @@
 ---
-name: YesWiki issue model
-about: general template for making an issue for YesWiki
+name:  Issue for YesWiki / demande pour YesWiki
+about: Describe a bug or a new feature for YesWiki / Remonter un bogue ou une demande de fonctionnalité YesWiki
 
 ---
 
