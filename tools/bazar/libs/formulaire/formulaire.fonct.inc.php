@@ -1967,7 +1967,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $tab_result = baz_requete_recherche_fiches(
                 $tabquery,
                 'alphabetique',
-                $id,
+                $tableau_template[1],
                 '',
                 1,
                 '',
