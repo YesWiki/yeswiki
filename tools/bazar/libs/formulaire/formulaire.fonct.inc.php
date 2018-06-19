@@ -1185,9 +1185,13 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
+            $link = $valeurs_fiche[$tableau_template[1]];
+            if (!preg_match('/https?:\/\//s', $link)) {
+                $link = 'http://'.$link;
+            }
             $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
-            $html.= '<span class="BAZ_texte">' . "\n" . '<a href="' . $valeurs_fiche[$tableau_template[1]] . '" class="BAZ_lien" target="_blank">';
-            $html.= $valeurs_fiche[$tableau_template[1]] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+            $html.= '<span class="BAZ_texte">' . "\n" . '<a href="' . $link . '" class="BAZ_lien" target="_blank">';
+            $html.= $link . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
         }
 
         return $html;
@@ -1960,7 +1964,17 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 $tabquery = '';
             }
-            $tab_result = baz_requete_recherche_fiches($tabquery, 'alphabetique', $tableau_template[1], '', 1, '', '', false, (!empty($tableau_template[13])) ? $tableau_template[13] : '');
+            $tab_result = baz_requete_recherche_fiches(
+                $tabquery,
+                'alphabetique',
+                $id,
+                '',
+                1,
+                '',
+                '',
+                true,
+                (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+            );
             foreach ($tab_result as $fiche) {
                 $valeurs_fiche_liste = json_decode($fiche["body"], true);
                 if (YW_CHARSET != 'UTF-8') {
