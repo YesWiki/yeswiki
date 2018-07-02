@@ -67,9 +67,26 @@ if ($HasAccessRead=$this->HasAccess("read"))
 			echo "<div class=\"commentinfo\">Ceci est un commentaire sur ",$this->ComposeLinkToPage($this->page["comment_on"], "", "", 0),", post&eacute; par ",$this->Format($this->page["user"])," &agrave; ",$this->page["time"],"</div>";
 		}
 
-		if ($this->page["latest"] == "N")
-		{
-			echo "<div class=\"revisioninfo\">Ceci est une version archiv&eacute;e de <a href=\"",$this->href(),"\">",$this->GetPageTag(),"</a> &agrave; ",$this->page["time"],".</div>";
+		if ($this->page["latest"] == "N") {
+			echo '<div class="alert alert-info">'."\n";
+			echo "Ceci est une version archiv&eacute;e de <a href=\"",$this->href(),"\">",$this->GetPageTag(),"</a> &agrave; ",$this->page["time"];
+			// if this is an old revision, display some buttons
+			if ($this->HasAccess("write")) {
+				$latest = $this->LoadPage($this->tag);
+				?>
+				<?php
+				  $time = isset($_GET['time']) ? $_GET['time'] : '';
+				  echo $this->FormOpen('edit');
+				?>
+				<input type="hidden" name="time" value="<?php echo $time ?>" />
+				<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
+				<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT, YW_CHARSET) ?>" />
+				<input class="btn btn-primary" type="submit" value="R&eacute;&eacute;diter cette version archiv&eacute;e" />
+				<?php echo  $this->FormClose(); ?>
+				<?php
+			}
+
+			echo '</div>'."\n";
 		}
 
 
@@ -78,19 +95,6 @@ if ($HasAccessRead=$this->HasAccess("read"))
 		echo $this->Format($this->page["body"], "wakka");
 		$this->UnregisterLastInclusion();
 
-		// if this is an old revision, display some buttons
-		if (($this->page["latest"] == "N") && $this->HasAccess("write"))
-		{
-			$latest = $this->LoadPage($this->tag);
-			?>
-			<br />
-			<?php echo  $this->FormOpen("edit") ?>
-			<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
-			<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT, YW_CHARSET) ?>" />
-			<input type="submit" value="R&eacute;&eacute;diter cette version archiv&eacute;e" />
-			<?php echo  $this->FormClose(); ?>
-			<?php
-		}
 	}
 }
 else
