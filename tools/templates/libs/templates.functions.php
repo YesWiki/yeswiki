@@ -806,8 +806,10 @@ function getImageFromBody($page, $width, $height)
         $oldpage = $GLOBALS['wiki']->GetPageTag();
         $GLOBALS['wiki']->tag = $page['tag'];
         $GLOBALS['wiki']->page['time'] = $page['time'];
-        $GLOBALS['wiki']->setParameter('desc', $img[1][0]);
-        $GLOBALS['wiki']->setParameter('file', $img[1][0]);
+        if (isset($img[1][0])) {
+            $GLOBALS['wiki']->setParameter('desc', $img[1][0]);
+            $GLOBALS['wiki']->setParameter('file', $img[1][0]);
+        }
         $GLOBALS['wiki']->setParameter('width', $width);
         $GLOBALS['wiki']->setParameter('height', $height);
         if (!class_exists('attach')) {
