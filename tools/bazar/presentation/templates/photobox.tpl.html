@@ -95,6 +95,9 @@ if (count($fiches) > 0) :
 </style>
 <?php
 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/jquery.photobox.js');
-$GLOBALS['wiki']->AddJavascript("$('#gallery" . $GLOBALS['nbgalleries'] . "').photobox('a',{ time:0 });\n");
-?>
-<?php endif; ?>
+$GLOBALS['wiki']->AddJavascript('
+$(document).ready(function () {
+ $(\'#gallery' . $GLOBALS['nbgalleries'] . '\').photobox(\'a\',{ time:0 });
+}
+');
+endif; ?>

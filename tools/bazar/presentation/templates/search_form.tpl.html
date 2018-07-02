@@ -5,7 +5,7 @@
   <div class="bazar-search control-group">
     <div class="input-group input-prepend input-append">
       <span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
-      <input type="text" value="<?php echo $search; ?>" name="q" placeholder="<?php echo _t('BAZ_MOT_CLE'); ?>" class="form-control input-lg">
+      <input type="text" value="<?php echo $search; ?>" name="q" placeholder="<?php echo _t('BAZ_MOT_CLE'); ?>" class="search-input form-control input-lg">
       <?php if (!empty($forms)) : ?>
         <span class="input-group-btn" style="width:auto;max-width:240px;">
           <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id">
@@ -39,5 +39,8 @@
             </span>
     </div>
   </div>
+  <button class="sort" data-sort="name">
+    Trier par nom
+  </button>
 </form>
 <!-- /#search-form -->

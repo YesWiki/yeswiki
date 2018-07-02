@@ -421,7 +421,6 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 	-webkit-box-shadow: 0 0 90px #000;
 }
 
-.facette-container .results .alert-info {padding:10px; margin-bottom:0;}
 .facette-container .panel-heading {cursor: pointer;}
 
 .bazar-lists select {
@@ -447,6 +446,9 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 }
 .entries-list .yeswiki-checkbox {width:100% !important;}
 .yeswiki-input-entries + .bootstrap-tagsinput input {display:block;}
+.pagination .page {
+  min-height: auto;
+}
 
 .bazar-date  {width: 150px !important;}
 input::-webkit-calendar-picker-indicator{

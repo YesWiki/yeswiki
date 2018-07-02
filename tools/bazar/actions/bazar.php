@@ -75,12 +75,14 @@ switch ($GLOBALS['params']['vue']) {
                     $fiche = baz_valeurs_fiche($_REQUEST['id_fiche']);
                     if (!is_array($fiche)) {
                         echo '<div class="alert alert-danger">'
-                            ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '.$_REQUEST['id_fiche'].'</div>';
+                            ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '
+                            .htmlspecialchars($_REQUEST['id_fiche']).'</div>';
                     } else {
                         echo baz_voir_fiche(1, $fiche);
                     }
                 } else {
-                    echo '<div class="alert alert-danger">'._t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE').'</div>';
+                    echo '<div class="alert alert-danger">'
+                        ._t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE').'</div>';
                 }
                 break;
             default:

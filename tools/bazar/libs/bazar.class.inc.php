@@ -83,7 +83,7 @@ function checkBazarAcls($page, $tag)
                     $valeur[$field] = "";
                      // on vide le champ
                 }
-                $valeur = array_map("utf8_encode", $valeur);
+                //$valeur = array_map("utf8_encode", $valeur);
                 $page["body"] = json_encode($valeur);
             }
         }

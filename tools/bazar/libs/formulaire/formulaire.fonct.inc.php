@@ -2010,7 +2010,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($isUrl === false) {
             if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])
                 && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-                if ($tableau_template[3] == 'fiche') {
+                if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                 } else {
                     $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -2221,7 +2221,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
             foreach ($tab_fiche as $fiche) {
                 $html .= '<ul>';
-                if ($tableau_template[3] == 'fiche') {
+                if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html.= baz_voir_fiche(0, $fiche);
                 } else {
                     $val_fiche = baz_valeurs_fiche($fiche);
