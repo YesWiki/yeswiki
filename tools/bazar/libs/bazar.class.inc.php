@@ -20,10 +20,7 @@ public function loadPage($tag, $time = "", $cache = 1)
         if ($type == 'fiche_bazar') {
             $page = $this->checkBazarAcls($page, $tag);
         }
-        // the database is in ISO-8859-15, it must be converted
-        if (isset($page['body'])) {
-            $page['body'] = _convert($page['body'], 'ISO-8859-15');
-        }
+
         // cache result
         if (!$time) {
             $this->CachePage($page, $tag);
@@ -62,11 +59,17 @@ function checkBazarAcls($page, $tag)
     if ($page) {
         $valjson = $page["body"];
         $valeur = json_decode($valjson, true);
-        //$valeur = array_map('utf8_decode', $valeur);
+
         if ($valeur) {
             $val_formulaire = baz_valeurs_formulaire($valeur['id_typeannonce']);
             $fieldname = array();
             foreach ($val_formulaire['template'] as $line) {
+                // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
+                if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
+                    if ($this->getMethod() == 'raw') {
+                        $fieldname[] = $line[1];
+                    }
+                }
                 if (isset($line[11]) && $line[11] != '') {
                     if ($this->CheckAcl($line[11]) == "%") {
                         $line[11] = $this->GetUserName();

@@ -170,7 +170,7 @@ function baz_afficher_formulaire_import()
         }
         //on transforme en entier, pour eviter des attaques
         $id = (int)preg_replace('/[^\d]+/', '', $id);
-        
+
         $urlParams = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_IMPORTER;
         $output .= '<form method="post" action="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'" '.
         'enctype="multipart/form-data" class="form-horizontal">'."\n";
@@ -2707,7 +2707,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['values'] = baz_valeurs_fiche($idfiche);
 
         // on recupere les infos du type de fiche
-        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $f = $fichebazar['values']['id_typeannonce'];
+        $fichebazar['form'] = is_array($form[$f]) ? $form[$f] : baz_valeurs_formulaire($f);
     }
 
     $res = '';

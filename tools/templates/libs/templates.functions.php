@@ -919,12 +919,8 @@ function getDescriptionFromBody($page, $length = 300)
     );
 
     if ($type == 'fiche_bazar') {
-        $valjson = $page["body"];
-        $tab_valeurs = json_decode($valjson, true);
-        if (YW_CHARSET != 'UTF-8') {
-            $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
-        }
-        $desc = baz_voir_fiche(0, $tab_valeurs);
+        $entry = baz_valeurs_fiche($GLOBALS['wiki']->GetPageTag());
+        $desc = baz_voir_fiche(0, $entry);
     } else {
         $desc = $GLOBALS['wiki']->Format($page['body']);
     }
