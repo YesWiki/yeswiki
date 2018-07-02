@@ -1,7 +1,22 @@
 <?php
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined('WIKINI_VERSION')) {
+    die('acc&egrave;s direct interdit');
 }
-echo $this->GetPageTag();
-?>
+
+$content = $this->getParameter('content');
+switch ($content) {
+// todo finish the cases
+case "title":
+    echo "title";
+    break;
+case "description":
+    echo "description";
+    break;
+case "image":
+    echo "image";
+    break;
+default:
+    echo $this->GetPageTag();
+    break;
+}
+
