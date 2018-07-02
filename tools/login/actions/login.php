@@ -70,8 +70,10 @@ $profileurl = $this->GetParameter('profileurl');
 // sauvegarde de l'url d'ou on vient
 $incomingurl = $this->GetParameter('incomingurl');
 if (empty($incomingurl)) {
-    $incomingurl = $this->getBaseUrl()
-      .str_replace(dirname($_SERVER['REQUEST_URI']), '', $_SERVER['REQUEST_URI']);
+    $url = explode('?', $_SERVER['REQUEST_URI']);
+    $d = dirname($url[0].'?');
+    $t = ($d != '/' ? str_replace($d, '', $_SERVER['REQUEST_URI']) : $_SERVER['REQUEST_URI']);
+    $incomingurl = $this->getBaseUrl().$t;
 }
 
 $userpage = $this->GetParameter("userpage");

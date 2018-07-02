@@ -112,7 +112,14 @@ abstract class Package extends Files
     private function downloadFile($sourceUrl)
     {
         $this->downloadedFile = tempnam(realpath('cache'), $this::PREFIX_FILENAME);
-        file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
+        //file_put_contents($this->downloadedFile, fopen($sourceUrl, 'r'));
+        $ch = curl_init($sourceUrl);
+        $fp = fopen($this->downloadedFile, 'wb');
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_exec($ch);
+        curl_close($ch);
+        fclose($fp);
     }
 
     protected function updateAvailable()

@@ -1,7 +1,6 @@
 <?php
 if(count($fiches)>0) : ?>
     <?php echo $info_res;?>
-    <?php echo $pager_links;?>
     <ul class="BAZ_liste <?php echo $param['class'];?>">
     <?php
     foreach($fiches as $fiche): ?>
@@ -28,7 +27,7 @@ if(count($fiches)>0) : ?>
               echo '<i class="'.$icon.'"></i> ';
             }
 
-            echo $fiche['bf_titre'];
+            echo '<span class="entry-title">'.$fiche['bf_titre'].'</span>';
             ?>
           </a>
         </li>

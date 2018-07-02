@@ -31,7 +31,7 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 if ($type == 'fiche_bazar') {
-    $replace = '<input type="hidden" name="body" value="'.htmlspecialchars(json_encode($tab_valeurs), ENT_COMPAT, YW_CHARSET).'" />';
+    $replace = '<input type="hidden" name="body" value="'.htmlspecialchars(json_encode($entry), ENT_COMPAT, YW_CHARSET).'" />';
     if (isset($_GET['time'])) {
         $replace = '<input type="hidden" name="time" value="'.htmlspecialchars($_GET['time'], ENT_COMPAT, YW_CHARSET).'">'."\n".$replace;
     }

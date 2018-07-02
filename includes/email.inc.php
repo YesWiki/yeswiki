@@ -24,7 +24,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         // 0 = off (for production use)
         // 1 = client messages
         // 2 = client and server messages
-        $mail->SMTPDebug = 0;
+        $mail->SMTPDebug = $GLOBALS['wiki']->config['contact_debug'];
         //Ask for HTML-friendly debug output
         $mail->Debugoutput = 'html';
         //Set the hostname of the mail server

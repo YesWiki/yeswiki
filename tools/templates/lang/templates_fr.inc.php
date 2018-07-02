@@ -33,6 +33,7 @@ $GLOBALS['translations'] = array_merge(
     array(
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
+    'TEMPLATES_PAGE_WITHOUT_TITLE' => 'Page sans titre',
 
     // actions/button.php
     'TEMPLATE_ACTION_BUTTON' => 'Action {{button ...}}',

@@ -166,8 +166,11 @@ function baz_afficher_formulaire_import()
     if ($GLOBALS['wiki']->UserIsAdmin()) {
         $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
         if (empty($id)) {
-          $id = isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : '';
+            $id = isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : '';
         }
+        //on transforme en entier, pour eviter des attaques
+        $id = (int)preg_replace('/[^\d]+/', '', $id);
+
         $urlParams = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_IMPORTER;
         $output .= '<form method="post" action="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'" '.
         'enctype="multipart/form-data" class="form-horizontal">'."\n";
@@ -695,6 +698,8 @@ function baz_afficher_formulaire_export()
     $output = '';
 
     $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : (isset($_POST['id_typeannonce']) ? $_POST['id_typeannonce'] : '');
+    //on transforme en entier, pour eviter des attaques
+    $id = (int)preg_replace('/[^\d]+/', '', $id);
 
     //On choisit un type de fiches pour parser le csv en consequence
     $resultat = baz_valeurs_formulaire('', $GLOBALS['params']['categorienature']);
@@ -2702,7 +2707,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['values'] = baz_valeurs_fiche($idfiche);
 
         // on recupere les infos du type de fiche
-        $fichebazar['form'] = is_array($form[$fichebazar['values']['id_typeannonce']]) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
+        $f = $fichebazar['values']['id_typeannonce'];
+        $fichebazar['form'] = is_array($form[$f]) ? $form[$f] : baz_valeurs_formulaire($f);
     }
 
     $res = '';
@@ -3093,9 +3099,10 @@ function genere_nom_wiki($nom, $occurence = 1)
  */
 function baz_rechercher($typeannonce = '', $categorienature = '')
 {
-    // pour la recherche, on affiche les possibilites d'export
-    $oldparam = $GLOBALS['params']['showexportbuttons'];
-    $GLOBALS['params']['showexportbuttons'] = true;
+    if (!isset($GLOBALS['_BAZAR_']['nbbazarsearch'])) {
+        $GLOBALS['_BAZAR_']['nbbazarsearch'] = 0;
+    }
+    ++$GLOBALS['_BAZAR_']['nbbazarsearch'];
 
     $res = '';
 
@@ -3166,10 +3173,28 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 
     // affichage du formulaire
     include_once 'includes/squelettephp.class.php';
+//     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/list.1.5.0.min.js');
+//     $js = '$(document).ready(function () {
+//     var options = {
+//         valueNames: [ \'entry-title\' ],
+//         listClass: \'BAZ_liste\',
+//         searchClass: \'search-input\','."\n";
+//     if (!empty($GLOBALS['params']['pagination'])) {
+//         $js .=  'page: '.$GLOBALS['params']['pagination'].',
+//         pagination: {
+//           outerWindow: 2,
+//           innerWindow: 3
+//         }'."\n";
+//     }
+//     $js .=  '}
+//       var bazarList'.$GLOBALS['_BAZAR_']['nbbazarsearch'].' = new List(\'bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'\', options);
+//    });';
+//    var_dump($GLOBALS['params']['pagination'], $js);
+//     $GLOBALS['wiki']->addJavascript($js);
     $templatetoload = 'tools/bazar/presentation/templates/search_form.tpl.html';
     $squelsearch = new SquelettePhp($templatetoload);
     $squelsearch->set($data);
-    $res .= $squelsearch->analyser();
+    $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">'.$squelsearch->analyser();
 
     $fiches = baz_requete_recherche_fiches(
         $GLOBALS['params']['query'],
@@ -3183,7 +3208,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
         $data['search']
     );
     $shownbres = count($GLOBALS['params']['groups']) == 0 || count($fiches) == 0;
-    $res .= displayResultList($fiches, $GLOBALS['params'], $shownbres);
+    $res .= displayResultList($fiches, $GLOBALS['params'], $shownbres).'</div>';
     return $res;
 }
 
@@ -3680,37 +3705,36 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     } else {
         $fiches['info_res'] = '';
     }
+    $fiches['pager_links'] = '';
     if (!empty($params['pagination'])) {
-        // Mise en place du Pager
-        require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
-        $tab = array_merge($_POST, $_GET);
-        // use wiki get param instead of short camelCase param
-        if (isset($tab[$GLOBALS['wiki']->getPageTag()])) {
-            unset($tab[$GLOBALS['wiki']->getPageTag()]);
-            unset($_GET[$GLOBALS['wiki']->getPageTag()]);
-        }
-        $param = array(
-            'mode' => $GLOBALS['wiki']->config['BAZ_MODE_DIVISION'],
-            'perPage' => $params['pagination'],
-            'delta' => $GLOBALS['wiki']->config['BAZ_DELTA'],
-            'httpMethod' => 'GET',
-            'path' => $GLOBALS['wiki']->getBaseUrl(),
-            'extraVars' => $tab,
-            'altNext' => _t('BAZ_SUIVANT'),
-            'altPrev' => _t('BAZ_PRECEDENT'),
-            'nextImg' => _t('BAZ_SUIVANT'),
-            'prevImg' => _t('BAZ_PRECEDENT'),
-            'itemData' => $fiches['fiches'],
-            'curPageSpanPre' => '<li class="active"><a>',
-            'curPageSpanPost' => '</a></li>',
-            'useSessions' => false,
-            'closeSession' => false,
-        );
-        $pager = &Pager::factory($param);
-        $fiches['fiches'] = $pager->getPageData();
-        $fiches['pager_links'] = '<div class="bazar_numero text-center">'."\n".'<ul class="pagination">'."\n".$pager->links.'</ul>'."\n".'</div>'."\n";
-    } else {
-        $fiches['pager_links'] = '';
+        // // Mise en place du Pager
+        // require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
+        // $tab = array_merge($_POST, $_GET);
+        // // use wiki get param instead of short camelCase param
+        // if (isset($tab[$GLOBALS['wiki']->getPageTag()])) {
+        //     unset($tab[$GLOBALS['wiki']->getPageTag()]);
+        //     unset($_GET[$GLOBALS['wiki']->getPageTag()]);
+        // }
+        // $param = array(
+        //     'mode' => $GLOBALS['wiki']->config['BAZ_MODE_DIVISION'],
+        //     'perPage' => $params['pagination'],
+        //     'delta' => $GLOBALS['wiki']->config['BAZ_DELTA'],
+        //     'httpMethod' => 'GET',
+        //     'path' => $GLOBALS['wiki']->getBaseUrl(),
+        //     'extraVars' => $tab,
+        //     'altNext' => _t('BAZ_SUIVANT'),
+        //     'altPrev' => _t('BAZ_PRECEDENT'),
+        //     'nextImg' => _t('BAZ_SUIVANT'),
+        //     'prevImg' => _t('BAZ_PRECEDENT'),
+        //     'itemData' => $fiches['fiches'],
+        //     'curPageSpanPre' => '<li class="active"><a>',
+        //     'curPageSpanPost' => '</a></li>',
+        //     'useSessions' => false,
+        //     'closeSession' => false,
+        // );
+        // $pager = &Pager::factory($param);
+        // $fiches['fiches'] = $pager->getPageData();
+        // $fiches['pager_links'] = '<div class="bazar_numero text-center">'."\n".'<ul class="pagination">'."\n".$pager->links.'</ul>'."\n".'</div>'."\n";
     }
     $fiches['param'] = $params;
 
@@ -3734,8 +3758,11 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         // calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
         $resultcolsize = 12 - intval($params['filtercolsize']);
 
+        if ($resultcolsize == 0) {
+            $resultcolsize = 12;
+        }
         // colonne des resultats
-        $outputresult = '<div class="col-xs-'.$resultcolsize.' span'.$resultcolsize.'">'."\n".
+        $outputresult = '<div class="col-xs-'.$resultcolsize.'">'."\n".
             '<div class="results">'."\n".
             '<div class="alert alert-info">'."\n".
             _t('BAZ_IL_Y_A').
@@ -3747,7 +3774,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
 
         // colonne des filtres
-        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].' span'.$params['filtercolsize'].'">'."\n".
+        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".
                         '<div class="filters no-dblclick">'."\n";
         $i = 0;
         $first = true;

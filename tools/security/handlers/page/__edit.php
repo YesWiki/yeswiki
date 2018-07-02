@@ -6,9 +6,13 @@ if (!defined('WIKINI_VERSION')) {
 }
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
-    if (isset($this->config['password_for_editing']) and !empty($this->config['password_for_editing']) and !$this->UserIsAdmin()) {
+    if (isset($this->config['password_for_editing'])
+        and !empty($this->config['password_for_editing'])
+        and !$this->GetUser()
+    ) {
         if (!isset($_POST['password_for_editing'])
-            or $_POST['password_for_editing'] != $this->config['password_for_editing']) {
+            or $_POST['password_for_editing'] != $this->config['password_for_editing']
+        ) {
             echo $this->Header();
             if (isset($_POST['password_for_editing'])
                 and $_POST['password_for_editing'] != $this->config['password_for_editing']) {
