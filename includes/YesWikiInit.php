@@ -155,7 +155,7 @@ class Init
             'footer_action' => 'footer',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
             'referrers_purge_time' => 24,
-            'pages_purge_time' => 90,
+            'pages_purge_time' => 365,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => '@admins',
