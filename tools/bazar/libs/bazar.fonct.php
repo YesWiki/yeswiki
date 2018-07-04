@@ -1093,10 +1093,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         $valid = validateForm($_POST);
         if ($valid['result']) {
             $valeur = baz_insertion_fiche($_POST);
-            // Redirection pour eviter la revalidation du formulaire
-            $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
+            if (!empty($GLOBALS['params']['redirecturl'])) {
+                header('Location: '.$GLOBALS['params']['redirecturl']);
+            } else {
+                // Redirection pour eviter la revalidation du formulaire
+                $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
               .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-            header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
+                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
+            }
             exit;
         } else {
             echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
@@ -4507,6 +4511,11 @@ function getAllParameters($wiki)
      * Agenda : calendrier plus petit
      */
     $param['minical'] = $wiki->GetParameter('minical');
+
+    /*
+     * Permettre de rediriger vers une url apres saisie de fiche
+     */
+    $param['redirecturl'] = $wiki->GetParameter('redirecturl');
 
     // Parametres pour Bazarliste avec carto
     getAllParameters_carto($wiki, $param);
