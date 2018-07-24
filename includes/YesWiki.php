@@ -24,6 +24,7 @@ require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
+require_once 'includes/yeswiki.api.php';
 
  /**
   * Main YesWiki class
@@ -63,6 +64,8 @@ class Wiki
     public $CookiePath = '/';
 
     public $inclusions = array();
+
+    public $extensions = array();
 
 
 
@@ -2021,11 +2024,16 @@ class Wiki
             if (function_exists($func)) {
                 echo $func($GLOBALS['api_args']);
             } else {
-                echo json_encode(
-                    array(
-                    'error' => array('YesWiki api - error - no function: '.$func)
-                    )
-                );
+                echo $this->Header();
+                echo documentationYesWiki();
+                $extensions = array_keys($this->extensions);
+                foreach ($extensions as $extension) {
+                    $func = 'documentation'.ucfirst(strtolower($extension));
+                    if (function_exists($func)) {
+                        echo $func();
+                    }
+                }
+                echo $this->Footer();
             }
             //cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
             exit();
@@ -2065,12 +2073,12 @@ class Wiki
         include_once 'includes/YesWikiPlugins.php';
         $objPlugins = new \YesWiki\Plugins($plugins_root);
         $objPlugins->getPlugins(true);
-        $plugins_list = $objPlugins->getPluginsList();
+        $pluginsList = $objPlugins->getPluginsList();
 
         $wikiClasses[] = '\YesWiki\WikiTools';
         $wikiClassesContent[] = '';
 
-        foreach ($plugins_list as $k => $v) {
+        foreach ($pluginsList as $k => $v) {
 
             $pluginBase = $plugins_root . $k . '/';
 
@@ -2114,6 +2122,7 @@ class Wiki
         }
         eval('$wiki  = new ' . $wikiClasses[count($wikiClasses) - 1] . '($wakkaConfig);');
         $wiki->config = $wakkaConfig;
+        $wiki->extensions = $pluginsList;
 
         return $wiki;
     }

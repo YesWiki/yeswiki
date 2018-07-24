@@ -337,4 +337,7 @@ $GLOBALS['translations'] = array(
 'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directement dans le r&eacute;pertoire de YesWiki. Une fois que vous aurez fait cela, votre site YesWiki devrait fonctionner correctement',
 'TRY_AGAIN' => 'Essayer &agrave; nouveau',
 
+// API
+'USERS' => 'Utilisateurs',
+'GROUPS' => 'Groupes',
 );

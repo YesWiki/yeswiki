@@ -319,34 +319,37 @@ class Init
      */
     public function initApi($args)
     {
-        header('Content-type: application/json; charset=UTF-8');
-        header('Access-Control-Allow-Origin: *');
-
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])
-                && ($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
-                || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
-                || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT')
-            ) {
-                header('Access-Control-Allow-Credentials: true');
-                header('Access-Control-Allow-Headers: X-Requested-With');
-                header('Access-Control-Allow-Headers: Content-Type');
-                header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
-                header('Access-Control-Max-Age: 86400');
-            }
-            exit;
-        }
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
-            $_POST = json_decode(file_get_contents('php://input'), true);
-        }
 
         // call to YesWiki api
         if (isset($args[1]) and !empty($args[1])) {
             array_shift($args);
             $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD'])
-              .ucwords(strtolower($args[0]));
+            .ucwords(strtolower($args[0]));
             array_shift($args);
-            return array('function' => $apiFunctionName, 'args' => $args);
+            if (function_exists($apiFunctionName)) {
+                header('Content-type: application/json; charset=UTF-8');
+                header('Access-Control-Allow-Origin: *');
+                if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])
+                        && ($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
+                        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
+                        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT')
+                    ) {
+                        header('Access-Control-Allow-Credentials: true');
+                        header('Access-Control-Allow-Headers: X-Requested-With');
+                        header('Access-Control-Allow-Headers: Content-Type');
+                        header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+                        header('Access-Control-Max-Age: 86400');
+                    }
+                    exit;
+                }
+                if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
+                    $_POST = json_decode(file_get_contents('php://input'), true);
+                }
+                return array('function' => $apiFunctionName, 'args' => $args);
+            } else {
+                return array('function' => 'getApiDocumentation', 'args' => '');
+            }
         } else {
             return array('function' => 'getApiDocumentation', 'args' => '');
         }

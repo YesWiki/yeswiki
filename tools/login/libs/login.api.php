@@ -1,25 +1,54 @@
 <?php
+/**
+ * Function library for login
+ *
+ * @category Wiki
+ * @package  YesWiki
+ * @author   Florian Schmitt <mrflos@lilo.org>
+ * @license  GNU/GPL version 3
+ * @link     https://yeswiki.net
+ */
 
-function getUser($username = '')
+/**
+ * Get all users or one user's information
+ *
+ * @param string $username specify username 
+ * 
+ * @return string json
+ */
+function getAuth($username = '')
 {
     global $wiki;
     if (!empty($username[0])) {
         if ($wiki->UserIsAdmin() or $wiki->GetUserName() == $username[0]) {
             $user = $wiki->LoadUser($username[0]);
             if ($user) {
-                echo json_encode($user);
+                return json_encode($user);
             } else {
-                echo json_encode(
+                return json_encode(
                     array('error' => array('User '.$username[0].' not found.'))
                 );
             }
         } else {
-            echo json_encode(
+            return json_encode(
                 array('error' => array('Unauthorized'))
             );
         }
     } else {
         $users = $wiki->LoadUsers();
-        echo json_encode($users);
+        return json_encode($users);
     }
+}
+
+/**
+ * Display login api documentation
+ *
+ * @return void
+ */
+function documentationLogin()
+{
+    global $wiki;
+    $output = '<h2>Extension login</h2>'."\n".
+    'GET <code>'.$wiki->href('', 'api/auth').'</code><br />';
+    return $output;
 }
