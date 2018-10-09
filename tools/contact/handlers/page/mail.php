@@ -48,6 +48,8 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
         $message_html = $infomsg.html_entity_decode(_convert($this->Format($this->page["body"]), YW_CHARSET));
         $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
+    } elseif (isset($_POST['type']) and ($_POST['type'] == 'abonnement' or $_POST['type'] == 'desabonnement')) {
+        $message_html = $message_txt = 'Mailinglist : '.$_POST['type'];
     } else {
         // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
@@ -85,6 +87,10 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
             } elseif ($_POST['type'] == 'desabonnement') {
                 $subject = 'unsubscribe '.$listname;
             }
+        }
+
+        if (empty($message_txt)) {
+            $message_txt = $message_html = 'dummy message';
         }
 
         if (send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html)) {

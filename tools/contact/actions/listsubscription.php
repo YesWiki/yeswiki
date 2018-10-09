@@ -46,7 +46,7 @@ if ($user = $this->GetUser()) {
 				<form id="ajax-abonne-form" class="form-mail" action="'.$this->href('mail').'">
 					'.$list.' : '."\n".
 				'</form>'."\n";
-				$GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
+				$this->addJavascriptFile('tools/contact/libs/contact.js');
 		} 
 		else {
 			echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_LIST_REQUIRED').'.</div>';

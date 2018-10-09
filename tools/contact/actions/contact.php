@@ -77,5 +77,5 @@ if (empty($contactelements['mail'])) {
     $squel->set($contactelements);
     echo $squel->analyser();
 
-    $GLOBALS['js'] = ((isset($GLOBALS['js'])) ? str_replace('	<script src="tools/contact/libs/contact.js"></script>'."\n", '', $GLOBALS['js']) : '').'	<script src="tools/contact/libs/contact.js"></script>'."\n";
+    $this->addJavascriptFile('tools/contact/libs/contact.js');
 }
