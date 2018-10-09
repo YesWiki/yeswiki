@@ -56,6 +56,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_VIEW_PAGE' => 'Voir la page',
     'TEMPLATE_EDIT' => '&Eacute;diter',
     'TEMPLATE_EDIT_THIS_PAGE' => '&Eacute;diter la page',
+    'TEMPLATE_WIKINAME_IS_NOT_A_PAGE' => 'Ce ChatMot n\'est pas une page',
     'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Les derni&egrave;res modifications de la page',
     'TEMPLATE_LAST_UPDATE' => 'Modifi&eacute;e le',
     'TEMPLATE_OWNER' => 'Propri&eacute;taire',

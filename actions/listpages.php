@@ -306,7 +306,7 @@ if ($tree)
                                     }
                                     else
                                     {
-                                        $retour .= '<span class="missingpage">' . $pageData['owner'] . '</span>';
+                                        $retour .= '<span class="forced-link missingpage">' . $pageData['owner'] . '</span>';
                                         $retour .= $wiki->ComposeLinkToPage($pageData['owner'],'edit', '?', false);
                                     }
                                 }
@@ -325,7 +325,7 @@ if ($tree)
                                     }
                                     else
                                     {
-                                        $retour .= '<span class="missingpage">' . $pageData['user'] . '</span>';
+                                        $retour .= '<span class="forced-link missingpage">' . $pageData['user'] . '</span>';
                                         $retour .= $wiki->ComposeLinkToPage($pageData['user'],'edit', '?', false);
                                     }
                                 }
@@ -347,7 +347,7 @@ if ($tree)
                     }
                     else
                     {
-                        $retour .= '<span class="missingpage">' . $pageName . '</span>'
+                        $retour .= '<span class="forced-link missingpage">' . $pageName . '</span>'
                             . $wiki->ComposeLinkToPage($pageName,'edit', '?', false);
                     }
                     $retour .= "</li>\n";
@@ -503,7 +503,7 @@ else
                 }
                 else
                 {
-                    echo '<span class="missingpage">' . $page['owner'] . '</span>';
+                    echo '<span class="forced-link missingpage">' . $page['owner'] . '</span>';
                     echo $this->ComposeLinkToPage($page['owner'],'edit', '?', false);
                 }
             }
@@ -530,7 +530,7 @@ else
                     }
                     else
                     {
-                        echo '<span class="missingpage">' . $page['user'] . '</span>';
+                        echo '<span class="forced-link missingpage">' . $page['user'] . '</span>';
                         echo $this->ComposeLinkToPage($page['user'], 'edit', '?', false);
                     }
                 }

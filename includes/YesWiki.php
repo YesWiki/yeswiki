@@ -940,65 +940,77 @@ class Wiki
         return $href;
     }
 
-    public function Link($tag, $method = "", $text = "", $track = 1)
+    public function Link($tag, $method = "", $text = "", $track = 1, $forcedLink = false)
     {
         $displayText = $text ? $text : $tag;
+        
         // is this an interwiki link?
         if (preg_match('/^' . WN_INTERWIKI_CAPTURE . '$/', $tag, $matches)) {
-            if ($tagInterWiki = $this->GetInterWikiUrl($matches[1], $matches[2])) {
-                return '<a href="' . htmlspecialchars($tagInterWiki, ENT_COMPAT, YW_CHARSET) . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . ' (interwiki)</a>';
+            if ($IWiki = $this->GetInterWikiUrl($matches[1], $matches[2])) {
+                return '<a href="'.htmlspecialchars($IWiki, ENT_COMPAT, YW_CHARSET)
+                . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
+                . ' (interwiki)</a>';
             } else {
-                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . ' (interwiki inconnu)</a>';
+                return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
+                . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET)
+                . ' (interwiki inconnu)</a>';
             }
-        }  // is this a full link? ie, does it contain non alpha-numeric characters?
-          // Note : [:alnum:] is equivalent [0-9A-Za-z]
-          // [^[:alnum:]] means : some caracters other than [0-9A-Za-z]
-          // For example : "www.adress.com", "mailto:adress@domain.com", "http://www.adress.com"
-        else
-            if (preg_match('/[^[:alnum:]]/', $tag)) {
-                // check for various modifications to perform on $tag
-                if (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
-                    // email addresses
-                    $tag = 'mailto:' . $tag;
-                } else  // Note : in Perl regexp, (?: ... ) is a non-catching cluster
-                    if (preg_match('/^[[:alnum:]][[:alnum:].-]*(?:\/|$)/', $tag)) {
-                        // protocol-less URLs
-                        $tag = 'http://' . $tag;
-                    }  // Finally, block script schemes (see RFC 3986 about
-                      // schemes) and allow relative link & protocol-full URLs
-                    else
-                        if (preg_match('/^[a-z0-9.+-]*script[a-z0-9.+-]*:/i', $tag) || ! (preg_match('/^\.?\.?\//', $tag) || preg_match('/^[a-z0-9.+-]+:\/\//i', $tag))) {
-                            // If does't fit, we can't qualify $tag as an URL.
-                            // There is a high risk that $tag is just XSS (bad
-                            // javascript: code) or anything nasty. So we must not
-                            // produce any link at all.
-                            return htmlspecialchars($tag . ($text ? ' ' . $text : ''), ENT_COMPAT, YW_CHARSET);
-                        }
+        } else {
+            // is this a full link? ie, does it contain non alpha-numeric characters?
+            // Note : [:alnum:] is equivalent [0-9A-Za-z]
+            // [^[:alnum:]] means : some caracters other than [0-9A-Za-z]
+            // For example : "www.adress.com", "mailto:adress@domain.com", "http://www.adress.com"
+            if ($text and preg_match("/\.(gif|jpeg|png|jpg|svg)$/i", $tag)) {
                 // Important: Here, we know that $tag is not something bad
                 // and that we must produce a link with it
 
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
-                if ($text and preg_match("/\.(gif|jpeg|png|jpg|svg)$/i", $tag)) {
-                    return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '" alt="' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '"/>';
-                } else {
-                    // Even if we know $tag is harmless, we MUST encode it
-                    // in HTML with htmlspecialchars() before echoing it.
-                    // This is not about being paranoiac. This is about
-                    // being compliant to the HTML standard.
-                    return '<a href="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
-                }
-            } else {
-                // it's a Wiki link!
+                return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) 
+                .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
+            } elseif (preg_match('/^'.WN_CAMEL_CASE_EVOLVED.'$/u', $tag)) {
                 if (! empty($track)) {
+                    // it's a Wiki link!
                     $this->TrackLinkTo($tag);
                 }
-
-                if ($this->LoadPage($tag)) {
-                    return '<a href="' . htmlspecialchars($this->href($method, $tag), ENT_COMPAT, YW_CHARSET) . '">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
-                } else {
-                    return '<span class="missingpage">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</span><a href="' . htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, YW_CHARSET) . '">?</a>';
-                }
+            } elseif (filter_var($tag, FILTER_VALIDATE_URL)) {
+                return '<a href="'.$tag.'">'.$text.'</a>'."\n";
+            } elseif (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
+                // check for various modifications to perform on $tag
+                // email addresses
+                $tag = 'mailto:' . $tag;
+            } elseif (preg_match('/^[[:alnum:]][[:alnum:].-]*(?:\/|$)/', $tag)) {
+                // protocol-less URLs
+                $tag = 'https://' . $tag;
+            } elseif (preg_match('/^[a-z0-9.+-]*script[a-z0-9.+-]*:/i', $tag)
+                || ! (preg_match('/^\.?\.?\//', $tag)
+                || preg_match('/^[a-z0-9.+-]+:\/\//i', $tag))
+            ) {
+                // Finally, block script schemes (see RFC 3986 about
+                // schemes) and allow relative link & protocol-full URLs
+                // If does't fit, we can't qualify $tag as an URL.
+                // There is a high risk that $tag is just XSS (bad
+                // javascript: code) or anything nasty. So we must not
+                // produce any link at all.
+                return htmlspecialchars(
+                    $tag . ($text ? ' ' . $text : ''),
+                    ENT_COMPAT,
+                    YW_CHARSET
+                );
             }
+        }
+
+        if ($this->LoadPage($tag)) {
+            return '<a href="'.htmlspecialchars(
+                $this->href($method, $tag),
+                ENT_COMPAT,
+                YW_CHARSET
+            ).'">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
+        } else {
+            return '<span class="'.($forcedLink ? 'forced-link ' : '').'missingpage">'
+            . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'</span><a href="'
+            . htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, YW_CHARSET)
+            . '">?</a>';
+        }
     }
 
     public function ComposeLinkToPage($tag, $method = "", $text = "", $track = 1)
@@ -1017,7 +1029,7 @@ class Wiki
 
     public function IsWikiName($text)
     {
-        return preg_match('/^' . WN_CAMEL_CASE . '$/', $text);
+        return preg_match('/^' . WN_CAMEL_CASE . '$/u', $text);
     }
 
     // LinkTracking management

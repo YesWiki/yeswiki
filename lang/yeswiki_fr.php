@@ -40,7 +40,6 @@ $GLOBALS['translations'] = array(
 'HANDLER_NO_ACCESS' => 'Vous ne pouvez pas acc&eacute;der &agrave; cette page par le handler sp&eacute;cifi&eacute;.',
 'NO_REQUEST_FOUND' => '$_REQUEST[] pas trouv&eacute;. Wakka n&eacute;cessite PHP 4.1.0 ou plus r&eacute;cent!',
 'SITE_BEING_UPDATED' => 'Ce site est en cours de mise &agrave; jour. Veuillez essayer plus tard.',
-'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',
 'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'acc&egrave;s &agrave; la base de donn&eacute;es a &eacute;chou&eacute;. <br><br>Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
 'LOG_DB_CONNECT_FAIL' => 'YesWiki : la connexion BDD a echouee', // sans accents car commande systeme
 'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',

@@ -137,7 +137,7 @@ function nomwikidouble($nomwiki, $nomswiki)
 //fonction pour remplacer les liens vers les NomWikis n'existant pas
 function replace_missingpage_links($output)
 {
-    $pattern = '/<span class="missingpage">(.*)<\/span><a href="'.str_replace(
+    $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="'.str_replace(
         array('/', '?'),
         array('\/', '\?'),
         $GLOBALS['wiki']->config['base_url']
@@ -151,14 +151,18 @@ function replace_missingpage_links($output)
                         '&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
                         '&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
                         '&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).
-                        ((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '').
+                        ((!$GLOBALS['wiki']->IsWikiName($values[2])) ? '&amp;body='.urlencode($values[2]) : '').
                         '&amp;newpage=1';
-        $replacement = '<a class="yeswiki-editable" href="'
-            .$GLOBALS['wiki']->href("edit", $values[2], $query_string)
-            .'"><i class="glyphicon glyphicon-pencil icon-pencil"></i>&nbsp;'
-            .$values[1].'</a>';
+        $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
+            .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
+            .'">'
+            .$values[2].' <i class="glyphicon glyphicon-pencil"></i></a>';
+            if (empty($values[1])) {
+                $replacement .= '<a href="'.$GLOBALS['wiki']->href('escapeword', $GLOBALS['wiki']->getPageTag(), 'word='.urlencode($values[3])).'" title="'._t('TEMPLATE_WIKINAME_IS_NOT_A_PAGE').'"><i class="glyphicon glyphicon-ok"></i></a>';
+            }
         $output = str_replace_once($values[0], $replacement, $output);
     }
+
     return $output;
 }
 

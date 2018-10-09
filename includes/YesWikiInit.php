@@ -87,38 +87,41 @@ class Init
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
         $args = explode('/', $uri[0]);
-        if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
-            // if old school wiki url
-            if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
-                // remove leading slash
-                $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', $_REQUEST['wiki']);
 
-                if (empty($wiki)) {
-                    // this will be redirected to install or to homepage later
-                } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`', $wiki, $matches)) {
-                    // split into page/method, checking wiki name & method name (XSS proof)
-                    list(, $this->page, $this->method) = $matches;
-                } elseif (preg_match('`^' . WN_PAGE_TAG . '$`', $wiki)) {
-                    // WikiPageName without method
-                    $this->page = $wiki;
-                } else {
-                    // invalid WikiPageName
-                    echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                    exit();
-                }
-            } elseif ($args[0] == 'api') {
+        if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
+            if ($args[0] == 'api') {
                 $tab = $this->initApi($args);
                 $this->page = $_GET['wiki'] = 'api';
                 $this->method = $tab['function'];
                 $GLOBALS['api_args'] = $tab['args'];            
             } else {
-                $this->page = $args[0];
-                if (isset($args[1]) and !empty($args[1])) {
-                    // Security (quick hack) : Check method syntax
-                    if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
-                        $this->method = $args[1];
-                    }
+                // if old school wiki url
+                if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
+                    // remove leading slash
+                    $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
+                } else {
+                    $wiki = urldecode($args[0]);
                 }
+                if (empty($wiki)) {
+                    // this will be redirected to install or to homepage later
+                } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
+                    // split into page/method, checking wiki name & method name (XSS proof)
+                    list(, $this->page, $this->method) = $matches;
+                } elseif (preg_match('`^' . WN_PAGE_TAG . '$`u', $wiki)) {
+                    // WikiPageName without method
+                    $this->page = $wiki;
+                    if (isset($args[1]) and !empty($args[1])) {
+                        // Security (quick hack) : Check method syntax
+                        if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
+                            $this->method = $args[1];
+                        }
+                    }
+                } else {
+                    // invalid WikiPageName
+                    echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
+                    exit();
+                }
+
                 $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
             }
         }
