@@ -15,7 +15,7 @@ if (empty($type)) {
     $type = complexe;
 }
 
-// nombre de colonne
+// nombre de colonnes
 $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
 if (empty($nbcol)) {
     $nbcol = 4;
@@ -54,7 +54,19 @@ if ( count($fiches)>0 ) : ?>
   <?php foreach ($fiches as $fiche) : ?>
 
         <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
-        <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
+		  <?php
+			$color = getCustomValueForEntry(
+			  $param['color'],
+			  $param['colorfield'],
+			  $fiche,
+			  ''
+			);
+			if (!empty($color)) {
+				echo '<article class="material-card '.ucfirst($color).'">';
+			} else {
+				echo '<article class="material-card '.$classes[rand(0, $nbclasses-1)].'">';
+			}
+			?>
           <h2>
                       <span><?php echo $fiche['bf_titre']; ?></span>
                       <strong>
@@ -147,7 +159,19 @@ $GLOBALS['wiki']->AddJavascript($js);
 
     <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
       <a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>">
-      <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
+			<?php
+			$color = getCustomValueForEntry(
+			  $param['color'],
+			  $param['colorfield'],
+			  $fiche,
+			  ''
+			);
+			if (!empty($color)) {
+				echo '<article class="material-card '.ucfirst($color).'">';
+			} else {
+				echo '<article class="material-card '.$classes[rand(0, $nbclasses-1)].'">';
+			}
+ 			?>
      <h2>
                     <span><?php echo $fiche['bf_titre']; ?> </span>
         </h2>
