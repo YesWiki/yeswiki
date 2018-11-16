@@ -1,4 +1,4 @@
-<?php if( count($fiches)>0 ) : ?> 
+<?php if( count($fiches)>0 ) : ?>
   <?php
   // affiche un evenement dans le temps
   function affiche_ligne_timeline($gauche, $droite, $classligne='') {
@@ -18,7 +18,7 @@
       $t1 = strtotime($a['dateevenement']);
       $t2 = strtotime($b['dateevenement']);
       return $t1 - $t2;
-  }    
+  }
   usort($fiches, 'date_compare');
   $gauche = true;
   $output = '';
@@ -26,7 +26,7 @@
   foreach ($fiches as $key => $fiche) {
     $date = explode('-', $fiche['dateevenement']);
     // premier passage
-    if ( !isset($anneeencours) || $anneeencours < $date[0] ) { 
+    if ( !isset($anneeencours) || $anneeencours < $date[0] ) {
       $anneeencours = $date[0];
       $years[] =  $anneeencours;
       $output .= affiche_ligne_timeline('<h2 id="annee'.$anneeencours.'">Ann&eacute;e</h2>', '<h2>'.$anneeencours.'</h2>');
@@ -48,27 +48,34 @@
         break;
     }
 
-    if ($gauche) {
-      $gauche=false;
-      $output .= affiche_ligne_timeline(
-                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>', 
-                  '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-                  $fiche['listeListeTailleImage']
-                );
-    }
-    else {
-      $gauche=true;
-      $output .= affiche_ligne_timeline(
-                  '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-                  '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
-                  $fiche['listeListeTailleImage'], ''
-                );
-    }
+    if (!empty($fiche['imagebf_image']) and file_exists('files/'.$fiche['imagebf_image'])) {
+     $url = redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage);
+  } else {
+     $url = redimensionner_image('tools/bazar/presentation/images/placeholder-800-800.jpg', 'cache/placeholder_'.$pixelsimage.'_'.$pixelsimage.'.jpg', $pixelsimage, $pixelsimage);
   }
-  ?>
+    if ($gauche) {
+        $gauche=false;
+
+        $output .= affiche_ligne_timeline(
+         '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
+         '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+                    $fiche['listeListeTailleImage']
+                  );
+      }
+      else {
+        $gauche=true;
+        $output .= affiche_ligne_timeline(
+         '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+         '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
+                    $fiche['listeListeTailleImage'], ''
+                  );
+      }
+    }
+    ?>
+
       <h2 class="ss-subtitle"></h2>
       <div id="ss-links" class="ss-links">
-        <?php 
+        <?php
           foreach ($years as $key => $value) {
             echo '<a class="btn btn-mini btn-info" href="#annee'.$value.'">'.$value.'</a>';
           }
@@ -185,14 +192,14 @@ h2.ss-subtitle:after{
     display: block;
     text-indent: -9000px;
     text-align: left;
-    -webkit-box-shadow: 
-    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    -webkit-box-shadow:
+    0px 2px 5px rgba(0,0,0,0.7) inset,
     0px 0px 0px 12px rgba(61,64,85,0.3);
-    -moz-box-shadow: 
-    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    -moz-box-shadow:
+    0px 2px 5px rgba(0,0,0,0.7) inset,
     0px 0px 0px 12px rgba(61,64,85,0.3);
-    box-shadow: 
-    0px 2px 5px rgba(0,0,0,0.7) inset, 
+    box-shadow:
+    0px 2px 5px rgba(0,0,0,0.7) inset,
     0px 0px 0px 12px rgba(61,64,85,0.3);
   background-size: cover;
   background-color: #f0f0f0;
@@ -236,10 +243,10 @@ h2.ss-subtitle:after{
   margin-top: -10px;
 }
 .ss-left .ss-circle-deco:before{
-    right: 2%;   
+    right: 2%;
 }
 .ss-right .ss-circle-deco:before{
-    left: 2%;   
+    left: 2%;
 }
 .ss-left .ss-circle-deco:after{
   right: 0;
