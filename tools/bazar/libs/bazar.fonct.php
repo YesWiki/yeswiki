@@ -22,7 +22,6 @@
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
 // CVS : $Id: bazar.fonct.php,v 1.10 2010/03/04 14:19:03 mrflos Exp $
-// 2018/10/21 21:37:54 sylvainboyer
 
 /**
  * Fonctions du module bazar.
@@ -3603,18 +3602,21 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
 		if (!empty($params['correspondance'])) {
 			$tabcorrespondances = array();
 			$tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
-			foreach ($tabcorrespondances as $key=>$data) {
-				if (isset($key)) {
-					if (isset($data) && isset($fiche[$data])) {
-						$fiche[$key] = $fiche[$data];
+			if ($tabcorrespondances['fail'] != 1){
+				foreach ($tabcorrespondances as $key=>$data) {
+					if (isset($key)) {
+						if (isset($data) && isset($fiche[$data])) {
+							$fiche[$key] = $fiche[$data];
+						} else {
+							$fiche[$key] = '';
+						}
 					} else {
-						$fiche[$key] = '';
+						exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
 					}
-				} else {
-					exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
 				}
+			} else {
+				exit('<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
 			}
-
         }
         $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
         $fiche['datastr'] = $fiche['html_data'];
@@ -4577,35 +4579,29 @@ function getAllParameters_carto($wiki, array &$param)
      */
     $param['iconfield'] = isset($_GET['iconfield']) ? $_GET['iconfield'] : $wiki->GetParameter('iconfield');
 
-    /*
-     * icon : icone des marqueurs
-     */
-    $param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
-
-    if (!empty($param['icon'])) {
-        $iconparam = explode(',', $param['icon']);
-        if (count($iconparam) > 1 && !empty($param['iconfield'])) {
-            $iconparam = array_map('trim', $iconparam);
-            $tabparam = array();
-            // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
-            foreach ($iconparam as $value) {
-                $tab = explode('=', $value);
-                $tab = array_map('trim', $tab);
-                if (count($tab) > 0) {
-                    $tabparam[$tab[1]] = $tab[0];
-                } else {
-                    exit('<div class"alert alert-error">icon : erreur de formatage:<br>"'.
-                        '<br>syntaxe: icon="classe icone1=valeur,classe icone2=valeur2"</div>');
-                }
-            }
-            $param['icon'] = $tabparam;
-        } else {
-            $param['icon'] = trim($iconparam[0]);
-        }
-    } else {
-        $param['icon'] = $GLOBALS['wiki']->config['baz_marker_icon'];
-    }
-
+	/*
+	 * icon : icone des marqueurs
+	 */
+	$param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
+	if (!empty($param['icon'])) {
+		$tabparam = array();
+		$tabparam = getMultipleParameters($param['icon'], ',', '=');
+		if ($tabparam['fail'] != 1){
+			if (count($tabparam) > 1 && !empty($param['iconfield'])) {
+				foreach ($tabparam as $key=>$data) {
+					// on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+					$tabparam[$data] = $key;
+				 }
+				 $param['icon'] = $tabparam;
+			} else {
+				$param['icon'] = trim($iconparam[0]);
+				}
+			} else {
+				exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+			}
+		} else {
+			$param['icon'] = $GLOBALS['wiki']->config['baz_marker_icon'];
+		}
     /*
      * colorfield : designe le champ utilise pour la couleur des marqueurs
      */
@@ -4622,17 +4618,21 @@ function getAllParameters_carto($wiki, array &$param)
 	if (!empty($param['color'])) {
 		$tabparam = array();
 		$tabparam = getMultipleParameters($param['color'], ',', '=');
-		if (count($tabparam) > 1 && !empty($param['colorfield'])) {
-			foreach ($tabparam as $key=>$data) {
-				 // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-				  $tabparam[$data] = $key;
-			 }
-			 $param['color'] = $tabparam;
+		if ($tabparam['fail'] != 1){
+			if (count($tabparam) > 1 && !empty($param['colorfield'])) {
+				foreach ($tabparam as $key=>$data) {
+					 // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+					  $tabparam[$data] = $key;
+				 }
+				 $param['color'] = $tabparam;
+			} else {
+				 $param['color'] = trim($colors[0]);
+				 if (!in_array($param['color'], $colors)) {
+					  $param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
+				 }
+			}
 		} else {
-			 $param['color'] = trim($colors[0]);
-			 if (!in_array($param['color'], $colors)) {
-				  $param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
-			 }
+			exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
 		}
 	} else {
 		$param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
@@ -4751,13 +4751,29 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 	// $param is the parameter where we have to fecth the couples
 	// $firstseparator is the separator between the couples (usually ',')
 	// $secondseparator is the separator between key and value in each couple (usually '=')
-	$params = explode($firstseparator, $param);
-	$params = array_map('trim', $params);
+	// Returns the table of (key , value) couples
+	// If fails to explode the data, then $tabparam['fail'] == 1
 	$tabparam = array();
-	foreach ($params as $value) {
-		$tab = explode($secondseparator, $value);
-		$tab = array_map('trim', $tab);
-		$tabparam[$tab[0]] = $tab[1];
+	$tabparam['fail'] = 0;
+	// check if first and second separators are at least somewhere
+	if ((strpos($param, $firstseparator) !== false) && (strpos($param, $secondseparator) !== false)){
+		$params = explode($firstseparator, $param);
+		$params = array_map('trim', $params);
+		if (count($params) > 0) {
+			foreach ($params as $value) {
+				$tab = explode($secondseparator, $value);
+				$tab = array_map('trim', $tab);
+				if (count($tab) > 1) {
+					$tabparam[$tab[0]] = $tab[1];
+				} else {
+					$tabparam['fail'] = 1;
+				}
+			}
+		} else {
+			$tabparam['fail'] = 1;
+		}
+	} else {
+		$tabparam['fail'] = 1;
 	}
 	return $tabparam;
 }
