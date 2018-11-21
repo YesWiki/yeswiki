@@ -32,12 +32,20 @@ if (!defined('WIKINI_VERSION')) {
 }
 
 // on enleve l'action template
-$plugin_output_new = preg_replace('/'.'(\\{\\{template)'.'(.*?)'.'(\\}\\})'.'/is', '', $plugin_output_new);
+$plugin_output_new = preg_replace(
+    '/'.'(\\{\\{template)'.'(.*?)'.'(\\}\\})'.'/is',
+    '',
+    $plugin_output_new
+);
 
 // on enleve les restes de wikini : script obscur de la barre de redaction
-$plugin_output_new = str_replace("<script type=\"text/javascript\">\n".
-                "document.getElementById(\"body\").onkeydown=fKeyDown;\n".
-                "</script>\n", '', $plugin_output_new);
+$plugin_output_new = str_replace(
+    "<script type=\"text/javascript\">\n".
+        "document.getElementById(\"body\").onkeydown=fKeyDown;\n".
+    "</script>\n",
+    '',
+    $plugin_output_new
+);
 
 // personnalisation graphique que dans le cas ou on est autorise
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) &&

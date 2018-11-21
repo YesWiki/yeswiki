@@ -137,7 +137,7 @@ function nomwikidouble($nomwiki, $nomswiki)
 //fonction pour remplacer les liens vers les NomWikis n'existant pas
 function replace_missingpage_links($output)
 {
-    $pattern = '/<span class="missingpage">(.*)<\/span><a href="'.str_replace(
+    $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="'.str_replace(
         array('/', '?'),
         array('\/', '\?'),
         $GLOBALS['wiki']->config['base_url']
@@ -151,14 +151,18 @@ function replace_missingpage_links($output)
                         '&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
                         '&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
                         '&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).
-                        ((!$GLOBALS['wiki']->IsWikiName($values[1])) ? '&amp;body='.urlencode($values[1]) : '').
+                        ((!$GLOBALS['wiki']->IsWikiName($values[2])) ? '&amp;body='.urlencode($values[2]) : '').
                         '&amp;newpage=1';
-        $replacement = '<a class="yeswiki-editable" href="'
-            .$GLOBALS['wiki']->href("edit", $values[2], $query_string)
-            .'"><i class="glyphicon glyphicon-pencil icon-pencil"></i>&nbsp;'
-            .$values[1].'</a>';
+        $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
+            .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
+            .'">'
+            .$values[2].' <i class="glyphicon glyphicon-pencil"></i></a>';
+            if (empty($values[1])) {
+                $replacement .= '<a href="'.$GLOBALS['wiki']->href('escapeword', $GLOBALS['wiki']->getPageTag(), 'word='.urlencode($values[3])).'" title="'._t('TEMPLATE_WIKINAME_IS_NOT_A_PAGE').'"><i class="glyphicon glyphicon-ok"></i></a>';
+            }
         $output = str_replace_once($values[0], $replacement, $output);
     }
+
     return $output;
 }
 
@@ -774,4 +778,173 @@ function theme_selector($method = '') {
     $GLOBALS['wiki']->addJavascript($js);
 
     return $selecteur;
+}
+
+/**
+ * Get the first image in the page
+ *
+ * @param array  $page   Page info
+ * @param string $width  Width of the image
+ * @param string $height Height of the image
+ * 
+ * @return string  link to the image
+ */
+function getImageFromBody($page, $width, $height)
+{
+    if (!isset($page['body'])) {
+        if (isset($GLOBALS['wiki']->config['opengraph_image'])
+            and file_exists($GLOBALS['wiki']->config['opengraph_image'])
+        ) {
+            $image = $GLOBALS['wiki']->getBaseUrl().'/'.$GLOBALS['wiki']->config['opengraph_image'];
+        } else {
+            $image = '';
+        }
+        return $image;
+    }
+    $image = '';
+    // on cherche les actions attach avec image, puis les images bazar
+    preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpe?g|png).*\}\}/U", $page['body'], $images);
+    if (is_array($images[0]) && !empty($images[0][0])) {
+        preg_match_all("/.*file=\"(.*\.(?i)(jpe?g|pngif))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $img);
+
+        $oldpage = $GLOBALS['wiki']->GetPageTag();
+        $GLOBALS['wiki']->tag = $page['tag'];
+        $GLOBALS['wiki']->page['time'] = $page['time'];
+        if (isset($img[1][0])) {
+            $GLOBALS['wiki']->setParameter('desc', $img[1][0]);
+            $GLOBALS['wiki']->setParameter('file', $img[1][0]);
+        }
+        $GLOBALS['wiki']->setParameter('width', $width);
+        $GLOBALS['wiki']->setParameter('height', $height);
+        if (!class_exists('attach')) {
+            include 'tools/attach/actions/attach.class.php';
+        }
+        $attach = new Attach($GLOBALS['wiki']);
+        $attach->CheckParams();
+        $imagefile = $attach->GetFullFilename();
+        $GLOBALS['wiki']->tag = $oldpage;
+        $image = $GLOBALS['wiki']->getBaseUrl().'/'.redimensionner_image(
+            $imagefile,
+            'cache/'.$width.'x'.$height.'-'.str_replace('files/', '', $imagefile),
+            $width,
+            $height,
+            'crop'
+        );
+    } else {
+        preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
+        if (is_array($image[1]) && !empty($image[1][0])) {
+            $imagefile = utf8_decode(
+                preg_replace_callback(
+                    '/\\\\u([a-f0-9]{4})/',
+                    'encodingFromUTF8',
+                    $image[1][0]
+                )
+            );
+            $image = $GLOBALS['wiki']->getBaseUrl().'/'.redimensionner_image(
+                'files/'.$imagefile,
+                'cache/'.$width.'x'.$height.'-'.$imagefile,
+                $width,
+                $height,
+                'crop'
+            );
+        } else {
+            preg_match_all("/\[\[(http.*\.(?i)(jpe?g|png)) .*\]\]/U", $page['body'], $image);
+            if (is_array($image[1]) && !empty($image[1][0])) {
+                $image = trim(str_replace('\\', '', $image[1][0]));
+            } else {
+                
+                preg_match_all("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $image);
+                if (is_array($image[1]) && !empty($image[1][0])) {
+                    $image = trim($image[1][0]);
+                } elseif (isset($GLOBALS['wiki']->config['opengraph_image'])
+                    and file_exists($GLOBALS['wiki']->config['opengraph_image'])
+                ) {
+                    $image = $GLOBALS['wiki']->getBaseUrl().'/'.$GLOBALS['wiki']->config['opengraph_image'];
+                } else {
+                    $image = '';
+                }
+            }
+        }
+    }
+
+    return $image;
+}
+
+/**
+ * Get the first title in page
+ *
+ * @param array $page Informations de la page
+ * 
+ * @return string The title string
+ */
+function getTitleFromBody($page)
+{
+    if (!isset($page['body'])) {
+        return _t('TEMPLATES_PAGE_WITHOUT_TITLE');
+    }
+    $title = '';
+    // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2 
+    preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
+    if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+        $title = $titles[1][0];
+    } else {
+        preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
+        if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+            $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+        } else {
+            preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
+            if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+                $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+            }
+        }
+    }
+
+    return empty($title) ? _t('TEMPLATES_PAGE_WITHOUT_TITLE') : strip_tags($title);
+}
+
+/**
+ * Get the first title in page
+ *
+ * @param array $page   Page informations
+ * @param int   $length Max number of chars (default 300)
+ * 
+ * @return string The title string
+ */
+function getDescriptionFromBody($page, $length = 300)
+{
+    if (!isset($page['body'])) {
+        return '';
+    }
+    $desc = '';
+    // si la page est de type fiche_bazar, alors on affiche la fiche plutot que de formater en wiki
+    $type = $GLOBALS['wiki']->GetTripleValue(
+        $page['tag'],
+        'http://outils-reseaux.org/_vocabulary/type',
+        '',
+        ''
+    );
+
+    if ($type == 'fiche_bazar') {
+        $entry = baz_valeurs_fiche($GLOBALS['wiki']->GetPageTag());
+        $desc = baz_voir_fiche(0, $entry);
+    } else {
+        $desc = $GLOBALS['wiki']->Format($page['body']);
+    }
+    // no javascript
+    $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', "", $desc);
+
+    // no double space or new lines
+    $desc = trim(
+        preg_replace(
+            '!\s+!',
+            ' ',
+            str_replace(
+                array("\r", "\n"),
+                ' ',
+                str_replace(getTitleFromBody($page), '', strip_tags($desc))
+            )
+        )
+    );
+    $desc = strtok(wordwrap($desc, $length, "…\n"), "\n");
+    return $desc;
 }

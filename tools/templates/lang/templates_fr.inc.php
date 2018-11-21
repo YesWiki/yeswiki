@@ -33,6 +33,7 @@ $GLOBALS['translations'] = array_merge(
     array(
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
+    'TEMPLATES_PAGE_WITHOUT_TITLE' => 'Page sans titre',
 
     // actions/button.php
     'TEMPLATE_ACTION_BUTTON' => 'Action {{button ...}}',
@@ -55,6 +56,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_VIEW_PAGE' => 'Voir la page',
     'TEMPLATE_EDIT' => '&Eacute;diter',
     'TEMPLATE_EDIT_THIS_PAGE' => '&Eacute;diter la page',
+    'TEMPLATE_WIKINAME_IS_NOT_A_PAGE' => 'Ce ChatMot n\'est pas une page',
     'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Les derni&egrave;res modifications de la page',
     'TEMPLATE_LAST_UPDATE' => 'Modifi&eacute;e le',
     'TEMPLATE_OWNER' => 'Propri&eacute;taire',

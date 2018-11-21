@@ -348,5 +348,5 @@ switch ($version) {
 <tt><?php echo  $wakkaConfigLocation ?></tt>.</br>
 <?php echo _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'); ?>.  </div>
 <?php 
-$_POST['config'] = serialize($config);
+$_POST['config'] = json_encode($config);
 require_once 'setup/writeconfig.php';

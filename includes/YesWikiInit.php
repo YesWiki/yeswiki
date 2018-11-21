@@ -87,38 +87,41 @@ class Init
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
         $args = explode('/', $uri[0]);
-        if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
-            // if old school wiki url
-            if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
-                // remove leading slash
-                $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', $_REQUEST['wiki']);
 
-                if (empty($wiki)) {
-                    // this will be redirected to install or to homepage later
-                } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`', $wiki, $matches)) {
-                    // split into page/method, checking wiki name & method name (XSS proof)
-                    list(, $this->page, $this->method) = $matches;
-                } elseif (preg_match('`^' . WN_PAGE_TAG . '$`', $wiki)) {
-                    // WikiPageName without method
-                    $this->page = $wiki;
-                } else {
-                    // invalid WikiPageName
-                    echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                    exit();
-                }
-            } elseif ($args[0] == 'api') {
+        if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
+            if ($args[0] == 'api') {
                 $tab = $this->initApi($args);
                 $this->page = $_GET['wiki'] = 'api';
                 $this->method = $tab['function'];
                 $GLOBALS['api_args'] = $tab['args'];            
             } else {
-                $this->page = $args[0];
-                if (isset($args[1]) and !empty($args[1])) {
-                    // Security (quick hack) : Check method syntax
-                    if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
-                        $this->method = $args[1];
-                    }
+                // if old school wiki url
+                if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
+                    // remove leading slash
+                    $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
+                } else {
+                    $wiki = urldecode($args[0]);
                 }
+                if (empty($wiki)) {
+                    // this will be redirected to install or to homepage later
+                } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
+                    // split into page/method, checking wiki name & method name (XSS proof)
+                    list(, $this->page, $this->method) = $matches;
+                } elseif (preg_match('`^' . WN_PAGE_TAG . '$`u', $wiki)) {
+                    // WikiPageName without method
+                    $this->page = $wiki;
+                    if (isset($args[1]) and !empty($args[1])) {
+                        // Security (quick hack) : Check method syntax
+                        if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
+                            $this->method = $args[1];
+                        }
+                    }
+                } else {
+                    // invalid WikiPageName
+                    echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
+                    exit();
+                }
+
                 $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
             }
         }
@@ -155,7 +158,7 @@ class Init
             'footer_action' => 'footer',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
             'referrers_purge_time' => 24,
-            'pages_purge_time' => 90,
+            'pages_purge_time' => 365,
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => '@admins',
@@ -319,34 +322,37 @@ class Init
      */
     public function initApi($args)
     {
-        header('Content-type: application/json; charset=UTF-8');
-        header('Access-Control-Allow-Origin: *');
-
-        if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-            if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])
-                && ($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
-                || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
-                || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT')
-            ) {
-                header('Access-Control-Allow-Credentials: true');
-                header('Access-Control-Allow-Headers: X-Requested-With');
-                header('Access-Control-Allow-Headers: Content-Type');
-                header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
-                header('Access-Control-Max-Age: 86400');
-            }
-            exit;
-        }
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
-            $_POST = json_decode(file_get_contents('php://input'), true);
-        }
 
         // call to YesWiki api
         if (isset($args[1]) and !empty($args[1])) {
             array_shift($args);
             $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD'])
-              .ucwords(strtolower($args[0]));
+            .ucwords(strtolower($args[0]));
             array_shift($args);
-            return array('function' => $apiFunctionName, 'args' => $args);
+            if (function_exists($apiFunctionName)) {
+                header('Content-type: application/json; charset=UTF-8');
+                header('Access-Control-Allow-Origin: *');
+                if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])
+                        && ($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
+                        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
+                        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT')
+                    ) {
+                        header('Access-Control-Allow-Credentials: true');
+                        header('Access-Control-Allow-Headers: X-Requested-With');
+                        header('Access-Control-Allow-Headers: Content-Type');
+                        header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+                        header('Access-Control-Max-Age: 86400');
+                    }
+                    exit;
+                }
+                if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
+                    $_POST = json_decode(file_get_contents('php://input'), true);
+                }
+                return array('function' => $apiFunctionName, 'args' => $args);
+            } else {
+                return array('function' => 'getApiDocumentation', 'args' => '');
+            }
         } else {
             return array('function' => 'getApiDocumentation', 'args' => '');
         }

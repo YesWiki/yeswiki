@@ -146,7 +146,28 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
     } elseif (isset($_POST["config"])) {
         // just for installation
         if (count($_POST["config"])==1) {
-            $conf = unserialize($_POST["config"]);
+            if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
+                $conf = unserialize($_POST["config"], ['allowed_classes' => false]);
+            } else {
+                // workaround to avoid possibility of having classes
+                $allowed_classes = false;
+                $_POST["config"] = preg_replace_callback(
+                    '/(?=^|:)(O|C):\d+:"([^"]*)":(\d+):{/',
+                    function ($matches) use ($allowed_classes)
+                    {
+                        if (is_array($allowed_classes) && in_array($matches[2], $allowed_classes)) {
+                            return $matches[0];
+                        } else {
+                            return $matches[1].':22:"__PHP_Incomplete_Class":'.
+                            ($matches[3] + 1).
+                            ':{s:27:"__PHP_Incomplete_Class_Name";'.
+                            serialize($matches[2]);
+                        }
+                    },
+                    $_POST["config"]
+                );
+                $conf = unserialize($_POST["config"]);
+            }
             if (isset($conf['default_language']) && in_array($conf['default_language'], $available_languages)) {
                 return $conf['default_language'];
             }

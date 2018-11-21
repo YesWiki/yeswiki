@@ -170,18 +170,19 @@ overflow: auto;
 .accordion-group {
   cursor: pointer;
 }
+.accordion-group .panel-title {
+  position: relative;
+}
 .accordion-group .panel-title:after {
     /* symbol for "opening" panels */
-    content:"\02C4";
+    content: "\02C4";
     color: inherit;
     font-size: 2em;
-    line-height: 0.1em;
-    margin-top: 0.55em;
-    float: right;
-    display:block;
-    /*position: absolute;
-    right:0;
-    top:0;*/
+    line-height: 1em;
+    display: block;
+    position: absolute;
+    right: -5px;
+    top: 0;
 }
 .accordion-group .panel-heading.collapsed .panel-title:after {
     /* symbol for "collapsed" panels */
