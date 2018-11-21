@@ -17,7 +17,7 @@ function geocodage( address, callbackOk, callbackError )
 
   // async call to find the full address
   asyncCalls.push(
-    $.get('https:////nominatim.openstreetmap.org/search?q='+encodeURIComponent(address)+'&format=json')
+    $.get('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(address)+'&format=json')
   );
 
   if( found = address.match( /^\d+(.*)/i ) )
