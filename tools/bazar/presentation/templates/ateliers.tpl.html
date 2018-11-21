@@ -1,0 +1,579 @@
+<?php
+/*******************************************************************************
+ * Comportement du template
+ *
+ *	Affiche toutes les fiches d'un formulaire sur la même page
+ * sous la forme d'un damier de cases alternativement blanches et de couleur
+ * (la couleur est définie par le paramètre couleur).
+ *	L'affichage des fiches peut être précédé de texte
+ *		(contenu dans une page appelée via le paramètre pageDessus).
+ *	et/ou suivi de text
+ *		(contenu dans une page appelée via le paramètre pageDessous).
+ *
+ * Pour chaque fiche sont affichés les champs :
+ *	-	bf_titre
+ *	-	bf_prochainedate
+ *	-	bf_prochainlieu
+ *	-	bf_enbref
+ *	Et un bouton, permet de pointer vers l'adresse contenue dans bf_lien.
+ *	Le libellé du bouton provient d'un champ de type liste ou radio
+ *		(indiqué par le paramètre listeboutons).
+ *		Si le champ bf_lien est vide, le bouton de la fiche n'est pas actif.
+ *
+ *	Exemple de formulaire :
+ *		texte***bf_titre...
+ *		jour***bf_prochainedate...
+ *		texte***bf_prochainlieu...
+ *		textelong***bf_enbref...
+ *		texte***bf_lien...
+ *		radio***ListeBoutons...
+ *
+ *	Une fiche ressemble, en plus beau, à ça
+ *		________________________________________
+ *		|					bf_titre						|
+ *		|  bf_prochainedate à bf_prochainlieu	|
+ *		|													|
+ *		| bf_enbref										|
+ *		|				___________________			|
+ *		|				|radioListeBoutons|			|
+ *		|				|_________________|			|
+ *		|______________________________________|
+ *
+ *	Certaines fiches peuvent être mises en exergue.
+ *		On utilise pour cela une des valeurs de la listeboutons
+ *			(précisée par le paramètre valeurexergue)
+ *
+ *	On peut voir ce template sur la page https://osons.cc/?PageAteliers
+ *	obtenu avec l'action suivante :
+ *	{{bazarliste template="ateliers.tpl.html" pageDessus="PageAteliersHaut"
+ *		pageDessous="TarifsAteliers" id="3" champ="bf_rang" nbcol="4"
+ *		couleur="#009999" urldebase="https://osons.cc/?"
+ *		listeboutons="radioListeBoutonsAtelier" valeurexergue="1"}}
+ ******************************************************************************/
+/*******************************************************************************
+ * parametres du template
+ *
+ * ils peuvent être passés dans l'action bazar ou bazarliste,
+ * mais sont spécifiques à ce template
+ *
+ *	pageDessus="NomWikiDeLaPage"
+ *		S'il est rempli,
+ *			indique le nom Wiki d'une page du wiki qui apparaitra
+ *			au dessus des fiches.
+ *		S'il n'est pas rempli ou pas présent,
+ *			rien n'appraraîtra avant les fiches.
+ * pageDessous="NomWikiDeLaPage"
+ *		S'il est rempli,
+ *			indique le nom Wiki d'une page du wiki qui apparaitra
+ *			au dessous des fiches.
+ *		S'il n'est pas rempli ou pas présent,
+ *			rien n'appraraîtra après les fiches.
+ *	nbcol="4"
+ *		S'il est rempli,
+ *			permet de changer le nombre de fiches affichées sur une ligne.
+ *		S'il n'est pas rempli ou pas présent,
+ *			les fiches seront 4 par ligne.
+ *	couleur="SeaGreen" ou couleur="#2E8B57"
+ * 	S'il est rempli, indique la couleur utilisée (nom ou code de couleur HTML)
+ *		S'il n'est pas rempli ou pas présent, la couleur sera SeaGreen=#2E8B57.
+ * urldebase="https://adresse.demon.site/?"
+ *		Permet de préciser l'adresse de base du wiki.
+ *			Ne pas oublier de mettre le "?" à la fin.
+ *		S'il n'est pas rempli ou pas présent,
+ *			les liens internes au Wiki ne fonctionneront pas.
+ * listeboutons="listeListeTypeDeTrucs"
+ *		Indique la liste utilisée pour les libellés des boutons.
+ *			Attention, si vous utilisez, avec des boutons radio,
+ *			une liste qui s'appelle, dans Bazar, "ListeTypeDeTrucs",
+ *			le paramètre listeboutons devra être égal à "radioListeTypeDeTrucs".
+ *			Et si vous utilisez cette même liste sous forme de liste,
+ *			le paramètre listeboutons devra être égal à "listeListeTypeDeTrucs".
+ *		S'il n'est pas rempli ou pas présent,
+ *			la valeur ustilisée sera "radioListeBoutons"
+ *	valeurexergue="1"
+ *		S'il est rempli,
+ *			indique, dans la liste utilisée pour les libellés de bouton
+ *			(cf. paramètre listeboutons), celui qui doit être utilisé pour mettre
+ *			les fiches en exergue.
+ *			Attention, on utilise ici le clé dans la liste et non la valeur
+ *			par exemple, "1" plutôt que "Prochaine date"
+ *		S'il n'est pas rempli ou pas présent,
+ *			aucune fiche ne sera mise en exergue.
+ ******************************************************************************/
+
+// avec ou sans page au dessus ?
+$pageDessus = ''; // declaration d'une chaine de char vide
+$pageDessus = $GLOBALS['wiki']->GetParameter('pageDessus');
+if (empty($pageDessus)) {
+	$pageDessus = "non";
+}
+
+// avec ou sans page au dessous ?
+$pageDessous = ''; // declaration d'une chaine de char vide
+$pageDessous = $GLOBALS['wiki']->GetParameter('pageDessous');
+if (empty($pageDessous)) {
+  $pageDessous = "non";
+}
+
+// nombre de colonnes
+$nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
+if (empty($nbcol)) {
+    $nbcol = 4;
+}
+
+$largeur=floor(100 / $nbcol)."%";
+
+
+// couleur
+$couleur = $GLOBALS['wiki']->GetParameter('couleur');
+if (empty($couleur)) {
+	 $couleur = 'SeaGreen';
+}
+
+// url de base
+$base_url = $GLOBALS['wiki']->GetParameter('urldebase');
+if (empty($base_url)) {
+	 $base_url = '';
+}
+
+// nom de la liste des boutons
+$liste_boutons = $GLOBALS['wiki']->GetParameter('listeboutons');
+if (empty($liste_boutons)) {
+	$liste_boutons='radioListeBoutons';
+}
+
+// valeur à mettre en exergue dans la liste des boutons
+$valeur_exergue = $GLOBALS['wiki']->GetParameter('valeurexergue');
+if (empty($valeur_exergue)) {
+	$valeur_exergue='';
+}
+
+?>
+<?php
+/*******************************************************************************
+ * styles du template
+ ******************************************************************************/
+?>
+<style>
+.btn-couleur{
+	border-color: <?php echo $couleur; ?>;
+	background-color: <?php echo $couleur; ?>;
+	color: #ffffff;
+	font-family: OpenDyslexic;
+}
+
+
+.cell-couleur-haut{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 2px;
+	    border-right-width: 2px;
+	    border-bottom-width: 0px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 4px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	background-color: <?php echo $couleur; ?>;
+	color:#ffffff;
+	vertical-align: top;
+}
+
+.cell-couleur-milieu{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 2px;
+	    border-bottom-width: 0px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	background-color: <?php echo $couleur; ?>;
+	color:#ffffff;
+	vertical-align: top;
+}
+
+.cell-couleur-bas{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 2px;
+	    border-bottom-width: 2px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 4px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	background-color: <?php echo $couleur; ?>;
+	color:#ffffff;
+	vertical-align: top;
+}
+
+.cell-couleurblanc-haut{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 2px;
+	    border-right-width: 2px;
+	    border-bottom-width: 0px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 4px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	vertical-align: top;
+	line-height: 100%;
+}
+
+.cell-couleurblanc-milieu{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 2px;
+	    border-bottom-width: 0px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	vertical-align: top;
+}
+
+.cell-couleurblanc-bas{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 2px;
+	    border-bottom-width: 2px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 4px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	vertical-align: top;
+}
+
+.cell-couleur-exergue-haut,
+.cell-couleurblanc-exergue-haut{
+	border-color: <?php echo $couleur; ?>;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 4px;
+	    border-right-width: 4px;
+	    border-bottom-width: 0px;
+	    border-left-width: 4px;
+	padding: ;
+	    padding-top: 4px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	box-shadow: -4px -4px #ffffff, 4px -4px #ffffff, -4px 0 #ffffff, 4px 0 #ffffff;
+	background-color: #ffffff;
+	color: <?php echo $couleur; ?>;
+	vertical-align: top;
+}
+
+.cell-couleur-exergue-milieu,
+.cell-couleurblanc-exergue-milieu{
+	border-color: <?php echo $couleur; ?>;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 4px;
+	    border-bottom-width: 0px;
+	    border-left-width: 4px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	box-shadow: -4px 0 #ffffff, 4px 0 #ffffff;
+	background-color: #ffffff;
+	color: <?php echo $couleur; ?>;
+	vertical-align: top;
+}
+
+.cell-couleur-exergue-texte-milieu,
+.cell-couleurblanc-exergue-texte-milieu{
+	border-color: <?php echo $couleur; ?>;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 4px;
+	    border-bottom-width: 0px;
+	    border-left-width: 4px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 0px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	box-shadow: -4px 0 #ffffff, 4px 0 #ffffff;
+	background-color: #ffffff;
+	color: #000000;
+	vertical-align: top;
+}
+
+.cell-couleur-exergue-bas,
+.cell-couleurblanc-exergue-bas{
+	border-color: <?php echo $couleur; ?>;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 0px;
+	    border-right-width: 4px;
+	    border-bottom-width: 4px;
+	    border-left-width: 4px;
+	padding: ;
+	    padding-top: 0px;
+	    padding-bottom: 4px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	box-shadow: -4px 0 #ffffff, 4px 0 #ffffff, -4px 4px #ffffff, 4px 4px #ffffff;
+	background-color:#ffffff;
+	color: <?php echo $couleur; ?>;
+	vertical-align: top;
+}
+
+.btn-reverse-couleurblanc{
+	border-color: <?php echo $couleur; ?>;
+	background-color: <?php echo $couleur; ?>;
+	color: #ffffff;
+	font-family: OpenDyslexic;
+}
+.btn-reverse-couleur{
+	border-color: #ffffff;
+	background-color: #ffffff;
+	color: <?php echo $couleur; ?>;
+	font-family: OpenDyslexic;
+}
+.faux-btn-reverse-couleurblanc {
+	display:inline-block;
+	padding:6px 12px;
+	margin-bottom:0;
+	font-size:14px;
+	font-weight:400;
+	text-align:center;
+	white-space:nowrap;
+	vertical-align:middle;
+	background-image:none;
+	border:1px solid transparent;
+	border-radius:4px
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	border-color: <?php echo $couleur; ?>;
+	background-color: <?php echo $couleur; ?>;
+	color: #ffffff;
+	font-family: OpenDyslexic;
+}
+.faux-btn-reverse-couleur {
+	display:inline-block;
+	padding:6px 12px;
+	margin-bottom:0;
+	font-size:14px;
+	font-weight:400;
+	text-align:center;
+	white-space:nowrap;
+	vertical-align:middle;
+	background-image:none;
+	border:1px solid transparent;
+	border-radius:4px
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	border-color: #ffffff;
+	background-color: #ffffff;
+	color: <?php echo $couleur; ?>;
+	font-family: OpenDyslexic;
+	font-weight: normal;
+}
+
+ul{
+	list-style: circle outside; margin:
+	0 8px 0 8px;
+	border:0;
+	padding: 0 0 0 4px;
+}
+
+.texte-gauche{
+	text-align: left;
+	padding-left:4px;
+}
+</style>
+
+<?php
+/*******************************************************************************
+ * code du template
+ ******************************************************************************/
+?>
+<?php
+/***** Inclure la page du dessus **********************************************/
+if ($pageDessus != 'non') :
+	?>
+	<div id="text-dessus">
+	<?php
+		$includePage = '{{include page="'.$pageDessus.'"}}';
+		// pour inclure du code wiki dans un template il faut utiliser la ligne ci-dessous
+		echo $GLOBALS['wiki']->Format($includePage);
+	?>
+	</div>
+<?php endif; ?>
+
+<?php
+/***** Affichage des fiches ***************************************************/
+$nbfiches=count($fiches);
+if ($nbfiches>0) :
+	if ((substr($liste_boutons,0,5)=="liste") || (substr($liste_boutons,0,5)=="radio")){
+		$listename=substr($liste_boutons,5);
+	} elseif (substr($liste_boutons,0,8)=="checkbox"){
+		$listename=substr($liste_boutons,8);
+	}
+	$valeurslistetmp = baz_valeurs_liste($listename);
+	$valeursliste = $valeurslistetmp['label'];
+	$nb = 0;
+	$nblignes=ceil($nbfiches / $nbcol);
+	$tabfiches = array();
+	foreach ($fiches as $fiche) :
+		$nb++;
+		$row=ceil($nb / $nbcol);
+		$col=$nb-($nbcol*($row-1));
+		if (($row + $col) % 2 == 0){
+			$class="couleur";
+		} else {
+			$class="couleurblanc";
+		}
+		if (($valeur_exergue!='') && ($fiche[$liste_boutons]==$valeur_exergue)){
+			$exergue=1;
+		} else {
+			$exergue=0;
+		}
+		$tabfiches[$nb] = array($fiche,$class,$exergue,$row,$col);
+	endforeach;
+	?>
+	<table width="100%"><tbody><tr>
+<?php
+	$nb = 1;
+	$ligne=1;
+	while ($ligne <= $nblignes):
+		$colonne=1;
+		echo('<tr>');
+		// Chaque fiche s'affiche sur plusieurs lignes de tableau,
+		// affichage de la 1re contenant le titre
+		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
+	?>
+			<td width="<?php echo $largeur; ?>" class="cell-<?php echo $tabfiches[$nb][1]; ?><?php if ($tabfiches[$nb][2]){echo ('-exergue');} ?>-haut" style="text-align: center;">
+				<h4><?php echo $tabfiches[$nb][0]['bf_titre']; ?></h4>
+			</td>
+	<?php
+			$nb++;
+			$colonne++;
+		endwhile;
+		echo('</tr>');
+		$colonne=1;
+		$nb = (($ligne - 1) * $nbcol) + $colonne;
+		// affichage de la 2e ligne contenant la prochaine date
+		echo('<tr>');
+		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
+			if (isset($tabfiches[$nb][0]['bf_prochainedate']) && ($tabfiches[$nb][0]['bf_prochainedate'] != "")) {
+				$moment = explode('T', $tabfiches[$nb][0]['bf_prochainedate']);
+				$date = explode('-', $moment[0]);
+				$moisnoms = array('janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre');
+				$moisnum = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
+				if ($date[2] == '01'){
+					$date[2] = '1<sup>er</sup>';
+				}
+				$date[1]=str_replace($moisnum, $moisnoms, $date[1]);
+				$heure = explode(':', $moment[1]);
+				$annonce="Le ".ltrim($date[2],'0')." ".$date[1]." ".$date[0]." – ".ltrim($heure[0],'0')."h".ltrim($heure[1],'0')."-".($heure[0]+3)."h".ltrim($heure[1],'0')." à ".$tabfiches[$nb][0]['bf_prochainlieu'];
+			} else {
+				$annonce=$tabfiches[$nb][0]['bf_prochainlieu'];
+			}
+				?>
+				<td width="<?php echo $largeur; ?>" class="cell-<?php echo $tabfiches[$nb][1]; ?><?php if ($tabfiches[$nb][2]){echo ('-exergue');} ?>-milieu" style="text-align: center;">
+					<b><?php echo $annonce; ?></b><br/>
+				</td>
+		<?php
+			$nb++;
+			$colonne++;
+		endwhile;
+		echo('</tr>');
+		$colonne=1;
+		$nb = (($ligne - 1) * $nbcol) + $colonne;
+		// affichage de la 3e ligne contenant le texte
+		echo('<tr>');
+		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
+			?>
+			<td width="<?php echo $largeur; ?>" class="cell-<?php echo $tabfiches[$nb][1]; ?><?php if ($tabfiches[$nb][2]){echo ('-exergue-texte');} ?>-milieu">
+				<div class="texte-gauche"><br />
+					<?php echo $tabfiches[$nb][0]['bf_enbref']; ?>
+				</div>
+			</td>
+		<?php
+			$nb++;
+			$colonne++;
+		endwhile;
+		echo('</tr>');
+		$colonne=1;
+		$nb = (($ligne - 1) * $nbcol) + $colonne;
+		// affichage de la 4e ligne contenant le bouton
+		echo('<tr>');
+		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
+			if ($tabfiches[$nb][2]){
+				$cell_class='-exergue';
+				$btn_class='btn-couleur';
+			} else {
+				$cell_class='';
+				$btn_class='btn-reverse-'.$tabfiches[$nb][1];
+			}
+			$libelle_bouton=$valeursliste[$tabfiches[$nb][0][$liste_boutons]];
+			if (isset($tabfiches[$nb][0]['bf_lien']) && ($tabfiches[$nb][0]['bf_lien']!='')){
+				if (ctype_alnum($tabfiches[$nb][0]['bf_lien'])){
+					$lien= $base_url . $tabfiches[$nb][0]['bf_lien'];
+				} else{
+					$lien= $tabfiches[$nb][0]['bf_lien'];
+				}
+				$output='<td width="<?php echo $largeur; ?>" class="cell-'.$tabfiches[$nb][1].$cell_class.'-bas" style="text-align: center;"><br /><a href="'.$lien.'" class="btn '.$btn_class.' modalbox" title="'.$libelle_bouton.'">'.$libelle_bouton.'</a></td>';
+			} else {
+				$output='<td width="<?php echo $largeur; ?>" class="cell-'.$tabfiches[$nb][1].$cell_class.'-bas" style="text-align: center;"><br /><span class="faux-btn-reverse-'.$tabfiches[$nb][1].'">'.$libelle_bouton.'</span><br /></td>';
+			}
+			?>
+			<?php echo $output; ?>
+		<?php
+			$nb++;
+			$colonne++;
+		endwhile;
+		echo('</tr>');
+		$colonne=1;
+		$ligne++;
+	endwhile;
+	?>
+	</tbody></table>
+
+<?php endif; ?>
+
+<?php
+/***** Inclure la page du dessous *********************************************/
+if ($pageDessous != 'non') :
+	?>
+	<div id="text-dessous">
+	<?php
+		$includePage = '{{include page="'.$pageDessous.'"}}';
+		// pour inclure du code wiki dans un template il faut utiliser la ligne ci-dessous
+		echo $GLOBALS['wiki']->Format($includePage);
+	?>
+	</div>
+<?php endif; ?>
