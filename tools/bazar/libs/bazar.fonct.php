@@ -1063,13 +1063,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         }
     }
     // test si on est dans une iframe
-    $ref = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    $iframe = strstr($ref, '/iframe');
-    if ($iframe) {
-        $iframe = 'iframe';
-    } else {
-        $iframe = '';
-    }
+    $iframe = testUrlInIframe();
 
     //------------------------------------------------------------------------------------------------
     // AFFICHAGE DU FORMULAIRE CORRESPONDANT AU TYPE DE FICHE CHOISI PAR L'UTILISATEUR
@@ -1969,7 +1963,7 @@ function bazPrepareFormData($form)
  */
 function baz_valeurs_formulaire($idformulaire = '')
 {
-    if (is_array($idformulaire)) {
+    if (is_array($idformulaire) and count($idformulaire) > 0) {
         $tabf = array();
         foreach ($idformulaire as $id) {
             if (!isset($GLOBALS['_BAZAR_']['form'][$id])) {
@@ -1983,7 +1977,7 @@ function baz_valeurs_formulaire($idformulaire = '')
             $tabf[$id] = $GLOBALS['_BAZAR_']['form'][$id];
         }
         return $tabf;
-    } elseif ($idformulaire != '') {
+    } elseif ($idformulaire != '' and !is_array($idformulaire)) {
         if (!isset($GLOBALS['_BAZAR_']['form'][$idformulaire])) {
             $requete = 'SELECT * FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature WHERE bn_id_nature='.$idformulaire;
             $tab_resultat = $GLOBALS['wiki']->LoadSingle($requete);
@@ -2042,14 +2036,17 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
         $tab_formulaire['titre_liste'] = $valeursliste['titre_liste'];
     }
 
+    // test si on est dans une iframe
+    $iframe = testUrlInIframe();
+
     $tab_formulaire['form_link'] = $GLOBALS['wiki']->href(
-        '',
+        $iframe,
         $GLOBALS['wiki']->GetPageTag(),
         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&action='.$mode
         .(isset($_GET['idliste']) ? '&idliste='.$_GET['idliste'] : '')
     );
     $tab_formulaire['cancel_link'] = $GLOBALS['wiki']->href(
-        '',
+        $iframe,
         $GLOBALS['wiki']->GetPageTag(),
         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES
     );
@@ -2236,7 +2233,7 @@ function baz_gestion_formulaire()
 function baz_gestion_listes()
 {
     $res = '';
-
+    $iframe = testUrlInIframe();
     // affichage de la liste des templates a modifier ou supprimer (dans le cas ou il n'y a pas d'action selectionnee)
     if (!isset($_GET['action'])) {
         // il y a des listes à importer
@@ -2346,9 +2343,9 @@ function baz_gestion_listes()
         $GLOBALS['wiki']->InsertTriple($nomwikiliste, 'http://outils-reseaux.org/_vocabulary/type', 'liste', '', '');
 
         //on redirige vers la page contenant toutes les listes, et on confirme par message la bonne saisie de la liste
-        $GLOBALS['wiki']->SetMessage(_t('BAZ_NOUVELLE_LISTE_ENREGISTREE'));
+        // $GLOBALS['wiki']->SetMessage(_t('BAZ_NOUVELLE_LISTE_ENREGISTREE'));
         $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
+            $GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
         );
     } elseif ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE_V
         && $GLOBALS['wiki']->HasAccess('write', $_POST['NomWiki'])) {
@@ -2391,9 +2388,9 @@ function baz_gestion_listes()
         $GLOBALS['wiki']->SavePage($_POST['NomWiki'], json_encode($valeur));
 
         //on redirige vers la page contenant toutes les listes, et on confirme par message la modification de la liste
-        $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTE_MODIFIEE'));
+        // $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTE_MODIFIEE'));
         $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
+            $GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
         );
     } elseif ($_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE &&
         isset($_GET['idliste']) && $_GET['idliste'] != '' &&
@@ -2437,9 +2434,9 @@ function baz_gestion_listes()
         }
 
         //on redirige vers la page contenant toutes les listes, avec un message de confirmation
-        $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTES_SUPPRIMEES'));
+        // $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTES_SUPPRIMEES'));
         $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
+            $GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
         );
     }
 
@@ -2537,6 +2534,7 @@ function baz_valeurs_liste($idliste = '')
 
         return $GLOBALS['_BAZAR_']['lists'][$idliste];
     } else {
+        $GLOBALS['_BAZAR_']['lists'] = '';
         //requete pour obtenir l'id et le label des listes
         $requete = 'SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples '
           .'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="liste" ORDER BY resource';
@@ -3344,7 +3342,8 @@ function baz_requete_recherche_fiches(
         // on transforme les specifications de recherche sur les liste et checkbox
         if (isset($_REQUEST['rechercher'])) {
             reset($_REQUEST);
-            while (list($nom, $val) = each($_REQUEST)) {
+
+            foreach ($_REQUEST as $nom => $val) {
                 if (((substr($nom, 0, 5) == 'liste') || (substr($nom, 0, 8) ==
                     'checkbox')) && $val != '0' && $val != '') {
                     if (is_array($val)) {
@@ -3373,8 +3372,7 @@ function baz_requete_recherche_fiches(
 
     if ($motcles == true) {
         reset($tableau_criteres);
-
-        while (list($nom, $val) = each($tableau_criteres)) {
+        foreach ($tableau_criteres as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
                 $valcrit = explode(',', $val);
                 if (is_array($valcrit) && count($valcrit) > 1) {
@@ -3420,7 +3418,8 @@ function baz_requete_recherche_fiches(
             $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
         }
         $first = true;
-        while (list($nom, $val) = each($tableau)) {
+        
+        foreach ($tableau as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
                 $valcrit = explode(',', $val);
                 if (is_array($valcrit) && count($valcrit) > 1) {
@@ -3751,7 +3750,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     $squelfacette = new SquelettePhp($templatetoload);
     $squelfacette->set($fiches);
-    $output = $squelfacette->analyser();
+    $output = '<div id="bazar-list-'.$params['nbbazarliste'].'" class="bazar-list">
+    <div class="list">'.$squelfacette->analyser().'</div></div>';
     //$output = $GLOBALS['wiki']->renderTemplate('bazar', $params['template'], $fiches);
 
     // affichage spécifique pour facette
@@ -3779,7 +3779,16 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
         // colonne des filtres
         $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".
-                        '<div class="filters no-dblclick">'."\n";
+                        '<div class="filters no-dblclick">'."\n".
+                        '<div class="form-group">
+                          <div class="input-group">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
+                            <input type="text" class="form-control filter-bazar" id="inputBazarFilter'
+                            .$params['nbbazarliste'].'" placeholder="'._t('BAZAR_FILTER').'" data-target="bazar-list-'.$params['nbbazarliste'].'" />
+                          </div>
+                        </div>'."\n";
+                        
+
         $i = 0;
         $first = true;
 
