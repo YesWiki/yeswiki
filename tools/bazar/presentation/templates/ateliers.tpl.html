@@ -9,6 +9,7 @@
  *		(contenu dans une page appelée via le paramètre pageDessus).
  *	et/ou suivi de text
  *		(contenu dans une page appelée via le paramètre pageDessous).
+ *
  * Pour chaque fiche sont affichés les champs :
  *	-	bf_titre
  *	-	bf_prochainedate
@@ -18,6 +19,15 @@
  *	Le libellé du bouton provient d'un champ de type liste ou radio
  *		(indiqué par le paramètre listeboutons).
  *		Si le champ bf_lien est vide, le bouton de la fiche n'est pas actif.
+ *
+ *	Exemple de formulaire :
+ *		texte***bf_titre...
+ *		jour***bf_prochainedate...
+ *		texte***bf_prochainlieu...
+ *		textelong***bf_enbref...
+ *		texte***bf_lien...
+ *		radio***ListeBoutons...
+ *
  *	Une fiche ressemble, en plus beau, à ça
  *		________________________________________
  *		|					bf_titre						|
@@ -26,12 +36,19 @@
  *		| bf_enbref										|
  *		|				___________________			|
  *		|				|radioListeBoutons|			|
+ *		|				|_________________|			|
  *		|______________________________________|
  *
  *	Certaines fiches peuvent être mises en exergue.
  *		On utilise pour cela une des valeurs de la listeboutons
  *			(précisée par le paramètre valeurexergue)
+ *
  *	On peut voir ce template sur la page https://osons.cc/?PageAteliers
+ *	obtenu avec l'action suivante :
+ *	{{bazarliste template="ateliers.tpl.html" pageDessus="PageAteliersHaut"
+ *		pageDessous="TarifsAteliers" id="3" champ="bf_rang" nbcol="4"
+ *		couleur="#009999" urldebase="https://osons.cc/?"
+ *		listeboutons="radioListeBoutonsAtelier" valeurexergue="1"}}
  ******************************************************************************/
 /*******************************************************************************
  * parametres du template
