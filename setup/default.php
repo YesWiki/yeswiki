@@ -56,7 +56,7 @@ if (!defined('WIKINI_VERSION')) {
     ?>
 
     </div>
-    <form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?installAction=install" method="post">
+    <form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?PagePrincipale&installAction=install" method="post">
 
     <fieldset>
 

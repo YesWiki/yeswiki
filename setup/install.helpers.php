@@ -39,5 +39,5 @@ function test($text, $condition, $errorText = "", $stopOnError = 1)
 function myLocation()
 {
     list($url, ) = explode("?", $_SERVER["REQUEST_URI"]);
-    return $url.'setup/';
+    return $url;
 }
