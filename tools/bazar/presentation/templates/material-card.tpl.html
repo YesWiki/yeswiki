@@ -3,11 +3,23 @@
 <?php
 $rowcol = ''; // declaration d'une chaine de char vide
 $type = ''; // declaration d'une chaine de char vide
+$modal = ''; // declaration d'une chaine de char vide
 
 /**************************************************************************************************
  * parametres du template :
  * ils peuvent être passés dans l'action bazar ou bazarliste, mais sont spécifiques à ce template
  **************************************************************************************************/
+
+ // test si on veut affichage modal ou pas
+ $modal = $GLOBALS['wiki']->GetParameter('modal');
+ if (empty($modal)) {
+     $modal = non;
+ }
+
+ if ($modal==1) {
+     $modal = modalbox;
+ }
+
 
 // version simple (oneclick) ou complexe (les deux valeurs du param)
 $type = $GLOBALS['wiki']->GetParameter('type');
@@ -15,7 +27,7 @@ if (empty($type)) {
     $type = complexe;
 }
 
-// nombre de colonnes
+// nombre de colonne
 $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
 if (empty($nbcol)) {
     $nbcol = 4;
@@ -54,19 +66,7 @@ if ( count($fiches)>0 ) : ?>
   <?php foreach ($fiches as $fiche) : ?>
 
         <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
-		  <?php
-			$color = getCustomValueForEntry(
-			  $param['color'],
-			  $param['colorfield'],
-			  $fiche,
-			  ''
-			);
-			if (!empty($color)) {
-				echo '<article class="material-card '.ucfirst($color).'">';
-			} else {
-				echo '<article class="material-card '.$classes[rand(0, $nbclasses-1)].'">';
-			}
-			?>
+        <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
           <h2>
                       <span><?php echo $fiche['bf_titre']; ?></span>
                       <strong>
@@ -156,22 +156,15 @@ $GLOBALS['wiki']->AddJavascript($js);
 <?php if( count($fiches)>0 ) : ?>
 <div class="row">
 <?php foreach ($fiches as $fiche) : ?>
+  <style>
+  .modal-header {
+      display:none;
+  }
+  </style>
 
     <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
-      <a href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>">
-			<?php
-			$color = getCustomValueForEntry(
-			  $param['color'],
-			  $param['colorfield'],
-			  $fiche,
-			  ''
-			);
-			if (!empty($color)) {
-				echo '<article class="material-card '.ucfirst($color).'">';
-			} else {
-				echo '<article class="material-card '.$classes[rand(0, $nbclasses-1)].'">';
-			}
- 			?>
+      <a class="<?php echo $modal; ?>" title="<?php echo htmlspecialchars($fiche['bf_titre']);?>" href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>">
+      <article class="material-card <?php echo $classes[rand(0, $nbclasses-1)]?>">
      <h2>
                     <span><?php echo $fiche['bf_titre']; ?> </span>
         </h2>
