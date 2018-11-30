@@ -28,7 +28,12 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
       </div>';
             // pour l'edition d'une page de l'historique
             if (isset($_REQUEST['time'])) {
-                echo '<input type="hidden" name="time" value="'.htmlspecialchars($_REQUEST['time']).'">';
+                echo '<input type="hidden" name="time" value="'
+                  .htmlspecialchars($_REQUEST['time']).'">';
+            }
+            if (isset($_REQUEST['previous'])) {
+                echo '<input type="hidden" name="previous" value="'
+                  .htmlspecialchars($_REQUEST['previous']).'" />'."\n";
             }
             echo '
       <button type="submit" class="btn btn-default">'._t('HASHCASH_SEND').'</button>

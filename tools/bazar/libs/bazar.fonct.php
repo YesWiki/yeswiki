@@ -1063,13 +1063,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         }
     }
     // test si on est dans une iframe
-    $ref = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    $iframe = strstr($ref, '/iframe');
-    if ($iframe) {
-        $iframe = 'iframe';
-    } else {
-        $iframe = '';
-    }
+    $iframe = testUrlInIframe();
 
     //------------------------------------------------------------------------------------------------
     // AFFICHAGE DU FORMULAIRE CORRESPONDANT AU TYPE DE FICHE CHOISI PAR L'UTILISATEUR
@@ -1093,10 +1087,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         $valid = validateForm($_POST);
         if ($valid['result']) {
             $valeur = baz_insertion_fiche($_POST);
-            // Redirection pour eviter la revalidation du formulaire
-            $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
+            if (!empty($GLOBALS['params']['redirecturl'])) {
+                header('Location: '.$GLOBALS['params']['redirecturl']);
+            } else {
+                // Redirection pour eviter la revalidation du formulaire
+                $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
               .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-            header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
+                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
+            }
             exit;
         } else {
             echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
@@ -1965,7 +1963,7 @@ function bazPrepareFormData($form)
  */
 function baz_valeurs_formulaire($idformulaire = '')
 {
-    if (is_array($idformulaire)) {
+    if (is_array($idformulaire) and count($idformulaire) > 0) {
         $tabf = array();
         foreach ($idformulaire as $id) {
             if (!isset($GLOBALS['_BAZAR_']['form'][$id])) {
@@ -1979,7 +1977,7 @@ function baz_valeurs_formulaire($idformulaire = '')
             $tabf[$id] = $GLOBALS['_BAZAR_']['form'][$id];
         }
         return $tabf;
-    } elseif ($idformulaire != '') {
+    } elseif ($idformulaire != '' and !is_array($idformulaire)) {
         if (!isset($GLOBALS['_BAZAR_']['form'][$idformulaire])) {
             $requete = 'SELECT * FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature WHERE bn_id_nature='.$idformulaire;
             $tab_resultat = $GLOBALS['wiki']->LoadSingle($requete);
@@ -2038,14 +2036,17 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
         $tab_formulaire['titre_liste'] = $valeursliste['titre_liste'];
     }
 
+    // test si on est dans une iframe
+    $iframe = testUrlInIframe();
+
     $tab_formulaire['form_link'] = $GLOBALS['wiki']->href(
-        '',
+        $iframe,
         $GLOBALS['wiki']->GetPageTag(),
         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&action='.$mode
         .(isset($_GET['idliste']) ? '&idliste='.$_GET['idliste'] : '')
     );
     $tab_formulaire['cancel_link'] = $GLOBALS['wiki']->href(
-        '',
+        $iframe,
         $GLOBALS['wiki']->GetPageTag(),
         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES
     );
@@ -2232,7 +2233,7 @@ function baz_gestion_formulaire()
 function baz_gestion_listes()
 {
     $res = '';
-
+    $iframe = testUrlInIframe();
     // affichage de la liste des templates a modifier ou supprimer (dans le cas ou il n'y a pas d'action selectionnee)
     if (!isset($_GET['action'])) {
         // il y a des listes à importer
@@ -2342,9 +2343,9 @@ function baz_gestion_listes()
         $GLOBALS['wiki']->InsertTriple($nomwikiliste, 'http://outils-reseaux.org/_vocabulary/type', 'liste', '', '');
 
         //on redirige vers la page contenant toutes les listes, et on confirme par message la bonne saisie de la liste
-        $GLOBALS['wiki']->SetMessage(_t('BAZ_NOUVELLE_LISTE_ENREGISTREE'));
+        // $GLOBALS['wiki']->SetMessage(_t('BAZ_NOUVELLE_LISTE_ENREGISTREE'));
         $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
+            $GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
         );
     } elseif ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE_V
         && $GLOBALS['wiki']->HasAccess('write', $_POST['NomWiki'])) {
@@ -2387,9 +2388,9 @@ function baz_gestion_listes()
         $GLOBALS['wiki']->SavePage($_POST['NomWiki'], json_encode($valeur));
 
         //on redirige vers la page contenant toutes les listes, et on confirme par message la modification de la liste
-        $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTE_MODIFIEE'));
+        // $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTE_MODIFIEE'));
         $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
+            $GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
         );
     } elseif ($_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE &&
         isset($_GET['idliste']) && $_GET['idliste'] != '' &&
@@ -2433,9 +2434,9 @@ function baz_gestion_listes()
         }
 
         //on redirige vers la page contenant toutes les listes, avec un message de confirmation
-        $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTES_SUPPRIMEES'));
+        // $GLOBALS['wiki']->SetMessage(_t('BAZ_LISTES_SUPPRIMEES'));
         $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
+            $GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES, false)
         );
     }
 
@@ -2533,6 +2534,7 @@ function baz_valeurs_liste($idliste = '')
 
         return $GLOBALS['_BAZAR_']['lists'][$idliste];
     } else {
+        $GLOBALS['_BAZAR_']['lists'] = '';
         //requete pour obtenir l'id et le label des listes
         $requete = 'SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples '
           .'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="liste" ORDER BY resource';
@@ -3340,7 +3342,8 @@ function baz_requete_recherche_fiches(
         // on transforme les specifications de recherche sur les liste et checkbox
         if (isset($_REQUEST['rechercher'])) {
             reset($_REQUEST);
-            while (list($nom, $val) = each($_REQUEST)) {
+
+            foreach ($_REQUEST as $nom => $val) {
                 if (((substr($nom, 0, 5) == 'liste') || (substr($nom, 0, 8) ==
                     'checkbox')) && $val != '0' && $val != '') {
                     if (is_array($val)) {
@@ -3369,8 +3372,7 @@ function baz_requete_recherche_fiches(
 
     if ($motcles == true) {
         reset($tableau_criteres);
-
-        while (list($nom, $val) = each($tableau_criteres)) {
+        foreach ($tableau_criteres as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
                 $valcrit = explode(',', $val);
                 if (is_array($valcrit) && count($valcrit) > 1) {
@@ -3416,7 +3418,8 @@ function baz_requete_recherche_fiches(
             $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
         }
         $first = true;
-        while (list($nom, $val) = each($tableau)) {
+        
+        foreach ($tableau as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
                 $valcrit = explode(',', $val);
                 if (is_array($valcrit) && count($valcrit) > 1) {
@@ -3623,19 +3626,25 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
             }
         }
 
-        // champs correspondants
-        if (!empty($params['correspondance'])) {
-            $tabcorrespondance = explode('=', trim($params['correspondance']));
-            if (isset($tabcorrespondance[0])) {
-                if (isset($tabcorrespondance[1]) && isset($fiche[$tabcorrespondance[1]])) {
-                    $fiche[$tabcorrespondance[0]] = $fiche[$tabcorrespondance[1]];
-                } else {
-                    $fiche[$tabcorrespondance[0]] = '';
-                }
-            } else {
-                exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli :
-                 il doit etre de la forme correspondance="identifiant_1=identifiant_2"</div>');
-            }
+		// champs correspondants
+		if (!empty($params['correspondance'])) {
+			$tabcorrespondances = array();
+			$tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
+			if ($tabcorrespondances['fail'] != 1){
+				foreach ($tabcorrespondances as $key=>$data) {
+					if (isset($key)) {
+						if (isset($data) && isset($fiche[$data])) {
+							$fiche[$key] = $fiche[$data];
+						} else {
+							$fiche[$key] = '';
+						}
+					} else {
+						exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
+					}
+				}
+			} else {
+				exit('<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
+			}
         }
         $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
         $fiche['datastr'] = $fiche['html_data'];
@@ -3747,7 +3756,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     $squelfacette = new SquelettePhp($templatetoload);
     $squelfacette->set($fiches);
-    $output = $squelfacette->analyser();
+    $output = '<div id="bazar-list-'.$params['nbbazarliste'].'" class="bazar-list">
+    <div class="list">'.$squelfacette->analyser().'</div></div>';
     //$output = $GLOBALS['wiki']->renderTemplate('bazar', $params['template'], $fiches);
 
     // affichage spécifique pour facette
@@ -3775,7 +3785,16 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
         // colonne des filtres
         $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".
-                        '<div class="filters no-dblclick">'."\n";
+                        '<div class="filters no-dblclick">'."\n".
+                        '<div class="form-group">
+                          <div class="input-group">
+                            <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
+                            <input type="text" class="form-control filter-bazar" id="inputBazarFilter'
+                            .$params['nbbazarliste'].'" placeholder="'._t('BAZAR_FILTER').'" data-target="bazar-list-'.$params['nbbazarliste'].'" />
+                          </div>
+                        </div>'."\n";
+                        
+
         $i = 0;
         $first = true;
 
@@ -4508,6 +4527,11 @@ function getAllParameters($wiki)
      */
     $param['minical'] = $wiki->GetParameter('minical');
 
+    /*
+     * Permettre de rediriger vers une url apres saisie de fiche
+     */
+    $param['redirecturl'] = $wiki->GetParameter('redirecturl');
+
     // Parametres pour Bazarliste avec carto
     getAllParameters_carto($wiki, $param);
 
@@ -4600,76 +4624,64 @@ function getAllParameters_carto($wiki, array &$param)
      */
     $param['iconfield'] = isset($_GET['iconfield']) ? $_GET['iconfield'] : $wiki->GetParameter('iconfield');
 
-    /*
-     * icon : icone des marqueurs
-     */
-    $param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
-
-    if (!empty($param['icon'])) {
-        $iconparam = explode(',', $param['icon']);
-        if (count($iconparam) > 1 && !empty($param['iconfield'])) {
-            $iconparam = array_map('trim', $iconparam);
-            $tabparam = array();
-            // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
-            foreach ($iconparam as $value) {
-                $tab = explode('=', $value);
-                $tab = array_map('trim', $tab);
-                if (count($tab) > 0) {
-                    $tabparam[$tab[1]] = $tab[0];
-                } else {
-                    exit('<div class"alert alert-error">icon : erreur de formatage:<br>"'.
-                        '<br>syntaxe: icon="classe icone1=valeur,classe icone2=valeur2"</div>');
-                }
-            }
-            $param['icon'] = $tabparam;
-        } else {
-            $param['icon'] = trim($iconparam[0]);
-        }
-    } else {
-        $param['icon'] = $GLOBALS['wiki']->config['baz_marker_icon'];
-    }
-
+	/*
+	 * icon : icone des marqueurs
+	 */
+	$param['icon'] = isset($_GET['icon']) ? $_GET['icon'] : $wiki->GetParameter('icon');
+	if (!empty($param['icon'])) {
+		$tabparam = array();
+		$tabparam = getMultipleParameters($param['icon'], ',', '=');
+		if ($tabparam['fail'] != 1){
+			if (count($tabparam) > 1 && !empty($param['iconfield'])) {
+				foreach ($tabparam as $key=>$data) {
+					// on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+					$tabparam[$data] = $key;
+				 }
+				 $param['icon'] = $tabparam;
+			} else {
+				$param['icon'] = trim($iconparam[0]);
+				}
+			} else {
+				exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+			}
+		} else {
+			$param['icon'] = $GLOBALS['wiki']->config['baz_marker_icon'];
+		}
     /*
      * colorfield : designe le champ utilise pour la couleur des marqueurs
      */
     $param['colorfield'] = isset($_GET['colorfield']) ? $_GET['colorfield'] : $wiki->GetParameter('colorfield');
 
-    /*
-     * color : couleur des marqueurs
-     */
-    // $colors = array(
-    //     'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
-    //     'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
-    // );
-    $param['color'] = isset($_GET['color']) ? $_GET['color'] : $wiki->GetParameter('color');
-    if (!empty($param['color'])) {
-        $colorsparam = explode(',', $param['color']);
-        if (count($colorsparam) > 1 && !empty($param['colorfield'])) {
-            $colorsparam = array_map('trim', $colorsparam);
-            $tabparam = array();
-            // on genere un tableau avec la valeur en cle, pour pouvoir les reprendre facilement dans la carto
-            foreach ($colorsparam as $value) {
-                $tab = explode('=', $value);
-                $tab = array_map('trim', $tab);
-                $tabparam[$tab[1]] = $tab[0];
-                // if (in_array($tab[0], $colors)) {
-                //     $tabparam[$tab[1]] = $tab[0];
-                // } else {
-                //     echo '<div class="alert alert-danger">color : la couleur indiquée doit etre choisie parmis :<br>"'.
-                //         implode('", "', $colors).'"<br>syntaxe: color="couleur=valeur,couleur2=valeur2"</div>';
-                //     return;
-                // }
-            }
-            $param['color'] = $tabparam;
-        } else {
-            $param['color'] = trim($colors[0]);
-            if (!in_array($param['color'], $colors)) {
-                $param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
-            }
-        }
-    } else {
-        $param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
-    }
+	/*
+	* color : couleur des marqueurs
+	*/
+	// $colors = array(
+	//     'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+	//     'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
+	// );
+	$param['color'] = isset($_GET['color']) ? $_GET['color'] : $wiki->GetParameter('color');
+	if (!empty($param['color'])) {
+		$tabparam = array();
+		$tabparam = getMultipleParameters($param['color'], ',', '=');
+		if ($tabparam['fail'] != 1){
+			if (count($tabparam) > 1 && !empty($param['colorfield'])) {
+				foreach ($tabparam as $key=>$data) {
+					 // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+					  $tabparam[$data] = $key;
+				 }
+				 $param['color'] = $tabparam;
+			} else {
+				 $param['color'] = trim($colors[0]);
+				 if (!in_array($param['color'], $colors)) {
+					  $param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
+				 }
+			}
+		} else {
+			exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+		}
+	} else {
+		$param['color'] = $GLOBALS['wiki']->config['baz_marker_color'];
+	}
 
     /*
      * smallmarker : mettre des puces petites ? non par defaut
@@ -4776,4 +4788,37 @@ function getAllParameters_carto($wiki, array &$param)
     if (empty($param['fullscreen'])) {
         $param['fullscreen'] = 'true';
     }
+}
+
+function getMultipleParameters($param, $firstseparator = ',', $secondseparator = '=')
+{
+	// This function's aim is to fetch (key , value) couples stored in a multiple parameter
+	// $param is the parameter where we have to fecth the couples
+	// $firstseparator is the separator between the couples (usually ',')
+	// $secondseparator is the separator between key and value in each couple (usually '=')
+	// Returns the table of (key , value) couples
+	// If fails to explode the data, then $tabparam['fail'] == 1
+	$tabparam = array();
+	$tabparam['fail'] = 0;
+	// check if first and second separators are at least somewhere
+	if ((strpos($param, $firstseparator) !== false) && (strpos($param, $secondseparator) !== false)){
+		$params = explode($firstseparator, $param);
+		$params = array_map('trim', $params);
+		if (count($params) > 0) {
+			foreach ($params as $value) {
+				$tab = explode($secondseparator, $value);
+				$tab = array_map('trim', $tab);
+				if (count($tab) > 1) {
+					$tabparam[$tab[0]] = $tab[1];
+				} else {
+					$tabparam['fail'] = 1;
+				}
+			}
+		} else {
+			$tabparam['fail'] = 1;
+		}
+	} else {
+		$tabparam['fail'] = 1;
+	}
+	return $tabparam;
 }
