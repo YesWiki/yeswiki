@@ -70,7 +70,7 @@ $req = "CREATE TABLE IF NOT EXISTS `" . $wakkaConfig['table_prefix'] . "nature` 
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL DEFAULT '',
   PRIMARY KEY (`bn_id_nature`)
-) ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;";
 $resultat = $GLOBALS['wiki']->query($req);
 
 // +------------------------------------------------------------------------------------------------------+

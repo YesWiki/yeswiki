@@ -135,7 +135,7 @@ switch ($version) {
                 'KEY idx_time (time),'.
                 'KEY idx_latest (latest),'.
                 'KEY idx_comment_on (comment_on)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -149,7 +149,7 @@ switch ($version) {
                 "privilege varchar(20) NOT NULL default '',".
                 'list text NOT NULL,'.
                 'PRIMARY KEY  (page_tag,privilege)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -164,7 +164,7 @@ switch ($version) {
                 'UNIQUE KEY from_tag (from_tag,to_tag),'.
                 'KEY idx_from (from_tag),'.
                 'KEY idx_to (to_tag)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -179,7 +179,7 @@ switch ($version) {
                 "time datetime NOT NULL,".
                 'KEY idx_page_tag (page_tag),'.
                 'KEY idx_time (time)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -201,7 +201,7 @@ switch ($version) {
                 'PRIMARY KEY  (name),'.
                 'KEY idx_name (name),'.
                 'KEY idx_signuptime (signuptime)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -218,7 +218,7 @@ switch ($version) {
                 '  PRIMARY KEY  (`id`),'.
                 '  KEY `resource` (`resource`),'.
                 '  KEY `property` (`property`)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
@@ -318,7 +318,7 @@ switch ($version) {
                 '  PRIMARY KEY  (`id`),'.
                 '  KEY `resource` (`resource`),'.
                 '  KEY `property` (`property`)'.
-                ') ENGINE=MyISAM CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
             ),
             _t('ALREADY_CREATED').' ?',
             0
