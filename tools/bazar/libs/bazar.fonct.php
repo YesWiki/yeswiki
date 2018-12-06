@@ -188,9 +188,7 @@ function baz_afficher_formulaire_import()
             $type_champ = array();
             foreach ($tableau as $ligne) {
                 if ($ligne[0] != 'labelhtml') {
-                    if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' ||
-                        $ligne[0] == 'listefiche' || $ligne[0] ==
-                        'checkboxfiche') {
+                    if ($ligne[0] == 'radio' || $ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
                         $nom_champ[] =
                         $ligne[0].$ligne[1].$ligne[6];
                         $type_champ[] =
@@ -317,22 +315,23 @@ function baz_afficher_formulaire_import()
                                                     $data[$c],
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
                                                 );
+																if ( (! $idval) && ( is_numeric($data[$c])) ) {
+																		$idval = $data[$c] ;
+																	}
                                             } elseif ($type_champ[$c] ==
                                                 'checkbox') {
-                                                $tab_chkb = explode(
-                                                    ',',
-                                                    $data[$c]
-                                                );
-                                                $tab_chkb = array_map(
-                                                    'trim',
-                                                    $tab_chkb
-                                                );
+                                                $tab_chkb = explode(',', $data[$c]);
+                                                $tab_chkb = array_map('trim', $tab_chkb);
+																$k = strtolower($idliste_champ[$nom_champ[$c]]);
+                                                $refList = $alllists[$k]['label'];
                                                 $tab_id = array();
                                                 foreach ($tab_chkb as $value) {
-                                                    $tab_id[] = array_search(
-                                                        $value,
-                                                        $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
-                                                    );
+																	// dirty patch to permits "index" instead of "label"
+                                                    // https://framagit.org/Artefacts/ATable-guide-web/issues/30
+                                                    if( is_numeric($value) )
+                                                        $tab_id[] = $value ;
+                                                    else
+                                                        $tab_id[] = array_search( $value, $refList );
                                                 }
                                                 $idval = implode(',', $tab_id);
                                             }
@@ -3418,7 +3417,7 @@ function baz_requete_recherche_fiches(
             $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
         }
         $first = true;
-        
+
         foreach ($tableau as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
                 $valcrit = explode(',', $val);
@@ -3793,7 +3792,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                             .$params['nbbazarliste'].'" placeholder="'._t('BAZAR_FILTER').'" data-target="bazar-list-'.$params['nbbazarliste'].'" />
                           </div>
                         </div>'."\n";
-                        
+
 
         $i = 0;
         $first = true;
