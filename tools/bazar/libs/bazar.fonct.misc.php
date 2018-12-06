@@ -234,3 +234,17 @@ function obtenir_extension($filename)
         return $extension;
     }
 }
+
+function testUrlInIframe($url = '')
+{
+    if (empty($url)) {
+        // test si on est dans une iframe
+        $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+    }
+    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
+    if ($iframe) {
+        return 'iframe';
+    } else {
+        return '';
+    }
+}
