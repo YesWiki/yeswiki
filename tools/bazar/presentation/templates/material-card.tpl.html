@@ -13,18 +13,18 @@ $modal = ''; // declaration d'une chaine de char vide
  // test si on veut affichage modal ou pas
  $modal = $GLOBALS['wiki']->GetParameter('modal');
  if (empty($modal)) {
-     $modal = non;
+     $modal = 'non';
  }
 
  if ($modal==1) {
-     $modal = modalbox;
+     $modal = 'modalbox';
  }
 
 
 // version simple (oneclick) ou complexe (les deux valeurs du param)
 $type = $GLOBALS['wiki']->GetParameter('type');
 if (empty($type)) {
-    $type = complexe;
+    $type = 'complexe';
 }
 
 // nombre de colonne
