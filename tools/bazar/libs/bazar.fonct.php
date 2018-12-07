@@ -3568,7 +3568,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             if (!empty($value) and is_array($templatef[$fiche['id_typeannonce']]) && $facetteasked) {
                 $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
                 $val = array_shift($val);
-                $islist = in_array($val['type'], array('checkbox', 'select', 'scope'));
+                $islist = in_array($val['type'], array('checkbox', 'select', 'scope','radio'));
                 $islistforeign = (strpos($val['id'], 'listefiche')===0) or (strpos($val['id'], 'checkboxfiche')==0);
                 $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
 
