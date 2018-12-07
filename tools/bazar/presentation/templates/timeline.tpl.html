@@ -19,8 +19,8 @@ if (!function_exists('date_compare')) {
   //tri par ordre chronologique
   function date_compare($a, $b)
   {
-      $t1 = strtotime($a['dateevenement']);
-      $t2 = strtotime($b['dateevenement']);
+      $t1 = strtotime($a['bf_date_debut_evenement']);
+      $t2 = strtotime($b['bf_date_debut_evenement']);
       return $t1 - $t2;
   }
 }
@@ -30,7 +30,7 @@ if (!function_exists('date_compare')) {
   $output = '';
 
   foreach ($fiches as $key => $fiche) {
-    $date = explode('-', $fiche['dateevenement']);
+    $date = explode('-', $fiche['bf_date_debut_evenement']);
     // premier passage
     if ( !isset($anneeencours) || $anneeencours < $date[0] ) {
       $anneeencours = $date[0];
@@ -63,14 +63,14 @@ if (!function_exists('date_compare')) {
         $gauche=false;
         $output .= affiche_ligne_timeline(
          '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
-         '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+         '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
                     $fiche['listeListeTailleImage']
                   );
       }
       else {
         $gauche=true;
         $output .= affiche_ligne_timeline(
-         '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+         '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
          '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
                     $fiche['listeListeTailleImage'], ''
                   );
@@ -82,14 +82,14 @@ if (!function_exists('date_compare')) {
       $gauche=false;
       $output .= affiche_ligne_timeline(
                   '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
-                  '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+                  '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
                   $fiche['listeListeTailleImage']
                 );
     }
     else {
       $gauche=true;
       $output .= affiche_ligne_timeline(
-                  '<h3><span>'.$fiche['dateevenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+                  '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$fiche['lien'].'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
                   '<a href="'.$fiche['lien'].'" class="ss-circle" style="background-image:url('.redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$pixelsimage.'_'.$pixelsimage.'_'.$fiche['imagebf_image'], $pixelsimage, $pixelsimage).');">'.$fiche['bf_titre'].'</a>',
                   $fiche['listeListeTailleImage'], ''
                 );
