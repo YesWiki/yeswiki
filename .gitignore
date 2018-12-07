@@ -58,10 +58,16 @@ tools/hashcash/secret/wp-hashcash.key
 # Macintosh OS
 .DS_Store
 
-# Eclipse IDe
+# Eclipse IDE
 .buildpath
 .project
 .settings/
+
+# PHPStorm IDE
+.idea
+
+# Docker
+.db
 
 # Other
 .phpintel/
