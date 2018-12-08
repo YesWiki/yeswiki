@@ -66,9 +66,7 @@ if (!$paramPhrase)
 
 if ($phrase)
 {
-	// on cherche sur le mot avec entités html, ou le mot encodé par bazar en json
-	$search = $phrase.','.substr(json_encode($phrase),1,-1);
-	$results = $this->FullTextSearch($search);
+	$results = $this->FullTextSearch($phrase);
 	if ($results)
 	{
 	    if ($separator)
