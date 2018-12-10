@@ -13,7 +13,7 @@ if ($type == 'fiche_bazar') {
     if (YW_CHARSET != 'UTF-8') {
         $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
     }
-    $bazaroutput .= baz_voir_fiche(0, $tab_valeurs);
+    $bazaroutput .= baz_voir_fiche(true, $tab_valeurs);
 } elseif (isset($_GET['id']) and !isset($_GET['action'])) {
     // si le parametre id est passé, on souhaite afficher une liste bazar
     // TODO : factoriser avec bazarliste?
@@ -61,8 +61,10 @@ if (!empty($bazaroutput)) {
         $output .= $bazaroutput;
     } else {
         // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
+        $bazaroutput = str_replace($this->href('edit'), $this->href('editiframe'), $bazaroutput);
         $pattern = ',' . preg_quote($this->config['base_url']) . '(\w+)([&#?].*?)?(["<]),';
         $output .= preg_replace($pattern, $this->config['base_url'] . "$1/iframe$2$3", $bazaroutput);
+        
     }
     $output .= "</div><!-- end div.page-widget -->";
 
@@ -88,7 +90,7 @@ if (!empty($bazaroutput)) {
       background-color : transparent;
   }
   </style>' . "\n";
-
+    $this->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
     // on recupere juste les javascripts et la fin des balises body et html
     $output .= preg_replace('/^.+<script/Us', $styleiframe . '<script', $this->Footer());
     die($output);
