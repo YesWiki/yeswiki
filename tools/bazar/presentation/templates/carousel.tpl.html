@@ -5,6 +5,7 @@ if (count($fiches)>0) :
 
 <?php
     $avecpage = ''; // declaration d'une chaine de char vide
+    $sanstitre = ''; // declaration d'une chaine de char vide
 
     /**************************************************************************************************
      * parametres du template :
@@ -14,8 +15,15 @@ if (count($fiches)>0) :
     // version avec une page par dessus le slider (avecpage="oui") sinon c'est slider classique
     $avecpage = $GLOBALS['wiki']->GetParameter('avecpage');
     if (empty($avecpage)) {
-        $avecpage = non;
+        $avecpage = 'non';
     }
+
+    // version qui cache le titre (sanstitre="oui") sinon c'est classique
+    $sanstitre = $GLOBALS['wiki']->GetParameter('sanstitre');
+    if (empty($sanstitre)) {
+        $sanstitre = 'non';
+    }
+
 ?>
 
 <style>
@@ -168,17 +176,18 @@ padding: 20px;
       <div class="slide-img slide-<?php echo $nb; ?>" style="background-image: url(<?php echo 'files/'.$fiche['imagebf_image'];?>);"></div>
       <div class="hero">
         <?php if ($avecpage != 'oui') : ?>
-        <hgroup>
-            <h1>
-                <?php echo $fiche['bf_titre']; ?>
-            </h1>
-            <?php if (isset($fiche['bf_description']) && $fiche['bf_description']!='' ) : ?>
-              <h3><?php echo $fiche['bf_description']; ?></h3>
-            <?php endif; ?>
-        </hgroup>
-          <?php if (isset($fiche['bf_lien']) && $fiche['bf_lien']!='' ) : ?>
-           <a class="btn btn-hero btn-lg" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">En savoir plus</a>
-          <?php endif; ?>
+            <hgroup>
+              <?php if ($sanstitre != 'oui') : ?>
+                <h1><?php echo $fiche['bf_titre']; ?></h1>
+                
+                <?php endif; ?>
+                <?php if (isset($fiche['bf_description']) && $fiche['bf_description']!='' ) : ?>
+                  <h3><?php echo $fiche['bf_description']; ?></h3>
+                <?php endif; ?>
+            </hgroup>
+              <?php if (isset($fiche['bf_lien']) && $fiche['bf_lien']!='' ) : ?>
+               <a class="btn btn-hero btn-lg" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">En savoir plus</a>
+              <?php endif; ?>
           <?php endif; ?>
       </div>
     </div>
