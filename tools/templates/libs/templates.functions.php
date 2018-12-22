@@ -36,7 +36,8 @@ function search_template_files($directory)
     while ($dir && ($file = readdir($dir)) !== false) {
         if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
             if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')
-                && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
+                && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')
+            ) {
                 $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
                 while (false !== ($file2 = readdir($dir2))) {
                     if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
@@ -72,16 +73,14 @@ function search_template_files($directory)
 
 
 /**
-*
-* remplace juste la premiere occurence d'une chaine de caracteres
-*
-* @param $from : partie de la chaine recherch?e
-* @param $to   : chaine de remplacement
-* @param $str  : chaine entree
-*
-* return string : chaine entree avec la premiere occurence changee
-*
-*/
+ * Remplace juste la premiere occurence d'une chaine de caracteres
+ *
+ * @param string $from : partie de la chaine recherchée
+ * @param string $to   : chaine de remplacement
+ * @param string $str  : chaine entree
+ *
+ * @return string : chaine entree avec la premiere occurence changee
+ */
 function str_replace_once($from, $to, $str)
 {
     if (!$newStr = strstr($str, $from)) {
@@ -110,14 +109,12 @@ if (!function_exists('str_ireplacement')) {
 
 
 /**
-*
-* savoir si l'url est bien une image
-*
-* @param $url : url de l'image
-*
-* return boolean : indique si l'url est une image ou pas
-*
-*/
+ * Savoir si l'url est bien une image
+ *
+ * @param string $url : url de l'image
+ *
+ * @return boolean : indique si l'url est une image ou pas
+ */
 function image_exists($url)
 {
     $info = @getimagesize($url);
