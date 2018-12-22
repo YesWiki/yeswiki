@@ -5,8 +5,8 @@
 if ($this->HasAccess('write')) {
     if (!empty($_GET['word'])) {
         $body = preg_replace(
-            '(?!(""|\[\[))('.preg_quote($_GET['word']).')(?!(""|\]\]))/Uu',
-            '""$2""',
+            '/(?!""|\[\[|\=")'.preg_quote($_GET['word']).'(?!""|.*\]\]|")/Uu',
+            '""$0""',
             $this->page["body"]
         );
         $this->SavePage($this->getPageTag(), $body);
