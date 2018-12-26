@@ -6,7 +6,7 @@ if (!defined("WIKINI_VERSION"))
 
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');
-if ($this->IsWikiName($link)) {
+if ($this->IsWikiName($link, WN_CAMEL_CASE_EVOLVED)) {
 	$link = $this->href('', $link);
 }
 

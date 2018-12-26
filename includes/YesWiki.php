@@ -1027,9 +1027,9 @@ class Wiki
         return '<a href="' . $this->href($method, $tag) . '">' . $text . '</a>';
     }
 
-    public function IsWikiName($text)
+    public function IsWikiName($text, $type = WN_CAMEL_CASE)
     {
-        return preg_match('/^' . WN_CAMEL_CASE . '$/u', $text);
+        return preg_match('/^' . $type . '$/u', $text);
     }
 
     // LinkTracking management

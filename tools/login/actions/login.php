@@ -59,7 +59,7 @@ $signupurl = $this->GetParameter('signupurl');
 if (empty($signupurl) && $signupurl != "0") {
     $signupurl = $this->href("", "ParametresUtilisateur", "");
 } else {
-    if ($this->IsWikiName($signupurl)) {
+    if ($this->IsWikiName($signupurl, WN_CAMEL_CASE_EVOLVED)) {
         $signupurl = $this->href('', $signupurl);
     }
 }
@@ -85,7 +85,7 @@ if (empty($userpage)) {
         $userpage = str_replace('&action=logout', '', $userpage);
     }
 } else {
-    if ($this->IsWikiName($userpage)) {
+    if ($this->IsWikiName($userpage, WN_CAMEL_CASE_EVOLVED)) {
         $userpage = $this->href('', $userpage);
     }
 }
@@ -95,7 +95,7 @@ if (empty($userpage)) {
  */
 $lostpasswordurl = $this->GetParameter('lostpasswordurl');
 if (!empty($lostpasswordurl)) {
-    if ($this->IsWikiName($lostpasswordurl)) {
+    if ($this->IsWikiName($lostpasswordurl, WN_CAMEL_CASE_EVOLVED)) {
         $lostpasswordurl = $this->href('', $lostpasswordurl);
     }
 } else {
@@ -199,7 +199,7 @@ if ($user = $this->GetUser()) {
     } elseif ($profileurl == 'WikiName') {
         $profileurl = $this->href("edit", $user['name'], "");
     } else {
-        if ($this->IsWikiName($profileurl)) {
+        if ($this->IsWikiName($profileurl, WN_CAMEL_CASE_EVOLVED)) {
             $profileurl = $this->href('', $profileurl);
         }
     }

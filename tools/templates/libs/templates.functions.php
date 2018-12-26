@@ -148,7 +148,7 @@ function replace_missingpage_links($output)
                         '&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
                         '&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
                         '&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).
-                        ((!$GLOBALS['wiki']->IsWikiName($values[2])) ? '&amp;body='.urlencode($values[2]) : '').
+                        ((!$GLOBALS['wiki']->IsWikiName($values[2], WN_CAMEL_CASE_EVOLVED)) ? '&amp;body='.urlencode($values[2]) : '').
                         '&amp;newpage=1';
         $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
             .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
