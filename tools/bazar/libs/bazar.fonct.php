@@ -3628,7 +3628,7 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
 		// champs correspondants
 		if (!empty($params['correspondance'])) {
 			$tabcorrespondances = array();
-			$tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
+            $tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
 			if ($tabcorrespondances['fail'] != 1){
 				foreach ($tabcorrespondances as $key=>$data) {
 					if (isset($key)) {
@@ -3638,11 +3638,11 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
 							$fiche[$key] = '';
 						}
 					} else {
-						exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
+                        echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
 					}
 				}
 			} else {
-				exit('<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
+                echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
 			}
         }
         $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
@@ -4800,24 +4800,26 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 	$tabparam = array();
 	$tabparam['fail'] = 0;
 	// check if first and second separators are at least somewhere
-	if ((strpos($param, $firstseparator) !== false) && (strpos($param, $secondseparator) !== false)){
+	if (strpos($param, $secondseparator) !== false){
 		$params = explode($firstseparator, $param);
 		$params = array_map('trim', $params);
 		if (count($params) > 0) {
-			foreach ($params as $value) {
-				$tab = explode($secondseparator, $value);
-				$tab = array_map('trim', $tab);
-				if (count($tab) > 1) {
-					$tabparam[$tab[0]] = $tab[1];
-				} else {
-					$tabparam['fail'] = 1;
-				}
+            foreach ($params as $value) {
+                if (!empty($value)) {
+                    $tab = explode($secondseparator, $value);
+                    $tab = array_map('trim', $tab);
+                    if (count($tab) > 1) {
+                        $tabparam[$tab[0]] = $tab[1];
+                    } else {
+                        $tabparam['fail'] = 1;
+                    }
+                }
 			}
 		} else {
-			$tabparam['fail'] = 1;
+            $tabparam['fail'] = 1;
 		}
 	} else {
-		$tabparam['fail'] = 1;
+        $tabparam['fail'] = 1;
 	}
 	return $tabparam;
 }
