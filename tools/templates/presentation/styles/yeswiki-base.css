@@ -224,3 +224,8 @@ overflow: auto;
   margin-left: -50vw;
   margin-right: -50vw;
 }
+
+
+.popover .page {
+  min-height:auto;
+    } /* gestion des popup au survol modalbox-hover
