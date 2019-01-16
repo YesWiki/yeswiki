@@ -217,7 +217,7 @@ overflow: auto;
 }
 
 .full-width {
-  width: 100vw;
+  width: 100vw !important;
   position: relative;
   left: 50%;
   right: 50%;
