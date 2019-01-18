@@ -77,7 +77,7 @@ if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr(
             $element->parentNode->setAttribute('class', 'dropdown');
         }
     }
-    $dropdownslist = $xpath->query('*/div/ul/li/ul/..');
+    $dropdownslist = $xpath->query('*/div/ul//li/ul/..');
     if (!is_null($dropdownslist)) {
         foreach ($dropdownslist as $element) {
             $nodes = $element->childNodes;
