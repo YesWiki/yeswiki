@@ -3678,7 +3678,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     ++$GLOBALS['_BAZAR_']['nbbazarliste'];
     $params['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
-
     $fiches['fiches'] = searchResultstoArray($tableau_fiches, $params, $formtab);
     // tri des fiches
     if ($params['random']) {
@@ -3783,8 +3782,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
 
         // colonne des filtres
-        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".
-                        '<div class="filters no-dblclick">'."\n".
+        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".'<div class="filters no-dblclick">'."\n";
+        if ($params['filtertext'] == true) {
+            $outputfilter .= 
                         '<div class="form-group">
                           <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
@@ -3792,6 +3792,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                             .$params['nbbazarliste'].'" placeholder="'._t('BAZAR_FILTER').'" data-target="bazar-list-'.$params['nbbazarliste'].'" />
                           </div>
                         </div>'."\n";
+        }
+        
 
 
         $i = 0;
@@ -4489,6 +4491,9 @@ function getAllParameters($wiki)
 
     // nombre de résultats affichées avant pagination
     $param['pagination'] = $wiki->GetParameter('pagination');
+
+    // ajout d'un filtre pour chercher du txte dans les resultats pour les facette
+    $param['filtertext'] = getParameter_boolean($wiki, 'filtertext', false);
 
     // correspondance transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
     $param['correspondance'] = $wiki->GetParameter('correspondance');

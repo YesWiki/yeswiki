@@ -29,6 +29,9 @@ color:#E9322D;
   font-size:.9em;
 }
 
+.results {
+  clear: both;
+}
 /*
 .btn_adresse,.btn_client {
 display:inline;

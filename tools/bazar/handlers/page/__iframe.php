@@ -14,7 +14,7 @@ if ($type == 'fiche_bazar') {
         $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
     }
     $bazaroutput .= baz_voir_fiche(true, $tab_valeurs);
-} elseif (isset($_GET['id']) and !isset($_GET['action'])) {
+} elseif (isset($_GET['idf'])) {
     // si le parametre id est passé, on souhaite afficher une liste bazar
     // TODO : factoriser avec bazarliste?
     // on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances

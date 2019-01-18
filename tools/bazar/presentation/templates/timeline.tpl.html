@@ -110,7 +110,8 @@ if (!function_exists('date_compare')) {
         <?php echo $output; ?>
       </div>
 <?php
- $GLOBALS['js'] = (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').'<script src="tools/bazar/presentation/javascripts/timeline.js"></script>
+$GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/timeline.js');
+?>
 <style>
 h2.ss-subtitle{
   padding: 0 0 40px;
@@ -321,5 +322,5 @@ h2.ss-subtitle:after{
 .ss-container h3 a:hover{
   color: rgba(255,255,255,1);
 }
-</style>'; ?>
+</style>
 <?php endif; ?>
