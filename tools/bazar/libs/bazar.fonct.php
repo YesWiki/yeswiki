@@ -3568,10 +3568,9 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             if (!empty($value) and is_array($templatef[$fiche['id_typeannonce']]) && $facetteasked) {
                 $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
                 $val = array_shift($val);
-                $islist = in_array($val['type'], array('checkbox', 'select', 'scope','radio'));
-                $islistforeign = (strpos($val['id'], 'listefiche')===0) or (strpos($val['id'], 'checkboxfiche')==0);
+                $islistforeign = (strpos($val['id'], 'listefiche')===0) || (strpos($val['id'], 'checkboxfiche')===0);
+                $islist = in_array($val['type'], array('checkbox', 'select', 'scope', 'radio') ) && !$islistforeign;
                 $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
-
                 if ($islistforeign) {
                     // listefiche ou checkboxfiche
                     $facettevalue[$val['id']]['type'] = 'fiche';
@@ -3784,7 +3783,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         // colonne des filtres
         $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".'<div class="filters no-dblclick">'."\n";
         if ($params['filtertext'] == true) {
-            $outputfilter .= 
+            $outputfilter .=
                         '<div class="form-group">
                           <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
@@ -3793,7 +3792,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                           </div>
                         </div>'."\n";
         }
-        
+
 
 
         $i = 0;
@@ -3828,7 +3827,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                     $list = multiArraySearch($allform, 'id', $facettevalue[$id]['source']);
                     $list = $list[0];
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
-                    $form = $allform[$facettevalue[$id]['source']];
+                    $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
+                    $form = $allform[$src];
                     $list['titre_liste'] = $form['bn_label_nature'];
                     foreach ($facettevalue[$id] as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
