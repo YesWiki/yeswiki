@@ -229,3 +229,7 @@ overflow: auto;
 .popover .page {
   min-height:auto;
     } /* gestion des popup au survol modalbox-hover
+
+.popover .BAZ_label {
+display:none} /* enlever les label des fiches bazar quand on utilise la fonction glossaire
+
