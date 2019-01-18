@@ -222,4 +222,25 @@
     });
   }
 
+  // get the html from a yeswiki page
+  function getText(url, link) {
+    var html;
+    $.get( url, function(data) {
+      html = data;
+    }).done(function() {
+      link.attr('data-content', html);
+    })
+  }
+
+  $('.modalbox-hover').each(function( index ) {
+    getText($(this).attr('href')+'/html', $(this));
+  });
+  $('.modalbox-hover').popover({
+    trigger: "hover",
+    html: true, // permet d'utiliser du html
+    placement : 'right' // position de la popover (top ou bottom ou left ou right)
+  });
+
+  // ouvrir les liens dans une nouvelle fenetre
+  $('.new-window').attr('target', '_blank');
 })(jQuery);

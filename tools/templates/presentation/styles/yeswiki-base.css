@@ -217,10 +217,15 @@ overflow: auto;
 }
 
 .full-width {
-  width: 100vw;
+  width: 100vw !important;
   position: relative;
   left: 50%;
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
 }
+
+
+.popover .page {
+  min-height:auto;
+    } /* gestion des popup au survol modalbox-hover
