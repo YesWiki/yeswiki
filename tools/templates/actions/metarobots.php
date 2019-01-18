@@ -28,11 +28,11 @@ if ($this->GetMethod() != 'show') {
     echo "\n".'  <!-- opengraph -->'."\n";
     echo '  <meta property="og:site_name" content="'
       .$this->config['wakka_name'].'" />'."\n";
-    $title = htmlspecialchars(getTitleFromBody($this->page), ENT_QUOTES);
+    $title = htmlspecialchars(getTitleFromBody($this->page), ENT_COMPAT | ENT_HTML5);
     if ($title) {
         echo '  <meta property="og:title" content="'.$title.'" />'."\n";
     }
-    $desc = htmlspecialchars(getDescriptionFromBody($this->page), ENT_QUOTES);
+    $desc = htmlspecialchars(getDescriptionFromBody($this->page), ENT_COMPAT | ENT_HTML5);
     if ($desc) {
         echo '  <meta property="og:description" content="'.$desc.'" />'."\n";
     }

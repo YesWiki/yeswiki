@@ -877,11 +877,11 @@ function getImageFromBody($page, $width, $height)
 function getTitleFromBody($page)
 {
     if (!isset($page['body'])) {
-        return _t('TEMPLATES_PAGE_WITHOUT_TITLE');
+        return $GLOBALS['wiki']->config['wakka_name'];
     }
     $title = '';
     // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2 
-    preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
+    preg_match_all('/<h1 class="BAZ_fiche_titre">(.*)<\/h1>/mU', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = $titles[1][0];
     } else {
@@ -896,7 +896,7 @@ function getTitleFromBody($page)
         }
     }
 
-    return empty($title) ? _t('TEMPLATES_PAGE_WITHOUT_TITLE') : strip_tags($title);
+    return empty($title) ? $GLOBALS['wiki']->config['wakka_name'] : strip_tags($title);
 }
 
 /**
@@ -938,7 +938,7 @@ function getDescriptionFromBody($page, $length = 300)
             str_replace(
                 array("\r", "\n"),
                 ' ',
-                str_replace(getTitleFromBody($page), '', strip_tags($desc))
+                html_entity_decode(str_replace(getTitleFromBody($page), '', strip_tags($desc)), ENT_COMPAT | ENT_HTML5)
             )
         )
     );
