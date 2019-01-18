@@ -135,8 +135,7 @@ if (count($markers)>0) {
 	}
 }
 
-$javascriptadded = '	<script src="tools/attach/libs/pointimage.js"></script>
-
+$modal = '
 	<div class="modal fade modal-pointimage">
 	  <div class="modal-dialog">
 	    <div class="modal-content">
@@ -164,14 +163,11 @@ $javascriptadded = '	<script src="tools/attach/libs/pointimage.js"></script>
 	</div><!-- /.modal -->'."\n";
 
 // adds the javascript just one time
-if (!isset($GLOBALS['pointimagejsincluded'])) {
-	$GLOBALS['js'] =  (isset($GLOBALS['js']) ? $GLOBALS['js'] : '').$javascriptadded;
-	$GLOBALS['pointimagejsincluded'] = true;
-}
+$this->addJavascriptFile('tools/attach/libs/pointimage.js');
 
 // output the image on the page
 
-echo '<div class="pointimage-container no-dblclick" data-readonly="'.((!empty($readonly) && $readonly==1) ? 'true' : 'false').'" data-markerscolor=\''.$colors.'\' data-markerslabel=\''.$labels.'\' data-markersize="'.$point_size.'" data-pagetag="'.$this->Href('', $datapagetag).'">'."\n";
+echo $modal.'<div class="pointimage-container no-dblclick" data-readonly="'.((!empty($readonly) && $readonly==1) ? 'true' : 'false').'" data-markerscolor=\''.$colors.'\' data-markerslabel=\''.$labels.'\' data-markersize="'.$point_size.'" data-pagetag="'.$this->Href('', $datapagetag).'">'."\n";
 if (isset($size)) {
 	echo $this->Format('{{attach file="'.$file.'" desc="image '.$file.'" size="original" class="pointimage-image" nofullimagelink="1"}}');
 } else {

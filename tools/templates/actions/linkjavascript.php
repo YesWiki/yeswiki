@@ -6,9 +6,9 @@ if (!defined("WIKINI_VERSION")) {
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
 if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == "1") {
-    $this->addJavascriptFile('https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js', true);
+    $this->addJavascriptFile('https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js', true);
 } else {
-    $this->addJavascriptFile('tools/templates/libs/vendor/jquery-3.2.1.min.js', true);
+    $this->addJavascriptFile('tools/templates/libs/vendor/jquery-3.3.1.min.js', true);
 }
 
 // on récupère le bon chemin pour le theme

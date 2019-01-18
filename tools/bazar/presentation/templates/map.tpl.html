@@ -240,20 +240,18 @@ if (count($fiches)>0) :
 		}
 
 		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$param['nbbazarliste'].');' ;
-
-		//$GLOBALS['wiki']->AddJavascript( $js );
-
-	} // else Avec un L.control.layers
-
+	}
 	$GLOBALS['wiki']->AddJavascript( '
 	$(document).ready(function() {
+    if ($(\'#osmmap'.$param['nbbazarliste'].'\').length>0) {
 		'.$js.'
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
 		map'.$param['nbbazarliste'].'.addLayer(provider);
 		map'.$param['nbbazarliste'].'.setView(new L.LatLng('.$param['latitude'].', '.$param['longitude'].'), '.$param['zoom'].');
 		var i = 0;
 		var marker = Array();
-		'. $markersjs .'
+    '. $markersjs .'
+    }
 	});'
 	);
 
