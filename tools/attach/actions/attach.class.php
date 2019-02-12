@@ -557,7 +557,7 @@ if (!class_exists('attach')) {
         // Affiche le fichier liee comme un fichier audio
         public function showAsAudio($fullFilename)
         {
-            $output = $this->wiki->format('{{player url="' . str_replace('wakka.php?wiki=', '', $this->wiki->config['base_url']) . $fullFilename . '"}}');
+            $output = $this->wiki->format('{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'"}}');
             echo $output;
             $this->showUpdateLink();
         }
@@ -565,9 +565,11 @@ if (!class_exists('attach')) {
         // Affiche le fichier liee comme un fichier mind map  freemind
         public function showAsFreeMindMindMap($fullFilename)
         {
-            $output = $this->wiki->format('{{player url="' . $this->wiki->getBaseUrl . $fullFilename . '" ' .
+            $output = $this->wiki->format(
+                '{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" '.
                 'height="' . (!empty($height) ? $height : '650px') . '" ' .
-                'width="' . (!empty($width) ? $width : '100%') . '"}}');
+                'width="' . (!empty($width) ? $width : '100%') . '"}}'
+            );
             echo $output;
             $this->showUpdateLink();
         }
@@ -581,9 +583,11 @@ if (!class_exists('attach')) {
         // Affiche le fichier liee comme une video flash
         public function showAsFlashvideo($fullFilename)
         {
-            $output = $this->wiki->format('{{player url="' . $this->wiki->getBaseUrl . $fullFilename . '" ' .
-                'height="' . (!empty($height) ? $height : '300px') . '" ' .
-                'width="' . (!empty($width) ? $width : '400px') . '"}}');
+            $output = $this->wiki->format(
+                '{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" '.
+                'height="'.(!empty($height) ? $height : '300px').'" '.
+                'width="'.(!empty($width) ? $width : '400px').'"}}'
+            );
             echo $output;
             $this->showUpdateLink();
         }
