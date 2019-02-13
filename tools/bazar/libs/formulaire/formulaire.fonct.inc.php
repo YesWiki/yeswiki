@@ -2293,9 +2293,6 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
     if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
-
-        //ajout lien nouvelle saisie
-        $html.= '<a class="modalbox" href="'. $GLOBALS['wiki']->href('iframe', $GLOBALS['wiki']->getPageTag(), 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$tableau_template[1].'&ce_fiche_liee='.$valeurs_fiche['id_fiche']).'" title="' . htmlentities($tableau_template[4], ENT_QUOTES, YW_CHARSET) . '">' . $tableau_template[4] . '</a>' . "\n";
         return $html;
     } elseif ($mode == 'html') {
         $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';

@@ -130,7 +130,6 @@ switch ($version) {
                 "handler varchar(30) NOT NULL default 'page',".
                 "comment_on varchar(50) NOT NULL default '',".
                 'PRIMARY KEY  (id),'.
-                'FULLTEXT KEY tag (tag,body),'.
                 'KEY idx_tag (tag),'.
                 'KEY idx_time (time),'.
                 'KEY idx_latest (latest),'.

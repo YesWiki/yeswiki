@@ -56,20 +56,6 @@
   <div class='control-group form-group'>
     <label class="control-label col-lg-4"></label>
     <div class="controls col-lg-4">
-      <?php
-        if ($defForceTheme) {
-          print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme' checked >");
-        } else {
-          print("<input type='checkbox' name='wdtForceTheme' id='wdtForceTheme'>");
-        }
-      ?>
-      <label for='wdtForceTheme'><?php print(_t('TEMPLATE_FORCE_TEMPLATE')); ?></label>
-    </div>
-  </div>
-
-  <div class='control-group form-group'>
-    <label class="control-label col-lg-4"></label>
-    <div class="controls col-lg-4">
       <input type='submit' class="btn btn-primary" value='<?php print(_t('TEMPLATE_APPLY')); ?>'/>
     </div>
   </div>

@@ -212,10 +212,8 @@ if (isset($_REQUEST['demand'])) {
                     return $a['bn_label_nature'] < $b['bn_label_nature'];
                 }
             }
-            if ($formval) {
-                usort($formval, 'sortByLabel');
-                $formval = _convert($formval, 'UTF-8');
-            }
+            usort($formval, 'sortByLabel');
+            $formval = _convert($formval, 'UTF-8');
             echo json_encode($formval);
             break;
         case "entries":
@@ -243,7 +241,6 @@ if (isset($_REQUEST['demand'])) {
                 $q
             );
 
-            $tab_entries = '';
             foreach ($results as $wikipage) {
                 $decoded_entry = json_decode($wikipage['body'], true);
                 //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
@@ -258,10 +255,7 @@ if (isset($_REQUEST['demand'])) {
                         }
                     }
                 }
-                $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
-            }
-            if ($tab_entries) {
-                ksort($tab_entries);
+                $tab_entries[] = array_map('strval', $decoded_entry);
             }
             echo json_encode($tab_entries);
             break;

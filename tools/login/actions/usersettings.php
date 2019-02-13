@@ -178,7 +178,7 @@ if ($action == 'logout') {
             $confpassword = $_POST['confpassword'];
 
             // check if name is WikkiName style
-            if (!$this->IsWikiName($name)) {
+            if (!$this->IsWikiName($name, WN_CAMEL_CASE_EVOLVED)) {
             	$error = _t('USERNAME_MUST_BE_WIKINAME').'.';
             } elseif (!$email) {
                 $error = _t('YOU_MUST_SPECIFY_AN_EMAIL').'.';

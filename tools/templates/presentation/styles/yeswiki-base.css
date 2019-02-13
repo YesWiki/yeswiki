@@ -217,10 +217,25 @@ overflow: auto;
 }
 
 .full-width {
-  width: 100vw;
+  width: 100vw !important;
   position: relative;
   left: 50%;
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
 }
+
+
+.popover .page { /* gestion des popup au survol modalbox-hover */
+  min-height:auto;
+    }
+
+.popover .BAZ_label {
+display:none;} /* enlever les label des fiches bazar quand on utilise la fonction glossaire */
+
+.btn-glossaire { /* enlève le padding trop grand qui s'applique sur les boutons en général */
+    padding: 0px !important;
+    font-size: inherit !important;
+    vertical-align: inherit !important;
+}
+

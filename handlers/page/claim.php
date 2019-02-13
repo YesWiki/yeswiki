@@ -38,7 +38,7 @@ if (!defined("WIKINI_VERSION"))
 if ($this->page && !$this->GetPageOwner() && $this->GetUser())
 {
 	$this->SetPageOwner($this->GetPageTag(), $this->GetUserName());
-	$this->SetMessage("Vous &ecirc;tes maintenant le propri&eacute;taire de cette page");
+	// $this->SetMessage("Vous &ecirc;tes maintenant le propri&eacute;taire de cette page");
 }
 
 $this->Redirect($this->href());

@@ -32,7 +32,12 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if ($this->HasAccess('write')) {
-    $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
+    $type = $this->GetTripleValue(
+        $this->GetPageTag(),
+        'http://outils-reseaux.org/_vocabulary/type',
+        '',
+        ''
+    );
 
     if ($type == 'fiche_bazar') {
         // dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
@@ -40,11 +45,17 @@ if ($this->HasAccess('write')) {
             baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href(), $_POST);
         } else {
             $fiche = baz_valeurs_fiche($this->GetPageTag());
-            $pageeditionfiche = baz_formulaire(BAZ_ACTION_MODIFIER, $this->href('edit'), $fiche);
+            $pageeditionfiche = baz_formulaire(
+                BAZ_ACTION_MODIFIER,
+                $this->href('edit'),
+                $fiche
+            );
             // on peut tout de suite afficher le resultat a l'ecran
             $plugin_output_new  = $this->Header();
             $plugin_output_new .= $pageeditionfiche;
             $plugin_output_new .= $this->Footer();
+            
+            // we use die so that the script stop there and the default handler of wiki isn't called 
             die($plugin_output_new);
         }
     }

@@ -665,7 +665,7 @@ class Wiki
 
     public function FullTextSearch($phrase)
     {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and match(tag, body) against('" . mysqli_real_escape_string($this->dblink, $phrase) . "')");
+        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and (body LIKE '%" . mysqli_real_escape_string($this->dblink, $phrase) . "%' OR tag LIKE '%" . mysqli_real_escape_string($this->dblink, $phrase) . "%')");
     }
 
     public function LoadWantedPages()
@@ -1027,9 +1027,9 @@ class Wiki
         return '<a href="' . $this->href($method, $tag) . '">' . $text . '</a>';
     }
 
-    public function IsWikiName($text)
+    public function IsWikiName($text, $type = WN_CAMEL_CASE)
     {
-        return preg_match('/^' . WN_CAMEL_CASE . '$/u', $text);
+        return preg_match('/^' . $type . '$/u', $text);
     }
 
     // LinkTracking management

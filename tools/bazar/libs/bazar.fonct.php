@@ -188,9 +188,7 @@ function baz_afficher_formulaire_import()
             $type_champ = array();
             foreach ($tableau as $ligne) {
                 if ($ligne[0] != 'labelhtml') {
-                    if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' ||
-                        $ligne[0] == 'listefiche' || $ligne[0] ==
-                        'checkboxfiche') {
+                    if ($ligne[0] == 'radio' || $ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'listefiche' || $ligne[0] == 'checkboxfiche') {
                         $nom_champ[] =
                         $ligne[0].$ligne[1].$ligne[6];
                         $type_champ[] =
@@ -317,22 +315,23 @@ function baz_afficher_formulaire_import()
                                                     $data[$c],
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
                                                 );
+																if ( (! $idval) && ( is_numeric($data[$c])) ) {
+																		$idval = $data[$c] ;
+																	}
                                             } elseif ($type_champ[$c] ==
                                                 'checkbox') {
-                                                $tab_chkb = explode(
-                                                    ',',
-                                                    $data[$c]
-                                                );
-                                                $tab_chkb = array_map(
-                                                    'trim',
-                                                    $tab_chkb
-                                                );
+                                                $tab_chkb = explode(',', $data[$c]);
+                                                $tab_chkb = array_map('trim', $tab_chkb);
+																$k = strtolower($idliste_champ[$nom_champ[$c]]);
+                                                $refList = $alllists[$k]['label'];
                                                 $tab_id = array();
                                                 foreach ($tab_chkb as $value) {
-                                                    $tab_id[] = array_search(
-                                                        $value,
-                                                        $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
-                                                    );
+																	// dirty patch to permits "index" instead of "label"
+                                                    // https://framagit.org/Artefacts/ATable-guide-web/issues/30
+                                                    if( is_numeric($value) )
+                                                        $tab_id[] = $value ;
+                                                    else
+                                                        $tab_id[] = array_search( $value, $refList );
                                                 }
                                                 $idval = implode(',', $tab_id);
                                             }
@@ -3418,7 +3417,7 @@ function baz_requete_recherche_fiches(
             $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
         }
         $first = true;
-        
+
         foreach ($tableau as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
                 $valcrit = explode(',', $val);
@@ -3569,10 +3568,9 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             if (!empty($value) and is_array($templatef[$fiche['id_typeannonce']]) && $facetteasked) {
                 $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
                 $val = array_shift($val);
-                $islist = in_array($val['type'], array('checkbox', 'select', 'scope'));
-                $islistforeign = (strpos($val['id'], 'listefiche')===0) or (strpos($val['id'], 'checkboxfiche')==0);
+                $islistforeign = (strpos($val['id'], 'listefiche')===0) || (strpos($val['id'], 'checkboxfiche')===0);
+                $islist = in_array($val['type'], array('checkbox', 'select', 'scope', 'radio') ) && !$islistforeign;
                 $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
-
                 if ($islistforeign) {
                     // listefiche ou checkboxfiche
                     $facettevalue[$val['id']]['type'] = 'fiche';
@@ -3629,7 +3627,7 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
 		// champs correspondants
 		if (!empty($params['correspondance'])) {
 			$tabcorrespondances = array();
-			$tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
+            $tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
 			if ($tabcorrespondances['fail'] != 1){
 				foreach ($tabcorrespondances as $key=>$data) {
 					if (isset($key)) {
@@ -3639,11 +3637,11 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
 							$fiche[$key] = '';
 						}
 					} else {
-						exit('<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
+                        echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
 					}
 				}
 			} else {
-				exit('<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>');
+                echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
 			}
         }
         $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
@@ -3679,7 +3677,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     ++$GLOBALS['_BAZAR_']['nbbazarliste'];
     $params['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
-
     $fiches['fiches'] = searchResultstoArray($tableau_fiches, $params, $formtab);
     // tri des fiches
     if ($params['random']) {
@@ -3784,8 +3781,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
 
         // colonne des filtres
-        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".
-                        '<div class="filters no-dblclick">'."\n".
+        $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".'<div class="filters no-dblclick">'."\n";
+        if ($params['filtertext'] == true) {
+            $outputfilter .=
                         '<div class="form-group">
                           <div class="input-group">
                             <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
@@ -3793,7 +3791,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                             .$params['nbbazarliste'].'" placeholder="'._t('BAZAR_FILTER').'" data-target="bazar-list-'.$params['nbbazarliste'].'" />
                           </div>
                         </div>'."\n";
-                        
+        }
+
+
 
         $i = 0;
         $first = true;
@@ -3827,7 +3827,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                     $list = multiArraySearch($allform, 'id', $facettevalue[$id]['source']);
                     $list = $list[0];
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
-                    $form = $allform[$facettevalue[$id]['source']];
+                    $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
+                    $form = $allform[$src];
                     $list['titre_liste'] = $form['bn_label_nature'];
                     foreach ($facettevalue[$id] as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
@@ -4491,6 +4492,9 @@ function getAllParameters($wiki)
     // nombre de résultats affichées avant pagination
     $param['pagination'] = $wiki->GetParameter('pagination');
 
+    // ajout d'un filtre pour chercher du txte dans les resultats pour les facette
+    $param['filtertext'] = getParameter_boolean($wiki, 'filtertext', false);
+
     // correspondance transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
     $param['correspondance'] = $wiki->GetParameter('correspondance');
 
@@ -4801,24 +4805,26 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 	$tabparam = array();
 	$tabparam['fail'] = 0;
 	// check if first and second separators are at least somewhere
-	if ((strpos($param, $firstseparator) !== false) && (strpos($param, $secondseparator) !== false)){
+	if (strpos($param, $secondseparator) !== false){
 		$params = explode($firstseparator, $param);
 		$params = array_map('trim', $params);
 		if (count($params) > 0) {
-			foreach ($params as $value) {
-				$tab = explode($secondseparator, $value);
-				$tab = array_map('trim', $tab);
-				if (count($tab) > 1) {
-					$tabparam[$tab[0]] = $tab[1];
-				} else {
-					$tabparam['fail'] = 1;
-				}
+            foreach ($params as $value) {
+                if (!empty($value)) {
+                    $tab = explode($secondseparator, $value);
+                    $tab = array_map('trim', $tab);
+                    if (count($tab) > 1) {
+                        $tabparam[$tab[0]] = $tab[1];
+                    } else {
+                        $tabparam['fail'] = 1;
+                    }
+                }
 			}
 		} else {
-			$tabparam['fail'] = 1;
+            $tabparam['fail'] = 1;
 		}
 	} else {
-		$tabparam['fail'] = 1;
+        $tabparam['fail'] = 1;
 	}
 	return $tabparam;
 }

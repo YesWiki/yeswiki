@@ -183,7 +183,7 @@ $(document).ready(function () {
 
     // les emails
     $('#formulaire input[type=email]:visible').each(function () {
-      var reg = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+      var reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; // regex that works for 99,99%, following RFC 5322
       var address = $(this).val();
       if (reg.test(address) === false
         && !(address === '' && $(this).attr('required') !== 'required')) {
@@ -639,4 +639,21 @@ $(document).ready(function () {
       $(this).tagsinput('add', $(this).tagsinput('input').val());
     });
   });
-});
+
+  var bazarList = [];
+  $('.filter-bazar').on('keyup', function(e) {
+    var target = $(this).data('target')
+    var searchstring = $(this).val().toLowerCase();
+    if (bazarList[target] === undefined) {
+      bazarList[target] = []
+      $('#'+target+' .bazar-entry').each(function() {
+        bazarList[target][$(this).data('id_fiche')] = $(this).text().toLowerCase()
+      })
+    }
+    $('#'+target+' .bazar-entry').hide();
+    $('#'+target+' .bazar-entry').filter(function(i) {
+      //console.log(bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) )
+      return bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1;
+    }).show()
+  });
+})

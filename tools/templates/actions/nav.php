@@ -27,7 +27,7 @@ if (!empty($titles)) {
 
 $listlinks = '';
 foreach ($titles as $key => $title) {
-    $url = $this->IsWikiName($links[$key]) ? $this->href('', $links[$key]) : $links[$key];
+    $url = $this->IsWikiName($links[$key], WN_CAMEL_CASE_EVOLVED) ? $this->href('', $links[$key]) : $links[$key];
     $listclass = ($url == $this->href('', $this->GetPageTag())) ? ' class="active"' : '';
     $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.$title.'</a></li>'."\n";
 }
