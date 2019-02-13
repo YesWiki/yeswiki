@@ -226,10 +226,16 @@ overflow: auto;
 }
 
 
-.popover .page {
+.popover .page { /* gestion des popup au survol modalbox-hover */
   min-height:auto;
-    } /* gestion des popup au survol modalbox-hover
+    }
 
 .popover .BAZ_label {
-display:none} /* enlever les label des fiches bazar quand on utilise la fonction glossaire
+display:none;} /* enlever les label des fiches bazar quand on utilise la fonction glossaire */
+
+.btn-glossaire { /* enlève le padding trop grand qui s'applique sur les boutons en général */
+    padding: 0px !important;
+    font-size: inherit !important;
+    vertical-align: inherit !important;
+}
 
