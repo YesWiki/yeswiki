@@ -142,13 +142,15 @@ function replace_missingpage_links($output)
     preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
     foreach ($matches as $values) {
+        var_dump($values);
+    
         // on passe en parametres GET les valeurs du template de la page de provenance,
         // pour avoir le meme graphisme dans la page creee
         $query_string = 'theme='.urlencode($GLOBALS['wiki']->config['favorite_theme']).
                         '&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
                         '&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
                         '&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).
-                        ((!$GLOBALS['wiki']->IsWikiName($values[2], WN_CAMEL_CASE_EVOLVED)) ? '&amp;body='.urlencode($values[2]) : '').
+                        (($values[2] != $values[3]) ? '&amp;body='.urlencode($values[2]) : '').
                         '&amp;newpage=1';
         $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
             .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
