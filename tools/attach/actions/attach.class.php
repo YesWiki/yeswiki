@@ -418,6 +418,7 @@ if (!class_exists('attach')) {
             if (empty($this->desc)) {
                 $this->desc = $this->wiki->GetParameter("desc");
             }
+            $this->desc = htmlentities(strip_tags($this->desc)); // avoid XSS
 
             $this->link = $this->wiki->GetParameter("attachlink"); //url de lien - uniquement si c'est une image
             if (empty($this->link)) {
