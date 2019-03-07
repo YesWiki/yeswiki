@@ -869,19 +869,19 @@ class Wiki
     // COOKIES
     public function SetSessionCookie($name, $value)
     {
-        SetCookie($name, $value, 0, $this->CookiePath);
+        SetCookie($name, $value, 0, $this->CookiePath, '', !empty($_SERVER['HTTPS']), true);
         $_COOKIE[$name] = $value;
     }
 
     public function SetPersistentCookie($name, $value, $remember = 0)
     {
-        SetCookie($name, $value, time() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60), $this->CookiePath);
+        SetCookie($name, $value, time() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60), $this->CookiePath, '', !empty($_SERVER['HTTPS']), true);
         $_COOKIE[$name] = $value;
     }
 
     public function DeleteCookie($name)
     {
-        SetCookie($name, '', 1, $this->CookiePath);
+        SetCookie($name, '', 1, $this->CookiePath, '', !empty($_SERVER['HTTPS']), true);
         $_COOKIE[$name] = '';
     }
 
