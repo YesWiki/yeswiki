@@ -45,8 +45,8 @@
  *
  *	On peut voir ce template sur la page https://osons.cc/?PageAteliers
  *	obtenu avec l'action suivante :
- *	{{bazarliste template="ateliers.tpl.html" pageDessus="PageAteliersHaut"
- *		pageDessous="TarifsAteliers" id="3" champ="bf_rang" nbcol="4"
+ *	{{bazarliste template="damier.tpl.html" pageDessus="PageAteliersHaut"
+ *		pageDessous="TarifsAteliers" id="3" champ="bf_prochainedate" nbcol="4"
  *		couleur="#009999" urldebase="https://osons.cc/?"
  *		listeboutons="radioListeBoutonsAtelier" valeurexergue="1"}}
  ******************************************************************************/
@@ -497,8 +497,13 @@ if ($nbfiches>0) :
 					$date[2] = '1<sup>er</sup>';
 				}
 				$date[1]=str_replace($moisnum, $moisnoms, $date[1]);
-				$heure = explode(':', $moment[1]);
-				$annonce="Le ".ltrim($date[2],'0')." ".$date[1]." ".$date[0]." – ".ltrim($heure[0],'0')."h".ltrim($heure[1],'0')."-".($heure[0]+3)."h".ltrim($heure[1],'0')." à ".$tabfiches[$nb][0]['bf_prochainlieu'];
+				$annonce="Le ".ltrim($date[2],'0')." ".$date[1]." ".$date[0];
+				if (isset($moment[1]) && ($moment[1] != "")) {
+					$heure = explode(':', $moment[1]);
+					$annonce.=" – ".ltrim($heure[0],'0')."h".ltrim($heure[1],'0')."-".($heure[0]+3)."h".ltrim($heure[1],'0')." à ".$tabfiches[$nb][0]['bf_prochainlieu'];
+				}
+				$annonce.=" à ".$tabfiches[$nb][0]['bf_prochainlieu'];
+
 			} else {
 				$annonce=$tabfiches[$nb][0]['bf_prochainlieu'];
 			}
