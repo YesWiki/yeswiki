@@ -52,10 +52,7 @@ if(count($fiches)>0) {
                   element.attr('data-'+index, value);
                 })
             },
-            monthNames: ['"._t('BAZ_JANVIER')."','"._t('BAZ_FEVRIER')."','"._t('BAZ_MARS')."','"._t('BAZ_AVRIL')."','"._t('BAZ_MAI')."','"._t('BAZ_JUIN')."','"._t('BAZ_JUILLET')."','"._t('BAZ_AOUT')."','"._t('BAZ_SEPTEMBRE')."','"._t('BAZ_OCTOBRE')."','"._t('BAZ_NOVEMBRE')."','"._t('BAZ_DECEMBRE')."'],
-            monthNamesShort: ['Jan','Fev','Mar','Avr','Mai','Juin','Juil','Aug','Sep','Oct','Nov','Dec'],
-            dayNames: ['"._t('BAZ_DIMANCHE')."','"._t('BAZ_LUNDI')."','"._t('BAZ_MARDI')."','"._t('BAZ_MERCREDI')."','"._t('BAZ_JEUDI')."','"._t('BAZ_VENDREDI')."','"._t('BAZ_SAMEDI')."'],
-            dayNamesShort: ['"._t('BAZ_DIMANCHE_COURT')."','"._t('BAZ_LUNDI_COURT')."','"._t('BAZ_MARDI_COURT')."','"._t('BAZ_MERCREDI_COURT')."','"._t('BAZ_JEUDI_COURT')."','"._t('BAZ_VENDREDI_COURT')."','"._t('BAZ_SAMEDI_COURT')."'],
+            locale: '".$GLOBALS['wiki']->config['default_language']."',
             buttonText: {
                 prev: ' ◄ ',
                 next: ' ► ',
@@ -129,6 +126,7 @@ if(count($fiches)>0) {
   $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css');
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/moment.min.js');
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js');
+  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/fullcalendar/locale-all.js');
   $GLOBALS['wiki']->AddJavascript($script);
   echo '<div id="calendar'.$param['nbbazarliste'].'" class="no-dblclick '.$param['class'].'"></div>'."\n";
 }
