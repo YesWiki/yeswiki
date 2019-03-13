@@ -75,4 +75,36 @@ if ($this->HasAccess('write')) {
     // on recupere juste les javascripts et la fin des balises body et html
     $output .= preg_replace('/^.+<script/Us', $styleiframe . '<script', $this->Footer());
     echo $output;
+} else {
+    $output = '';
+    // on recupere les entetes html mais pas ce qu'il y a dans le body
+    $header = explode('<body', $this->Header());
+    $output .= $header[0] . '<body class="yeswiki-body">'."\n".'<div class="yeswiki-page-widget page-widget page">'."\n";
+    $output .= '<div class="alert alert-danger alert-error">'
+      ._t('LOGIN_NOT_AUTORIZED_EDIT').'. '._t('LOGIN_PLEASE_REGISTER').'.'
+      .'</div>'."\n"
+      .$this->Format('{{login signupurl="0"}}'."\n\n");
+    
+    // on efface le style par defaut du fond pour l'iframe
+    $styleiframe = '<style>
+        html {
+            overflow-y: auto;
+            background-color : transparent;
+            background-image : none;
+        }
+        .yeswiki-body {
+            background-color : transparent;
+            background-image : none;
+            text-align : left;
+            width : auto;
+            min-width : 0;
+            padding-top : 0;
+        }
+        .yeswiki-page-widget { min-height:auto !important; }
+    </style>' . "\n";
+
+    $this->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
+    // on recupere juste les javascripts et la fin des balises body et html
+    $output .= preg_replace('/^.+<script/Us', $styleiframe . '<script', $this->Footer());
+    exit($output);
 }

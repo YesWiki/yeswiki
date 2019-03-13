@@ -142,8 +142,6 @@ function replace_missingpage_links($output)
     preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
     foreach ($matches as $values) {
-        var_dump($values);
-    
         // on passe en parametres GET les valeurs du template de la page de provenance,
         // pour avoir le meme graphisme dans la page creee
         $query_string = 'theme='.urlencode($GLOBALS['wiki']->config['favorite_theme']).
