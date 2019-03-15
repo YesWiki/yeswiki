@@ -689,7 +689,11 @@ if (!class_exists('attach')) {
         public function performUpload()
         {
             $this->file = $_POST['file'];
-
+            $pathinfo = pathinfo($this->file);
+            $ext = strtolower($pathinfo['extension']);
+            if ($this->wiki->config['authorized_extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized_extensions']))) {
+                $_FILES['upFile']['error'] = 5;
+            }
             $destFile = $this->GetFullFilename(true); //nom du fichier destination
             //test de la taille du fichier recu
             if ($_FILES['upFile']['error'] == 0) {
@@ -699,27 +703,35 @@ if (!class_exists('attach')) {
                 }
             }
             switch ($_FILES['upFile']['error']) {
-                case 0:
-                    $srcFile = $_FILES['upFile']['tmp_name'];
-                    if (move_uploaded_file($srcFile, $destFile)) {
-                        chmod($destFile, 0644);
-                        header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
-                    } else {
-                        echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
-                    }
-                    break;
-                case 1:
-                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_UPLOAD_MAX_FILESIZE') . "</div>\n";
-                    break;
-                case 2:
-                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MAX_FILE_SIZE') . "</div>\n";
-                    break;
-                case 3:
-                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_PARTIAL_UPLOAD') . "</div>\n";
-                    break;
-                case 4:
-                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_NO_FILE_UPLOADED') . "</div>\n";
-                    break;
+            case 0:
+                $srcFile = $_FILES['upFile']['tmp_name'];
+                if (move_uploaded_file($srcFile, $destFile)) {
+                    chmod($destFile, 0644);
+                    header("Location: " . $this->wiki->href("", $this->wiki->GetPageTag(), ""));
+                } else {
+                    echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MOVING_TEMPORARY_FILE') . "</div>\n";
+                }
+                break;
+            case 1:
+                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_UPLOAD_MAX_FILESIZE') . "</div>\n";
+                break;
+            case 2:
+                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_MAX_FILE_SIZE') . "</div>\n";
+                break;
+            case 3:
+                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_PARTIAL_UPLOAD') . "</div>\n";
+                break;
+            case 4:
+                echo "<div class=\"alert alert-error alert-danger\">" . _t('ERROR_NO_FILE_UPLOADED') . "</div>\n";
+                break;
+            case 5:
+                $t = array();
+                foreach ($this->wiki->config['authorized_extensions'] as $ext => $des) {
+                    $t[] = $ext.' ('.$des.')';
+                }
+                $these = implode(', ', $t);
+                echo "<div class=\"alert alert-error alert-danger\">". _t('ERROR_NOT_AUTHORIZED_EXTENSION'). $these . '.</div>';
+                break;
             }
             echo $this->wiki->Format(_t('ATTACH_BACK_TO_PAGE') . " " . $this->wiki->GetPageTag());
         }
