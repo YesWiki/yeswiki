@@ -79,19 +79,12 @@ if ($last = $this->GetParameter('last')) {
     $sql .= ' ORDER BY name ASC';
     $curday = '';
     if ($last_users = $this->LoadAll($sql)) {
+        echo '<ol class="list-users">';
         foreach ($last_users as $user) {
-            // day header
             list($day, $time) = explode(' ', $user['signuptime']);
-            if ($day != $curday) {
-                if ($curday) {
-                    echo "<br>\n";
-                }
-                echo '<strong>'.date('d.m.Y', strtotime($day)).'&nbsp;:</strong><br>'."\n";
-                $curday = $day;
-            }
-            // echo entry
-            echo '<small>'.$time.'</small> '.$user['name']."<br>\n";
+            echo '<li>'.$user['name'].' - <small>'.date('d.m.Y', strtotime($day)).' '.$time.'</small> '."</li>\n";
         }
+        echo '</ol>';
     } else {
         echo _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
     }
