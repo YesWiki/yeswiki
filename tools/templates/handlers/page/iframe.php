@@ -7,6 +7,7 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+
 if ($this->HasAccess("read")) {
     if (!$this->page) {
         return;
@@ -14,9 +15,11 @@ if ($this->HasAccess("read")) {
         $output = '';
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->Header());
-        $output .= $header[0] . '<body class="yeswiki-body">'."\n".'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
+        $output .= $header[0] . '<body class="iframe-body">'."\n"
+            .'<div class="container">'."\n"
+            .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
 
-        // on ajoute un bouton de partage, mais il peut etre desactive en ajoutant &share=0 à l'url de l'iframe
+        // on ajoute un bouton de partage, si &share=1 est présent dans l'url
         if (isset($_GET['share']) && $_GET['share'] == '1') {
             $output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="' . $this->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->GetPageTag() . '"><i class="glyphicon glyphicon-share"></i>&nbsp;' . _t('TEMPLATE_SHARE') . '</a>';
         }
@@ -45,37 +48,40 @@ if ($this->HasAccess("read")) {
             // on ajoute au contenu
             $output .= $pagebody;
         }
-        $output .= '</div><!-- end div.page-widget -->'."\n";
-
-        // par defaut on ajoute la barre de modification, mais elle peut etre desactivee en ajoutant &edit=0 à l'url de l'iframe
-        if (isset($_GET['edit']) && $_GET['edit'] == '1') {
-            $output .= $this->Format('{{barreredaction}}');
-        }
-
-        // on efface le style par defaut du fond pour l'iframe
-        $styleiframe = '<style>
-			html {
-				overflow-y: auto;
-				background-color : transparent;
-				background-image : none;
-			}
-			.yeswiki-body {
-				background-color : transparent;
-				background-image : none;
-				text-align : left;
-				width : auto;
-				min-width : 0;
-				padding-top : 0;
-			}
-			.yeswiki-page-widget { min-height:auto !important; }
-		</style>' . "\n";
-
-        $this->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
-        // on recupere juste les javascripts et la fin des balises body et html
-        $output .= preg_replace('/^.+<script/Us', $styleiframe . '<script', $this->Footer());
-        echo $output;
-
     }
 } else {
-    return;
+    $output = '';
+    // on recupere les entetes html mais pas ce qu'il y a dans le body
+    $header = explode('<body', $this->Header());
+    $output .= $header[0] . '<body class="login-body">'."\n"
+        .'<div class="container">'."\n"
+        .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
+
+    if ($contenu = $this->LoadPage("PageLogin")) {
+        // si une page PageLogin existe, on l'affiche
+        $output .= $this->Format($contenu["body"]);
+    } else {
+        // sinon on affiche le formulaire d'identification minimal
+        $output .= '<div class="vertical-center white-bg">'."\n"
+        .'<div class="alert alert-danger alert-error">'."\n"
+        ._t('LOGIN_NOT_AUTORIZED').'. '._t('LOGIN_PLEASE_REGISTER').'.'."\n"
+        .'</div>'."\n"
+        .$this->Format('{{login signupurl="0"}}'."\n\n")
+        .'</div><!-- end .vertical-center -->'."\n";
+    }
 }
+
+$output .= '</div><!-- end .page-widget -->'."\n";
+
+// on affiche la barre de modification, si on ajoute &edit=1 à l'url de l'iframe
+if (isset($_GET['edit']) && $_GET['edit'] == '1') {
+    $output .= $this->Format('{{barreredaction}}');
+}
+$output .= '</div><!-- end .container -->'."\n";
+
+$this->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
+// on recupere juste les javascripts et la fin des balises body et html
+$output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
+
+// affichage a l'ecran
+echo $output;

@@ -24,5 +24,33 @@ if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == '
     $GLOBALS['template-error'] = '';
 }
 
+if (!$this->HasAccess('read')) {
+    $output = '';
+    // on recupere les entetes html mais pas ce qu'il y a dans le body
+    $header = explode('<body', $this->Header());
+    $output .= $header[0] . '<body class="login-body">'."\n"
+        .'<div class="container">'."\n"
+        .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
+
+    if ($contenu = $this->LoadPage("PageLogin")) {
+        $output .= $this->Format($contenu["body"]);
+        // on recupere juste les javascripts et la fin des balises body et html
+        $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
+    } else {
+        // sinon on affiche le formulaire d'identification minimal
+        $output .= str_replace(
+            "<i>"._t('LOGIN_NOT_AUTORIZED')."</i>",
+            '<div class="alert alert-danger alert-error">'.
+            _t('LOGIN_NOT_AUTORIZED').', '._t('LOGIN_PLEASE_REGISTER').'.'.
+            '</div>'."\n".
+            $this->Format('{{login signupurl="0"}}'),
+            $plugin_output_new
+        );
+    }
+    // on recupere juste les javascripts et la fin des balises body et html
+    $output .= preg_replace('/^.+<script/Us',  '<script', $this->Footer());
+    exit($output);
+}
+
 // TODO : make it work with big buffers
 //$plugin_output_new = postFormat($plugin_output_new);

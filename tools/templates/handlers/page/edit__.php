@@ -111,3 +111,19 @@ $replacements = array(
                     3 => ' class="edit form-control">',
                     );
 $plugin_output_new = preg_replace($patterns, $replacements, $plugin_output_new);
+
+if (!$this->HasAccess('write')) {
+    $output = '';
+    // on recupere les entetes html mais pas ce qu'il y a dans le body
+    $header = explode('<body', $this->Header());
+    $output .= $header[0] . '<body class="login-body">'."\n"
+        .'<div class="yeswiki-page-widget page-widget page">'."\n";
+    $output .= '<div class="alert alert-danger alert-error">'
+    ._t('LOGIN_NOT_AUTORIZED_EDIT').'. '._t('LOGIN_PLEASE_REGISTER').'.'
+    .'</div><!-- end .alert -->'."\n"
+    .$this->Format('{{login signupurl="0"}}'."\n\n")
+    .'</div><!-- end .page -->'."\n";
+    // on recupere juste les javascripts et la fin des balises body et html
+    $output .= preg_replace('/^.+<script/Us',  '<script', $this->Footer());
+    exit($output);
+}
