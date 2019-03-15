@@ -2083,8 +2083,9 @@ function multiArraySearch($array, $key, $value)
     return $results;
 }
 
-/** baz_gestion_formulaire() affiche le listing des formulaires et permet de les modifier
- *   @return  string    le code HTML
+/** Affiche le listing des formulaires et permet de les modifier
+ *  
+ * @return string le code HTML
  */
 function baz_gestion_formulaire()
 {
@@ -2103,15 +2104,13 @@ function baz_gestion_formulaire()
         $res .= baz_formulaire_des_formulaires('new_v');
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'new_v') {
         // il y a des donnees pour ajouter un nouveau formulaire
-        $requete =
-        'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix'].
-        'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
+        $requete = 'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix']
+        .'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
         .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
         .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
         .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
         .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
         $resultat = $GLOBALS['wiki']->query($requete);
-
         $res .=
         '<div class="alert alert-success">'."\n".
         '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
@@ -2133,9 +2132,7 @@ function baz_gestion_formulaire()
         '<div class="alert alert-success">'."\n".
         '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
         _t('BAZ_FORMULAIRE_MODIFIE').'</div>'."\n";
-    } elseif (isset($_GET['action_formulaire']) &&
-        $_GET['action_formulaire'] == 'delete' &&
-        baz_a_le_droit('saisie_formulaire')) {
+    } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'delete' && baz_a_le_droit('saisie_formulaire')) {
         // il y a un id de formulaire a supprimer, suppression de l'entree dans la table nature
         $requete =
         'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature WHERE bn_id_nature='.
@@ -2559,10 +2556,6 @@ function baz_nextId($table, $colonne_identifiant, $bdd)
     $requete = 'SELECT MAX('.$colonne_identifiant.') AS maxi FROM '.
     $table;
     $ligne = $GLOBALS['wiki']->LoadSingle($requete);
-
-    if (count($ligne['maxi']) > 1) {
-        die('<br />La table '.$table.' a un identifiant non unique<br />');
-    }
 
     return $ligne['maxi'] + 1;
 }
@@ -3464,11 +3457,11 @@ function baz_requete_recherche_fiches(
 
     // systeme de cache des recherches
     $reqid = 'bazar-search-'.md5($requete);
+    // debug
+    if (isset($_GET['showreq'])) {
+        echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
+    }
     if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
-        // debug
-        if (isset($_GET['showreq'])) {
-            echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
-        }
         $GLOBALS['_BAZAR_'][$reqid] = $GLOBALS['wiki']->LoadAll($requete);
     }
     return $GLOBALS['_BAZAR_'][$reqid];
@@ -4061,6 +4054,11 @@ function encoder_en_utf8($txt)
     return strtr(preg_replace('/ \x{0026} /u', ' &#38; ', mb_convert_encoding($txt, 'UTF-8', 'HTML-ENTITIES')), $cp1252_map);
 }
 
+function sanitizeStringForRss($string) {
+    $string = html_entity_decode($string, ENT_QUOTES, 'UTF-8');
+    return $string;
+}
+
 /** baz_affiche_flux_RSS() - affiche le flux rss a partir de parametres
  * @return string Le flux RSS, avec les headers et tout et tout
  */
@@ -4150,15 +4148,15 @@ function baz_afficher_flux_RSS()
     $xml .= "\r\n    ";
     $xml .= XML_Util::createStartElement('channel');
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag('title', null, html_entity_decode(_t('BAZ_DERNIERE_ACTU'), ENT_QUOTES, 'UTF-8'));
+    $xml .= XML_Util::createTag('title', null, sanitizeStringForRss(_t('BAZ_DERNIERE_ACTU')));
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag('link', null, html_entity_decode($GLOBALS['wiki']->config['BAZ_RSS_ADRESSESITE'], ENT_QUOTES, 'UTF-8'));
+    $xml .= XML_Util::createTag('link', null, sanitizeStringForRss($GLOBALS['wiki']->config['BAZ_RSS_ADRESSESITE'], ENT_QUOTES, 'UTF-8'));
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag('description', null, html_entity_decode($GLOBALS['wiki']->config['BAZ_RSS_DESCRIPTIONSITE'], ENT_QUOTES, 'UTF-8'));
+    $xml .= XML_Util::createTag('description', null, sanitizeStringForRss($GLOBALS['wiki']->config['BAZ_RSS_DESCRIPTIONSITE']));
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag('language', null, 'fr-FR');
     $xml .= "\r\n      ";
-    $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) '.date('Y').' '. html_entity_decode($GLOBALS['wiki']->config['BAZ_RSS_NOMSITE'], ENT_QUOTES, 'UTF-8'));
+    $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) '.date('Y').' '. sanitizeStringForRss($GLOBALS['wiki']->config['BAZ_RSS_NOMSITE']));
     $xml .= "\r\n      ";
     $xml .= XML_Util::createTag('lastBuildDate', null, gmstrftime('%a, %d %b %Y %H:%M:%S %Z'));
     $xml .= "\r\n      ";
@@ -4174,7 +4172,7 @@ function baz_afficher_flux_RSS()
     $xml .= "\r\n      ";
     $xml .= XML_Util::createStartElement('image');
     $xml .= "\r\n        ";
-    $xml .= XML_Util::createTag('title', null, html_entity_decode(_t('BAZ_DERNIERE_ACTU'), ENT_QUOTES, 'UTF-8'));
+    $xml .= XML_Util::createTag('title', null, sanitizeStringForRss(_t('BAZ_DERNIERE_ACTU')));
     $xml .= "\r\n        ";
     $xml .= XML_Util::createTag('url', null, $GLOBALS['wiki']->config['BAZ_RSS_LOGOSITE']);
     $xml .= "\r\n        ";
@@ -4188,7 +4186,7 @@ function baz_afficher_flux_RSS()
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('item');
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('title', null, stripslashes($ligne['bf_titre']));
+            $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', sanitizeStringForRss($ligne['bf_titre'])));
             $xml .= "\r\n        ";
             $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $GLOBALS['wiki']->href('', $ligne['id_fiche']) . ']]>');
             $xml .= "\r\n        ";
@@ -4202,11 +4200,11 @@ function baz_afficher_flux_RSS()
                 '<![CDATA['.preg_replace(
                     '/data-id=".*"/Ui',
                     '',
-                    html_entity_decode(baz_voir_fiche(0, $ligne), ENT_QUOTES, 'UTF-8')
+                    sanitizeStringForRss(baz_voir_fiche(0, $ligne))
                 ).']]>'
             );
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('pubDate', null, strftime('%a, %d %b %Y %H:%M:%S GMT', strtotime($ligne['date_creation_fiche'])));
+            $xml .= XML_Util::createTag('pubDate', null, strftime('%a, %d %b %Y %H:%M:%S +0100', strtotime($ligne['date_creation_fiche'])));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createEndElement('item');
         }
@@ -4215,13 +4213,13 @@ function baz_afficher_flux_RSS()
         $xml .= "\r\n      ";
         $xml .= XML_Util::createStartElement('item');
         $xml .= "\r\n          ";
-        $xml .= XML_Util::createTag('title', null, html_entity_decode(_t('BAZ_PAS_DE_FICHES'), ENT_QUOTES, 'UTF-8'));
+        $xml .= XML_Util::createTag('title', null, sanitizeStringForRss(_t('BAZ_PAS_DE_FICHES')));
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag('link', null, '<![CDATA['.$GLOBALS['wiki']->config['base_url'].$GLOBALS['wiki']->config['root_page'].']]>');
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag('guid', null, '<![CDATA['.$GLOBALS['wiki']->config['base_url'].$GLOBALS['wiki']->config['root_page'].']]>');
         $xml .= "\r\n          ";
-        $xml .= XML_Util::createTag('description', null, html_entity_decode(_t('BAZ_PAS_DE_FICHES'), ENT_QUOTES, 'UTF-8'));
+        $xml .= XML_Util::createTag('description', null, sanitizeStringForRss(_t('BAZ_PAS_DE_FICHES')));
         $xml .= "\r\n          ";
         $xml .= XML_Util::createTag('pubDate', null, strftime('%a, %d %b %Y %H:%M:%S GMT', strtotime('01/01/%Y')));
         $xml .= "\r\n      ";
@@ -4234,9 +4232,10 @@ function baz_afficher_flux_RSS()
 
     echo str_replace(
         '</image>',
-        '</image>'."\n".'<atom:link href="'.$urlrss.
-        '" rel="self" type="application/rss+xml" />',
-        html_entity_decode($xml, ENT_QUOTES, 'UTF-8')
+        '</image>'."\n"
+        .'    <atom:link href="'. htmlentities((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . '://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'])
+        .'" rel="self" type="application/rss+xml" />',
+        sanitizeStringForRss($xml, ENT_QUOTES, 'UTF-8')
     );
 }
 

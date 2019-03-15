@@ -243,7 +243,7 @@ if (isset($_REQUEST['demand'])) {
                 $q
             );
 
-            $tab_entries = '';
+            $tab_entries = array();
             foreach ($results as $wikipage) {
                 $decoded_entry = json_decode($wikipage['body'], true);
                 //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
@@ -260,10 +260,10 @@ if (isset($_REQUEST['demand'])) {
                 }
                 $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
             }
-            if ($tab_entries) {
+            if (count($tab_entries)>0) {
                 ksort($tab_entries);
+                echo json_encode($tab_entries);
             }
-            echo json_encode($tab_entries);
             break;
         case "pages":
             // recuperation des pages wikis

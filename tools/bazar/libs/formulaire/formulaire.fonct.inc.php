@@ -2303,7 +2303,7 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 // nouvelle appelation pour moins la confondre
 function listefichesliees(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    listefiches($formtemplate, $tableau_template, $mode, $valeurs_fiche);
+    return listefiches($formtemplate, $tableau_template, $mode, $valeurs_fiche);
 }
 
 
