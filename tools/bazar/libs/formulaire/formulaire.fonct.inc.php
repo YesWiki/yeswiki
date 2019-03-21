@@ -72,7 +72,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
         $radio_html = '<div class="control-group form-group">
   <label class="control-label col-sm-3">
-  '. $tableau_template[2] . $ob . $bulledaide .' :</label>
+  '. $tableau_template[2] . $ob . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
   <div class="controls col-sm-9">';
         $valliste = baz_valeurs_liste($tableau_template[1]);
         if (is_array($valliste['label'])) {
@@ -139,7 +139,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                 $select_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
             }
-            $select_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
+            $select_html.= $tableau_template[2] . (empty($bulledaide) ? "&nbsp;:&nbsp;" : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
 
             $select_attributes = '';
 
@@ -228,7 +228,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $checkbox_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
                 }
-                $checkbox_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n" . '<div class="controls col-sm-9"';
+                $checkbox_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9"';
                 if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $checkbox_html.= ' required="required"';
                 }
@@ -274,7 +274,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
                 $checkbox_html = '<div class="control-group form-group">
 <label class="control-label col-sm-3">
-'.$req . $tableau_template[2] . $bulledaide.' :</label>
+'.$req . $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
 <div class="controls col-sm-9">
 <div class="bazar-checkbox-cols'.$classrequired.'">';
                 foreach ($choixcheckbox as $key => $label) {
@@ -349,7 +349,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $date_html .= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
         }
-        $date_html .= $tableau_template[2] . $bulledaide . ' : </label>' . "\n"
+        $date_html .= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n"
             .'<div class="controls col-sm-9">' . "\n"
             .'<div class="input-prepend input-group"><span class="add-on input-group-addon">'
             .'<i class="icon-calendar glyphicon glyphicon-calendar"></i></span>'
@@ -552,7 +552,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($tableau_template[9] == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n";
+        $input_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<div class="input-group">' . "\n";
         $input_html.= '<input type="text"';
@@ -652,7 +652,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . $bulledaide . ' : </label>' . "\n";
+        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<div class="input-group">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
@@ -719,7 +719,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
                     .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
             $output = '<div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . $bulledaide.' : </label>
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
             <div class="controls col-sm-9">
             <div class="input-group">
             <input class="form-control" type="password" required name="mot_de_passe_wikini" size="'.$tableau_template[3].'" />
@@ -727,7 +727,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             </div>
             </div>
             <div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. $bulledaide.' : </label>
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide ) . '</label>
             <div class="controls col-sm-9">
             <div class="input-group">
             <input class="form-control" type="password" required name="mot_de_passe_repete_wikini" size="'.$tableau_template[3].'" />
@@ -920,7 +920,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . $bulledaide . ' : </label>' . "\n";
+        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ($defauts != '') ? ' value="' . $defauts . '"' : '';
@@ -982,7 +982,7 @@ function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . $bulledaide . ' : </label>' . "\n";
+        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ' name="' . $identifiant . '" class="form-control" id="' . $identifiant . '"';
@@ -1074,7 +1074,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label. $longueurmaxlabel . $bulledaide . ' : </label>' . "\n";
+        $input_html.= $label. $longueurmaxlabel . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<textarea id="'.$identifiant.'" name="'.$identifiant.'" '.((isset($obligatoire) && $obligatoire == 1) ? 'required ' : '');
         $input_html.= 'class="form-control '.(($formatage == 'html') ? 'summernote' : $formatage).'" ';
@@ -1165,7 +1165,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
         $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . $bulledaide . ' : </label>' . "\n";
+        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ($defauts != 'http://') ? ' value="' . $defauts . '"' : ' placeholder="' . $defauts . '"';
@@ -1228,7 +1228,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'delete_file=' . $valeurs_fiche[$type . $identifiant];
 
                 $html .= '<div class="control-group form-group">
-                    <label class="control-label col-sm-3">' . $label . ' : </label>
+                    <label class="control-label col-sm-3">' . $label . '&nbsp;:&nbsp;</label>
                     <div class="controls col-sm-9">
                     <a href="' . BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant] . '" target="_blank">' . $valeurs_fiche[$type . $identifiant] . '</a>' . "\n" . '<a href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER') . '\');" >' . _t('BAZ_SUPPRIMER') . '</a><br />
                     </div>
@@ -1901,7 +1901,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $select_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
         }
-        $select_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
+        $select_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
 
         $select_attributes = '';
 
@@ -2085,7 +2085,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $checkbox_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
         }
-        $checkbox_html.= $tableau_template[2] . $bulledaide . ' : </label>' . "\n" . '<div class="controls col-sm-9"';
+        $checkbox_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9"';
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $checkbox_html.= ' required="required"';
         }
