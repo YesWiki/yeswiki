@@ -1,7 +1,9 @@
 <?php
 /*
 orphanedpages.php
+List all orphaned pages BUT bazar records
 
+Copyright 2019 acheype
 Copyright 2002, 2003  David DELON
 Copyright 2002  Charles NEPOTE
 Copyright 2002  Patrick PAUL
@@ -20,16 +22,16 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-if ($pages = $this->LoadOrphanedPages())
+if ($pages = $this->PageList('', 'wiki', '', ''))
 {
-	foreach ($pages as $page)
-	{
-		echo $this->ComposeLinkToPage($page["tag"], "", "", 0),"<br />\n" ;
-	}
+    foreach ($pages as $page)
+    {
+        echo $this->ComposeLinkToPage($page["tag"], "", "", 0),"<br />\n" ;
+    }
 }
 else
 {
-	echo "<i>"._t('NO_ORPHAN_PAGES')."</i>" ;
+    echo "<i>"._t('NO_ORPHAN_PAGES')."</i>" ;
 }
 
 ?>
