@@ -680,6 +680,11 @@ class Wiki
         return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.comment_on = '' and p.latest = 'Y' order by tag");
     }
 
+    public function LoadOrphanedPagesOnly()
+    {
+        return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.comment_on = '' and p.latest = 'Y' and body not LIKE '{\"%' order by tag");
+    }
+
     public function IsOrphanedPage($tag)
     {
         return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.latest = 'Y' and tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'");
