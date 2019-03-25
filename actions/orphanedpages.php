@@ -26,7 +26,9 @@ if ($pages = $this->PageList('', 'wiki', '', ''))
 {
     foreach ($pages as $page)
     {
-        echo $this->ComposeLinkToPage($page["tag"], "", "", 0),"<br />\n" ;
+        if ($this->IsOrphanedPage($page["tag"])) {
+            echo $this->ComposeLinkToPage($page["tag"], "", "", 0), "<br />\n";
+        }
     }
 }
 else
