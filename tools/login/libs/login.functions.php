@@ -56,7 +56,7 @@ function sendPasswordEmail($userID)
         if (!function_exists('send_mail')) {
             require_once('includes/email.inc.php');
         }
-        send_mail($GLOBALS['wiki']->GetConfigValue('email_from', 'noreply@' . $domain), 'WikiAdmin', $existingUser['email'], $subject, $message);
+        send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $existingUser['email'], $subject, $message);
     }
 }
 

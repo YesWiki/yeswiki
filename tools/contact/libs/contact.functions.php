@@ -146,7 +146,7 @@ function sendPeriodicalMailToGroup($period, $groups, $oldjson)
             foreach ($groupmembers as $member) {
                 $user = $GLOBALS['wiki']->LoadUser($member);
                 if (!empty($user['email'])) {
-                    send_mail('no-reply@yeswiki.net', 'YesWiki', $user['email'], $subject, $message_txt, $message_html);
+                    send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $user['email'], $subject, $message_txt, $message_html);
                 }
             }
             $newjson[$group] = $today;
