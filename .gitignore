@@ -65,7 +65,7 @@ tools/hashcash/secret/wp-hashcash.key
 
 # PHPStorm IDE
 .idea
-.iml
+*.iml
 
 # Docker
 .db
