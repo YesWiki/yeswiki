@@ -3375,10 +3375,8 @@ function baz_requete_recherche_fiches(
                             $requeteSQL .= ' '.$facettesearch.' ';
                         }
                         $requeteSQL .=
-                        'body LIKE \'%"'.$nom.'":"'.$critere.'"%\' or '
-                        .'body LIKE \'%"'.$nom.'":"'.$critere.',%\' or '
-                        .'body LIKE \'%"'.$nom.'":"%,'.$critere.'%\' or '
-                        .'body LIKE \'%"'.$nom.'":"%,'.$critere.',%\'';
+                        'body REGEXP \'"'.$nom.'":"[^"]^'.$critere.
+                            '[^"]"\'';
 
                         $first = false;
                     }
@@ -3386,13 +3384,12 @@ function baz_requete_recherche_fiches(
                 } else {
                     if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                         $requeteSQL .=
-                        ' AND (body LIKE \'%"'.$nom.'":"'.$val.'"%\')';
+                        ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
                     } else {
                         $requeteSQL .=
-                        ' AND (body LIKE \'%"'.$nom.'":"'.$val.'"%\' or '
-                        .'body LIKE \'%"'.$nom.'":"'.$val.',%\' or '
-                        .'body LIKE \'%"'.$nom.'":"%,'.$val.'%\' or '
-                        .'body LIKE \'%"'.$nom.'":"%,'.$val.',%\')';
+                        ' AND (body REGEXP \'"'.$nom.'":("'.$val.
+                        '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
+                        .$val.',[^"]*")\')';
                     }
                 }
             }
