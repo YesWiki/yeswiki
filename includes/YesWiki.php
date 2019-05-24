@@ -972,8 +972,8 @@ class Wiki
                     // it's a Wiki link!
                     $this->TrackLinkTo($tag);
                 }
-            } elseif (filter_var($tag, FILTER_VALIDATE_URL)) {
-                return '<a href="'.$tag.'">'.$text.'</a>'."\n";
+            } elseif ($safeUrl = str_replace('%3A', ':', implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag)))))) {
+                return '<a href="'.$safeUrl.'">'.$text.'</a>'."\n";
             } elseif (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
                 // check for various modifications to perform on $tag
                 // email addresses
