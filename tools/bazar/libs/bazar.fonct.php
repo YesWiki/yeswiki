@@ -2103,18 +2103,15 @@ function baz_gestion_formulaire()
         // il y a un nouveau formulaire a saisir
         $res .= baz_formulaire_des_formulaires('new_v');
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'new_v') {
-        // il y a des donnees pour ajouter un nouveau formulaire
-        $requete = 'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix']
-        .'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
-        .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
-        .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
-        .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
-        .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
-        $resultat = $GLOBALS['wiki']->query($requete);
-        $res .=
-        '<div class="alert alert-success">'."\n".
-        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
-        _t('BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE').'</div>'."\n";
+            // il y a des donnees pour ajouter un nouveau formulaire
+            $requete = 'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix']
+            .'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
+            .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
+            .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
+            $GLOBALS['wiki']->query($requete);
+            $GLOBALS['wiki']->redirect($GLOBALS['wiki']->href('','', 'vue=formulaire&msg=form_created', false));     
     } elseif (isset($_GET['action_formulaire']) &&
         $_GET['action_formulaire'] == 'modif_v' &&
         baz_a_le_droit('saisie_formulaire')) {
@@ -2152,6 +2149,12 @@ function baz_gestion_formulaire()
         ($_GET['action_formulaire'] != 'modif' &&
             $_GET['action_formulaire'] != 'new')) {
         $res = '';
+        if (isset($_GET['msg']) && $_GET['msg']=='form_created') {
+            $res .=
+        '<div class="alert alert-success">'."\n".
+        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
+        _t('BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE').'</div>'."\n";
+        }
         $tab_forms['forms'] = array();
         $forms = baz_valeurs_formulaire('');
 
@@ -3613,42 +3616,43 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
                 $fiche = array_map('utf8_decode', $fiche);
             }
         }
+        if (is_array($fiche)) {
+            // champs correspondants
+            if (!empty($params['correspondance'])) {
+                $tabcorrespondances = array();
+                $tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
+                if ($tabcorrespondances['fail'] != 1){
+                    foreach ($tabcorrespondances as $key=>$data) {
+                        if (isset($key)) {
+                            if (isset($data) && isset($fiche[$data])) {
+                                $fiche[$key] = $fiche[$data];
+                            } else {
+                                $fiche[$key] = '';
+                            }
+                        } else {
+                            echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                        }
+                    }
+                } else {
+                    echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                }
+            }
+            $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
+            $fiche['datastr'] = $fiche['html_data'];
 
-		// champs correspondants
-		if (!empty($params['correspondance'])) {
-			$tabcorrespondances = array();
-            $tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
-			if ($tabcorrespondances['fail'] != 1){
-				foreach ($tabcorrespondances as $key=>$data) {
-					if (isset($key)) {
-						if (isset($data) && isset($fiche[$data])) {
-							$fiche[$key] = $fiche[$data];
-						} else {
-							$fiche[$key] = '';
-						}
-					} else {
-                        echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
-					}
-				}
-			} else {
-                echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
-			}
+            // les fiches concernent un wiki externe
+            if (isset($exturl)) {
+                $arr = explode('/wakka.php', $exturl, 2);
+                $exturl = $arr[0];
+                $fiche['url'] = $exturl.'/wakka.php?wiki='.$fiche['id_fiche'];
+            } else {
+                $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+            }
+            //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
+
+            // tableau qui contient le contenu de toutes les fiches
+            $fiches['fiches'][$fiche['id_fiche']] = $fiche;
         }
-        $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
-        $fiche['datastr'] = $fiche['html_data'];
-
-        // les fiches concernent un wiki externe
-        if (isset($exturl)) {
-            $arr = explode('/wakka.php', $exturl, 2);
-            $exturl = $arr[0];
-            $fiche['url'] = $exturl.'/wakka.php?wiki='.$fiche['id_fiche'];
-        } else {
-            $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
-        }
-        //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
-
-        // tableau qui contient le contenu de toutes les fiches
-        $fiches['fiches'][$fiche['id_fiche']] = $fiche;
     }
     return $fiches['fiches'];
 }
