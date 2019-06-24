@@ -89,5 +89,11 @@ Pour inclure une page d'un autre yeswiki : ( Noter le pipe ""|"" après les prem
 =====Texte du titre=====
 description
 {{endbackgroundimage}}%%
+===Couleur de fond avec du texte par dessus===
+//Avec possibilité de mettre du texte par dessus//
+%%{{backgroundimage height="150" bgcolor="#2BB34A" class="white text-center doubletitlesize"}}
+=====Texte du titre=====
+description
+{{endbackgroundimage}}%%
 {{end elem="col"}}
 {{end elem="grid"}}
