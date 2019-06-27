@@ -37,7 +37,7 @@ __""__Souligné__""__
 |]
 </pre>""
 ===Boutons wiki===
-""<pre>{{button class="btn btn-danger" link="lienverspage" icon="plus icon-white" text="votre texte"}}</pre>""
+""<pre>{{button class="btn btn-danger" link="lienverspage" icon="plus icon-white" text="votre texte"}}</pre>""{{button nobtn="1" icon="book" link="https://yeswiki.net/?DemoButton" text="Doc"}}
 ===Placer un bouton qui s'ouvre dans un autre onglet===
 %%""<a href="votrelien" target="_blank" class="btn btn-primary btn-large">votre texte</a>""%%
 ===Ecrire en html===
