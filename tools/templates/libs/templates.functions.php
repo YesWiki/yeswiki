@@ -847,7 +847,7 @@ function getImageFromBody($page, $width, $height)
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpe?g|png)) .*\]\]/U", $page['body'], $image);
             if (is_array($image[1]) && !empty($image[1][0])) {
-                $image = trim(str_replace('\\', '', $image[1][0]));
+                $image = $GLOBALS['wiki']->getBaseUrl().'/'.trim(str_replace('\\', '', $image[1][0]));
             } else {
                 
                 preg_match_all("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $image);
@@ -881,7 +881,7 @@ function getTitleFromBody($page)
     }
     $title = '';
     // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2 
-    preg_match_all('/<h1 class="BAZ_fiche_titre">(.*)<\/h1>/mU', $page['body'], $titles);
+    preg_match_all('/<h1.*>\s*(.*)\s*<\/h1>/mU', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = $titles[1][0];
     } else {
