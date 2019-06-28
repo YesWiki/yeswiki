@@ -190,7 +190,7 @@ switch ($version) {
                 'CREATE TABLE '.$config['table_prefix'].'users ('.
                 "name varchar(80) NOT NULL default '',".
                 "password varchar(32) NOT NULL default '',".
-                "email varchar(50) NOT NULL default '',".
+                "email varchar(250) NOT NULL default '',".
                 'motto text,'.
                 "revisioncount int(10) unsigned NOT NULL default '20',".
                 "changescount int(10) unsigned NOT NULL default '50',".
