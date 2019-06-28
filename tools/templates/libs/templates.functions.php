@@ -154,9 +154,6 @@ function replace_missingpage_links($output)
             .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
             .'">'
             .$values[2].' <i class="glyphicon glyphicon-pencil"></i></a>';
-            if (empty($values[1])) {
-                $replacement .= '<a href="'.$GLOBALS['wiki']->href('escapeword', $GLOBALS['wiki']->getPageTag(), 'word='.urlencode($values[3])).'" title="'._t('TEMPLATE_WIKINAME_IS_NOT_A_PAGE').'"><i class="glyphicon glyphicon-ok"></i></a>';
-            }
         $output = str_replace_once($values[0], $replacement, $output);
     }
 
