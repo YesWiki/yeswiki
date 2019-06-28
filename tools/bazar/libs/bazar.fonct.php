@@ -4274,9 +4274,9 @@ function getCustomValueForEntry($parameter, $field, $entry, $default)
 function champCompare($a, $b)
 {
     if ($GLOBALS['ordre'] == 'desc') {
-        return strnatcasecmp($b[$GLOBALS['champ']], $a[$GLOBALS['champ']]);
+        return strcoll($b[$GLOBALS['champ']], $a[$GLOBALS['champ']]);
     } else {
-        return strnatcasecmp($a[$GLOBALS['champ']], $b[$GLOBALS['champ']]);
+        return strcoll($a[$GLOBALS['champ']], $b[$GLOBALS['champ']]);
     }
 }
 
