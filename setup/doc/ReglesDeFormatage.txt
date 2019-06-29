@@ -27,7 +27,7 @@ __""__Souligné__""__
 ""[[PageDeCeWiki Texte à afficher pour le lien interne]]</pre>""
 ===Lien qui force l'ouverture vers une page extérieure===
 %%""<a href="http://exemple.com" target="_blank">ton texte</a>""%%
-===Images===
+===Images===""<a href="https://yeswiki.net/?DemoAttach" target="_blank" class="btn btn-primary btn-large">Doc en ligne</a>""
 //""<pre>Pour télécharger une image, utiliser le bouton Joindre/insérer un fichier</pre>"".//
 ===Tableaux===
 ""<pre>[|
@@ -36,9 +36,9 @@ __""__Souligné__""__
 | Mary     | Smith    | Female   |
 |]
 </pre>""
-===Boutons wiki===
-""<pre>{{button class="btn btn-danger" link="lienverspage" icon="plus icon-white" text="votre texte"}}</pre>""{{button nobtn="1" icon="book" link="https://yeswiki.net/?DemoButton" text="Doc"}}
-===Placer un bouton qui s'ouvre dans un autre onglet===
+===Boutons wiki===""<a href="https://yeswiki.net/?DemoButton" target="_blank" class="btn btn-primary btn-large">Doc en ligne</a>""
+""<pre>{{button class="btn btn-danger" link="lienverspage" icon="plus icon-white" text="votre texte"}}</pre>""
+===Créer un lien qui s'ouvre dans un nouvel onglet===
 %%""<a href="votrelien" target="_blank" class="btn btn-primary btn-large">votre texte</a>""%%
 ===Ecrire en html===
 ""<pre>si vous déposez du html dans la page wiki, 
@@ -49,7 +49,7 @@ pour qu'il soit interprété</pre>""
 {{end elem="col"}}
 {{col size="6"}}
 =====Code exemples=====
-===Insérer un iframe===
+===Insérer un iframe===""<a href="https://yeswiki.net/?DocumentationIntegrerDuHtml" target="_blank" class="btn btn-primary btn-large">Doc en ligne</a>""https://yeswiki.net/?DocumentationIntegrerDuHtml
 //Inclure un autre site, ou un pad, ou une vidéo youtube, etc...//
 %%""<iframe width=100% height="1250" src="http://exemple.com" frameborder="0" allowfullscreen></iframe>""%%
 ===Texte en couleur===
