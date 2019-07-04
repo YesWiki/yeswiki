@@ -1,5 +1,7 @@
 <?php
 /*******************************************************************************
+ * Documentation en français du template
+ *******************************************************************************
  * Comportement du template
  *
  *	Affiche toutes les fiches d'un formulaire sur la même page
@@ -12,38 +14,36 @@
  *
  * Pour chaque fiche sont affichés les champs :
  *	-	bf_titre
- *	-	bf_prochainedate
- *	-	bf_prochainlieu
- *	-	bf_enbref
+ *	-	bf_debut
+ *	-	bf_fin
+ *	-	bf_lieu
+ *	-	bf_image
+ *	-	bf_description
  *	Et un bouton, permet de pointer vers l'adresse contenue dans bf_lien.
- *	Le libellé du bouton provient d'un champ de type liste ou radio
- *		(indiqué par le paramètre listeboutons).
- *		Si le champ bf_lien est vide, le bouton de la fiche n'est pas actif.
+ *	Le libellé du bouton provient du champ bf_bouton.
+ *		Le bouton renvoie, soit vers l'adresse contenue dans le champ bf_lien.
+ *		S'il est renseigné, si bf_lien est vide,
+ *		le bouton permet de télécharger le fichier indiqué par bf_fichier.
+ 		Si, ni lien, ni fichier ne sont renseignés, aucun bouton ne s'affiche.
  *
  *	Exemple de formulaire :
  *		texte***bf_titre...
- *		jour***bf_prochainedate...
- *		texte***bf_prochainlieu...
- *		textelong***bf_enbref...
- *		texte***bf_lien...
- *		radio***ListeBoutons...
- *
- *	Une fiche ressemble, en plus beau, à ça
- *		________________________________________
- *		|bf_titre       			|
- *		|  bf_prochainedate à bf_prochainlieu	|
- *		|					|
- *		| bf_enbref				|
- *		|		___________________	|
- *		|		|radioListeBoutons|	|
- *		|		|_________________|	|
- *		|______________________________________|
+ *		image***bf_image...
+ *		jour***bf_debut...		<=	date et heure éventuelles de début de l'événement
+ *		jour***bf_fin...			<=	date et heure éventuelles de fin de l'événement
+ *		texte***bf_lieu
+ *		textelong***bf_description...
+ *		texte***bf_lien...		<=	lien à activer en cliquant sur le bouton
+ *		fichier***bf_fichier...	<=	fichier à télécharger cliquant sur le bouton
+ *		texte***bf_bouton...		<=	texte à afficher sur le bouton
+ *		texte***bf_exergue...	<= détermine les fiches à mettre en exergue
  *
  *	Certaines fiches peuvent être mises en exergue.
- *		On utilise pour cela une des valeurs de la listeboutons
- *			(précisée par le paramètre valeurexergue)
+ *		On utilise pour cela la valeur du champ bf_exergue.
+ *		Les fiches mises en exergue seront celles dont ce champ porte la valeur
+ *		précisée par le paramètre valeurexergue
  *
- *	On peut voir ce template sur la page https://osons.cc/?PageAteliers
+ *	On peut voir ce template sur la page https://osons.cc/?PageEquipe
  *	obtenu avec l'action suivante :
  *	{{bazarliste template="damier.tpl.html" pageDessus="PageAteliersHaut"
  *		pageDessous="TarifsAteliers" id="3" champ="bf_prochainedate" nbcol="4"
@@ -54,7 +54,9 @@
  * parametres du template
  *
  * ils peuvent être passés dans l'action bazar ou bazarliste,
- * mais sont spécifiques à ce template
+ * mais sont spécifiques à ce template.
+ * les paramètres génériques à tous les templates et
+ * particulièrement applicables avec le présent template sont rappelés à la fin.
  *
  *	pageDessus="NomWikiDeLaPage"
  *		S'il est rempli,
@@ -62,99 +64,519 @@
  *			au dessus des fiches.
  *		S'il n'est pas rempli ou pas présent,
  *			rien n'appraraîtra avant les fiches.
+ *
  * pageDessous="NomWikiDeLaPage"
  *		S'il est rempli,
  *			indique le nom Wiki d'une page du wiki qui apparaitra
  *			au dessous des fiches.
  *		S'il n'est pas rempli ou pas présent,
  *			rien n'appraraîtra après les fiches.
+ *
  *	nbcol="4"
  *		S'il est rempli,
  *			permet de changer le nombre de fiches affichées sur une ligne.
  *		S'il n'est pas rempli ou pas présent,
  *			les fiches seront 4 par ligne.
+ *		ATTENTION -
+ *			1.	Sur un écran de téléphone, une seule fiche sera affichée par ligne.
+ *			2.	Sur un écran d'ordinateur, le nombre de colonnes sera le suivant :
+ *				 si nbcol = 1, alors les fiches apparaitront Sur	1 colonne,
+ *				 si nbcol = 2, alors les fiches apparaitront sur	2 colonnes,
+ *				 si nbcol = 3, 												3 colonnes,
+ *				 si nbcol = 4, 												4 colonnes,
+ *				 si nbcol = 5 ou 6, 											6 colonnes,
+ *				 si nbcol 7 ou plus,  										12 colonnes.
+ *
+ *	ordreaffichage="image, titre, texte, bouton"
+ *		S'il est rempli,
+ *			permet de définir l'ordre d'affichage des informations de toute fiche.
+ *		S'il n'est pas rempli ou pas présent,
+ *			les informations de chaque fiche seront affichées dans l'ordre
+ *				"image, titre, texte, bouton"
+ *		Pour afficher, par exemple, le titre, puis l'image, puis le bouton,
+ *		puis le texte, il faut préciser, en séparant les mots par des virgules :
+ *		ordreaffichage="titre, image, bouton, texte"
+ *
  *	couleur="SeaGreen" ou couleur="#2E8B57"
  * 	S'il est rempli, indique la couleur utilisée (nom ou code de couleur HTML)
  *		S'il n'est pas rempli ou pas présent, la couleur sera SeaGreen=#2E8B57.
+ *
  * urldebase="https://adresse.demon.site/?"
  *		Permet de préciser l'adresse de base du wiki.
  *			Ne pas oublier de mettre le "?" à la fin.
  *		S'il n'est pas rempli ou pas présent,
  *			les liens internes au Wiki ne fonctionneront pas.
- * listeboutons="listeListeTypeDeTrucs"
- *		Indique la liste utilisée pour les libellés des boutons.
- *			Attention, si vous utilisez, avec des boutons radio,
- *			une liste qui s'appelle, dans Bazar, "ListeTypeDeTrucs",
- *			le paramètre listeboutons devra être égal à "radioListeTypeDeTrucs".
- *			Et si vous utilisez cette même liste sous forme de liste,
- *			le paramètre listeboutons devra être égal à "listeListeTypeDeTrucs".
- *		S'il n'est pas rempli ou pas présent,
- *			la valeur ustilisée sera "radioListeBoutons"
+ *
  *	valeurexergue="1"
  *		S'il est rempli,
- *			indique, dans la liste utilisée pour les libellés de bouton
- *			(cf. paramètre listeboutons), celui qui doit être utilisé pour mettre
- *			les fiches en exergue.
- *			Attention, on utilise ici le clé dans la liste et non la valeur
- *			par exemple, "1" plutôt que "Prochaine date"
+ *			indique, la valeur du champ bf_exergue
+ *			pour laquelle une fiche sera mise en $exergue.
+ *			Autrement dit seront mises en exergue les fiches
+ *			dont le champ bf_exergue porte
+ *			la même valeur que le paramètre valeurexergue.
  *		S'il n'est pas rempli ou pas présent,
  *			aucune fiche ne sera mise en exergue.
+ *
+ * Paramètres génériques à tous les templates et particulièrement applicables ici
+ *
+ * correspondance
+ *		Permet, lorsque le nom de l'un ou plusieurs des champs de votre formulaire
+ *		diffère(nt) de (bf_image, bf_bouton, bf_description, bf_exergue, bf_lien
+ *		ou bf_fichier), de préciser le(s)quel(s) de vos champs utiliser.
+ *		ex. : correspondance="bf_texte=bf_monchamp, bf_image=bf_photo_vacances"
+ *
+ * champ
+ *		Permet de trier les fiches autrement que par ordre alphabétique des titres
+ *		Ce paramètre permet de définir le champ de votre formulaire sur lequel
+ *		s'effectuera le tri des fiches avant leur affichage.
+ *		ex. : champ="bf_monchamp"
+ *
+ * ordre
+ *		Permet de trier les fiches autrement que par ordre alphabétique des titres
+ *		Ce paramètre permet de changer l'odre de tri des fiches.
+ *		Par défaut, les fiches sont affichées dans l'ordre croissant des titres
+ *		ou du champ défini par le paramètre champ.
+ *		On peut changer cet ordre et le rendre décroissant.
+ *		ex. : ordre="desc"
+ *
  ******************************************************************************/
-
-// avec ou sans page au dessus ?
-$pageDessus = ''; // declaration d'une chaine de char vide
-$pageDessus = $GLOBALS['wiki']->GetParameter('pageDessus');
-if (empty($pageDessus)) {
-	$pageDessus = "non";
-}
-
-// avec ou sans page au dessous ?
-$pageDessous = ''; // declaration d'une chaine de char vide
-$pageDessous = $GLOBALS['wiki']->GetParameter('pageDessous');
-if (empty($pageDessous)) {
-  $pageDessous = "non";
-}
-
-// nombre de colonnes
-$nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
-if (empty($nbcol)) {
-    $nbcol = 4;
-}
-
-$largeur=floor(100 / $nbcol)."%";
-
-
-// couleur
-$couleur = $GLOBALS['wiki']->GetParameter('couleur');
-if (empty($couleur)) {
-	 $couleur = 'SeaGreen';
-}
-
-// url de base
-$base_url = $GLOBALS['wiki']->GetParameter('urldebase');
-if (empty($base_url)) {
-	 $base_url = '';
-}
-
-// nom de la liste des boutons
-$liste_boutons = $GLOBALS['wiki']->GetParameter('listeboutons');
-if (empty($liste_boutons)) {
-	$liste_boutons='radioListeBoutons';
-}
-
-// valeur à mettre en exergue dans la liste des boutons
-$valeur_exergue = $GLOBALS['wiki']->GetParameter('valeurexergue');
-if (empty($valeur_exergue)) {
-	$valeur_exergue='';
-}
-
 ?>
+
 <?php
 /*******************************************************************************
- * styles du template
+ * Here starts the code
+ ******************************************************************************/
+
+/*******************************************************************************
+ *	As parameter ordreaffichage allows for changing of field display order,
+ *	one must use functions to describe how to display each specific field.
+ *	Those functions are
+ *	- montrer_bouton to display the button
+ *	- montrer_date to display the date
+ *	- montrer_image to display the image
+ *	- montrer_lieu to display the location
+ *	- montrer_texte to display the text
+ *	- montrer_titre to display the title
+ *	- jolie_date called by montrer_date to convert dates into French
+ *	- jolie_heure called by montrer_date to properly display time
+ ******************************************************************************/
+if (!function_exists('montrer_bouton'))
+{
+	function montrer_bouton($tabfiche)
+		{
+		if ($tabfiche[2]){ // $tabfiche[2] is true when the record must be highlighted (exergue)
+			$btn_class='btn-couleur';
+		} else {
+			$btn_class='btn-reverse-'.$tabfiche[1];
+		}
+		$libelle_bouton=$tabfiche[0]['bf_bouton']; // button label
+		/* If 		the record stores a link, then the button activates it
+		* else if	the record stores a file, then the button downloads it
+		* else		there is no button */
+		if (isset($tabfiche[0]['bf_lien']) && ($tabfiche[0]['bf_lien']!='')){
+			if (ctype_alnum($tabfiche[0]['bf_lien'])) { // text link is alphanum only, therefore a page of the current wiki
+				$lien= $base_url . $tabfiche[0]['bf_lien'];
+			} else {
+				$lien= $tabfiche[0]['bf_lien'];
+			}
+			$button = 1;
+		} elseif (isset($tabfiche[0]['fichierbf_fichier']) && ($tabfiche[0]['fichierbf_fichier']!='')) {
+				$lien= 'files/' . $tabfiche[0]['fichierbf_fichier'];
+			$button = 1;
+		} else {
+			$button = 0;
+		}
+		if ($button){
+			$output='<div class="conteneur-bouton"><br /><a href="'.$lien.'" class="btn '.$btn_class.'" title="'.$libelle_bouton.'" target="_blank">'.$libelle_bouton.'</a></div>';
+	 		echo $output;
+		}
+	}
+}
+
+if (!function_exists('montrer_date'))
+{
+	function montrer_date($tabfiche, $tabordreaffichage)
+		{
+		if (isset($tabfiche[0]['bf_debut']) && ($tabfiche[0]['bf_debut']!='')){
+			// Only if there is a start date
+			// Setting a few variables
+			if (array_search('lieu',$tabordreaffichage)){ // there is also a location
+				switch (array_search('lieu',$tabordreaffichage) - array_search('date',$tabordreaffichage)) {
+					case -1:
+						// display location before date
+						$lieu = 1; // before
+						break;
+					case 1:
+						// display date before location
+						$lieu = 2; // after
+						break;
+					default:
+						// separate display of location and date
+						$lieu = 3; // no
+						break;
+				}
+			}
+			$moment_debut = explode('T', $tabfiche[0]['bf_debut']);
+			if (isset($moment_debut[1]) && ($moment_debut[1]!='')) {
+				$start_time = 1; // There is a time set for start date
+
+			} else {
+				$start_time = 0; // There isn't any time set for start date
+			}
+			if (isset($tabfiche[0]['bf_fin']) && ($tabfiche[0]['bf_fin']!='')){
+				$moment_fin = explode('T', $tabfiche[0]['bf_fin']);
+				if ($moment_debut[0] == $moment_fin[0]) {
+					// start and end date are the same
+					$same_date = 1;
+				} else {
+					$same_date = 0;
+				}
+				if (isset($moment_fin[1]) && ($moment_fin[1]!='')) {
+					$end_time = 1; // There is a time set for end date
+					if ($moment_debut[1] == $moment_fin[1]) {
+						// start and end time are the same
+						$same_time = 1;
+					} else {
+						$same_time = 0;
+					}
+				} else {
+					$end_time = 0; // There isn't any time set for end date
+				}
+			} else {
+				$moment_fin[0] = 0; // There isn't any end date (set to false)
+			}
+			// Computing the display
+			if ($moment_fin[0] == 0) { // no end date
+				$date = ($lieu == 1 ? $tabfiche[0]['bf_lieu'].', l' : 'L') . 'e ' . jolie_date($moment_debut[0]);
+				if ($start_time) {// start time set
+					$date .= ' à ' . jolie_heure($moment_debut[1]);
+				}
+			} else { // end date set
+				if ($same_date) { // same date
+					$date = ($lieu == 1 ? $tabfiche[0]['bf_lieu'].', l' : 'L') . 'e ' . jolie_date($moment_debut[0]);
+					if ($start_time == 0) { // There isn't any start time set
+						$date .= '';
+					} elseif ($end_time == 0) { // There isn't any end time set
+						$date .= ' à ' . jolie_heure($moment_debut[1]);
+					} elseif ($same_time == 0) { // both times exist and are different
+						$date .= ' – ' . jolie_heure($moment_debut[1]) .' - ' . jolie_heure($moment_fin[1]);
+					} else { // same times
+						$date .= ' à ' . jolie_heure($moment_debut[1]);
+					}
+				} else { // different dates
+					if ($start_time == 0) { // no start time
+						$date = ($lieu == 1 ? $tabfiche[0]['bf_lieu'].', d' : 'D') . 'u ' . jolie_date($moment_debut[0]) . ' au ' . jolie_date($moment_fin[0]);
+					} elseif ($end_time == 0) { // start time set but no end time (stupid?)
+						$date = ($lieu == 1 ? $tabfiche[0]['bf_lieu'].', d' : 'D') . 'u ' . jolie_date($moment_debut[0]) . ', ' . jolie_heure($moment_debut[1]) . ' au ' . jolie_date($moment_fin[0]);
+					} else { // both times exist
+						$date = ($lieu == 1 ? $tabfiche[0]['bf_lieu'].', d' : 'D') . 'u ' . jolie_date($moment_debut[0]) . ', ' . jolie_heure($moment_debut[1]) . ' au ' . jolie_date($moment_fin[0]) . ', ' . jolie_heure($moment_fin[1]);
+					}
+				}
+			}
+			if (($lieu == 2) && isset($tabfiche[0]['bf_lieu']) && ($tabfiche[0]['bf_lieu']!='')) { // display location after dates
+				$date .= ' – ' . $tabfiche[0]['bf_lieu'];
+			}
+			$output = '<div class="conteneur-date">';
+			$output .= $date;
+			$output .= '</div>';
+			echo $output;
+		}
+	}
+}
+
+if (!function_exists('montrer_image'))
+{
+	function montrer_image($tabfiche)
+		{
+		if (isset($tabfiche[0]['imagebf_image']) && ($tabfiche[0]['imagebf_image']!='')){
+			// Only if there is an image
+			$image = redimensionner_image(
+				'files/' . $tabfiche[0]['imagebf_image'],
+				'cache/image_209x209_' . $tabfiche[0]['imagebf_image'],
+				209,
+				209,
+				'fit'
+			);
+			$output = '<div class="conteneur-image">';
+			$output .= '<img class="img-rounded" src="'.$image.'">';
+			$output .= '</div>';
+			echo $output;
+		}
+	}
+}
+
+if (!function_exists('montrer_lieu'))
+{
+	function montrer_lieu($tabfiche, $tabordreaffichage)
+		{
+		if (isset($tabfiche[0]['bf_lieu']) && ($tabfiche[0]['bf_lieu']!='')){
+			// Only if there is a location
+			// Checking if there is work to do
+			if (array_search('date',$tabordreaffichage)){ // there is also a date
+				switch (array_search('lieu',$tabordreaffichage) - array_search('date',$tabordreaffichage)) {
+					case -1:
+						// display location before date and it's done by montrer_date
+						$lieu = 0; // no
+						break;
+					case 1:
+						// display date before location and it's done by montrer_date
+						$lieu = 0; // no
+						break;
+					default:
+						// separate display of location and date, we got to do something
+						$lieu = 1; // yes
+						break;
+				}
+			}
+			if ($lieu){
+				$output = '<div class="conteneur-lieu">';
+				$output .= $tabfiche[0]['bf_lieu'];
+				$output .= '</div>';
+				echo $output;
+			}
+		}
+	}
+}
+
+if (!function_exists('montrer_texte'))
+{
+	function montrer_texte($tabfiche)
+		{
+		if (isset($tabfiche[0]['bf_description']) && ($tabfiche[0]['bf_description']!='')){
+			// Only if there is a text
+			$output = '<div class="texte-gauche">';
+			$output .= $tabfiche[0]['bf_description'];
+			$output .= '</div>';
+			echo $output;
+		}
+	}
+}
+
+if (!function_exists('montrer_titre'))
+{
+	function montrer_titre($tabfiche)
+		{
+		$output = '<div class="conteneur-titre">';
+		$output .= $tabfiche[0]['bf_titre'];
+		$output .= '</div>';
+		echo $output;
+	}
+}
+
+if (!function_exists('jolie_date'))
+{
+	function jolie_date($date_string)
+		{
+			$date = explode('-', $date_string);
+			$moisnoms = array('janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre');
+			$moisnum = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
+			if ($date[2] == '01'){
+				$date[2] = '1<sup>er</sup>';
+			}
+			$date[1]=str_replace($moisnum, $moisnoms, $date[1]);
+//			$result = '<span class="date">' . ltrim($date[2],'0') . '</span>' . " " . $date[1] . " " . '<span class="date">' . $date[0] . '</span>';
+			$result=ltrim($date[2],'0')." ".$date[1]." ".$date[0];
+			return $result;
+	}
+}
+
+if (!function_exists('jolie_heure'))
+{
+	function jolie_heure($time_string)
+		{
+		$hour = explode(':', $time_string);
+//		$result = '<span class="date">' . ltrim($hour[0],'0') . '</span>' . 'h' . '<span class="date">' . ltrim($hour[1],'0') . '</span>';
+		$result = ltrim($hour[0],'0') . 'h' . ltrim($hour[1],'0');
+		return $result;
+	}
+}
+
+
+/*******************************************************************************
+ *	Get template parameters
+ ******************************************************************************/
+
+// With or without an included page above?
+$pageDessus = ''; // empty char string set
+$pageDessus = $GLOBALS['wiki']->GetParameter('pageDessus');
+if (empty($pageDessus)) {
+	$pageDessus = "non"; // default value
+}
+
+// With or without an included page bellow?
+$pageDessous = ''; // empty char string set
+$pageDessous = $GLOBALS['wiki']->GetParameter('pageDessous');
+if (empty($pageDessous)) {
+  $pageDessous = "non"; // default value
+}
+
+/* Cols number
+ *	We are dealing with bootstrap grids hereafter
+ *	So, we divide 12 by the number of cols
+ *	Meanwhile, we need to take care of numbers of cols bigger than 12
+ * (then we set it back to 12)
+ *	if $nbcol =	1 then colsize should be	12
+ *	 				2									 6
+ *					3									 4
+ *					4									 3
+ *					5									 2
+ *					6									 2
+ *					7 - 12							 1
+ *					12 +								 1
+ *	Therefore, before computing col width ($largeur), we "correct" $nbcol,
+ * (we need a proper value of $nbcol later on to compute the number of rows) */
+$nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
+if (empty($nbcol)) {
+    $nbcol = 4; // default value
+}
+if ($nbcol > 6) {
+    $nbcol = 12;
+}elseif ($nbcol == 5) {
+    $nbcol = 6;
+}
+
+$largeur=floor(12 / $nbcol);
+
+// $$ordreaffichage specifies in wich order fields are displayed
+$ordreaffichage = '';  // empty char string set
+$ordreaffichage = $GLOBALS['wiki']->GetParameter('ordreaffichage');
+if (empty($ordreaffichage)) {
+    $ordreaffichage = "image, titre, date, lieu, texte, bouton"; // default value
+}
+$tabordreaffichage = explode(",", $ordreaffichage);
+$tabordreaffichage = array_map('trim', $tabordreaffichage);
+
+// color used for half the tiles and buttons
+$couleur = $GLOBALS['wiki']->GetParameter('couleur');
+if (empty($couleur)) {
+	 $couleur = 'SeaGreen'; // default value
+}
+
+// base url
+$base_url = $GLOBALS['wiki']->GetParameter('urldebase');
+if (empty($base_url)) {
+	 $base_url = ''; // default value
+}
+
+// value to seek in bf_exergue field to know if a record must be highlighted
+$valeur_exergue = $GLOBALS['wiki']->GetParameter('valeurexergue');
+if (empty($valeur_exergue)) {
+	$valeur_exergue=''; // default value
+}
+/*******************************************************************************
+ *	End of the parameters section
+ ******************************************************************************/
+?>
+
+<?php
+/*******************************************************************************
+ * styles specific to the template
+ * class	cell-couleur is used to display	color tiles
+ *			cell-blanc								white tiles
+ *			cell-couleur-exergue					highlighted color tiles
+ *			cell-blanc-exergue					highlighted white tiles
+ *			texte-gauche							text containers
+ *			conteneur-bouton						div button containers
+ *			conteneur-date							div date (and sometimes location) containers
+ *			conteneur-image						div image containers
+ *			conteneur-lieu							div location containers
+ *			conteneur-titre						div title containers
+ *			btn-reverse-blanc						color button for white tiles
+ *			btn-reverse-couleur					white button for color tiles
+ *			btn-couleur								color button for highlighted tiles
  ******************************************************************************/
 ?>
 <style>
+.cell-couleur{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 2px;
+	    border-right-width: 2px;
+	    border-bottom-width: 2px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 4px;
+	    padding-bottom: 4px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	background-color: <?php echo $couleur; ?>;
+	color:#ffffff;
+	vertical-align: top;
+}
+
+.cell-blanc{
+	border-color: #ffffff;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 2px;
+	    border-right-width: 2px;
+	    border-bottom-width: 2px;
+	    border-left-width: 2px;
+	padding: ;
+	    padding-top: 4px;
+	    padding-bottom: 4px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	vertical-align: top;
+	line-height: 100%;
+}
+
+.cell-couleur-exergue,
+.cell-blanc-exergue{
+	border-color: <?php echo $couleur; ?>;
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 4px;
+	    border-right-width: 4px;
+	    border-bottom-width: 4px;
+	    border-left-width: 4px;
+	padding: ;
+	    padding-top: 4px;
+	    padding-bottom: 4px;
+	    padding-right: 4px;
+	    padding-left: 4px;
+	box-shadow: -4px -4px #ffffff, 4px -4px #ffffff, -4px 4px #ffffff, 4px 4px #ffffff;
+	background-color: #ffffff;
+	color: <?php echo $couleur; ?>;
+	vertical-align: top;
+}
+
+.texte-gauche{
+	text-align: left;
+	padding-left:4px;
+	line-height: 1.429;
+}
+
+div.conteneur-bouton{
+	text-align: center;
+}
+
+div.conteneur-date{
+	text-align: center;
+}
+
+span.date{
+	font-family: georgia;
+}
+
+div.conteneur-image{
+	text-align: center;
+}
+
+div.conteneur-lieu{
+	text-align: center;
+}
+
+div.conteneur-titre{
+	font-size: 32px;
+	font-weight: 400;
+	line-height: 35.2px;
+	margin-bottom: 10.5px;
+	margin-top: 21px;
+	text-align: center;
+}
+
 .btn-couleur{
 	border-color: <?php echo $couleur; ?>;
 	background-color: <?php echo $couleur; ?>;
@@ -162,244 +584,24 @@ if (empty($valeur_exergue)) {
 	font-family: OpenDyslexic;
 }
 
-
-.cell-couleur-haut{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 2px;
-	    border-right-width: 2px;
-	    border-bottom-width: 0px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 4px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	background-color: <?php echo $couleur; ?>;
-	color:#ffffff;
-	vertical-align: top;
-}
-
-.cell-couleur-milieu{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 2px;
-	    border-bottom-width: 0px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	background-color: <?php echo $couleur; ?>;
-	color:#ffffff;
-	vertical-align: top;
-}
-
-.cell-couleur-bas{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 2px;
-	    border-bottom-width: 2px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 4px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	background-color: <?php echo $couleur; ?>;
-	color:#ffffff;
-	vertical-align: top;
-}
-
-.cell-couleurblanc-haut{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 2px;
-	    border-right-width: 2px;
-	    border-bottom-width: 0px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 4px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	vertical-align: top;
-	line-height: 100%;
-}
-
-.cell-couleurblanc-milieu{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 2px;
-	    border-bottom-width: 0px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	vertical-align: top;
-}
-
-.cell-couleurblanc-bas{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 2px;
-	    border-bottom-width: 2px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 4px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	vertical-align: top;
-}
-
-.cell-couleur-exergue-haut,
-.cell-couleurblanc-exergue-haut{
-	border-color: <?php echo $couleur; ?>;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 4px;
-	    border-right-width: 4px;
-	    border-bottom-width: 0px;
-	    border-left-width: 4px;
-	padding: ;
-	    padding-top: 4px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	box-shadow: -4px -4px #ffffff, 4px -4px #ffffff, -4px 0 #ffffff, 4px 0 #ffffff;
-	background-color: #ffffff;
-	color: <?php echo $couleur; ?>;
-	vertical-align: top;
-}
-
-.cell-couleur-exergue-milieu,
-.cell-couleurblanc-exergue-milieu{
-	border-color: <?php echo $couleur; ?>;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 4px;
-	    border-bottom-width: 0px;
-	    border-left-width: 4px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	box-shadow: -4px 0 #ffffff, 4px 0 #ffffff;
-	background-color: #ffffff;
-	color: <?php echo $couleur; ?>;
-	vertical-align: top;
-}
-
-.cell-couleur-exergue-texte-milieu,
-.cell-couleurblanc-exergue-texte-milieu{
-	border-color: <?php echo $couleur; ?>;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 4px;
-	    border-bottom-width: 0px;
-	    border-left-width: 4px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 0px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	box-shadow: -4px 0 #ffffff, 4px 0 #ffffff;
-	background-color: #ffffff;
-	color: #000000;
-	vertical-align: top;
-}
-
-.cell-couleur-exergue-bas,
-.cell-couleurblanc-exergue-bas{
-	border-color: <?php echo $couleur; ?>;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 0px;
-	    border-right-width: 4px;
-	    border-bottom-width: 4px;
-	    border-left-width: 4px;
-	padding: ;
-	    padding-top: 0px;
-	    padding-bottom: 4px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	box-shadow: -4px 0 #ffffff, 4px 0 #ffffff, -4px 4px #ffffff, 4px 4px #ffffff;
-	background-color:#ffffff;
-	color: <?php echo $couleur; ?>;
-	vertical-align: top;
-}
-
-.btn-reverse-couleurblanc{
+.btn-reverse-blanc{
 	border-color: <?php echo $couleur; ?>;
 	background-color: <?php echo $couleur; ?>;
 	color: #ffffff;
 	font-family: OpenDyslexic;
 }
+
 .btn-reverse-couleur{
 	border-color: #ffffff;
 	background-color: #ffffff;
 	color: <?php echo $couleur; ?>;
 	font-family: OpenDyslexic;
 }
-.faux-btn-reverse-couleurblanc {
-	display:inline-block;
-	padding:6px 12px;
-	margin-bottom:0;
-	font-size:14px;
-	font-weight:400;
-	text-align:center;
-	white-space:nowrap;
-	vertical-align:middle;
-	background-image:none;
-	border:1px solid transparent;
-	border-radius:4px
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	border-color: <?php echo $couleur; ?>;
-	background-color: <?php echo $couleur; ?>;
-	color: #ffffff;
-	font-family: OpenDyslexic;
-}
-.faux-btn-reverse-couleur {
-	display:inline-block;
-	padding:6px 12px;
-	margin-bottom:0;
-	font-size:14px;
-	font-weight:400;
-	text-align:center;
-	white-space:nowrap;
-	vertical-align:middle;
-	background-image:none;
-	border:1px solid transparent;
-	border-radius:4px
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-	border-color: #ffffff;
-	background-color: #ffffff;
+
+.btn-reverse-couleur:hover,
+.btn-reverse-couleur:focus {
 	color: <?php echo $couleur; ?>;
 	font-family: OpenDyslexic;
-	font-weight: normal;
 }
 
 ul{
@@ -408,177 +610,136 @@ ul{
 	border:0;
 	padding: 0 0 0 4px;
 }
-
-.texte-gauche{
-	text-align: left;
-	padding-left:4px;
-}
 </style>
 
 <?php
 /*******************************************************************************
- * code du template
+ * core code
  ******************************************************************************/
-?>
-<?php
-/***** Inclure la page du dessus **********************************************/
+
+/***** Include above page *****************************************************/
 if ($pageDessus != 'non') :
 	?>
 	<div id="text-dessus">
 	<?php
 		$includePage = '{{include page="'.$pageDessus.'"}}';
-		// pour inclure du code wiki dans un template il faut utiliser la ligne ci-dessous
+		// The following line is the way to output wiki code using PHP
 		echo $GLOBALS['wiki']->Format($includePage);
 	?>
 	</div>
 <?php endif; ?>
 
 <?php
-/***** Affichage des fiches ***************************************************/
+/***** Diplay the records ****************************************************/
 $nbfiches=count($fiches);
-if ($nbfiches>0) :
-	if ((substr($liste_boutons,0,5)=="liste") || (substr($liste_boutons,0,5)=="radio")){
-		$listename=substr($liste_boutons,5);
-	} elseif (substr($liste_boutons,0,8)=="checkbox"){
-		$listename=substr($liste_boutons,8);
-	}
-	$valeurslistetmp = baz_valeurs_liste($listename);
-	$valeursliste = $valeurslistetmp['label'];
+if ($nbfiches>0) : // We need at least one record to display it
 	$nb = 0;
-	$nblignes=ceil($nbfiches / $nbcol);
+	$nblignes=ceil($nbfiches / $nbcol); // getting rows number from number of cell and of cols
+	/*	Building an array to store required data to compute each record display
+	 *	each value of the array will contain:
+	 *	- the record itself
+	 *	- the relevant class dependant of the position of the tile on the display
+	 *	- a boolean
+	 *			true if the record/tile is to be highlighted,
+	 *			false otherwise
+	 *	- a boolean
+	 *			true if we start a line of tiles before the current record/tile,
+	 *			false otherwise
+	 *	- a boolean
+	 *			true if we end a line of tiles after the current record/tile,
+	 *			false otherwise
+	*/
 	$tabfiches = array();
 	foreach ($fiches as $fiche) :
+		// computing the position, and therefore tile color
 		$nb++;
 		$row=ceil($nb / $nbcol);
 		$col=$nb-($nbcol*($row-1));
 		if (($row + $col) % 2 == 0){
 			$class="couleur";
 		} else {
-			$class="couleurblanc";
+			$class="blanc";
 		}
-		if (($valeur_exergue!='') && ($fiche[$liste_boutons]==$valeur_exergue)){
+		// Should we highlight the tile/record?
+		if (($valeur_exergue!='') && ($fiche['bf_exergue']==$valeur_exergue)){
 			$exergue=1;
 		} else {
 			$exergue=0;
 		}
-		$tabfiches[$nb] = array($fiche,$class,$exergue,$row,$col);
-	endforeach;
-	?>
-	<table width="100%"><tbody><tr>
+		// Should we start a grid (line) before the tile/record?
+		if ($col == 1) {
+			$start_grid = 1; // start a new grid on first col
+		} else {
+			$start_grid = 0; // nope
+		}
+		// Should we end a grid (line) after the tile/record?
+		if ($nb == $nbfiches) {
+			$end_grid = 1; // end the grid after the last record
+		} elseif ($col == $nbcol) {
+			$end_grid = 1; // end the grid after the last col
+		} else {
+			$end_grid = 0; // nope
+		}
+		$tabfiches[$nb] = array($fiche,$class,$exergue,$start_grid,$end_grid);
+	endforeach; //$fiches as $fiche
+
+	foreach ($tabfiches as $tabfiche):
+		if ($tabfiche[3]) { // first col -> start a grid
+			echo '<div class="row-fluid row"> <!-- start of grid -->';
+		}
+?>
+		<div class="span<?php echo $largeur; ?> col-md-<?php echo $largeur; ?>"><!-- start of col -->
+			<div class="cell-<?php echo $tabfiche[1]; ?><?php if ($tabfiche[2]){echo ('-exergue');} ?>"><!-- start of the div wearing the tile class -->
 <?php
-	$nb = 1;
-	$ligne=1;
-	while ($ligne <= $nblignes):
-		$colonne=1;
-		echo('<tr>');
-		// Chaque fiche s'affiche sur plusieurs lignes de tableau,
-		// affichage de la 1re contenant le titre
-		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
-	?>
-			<td width="<?php echo $largeur; ?>" class="cell-<?php echo $tabfiches[$nb][1]; ?><?php if ($tabfiches[$nb][2]){echo ('-exergue');} ?>-haut" style="text-align: center;">
-				<h4><?php echo $tabfiches[$nb][0]['bf_titre']; ?></h4>
-			</td>
-	<?php
-			$nb++;
-			$colonne++;
-		endwhile;
-		echo('</tr>');
-		$colonne=1;
-		$nb = (($ligne - 1) * $nbcol) + $colonne;
-		// affichage de la 2e ligne contenant la prochaine date
-		echo('<tr>');
-		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
-			if (isset($tabfiches[$nb][0]['bf_prochainedate']) && ($tabfiches[$nb][0]['bf_prochainedate'] != "")) {
-				$moment = explode('T', $tabfiches[$nb][0]['bf_prochainedate']);
-				$date = explode('-', $moment[0]);
-				$moisnoms = array('janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre');
-				$moisnum = array('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12');
-				if ($date[2] == '01'){
-					$date[2] = '1<sup>er</sup>';
-				}
-				$date[1]=str_replace($moisnum, $moisnoms, $date[1]);
-				$annonce="Le ".ltrim($date[2],'0')." ".$date[1]." ".$date[0];
-				if (isset($moment[1]) && ($moment[1] != "")) {
-					$heure = explode(':', $moment[1]);
-					$annonce.=" – ".ltrim($heure[0],'0')."h".ltrim($heure[1],'0')."-".($heure[0]+3)."h".ltrim($heure[1],'0')." à ".$tabfiches[$nb][0]['bf_prochainlieu'];
-				}
-				$annonce.=" à ".$tabfiches[$nb][0]['bf_prochainlieu'];
-
-			} else {
-				$annonce=$tabfiches[$nb][0]['bf_prochainlieu'];
-			}
-				?>
-				<td width="<?php echo $largeur; ?>" class="cell-<?php echo $tabfiches[$nb][1]; ?><?php if ($tabfiches[$nb][2]){echo ('-exergue');} ?>-milieu" style="text-align: center;">
-					<b><?php echo $annonce; ?></b><br/>
-				</td>
-		<?php
-			$nb++;
-			$colonne++;
-		endwhile;
-		echo('</tr>');
-		$colonne=1;
-		$nb = (($ligne - 1) * $nbcol) + $colonne;
-		// affichage de la 3e ligne contenant le texte
-		echo('<tr>');
-		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
-			?>
-			<td width="<?php echo $largeur; ?>" class="cell-<?php echo $tabfiches[$nb][1]; ?><?php if ($tabfiches[$nb][2]){echo ('-exergue-texte');} ?>-milieu">
-				<div class="texte-gauche"><br />
-					<?php echo $tabfiches[$nb][0]['bf_enbref']; ?>
-				</div>
-			</td>
-		<?php
-			$nb++;
-			$colonne++;
-		endwhile;
-		echo('</tr>');
-		$colonne=1;
-		$nb = (($ligne - 1) * $nbcol) + $colonne;
-		// affichage de la 4e ligne contenant le bouton
-		echo('<tr>');
-		while (($colonne <= $nbcol) and ($nb <= $nbfiches)):
-			if ($tabfiches[$nb][2]){
-				$cell_class='-exergue';
-				$btn_class='btn-couleur';
-			} else {
-				$cell_class='';
-				$btn_class='btn-reverse-'.$tabfiches[$nb][1];
-			}
-			$libelle_bouton=$valeursliste[$tabfiches[$nb][0][$liste_boutons]];
-			if (isset($tabfiches[$nb][0]['bf_lien']) && ($tabfiches[$nb][0]['bf_lien']!='')){
-				if (ctype_alnum($tabfiches[$nb][0]['bf_lien'])){
-					$lien= $base_url . $tabfiches[$nb][0]['bf_lien'];
-				} else{
-					$lien= $tabfiches[$nb][0]['bf_lien'];
-				}
-				$output='<td width="<?php echo $largeur; ?>" class="cell-'.$tabfiches[$nb][1].$cell_class.'-bas" style="text-align: center;"><br /><a href="'.$lien.'" class="btn '.$btn_class.' modalbox" title="'.$libelle_bouton.'">'.$libelle_bouton.'</a></td>';
-			} else {
-				$output='<td width="<?php echo $largeur; ?>" class="cell-'.$tabfiches[$nb][1].$cell_class.'-bas" style="text-align: center;"><br /><span class="faux-btn-reverse-'.$tabfiches[$nb][1].'">'.$libelle_bouton.'</span><br /></td>';
-			}
-			?>
-			<?php echo $output; ?>
-		<?php
-			$nb++;
-			$colonne++;
-		endwhile;
-		echo('</tr>');
-		$colonne=1;
-		$ligne++;
-	endwhile;
-	?>
-	</tbody></table>
-
-<?php endif; ?>
+				/*	To display record fields in the order requested
+				 *	by parameter ordreaffichage, we scan the array we previously built
+				 *	using this parameter ($tabordreaffichage)
+				 *	For each field indicated in this array,
+				 *	we call the relevant function */
+				foreach ($tabordreaffichage as $champ){
+					switch ($champ)
+					{
+						case 'bouton':
+							montrer_bouton($tabfiche);
+							break;
+						case 'date':
+  							montrer_date($tabfiche, $tabordreaffichage);
+  							break;
+						case 'image':
+  							montrer_image($tabfiche);
+  							break;
+						case 'lieu':
+  							montrer_lieu($tabfiche, $tabordreaffichage);
+  							break;
+						 case 'texte':
+							montrer_texte($tabfiche);
+							break;
+						 case 'titre':
+							montrer_titre($tabfiche);
+							break;
+					} // switch*/
+				} // foreach
+?>
+			</div><!-- end of the div wearing the tile class -->
+		</div> <!-- end of col -->
+<?php
+		if ($tabfiche[4]) { // last col or last record -> end a grid
+			echo '</div> <!-- end of grid -->';
+		}
+	endforeach; //$tabfiches as $tabfiche
+endif; //$nbfiches>0
+?>
 
 <?php
-/***** Inclure la page du dessous *********************************************/
+/***** Inclure bottom page ****************************************************/
 if ($pageDessous != 'non') :
 	?>
 	<div id="text-dessous">
 	<?php
 		$includePage = '{{include page="'.$pageDessous.'"}}';
-		// pour inclure du code wiki dans un template il faut utiliser la ligne ci-dessous
+		// The following line is the way to output wiki code using PHP
 		echo $GLOBALS['wiki']->Format($includePage);
 	?>
 	</div>
-<?php endif; ?>
+<?php endif;
+?>
