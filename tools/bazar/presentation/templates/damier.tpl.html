@@ -117,6 +117,16 @@
  *		S'il n'est pas rempli ou pas présent,
  *			aucune fiche ne sera mise en exergue.
  *
+ *	ombreportee="oui"
+ *		S'il est rempli,
+ *			indique, si chaque fiche est présentée sans une ombre portée (non)
+ *			ou avec (tous les autres cas)
+ *			Si on choisit d'avoir une ombre portée, les coins des fiches sont
+ *			également arrondis.
+ *			Sinon, les fiches sont des rectangles.
+ *		S'il n'est pas rempli ou pas présent ou pas égal à "non",
+ *			il y a une ombre portée
+ *
  * Paramètres génériques à tous les templates et particulièrement applicables ici
  *
  * correspondance
@@ -463,6 +473,16 @@ $valeur_exergue = $GLOBALS['wiki']->GetParameter('valeurexergue');
 if (empty($valeur_exergue)) {
 	$valeur_exergue=''; // default value
 }
+
+// Is each record/tile displayed with a shadow and rounded corners
+$ombre_portee = $GLOBALS['wiki']->GetParameter('ombreportee');
+if ($ombre_portee == 'non') {
+	$ombre_portee='';
+} else { // default value
+	$ombre_portee  = 'border-radius: 5px;';
+	$ombre_portee .= 'box-shadow: 10px 10px 5px #aaaaaa;';
+}
+
 /*******************************************************************************
  *	End of the parameters section
  ******************************************************************************/
@@ -488,7 +508,7 @@ if (empty($valeur_exergue)) {
 ?>
 <style>
 .cell-couleur{
-	border-color: #ffffff;
+	border-color: <?php echo $couleur; ?>;
 	border-style: solid;
 	border-width: ;
 	    border-top-width: 2px;
@@ -503,6 +523,7 @@ if (empty($valeur_exergue)) {
 	background-color: <?php echo $couleur; ?>;
 	color:#ffffff;
 	vertical-align: top;
+	<?php echo $ombre_portee; ?>
 }
 
 .cell-blanc{
@@ -520,6 +541,7 @@ if (empty($valeur_exergue)) {
 	    padding-left: 4px;
 	vertical-align: top;
 	line-height: 100%;
+	<?php echo $ombre_portee; ?>
 }
 
 .cell-couleur-exergue,
@@ -540,6 +562,7 @@ if (empty($valeur_exergue)) {
 	background-color: #ffffff;
 	color: <?php echo $couleur; ?>;
 	vertical-align: top;
+	<?php echo $ombre_portee; ?>
 }
 
 .texte-gauche{
@@ -725,6 +748,7 @@ if ($nbfiches>0) : // We need at least one record to display it
 <?php
 		if ($tabfiche[4]) { // last col or last record -> end a grid
 			echo '</div> <!-- end of grid -->';
+			echo '<p style="line-height: 5px;">&nbsp;</p>';
 		}
 	endforeach; //$tabfiches as $tabfiche
 endif; //$nbfiches>0
