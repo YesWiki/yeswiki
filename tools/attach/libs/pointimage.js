@@ -10,7 +10,7 @@ $(document).ready(function () {
 		}
 	});
 
-	$popovers.popover({trigger: 'click', html:'true', placement:'top', delay: { show: 0, hide: 0 }});
+	$popovers.popover({trigger: 'focus', html:'true', placement:'top', delay: { show: 0, hide: 0 }});
 	$popovers.on( "click", function() { return false; });
 
 	/*$popovers.on('shown.bs.popover', function () {
