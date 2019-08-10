@@ -78,7 +78,7 @@ if (isset($this)) {
                     }
                 }
             }
-
+            $this->query('ALTER TABLE '.$table.' ENGINE=InnoDB;');
             $output .=  "Complete Table: <b>".$table."</b><br>";
 
         }
@@ -231,7 +231,7 @@ if (php_sapi_name() === 'cli') {
                 }
             }
         }
-
+        sqlQuery('ALTER TABLE '.$table.' ENGINE=InnoDB;');
         echo  "Complete Table: <b>".$table."</b><br>";
     }
 
