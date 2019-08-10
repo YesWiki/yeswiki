@@ -3308,8 +3308,13 @@ function baz_requete_recherche_fiches(
 
     //si une personne a ete precisee, on limite la recherche sur elle
     if ($personne != '') {
-        $requete .=
-        ' AND body LIKE \'%"createur":"'.utf8_encode($personne).'"%\'';
+        $personne = mysqli_escape_string(
+            $GLOBALS['wiki']->dblink,
+            preg_replace('/^"(.*)"$/', '$1', json_encode($personne))
+        );
+        // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
+        $personne = str_replace('\\u00', '\\\\\u00', $personne);
+        $requete .= ' AND body LIKE _utf8\'%"createur":"'.$personne.'"%\'';
     }
 
     $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
