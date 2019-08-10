@@ -1,4 +1,10 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/PHPMailer/src/Exception.php';
+require 'vendor/PHPMailer/src/PHPMailer.php';
+require 'vendor/PHPMailer/src/SMTP.php';
 
 /**
  *
@@ -11,7 +17,6 @@
  */
 function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '')
 {
-    require_once('vendor/PHPMailer/PHPMailerAutoload.php');
     //Create a new PHPMailer instance
     $mail = new PHPMailer;
 
@@ -32,11 +37,15 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         //Set the SMTP port number - likely to be 25, 465 or 587
         $mail->Port = $GLOBALS['wiki']->config['contact_smtp_port'];
         //Whether to use SMTP authentication
-        $mail->SMTPAuth = true;
-        //Username to use for SMTP authentication
-        $mail->Username = $GLOBALS['wiki']->config['contact_smtp_user'];
-        //Password to use for SMTP authentication
-        $mail->Password = $GLOBALS['wiki']->config['contact_smtp_pass'];
+        if (!empty($GLOBALS['wiki']->config['contact_smtp_user'])) {
+            $mail->SMTPAuth = true;
+            //Username to use for SMTP authentication
+            $mail->Username = $GLOBALS['wiki']->config['contact_smtp_user'];
+            //Password to use for SMTP authentication
+            $mail->Password = $GLOBALS['wiki']->config['contact_smtp_pass'];
+        } else {
+            $mail->SMTPAuth = false;  
+        }
     } elseif ($GLOBALS['wiki']->config['contact_mail_func'] == 'sendmail') {
         // Set PHPMailer to use the sendmail transport
         $mail->isSendmail();
@@ -48,7 +57,11 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     }
     $mail->setFrom($mail_sender, $name_sender);
     //Set an alternative reply-to address
-    $mail->addReplyTo($mail_sender, $name_sender);
+    if (!empty($GLOBALS['wiki']->config['contact_reply_to'])) {
+        $mail->addReplyTo($GLOBALS['wiki']->config['contact_reply_to']);
+    } else {
+        $mail->addReplyTo($mail_sender, $name_sender);
+    }
     //Set who the message is to be sent to
     $mail->addAddress($mail_receiver, $mail_receiver);
     //Set the subject line
@@ -65,7 +78,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     } else {
         $mail->isHTML(true);
         $mail->Body = $message_html ;
-        if (! empty($message_txt)) {
+        if (!empty($message_txt)) {
             $mail->AltBody = $message_txt;
         }
     }
@@ -74,11 +87,13 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     //$mail->addAttachment('images/phpmailer_mini.png');
 
     //send the message, check for errors
-    if (!$mail->send()) {
-        // TODO: remove hardcoded html (eg. return the error message OR true)
-        echo '<div class="alert alert-danger">Mailer Error: ' . $mail->ErrorInfo .'</div>';
-        return false;
-    } else {
+    try {
+        $mail->send();
         return true;
+    } catch (Exception $e) {
+        echo $e->errorMessage();
+    } catch (\Exception $e) {
+        echo $e->getMessage();
+        return false;
     }
 }

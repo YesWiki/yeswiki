@@ -55,8 +55,9 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
           ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false) .
           (($name_sender) ? ' ' . _t('CONTACT_FROM') . ' ' . $name_sender : '');
-        $message_html = (isset($_POST['message'])) ? $infomsg."\n\n".stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
-        $message_txt = (isset($_POST['message'])) ? strip_tags($infomsg)."\n\n".stripslashes(_convert($_POST['message'], YW_CHARSET)) : '';
+        $message = (isset($_POST['message'])) ? $infomsg."\n\n".stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
+        $message_html = trim($message);
+        $message_txt = trim(strip_tags($message));
     }
 
     // on verifie si tous les parametres sont bons

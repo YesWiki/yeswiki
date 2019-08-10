@@ -34,7 +34,17 @@ $wakkaConfig['mail_template'] = isset($wakkaConfig['mail_template']) ?
   $wakkaConfig['mail_template']
   :'email.tpl.html';
 
+// default mail to reply to
+$wakkaConfig['contact_reply_to'] = isset($wakkaConfig['contact_reply_to']) ?
+  $wakkaConfig['contact_reply_to']
+  : '';
+
 // debug mode (0 pour rien, 1 pour normal, 2 pour detaille)
 $wakkaConfig['contact_debug'] = isset($wakkaConfig['contact_debug']) ?
   $wakkaConfig['contact_debug']
   : 0;
+
+// passphrase pour envoyer des mail
+$wakkaConfig['contact_passphrase'] = isset($wakkaConfig['contact_passphrase']) ?
+$wakkaConfig['contact_passphrase']
+: '';
