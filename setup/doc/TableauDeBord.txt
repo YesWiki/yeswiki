@@ -1,23 +1,26 @@
 ======Tableau de bord======
 {{mailperiod}}
 {{grid}}
-{{col size="6"}}
-====Derniers comptes utilisateurs ====
-{{Listusers}}
-------
+{{col size="4"}}
 ====Dernières pages modifiées ====
 {{recentchanges}}
 ------
-==== 5 dernières pages commentées ====
-{{RecentlyCommented}}
-------
-{{end elem="col"}}
-{{col size="6"}}
-==== Index des pages ====
-{{pageindex}}
+====Derniers comptes utilisateurs ====
+{{listusers}}
 ------
 ==== Pages orphelines ====
-{{OrphanedPages}}
+//pages n'ayant pas de lien vers elles//
+{{orphanedpages}}
+------
+{{end elem="col"}}
+{{col size="4"}}
+==== Index des pages wiki ====
+{{pageonlyindex}}
+------
+{{end elem="col"}}
+{{col size="4"}}
+==== Index des fiches bazar ====
+{{bazarrecordsindex}}
 ------
 {{end elem="col"}}
 {{end elem="grid"}}
