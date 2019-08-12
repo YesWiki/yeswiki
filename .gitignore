@@ -1,13 +1,13 @@
 # YesWiki stuff
 wakka.config.php
 info.php
-cache/
-!cache/empty.txt
-files/
-!files/empty.txt
-themes/
+cache/*
+!cache/README.md
+files/*
+!files/README.md
+themes/*
 !themes/README.md
-templates/
+templates/*
 !templates/README.md
 
 # tools
@@ -15,7 +15,6 @@ tools/*
 !tools/README.md
 !tools/autoupdate
 !tools/aceditor/*
-!tools/prepend.php
 !tools/aceditor
 !tools/aceditor/*
 !tools/attach
@@ -28,13 +27,10 @@ tools/*
 !tools/despam/*
 !tools/hashcash
 !tools/hashcash/*
-tools/hashcash/secret/wp-hashcash.key
 !tools/ipblock
 !tools/ipblock/*
 !tools/lang
 !tools/lang/*
-!tools/libs
-!tools/libs/*
 !tools/login
 !tools/login/*
 !tools/nospam
@@ -55,8 +51,6 @@ tools/hashcash/secret/wp-hashcash.key
 !tools/templates/*
 !tools/toc
 !tools/toc/*
-!tools/toolsmng
-!tools/toolsmng/*
 
 # Macintosh OS
 .DS_Store
