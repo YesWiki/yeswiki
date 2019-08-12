@@ -178,3 +178,8 @@ if (is_dir('themes')) {
         ksort($wakkaConfig['templates']);
     }
 }
+
+// Array of paths where to find templates (order is important)
+$wakkaConfig['template_directories'] = isset($wakkaConfig['template_directories']) ?
+    $wakkaConfig['template_directories']
+    : ['custom/templates', 'templates', 'themes/tools'];

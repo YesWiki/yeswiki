@@ -216,34 +216,29 @@ if ($user = $this->GetUser()) {
 //
 // on affiche le template
 //
-
-include_once('includes/squelettephp.class.php');
-
-// on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-$templatetoload = 'themes/tools/login/templates/' . $template;
-
-if (!is_file($templatetoload)) {
-    $templatetoload = 'tools/login/presentation/templates/' . $template;
+include_once 'includes/squelettephp.class.php';
+try {
+    $squel = new SquelettePhp($template, 'login');
+    $content = $squel->render(
+        array(
+            "connected" => $connected,
+            "user" => ((isset($user["name"])) ? $user["name"] : ((isset($_POST["name"])) ? $_POST["name"] : '')),
+            "email" => ((isset($user["email"])) ? $user["email"] : ((isset($_POST["email"])) ? $_POST["email"] : '')),
+            "incomingurl" => $incomingurl,
+            "signupurl" => $signupurl,
+            'lostpasswordurl' => $lostpasswordurl,
+            "profileurl" => $profileurl,
+            "userpage" => $userpage,
+            "PageMenuUser" => $PageMenuUser,
+            "btnclass" => $btnclass,
+            "nobtn" => $nobtn,
+            "error" => $error
+        )
+    );
+} catch (Exception $e) {
+    $content = '<div class="alert alert-danger">Erreur action {{login ..}} : '.  $e->getMessage(). '</div>'."\n";
 }
 
-$squel = new SquelettePhp($templatetoload);
-$squel->set(
-    array(
-        "connected" => $connected,
-        "user" => ((isset($user["name"])) ? $user["name"] : ((isset($_POST["name"])) ? $_POST["name"] : '')),
-        "email" => ((isset($user["email"])) ? $user["email"] : ((isset($_POST["email"])) ? $_POST["email"] : '')),
-        "incomingurl" => $incomingurl,
-        "signupurl" => $signupurl,
-        'lostpasswordurl' => $lostpasswordurl,
-        "profileurl" => $profileurl,
-        "userpage" => $userpage,
-        "PageMenuUser" => $PageMenuUser,
-        "btnclass" => $btnclass,
-        "nobtn" => $nobtn,
-        "error" => $error
-    )
-);
-
-$output = (!empty($class)) ? '<div class="'.$class.'">'."\n".$squel->analyser()."\n".'</div>'."\n" : $squel->analyser();
+$output = (!empty($class)) ? '<div class="'.$class.'">'."\n".$content."\n".'</div>'."\n" : $squel->analyser();
 
 echo $output;

@@ -36,17 +36,6 @@ $tri = (isset($_GET['tri'])) ? $_GET['tri'] : '';
 $nbcartrunc = 200;
 $template = (isset($_GET['template'])) ? $_GET['template'] : 'pages_accordion.tpl.html';
 $valtemplate=array();
-if (!file_exists('themes/tools/tags/presentation/templates/'.$template)) {
-	if (!file_exists('tools/tags/presentation/templates/'.$template)) {
-		exit('Le fichier template du formulaire de microblog "tools/tags/presentation/templates/'.$template.'" n\'existe pas. Il doit exister...');
-	}
-	else {
-		$squel = new SquelettePhp('tools/tags/presentation/templates/'.$template);
-	}
-}
-else {
-	$squel = new SquelettePhp('themes/tools/tags/presentation/templates/'.$template);
-}
 
 $output = '';
 
@@ -101,9 +90,14 @@ if ($resultat) {
 			$element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']).' ';
 			$element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">'.$tag['value'].'</span>&nbsp;';
 		}
-	}
-	$squel->set(array('elements' => $element));
-	$text .= $squel->analyser();			
+    }
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp($template, 'tags');
+        $text .=  $squel->render(array('elements' => $element));
+    } catch (Exception $e) {
+        $text .=  '<div class="alert alert-danger">Erreur action {{login (oauth) ..}} : '.  $e->getMessage(). '</div>'."\n";
+    }		
 } else {
 	$nb_total = 0;
 }

@@ -10,9 +10,16 @@ if ($this->UserIsAdmin()) {
     $pages = $this->LoadAll($sql);
 
     include_once 'includes/squelettephp.class.php';
-    $template_pages = new SquelettePhp('tools/templates/presentation/templates/pages_table.tpl.html');
-    $template_pages->set(array('pages' => $pages)); // on passe le tableau de pages en parametres
-    $output = $template_pages->analyser(); // affiche les resultats
+    try {
+        $squel = new SquelettePhp('pages_table.tpl.html', 'templates');
+        $output = $squel->render(
+            array(
+                'pages' => $pages
+            )
+        );
+    } catch (Exception $e) {
+        $output = '<div class="alert alert-danger">Erreur action {{adminpages ..}} : '.  $e->getMessage(). '</div>'."\n";
+    }
 
     echo $output;
 } else {

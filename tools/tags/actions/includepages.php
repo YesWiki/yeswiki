@@ -55,10 +55,15 @@ else {
 		}
 	}
 
-	include_once 'includes/squelettephp.class.php';
-	$templateelements = new SquelettePhp('tools/tags/presentation/templates/'.$template);
-	$templateelements->set(array('elements' => $element));
-	$output .= $templateelements->analyser();
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp($template, 'tags');
+        $output .= $squel->render(
+            array('elements' => $element)
+        );
+    } catch (Exception $e) {
+        $output .= '<div class="alert alert-danger">Erreur action {{includepages ..}} : '.  $e->getMessage(). '</div>'."\n";
+    }
 }
 
 if (empty($class)) {

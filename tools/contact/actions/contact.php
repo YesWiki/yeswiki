@@ -68,14 +68,12 @@ if (empty($contactelements['mail'])) {
     $contactelements['mailerurl'] = $this->href('mail');
 
     include_once 'includes/squelettephp.class.php';
-    // On cherche un template personnalise dans le repertoire themes/tools/contact/templates
-    $contactTemplate = 'themes/tools/contact/templates/'.$template;
-    if (!is_file($contactTemplate)) {
-        $contactTemplate = 'tools/contact/presentation/templates/'.$template;
+    try {
+        $squel = new SquelettePhp($template, 'contact');
+        echo $squel->render($contactelements);
+    } catch (Exception $e) {
+        echo '<div class="alert alert-danger">Erreur action {{contact ..}} : ',  $e->getMessage(), '</div>'."\n";
     }
-    $squel = new SquelettePhp($contactTemplate);
-    $squel->set($contactelements);
-    echo $squel->analyser();
-
+    
     $this->addJavascriptFile('tools/contact/libs/contact.js');
 }

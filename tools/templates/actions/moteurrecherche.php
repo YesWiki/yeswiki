@@ -20,9 +20,11 @@ $searchelements['url'] = ($this->GetParameter('url') ? $this->GetParameter('url'
 // si une recherche a été effectuée, on garde les mots clés
 $searchelements['phrase'] = (isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : "");
 
-include_once('includes/squelettephp.class.php');
-$searchtemplate = new SquelettePhp('tools/templates/presentation/templates/'.$template);
-$searchtemplate->set($searchelements);
-echo $searchtemplate->analyser();
-
+include_once 'includes/squelettephp.class.php';
+try {
+    $squel = new SquelettePhp($template, 'templates');
+    echo $squel->render($searchelements);
+} catch (Exception $e) {
+    echo '<div class="alert alert-danger">Erreur action {{moteurrecherche ..}} : ',  $e->getMessage(), '</div>'."\n";
+}
 ?>

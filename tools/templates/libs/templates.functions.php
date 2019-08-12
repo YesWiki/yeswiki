@@ -256,18 +256,21 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
         }
 
         //on affiche le template
-
-        include_once('includes/squelettephp.class.php');
-
-        $squel = new SquelettePhp('tools/templates/presentation/templates/'.$template);
-        $squel->set(array(
-            "pagetag" => $pagetag,
-            "slides" => $slides,
-            "titles" => $titles,
-            "buttons" => $buttons,
-            "class" => $class
-        ));
-        $output = $squel->analyser() ;
+        include_once 'includes/squelettephp.class.php';
+        try {
+            $squel = new SquelettePhp($template, 'templates');
+            $output = $squel->render(
+                array(
+                    "pagetag" => $pagetag,
+                    "slides" => $slides,
+                    "titles" => $titles,
+                    "buttons" => $buttons,
+                    "class" => $class
+                )
+            );
+        } catch (Exception $e) {
+            $output = '<div class="alert alert-danger">Erreur slides : '.  $e->getMessage(). '</div>'."\n";
+        }
 
         return $output;
     }

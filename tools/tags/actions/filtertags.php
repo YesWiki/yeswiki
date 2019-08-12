@@ -71,9 +71,18 @@ foreach ($pages as $page) {
 }
 
 include_once 'includes/squelettephp.class.php';
-$templateelements = new SquelettePhp('tools/tags/presentation/templates/'.$template);
-$templateelements->set(array('elements' => $element, 'elementwidth' => $elementwidth, 'elementoffset' => $elementoffset));
-echo $templateelements->analyser();
+try {
+    $squel = new SquelettePhp($template, 'tags');
+    echo $squel->render(
+        array(
+            'elements' => $element,
+            'elementwidth' => $elementwidth,
+            'elementoffset' => $elementoffset
+        )
+    );
+} catch (Exception $e) {
+    echo '<div class="alert alert-danger">Erreur action {{filtertags ..}} : '.  $e->getMessage(). '</div>'."\n";
+}
 
 // ajout du javascript gerant le filtrage
 $this->AddJavascriptFile('tools/tags/libs/vendor/imagesloaded.pkgd.min.js');

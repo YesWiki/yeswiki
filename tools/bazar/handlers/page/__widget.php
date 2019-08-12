@@ -69,15 +69,16 @@ if (isset($_GET['id'])) {
       .(isset($_GET['query']) ? '&query='.$_GET['query'] : '')
       .(!empty($q) ? '&q='.$q : '');
     // affichage des resultats
+ 
+    $values = array('facettes' => $tabfacette, 'showtooltip' => $showtooltip, 'facettestext' => $tabfacettetext, 'params' => $params, 'urlparams' => $urlparams);
+
     include_once 'includes/squelettephp.class.php';
-    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $templatetoload = 'themes/tools/bazar/templates/widget.tpl.html';
-    if (!is_file($templatetoload)) {
-        $templatetoload = 'tools/bazar/presentation/templates/widget.tpl.html';
+    try {
+        $squel = new SquelettePhp('widget.tpl.html', 'bazar');
+        echo $squel->render($values);
+    } catch (Exception $e) {
+        echo '<div class="alert alert-danger">Erreur handler widget : ',  $e->getMessage(), '</div>'."\n";
     }
-    $squelwidget = new SquelettePhp($templatetoload);
-    $squelwidget->set(array('facettes' => $tabfacette, 'showtooltip' => $showtooltip, 'facettestext' => $tabfacettetext, 'params' => $params, 'urlparams' => $urlparams));
-    echo $squelwidget->analyser();
 
     echo $this->Footer();
     exit;

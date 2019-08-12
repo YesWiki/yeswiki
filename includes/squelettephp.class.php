@@ -2,100 +2,102 @@
 /**
  * SquelettePhp
  *
- * Auteur d'origine : Brian Lozier
+ * Original Author : Brian Lozier
  * Source : http://www.massassi.com/php/articles/template_engines/
  */
-if (! class_exists('SquelettePhp')) {
 
-    class SquelettePhp
+class SquelettePhp
+{
+
+    /**
+     * Variables which will be integrated in the template.
+     *
+     * @var array
+     */
+    protected $vars = [];
+
+    /**
+     * Filename of template.
+     *
+     * @var string
+     */
+    protected $templateFile = '';
+
+    /**
+     * Path to template file.
+     *
+     * @var string
+     */
+    protected $templatePath = '';
+
+    /**
+     * Constructor
+     *
+     * @param string $templateFile Filename of template.
+     * @param string $templateDir Directory of template type, used to find path to template file.
+     */
+    public function __construct($templateFile, $templateDir)
     {
-
-        /**
-         * Contient toutes les variables à insérer dans le squelette (template).
-         *
-         * @var array
-         */
-        protected $vars;
-
-        /**
-         * Le nom du fichier de squelette.
-         *
-         * @var string
-         */
-        protected $fichier;
-
-        /**
-         * Constructeur
-         *
-         * @param string|null $fichier
-         *            le nom du fichier de template à charger.
-         */
-        public function __construct($fichier_tpl = null)
-        {
-            $this->fichier = $fichier_tpl;
+        $dirs = $GLOBALS['wiki']->config['template_directories'];
+        $found = false;
+        foreach($dirs as $dir) {
+            //echo realpath($dir.'/'.$templateDir.'/'.$templateFile).'<br>';
+            if (file_exists(realpath($dir.'/'.$templateDir.'/'.$templateFile))) {
+                $this->templateFile = $templateFile;
+                $this->templatePath = $dir.'/'.$templateDir.'/';
+                $found = true;
+                break;
+            }
         }
-
-        /**
-         */
-        /**
-         * Ajout une (string) ou plusieurs (array) variables nommées pour le squelette.
-         *
-         * @param mixed $nom
-         *            Le nom de la variable, ou un tableau associatif nom=>valeur
-         * @param mixed $valeur
-         */
-        public function set($nom, $valeur = null)
-        {
-            if (is_null($valeur) && is_array($nom)) {
-                $this->vars = $nom;
-            } elseif ($valeur instanceof SquelettePhp) {
-                $this->vars[$nom] = $valeur->analyser();
+        if (!$found) {
+            $defaultpath = 'tools/'.$templateDir.'/presentation/templates';
+            //echo realpath($defaultpath.'/'.$templateFile).'<br>';
+            if (file_exists(realpath($defaultpath.'/'.$templateFile))) {
+                $this->templateFile = $templateFile;
+                $this->templatePath = $defaultpath.'/';
             } else {
-                $this->vars[$nom] = $valeur;
+                throw new Exception(_t('TEMPLATE_FILE_NOT_FOUND').' : '.$templateFile);
             }
         }
+    }
 
-        /**
-         * Ouvre, parse le template, remplace les variable, puis retourne le résultat.
-         *
-         * @param $fichier string
-         *            le nom du fichier squelette.
-         */
-        public function analyser($fichier = null)
-        {
-            if (! $fichier) {
-                $fichier = $this->fichier;
-            }
-
-            // TODO : faire en sorte que les templates puisse etre mis en cache et voir que faire du js et css
-            // // on efface les fichier du cache qui sont plus vieux que 5 minutes
-            // foreach (glob('cache/'.$GLOBALS['wiki']->getPageTag().'-'.basename($fichier).'-*') as $filename) {
-            //     if (filemtime($filename) < (time() - 5 * 60) or (isset($_GET['refresh']) and $_GET['refresh'] == '1')) {
-            //         unlink($filename);
-            //     }
-            // }
-            // // generation d'un marqueur pour identifier le fichier template a partir de ses valeurs
-            // $id = '';
-            // foreach (array_keys($this->vars) as $key => $value) {
-            //     if (is_array($this->vars[$value])) {
-            //         $id .= $value.count($this->vars[$value]);
-            //     } else {
-            //         $id .= $value.$this->vars[$value];
-            //     }
-            // }
-            // //var_dump($id);
-            // $cachedFile = 'cache/'.$GLOBALS['wiki']->getPageTag().'-'.basename($fichier).'-'.md5($id);
-            // if (file_exists($cachedFile)) {
-            //     return file_get_contents($cachedFile);
-            // } else {
-                extract($this->vars); // Extrait les variables et les ajoutes à l'espace de noms local
-                ob_start(); // Démarre le buffer
-                include($fichier); // Inclusion du fichier
-                $contenu = ob_get_contents(); // Récupérer le contenu du buffer
-                ob_end_clean(); // Arrête et détruit le buffer
-            //    file_put_contents($cachedFile, $contenu);
-                return $contenu; // Retourne le contenu
-            // }
+    /**
+     */
+    /**
+     * Add several or one value to template
+     *
+     * @param mixed $name variable name, or array name=>value
+     * @param mixed $value value(s) of variable or SquelettePhp object to include
+     */
+    public function set($name, $value = [])
+    {
+        if (empty($value) && is_array($name)) {
+            $this->vars = $name;
+        } elseif ($value instanceof SquelettePhp) {
+            $this->vars[$name] = $value->render();
+        } else {
+            var_dump($name, $value);
+            $this->vars[$name] = $value;
         }
+    }
+
+    /**
+     * replace variables in template file
+     *
+     * @param mixed $value value(s) used to render template.
+     */
+    public function render($name = '', $value = [])
+    {
+        if (!empty($name)) {
+            $this->set($name, $value);
+        }
+        if (!empty($this->vars)) {
+            extract($this->vars); // extract variables for the template
+        }
+        ob_start(); // buffer
+        include_once realpath($this->templatePath.$this->templateFile); // include the template, with values
+        $content = ob_get_contents(); // get buffer's content
+        ob_end_clean(); // destroy buffer
+        return $content; // Retourne le contenu
     }
 }

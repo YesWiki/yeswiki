@@ -1205,14 +1205,12 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
 
     //Affichage a l'ecran
     include_once 'includes/squelettephp.class.php';
-    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $templatetoload = 'themes/tools/bazar/templates/form_edit_entry.tpl.html';
-    if (!is_file($templatetoload)) {
-        $templatetoload = 'tools/bazar/presentation/templates/form_edit_entry.tpl.html';
+    try {
+        $squel = new SquelettePhp('form_edit_entry.tpl.html', 'bazar');
+        $res .=  $squel->render($data);
+    } catch (Exception $e) {
+        $res .= '<div class="alert alert-danger">Erreur form edit fiche : '.$e->getMessage().'</div>'."\n";
     }
-    $squel = new SquelettePhp($templatetoload);
-    $squel->set($data);
-    $res .= $squel->analyser();
     return $res;
 }
 
@@ -1642,14 +1640,12 @@ function baz_formulaire_des_formulaires($mode, $form = '')
     $data['idformulaire'] = isset($_GET['idformulaire']) ? $_GET['idformulaire'] : '';
 
     include_once 'includes/squelettephp.class.php';
-    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $templatetoload = 'themes/tools/bazar/templates/form_edit_form.tpl.html';
-    if (!is_file($templatetoload)) {
-        $templatetoload = 'tools/bazar/presentation/templates/form_edit_form.tpl.html';
+    try {
+        $squel = new SquelettePhp('form_edit_form.tpl.html', 'bazar');
+        return $squel->render($data);
+    } catch (Exception $e) {
+        return '<div class="alert alert-danger">Erreur form edit form : '.$e->getMessage().'</div>'."\n";
     }
-    $squel = new SquelettePhp($templatetoload);
-    $squel->set($data);
-    return $squel->analyser();
 }
 
 /*
@@ -2053,17 +2049,15 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     // on rajoute les bibliothèques js nécéssaires
     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
-    // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $templatetoload = 'themes/tools/bazar/templates/lists_edit.tpl.html';
-    if (!is_file($templatetoload)) {
-        $templatetoload =
-        'tools/bazar/presentation/templates/lists_edit.tpl.html';
-    }
-    include_once 'includes/squelettephp.class.php';
-    $formlistes = new SquelettePhp($templatetoload);
-    $formlistes->set($tab_formulaire);
 
-    return $formlistes->analyser();
+    // affichage du template du formulaire
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp('lists_edit.tpl.html', 'bazar');
+        return $squel->render($tab_formulaire);
+    } catch (Exception $e) {
+        return '<div class="alert alert-danger">Erreur form edit listes : '.$e->getMessage().'</div>'."\n";
+    }
 }
 
 function multiArraySearch($array, $key, $value)
@@ -2212,16 +2206,19 @@ function baz_gestion_formulaire()
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
 
         // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-        $templatetoload = 'themes/tools/bazar/templates/forms_table.tpl.html';
+        $templatetoload = 'themes/tools/bazar/templates/';
         if (!is_file($templatetoload)) {
             $templatetoload =
             'tools/bazar/presentation/templates/forms_table.tpl.html';
         }
 
         include_once 'includes/squelettephp.class.php';
-        $templateforms = new SquelettePhp($templatetoload);
-        $templateforms->set($tab_forms);
-        $res .= $templateforms->analyser();
+        try {
+            $squel = new SquelettePhp('forms_table.tpl.html', 'bazar');
+            $res .=  $squel->render($tab_forms);
+        } catch (Exception $e) {
+            $res .= '<div class="alert alert-danger">Erreur tableau des formulaires  : '.$e->getMessage().'</div>'."\n";
+        }
     }
     return $res;
 }
@@ -2293,19 +2290,14 @@ function baz_gestion_listes()
             }
         }
         // on rajoute les bibliothèques js nécéssaires
-        $GLOBALS['wiki']
-            ->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
-        // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-        $templatetoload = 'themes/tools/bazar/templates/lists_table.tpl.html';
-        if (!is_file($templatetoload)) {
-            $templatetoload =
-            'tools/bazar/presentation/templates/lists_table.tpl.html';
-        }
+        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
 
-        include_once 'includes/squelettephp.class.php';
-        $templatelists = new SquelettePhp($templatetoload);
-        $templatelists->set($tab_lists);
-        $res .= $templatelists->analyser();
+        try {
+            $squel = new SquelettePhp('lists_table.tpl.html', 'bazar');
+            $res .=  $squel->render($tab_lists);
+        } catch (Exception $e) {
+            $res .= '<div class="alert alert-danger">Erreur table des listes : '.$e->getMessage().'</div>'."\n";
+        }
     } elseif ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE) {
         // il y a une liste a modifier, recuperation des informations
         $valeursliste = baz_valeurs_liste($_GET['idliste']);
@@ -3188,10 +3180,15 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 //    });';
 //    var_dump($GLOBALS['params']['pagination'], $js);
 //     $GLOBALS['wiki']->addJavascript($js);
-    $templatetoload = 'tools/bazar/presentation/templates/search_form.tpl.html';
-    $squelsearch = new SquelettePhp($templatetoload);
-    $squelsearch->set($data);
-    $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">'.$squelsearch->analyser();
+   
+    $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">';
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp('search_form.tpl.html', 'bazar');
+        $res .=  $squel->render($data);
+    } catch (Exception $e) {
+        $res .= '<div class="alert alert-danger">Erreur template search_form.tpl.html : '.$e->getMessage().'</div>'."\n";
+    }
 
     $fiches = baz_requete_recherche_fiches(
         $GLOBALS['params']['query'],
@@ -3745,16 +3742,13 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
     // affichage des resultats
     include_once 'includes/squelettephp.class.php';
-    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $templatetoload = 'themes/tools/bazar/templates/'.$params['template'];
-    if (!is_file($templatetoload)) {
-        $templatetoload = 'tools/bazar/presentation/templates/'.$params['template'];
+    try {
+        $squel = new SquelettePhp($params['template'], 'bazar');
+        $output = '<div id="bazar-list-'.$params['nbbazarliste'].'" class="bazar-list">
+    <div class="list">'.$squel->render($fiches).'</div></div>';
+    } catch (Exception $e) {
+        $output = '<div class="alert alert-danger">Erreur liste fiches : '.$e->getMessage().'</div>'."\n";
     }
-    $squelfacette = new SquelettePhp($templatetoload);
-    $squelfacette->set($fiches);
-    $output = '<div id="bazar-list-'.$params['nbbazarliste'].'" class="bazar-list">
-    <div class="list">'.$squelfacette->analyser().'</div></div>';
-    //$output = $GLOBALS['wiki']->renderTemplate('bazar', $params['template'], $fiches);
 
     // affichage spécifique pour facette
     if (count($facettevalue) > 0) {

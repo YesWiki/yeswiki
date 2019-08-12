@@ -62,9 +62,14 @@ if ($resultat) {
         }
     }
     include_once 'includes/squelettephp.class.php';
-    $templateelements = new SquelettePhp('tools/tags/presentation/templates/'.$template);
-    $templateelements->set(array('elements' => $element));
-    $output .= $templateelements->analyser();
+    try {
+        $squel = new SquelettePhp($template, 'tags');
+        $content = $squel->render(
+            array('elements' => $element)
+        );
+    } catch (Exception $e) {
+        $content = '<div class="alert alert-danger">Erreur action {{listpagestag ..}} : '.  $e->getMessage(). '</div>'."\n";
+    }
 } else {
     $nb_total = 0;
 }

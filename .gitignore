@@ -6,10 +6,13 @@ cache/
 files/
 !files/empty.txt
 themes/
-!themes/bootstrap/
+!themes/README.md
+templates/
+!templates/README.md
 
 # tools
 tools/*
+!tools/README.md
 !tools/autoupdate
 !tools/aceditor/*
 !tools/prepend.php

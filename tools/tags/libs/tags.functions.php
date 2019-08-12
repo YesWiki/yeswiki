@@ -143,11 +143,13 @@ function afficher_commentaires_recursif($page, $wiki, $premier = true)
         $valcomment['commentform'] .= "<div class=\"clear\"></div></div>\n";
     }
 
-    include_once('includes/squelettephp.class.php');
-
-    $squelcomment = new SquelettePhp('tools/tags/presentation/templates/comment_list.tpl.html');
-    $squelcomment->set($valcomment);
-    $output .= $squelcomment->analyser();
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp('comment_list.tpl.html', 'tags');
+        $output .=  $squel->render($valcomment);
+    } catch (Exception $e) {
+        $output .=  '<div class="alert alert-danger">Erreur comment list : '.  $e->getMessage(). '</div>'."\n";
+    }
 
     return $output;
 }
