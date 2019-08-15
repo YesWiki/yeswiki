@@ -76,7 +76,7 @@ if (!empty($tags)) {
             } else {
                 $page["body"] = _convert($page["body"], 'ISO-8859-1');
             }
-            $texteformat = htmlspecialchars($this->Format($page['body']), ENT_COMPAT, YW_CHARSET);
+            $texteformat = htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET);
             
             $items.= $texteformat . "]]></description>\r\n";
             $items.= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET).

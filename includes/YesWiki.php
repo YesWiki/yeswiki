@@ -46,7 +46,6 @@ require_once 'includes/yeswiki.api.php';
   */
 class Wiki
 {
-
     public $dblink;
 
     public $page;
@@ -82,6 +81,7 @@ class Wiki
     public $linktable = array();
 
     public $pageCache = array();
+    public $pageCacheFormatted = array();
 
     public $_groupsCache = array();
 
@@ -146,44 +146,44 @@ class Wiki
     // MISC
     public function GetMicroTime()
     {
-        list ($usec, $sec) = explode(" ", microtime());
+        list($usec, $sec) = explode(" ", microtime());
         return ((float) $usec + (float) $sec);
     }
 
-    public function IncludeBuffered($filename, $notfoundText = '', $vars = '', $path = '')
-    {
-        if ($path) {
-            $dirs = explode(':', $path);
-        } else {
-            $dirs = array(
-                ''
-            );
-        }
+    // public function IncludeBuffered($filename, $notfoundText = '', $vars = [], $path = '')
+    // {
+    //     if ($path) {
+    //         $dirs = explode(':', $path);
+    //     } else {
+    //         $dirs = array(
+    //             ''
+    //         );
+    //     }
 
-        foreach ($dirs as $dir) {
-            if ($dir) {
-                $dir .= '/';
-            }
+    //     foreach ($dirs as $dir) {
+    //         if ($dir) {
+    //             $dir .= '/';
+    //         }
 
-            $fullfilename = $dir . $filename;
-            if (file_exists($fullfilename)) {
-                if (is_array($vars)) {
-                    extract($vars);
-                }
+    //         $fullfilename = $dir . $filename;
+    //         if (file_exists($fullfilename)) {
+    //             if (is_array($vars) && !empty($vars)) {
+    //                 extract($vars);
+    //             }
 
-                ob_start();
-                include $fullfilename;
-                $output = ob_get_contents();
-                ob_end_clean();
-                return $output;
-            }
-        }
-        if ($notfoundText) {
-            return $notfoundText;
-        } else {
-            return false;
-        }
-    }
+    //             ob_start();
+    //             include $fullfilename;
+    //             $output = ob_get_contents();
+    //             ob_end_clean();
+    //             return $output;
+    //         }
+    //     }
+    //     if ($notfoundText) {
+    //         return $notfoundText;
+    //     } else {
+    //         return false;
+    //     }
+    // }
 
     // VARIABLES
     public function GetPageTag()
@@ -204,8 +204,8 @@ class Wiki
     public function GetConfigValue($name, $default=null)
     {
         return isset($this->config[$name])
-        	? trim($this->config[$name])
-        	: ($default != null ? $default : '') ;
+            ? trim($this->config[$name])
+            : ($default != null ? $default : '') ;
     }
 
     public function GetWakkaName()
@@ -290,30 +290,29 @@ class Wiki
      */
     public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-		$res = $re_prefix . $resource ;
-		$prop = $prop_prefix . $property ;
-		if( isset( $this->triplesCacheByResource[$res]) )
-    	{
-    		// All resource's properties was previously loaded.
-			//error_log(__METHOD__.' cache hits ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
-    		if( isset( $this->triplesCacheByResource[$res][$prop]) )
-    		{
-    			return $this->triplesCacheByResource[$res][$prop] ;
-    		}
-    		// LoadAll($sql) return an empty array when no result, do the same.
-   			return array();
-    	}
-		//error_log(__METHOD__.' cache miss ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
-    	$this->triplesCacheByResource[$res] = array();
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . addslashes($res) . '"' ;
-        foreach( $this->LoadAll($sql) as $triple )
-        {
-        	if( ! isset($this->triplesCacheByResource[$res][ $triple['property'] ]))
-        		$this->triplesCacheByResource[$res][ $triple['property'] ] = array();
-        	$this->triplesCacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value']) ;
+        $res = $re_prefix . $resource ;
+        $prop = $prop_prefix . $property ;
+        if (isset($this->triplesCacheByResource[$res])) {
+            // All resource's properties was previously loaded.
+            //error_log(__METHOD__.' cache hits ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
+            if (isset($this->triplesCacheByResource[$res][$prop])) {
+                return $this->triplesCacheByResource[$res][$prop] ;
+            }
+            // LoadAll($sql) return an empty array when no result, do the same.
+            return array();
         }
-        if( isset( $this->triplesCacheByResource[$res][$prop]) )
-        	return $this->triplesCacheByResource[$res][$prop] ;
+        //error_log(__METHOD__.' cache miss ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
+        $this->triplesCacheByResource[$res] = array();
+        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . addslashes($res) . '"' ;
+        foreach ($this->LoadAll($sql) as $triple) {
+            if (! isset($this->triplesCacheByResource[$res][ $triple['property'] ])) {
+                $this->triplesCacheByResource[$res][ $triple['property'] ] = array();
+            }
+            $this->triplesCacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value']) ;
+        }
+        if (isset($this->triplesCacheByResource[$res][$prop])) {
+            return $this->triplesCacheByResource[$res][$prop] ;
+        }
         return array() ;
     }
 
@@ -385,15 +384,16 @@ class Wiki
      */
     public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-    	$res = $re_prefix . $resource ;
+        $res = $re_prefix . $resource ;
 
         if ($this->TripleExists($res, $property, $value, '', $prop_prefix)) {
             return 3;
         }
 
         // invalidate the cache
-        if( isset( $this->triplesCacheByResource[$res]) )
-        	unset($this->triplesCacheByResource[$res]);
+        if (isset($this->triplesCacheByResource[$res])) {
+            unset($this->triplesCacheByResource[$res]);
+        }
 
         $sql = 'INSERT INTO ' . $this->GetConfigValue('table_prefix') . 'triples (resource, property, value)' . 'VALUES ("' . addslashes($res) . '", "' . addslashes($prop_prefix . $property) . '", "' . addslashes($value) . '")';
         return $this->Query($sql) ? 0 : 1;
@@ -420,7 +420,7 @@ class Wiki
      */
     public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-    	$res = $re_prefix . $resource ;
+        $res = $re_prefix . $resource ;
 
         $id = $this->TripleExists($res, $property, $oldvalue, '', $prop_prefix);
         if (! $id) {
@@ -432,8 +432,9 @@ class Wiki
         }
 
         // invalidate the cache
-        if( isset( $this->triplesCacheByResource[$res]) )
-        	unset($this->triplesCacheByResource[$res]);
+        if (isset($this->triplesCacheByResource[$res])) {
+            unset($this->triplesCacheByResource[$res]);
+        }
 
         $sql = 'UPDATE ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'SET value = "' . addslashes($newvalue) . '" ' . 'WHERE id = ' . $id;
         return $this->Query($sql) ? 0 : 1;
@@ -456,7 +457,7 @@ class Wiki
      */
     public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-    	$res = $re_prefix . $resource ;
+        $res = $re_prefix . $resource ;
 
         $sql = 'DELETE FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . addslashes($res) . '" ' . 'AND property = "' . addslashes($prop_prefix . $property) . '" ';
         if ($value !== null) {
@@ -464,8 +465,9 @@ class Wiki
         }
 
         // invalidate the cache
-        if( isset( $this->triplesCacheByResource[$res]) )
-        	unset($this->triplesCacheByResource[$res]);
+        if (isset($this->triplesCacheByResource[$res])) {
+            unset($this->triplesCacheByResource[$res]);
+        }
 
         $this->Query($sql);
     }
@@ -651,15 +653,16 @@ class Wiki
         return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' order by tag");
     }
 
-    public function GetPageCreateTime( $pageTag )
+    public function GetPageCreateTime($pageTag)
     {
         $sql = 'SELECT time FROM '.$this->config['table_prefix'].'pages'
             .' WHERE tag = "'.mysqli_real_escape_string($this->dblink, $pageTag).'"'
             .' AND comment_on = ""'
             .' ORDER BY `time` ASC LIMIT 1';
         $page = $this->LoadSingle($sql);
-        if( $page )
+        if ($page) {
             return $page['time'];
+        }
         return null ;
     }
 
@@ -910,7 +913,7 @@ class Wiki
 
     public function getBaseUrl()
     {
-        $url = explode('wakka.php',$this->config['base_url']);
+        $url = explode('wakka.php', $this->config['base_url']);
         $url = explode('index.php', $url[0]);
         $url = preg_replace(array('/\/\?$/', '/\/$/'), '', $url[0]);
         return $url;
@@ -965,7 +968,7 @@ class Wiki
                 // and that we must produce a link with it
 
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
-                return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET) 
+                return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
             } elseif (preg_match('/^'.WN_CAMEL_CASE_EVOLVED.'$/u', $tag)) {
                 if (! empty($track)) {
@@ -1107,9 +1110,10 @@ class Wiki
         $this->Query('delete from ' . $this->config['table_prefix'] . "links where from_tag = '" . mysqli_real_escape_string($this->dblink, $this->GetPageTag()) . "'");
         if ($linktable = $this->GetLinkTable()) {
             $from_tag = mysqli_real_escape_string($this->dblink, $this->GetPageTag());
+            $written = [];
             foreach ($linktable as $to_tag) {
                 $lower_to_tag = strtolower($to_tag);
-                if (! isset($written[$lower_to_tag])) {
+                if (!isset($written[$lower_to_tag])) {
                     $this->Query('insert into ' . $this->config['table_prefix'] . "links set from_tag = '" . $from_tag . "', to_tag = '" . mysqli_real_escape_string($this->dblink, $to_tag) . "'");
                     $written[$lower_to_tag] = 1;
                 }
@@ -1159,7 +1163,7 @@ class Wiki
         if ($lines = file('interwiki.conf')) {
             foreach ($lines as $line) {
                 if ($line = trim($line)) {
-                    list ($wikiName, $wikiUrl) = explode(' ', trim($line));
+                    list($wikiName, $wikiUrl) = explode(' ', trim($line));
                     $this->AddInterWiki($wikiName, $wikiUrl);
                 }
             }
@@ -1244,7 +1248,7 @@ class Wiki
         if (! preg_match("/^([a-zA-Z-0-9]+)\/?(.*)$/", $cmd, $matches)) {
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
         }
-        list (, $action, $vars_temp) = $matches;
+        list(, $action, $vars_temp) = $matches;
         $vars[$vars_temp] = $vars_temp; // usefull for {{action/vars_temp}}
 
         // now that we have the action's name, we can check if the user satisfies the ACLs
@@ -1341,43 +1345,43 @@ class Wiki
         return $actionObj;
     }
 
-    /**
-     * Retrieves the list of existing actions
-     *
-     * @return array An unordered array of all the available actions.
-     */
-    public function GetActionsList()
-    {
-        $action_path = $this->GetConfigValue('action_path');
-        $list = array();
-        if ($dh = opendir($action_path)) {
-            while (($file = readdir($dh)) !== false) {
-                if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
-                    $list[] = $matches[1];
-                }
-            }
-        }
-        return $list;
-    }
+    // /**
+    //  * Retrieves the list of existing actions
+    //  *
+    //  * @return array An unordered array of all the available actions.
+    //  */
+    // public function GetActionsList()
+    // {
+    //     $action_path = $this->GetConfigValue('action_path');
+    //     $list = array();
+    //     if ($dh = opendir($action_path)) {
+    //         while (($file = readdir($dh)) !== false) {
+    //             if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
+    //                 $list[] = $matches[1];
+    //             }
+    //         }
+    //     }
+    //     return $list;
+    // }
 
-    /**
-     * Retrieves the list of existing handlers
-     *
-     * @return array An unordered array of all the available handlers.
-     */
-    public function GetHandlersList()
-    {
-        $handler_path = $this->GetConfigValue('handler_path') . '/page/';
-        $list = array();
-        if ($dh = opendir($handler_path)) {
-            while (($file = readdir($dh)) !== false) {
-                if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
-                    $list[] = $matches[1];
-                }
-            }
-        }
-        return $list;
-    }
+    // /**
+    //  * Retrieves the list of existing handlers
+    //  *
+    //  * @return array An unordered array of all the available handlers.
+    //  */
+    // public function GetHandlersList()
+    // {
+    //     $handler_path = $this->GetConfigValue('handler_path') . '/page/';
+    //     $list = array();
+    //     if ($dh = opendir($handler_path)) {
+    //         while (($file = readdir($dh)) !== false) {
+    //             if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
+    //                 $list[] = $matches[1];
+    //             }
+    //         }
+    //     }
+    //     return $list;
+    // }
 
     public function Method($method)
     {
@@ -1389,10 +1393,146 @@ class Wiki
         return $this->IncludeBuffered($methodLocation, '<i>' . _t('UNKNOWN_METHOD') . " \"$methodLocation\"</i>", "", $this->config['handler_path']);
     }
 
-    public function Format($text, $formatter = "wakka")
+    public function Format($text, $formatter = 'wakka', $fullPageName = '')
     {
-        return $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
+        if (!empty($fullPageName)) {
+            if (empty($this->pageCacheFormatted[$fullPageName])) {
+                $this->pageCacheFormatted[$fullPageName] = $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
+                $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
+            }
+            return $this->pageCacheFormatted[$fullPageName];
+        } else {
+            return $this->IncludeBuffered($formatter . '.php', "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text"), $this->config['formatter_path']);
+        }
     }
+
+    public function IncludeBuffered($filename, $notfoundText = '', $vars = [], $path = '')
+    {
+        if ($path) {
+            $dirs = explode(':', $path);
+        } else {
+            $dirs = array(
+                ''
+            );
+        }
+        
+        $included['before'] = array();
+        $included['new'] = array();
+        $included['after'] = array();
+        
+        foreach ($dirs as $dir) {
+            if ($dir) {
+                $dir .= '/';
+            }
+            $fullfilename = $dir . $filename;
+            if (strstr($filename, 'page/')) {
+                list($file, $extension) = explode('page/', $filename);
+                $beforefullfilename = $dir . $file . 'page/__' . $extension;
+            } else {
+                $beforefullfilename = $dir . '__' . $filename;
+            }
+            
+            list($file, $extension) = explode('.', $filename);
+            $afterfullfilename = $dir . $file . '__.' . $extension;
+            
+            if (file_exists($beforefullfilename)) {
+                $included['before'][] = $beforefullfilename;
+            }
+            
+            if (file_exists($fullfilename)) {
+                $included['new'][] = $fullfilename;
+            }
+            
+            if (file_exists($afterfullfilename)) {
+                $included['after'][] = $afterfullfilename;
+            }
+        }
+        
+        $plugin_output_new = '';
+        $found = 0;
+        
+        if (is_array($vars)) {
+            extract($vars);
+        }
+        
+        foreach ($included['before'] as $before) {
+            $found = 1;
+            ob_start();
+            include($before);
+            $plugin_output_new .= ob_get_contents();
+            ob_end_clean();
+        }
+        foreach ($included['new'] as $new) {
+            $found = 1;
+            ob_start();
+            require($new);
+            $plugin_output_new = ob_get_contents();
+            ob_end_clean();
+            break;
+        }
+        foreach ($included['after'] as $after) {
+            $found = 1;
+            ob_start();
+            include($after);
+            $plugin_output_new .= ob_get_contents();
+            ob_end_clean();
+        }
+        if ($found) {
+            return $plugin_output_new;
+        }
+        if ($notfoundText) {
+            return $notfoundText;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Retrieves the list of existing actions
+     *
+     * @return array An unordered array of all the available actions.
+     */
+    public function GetActionsList()
+    {
+        $action_path = $this->GetConfigValue('action_path');
+        $dirs = explode(":", $action_path);
+        $list = array();
+        foreach ($dirs as $dir) {
+            if ($dh = opendir($dir)) {
+                while (($file = readdir($dh)) !== false) {
+                    if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
+                        $list[] = $matches[1];
+                    }
+                }
+            }
+        }
+        
+        return array_unique($list);
+    }
+
+    /**
+     * Retrieves the list of existing handlers
+     *
+     * @return array An unordered array of all the available handlers.
+     */
+    public function GetHandlersList()
+    {
+        $handler_path = $this->GetConfigValue('handler_path');
+        $dirs = explode(":", $handler_path);
+        $list = array();
+        foreach ($dirs as $dir) {
+            $dir .= '/page';
+            if ($dh = opendir($dir)) {
+                while (($file = readdir($dh)) !== false) {
+                    if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
+                        $list[] = $matches[1];
+                    }
+                }
+            }
+        }
+        return array_unique($list);
+    }
+    
 
     // USERS
     public function LoadUser($name, $password = 0)
@@ -1441,6 +1581,18 @@ class Wiki
             return false;
         }
         return ($user['show_comments'] == 'Y');
+    }
+
+    /**
+     * Ajout d'un parametre
+     *
+     * @param string $parameter nom du parametre
+     * @param mixed $value valeur du parametre
+     * @return void
+     */
+    public function setParameter($parameter, $value)
+    {
+        $this->parameter[$parameter] = $value;
     }
 
     public function GetParameter($parameter, $default = '')
@@ -1497,9 +1649,10 @@ class Wiki
         if ($ids = $this->LoadAll('select min(id) as id from ' . $this->config['table_prefix'] . 'pages where comment_on != "" group by tag order by id desc')) {
             // load complete comments
             $num = 0;
+            $comments = [];
             foreach ($ids as $id) {
                 $comment = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . $id['id'] . "' limit 1");
-                if (! isset($comments[$comment['comment_on']]) && $num < $limit) {
+                if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
                     $comments[$comment['comment_on']] = $comment;
                     $num ++;
                 }
@@ -1705,15 +1858,13 @@ class Wiki
      * @param boolean $useDefaults
      * @return array [page_tag, privilege, list]
      */
-    public function LoadAcl($tag, $privilege, $useDefaults = true )
+    public function LoadAcl($tag, $privilege, $useDefaults = true)
     {
-        if( isset($this->aclsCache[$tag][$privilege]) )
-        {
+        if (isset($this->aclsCache[$tag][$privilege])) {
             return $this->aclsCache[$tag][$privilege] ;
         }
 
-        if( $useDefaults )
-        {
+        if ($useDefaults) {
             $this->aclsCache[$tag] = array(
                 'read' => array(
                     'page_tag' => $tag,
@@ -1731,24 +1882,19 @@ class Wiki
                     'list' => $this->GetConfigValue('default_comment_acl')
                 )
             );
-        }
-        else
-        {
+        } else {
             $this->aclsCache[$tag] = array();
         }
 
         $res = $this->LoadAll('SELECT * FROM '.$this->config['table_prefix'].'acls'.' WHERE page_tag = "'.mysqli_real_escape_string($this->dblink, $tag).'"');
-        foreach( $res as $acl )
-        {
+        foreach ($res as $acl) {
             $this->aclsCache[$tag][$acl['privilege']] = $acl;
         }
 
-        if( isset($this->aclsCache[$tag][$privilege]) )
-        {
+        if (isset($this->aclsCache[$tag][$privilege])) {
             return $this->aclsCache[$tag][$privilege];
         }
         return null ;
-
     }
 
     /**
@@ -1757,11 +1903,11 @@ class Wiki
      * @param string $privilege the privilege
      * @param string $list the multiline string describing the acl
      */
-    public function SaveAcl($tag, $privilege, $list, $appendAcl = false )
+    public function SaveAcl($tag, $privilege, $list, $appendAcl = false)
     {
-        $acl = $this->LoadAcl($tag, $privilege, false );
+        $acl = $this->LoadAcl($tag, $privilege, false);
 
-        if( $acl && $appendAcl ) {
+        if ($acl && $appendAcl) {
             $list = $acl['list']."\n".$list ;
         }
 
@@ -1784,15 +1930,16 @@ class Wiki
      * @param string $tag The page's WikiName
      * @param string|array $privileges A privilege or several privileges to delete from database.
      */
-    public function DeleteAcl( $tag, $privileges=array('read','write','comment') )
+    public function DeleteAcl($tag, $privileges=array('read','write','comment'))
     {
-        if( ! is_array($privileges)) {
+        if (! is_array($privileges)) {
             $privileges = array($privileges);
         }
 
         // add '"' at begin and end of each escaped privileges elements.
-        for( $i=0; $i<count($privileges); $i++ )
+        for ($i=0; $i<count($privileges); $i++) {
             $privileges[$i] = '"'.mysqli_real_escape_string($this->dblink, $privileges[$i]) .'"';
+        }
         // construct a CSV string with privileges elements
         $privileges = implode(',', $privileges);
 
@@ -1800,8 +1947,9 @@ class Wiki
             .' WHERE page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '"'
             .' AND privilege IN (' . $privileges .')');
 
-        if( isset($this->aclsCache[$tag]))
+        if (isset($this->aclsCache[$tag])) {
             unset($this->aclsCache[$tag]);
+        }
     }
 
     /**
@@ -1859,7 +2007,6 @@ class Wiki
         }
 
         foreach (explode("\n", $acl) as $line) {
-
             $line = trim($line);
 
             // check for inversion character "!"
@@ -1883,6 +2030,7 @@ class Wiki
                         } else {
                             return ! $negate;
                         }
+                        // no break
                     case '@': // groups
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
@@ -2086,12 +2234,8 @@ class Wiki
         $objPlugins = new \YesWiki\Plugins($plugins_root);
         $objPlugins->getPlugins(true);
         $pluginsList = $objPlugins->getPluginsList();
-
-        $wikiClasses[] = '\YesWiki\WikiTools';
-        $wikiClassesContent[] = '';
-
+        $yeswikiClasses = [];
         foreach ($pluginsList as $k => $v) {
-
             $pluginBase = $plugins_root . $k . '/';
 
             if (file_exists($pluginBase . 'wiki.php')) {
@@ -2106,8 +2250,15 @@ class Wiki
                 include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
             }
 
+            // api functions
             if (file_exists($pluginBase . 'libs/' . $k . '.api.php')) {
                 include $pluginBase . 'libs/' . $k . '.api.php';
+            }
+
+            // YesWiki Classes
+            $currentClassFile = $pluginBase . 'libs/' . $k . '.class.inc.php';
+            if (file_exists($currentClassFile)) {
+                $yeswikiClasses['\YesWiki\\'.ucfirst(strtolower($k))] = $currentClassFile;
             }
 
             if (file_exists($pluginBase . 'actions')) {
@@ -2121,18 +2272,18 @@ class Wiki
             }
         }
 
-        for ($iw = 0; $iw < count($wikiClasses); $iw ++) {
-            if ($wikiClasses[$iw] != '\YesWiki\WikiTools') {
-                if ($wikiClasses[$iw - 1] == 'Wiki') {
-                    $wikiClasses[$iw - 1] == '\YesWiki\Wiki';
-                }
-                if ($wikiClasses[$iw] == 'Wiki') {
-                    $wikiClasses[$iw] == '\YesWiki\Wiki';
-                }
-                eval('Class ' . $wikiClasses[$iw] . ' extends ' . $wikiClasses[$iw - 1] . ' { ' . $wikiClassesContent[$iw] . ' }; ');
+        $previous = false;
+        foreach ($yeswikiClasses as $yeswikiClass => $path) {
+            $classContent = file_get_contents($path);
+            if (!$previous) {
+                $previous = $yeswikiClass;
+            } else {
+                $classContent = str_replace('extends \YesWiki\Wiki', 'extends '.$previous, $classContent);
+                $previous = $yeswikiClass;
             }
+            eval('?>' . $classContent);
+            $wiki = new $yeswikiClass($wakkaConfig);
         }
-        eval('$wiki  = new ' . $wikiClasses[count($wikiClasses) - 1] . '($wakkaConfig);');
         $wiki->config = $wakkaConfig;
         $wiki->extensions = $pluginsList;
 

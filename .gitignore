@@ -67,6 +67,9 @@ tools/hashcash/secret/wp-hashcash.key
 .idea
 *.iml
 
+# vscode IDE
+.vscode
+
 # Docker
 .db
 

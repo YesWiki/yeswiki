@@ -92,7 +92,7 @@ if ($HasAccessRead=$this->HasAccess("read"))
 
 		// display page
 		$this->RegisterInclusion($this->GetPageTag());
-		echo $this->Format($this->page["body"], "wakka");
+		echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
 		$this->UnregisterLastInclusion();
 
 	}
