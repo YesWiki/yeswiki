@@ -41,18 +41,23 @@ class SquelettePhp
         $dirs = $GLOBALS['wiki']->config['template_directories'];
         $found = false;
         foreach($dirs as $dir) {
-            //echo realpath($dir.'/'.$templateDir.'/'.$templateFile).'<br>';
-            if (file_exists(realpath($dir.'/'.$templateDir.'/'.$templateFile))) {
+            if ($dir == 'themes/tools') {
+                // historical templates are in templates folder
+                $path = $dir.'/'.$templateDir.'/templates/'.$templateFile;
+            } else {
+                // other have their name as folder
+                $path = $dir.'/'.$templateDir.'/'.preg_replace('/.tpl.html$/Ui', '', $templateFile).'/'.$templateFile;
+            }
+            if (file_exists($path)) {
                 $this->templateFile = $templateFile;
-                $this->templatePath = $dir.'/'.$templateDir.'/';
+                $this->templatePath = str_replace($templateFile, '', $path);
                 $found = true;
                 break;
             }
         }
         if (!$found) {
             $defaultpath = 'tools/'.$templateDir.'/presentation/templates';
-            //echo realpath($defaultpath.'/'.$templateFile).'<br>';
-            if (file_exists(realpath($defaultpath.'/'.$templateFile))) {
+            if (file_exists($defaultpath.'/'.$templateFile)) {
                 $this->templateFile = $templateFile;
                 $this->templatePath = $defaultpath.'/';
             } else {
@@ -76,7 +81,6 @@ class SquelettePhp
         } elseif ($value instanceof SquelettePhp) {
             $this->vars[$name] = $value->render();
         } else {
-            var_dump($name, $value);
             $this->vars[$name] = $value;
         }
     }

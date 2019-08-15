@@ -239,6 +239,6 @@ try {
     $content = '<div class="alert alert-danger">Erreur action {{login ..}} : '.  $e->getMessage(). '</div>'."\n";
 }
 
-$output = (!empty($class)) ? '<div class="'.$class.'">'."\n".$content."\n".'</div>'."\n" : $squel->analyser();
+$output = (!empty($class)) ? '<div class="'.$class.'">'."\n".$content."\n".'</div>'."\n" : $content;
 
 echo $output;

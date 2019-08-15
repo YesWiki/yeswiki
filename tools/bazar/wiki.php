@@ -287,12 +287,3 @@ $wakkaConfig['default_bazar_template'] = getConfigValue('default_bazar_template'
 
 // les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
 $wakkaConfig['global_query'] = getConfigValue('global_query', true, $wakkaConfig);
-
-// Fonctions ajoutées par bazar a la classe Wiki
-$wikiClasses[] = 'Bazar';
-
-// fonctions supplementaires a ajouter la classe wiki
-$fp = @fopen('tools/bazar/libs/bazar.class.inc.php', 'r');
-$contents = fread($fp, filesize('tools/bazar/libs/bazar.class.inc.php'));
-fclose($fp);
-$wikiClassesContent [] = str_replace('<?php', '', $contents);

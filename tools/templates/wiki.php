@@ -50,15 +50,6 @@ define('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 // Pour que seul le propriétaire et l'admin puissent changer de theme
 define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
-// Surcharge  fonction  LoadRecentlyChanged : suppression remplissage cache car affecte le rendu du template.
-$wikiClasses[] = 'Template';
-
-// fonctions supplementaires a ajouter la classe wiki
-$fp = @fopen('tools/templates/libs/templates.class.inc.php', 'r');
-$contents = fread($fp, filesize('tools/templates/libs/templates.class.inc.php'));
-fclose($fp);
-$wikiClassesContent [] = str_replace('<?php', '', $contents);
-
 //on récupère les metadonnées de la page
 $metadatas = $wiki->GetTripleValue(
     $page,

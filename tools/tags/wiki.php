@@ -11,11 +11,3 @@ if (!defined("WIKINI_VERSION")) {
 //si 1 ils sont ouverts par defaut
 define('COMMENTAIRES_OUVERTS_PAR_DEFAUT', 0);
 define('CACHER_MOTS_CLES', 0);
-
-$wikiClasses [] = 'Tags';
-
-// fonctions supplementaires a ajouter la classe wiki
-$fp = @fopen('tools/tags/libs/tags.class.inc.php', 'r');
-$contents = fread($fp, filesize('tools/tags/libs/tags.class.inc.php'));
-fclose($fp);
-$wikiClassesContent [] = str_replace('<?php', '', $contents);
