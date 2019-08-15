@@ -64,6 +64,16 @@ $(document).ready(function () {
     return false;
   });
 
+  // confirm delete of entry
+  $('.btn-delete-page-confirm').click(function(e) {
+    if (confirm($(this).data('confirm-text'))) {
+      $(this).attr('href',  $(this).attr('href')+'&confirme=oui');
+      return true;
+    } else {
+      return false;
+    }
+  });
+
   //permet de gerer des affichages conditionnels, en fonction de balises div
   function handleConditionnalListChoice() {
     var id = $(this).attr('id');
@@ -207,7 +217,7 @@ $(document).ready(function () {
     });
 
     // les checkbox chk_required
-    $('#formulaire fieldset.chk_required:visible').each(function () {
+    $('#formulaire .chk_required:visible').each(function () {
       var nbchkbox = $(this).find(':checked');
       if (nbchkbox.length === 0) {
         atleastonecheckboxfieldnotvalid = true;

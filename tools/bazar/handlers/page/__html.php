@@ -35,6 +35,8 @@ if (!defined("WIKINI_VERSION")) {
 $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
 
 if ($type == 'fiche_bazar') {
+    // js lib
+    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $tab_valeurs = baz_valeurs_fiche($this->GetPageTag());
     $this->page["body"] = '""'.baz_voir_fiche(0, $tab_valeurs).'""';
 }

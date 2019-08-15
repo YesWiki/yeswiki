@@ -19,6 +19,9 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
+// js lib
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {
     // tri par ordre desire
@@ -115,7 +118,7 @@ if (empty($list)) {
             $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
             // lien de suppression visible pour le super admin
             if (baz_a_le_droit('supp_fiche', $valeurs_fiche['createur'])) {
-                $valeurs_fiche['lien_suppression'] = '<a class="BAZ_lien_supprimer" href="'.
+                $valeurs_fiche['lien_suppression'] = '<a class="btn-delete-page-confirm" href="'.
                     $this->href('deletepage', $valeurs_fiche['id_fiche']).'"></a>'."\n";
             }
             if (baz_a_le_droit('modif_fiche', $valeurs_fiche['createur'])) {

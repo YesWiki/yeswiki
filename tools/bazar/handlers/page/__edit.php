@@ -40,6 +40,9 @@ if ($this->HasAccess('write')) {
     );
 
     if ($type == 'fiche_bazar') {
+        // js lib
+        $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
         // dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
         if (isset($_POST['bf_titre'])) {
             baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href(), $_POST);

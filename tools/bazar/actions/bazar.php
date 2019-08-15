@@ -54,6 +54,9 @@ $GLOBALS['params'] = getAllParameters($this);
 // |                                            CORPS du PROGRAMME                                        |
 // +------------------------------------------------------------------------------------------------------+
 
+// js lib
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
 // si c'est demandé, on affiche le menu
 if ($GLOBALS['params']['voirmenu'] != '0') {
     $menuitems = array_map('trim', explode(',', $GLOBALS['params']['voirmenu']));

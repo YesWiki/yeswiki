@@ -506,28 +506,31 @@ function baz_afficher_formulaire_import()
                 }
             }
         } elseif (isset($_POST['importfiche'])) {
-            // Pour les traitements particulier lors de l import
-            $GLOBALS['_BAZAR_']['provenance'] = 'import';
-
-            // des fiches ont été sélectionnées pour l'import
-            $val_formulaire = baz_valeurs_formulaire($id);
-            $importlist = '';
-            $nb = 0;
-            foreach ($_POST['importfiche'] as $WikiName => $valeur) {
-                $valeur = unserialize(base64_decode($valeur));
-                $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
-                $valeur['id_typeannonce'] = $id;
-                $valeur = array_map('strval', $valeur);
-                baz_insertion_fiche($valeur);
-                ++$nb;
-                $importlist .=
-                ' '.$nb.') [['.$valeur['id_fiche'].' '.
-                $valeur['bf_titre'].']]'."\n";
+            if (!isset($GLOBALS['importdone'])) {
+                // Pour les traitements particulier lors de l import
+                $GLOBALS['_BAZAR_']['provenance'] = 'import';
+    
+                // des fiches ont été sélectionnées pour l'import
+                $val_formulaire = baz_valeurs_formulaire($id);
+                $importlist = '';
+                $nb = 0;
+                foreach ($_POST['importfiche'] as $valeur) {
+                    $valeur = unserialize(base64_decode($valeur));
+                    $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
+                    $valeur['id_typeannonce'] = $id;
+                    $valeur = array_map('strval', $valeur);
+                    baz_insertion_fiche($valeur);
+                    ++$nb;
+                    $importlist .=
+                    ' '.$nb.') [['.$valeur['id_fiche'].' '.
+                    $valeur['bf_titre'].']]'."\n";
+                }
+                $output .=
+                '<div class="alert alert-success">'.
+                _t('BAZ_NOMBRE_FICHE_IMPORTE').' '.$nb.'</div>'."\n".
+                $GLOBALS['wiki']->Format($importlist);
+                $GLOBALS['importdone'] = true;
             }
-            $output .=
-            '<div class="alert alert-success">'.
-            _t('BAZ_NOMBRE_FICHE_IMPORTE').' '.$nb.'</div>'."\n".
-            $GLOBALS['wiki']->Format($importlist);
         } else {
             // Affichage par defaut
             //On choisit un type de fiches pour parser le csv en consequence
@@ -864,6 +867,7 @@ function baz_afficher_formulaire_export()
                 || $tabindex[0] == 'listefiche' || $tabindex[0] ==
                 'checkboxfiche') {
                 // ???  FIXME ?
+                $toto = 'dummy';
                 $html = $tabindex[0](
                     $toto,
                     array(
@@ -1185,6 +1189,7 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
             $valeurs = baz_valeurs_fiche($valeurs);
         }
         $data['content'] = '';
+        $formtemplate = '';
         for ($i = 0; $i < count($tableau); ++$i) {
             $data['content'] .= $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
         }
@@ -1659,7 +1664,7 @@ function baz_formulaire_des_formulaires($mode, $form = '')
 function bazPrepareFormData($form)
 {
     $i = 0;
-    $prepared = array();
+    $prepared = $result = [];
     $form['template'] = _convert($form['template'], 'ISO-8859-15');
     foreach ($form['template'] as $formelem) {
         if (in_array($formelem[0], array('radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'))) {
@@ -1960,7 +1965,7 @@ function bazPrepareFormData($form)
  *
  * @return array
  */
-function baz_valeurs_formulaire($idformulaire = '')
+function baz_valeurs_formulaire($idformulaire = [])
 {
     if (is_array($idformulaire) and count($idformulaire) > 0) {
         $tabf = array();
@@ -2533,7 +2538,7 @@ function baz_valeurs_liste($idliste = '')
 
         return $GLOBALS['_BAZAR_']['lists'][$idliste];
     } else {
-        $GLOBALS['_BAZAR_']['lists'] = '';
+        $GLOBALS['_BAZAR_']['lists'] = [];
         //requete pour obtenir l'id et le label des listes
         $requete = 'SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples '
           .'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="liste" ORDER BY resource';
@@ -2561,23 +2566,6 @@ function baz_nextId($table, $colonne_identifiant, $bdd)
     $ligne = $GLOBALS['wiki']->LoadSingle($requete);
 
     return $ligne['maxi'] + 1;
-}
-
-/** baz_titre_wiki() Renvoie la chaine de caractere sous une forme compatible avec wikini
- *   @param  string  mot a transformer (enlever accents, espaces)
- *
- *   return  string  mot transforme
- */
-function baz_titre_wiki($nom)
-{
-    $titre = trim($nom);
-    for ($j = 0; $j < strlen($titre); ++$j) {
-        if (!preg_match('/[a-zA-Z0-9]/', $titre[$j])) {
-            $titre[$j] = '_';
-        }
-    }
-
-    return $titre;
 }
 
 function getHtmlDataAttributes($fiche, $formtab = '')
@@ -2763,7 +2751,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
           $res .= fread($fp, filesize($cacheid));
           fclose($fp);
         } else {
-          $html = array();
+          $html = $formtemplate = [];
           for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
               // Champ  acls  present
               if (isset($fichebazar['form']['template'][$i][11]) &&
@@ -2872,9 +2860,9 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
                 // lien supprimer la fiche
                 $fichebazar['infos'] .=
-                ' <a class="btn btn-xs btn-mini btn-danger" href="'
-                . $GLOBALS['wiki']->href('deletepage', $idfiche).'" onclick="javascript:return confirm(\''
-                . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'\');">'
+                ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
+                . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
+                . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
                 . '<i class="glyphicon glyphicon-trash icon-trash icon-white"></i> '
                 . _t('BAZ_SUPPRIMER').'</a>'."\n";
             }
@@ -3134,6 +3122,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 
     // on recupere le nb de types de fiches, pour plus tard
     $nb_type_de_fiches = 0;
+    $type_fiche = '';
     $type_formulaire_select[''] = _t('BAZ_TOUS_TYPES_FICHES');
     if (is_array($tab_formulaires) and !isset($tab_formulaires["bn_id_nature"])) {
         foreach ($tab_formulaires as $nomwiki => $ligne) {
@@ -3170,24 +3159,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 
     // affichage du formulaire
     include_once 'includes/squelettephp.class.php';
-//     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/list.1.5.0.min.js');
-//     $js = '$(document).ready(function () {
-//     var options = {
-//         valueNames: [ \'entry-title\' ],
-//         listClass: \'BAZ_liste\',
-//         searchClass: \'search-input\','."\n";
-//     if (!empty($GLOBALS['params']['pagination'])) {
-//         $js .=  'page: '.$GLOBALS['params']['pagination'].',
-//         pagination: {
-//           outerWindow: 2,
-//           innerWindow: 3
-//         }'."\n";
-//     }
-//     $js .=  '}
-//       var bazarList'.$GLOBALS['_BAZAR_']['nbbazarsearch'].' = new List(\'bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'\', options);
-//    });';
-//    var_dump($GLOBALS['params']['pagination'], $js);
-//     $GLOBALS['wiki']->addJavascript($js);
     $templatetoload = 'tools/bazar/presentation/templates/search_form.tpl.html';
     $squelsearch = new SquelettePhp($templatetoload);
     $squelsearch->set($data);
@@ -3377,9 +3348,16 @@ function baz_requete_recherche_fiches(
                         if (!$first) {
                             $requeteSQL .= ' '.$facettesearch.' ';
                         }
-                        $requeteSQL .=
-                        'body REGEXP \'"'.$nom.'":"[^"]^'.$critere.
-                            '[^"]"\'';
+
+                        if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                            $requeteSQL .=
+                            'body REGEXP \'"'.$nom.'":"'.$critere.'"\'';
+                        } else {
+                            $requeteSQL .=
+                            'body REGEXP \'"'.$nom.'":("'.$critere.
+                            '"|"[^"]*,'.$critere.'"|"'.$critere.',[^"]*"|"[^"]*,'
+                            .$critere.',[^"]*")\'';
+                        }
 
                         $first = false;
                     }
@@ -3544,7 +3522,7 @@ function endsWith($haystack, $needle)
  */
 function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
 {
-    $facettevalue = array();
+    $facettevalue = $templatef = [];
 
     foreach ($fiches as $fiche) {
         // on recupere les valeurs du formulaire si elles n'existaient pas
@@ -3707,34 +3685,34 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     $fiches['pager_links'] = '';
     if (!empty($params['pagination'])) {
-        // // Mise en place du Pager
-        // require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
-        // $tab = array_merge($_POST, $_GET);
-        // // use wiki get param instead of short camelCase param
-        // if (isset($tab[$GLOBALS['wiki']->getPageTag()])) {
-        //     unset($tab[$GLOBALS['wiki']->getPageTag()]);
-        //     unset($_GET[$GLOBALS['wiki']->getPageTag()]);
-        // }
-        // $param = array(
-        //     'mode' => $GLOBALS['wiki']->config['BAZ_MODE_DIVISION'],
-        //     'perPage' => $params['pagination'],
-        //     'delta' => $GLOBALS['wiki']->config['BAZ_DELTA'],
-        //     'httpMethod' => 'GET',
-        //     'path' => $GLOBALS['wiki']->getBaseUrl(),
-        //     'extraVars' => $tab,
-        //     'altNext' => _t('BAZ_SUIVANT'),
-        //     'altPrev' => _t('BAZ_PRECEDENT'),
-        //     'nextImg' => _t('BAZ_SUIVANT'),
-        //     'prevImg' => _t('BAZ_PRECEDENT'),
-        //     'itemData' => $fiches['fiches'],
-        //     'curPageSpanPre' => '<li class="active"><a>',
-        //     'curPageSpanPost' => '</a></li>',
-        //     'useSessions' => false,
-        //     'closeSession' => false,
-        // );
-        // $pager = &Pager::factory($param);
-        // $fiches['fiches'] = $pager->getPageData();
-        // $fiches['pager_links'] = '<div class="bazar_numero text-center">'."\n".'<ul class="pagination">'."\n".$pager->links.'</ul>'."\n".'</div>'."\n";
+        // Mise en place du Pager
+        require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
+        $tab = array_merge($_POST, $_GET);
+        // use wiki get param instead of short camelCase param
+        if (isset($tab[$GLOBALS['wiki']->getPageTag()])) {
+            unset($tab[$GLOBALS['wiki']->getPageTag()]);
+            unset($_GET[$GLOBALS['wiki']->getPageTag()]);
+        }
+        $param = array(
+            'mode' => $GLOBALS['wiki']->config['BAZ_MODE_DIVISION'],
+            'perPage' => $params['pagination'],
+            'delta' => $GLOBALS['wiki']->config['BAZ_DELTA'],
+            'httpMethod' => 'GET',
+            'path' => $GLOBALS['wiki']->getBaseUrl(),
+            'extraVars' => $tab,
+            'altNext' => _t('BAZ_SUIVANT'),
+            'altPrev' => _t('BAZ_PRECEDENT'),
+            'nextImg' => _t('BAZ_SUIVANT'),
+            'prevImg' => _t('BAZ_PRECEDENT'),
+            'itemData' => $fiches['fiches'],
+            'curPageSpanPre' => '<li class="active"><a>',
+            'curPageSpanPost' => '</a></li>',
+            'useSessions' => false,
+            'closeSession' => false,
+        );
+        $pager = &Pager::factory($param);
+        $fiches['fiches'] = $pager->getPageData();
+        $fiches['pager_links'] = '<div class="bazar_numero text-center">'."\n".'<ul class="pagination">'."\n".$pager->links.'</ul>'."\n".'</div>'."\n";
     }
     $fiches['param'] = $params;
 
@@ -3915,12 +3893,12 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         if (isset($_GET['id']) and !empty($_GET['id'])) {
             $key = $_GET['id'];
         } elseif (is_array($GLOBALS['params']['idtypeannonce'])) {
-            $key = implode($GLOBALS['params']['idtypeannonce'], ',');
+            $key = implode(',',$GLOBALS['params']['idtypeannonce']);
         } elseif (!empty($GLOBALS['params']['idtypeannonce'])) {
             $key = $GLOBALS['params']['idtypeannonce'];
         } else {
             $keys =  array_keys($GLOBALS['_BAZAR_']['form']);
-            $key = is_array($keys) ? implode($keys, ',') : $params['idtypeannonce'];
+            $key = is_array($keys) ? implode(',', $keys) : $params['idtypeannonce'];
         }
 
         if (isset($_GET['q']) and !empty($_GET['q'])) {
@@ -4396,13 +4374,16 @@ function getAllParameters($wiki)
     }
     if (!empty($param['query'])) {
         $tabquery = array();
-        $tableau = array();
+
         $tab = explode('|', $param['query']); //découpe la requete autour des |
         foreach ($tab as $req) {
             $tabdecoup = explode('=', $req, 2);
-            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+            if (isset($tabquery[$tabdecoup[0]]) && !empty($tabquery[$tabdecoup[0]])) {
+                $tabquery[$tabdecoup[0]] = $tabquery[$tabdecoup[0]].','.trim($tabdecoup[1]);
+            } else {
+                $tabquery[$tabdecoup[0]] = trim($tabdecoup[1]);
+            }
         }
-        $tabquery = array_merge($tabquery, $tableau);
     } else {
         $tabquery = '';
     }
@@ -4643,7 +4624,7 @@ function getAllParameters_carto($wiki, array &$param)
 				 }
 				 $param['icon'] = $tabparam;
 			} else {
-				$param['icon'] = trim($iconparam[0]);
+				$param['icon'] = trim($tabparam[0]);
 				}
 			} else {
 				exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
@@ -4659,10 +4640,10 @@ function getAllParameters_carto($wiki, array &$param)
 	/*
 	* color : couleur des marqueurs
 	*/
-	// $colors = array(
-	//     'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
-	//     'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
-	// );
+	$colors = array(
+	    'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+	    'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
+	);
 	$param['color'] = isset($_GET['color']) ? $_GET['color'] : $wiki->GetParameter('color');
 	if (!empty($param['color'])) {
 		$tabparam = array();

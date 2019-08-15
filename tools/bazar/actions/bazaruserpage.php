@@ -17,6 +17,9 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+// js lib
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
 $nomwiki = $GLOBALS['wiki']->getUser();
 if ($nomwiki) {
     $requetesql = 'SELECT DISTINCT tag FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE latest="Y" AND comment_on = \'\' AND body LIKE \'%"nomwiki":"'.addslashes($nomwiki['name']).'"%\' AND body LIKE \'%"statut_fiche":"1"%\'
