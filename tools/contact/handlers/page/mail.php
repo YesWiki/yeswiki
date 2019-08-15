@@ -46,7 +46,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if (isset($_POST['type']) and $_POST['type'] == 'mail') {
         $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
-        $message_html = $infomsg.html_entity_decode(_convert($this->Format($this->page["body"]), YW_CHARSET));
+        $message_html = $infomsg.html_entity_decode(_convert($this->Format($this->page["body"], 'wakka', $this->GetPageTag()), YW_CHARSET));
         $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
     } elseif (isset($_POST['type']) and ($_POST['type'] == 'abonnement' or $_POST['type'] == 'desabonnement')) {
         $message_html = $message_txt = 'Mailinglist : '.$_POST['type'];

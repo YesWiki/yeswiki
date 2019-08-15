@@ -31,6 +31,9 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 if (isset($_GET['id'])) {
+    // js lib
+    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
     echo $this->Header();
     echo '<h1>Partager les résultats par widget HTML (code embed)</h1>'."\n";
     $params = getAllParameters($this);

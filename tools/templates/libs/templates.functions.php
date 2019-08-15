@@ -182,7 +182,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
         if (!$page = $GLOBALS['wiki']->LoadPage($pagetag)) {
             return '<div class="alert alert-danger">'._t('TEMPLATE_PAGE_DOESNT_EXIST').' ('.$pagetag.').</div>';
         } else {
-            $body_f = $GLOBALS['wiki']->Format($page["body"]);
+            // $body_f = $GLOBALS['wiki']->Format($page["body"], 'wakka', $pagetag);
             // on regarde si on gere la 2d pour reveal
             //preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
             preg_match_all('/======.*======/Um', $page["body"], $titles);
@@ -643,18 +643,15 @@ function recup_droits($page)
         'comment' => $wiki->GetConfigValue('default_comment_acl'),
         'comment_default' => true,
     );
-    if( isset($readACL['list']) )
-    {
+    if (isset($readACL['list'])) {
         $acls['lire'] = $readACL['list'] ;
         $acls['lire_default'] = false ;
     }
-    if( isset($writeACL['list']) )
-    {
+    if (isset($writeACL['list'])) {
         $acls['ecrire'] = $writeACL['list'] ;
         $acls['ecrire_default'] = false ;
     }
-    if( isset($commentACL['list']) )
-    {
+    if (isset($commentACL['list'])) {
         $acls['comment'] = $commentACL['list'] ;
         $acls['comment_default'] = false ;
     }
@@ -662,7 +659,8 @@ function recup_droits($page)
 }
 
 //Récupère les droits de la page désignée en argument et renvoie un tableau
-function recup_meta($page) { 
+function recup_meta($page)
+{
     $metas = $GLOBALS['wiki']->GetMetaDatas($page);
 
     return array('page' => $page,
@@ -704,15 +702,15 @@ function add_change_theme_js()
     return $js;
 }
 
-function theme_selector($method = '') {
-
+function theme_selector($method = '')
+{
     if (!isset($formclass)) {
         $formclass = 'form-horizontal' ;
     }
 
     $id = 'select_theme';
 
-    $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '' ).'class="' . $formclass . '" id="' . $id . '">' . "\n";
+    $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '').'class="' . $formclass . '" id="' . $id . '">' . "\n";
 
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
     $repertoire_initial = 'tools' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'themes';
@@ -725,7 +723,6 @@ function theme_selector($method = '') {
         if (is_array($GLOBALS['wiki']->config['templates'])) {
             ksort($GLOBALS['wiki']->config['templates']);
         }
-
     }
 
     $selecteur .= '			<div class="control-group form-group">' . "\n" .
@@ -783,7 +780,7 @@ function theme_selector($method = '') {
  * @param array  $page   Page info
  * @param string $width  Width of the image
  * @param string $height Height of the image
- * 
+ *
  * @return string  link to the image
  */
 function getImageFromBody($page, $width, $height)
@@ -849,7 +846,6 @@ function getImageFromBody($page, $width, $height)
             if (is_array($image[1]) && !empty($image[1][0])) {
                 $image = $GLOBALS['wiki']->getBaseUrl().'/'.trim(str_replace('\\', '', $image[1][0]));
             } else {
-                
                 preg_match_all("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $image);
                 if (is_array($image[1]) && !empty($image[1][0])) {
                     $image = trim($image[1][0]);
@@ -871,7 +867,7 @@ function getImageFromBody($page, $width, $height)
  * Get the first title in page
  *
  * @param array $page Informations de la page
- * 
+ *
  * @return string The title string
  */
 function getTitleFromBody($page)
@@ -880,7 +876,7 @@ function getTitleFromBody($page)
         return $GLOBALS['wiki']->config['wakka_name'];
     }
     $title = '';
-    // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2 
+    // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
     preg_match_all('/<h1.*>\s*(.*)\s*<\/h1>/mU', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = $titles[1][0];
@@ -904,7 +900,7 @@ function getTitleFromBody($page)
  *
  * @param array $page   Page informations
  * @param int   $length Max number of chars (default 300)
- * 
+ *
  * @return string The title string
  */
 function getDescriptionFromBody($page, $length = 300)
@@ -925,7 +921,7 @@ function getDescriptionFromBody($page, $length = 300)
         $entry = baz_valeurs_fiche($GLOBALS['wiki']->GetPageTag());
         $desc = baz_voir_fiche(0, $entry);
     } else {
-        $desc = $GLOBALS['wiki']->Format($page['body']);
+        //$desc = $GLOBALS['wiki']->Format($page['body'], 'wakka', $page["tag"]);
     }
     // no javascript
     $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', "", $desc);

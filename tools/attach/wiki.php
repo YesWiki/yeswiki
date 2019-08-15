@@ -38,14 +38,3 @@ $wakkaConfig['authorized_extensions'] = isset($wakkaConfig['authorized_extension
     // open document format
     'odt' => 'opendocument text', 'ods' => 'opendocument spreadsheet', 'odp' => 'opendocument presentation', 'odg' => 'opendocument graphics', 'odc' => 'opendocument chart', 'odf' => 'opendocument formula', 'odb' => 'opendocument database', 'odi' => 'opendocument image', 'odm' => 'opendocument text-master', 'ott' => 'opendocument text-template', 'ots' => 'opendocument spreadsheet-template', 'otp' => 'opendocument presentation-template', 'otg' => 'opendocument graphics-template',
 );
-
-
-// une fonction pour passer les parametres a l'upload
-$wikiClasses [] = 'ExtendAttach';
-
-$wikiClassesContent [] = '
-	// Fonction supplementaire pour paser des parametres a l\'upload
-    function setParameter($parameter,$value) {
-        $this->parameter[$parameter]=$value;
-    }
-';

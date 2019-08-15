@@ -11,6 +11,9 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+// js lib
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
 // on compte les actions bazarliste afin de différencier les instances
 if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
     $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;

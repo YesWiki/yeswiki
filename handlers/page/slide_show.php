@@ -84,7 +84,7 @@ if (!$this->HasAccess('read')) {
         //
         // découpe la page
         $this->RegisterInclusion($this->GetPageTag());
-        $body_f = $this->format($this->page['body']);
+        $body_f = $this->format($this->page['body'], 'wakka', $this->GetPageTag());
         $this->UnregisterLastInclusion();
         $body = preg_split('/(.*<h2>.*<\/h2>)/', $body_f, -1, PREG_SPLIT_DELIM_CAPTURE);
 

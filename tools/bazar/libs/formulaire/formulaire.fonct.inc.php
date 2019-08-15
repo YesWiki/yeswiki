@@ -1647,7 +1647,16 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $tab_fiche = baz_valeurs_fiche($valeurs_fiche[$var]);
                     $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', ($tab_fiche['bf_titre'] != null) ? $tab_fiche['bf_titre'] : '', $valeurs_fiche['bf_titre']);
                 } elseif (preg_match('#^liste#', $var) != false || preg_match('#^checkbox#', $var) != false) {
-                    // TODO : toujours necessaire?
+                    $liste = preg_replace('#^(liste|checkbox)(.*)#', '$2', $var);
+                    $valliste = baz_valeurs_liste($liste);
+                    $list = explode(',', $valeurs_fiche[$var]);
+                    $listlabel = array();
+                    foreach($list as $l) {
+                    $listlabel[] = $valliste['label'][$l];
+                    }
+                    $listlab = implode(', ', $listlabel);
+     
+                    $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', $listlab, $valeurs_fiche['bf_titre']);
                 } else {
                     $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', $valeurs_fiche[$var], $valeurs_fiche['bf_titre']);
                 }
@@ -2274,6 +2283,8 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $query = $tableau_template[2] . '|' . $typefiche . $valeurs_fiche['id_typeannonce'] . '=' . $valeurs_fiche['id_fiche'];
     } elseif (isset($valeurs_fiche) && $valeurs_fiche != '') {
         $query = $typefiche . $valeurs_fiche['id_typeannonce'] . '=' . $valeurs_fiche['id_fiche'];
+    } else {
+        $query= '';
     }
     if (isset($tableau_template[3])) {
         $otherparams = $tableau_template[3];

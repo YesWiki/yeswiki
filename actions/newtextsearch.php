@@ -113,7 +113,7 @@ if ($phrase) {
                 if ($this->HasAccess("read", $page["tag"])) {
                     $lien = $this->ComposeLinkToPage($page["tag"]);
                     echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, "</h4>";
-                    echo displayNewSearchResult($this->Format($page["body"]), $phrase);
+                    echo displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase);
                     echo "</li>\n";
                 }
             }

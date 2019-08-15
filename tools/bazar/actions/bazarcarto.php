@@ -8,6 +8,8 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
+// js lib
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
 // test de sécurité pour vérifier si on passe par wiki
 if (!defined('WIKINI_VERSION')) {

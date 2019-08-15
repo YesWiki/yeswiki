@@ -64,6 +64,9 @@ tools/*
 .idea
 *.iml
 
+# vscode IDE
+.vscode
+
 # Docker
 .db
 

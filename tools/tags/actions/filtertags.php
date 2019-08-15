@@ -60,7 +60,7 @@ foreach ($pages as $page) {
 	$element[$page['tag']]['title'] = get_title_from_body($page);
 	$element[$page['tag']]['image'] = get_image_from_body($page);
 	$this->RegisterInclusion($page['tag']);
-	$element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'])), $nbcartrunc);
+	$element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'], 'wakka', $page["tag"])), $nbcartrunc);
 	$this->UnregisterLastInclusion();
 	$pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
 	foreach ($pagetags as $tag) {

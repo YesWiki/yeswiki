@@ -84,7 +84,7 @@ if ($resultat) {
 		$element[$page['tag']]['time'] = $page['time'];
 		$element[$page['tag']]['title'] = get_title_from_body($page);
 		$element[$page['tag']]['image'] = get_image_from_body($page);
-		$element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'])), $nbcartrunc);
+		$element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->Format($page['body'], 'wakka', $page["tag"])), $nbcartrunc);
 		$pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
 		foreach ($pagetags as $tag) {
 			$element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']).' ';

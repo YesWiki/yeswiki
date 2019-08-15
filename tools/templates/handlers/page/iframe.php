@@ -27,14 +27,14 @@ if ($this->HasAccess("read")) {
         // affichage de la page formatee
         if (isset($_GET['iframelinks']) && $_GET['iframelinks'] == '0') {
             // pas de modification des urls
-            $output .= $this->Format($this->page["body"]);
+            $output .= $this->Format($this->page["body"], 'wakka', $this->GetPageTag());
         } else {
             // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
             $pattern = ',' . preg_quote($this->config['base_url']) . '(\w+)([&#?].*?)?(["<]),';
             $pagebody = preg_replace(
                 $pattern,
                 $this->config['base_url'] . "$1/iframe$2$3",
-                $this->Format($this->page["body"])
+                $this->Format($this->page["body"], 'wakka', $this->GetPageTag())
             );
 
             // pattern qui rajoute le /editiframe pour les liens au bon endroit

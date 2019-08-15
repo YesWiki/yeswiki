@@ -15,6 +15,9 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+// js lib
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
 // Recuperation de tous les parametres
 $GLOBALS['params'] = getAllParameters($this);
 // tableau des fiches correspondantes aux critères
