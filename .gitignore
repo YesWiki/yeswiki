@@ -4,9 +4,11 @@ info.php
 cache/*
 !cache/README.md
 files/*
+!files/backgrounds
 !files/README.md
 themes/*
 !themes/README.md
+!themes/yeswiki
 templates/*
 !templates/README.md
 custom/themes/*

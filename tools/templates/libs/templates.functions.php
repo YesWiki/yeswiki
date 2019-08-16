@@ -276,7 +276,7 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
     }
 }
 
-function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizontal')
+function show_form_theme_selector($mode = 'selector', $formclass = '')
 {
     // en mode edition on recupere aussi les images de fond
     if ($mode=='edit') {
@@ -372,8 +372,8 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
 
 
     $selecteur .= '         <div class="control-group form-group">'."\n".
-                    '               <label class="control-label col-lg-4">'._t('TEMPLATE_THEME').'</label>'."\n".
-                    '               <div class="controls col-lg-7">'."\n".
+                    '               <label class="control-label">'._t('TEMPLATE_THEME').'</label>'."\n".
+                    '               <div class="controls">'."\n".
                     '                   <select class="form-control" id="changetheme" name="theme">'."\n";
     foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
         if ($value !== $GLOBALS['wiki']->config['favorite_theme']) {
@@ -385,8 +385,8 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
     $selecteur .= '                 </select>'."\n".'               </div>'."\n".'          </div>'."\n";
     $selecteur .=
     '           <div class="control-group form-group">'."\n".
-    '               <label class="control-label col-lg-4">'._t('TEMPLATE_SQUELETTE').'</label>'."\n".
-    '               <div class="controls col-lg-7">'."\n".
+    '               <label class="control-label">'._t('TEMPLATE_SQUELETTE').'</label>'."\n".
+    '               <div class="controls">'."\n".
     '                   <select class="form-control" id="changesquelette" name="squelette">'."\n";
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
     foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
@@ -401,8 +401,8 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);
     $selecteur .=
     '           <div class="control-group form-group">'."\n".
-    '               <label class="control-label col-lg-4">'._t('TEMPLATE_STYLE').'</label>'."\n".
-    '               <div class="controls col-lg-7">'."\n".
+    '               <label class="control-label">'._t('TEMPLATE_STYLE').'</label>'."\n".
+    '               <div class="controls">'."\n".
     '                   <select class="form-control" id="changestyle" name="style">'."\n";
     foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
         if ($value !== $GLOBALS['wiki']->config['favorite_style']) {
@@ -423,8 +423,8 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
                     <div id="avanced-page-settings" class="panel-collapse accordion-body collapse">
                         <div class="panel-body accordion-inner">
                             <div class="control-group form-group">
-                                <label class="control-label col-lg-4">'._t('PAGE_LANGUAGE').'</label>
-                                <div class="controls col-lg-7">
+                                <label class="control-label">'._t('PAGE_LANGUAGE').'</label>
+                                <div class="controls">
                                     <select class="form-control" name="lang">'."\n";
 
         // choice of language
@@ -444,43 +444,43 @@ function show_form_theme_selector($mode = 'selector', $formclass = 'form-horizon
         $selecteur .= '         <fieldset>
                                 <legend>'._t('CHOOSE_PAGE_FOR').' : </legend>
                                 <div class="control-group form-group">
-                                    <label class="control-label col-lg-4">'._t('HORIZONTAL_MENU_PAGE').'</label>
-                                    <div class="controls col-lg-7">
+                                    <label class="control-label">'._t('HORIZONTAL_MENU_PAGE').'</label>
+                                    <div class="controls">
                                         <input class="form-control" type="text" autocomplete="off" name="PageMenuHaut" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageMenuHaut']) ? $GLOBALS['wiki']->page["metadatas"]['PageMenuHaut'] : 'PageMenuHaut').'" />
                                     </div>
                                 </div>'."\n";
         $selecteur .= '
                                 <div class="control-group form-group">
-                                    <label class="control-label col-lg-4">'._t('FAST_ACCESS_RIGHT_PAGE').'</label>
-                                    <div class="controls col-lg-7">
+                                    <label class="control-label">'._t('FAST_ACCESS_RIGHT_PAGE').'</label>
+                                    <div class="controls">
                                         <input class="form-control" type="text" autocomplete="off" name="PageRapideHaut" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageRapideHaut']) ? $GLOBALS['wiki']->page["metadatas"]['PageRapideHaut'] : 'PageRapideHaut').'" />
                                     </div>
                                 </div>'."\n";
         $selecteur .= '
                                 <div class="control-group form-group">
-                                    <label class="control-label col-lg-4">'._t('HEADER_PAGE').'</label>
-                                    <div class="controls col-lg-7">
+                                    <label class="control-label">'._t('HEADER_PAGE').'</label>
+                                    <div class="controls">
                                         <input class="form-control" type="text" autocomplete="off" name="PageHeader" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageHeader']) ? $GLOBALS['wiki']->page["metadatas"]['PageHeader'] : 'PageHeader').'" />
                                     </div>
                                 </div>'."\n";
         $selecteur .= '
                                 <div class="control-group form-group">
-                                    <label class="control-label col-lg-4">'._t('FOOTER_PAGE').'</label>
-                                    <div class="controls col-lg-7">
+                                    <label class="control-label">'._t('FOOTER_PAGE').'</label>
+                                    <div class="controls">
                                         <input class="form-control" type="text" autocomplete="off" name="PageFooter" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageFooter']) ? $GLOBALS['wiki']->page["metadatas"]['PageFooter'] : 'PageFooter').'" />
                                     </div>
                                 </div>'."\n";
         $selecteur .= '         <div class="control-group form-group">
-                                    <label class="control-label col-lg-4">'._t('VERTICAL_MENU_PAGE').'</label>
-                                    <div class="controls col-lg-7">
+                                    <label class="control-label">'._t('VERTICAL_MENU_PAGE').'</label>
+                                    <div class="controls">
                                         <input class="form-control" type="text" autocomplete="off" name="PageMenu" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageMenu']) ? $GLOBALS['wiki']->page["metadatas"]['PageMenu'] : 'PageMenu').'" />
                                     </div>
                                 </div>'."\n";
 
         $selecteur .= '
                     <div class="control-group form-group">
-                        <label class="control-label col-lg-4">'._t('RIGHT_COLUMN_PAGE').'</label>
-                        <div class="controls col-lg-7">
+                        <label class="control-label">'._t('RIGHT_COLUMN_PAGE').'</label>
+                        <div class="controls">
                             <input class="form-control" type="text" autocomplete="off" name="PageColonneDroite" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageColonneDroite']) ? $GLOBALS['wiki']->page["metadatas"]['PageColonneDroite'] : 'PageColonneDroite').'" />
                         </div>
                     </div>'."\n".
@@ -705,7 +705,7 @@ function add_change_theme_js()
 function theme_selector($method = '')
 {
     if (!isset($formclass)) {
-        $formclass = 'form-horizontal' ;
+        $formclass = '' ;
     }
 
     $id = 'select_theme';
@@ -713,12 +713,12 @@ function theme_selector($method = '')
     $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '').'class="' . $formclass . '" id="' . $id . '">' . "\n";
 
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-    $repertoire_initial = 'tools' . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . 'themes';
+    $repertoire_initial = 'themes';
     $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
 
     //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-    if (is_dir('themes')) {
-        $repertoire_racine = 'themes';
+    if (is_dir('custom/themes')) {
+        $repertoire_racine = 'custom/themes';
         $GLOBALS['wiki']->config['templates'] = array_merge($GLOBALS['wiki']->config['templates'], search_template_files($repertoire_racine));
         if (is_array($GLOBALS['wiki']->config['templates'])) {
             ksort($GLOBALS['wiki']->config['templates']);
@@ -726,8 +726,8 @@ function theme_selector($method = '')
     }
 
     $selecteur .= '			<div class="control-group form-group">' . "\n" .
-    '				<label class="control-label col-lg-4">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
-        '				<div class="controls col-lg-4">' . "\n" .
+    '				<label class="control-label">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
+        '				<div class="controls">' . "\n" .
         '					<select class="form-control" id="changetheme" name="theme_select">' . "\n";
     foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
         $selected = '';
@@ -740,8 +740,8 @@ function theme_selector($method = '')
 
     $selecteur .=
     '			<div class="control-group form-group">' . "\n" .
-    '				<label class="control-label col-lg-4">' . _t('TEMPLATE_SQUELETTE') . '</label>' . "\n" .
-        '				<div class="controls col-lg-4">' . "\n" .
+    '				<label class="control-label">' . _t('TEMPLATE_SQUELETTE') . '</label>' . "\n" .
+        '				<div class="controls">' . "\n" .
         '					<select class="form-control" id="changesquelette" name="squelette_select">' . "\n";
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
     foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
@@ -756,8 +756,8 @@ function theme_selector($method = '')
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);
     $selecteur .=
     '			<div class="control-group form-group">' . "\n" .
-    '				<label class="control-label col-lg-4">' . _t('TEMPLATE_STYLE') . '</label>' . "\n" .
-        '				<div class="controls col-lg-4">' . "\n" .
+    '				<label class="control-label">' . _t('TEMPLATE_STYLE') . '</label>' . "\n" .
+        '				<div class="controls">' . "\n" .
         '					<select class="form-control" id="changestyle" name="style_select">' . "\n";
     foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
         $selected = '';

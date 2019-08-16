@@ -18,16 +18,15 @@ if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->con
 }
 
 // on regarde dans quel dossier se trouve le theme
-if (file_exists('themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'])) {
-	$css_file = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
-} else {
-	$css_file = 'tools/templates/themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+$styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+if (file_exists('custom/'.$styleFile)) {
+	$styleFile = 'custom/'.$styleFile;
 }
 
 // on ajoute le style css selectionne du theme
 if ($this->config['favorite_style']!='none') {
 	if (substr($this->config['favorite_style'], -4, 4) == '.css') {
-		$styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$css_file.'" id="mainstyle" />'."\n";
+		$styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$styleFile.'" id="mainstyle" />'."\n";
 	}
 }
 
@@ -36,11 +35,11 @@ $othercss = $this->GetParameter('othercss');
 if (!empty($othercss)) {
 	$tabcss = explode(',', $othercss);
 	foreach($tabcss as $cssfile) {
-		if (file_exists('themes/'.$this->config['favorite_theme'].'/styles/'.$cssfile)) {
-			$styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/themes/'.$this->config['favorite_theme'].'/styles/'.$cssfile.'" />'."\n";
-		} elseif (file_exists('tools/templates/themes/'.$this->config['favorite_theme'].'/styles/'.$cssfile)) {
-			$styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/themes/'.$this->config['favorite_theme'].'/styles/'.$cssfile.'" />'."\n";
+        $style = 'themes/'.$this->config['favorite_theme'].'/styles/'.$cssfile;
+		if (file_exists('custom/'.$style)) {
+            $style = 'custom/'.$style;
 		}
+		$styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$style.'" />'."\n";
 	}
 }
 
