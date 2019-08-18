@@ -72,13 +72,13 @@ if (empty($listelements['mail'])) {
     // adresse url d'envoi du mail
     $listelements['mailerurl'] = $this->href('mail');
 
-        // type de demande et placeholder
+    // type de demande et placeholder
     $listelements['demand'] = 'abonnement';
     $listelements['placeholder'] = _t('CONTACT_SUBSCRIBE');
 
     include_once 'includes/squelettephp.class.php';
     try {
-        $squel = new SquelettePhp($template, 'bazar');
+        $squel = new SquelettePhp($template, 'contact');
         echo $squel->render($listelements);
     } catch (Exception $e) {
         echo '<div class="alert alert-danger">Erreur action {{abonnement ..}} : '.$e->getMessage().'</div>'."\n";

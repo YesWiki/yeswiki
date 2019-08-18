@@ -78,7 +78,7 @@ if (empty($listelements['mail'])) {
 
     include_once 'includes/squelettephp.class.php';
     try {
-        $squel = new SquelettePhp($template, 'bazar');
+        $squel = new SquelettePhp($template, 'contact');
         echo $squel->render($listelements);
     } catch (Exception $e) {
         echo '<div class="alert alert-danger">Erreur action {{desabonnement ..}} : '.$e->getMessage().'</div>'."\n";

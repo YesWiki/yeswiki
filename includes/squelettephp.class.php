@@ -40,7 +40,7 @@ class SquelettePhp
     {
         $dirs = $GLOBALS['wiki']->config['template_directories'];
         $found = false;
-        foreach($dirs as $dir) {
+        foreach ($dirs as $dir) {
             if ($dir == 'themes/tools') {
                 // historical templates are in templates folder
                 $path = $dir.'/'.$templateDir.'/templates/'.$templateFile;
