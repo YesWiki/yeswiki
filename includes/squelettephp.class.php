@@ -86,8 +86,9 @@ class SquelettePhp
     }
 
     /**
-     * replace variables in template file
+     * Replace variables in template file
      *
+     * @param mixed $name variable name, or array name=>value
      * @param mixed $value value(s) used to render template.
      */
     public function render($name = '', $value = [])
