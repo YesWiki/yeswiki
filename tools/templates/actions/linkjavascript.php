@@ -12,11 +12,15 @@ if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] ==
 }
 
 // on récupère le bon chemin pour le theme
-$jsDir = 'themes/'.$this->config['favorite_theme'].'/javascripts';
-if (is_dir('custom/'.$jsDir)) {
-    $repertoire = 'custom/'.$jsDir;
+if (!empty($this->config['use_fallback_theme'])) {
+    $repertoire = 'tools/templates/themes/'.$this->config['favorite_theme'].'/javascripts';
 } else {
-    $repertoire =$jsDir;
+    $jsDir = 'themes/'.$this->config['favorite_theme'].'/javascripts';
+    if (is_dir('custom/'.$jsDir)) {
+        $repertoire = 'custom/'.$jsDir;
+    } else {
+        $repertoire = $jsDir;
+    }
 }
 
 // on scanne les javascripts du theme

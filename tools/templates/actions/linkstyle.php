@@ -18,9 +18,13 @@ if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->con
 }
 
 // on regarde dans quel dossier se trouve le theme
-$styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
-if (file_exists('custom/'.$styleFile)) {
-	$styleFile = 'custom/'.$styleFile;
+if (!empty($this->config['use_fallback_theme'])) {
+    $styleFile = 'tools/templates/themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+} else {
+    $styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+    if (file_exists('custom/'.$styleFile)) {
+        $styleFile = 'custom/'.$styleFile;
+    }
 }
 
 // on ajoute le style css selectionne du theme

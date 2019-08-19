@@ -91,10 +91,10 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
     }
 } else {
     // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
-    if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
-        isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
-        isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
-        ) {
+    if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme']) || is_dir('tools/templates/themes/'.$_REQUEST['theme'])) &&
+        isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
+        isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('tools/templates/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
+    ) {
         $wakkaConfig['favorite_theme'] = $_REQUEST['theme'];
         $wakkaConfig['favorite_style'] = $_REQUEST['style'];
         $wakkaConfig['favorite_squelette'] = $_REQUEST['squelette'];
@@ -133,44 +133,49 @@ if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_tem
 }
 
 // Test existence du template, on utilise le template par defaut sinon==============================
-if ((!file_exists('custom/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
+if (
+    (!file_exists('custom/themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette'])
     and !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/squelettes/'.$wakkaConfig['favorite_squelette']))
     || (!file_exists('custom/themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style'])
-    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style']))) {
-    if ((
-        file_exists('custom/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT) ||
-             file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
-            ) &&
-            (
-                file_exists('custom/themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT) ||
-             file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
-            )
-           ) {
-        $GLOBALS['template-error']['type'] = 'theme-not-found';
-        $GLOBALS['template-error']['theme'] = $wakkaConfig['favorite_theme'];
-        $GLOBALS['template-error']['style'] = $wakkaConfig['favorite_style'];
-        $GLOBALS['template-error']['squelette'] = $wakkaConfig['favorite_squelette'];
-        $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
-        $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
-        $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
-        $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
-    } else {
-        exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
+    && !file_exists('themes/'.$wakkaConfig['favorite_theme'].'/styles/'.$wakkaConfig['favorite_style']))
+) {
+    if (
+        $wakkaConfig['favorite_theme'] != THEME_PAR_DEFAUT || 
+        (
+            $wakkaConfig['favorite_theme'] == THEME_PAR_DEFAUT && (!file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.$wakkaConfig['favorite_squelette'])  or
+        !file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/styles/'.$wakkaConfig['favorite_style']))
+        )
+    ) {
+        if (
+            file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
+            && file_exists('tools/templates/themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
+        ) {  
+            $GLOBALS['template-error']['type'] = 'theme-not-found';
+            $GLOBALS['template-error']['theme'] = $wakkaConfig['favorite_theme'];
+            $GLOBALS['template-error']['style'] = $wakkaConfig['favorite_style'];
+            $GLOBALS['template-error']['squelette'] = $wakkaConfig['favorite_squelette'];
+            $wakkaConfig['favorite_theme'] = THEME_PAR_DEFAUT;
+            $wakkaConfig['favorite_style'] = CSS_PAR_DEFAUT;
+            $wakkaConfig['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+            $wakkaConfig['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+        } else {
+            exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
+        }
     }
+    $wakkaConfig['use_fallback_theme'] = true;
 }
 
-//on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-$repertoire_initial = 'custom/themes';
-$wakkaConfig['templates'] = search_template_files($repertoire_initial);
-
-//s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
+// default theme
+$wakkaConfig['templates'] = search_template_files('tools/templates/themes');
+// themes folder (used by {{update}})
 if (is_dir('themes')) {
-    $repertoire_racine = 'themes';
-    $wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files($repertoire_racine));
-    if (is_array($wakkaConfig['templates'])) {
-        ksort($wakkaConfig['templates']);
-    }
+    $wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files('themes'));
 }
+// custom themes folder
+if (is_dir('custom/themes')) {
+    $wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files('custom/themes'));
+}
+ksort($wakkaConfig['templates']);
 
 // Array of paths where to find templates (order is important)
 $wakkaConfig['template_directories'] = isset($wakkaConfig['template_directories']) ?

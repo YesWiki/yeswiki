@@ -711,20 +711,7 @@ function theme_selector($method = '')
     $id = 'select_theme';
 
     $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '').'class="' . $formclass . '" id="' . $id . '">' . "\n";
-
-    //on cherche tous les dossiers du repertoire themes et des sous dossier styles et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-    $repertoire_initial = 'themes';
-    $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
-
-    //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-    if (is_dir('custom/themes')) {
-        $repertoire_racine = 'custom/themes';
-        $GLOBALS['wiki']->config['templates'] = array_merge($GLOBALS['wiki']->config['templates'], search_template_files($repertoire_racine));
-        if (is_array($GLOBALS['wiki']->config['templates'])) {
-            ksort($GLOBALS['wiki']->config['templates']);
-        }
-    }
-
+    
     $selecteur .= '			<div class="control-group form-group">' . "\n" .
     '				<label class="control-label">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
         '				<div class="controls">' . "\n" .

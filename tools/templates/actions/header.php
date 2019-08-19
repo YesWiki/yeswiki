@@ -5,11 +5,16 @@ if (!defined("WIKINI_VERSION")) {
 //=======Restes de wikini=================================================================================
 $user = $this->GetUser();
 
-$chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
-if (file_exists('custom/'.$chemin_theme)) {
-    $file_content = file_get_contents('custom/'.$chemin_theme);
-} else {
+if (!empty($this->config['use_fallback_theme'])) {
+    $chemin_theme = 'tools/templates/themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
     $file_content = file_get_contents($chemin_theme);
+} else {
+    $chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+    if (file_exists('custom/'.$chemin_theme)) {
+        $file_content = file_get_contents('custom/'.$chemin_theme);
+    } else {
+        $file_content = file_get_contents($chemin_theme);
+    }
 }
 
 //On recupere la partie haut du template et on execute les actions wikini
