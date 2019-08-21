@@ -2296,7 +2296,8 @@ function baz_gestion_listes()
         }
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
-
+        
+        include_once 'includes/squelettephp.class.php';
         try {
             $squel = new SquelettePhp('lists_table.tpl.html', 'bazar');
             $res .=  $squel->render($tab_lists);
