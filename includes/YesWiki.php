@@ -977,7 +977,7 @@ class Wiki
                 }
             } elseif ($safeUrl = str_replace(
                 array('%3F', '%3A', '%26', '%3D', '%23'),
-                array('?', ':', '/', '=', '#'),
+                array('?', ':', '&', '=', '#'),
                 implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag)))))
             ) {
                 return '<a href="'.$safeUrl.'">'.$text.' test</a>'."\n";
