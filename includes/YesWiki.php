@@ -975,8 +975,12 @@ class Wiki
                     // it's a Wiki link!
                     $this->TrackLinkTo($tag);
                 }
-            } elseif ($safeUrl = str_replace('%3A', ':', implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag)))))) {
-                return '<a href="'.$safeUrl.'">'.$text.'</a>'."\n";
+            } elseif ($safeUrl = str_replace(
+                array('%3F', '%3A', '%26', '%3D', '%23'),
+                array('?', ':', '/', '=', '#'),
+                implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag)))))
+            ) {
+                return '<a href="'.$safeUrl.'">'.$text.' test</a>'."\n";
             } elseif (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
                 // check for various modifications to perform on $tag
                 // email addresses
