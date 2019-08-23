@@ -980,7 +980,7 @@ class Wiki
                 array('?', ':', '&', '=', '#'),
                 implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag)))))
             ) {
-                return '<a href="'.$safeUrl.'">'.$text.' test</a>'."\n";
+                return '<a href="'.$safeUrl.'">'.$text.'</a>'."\n";
             } elseif (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
                 // check for various modifications to perform on $tag
                 // email addresses
