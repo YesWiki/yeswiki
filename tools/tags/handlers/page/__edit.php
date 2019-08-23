@@ -63,10 +63,3 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") &&
 {
 	$this->SaveTags($this->GetPageTag(), stripslashes($_POST["pagetags"]));
 }
-
-// If the page is an ebook, we will display the ebook generator 
-if ($this->HasAccess('write') && isset($this->page["metadatas"]["ebook-title"])) {
-	$pageeditionebook = $this->Format('{{ebookgenerator}}');
-}
-
-?>
