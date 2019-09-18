@@ -91,7 +91,6 @@ if (!function_exists('wakka2callbacktableaux')) {
     function wakka2callbacktableaux($things)
     {
         $thing = $things[1];
-
         global $wiki;
 
         if (preg_match("/^\[\|(.*)\|\]/s", $thing)) {
@@ -105,4 +104,4 @@ if (!function_exists('wakka2callbacktableaux')) {
     }
 }
 
-$plugin_output_new = preg_replace_callback("/(^\[\|.*?\|\])/ms", 'wakka2callbacktableaux', $plugin_output_new);
+$plugin_output_new = preg_replace_callback("/(\[\|.*?\|\])/msu", 'wakka2callbacktableaux', $plugin_output_new);
