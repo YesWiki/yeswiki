@@ -100,7 +100,7 @@ class SquelettePhp
             extract($this->vars); // extract variables for the template
         }
         ob_start(); // buffer
-        include_once realpath($this->templatePath.$this->templateFile); // include the template, with values
+        include realpath($this->templatePath.$this->templateFile); // include the template, with values
         $content = ob_get_contents(); // get buffer's content
         ob_end_clean(); // destroy buffer
         return $content; // Retourne le contenu
