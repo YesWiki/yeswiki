@@ -1,7 +1,7 @@
 <?php
 /**
  * Formatter from wakka syntax
- * 
+ *
  * @author Hendrik Mans <hendrik@mans.de>
  * @author David DELON <hidden@mail.ext>
  * @author Charles NEPOTE <hidden@mail.ext>
@@ -12,8 +12,9 @@
  * @author Didier LOISEAU <hidden@mail.ext>
  */
 
+namespace YesWiki;
 
-if (!class_exists('WikiniFormatter')) {
+if (!class_exists('\YesWiki\WikiniFormatter')) {
     class WikiniFormatter
     {
         public $wiki;
@@ -169,7 +170,7 @@ if (!class_exists('WikiniFormatter')) {
             $elem = array('tag' => $tag, 'attr' => $attr);
             $idx = array_search($elem, $stack);
             if ($idx === null || $idx === false) { // depends on php version
-               // not in array
+                // not in array
                 $stack[] = $elem;
                 return $this->openTag($tag, $attr);
             } else {
@@ -485,10 +486,7 @@ if (!class_exists('WikiniFormatter')) {
             return $result;
         } // function indentedText
     } // class WikiniFormatter
-} // if !class_exists
+}
 
-
-//$form = & WikiniFormatter :: getInstance($this);
-$form = new WikiniFormatter($this);
-//$form->getInstance($this);
+$form = new \YesWiki\WikiniFormatter($this);
 echo $form->format($text);
