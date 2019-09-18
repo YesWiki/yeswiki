@@ -145,7 +145,7 @@ if (empty($list)) {
 
     $listvalues = baz_valeurs_liste($list);
     $currentlabel = 'this is an impossible label';
-    $fichescat = '';
+    $fichescat = [];
     $output = '';
     $first = true;
     foreach ($fiches['fiches'] as $fiche) {
@@ -163,7 +163,7 @@ if (empty($list)) {
                 }
                 // it's not the first time in the loop so we must close previously opened div
                 $output .=  '</div>'."\n";
-                $fichescat = '';
+                $fichescat = [];
             } else {
                 $first = false;
             }
