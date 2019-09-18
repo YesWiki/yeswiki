@@ -3,70 +3,6 @@ namespace YesWiki;
 
 class Templates extends \YesWiki\Wiki
 {
-    public function AddCSS($style)
-    {
-        if (!isset($GLOBALS['css'])) {
-            $GLOBALS['css'] = '';
-        }
-        if (!empty($style) && !strpos($GLOBALS['css'], '<style>'."\n".$style.'</style>')) {
-            $GLOBALS['css'] .= '  <style>'."\n".$style.'</style>'."\n";
-        }
-        return;
-    }
-
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
-    {
-        if (!isset($GLOBALS['css'])) {
-            $GLOBALS['css'] = '';
-        }
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                .'  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">'
-                ."\n".'  '.$conditionend."\n";
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                    .'  <link rel="stylesheet" href="'.$file.'">'."\n"
-                    .'  '.$conditionend."\n";
-            }
-        }
-        return;
-    }
-
-    public function AddJavascript($script)
-    {
-        if (!isset($GLOBALS['js'])) {
-            $GLOBALS['js'] = '';
-        }
-        if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
-            $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
-        }
-        return;
-    }
-
-    public function AddJavascriptFile($file, $first = false)
-    {
-        if (!isset($GLOBALS['js'])) {
-            $GLOBALS['js'] = '';
-        }
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
-                if ($first) {
-                    $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n".$GLOBALS['js'];
-                } else {
-                    $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
-                }
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$file.'"></script>')) {
-                $GLOBALS['js'] .= '  <script defer src="'.$file.'"></script>'."\n";
-            }
-        }
-        return;
-    }
-
     public function GetMethod()
     {
         if ($this->method=='iframe') {
@@ -77,38 +13,7 @@ class Templates extends \YesWiki\Wiki
             return \YesWiki\Wiki::GetMethod();
         }
     }
-
-
-    public function GetMetaDatas($pagetag)
-    {
-        $metadatas = $this->GetTripleValue($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-        if (!empty($metadatas)) {
-            if (YW_CHARSET != 'UTF-8') {
-                return array_map('utf8_decode', json_decode($metadatas, true));
-            } else {
-                return json_decode($metadatas, true);
-            }
-        } else {
-            return false;
-        }
-    }
-
-    public function SaveMetaDatas($pagetag, $metadatas)
-    {
-        $former_metadatas = $this->GetMetaDatas($pagetag);
-
-        if ($former_metadatas) {
-            $metadatas = array_merge($former_metadatas, $metadatas);
-            $this->DeleteTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', null, '', '');
-        }
-        if (YW_CHARSET != 'UTF-8') {
-            $metadatas = json_encode(array_map("utf8_encode", $metadatas));
-        } else {
-            $metadatas = json_encode($metadatas);
-        }
-        return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
-    }
-
+    
     /**
      *
      * @param $file string the file name you want to load

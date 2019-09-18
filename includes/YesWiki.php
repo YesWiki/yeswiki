@@ -978,7 +978,8 @@ class Wiki
             } elseif ($safeUrl = str_replace(
                 array('%3F', '%3A', '%26', '%3D', '%23'),
                 array('?', ':', '&', '=', '#'),
-                implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag)))))
+                implode('/', array_map('rawurlencode', explode('/', rawurldecode($tag))))
+            )
             ) {
                 return '<a href="'.$safeUrl.'">'.$text.'</a>'."\n";
             } elseif (preg_match("/^[\w.-]+\@[\w.-]+$/", $tag)) {
@@ -1400,11 +1401,10 @@ class Wiki
     public function Format($text, $formatter = 'wakka', $fullPageName = '')
     {
         if (!empty($fullPageName)) {
-            if (empty($this->pageCacheFormatted[$fullPageName])) {
-                $this->pageCacheFormatted[$fullPageName] = $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
-                $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
-            }
-            return $this->pageCacheFormatted[$fullPageName];
+            //if (empty($this->pageCacheFormatted[$fullPageName])) {
+            return $this->IncludeBuffered($formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'), $this->config['formatter_path']);
+        //}
+            //return $this->pageCacheFormatted[$fullPageName];
         } else {
             return $this->IncludeBuffered($formatter . '.php', "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text"), $this->config['formatter_path']);
         }
@@ -1426,7 +1426,9 @@ class Wiki
         
         foreach ($dirs as $dir) {
             if ($dir) {
-                $dir .= '/';
+                if (!preg_match('~/$~', $dir)) {
+                    $dir .= '/';
+                }
             }
             $fullfilename = $dir . $filename;
             if (strstr($filename, 'page/')) {
@@ -1438,7 +1440,6 @@ class Wiki
             
             list($file, $extension) = explode('.', $filename);
             $afterfullfilename = $dir . $file . '__.' . $extension;
-            
             if (file_exists($beforefullfilename)) {
                 $included['before'][] = $beforefullfilename;
             }
@@ -1451,7 +1452,6 @@ class Wiki
                 $included['after'][] = $afterfullfilename;
             }
         }
-        
         $plugin_output_new = '';
         $found = 0;
         
@@ -1469,7 +1469,7 @@ class Wiki
         foreach ($included['new'] as $new) {
             $found = 1;
             ob_start();
-            require($new);
+            include($new);
             $plugin_output_new = ob_get_contents();
             ob_end_clean();
             break;
@@ -2219,6 +2219,101 @@ class Wiki
         }
     }
 
+    public function AddCSS($style)
+    {
+        if (!isset($GLOBALS['css'])) {
+            $GLOBALS['css'] = '';
+        }
+        if (!empty($style) && !strpos($GLOBALS['css'], '<style>'."\n".$style.'</style>')) {
+            $GLOBALS['css'] .= '  <style>'."\n".$style.'</style>'."\n";
+        }
+        return;
+    }
+
+    public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
+    {
+        if (!isset($GLOBALS['css'])) {
+            $GLOBALS['css'] = '';
+        }
+        if (!empty($file) && file_exists($file)) {
+            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">')) {
+                $GLOBALS['css'] .= '  '.$conditionstart."\n"
+                .'  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">'
+                ."\n".'  '.$conditionend."\n";
+            }
+        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
+            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
+                $GLOBALS['css'] .= '  '.$conditionstart."\n"
+                    .'  <link rel="stylesheet" href="'.$file.'">'."\n"
+                    .'  '.$conditionend."\n";
+            }
+        }
+        return;
+    }
+
+    public function AddJavascript($script)
+    {
+        if (!isset($GLOBALS['js'])) {
+            $GLOBALS['js'] = '';
+        }
+        if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
+            $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
+        }
+        return;
+    }
+
+    public function AddJavascriptFile($file, $first = false)
+    {
+        if (!isset($GLOBALS['js'])) {
+            $GLOBALS['js'] = '';
+        }
+        if (!empty($file) && file_exists($file)) {
+            if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
+                if ($first) {
+                    $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n".$GLOBALS['js'];
+                } else {
+                    $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
+                }
+            }
+        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
+            if (!strpos($GLOBALS['js'], '<script defer src="'.$file.'"></script>')) {
+                $GLOBALS['js'] .= '  <script defer src="'.$file.'"></script>'."\n";
+            }
+        }
+        return;
+    }
+    
+    
+    public function GetMetaDatas($pagetag)
+    {
+        $metadatas = $this->GetTripleValue($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+        if (!empty($metadatas)) {
+            if (YW_CHARSET != 'UTF-8') {
+                return array_map('utf8_decode', json_decode($metadatas, true));
+            } else {
+                return json_decode($metadatas, true);
+            }
+        } else {
+            return false;
+        }
+    }
+    
+    public function SaveMetaDatas($pagetag, $metadatas)
+    {
+        $former_metadatas = $this->GetMetaDatas($pagetag);
+        
+        if ($former_metadatas) {
+            $metadatas = array_merge($former_metadatas, $metadatas);
+            $this->DeleteTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', null, '', '');
+        }
+        if (YW_CHARSET != 'UTF-8') {
+            $metadatas = json_encode(array_map("utf8_encode", $metadatas));
+        } else {
+            $metadatas = json_encode($metadatas);
+        }
+        return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
+    }
+    
     /**
      * Load all extensions
      *

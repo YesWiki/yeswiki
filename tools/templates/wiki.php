@@ -73,8 +73,6 @@ if (isset($metadatas['charset'])) {
     $wakkaConfig['charset'] = YW_CHARSET;
 }
 
-header('Content-Type: text/html; charset='.YW_CHARSET);
-
 // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
 if (isset($wakkaConfig['hide_action_template']) && $wakkaConfig['hide_action_template'] == '1') {
     if (!isset($wakkaConfig['favorite_theme'])) {
@@ -176,8 +174,3 @@ if (is_dir('custom/themes')) {
     $wakkaConfig['templates'] = array_merge($wakkaConfig['templates'], search_template_files('custom/themes'));
 }
 ksort($wakkaConfig['templates']);
-
-// Array of paths where to find templates (order is important)
-$wakkaConfig['template_directories'] = isset($wakkaConfig['template_directories']) ?
-    $wakkaConfig['template_directories']
-    : ['custom/templates', 'templates', 'themes/tools'];
