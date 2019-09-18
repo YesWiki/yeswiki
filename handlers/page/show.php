@@ -33,8 +33,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // V?rification de s?curit?
-if (!defined("WIKINI_VERSION"))
-{
+if (!defined("WIKINI_VERSION")) {
 	die ("acc&egrave;s direct interdit");
 }
 
@@ -89,16 +88,13 @@ if ($HasAccessRead=$this->HasAccess("read"))
 			echo '</div>'."\n";
 		}
 
-
 		// display page
 		$this->RegisterInclusion($this->GetPageTag());
 		echo $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
-		$this->UnregisterLastInclusion();
-
+        $this->UnregisterLastInclusion();
 	}
 }
-else
-{
+else {
 	echo "<i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; lire cette page</i>" ;
 }
 ?>
