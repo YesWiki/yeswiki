@@ -3,4 +3,4 @@
 	- [[CoursUtilisationYesWiki Cours sur l'utilisation de YesWiki]]
 	- ReglesDeFormatage : résumé des syntaxes permettant la mise en forme du texte.
 
-""<a onclick="var iframe = document.getElementById('yeswiki-doc');iframe.src = 'https://yeswiki.net/wakka.php?wiki=DocumentatioN/iframe';" class="btn btn-default"><i class="glyphicon glyphicon-home"></i> Accueil de la documentation</a><iframe id="yeswiki-doc" width="100%" height="1000" frameborder="0" class="auto-resize" src="https://yeswiki.net/wakka.php?wiki=DocumentatioN/iframe"></iframe>""
+""<a onclick="var iframe = document.getElementById('yeswiki-doc');iframe.src = 'https://yeswiki.net/?DocumentatioN/iframe';" class="btn btn-default"><i class="glyphicon glyphicon-home"></i> Accueil de la documentation</a><iframe id="yeswiki-doc" width="100%" height="1000" frameborder="0" class="auto-resize" src="https://yeswiki.net/?DocumentatioN/iframe"></iframe>""
