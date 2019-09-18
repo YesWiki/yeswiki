@@ -174,7 +174,7 @@ switch ($version) {
                 $dblink,
                 'CREATE TABLE '.$config['table_prefix'].'referrers ('.
                 "page_tag char(50) NOT NULL default '',".
-                "referrer char(150) NOT NULL default '',".
+                "referrer text NOT NULL default '',".
                 "time datetime NOT NULL,".
                 'KEY idx_page_tag (page_tag),'.
                 'KEY idx_time (time)'.
@@ -191,7 +191,7 @@ switch ($version) {
                 "name varchar(80) NOT NULL default '',".
                 "password varchar(32) NOT NULL default '',".
                 "email varchar(250) NOT NULL default '',".
-                'motto text,'.
+                'motto text NOT NULL default \'\','.
                 "revisioncount int(10) unsigned NOT NULL default '20',".
                 "changescount int(10) unsigned NOT NULL default '50',".
                 "doubleclickedit enum('Y','N') NOT NULL default 'Y',".
@@ -253,7 +253,7 @@ switch ($version) {
 
 
         //insertion des pages de documentation et des pages standards
-	$setupDocDir = 'setup/doc/' ;
+    $setupDocDir = 'setup/doc/' ;
         $d = dir($setupDocDir);
         while ($doc = $d->read()) {
             if (is_dir($setupDocDir.$doc) || substr($doc, -4) != '.txt') {
@@ -280,7 +280,7 @@ switch ($version) {
                     "latest = 'Y'";
                 test(_t('INSERTION_OF_PAGE')." $pagename ...", @mysqli_query($dblink, $sql), '?', 0);
 
-                // update table_links
+            // update table_links
                 // $wiki->SetPage($wiki->LoadPage($pagename, '', 0));
                 // $wiki->ClearLinkTable();
                 // $wiki->StartLinkTracking();
@@ -346,6 +346,6 @@ switch ($version) {
 <div class="alert alert-info"><?php echo _t('NEXT_STEP_WRITE_CONFIGURATION_FILE'); ?>
 <tt><?php echo  $wakkaConfigLocation ?></tt>.</br>
 <?php echo _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'); ?>.  </div>
-<?php 
+<?php
 $_POST['config'] = json_encode($config);
 require_once 'setup/writeconfig.php';
