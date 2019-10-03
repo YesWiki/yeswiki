@@ -63,11 +63,12 @@ if ($resultat) {
     include_once 'includes/squelettephp.class.php';
     try {
         $squel = new SquelettePhp($template, 'tags');
-        $content = $squel->render(
+        $output = $squel->render(
             array('elements' => $element)
         );
+
     } catch (Exception $e) {
-        $content = '<div class="alert alert-danger">Erreur action {{listpagestag ..}} : '.  $e->getMessage(). '</div>'."\n";
+        $output = '<div class="alert alert-danger">Erreur action {{listpagestag ..}} : '.  $e->getMessage(). '</div>'."\n";
     }
 } else {
     $nb_total = 0;
