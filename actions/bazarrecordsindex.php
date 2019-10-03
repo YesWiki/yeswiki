@@ -5,6 +5,7 @@ lists only bazar records.
 
 @licence: AGPL
 */
+
 if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config["table_prefix"] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' AND body LIKE \'{"%\' AND tag IN (SELECT DISTINCT resource FROM ' . $this->config["table_prefix"] . 'triples WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type")')) {
     $pagesarray = [];
     foreach ($pages as $page) {
@@ -14,6 +15,7 @@ if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config["table_prefix"] 
         }
     }
     asort($pagesarray);
+    $buffer = '';
     foreach ($pagesarray as $tag => $page) {
         // XXX: strtoupper is locale dependent
         $firstChar = strtoupper($page[0]);
@@ -22,13 +24,16 @@ if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config["table_prefix"] 
         }
 
         if (empty($curChar) || $firstChar != $curChar) {
+            echo $this->Format($buffer);
+            $buffer = '';
             if (!empty($curChar)) {
-                echo "<br />\n" ;
+                echo "<br /><br />\n" ;
             }
             echo "<b>$firstChar</b><br />\n" ;
             $curChar = $firstChar;
+
         }
-        echo $this->Format('[['.$tag.' '.$page.']]')."<br />";
+        $buffer .= '[['.$tag.' '.$page.']]'."\n";
     }
 } else {
     echo '<i>'._t('NO_PAGE_FOUND').'.</i>' ;
