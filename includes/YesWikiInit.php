@@ -100,7 +100,8 @@ class Init
                     // remove leading slash
                     $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
                 } else {
-                    $wiki = urldecode($args[0]);
+                    $a = explode('=', $args[0]);
+                    $wiki = urldecode($a[0]);
                 }
                 if (empty($wiki)) {
                     // this will be redirected to install or to homepage later
