@@ -1,0 +1,35 @@
+<?php
+// $content
+// $filters
+// $position
+// $colsize
+// $nbfiches
+
+// affichage des resultats et filtres dans une grille
+        $outputfacette = '<div class="facette-container row">'."\n";
+
+        // calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
+        $resultcolsize = 12 - intval($colsize);
+
+        if ($resultcolsize == 0) {
+            $resultcolsize = 12;
+        }
+        // colonne des resultats
+        $content = '<div class="col-xs-'.$resultcolsize.'">'."\n".
+            '<div class="results">'."\n".
+            '<div class="alert alert-info">'."\n".
+            _t('BAZ_IL_Y_A').
+            '<span class="nb-results">'.$nbfiches.'</span> '
+            ._t('BAZ_FICHES_CORRESPONDANTES_FILTRES')."\n".
+            '.</div>'."\n".
+            $content."\n".
+            '</div> <!-- /.results -->'."\n".
+            '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
+// disposition des filtres (gauche ou droite)
+if ($position == 'right') {
+    $outputfacette .= $content.$filters;
+} else {
+    $outputfacette .= $filters.$content;
+}
+echo $outputfacette.'</div><!-- /.facette-container.row -->';
+ 

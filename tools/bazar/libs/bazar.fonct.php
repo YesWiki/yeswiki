@@ -3730,26 +3730,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
     // affichage spécifique pour facette
     if (count($facettevalue) > 0) {
-        // affichage des resultats et filtres dans une grille
-        $outputfacette = '<div class="facette-container row row-fluid">'."\n";
-
-        // calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
-        $resultcolsize = 12 - intval($params['filtercolsize']);
-
-        if ($resultcolsize == 0) {
-            $resultcolsize = 12;
-        }
-        // colonne des resultats
-        $outputresult = '<div class="col-xs-'.$resultcolsize.'">'."\n".
-            '<div class="results">'."\n".
-            '<div class="alert alert-info">'."\n".
-            _t('BAZ_IL_Y_A').
-            '<span class="nb-results">'.count($fiches['fiches']).'</span> '
-            ._t('BAZ_FICHES_CORRESPONDANTES_FILTRES')."\n".
-            '.</div>'."\n".
-            $output."\n".
-            '</div> <!-- /.results -->'."\n".
-            '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
 
         // colonne des filtres
         $outputfilter = '<div class="col-xs-'.$params['filtercolsize'].'">'."\n".'<div class="filters no-dblclick">'."\n";
@@ -3877,14 +3857,18 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         $outputfilter .= '</div> <!-- /.filters -->'."\n".
             '</div> <!-- /.col-xs-3 -->'."\n";
 
-        // disposition des filtres (gauche ou droite)
-        if ($params['filterposition'] == 'right') {
-            $outputfacette .= $outputresult.$outputfilter;
-        } else {
-            $outputfacette .= $outputfilter.$outputresult;
+        try {
+            $squel = new SquelettePhp($params['facettetemplate'], 'bazar');
+            $output = $squel->render([
+                'content' => $output,
+                'filters' => $outputfilter,
+                'position' => $params['filterposition'],
+                'nbfiches' => count($fiches['fiches']),
+                'colsize' => $params['filtercolsize'],
+            ]);
+        } catch (Exception $e) {
+            $output = '<div class="alert alert-danger">Erreur liste fiches template facette '.$params['facettetemplate'].' : '.$e->getMessage().'</div>'."\n";
         }
-
-        $output = $outputfacette.'</div><!-- /.facette-container.row -->';
     }
     // affiche les possibilités d'export
     if (!preg_match('/\/iframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
@@ -4504,6 +4488,14 @@ function getAllParameters($wiki)
     $param['groupsexpanded'] = isset($_GET['groupsexpanded']) ? $_GET['groupsexpanded'] : $wiki->GetParameter('groupsexpanded');
     if (empty($param['groupsexpanded'])) {
         $param['groupsexpanded'] = 'true';
+    }
+
+    /*
+     * Facette: template pour les facettes
+     */
+    $param['facettetemplate'] = isset($_GET['facettetemplate']) ? $_GET['facettetemplate'] : $wiki->GetParameter('facettetemplate');
+    if (empty($param['facettetemplate'])) {
+        $param['facettetemplate'] = 'facette-default.tpl.html';
     }
 
     /*

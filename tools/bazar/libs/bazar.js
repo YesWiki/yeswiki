@@ -653,16 +653,18 @@ $(document).ready(function () {
   var bazarList = [];
   $('.filter-bazar').on('keyup', function(e) {
     var target = $(this).data('target')
-    var searchstring = $(this).val().toLowerCase();
+    var searchstring = $(this).val()
+    if (searchstring) {
+      searchstring = searchstring.toLowerCase();
+    }
     if (bazarList[target] === undefined) {
       bazarList[target] = []
       $('#'+target+' .bazar-entry').each(function() {
-        bazarList[target][$(this).data('id_fiche')] = $(this).text().toLowerCase()
+        bazarList[target][$(this).data('id_fiche')] = $(this).find(':visible').text().toLowerCase()
       })
     }
     $('#'+target+' .bazar-entry').hide();
     $('#'+target+' .bazar-entry').filter(function(i) {
-      //console.log(bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) )
       return bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1;
     }).show()
   });
