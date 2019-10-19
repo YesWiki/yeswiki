@@ -17,7 +17,7 @@ if ($type == 'fiche_bazar') {
         $tab_valeurs = array_map('utf8_decode', $tab_valeurs);
     }
     $bazaroutput .= baz_voir_fiche(true, $tab_valeurs);
-} elseif (isset($_GET['idf'])) {
+} elseif (isset($_GET['id'])) {
     // si le parametre id est passé, on souhaite afficher une liste bazar
     // TODO : factoriser avec bazarliste?
     // on compte le nombre de fois que l'action bazarliste est appelée afin de différencier les instances
@@ -67,7 +67,6 @@ if (!empty($bazaroutput)) {
         $bazaroutput = str_replace($this->href('edit'), $this->href('editiframe'), $bazaroutput);
         $pattern = ',' . preg_quote($this->config['base_url']) . '(\w+)([&#?].*?)?(["<]),';
         $output .= preg_replace($pattern, $this->config['base_url'] . "$1/iframe$2$3", $bazaroutput);
-        
     }
     $output .= "</div><!-- end div.page-widget -->";
 
