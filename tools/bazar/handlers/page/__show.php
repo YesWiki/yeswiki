@@ -38,5 +38,13 @@ if ($type == 'fiche_bazar') {
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
     $entry = baz_valeurs_fiche($this->GetPageTag());
-    $this->page["body"] = '""'.baz_voir_fiche(0, $entry).'""';
+
+    if( strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false ) {
+        header('Content-type: application/ld+json; charset=UTF-8');
+        header('Access-Control-Allow-Origin: *');
+        echo json_encode(baz_format_jsonld(33, $entry));
+        exit();
+    } else {
+        $this->page["body"] = '""'.baz_voir_fiche(0, $entry).'""';
+    }
 }

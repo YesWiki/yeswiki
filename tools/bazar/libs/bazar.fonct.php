@@ -1950,6 +1950,17 @@ function bazPrepareFormData($form)
             $prepared[$i]['helper'] = $formelem[1];
         }
 
+        // traitement sémantique
+        if( $formelem[14] ) {
+            if( substr($formelem[14], 0, 4) === 'http' ) {
+                $prepared[$i]['sem_type'] = str_replace($form['bn_sem_context'], '', $formelem[14]);
+                $prepared[$i]['sem_full_type'] = $formelem[14];
+            } else {
+                $prepared[$i]['sem_type'] = $formelem[14];
+                $prepared[$i]['sem_full_type'] = $form['bn_sem_context'] . "#" . $formelem[14];
+            }
+        }
+
         $i++;
     }
     return $prepared;
@@ -2104,10 +2115,12 @@ function baz_gestion_formulaire()
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'new_v') {
             // il y a des donnees pour ajouter un nouveau formulaire
             $requete = 'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix']
-            .'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
+            .'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description`, `bn_sem_context`, `bn_sem_type` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
             .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
             .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
             .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_sem_context'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($_POST['bn_sem_type'], YW_CHARSET, true)).'", "'
             .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
             $GLOBALS['wiki']->query($requete);
             $GLOBALS['wiki']->redirect($GLOBALS['wiki']->href('','', 'vue=formulaire&msg=form_created', false));     
@@ -2120,6 +2133,8 @@ function baz_gestion_formulaire()
         .'`bn_label_nature`="'.addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'" ,'
         .'`bn_template`="'.addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'" ,'
         .'`bn_description`="'.addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'" ,'
+        .'`bn_sem_context`="'.addslashes(_convert($_POST['bn_sem_context'], YW_CHARSET, true)).'" ,'
+        .'`bn_sem_type`="'.addslashes(_convert($_POST['bn_sem_type'], YW_CHARSET, true)).'" ,'
         .'`bn_condition`="'.addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'"'
         .' WHERE `bn_id_nature`='.$_POST['bn_id_nature'];
         $resultat = $GLOBALS['wiki']->query($requete);
@@ -2172,6 +2187,8 @@ function baz_gestion_formulaire()
                     .'`bn_label_nature`="'.addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'" ,'
                     .'`bn_template`="'.addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'" ,'
                     .'`bn_description`="'.addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'" ,'
+                    .'`bn_sem_context`="'.addslashes(_convert($value['bn_sem_context'], YW_CHARSET, true)).'" ,'
+                    .'`bn_sem_type`="'.addslashes(_convert($value['bn_sem_type'], YW_CHARSET, true)).'" ,'
                     .'`bn_condition`="'.addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'"'
                     .' WHERE `bn_id_nature`='.$value['bn_id_nature'];
 
@@ -2184,10 +2201,12 @@ function baz_gestion_formulaire()
                     }
                     $requete =
                     'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix'].
-                    'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_condition`)'.' VALUES ('.$id.', "fr-FR", "'
+                    'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description`, `bn_sem_context`, `bn_sem_type` ,`bn_condition`)'.' VALUES ('.$id.', "fr-FR", "'
                     .addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'", "'
                     .addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'", "'
                     .addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'", "'
+                    .addslashes(_convert($value['bn_sem_context'], YW_CHARSET, true)).'", "'
+                    .addslashes(_convert($value['bn_sem_type'], YW_CHARSET, true)).'", "'
                     .addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'")';
                     // on ajoute le formulaire à la liste des formulaires existants
                     $forms[$id] = $value;
@@ -4799,4 +4818,27 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
         $tabparam['fail'] = 1;
 	}
 	return $tabparam;
+}
+
+function baz_format_jsonld($formId, $fiche)
+{
+    $form_settings = baz_valeurs_formulaire($formId);
+    $fields_infos = bazPrepareFormData($form_settings);
+
+    if( !$form_settings['bn_sem_type'] ) {
+        exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
+    }
+
+    // TODO if no context is defined, guess it from the sem_full_type
+    $output['@context'] = $form_settings['bn_sem_context'];
+    $output['type'] = $form_settings['bn_sem_type'];
+    $output['id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+
+    foreach( $fields_infos as $field_info ) {
+        if( $field_info['sem_type'] ) {
+            $output[$field_info['sem_type']] = $fiche[$field_info['id']];
+        }
+    }
+
+    return $output;
 }
