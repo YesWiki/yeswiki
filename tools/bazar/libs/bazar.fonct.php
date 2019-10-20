@@ -893,7 +893,7 @@ function baz_afficher_formulaire_export()
                 }
                 // ajoute l'URL de base aux images et fichiers
                 if ($tabindex[0] == 'image' || $tabindex[0] == 'fichier') {
-                    $tab_valeurs[$index] = $GLOBALS['wiki']->getBaseUrl() . "/files/" . $tab_valeurs[$index];
+                    $tab_valeurs[$index] = $GLOBALS['wiki']->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $tab_valeurs[$index];
                 }
                 $tab_csv[] = html_entity_decode(
                     '"'.str_replace('"', '""', $tab_valeurs[$index]).'"'
