@@ -1,0 +1,30 @@
+/* Order of the field attributes */
+.form-wrap.form-builder .frmb .form-elements { display: flex; flex-direction: column; }
+.form-wrap.form-builder .frmb .form-field .form-group { order: 100; }
+.required-wrap { order: 0 !important; }
+.name-wrap { order: 1 !important; }
+.label-wrap { order: 2 !important; }
+.subtype-wrap { order: 3 !important; }
+.separator-wrap {
+  order: 50 !important;
+  margin-top: 10px;
+  border-top: 1px dashed grey;
+  padding-top: 10px;
+}
+.access-wrap { order: 110 !important; }
+
+.separator-field label, .separator-field .copy-button, .separator-field .toggle-form { display: none !important; }
+.separator-wrap label, .separator-wrap .input-wrap { display: none !important; }
+.separator-wrap {
+  order: 50 !important;
+  margin-top: 10px;
+  border-top: 1px dashed grey;
+  padding-top: 10px;
+}
+
+.form-wrap.form-builder .frmb .form-elements .input-wrap { width: 70%; }
+.form-wrap.form-builder .frmb .form-elements .false-label:first-child, .form-wrap.form-builder .frmb .form-elements label:first-child { width: 25%; }
+
+.titre-field .form-group:not(.label-wrap) { display: none !important; }
+.carte_google-field .label-wrap, .carte_google-field .value-wrap, .carte_google-field .required-wrap, .carte_google-field .name-wrap { display: none !important; }
+.carte_google-field .field-label { display: none; }

@@ -20,7 +20,9 @@
     <div class="control-group form-group">
         <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
         <div class="controls col-sm-9">
-            <textarea class="form-control input-xxlarge" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
+            <!-- container where the form bulder will be rendered -->
+            <div id="form-builder-container"></div>
+            <textarea class="form-control input-xxlarge" id="form-builder-text" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
         </div>
     </div>
     <div class="form-group">
@@ -34,3 +36,9 @@
     <input type="hidden" name="bn_id_nature" value="<?php echo $idformulaire; ?>">
     <?php endif; ?>
 </form>
+
+<?php
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-builder.min.js');
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-edit-template.js');
+    $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/form-edit-template.css');
+?>
