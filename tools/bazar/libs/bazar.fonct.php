@@ -4707,9 +4707,9 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
     return $tabparam;
 }
 
-function baz_format_jsonld($formId, $fiche)
+function baz_format_jsonld($fiche)
 {
-    $form_settings = baz_valeurs_formulaire($formId);
+    $form_settings = baz_valeurs_formulaire($fiche['id_typeannonce']);
     $fields_infos = bazPrepareFormData($form_settings);
 
     if( !$form_settings['bn_sem_type'] ) {

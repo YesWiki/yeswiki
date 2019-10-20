@@ -262,7 +262,7 @@ if (isset($_REQUEST['demand'])) {
 
                 // Output JSON-LD
                 if( $is_semantic ) {
-                    $tab_entries[] = baz_format_jsonld($form, $decoded_entry);
+                    $tab_entries[] = baz_format_jsonld($decoded_entry);
                 } else {
                     $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
                 }
