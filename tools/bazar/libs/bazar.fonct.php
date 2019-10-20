@@ -2497,6 +2497,9 @@ function baz_valeurs_fiche($idfiche = '', $formtab = '')
             // on ajoute des attributs html pour tous les champs qui pourraient faire des filtres)
             $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche, $formtab);
 
+            // ajout des données sémantiques, s'il y en a
+            $valeurs_fiche['semantic'] = baz_extraire_donnees_semantiques($valeurs_fiche);
+
             return $valeurs_fiche;
         } else {
             return false;
@@ -2814,6 +2817,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             $fiche['html'] = $html;
             $fiche['fiche'] = $fichebazar['values'];
             $fiche['form'] = $fichebazar['form'];
+            $fiche['sem'] = 'Test';
             $res .= $GLOBALS['wiki']->renderTemplate(
                 'bazar',
                 'fiche-'.$fichebazar['values']['id_typeannonce'].'.tpl.html',
@@ -3652,6 +3656,9 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
                 $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
             }
             //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
+
+            // ajout des données sémantiques, s'il y en a
+            $fiche['semantic'] = baz_extraire_donnees_semantiques($fiche);
 
             // tableau qui contient le contenu de toutes les fiches
             $fiches['fiches'][$fiche['id_fiche']] = $fiche;
@@ -4710,7 +4717,6 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 function baz_format_jsonld($fiche)
 {
     $form_settings = baz_valeurs_formulaire($fiche['id_typeannonce']);
-    $fields_infos = bazPrepareFormData($form_settings);
 
     if( !$form_settings['bn_sem_type'] ) {
         exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
@@ -4721,11 +4727,32 @@ function baz_format_jsonld($fiche)
     $output['type'] = $form_settings['bn_sem_type'];
     $output['id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
 
+    $fields_infos = bazPrepareFormData($form_settings);
+    foreach( $fields_infos as $field_info ) {
+        if( $field_info['sem_type'] ) {
+            $value = $fiche[$field_info['id']];
+            if( $field_info['type'] === 'file' ) $value = $GLOBALS['wiki']->getBaseUrl() . "/files/" . $value;
+            $output[$field_info['sem_type']] = $value;
+        }
+    }
+
+    return $output;
+}
+
+function baz_extraire_donnees_semantiques($fiche)
+{
+    $form_settings = baz_valeurs_formulaire($fiche['id_typeannonce']);
+
+    if( !$form_settings['bn_sem_type'] ) {
+        return null;
+    }
+
+    $fields_infos = bazPrepareFormData($form_settings);
     foreach( $fields_infos as $field_info ) {
         if( $field_info['sem_type'] ) {
             $output[$field_info['sem_type']] = $fiche[$field_info['id']];
         }
     }
 
-    return $output;
+    return array( $form_settings['bn_sem_context'] . '#' . $form_settings['bn_sem_type']  => $output );
 }
