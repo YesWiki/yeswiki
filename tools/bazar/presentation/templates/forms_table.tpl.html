@@ -41,7 +41,7 @@
               'id='.$key
               ); ?>">
               <i class="glyphicon glyphicon-signal icon-signal"></i></a>
-              <a class="btn btn-default btn-mini btn-xs"
+              <a class="btn btn-default btn-mini btn-xs" target="_blank"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_CSV'); ?>"
               href="<?php
               echo $GLOBALS['wiki']->href(
@@ -50,7 +50,7 @@
               'vue=exporter&id='.$key
               ); ?>">
               CSV</a>
-              <a class="btn btn-default btn-mini btn-xs"
+              <a class="btn btn-default btn-mini btn-xs" target="_blank"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON'); ?>"
               href="<?php
               echo $GLOBALS['wiki']->href(
@@ -60,8 +60,8 @@
               ); ?>">
               JSON</a>
               <?php if($form['is_semantic']): ?>
-              <a class="btn btn-default btn-mini btn-xs"
-                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON'); ?>"
+              <a class="btn btn-default btn-mini btn-xs" target="_blank"
+                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON_LD'); ?>"
                  href="<?php
               echo $GLOBALS['wiki']->href(
               'json',
