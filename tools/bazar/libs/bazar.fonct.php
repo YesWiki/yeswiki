@@ -1957,13 +1957,9 @@ function bazPrepareFormData($form)
 
         // traitement sémantique
         if( $formelem[14] ) {
-            if( substr($formelem[14], 0, 4) === 'http' ) {
-                $prepared[$i]['sem_type'] = str_replace($form['bn_sem_context'], '', $formelem[14]);
-                $prepared[$i]['sem_full_type'] = $formelem[14];
-            } else {
-                $prepared[$i]['sem_type'] = $formelem[14];
-                $prepared[$i]['sem_full_type'] = $form['bn_sem_context'] . "#" . $formelem[14];
-            }
+            $prepared[$i]['sem_type'] = strpos($formelem[14], ',')
+                ? array_map(function($str) { return trim($str); }, explode(',', $formelem[14]))
+                : $formelem[14];
         }
 
         $i++;
@@ -2229,6 +2225,7 @@ function baz_gestion_formulaire()
                 $tab_forms['forms'][$ligne['bn_id_nature']]['description'] = $ligne['bn_description'];
                 $tab_forms['forms'][$ligne['bn_id_nature']]['can_edit'] = baz_a_le_droit('saisie_formulaire');
                 $tab_forms['forms'][$ligne['bn_id_nature']]['can_delete'] = $GLOBALS['wiki']->UserIsAdmin();
+                $tab_forms['forms'][$ligne['bn_id_nature']]['is_semantic'] = isset($ligne['bn_sem_type']) && $ligne['bn_sem_type'] !== "";
             }
         }
         // on rajoute les bibliothèques js nécéssaires
@@ -2498,7 +2495,7 @@ function baz_valeurs_fiche($idfiche = '', $formtab = '')
             $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche, $formtab);
 
             // ajout des données sémantiques, s'il y en a
-            $valeurs_fiche['semantic'] = baz_extraire_donnees_semantiques($valeurs_fiche);
+            $valeurs_fiche['semantic'] = baz_format_jsonld($valeurs_fiche);
 
             return $valeurs_fiche;
         } else {
@@ -3658,7 +3655,7 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
             //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
 
             // ajout des données sémantiques, s'il y en a
-            $fiche['semantic'] = baz_extraire_donnees_semantiques($fiche);
+            $fiche['semantic'] = baz_format_jsonld($fiche);
 
             // tableau qui contient le contenu de toutes les fiches
             $fiches['fiches'][$fiche['id_fiche']] = $fiche;
@@ -4716,43 +4713,40 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 
 function baz_format_jsonld($fiche)
 {
-    $form_settings = baz_valeurs_formulaire($fiche['id_typeannonce']);
+    $form = baz_valeurs_formulaire($fiche['id_typeannonce']);
+    if( !$form['bn_sem_type'] ) exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
 
-    if( !$form_settings['bn_sem_type'] ) {
-        exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
-    }
+    // If context is a JSON decode it, otherwise use the string
+    $output['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
 
-    // TODO if no context is defined, guess it from the sem_full_type
-    $output['@context'] = $form_settings['bn_sem_context'];
-    $output['type'] = $form_settings['bn_sem_type'];
-    $output['id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+    // If we have multiple types split by comma, generate an array, otherwise use a string
+    $output['@type'] = strpos($form['bn_sem_type'], ',')
+        ? array_map(function($str) { return trim($str); }, explode(',', $form['bn_sem_type']))
+        : $form['bn_sem_type'];
 
-    $fields_infos = bazPrepareFormData($form_settings);
+    // Add the ID of the Bazar object
+    $output['@id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+
+    $fields_infos = bazPrepareFormData($form);
     foreach( $fields_infos as $field_info ) {
+        // If the file is not semantically defined, ignore it
         if( $field_info['sem_type'] ) {
             $value = $fiche[$field_info['id']];
-            if( $field_info['type'] === 'file' ) $value = $GLOBALS['wiki']->getBaseUrl() . "/files/" . $value;
-            $output[$field_info['sem_type']] = $value;
+            if( $value ) {
+                // If this is a file or image, add the base URL
+                if( $field_info['type'] === 'file' ) $value = $GLOBALS['wiki']->getBaseUrl() . "/files/" . $value;
+
+                if( is_array($field_info['sem_type']) ) {
+                    // If we have multiple fields, duplicate the data
+                    foreach( $field_info['sem_type'] as $sem_type ) {
+                        $output[$sem_type] = $value;
+                    }
+                } else {
+                    $output[$field_info['sem_type']] = $value;
+                }
+            }
         }
     }
 
     return $output;
-}
-
-function baz_extraire_donnees_semantiques($fiche)
-{
-    $form_settings = baz_valeurs_formulaire($fiche['id_typeannonce']);
-
-    if( !$form_settings['bn_sem_type'] ) {
-        return null;
-    }
-
-    $fields_infos = bazPrepareFormData($form_settings);
-    foreach( $fields_infos as $field_info ) {
-        if( $field_info['sem_type'] ) {
-            $output[$field_info['sem_type']] = $fiche[$field_info['id']];
-        }
-    }
-
-    return array( $form_settings['bn_sem_context'] . '#' . $form_settings['bn_sem_type']  => $output );
 }

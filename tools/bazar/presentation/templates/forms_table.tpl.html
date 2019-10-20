@@ -59,6 +59,17 @@
               'demand=entries&id='.$key
               ); ?>">
               JSON</a>
+              <?php if($form['is_semantic']): ?>
+              <a class="btn btn-default btn-mini btn-xs"
+                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON'); ?>"
+                 href="<?php
+              echo $GLOBALS['wiki']->href(
+              'json',
+              $GLOBALS['wiki']->getPageTag(),
+              'demand=entries&id='.$key.'&ld=true'
+              ); ?>">
+              JSON-LD</a>
+              <?php endif; ?>
               <a class="btn btn-default btn-mini btn-xs"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_WIDGET'); ?>"
               href="<?php
