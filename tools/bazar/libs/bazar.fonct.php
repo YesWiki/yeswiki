@@ -775,7 +775,7 @@ function baz_afficher_formulaire_export()
                 '",';
             } elseif ($ligne[0] == 'image' || $ligne[0] == 'fichier') {
                 // image et fichiers
-                $tab_champs[] = $ligne[0].$ligne[1];
+                $tab_champs[] = $ligne[0].'|'.$ligne[1];
                 $csv .= '"'.str_replace('"', '""', $ligne[2])
                 .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
                 '",';
@@ -890,6 +890,10 @@ function baz_afficher_formulaire_export()
             if (isset($tab_valeurs[$index])) {
                 if ($index == 'mot_de_passe_wikini') {
                     $tab_valeurs[$index] = md5($tab_valeurs[$index]);
+                }
+                // ajoute l'URL de base aux images et fichiers
+                if ($tabindex[0] == 'image' || $tabindex[0] == 'fichier') {
+                    $tab_valeurs[$index] = $GLOBALS['wiki']->getBaseUrl() . "/files/" . $tab_valeurs[$index];
                 }
                 $tab_csv[] = html_entity_decode(
                     '"'.str_replace('"', '""', $tab_valeurs[$index]).'"'
