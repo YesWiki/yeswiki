@@ -21,12 +21,14 @@
   Alternatively, for developers, they could provide a json configuration object url inside the "jsonconfurl" attribute, for example
   {{ bazarliste id="2" template="gogomap.tpl.html" jsonconf="http://mysite/myCartoConf.json" }}
   This jsonconf will be merged with the template configuration (providing data, taxonomy etc...)
+
+  TODO
+  handle other params already used in map template : provider, latitude, longitude, zoom etc...
 -->
 
 
 <?php
-  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/gogocarto.min.js', true);
-  $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/gogocarto.min.css');
+  $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/gogocarto.min.css', true);
 ?>
 
 <div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
@@ -34,6 +36,8 @@
          style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
 
 <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+
+<script src="//cdn.jsdelivr.net/npm/velocity-animate@2.0/velocity.min.js"></script>
 
 <script>
   // wiki data to display
@@ -44,6 +48,7 @@
   var categoriesUrl = "<?php echo $GLOBALS['wiki']->href('json', 'BazaR', 'demand=lists', false) ?>";
 
   var gogoConf = {};
+  var confReady = false; // sometime we need to download distant configuration
 
   // re format wiki data to better fit gogocarto ontology.
   data = data.map(function(el) {
@@ -82,12 +87,24 @@
     wikiCategoryNameMapping[catId] = param['titles'][i];
   }
 
-  console.log('data', data, param);
   document.addEventListener("DOMContentLoaded",function() {
 
     // fix conflict bootstrap and materialize sue same function name
     $.fn.tooltip = function (options) { }
     $.fn.velocity = function (options) { }
+
+    // Load gogocartoJs now (after jquery and bootstrap are already loaded) so there is no conflict
+    var jsElm = document.createElement("script");
+    jsElm.type = "application/javascript";
+    jsElm.src = "/tools/bazar/presentation/javascripts/gogocarto.min.js";
+    document.body.appendChild(jsElm);
+
+    interval = setInterval(function() {
+      if (goGoCarto != undefined && confReady) {
+        initializeGoGoCarto();
+        clearInterval(interval);
+      }
+    },100)
 
     $.get(categoriesUrl, function(wikiTaxo) {
       // Transform wikiTaxo into gogocartoTaxo
@@ -95,7 +112,6 @@
       for(var categoryId in wikiTaxo)
       {
         var wikiCat = wikiTaxo[categoryId];
-        console.log(wikiCategoryNameMapping, categoryId)
         var gogoCat = {
           "name":  wikiCategoryNameMapping[categoryId] || wikiCat.titre_liste,
           "options":[]
@@ -129,13 +145,11 @@
       if (param['jsonconfurl']) {
         $.get(param['jsonconfurl'], function(distantConf) {
           gogoConf = { ...distantConf, ...gogoConf }
-          initializeGoGoCarto();
+          confReady = true;
         });
       } else {
-        initializeGoGoCarto();
+        confReady = true;
       }
-
-      // carto.app.map().setView(new L.LatLng(param['latitude'], param['longitude']), param['zoom']);
     })
   });
 
