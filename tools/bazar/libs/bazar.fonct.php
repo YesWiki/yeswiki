@@ -4734,7 +4734,10 @@ function baz_format_jsonld($fiche)
             $value = $fiche[$field_info['id']];
             if( $value ) {
                 // If this is a file or image, add the base URL
-                if( $field_info['type'] === 'file' ) $value = $GLOBALS['wiki']->getBaseUrl() . "/files/" . $value;
+                if( $field_info['type'] === 'file' ) $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
+
+                // If this is a linked entity (listefiche), use the URL
+                if( startsWith($field_info['id'], 'listefiche') ) $value = $GLOBALS['wiki']->href('', $value);
 
                 if( is_array($field_info['sem_type']) ) {
                     // If we have multiple fields, duplicate the data
