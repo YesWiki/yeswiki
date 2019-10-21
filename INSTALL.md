@@ -30,7 +30,7 @@ If you do `docker-compose up`, 3 Docker containers will be launched:
 
 Then go to http://localhost. In the setup, you will need to use these informations for the MySQL serveur:
 
-- Host: db
+- Host ("Machine MySQL"): db
 - Port: 3306
 - Login: root
 - Password: root
