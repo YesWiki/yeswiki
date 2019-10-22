@@ -154,6 +154,11 @@
 
 <?php
 /*******************************************************************************
+ * Calling CSS
+ ******************************************************************************/
+$GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/damier.css');
+
+/*******************************************************************************
  * Here starts the code
  ******************************************************************************/
 
@@ -172,12 +177,17 @@
  ******************************************************************************/
 if (!function_exists('montrer_bouton'))
 {
-	function montrer_bouton($tabfiche)
+	function montrer_bouton($tabfiche, $creerstylebtn, $couleur)
 		{
-		if ($tabfiche[2]){ // $tabfiche[2] is true when the record must be highlighted (exergue)
-			$btn_class='btn-couleur';
+		$btn_class='btn-reverse-'.$tabfiche[1];
+		if ($creerstylebtn){
+			if ($tabfiche[1] == "couleur"){
+				$btnstyle=' style="border-color: #ffffff; background-color: #ffffff; color: ' . $couleur . ';"';
+			} else {
+				$btnstyle=' style="border-color: ' . $couleur . '; background-color: ' . $couleur . '; color: #ffffff;"';
+			}
 		} else {
-			$btn_class='btn-reverse-'.$tabfiche[1];
+			$btnstyle='';
 		}
 		$libelle_bouton=$tabfiche[0]['bf_bouton']; // button label
 		/* If 		the record stores a link, then the button activates it
@@ -197,7 +207,7 @@ if (!function_exists('montrer_bouton'))
 			$button = 0;
 		}
 		if ($button){
-			$output='<div class="conteneur-bouton"><br /><a href="'.$lien.'" class="btn '.$btn_class.'" title="'.$libelle_bouton.'" target="_blank">'.$libelle_bouton.'</a></div>';
+			$output='<div class="conteneur-bouton"><br /><a href="'.$lien.'" class="btn '.$btn_class.'" title="'.$libelle_bouton.'"' . $btnstyle . ' target="_blank">'.$libelle_bouton.'</a></div>';
 	 		echo $output;
 		}
 	}
@@ -458,8 +468,12 @@ $tabordreaffichage = array_map('trim', $tabordreaffichage);
 
 // color used for half the tiles and buttons
 $couleur = $GLOBALS['wiki']->GetParameter('couleur');
-if (empty($couleur)) {
-	 $couleur = 'SeaGreen'; // default value
+if (!empty($couleur)) {
+	$stylecouleur = ' style="border-color: ' . $couleur . '; background-color: ' . $couleur . '"';
+	$creerstylebtn = 1;
+} else {
+	$stylecouleur = ''; // default value
+	$creerstylebtn = 0;
 }
 
 // base url
@@ -487,153 +501,6 @@ if ($ombre_portee == 'non') {
  *	End of the parameters section
  ******************************************************************************/
 ?>
-
-<?php
-/*******************************************************************************
- * styles specific to the template
- * class	cell-couleur is used to display	color tiles
- *			cell-blanc								white tiles
- *			cell-couleur-exergue					highlighted color tiles
- *			cell-blanc-exergue					highlighted white tiles
- *			texte-gauche							text containers
- *			conteneur-bouton						div button containers
- *			conteneur-date							div date (and sometimes location) containers
- *			conteneur-image						div image containers
- *			conteneur-lieu							div location containers
- *			conteneur-titre						div title containers
- *			btn-reverse-blanc						color button for white tiles
- *			btn-reverse-couleur					white button for color tiles
- *			btn-couleur								color button for highlighted tiles
- ******************************************************************************/
-?>
-<style>
-.cell-couleur{
-	border-color: <?php echo $couleur; ?>;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 2px;
-	    border-right-width: 2px;
-	    border-bottom-width: 2px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 4px;
-	    padding-bottom: 4px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	background-color: <?php echo $couleur; ?>;
-	color:#ffffff;
-	vertical-align: top;
-	<?php echo $ombre_portee; ?>
-}
-
-.cell-blanc{
-	border-color: #ffffff;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 2px;
-	    border-right-width: 2px;
-	    border-bottom-width: 2px;
-	    border-left-width: 2px;
-	padding: ;
-	    padding-top: 4px;
-	    padding-bottom: 4px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	vertical-align: top;
-	line-height: 100%;
-	<?php echo $ombre_portee; ?>
-}
-
-.cell-couleur-exergue,
-.cell-blanc-exergue{
-	border-color: <?php echo $couleur; ?>;
-	border-style: solid;
-	border-width: ;
-	    border-top-width: 4px;
-	    border-right-width: 4px;
-	    border-bottom-width: 4px;
-	    border-left-width: 4px;
-	padding: ;
-	    padding-top: 4px;
-	    padding-bottom: 4px;
-	    padding-right: 4px;
-	    padding-left: 4px;
-	box-shadow: -4px -4px #ffffff, 4px -4px #ffffff, -4px 4px #ffffff, 4px 4px #ffffff;
-	background-color: #ffffff;
-	color: <?php echo $couleur; ?>;
-	vertical-align: top;
-	<?php echo $ombre_portee; ?>
-}
-
-.texte-gauche{
-	text-align: left;
-	padding-left:4px;
-	line-height: 1.429;
-}
-
-div.conteneur-bouton{
-	text-align: center;
-}
-
-div.conteneur-date{
-	text-align: center;
-}
-
-span.date{
-	font-family: georgia;
-}
-
-div.conteneur-image{
-	text-align: center;
-}
-
-div.conteneur-lieu{
-	text-align: center;
-}
-
-div.conteneur-titre{
-	font-size: 32px;
-	font-weight: 400;
-	line-height: 35.2px;
-	margin-bottom: 10.5px;
-	margin-top: 21px;
-	text-align: center;
-}
-
-.btn-couleur{
-	border-color: <?php echo $couleur; ?>;
-	background-color: <?php echo $couleur; ?>;
-	color: #ffffff;
-	font-family: OpenDyslexic;
-}
-
-.btn-reverse-blanc{
-	border-color: <?php echo $couleur; ?>;
-	background-color: <?php echo $couleur; ?>;
-	color: #ffffff;
-	font-family: OpenDyslexic;
-}
-
-.btn-reverse-couleur{
-	border-color: #ffffff;
-	background-color: #ffffff;
-	color: <?php echo $couleur; ?>;
-	font-family: OpenDyslexic;
-}
-
-.btn-reverse-couleur:hover,
-.btn-reverse-couleur:focus {
-	color: <?php echo $couleur; ?>;
-	font-family: OpenDyslexic;
-}
-
-ul{
-	list-style: circle outside; margin:
-	0 8px 0 8px;
-	border:0;
-	padding: 0 0 0 4px;
-}
-</style>
 
 <?php
 /*******************************************************************************
@@ -711,8 +578,8 @@ if ($nbfiches>0) : // We need at least one record to display it
 			echo '<div class="row-fluid row"> <!-- start of grid -->';
 		}
 ?>
-		<div class="span<?php echo $largeur; ?> col-md-<?php echo $largeur; ?>"><!-- start of col -->
-			<div class="cell-<?php echo $tabfiche[1]; ?><?php if ($tabfiche[2]){echo ('-exergue');} ?>"><!-- start of the div wearing the tile class -->
+		<div class="span<?php echo $largeur; ?> col-md-<?php echo $largeur; ?>" style="margin: 0; border: 0; padding: 0;"><!-- start of col -->
+			<div class="cell-<?php echo $tabfiche[1]; ?><?php if ($tabfiche[2]){echo ' exergue';} ?>"<?php if ($tabfiche[1]=='couleur'){echo $stylecouleur;} ?>><!-- start of the div wearing the tile class -->
 <?php
 				/*	To display record fields in the order requested
 				 *	by parameter ordreaffichage, we scan the array we previously built
@@ -723,7 +590,7 @@ if ($nbfiches>0) : // We need at least one record to display it
 					switch ($champ)
 					{
 						case 'bouton':
-							montrer_bouton($tabfiche);
+							montrer_bouton($tabfiche, $creerstylebtn, $couleur);
 							break;
 						case 'date':
   							montrer_date($tabfiche, $tabordreaffichage);
