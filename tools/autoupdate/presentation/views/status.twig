@@ -1,15 +1,62 @@
 {% if showCore %}
     {% include 'core.twig' %}
 {% endif %}
-
+<p>&nbsp;</p>
+<!-- start of accordion -->
+<div class="panel-group" role="tablist" aria-multiselectable="true" id="accordion_update" >
 {% if showThemes %}
-<h2>Thèmes</h2>
-    {% set exts = themes %}
-    {% include 'exts.twig' %}
+	{% set nbMaj = 0 %}
+	{% set exts = themes %}
+	{% for ext in exts %}
+		{% if ext.updateAvailable and ext.installed %}
+			{% set nbMaj = nbMaj + 1 %}
+		{% endif %}
+	{% endfor %}
+	<!-- start of panel -->
+	{% if nbMaj > 0 %}
+		<div class="panel panel-warning"  >
+	{% else %}
+		<div class="panel panel-default"  >
+	{% endif %}
+		<div class="panel-heading" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="true" aria-controls="collapseThemes">
+			<h2 class="panel-title">Thèmes
+				{% if nbMaj > 0 %}
+					<span style="float: right;">Vous avez {{nbMaj}} thèmes à mettre à jour</span>
+				{% endif %}
+			</h2>
+		</div>
+		<div id="collapseThemes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThemes">
+			{% set exts = themes %}
+			{% include 'exts.twig' %}
+		</div>
+	 </div> <!-- end of panel -->
 {% endif %}
 
 {% if showTools %}
-<h2>Tools (extensions)</h2>
-    {% set exts = tools %}
-    {% include 'exts.twig' %}
+	{% set nbMaj = 0 %}
+	{% set exts = tools %}
+	{% for ext in exts %}
+		{% if ext.updateAvailable and ext.installed %}
+			{% set nbMaj = nbMaj + 1 %}
+		{% endif %}
+	{% endfor %}
+	<!-- start of panel -->
+	{% if nbMaj > 0 %}
+		<div class="panel panel-warning"  >
+	{% else %}
+		<div class="panel panel-default"  >
+	{% endif %}
+		<div class="panel-heading" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
+			<h2 class="panel-title">Tools (extensions)
+				{% if nbMaj > 0 %}
+					<span style="float: right;">Vous avez {{nbMaj}} extensions à mettre à jour</span>
+				{% endif %}
+			</h2>
+		</div>
+		<div id="collapseTools" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTools">
+			{% set exts = tools %}
+			{% include 'exts.twig' %}
+		</div>
+	</div> <!-- end of panel -->
 {% endif %}
+</div><!-- end of accordion -->
