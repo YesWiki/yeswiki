@@ -2,19 +2,43 @@ var $formBuilderTextInput = $('#form-builder-text')
 var $formBuilderContainer = $('#form-builder-container')
 var formBuilder;
 
-$(document).ready(function() {
+function initializeFormbuilder(formAndListIds)
+{
+  // Custom fields to add to form builder
+  var fields = [
+    { label: 'Titre', name: "titre", attrs: { type: 'titre' }, icon: '*' },
+    { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '*' },
+    { label: 'Image', name: "image", attrs: { type: 'image' }, icon: '*' },
+    { label: 'Email', name: "champs_mail", attrs: { type: 'champs_mail' }, icon: '@' },
+  ];
+
+  // Some attributes configuration used in multiple fields
   var visibilityOptions = {
     '': 'Tout le monde',
     '+': 'Utilisateurs identifiés',
     '%': 'Propriétaire de la fiche et admins',
     '@admins': 'Membre du groupe admin'
   }
+  var readConf = { label: 'Peut être lu par', options: visibilityOptions }
+  var writeconf = { label: 'Peut être saisi par', options: visibilityOptions }
+  var searchableConf = { label: 'Présence dans le moteur de recherche', options: { '': 'Non', '1': 'Oui' } }
 
-  var fields = [
-    { label: 'Titre', name: "titre", attrs: { type: 'titre' }, icon: '*' },
-    { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '*' },
-  ];
+  var selectConf = {
+    subtype2: { label: 'Origine des données', options: {
+      'list': 'Une liste',
+      'form': 'Un Formulaire Bazar'
+      },
+    },
+    listeOrFormId: { label: 'Choix de la liste/du formulaire', options: {...{ '': ''}, ...formAndListIds.lists, ...formAndListIds.forms} },
+    listId: { label: '', options: formAndListIds.lists },
+    formId: { label: '', options: formAndListIds.forms },
+    hint: { label: "Texte d'aide" },
+    read: readConf,
+    write: writeconf,
+    // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
+  }
 
+  // Attributes to be configured for each field
   var typeUserAttrs = {
     text: {
       maxlength: { label: "Longueur Max."},
@@ -27,42 +51,74 @@ $(document).ready(function() {
           'password': "Mot de passe"
         },
       },
-      read: { label: 'Peut lire', options: visibilityOptions },
-      write: { label: 'Peut écrire', options: visibilityOptions }
+      read: readConf,
+      write: writeconf,
+      size: { label: "Nbre caractères visibles"},
     },
     champs_mail: {
       hint: { label: "Texte d'aide" },
       separator: { label: '' }, // separate important attrs from others
       replace_email_by_button: { label: "Remplacer l'email par un bouton contact", options: { '': 'Non', 'form': 'Oui' } },
       send_form_content_to_this_email: { label: "Envoyer le contenu du formulaire à cet email", options: { '': 'Non', '1': 'Oui' } },
-      read: { label: 'Peut lire', options: visibilityOptions },
-      write: { label: 'Peut écrire', options: visibilityOptions }
+      // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
+      read: readConf,
+      write: writeconf,
     },
     carte_google: {
       name_latitude: { label: "Nom champ latitude" },
       name_longitude: { label: "Nom champ longitude" },
-    }
+    },
+    date: {
+      today_button: { label: "Btn Aujourd'hui", options: { '': 'Non', '1': 'Oui' } },
+      read: readConf,
+      write: writeconf,
+    },
+    image: {
+      hint: { label: "Texte d'aide" },
+      thumb_height: { label: "Hauteur Vignette", value: "140" },
+      thumb_width: { label: "Largeur Vignette", value: "140" },
+      resize_height: { label: "Hauteur redimension", value: "600" },
+      resize_width: { label: "Largeur redimension", value: "600" },
+      align: { label: "Alignement", value: 'right', options: { 'left': "Gauche", 'center': "Centre", 'right': 'Droite'} }
+    },
+    select: selectConf,
+    'checkbox-group': selectConf,
+    'radio-group': selectConf
   }
 
+  // How a field is represented in the formBuilder view
   var templates = {
     titre: function(fieldData) { return { field: '' }; },
     champs_mail: function(fieldData) { return { field: '<input id="' + fieldData.name + '"' + ' type="email"/>' }; },
     carte_google: function(fieldDate) { return { field: 'Geoloc'} },
+    image: function(fieldDate) { return { field: '<input type="file"/>' }},
+    text: function(fieldData) {
+      var string = '<input type="' + fieldData.subtype + '"';
+      if (fieldData.subtype == "url")
+        string += 'placeholder="' + (fieldData.value || '') + '"/>';
+      else
+        string += 'value="' + fieldData.value + '"/>';
+      return { field:  string }
+    },
   };
 
+  // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
     showActionButtons: false,
     fields: fields,
-    i18n: { locale: 'fr-FR' },
+    // i18n: { locale: 'fr-FR' },
     templates: templates,
-    disableFields: ['carte_google', 'titre', 'hidden', 'button', 'autocomplete'],
-    controlOrder: ['text', 'number', 'date'], // 'email', 'number', 'textarea', 'checkbox', 'checkbox-group', 'radio-group', 'select', 'date'],
+    disableFields: ['carte_google', 'titre', 'hidden', 'button', 'autocomplete', 'checkbox', 'paragraph', 'header'],
+    controlOrder: ['text', 'number', 'date', 'image', 'champs_mail'],
     disabledAttrs: ['access', 'placeholder', 'className', 'inline', 'toggle', 'description', 'other', 'multiple'],
     typeUserAttrs: typeUserAttrs,
   });
 
+  // Each 300ms update the text field converting form bulder content into wiki syntax
+  var formBuilderInitialized = false;
   setInterval(function() {
-    if (!formBuilder || !formBuilder.actions) return;
+    if (!formBuilder || !formBuilder.actions || !formBuilder.actions.setData) return;
+    if (!formBuilderInitialized) { initializeBuilderFromTextInput(); formBuilderInitialized = true; }
     if ($formBuilderTextInput.is(':focus')) return;
     ensureFieldsNamesAreUnique();
 
@@ -70,11 +126,28 @@ $(document).ready(function() {
     var wikiText = formatJsonDataIntoWikiText(formData);
     if (wikiText) $formBuilderTextInput.val(wikiText);
 
+    // when selecting betwwen data source lists or forms, we need to populate again the listOfFormId select with the
+    // proper set of options
+    $('.radio-group-field, .checkbox-group-field, .select-field').find('select[name=subtype2]:not(.initialized)').change(function() {
+      $(this).addClass('initialized');
+      var visibleSelect = $(this).closest('.form-field').find('select[name=listeOrFormId]')
+      selectedValue = visibleSelect.val();
+      visibleSelect.empty();
+      var optionToAddToSelect = $(this).closest('.form-field').find('select[name=' + $(this).val() +'Id] option')
+      visibleSelect.append(new Option('', '', false));
+      optionToAddToSelect.each(function() {
+        var optionKey = $(this).attr('value');
+        var optionLabel = $(this).text();
+        var isSelected = optionKey == selectedValue;
+        var newOption = new Option(optionLabel, optionKey, false, isSelected);
+        visibleSelect.append(newOption);
+      })
+    }).trigger('change');
+
    }, 300);
 
    $formBuilderTextInput.change(initializeBuilderFromTextInput)
-   setTimeout(initializeBuilderFromTextInput, 500);
-});
+}
 
 function initializeBuilderFromTextInput()
 {
@@ -103,13 +176,19 @@ function ensureFieldsNamesAreUnique() {
 }
 
 var defaultMapping = { 0: "type", 1: "name", 2: "label", 3: 'size', 4: 'maxlength', 5: 'value', 6: 'pattern',  8: 'required', 9: 'searchable', 10: 'hint', 11: 'read', 12: 'write' }
+var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 6: 'name' } }
 var yesWikiMapping = {
   "titre": { 0: "type", 1: "label"},
   "text": defaultMapping,
   "number": defaultMapping,
   "textarea": defaultMapping,
   "champs_mail": {...defaultMapping, ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email"}},
-  "carte_google": { 0: "type", 1: "name_latitude", 2: "name_longitude", 3: '?', 4: '?' }
+  "carte_google": { 0: "type", 1: "name_latitude", 2: "name_longitude", 3: '?', 4: '?' },
+  "date": {...defaultMapping, ...{ 5: 'today_button'}},
+  "image": {...defaultMapping, ...{ 3: 'thumb_height', 4: 'thumb_width', 5: 'resize_height', 6: 'resize_width', 7: 'align'}},
+  "select" : lists,
+  "checkbox-group" : lists,
+  "radio-group" : lists,
 }
 var yesWikiTypes = {
   "texte": { type: "text", subtype: "text" },
@@ -117,13 +196,19 @@ var yesWikiTypes = {
   "mot_de_passe": { type: "text", subtype: "password" },
   "nombre": { type: "text", subtype: "tel" },
   "textelong": { type: "textarea"},
+  "jour": { type: "date"},
+  "checkbox": { type: "checkbox-group", subtype2: "list"},
+  "liste": { type: "select", subtype2: "list"},
+  "radio": { type: "radio-group", subtype2: "list"},
+  "checkboxfiche": { type: "checkbox-group", subtype2: "form"},
+  "listefiche": { type: "select", subtype2: "form"},
+  "radiofiche": { type: "radio-group", subtype2: "form"},
 }
 
 // transform a json object like "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
 // into wiki text like "texte***bf_titre***Nom***255***255*** *** *** ***1***0***"
 function formatJsonDataIntoWikiText(formData) {
   if (formData.length == 0) return null;
-  console.log(formData);
   var wikiText = "";
 
   for(var i = 0; i < formData.length; i++)
@@ -134,7 +219,9 @@ function formatJsonDataIntoWikiText(formData) {
 
     var wikiType = formElement.type
     for(var type in yesWikiTypes)
-      if (formElement.type == yesWikiTypes[type].type && (!formElement.subtype || formElement.subtype == yesWikiTypes[type].subtype)) wikiType = type
+      if (   formElement.type == yesWikiTypes[type].type
+        && (!formElement.subtype || formElement.subtype == yesWikiTypes[type].subtype)
+        && (!formElement.subtype2 || formElement.subtype2 == yesWikiTypes[type].subtype2)) wikiType = type
 
     wikiProps[0] = wikiType;
 
@@ -180,7 +267,8 @@ function parseWikiTextIntoJsonData(text)
       var mapping = yesWikiMapping[fieldType];
 
       fieldObject["type"] = fieldType;
-      fieldObject["subtype"] = "text"; //(wikiType in yesWikiTypes) ? yesWikiTypes[wikiType].subtype : "text";
+      fieldObject["subtype"] = (wikiType in yesWikiTypes) ? yesWikiTypes[wikiType].subtype : "";
+      fieldObject["subtype2"] = (wikiType in yesWikiTypes) ? yesWikiTypes[wikiType].subtype2 : "";
       for(var j = 1; j < fieldValues.length; j++)
       {
         var value = fieldValues[j];

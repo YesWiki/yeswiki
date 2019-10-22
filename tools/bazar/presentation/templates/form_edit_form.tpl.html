@@ -37,6 +37,12 @@
     <?php endif; ?>
 </form>
 
+<script>
+    var formAndListIds = <?php echo json_encode(baz_forms_and_lists_ids()) ?>;
+    document.addEventListener("DOMContentLoaded",function() {
+        initializeFormbuilder(formAndListIds);
+    });
+</script>
 <?php
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-builder.min.js');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-edit-template.js');

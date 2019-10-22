@@ -28,3 +28,16 @@
 .titre-field .form-group:not(.label-wrap) { display: none !important; }
 .carte_google-field .label-wrap, .carte_google-field .value-wrap, .carte_google-field .required-wrap, .carte_google-field .name-wrap { display: none !important; }
 .carte_google-field .field-label { display: none; }
+
+.date-field .value-wrap { display: none !important; }
+
+.image-field .value-wrap { display: none !important; }
+
+.select-field .field-options, .radio-group-field .field-options, .checkbox-group-field .field-options { display: none !important; }
+
+.form-wrap.form-builder .frmb .form-elements .false-label:first-child, .form-wrap.form-builder .frmb .form-elements label:first-child {
+  white-space: normal;
+  text-overflow: initial;
+}
+
+.listId-wrap, .formId-wrap { display: none !important; }

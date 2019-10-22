@@ -509,7 +509,7 @@ function baz_afficher_formulaire_import()
             if (!isset($GLOBALS['importdone'])) {
                 // Pour les traitements particulier lors de l import
                 $GLOBALS['_BAZAR_']['provenance'] = 'import';
-    
+
                 // des fiches ont été sélectionnées pour l'import
                 $val_formulaire = baz_valeurs_formulaire($id);
                 $importlist = '';
@@ -2083,7 +2083,7 @@ function multiArraySearch($array, $key, $value)
 }
 
 /** Affiche le listing des formulaires et permet de les modifier
- *  
+ *
  * @return string le code HTML
  */
 function baz_gestion_formulaire()
@@ -2110,7 +2110,7 @@ function baz_gestion_formulaire()
             .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
             .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
             $GLOBALS['wiki']->query($requete);
-            $GLOBALS['wiki']->redirect($GLOBALS['wiki']->href('','', 'vue=formulaire&msg=form_created', false));     
+            $GLOBALS['wiki']->redirect($GLOBALS['wiki']->href('','', 'vue=formulaire&msg=form_created', false));
     } elseif (isset($_GET['action_formulaire']) &&
         $_GET['action_formulaire'] == 'modif_v' &&
         baz_a_le_droit('saisie_formulaire')) {
@@ -2296,7 +2296,7 @@ function baz_gestion_listes()
         }
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
-        
+
         include_once 'includes/squelettephp.class.php';
         try {
             $squel = new SquelettePhp('lists_table.tpl.html', 'bazar');
@@ -2544,6 +2544,17 @@ function baz_valeurs_liste($idliste = '')
         return $GLOBALS['_BAZAR_']['lists'];
     }
 }
+
+function baz_forms_and_lists_ids()
+{
+    foreach(baz_valeurs_liste() as $listId => $list) { $lists[$listId] = $list['titre_liste']; }
+
+    $requete = 'SELECT bn_id_nature, bn_label_nature FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature';
+    $result = $GLOBALS['wiki']->LoadAll($requete);
+    foreach($result as $form) { $forms[$form['bn_id_nature']] = $form['bn_label_nature']; }
+    return ['lists' => $lists, 'forms' => $forms];
+}
+
 
 /** baz_nextId () Renvoie le prochain identifiant numerique libre d'une table
  *   @param  string  Nom de la table
