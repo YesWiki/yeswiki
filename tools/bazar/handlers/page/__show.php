@@ -39,7 +39,7 @@ if ($type == 'fiche_bazar') {
     if( strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false ) {
         header('Content-type: application/ld+json; charset=UTF-8');
         header('Access-Control-Allow-Origin: *');
-        echo json_encode(baz_format_jsonld($entry));
+        echo json_encode(baz_append_semantic_data($entry, true));
         exit();
     } else {
         // js lib

@@ -2495,7 +2495,7 @@ function baz_valeurs_fiche($idfiche = '', $formtab = '')
             $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche, $formtab);
 
             // ajout des données sémantiques, s'il y en a
-            $valeurs_fiche['semantic'] = baz_format_jsonld($valeurs_fiche);
+            baz_append_semantic_data($valeurs_fiche, false);
 
             return $valeurs_fiche;
         } else {
@@ -3655,7 +3655,7 @@ function searchResultstoArray($tableau_fiches, $params, $formtab = '')
             //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
 
             // ajout des données sémantiques, s'il y en a
-            $fiche['semantic'] = baz_format_jsonld($fiche);
+            baz_append_semantic_data($fiche, false);
 
             // tableau qui contient le contenu de toutes les fiches
             $fiches['fiches'][$fiche['id_fiche']] = $fiche;
@@ -4711,10 +4711,16 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
     return $tabparam;
 }
 
-function baz_format_jsonld($fiche)
+function baz_append_semantic_data(&$fiche, $err_if_not_semantic)
 {
     $form = baz_valeurs_formulaire($fiche['id_typeannonce']);
-    if( !$form['bn_sem_type'] ) exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
+    if( !$form['bn_sem_type'] ) {
+        if( $err_if_not_semantic ) {
+            exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
+        } else {
+            return null;
+        }
+    }
 
     // If context is a JSON decode it, otherwise use the string
     $output['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
@@ -4750,6 +4756,8 @@ function baz_format_jsonld($fiche)
             }
         }
     }
+
+    $fiche['semantic'] = $output;
 
     return $output;
 }
