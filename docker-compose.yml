@@ -2,7 +2,7 @@ version: '2'
 
 services:
     yeswiki:
-        image: lavoweb/php-5.6
+        build: .
         container_name: yeswiki
         ports:
             - "80:80"
