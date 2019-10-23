@@ -33,11 +33,9 @@ if ($this->config['favorite_style']!='none') {
     }
 }
 
-// on ajoute le style css selectionne du theme
-if ($this->config['favorite_style']!='none') {
-    if (substr($this->config['favorite_style'], -4, 4) == '.css') {
-        $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/libs/vendor/fontawesome-5/css/all.min.css" id="mainstyle" />'."\n";
-    }
+// on ajoute les icones de fontawesome
+if (empty($this->config['fontawesome']) || $this->config['fontawesome'] != '0') {
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/libs/vendor/fontawesome-5/css/all.min.css" />'."\n";
 }
 
 // si l'action propose d'autres css a ajouter, on les ajoute
