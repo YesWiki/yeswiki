@@ -15,7 +15,7 @@
    --neutral-light-color:#fff;
 
   --main-text-color:var(--neutral-color);
-  --main-text-fontsize:20px;
+  --main-text-fontsize:18px;
   --main-text-lineheight:1.3em;
   --main-text-fontfamily:'Nunito', sans-serif;
   --main-selected-text-bg:rgb(254, 224, 52); /* jaune marqueur pour surligner le texte */
@@ -264,14 +264,8 @@ a:focus, a:hover {
    color: var(--navbar-link-hover-color-color) !important;
    background-color: var(--navbar-link-bg-hover-color) !important;
 }
-.navbar-default .navbar-nav > li.active > a {
-   /*text-decoration: underline;*/
-}
-
-
 
 /* Bandeau d'entete */
-
 #yw-header {
 background-color: var(--header-bg-color);
 color: var(--header-text-color);
@@ -493,6 +487,7 @@ border-bottom:1px solid var(--neutral-color);
   border: none;
 padding:0;
 }
+
 .bazar-search .input-group-btn {
 display:none;
 }
@@ -502,13 +497,13 @@ color: var(--neutral-color);
 .search-input::-moz-placeholder { /* Firefox 19+ */
 color: var(--neutral-color);
 }
-.search-input:-ms-input-placeholder { /* IE 10+ /
+.search-input:-ms-input-placeholder { /* IE 10+ */
 color: var(--neutral-color);
+}
+.search-input:-moz-placeholder { /* Firefox 18- */
+color: var(--neutral-color);
+}
 
-}
-.search-input:-moz-placeholder { / Firefox 18- */
-color: var(--neutral-color);
-}
 .btn.active { box-shadow: none !important }
 .btn-group > .btn {
     position: relative;
