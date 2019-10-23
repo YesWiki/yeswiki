@@ -1,3 +1,9 @@
+// replace full calendar icons
+$(document).ready(function() {
+  $('.fc-prev-button').html('<span class="fa fa-chevron-left"></span>').prependTo('.fc-toolbar.fc-header-toolbar')
+  $('.fc-next-button').html('<span class="fa fa-chevron-right"></span>').appendTo('.fc-toolbar.fc-header-toolbar')
+})
+
 // polyfill pour variables css
 var cssVarPoly = {
   init: function init() {
