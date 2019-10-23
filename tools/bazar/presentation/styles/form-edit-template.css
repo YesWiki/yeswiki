@@ -41,3 +41,6 @@
 }
 
 .listId-wrap, .formId-wrap { display: none !important; }
+
+.textarea-field .maxlength-wrap, .textarea-field .subtype-wrap { display: none !important; }
+.file-field .subtype-wrap { display: none !important; }

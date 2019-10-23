@@ -10,6 +10,7 @@ function initializeFormbuilder(formAndListIds)
     { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '*' },
     { label: 'Image', name: "image", attrs: { type: 'image' }, icon: '*' },
     { label: 'Email', name: "champs_mail", attrs: { type: 'champs_mail' }, icon: '@' },
+    { label: 'Tags', name: "tags", attrs: { type: 'tags' }, icon: '*' },
   ];
 
   // Some attributes configuration used in multiple fields
@@ -46,7 +47,7 @@ function initializeFormbuilder(formAndListIds)
       separator: { label: '' }, // separate important attrs from others
       subtype: { label: 'Type', options: {
           'text': 'Texte',
-          'tel': 'Téléphone',
+          // 'tel': 'Téléphone',
           'url': 'Url',
           'password': "Mot de passe"
         },
@@ -83,7 +84,19 @@ function initializeFormbuilder(formAndListIds)
     },
     select: selectConf,
     'checkbox-group': selectConf,
-    'radio-group': selectConf
+    'radio-group': selectConf,
+    textarea: {
+      syntax: { label: "Format d'écriture", options: { 'wiki': "Wiki", "html": "Editeur Wysiwyg", 'nohtml': "Html non interprété"}},
+      size: { label: "Largeur champ de saisie"},
+    },
+    file: {
+      maxsize: { label: "Taille max" }
+    },
+    tags: {
+      hint: { label: "Texte d'aide" },
+      read: readConf,
+      write: writeconf
+    }
   }
 
   // How a field is represented in the formBuilder view
@@ -100,6 +113,7 @@ function initializeFormbuilder(formAndListIds)
         string += 'value="' + fieldData.value + '"/>';
       return { field:  string }
     },
+    tags: function(field) { return { field: '<input/>'} }
   };
 
   // FormBuilder conf
@@ -109,7 +123,7 @@ function initializeFormbuilder(formAndListIds)
     // i18n: { locale: 'fr-FR' },
     templates: templates,
     disableFields: ['carte_google', 'titre', 'hidden', 'button', 'autocomplete', 'checkbox', 'paragraph', 'header'],
-    controlOrder: ['text', 'number', 'date', 'image', 'champs_mail'],
+    controlOrder: ['text', 'number', 'date', 'image', 'champs_mail', 'tags'],
     disabledAttrs: ['access', 'placeholder', 'className', 'inline', 'toggle', 'description', 'other', 'multiple'],
     typeUserAttrs: typeUserAttrs,
   });
@@ -143,6 +157,11 @@ function initializeFormbuilder(formAndListIds)
         visibleSelect.append(newOption);
       })
     }).trigger('change');
+
+    // Changes icons and icones helpers
+    $('a[type=remove].icon-cancel').removeClass('icon-cancel').addClass('glyphicon glyphicon-trash');
+    $('a[type=copy].icon-copy').attr('title', 'Dupliquer');
+    $('a[type=edit].icon-pencil').attr('title', 'Editer/Masquer');
 
    }, 300);
 
@@ -189,13 +208,16 @@ var yesWikiMapping = {
   "select" : lists,
   "checkbox-group" : lists,
   "radio-group" : lists,
+  "textarea": {...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
+  "file": {...defaultMapping, ...{ 3: "maxsize" } },
+  "tags": defaultMapping
 }
 var yesWikiTypes = {
   "texte": { type: "text", subtype: "text" },
   "lien_internet": { type: "text", subtype: "url" },
   "mot_de_passe": { type: "text", subtype: "password" },
-  "nombre": { type: "text", subtype: "tel" },
-  "textelong": { type: "textarea"},
+  // "nombre": { type: "text", subtype: "tel" },
+  "textelong": { type: "textarea", subtype: "textarea"},
   "jour": { type: "date"},
   "checkbox": { type: "checkbox-group", subtype2: "list"},
   "liste": { type: "select", subtype2: "list"},
@@ -203,6 +225,7 @@ var yesWikiTypes = {
   "checkboxfiche": { type: "checkbox-group", subtype2: "form"},
   "listefiche": { type: "select", subtype2: "form"},
   "radiofiche": { type: "radio-group", subtype2: "form"},
+  "fichier": { type: "file", subtype: "file" }
 }
 
 // transform a json object like "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
@@ -273,6 +296,7 @@ function parseWikiTextIntoJsonData(text)
       {
         var value = fieldValues[j];
         var field = (mapping && j in mapping) ? mapping[j] : j;
+        if (field == "required") value = (value == "1") ? true : false;
         if (field) fieldObject[field] = value;
       }
       if (!fieldObject.label) fieldObject.label = '';
