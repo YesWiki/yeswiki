@@ -21,7 +21,7 @@ if(count($pages)>0) : ?>
         if ($GLOBALS['wiki']->HasAccess("write", $page['tag'])) :?>
 		                <a class="btn btn-default btn-mini btn-xs" href="<?php 
             echo $GLOBALS['wiki']->href('edit', $page['tag']); ?>">
-            					  <i class="glyphicon glyphicon-pencil icon-pencil"></i> <?php 
+            					  <i class="fa fa-edit icon-pencil"></i> <?php 
             echo _t('TEMPLATE_MODIFY'); ?>
             				</a>
 		            <?php 
@@ -31,7 +31,7 @@ if(count($pages)>0) : ?>
 		                <a class="btn btn-danger btn-mini btn-xs" href="<?php
             echo $GLOBALS['wiki']->href('deletepage', $page['tag']); ?>"  onclick="javascript:return confirm('<?php
             echo _t('TEMPLATE_CONFIRM_DELETE_PAGE'); ?> ?');">
-            					  <i class="glyphicon glyphicon-trash icon-trash icon-white"></i>
+            					  <i class="fa fa-trash icon-trash icon-white"></i>
             				</a>
 		            <?php 
         endif; ?>

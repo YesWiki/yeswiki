@@ -16,10 +16,10 @@
             <td><?php echo $key; ?></td>
             <td>
             <?php if ($list['can_edit']) :?>
-                <a class="btn btn-default btn-mini btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="glyphicon glyphicon-pencil icon-pencil"></i> <?php echo _t('BAZ_MODIFIER'); ?></a>
+                <a class="btn btn-default btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="fa fa-edit"></i> <?php echo _t('BAZ_MODIFIER'); ?></a>
             <?php endif; ?>
             <?php if ($list['can_delete']) :?>
-                <a class="btn btn-danger btn-mini btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste='.$key); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_LISTE'); ?> ?');"><i class="glyphicon glyphicon-trash icon-trash icon-white"></i></a>
+                <a class="btn btn-danger btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste='.$key); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_LISTE'); ?> ?');"><i class="fa fa-trash icon-white"></i></a>
             <?php endif; ?>
             </td>
         </tr>
@@ -32,12 +32,12 @@
 </div>
 <?php endif; ?>
 
-<a href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&amp;'.BAZ_VARIABLE_ACTION.'='.BAZ_ACTION_NOUVELLE_LISTE); ?>" class="btn btn-primary"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVELLE_LISTE'); ?></a>
+<a href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&amp;'.BAZ_VARIABLE_ACTION.'='.BAZ_ACTION_NOUVELLE_LISTE); ?>" class="btn btn-primary"><i class="fa fa-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVELLE_LISTE'); ?></a>
 <hr>
 <strong><?php echo _t('BAZ_IMPORT_LISTS_FROM_URL'); ?></strong>
 <form action="javascript:undefined" class="form-horizontal">
 	<div class="input-prepend input-append input-group">
-		<span class="add-on input-group-addon"><i class="glyphicon glyphicon-link icon-globe"></i></span>
+		<span class="add-on input-group-addon"><i class="fa fa-link icon-globe"></i></span>
 		<input id="url-import-lists" class="form-control input-xxlarge" placeholder="<?php echo _t('BAZ_URL_IMPORT_LISTS_INFO'); ?>" type="url">
 		<span class="input-group-btn">
 		    <button id="btn-import-lists" class="btn btn-primary" type="submit"><?php echo _t('BAZ_GO'); ?> !</button>

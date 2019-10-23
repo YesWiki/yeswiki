@@ -189,7 +189,7 @@
       $editmodal
         .find('.modal-body')
         .append('<a href="' + href + '" class="btn btn-default btn-block">' +
-          '<i class="glyphicon glyphicon-pencil"></i> Editer la page ' + pagewiki + '</a>');
+          '<i class="fa fa-edit"></i> Editer la page ' + pagewiki + '</a>');
 
     });
 

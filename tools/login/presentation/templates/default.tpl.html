@@ -1,5 +1,5 @@
 <?php if ($connected) : ?>
-	<h5><i class="glyphicon glyphicon-user"></i>&nbsp;<?php echo _t('LOGIN_CONNECTED_AS').' '.$user; ?></h5>
+	<h5><i class="fa fa-user"></i>&nbsp;<?php echo _t('LOGIN_CONNECTED_AS').' '.$user; ?></h5>
 	<ul class="login-actions">
 	  <?php echo $PageMenuUser; ?>
 	  <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
@@ -31,7 +31,7 @@
         <input type="checkbox" id="remember-default" name="remember" value="1"> <?php echo _t('LOGIN_REMEMBER_ME'); ?>
       </label>
     </div>
-		<button type="submit" class="btn <?php echo $btnclass; ?> btn-primary"><i class="glyphicon glyphicon-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
+		<button type="submit" class="btn <?php echo $btnclass; ?> btn-primary"><i class="fa fa-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
 		<input type="hidden" name="action" value="login" />
 		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />
@@ -39,7 +39,7 @@
     </div> <!-- /.col-xs-6 -->
     <div class="col-xs-6">
 			<h5><?php echo _t('LOGIN_NEW_MEMBER'); ?></h5>
-			<a class="btn <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="glyphicon glyphicon-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a>
+			<a class="btn <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="fa fa-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a>
     </div>
   </div> <!-- /.row -->
 		<?php endif; ?>
