@@ -257,13 +257,15 @@ a:focus, a:hover {
    box-shadow: var(--navbar-shadow);
 }
 .navbar-default .navbar-brand, .navbar-default .navbar-nav > li > a {
-   color: var(--navbar-link-color);
+   color: var(--navbar-link-color) !important;
+   background-color: var(--navbar-link-bg-color) !important;
 }
-.navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav a.active-parent-link, .navbar-default .navbar-nav a:hover, .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > li > a:hover,
-.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:focus, .navbar-default .navbar-nav > .open > a:hover,
-.navbar-default .navbar-brand:focus, .navbar-default .navbar-brand:hover {
-   color: var(--navbar-link-hover-color);
-   background-color: var(--navbar-link-bg-hover-color);
+.navbar-default .navbar-brand, .navbar-default .navbar-nav > li > a:hover {
+   color: var(--navbar-link-hover-color-color) !important;
+   background-color: var(--navbar-link-bg-hover-color) !important;
+}
+.navbar-default .navbar-nav > li.active > a {
+   /*text-decoration: underline;*/
 }
 
 
