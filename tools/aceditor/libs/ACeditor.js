@@ -165,7 +165,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
       // help
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
-                '<i class="fa fa-question-sign"></i></a>' +
+                '<i class="fa fa-question"></i></a>' +
             '</div>');
 
       var lastFocus;
