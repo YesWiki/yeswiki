@@ -19,7 +19,7 @@ if ($caret != '0') {
 // icone du bouton
 $icon = $this->GetParameter('icon');
 if (!empty($icon)) {
-    $icon = '<i class="icon-'.$icon.' glyphicon glyphicon-'.$icon.'"></i>';
+    $icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
 }
 
 // classe css supplémentaire l'ensemble du

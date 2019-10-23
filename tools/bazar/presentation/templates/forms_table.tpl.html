@@ -23,13 +23,13 @@
                     data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_RECHERCHER'); ?>"
                     href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR
                     .'='.BAZ_VOIR_CONSULTER.'&amp;action='.BAZ_MOTEUR_RECHERCHE.'&amp;id='.$key); ?>">
-                <i class="glyphicon glyphicon-search icon-search"></i></a>
+                <i class="fa fa-search icon-search"></i></a>
                 <a class="btn btn-default btn-mini btn-xs"
                     data-toggle="tooltip" data-placement="bottom"
                     title="<?php echo _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE'); ?>"
                     href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR
                     .'='.BAZ_VOIR_SAISIR . '&amp;action='.BAZ_ACTION_NOUVEAU.'&amp;id='.$key); ?>">
-                <i class="glyphicon glyphicon-plus icon-plus"></i></a>
+                <i class="fa fa-plus icon-plus"></i></a>
             </td>
             <td>
               <a class="btn btn-default btn-mini btn-xs"
@@ -40,7 +40,7 @@
               $GLOBALS['wiki']->getPageTag(),
               'id='.$key
               ); ?>">
-              <i class="glyphicon glyphicon-signal icon-signal"></i></a>
+              <i class="fa fa-signal icon-signal"></i></a>
               <a class="btn btn-default btn-mini btn-xs"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_CSV'); ?>"
               href="<?php
@@ -80,10 +80,10 @@
                         '',
                         $GLOBALS['wiki']->GetPageTag(),
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=modif&amp;idformulaire='.$key
-                    ); ?>"><i class="glyphicon glyphicon-pencil"></i></a>
+                    ); ?>"><i class="fa fa-edit"></i></a>
             <?php
             else : ?>
-              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="glyphicon glyphicon-pencil"></i></button>
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="fa fa-edit"></i></button>
           	<?php
             endif; ?>
             <?php
@@ -95,9 +95,9 @@
                         '',
                         $GLOBALS['wiki']->GetPageTag(),
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=delete&amp;idformulaire='.$key
-                    ); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE'); ?> ?');"><i class="glyphicon glyphicon-trash"></i></a>
+                    ); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE'); ?> ?');"><i class="fa fa-trash"></i></a>
             <?php else : ?>
-                      <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="glyphicon glyphicon-trash"></i></button>
+                      <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="fa fa-trash"></i></button>
             <?php
             endif; ?>
             </td>
@@ -113,14 +113,14 @@
 </div>
 <?php endif; ?>
 
-<a class="btn btn-primary<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?>" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=new'); ?>"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVEAU_FORMULAIRE'); ?></a>
+<a class="btn btn-primary<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?>" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=new'); ?>"><i class="fa fa-plus icon-plus icon-white"></i> <?php echo _t('BAZ_NOUVEAU_FORMULAIRE'); ?></a>
 
 
 <hr>
 <strong><?php echo _t('BAZ_IMPORT_FORMS_FROM_URL'); ?></strong>
 <form action="javascript:undefined" class="form-horizontal">
 	<div class="input-prepend input-append input-group">
-		<span class="add-on input-group-addon"><i class="glyphicon glyphicon-link icon-globe"></i></span>
+		<span class="add-on input-group-addon"><i class="fa fa-link icon-globe"></i></span>
 		<input id="url-import-forms" class="form-control input-xxlarge"<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?>  placeholder="<?php echo _t('BAZ_URL_IMPORT_LISTS_INFO'); ?>" type="url">
 		<span class="input-group-btn">
 		    <button id="btn-import-forms"<?php if (!$GLOBALS['wiki']->GetUser()) :?> disabled<?php endif; ?> class="btn btn-primary" type="submit"><?php echo _t('BAZ_GO'); ?> !</button>

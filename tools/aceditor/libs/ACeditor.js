@@ -156,16 +156,16 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
       // Horizontal line and links
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang['ACEDITOR_LINE']+'">' +
-                '<i class="glyphicon glyphicon-minus icon-minus"></i>' +
+                '<i class="fa fa-minus icon-minus"></i>' +
               '</a>' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="'+this.lang['ACEDITOR_LINK_PROMPT']+'" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="'+this.lang['ACEDITOR_LINK_TITLE']+'" class="btn">' +
-                '<i class="glyphicon glyphicon-share-alt icon-share-alt"></i> '+this.lang['ACEDITOR_LINK']+'</a>' +
+                '<i class="fa fa-share-alt icon-share-alt"></i> '+this.lang['ACEDITOR_LINK']+'</a>' +
             '</div>');
 
       // help
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
-                '<i class="glyphicon glyphicon-question-sign"></i></a>' +
+                '<i class="fa fa-question-sign"></i></a>' +
             '</div>');
 
       var lastFocus;

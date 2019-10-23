@@ -352,7 +352,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $date_html .= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n"
             .'<div class="controls col-sm-9">' . "\n"
             .'<div class="input-prepend input-group"><span class="add-on input-group-addon">'
-            .'<i class="icon-calendar glyphicon glyphicon-calendar"></i></span>'
+            .'<i class="icon-calendar fa fa-calendar"></i></span>'
             .'<input type="text" name="'.$tableau_template[1].'"'
             .' class="form-control bazar-date" id="'.$tableau_template[1].'"';
 
@@ -390,7 +390,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         </select></div>
         <div class="select-time' . (($hashour) ? '' : ' hide') . ' input-prepend input-group">
         <span class="add-on input-group-addon">
-        <i class="icon-time glyphicon glyphicon-time"></i></span>
+        <i class="icon-time fa fa-time"></i></span>
         <select class="form-control select-hour" name="' . $tableau_template[1] . '_hour">
         <option value="00"' . (($hashour) ? '' : ' selected') . (($tabtime[0] == '00') ? 'selected' : '') . '>00</option>
         <option value="01"' . (($tabtime[0] == '01') ? 'selected' : '') . '>01</option>
@@ -787,7 +787,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             $html .= '<span class="BAZ_texte"> ';
             $html .= $valeurs_fiche['nomwiki'];
             if ($GLOBALS['wiki']->GetUser() and ($GLOBALS['wiki']->GetUserName() == $valeurs_fiche['nomwiki'])) {
-                $html .= ' <a class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('edit', $valeurs_fiche['nomwiki']).'"><i class="glyphicon glyphicon-pencil"></i> '._t('BAZ_EDIT_MY_ENTRY').'</a> <a  class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('', 'ParametresUtilisateur').'"><i class="glyphicon glyphicon-lock"></i> '._t('BAZ_CHANGE_PWD').'</a>';
+                $html .= ' <a class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('edit', $valeurs_fiche['nomwiki']).'"><i class="fa fa-edit"></i> '._t('BAZ_EDIT_MY_ENTRY').'</a> <a  class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('', 'ParametresUtilisateur').'"><i class="fa fa-lock"></i> '._t('BAZ_CHANGE_PWD').'</a>';
             }
             $html .= '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
         }
@@ -947,7 +947,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
                 $title = _t('BAZ_CONTACT_BY_MAIL').' '.htmlspecialchars($valeurs_fiche['bf_titre']);
                 $html .= '<span class="BAZ_texte"><a class="btn btn-default modalbox" title="'.$title.'" href="'
-                  .$GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$tableau_template[1]).'"><i class="glyphicon glyphicon-envelope"></i> '.$title;
+                  .$GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$tableau_template[1]).'"><i class="fa fa-envelope"></i> '.$title;
                 $html .=  '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             } else {
                 $html.= '<span class="BAZ_texte"><a href="mailto:' . $valeurs_fiche[$tableau_template[1]] . '" class="BAZ_lien_mail">';
@@ -1460,8 +1460,8 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'suppr_image=' . $valeurs_fiche[$type . $identifiant];
-                $lien_supprimer_image = '<a class="btn btn-sm btn-block btn-danger" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="glyphicon glyphicon-trash"></i> ' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
-                $inputhtml .= '<label class="btn btn-block btn-default"><i class="glyphicon glyphicon-pencil"></i>
+                $lien_supprimer_image = '<a class="btn btn-sm btn-block btn-danger" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="fa fa-trash"></i> ' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
+                $inputhtml .= '<label class="btn btn-block btn-default"><i class="fa fa-edit"></i>
                 '. _t('BAZ_MODIFIER_IMAGE').'<input type="file" style="display: none;" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png">
             </label>'.$lien_supprimer_image;
 
@@ -1802,7 +1802,7 @@ $(document).ready(function() {
         }
     }
     function popupHtml( point ) {
-        return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"glyphicon glyphicon-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin ou modifier les coordonnées GPS.";
+        return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin ou modifier les coordonnées GPS.";
     }
 
     function geocodedmarkerRefresh( point )
@@ -2322,7 +2322,7 @@ function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     if ($mode == 'html') {
         if ($GLOBALS['wiki']->GetMethod() == 'iframe') {
-            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="glyphicon glyphicon-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
+            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
         }
     } elseif ($mode == 'saisie') {
         if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/iframe') {

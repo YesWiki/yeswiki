@@ -151,7 +151,7 @@ function baz_afficher_liste_fiches_utilisateur()
     $urlParams = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR;
     $res .= '<a class="btn btn-primary" href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams)
     .'" title="'._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE')
-    .'"><i class="glyphicon glyphicon-plus icon-plus icon-white"></i>&nbsp;'
+    .'"><i class="fa fa-plus icon-plus icon-white"></i>&nbsp;'
     ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a></li></ul>';
 
     return $res;
@@ -431,7 +431,7 @@ function baz_afficher_formulaire_import()
 
                                     .
 
-                                    '<i class="glyphicon glyphicon-eye-open icon-eye-open icon-white"></i> '
+                                    '<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
 
                                     ._t('BAZ_SEE_ENTRY').'</a>
                                 <div class="panel panel-danger">
@@ -461,7 +461,7 @@ function baz_afficher_formulaire_import()
 
                                     .
 
-                                    '<i class="glyphicon glyphicon-eye-open icon-eye-open icon-white"></i> '
+                                    '<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
                                     ._t('BAZ_SEE_ENTRY').'</a>
                                     <div class="panel panel-default">
                                         <div id="collapse'.
@@ -933,7 +933,7 @@ function baz_afficher_formulaire_export()
     //on cree le lien vers ce fichier
     $output .=
     '<a href="'.$chemin_destination.'" class="btn btn-xl btn-primary" title="'
-    ._t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'"><i class="glyphicon glyphicon-download"></i> '.
+    ._t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'"><i class="fa fa-download"></i> '.
     _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
 
     return $output;
@@ -1060,7 +1060,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                             <a class="btn btn-mini btn-xs btn-primary" href="'
                             .$newurl.'">'
 
-                            .'<i class="glyphicon glyphicon-plus icon-plus"></i> '
+                            .'<i class="fa fa-plus icon-plus"></i> '
                             ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a>&nbsp;&nbsp;'."\n"
                             .'</td>
                         </tr>';
@@ -2854,7 +2854,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 // lien modifier la fiche
                 . '<a class="btn btn-xs btn-mini btn-default" href="'
                 . $GLOBALS['wiki']->href('edit', $idfiche).'">'
-                . '<i class="glyphicon glyphicon-pencil icon-pencil"></i> '
+                . '<i class="fa fa-edit icon-pencil"></i> '
                 . _t('BAZ_MODIFIER')
                 .'</a>'."\n";
 
@@ -2864,7 +2864,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
                 . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
                 . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
-                . '<i class="glyphicon glyphicon-trash icon-trash icon-white"></i> '
+                . '<i class="fa fa-trash icon-trash icon-white"></i> '
                 . _t('BAZ_SUPPRIMER').'</a>'."\n";
             }
 
@@ -3888,7 +3888,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             $output .= '<div class="export-links pull-right"><a class="btn btn-default btn-mini btn-xs"
             data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_RSS').'"
             href="'.$GLOBALS['wiki']->href('rss', $GLOBALS['wiki']->getPageTag(), 'id='.$key).'">
-            <i class="glyphicon glyphicon-signal icon-signal"></i></a>
+            <i class="fa fa-signal icon-signal"></i></a>
             <a class="btn btn-default btn-mini btn-xs"
             data-toggle="tooltip" data-placement="bottom" title="'._t('BAZ_CSV').'"
             href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), 'vue=exporter&id='.$key).'">
