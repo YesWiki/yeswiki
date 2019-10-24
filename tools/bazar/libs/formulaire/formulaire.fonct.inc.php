@@ -787,7 +787,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             $html .= '<span class="BAZ_texte"> ';
             $html .= $valeurs_fiche['nomwiki'];
             if ($GLOBALS['wiki']->GetUser() and ($GLOBALS['wiki']->GetUserName() == $valeurs_fiche['nomwiki'])) {
-                $html .= ' <a class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('edit', $valeurs_fiche['nomwiki']).'"><i class="fa fa-edit"></i> '._t('BAZ_EDIT_MY_ENTRY').'</a> <a  class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('', 'ParametresUtilisateur').'"><i class="fa fa-lock"></i> '._t('BAZ_CHANGE_PWD').'</a>';
+                $html .= ' <a class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('edit', $valeurs_fiche['nomwiki']).'"><i class="fa fa-pencil-alt"></i> '._t('BAZ_EDIT_MY_ENTRY').'</a> <a  class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('', 'ParametresUtilisateur').'"><i class="fa fa-lock"></i> '._t('BAZ_CHANGE_PWD').'</a>';
             }
             $html .= '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
         }
@@ -1461,7 +1461,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $lien_supprimer = $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag());
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'suppr_image=' . $valeurs_fiche[$type . $identifiant];
                 $lien_supprimer_image = '<a class="btn btn-sm btn-block btn-danger" href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') . '\');" ><i class="fa fa-trash"></i> ' . _t('BAZ_SUPPRIMER_IMAGE') . '</a>' . "\n";
-                $inputhtml .= '<label class="btn btn-block btn-default"><i class="fa fa-edit"></i>
+                $inputhtml .= '<label class="btn btn-block btn-default"><i class="fa fa-pencil-alt"></i>
                 '. _t('BAZ_MODIFIER_IMAGE').'<input type="file" style="display: none;" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png">
             </label>'.$lien_supprimer_image;
 
@@ -1655,7 +1655,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $listlabel[] = $valliste['label'][$l];
                     }
                     $listlab = implode(', ', $listlabel);
-     
+
                     $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', $listlab, $valeurs_fiche['bf_titre']);
                 } else {
                     $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', $valeurs_fiche[$var], $valeurs_fiche['bf_titre']);

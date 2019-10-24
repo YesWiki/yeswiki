@@ -16,7 +16,7 @@
             <td><?php echo $key; ?></td>
             <td>
             <?php if ($list['can_edit']) :?>
-                <a class="btn btn-default btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="fa fa-edit"></i> <?php echo _t('BAZ_MODIFIER'); ?></a>
+                <a class="btn btn-default btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="fa fa-pencil-alt"></i> <?php echo _t('BAZ_MODIFIER'); ?></a>
             <?php endif; ?>
             <?php if ($list['can_delete']) :?>
                 <a class="btn btn-danger btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste='.$key); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_LISTE'); ?> ?');"><i class="fa fa-trash icon-white"></i></a>

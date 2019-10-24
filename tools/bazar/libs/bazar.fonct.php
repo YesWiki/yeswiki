@@ -510,7 +510,7 @@ function baz_afficher_formulaire_import()
             if (!isset($GLOBALS['importdone'])) {
                 // Pour les traitements particulier lors de l import
                 $GLOBALS['_BAZAR_']['provenance'] = 'import';
-    
+
                 // des fiches ont été sélectionnées pour l'import
                 $val_formulaire = baz_valeurs_formulaire($id);
                 $importlist = '';
@@ -2305,7 +2305,7 @@ function baz_gestion_listes()
         }
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
-        
+
         include_once 'includes/squelettephp.class.php';
         try {
             $squel = new SquelettePhp('lists_table.tpl.html', 'bazar');
@@ -2854,7 +2854,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 // lien modifier la fiche
                 . '<a class="btn btn-xs btn-mini btn-default" href="'
                 . $GLOBALS['wiki']->href('edit', $idfiche).'">'
-                . '<i class="fa fa-edit icon-pencil"></i> '
+                . '<i class="fa fa-pencil-alt icon-pencil"></i> '
                 . _t('BAZ_MODIFIER')
                 .'</a>'."\n";
 
@@ -3808,14 +3808,14 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
             $idkey = htmlspecialchars($id);
 
-            $facettableValues[$idkey]['icon'] = 
+            $facettableValues[$idkey]['icon'] =
               (isset($params['groupicons'][$i]) && !empty($params['groupicons'][$i])) ?
                 '<i class="'.$params['groupicons'][$i].'"></i> ' : '';
 
-            $facettableValues[$idkey]['title'] = 
+            $facettableValues[$idkey]['title'] =
               (isset($params['titles'][$i]) && !empty($params['titles'][$i])) ?
                 $params['titles'][$i] : $list['titre_liste'];
-            
+
             $facettableValues[$idkey]['collapsed'] =
               (!$first and $params['groupsexpanded'] == 'false') ?
                 ' collapsed' : '';
