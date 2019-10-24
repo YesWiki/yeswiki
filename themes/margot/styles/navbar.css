@@ -73,7 +73,7 @@
   /* Reduce padding with negative margin */
   margin-left: -6px;
   margin-right: -6px;
-  margin-top: -1px;
+  margin-top: -2px;
 }
 #yw-topnav .btn-default .fa-cog {
   font-size: 22px;
@@ -91,9 +91,6 @@
   margin-top: -10px;
 }
 
-#yw-topnav.fixable.nav-up, .yw-responsive #yw-topnav.fixable.nav-up {
-  top: -80px;
-}
 
 .yw-fixed #yw-topnav, .yw-responsive #yw-topnav {
   margin: 0 -15px 15px;
@@ -115,10 +112,13 @@
   }
 }
 
+#yw-topnav.fixable.nav-up, .yw-responsive #yw-topnav.fixable.nav-up {
+  top: -80px;
+}
 
 /* on decalle le contenu vers le bas pour eviter un saut */
 #yw-topnav.affix + #yw-header {
-  margin-top: 50px;
+  margin-top: 75px;
 }
 
 /* Couleur navbar */

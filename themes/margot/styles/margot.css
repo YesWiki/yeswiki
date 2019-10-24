@@ -17,7 +17,7 @@
  * CSS variables
  */
  :root {
-   --primary-color:#F8C400;
+   --primary-color: #1A89A0; /* initial yellow #F8C400; */
    --secondary-color-1:#1A89A0;
    --secondary-color-2:#D78958;
    --neutral-color:#4E5056;
@@ -69,18 +69,6 @@
 
   --btn-border:none;
   --btn-border-radius:.5em;
-  --btn-default-color:var(--neutral-light-color);
-  --btn-default-background:var(--neutral-color);
-  --btn-default-border:1px solid var(--neutral-color);
-  --btn-primary-color:var(--neutral-light-color);
-  --btn-primary-background:var(--primary-color);
-  --btn-primary-border:1px solid var(--primary-color);
-  --btn-secondary-1-color:var(--neutral-light-color);
-  --btn-secondary-1-background:var(--secondary-color-1);
-  --btn-secondary-1-border:1px solid var(--secondary-color-1);
-  --btn-secondary-2-color:var(--neutral-light-color);
-  --btn-secondary-2-background:var(--secondary-color-2);
-  --btn-secondary-2-border:1px solid var(--secondary-color-2);
 }
 
 

@@ -1,26 +1,44 @@
 .footer {
-  font-size: 0.75em;
-  margin: 15px 0;
+  font-size: .8em;
+  margin: 30px 0 15px 0;
   padding: 0;
   text-align: center;
   border-bottom: var(--footer-border);
 }
 
 .footer a {
-  color: var(--main-text-color);
+  color: var(--neutral-soft-color);
   padding: 5px 10px;
   text-decoration: none;
   display: inline-block;
   margin: 0;
+  font-weight: 800;
+}
+.footer::after {
+  content: "";
+  background-color: var(--neutral-soft-color);
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  bottom: 0;
+  height: 8px;
+  border-radius: 10px;
 }
 
 .footer a:hover {
   text-decoration: none;
+  color: var(--neutral-color);
+  transition: color .2s;
 }
-
 .footer a i {
   color: var(--primary-color);
   font-size: 1.2em;
+  margin-right: 2px;
+  opacity: .7;
+  transition: opacity .2s;
+}
+.footer a:hover i {
+  opacity: 1;
 }
 
 
@@ -29,7 +47,6 @@
 #yw-footer {
   background-color: var(--footer-bg-color);
   color: var(--footer-text-color);
-
   padding: 30px 0;
 }
 #yw-footer h1, #yw-footer h2, #yw-footer h3, #yw-footer h4, #yw-footer h5, #yw-footer h6 {

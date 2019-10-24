@@ -14,3 +14,6 @@
 #yw-header .white h1, #yw-header .white h2, #yw-header .white h3, #yw-header .white h4, #yw-header .white h5, #yw-header .white h6, #yw-header .white a, #yw-header .white a:hover {
   color:var(--neutral-light-color) !important;
 }
+#yw-header .background-image {
+  background-position: center;
+}
