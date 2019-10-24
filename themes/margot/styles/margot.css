@@ -2,17 +2,17 @@
  * under GNU General Public License
  */
 
-@import 'general.css';
-@import 'navbar.css';
-@import 'header.css';
-@import 'main-containers.css';
-@import 'footer.css';
+@import 'partials/general.css';
+@import 'partials/navbar.css';
+@import 'partials/header.css';
+@import 'partials/main-containers.css';
+@import 'partials/footer.css';
 
-@import 'buttons.css';
-@import 'bootstrap-components.css';
-@import 'modals.css';
+@import 'components/buttons.css';
+@import 'components/bootstrap-components.css';
+@import 'components/modals.css';
 
-@import 'template-calendar.css';
+@import 'templates/calendar.css';
 
  /*
  * CSS variables
