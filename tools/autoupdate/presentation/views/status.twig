@@ -21,7 +21,13 @@
 		<div class="panel-heading" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="true" aria-controls="collapseThemes">
 			<h2 class="panel-title">Thèmes
 				{% if nbMaj > 0 %}
-					<span style="float: right;">Vous avez {{nbMaj}} thèmes à mettre à jour</span>
+					{% set alerte = '' %}
+					{% if nbMaj > 1 %}
+						{% set alerte = 'Vous avez {{nbMaj}} thèmes à mettre à jour' %}
+					{% else %}
+						{% set alerte = 'Vous avez 1 thème à mettre à jour' %}
+					{% endif %}
+					<span style="float: right;">{{alerte}}</span>
 				{% endif %}
 			</h2>
 		</div>
@@ -49,7 +55,13 @@
 		<div class="panel-heading" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="true" aria-controls="collapseTools">
 			<h2 class="panel-title">Tools (extensions)
 				{% if nbMaj > 0 %}
-					<span style="float: right;">Vous avez {{nbMaj}} extensions à mettre à jour</span>
+					{% set alerte = '' %}
+					{% if nbMaj > 1 %}
+						{% set alerte = 'Vous avez {{nbMaj}} extensions à mettre à jour' %}
+					{% else %}
+						{% set alerte = 'Vous avez 1 extension à mettre à jour' %}
+					{% endif %}
+					<span style="float: right;">{{alerte}}</span>
 				{% endif %}
 			</h2>
 		</div>
