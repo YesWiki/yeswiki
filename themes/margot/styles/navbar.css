@@ -1,0 +1,138 @@
+/* Menu horizontal principal */
+
+#yw-topnav {
+  margin:0;
+  -webkit-border-radius: var(--navbar-border-radius);
+  border-radius: var(--navbar-border-radius);
+  border: var(--navbar-border);
+  transition: top 0.3s ease-in-out;
+  padding: 9px 0;
+}
+#yw-topnav .container {
+  width: 100%;
+  padding: 0 100px;
+  display: flex;
+  align-items: center;
+}
+#yw-topnav .links-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.#yw-topnav .container .navbar-nav {
+  flex: 1 auto;
+  text-align: center;
+}
+#yw-topnav .dropdown-menu {
+  background: var(--primary-color);
+  box-shadow:none;
+  border:none;
+  margin-top: 15px;
+  border-radius: 0 0 5px 5px;
+  font-size: .9rem;
+}
+#yw-topnav .dropdown-menu a {
+  padding: 2px 20px 6px 15px;
+  color:var(--neutral-light-color);
+}
+#yw-topnav li a {
+  padding: 15px 25px;
+}
+#yw-topnav li a:hover {
+  opacity: .8;
+}
+#yw-topnav .dropdown-menu a i {
+  width: 20px;
+  text-align: center;
+}
+#yw-topnav .dropdown-menu .divider {
+  margin: 4px 0 10px 0;
+  opacity: .3;
+  background-color: var(--neutral-light-color);
+}
+
+#yw-topnav .dropdown-menu a:hover, #yw-topnav .dropdown-menu a:focus {
+  background: var(--primary-color);
+  /*color:rgba(255,255,255,0.85);*/
+  opacity: .8;
+}
+#yw-topnav .btn-default, #yw-topnav .btn-default:focus {
+   background: var(--neutral-light-color);
+   border: 1px solid var(--neutral-light-color);
+   color: var(--primary-color);
+}
+#yw-topnav .active-link {
+  font-weight: bold;
+}
+#yw-topnav .btn {
+  margin-left: 5px;
+}
+#yw-topnav .btn-default .fa {
+  font-size: 1rem;
+  vertical-align: middle;
+  /* Reduce padding with negative margin */
+  margin-left: -6px;
+  margin-right: -6px;
+  margin-top: -1px;
+}
+#yw-topnav .btn-default .fa-cog {
+  font-size: 22px;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.navbar-brand img {
+  max-height: 50px;
+  width:auto;
+  margin-left: -15px;
+  margin-top: -10px;
+}
+
+#yw-topnav.fixable.nav-up, .yw-responsive #yw-topnav.fixable.nav-up {
+  top: -80px;
+}
+
+.yw-fixed #yw-topnav, .yw-responsive #yw-topnav {
+  margin: 0 -15px 15px;
+  /*marge negative pour compenser le conteneur principal*/
+}
+
+/* le menu devient fixe quand on scrolle plus bas dans la page */
+
+#yw-topnav.affix {
+  right: auto;
+  left: auto;
+  z-index: 3;
+  width: var(--main-container-width);
+}
+
+@media screen and (max-width: 768px) {
+  #yw-topnav.affix {
+    width: 100%;
+  }
+}
+
+
+/* on decalle le contenu vers le bas pour eviter un saut */
+#yw-topnav.affix + #yw-header {
+  margin-top: 50px;
+}
+
+/* Couleur navbar */
+.navbar-default {
+   background-color: var(--primary-color);
+   color: var(--navbar-text-color);
+   border: var(--navbar-border);
+   box-shadow: var(--navbar-shadow);
+}
+.navbar-default .navbar-brand, .navbar-default .navbar-nav > li > a {
+   color: var(--navbar-link-color) !important;
+   background-color: var(--navbar-link-bg-color) !important;
+}
+.navbar-default .navbar-brand, .navbar-default .navbar-nav > li > a:hover {
+   color: var(--navbar-link-hover-color-color) !important;
+   background-color: var(--navbar-link-bg-hover-color) !important;
+}
