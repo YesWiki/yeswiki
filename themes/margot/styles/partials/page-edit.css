@@ -1,0 +1,73 @@
+.btn-toolbar {
+  margin-top: 25px;
+  margin-left: 0;
+}
+.btn-toolbar > .btn-group {
+  margin: 0;
+  padding-left: 2px;
+}
+.btn-toolbar > .btn-group:first-child {
+  padding-left: 0;
+}
+.btn-toolbar > .btn-group:not(:first-child)::before {
+  content: ".";
+  width: 2px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  height: 1.5rem;
+  color: #eee;
+  background: #eee;
+}
+/* no need to chose background because there is no background for margot theme*/
+#form_graphical_options #bgCarousel, #form_graphical_options h3 {
+  display: none;
+}
+#ACEditor textarea#body {
+  background-color: #eee;
+  border-top-left-radius: 0;
+  padding: 15px;
+}
+.btn-toolbar .aceditor-btn-save {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-toolbar .btn {
+  border-radius: 4px 4px 0 0;
+}
+#ACEditor .btn:not(.qq-upload-button) i {
+  margin: 0;
+}
+#hashcash-text {
+  line-height: 2rem;
+  font-size: .9em;
+  font-style: italic;
+}
+.btn-toolbar .dropdown-menu h1, .btn-toolbar .dropdown-menu h2, .btn-toolbar .dropdown-menu h3,
+.btn-toolbar .dropdown-menu h4, .btn-toolbar .dropdown-menu h5, .btn-toolbar .dropdown-menu .lead,
+.btn-toolbar .dropdown-menu .well, .btn-toolbar .dropdown-menu pre {
+  margin: 0;
+}
+.btn-toolbar .dropdown-menu li a {
+  padding: 5px 15px;
+  min-height: 25px;
+  cursor: pointer;
+}
+#YesWikiHelpModal .page h4,
+[ondblclick$="?ReglesDeFormatage/edit';"] .page h4 {
+  color: var(--neutral-color);
+}
+#YesWikiHelpModal .page .col-md-6 > h2,
+[ondblclick$="?ReglesDeFormatage/edit';"] .page .col-md-6 > h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+#YesWikiHelpModal .page .btn-primary,
+[ondblclick$="?ReglesDeFormatage/edit';"] .page .btn-primary {
+  border-radius: 4px;
+  padding: 2px 15px;
+  font-size: .8em;
+  margin-bottom: .5rem;
+}

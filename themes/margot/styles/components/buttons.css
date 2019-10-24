@@ -18,9 +18,7 @@
 .btn.disabled, .btn[disabled] {
   opacity: .4;
 }
-.btn-default.disabled, .btn-default[disabled] {
-  background: var(--neutral-color) !important;
-}
+
 .btn-link {
   color: var(--primary-color);
 }
@@ -32,7 +30,19 @@
   color: var(--primary-color);
   text-decoration: underline;
 }
-.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus, .btn-default:active:focus {
+.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus, .btn-default:active:focus,
+.open>.dropdown-toggle.btn-default, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover {
+  background: transparent;
+  color: var(--neutral-color);
+}
+.btn-default:hover, .btn-default:active, .btn-default:focus, .btn-default:active:focus {
+  background: #eee;
+}
+.btn.btn-default.dropdown-toggle:hover {
+  background: #eee !important;
+  color: var(--neutral-color) !important;
+}
+.btn-neutral, .btn-neutral:hover, .btn-neutral:active, .btn-neutral:focus, .btn-neutral:active:focus {
   background: var(--neutral-color);
 }
 .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:active:focus {
