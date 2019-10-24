@@ -9,7 +9,7 @@
 .btn-toolbar > .btn-group:first-child {
   padding-left: 0;
 }
-.btn-toolbar > .btn-group:not(:first-child)::before {
+.btn-toolbar > .btn-group:not(:first-child):not(:nth-chld(2))::before {
   content: ".";
   width: 2px;
   bottom: 0;

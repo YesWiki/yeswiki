@@ -231,7 +231,7 @@ $wakkaConfig['baz_map_zoom'] = getConfigValue('baz_map_zoom', '5', $wakkaConfig)
 $wakkaConfig['baz_map_width'] = getConfigValue('baz_map_width', '100%', $wakkaConfig);
 
  // taille de la carte a l'ecran : valeur de l'attribut css height de la carte
-$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '600px', $wakkaConfig);
+$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '300px', $wakkaConfig);
 
 // afficher la navigation : true ou false
 $wakkaConfig['baz_show_nav'] = getConfigValue('baz_show_nav', 'true', $wakkaConfig);

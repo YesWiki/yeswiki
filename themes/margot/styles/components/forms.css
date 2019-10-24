@@ -1,0 +1,101 @@
+.form-control {
+  height: 2.5rem;
+  padding: .5em 15px 6px 15px;
+  font-size: var(--main-text-fontsize);
+  color: var(--main-text-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 3px !important;
+}
+.form-group {
+  position: relative;
+  margin-top: 20px;
+}
+.form-group:first-child {
+  margin-top: 30px;
+}
+.form-group .controls.col-sm-9 {
+  width: 100%;
+}
+.form-group .control-label {
+  text-align: left;
+  color: var(--primary-color);
+  width: auto !important;
+  font-weight: 600;
+}
+.form-group.textarea {
+  margin-top: -10px;
+}
+.form-group.input:not(.file) .control-label, .form-group.select .control-label, .form-group.textarea .control-label {
+  position: absolute;
+  z-index: 5;
+  left: 26px;
+  font-size: .8em;
+  background-color: var(--neutral-light-color);
+  padding: 0 4px 0 8px;
+  top: -.8em;
+}
+.form-group.textarea .control-label {
+  position: relative;
+  top: 26px;
+  left: 0;
+  margin-left: 12px;
+}
+.form-group.input.file .control-label {
+  font-size: .8em;
+  margin-bottom: 5px;
+}
+.form-group.input.file {
+  margin-top: -10px;
+}
+.symbole_obligatoire {
+  float: right;
+}
+.controls .btn-toolbar {
+  margin-top: 0;
+}
+input.form-control[type=file] {
+  padding-left: 0;
+  padding-top: 7px;
+}
+input.form-control[type=file]::before {
+  content: "Choisir un fichier";
+  position: absolute;
+  background-color: var(--primary-color);
+  top: 0;
+  line-height: 2.5rem;
+  padding: 0 14px 0 13px;
+  color: var(--neutral-light-color);
+  font-size: .9em;
+}
+input[type=file] ~ output {
+  padding: 0;
+  margin-top: 10px;
+  border-radius: 5px;
+  width: 200px;
+}
+input[type=file] ~ output img {
+  border-radius: 3px;
+}
+
+/* MAP */
+#osmmapform {
+  margin-top: 0 !important;
+  border-radius: 0 5px 5px 5px;
+  margin-bottom: 10px;
+}
+.btn-geolocate-address {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.leaflet-control-zoom.leaflet-bar.leaflet-control {
+  border:none;
+  margin-top: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  background-color: var(--neutral-light-color);
+}
+.leaflet-control-zoom.leaflet-bar.leaflet-control a {
+  color: var(--primary-color);
+  font-size: 18px !important;
+  font-weight: normal;
+  text-indent: 0;
+}

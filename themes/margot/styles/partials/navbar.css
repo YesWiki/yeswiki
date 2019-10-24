@@ -7,6 +7,7 @@
   border: var(--navbar-border);
   transition: top 0.3s ease-in-out;
   padding: 9px 0;
+  z-index: 1001 !important;
 }
 #yw-topnav .container {
   width: 100%;

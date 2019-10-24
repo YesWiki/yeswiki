@@ -1496,7 +1496,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $inputhtml = '<div class="control-group form-group">
               <label class="control-label col-sm-3">'.$label.'</label>
               <div class="controls col-sm-9">
-                <input type="file" class="yw-image-upload" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png" '.((isset($obligatoire) && $obligatoire == 1) ? 'required': '').'>
+                <input type="file" class="yw-image-upload form-control" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png" '.((isset($obligatoire) && $obligatoire == 1) ? 'required': '').'>
                 <output id="img-'.$type . $identifiant.'" class="col-xs-6"></output>
                 <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'
                         .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
@@ -1758,9 +1758,9 @@ $(document).ready(function() {
         zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
     });
     var geocodedmarker;
-    var OsmLayer = new L.TileLayer(\''.$http.'://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png\', {
+    var OsmLayer = new L.TileLayer(\''.$http.'://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png\', {
       maxZoom: 18,
-      attribution: \'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors\'
+      attribution: \'<a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia</a> | Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>\'
     });
     map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].').addLayer(OsmLayer);
 
