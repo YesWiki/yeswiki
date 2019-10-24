@@ -22,10 +22,10 @@
   text-transform: capitalize;
 }
 .fc-ltr .fc-basic-view .fc-day-top .fc-day-number {
-  margin-top: -2px;
+  margin-top: 2px;
   font-size: .7em;
   margin-right: 3px;
-  height: 1.9em;
+  height: 1.3em;
 }
 .fc-scroller, .fc-scroller ~ div, .fc-scroller ~ hr {
   padding: 0 10px;
@@ -40,16 +40,19 @@
   color: var(--neutral-color);
 }
 .fc-event-container a {
-
   font-size: .8em;
-  margin: .7em -1px 0 -1px;
-  padding: 2px 5px 1px 5px !important;
   border: none !important;
+  padding: 2px 5px 1px 5px !important;
+
+/*margin: .7em -1px 0 -1px;
   border-radius: 0px !important;
+*/
+  margin: .6em 5px 0 5px;
+  border-radius: 2px;
 }
-.fc-content-skeleton tbody tr:nth-child(3) a {
+/*.fc-content-skeleton tbody tr:nth-child(3) a, .fc-content-skeleton tbody tr:nth-child(4) a {
   margin-left: 0;
-}
+}*/
 .fc-event-container a .fc-content {
   width: 100%;
   text-overflow: ellipsis;
@@ -75,8 +78,8 @@ tr .fc-event-container:nth-child(7) a { background-color: var(--secondary-color-
   background-color: var(--neutral-light-color) !important;
 }
 .fc .fc-popover .fc-header {
-    padding: 5px 8px 4px 8px;
-    font-size: .9em;
+  padding: 5px 8px 4px 8px;
+  font-size: .9em;
 }
 .fc .fc-popover .fc-close {
   font-size: .9em;
