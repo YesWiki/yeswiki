@@ -34,6 +34,7 @@
 #yw-topnav .dropdown-menu a {
   padding: 2px 20px 6px 15px;
   color:var(--neutral-light-color);
+  font-weight: 600;
 }
 #yw-topnav li a {
   padding: 15px 25px;
@@ -91,7 +92,6 @@
   margin-top: -10px;
 }
 
-
 .yw-fixed #yw-topnav, .yw-responsive #yw-topnav {
   margin: 0 -15px 15px;
   /*marge negative pour compenser le conteneur principal*/
@@ -136,3 +136,27 @@
    color: var(--navbar-link-hover-color-color) !important;
    background-color: var(--navbar-link-bg-hover-color) !important;
 }
+
+/* SEARCH */
+#search .btn.close-search {
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-size: 80px;
+  top: -30px;
+  right: -10px;
+  padding: 0 40px;
+}
+#search .yeswiki-search-form .btn-search, #search .yeswiki-search-form .search-query {
+  height: 4rem !important;
+  margin: 0;
+  border: none;
+}
+#search .yeswiki-search-form .btn-search {
+  padding: 0 30px;
+  border-left: 1px solid #eee;
+}
+#search .yeswiki-search-form .btn-search i {
+  font-size: 1.8rem;
+}
+
