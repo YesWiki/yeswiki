@@ -153,7 +153,7 @@ function replace_missingpage_links($output)
         $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
             .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
             .'">'
-            .$values[2].' <i class="fa fa-edit"></i></a>';
+            .$values[2].' <i class="fa fa-pencil-alt icon-edit"></i></a>';
         $output = str_replace_once($values[0], $replacement, $output);
     }
 
@@ -711,7 +711,7 @@ function theme_selector($method = '')
     $id = 'select_theme';
 
     $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '').'class="' . $formclass . '" id="' . $id . '">' . "\n";
-    
+
     $selecteur .= '			<div class="control-group form-group">' . "\n" .
     '				<label class="control-label">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
         '				<div class="controls">' . "\n" .
@@ -754,7 +754,7 @@ function theme_selector($method = '')
         $selecteur .= '						<option value="' . $key . '"'.$selected.'>' . $value . '</option>' . "\n";
     }
     $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '				</div>' . "\n";
-    
+
     $js = add_templates_list_js() . "\n" . add_change_theme_js();
     $GLOBALS['wiki']->addJavascript($js);
 

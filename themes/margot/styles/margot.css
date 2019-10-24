@@ -15,8 +15,7 @@
    --neutral-light-color:#fff;
 
   --main-text-color:var(--neutral-color);
-  --main-text-fontsize:18px;
-  --main-text-lineheight:1.3em;
+  --main-text-fontsize: 17px;
   --main-text-fontfamily:'Nunito', sans-serif;
   --main-selected-text-bg:rgb(254, 224, 52); /* jaune marqueur pour surligner le texte */
   --main-bg-color:var(--neutral-light-color);
@@ -101,10 +100,11 @@
 * Main styles
 */
 
-body {
-background: var(--main-bg-color);
-color: var(--main-text-color);
-font: var(--main-text-fontsize)/var(--main-text-lineheight) var(--main-text-fontfamily);
+html, body { /* define also html so we can use rem */
+  background: var(--main-bg-color);
+  color: var(--main-text-color);
+  font-size: var(--main-text-fontsize);
+  font-family: var(--main-text-fontfamily);
 }
 
 /* background color of selected text */
@@ -182,33 +182,80 @@ a:focus, a:hover {
   border-radius: var(--navbar-border-radius);
   border: var(--navbar-border);
   transition: top 0.3s ease-in-out;
+  padding: 9px 0;
 }
-
-#yw-topnav .dropdown-menu, #yw-topnav .dropdown-menu a {
+#yw-topnav .container {
+  width: 100%;
+  padding: 0 100px;
+  display: flex;
+  align-items: center;
+}
+#yw-topnav .links-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.#yw-topnav .container .navbar-nav {
+  flex: 1 auto;
+  text-align: center;
+}
+#yw-topnav .dropdown-menu {
   background: var(--primary-color);
-  color:var(--neutral-light-color);
   box-shadow:none;
   border:none;
+  margin-top: 15px;
+  border-radius: 0 0 5px 5px;
+  font-size: .9rem;
+}
+#yw-topnav .dropdown-menu a {
+  padding: 2px 20px 6px 15px;
+  color:var(--neutral-light-color);
+  font-weight: bold;
+}
+#yw-topnav li a {
+  padding: 15px 25px;
+}
+#yw-topnav .dropdown-menu a i {
+  width: 20px;
+  text-align: center;
+}
+#yw-topnav .dropdown-menu .divider {
+  margin: 4px 0 10px 0;
+  opacity: .3;
+  background-color: var(--neutral-light-color);
 }
 
 #yw-topnav .dropdown-menu a:hover, #yw-topnav .dropdown-menu a:focus {
   background: var(--primary-color);
-  color:rgba(255,255,255,0.85);
+  /*color:rgba(255,255,255,0.85);*/
+  opacity: .8;
 }
- #yw-topnav .btn-default {
+#yw-topnav .btn-default, #yw-topnav .btn-default:focus {
    background: var(--neutral-light-color);
    border: 1px solid var(--neutral-light-color);
    color: var(--primary-color);
-   border-radius: .5em;
-   padding: 6px 9px;
- }
- #yw-topnav .btn-default:hover, #yw-topnav .btn-default:focus {
-   background: rgba(255, 255, 255, 0.8);
- }
+}
+#yw-topnav .active-link {
+  font-weight: bold;
+}
+#yw-topnav .btn {
+  margin-left: 5px;
+}
+#yw-topnav .btn-default .fa {
+  font-size: 1rem;
+  vertical-align: middle;
+  /* Reduce padding with negative margin */
+  margin-left: -6px;
+  margin-right: -6px;
+  margin-top: -1px;
+}
+#yw-topnav .btn-default .fa-cog {
+  font-size: 22px;
+}
 
 .navbar-brand {
-  font-size: var(--main-text-text-size);
-  font-weight:800;
+  font-size: 1.5rem;
+  font-weight: bold;
 }
 
 .navbar-brand img {
@@ -219,7 +266,7 @@ a:focus, a:hover {
 }
 
 #yw-topnav.fixable.nav-up, .yw-responsive #yw-topnav.fixable.nav-up {
-  top: -50px;
+  top: -80px;
 }
 
 .yw-fixed #yw-topnav, .yw-responsive #yw-topnav {
@@ -267,28 +314,28 @@ a:focus, a:hover {
 
 /* Bandeau d'entete */
 #yw-header {
-background-color: var(--header-bg-color);
-color: var(--header-text-color);
+  background-color: var(--header-bg-color);
+  color: var(--header-text-color);
 }
 #yw-header h1,#yw-header h2, #yw-header h3 ,#yw-header h4, #yw-header h5, #yw-header h6  {
-color: var(--header-title-color);
+  color: var(--header-title-color);
 }
 
 #yw-header .white {
- color: var(--neutral-light-color) !important;
+  color: var(--neutral-light-color) !important;
 }
 
 #yw-header .white h1, #yw-header .white h2, #yw-header .white h3, #yw-header .white h4, #yw-header .white h5, #yw-header .white h6, #yw-header .white a, #yw-header .white a:hover {
- color:var(--neutral-light-color) !important;
+  color:var(--neutral-light-color) !important;
 }
 
 .page .background-image {
-    position: relative;
-    left: var(--section-background-image-position);
-    right: var(--section-background-image-position);
-    width:var(--section-background-image-width);
-    margin-left: var(--section-background-image-margin);
-    margin-right: var(--section-background-image-margin);
+  position: relative;
+  left: var(--section-background-image-position);
+  right: var(--section-background-image-position);
+  width:var(--section-background-image-width);
+  margin-left: var(--section-background-image-margin);
+  margin-right: var(--section-background-image-margin);
 }
 
 
@@ -373,8 +420,8 @@ color: var(--header-title-color);
 }
 
 .bazar-list .panel-default {
-border: none;
-background-color:transparent;
+  border: none;
+  background-color:transparent;
 }
 /* modif fleche accordeon */
 .bazar-list .panel-default > .panel-heading {
@@ -400,8 +447,18 @@ background-color:transparent;
 }
 
 .btn {
-  border: var(--btn-border);
+  border: none;
   border-radius: var(--btn-border-radius);
+  font-size: var(--main-text-fontsize);
+  font-weight: bold;
+  padding: 6px 17px;
+  line-height: 1.6;
+}
+.btn:hover {
+  opacity: .95;
+}
+.btn, .btn:hover, .btn:focus, .btn:active {
+  box-shadow: none !important;
 }
 .btn-link {
   color: var(--primary-color);
@@ -431,6 +488,10 @@ background-color:transparent;
   border: var(--btn-secondary-2-border);
 }
 
+a.yeswiki-editable .icon-edit {
+  font-size: .8rem;
+  margin-left: 2px;
+}
 
 /* Barre de rédaction */
 
