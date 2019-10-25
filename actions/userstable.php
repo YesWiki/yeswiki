@@ -63,7 +63,7 @@ foreach($last_users as $user)
         //error_log($group.' : '.print_r($acl,true));
     }
     echo '<tr>';
-    echo '<td>', $this->Format($user['name']) , '</td>';
+    echo '<td>' . $user['name'] . '</td>';
     echo '<td>', implode(',', $ug) , '</td>';
     echo '<td>', $user['email'] , '</td>';
     echo '<td>', $user['signuptime'] , '</td>';

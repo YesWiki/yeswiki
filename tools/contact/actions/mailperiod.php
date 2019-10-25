@@ -46,9 +46,9 @@ if (!empty($action) and $this->GetUser()) {
 if (!empty($period)) {
     if ($this->getUser()) {
         if ($this->UserIsInGroup($groupname, $this->GetUserName(), false)) {
-            echo '<a class="btn btn-danger btn-sm" href="'.$this->href('', $this->getPageTag(), 'period='.$period.'&action=unsubscribe').'"><i class="glyphicon glyphicon-envelope"></i> '._t('CONTACT_UNSUBSCRIBE_FOR_THIS_PERIOD').'</a>';
+            echo '<a class="btn btn-danger btn-sm" href="'.$this->href('', $this->getPageTag(), 'period='.$period.'&action=unsubscribe').'"><i class="fa fa-envelope"></i> '._t('CONTACT_UNSUBSCRIBE_FOR_THIS_PERIOD').'</a>';
         } else {
-            echo '<a class="btn btn-default btn-sm" href="'.$this->href('', $this->getPageTag(), 'period='.$period.'&action=subscribe').'"><i class="glyphicon glyphicon-envelope"></i> '._t('CONTACT_SUBSCRIBE_FOR_THIS_PERIOD').'</a>';
+            echo '<a class="btn btn-default btn-sm" href="'.$this->href('', $this->getPageTag(), 'period='.$period.'&action=subscribe').'"><i class="fa fa-envelope"></i> '._t('CONTACT_SUBSCRIBE_FOR_THIS_PERIOD').'</a>';
         }
     } else {
         echo _t('CONTACT_LOGIN_TO_GET_INFOS');

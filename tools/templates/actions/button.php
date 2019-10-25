@@ -26,7 +26,7 @@ if (!empty($icon)) {
 	}
 	else
 	{
-		$icon = '<i class="icon-'.$icon.' glyphicon glyphicon-'.$icon.'"></i>';
+		$icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
 	}
 	if (!empty($text)) $icon = $icon.' ';
 }

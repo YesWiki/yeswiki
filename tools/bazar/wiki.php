@@ -210,13 +210,13 @@ $wakkaConfig['baz_map_center_lat'] = getConfigValue('baz_map_center_lat', '46.22
 $wakkaConfig['baz_map_center_lon'] = getConfigValue('baz_map_center_lon', '2.213749', $wakkaConfig);
 
 // prefixe des classes CSS pour les icones du marqueur
-$wakkaConfig['baz_marker_icon_prefix'] = getConfigValue('baz_marker_icon_prefix', 'glyphicon glyphicon-', $wakkaConfig);
+$wakkaConfig['baz_marker_icon_prefix'] = getConfigValue('baz_marker_icon_prefix', 'fa fa-', $wakkaConfig);
 
 // icone du marqueur de base
 $wakkaConfig['baz_provider'] = getConfigValue('baz_provider', 'OpenStreetMap.Mapnik', $wakkaConfig);
 
 // icone du marqueur de base
-$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'glyphicon glyphicon-record', $wakkaConfig);
+$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'fa fa-record', $wakkaConfig);
 
 // couleur du marqueur de base
 $wakkaConfig['baz_marker_color'] = getConfigValue('baz_marker_color', 'darkred', $wakkaConfig);

@@ -153,7 +153,7 @@ function replace_missingpage_links($output)
         $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
             .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
             .'">'
-            .$values[2].' <i class="glyphicon glyphicon-pencil"></i></a>';
+            .$values[2].' <i class="fa fa-edit"></i></a>';
         $output = str_replace_once($values[0], $replacement, $output);
     }
 

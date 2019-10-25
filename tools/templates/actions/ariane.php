@@ -90,7 +90,7 @@ $_SESSION['breadcrumbs'] = $crumbs;
 $page_trail = "<ol class=\"breadcrumb\">\n"
     . '<li><a href="'
     . $this->href('', $this->config['root_page'])
-    . '"><span class="glyphicon glyphicon-home"></span></a></li>'
+    . '"><span class="fa fa-home"></span></a></li>'
     . "\n";
 
 foreach ($crumbs as $this_crumb) {
