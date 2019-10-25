@@ -287,3 +287,9 @@ $wakkaConfig['default_bazar_template'] = getConfigValue('default_bazar_template'
 
 // les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
 $wakkaConfig['global_query'] = getConfigValue('global_query', true, $wakkaConfig);
+
+// Si un formulaire est sémantique et qu'il a un des contextes ci-dessous, nous allons chercher dans
+// /tools/bazar/presentation/templates/{cle} pour voir si une template prédéfinie existe pour ce type sémantique
+$wakkaConfig['baz_semantic_types_mapping'] = getConfigValue('baz_semantic_types_mapping', [
+    'https://www.w3.org/ns/activitystreams' => 'activitystreams'
+], $wakkaConfig);

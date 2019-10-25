@@ -1,0 +1,34 @@
+<!--
+  This is an example of a custom template using semantic data.
+  It displays objects of type https://www.w3.org/TR/activitystreams-vocabulary/#dfn-note
+  You can add more by adding new ActivityStreams types to the /activitystreams folders,
+  or by adding new mapped contexts to the baz_semantic_types_mapping wakka config
+-->
+
+<style>
+  /* Display image on the right */
+  .custom-fiche img {
+    margin-left: 15px;
+    float: right;
+    display: inline-block;
+  }
+  /* Reduce top margin */
+  .custom-fiche .BAZ_fiche_titre {
+    margin-top: 5px;
+  }
+  /* We don't want the labels to be displayed */
+  .custom-fiche .BAZ_label {
+    display: none;
+  }
+</style>
+
+<div class="custom-fiche">
+  <?php echo($html['semantic']['image']) ?>
+
+  <?php echo($html['semantic']['title']) ?>
+
+  <?php echo($html['semantic']['content']) ?>
+
+  <div class="clearfix"></div>
+  <br/>
+</div>

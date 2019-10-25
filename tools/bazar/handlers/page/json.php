@@ -262,7 +262,7 @@ if (isset($_REQUEST['demand'])) {
 
                 // Output JSON-LD
                 if( $is_semantic ) {
-                    $tab_entries[] = baz_append_semantic_data($decoded_entry, true);
+                    $tab_entries[] = baz_append_semantic_data($decoded_entry, $decoded_entry['id_typeannonce'], true);
                 } else {
                     $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
                 }
