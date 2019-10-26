@@ -5,10 +5,6 @@ $(document).ready(function() {
   $('.fc-next-button').html('<span class="fa fa-chevron-right"></span>')
                       .appendTo('.fc-toolbar.fc-header-toolbar').removeClass('btn btn-default')
 
-  // Wave effect on buttons
-  Waves.attach('.btn', ['waves-float', "waves-light"]);
-  Waves.init();
-
   $('.form-control').each(function() {
     var parent = $(this).closest('.form-group');
     parent.addClass($(this).prop("tagName").toLowerCase());
@@ -35,10 +31,4 @@ $(document).ready(function() {
   })
 
   $('.BAZ_menu .nav-pills').removeClass('nav-pills').addClass('nav-tabs');
-
-  // replace strange button
-  var $btn = $('.import-file input[name=submit_file]')
-  $btn.addClass('btn btn-primary').removeClass('waves-button-input')
-  $btn.prependTo($btn.closest('.controls'));
-  $btn.removeAttr('style')
 })
