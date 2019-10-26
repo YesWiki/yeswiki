@@ -578,9 +578,9 @@ function baz_afficher_formulaire_import()
                 ._t('BAZ_FICHIER_CSV_A_IMPORTER').' :</label>'."\n".
                 '<div class="controls col-sm-9">';
                 $output .=
-                '<input type="file" name="fileimport" id="idfileimport" />'.
+                '<input type="file" class="form-control" name="fileimport" id="idfileimport" />'.
                 "\n".'</div>'."\n".'</div>'."\n";
-                $output .= '<div class="control-group form-group">'."\n"
+                $output .= '<div class="control-group form-group import-file">'."\n"
                 .'<label class="control-label col-sm-3"></label>'."\n"
                 .'<div class="controls col-sm-9">'."\n".
                 '<input name="submit_file" type="submit" value="'
@@ -678,9 +678,9 @@ function baz_afficher_formulaire_import()
                 //on cree le lien vers ce fichier
                 $output .=
                 '<a href="'.$chemin_destination.
-                '" class="link-csv-file" title="'
-                ._t('BAZ_TELECHARGER_FICHIER_IMPORT_CSV').'">'
-                ._t('BAZ_TELECHARGER_FICHIER_IMPORT_CSV').'</a>'."\n";
+                '" class="btn btn-neutral link-csv-file">'.
+                '<i class="fa fa-download"></i>'.
+                _t('BAZ_TELECHARGER_FICHIER_IMPORT_CSV').'</a>'."\n";
             }
         }
         $output .= '</form>'."\n";
@@ -717,7 +717,6 @@ function baz_afficher_formulaire_export()
     //s'il y a plus d'un choix possible, on propose
     if (count($resultat) >= 1) {
         $output .=
-        '<div class="row row-fluid">'."\n".
         '<div class="control-group form-group">'."\n"
 
         .'<label class="control-label col-sm-3">'."\n".
@@ -748,7 +747,7 @@ function baz_afficher_formulaire_export()
         '<div class="alert alert-danger">'.
         _t('BAZ_PAS_DE_FORMULAIRES_TROUVES').'</div>'."\n";
     }
-    $output .= '</div> <!-- /.row -->'."\n".'</form>'."\n";
+    $output .= "\n".'</form>'."\n";
 
     if ($id == '') {
         return $output;
@@ -1061,7 +1060,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                             .$newurl.'">'
 
                             .'<i class="fa fa-plus icon-plus"></i> '
-                            ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a>&nbsp;&nbsp;'."\n"
+                            ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a>'."\n"
                             .'</td>
                         </tr>';
                 }

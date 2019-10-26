@@ -67,3 +67,13 @@
   background-color: var(--secondary-color-2);
   border-color: var(-secondary-color-2);
 }
+
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+  color: var(--neutral-light-color);
+  background-color: var(--primary-color);
+}
+
+.text-info {
+  margin-top: 10px;
+  color: inherit;
+}

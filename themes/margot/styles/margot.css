@@ -8,11 +8,13 @@
 @import 'partials/main-containers.css';
 @import 'partials/footer.css';
 @import 'partials/page-edit.css';
+@import 'partials/bazar.css';
 
 @import 'components/buttons.css';
 @import 'components/bootstrap-components.css';
 @import 'components/modals.css';
 @import 'components/forms.css';
+@import 'components/tables.css';
 
 @import 'templates/calendar.css';
 
@@ -21,7 +23,7 @@
  */
  :root {
    --primary-color: #1A89A0; /* initial yellow #F8C400; */
-   --secondary-color-1:#1A89A0;
+   --secondary-color-1: #d8604c;
    --secondary-color-2:#D78958;
    --neutral-color:#4E5056;
    --neutral-soft-color:#b0b1b3;

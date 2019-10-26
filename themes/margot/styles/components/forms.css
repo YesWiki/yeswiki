@@ -1,14 +1,21 @@
+.form-horizontal {
+  margin: 10px 0;
+}
 .form-control {
-  height: 2.5rem;
+  height: 2.7rem;
   padding: .5em 15px 6px 15px;
   font-size: var(--main-text-fontsize);
   color: var(--main-text-color);
   border: 2px solid var(--primary-color);
   border-radius: 3px !important;
+  background-color: #f9f9f9;
+}
+textarea.form-control {
+  padding: 15px;
 }
 .form-group {
   position: relative;
-  margin-top: 20px;
+  margin-top: 25px;
 }
 .form-group:first-child {
   margin-top: 30px;
@@ -21,24 +28,38 @@
   color: var(--primary-color);
   width: auto !important;
   font-weight: 600;
+  padding-left: 15px;
 }
-.form-group.textarea {
+.form-group.textarea.wiki-textarea {
   margin-top: -10px;
 }
-.form-group.input:not(.file) .control-label, .form-group.select .control-label, .form-group.textarea .control-label {
+.form-group:not(.file) .control-label {
   position: absolute;
   z-index: 5;
-  left: 26px;
+  left: 24px;
   font-size: .8em;
   background-color: var(--neutral-light-color);
   padding: 0 4px 0 8px;
   top: -.8em;
 }
-.form-group.textarea .control-label {
-  position: relative;
-  top: 26px;
+.form-group:not(.file) .control-label::after {
+  content: "";
+  background-color: #f9f9f9;
+  position: absolute;
+  bottom: 0;
   left: 0;
-  margin-left: 12px;
+  right: 0;
+  height: 9px;
+  z-index: -1;
+}
+.form-group.wiki-textarea .control-label {
+  position: relative;
+  top: 28px;
+  left: 0;
+  margin-left: 10px;
+}
+.form-group.wrapper .control-label {
+  left: 9px;
 }
 .form-group.input.file .control-label {
   font-size: .8em;
@@ -47,7 +68,17 @@
 .form-group.input.file {
   margin-top: -10px;
 }
-.symbole_obligatoire {
+.form-control.wrapper {
+  height: auto;
+  margin-left: 0px;
+  padding-left: 0;
+  padding-bottom: 10px;
+}
+select.input-sm {
+  font-size: .9em;
+  padding: 1px 5px;
+}
+label .symbole_obligatoire {
   float: right;
 }
 .controls .btn-toolbar {
@@ -55,17 +86,55 @@
 }
 input.form-control[type=file] {
   padding-left: 0;
-  padding-top: 7px;
+  padding-top: .5em;
+  cursor: pointer;
 }
 input.form-control[type=file]::before {
   content: "Choisir un fichier";
   position: absolute;
-  background-color: var(--primary-color);
   top: 0;
-  line-height: 2.5rem;
-  padding: 0 14px 0 13px;
-  color: var(--neutral-light-color);
   font-size: .9em;
+  cursor: pointer;
+  padding: 1px 14px 0 13px;
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  line-height: 2.7rem;
+}
+.input-group {
+  display: flex;
+}
+.input-group-addon {
+  border-radius: 5px 0 0 5px;
+  line-height: 2.7rem;
+  height: 2.7rem;
+  padding: 0 14px;
+  width: auto;
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  border: none;
+}
+.input-group-addon, .input-group-btn {
+  width: auto;
+}
+.input-prepend input {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.input-append input {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-right: none !important;
+}
+.input-group.input-prepend.input-append input {
+  flex: 1;
+}
+.input-append .input-group-btn select {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+  line-height: 2.7rem;
+  height: 2.7rem;
 }
 input[type=file] ~ output {
   padding: 0;
@@ -75,6 +144,33 @@ input[type=file] ~ output {
 }
 input[type=file] ~ output img {
   border-radius: 3px;
+}
+form {
+  position: relative;
+}
+form .col-sm-9 {
+  width: 100%;
+  margin: 0;
+}
+.symbole_obligatoire.col-sm-9.col-sm-offset-3 {
+  position: absolute;
+  bottom: .7em;
+  right: 0;
+  width: auto;
+  font-size: .9em;
+}
+.bazar-checkbox-cols {
+  column-width: 250px;
+  -webkit-column-width: 250px;
+  -moz-column-width: 250px;
+  column-count: 50;
+  -webkit-column-count: 50;
+  -moz-column-count: 50;
+}
+.form-help {
+  cursor: help;
+  margin-left: -3px;
+  margin-right: 3px;
 }
 
 /* MAP */

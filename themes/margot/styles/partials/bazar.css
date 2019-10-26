@@ -1,0 +1,17 @@
+pre.precsv {
+  height: 140px;
+  white-space: pre;
+  padding: 15px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+#btn-import-forms, #btn-import-lists {
+  height: 2.7rem;
+  padding: 0 14px;
+  border: none;
+  margin-left: -5px;
+}
+.form-group.import-file {
+
+}

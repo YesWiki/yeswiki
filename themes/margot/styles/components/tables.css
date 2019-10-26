@@ -1,0 +1,14 @@
+.table-condensed > tbody > tr > td {
+  line-height: 1.8rem;
+  vertical-align: middle;
+}
+.table-condensed > tbody > tr > td:first-child {
+  font-weight: bold;
+  text-transform: capitalize;
+  color: var(--primary-color);
+}
+#add-entry-table .btn-xs {
+  padding: 4px 15px !important;
+}
+#add-entry-table .btn-xs i { margin-right: 8px; }
+#add-entry-table th:last-child { width: 245px !important; }

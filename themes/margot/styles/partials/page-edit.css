@@ -24,8 +24,7 @@
   display: none;
 }
 #ACEditor textarea#body {
-  background-color: #eee;
-  border-top-left-radius: 0;
+  border-top-left-radius: 0 !important;
   padding: 15px;
 }
 .btn-toolbar .aceditor-btn-save {
