@@ -28,7 +28,7 @@
 
 /* Partie centrale de la page Wiki */
 #yw-main {
-  padding-top: 15px;
+  padding-top: 1em;
   position: relative;
   min-height: 400px;
 }

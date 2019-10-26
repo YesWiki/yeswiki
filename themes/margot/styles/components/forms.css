@@ -1,6 +1,6 @@
 .form-control {
   height: 2.5rem;
-  padding: .5em 15px 6px 15px;
+  padding: .5em 1em .4em 1em;
   font-size: var(--main-text-fontsize);
   color: var(--main-text-color);
   border: 2px solid var(--primary-color);
