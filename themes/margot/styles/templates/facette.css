@@ -1,0 +1,17 @@
+.results-info {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.filter-box .checkbox {
+  margin-left: 1em;
+}
+
+.results-container .filter-box:nth-of-type(2),
+.results-container .filter-box:nth-of-type(5) {
+  --neutral-color: var(--secondary-color-1);
+}
+.results-container .filter-box:nth-of-type(3),
+.results-container .filter-box:nth-of-type(6) {
+  --neutral-color: var(--secondary-color-2);
+}

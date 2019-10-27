@@ -43,7 +43,7 @@
   z-index: 0;
   border: 2px solid var(--checkbox-color);
   border-radius: 3px;
-  opacity: .8;
+  opacity: .9;
   margin-top: 3px;
   -webkit-transition: .2s;
   transition: .2s;

@@ -34,8 +34,19 @@
   color:var(--neutral-light-color);
 }
 
+
+/* PANELS */
+.panel {
+  border-width: 3px;
+  border-radius: 5px;
+}
+.panel-heading {
+  border-radius: 0;
+}
+
 .panel-default {
   border-color: var(--neutral-color);
+  --checkbox-color: var(--neutral-color);
 }
 .panel-default > .panel-heading {
   color: var(--neutral-light-color);
@@ -45,6 +56,7 @@
 
 .panel-primary {
   border-color: var(--primary-color);
+  --checkbox-color: var(--primary-color);
 }
 .panel-primary > .panel-heading {
   color: var(--neutral-light-color);
@@ -53,6 +65,7 @@
 }
 .panel-secondary-1 {
   border-color: var(--secondary-color-1);
+  --checkbox-color: var(--secondary-color-1);
 }
 .panel-secondary-1 > .panel-heading {
   color: var(--neutral-light-color);
@@ -61,6 +74,7 @@
 }
 .panel-secondary-2 {
   border-color: var(--secondary-color-2);
+  --checkbox-color: var(--secondary-color-2);
 }
 .panel-secondary-2 > .panel-heading {
   color: var(--neutral-light-color);

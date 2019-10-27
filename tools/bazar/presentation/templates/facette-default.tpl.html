@@ -32,27 +32,32 @@ if ($resultcolsize == 0) {
         <span class="nb-results"><?php echo $nbfiches; ?></span>
         <?php echo ($nbfiches > 1) ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES'); ?>
       </div>
+      <div class="results-container">
       <?php foreach($filters as $idkey => $val) : ?>
-      <div class="filter-box panel panel-default <?php echo $idkey; ?>" data-id="<?php echo $idkey; ?>">
-        <div class="panel-heading<?php echo $val['collapsed']; ?>" data-toggle="collapse" href="#collapse<?php echo $GLOBALS['_BAZAR_']['nbbazarliste']; ?>_<?php echo $idkey; ?>" >
-          <?php echo $val['icon'].$val['title']; ?>
-        </div>
-        <div class="panel-body">
-          <?php foreach($val['list'] as $list) : ?>
-          <div class="checkbox">
-            <label for="<?php echo $list['id']; ?>">
-              <input class="filter-checkbox" type="checkbox" id="<?php echo $list['id']; ?>" name="<?php echo $list['name']; ?>"
-              value="<?php echo $list['value']; ?>">
-              <span>
-                <?php echo $list['checked']; ?>
-                <?php echo $list['label']; ?> (<span class="nb"><?php echo $list['nb']; ?></span>)
-              </span>
-            </label>
-          </div><!-- /.checkbox -->
-          <?php endforeach; ?>
-        </div><!-- /.panel-body -->
-      </div><!-- /.filter-box -->
-      <?php endforeach; ?>
+        <?php $panelId = "collapse" . $GLOBALS['_BAZAR_']['nbbazarliste'] . "_" . $idkey ?>
+        <div class="filter-box panel panel-default <?php echo $idkey; ?>" data-id="<?php echo $idkey; ?>">
+          <div class="panel-heading <?php echo $val['collapsed']; ?>" data-toggle="collapse" data-target="#<?php echo $panelId ?>" aria-expanded="true">
+            <?php echo $val['icon'].$val['title']; ?>
+          </div>
+
+          <div class="panel-collapse collapse in"
+               id="<?php echo $panelId ?>">
+            <?php foreach($val['list'] as $list) : ?>
+            <div class="checkbox">
+              <label for="<?php echo $list['id']; ?>">
+                <input class="filter-checkbox" type="checkbox" id="<?php echo $list['id']; ?>" name="<?php echo $list['name']; ?>"
+                value="<?php echo $list['value']; ?>">
+                <span>
+                  <?php echo $list['checked']; ?>
+                  <?php echo $list['label']; ?> (<span class="nb"><?php echo $list['nb']; ?></span>)
+                </span>
+              </label>
+            </div><!-- /.checkbox -->
+            <?php endforeach; ?>
+          </div><!-- /.panel-body -->
+        </div><!-- /.filter-box -->
+        <?php endforeach; ?>
+      </div><!-- /.results-container -->
     </div> <!-- /.filters -->
   </div> <!-- /.col-xs-<?php echo $params['filtercolsize'];?> -->
 
