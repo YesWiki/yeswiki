@@ -19,7 +19,7 @@ if ($resultcolsize == 0) {
     </div> <!-- /.results -->
   </div> <!-- /.col-xs-<?php echo $resultcolsize; ?> -->
   <?php endif; ?>
-  
+
   <div class="col-xs-<?php echo $params['filtercolsize'];?>">
     <div class="filters no-dblclick">
       <?php if ($params['filtertext'] == true) : ?>
@@ -28,7 +28,7 @@ if ($resultcolsize == 0) {
         <input type="text" class="form-control filter-bazar" id="inputBazarFilter<?php echo $params['nbbazarliste']; ?>" placeholder="<?php echo _t('BAZAR_FILTER'); ?>" data-target="bazar-list-<?php echo $params['nbbazarliste']; ?>" />
       </div>
       <?php endif; ?>
-      <div class="results-info text-info text-right"> 
+      <div class="results-info text-info text-right">
         <span class="nb-results"><?php echo $nbfiches; ?></span>
         <?php echo ($nbfiches > 1) ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES'); ?>
       </div>
@@ -42,8 +42,11 @@ if ($resultcolsize == 0) {
           <div class="checkbox">
             <label for="<?php echo $list['id']; ?>">
               <input class="filter-checkbox" type="checkbox" id="<?php echo $list['id']; ?>" name="<?php echo $list['name']; ?>"
-              value="<?php echo $list['value']; ?>"<?php echo $list['checked']; ?>>
-              <?php echo $list['label']; ?> (<span class="nb"><?php echo $list['nb']; ?></span>)
+              value="<?php echo $list['value']; ?>">
+              <span>
+                <?php echo $list['checked']; ?>
+                <?php echo $list['label']; ?> (<span class="nb"><?php echo $list['nb']; ?></span>)
+              </span>
             </label>
           </div><!-- /.checkbox -->
           <?php endforeach; ?>

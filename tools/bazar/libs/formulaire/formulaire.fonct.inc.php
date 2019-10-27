@@ -82,7 +82,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if ($def != '' && strstr($key, $def)) {
                     $radio_html.= ' checked';
                 }
-                $radio_html.= ' />' . $label . '</label></div>';
+                $radio_html.= ' /><span>' . $label . '</span></label></div>';
             }
             $radio_html.= '</div>';
         }
@@ -285,9 +285,9 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         $chk = '';
                     }
                     $checkbox_html .= '<div class="checkbox">'."\n"
-                      .'  <label for="'.$id.'['.$key.']'.'">'."\n"
+                      .'<label for="'.$id.'['.$key.']'.'">'."\n"
                       .'    <input class="element_checkbox" name="'.$id.'['.$key.']'.'" value="1"'
-                      .$chk.' id="'.$id.'['.$key.']'.'" type="checkbox">'.$label."\n"
+                      .$chk.' id="'.$id.'['.$key.']'.'" type="checkbox"><span>'.$label."</span>\n"
                       .'  </label>'."\n"
                       .'</div>'."\n";
                 }
