@@ -172,21 +172,22 @@ overflow: auto;
 .accordion-group .panel-title {
   position: relative;
 }
-.accordion-group .panel-title:after {
-    /* symbol for "opening" panels */
-    content: "\02C4";
-    color: inherit;
-    font-size: 2em;
-    line-height: 1em;
-    display: block;
-    position: absolute;
-    right: -5px;
-    top: 0;
+.accordion-group .panel-heading {
+  position: relative;
 }
-.accordion-group .panel-heading.collapsed .panel-title:after {
-    /* symbol for "collapsed" panels */
-    content:"\02C5";
+.accordion-group .panel-heading .icon-chevron {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 15px;
 }
+.accordion-group .panel-heading.collapsed .chevron-down {
+  display: inline-block;
+}
+.accordion-group .panel-heading:not(.collapsed) .chevron-up {
+  display: inline-block;
+}
+
 
 /* dropdown menu in modal */
 #page_options .typeahead.dropdown-menu { z-index: 200000; }

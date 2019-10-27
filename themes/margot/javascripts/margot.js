@@ -31,4 +31,10 @@ $(document).ready(function() {
   })
 
   $('.BAZ_menu .nav-pills').removeClass('nav-pills').addClass('nav-tabs');
+
+  $('.bazar-list .panel-collapse').on('hide.bs.collapse', function () {
+    $(this).parent().addClass("collapsed")
+  }).on('show.bs.collapse', function () {
+    $(this).parent().removeClass("collapsed")
+  });
 })
