@@ -89,6 +89,7 @@
   top: 23px;
   color: var(--neutral-soft-color);
   transition: color .3s;
+  right: 0;
 }
 .accordion-group .panel-heading:not(.collapsed) .chevron-up {
   top: 18px;
