@@ -261,3 +261,12 @@ display:none;} /* enlever les label des fiches bazar quand on utilise la fonctio
 }
 
 .yeswiki-page-widget { min-height:auto !important; }
+
+.control-label:after {
+  content: ":";
+  margin: 0 .25em;
+}
+.symbole_obligatoire:after {
+  content: "*";
+  margin-right: .25em;
+}
