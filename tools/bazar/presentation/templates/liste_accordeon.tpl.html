@@ -1,7 +1,7 @@
 <?php echo $info_res; ?>
 <?php if (count($fiches)>0) : ?>
     <?php echo $pager_links;?>
-    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $param['nbbazarliste']; ?>">
+    <div class="panel-group accordion-group accordion-template-container no-dblclick" id="accordion<?php echo $param['nbbazarliste']; ?>">
     <?php
     foreach($fiches as $fiche): ?>
         <div class="bazar-entry panel panel-default collapsed" <?php echo $fiche['html_data'];?>>

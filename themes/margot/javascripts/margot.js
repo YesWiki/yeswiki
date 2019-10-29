@@ -37,4 +37,8 @@ $(document).ready(function() {
   }).on('show.bs.collapse', function () {
     $(this).parent().removeClass("collapsed")
   });
+
+  $('#search-form + .facette-container').each(function() {
+    $(this).siblings('#search-form').prependTo($(this).find('.results-col'));
+  })
 })

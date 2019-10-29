@@ -119,7 +119,7 @@
 
 /* on decalle le contenu vers le bas pour eviter un saut */
 #yw-topnav.affix + #yw-header {
-  margin-top: 75px;
+  margin-top: 79px;
 }
 
 /* Couleur navbar */

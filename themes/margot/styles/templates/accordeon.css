@@ -94,3 +94,6 @@
 .bazar-list .panel .panel-heading:hover .icon-chevron {
   color: var(--primary-color);
 }
+.accordion-template-container {
+  margin-top: -10px;
+}

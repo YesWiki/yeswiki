@@ -113,6 +113,10 @@ input.form-control[type=file]::before {
   color: var(--neutral-light-color);
   border: none;
 }
+.input-group-addon + .form-control {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
 .input-group-addon, .input-group-btn {
   width: auto;
 }
