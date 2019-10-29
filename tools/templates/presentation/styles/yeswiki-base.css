@@ -224,6 +224,7 @@ overflow: auto;
   margin-left: -50vw;
   margin-right: -50vw;
 }
+html, body {overflow-x:hidden;} /* hack pour cacher l'ascenseur horizontal */
 
 
 .popover .page { /* gestion des popup au survol modalbox-hover */
