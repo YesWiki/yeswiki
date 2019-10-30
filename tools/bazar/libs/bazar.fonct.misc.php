@@ -73,7 +73,8 @@ function afficher_image(
     $hauteur_vignette,
     $largeur_image,
     $hauteur_image,
-    $method = 'fit'
+    $method = 'fit',
+    $show_vignette = true
 ) {
     // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
     $destimg = sanitizeFilename($nom_image);
@@ -108,11 +109,11 @@ function afficher_image(
                         $method
                     );
                 }
-
+                $baseUrl = $show_vignette ? 'cache/vignette_' : 'cache/image_';
                 //on renvoit l'image en vignette, avec quand on clique, l'image redimensionnee
                 return '<a data-id="' . $champ . '" class="modalbox ' . $class
                     .'" href="' . $url_base . 'cache/image_' . $destimg . '" title="' . htmlentities($nom_image) . '">' . "\n"
-                    .'<img src="' . $url_base . 'cache/vignette_' . $destimg . '" alt="' . $destimg . '"'.' />'."\n"
+                    .'<img src="' . $url_base . $baseUrl . $destimg . '" alt="' . $destimg . '"'.' />'."\n"
                     .'</a> <!-- ' . $nom_image . ' -->' . "\n";
             } else {
                 //on renvoit l'image en vignette, avec quand on clique, l'image originale

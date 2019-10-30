@@ -42,11 +42,11 @@ pre.precsv {
   font-size: 1rem;
   font-weight: bold !important;
 }
-.BAZ_cadre_fiche a[data-id=bf_image] {
+.BAZ_cadre_fiche [data-id=bf_image] {
   float: right;
   padding: 0 0 20px 20px;
-  width: 30%;
+  max-width: 40%;
 }
-.BAZ_cadre_fiche a[data-id=bf_image] img {
+.BAZ_cadre_fiche [data-id=bf_image] img {
   width: 100%;
 }

@@ -1547,6 +1547,10 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
             return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
         }
+    } elseif ($mode == 'html_outside_app') {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
+            return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_image, $hauteur_image, $largeur_image, $hauteur_image, 'fit', $show_vignette = false);
+        }
     }
 }
 
