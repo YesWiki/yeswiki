@@ -17,11 +17,10 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
 
 </script>
 <?php
-$btnclass = $this->GetParameter('btnclass');
 
 //action réservée aux admins
 if (! $this->UserIsAdmin()) {
-    echo '<div class="alert alert-danger alert-error"><strong>Erreur action {{gererdroits..}}</strong> : cette action est r&eacute;serv&eacute;e aux admins</div>';
+    echo '<div class="alert alert-danger alert-error">Cette action est r&eacute;serv&eacute;e aux admins</div>';
     return ;
 }
 
@@ -31,52 +30,39 @@ if (! $this->UserIsAdmin()) {
 
     //Modification de droits
     if ( isset($_POST['geredroits_modifier'])
-        && ( ($_POST['typemaj']=='default') || isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment']))
-        ) {
+        && ( ($_POST['typemaj']=='default') || isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment'])) ) {
 
         if (!isset($_POST['selectpage'])) {
-
-            $this->SetMessage("Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.");
-
+            $error = "Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.";
         } else {
 
-            if ( $_POST['typemaj'] != 'default'
-                && (!isset($_POST['modiflire'])) && (!isset($_POST['modifecrire'])) && !(isset($_POST['modifcomment']))
-                ) {
-                $this->SetMessage("Vous n'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.");
-
+            if ( $_POST['typemaj'] != 'default' && (!isset($_POST['modiflire']))
+                 && (!isset($_POST['modifecrire'])) && !(isset($_POST['modifcomment'])))  {
+                $error = "Vous n'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.";
             } else {
-
                 foreach ($_POST['selectpage'] as $page_cochee) {
 
                     if( $_POST['typemaj'] == 'default') {
-
                         $this->DeleteAcl($page_cochee);
-
                     } else {
-
-                        if ($_POST['typemaj'] == 'ajouter') {
-                            $appendAcl = true ;
-                        } else { //if ($_POST['typemaj'] == 'remplacer') {
-                            $appendAcl = false ;
-                        }
+                        $appendAcl = $_POST['typemaj'] == 'ajouter';
 
                         if (isset($_POST['modiflire'])) {
-                            $this->SaveAcl($page_cochee, 'read', $_POST['newlire'], $appendAcl );
+                            $val = $_POST['newlire_advanced'] ? $_POST['newlire_advanced'] : $_POST['newlire'];
+                            $this->SaveAcl($page_cochee, 'read', $val, $appendAcl );
                         }
-
                         if (isset($_POST['modifecrire'])) {
-                            $this->SaveAcl($page_cochee, 'write', $_POST['newecrire'], $appendAcl );
+                            $val = $_POST['newecrire_advanced'] ? $_POST['newecrire_advanced'] : $_POST['newecrire'];
+                            $this->SaveAcl($page_cochee, 'write', $val, $appendAcl );
                         }
-
                         if (isset($_POST['modifcomment'])) {
-                            $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment'], $appendAcl );
+                            $val = $_POST['newcomment_advanced'] ? $_POST['newcomment_advanced'] : $_POST['newcomment'];
+                            $this->SaveAcl($page_cochee, 'comment', $val, $appendAcl );
                         }
                     }
                 }
 
-                $this->SetMessage('Droit modifi&eacute;s avec succ&egrave;s');
-
+                $success = 'Droit modifi&eacute;s avec succ&egrave;s';
             }
         }
     }
@@ -88,8 +74,6 @@ if (! $this->UserIsAdmin()) {
     echo '<form method="post" action="'.$this->href().'" class="form-inline">';
 ?>
 
-
-
 <?php
 $num_page = 0;
 while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
@@ -97,111 +81,133 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
     ++$num_page;
 }
 ?>
-<div class="alert alert-info">
-	<?php echo $num_page; ?> pages trouv&eacute;es
-</div>
 
-<p>En <span style="font-weight:bold;color:orange">orange</span> les valeurs par défaut <em>dans wakka.config.php</em>.</p>
+<?php
+if (isset($error)) {
+  echo "<div class='alert alert-danger'>$error</div>";
+} else if (isset($success)) {
+  echo "<div class='alert alert-success'>$success</div>";
+}
+?>
+<p>Cochez les pages que vous souhaitez modifier et choisissez une action en base de page</p>
   <table class="table table-striped table-condensed">
     <tr>
-      <td><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"></td>
+      <td><label><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"><span></span></label></td>
       <td><div><b>Page</b></div></td>
       <td><div align="center"><b>Lecture</b></div></td>
       <td><div align="center"><b>Ecriture</b></div></td>
       <td><div align="center"><b>Commentaires</b></div></td>
     </tr>
+<?php
+  function display_droit($text) {
+    $values = explode("\n", $text);
+    $values = array_map(function($el) {
+      switch($el) {
+        case '*': return "<span class='label label-success'>Tout le monde</span>";
+        case '+': return "<span class='label label-warning'>Utilisateurs connectés</span>";
+        case '%': return "<span class='label label-danger'>Propriétaire</span>";
+      }
+      switch ($el[0]) {
+        case '@': return "<span class='label label-primary'>$el</span>";
+        case '!': return "<span class='label label-danger'>$el</span>";
+      }
+      return "<span class='label label-default'>$el</span>";
+    }, $values);
+    $result = implode('<br>', $values);
+    return nl2br($result);
+  }
+?>
 <?php for ($x = 0; $x < $num_page; ++$x) : ?>
     <tr>
       <td>
-      	<input type="checkbox" name="selectpage[]" value="<?php echo $page_et_droits[$x]['page']; ?>">
+        <label for="selectpage[<?php echo $page_et_droits[$x]['page']; ?>]">
+        	<input type="checkbox" name="selectpage[<?php echo $page_et_droits[$x]['page']; ?>]"
+                 value="<?php echo $page_et_droits[$x]['page']; ?>"
+                 id="selectpage[<?php echo $page_et_droits[$x]['page']; ?>]">
+          <span></span>
+        </label>
       </td>
       <td>
       	<?php echo $this->Link($page_et_droits[$x]['page']); ?>
       </td>
-      <td align="center"
-        <?php if($page_et_droits[$x]['lire_default']) echo 'style="font-weight:bold;color:orange"' ;?>
-        >
-      	<?php echo nl2br(str_replace(' ', '<br>', $page_et_droits[$x]['lire'])); ?>
+      <td align="center">
+      	<?php echo display_droit($page_et_droits[$x]['lire']); ?>
       </td>
-      <td align="center"
-        <?php if($page_et_droits[$x]['ecrire_default']) echo 'style="font-weight:bold;color:orange"' ;?>
-        >
-      	<?php echo nl2br(str_replace(' ', '<br>', $page_et_droits[$x]['ecrire'])); ?>
+      <td align="center">
+      	<?php echo display_droit($page_et_droits[$x]['ecrire']); ?>
 	  </td>
-      <td align="center"
-        <?php if($page_et_droits[$x]['comment_default']) echo 'style="font-weight:bold;color:orange"' ;?>
-        >
-      	<?php echo nl2br(str_replace(' ', '<br>', $page_et_droits[$x]['comment'])); ?>
+      <td align="center">
+      	<?php echo display_droit($page_et_droits[$x]['comment']); ?>
       </td>
     </tr>
 
 <?php endfor; ?>
 </table>
-  <h4>Modifier les droits</h4>
-  <p><i>Seuls les pages cochées seront modifiées.</i></p>
+  <p><b>Actions</b></p>
+
+  <p class="type-modif-container">
+    <label for="typemajdefault">
+      <input type=radio name="typemaj" value="default" id="typemajdefault"
+             onClick="$('.edit-acl-container').slideUp()">
+      <span>Réinitialiser (avec les valeurs par défaut définies dans <em>wakka.config.php</em>)</span>
+    </label>
+    <label for="typemajajouter">
+      <input type=radio name="typemaj" value="ajouter" id="typemajajouter" checked
+             onClick="$('.edit-acl-container').slideDown()">
+      <span>Ajouter (Les nouveaux droits seront ajout&eacute;s aux actuels)</span>
+    </label>
+    <label for="typemalremplacer">
+      <input type=radio name="typemaj" value="remplacer" id="typemalremplacer"
+             onClick="$('.edit-acl-container').slideDown()">
+      <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
+    </label>
+  </p>
+
+  <div class="edit-acl-container">
+
+    <p><b>Cochez le type de droits et choisissez une valeur</b></p>
+
+    <div class="switch">
+      <label>
+        Mode simple
+        <input type="checkbox" id="acl-switch-mode">
+        <span class="lever"></span>
+        Mode avancé
+      </label>
+    </div>
+
+    <div class="alert alert-default acl-advanced">
+      Séparez chaque entrée par un retour à la ligne, par example</br>
+      <b>*</b> (tous les utilisateurs)</br>
+      <b>+</b> (utilisateurs enregistrés)</br>
+      <b>%</b> (créateur de la fiche/page)</br>
+      <b>@nom_du_groupe</b> (groupe d'utilisateur, ex: @admins)</br>
+      <b>JamesBond</b> (nom YesWiki d'un utilisateur)</br>
+      <b>!SuperCat</b> (négation, SuperCat n'est pas autorisé)</br>
+    </div>
+
+    <div class="acl-container">
+      <?php $roles = ['lire' => 'Lecture', 'ecrire' => 'Ecriture', 'comment' => 'Commentaire'];
+      foreach ($roles as $role => $label) { ?>
+        <div class="acl-single-container">
+          <label for="modif<?php echo $role ?>" class="control-label">
+            <input type="checkbox" name="modif<?php echo $role ?>" id="modif<?php echo $role ?>" class="form-control">
+            <span><?php echo $label ?></span>
+          </label>
+          <select name="new<?php echo $role ?>" class="form-control acl-simple">
+            <option value="*">Tout le monde</option>
+            <option value="+">Utilisateurs connectés</option>
+            <option value="%">Propriétaire de la page</option>
+            <option value="@admins">Groupe admin</option>
+          </select>
+          <input placeholder="Liste des droits séparés par des virgules" name="new<?php echo $role ?>_advanced" class="acl-advanced form-control"></textarea>
+        </div>
+      <?php } ?>
+    </div>
+  </div>
 
 	<p>
-	<input type=radio name="typemaj" value="default" id="typemajdefault" >
-	<label for="typemajdefault">Valeurs par défaut (<em>wakka.config.php</em>)</label> (Supprime les droits dans la base de données).
-	</p>
-
-  <p><i>Seuls les droits cochés seront modifiés.</i></p>
-  <table class="table">
-    <tr cellpadding="3">
-      <td>
-        <div class="form-group">
-          <input type="checkbox" name="modiflire" id="modiflire" class="form-control" value="modiflire">
-          <label for="modiflire" class="control-label">Lecture</label>
-        </div>
-      </td>
-      <td>
-        <div class="form-group">
-          <input type="checkbox" name="modifecrire" id="modifecrire" class="form-control" value="modifecrire">
-          <label for="modifecrire" class="control-label">Ecriture</label>
-        </div>
-      </td>
-      <td>
-        <div class="form-group">
-          <input type="checkbox" name="modifcomment" id="modifcomment" value="modifcomment">
-          <label for="modifcomment" class="control-label">Commentaires</label>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td>
-		<textarea name="newlire" rows=4 cols=10 ><?php
-        if (isset($_POST['newlire'])) {
-            echo $_POST['newlire'];
-        }
-        ?></textarea>
-      </td>
-      <td>
-      	<textarea name="newecrire" rows=4 cols=10 ><?php
-        if (isset($_POST['newecrire'])) {
-            echo $_POST['newecrire'];
-        }
-        ?></textarea>
-      </td>
-      <td><textarea name="newcomment" rows=4 cols=10 ><?php
-        if (isset($_POST['newcomment'])) {
-            echo $_POST['newcomment'];
-        }
-        ?></textarea>
-      </td>
-    </tr>
-  </table>
-
-	<input type=radio name="typemaj" value="ajouter" id="typemajajouter" checked>
-	<label for="typemajajouter">Ajouter</label> (Les nouveaux droits seront ajout&eacute;s aux actuels).
-    <br/>
-	<input type=radio name="typemaj" value="remplacer" id="typemalremplacer">
-	<label for="typemalremplacer">Remplacer</label> (Les droits actuels seront supprim&eacute;s).
-    <br/>
-
-	<p>
-		<input name="geredroits_modifier" class="btn <?php if ($btnclass != '') echo ' '.$btnclass; ?>"
-    		value="Mettre &agrave; jour" type="submit"
-    	>
+		<input name="geredroits_modifier" class="btn btn-primary btn-block" value="Mettre &agrave; jour" type="submit">
 	</p>
 <?php
 echo $this->FormClose();
