@@ -9,6 +9,7 @@
 @import 'partials/footer.css';
 @import 'partials/page-edit.css';
 @import 'partials/bazar.css';
+@import 'partials/admin.css';
 
 @import 'components/buttons.css';
 @import 'components/bootstrap-components.css';
@@ -32,6 +33,10 @@
    --neutral-color:#4E5056;
    --neutral-soft-color:#b0b1b3;
    --neutral-light-color:#fff;
+
+   --success-color: #3cab3b;
+   --danger-color: #d8604c;
+   --warning-color: #D78958;
 
   --main-text-color:var(--neutral-color);
   --main-text-fontsize: 17px;
