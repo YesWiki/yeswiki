@@ -10,6 +10,15 @@
 .label-primary {
   background-color:var(--primary-color);
 }
+.label-success {
+  background-color:var(--success-color);
+}
+.label-warning {
+  background-color:var(--warning-color);
+}
+.label-danger {
+  background-color:var(--danger-color);
+}
 .label-secondary-1 {
   background-color:var(--secondary-color-1);
 }
@@ -17,22 +26,47 @@
   background-color:var(--secondary-color-2);
 }
 
-.alert-default {
-  background-color:var(--neutral-color);
-  color:var(--neutral-light-color);
+.alert-default, .alert-primary, .alert-info {
+  border: none;
+  position: relative;
+  background-color: transparent !important;
+  color:var(--neutral-color) !important;
 }
-.alert-primary {
-  background-color:var(--primary-color);
-  color:var(--neutral-light-color);
+.alert-default:before, .alert-primary:before, .alert-info:before {
+  content: " ";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: .3rem;
+  opacity: .3;
 }
-.alert-secondary-1 {
-  background-color:var(--secondary-color-1);
-  color:var(--neutral-light-color);
+.alert-default:before {
+  background-color: var(--neutral-color);
 }
-.alert-secondary-2 {
-  background-color:var(--secondary-color-2);
-  color:var(--neutral-light-color);
+.alert-primary:before, .alert-info:before {
+  background-color: var(--primary-color);
 }
+
+.alert-success, .alert-warning, .alert-danger {
+  border: none;
+  border-radius: .3rem;
+  color: var(--neutral-light-color);
+  opacity: .8;
+}
+.alert-success {
+  background-color: var(--success-color);
+}
+.alert-danger {
+  background-color: var(--danger-color);
+}
+.alert-warning {
+  background-color: var(--warning-color);
+}
+
+
+
 
 
 /* PANELS */
@@ -82,10 +116,12 @@
   border-color: var(-secondary-color-2);
 }
 
-.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover {
+.nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover,
+.nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
   color: var(--neutral-light-color);
   background-color: var(--primary-color);
 }
+
 
 .text-info {
   margin-top: 10px;
