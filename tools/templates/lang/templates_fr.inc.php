@@ -167,5 +167,9 @@ $GLOBALS['translations'] = array_merge(
 
     // actions/setwikidefaultheme.php
     'TEMPLATE_FORCE_TEMPLATE' => 'Forcer le choix pour tout le wiki.',
+
+    // themeselector.tpl.html
+    'TEMPLATE_PRESETS' => 'Pré-configurations graphiques',
+    'TEMPLATE_CREATE_PRESETS' => 'Créer sa pré-configuration graphique',
     )
 );

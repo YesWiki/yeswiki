@@ -36,13 +36,16 @@ if (!defined('WIKINI_VERSION')) {
 require_once 'libs/templates.functions.php';
 
 // Theme par défaut
-define('THEME_PAR_DEFAUT', 'yeswiki');
+define('THEME_PAR_DEFAUT', 'margot');
 
 // Style par défaut
-define('CSS_PAR_DEFAUT', 'gray.css');
+define('CSS_PAR_DEFAUT', 'margot.css');
 
 // Squelette par défaut
-define('SQUELETTE_PAR_DEFAUT', 'responsive-1col.tpl.html');
+define('SQUELETTE_PAR_DEFAUT', '1col.tpl.html');
+
+// Preset CSS par défaut
+define('PRESET_PAR_DEFAUT', '');
 
 // Image de fond par défaut
 define('BACKGROUND_IMAGE_PAR_DEFAUT', '');

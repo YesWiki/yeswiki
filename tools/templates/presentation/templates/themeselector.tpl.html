@@ -1,0 +1,127 @@
+<form class="<?php echo $class; ?>" id="<?php echo $id; ?>">
+  <div class="control-group form-group">
+    <label class="control-label"><?php echo _t('TEMPLATE_THEME'); ?></label>
+    <div class="controls">
+      <select class="form-control" id="changetheme" name="theme">
+        <?php foreach ($themeNames as $key => $value) : ?>
+          <?php if ($value !== $wiki->config['favorite_theme']) : ?>
+          <option value="<?php echo $value; ?>"><?php echo $value; ?></option>
+          <?php else : ?>
+          <option value="<?php echo $value; ?>" selected="selected"><?php echo $value; ?></option>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  </div>
+
+  <div class="control-group form-group">
+    <label class="control-label"><?php echo _t('TEMPLATE_SQUELETTE'); ?></label>
+    <div class="controls">
+      <select class="form-control" id="changesquelette" name="squelette">
+        <?php foreach ($themes[$wiki->config['favorite_theme']]['squelette'] as $key => $value) : ?>
+          <?php if ($value !== $wiki->config['favorite_squelette']) : ?>
+          <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
+          <?php else : ?>
+          <option value="<?php echo $wiki->config['favorite_squelette']; ?>" selected="selected"><?php echo $value; ?></option>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  </div>
+  
+  <div class="control-group form-group">
+    <label class="control-label"><?php echo _t('TEMPLATE_STYLE'); ?></label>
+    <div class="controls">
+      <select class="form-control" id="changestyle" name="style">
+        <?php foreach ($themes[$wiki->config['favorite_theme']]['style'] as $key => $value) : ?>
+          <?php if ($value !== $wiki->config['favorite_style']) : ?>
+          <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
+          <?php else : ?>
+          <option value="<?php echo $wiki->config['favorite_style']; ?>" selected="selected"><?php echo $value; ?></option>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  </div>
+  <?php if (!empty($themes[$wiki->config['favorite_theme']]['presets'])) : ?>
+    <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
+    <ul class="css-preset-list list-inline">
+    <?php foreach ($themes[$wiki->config['favorite_theme']]['presets'] as $key => $value) : ?>
+      <li>
+        <a class="css-preset" href="#" data-variables="<?php echo htmlspecialchars(json_encode($value['variables'])); ?>">
+        <?php echo (!empty($value['title'][$GLOBALS['prefered_language']]) ? $value['title'][$GLOBALS['prefered_language']] : $value['title']['fr']); ?>
+        </a>
+      </li>
+    <?php endforeach; ?>
+    </ul>
+  <?php endif; ?>
+  <?php echo $bgselector; ?>
+
+  <?php if ($mode == 'edit') : ?>
+  
+  <div class="panel-group accordion" id="accordion-avanced-page-settings">
+    <div class="panel panel-default accordion-group">
+      <div class="panel-heading accordion-heading">
+        <h4 class="panel-title accordion-trigger" data-parent="#accordion-avanced-page-settings"
+          href="#avanced-page-settings" data-target="#avanced-page-settings" data-toggle="collapse"
+          title="<?php echo _t('SEE_THE_ADVANCED_PARAMETERS'); ?>"><?php echo _t('ADVANCED_PARAMETERS'); ?></h4>
+      </div>
+      <div id="avanced-page-settings" class="panel-collapse accordion-body collapse">
+        <div class="panel-body accordion-inner">
+          <div class="control-group form-group">
+            <label class="control-label"><?php echo _t('PAGE_LANGUAGE'); ?></label>
+            <div class="controls">
+              <select class="form-control" name="lang">
+                <?php foreach ($GLOBALS['available_languages'] as $value) : ?>
+                  <option value="<?php echo $value; ?>"<?php echo ($value == $GLOBALS['prefered_language'] ? ' selected="selected"' : ''); ?>>
+                  <?php echo ucfirst(
+                    htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8')
+                  ); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+
+           <fieldset>
+            <legend><?php echo _t('CHOOSE_PAGE_FOR'); ?>: </legend>
+            <div class="control-group form-group">
+              <label class="control-label"><?php echo _t('HORIZONTAL_MENU_PAGE'); ?></label>
+              <div class="controls">
+                <input class="form-control typeahead" type="text" autocomplete="off" name="PageMenuHaut" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageMenuHaut']) ? $wiki->page["metadatas"]['PageMenuHaut'] : 'PageMenuHaut'); ?>" />
+              </div>
+            </div>
+            
+            <div class="control-group form-group">
+              <label class="control-label"><?php echo _t('FAST_ACCESS_RIGHT_PAGE'); ?></label>
+              <div class="controls">
+                <input class="form-control typeahead" type="text" autocomplete="off" name="PageRapideHaut" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page[" metadatas"]['PageRapideHaut']) ?
+                  $wiki->page["metadatas"]['PageRapideHaut'] : 'PageRapideHaut'); ?>" />
+              </div>
+            </div>
+            
+            <div class="control-group form-group">
+              <label class="control-label"><?php echo _t('HEADER_PAGE'); ?></label>
+              <div class="controls">
+                <input class="form-control typeahead" type="text" autocomplete="off" name="PageHeader" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageHeader']) ? $wiki->page["metadatas"]['PageHeader'] : 'PageHeader'); ?>" />
+              </div>
+            </div>
+            
+            <div class="control-group form-group">
+              <label class="control-label"><?php echo _t('FOOTER_PAGE'); ?></label>
+              <div class="controls">
+                <input class="form-control typeahead" type="text" autocomplete="off" name="PageFooter" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageFooter']) ? $wiki->page["metadatas"]['PageFooter'] : 'PageFooter'); ?>" />
+              </div>
+            </div>
+             <div class="control-group form-group">
+              <label class="control-label"><?php echo _t('VERTICAL_MENU_PAGE'); ?></label>
+              <div class="controls">
+                <input class="form-control typeahead" type="text" autocomplete="off" name="PageMenu" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageMenu']) ? $wiki->page["metadatas"]['PageMenu'] : 'PageMenu'); ?>" />
+              </div>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+  </div> <!-- /#avanced-page-settings -->
+<?php endif; ?>
+</form>

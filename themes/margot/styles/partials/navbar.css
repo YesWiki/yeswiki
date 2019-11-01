@@ -20,7 +20,7 @@
   display: flex;
   justify-content: center;
 }
-.#yw-topnav .container .navbar-nav {
+#yw-topnav .container .navbar-nav {
   flex: 1 auto;
   text-align: center;
 }
@@ -119,7 +119,7 @@
 
 /* on decalle le contenu vers le bas pour eviter un saut */
 #yw-topnav.affix + #yw-header {
-  margin-top: 75px;
+  margin-top: 79px;
 }
 
 /* Couleur navbar */
