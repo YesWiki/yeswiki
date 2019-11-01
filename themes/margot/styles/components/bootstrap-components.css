@@ -49,6 +49,21 @@
   background-color: var(--primary-color);
 }
 
+.alert-primary {
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+}
+
+.alert-secondary-1 {
+  background-color: var(--secondary-color-1);
+  color: var(--neutral-light-color);
+}
+
+.alert-secondary-2 {
+  background-color: var(--secondary-color-2);
+  color: var(--neutral-light-color);
+}
+
 .alert-success, .alert-warning, .alert-danger {
   border: none;
   border-radius: .3rem;
