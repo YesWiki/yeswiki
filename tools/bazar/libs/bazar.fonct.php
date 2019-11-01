@@ -2825,11 +2825,14 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     }
                 }
             } else {
-                if (function_exists($fichebazar['form']['template'][$i][0])) {
-                    $res .= $fichebazar['form']['template'][$i][0](
+                $functionName = $fichebazar['form']['template'][$i][0];
+                if (function_exists($functionName)) {
+                    $mode = 'html';
+                    if (!$danslappli && $functionName == "image") $mode = 'html_outside_app';
+                    $res .= $functionName(
                         $formtemplate,
                         $fichebazar['form']['template'][$i],
-                        'html',
+                        $mode,
                         $fichebazar['values']
                     );
                 }

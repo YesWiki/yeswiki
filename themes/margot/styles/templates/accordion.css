@@ -35,9 +35,6 @@
 .bazar-list .panel:not(.collapsed) + .panel .panel-heading {
   border-top: none !important;
 }
-.bazar-list .panel:not(.collapsed) .panel-title {
-  color: var(--primary-color);
-}
 .bazar-list .panel:not(.collapsed) + .panel:not(.collapsed) {
   margin-top: 10px;
 }
@@ -59,6 +56,11 @@
 }
 .bazar-list .panel-title {
   font-size: 1rem;
+  transition: all .3s;
+}
+.bazar-list .panel:not(.collapsed) .panel-title {
+  color: var(--primary-color);
+  margin-bottom: 5px;
 }
 .bazar-list .panel-body .BAZ_fiche_titre {
   display: none;
@@ -87,10 +89,15 @@
   top: 23px;
   color: var(--neutral-soft-color);
   transition: color .3s;
+  right: 0;
 }
 .accordion-group .panel-heading:not(.collapsed) .chevron-up {
   top: 18px;
 }
-.bazar-list .panel .panel-heading:hover .icon-chevron {
+.bazar-list .panel .panel-heading:hover .icon-chevron,
+.bazar-list .panel .panel-heading:hover .panel-title {
   color: var(--primary-color);
+}
+.accordion-template-container {
+  margin-top: -10px;
 }

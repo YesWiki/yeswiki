@@ -1,6 +1,7 @@
 {{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMisesAJour" titles="Gestion du site, Droits d'accès aux pages, Thèmes graphiques, Utilisateurs et groupes, Mises à jour / extensions"}}
 
-===Gérer les menus et pages spéciales de ce wiki===
+=====Gérer les menus et pages spéciales de ce wiki=====
+
  - [[PageMenuHaut Éditer menu horizontal d'en haut]]
  - [[PageTitre Éditer le titre]]
  - [[PageRapideHaut Éditer le menu roue crantée]]
@@ -11,6 +12,6 @@
  - [[PageColonneDroite Éditer la colonne de droite (apparaissant sur les thèmes 3 colonnes)]]
 ------
   - [[ReglesDeFormatage Éditer le mémo de formatage (bouton "?" dans la barre d'édition )]]
-------
-===Gestion des mots clés ===
+
+=====Gestion des mots clés=====
 {{admintag}}

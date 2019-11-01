@@ -1,3 +1,10 @@
+.control-label:after {
+  content: "";
+  margin-right: 0;
+}
+.symbole_obligatoire:after {
+  margin-left: .25em;
+}
 .form-horizontal {
   margin: 10px 0;
 }
@@ -42,7 +49,7 @@ textarea.form-control {
   padding: 0 4px 0 8px;
   top: -.8em;
 }
-.form-group:not(.file) .control-label::after {
+.form-group:not(.file) .control-label::before {
   content: "";
   background-color: #f9f9f9;
   position: absolute;
@@ -54,7 +61,7 @@ textarea.form-control {
 }
 .form-group.wiki-textarea .control-label {
   position: relative;
-  top: 28px;
+  top: 32px;
   left: 0;
   margin-left: 10px;
 }
@@ -112,6 +119,10 @@ input.form-control[type=file]::before {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
   border: none;
+}
+.input-group-addon + .form-control {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
 }
 .input-group-addon, .input-group-btn {
   width: auto;

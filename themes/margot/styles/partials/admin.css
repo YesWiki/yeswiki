@@ -1,0 +1,11 @@
+.type-modif-container label {
+  display: block;
+}
+
+td > label {
+  line-height: 0;
+  vertical-align: middle;
+  padding-left: 10px;
+  margin: 0;
+  width: 20px;
+}

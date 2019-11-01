@@ -30,11 +30,15 @@ $(document).ready(function() {
     $(this).remove();
   })
 
-  $('.BAZ_menu .nav-pills').removeClass('nav-pills').addClass('nav-tabs');
+  $('.nav-pills').removeClass('nav-pills').addClass('nav-tabs');
 
   $('.bazar-list .panel-collapse').on('hide.bs.collapse', function () {
     $(this).parent().addClass("collapsed")
   }).on('show.bs.collapse', function () {
     $(this).parent().removeClass("collapsed")
   });
+
+  $('#search-form + .facette-container').each(function() {
+    $(this).siblings('#search-form').prependTo($(this).find('.results-col'));
+  })
 })

@@ -57,12 +57,12 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide.= ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide.= ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
         $ob = '';
         $optionrequired = '';
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $ob .= ' <span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+            $ob .= ' <span class="symbole_obligatoire"></span>' . "\n";
             $optionrequired .= ' radio_required';
         }
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
@@ -72,7 +72,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
         $radio_html = '<div class="control-group form-group">
   <label class="control-label col-sm-3">
-  '. $tableau_template[2] . $ob . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
+  '. $ob . $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>
   <div class="controls col-sm-9">';
         $valliste = baz_valeurs_liste($tableau_template[1]);
         if (is_array($valliste['label'])) {
@@ -110,7 +110,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     }
                 }
             } {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -132,14 +132,14 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($valliste) {
             $bulledaide = '';
             if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-                $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+                $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
 
             $select_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
             if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-                $select_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+                $select_html.= '<span class="symbole_obligatoire"></span>' . "\n";
             }
-            $select_html.= $tableau_template[2] . (empty($bulledaide) ? "&nbsp;:&nbsp;" : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
+            $select_html.= $tableau_template[2] . (empty($bulledaide) ? "" : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
 
             $select_attributes = '';
 
@@ -186,7 +186,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             if (isset($valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]])) {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]] . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]] . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -206,7 +206,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
+            $bulledaide = ' <img class="tooltip_aide" title="'
             .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
             .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
@@ -226,9 +226,9 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if ($tableau_template[7] == 'tags') {
                 $checkbox_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
                 if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
-                    $checkbox_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+                    $checkbox_html.= '<span class="symbole_obligatoire"></span>' . "\n";
                 }
-                $checkbox_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9"';
+                $checkbox_html.= $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9"';
                 if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $checkbox_html.= ' required="required"';
                 }
@@ -267,14 +267,14 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $classrequired = ' chk_required';
-                    $req = '<span class="symbole_obligatoire">&nbsp;*</span> ';
+                    $req = '<span class="symbole_obligatoire"></span> ';
                 } else {
                     $classrequired = '';
                     $req = '';
                 }
                 $checkbox_html = '<div class="control-group form-group">
 <label class="control-label col-sm-3">
-'.$req . $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
+'.$req . $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>
 <div class="controls col-sm-9">
 <div class="bazar-checkbox-cols'.$classrequired.'">';
                 foreach ($choixcheckbox as $key => $label) {
@@ -321,7 +321,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     }
                 }
             } {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
 
@@ -342,14 +342,14 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $date_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
         if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $date_html .= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+            $date_html .= '<span class="symbole_obligatoire"></span>' . "\n";
         }
-        $date_html .= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n"
+        $date_html .= $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n"
             .'<div class="controls col-sm-9">' . "\n"
             .'<div class="input-prepend input-group"><span class="add-on input-group-addon">'
             .'<i class="icon-calendar fa fa-calendar"></i></span>'
@@ -456,7 +456,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $res = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) and !empty($valeurs_fiche[$tableau_template[1]])) {
-            $res .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+            $res .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             if (strlen($valeurs_fiche[$tableau_template[1]]) > 10) {
                 $res .= '<span class="BAZ_texte">' . strftime('%d.%m.%Y - %H:%M', strtotime($valeurs_fiche[$tableau_template[1]])) . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             } else {
@@ -546,13 +546,13 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
+            $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                 .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($tableau_template[9] == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
+        $input_html.= ($tableau_template[9] == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<div class="input-group">' . "\n";
         $input_html.= '<input type="text"';
@@ -588,7 +588,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
-            $html = '<div class="BAZ_rubrique tags_' . $tableau_template[1] . '" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+            $html = '<div class="BAZ_rubrique tags_' . $tableau_template[1] . '" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<div class="BAZ_texte"> ';
             $tabtagsexistants = explode(',', $valeurs_fiche[$tableau_template[1]]);
 
@@ -622,7 +622,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -651,8 +651,8 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
+        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<div class="input-group">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
@@ -685,7 +685,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 // Le titre
                 $html.= '<h1 class="BAZ_fiche_titre">' . $valeurs_fiche[$tableau_template[1]] . '</h1>' . "\n";
             } else {
-                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
                 $html.= '<span class="BAZ_texte"> ';
                 $html.= $valeurs_fiche[$tableau_template[1]] . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
@@ -714,12 +714,12 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             //mot de passe
             $bulledaide = '';
             if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-                $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
+                $bulledaide = ' <img class="tooltip_aide" title="'
                     .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
                     .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
             $output = '<div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . (empty($bulledaide) ? '' : $bulledaide) . '</label>
             <div class="controls col-sm-9">
             <div class="input-group">
             <input class="form-control" type="password" required name="mot_de_passe_wikini" size="'.$tableau_template[3].'" />
@@ -727,7 +727,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             </div>
             </div>
             <div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide ) . '</label>
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. (empty($bulledaide) ? '' : $bulledaide ) . '</label>
             <div class="controls col-sm-9">
             <div class="input-group">
             <input class="form-control" type="password" required name="mot_de_passe_repete_wikini" size="'.$tableau_template[3].'" />
@@ -892,7 +892,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -919,8 +919,8 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
+        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ($defauts != '') ? ' value="' . $defauts . '"' : '';
@@ -941,7 +941,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
-            $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+            $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             if ($showform == 'form') {
                 // js necessaire pour valider le formulaire et faire l'envoi ajax
                 $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
@@ -972,7 +972,7 @@ function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -981,8 +981,8 @@ function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $type_input = 'password';
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
+        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ' name="' . $identifiant . '" class="form-control" id="' . $identifiant . '"';
@@ -1058,7 +1058,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $bulledaide = '';
         if ($bulle_d_aide != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         //gestion des valeurs par defaut : d'abord on regarde s'il y a une valeur a modifier,
@@ -1073,8 +1073,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label. $longueurmaxlabel . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
+        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= $label. $longueurmaxlabel . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<textarea id="'.$identifiant.'" name="'.$identifiant.'" '.((isset($obligatoire) && $obligatoire == 1) ? 'required ' : '');
         $input_html.= 'class="form-control '.(($formatage == 'html') ? 'summernote' : $formatage).'" ';
@@ -1096,7 +1096,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$identifiant]) && $valeurs_fiche[$identifiant] != '') {
-            $html = '<div class="BAZ_rubrique" data-id="' . $identifiant . '">' . "\n" . '<span class="BAZ_label">' . $label . '&nbsp;:</span>' . "\n";
+            $html = '<div class="BAZ_rubrique" data-id="' . $identifiant . '">' . "\n" . '<span class="BAZ_label">' . $label . '</span>' . "\n";
             $html.= '<span class="BAZ_texte"> ';
             if ($formatage == 'wiki-textarea') {
                 $containsattach = (strpos($valeurs_fiche[$identifiant], '{{attach') !== false);
@@ -1137,7 +1137,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
-            $bulledaide = '&nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         } else {
             $bulledaide = '';
         }
@@ -1164,8 +1164,8 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' : '';
-        $input_html.= $label . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n";
+        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<input type="' . $type_input . '"';
         $input_html.= ($defauts != 'http://') ? ' value="' . $defauts . '"' : ' placeholder="' . $defauts . '"';
@@ -1189,7 +1189,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (!preg_match('/https?:\/\//s', $link)) {
                 $link = 'http://'.$link;
             }
-            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n" . '<a href="' . $link . '" class="BAZ_lien" target="_blank">';
             $html.= $link . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
         }
@@ -1211,7 +1211,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     $option = array();
     if ($mode == 'saisie') {
         $html = '';
-        $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' . $label : $label;
+        $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' . $label : $label;
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '') {
             if (isset($_GET['delete_file']) && $_GET['delete_file'] == $valeurs_fiche[$type . $identifiant]) {
                 if (baz_a_le_droit('supp_fiche', (isset($valeurs_fiche['createur']) ? $valeurs_fiche['createur'] : ''))) {
@@ -1228,7 +1228,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $lien_supprimer.= ($GLOBALS['wiki']->config["rewrite_mode"] ? "?" : "&") . 'delete_file=' . $valeurs_fiche[$type . $identifiant];
 
                 $html .= '<div class="control-group form-group">
-                    <label class="control-label col-sm-3">' . $label . '&nbsp;:&nbsp;</label>
+                    <label class="control-label col-sm-3">' . $label . '</label>
                     <div class="controls col-sm-9">
                     <a href="' . BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant] . '" target="_blank">' . $valeurs_fiche[$type . $identifiant] . '</a>' . "\n" . '<a href="' . str_replace('&', '&amp;', $lien_supprimer) . '" onclick="javascript:return confirm(\'' . _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER') . '\');" >' . _t('BAZ_SUPPRIMER') . '</a><br />
                     </div>
@@ -1237,7 +1237,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 return $html;
             } else {
                 if ($bulle_d_aide != '') {
-                    $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+                    $label = $label . ' <img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
                 }
                 return '<div class="control-group form-group">
     <label class="control-label col-sm-3">'.$label.'</label>
@@ -1248,7 +1248,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
         } else {
             if ($bulle_d_aide != '') {
-                $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
+                $label = $label . ' <img class="tooltip_aide" title="'
                     . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET)
                     . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
             }
@@ -1314,7 +1314,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide, $maxsize) = $tableau_template;
 
     if ($mode == 'saisie') {
-        $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire">*&nbsp;</span>' . $label : $label;
+        $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' . $label : $label;
         // javascript pour gerer la previsualisation
         $js = 'function getOrientation(file, callback) {
   var reader = new FileReader();
@@ -1442,7 +1442,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         if ($bulle_d_aide != '') {
-            $label = $label . ' &nbsp;&nbsp;<img class="tooltip_aide" title="'
+            $label = $label . ' <img class="tooltip_aide" title="'
                 .htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET)
                 .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
@@ -1546,6 +1546,10 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
             return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
+        }
+    } elseif ($mode == 'html_outside_app') {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
+            return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_image, $hauteur_image, $largeur_image, $hauteur_image, 'fit', $show_vignette = false);
         }
     }
 }
@@ -1868,7 +1872,7 @@ $(document).ready(function() {
         $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
         return
             '<div class="control-group form-group">
-                <label class="control-label col-sm-3"></label>
+                <label class="col-sm-3"></label>
                 <div class="controls col-sm-9">
                     <a class="btn btn-primary btn-geolocate-address">'
                     ._t('BAZ_VERIFIER_MON_ADRESSE')
@@ -1903,14 +1907,14 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $select_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $select_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+            $select_html.= '<span class="symbole_obligatoire"></span>' . "\n";
         }
-        $select_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
+        $select_html.= $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9">' . "\n" . '<select';
 
         $select_attributes = '';
 
@@ -2025,7 +2029,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                     $html = '';
                     if (is_array($val_fiche)) {
-                        $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                        $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
                         $html.= '<span class="BAZ_texte">';
                         $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
                     }
@@ -2045,7 +2049,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $val_fiche = json_decode($json, true);
                     $html = '';
                     if (is_array($val_fiche)) {
-                        $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$id.$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+                        $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$id.$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
                         $html.= '<span class="BAZ_texte">';
                         $urlfiche = explode('BazaR/json', $tableau_template[1]);
                         $html.= '<a href="'.$urlfiche[0].$valeurs_fiche[$tableau_template[0].$id.$tableau_template[6]] . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -2087,14 +2091,14 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if ($mode == 'saisie') {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
-            $bulledaide = ' &nbsp;&nbsp;<img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
+            $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
         }
 
         $checkbox_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">' . "\n";
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
-            $checkbox_html.= '<span class="symbole_obligatoire">*&nbsp;</span>' . "\n";
+            $checkbox_html.= '<span class="symbole_obligatoire"></span>' . "\n";
         }
-        $checkbox_html.= $tableau_template[2] . (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9"';
+        $checkbox_html.= $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n" . '<div class="controls col-sm-9"';
         if ($mode == 'saisie' && isset($tableau_template[8]) && $tableau_template[8] == 1) {
             $checkbox_html.= ' required="required"';
         }
@@ -2224,7 +2228,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n";
+            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
             $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
 

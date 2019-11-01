@@ -13,25 +13,25 @@ if ($resultcolsize == 0) {
 ?>
 <div class="facette-container row">
   <?php if ($params['filterposition'] == 'right') : ?>
-  <div class="col-xs-<?php echo $resultcolsize; ?>">
+  <div class="results-col col-xs-<?php echo $resultcolsize; ?>">
     <div class="results">
       <?php echo $content;?>
     </div> <!-- /.results -->
   </div> <!-- /.col-xs-<?php echo $resultcolsize; ?> -->
   <?php endif; ?>
 
-  <div class="col-xs-<?php echo $params['filtercolsize'];?>">
-    <div class="filters no-dblclick">
+  <div class="filters-col col-xs-<?php echo $params['filtercolsize'];?>">
+    <div class="filters no-dblclick <?php echo $params['filterposition']; ?>">
+      <div class="results-info text-info">
+        <span class="nb-results"><?php echo $nbfiches; ?></span>
+        <?php echo ($nbfiches > 1) ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES'); ?>
+      </div>
       <?php if ($params['filtertext'] == true) : ?>
-      <div class="input-group">
+      <div class="input-group filtertext">
         <span class="input-group-addon"><i class="fa fa-filter"></i></span>
         <input type="text" class="form-control filter-bazar" id="inputBazarFilter<?php echo $params['nbbazarliste']; ?>" placeholder="<?php echo _t('BAZAR_FILTER'); ?>" data-target="bazar-list-<?php echo $params['nbbazarliste']; ?>" />
       </div>
       <?php endif; ?>
-      <div class="results-info text-info text-right">
-        <span class="nb-results"><?php echo $nbfiches; ?></span>
-        <?php echo ($nbfiches > 1) ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES'); ?>
-      </div>
       <div class="results-container">
       <?php foreach($filters as $idkey => $val) : ?>
         <?php $panelId = "collapse" . $GLOBALS['_BAZAR_']['nbbazarliste'] . "_" . $idkey ?>
@@ -62,7 +62,7 @@ if ($resultcolsize == 0) {
   </div> <!-- /.col-xs-<?php echo $params['filtercolsize'];?> -->
 
   <?php if ($params['filterposition'] != 'right') : ?>
-  <div class="col-xs-<?php echo $resultcolsize; ?>">
+  <div class="results-col col-xs-<?php echo $resultcolsize; ?>">
     <div class="results">
       <?php echo $content;?>
     </div> <!-- /.results -->

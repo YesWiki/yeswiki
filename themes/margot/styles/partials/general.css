@@ -96,3 +96,6 @@ a.yeswiki-editable .icon-edit {
 pre {
   color: inherit;
 }
+img {
+  border-radius: 3px;
+}

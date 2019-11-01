@@ -1,0 +1,64 @@
+.bazar-search .input-group-addon {
+  background: none;
+  color: var(--primary-color);
+  font-size: 70px;
+  position: absolute;
+  z-index: 5;
+  top: -10px;
+  left: 0;
+  padding: 0;
+}
+.bazar-search input[type=text] {
+  margin-left: 46px;
+  border-bottom-left-radius: 15px !important;
+  background-color: var(--neutral-soft-color);
+  border: none !important;
+  height: 2.4rem;
+  padding-left: 1.5rem;
+  /*color: var(--primary-color);*/
+}
+.bazar-search .search-filter select {
+  height: 2.4rem;
+  padding-top: .4em;
+  background-color: var(--neutral-color);
+  border: none;
+  color: var(--neutral-light-color);
+  border-radius: 0 !important;
+}
+.bazar-search .search-button-container .btn {
+  background-color: var(--primary-color) !important;
+  color: var(--neutral-light-color);
+  height: 2.4rem;
+  border-top-right-radius: .5em !important;
+  border-bottom-right-radius: .5em !important;
+}
+.bazar-search .search-button-container .btn {
+  background: none;
+}
+.search-input::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+  color: var(--neutral-color);
+}
+.search-input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  color: var(--neutral-color);;
+  opacity:  1;
+}
+.search-input::-moz-placeholder { /* Mozilla Firefox 19+ */
+  color: var(--neutral-color);;
+  opacity:  1;
+}
+.search-input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: var(--neutral-color);;
+}
+.search-input::-ms-input-placeholder { /* Microsoft Edge */
+  color: var(--neutral-color);;
+}
+.search-input::placeholder { /* Most modern browsers support this now. */
+  color: var(--neutral-color);;
+}
+
+.BAZ_menu + #bazar-search-1 {
+  margin-top: 30px;
+}
+#search-form{
+  margin-bottom: 30px;
+}

@@ -243,4 +243,16 @@
 
   // ouvrir les liens dans une nouvelle fenetre
   $('.new-window').attr('target', '_blank');
+
+  // acl switch
+  $('#acl-switch-mode').change(function() {
+    if ($(this).prop('checked')) {
+      $('.acl-simple').hide().appendTo($(this).parent());
+      $('.acl-advanced').slideDown();
+    }
+    else {
+      $('.acl-simple').show();
+      $('.acl-advanced').hide();
+    }
+  }).trigger('change');
 })(jQuery);

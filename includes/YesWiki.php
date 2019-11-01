@@ -946,7 +946,7 @@ class Wiki
     public function Link($tag, $method = "", $text = "", $track = 1, $forcedLink = false)
     {
         $displayText = $text ? $text : $tag;
-        
+
         // is this an interwiki link?
         if (preg_match('/^' . WN_INTERWIKI_CAPTURE . '$/', $tag, $matches)) {
             if ($IWiki = $this->GetInterWikiUrl($matches[1], $matches[2])) {
@@ -1419,11 +1419,11 @@ class Wiki
                 ''
             );
         }
-        
+
         $included['before'] = array();
         $included['new'] = array();
         $included['after'] = array();
-        
+
         foreach ($dirs as $dir) {
             if ($dir) {
                 if (!preg_match('~/$~', $dir)) {
@@ -1437,28 +1437,28 @@ class Wiki
             } else {
                 $beforefullfilename = $dir . '__' . $filename;
             }
-            
+
             list($file, $extension) = explode('.', $filename);
             $afterfullfilename = $dir . $file . '__.' . $extension;
             if (file_exists($beforefullfilename)) {
                 $included['before'][] = $beforefullfilename;
             }
-            
+
             if (file_exists($fullfilename)) {
                 $included['new'][] = $fullfilename;
             }
-            
+
             if (file_exists($afterfullfilename)) {
                 $included['after'][] = $afterfullfilename;
             }
         }
         $plugin_output_new = '';
         $found = 0;
-        
+
         if (is_array($vars)) {
             extract($vars);
         }
-        
+
         foreach ($included['before'] as $before) {
             $found = 1;
             ob_start();
@@ -1510,7 +1510,7 @@ class Wiki
                 }
             }
         }
-        
+
         return array_unique($list);
     }
 
@@ -1536,7 +1536,7 @@ class Wiki
         }
         return array_unique($list);
     }
-    
+
 
     // USERS
     public function LoadUser($name, $password = 0)
@@ -1909,6 +1909,10 @@ class Wiki
      */
     public function SaveAcl($tag, $privilege, $list, $appendAcl = false)
     {
+        // if list is comma separated, convert into to line break separated
+        if (strpos($list, ',') !== false) {
+           $list = preg_replace('/\s*,\s*/', "\n", $list);
+        }
         $acl = $this->LoadAcl($tag, $privilege, false);
 
         if ($acl && $appendAcl) {
@@ -2282,8 +2286,8 @@ class Wiki
         }
         return;
     }
-    
-    
+
+
     public function GetMetaDatas($pagetag)
     {
         $metadatas = $this->GetTripleValue($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
@@ -2297,11 +2301,11 @@ class Wiki
             return false;
         }
     }
-    
+
     public function SaveMetaDatas($pagetag, $metadatas)
     {
         $former_metadatas = $this->GetMetaDatas($pagetag);
-        
+
         if ($former_metadatas) {
             $metadatas = array_merge($former_metadatas, $metadatas);
             $this->DeleteTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', null, '', '');
@@ -2313,7 +2317,7 @@ class Wiki
         }
         return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
     }
-    
+
     /**
      * Load all extensions
      *
