@@ -2,7 +2,7 @@
   line-height: 1.8rem;
   vertical-align: middle;
 }
-.table-condensed > tbody > tr > td:first-child {
+.table-condensed:not(.table-updates) > tbody > tr > td:first-child {
   font-weight: bold;
   text-transform: capitalize;
   color: var(--primary-color);

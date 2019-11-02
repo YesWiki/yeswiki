@@ -79,6 +79,10 @@ h6 {
   font-size: 1rem;
 }
 
+br + h1, br + h2 {
+  margin-top: .2em;
+}
+
 /* Links */
 a {
   color: var(--link-color);

@@ -23,3 +23,16 @@ label.edit-group strong {
   text-transform: uppercase;
   color: var(--primary-color);
 }
+
+.table-condensed.table-updates tr > td:first-child,
+.table-condensed.table-updates tr > th:first-child {
+  padding-left: 1rem;
+}
+.table-condensed.table-updates tr > td:last-child {
+  text-align: center;
+}
+.table-condensed.table-updates tr > th {
+  padding-top: .5em;
+  padding-bottom: .5em;
+  color: var(--secondary-color-1);
+}

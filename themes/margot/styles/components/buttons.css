@@ -59,6 +59,7 @@
 
 .btn-xs {
   padding: 1px 5px !important;
+  border-radius: .3em;
 }
 .btn.btn-xs i {
   margin-right: 0;
