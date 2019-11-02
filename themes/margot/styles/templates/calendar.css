@@ -4,6 +4,10 @@
   border-radius: 15px;
   padding-top: 1px;
   line-height: 1.5;
+  border: none !important;
+}
+.fc-row.fc-week {
+  border-color: transparent;
 }
 .fc th {
   border-width: 0 !important;
@@ -27,10 +31,18 @@
   margin-right: 3px;
   height: 1.3em;
 }
-.fc-scroller, .fc-scroller ~ div, .fc-scroller ~ hr {
-  padding: 0 10px;
+.fc .fc-axis {
+  font-size: .8em;
+  padding-right: 10px !important;
 }
-.fc-today:not(.fc-day-top) {
+.fc hr.fc-divider {
+  border: none !important;
+  height: 3px;
+  background-color: var(--neutral-soft-color);
+  margin: 0 5px;
+  border-radius: 5px;
+}
+.fc-today:not(.fc-day-top):not(.fc-day-header) {
   background-color: var(--primary-color) !important;
   opacity: .2;
   color: inherit;
@@ -133,4 +145,14 @@ tr .fc-event-container:nth-child(7) a { background-color: var(--secondary-color-
 .fc .btn-group > .btn.active {
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
+}
+.fc .alert-default:before, .fc .alert-info:before {
+  opacity: 0;
+  display: none;
+}
+.fc-week tr:first-child>td>.fc-day-grid-event {
+  margin-top: 8px;
+}
+.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton {
+  padding-bottom: 8px !important;
 }
