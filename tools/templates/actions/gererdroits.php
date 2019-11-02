@@ -9,12 +9,10 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
   //Fonction pour cocher toutes les cases.
   function cocherTout(etat)
   {
-     var cases = document.getElementsByTagName('input');   // Récupération de tous les input
-     for(var i=1; i<cases.length; i++)
-     if(cases[i].type == 'checkbox')    //Vérification si c'est une checkbox
-       {cases[i].checked = etat;} //Cochée ou non en fonction de l'état
+     var cases = document.querySelectorAll('input.selectpage');
+     for(var i=0; i < cases.length; i++)
+       if(cases[i].type == 'checkbox') cases[i].checked = etat;
   }
-
 </script>
 <?php
 
@@ -89,7 +87,7 @@ if (isset($error)) {
   echo "<div class='alert alert-success'>$success</div>";
 }
 ?>
-<p>Cochez les pages que vous souhaitez modifier et choisissez une action en base de page</p>
+<p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
   <table class="table table-striped table-condensed">
     <tr>
       <td><label><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"><span></span></label></td>
@@ -122,7 +120,7 @@ if (isset($error)) {
       <td>
         <label for="selectpage[<?php echo $page_et_droits[$x]['page']; ?>]">
         	<input type="checkbox" name="selectpage[<?php echo $page_et_droits[$x]['page']; ?>]"
-                 value="<?php echo $page_et_droits[$x]['page']; ?>"
+                 value="<?php echo $page_et_droits[$x]['page']; ?>" class="selectpage"
                  id="selectpage[<?php echo $page_et_droits[$x]['page']; ?>]">
           <span></span>
         </label>
@@ -207,7 +205,7 @@ if (isset($error)) {
   </div>
 
 	<p>
-		<input name="geredroits_modifier" class="btn btn-primary btn-block" value="Mettre &agrave; jour" type="submit">
+		<input name="geredroits_modifier" class="btn btn-primary" value="Mettre &agrave; jour" type="submit">
 	</p>
 <?php
 echo $this->FormClose();

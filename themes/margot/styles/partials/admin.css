@@ -9,3 +9,8 @@ td > label {
   margin: 0;
   width: 20px;
 }
+
+input[name=theme_modifier], input[name=geredroits_modifier] {
+  width: 100%;
+  display: block;
+}
