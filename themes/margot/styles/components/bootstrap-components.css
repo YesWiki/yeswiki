@@ -26,13 +26,13 @@
   background-color:var(--secondary-color-2);
 }
 
-.alert-default, .alert-primary, .alert-info {
+.alert-default, .alert-info {
   border: none;
   position: relative;
   background-color: transparent !important;
   color:var(--neutral-color) !important;
 }
-.alert-default:before, .alert-primary:before, .alert-info:before {
+.alert-default:before, .alert-info:before {
   content: " ";
   position: absolute;
   left: 0;
@@ -45,30 +45,17 @@
 .alert-default:before {
   background-color: var(--neutral-color);
 }
-.alert-primary:before, .alert-info:before {
+.alert-info:before {
   background-color: var(--primary-color);
 }
 
-.alert-primary {
-  background-color: var(--primary-color);
-  color: var(--neutral-light-color);
-}
-
-.alert-secondary-1 {
-  background-color: var(--secondary-color-1);
-  color: var(--neutral-light-color);
-}
-
-.alert-secondary-2 {
-  background-color: var(--secondary-color-2);
-  color: var(--neutral-light-color);
-}
-
-.alert-success, .alert-warning, .alert-danger {
+.alert-primary, .alert-success, .alert-warning, .alert-danger, .alert-secondary-1, .alert-secondary-2 {
   border: none;
   border-radius: .3rem;
   color: var(--neutral-light-color);
-  opacity: .8;
+}
+.alert-primary {
+  background-color: var(--primary-color);
 }
 .alert-success {
   background-color: var(--success-color);
@@ -79,8 +66,12 @@
 .alert-warning {
   background-color: var(--warning-color);
 }
-
-
+.alert-secondary-1 {
+  background-color: var(--secondary-color-1);
+}
+.alert-secondary-2 {
+  background-color: var(--secondary-color-2);
+}
 
 
 
@@ -165,6 +156,10 @@
   background-color: var(--secondary-color-2);
 }
 .bg-secondary-2 h1, .bg-secondary-2 h2, .bg-secondary-2 h3,
+.bg-secondary-2 h4, .bg-secondary-2 h5,.bg-secondary-2 h6 {
+  color: inherit;
+}
+-secondary-2 h1, .bg-secondary-2 h2, .bg-secondary-2 h3,
 .bg-secondary-2 h4, .bg-secondary-2 h5,.bg-secondary-2 h6 {
   color: inherit;
 }
