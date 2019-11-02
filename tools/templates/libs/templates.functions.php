@@ -419,7 +419,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     $('.css-preset').click(function() {
         var cssvar = $(this).data('variables');
         cssvar.forEach(function(item){
-            console.log(item);
             document.documentElement.style.setProperty('--'+item.name, item.value);
         });
         return false;

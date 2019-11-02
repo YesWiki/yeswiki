@@ -100,7 +100,7 @@
 
 /* le menu devient fixe quand on scrolle plus bas dans la page */
 
-#yw-topnav.affix {
+#yw-topnav.affix, #yw-topnav.affix-top {
   right: auto;
   left: auto;
   z-index: 3;
@@ -118,7 +118,7 @@
 }
 
 /* on decalle le contenu vers le bas pour eviter un saut */
-#yw-topnav.affix + #yw-header {
+#yw-topnav.affix+#yw-header {
   margin-top: 79px;
 }
 

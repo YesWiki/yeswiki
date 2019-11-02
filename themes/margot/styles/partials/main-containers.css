@@ -1,7 +1,6 @@
 /* Conteneur principal de la page Wiki */
 
 #yw-container {
-  background-color: var(--main-container-bg-color);
   margin: var(--main-container-margin);
   -moz-border-radius: var(--main-container-border-radius);
   -webkit-border-radius: var(--main-container-border-radius);

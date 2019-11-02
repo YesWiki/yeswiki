@@ -92,15 +92,6 @@
         {
             "type" : "color",
             "label" : {
-                "fr" : "Couleur neutre claire",
-                "en" : "Neutral light color"
-            },
-            "name" : "neutral-light-color",
-            "value" : "#ffffff"
-        },
-        {
-            "type" : "color",
-            "label" : {
                 "fr" : "Couleur de fond de page",
                 "en" : "Background color"
             },
