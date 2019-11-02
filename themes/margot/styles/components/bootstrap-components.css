@@ -4,6 +4,10 @@
   background:var(--neutral-light-color);
 }
 
+.label {
+  padding: .2em .5em;
+  vertical-align: middle;
+}
 .label-default {
   background-color:var(--neutral-color);
 }
@@ -83,7 +87,6 @@
 .panel-heading {
   border-radius: 0;
 }
-
 .panel-default {
   border-color: var(--neutral-color);
   --checkbox-color: var(--neutral-color);
@@ -93,7 +96,6 @@
   background-color: var(--neutral-color);
   border-color: var(--neutral-color);
 }
-
 .panel-primary {
   border-color: var(--primary-color);
   --checkbox-color: var(--primary-color);
@@ -121,13 +123,46 @@
   background-color: var(--secondary-color-2);
   border-color: var(-secondary-color-2);
 }
+.panel-heading[data-toggle=collapse] {
+  --chevron-color: var(--neutral-light-color);
+  position: relative;
+}
+.panel-heading[data-toggle=collapse]:after {
+  content: "";
+  position: absolute;
+  top: 1.1em;
+  right: 1em;
+  opacity: .8;
+  width: 12px;
+  height: 12px;
+  border-top: 3px solid var(--chevron-color);
+  border-left: 3px solid var(--chevron-color);
+  border-right: 2px solid transparent;
+  border-bottom: 2px solid transparent;
+  -webkit-transform: rotate(35deg);
+  transform: rotate(45deg);
+}
+.panel-heading.collapsed[data-toggle=collapse]:after {
+  top: .8em;
+  border-top: 2px solid transparent;
+  border-left: 2px solid transparent;
+  border-right: 3px solid var(--chevron-color);
+  border-bottom: 3px solid var(--chevron-color);
+}
+.panel-heading[data-toggle=collapse]:hover:after {
+  opacity: 1;
+}
+.panel-heading .panel-title {
+  font-size: var(--main-text-fontsize);
+  line-height: inherit;
+}
 
+/* NAV */
 .nav-tabs>li.active>a, .nav-tabs>li.active>a:focus, .nav-tabs>li.active>a:hover,
 .nav-pills>li.active>a, .nav-pills>li.active>a:focus, .nav-pills>li.active>a:hover {
   color: var(--neutral-light-color);
   background-color: var(--primary-color);
 }
-
 
 .text-info {
   margin-top: 10px;
@@ -162,4 +197,9 @@
 -secondary-2 h1, .bg-secondary-2 h2, .bg-secondary-2 h3,
 .bg-secondary-2 h4, .bg-secondary-2 h5,.bg-secondary-2 h6 {
   color: inherit;
+}
+
+/* LIST GROUP */
+.list-group-item > .label {
+  padding: .5em .8em;
 }

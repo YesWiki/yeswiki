@@ -85,14 +85,19 @@
 .BAZ_cadre_fiche {
   padding-top: 10px;
 }
-.accordion-group .panel-heading .icon-chevron {
-  top: 23px;
-  color: var(--neutral-soft-color);
-  transition: color .3s;
-  right: 0;
+.bazar-list .panel-heading[data-toggle=collapse] {
+  --chevron-color: var(--neutral-soft-color);
 }
-.accordion-group .panel-heading:not(.collapsed) .chevron-up {
-  top: 18px;
+.bazar-list .panel-heading[data-toggle=collapse]:hover {
+  --chevron-color: var(--primary-color);
+}
+.bazar-list .panel-heading[data-toggle=collapse]:after {
+  transition: border-color .2s;
+  top: 1.5em;
+  right: .5em;
+}
+.bazar-list .panel-heading.collapsed[data-toggle=collapse]:after {
+  top: 1.4em;
 }
 .bazar-list .panel .panel-heading:hover .icon-chevron,
 .bazar-list .panel .panel-heading:hover .panel-title {
