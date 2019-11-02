@@ -14,3 +14,12 @@ input[name=theme_modifier], input[name=geredroits_modifier] {
   width: 100%;
   display: block;
 }
+
+.btn-edit-group, .btn-create-group {
+  margin-left: 10px;
+}
+
+label.edit-group strong {
+  text-transform: uppercase;
+  color: var(--primary-color);
+}
