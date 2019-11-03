@@ -79,6 +79,8 @@ function afficher_image(
     // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
     $destimg = sanitizeFilename($nom_image);
     $url_base = $GLOBALS['wiki']->GetBaseUrl().'/';
+    // If we have a full URL, remove the base URL first
+    $nom_image = str_replace($url_base . BAZ_CHEMIN_UPLOAD, '', $nom_image);
     if (file_exists(BAZ_CHEMIN_UPLOAD . $nom_image)
       && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
         // faut il creer la vignette?
