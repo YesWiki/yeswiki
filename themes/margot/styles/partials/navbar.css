@@ -175,7 +175,7 @@
 
 /* le menu devient fixe quand on scrolle plus bas dans la page */
 #yw-topnav.fixable.nav-up, .yw-responsive #yw-topnav.fixable.nav-up {
-  top: -100%;
+  top: -80px;
 }
 
 /* on decalle le contenu vers le bas pour eviter un saut */
