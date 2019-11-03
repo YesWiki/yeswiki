@@ -1,3 +1,4 @@
+.form-field { overflow: hidden; }
 /* Order of the field attributes */
 .form-wrap.form-builder .frmb .form-elements { display: flex; flex-direction: column; }
 .form-wrap.form-builder .frmb .form-field .form-group { order: 100; }

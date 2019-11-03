@@ -31,6 +31,7 @@ var aclsOptions = {...visibilityOptions, ...{
 var readConf = { label: 'Peut être lu par', options: visibilityOptions }
 var writeconf = { label: 'Peut être saisi par', options: visibilityOptions }
 var searchableConf = { label: 'Présence dans le moteur de recherche', options: { '': 'Non', '1': 'Oui' } }
+var semanticConf = { label: "Type sémantique du champ", placeholder: "Exple: https://schema.org/name"}
 var selectConf = {
   subtype2: { label: 'Origine des données', options: {
     'list': 'Une liste',
@@ -43,6 +44,7 @@ var selectConf = {
   hint: { label: "Texte d'aide" },
   read: readConf,
   write: writeconf,
+  semantic: semanticConf
   // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
 }
 
@@ -62,7 +64,8 @@ var typeUserAttrs = {
       },
     },
     read: readConf,
-    write: writeconf
+    write: writeconf,
+    semantic: semanticConf
   },
   champs_mail: {
     hint: { label: "Texte d'aide" },
@@ -72,6 +75,7 @@ var typeUserAttrs = {
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
+    semantic: semanticConf
   },
   carte_google: {
     name_latitude: { label: "Nom champ latitude", value: "bf_latitude" },
@@ -81,6 +85,7 @@ var typeUserAttrs = {
     today_button: { label: "Btn Aujourd'hui", options: { '': 'Non', '1': 'Oui' } },
     read: readConf,
     write: writeconf,
+    semantic: semanticConf
   },
   image: {
     hint: { label: "Texte d'aide" },
@@ -88,7 +93,8 @@ var typeUserAttrs = {
     thumb_width: { label: "Largeur Vignette", value: "140" },
     resize_height: { label: "Hauteur redimension", value: "600" },
     resize_width: { label: "Largeur redimension", value: "600" },
-    align: { label: "Alignement", value: 'right', options: { 'left': "Gauche", 'center': "Centre", 'right': 'Droite'} }
+    align: { label: "Alignement", value: 'right', options: { 'left': "Gauche", 'center': "Centre", 'right': 'Droite'} },
+    semantic: semanticConf
   },
   select: selectConf,
   'checkbox-group': selectConf,
@@ -96,14 +102,17 @@ var typeUserAttrs = {
   textarea: {
     syntax: { label: "Format d'écriture", options: { 'wiki': "Wiki", "html": "Editeur Wysiwyg", 'nohtml': "Html non interprété"}},
     size: { label: "Largeur champ de saisie"},
+    semantic: semanticConf
   },
   file: {
-    maxsize: { label: "Taille max" }
+    maxsize: { label: "Taille max" },
+    semantic: semanticConf
   },
   tags: {
     hint: { label: "Texte d'aide" },
     read: readConf,
-    write: writeconf
+    write: writeconf,
+    semantic: semanticConf
   },
   inscriptionliste : {
     subscription_email: { label: "Email pour s'inscrire"},
@@ -167,7 +176,7 @@ var templates = {
 };
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
-var defaultMapping = { 0: "type", 1: "name", 2: "label", 3: 'size', 4: 'maxlength', 5: 'value', 6: 'pattern', 7: 'subtype', 8: 'required', 9: 'searchable', 10: 'hint', 11: 'read', 12: 'write' }
+var defaultMapping = { 0: "type", 1: "name", 2: "label", 3: 'size', 4: 'maxlength', 5: 'value', 6: 'pattern', 7: 'subtype', 8: 'required', 9: 'searchable', 10: 'hint', 11: 'read', 12: 'write', 14: 'semantic' }
 var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 6: 'name' } }
 var yesWikiMapping = {
   "text": defaultMapping,
@@ -270,6 +279,14 @@ function initializeFormbuilder(formAndListIds)
         $parent.find('.maxlength-wrap, .size-wrap').show()
       }
     }).trigger('change');
+
+    // in semantic field, we want to separate value by coma
+    $('.fld-semantic').each(function() {
+      var newVal = $(this).val().replace(/\s*,\s*/g, ',')
+      newVal = newVal.replace(/\s+/g, ',')
+      newVal = newVal.replace(/,+/g, ',')
+      $(this).val(newVal)
+    });
 
     // Changes icons and icones helpers
     $('a[type=remove].icon-cancel').removeClass('icon-cancel').addClass('glyphicon glyphicon-trash');
