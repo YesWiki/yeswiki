@@ -20,9 +20,26 @@
     <div class="control-group form-group">
         <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
         <div class="controls col-sm-9">
-            <!-- container where the form bulder will be rendered -->
-            <div id="form-builder-container"></div>
-            <textarea class="form-control input-xxlarge" id="form-builder-text" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
+                    Constructeur Graphique
+                </a></li>
+                <li role="presentation"><a href="#code" aria-controls="code" role="tab" data-toggle="tab">
+                    Code Wiki (pour faire des copier-coller
+                </a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="formbuilder">
+                    <!-- container where the form bulder will be rendered -->
+                    <div id="form-builder-container"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="code">
+                    <textarea class="form-control input-xxlarge" id="form-builder-text" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
+                </div>
+            </div>
+
+
         </div>
     </div>
     <div class="form-group">
