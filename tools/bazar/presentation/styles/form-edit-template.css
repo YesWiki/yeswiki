@@ -27,7 +27,6 @@
 
 .titre-field .form-group:not(.label-wrap) { display: none !important; }
 
-.carte_google-field .field-label { display: none; }
 .carte_google-field .label-wrap,
 .carte_google-field .value-wrap,
 .carte_google-field .required-wrap,

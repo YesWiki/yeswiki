@@ -4,18 +4,18 @@ var formBuilder;
 
 // Custom fields to add to form builder
 var fields = [
-  { label: 'Titre', name: "titre", attrs: { type: 'titre' }, icon: '*' },
-  { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '*' },
-  { label: 'Image', name: "image", attrs: { type: 'image' }, icon: '*' },
+  { label: 'Texte, Nombre, Couleur, Url', name: "text", attrs: { type: 'text' } },
+  { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '.' },
+  { label: 'Image', name: "image", attrs: { type: 'image' }, icon: '.' },
   { label: 'Email', name: "champs_mail", attrs: { type: 'champs_mail' }, icon: '@' },
-  { label: 'Tags', name: "tags", attrs: { type: 'tags' }, icon: '*' },
-  { label: 'Inscription Liste Diffusion', name: "inscriptionliste", attrs: { type: 'inscriptionliste' }, icon: '*' },
-  { label: 'Custom HTML', name: "labelhtml", attrs: { type: 'labelhtml' }, icon: '*' },
-  { label: "Config Droits d'accès", name: "acls", attrs: { type: 'acls' }, icon: '*' },
-  { label: "Config Thème de la fiche", name: "metadatas", attrs: { type: 'metadatas' }, icon: '*' },
-  { label: "Bookmarklet", name: "bookmarklet", attrs: { type: 'bookmarklet' }, icon: '*' },
-  { label: "Liste des fiches liées", name: "listefichesliees", attrs: { type: 'listefichesliees' }, icon: '*' },
-  { label: 'Créer un utilisateur lorsque la fiche est validée', name: "utilisateur_wikini", attrs: { type: 'utilisateur_wikini' }, icon: '*' },
+  { label: 'Tags', name: "tags", attrs: { type: 'tags' }, icon: '#' },
+  { label: 'Inscription Liste Diffusion', name: "inscriptionliste", attrs: { type: 'inscriptionliste' }, icon: '.' },
+  { label: 'Custom HTML', name: "labelhtml", attrs: { type: 'labelhtml' }, icon: '.' },
+  { label: "Config Droits d'accès", name: "acls", attrs: { type: 'acls' }, icon: '.' },
+  { label: "Config Thème de la fiche", name: "metadatas", attrs: { type: 'metadatas' }, icon: '.' },
+  { label: "Bookmarklet", name: "bookmarklet", attrs: { type: 'bookmarklet' }, icon: '.' },
+  { label: "Liste des fiches liées", name: "listefichesliees", attrs: { type: 'listefichesliees' }, icon: '.' },
+  { label: 'Créer un utilisateur lorsque la fiche est validée', name: "utilisateur_wikini", attrs: { type: 'utilisateur_wikini' }, icon: '.' },
 ];
 
 // Some attributes configuration used in multiple fields
@@ -74,8 +74,8 @@ var typeUserAttrs = {
     write: writeconf,
   },
   carte_google: {
-    name_latitude: { label: "Nom champ latitude" },
-    name_longitude: { label: "Nom champ longitude" },
+    name_latitude: { label: "Nom champ latitude", value: "bf_latitude" },
+    name_longitude: { label: "Nom champ longitude", value: "bf_longitude" },
   },
   date: {
     today_button: { label: "Btn Aujourd'hui", options: { '': 'Non', '1': 'Oui' } },
@@ -132,20 +132,19 @@ var typeUserAttrs = {
   },
   bookmarklet : {},
   listefichesliees : {
-    id: { label: "id de la fiche liée"},
-    query: { label: "Query"},
+    id: { label: "id du formulaire lié"},
+    query: { label: "Query", placeholder: "Voir doc sur https://yeswiki.net/?DocQuery/iframe"},
     param: { label: "Params de l'action", placeholder: 'Exple: champs="bf_nom" ordre="desc"' },
-    number: { label: "Nombre de fiches", placeholder: 'Exple: nb="x"'},
-    template: { label: "Template de restitution", placeholder: 'Exple: template="liste_liens.tpl.html"'},
-    type_link: { label: "Type de fiche liee", placeholder: "checkbox pour checkboxfiche , rien pour listefiche"},
+    number: { label: "Nombre de fiches à ficher", placeholder: ''},
+    template: { label: "Template de restitution", placeholder: 'Exple: template="liste_liens.tpl.html (par défault = accordéon)"'},
+    type_link: { label: "Type de fiche liee", placeholder: 'mettre checkbox ici si vos fiches liées le sont via un checkbox'},
   }
 }
 
 // How a field is represented in the formBuilder view
 var templates = {
-  titre: function(fieldData) { return { field: '' }; },
   champs_mail: function(fieldData) { return { field: '<input id="' + fieldData.name + '"' + ' type="email"/>' }; },
-  carte_google: function(fieldDate) { return { field: 'Geoloc'} },
+  carte_google: function(fieldDate) { return { field: "Geolocolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays"} },
   image: function(fieldDate) { return { field: '<input type="file"/>' }},
   text: function(fieldData) {
     var string = '<input type="' + fieldData.subtype + '"';
@@ -171,7 +170,6 @@ var templates = {
 var defaultMapping = { 0: "type", 1: "name", 2: "label", 3: 'size', 4: 'maxlength', 5: 'value', 6: 'pattern', 7: 'subtype', 8: 'required', 9: 'searchable', 10: 'hint', 11: 'read', 12: 'write' }
 var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 6: 'name' } }
 var yesWikiMapping = {
-  "titre": { 0: "type", 1: "label"},
   "text": defaultMapping,
   "number": defaultMapping,
   "textarea": defaultMapping,
@@ -220,8 +218,8 @@ function initializeFormbuilder(formAndListIds)
     fields: fields,
     // i18n: { locale: 'fr-FR' },
     templates: templates,
-    disableFields: ['carte_google', 'titre', 'button', 'autocomplete', 'checkbox', 'paragraph', 'header'],
-    controlOrder: ['text', 'number', 'date', 'image', 'champs_mail', 'tags'],
+    disableFields: ['number', 'button', 'autocomplete', 'checkbox', 'paragraph', 'header'],
+    controlOrder: ['text', , 'date', 'image', 'champs_mail', 'tags'],
     disabledAttrs: ['access', 'placeholder', 'className', 'inline', 'toggle', 'description', 'other', 'multiple'],
     typeUserAttrs: typeUserAttrs,
   });
