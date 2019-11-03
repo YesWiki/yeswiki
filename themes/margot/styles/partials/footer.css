@@ -1,7 +1,4 @@
-
-@media (max-width: 800px) {
-  .footer
-  }.footer {
+.footer {
   font-size: .8em;
   margin: 2em 0 1em 0;
   padding: 0;
@@ -63,4 +60,9 @@
   }
   .footer a > span { display: none; }
   .footer a i { font-size: 1.1rem; }
+  .footer::after {
+    left: 0;
+    right: 0;
+    border-radius: 0;
+  }
 }
