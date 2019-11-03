@@ -13,6 +13,9 @@ pre.precsv {
   margin-left: -5px;
 }
 
+.bazar-table {
+  table-layout: auto !important; /* better for responsivness */
+}
 /* display fiche */
 
 .BAZ_fiche_titre {

@@ -39,6 +39,7 @@ textarea.form-control {
   width: auto !important;
   font-weight: 600;
   padding-left: 15px;
+  font-size: .8em;
 }
 .form-group.textarea.wiki-textarea {
   margin-top: -10px;
@@ -47,7 +48,6 @@ textarea.form-control {
   position: absolute;
   z-index: 5;
   left: 24px;
-  font-size: .8em;
   background-color: var(--neutral-light-color);
   padding: 0 4px 0 8px;
   top: -.8em;
@@ -64,7 +64,7 @@ textarea.form-control {
 }
 .form-group.wiki-textarea .control-label {
   position: relative;
-  top: 32px;
+  top: 1.7rem;
   left: 0;
   margin-left: 10px;
 }
@@ -72,7 +72,6 @@ textarea.form-control {
   left: 9px;
 }
 .form-group.input.file .control-label {
-  font-size: .8em;
   margin-bottom: 5px;
 }
 .form-group.input.file {
@@ -105,10 +104,10 @@ input.form-control[type=file]::before {
   top: 0;
   font-size: .9em;
   cursor: pointer;
-  padding: 1px 14px 0 13px;
+  padding: 1px .9rem 0 .7rem;
   background-color: var(--primary-color);
   color: var(--neutral-light-color);
-  line-height: 2.7rem;
+  line-height: 2.6rem;
 }
 .input-group {
   display: flex;
@@ -183,7 +182,7 @@ form .col-sm-9 {
 }
 .form-help {
   cursor: help;
-  margin-left: -3px;
+  margin-left: .3rem;
   margin-right: 3px;
 }
 
@@ -208,4 +207,14 @@ form .col-sm-9 {
   font-size: 18px !important;
   font-weight: normal;
   text-indent: 0;
+}
+
+@media (max-width: 800px) {
+  .textarea .btn-toolbar > .btn-group { display: none; }
+  .form-group.wiki-textarea .control-label { top: .7rem; }
+  input.form-control[type=file]::before { padding: 1px 1rem 0 .8rem; }
+}
+
+@media (max-width: 1200px) {
+  .form-group .control-label { font-size: .9em; }
 }

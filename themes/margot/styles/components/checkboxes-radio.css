@@ -16,11 +16,11 @@
 
 [type="checkbox"] + span:not(.lever) {
   position: relative;
-  padding-left: 35px;
+  padding-left: 2rem;
   cursor: pointer;
   display: inline-block;
-  height: 25px;
-  line-height: 25px;
+  height: 1.4rem;
+  line-height: 1.4rem;
   font-size: 1rem;
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -35,8 +35,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 18px;
-  height: 18px;
+  width: 1rem;
+  height: 1rem;
   z-index: 0;
   border: 2px solid var(--checkbox-color);
   border-radius: 3px;
@@ -59,15 +59,15 @@
   color: var(--checkbox-color);
 }
 [type="checkbox"]:checked + span:not(.lever):before {
-  top: -5px;
-  left: -2px;
-  width: 12px;
-  height: 21px;
+  top: -.25rem;
+  left: -.15rem;
+  width: .7rem;
+  height: 1.2rem;
   opacity: 1;
-  border-top: 2px solid transparent;
-  border-left: 2px solid transparent;
-  border-right: 3px solid var(--checkbox-color);
-  border-bottom: 3px solid var(--checkbox-color);
+  border-top: .17rem solid transparent;
+  border-left: .17rem solid transparent;
+  border-right: .17rem solid var(--checkbox-color);
+  border-bottom: .17rem solid var(--checkbox-color);
   -webkit-transform: rotate(35deg);
           transform: rotate(35deg);
   -webkit-backface-visibility: hidden;
@@ -77,19 +77,19 @@
 }
 
 [type="checkbox"]:checked:disabled + span:not(.lever):before {
-  border-right: 2px solid rgba(0, 0, 0, 0.42);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.42);
+  border-right: .1rem solid rgba(0, 0, 0, 0.42);
+  border-bottom: .1rem solid rgba(0, 0, 0, 0.42);
 }
 
 /* Indeterminate checkbox */
 [type="checkbox"]:indeterminate + span:not(.lever):before {
-  top: -11px;
-  left: -12px;
-  width: 10px;
-  height: 22px;
+  top: -.65rem;
+  left: -.7rem;
+  width: .6rem;
+  height: 1.3rem;
   border-top: none;
   border-left: none;
-  border-right: 2px solid var(--checkbox-color);
+  border-right: .1rem solid var(--checkbox-color);
   border-bottom: none;
   -webkit-transform: rotate(90deg);
           transform: rotate(90deg);
@@ -100,8 +100,12 @@
 }
 
 [type="checkbox"]:indeterminate:disabled + span:not(.lever):before {
-  border-right: 2px solid rgba(0, 0, 0, 0.42);
+  border-right: .1rem solid rgba(0, 0, 0, 0.42);
   background-color: transparent;
+}
+
+@media (max-width: 800px) {
+  [type="checkbox"]:checked + span:not(.lever):before { top: -.35rem; }
 }
 
 

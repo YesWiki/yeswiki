@@ -1,4 +1,7 @@
-.footer {
+
+@media (max-width: 800px) {
+  .footer
+  }.footer {
   font-size: .8em;
   margin: 2em 0 1em 0;
   padding: 0;
@@ -51,4 +54,13 @@
 }
 #yw-footer h1, #yw-footer h2, #yw-footer h3, #yw-footer h4, #yw-footer h5, #yw-footer h6 {
   color: var(--footer-title-color);
+}
+
+@media (max-width: 800px) {
+  .footer {
+    display: flex;
+    justify-content: space-around;
+  }
+  .footer a > span { display: none; }
+  .footer a i { font-size: 1.1rem; }
 }

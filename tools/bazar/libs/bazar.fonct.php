@@ -581,8 +581,7 @@ function baz_afficher_formulaire_import()
                 '<input type="file" class="form-control" name="fileimport" id="idfileimport" />'.
                 "\n".'</div>'."\n".'</div>'."\n";
                 $output .= '<div class="control-group form-group import-file">'."\n"
-                .'<label class="control-label col-sm-3"></label>'."\n"
-                .'<div class="controls col-sm-9">'."\n".
+                .'<div class="controls col-sm-9 col-sm-offset-3">'."\n".
                 '<input name="submit_file" type="submit" value="'
                 ._t('BAZ_IMPORTER_CE_FICHIER').
                 '" class="btn btn-primary" />'."\n".'</div>'."\n".
@@ -2857,7 +2856,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 . '<a class="btn btn-xs btn-mini btn-default" href="'
                 . $GLOBALS['wiki']->href('edit', $idfiche).'">'
                 . '<i class="fa fa-pencil-alt icon-pencil"></i> '
-                . _t('BAZ_MODIFIER')
+                . '<span>' . _t('BAZ_MODIFIER') . '</span>'
                 .'</a>'."\n";
 
             if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
@@ -2867,7 +2866,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
                 . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
                 . '<i class="fa fa-trash icon-trash icon-white"></i> '
-                . _t('BAZ_SUPPRIMER').'</a>'."\n";
+                . '<span>' . _t('BAZ_SUPPRIMER').'</span></a>'."\n";
             }
 
             // TODO ajouter action de validation (pour les admins)

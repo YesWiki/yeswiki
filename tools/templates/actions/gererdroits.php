@@ -88,6 +88,7 @@ if (isset($error)) {
 }
 ?>
 <p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
+<div class="table-responsive">
   <table class="table table-striped table-condensed">
     <tr>
       <td><label><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"><span></span></label></td>
@@ -140,7 +141,7 @@ if (isset($error)) {
     </tr>
 
 <?php endfor; ?>
-</table>
+</table></div>
   <p><b>Actions</b></p>
 
   <p class="type-modif-container">
@@ -188,11 +189,11 @@ if (isset($error)) {
       <?php $roles = ['lire' => 'Lecture', 'ecrire' => 'Ecriture', 'comment' => 'Commentaire'];
       foreach ($roles as $role => $label) { ?>
         <div class="acl-single-container">
-          <label for="modif<?php echo $role ?>" class="control-label">
+          <label for="modif<?php echo $role ?>" data-input="new<?php echo $role ?>" class="control-label">
             <input type="checkbox" name="modif<?php echo $role ?>" id="modif<?php echo $role ?>" class="form-control">
             <span><?php echo $label ?></span>
           </label>
-          <select name="new<?php echo $role ?>" class="form-control acl-simple">
+          <select name="new<?php echo $role ?>"class="form-control acl-simple">
             <option value="*">Tout le monde</option>
             <option value="+">Utilisateurs connectés</option>
             <option value="%">Propriétaire de la page</option>

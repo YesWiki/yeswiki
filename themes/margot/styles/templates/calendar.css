@@ -176,4 +176,9 @@ tr .fc-event-container:nth-child(7) a { background-color: var(--secondary-color-
     float: none;
   }
   .fc-today-button { display: none; }
+
+  .fc-more-cell > div {
+    height: 2rem;
+    overflow: hidden;
+  }
 }

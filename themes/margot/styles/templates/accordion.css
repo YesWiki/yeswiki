@@ -2,8 +2,8 @@
   border: none;
   background-color:transparent;
   transition: border .3s, margin .3s;
-  padding: 0 15px;
-  border: 5px solid transparent;
+  padding: 0 .9rem;
+  border: .3rem solid transparent;
   box-shadow: none;
 }
 .bazar-list .panel .panel-heading
@@ -27,7 +27,7 @@
 .bazar-list .panel:not(.collapsed) {
   border-color: var(--primary-color);
   border-radius: .5em;
-  margin-top: 10px !important;
+  margin-top: .6rem !important;
 }
 .bazar-list .panel:not(.collapsed) .panel-heading {
   border: none !important;
@@ -36,7 +36,7 @@
   border-top: none !important;
 }
 .bazar-list .panel:not(.collapsed) + .panel:not(.collapsed) {
-  margin-top: 10px;
+  margin-top: .6rem;
 }
 
 .bazar-list .panel-group .panel+.panel {
@@ -44,14 +44,14 @@
 }
 .bazar-list .panel-heading {
   border: none;
-  padding: 20px 0 0 0;
+  padding: 1.2rem 0 0 0;
 }
 .bazar-list .panel:not(:first-child) .panel-heading {
   border-top: 1px solid var(--neutral-soft-color);
   border-radius: 0;
 }
 .bazar-list .panel:last-child .panel-heading {
-  padding-bottom: 8px;
+  padding-bottom: .5rem;
   border-bottom: 1px solid var(--neutral-soft-color);
 }
 .bazar-list .panel-title {
@@ -71,19 +71,19 @@
   box-shadow: none;
   padding: 0;
   margin: 0;
-  margin-left: -15px;
+  margin-left: -.9rem;
   border-top: 1px dashed var(--neutral-soft-color);
-  margin-right: -15px;
+  margin-right: -.9rem;
   border-radius: 0;
-  padding: 15px;
+  padding: .9rem;
   opacity: .8;
   background-color: transparent;
 }
 .BAZ_actions_fiche {
-  padding-top: 7px;
+  padding-top: .4rem;
 }
 .BAZ_cadre_fiche {
-  padding-top: 10px;
+  padding-top: .6rem;
 }
 .bazar-list .panel-heading[data-toggle=collapse] {
   --chevron-color: var(--neutral-soft-color);
@@ -104,5 +104,24 @@
   color: var(--primary-color);
 }
 .accordion-template-container {
-  margin-top: -10px;
+  margin: -.6rem -.6rem -.6rem 0;
+}
+@media (max-width: 800px) {
+  .accordion-template-container {
+    margin: -1.1rem;
+    margin-bottom: .5rem;
+  }
+  .bazar-list .panel-heading {
+    padding-top: .9rem;
+  }
+  .bazar-list .bazar-entry.collapsed {
+    border-top-width: 0 !important;
+  }
+  .bazar-list .panel-heading[data-toggle=collapse]:after {
+    right: .2rem;
+  }
+  .bazar-list .panel-heading.collapsed[data-toggle=collapse]:after {
+    top: 1.2rem;
+  }
+  .BAZ_fiche_info .btn-mini > span { display: none; }
 }

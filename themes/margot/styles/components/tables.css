@@ -12,3 +12,7 @@
 }
 #add-entry-table .btn-xs i { margin-right: 8px; }
 #add-entry-table th:last-child { width: 245px !important; }
+
+@media screen and (max-width: 800px) {
+  .table-responsive { border:none !important };
+}

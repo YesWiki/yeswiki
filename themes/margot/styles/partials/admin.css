@@ -5,9 +5,9 @@
 td > label {
   line-height: 0;
   vertical-align: middle;
-  padding-left: 10px;
+  padding-left: .5rem;
   margin: 0;
-  width: 20px;
+  width: 1.2rem;
 }
 
 input[name=theme_modifier], input[name=geredroits_modifier] {
@@ -35,4 +35,8 @@ label.edit-group strong {
   padding-top: .5em;
   padding-bottom: .5em;
   color: var(--secondary-color-1);
+}
+
+@media (max-width: 1200px) {
+  td > label { padding-left: .2rem; }
 }

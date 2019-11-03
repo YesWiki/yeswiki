@@ -13,14 +13,14 @@ if ($resultcolsize == 0) {
 ?>
 <div class="facette-container row">
   <?php if ($params['filterposition'] == 'right') : ?>
-  <div class="results-col col-xs-<?php echo $resultcolsize; ?>">
+  <div class="results-col col-sm-<?php echo $resultcolsize; ?>">
     <div class="results">
       <?php echo $content;?>
     </div> <!-- /.results -->
   </div> <!-- /.col-xs-<?php echo $resultcolsize; ?> -->
   <?php endif; ?>
 
-  <div class="filters-col col-xs-<?php echo $params['filtercolsize'];?>">
+  <div class="filters-col col-sm-<?php echo $params['filtercolsize'];?>">
     <div class="filters no-dblclick <?php echo $params['filterposition']; ?>">
       <div class="results-info text-info">
         <span class="nb-results"><?php echo $nbfiches; ?></span>
@@ -62,7 +62,7 @@ if ($resultcolsize == 0) {
   </div> <!-- /.col-xs-<?php echo $params['filtercolsize'];?> -->
 
   <?php if ($params['filterposition'] != 'right') : ?>
-  <div class="results-col col-xs-<?php echo $resultcolsize; ?>">
+  <div class="results-col col-sm-<?php echo $resultcolsize; ?>">
     <div class="results">
       <?php echo $content;?>
     </div> <!-- /.results -->

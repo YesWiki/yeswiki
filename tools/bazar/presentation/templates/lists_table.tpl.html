@@ -1,5 +1,6 @@
 <?php if (count($lists)>0) : ?>
-<table id="existing-lists-table" class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
+<div class="table-responsive">
+<table id="existing-lists-table" class="table table-condensed table-striped">
     <thead>
         <tr>
             <th><?php echo _t('BAZ_TITLE'); ?></th>
@@ -25,7 +26,7 @@
         </tr>
                 <?php endforeach; ?>
     </tbody>
-</table>
+</table></div>
 <?php else : ?>
 <div class="alert alert-info">
 	<a data-dismiss="alert" class="close">&times;</a><?php echo _t('BAZ_INTRO_AJOUT_LISTE'); ?>
