@@ -667,5 +667,6 @@ $(document).ready(function () {
     $('#'+target+' .bazar-entry').filter(function(i) {
       return bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1;
     }).show()
+    $(this).parents('.facette-container').find('.nb-results').html($('#'+target+' .bazar-entry:visible').length)
   });
 })

@@ -115,7 +115,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail', '', 'field='.$_GET['field']) . '">
             <div class="form-group">
               <div class="input-group">
-                <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
+                <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
                 <input required class="form-control" type="email" name="email" value=""
                     placeholder="' . _t('CONTACT_YOUR_MAIL') . '" />
               </div>
@@ -129,7 +129,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
                     placeholder="' . _t('CONTACT_YOUR_MESSAGE') . '"></textarea>
             </div>
             <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
-              <i class="glyphicon glyphicon-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
+              <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
             </button>
             <input type="hidden" name="mail" value="'.htmlspecialchars($_GET['field']).'">
         </form>';
@@ -141,14 +141,14 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         <form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail') . '">
           <div class="form-group">
             <div class="input-group">
-              <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
+              <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
               <input required class="form-control" type="email" name="email" value=""
                     placeholder="' . _t('CONTACT_YOUR_MAIL') . '" />
             </div>
           </div>
           <div class="form-group">
             <div class="input-group">
-              <div class="input-group-addon"><i class="glyphicon glyphicon-envelope"></i></div>
+              <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
               <input required class="form-control" type="email" name="mail"
                         value="" placeholder="Adresse mail du destinataire" />
             </div>
@@ -158,7 +158,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
                   value="" placeholder="' . _t('CONTACT_SUBJECT') . '" />
           </div>
           <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
-            <i class="glyphicon glyphicon-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
+            <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
           </button>
           <input type="hidden" name="type" value="mail" />
         </form>';

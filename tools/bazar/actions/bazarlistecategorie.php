@@ -169,7 +169,7 @@ if (empty($list)) {
             }
             $output .=  '<h3 class="collapsed yeswiki-list-category" '
                 .'data-target="#collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
-                .'" data-toggle="collapse"><i class="glyphicon glyphicon-chevron-right"></i> '
+                .'" data-toggle="collapse"><i class="fa fa-chevron-right"></i> '
                 .(empty($listvalues['label'][$fiche[$id]]) ? 'Non catégorisé' : $listvalues['label'][$fiche[$id]]).'</h3>
                 <div id="collapse_'.htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))).'" class="collapse">';
         }

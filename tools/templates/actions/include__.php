@@ -16,7 +16,7 @@ if (!$incPage = $this->LoadPage($incPageName)) {
 
     $plugin_output_new = '<div class="'.$class.'">'."\n".
         '<a class="yeswiki-editable" href="'.$this->href('edit', $incPageName, $query_string).'">'.
-        '<i class="glyphicon glyphicon-pencil icon-pencil"></i> '._t('TEMPLATE_EDIT').' '.$incPageName.'</a>'."\n".
+        '<i class="fa fa-edit icon-pencil"></i> '._t('TEMPLATE_EDIT').' '.$incPageName.'</a>'."\n".
         '</div>'."\n";
 } else {
     // sinon, on remplace les liens vers les NomWikis n'existant pas

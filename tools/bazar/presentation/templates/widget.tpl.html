@@ -23,7 +23,6 @@
           <select v-model="templatemodel" class="form-control">
             <option value="liste_liens.tpl.html">Liste de lien simple</option>
             <option value="liste_accordeon.tpl.html">Liste accordéons</option>
-            <option value="carto.tpl.html">Carte avec fiches résumées</option>
             <option value="map.tpl.html">Carte avec fiches entières</option>
           </select>
         </div>
@@ -192,11 +191,11 @@
                     <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['id']; ?>']">
                         <input class="form-control" type="text" v-model="facettetext['<?php echo $value['id']; ?>']" @keyup.enter="hideTooltip" />
                         <span class="input-group-btn">
-              			    	<button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="glyphicon glyphicon-check"></i></button>
+              			    	<button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="fa fa-check"></i></button>
               			    </span>
                     </div>
                     <div class="facette-text" v-if="!show_tooltip['<?php echo $value['id']; ?>']">
-                        {{facettetext['<?php echo $value['id']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['id']; ?>')"><i class="glyphicon glyphicon-pencil"></i></button>
+                        {{facettetext['<?php echo $value['id']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['id']; ?>')"><i class="fa fa-edit"></i></button>
                     </div>
 
 

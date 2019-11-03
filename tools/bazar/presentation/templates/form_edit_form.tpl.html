@@ -12,11 +12,12 @@
         </div>
     </div>
     <div class="control-group form-group">
-        <label class="control-label col-sm-3"><?php echo _t('BAZ_CONDITION'); ?></label>
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
         <div class="controls col-sm-9">
-            <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_condition"><?php echo isset($form['bn_condition']) ? $form['bn_condition'] : ''; ?></textarea>
+            <textarea class="form-control input-xxlarge" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
         </div>
     </div>
+
     <div class="control-group form-group">
         <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
         <div class="controls col-sm-9">
@@ -38,10 +39,52 @@
                     <textarea class="form-control input-xxlarge" id="form-builder-text" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
                 </div>
             </div>
-
-
         </div>
     </div>
+
+    <div class="control-group form-group">
+      <div class="controls col-sm-9 col-sm-offset-3">
+        <div class="accordion-heading">
+          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour"><?php echo _t('ADVANCED_CONFIGURATION'); ?></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion" id="accordion4">
+      <div class="accordion-group">
+        <div id="collapseFour" class="accordion-body collapse">
+          <div class="accordion-inner">
+            <div class="control-group form-group">
+              <label class="control-label col-sm-3"><?php echo _t('BAZ_CONDITION'); ?></label>
+              <div class="controls col-sm-9">
+                <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_condition"><?php echo isset($form['bn_condition']) ? $form['bn_condition'] : ''; ?></textarea>
+              </div>
+            </div>
+            <div class="control-group form-group">
+              <label class="control-label col-sm-3"><?php echo _t('BAZ_SEM_CONTEXT'); ?></label>
+              <div class="controls col-sm-9">
+                <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_sem_context"><?php echo isset($form['bn_sem_context']) ? $form['bn_sem_context'] : ''; ?></textarea>
+              </div>
+            </div>
+            <div class="control-group form-group">
+              <label class="control-label col-sm-3"><?php echo _t('BAZ_SEM_TYPE'); ?></label>
+              <div class="controls col-sm-9">
+                <input class="form-control input-xxlarge" name="bn_sem_type" type="text" value="<?php echo isset($form['bn_sem_type']) ? $form['bn_sem_type'] : ''; ?>">
+              </div>
+            </div>
+            <div class="control-group form-group">
+              <label class="control-label col-sm-3"><?php echo _t('BAZ_SEM_USE_TEMPLATE'); ?></label>
+              <div class="controls col-sm-9 checkbox">
+                <label>
+                  <input type="checkbox" name="bn_sem_use_template" value="1" <?php if(!isset($form['bn_sem_use_template']) || $form['bn_sem_use_template'] ) echo('checked'); ?>> <?php echo _t('BAZ_SEM_USE_TEMPLATE_DESC'); ?>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="form-group">
         <div class="col-sm-9 col-sm-offset-3">
           <button type="submit" class="btn btn-success"><?php echo _t('BAZ_VALIDER'); ?></button>

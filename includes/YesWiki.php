@@ -1035,7 +1035,7 @@ class Wiki
         return '<a href="' . $this->href($method, $tag) . '">' . $text . '</a>';
     }
 
-    public function IsWikiName($text, $type = WN_CAMEL_CASE)
+    public function IsWikiName($text, $type = WN_CAMEL_CASE_EVOLVED)
     {
         return preg_match('/^' . $type . '$/u', $text);
     }

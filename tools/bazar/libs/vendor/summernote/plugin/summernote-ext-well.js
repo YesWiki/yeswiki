@@ -32,7 +32,7 @@
       context.memo('button.well', function() {
         // create button
         var button = ui.button({
-          contents: '<i class="glyphicon glyphicon-unchecked"/>',
+          contents: '<i class="fa fa-unchecked"/>',
           tooltip: 'Text box',
           hide: true,
           click: function() {

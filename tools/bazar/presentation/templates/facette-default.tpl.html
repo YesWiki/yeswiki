@@ -1,35 +1,63 @@
 <?php
-// $content
-// $filters
-// $position
-// $colsize
-// $nbfiches
+// Variables disponibles :
+// $content : liste des fiches en html
+// $filters : liste des valeurs filtrables, pour les facettes
+// $nbfiches : nombre totale de fiches disponibles
+// $params : ensemble des parametre passés a l'action
 
-// affichage des resultats et filtres dans une grille
-        $outputfacette = '<div class="facette-container row">'."\n";
-
-        // calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
-        $resultcolsize = 12 - intval($colsize);
-
-        if ($resultcolsize == 0) {
-            $resultcolsize = 12;
-        }
-        // colonne des resultats
-        $content = '<div class="col-xs-'.$resultcolsize.'">'."\n".
-            '<div class="results">'."\n".
-            '<div class="alert alert-info">'."\n".
-            _t('BAZ_IL_Y_A').
-            '<span class="nb-results">'.$nbfiches.'</span> '
-            ._t('BAZ_FICHES_CORRESPONDANTES_FILTRES')."\n".
-            '.</div>'."\n".
-            $content."\n".
-            '</div> <!-- /.results -->'."\n".
-            '</div> <!-- /.col-xs-'.$resultcolsize.' -->';
-// disposition des filtres (gauche ou droite)
-if ($position == 'right') {
-    $outputfacette .= $content.$filters;
-} else {
-    $outputfacette .= $filters.$content;
+// calcul de la largeur de la colonne pour les resultats, en fonction de la taille des filtres
+$resultcolsize = 12 - intval($params['filtercolsize']);
+if ($resultcolsize == 0) {
+  $resultcolsize = 12;
 }
-echo $outputfacette.'</div><!-- /.facette-container.row -->';
- 
+?>
+<div class="facette-container row">
+  <?php if ($params['filterposition'] == 'right') : ?>
+  <div class="col-xs-<?php echo $resultcolsize; ?>">
+    <div class="results">
+      <?php echo $content;?>
+    </div> <!-- /.results -->
+  </div> <!-- /.col-xs-<?php echo $resultcolsize; ?> -->
+  <?php endif; ?>
+  
+  <div class="col-xs-<?php echo $params['filtercolsize'];?>">
+    <div class="filters no-dblclick">
+      <?php if ($params['filtertext'] == true) : ?>
+      <div class="input-group">
+        <span class="input-group-addon"><i class="fa fa-filter"></i></span>
+        <input type="text" class="form-control filter-bazar" id="inputBazarFilter<?php echo $params['nbbazarliste']; ?>" placeholder="<?php echo _t('BAZAR_FILTER'); ?>" data-target="bazar-list-<?php echo $params['nbbazarliste']; ?>" />
+      </div>
+      <?php endif; ?>
+      <div class="results-info text-info text-right"> 
+        <span class="nb-results"><?php echo $nbfiches; ?></span>
+        <?php echo ($nbfiches > 1) ? _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') : _t('BAZ_FICHE_CORRESPONDANT_FILTRES'); ?>
+      </div>
+      <?php foreach($filters as $idkey => $val) : ?>
+      <div class="filter-box panel panel-default <?php echo $idkey; ?>" data-id="<?php echo $idkey; ?>">
+        <div class="panel-heading<?php echo $val['collapsed']; ?>" data-toggle="collapse" href="#collapse<?php echo $GLOBALS['_BAZAR_']['nbbazarliste']; ?>_<?php echo $idkey; ?>" >
+          <?php echo $val['icon'].$val['title']; ?>
+        </div>
+        <div class="panel-body">
+          <?php foreach($val['list'] as $list) : ?>
+          <div class="checkbox">
+            <label for="<?php echo $list['id']; ?>">
+              <input class="filter-checkbox" type="checkbox" id="<?php echo $list['id']; ?>" name="<?php echo $list['name']; ?>"
+              value="<?php echo $list['value']; ?>"<?php echo $list['checked']; ?>>
+              <?php echo $list['label']; ?> (<span class="nb"><?php echo $list['nb']; ?></span>)
+            </label>
+          </div><!-- /.checkbox -->
+          <?php endforeach; ?>
+        </div><!-- /.panel-body -->
+      </div><!-- /.filter-box -->
+      <?php endforeach; ?>
+    </div> <!-- /.filters -->
+  </div> <!-- /.col-xs-<?php echo $params['filtercolsize'];?> -->
+
+  <?php if ($params['filterposition'] != 'right') : ?>
+  <div class="col-xs-<?php echo $resultcolsize; ?>">
+    <div class="results">
+      <?php echo $content;?>
+    </div> <!-- /.results -->
+  </div> <!-- /.col-xs-<?php echo $resultcolsize; ?> -->
+  <?php endif; ?>
+</div><!-- /.facette-container.row -->
