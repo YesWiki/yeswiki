@@ -2,127 +2,225 @@ var $formBuilderTextInput = $('#form-builder-text')
 var $formBuilderContainer = $('#form-builder-container')
 var formBuilder;
 
-function initializeFormbuilder(formAndListIds)
-{
-  // Custom fields to add to form builder
-  var fields = [
-    { label: 'Titre', name: "titre", attrs: { type: 'titre' }, icon: '*' },
-    { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '*' },
-    { label: 'Image', name: "image", attrs: { type: 'image' }, icon: '*' },
-    { label: 'Email', name: "champs_mail", attrs: { type: 'champs_mail' }, icon: '@' },
-    { label: 'Tags', name: "tags", attrs: { type: 'tags' }, icon: '*' },
-  ];
+// Custom fields to add to form builder
+var fields = [
+  { label: 'Titre', name: "titre", attrs: { type: 'titre' }, icon: '*' },
+  { label: 'Carte Geolocalisation', name: "carte_google", attrs: { type: 'carte_google' }, icon: '*' },
+  { label: 'Image', name: "image", attrs: { type: 'image' }, icon: '*' },
+  { label: 'Email', name: "champs_mail", attrs: { type: 'champs_mail' }, icon: '@' },
+  { label: 'Tags', name: "tags", attrs: { type: 'tags' }, icon: '*' },
+  { label: 'Inscription Liste Diffusion', name: "inscriptionliste", attrs: { type: 'inscriptionliste' }, icon: '*' },
+  { label: 'Custom HTML', name: "labelhtml", attrs: { type: 'labelhtml' }, icon: '*' },
+  { label: "Config Droits d'accès", name: "acls", attrs: { type: 'acls' }, icon: '*' },
+  { label: "Config Thème de la fiche", name: "metadatas", attrs: { type: 'metadatas' }, icon: '*' },
+  { label: "Bookmarklet", name: "bookmarklet", attrs: { type: 'bookmarklet' }, icon: '*' },
+  { label: "Liste des fiches liées", name: "listefichesliees", attrs: { type: 'listefichesliees' }, icon: '*' },
+  { label: 'Créer un utilisateur lorsque la fiche est validée', name: "utilisateur_wikini", attrs: { type: 'utilisateur_wikini' }, icon: '*' },
+];
 
-  // Some attributes configuration used in multiple fields
-  var visibilityOptions = {
-    '': 'Tout le monde',
-    '+': 'Utilisateurs identifiés',
-    '%': 'Propriétaire de la fiche et admins',
-    '@admins': 'Membre du groupe admin'
-  }
-  var readConf = { label: 'Peut être lu par', options: visibilityOptions }
-  var writeconf = { label: 'Peut être saisi par', options: visibilityOptions }
-  var searchableConf = { label: 'Présence dans le moteur de recherche', options: { '': 'Non', '1': 'Oui' } }
+// Some attributes configuration used in multiple fields
+var visibilityOptions = {
+  '': 'Tout le monde',
+  '+': 'Utilisateurs identifiés',
+  '%': 'Propriétaire de la fiche et admins',
+  '@admins': 'Membre du groupe admin'
+}
+var aclsOptions = {...visibilityOptions, ...{
+  'user': "Utilisateur (lorsqu'on créé un utilisateur en même temps que la fiche)"
+}}
+var readConf = { label: 'Peut être lu par', options: visibilityOptions }
+var writeconf = { label: 'Peut être saisi par', options: visibilityOptions }
+var searchableConf = { label: 'Présence dans le moteur de recherche', options: { '': 'Non', '1': 'Oui' } }
+var selectConf = {
+  subtype2: { label: 'Origine des données', options: {
+    'list': 'Une liste',
+    'form': 'Un Formulaire Bazar'
+    },
+  },
+  listeOrFormId: { label: 'Choix de la liste/du formulaire', options: {...{ '': ''}, ...formAndListIds.lists, ...formAndListIds.forms} },
+  listId: { label: '', options: formAndListIds.lists },
+  formId: { label: '', options: formAndListIds.forms },
+  hint: { label: "Texte d'aide" },
+  read: readConf,
+  write: writeconf,
+  // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
+}
 
-  var selectConf = {
-    subtype2: { label: 'Origine des données', options: {
-      'list': 'Une liste',
-      'form': 'Un Formulaire Bazar'
+// Attributes to be configured for each field
+var typeUserAttrs = {
+  text: {
+    size: { label: "Nbre caractères visibles"},
+    maxlength: { label: "Longueur Max."},
+    hint: { label: "Texte d'aide" },
+    separator: { label: '' }, // separate important attrs from others
+    subtype: { label: 'Type', options: {
+        'text': 'Texte',
+        'range': 'Slider',
+        'url': 'Url',
+        'password': "Mot de passe",
+        'color': 'Couleur',
       },
     },
-    listeOrFormId: { label: 'Choix de la liste/du formulaire', options: {...{ '': ''}, ...formAndListIds.lists, ...formAndListIds.forms} },
-    listId: { label: '', options: formAndListIds.lists },
-    formId: { label: '', options: formAndListIds.forms },
+    read: readConf,
+    write: writeconf
+  },
+  champs_mail: {
     hint: { label: "Texte d'aide" },
+    separator: { label: '' }, // separate important attrs from others
+    replace_email_by_button: { label: "Remplacer l'email par un bouton contact", options: { '': 'Non', 'form': 'Oui' } },
+    send_form_content_to_this_email: { label: "Envoyer le contenu du formulaire à cet email", options: { '': 'Non', '1': 'Oui' } },
+    // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
-    // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
+  },
+  carte_google: {
+    name_latitude: { label: "Nom champ latitude" },
+    name_longitude: { label: "Nom champ longitude" },
+  },
+  date: {
+    today_button: { label: "Btn Aujourd'hui", options: { '': 'Non', '1': 'Oui' } },
+    read: readConf,
+    write: writeconf,
+  },
+  image: {
+    hint: { label: "Texte d'aide" },
+    thumb_height: { label: "Hauteur Vignette", value: "140" },
+    thumb_width: { label: "Largeur Vignette", value: "140" },
+    resize_height: { label: "Hauteur redimension", value: "600" },
+    resize_width: { label: "Largeur redimension", value: "600" },
+    align: { label: "Alignement", value: 'right', options: { 'left': "Gauche", 'center': "Centre", 'right': 'Droite'} }
+  },
+  select: selectConf,
+  'checkbox-group': selectConf,
+  'radio-group': selectConf,
+  textarea: {
+    syntax: { label: "Format d'écriture", options: { 'wiki': "Wiki", "html": "Editeur Wysiwyg", 'nohtml': "Html non interprété"}},
+    size: { label: "Largeur champ de saisie"},
+  },
+  file: {
+    maxsize: { label: "Taille max" }
+  },
+  tags: {
+    hint: { label: "Texte d'aide" },
+    read: readConf,
+    write: writeconf
+  },
+  inscriptionliste : {
+    subscription_email: { label: "Email pour s'inscrire"},
+    email_field_id: { label: "Champ du formulaire fournissant l'email à inscire", value: "bf_mail"},
+    mailing_list_tool: { label: "Type de service de diffusion", options: {'': '', 'ezmlm': 'Ezmlm'}}
+  },
+  labelhtml: {
+    label: { value: "Custom HT"},
+    content_saisie: { label: "Contenu lors la saisie" },
+    content_display: { label: "Contenu lors de l'affichage d'une fiche" }
+  },
+  utilisateur_wikini: {
+    name_field: { label: "Champ pour le nom d'utilisateur", value: "bf_titre" },
+    email_field: { label: "Champ pour l'email de l'utilisateur", value: "bf_mail" }
+  },
+  acls: {
+    read: { label: 'Peut voir la fiche', options: aclsOptions },
+    write: { label: 'Peut éditer la fiche', options: aclsOptions },
+    comment: { label: 'Peut commenter la fiche', options: aclsOptions }
+  },
+  metadatas: {
+    theme: { label: 'Nom du thème', placeholder: "margot, interface, colibris" },
+    squelette: { label: 'Squelette', value: "1col.tpl.html" },
+    style: { label: "Style", placeholder: "bootstrap.min.css..." },
+    image: { label: "Image de fond", placeholder: "foret.jpg..." }
+  },
+  bookmarklet : {},
+  listefichesliees : {
+    id: { label: "id de la fiche liée"},
+    query: { label: "Query"},
+    param: { label: "Params de l'action", placeholder: 'Exple: champs="bf_nom" ordre="desc"' },
+    number: { label: "Nombre de fiches", placeholder: 'Exple: nb="x"'},
+    template: { label: "Template de restitution", placeholder: 'Exple: template="liste_liens.tpl.html"'},
+    type_link: { label: "Type de fiche liee", placeholder: "checkbox pour checkboxfiche , rien pour listefiche"},
   }
+}
 
-  // Attributes to be configured for each field
-  var typeUserAttrs = {
-    text: {
-      maxlength: { label: "Longueur Max."},
-      hint: { label: "Texte d'aide" },
-      separator: { label: '' }, // separate important attrs from others
-      subtype: { label: 'Type', options: {
-          'text': 'Texte',
-          // 'tel': 'Téléphone',
-          'url': 'Url',
-          'password': "Mot de passe"
-        },
-      },
-      read: readConf,
-      write: writeconf,
-      size: { label: "Nbre caractères visibles"},
-    },
-    champs_mail: {
-      hint: { label: "Texte d'aide" },
-      separator: { label: '' }, // separate important attrs from others
-      replace_email_by_button: { label: "Remplacer l'email par un bouton contact", options: { '': 'Non', 'form': 'Oui' } },
-      send_form_content_to_this_email: { label: "Envoyer le contenu du formulaire à cet email", options: { '': 'Non', '1': 'Oui' } },
-      // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
-      read: readConf,
-      write: writeconf,
-    },
-    carte_google: {
-      name_latitude: { label: "Nom champ latitude" },
-      name_longitude: { label: "Nom champ longitude" },
-    },
-    date: {
-      today_button: { label: "Btn Aujourd'hui", options: { '': 'Non', '1': 'Oui' } },
-      read: readConf,
-      write: writeconf,
-    },
-    image: {
-      hint: { label: "Texte d'aide" },
-      thumb_height: { label: "Hauteur Vignette", value: "140" },
-      thumb_width: { label: "Largeur Vignette", value: "140" },
-      resize_height: { label: "Hauteur redimension", value: "600" },
-      resize_width: { label: "Largeur redimension", value: "600" },
-      align: { label: "Alignement", value: 'right', options: { 'left': "Gauche", 'center': "Centre", 'right': 'Droite'} }
-    },
-    select: selectConf,
-    'checkbox-group': selectConf,
-    'radio-group': selectConf,
-    textarea: {
-      syntax: { label: "Format d'écriture", options: { 'wiki': "Wiki", "html": "Editeur Wysiwyg", 'nohtml': "Html non interprété"}},
-      size: { label: "Largeur champ de saisie"},
-    },
-    file: {
-      maxsize: { label: "Taille max" }
-    },
-    tags: {
-      hint: { label: "Texte d'aide" },
-      read: readConf,
-      write: writeconf
-    }
-  }
+// How a field is represented in the formBuilder view
+var templates = {
+  titre: function(fieldData) { return { field: '' }; },
+  champs_mail: function(fieldData) { return { field: '<input id="' + fieldData.name + '"' + ' type="email"/>' }; },
+  carte_google: function(fieldDate) { return { field: 'Geoloc'} },
+  image: function(fieldDate) { return { field: '<input type="file"/>' }},
+  text: function(fieldData) {
+    var string = '<input type="' + fieldData.subtype + '"';
+    if (fieldData.subtype == "url")
+      string += 'placeholder="' + (fieldData.value || '') + '"/>';
+    else if (fieldData.subtype == "range")
+      string += 'min="' + (fieldData.size || '') + '" max="' + (fieldData.maxlength || '') + '"/>';
+    else
+      string += 'value="' + fieldData.value + '"/>';
+    return { field:  string }
+  },
+  tags: function(field) { return { field: '<input/>'} },
+  inscriptionliste: function(field) { return { field: '<input type="checkbox"/>'}},
+  labelhtml: function(field) { return { field: '<xmp>' + (field.content_saisie || '') + "</xmp><xmp>" + (field.content_display || '') + "</xmp>" }},
+  utilisateur_wikini: function(field) { return { field: '' }},
+  acls: function(field) { return { field: '' }},
+  metadatas: function(field) { return { field: '' }},
+  bookmarklet: function(field) { return { field: '' }},
+  listefichesliees: function(field) { return { field: '' }},
+};
 
-  // How a field is represented in the formBuilder view
-  var templates = {
-    titre: function(fieldData) { return { field: '' }; },
-    champs_mail: function(fieldData) { return { field: '<input id="' + fieldData.name + '"' + ' type="email"/>' }; },
-    carte_google: function(fieldDate) { return { field: 'Geoloc'} },
-    image: function(fieldDate) { return { field: '<input type="file"/>' }},
-    text: function(fieldData) {
-      var string = '<input type="' + fieldData.subtype + '"';
-      if (fieldData.subtype == "url")
-        string += 'placeholder="' + (fieldData.value || '') + '"/>';
-      else
-        string += 'value="' + fieldData.value + '"/>';
-      return { field:  string }
-    },
-    tags: function(field) { return { field: '<input/>'} }
-  };
+// Mapping betwwen yes wiki syntax and FormBuilder json syntax
+var defaultMapping = { 0: "type", 1: "name", 2: "label", 3: 'size', 4: 'maxlength', 5: 'value', 6: 'pattern', 7: 'subtype', 8: 'required', 9: 'searchable', 10: 'hint', 11: 'read', 12: 'write' }
+var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 6: 'name' } }
+var yesWikiMapping = {
+  "titre": { 0: "type", 1: "label"},
+  "text": defaultMapping,
+  "number": defaultMapping,
+  "textarea": defaultMapping,
+  "champs_mail": {...defaultMapping, ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email"}},
+  "carte_google": { 0: "type", 1: "name_latitude", 2: "name_longitude", 3: '?', 4: '?' },
+  "date": {...defaultMapping, ...{ 5: 'today_button'}},
+  "image": {...defaultMapping, ...{ 3: 'thumb_height', 4: 'thumb_width', 5: 'resize_height', 6: 'resize_width', 7: 'align'}},
+  "select" : lists,
+  "checkbox-group" : lists,
+  "radio-group" : lists,
+  "textarea": {...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
+  "file": {...defaultMapping, ...{ 3: "maxsize" } },
+  "tags": defaultMapping,
+  "inscriptionliste": { 0: 'type', 1: 'subscription_email', 2: 'label', 3: 'email_field_id', 4: 'mailing_list_tool'},
+  "labelhtml": {0: 'type', 1: 'content_saisie', 2: '', 3: 'content_display' },
+  "utilisateur_wikini": {0: 'type', 1: 'name_field', 2: 'email_field' },
+  "acls": {0: 'type', 1: 'read', 2: 'write', 3: "comment" },
+  "metadatas": {0: 'type', 1: 'theme', 2: 'squelette', 3: "style", 4: "image" },
+  "hidden": {0: 'type', 1: "name", 2: "value"},
+  "bookmarklet": { 0: "type", 1: "name", 2: "label", 3: 'value' },
+  "listefichesliees": { 0: "type", 1: "id", 2: "query", 3: 'param', 4: 'number', 5: 'template', 6: 'type_link' }
+}
+// Mapping betwwen yeswiki field type and standard field implemented by form builder
+var yesWikiTypes = {
+  "texte": { type: "text", subtype: "text" },
+  "lien_internet": { type: "text", subtype: "url" },
+  "mot_de_passe": { type: "text", subtype: "password" },
+  // "nombre": { type: "text", subtype: "tel" },
+  "textelong": { type: "textarea", subtype: "textarea"},
+  "jour": { type: "date"},
+  "checkbox": { type: "checkbox-group", subtype2: "list"},
+  "liste": { type: "select", subtype2: "list"},
+  "radio": { type: "radio-group", subtype2: "list"},
+  "checkboxfiche": { type: "checkbox-group", subtype2: "form"},
+  "listefiche": { type: "select", subtype2: "form"},
+  "radiofiche": { type: "radio-group", subtype2: "form"},
+  "fichier": { type: "file", subtype: "file" },
+  "champs_cache": { type: "hidden" }
+}
 
+function initializeFormbuilder(formAndListIds)
+{
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
     showActionButtons: false,
     fields: fields,
     // i18n: { locale: 'fr-FR' },
     templates: templates,
-    disableFields: ['carte_google', 'titre', 'hidden', 'button', 'autocomplete', 'checkbox', 'paragraph', 'header'],
+    disableFields: ['carte_google', 'titre', 'button', 'autocomplete', 'checkbox', 'paragraph', 'header'],
     controlOrder: ['text', 'number', 'date', 'image', 'champs_mail', 'tags'],
     disabledAttrs: ['access', 'placeholder', 'className', 'inline', 'toggle', 'description', 'other', 'multiple'],
     typeUserAttrs: typeUserAttrs,
@@ -140,7 +238,7 @@ function initializeFormbuilder(formAndListIds)
     var wikiText = formatJsonDataIntoWikiText(formData);
     if (wikiText) $formBuilderTextInput.val(wikiText);
 
-    // when selecting betwwen data source lists or forms, we need to populate again the listOfFormId select with the
+    // when selecting between data source lists or forms, we need to populate again the listOfFormId select with the
     // proper set of options
     $('.radio-group-field, .checkbox-group-field, .select-field').find('select[name=subtype2]:not(.initialized)').change(function() {
       $(this).addClass('initialized');
@@ -156,6 +254,23 @@ function initializeFormbuilder(formAndListIds)
         var newOption = new Option(optionLabel, optionKey, false, isSelected);
         visibleSelect.append(newOption);
       })
+    }).trigger('change');
+
+    $('.text-field select[name=subtype]:not(.initialized)').change(function() {
+      $(this).addClass('initialized');
+      $parent = $(this).closest('.form-field')
+      if ($(this).val() == "range") {
+        $parent.find('.maxlength-wrap label').text('Valeur max')
+        $parent.find('.size-wrap label').text('Valeur min')
+      } else {
+        $parent.find('.maxlength-wrap label').text('Longueur Max.')
+        $parent.find('.size-wrap label').text('Nbre Caractères Visibles')
+      }
+      if ($(this).val() == "color") {
+        $parent.find('.maxlength-wrap, .size-wrap').hide()
+      } else {
+        $parent.find('.maxlength-wrap, .size-wrap').show()
+      }
     }).trigger('change');
 
     // Changes icons and icones helpers
@@ -192,40 +307,6 @@ function ensureFieldsNamesAreUnique() {
     for(var i = 0; i < allNames.length; ++i) if (allNames[i] == currValue) count++;
     if (count > 1) $(this).val(currValue + "_bis");
   });
-}
-
-var defaultMapping = { 0: "type", 1: "name", 2: "label", 3: 'size', 4: 'maxlength', 5: 'value', 6: 'pattern',  8: 'required', 9: 'searchable', 10: 'hint', 11: 'read', 12: 'write' }
-var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 6: 'name' } }
-var yesWikiMapping = {
-  "titre": { 0: "type", 1: "label"},
-  "text": defaultMapping,
-  "number": defaultMapping,
-  "textarea": defaultMapping,
-  "champs_mail": {...defaultMapping, ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email"}},
-  "carte_google": { 0: "type", 1: "name_latitude", 2: "name_longitude", 3: '?', 4: '?' },
-  "date": {...defaultMapping, ...{ 5: 'today_button'}},
-  "image": {...defaultMapping, ...{ 3: 'thumb_height', 4: 'thumb_width', 5: 'resize_height', 6: 'resize_width', 7: 'align'}},
-  "select" : lists,
-  "checkbox-group" : lists,
-  "radio-group" : lists,
-  "textarea": {...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
-  "file": {...defaultMapping, ...{ 3: "maxsize" } },
-  "tags": defaultMapping
-}
-var yesWikiTypes = {
-  "texte": { type: "text", subtype: "text" },
-  "lien_internet": { type: "text", subtype: "url" },
-  "mot_de_passe": { type: "text", subtype: "password" },
-  // "nombre": { type: "text", subtype: "tel" },
-  "textelong": { type: "textarea", subtype: "textarea"},
-  "jour": { type: "date"},
-  "checkbox": { type: "checkbox-group", subtype2: "list"},
-  "liste": { type: "select", subtype2: "list"},
-  "radio": { type: "radio-group", subtype2: "list"},
-  "checkboxfiche": { type: "checkbox-group", subtype2: "form"},
-  "listefiche": { type: "select", subtype2: "form"},
-  "radiofiche": { type: "radio-group", subtype2: "form"},
-  "fichier": { type: "file", subtype: "file" }
 }
 
 // transform a json object like "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
@@ -299,7 +380,11 @@ function parseWikiTextIntoJsonData(text)
         if (field == "required") value = (value == "1") ? true : false;
         if (field) fieldObject[field] = value;
       }
-      if (!fieldObject.label) fieldObject.label = '';
+      if (!fieldObject.label) {
+        fieldObject.label = wikiType;
+        for(var k = 0; k < fields.length; k++)
+          if (fields[k].name == wikiType) fieldObject.label = fields[k].label;
+      }
       result.push(fieldObject)
     }
   }
