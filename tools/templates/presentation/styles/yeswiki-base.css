@@ -280,7 +280,11 @@ display:none;} /* enlever les label des fiches bazar quand on utilise la fonctio
   display: none;
 }
 
-.acl-single-container { margin-bottom: 10px; }
+.acl-single-container {
+   margin-bottom: 10px;
+   display: flex;
+   align-items: center;
+}
 .acl-single-container label { width: 180px; }
 .acl-single-container input { width: calc(100% - 185px) !important; }
 .edit-acl-container label { font-weight: normal; }

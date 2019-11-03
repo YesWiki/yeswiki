@@ -247,10 +247,14 @@
   // acl switch
   $('#acl-switch-mode').change(function() {
     if ($(this).prop('checked')) {
+      // show advanced
       $('.acl-simple').hide().appendTo($(this).parent());
       $('.acl-advanced').slideDown();
     }
     else {
+      $('.acl-single-container label').each(function() {
+        $(this).after($('select[name='+ $(this).data('input') +']'));
+      })
       $('.acl-simple').show();
       $('.acl-advanced').hide();
     }
