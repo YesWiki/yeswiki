@@ -1,6 +1,6 @@
 <form action="<?php echo $url ?>&amp;action_formulaire=<?php echo (!empty($idformulaire)) ? 'modif_v' : 'new_v' ?>" method="post" name="formulaire" id="formulaire" class="form-horizontal">
     <div class="control-group form-group">
-        <label class="control-label col-sm-3"><?php echo _t('BAZ_NOM_FORMULAIRE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
+        <label class="control-label col-sm-3"><?php echo _t('BAZ_NOM_FORMULAIRE'); ?><span class="symbole_obligatoire"></span></label>
         <div class="controls col-sm-9">
             <input class="form-control input-xxlarge" name="bn_label_nature" type="text" value="<?php echo isset($form['bn_label_nature']) ? $form['bn_label_nature'] : ''; ?>" required>
         </div>
@@ -11,15 +11,9 @@
             <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_description"><?php echo isset($form['bn_description']) ? $form['bn_description'] : ''; ?></textarea>
         </div>
     </div>
-    <div class="control-group form-group">
-        <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
-        <div class="controls col-sm-9">
-            <textarea class="form-control input-xxlarge" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
-        </div>
-    </div>
 
     <div class="control-group form-group">
-        <label class="control-label col-sm-3"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire">&nbsp;*</span></label>
+        <label class="control-label col-sm-3 form-builder-label"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire"></span></label>
         <div class="controls col-sm-9">
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active"><a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">

@@ -8,7 +8,7 @@
 .form-horizontal {
   margin: 10px 0;
 }
-.form-control {
+.form-control, #form-builder-container  {
   height: 2.7rem;
   padding: .5em 1em .4em 1em;
   font-size: var(--main-text-fontsize);

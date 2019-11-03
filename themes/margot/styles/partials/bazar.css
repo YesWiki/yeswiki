@@ -53,3 +53,35 @@ pre.precsv {
 .BAZ_cadre_fiche [data-id=bf_image] img {
   width: 100%;
 }
+.form-builder-label {
+  display: none;
+}
+#form-builder-container {
+  height: auto !important;
+  padding: 0 0 1px 0 !important;
+}
+#form-builder-container .form-wrap.form-builder .frmb-control li {
+  border-radius: 0;
+  border-right: none;
+}
+#form-builder-container .form-wrap.form-builder .frmb li {
+  background-color: transparent;
+  border-radius: 0;
+  transition: background-color .3s;
+}
+#form-builder-container .form-wrap.form-builder .frmb {
+  margin: 0;
+}
+#form-builder-container .form-group {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+#form-builder-container .form-control {
+  background-color: white;
+  border: 1px solid #ccc;
+}
+#form-builder-container .form-wrap.form-builder .frmb>li:hover {
+  background-color: var(--neutral-light-color);
+  border: none;
+  box-shadow: none;
+}
