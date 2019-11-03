@@ -41,20 +41,20 @@
   --main-text-color:var(--neutral-color);
   --main-text-fontsize: 17px;
   --main-text-fontfamily:'Nunito', sans-serif;
-  --main-selected-text-bg: var(--secondary-color-2);
   --main-bg-color:var(--neutral-light-color);
   --main-container-bg-color:var(--neutral-light-color);
 
 
   /* full width */
-  --main-container-margin: 0;
+  /* is the following used ? */
+/*  --main-container-margin: 0;
   --main-container-width: 100%;
   --main-container-text-width: 100%;
   --main-container-border-radius: 0;
   --main-container-box-shadow: none;
   --section-background-image-width:100vw;
   --section-background-image-margin:-50vw;
-  --section-background-image-position:50%;
+  --section-background-image-position:50%;*/
 
   /* Links */
   --link-color: var(--primary-color);
@@ -85,6 +85,17 @@
   --btn-border-radius:.5em;
 
   --checkbox-color: var(--primary-color)
+}
+
+@media (max-width: 1200px) {
+   :root {
+     --main-text-fontsize: 15px;
+   }
+}
+@media (max-width: 800px) {
+  :root {
+     --main-text-fontsize: 13px;
+   }
 }
 
 

@@ -28,10 +28,15 @@
 
 /* Partie centrale de la page Wiki */
 #yw-main {
-  padding-top: 1em;
+  padding-top: 1.5rem;
   position: relative;
   min-height: 400px;
 }
 #yw-main .container {
   max-width: var(--main-container-text-width);
 }
+@media (max-width: 992px) {
+  #yw-main .container { width: 100% !important; }
+  #yw-main { padding-top: 1rem; }
+}
+

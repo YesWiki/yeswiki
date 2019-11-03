@@ -3,8 +3,7 @@
   border-radius: var(--btn-border-radius);
   font-size: var(--main-text-fontsize);
   color: var(--neutral-light-color);
-  padding: 8px 17px;
-  line-height: 1.6;
+  padding: .5rem 1rem;
   font-weight: 600;
   transition: all .2s;
 }

@@ -1,16 +1,16 @@
 .bazar-search .input-group-addon {
   background: none;
   color: var(--primary-color);
-  font-size: 70px;
+  font-size: 4rem;
   position: absolute;
   z-index: 5;
-  top: -10px;
+  top: -.6rem;
   left: 0;
   padding: 0;
 }
 .bazar-search input[type=text] {
-  margin-left: 46px;
-  border-bottom-left-radius: 15px !important;
+  margin-left: 2.7rem;
+  border-bottom-left-radius: .9rem !important;
   background-color: var(--neutral-soft-color);
   border: none !important;
   height: 2.4rem;

@@ -41,4 +41,29 @@ $(document).ready(function() {
   $('#search-form + .facette-container').each(function() {
     $(this).siblings('#search-form').prependTo($(this).find('.results-col'));
   })
+
+  window.onresize = resizeNav;
+  resizeNav();
+
+  $('#yw-topnav .btn-menu').click(function() {
+    $links = $('#yw-topnav .links-container')
+    if ($links.is(':visible')) {
+      $links.fadeOut(200);
+      $('#yw-topnav .menu-backdrop').remove();
+    } else {
+      $links.fadeIn(200);
+      $backdrop = $("<div class='menu-backdrop'></div>")
+      $links.before($backdrop)
+      $backdrop.click(function(e) {
+        $('#yw-topnav .btn-menu').trigger('click');
+        e.preventDefault();
+        e.stopPropagation();
+      })
+    }
+  });
 })
+
+function resizeNav() {
+  console.log("resizeNav", $('#yw-topnav').outerHeight())
+  $('#yw-header').css('margin-top', $('#yw-topnav').outerHeight() + 'px');
+}

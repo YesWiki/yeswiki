@@ -41,15 +41,19 @@ html, body { /* define also html so we can use rem */
   color: var(--main-text-color);
   font-size: var(--main-text-fontsize);
   font-family: var(--main-text-fontfamily);
+  padding: 0 !important;
+  line-height: 1.6;
 }
 
 /* background color of selected text */
-*::selection {
-   background: var(--main-selected-text-bg);
+/**::selection {
+   background: var(--primary-color);
+   color: var(--neutral-light-color);
 }
 *::-moz-selection {
-   background: var(--main-selected-text-bg);
-}
+   background: var(--primary-color);
+   color: var(--neutral-light-color);
+}*/
 
 /* Titles */
 h1, h2, h3, h4, h5, h6 {
@@ -83,6 +87,12 @@ br + h1, br + h2 {
   margin-top: .2em;
 }
 
+@media (max-width: 1200px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.4rem; }
+  h3 { font-size: 1.2rem; }
+}
+
 /* Links */
 a {
   color: var(--link-color);
@@ -102,4 +112,7 @@ pre {
 }
 img {
   border-radius: 3px;
+}
+ul {
+  padding-left: 2rem;
 }

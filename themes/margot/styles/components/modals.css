@@ -1,30 +1,37 @@
 .modal-content {
   box-shadow: none;
   border: none;
-  border-radius: 14px;
+  border-radius: .8rem;
 }
 
 .modal-header {
   border: none;
-  padding: 15px 35px;
+  padding: .9rem 2rem;
+  display: flex;
+  align-items: center;
 }
 .modal-body {
-  padding: 0 35px 25px 35px;
+  padding: 0 2rem 1.5rem 2rem;
 }
 .modal-footer {
   text-align: center;
   border: none;
-  padding: 0 35px 25px 35px;
-  margin-top: -20px;
+  padding: 0 2rem 1.5rem 2rem;
+  margin-top: -1.3rem;
 }
 .modal-header .close {
-  margin-top: 6px;
+  margin-top: 0;
+  order: 10;
+  right: 0;
+  flex: 1 auto;
+  text-align: right;
+  margin-right: -10px;
 }
 
 .close {
   color: var(--neutral-color);
   font-size: 1.5rem;
-  padding: 10px !important;
+  padding: 10px !important; /* so it's easier to click on mobile */
   margin-right: -10px;
 }
 .modal-backdrop {

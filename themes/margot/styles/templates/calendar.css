@@ -111,7 +111,7 @@ tr .fc-event-container:nth-child(7) a { background-color: var(--secondary-color-
 }
 .fc-prev-button, .fc-next-button {
   border: none !important;
-  font-size: 35px !important;
+  font-size: 2rem !important;
   background: none;
   height: auto !important;
   color: var(--primary-color);
@@ -155,4 +155,25 @@ tr .fc-event-container:nth-child(7) a { background-color: var(--secondary-color-
 }
 .fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton {
   padding-bottom: 8px !important;
+}
+
+@media (max-width: 800px) {
+  .fc-toolbar.fc-header-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .fc-prev-button, .fc-next-button {
+    padding: 0 !important;
+  }
+  .fc-toolbar .fc-left { order: 10; }
+  .fc-toolbar .fc-right {
+    order: 11;
+    margin-top: .5rem;
+    flex: 1 1 100%;
+  }
+  .fc-toolbar .fc-right > .btn-group {
+    float: none;
+  }
+  .fc-today-button { display: none; }
 }

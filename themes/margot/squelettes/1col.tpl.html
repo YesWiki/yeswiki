@@ -27,14 +27,11 @@
   <div id="yw-container">
     <nav id="yw-topnav" class="navbar navbar-default fixable" role="navigation">
       <div class="container">
+          <button class="btn btn-default btn-menu"><span class="fa fa-bars"></span></button>
           <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-              <span class="sr-only">Toggle navigation</span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-              <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">{{include page="PageTitre" doubleclic="1"}}</a>
+            <a class="navbar-brand" href="{{configuration param="base_url"}}{{configuration param="root_page"}}">
+              {{include page="PageTitre" doubleclic="1"}}
+            </a>
           </div> <!-- /.navbar-header -->
           {{include page="PageMenuHaut" class="yw-topnav topnavpage links-container" doubleclic="1" actif="1"}}
           {{include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclic="1" actif="1"}}

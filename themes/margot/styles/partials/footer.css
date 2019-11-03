@@ -18,11 +18,11 @@
   content: "";
   background-color: var(--neutral-soft-color);
   position: absolute;
-  left: 30px;
-  right: 30px;
+  left: 1rem;
+  right: 1rem;
   bottom: 0;
-  height: 8px;
-  border-radius: 10px;
+  height: .5rem;
+  border-radius: .5rem;
 }
 
 .footer a:hover {
