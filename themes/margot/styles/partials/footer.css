@@ -33,7 +33,7 @@
 .footer a i {
   color: var(--primary-color);
   font-size: 1.2em;
-  margin-right: 2px;
+  margin-right: 6px;
   opacity: .7;
   transition: opacity .2s;
 }

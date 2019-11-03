@@ -88,3 +88,6 @@ box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px var(--primary-color);
 @media (max-width: 800px) {
   .btn-toolbar .btn { border-radius: 4px; }
 }
+#accordion-avanced-page-settings {
+  margin-top: 20px;
+}

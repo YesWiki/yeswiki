@@ -85,3 +85,10 @@ pre.precsv {
   border: none;
   box-shadow: none;
 }
+/* Remove checkbox style inside form-builder*/
+#form-builder-container [type="checkbox"]:not(:checked),
+#form-builder-container [type="checkbox"]:checked {
+  position: relative;
+  opacity: 1;
+  pointer-events: initial;
+}

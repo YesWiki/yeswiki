@@ -85,7 +85,7 @@
           <a class="btn btn-xs btn-danger" href="<?php echo $url ?>"><?php echo _t('BAZ_ANNULER'); ?></a>
         </div>
     </div>
-    <div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">* <?php echo _t('BAZ_CHAMPS_REQUIS'); ?></div>
+    <div class="col-sm-9 col-sm-offset-3 symbole_obligatoire"><?php echo _t('BAZ_CHAMPS_REQUIS'); ?></div>
     <?php if (!empty($idformulaire)) : ?>
     <input type="hidden" name="bn_id_nature" value="<?php echo $idformulaire; ?>">
     <?php endif; ?>

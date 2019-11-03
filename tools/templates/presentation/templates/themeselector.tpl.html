@@ -28,7 +28,7 @@
       </select>
     </div>
   </div>
-  
+
   <div class="control-group form-group">
     <label class="control-label"><?php echo _t('TEMPLATE_STYLE'); ?></label>
     <div class="controls">
@@ -62,7 +62,7 @@
   <?php echo $bgselector; ?>
 
   <?php if ($mode == 'edit') : ?>
-  
+
   <div class="panel-group accordion" id="accordion-avanced-page-settings">
     <div class="panel panel-default accordion-group">
       <div class="panel-heading accordion-heading">
@@ -87,14 +87,14 @@
           </div>
 
            <fieldset>
-            <legend><?php echo _t('CHOOSE_PAGE_FOR'); ?>: </legend>
+            <h4><?php echo _t('CHOOSE_PAGE_FOR'); ?>: </h4>
             <div class="control-group form-group">
               <label class="control-label"><?php echo _t('HORIZONTAL_MENU_PAGE'); ?></label>
               <div class="controls">
                 <input class="form-control typeahead" type="text" autocomplete="off" name="PageMenuHaut" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageMenuHaut']) ? $wiki->page["metadatas"]['PageMenuHaut'] : 'PageMenuHaut'); ?>" />
               </div>
             </div>
-            
+
             <div class="control-group form-group">
               <label class="control-label"><?php echo _t('FAST_ACCESS_RIGHT_PAGE'); ?></label>
               <div class="controls">
@@ -102,14 +102,14 @@
                   $wiki->page["metadatas"]['PageRapideHaut'] : 'PageRapideHaut'); ?>" />
               </div>
             </div>
-            
+
             <div class="control-group form-group">
               <label class="control-label"><?php echo _t('HEADER_PAGE'); ?></label>
               <div class="controls">
                 <input class="form-control typeahead" type="text" autocomplete="off" name="PageHeader" data-provide="typeahead" data-items="5" data-source='<?php echo $listWikinames; ?>' value="<?php echo (isset($wiki->page["metadatas"]['PageHeader']) ? $wiki->page["metadatas"]['PageHeader'] : 'PageHeader'); ?>" />
               </div>
             </div>
-            
+
             <div class="control-group form-group">
               <label class="control-label"><?php echo _t('FOOTER_PAGE'); ?></label>
               <div class="controls">
@@ -134,12 +134,12 @@
   <a href="#" class="closebtn" onclick="closeNav()">&times;</a>
   <form id="preset-form" action="#" method="post">
     <h4><?php echo _t('TEMPLATE_CUSTOMIZE_PRESET'); ?></h4>
-    <?php 
+    <?php
     // TODO : don't use CDN trackers are bad
     $GLOBALS['wiki']->addJavascriptFile('https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js');
     $GLOBALS['wiki']->addJavascriptFile('https://av01d.github.io/fontselect-jquery-plugin/jquery.fontselect.js');
     foreach ($themes[$wiki->config['favorite_theme']]['presets']['default.json']['variables'] as $varcss) : ?>
-    
+
     <?php if ($varcss['type'] == 'color') : ?>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="<?php echo $varcss['name']; ?>"
@@ -148,7 +148,7 @@
         $varcss['label'][$GLOBALS['prefered_language']] : $varcss['label']['fr']); ?></label>
     </div>
     <?php endif; ?>
-    
+
     <?php if ($varcss['type'] == 'font') : ?>
     <div class="form-group">
       <label><?php echo (!empty($varcss['label'][$GLOBALS['prefered_language']]) ?
