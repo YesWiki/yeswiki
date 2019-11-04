@@ -2,7 +2,13 @@
   line-height: 1.8rem;
   vertical-align: middle;
 }
-.table-condensed:not(.table-updates) > tbody > tr > td:first-child {
+.table-condensed>tbody>tr>td:first-child strong,
+.table-condensed>tbody>tr>td:first-child h1,
+.table-condensed>tbody>tr>td:first-child h2,
+.table-condensed>tbody>tr>td:first-child h3,
+.table-condensed>tbody>tr>td:first-child h4,
+.table-condensed>tbody>tr>td:first-child h5,
+.table-condensed>tbody>tr>td:first-child h6 {
   font-weight: bold;
   text-transform: capitalize;
   color: var(--primary-color);

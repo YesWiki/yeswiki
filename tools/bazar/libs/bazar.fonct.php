@@ -1958,7 +1958,7 @@ function bazPrepareFormData($form)
         }
 
         // traitement sémantique
-        if( $formelem[14] ) {
+        if( !empty($formelem[14])) {
             $prepared[$i]['sem_type'] = strpos($formelem[14], ',')
                 ? array_map(function($str) { return trim($str); }, explode(',', $formelem[14]))
                 : $formelem[14];
@@ -4822,7 +4822,7 @@ function baz_get_custom_template($fiche, $form) {
 }
 
 function baz_get_custom_semantic_template($fiche) {
-    if( !$fiche['semantic'] ) return null;
+    if( empty($fiche['semantic']) ) return null;
 
     // Trouve le contexte principal
     if( is_array($fiche['semantic']['@context']) ) {
