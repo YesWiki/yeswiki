@@ -4697,6 +4697,11 @@ function getAllParameters_carto($wiki, array &$param)
     if (empty($param['fullscreen'])) {
         $param['fullscreen'] = 'true';
     }
+
+    /*
+    * Provide a json configuration with URL
+    */
+    $param['jsonconfurl'] = $wiki->GetParameter('jsonconfurl');
 }
 
 function getMultipleParameters($param, $firstseparator = ',', $secondseparator = '=')
