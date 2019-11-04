@@ -1,0 +1,100 @@
+.btn {
+  border: var(--btn-border);
+  border-radius: var(--btn-border-radius);
+  font-size: var(--main-text-fontsize);
+  color: var(--neutral-light-color);
+  padding: .5rem 1rem;
+  font-weight: 600;
+  transition: all .2s;
+}
+.btn:hover {
+  opacity: .9;
+  color: var(--neutral-light-color);
+}
+.btn, .btn:hover, .btn:focus, .btn:active, .btn.active {
+  box-shadow: none !important;
+}
+.btn.disabled, .btn[disabled] {
+  opacity: .4;
+}
+
+.btn-link {
+  color: var(--primary-color);
+}
+.btn:not(.btn-icon) i {
+  margin-right: 8px;
+}
+
+.btn-link:hover, .btn-link:focus {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus, .btn-default:active:focus,
+.open>.dropdown-toggle.btn-default, .open>.dropdown-toggle.btn-default:focus, .open>.dropdown-toggle.btn-default:hover {
+  background: transparent;
+  color: var(--neutral-color);
+}
+.btn-default:hover, .btn-default:active, .btn-default:focus, .btn-default:active:focus {
+  background: #eee;
+}
+.btn.btn-default.dropdown-toggle:hover {
+  background: #eee !important;
+  color: var(--neutral-color) !important;
+}
+.btn-neutral, .btn-neutral:hover, .btn-neutral:active, .btn-neutral:focus, .btn-neutral:active:focus {
+  background-color: var(--neutral-color);
+}
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:focus, .btn-primary:active:focus {
+  background-color: var(--primary-color);
+}
+.btn-info, .btn-info:hover, .btn-info:active, .btn-info:focus, .btn-info:active:focus,
+.btn-secondary-1, .btn-secondary-1:hover, .btn-secondary-1:active, .btn-secondary-1:focus, .btn-secondary-1:active:focus {
+  background: var(--secondary-color-1);
+}
+.btn-warning, .btn-warning:hover, .btn-warning:active, .btn-warning:focus, .btn-warning:active:focus,
+.btn-secondary-2, .btn-secondary-2:hover, .btn-secondary-2:active, .btn-secondary-2:focus, .btn-secondary-2:active:focus {
+  background: var(--secondary-color-2);
+}
+
+.btn-xs {
+  padding: 2px 8px !important;
+  border-radius: .3em;
+}
+.btn.btn-xs i {
+  margin-right: 0;
+}
+.btn-xs.btn-danger {
+  background-color: transparent !important;
+  color: #d9534f;
+}
+.btn-xs.btn-danger:hover {
+  background: #eee !important;
+}
+
+/* Ripple effect */
+.btn, .ripple {
+  position: relative;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+}
+.btn:after, .ripple:after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, #000 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10, 10);
+  opacity: 0;
+  transition: transform .5s, opacity 1s;
+}
+.btn:active:after, .ripple:active:after {
+  transform: scale(0, 0);
+  opacity: .2;
+  transition: 0s;
+}

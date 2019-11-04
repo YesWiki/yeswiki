@@ -1,6 +1,6 @@
 <?php if ($connected) : ?>
 	<div class="btn-group">
-		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="glyphicon glyphicon-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
+		<button data-toggle="dropdown" class="btn dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="fa fa-user"></i>&nbsp;<?php echo $user; ?>&nbsp;<span class="caret"></span></button>
 		<ul class="dropdown-menu">
 		  <?php echo $PageMenuUser; ?>
 		  <li><a href="<?php echo $profileurl; ?>" title="<?php echo _t('LOGIN_MODIFY_USER'); ?>"><?php echo _t('LOGIN_MODIFY_USER'); ?></a></li>
@@ -22,8 +22,8 @@
         <input type="checkbox" id="remember-default" name="remember" value="1"> <?php echo _t('LOGIN_REMEMBER_ME'); ?>
       </label>
     </div>
-		<button type="submit" class="btn <?php echo $btnclass; ?> btn-primary"><i class="glyphicon glyphicon-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
-		<?php if ($signupurl != '' && $signupurl != '0') : ?><a class="btn <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="glyphicon glyphicon-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a><?php endif; ?>
+		<button type="submit" class="btn <?php echo $btnclass; ?> btn-primary"><i class="fa fa-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
+		<?php if ($signupurl != '' && $signupurl != '0') : ?><a class="btn <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="fa fa-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a><?php endif; ?>
 		<input type="hidden" name="action" value="login" />
 		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />

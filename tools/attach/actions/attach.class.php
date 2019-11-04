@@ -609,7 +609,7 @@ if (!class_exists('attach')) {
          */
         public function showFileNotExits()
         {
-            echo "<a href=\"" . $this->wiki->href("upload", $this->wiki->GetPageTag(), "file=$this->file") . "\" class=\"btn btn-primary\"><i class=\"glyphicon glyphicon-upload icon-upload icon-white\"></i> " . _t('UPLOAD_FILE') . ' ' . $this->file . "</a>";
+            echo "<a href=\"" . $this->wiki->href("upload", $this->wiki->GetPageTag(), "file=$this->file") . "\" class=\"btn btn-primary\"><i class=\"fa fa-upload icon-upload icon-white\"></i> " . _t('UPLOAD_FILE') . ' ' . $this->file . "</a>";
         }
         /**
          * Affiche l'attachement
@@ -870,8 +870,8 @@ if (!class_exists('attach')) {
 
             $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
             $output = '<ul id="fmtab' . $this->wiki->tag . '" class="nav nav-tabs">
-				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag . '#fmtab' . $this->wiki->tag) . '" title="Gestion des fichiers"><i class="glyphicon glyphicon-file icon-file"></i>&nbsp;Gestion des fichiers</a></li>
-				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '" title="Corbeille"><i class="glyphicon glyphicon-trash icon-trash"></i>&nbsp;Corbeille</a></li>
+				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag . '#fmtab' . $this->wiki->tag) . '" title="Gestion des fichiers"><i class="fa fa-file icon-file"></i>&nbsp;Gestion des fichiers</a></li>
+				<li' . (($trash) ? ' class="active"' : '') . '><a href="' . $this->wiki->href($method, $this->wiki->GetPageTag(), 'do=trash') . '" title="Corbeille"><i class="fa fa-trash icon-trash"></i>&nbsp;Corbeille</a></li>
             </ul>';
 
             $files = $this->fmGetFiles($trash);
@@ -900,17 +900,17 @@ if (!class_exists('attach')) {
                     //lien de suppression
                     if ($trash) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=erase&file=' . $file['realname']);
-                        $icon = 'glyphicon glyphicon-remove icon-remove';
+                        $icon = 'fa fa-remove icon-remove';
                     } else {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=del&file=' . $file['realname']);
-                        $icon = 'glyphicon glyphicon-trash icon-trash';
+                        $icon = 'fa fa-trash icon-trash';
                     }
                     $dellink = '<a class="btn btn-mini btn-danger" href="' . $url . '" title="Supprimer"><i class="' . $icon . ' icon-white"></i></a>';
                     //lien de restauration
                     $restlink = '';
                     if ($trash) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                        $restlink = '<a class="btn btn-mini btn-success" href="' . $url . '" title="Restaurer"><i class="glyphicon glyphicon-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
+                        $restlink = '<a class="btn btn-mini btn-success" href="' . $url . '" title="Restaurer"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
                     }
 
                     //lien pour downloader le fichier
@@ -934,7 +934,7 @@ if (!class_exists('attach')) {
                 $output .= '<table class="fmtable table table-condensed table-hover table-striped">' . "\n" . $fmHeadTable . $fmBodyTable . '</table>' . "\n";
                 if ($trash) {
                     //Avertissement
-                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="glyphicon glyphicon-remove icon-remove icon-white"></i>&nbsp;Vider la corbeille</a><strong>Attention :</strong> les fichiers effac&eacute;s &agrave; partir de la corbeille le seront d&eacute;finitivement.<div class="clearfix"></div></div>';
+                    $output .= '<div class="alert alert-danger"><a href="' . $this->wiki->href($method, $this->wiki->tag, 'do=emptytrash') . '" class="btn btn-danger pull-right"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Vider la corbeille</a><strong>Attention :</strong> les fichiers effac&eacute;s &agrave; partir de la corbeille le seront d&eacute;finitivement.<div class="clearfix"></div></div>';
                 }
             }
             echo $output;

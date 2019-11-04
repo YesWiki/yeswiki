@@ -1,0 +1,171 @@
+/*******************************************************************************
+ * styles specific to the template
+ * class	cell-couleur is used to display	color tiles
+ *			cell-blanc								white tiles
+ *			cell-couleur-exergue					highlighted color tiles
+ *			cell-blanc-exergue					highlighted white tiles
+ *			texte-gauche							text containers
+ *			conteneur-bouton						div button containers
+ *			conteneur-date							div date (and sometimes location) containers
+ *			conteneur-image						div image containers
+ *			conteneur-lieu							div location containers
+ *			conteneur-titre						div title containers
+ *			btn-reverse-blanc						color button for white tiles
+ *			btn-reverse-couleur					white button for color tiles
+ *			btn-couleur								color button for highlighted tiles
+ ******************************************************************************/
+:root {
+	--primary-color:#F8C400;
+	--secondary-color-1:#1A89A0;
+	--secondary-color-2:#D78958;
+	--neutral-color:#4E5056;
+	--neutral-soft-color:#b0b1b3;
+	--neutral-light-color:rgba(255,255,255,0.8);
+	--main-text-color:var(--neutral-color);
+	--main-text-fontsize:20px;
+	--main-text-lineheight:1.3em;
+	--main-text-fontfamily:'Nunito', sans-serif;
+	--main-selected-text-bg:rgb(254, 224, 52); /* jaune marqueur pour surligner le texte */
+	--main-bg-color:var(--neutral-light-color);
+	--main-container-bg-color:var(--neutral-light-color);
+	/* full width */
+	--main-container-margin: 0;
+	--main-container-width: 100%;
+	--main-container-text-width: 100%;
+	--main-container-border-radius: 0;
+	--main-container-box-shadow: none;
+	--section-background-image-width:100vw;
+	--section-background-image-margin:-50vw;
+	--section-background-image-position:50%;
+	/* Links */
+	--link-color: var(--primary-color);
+	--link-hover-color : var(--primary-color);
+	/* contained page */
+	--navbar-bg-color: var(--primary-color);
+	--navbar-text-color: var(--neutral-light-color);
+	--navbar-link-color: var(--neutral-light-color);
+	--navbar-link-bg-color: transparent;
+	--navbar-link-hover-color: #FFF;
+	--navbar-link-bg-hover-color: transparent;
+	--navbar-border: none;
+	--navbar-border-radius : 0;
+	--navbar-shadow: none;
+	--header-bg-color: var(--neutral-light-color);
+	--header-text-color: var(--neutral-color);
+	--header-title-color: var(--primary-color);
+	--footer-bg-color: #2b2b2b;
+	--footer-text-color: #99999b;
+	--footer-title-color: #ccc;
+	--footer-border-top:  none;
+	--btn-border:none;
+	--btn-border-radius:0;
+	--btn-default-color:white;
+	--btn-default-background:var(--neutral-soft-color);
+	--btn-default-border:none;
+}
+
+.cell-couleur{
+	margin: 4px;
+	border-color: var(--secondary-color-1);
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 3px;
+	    border-right-width: 3px;
+	    border-bottom-width: 3px;
+	    border-left-width: 3px;
+	padding: 4px;
+	background-color: var(--secondary-color-1);
+	color:#ffffff;
+	vertical-align: top;
+}
+
+.cell-blanc{
+	margin: 4px;
+	border-color: var(--secondary-color-1);
+	border-style: solid;
+	border-width: ;
+	    border-top-width: 3px;
+	    border-right-width: 3px;
+	    border-bottom-width: 3px;
+	    border-left-width: 3px;
+		 padding: 4px;
+	vertical-align: top;
+	line-height: 100%;
+}
+
+.exergue::after{
+	border-style: solid;
+	border-width: 0 80px 80px 0;
+	border-color: transparent var(--primary-color) transparent transparent;
+	position: absolute;
+	z-index: 10;
+	background-color: transparent;
+	top: 4px;
+	right: 4px;
+	content: "";
+}
+
+.texte-gauche{
+	text-align: left;
+	padding-left:4px;
+	line-height: 1.429;
+}
+
+div.conteneur-bouton{
+	text-align: center;
+}
+
+div.conteneur-date{
+	text-align: center;
+}
+
+span.date{
+	font-family: georgia;
+}
+
+div.conteneur-image{
+	text-align: center;
+}
+
+div.conteneur-lieu{
+	text-align: center;
+}
+
+div.conteneur-titre{
+	font-size: 32px;
+	font-weight: 400;
+	line-height: 35.2px;
+	margin-bottom: 10.5px;
+	margin-top: 21px;
+	text-align: center;
+}
+
+/*.btn-couleur{
+	border-color: var(--secondary-color-1);
+	background-color: var(--secondary-color-1);
+	color: #ffffff;
+}*/
+
+.btn-reverse-blanc{
+	border-color: var(--secondary-color-1);
+	background-color: var(--secondary-color-1);
+	color: #ffffff;
+}
+
+.btn-reverse-couleur{
+	border-color: #ffffff;
+	background-color: #ffffff;
+	color: var(--secondary-color-1);
+}
+
+.btn-reverse-couleur:hover,
+.btn-reverse-couleur:focus {
+	color: var(--secondary-color-1);
+}
+
+ul{
+	list-style: circle outside; margin:
+	0 8px 0 8px;
+	border:0;
+	padding: 0 0 0 4px;
+}

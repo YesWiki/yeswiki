@@ -1,0 +1,93 @@
+.btn-toolbar {
+  margin-left: 0;
+}
+.btn-toolbar > .btn-group {
+  margin: 0;
+  padding-left: 2px;
+}
+.btn-toolbar > .btn-group:first-child {
+  padding-left: 0;
+}
+.btn-toolbar > .btn-group:not(:first-child):not(:nth-chld(2))::before {
+  content: ".";
+  width: 2px;
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  height: 1.5rem;
+  color: #eee;
+  background: #eee;
+}
+
+/* no need to chose background because there is no background for margot theme*/
+#form_graphical_options #bgCarousel, #form_graphical_options h3 {
+  display: none;
+}
+#ACEditor textarea#body {
+  border-top-left-radius: 0 !important;
+  padding: 1em;
+}
+.btn-toolbar .aceditor-btn-save {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.btn-toolbar .btn {
+  border-radius: 4px 4px 0 0;
+}
+#ACEditor .btn:not(.qq-upload-button) i {
+  margin: 0;
+}
+#hashcash-text {
+  line-height: 2rem;
+  font-size: .9em;
+  font-style: italic;
+}
+.btn-toolbar .dropdown-menu h1, .btn-toolbar .dropdown-menu h2, .btn-toolbar .dropdown-menu h3,
+.btn-toolbar .dropdown-menu h4, .btn-toolbar .dropdown-menu h5, .btn-toolbar .dropdown-menu .lead,
+.btn-toolbar .dropdown-menu .well, .btn-toolbar .dropdown-menu pre {
+  margin: 0;
+}
+.btn-toolbar .dropdown-menu li a {
+  padding: 5px 1em;
+  min-height: 25px;
+  cursor: pointer;
+}
+#YesWikiHelpModal .page h4,
+[ondblclick$="?ReglesDeFormatage/edit';"] .page h4 {
+  color: var(--neutral-color);
+}
+#YesWikiHelpModal .page .col-md-6 > h2,
+[ondblclick$="?ReglesDeFormatage/edit';"] .page .col-md-6 > h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+#YesWikiHelpModal .page .btn-primary,
+[ondblclick$="?ReglesDeFormatage/edit';"] .page .btn-primary {
+  border-radius: 4px;
+  padding: 2px 1em;
+  font-size: .8em;
+  margin-bottom: .5rem;
+}
+
+/* input for tags  */
+#ACEditor .bootstrap-tagsinput {
+  font-size: var(--main-text-fontsize);
+  color: var(--main-text-color);
+  border: 2px solid var(--primary-color);
+  border-radius: 3px;
+}
+#ACEditor .bootstrap-tagsinput.focus {
+border-color: var(--primary-color);
+outline: 0;
+-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px var(--primary-color);
+box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 6px var(--primary-color);
+}
+
+@media (max-width: 800px) {
+  .btn-toolbar .btn { border-radius: 4px; }
+}
+#accordion-avanced-page-settings {
+  margin-top: 20px;
+}

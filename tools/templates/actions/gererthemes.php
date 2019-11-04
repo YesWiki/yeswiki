@@ -1,3 +1,12 @@
+<script>
+  //Fonction pour cocher toutes les cases.
+  function cocherTout(etat)
+  {
+     var cases = document.querySelectorAll('input.selectpage');
+     for(var i=0; i < cases.length; i++)
+       if(cases[i].type == 'checkbox') cases[i].checked = etat;
+  }
+</script>
 <?php
 /**
  * Copyright 2014 Rémi PESQUERS (rp.lefamillien@gmail.com)
@@ -7,17 +16,9 @@
 
 //action réservée aux admins
 if (!$this->UserIsAdmin()) {
-    echo '<div class="alert alert-danger alert-error"><strong>Erreur action {{gererthemes..}}</strong> : cette action est r&eacute;serv&eacute;e aux admins.</div>';
+    echo '<div class="alert alert-danger alert-error">Cette action est r&eacute;serv&eacute;e aux admins.</div>';
     return ;
 }
-
-$js = '//Fonction pour cocher toutes les cases
-function checkAllPages(etat) {
-	var cases = document.getElementsByName(\'selectpage[]\');
-	for (var i=0; i<cases.length; i++)
-		{cases[i].checked = etat;} //Cochée ou non en fonction de l\état
-}';
-$this->addJavascript($js);
 
 require_once 'tools/templates/libs/templates.functions.php';
 
@@ -25,10 +26,10 @@ $table = $GLOBALS['wiki']->config['table_prefix'];
 
 if (isset($_POST['theme_modifier'])) {
     if (!isset($_POST['selectpage'])) {
-        $this->SetMessage('Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.');
+        $error = 'Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.';
     } else {
         foreach ($_POST['selectpage'] as $page_cochee) {
-            if (isset($_POST['theme_reset'])) {
+            if($_POST['typemaj'] == 'reinitialiser') {
                 $this->SaveMetaDatas($page_cochee, array('theme' => null, 'style' => null, 'squelette' => null));
             } else {
                 $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
@@ -45,29 +46,18 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
     $page_et_themes[$num_page] = recup_meta($tab_liste_pages['tag']);
     $num_page++;
 }
-?>
-<a name="gererthemes"></a>
-<p class="alert alert-info"><?php echo $num_page;?> pages trouv&eacute;es </p>
 
-<?php
-echo theme_selector('post');
-?>
-<div class="control-group form-group">
-	<label class="control-label col-lg-4"></label>
-	<div class="controls col-lg-4">
-		<div class="checkbox">
-		<label>
-			<input type="checkbox" value="1" name="theme_reset" />
-			Utiliser thème par défaut
-			<span class="help-block">(effacer données de thème et style dans la base de données).</span>
-		</label>
-		</div>
-	</div>
-</div>
+if (isset($error)) {
+  echo "<div class='alert alert-danger'>$error</div>";
+}
 
+echo '<form method="post" action="'.$this->href().'">';
+?>
+<p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
+<div class="table-responsive">
 <table class="table table-striped table-condensed">
 	<tr>
-		<td><input type="checkbox" name="id" value="tous" onclick="checkAllPages(this.checked)"></td>
+		<td><label><input type="checkbox" name="id" value="tous" onclick="cocherTout(this.checked)"><span></span></label></td>
 		<td><div><b>Page</b></div></td>
 		<td><div align="center"><b>Theme</b></div></td>
 		<td><div align="center"><b>Squelette</b></div></td>
@@ -77,7 +67,14 @@ echo theme_selector('post');
 for ($x = 0; $x < $num_page; $x++) {
     ?>
 	<tr>
-		<td><input type="checkbox" name="selectpage[]" value="<?php echo $page_et_themes[$x]['page']; ?>"></td>
+		<td>
+      <label for="selectpage[<?php echo $page_et_themes[$x]['page']; ?>]">
+        <input type="checkbox" name="selectpage[<?php echo $page_et_themes[$x]['page']; ?>]"
+               value="<?php echo $page_et_themes[$x]['page']; ?>" class="selectpage"
+               id="selectpage[<?php echo $page_et_themes[$x]['page']; ?>]">
+        <span></span>
+      </label>
+    </td>
 		<td><?php echo $this->Link($page_et_themes[$x]['page']); ?></td>
 		<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['theme'])); ?></div></td>
 		<td><div align="center"><?php echo nl2br(str_replace(" ", "<br>", $page_et_themes[$x]['squelette'])); ?></div></td>
@@ -86,17 +83,33 @@ for ($x = 0; $x < $num_page; $x++) {
 <?php
 }
 ?>
-</table>
+</table></div>
+
+<p><b>Actions</b></p>
+
+<p class="type-modif-container">
+  <label for="typemajdefault">
+    <input type=radio name="typemaj" value="reinitialiser" id="typemajdefault" checked
+           onClick="$('.edit-theme-container').slideUp()">
+    <span>Réinitialiser les pages selectionnées (elles utiliseront le thème par défault)</span>
+  </label>
+  <label for="typemajajouter">
+    <input type=radio name="typemaj" value="modifier" id="typemajajouter"
+           onClick="$('.edit-theme-container').slideDown()">
+    <span>Modifier les valeurs pour les pages sélectionnées</span>
+  </label>
+</p>
+
+<div class="edit-theme-container" style="display:none">
+  <?php echo theme_selector('post'); ?>
+</div>
 
 <p>
-<input 
- name="theme_modifier"
- type="submit"
- value="Mettre &agrave; jour"
- class="btn btn-primary"
- onclick="this.form.action+='#gererthemes'; return true;"
-/>
+  <input name="theme_modifier" type="submit" value="Mettre &agrave; jour"
+       class="btn btn-primary" onclick="this.form.action+='#gererthemes'; return true;"/>
 </p>
+
+
 
 <?php
     echo $this->FormClose();

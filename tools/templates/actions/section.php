@@ -30,7 +30,7 @@ $bgcolor = $this->GetParameter('bgcolor');
 $file = $this->GetParameter('file');
 $backgroundimg =true;
 if (empty($file) && empty($bgcolor)) {
-    $bgcolor = 'transparent';
+    $bgcolor = false;
     $backgroundimg = false;
 }
 

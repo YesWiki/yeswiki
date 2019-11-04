@@ -189,7 +189,7 @@
       $editmodal
         .find('.modal-body')
         .append('<a href="' + href + '" class="btn btn-default btn-block">' +
-          '<i class="glyphicon glyphicon-pencil"></i> Editer la page ' + pagewiki + '</a>');
+          '<i class="fa fa-pencil-alt"></i> Editer la page ' + pagewiki + '</a>');
 
     });
 
@@ -243,4 +243,20 @@
 
   // ouvrir les liens dans une nouvelle fenetre
   $('.new-window').attr('target', '_blank');
+
+  // acl switch
+  $('#acl-switch-mode').change(function() {
+    if ($(this).prop('checked')) {
+      // show advanced
+      $('.acl-simple').hide().appendTo($(this).parent());
+      $('.acl-advanced').slideDown();
+    }
+    else {
+      $('.acl-single-container label').each(function() {
+        $(this).after($('select[name='+ $(this).data('input') +']'));
+      })
+      $('.acl-simple').show();
+      $('.acl-advanced').hide();
+    }
+  }).trigger('change');
 })(jQuery);

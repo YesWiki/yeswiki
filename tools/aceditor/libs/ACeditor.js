@@ -129,7 +129,6 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
                 '<li><a title="'+this.lang['ACEDITOR_TITLE2']+'" class="aceditor-btn aceditor-btn-title2" data-lft="'+this.syntax[this.options.syntax]['TITLE2_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE2_RGT']+'"><h2>'+this.lang['ACEDITOR_TITLE2']+'</h2></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_TITLE3']+'" class="aceditor-btn aceditor-btn-title3" data-lft="'+this.syntax[this.options.syntax]['TITLE3_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE3_RGT']+'"><h3>'+this.lang['ACEDITOR_TITLE3']+'</h3></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_TITLE4']+'" class="aceditor-btn aceditor-btn-title4" data-lft="'+this.syntax[this.options.syntax]['TITLE4_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE4_RGT']+'"><h4>'+this.lang['ACEDITOR_TITLE4']+'</h4></a></li>' +
-                '<li><a title="'+this.lang['ACEDITOR_TITLE5']+'" class="aceditor-btn aceditor-btn-title5" data-lft="'+this.syntax[this.options.syntax]['TITLE5_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['TITLE5_RGT']+'"><h5>'+this.lang['ACEDITOR_TITLE5']+'</h5></a></li>' +
                 '<li class="divider"></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax[this.options.syntax]['LEAD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax[this.options.syntax]['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
@@ -140,32 +139,32 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax[this.options.syntax]['BOLD_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['BOLD_RGT']+'" title="'+this.lang['ACEDITOR_BOLD_TEXT']+'">' +
-                '<span style="font-family:serif;font-weight:bold;">B</span>' +
+                '<span class="fa fa-bold"></span>' +
               '</a>' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-italic" data-lft="'+this.syntax[this.options.syntax]['ITALIC_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['ITALIC_RGT']+'" title="'+this.lang['ACEDITOR_ITALIC_TEXT']+'">' +
-                '<span style="font-family:serif;font-style:italic;">I</span>' +
+                '<span class="fa fa-italic"></span>' +
               '</a>' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-underline" data-lft="'+this.syntax[this.options.syntax]['UNDERLINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['UNDERLINE_RGT']+'" title="'+this.lang['ACEDITOR_UNDERLINE_TEXT']+'">' +
-                '<span style="font-family:serif;text-decoration:underline;">U</span>' +
+                '<span class="fa fa-underline"></span>' +
               '</a>' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-strike" data-lft="'+this.syntax[this.options.syntax]['STRIKE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['STRIKE_RGT']+'" title="'+this.lang['ACEDITOR_STRIKE_TEXT']+'">' +
-                '<span style="font-family:serif;text-decoration:line-through;">S</span>' +
+                '<span class="fa fa-strikethrough"></span>' +
               '</a>' +
             '</div>');
 
       // Horizontal line and links
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax[this.options.syntax]['LINE_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINE_RGT']+'" title="'+this.lang['ACEDITOR_LINE']+'">' +
-                '<i class="glyphicon glyphicon-minus icon-minus"></i>' +
+                '<i class="fa fa-minus icon-minus"></i>' +
               '</a>' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="'+this.lang['ACEDITOR_LINK_PROMPT']+'" data-prompt-val="http://" data-lft="'+this.syntax[this.options.syntax]['LINK_LFT']+'" data-rgt="'+this.syntax[this.options.syntax]['LINK_RGT']+'" title="'+this.lang['ACEDITOR_LINK_TITLE']+'" class="btn">' +
-                '<i class="glyphicon glyphicon-share-alt icon-share-alt"></i> '+this.lang['ACEDITOR_LINK']+'</a>' +
+                '<i class="fa fa-link"></i></a>' +
             '</div>');
 
       // help
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
-                '<i class="glyphicon glyphicon-question-sign"></i></a>' +
+                '<i class="fa fa-question-circle"></i></a>' +
             '</div>');
 
       var lastFocus;
@@ -190,7 +189,7 @@ surroundSelectedText:surroundSelectedText}})})(jQuery);
                 '<div class="modal-content">' +
                 '<div class="modal-header">' +
                 '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-                '<h3>' + $(this).attr('title') + '</h3>' +
+                '<h2>' + $(this).attr('title') + '</h2>' +
                 '</div>' +
                 '<div class="modal-body" style="min-height:500px">' +
                 '<span id="yw-modal-loading" class="throbber"></span>' +

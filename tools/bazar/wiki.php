@@ -210,13 +210,13 @@ $wakkaConfig['baz_map_center_lat'] = getConfigValue('baz_map_center_lat', '46.22
 $wakkaConfig['baz_map_center_lon'] = getConfigValue('baz_map_center_lon', '2.213749', $wakkaConfig);
 
 // prefixe des classes CSS pour les icones du marqueur
-$wakkaConfig['baz_marker_icon_prefix'] = getConfigValue('baz_marker_icon_prefix', 'glyphicon glyphicon-', $wakkaConfig);
+$wakkaConfig['baz_marker_icon_prefix'] = getConfigValue('baz_marker_icon_prefix', 'fa fa-', $wakkaConfig);
 
 // icone du marqueur de base
 $wakkaConfig['baz_provider'] = getConfigValue('baz_provider', 'OpenStreetMap.Mapnik', $wakkaConfig);
 
 // icone du marqueur de base
-$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'glyphicon glyphicon-record', $wakkaConfig);
+$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'fa fa-record', $wakkaConfig);
 
 // couleur du marqueur de base
 $wakkaConfig['baz_marker_color'] = getConfigValue('baz_marker_color', 'darkred', $wakkaConfig);
@@ -231,7 +231,7 @@ $wakkaConfig['baz_map_zoom'] = getConfigValue('baz_map_zoom', '5', $wakkaConfig)
 $wakkaConfig['baz_map_width'] = getConfigValue('baz_map_width', '100%', $wakkaConfig);
 
  // taille de la carte a l'ecran : valeur de l'attribut css height de la carte
-$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '600px', $wakkaConfig);
+$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '300px', $wakkaConfig);
 
 // afficher la navigation : true ou false
 $wakkaConfig['baz_show_nav'] = getConfigValue('baz_show_nav', 'true', $wakkaConfig);
@@ -287,3 +287,9 @@ $wakkaConfig['default_bazar_template'] = getConfigValue('default_bazar_template'
 
 // les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
 $wakkaConfig['global_query'] = getConfigValue('global_query', true, $wakkaConfig);
+
+// Si un formulaire est sémantique et qu'il a un des contextes ci-dessous, nous allons chercher dans
+// /tools/bazar/presentation/templates/{cle} pour voir si une template prédéfinie existe pour ce type sémantique
+$wakkaConfig['baz_semantic_types_mapping'] = getConfigValue('baz_semantic_types_mapping', [
+    'https://www.w3.org/ns/activitystreams' => 'activitystreams'
+], $wakkaConfig);

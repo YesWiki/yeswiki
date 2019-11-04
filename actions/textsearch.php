@@ -55,7 +55,7 @@ if (!$paramPhrase)
 {
 	echo $this->FormOpen('', '', 'get');
 	echo '<div class="input-prepend input-append input-group input-group-lg">
-			<span class="add-on input-group-addon"><i class="glyphicon glyphicon-search icon-search"></i></span>
+			<span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
       <input name="phrase" type="text" class="form-control" placeholder="'.(($label) ? $label : '').'" size="', $size, '" value="', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '" >
       <span class="input-group-btn">
         <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />
