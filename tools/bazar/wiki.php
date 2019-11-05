@@ -163,7 +163,7 @@ $wakkaConfig['BAZ_RSS_DESCRIPTIONSITE'] = getConfigValue('BAZ_RSS_DESCRIPTIONSIT
 $wakkaConfig['BAZ_NB_ENTREES_FLUX_RSS'] = getConfigValue('BAZ_NB_ENTREES_FLUX_RSS', 20, $wakkaConfig);
 
 //Logo du site indique dans les flux rss
-$wakkaConfig['BAZ_RSS_LOGOSITE'] = getConfigValue('BAZ_RSS_LOGOSITE', 'https://yeswiki.net/tools/templates/themes/yeswiki/images/apple-touch-icon.png', $wakkaConfig);
+$wakkaConfig['BAZ_RSS_LOGOSITE'] = getConfigValue('BAZ_RSS_LOGOSITE', 'https://yeswiki.net/themes/margot/images/apple-touch-icon.png', $wakkaConfig);
 
 //Managing editor du site
 $wakkaConfig['BAZ_RSS_MANAGINGEDITOR'] = getConfigValue('BAZ_RSS_MANAGINGEDITOR', 'contact@yeswiki.net (Mr YesWiki)', $wakkaConfig);

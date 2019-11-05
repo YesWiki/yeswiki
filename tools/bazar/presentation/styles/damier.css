@@ -14,56 +14,6 @@
  *			btn-reverse-couleur					white button for color tiles
  *			btn-couleur								color button for highlighted tiles
  ******************************************************************************/
-:root {
-	--primary-color:#F8C400;
-	--secondary-color-1:#1A89A0;
-	--secondary-color-2:#D78958;
-	--neutral-color:#4E5056;
-	--neutral-soft-color:#b0b1b3;
-	--neutral-light-color:rgba(255,255,255,0.8);
-	--main-text-color:var(--neutral-color);
-	--main-text-fontsize:20px;
-	--main-text-lineheight:1.3em;
-	--main-text-fontfamily:'Nunito', sans-serif;
-	--main-selected-text-bg:rgb(254, 224, 52); /* jaune marqueur pour surligner le texte */
-	--main-bg-color:var(--neutral-light-color);
-	--main-container-bg-color:var(--neutral-light-color);
-	/* full width */
-	--main-container-margin: 0;
-	--main-container-width: 100%;
-	--main-container-text-width: 100%;
-	--main-container-border-radius: 0;
-	--main-container-box-shadow: none;
-	--section-background-image-width:100vw;
-	--section-background-image-margin:-50vw;
-	--section-background-image-position:50%;
-	/* Links */
-	--link-color: var(--primary-color);
-	--link-hover-color : var(--primary-color);
-	/* contained page */
-	--navbar-bg-color: var(--primary-color);
-	--navbar-text-color: var(--neutral-light-color);
-	--navbar-link-color: var(--neutral-light-color);
-	--navbar-link-bg-color: transparent;
-	--navbar-link-hover-color: #FFF;
-	--navbar-link-bg-hover-color: transparent;
-	--navbar-border: none;
-	--navbar-border-radius : 0;
-	--navbar-shadow: none;
-	--header-bg-color: var(--neutral-light-color);
-	--header-text-color: var(--neutral-color);
-	--header-title-color: var(--primary-color);
-	--footer-bg-color: #2b2b2b;
-	--footer-text-color: #99999b;
-	--footer-title-color: #ccc;
-	--footer-border-top:  none;
-	--btn-border:none;
-	--btn-border-radius:0;
-	--btn-default-color:white;
-	--btn-default-background:var(--neutral-soft-color);
-	--btn-default-border:none;
-}
-
 .cell-couleur{
 	margin: 4px;
 	border-color: var(--secondary-color-1);
