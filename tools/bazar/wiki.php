@@ -67,6 +67,9 @@ $req = "CREATE TABLE IF NOT EXISTS `" . $wakkaConfig['table_prefix'] . "nature` 
   `bn_label_nature` varchar(255) DEFAULT NULL,
   `bn_description` text,
   `bn_condition` text,
+  `bn_sem_context` text,
+  `bn_sem_type` varchar(255) DEFAULT NULL,
+  `bn_sem_use_template` tinyint(1) NOT NULL DEFAULT 1,
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL DEFAULT '',
   PRIMARY KEY (`bn_id_nature`)
