@@ -5,4 +5,4 @@ RUN docker-php-ext-install mysqli
 
 # Add Chromium browser to enable pdf creation
 RUN rm -rf /var/cache/apk/* && rm -rf /tmp/* && \
-    apt install -y --no-install-recommends chromium-browser
+    apt install -y --no-install-recommends chromium
