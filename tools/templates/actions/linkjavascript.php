@@ -13,7 +13,7 @@ if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] ==
 
 // on récupère le bon chemin pour le theme
 if (!empty($this->config['use_fallback_theme'])) {
-    $repertoire = 'tools/templates/themes/'.$this->config['favorite_theme'].'/javascripts';
+    $repertoire = 'themes/'.$this->config['favorite_theme'].'/javascripts';
 } else {
     $jsDir = 'themes/'.$this->config['favorite_theme'].'/javascripts';
     if (is_dir('custom/'.$jsDir)) {
