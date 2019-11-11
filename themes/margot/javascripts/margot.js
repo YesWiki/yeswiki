@@ -18,6 +18,7 @@ $(document).ready(function() {
     var parent = $(this).closest('.form-group');
     parent.addClass('form-control wrapper');
   })
+  $('#bf_dossier-wiki').parents('.control-group.email.password').removeClass('hidden');
 
   $('form button[type=submit]').removeClass('btn-success').addClass('btn-primary')
   $('form button[type=submit] ~ .btn-danger').removeClass('btn-danger').addClass('btn-default')
