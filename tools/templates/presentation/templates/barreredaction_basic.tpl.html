@@ -1,30 +1,30 @@
 <div class="<?php echo $class;?>">
 <?php if (isset($linkedit)) : ?>
 	<a title="<?php echo _t('TEMPLATE_EDIT_THIS_PAGE').' '.$page;?>" href="<?php echo $linkedit;?>" class="link-edit">
-		<i class="fa fa-edit icon-pencil"></i>&nbsp;<?php echo _t('TEMPLATE_EDIT_THIS_PAGE');?>
+		<i class="fa fa-pencil-alt"></i><span><?php echo _t('TEMPLATE_EDIT_THIS_PAGE');?></span>
 	</a>
 <?php endif; ?>
 <?php if (isset($linkdeletepage)) : ?>
 	<a href="<?php echo $linkdeletepage;?>" class="link-deletepage modalbox" title="<?php echo _t('TEMPLATE_DELETE_PAGE').' '.$page;?>">
-		<i class="fa fa-trash icon-trash"></i>&nbsp;<?php echo _t('TEMPLATE_DELETE');?>
+		<i class="fa fa-trash"></i><span><?php echo _t('TEMPLATE_DELETE');?></span>
 	</a>
 <?php endif; ?>
 <?php if (isset($time)) : ?>
 	<a title="<?php echo _t('TEMPLATE_CLICK_TO_SEE_REVISIONS').' '.$page;?>" href="<?php echo $linkrevisions;?>" class="link-revisions modalbox">
-		<i class="fa fa-calendar icon-calendar"></i>&nbsp;<?php echo _t('TEMPLATE_LAST_UPDATE');?> : <?php echo $time;?>
+		<i class="fa fa-history"></i><span><?php echo _t('TEMPLATE_LAST_UPDATE');?> : <?php echo $time;?></span>
 	</a>
 <?php endif; ?>
 <?php if (isset($linkacls)) : ?>
 	<a class="link-acls<?php if (substr($linkacls, -4) == 'acls') : ?> modalbox<?php endif; ?>" href="<?php echo $linkacls;?>" title="<?php echo _t('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS').' '.$page;?>">
-		<i class="fa fa-user icon-user"></i>&nbsp;<?php if (isset($owner)) : ?><?php echo $owner;?><?php endif; ?>
+		<i class="fa fa-unlock-alt"></i><span><?php if (isset($owner)) : ?><?php echo $owner;?><?php endif; ?></span>
 	</a>
 <?php endif; ?>
 	<a title="<?php echo _t('TEMPLATE_CLICK_TO_SEE_REFERENCES').' '.$page;?>" href="<?php echo $linkreferrers;?>" class="link-referrers modalbox">
-		<i class="fas fa-info-circle icon-info-sign"></i>&nbsp;<?php echo _t('TEMPLATE_REFERENCES');?>
+		<i class="fas fa-info-circle"></i><span><?php echo _t('TEMPLATE_REFERENCES');?></span>
 	</a>
 	<span class="dropdown dropup">
 		<a title="<?php echo _t('TEMPLATE_SLIDESHOW_MODE');?>" href="<?php echo $linkdiaporama;?>" class="link-diaporama dropdown-toggle" data-toggle="dropdown">
-			<i class="fa fa-film icon-film"></i>&nbsp;<?php echo _t('TEMPLATE_SLIDESHOW');?> <span class="caret"></span>
+			<i class="fa fa-film"></i><span><?php echo _t('TEMPLATE_SLIDESHOW');?></span><span class="caret"></span>
 		</a>
 		<ul class="dropdown-menu">
       <li><a href="<?php echo $GLOBALS['wiki']->href('slide_show');?>"><?php echo _t('TEMPLATE_CLASSIC_SLIDESHOW');?></a></li>
@@ -32,6 +32,6 @@
 		</ul>
 	</span>
 	<a title="<?php echo _t('TEMPLATE_SEE_SHARING_OPTIONS').' '.$page;?>" href="<?php echo $linkshare;?>" class="link-share modalbox">
-		<i class="fa fa-share icon-share"></i>&nbsp;<?php echo _t('TEMPLATE_SHARE');?>
+		<i class="fa fa-share-alt"></i><span><?php echo _t('TEMPLATE_SHARE');?></span>
 	</a>
 </div>

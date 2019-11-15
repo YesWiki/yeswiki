@@ -34,16 +34,16 @@ class ActionEditgroups extends WikiniAdminAction
 		}
 		sort($list);
 		$res = $wiki->FormOpen('', '', 'get', 'form-inline');
-		$res .= _t('DEFINITION_OF_THE_GROUP').'<select name="groupname">';
+		$res .= '<label>Editer un groupe existant</label><p><select class="form-control" name="groupname">';
 		foreach ($list as $group)
 		{
 			$res .= '<option value="' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) . '"';
 			if (!empty($_GET['groupname']) && $_GET['groupname'] == $group) $res .= ' selected="selected"';
 			$res .= '>' . htmlspecialchars($group, ENT_COMPAT, YW_CHARSET) .  '</option>';
 		}
-		$res .= '</select>'."\n".'<input class="btn btn-default" type="submit" value="'._t('SEE').'" />'."\n" . $wiki->FormClose();
-		$res .= $wiki->FormOpen('', '', 'get', 'form-inline') . _t('CREATE_NEW_GROUP').': <input type="text" required="required" name="groupname" />';
-		$res .= '<input class="btn btn-default" type="submit" value="'._t('DEFINE').'" />' . $wiki->FormClose();
+		$res .= '</select>'."\n".'<input class="btn btn-primary btn-edit-group" type="submit" value="Voir / Editer" /></p>'."\n" . $wiki->FormClose();
+		$res .= $wiki->FormOpen('', '', 'get', 'form-inline') . '<label>' . _t('CREATE_NEW_GROUP').'</label><p> <input type="text" name="groupname" placeholder="Nom du groupe" class="form-control" />';
+		$res .= '<input class="btn btn-success btn-create-group" type="submit" value="'._t('DEFINE').'" /></p>' . $wiki->FormClose();
 
 		if ($_POST && !empty($_POST['groupname']) && isset($_POST['acl'])) // save ACL's
 		{
@@ -84,9 +84,9 @@ class ActionEditgroups extends WikiniAdminAction
 			if (!preg_match('/[^A-Za-z0-9]/', $name))
 			{
 				$res .= $wiki->FormOpen();
-				$res .= '<br />'._t('EDIT_GROUP').' <strong>' . htmlspecialchars($name, ENT_COMPAT, YW_CHARSET) . '</strong>: <br />';
+				$res .= '<hr><label class="edit-group">Liste des membres du groupe <strong>' . htmlspecialchars($name, ENT_COMPAT, YW_CHARSET) . '</strong></label> (un nom d\'utilisateur par ligne)';
 				$res .= '<input type="hidden" name="groupname" value="'. $name . '" />';
-				$res .= '<textarea name="acl" rows="3" class="form-control">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />'; 
+				$res .= '<textarea name="acl" rows="3" class="form-control">' . (in_array($name, $list) ? $wiki->GetGroupACL($name) : '') . '</textarea><br />';
 				$res .= '<input type="submit" value="'._t('SAVE').'" class="btn btn-primary" accesskey="s" />';
 				return $res . $wiki->FormClose();
 			}

@@ -1,0 +1,103 @@
+.form-field { overflow: hidden; }
+/* Order of the field attributes */
+.form-wrap.form-builder .frmb .form-elements { display: flex; flex-direction: column; }
+.form-wrap.form-builder .frmb .form-field .form-group { order: 100; }
+.required-wrap { order: 0 !important; }
+.name-wrap { order: 1 !important; }
+.label-wrap { order: 2 !important; }
+.subtype-wrap { order: 3 !important; }
+.separator-wrap {
+  order: 50 !important;
+  margin-top: 10px;
+  border-top: 1px dashed grey;
+  padding-top: 10px;
+}
+.access-wrap { order: 110 !important; }
+
+.separator-field label, .separator-field .copy-button, .separator-field .toggle-form { display: none !important; }
+.separator-wrap label, .separator-wrap .input-wrap { display: none !important; }
+.separator-wrap {
+  order: 50 !important;
+  margin-top: 10px;
+  border-top: 1px dashed grey;
+  padding-top: 10px;
+}
+
+.form-wrap.form-builder .frmb .form-elements .input-wrap { width: 70%; }
+.form-wrap.form-builder .frmb .form-elements .false-label:first-child, .form-wrap.form-builder .frmb .form-elements label:first-child { width: 25%; }
+
+.titre-field .form-group:not(.label-wrap) { display: none !important; }
+
+.carte_google-field .label-wrap,
+.carte_google-field .value-wrap,
+.carte_google-field .required-wrap,
+.carte_google-field .name-wrap {
+  display: none !important;
+}
+
+.date-field .value-wrap { display: none !important; }
+
+.image-field .value-wrap { display: none !important; }
+
+.select-field .field-options, .radio-group-field .field-options, .checkbox-group-field .field-options { display: none !important; }
+
+.form-wrap.form-builder .frmb .form-elements .false-label:first-child, .form-wrap.form-builder .frmb .form-elements label:first-child {
+  white-space: normal;
+  text-overflow: initial;
+}
+
+.listId-wrap, .formId-wrap { display: none !important; }
+
+.textarea-field .maxlength-wrap,
+.textarea-field .subtype-wrap {
+  display: none !important;
+}
+
+.file-field .subtype-wrap { display: none !important; }
+
+.inscriptionliste-field .required-wrap,
+.inscriptionliste-field .name-wrap,
+.inscriptionliste-field .value-wrap {
+  display: none !important;
+}
+
+.labelhtml-field .required-wrap,
+.labelhtml-field .name-wrap,
+.labelhtml-field .value-wrap,
+.labelhtml-field .label-wrap {
+  display: none !important;
+}
+
+.utilisateur_wikini-field .required-wrap,
+.utilisateur_wikini-field .name-wrap,
+.utilisateur_wikini-field .value-wrap,
+.utilisateur_wikini-field .label-wrap {
+  display: none !important;
+}
+
+.acls-field .required-wrap,
+.acls-field .name-wrap,
+.acls-field .value-wrap,
+.acls-field .label-wrap {
+  display: none !important;
+}
+
+.metadatas-field .required-wrap,
+.metadatas-field .name-wrap,
+.metadatas-field .value-wrap,
+.metadatas-field .label-wrap {
+  display: none !important;
+}
+
+.listefichesliees-field .required-wrap,
+.listefichesliees-field .name-wrap,
+.listefichesliees-field .value-wrap,
+.listefichesliees-field .label-wrap {
+  display: none !important;
+}
+
+.bookmarklet-field .required-wrap {
+  display: none !important;
+}
+
+xmp { overflow: auto; }

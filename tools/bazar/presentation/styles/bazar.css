@@ -21,8 +21,7 @@ color:#E9322D;
    white-space:pre;
    padding:5px;
    word-wrap:break-word;
-   border:1px solid #999;
-   overflow:auto; "
+   overflow:auto;
 }
 
 .BAZ_fiche_info {
@@ -431,7 +430,7 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
     display: inline-block;
 }
 
-.link-csv-file {background:url(../images/csv-file.png) no-repeat left center; display:block; font-size:20px; padding:5px 0 5px 35px; margin:10px 0;}
+.link-csv-file { display:block; margin: 10px 0;}
 
 /*.yeswiki-checkbox {
 	display: inline-block;

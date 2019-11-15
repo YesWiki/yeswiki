@@ -55,8 +55,8 @@ include_once 'tools/login/libs/login.functions.php';
 
 // url d'inscription
 $signupurl = $this->GetParameter('signupurl');
-// si pas de pas d'url d'inscription renseignée, on utilise ParametresUtilisateur
-if (empty($signupurl) && $signupurl != "0") {
+// si pas d'url d'inscription renseignée, on utilise ParametresUtilisateur
+if (empty($signupurl) || $signupurl === "0") {
     $signupurl = $this->href("", "ParametresUtilisateur", "");
 } else {
     if ($this->IsWikiName($signupurl, WN_CAMEL_CASE_EVOLVED)) {

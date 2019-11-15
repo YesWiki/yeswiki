@@ -1,4 +1,4 @@
-<?php 
+<?php
 if(count($pages)>0) : ?>
     <table class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
 		    <thead>
@@ -10,34 +10,34 @@ if(count($pages)>0) : ?>
 		        </tr>
 		    </thead>
 		    <tbody>
-		    		<?php 
+		    		<?php
     foreach ($pages as $key => $page) : ?>
 		        <tr>
 		            <td><?php echo $GLOBALS['wiki']->Format('[['.$page['tag'].' '.$page['tag'].']]'); ?></td>
 		            <td><?php echo date("d-m-Y H:i:s", strtotime($page['time'])); ?></td>
 		            <td><?php echo $GLOBALS['wiki']->Format('[['.$page['owner'].' '.$page['owner'].']]'); ?></td>
 		            <td>
-		            <?php 
+		            <?php
         if ($GLOBALS['wiki']->HasAccess("write", $page['tag'])) :?>
-		                <a class="btn btn-default btn-mini btn-xs" href="<?php 
+		                <a class="btn btn-default btn-mini btn-xs" href="<?php
             echo $GLOBALS['wiki']->href('edit', $page['tag']); ?>">
-            					  <i class="fa fa-edit icon-pencil"></i> <?php 
+            					  <i class="fa fa-pencil-alt icon-pencil"></i> <?php
             echo _t('TEMPLATE_MODIFY'); ?>
             				</a>
-		            <?php 
+		            <?php
         endif; ?>
-		            <?php 
+		            <?php
         if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) :?>
 		                <a class="btn btn-danger btn-mini btn-xs" href="<?php
             echo $GLOBALS['wiki']->href('deletepage', $page['tag']); ?>"  onclick="javascript:return confirm('<?php
             echo _t('TEMPLATE_CONFIRM_DELETE_PAGE'); ?> ?');">
             					  <i class="fa fa-trash icon-trash icon-white"></i>
             				</a>
-		            <?php 
+		            <?php
         endif; ?>
 		            </td>
 		        </tr>
-		        <?php 
+		        <?php
     endforeach; ?>
 		    </tbody>
     </table>

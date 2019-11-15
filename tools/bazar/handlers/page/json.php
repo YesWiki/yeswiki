@@ -25,24 +25,6 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if (isset($_REQUEST['demand'])) {
-    header('Content-type: application/json; charset=UTF-8');
-    header('Access-Control-Allow-Origin: *');
-
-
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
-           $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
-           $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
-           $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
-        )) {
-            header('Access-Control-Allow-Credentials: true');
-            header('Access-Control-Allow-Headers: X-Requested-With');
-            header('Access-Control-Allow-Headers: Content-Type');
-            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
-            header('Access-Control-Max-Age: 86400');
-        }
-        exit;
-    }
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
         $_POST = json_decode(file_get_contents('php://input'), true);
     }
@@ -56,6 +38,7 @@ if (isset($_REQUEST['demand'])) {
     $list = (isset($_REQUEST['list']) ? $_REQUEST['list'] : '');
     $idfiche = (isset($_REQUEST['id_fiche']) ? $_REQUEST['id_fiche'] : '');
     $pagetag = (isset($_REQUEST['pagetag']) ? $_REQUEST['pagetag'] : '');
+    $is_semantic = (isset($_REQUEST['ld']) ? $_REQUEST['ld'] : '');
     //on recupere les parametres query pour une requete specifique
     $query = (isset($_REQUEST['query']) ? $_REQUEST['query'] : '');
     if (!empty($query)) {
@@ -69,6 +52,24 @@ if (isset($_REQUEST['demand'])) {
         $tabquery = array_merge($tabquery, $tableau);
     } else {
         $tabquery = '';
+    }
+
+    header('Content-type: ' . ( $is_semantic ? 'application/ld+json' : 'application/json' ) . '; charset=UTF-8');
+    header('Access-Control-Allow-Origin: *');
+
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
+                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
+                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
+                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
+            )) {
+            header('Access-Control-Allow-Credentials: true');
+            header('Access-Control-Allow-Headers: X-Requested-With');
+            header('Access-Control-Allow-Headers: Content-Type');
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
+            header('Access-Control-Max-Age: 86400');
+        }
+        exit;
     }
 
     // différents services disponibles
@@ -258,7 +259,13 @@ if (isset($_REQUEST['demand'])) {
                         }
                     }
                 }
-                $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
+
+                // Output JSON-LD
+                if( $is_semantic ) {
+                    $tab_entries[] = baz_append_semantic_data($decoded_entry, $decoded_entry['id_typeannonce'], true);
+                } else {
+                    $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
+                }
             }
             if (count($tab_entries)>0) {
                 ksort($tab_entries);

@@ -4,7 +4,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if (!empty($this->config['use_fallback_theme'])) {
-    $chemin_theme = 'tools/templates/themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
+    $chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];
     $file_content = file_get_contents($chemin_theme);
 } else {
     $chemin_theme = 'themes/'.$this->config['favorite_theme'].'/squelettes/'.$this->config['favorite_squelette'];

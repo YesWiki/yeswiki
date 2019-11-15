@@ -67,6 +67,9 @@ $req = "CREATE TABLE IF NOT EXISTS `" . $wakkaConfig['table_prefix'] . "nature` 
   `bn_label_nature` varchar(255) DEFAULT NULL,
   `bn_description` text,
   `bn_condition` text,
+  `bn_sem_context` text,
+  `bn_sem_type` varchar(255) DEFAULT NULL,
+  `bn_sem_use_template` tinyint(1) NOT NULL DEFAULT 1,
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL DEFAULT '',
   PRIMARY KEY (`bn_id_nature`)
@@ -160,7 +163,7 @@ $wakkaConfig['BAZ_RSS_DESCRIPTIONSITE'] = getConfigValue('BAZ_RSS_DESCRIPTIONSIT
 $wakkaConfig['BAZ_NB_ENTREES_FLUX_RSS'] = getConfigValue('BAZ_NB_ENTREES_FLUX_RSS', 20, $wakkaConfig);
 
 //Logo du site indique dans les flux rss
-$wakkaConfig['BAZ_RSS_LOGOSITE'] = getConfigValue('BAZ_RSS_LOGOSITE', 'https://yeswiki.net/tools/templates/themes/yeswiki/images/apple-touch-icon.png', $wakkaConfig);
+$wakkaConfig['BAZ_RSS_LOGOSITE'] = getConfigValue('BAZ_RSS_LOGOSITE', 'https://yeswiki.net/themes/margot/images/apple-touch-icon.png', $wakkaConfig);
 
 //Managing editor du site
 $wakkaConfig['BAZ_RSS_MANAGINGEDITOR'] = getConfigValue('BAZ_RSS_MANAGINGEDITOR', 'contact@yeswiki.net (Mr YesWiki)', $wakkaConfig);
@@ -231,7 +234,7 @@ $wakkaConfig['baz_map_zoom'] = getConfigValue('baz_map_zoom', '5', $wakkaConfig)
 $wakkaConfig['baz_map_width'] = getConfigValue('baz_map_width', '100%', $wakkaConfig);
 
  // taille de la carte a l'ecran : valeur de l'attribut css height de la carte
-$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '600px', $wakkaConfig);
+$wakkaConfig['baz_map_height'] = getConfigValue('baz_map_height', '300px', $wakkaConfig);
 
 // afficher la navigation : true ou false
 $wakkaConfig['baz_show_nav'] = getConfigValue('baz_show_nav', 'true', $wakkaConfig);
@@ -287,3 +290,9 @@ $wakkaConfig['default_bazar_template'] = getConfigValue('default_bazar_template'
 
 // les passages de parametres query en get affectent ils les resultats de fiches croisees avec checkboxfiche?
 $wakkaConfig['global_query'] = getConfigValue('global_query', true, $wakkaConfig);
+
+// Si un formulaire est sémantique et qu'il a un des contextes ci-dessous, nous allons chercher dans
+// /tools/bazar/presentation/templates/{cle} pour voir si une template prédéfinie existe pour ce type sémantique
+$wakkaConfig['baz_semantic_types_mapping'] = getConfigValue('baz_semantic_types_mapping', [
+    'https://www.w3.org/ns/activitystreams' => 'activitystreams'
+], $wakkaConfig);
