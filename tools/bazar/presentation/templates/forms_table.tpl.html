@@ -5,7 +5,7 @@
         <tr>
             <th><?php echo _t('BAZ_FORMULAIRE'); ?></th>
             <th style="width:100px;"><?php echo _t('BAZ_ACTIONS_FICHES'); ?></th>
-            <th><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
+            <th style="width:250px;"><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
             <th style="width:40px;"><?php echo _t('BAZ_ID'); ?></th>
             <th style="width:80px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
         </tr>
@@ -40,8 +40,8 @@
               $GLOBALS['wiki']->getPageTag(),
               'id='.$key
               ); ?>">
-              <i class="fa fa-signal icon-signal"></i></a>
-              <a class="btn btn-default btn-mini btn-xs"
+              <i class="fa fa-signal"></i></a>
+              <a class="btn btn-default btn-xs"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_CSV'); ?>"
               href="<?php
               echo $GLOBALS['wiki']->href(
@@ -50,7 +50,7 @@
               'vue=exporter&id='.$key
               ); ?>">
               CSV</a>
-              <a class="btn btn-default btn-mini btn-xs"
+              <a class="btn btn-default btn-mini btn-xs" target="_blank"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON'); ?>"
               href="<?php
               echo $GLOBALS['wiki']->href(
@@ -59,6 +59,17 @@
               'demand=entries&id='.$key
               ); ?>">
               JSON</a>
+              <?php if($form['is_semantic']): ?>
+              <a class="btn btn-default btn-mini btn-xs" target="_blank"
+                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON_LD'); ?>"
+                 href="<?php
+              echo $GLOBALS['wiki']->href(
+              'json',
+              $GLOBALS['wiki']->getPageTag(),
+              'demand=entries&id='.$key.'&ld=true'
+              ); ?>">
+              JSON-LD</a>
+              <?php endif; ?>
               <a class="btn btn-default btn-mini btn-xs"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_WIDGET'); ?>"
               href="<?php
@@ -80,10 +91,10 @@
                         '',
                         $GLOBALS['wiki']->GetPageTag(),
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=modif&amp;idformulaire='.$key
-                    ); ?>"><i class="fa fa-edit"></i></a>
+                    ); ?>"><i class="fa fa-pencil-alt"></i></a>
             <?php
             else : ?>
-              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="fa fa-edit"></i></button>
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="fa fa-pencil-alt"></i></button>
           	<?php
             endif; ?>
             <?php

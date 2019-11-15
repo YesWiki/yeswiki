@@ -1,4 +1,4 @@
-<table class="table table-striped table-condensed">
+<table class="table table-striped table-condensed table-updates">
     <tr>
         <th>Nom</th>
         <th>Version installée</th>
@@ -29,7 +29,7 @@
             <td>
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
                     <a  href="{{ baseUrl }}{{ ext.updateLink }}"
-                        class="btn btn-success"
+                        class="btn btn-xs btn-success"
                         title="{{ AU_UPDATE }}"
                     >
                         {{ AU_UPDATE }}
@@ -41,7 +41,7 @@
             <td>
                 {% if isAdmin and not ext.installed %}
                     <a  href="{{ baseUrl }}{{ ext.updateLink }}"
-                        class="btn btn-primary"
+                        class="btn btn-xs btn-primary"
                         title="{{ AU_INSTALL }}"
                     >
                         {{ AU_INSTALL }}
@@ -50,7 +50,7 @@
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
-                        class="btn btn-danger"
+                        class="btn btn-xs btn-danger"
                         title="{{ AU_DELETE_EXT }}"
                     >
                         {{ AU_DELETE_EXT }}

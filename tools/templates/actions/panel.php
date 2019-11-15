@@ -27,13 +27,13 @@ if (!isset($GLOBALS['check_' . $pagetag]['panel'])) {
     $GLOBALS['check_' . $pagetag]['panel'] = check_graphical_elements('panel', $pagetag, $this->page['body']);
 }
 
-
-
 if ($GLOBALS['check_' . $pagetag]['panel']) {
     $headingID = uniqid('heading');
     $collapseID = uniqid('collapse');
     if (isset($GLOBALS['check_'.$pagetag]['accordion_uniqueID'])) {
         $accordionID = $GLOBALS['check_'.$pagetag]['accordion_uniqueID'];
+    } else {
+        $accordionID = '';
     }
 
     $data = '';
@@ -44,13 +44,13 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     }
 
     echo "<!-- start of panel -->"
-    . "<div class=\"panel $class\"  $data>
+    . "<div class=\"panel $class\" $data>
       <div class=\"panel-heading\" role=\"tab\" id=\"$headingID\" role=\"button\" data-toggle=\"collapse\" data-parent=\"#$accordionID\" href=\"#$collapseID\" aria-expanded=\"true\" aria-controls=\"$collapseID\">
           <h4 class=\"panel-title\">
            $title
           </h4>
       </div>
-      <div id=\"$collapseID\" class=\"panel-collapse collapse\" role=\"tabpanel\" aria-labelledby=\"$headingID\">
+      <div id=\"$collapseID\" class=\"panel-collapse".(!empty($accordionID) ? " collapse" : "")."\" role=\"tabpanel\" aria-labelledby=\"$headingID\">
         <div class=\"panel-body\">";
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_PANEL') . '</strong> : '

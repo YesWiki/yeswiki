@@ -58,6 +58,20 @@ function search_template_files($directory)
                 if (is_array($tab_themes[$file]["squelette"])) {
                     ksort($tab_themes[$file]["squelette"]);
                 }
+                $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
+                if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
+                    while (false !== ($file4 = readdir($dir4))) {                    
+                        if (substr($file4, -5, 5)=='.json' && file_exists($pathToPresets.'/'.$file4)) {
+                            $json = file_get_contents($pathToPresets.'/'.$file4);
+                            if (!empty($json)) {
+                                $jsonData = json_decode($json, true);
+                                if (!empty($jsonData)) {
+                                    $tab_themes[$file]["presets"][$file4] = $jsonData;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -153,7 +167,7 @@ function replace_missingpage_links($output)
         $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
             .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
             .'">'
-            .$values[2].' <i class="fa fa-edit"></i></a>';
+            .$values[2].' <i class="fa fa-pencil-alt icon-edit"></i></a>';
         $output = str_replace_once($values[0], $replacement, $output);
     }
 
@@ -368,132 +382,48 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         $bgselector = '';
     }
 
-    $selecteur = '      <form class="'.$formclass.'" id="'.$id.'">'."\n";
-
-
-    $selecteur .= '         <div class="control-group form-group">'."\n".
-                    '               <label class="control-label">'._t('TEMPLATE_THEME').'</label>'."\n".
-                    '               <div class="controls">'."\n".
-                    '                   <select class="form-control" id="changetheme" name="theme">'."\n";
-    foreach (array_keys($GLOBALS['wiki']->config['templates']) as $key => $value) {
-        if ($value !== $GLOBALS['wiki']->config['favorite_theme']) {
-            $selecteur .= '                     <option value="'.$value.'">'.$value.'</option>'."\n";
-        } else {
-            $selecteur .= '                     <option value="'.$value.'" selected="selected">'.$value.'</option>'."\n";
-        }
-    }
-    $selecteur .= '                 </select>'."\n".'               </div>'."\n".'          </div>'."\n";
-    $selecteur .=
-    '           <div class="control-group form-group">'."\n".
-    '               <label class="control-label">'._t('TEMPLATE_SQUELETTE').'</label>'."\n".
-    '               <div class="controls">'."\n".
-    '                   <select class="form-control" id="changesquelette" name="squelette">'."\n";
+    //sort array
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette']);
-    foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['squelette'] as $key => $value) {
-        if ($value !== $GLOBALS['wiki']->config['favorite_squelette']) {
-            $selecteur .= '                     <option value="'.$key.'">'.$value.'</option>'."\n";
-        } else {
-            $selecteur .= '                     <option value="'.$GLOBALS['wiki']->config['favorite_squelette'].'" selected="selected">'.$value.'</option>'."\n";
-        }
-    }
-    $selecteur .= '                 </select>'."\n".'               </div>'."\n".'          </div>'."\n";
-
     ksort($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style']);
-    $selecteur .=
-    '           <div class="control-group form-group">'."\n".
-    '               <label class="control-label">'._t('TEMPLATE_STYLE').'</label>'."\n".
-    '               <div class="controls">'."\n".
-    '                   <select class="form-control" id="changestyle" name="style">'."\n";
-    foreach ($GLOBALS['wiki']->config['templates'][$GLOBALS['wiki']->config['favorite_theme']]['style'] as $key => $value) {
-        if ($value !== $GLOBALS['wiki']->config['favorite_style']) {
-            $selecteur .= '                     <option value="'.$key.'">'.$value.'</option>'."\n";
-        } else {
-            $selecteur .= '                     <option value="'.$GLOBALS['wiki']->config['favorite_style'].'" selected="selected">'.$value.'</option>'."\n";
-        }
+
+    // page list
+    $tablistWikinames = $GLOBALS['wiki']->LoadAll(
+        'SELECT DISTINCT tag FROM '.$GLOBALS['wiki']->GetConfigValue('table_prefix').'pages WHERE latest="Y"'
+    );
+    foreach ($tablistWikinames as $tag) {
+        $listWikinames[] = $tag['tag'];
     }
-    $selecteur .=   '                   </select>'."\n".'               </div>'."\n".'              </div>'."\n".$bgselector."\n";
+    $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
-    if ($mode == 'edit') {
-        $selecteur .= '
-            <div class="panel-group accordion" id="accordion-avanced-page-settings">
-                <div class="panel panel-default accordion-group">
-                    <div class="panel-heading accordion-heading">
-                      <h4 class="panel-title accordion-trigger" data-parent="#accordion-avanced-page-settings" href="#avanced-page-settings" data-target="#avanced-page-settings" data-toggle="collapse" title="'._t('SEE_THE_ADVANCED_PARAMETERS').'">'._t('ADVANCED_PARAMETERS').'</h4>
-                    </div>
-                    <div id="avanced-page-settings" class="panel-collapse accordion-body collapse">
-                        <div class="panel-body accordion-inner">
-                            <div class="control-group form-group">
-                                <label class="control-label">'._t('PAGE_LANGUAGE').'</label>
-                                <div class="controls">
-                                    <select class="form-control" name="lang">'."\n";
 
-        // choice of language
-        foreach ($GLOBALS['available_languages'] as $value) {
-            $selecteur .=  "                                <option value=\"".$value."\"".(($value==$GLOBALS['prefered_language']) ? ' selected="selected"' : '').">".ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8'))."</option>\n";
-        }
-        $selecteur .= '                             </select>
-                                </div>
-                            </div>'."\n";
-
-        $tablistWikinames = $GLOBALS['wiki']->LoadAll('SELECT DISTINCT tag FROM '. $GLOBALS['wiki']->GetConfigValue('table_prefix') .'pages WHERE latest="Y"');
-        foreach ($tablistWikinames as $tag) {
-            $listWikinames[] = $tag['tag'];
-        }
-        $listWikinames = '["'.implode('","', $listWikinames).'"]';
-
-        $selecteur .= '         <fieldset>
-                                <legend>'._t('CHOOSE_PAGE_FOR').' : </legend>
-                                <div class="control-group form-group">
-                                    <label class="control-label">'._t('HORIZONTAL_MENU_PAGE').'</label>
-                                    <div class="controls">
-                                        <input class="form-control" type="text" autocomplete="off" name="PageMenuHaut" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageMenuHaut']) ? $GLOBALS['wiki']->page["metadatas"]['PageMenuHaut'] : 'PageMenuHaut').'" />
-                                    </div>
-                                </div>'."\n";
-        $selecteur .= '
-                                <div class="control-group form-group">
-                                    <label class="control-label">'._t('FAST_ACCESS_RIGHT_PAGE').'</label>
-                                    <div class="controls">
-                                        <input class="form-control" type="text" autocomplete="off" name="PageRapideHaut" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageRapideHaut']) ? $GLOBALS['wiki']->page["metadatas"]['PageRapideHaut'] : 'PageRapideHaut').'" />
-                                    </div>
-                                </div>'."\n";
-        $selecteur .= '
-                                <div class="control-group form-group">
-                                    <label class="control-label">'._t('HEADER_PAGE').'</label>
-                                    <div class="controls">
-                                        <input class="form-control" type="text" autocomplete="off" name="PageHeader" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageHeader']) ? $GLOBALS['wiki']->page["metadatas"]['PageHeader'] : 'PageHeader').'" />
-                                    </div>
-                                </div>'."\n";
-        $selecteur .= '
-                                <div class="control-group form-group">
-                                    <label class="control-label">'._t('FOOTER_PAGE').'</label>
-                                    <div class="controls">
-                                        <input class="form-control" type="text" autocomplete="off" name="PageFooter" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageFooter']) ? $GLOBALS['wiki']->page["metadatas"]['PageFooter'] : 'PageFooter').'" />
-                                    </div>
-                                </div>'."\n";
-        $selecteur .= '         <div class="control-group form-group">
-                                    <label class="control-label">'._t('VERTICAL_MENU_PAGE').'</label>
-                                    <div class="controls">
-                                        <input class="form-control" type="text" autocomplete="off" name="PageMenu" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageMenu']) ? $GLOBALS['wiki']->page["metadatas"]['PageMenu'] : 'PageMenu').'" />
-                                    </div>
-                                </div>'."\n";
-
-        $selecteur .= '
-                    <div class="control-group form-group">
-                        <label class="control-label">'._t('RIGHT_COLUMN_PAGE').'</label>
-                        <div class="controls">
-                            <input class="form-control" type="text" autocomplete="off" name="PageColonneDroite" data-provide="typeahead" data-items="5" data-source=\''.$listWikinames.'\' value="'.(isset($GLOBALS['wiki']->page["metadatas"]['PageColonneDroite']) ? $GLOBALS['wiki']->page["metadatas"]['PageColonneDroite'] : 'PageColonneDroite').'" />
-                        </div>
-                    </div>'."\n".
-                '</fieldset>
-                </div>
-            </div>
-        </div>
-    </div> <!-- /#avanced-page-settings -->';
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp('themeselector.tpl.html', 'templates');
+        $selecteur = $squel->render([
+            'mode' => $mode,
+            'wiki' => $GLOBALS['wiki'],
+            'id' => $id,
+            'class' => $formclass,
+            'bgselector' => $bgselector,
+            'themeNames' => array_keys($GLOBALS['wiki']->config['templates']),
+            'themes' => $GLOBALS['wiki']->config['templates'],
+            'listWikinames' => $listWikinames,
+        ]);
+    } catch (Exception $e) {
+        $selecteur = '<div class="alert alert-danger">Erreur template themeselector : '.$e->getMessage().'</div>'."\n";
     }
 
-    $selecteur .=   '</form>'."\n";
 
     $js = add_templates_list_js();
+    $js .= "
+    $('.css-preset').click(function() {
+        var cssvar = $(this).data('variables');
+        cssvar.forEach(function(item){
+            document.documentElement.style.setProperty('--'+item.name, item.value);
+        });
+        return false;
+    });
+    ";
     $GLOBALS['wiki']->addJavascript($js);
     return $selecteur;
 }
@@ -711,7 +641,7 @@ function theme_selector($method = '')
     $id = 'select_theme';
 
     $selecteur = '		<form '.(!empty($method) ? 'method="'.$method.'"' : '').'class="' . $formclass . '" id="' . $id . '">' . "\n";
-    
+
     $selecteur .= '			<div class="control-group form-group">' . "\n" .
     '				<label class="control-label">' . _t('TEMPLATE_THEME') . '</label>' . "\n" .
         '				<div class="controls">' . "\n" .
@@ -754,7 +684,7 @@ function theme_selector($method = '')
         $selecteur .= '						<option value="' . $key . '"'.$selected.'>' . $value . '</option>' . "\n";
     }
     $selecteur .= '					</select>' . "\n" . '				</div>' . "\n" . '				</div>' . "\n";
-    
+
     $js = add_templates_list_js() . "\n" . add_change_theme_js();
     $GLOBALS['wiki']->addJavascript($js);
 

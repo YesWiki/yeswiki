@@ -6,7 +6,7 @@ $(document).ready(function () {
 
 	$pointimagecontainers.each(function( index ) {
 		if ($(this).data('readonly') === false) {
-			$(this).find('.pointimage-image').append('<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="fa fa-plus icon-plus"></i> '+labeladdpoint+'</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="'+$(this).data('pagetag')+'/edit"><i class="fa fa-edit icon-edit"></i></a>');
+			$(this).find('.pointimage-image').append('<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="fa fa-plus icon-plus"></i> '+labeladdpoint+'</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="'+$(this).data('pagetag')+'/edit"><i class="fa fa-pencil-alt icon-edit"></i></a>');
 		}
 	});
 
@@ -15,13 +15,13 @@ $(document).ready(function () {
 
 	/*$popovers.on('shown.bs.popover', function () {
 		var $popup = $(this);
-	    $popup.next('.popover').find('.popover-title').prepend('<button type="button" class="btn-close-popover pull-right close">&times;</button>'); 
+	    $popup.next('.popover').find('.popover-title').prepend('<button type="button" class="btn-close-popover pull-right close">&times;</button>');
 	    $popup.next('.popover').find('.btn-close-popover').click(function (e) {
 	        $popup.popover('hide');
 	    });
 	});*/
 	$pointimagecontainers.on( "click", ".btn-close-popover",  function() {
-		$(this).parents('.popover').prev('.img-marker').popover('hide'); 
+		$(this).parents('.popover').prev('.img-marker').popover('hide');
 		return false;
 	});
 
@@ -39,7 +39,7 @@ $(document).ready(function () {
 		if ($(this).find("img").css('cursor') === 'crosshair') {
 			var $this=$(this);
 			$this.find("img").css('cursor', 'default');
-			var Offset = $this.offset(); 
+			var Offset = $this.offset();
 			var relX = Math.round(e.pageX - Offset.left);
 			var relY = Math.round(e.pageY - Offset.top);
 			var data = $this.data();
@@ -53,7 +53,7 @@ $(document).ready(function () {
 			$this.css('cursor', 'default');
 			$('.modal-pointimage').modal('show');
 			return false;
-		}	
+		}
 	});
 	$('.modal-pointimage').on('hide.bs.modal', function (e) {
 		$(this).find('.markers-choice').empty();

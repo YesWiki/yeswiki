@@ -45,10 +45,11 @@
         		<?php } ?>
             <div class="checkbox">
   						<label for="remember-modal">
-  							<input type="checkbox" id="remember-modal" name="remember" value="1" /> <?php echo _t('LOGIN_REMEMBER_ME'); ?>
+  							<input type="checkbox" id="remember-modal" name="remember" value="1" />
+                <span><?php echo _t('LOGIN_REMEMBER_ME'); ?></span>
   						</label>
   					</div>
-            <input type="submit" name="login" class="btn btn-block <?php echo $btnclass; ?> btn-primary" value="<?php echo _t('LOGIN_LOGIN'); ?>">
+            <input type="submit" name="login" class="btn btn-block btn-primary" value="<?php echo _t('LOGIN_LOGIN'); ?>">
             <input type="hidden" name="action" value="login" />
             <input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
             <input type="hidden" name="remember" value="0" />

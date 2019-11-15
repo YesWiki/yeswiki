@@ -1,0 +1,184 @@
+/* CALENDAR */
+.fc-head .fc-row {
+  background-color: var(--neutral-soft-color);
+  border-radius: 15px;
+  padding-top: 1px;
+  line-height: 1.5;
+  border: none !important;
+}
+.fc-row.fc-week {
+  border-color: transparent;
+}
+.fc th {
+  border-width: 0 !important;
+}
+.fc .table-bordered, .table-bordered td, .table-bordered th {
+  border: none !important;
+}
+.fc tr td:not(:first-child) {
+  border-left: 1px solid var(--neutral-soft-color) !important;
+}
+.fc .fc-row:not(:last-child) {
+  border-bottom: 1px solid var(--neutral-soft-color) !important;
+}
+.fc-head-container {
+  font-size: .75em;
+  text-transform: capitalize;
+}
+.fc-ltr .fc-basic-view .fc-day-top .fc-day-number {
+  margin-top: 2px;
+  font-size: .7em;
+  margin-right: 3px;
+  height: 1.3em;
+}
+.fc .fc-axis {
+  font-size: .8em;
+  padding-right: 10px !important;
+}
+.fc hr.fc-divider {
+  border: none !important;
+  height: 3px;
+  background-color: var(--neutral-soft-color);
+  margin: 0 5px;
+  border-radius: 5px;
+}
+.fc-today:not(.fc-day-top):not(.fc-day-header) {
+  background-color: var(--primary-color) !important;
+  opacity: .2;
+  color: inherit;
+  border-color: inherit;
+}
+.fc-today .fc-day-number {
+  color: var(--neutral-color);
+}
+.fc-event-container a {
+  font-size: .8em;
+  border: none !important;
+  padding: 2px 5px 1px 5px !important;
+
+/*margin: .7em -1px 0 -1px;
+  border-radius: 0px !important;
+*/
+  margin: .6em 5px 0 5px;
+  border-radius: 2px;
+}
+/*.fc-content-skeleton tbody tr:nth-child(3) a, .fc-content-skeleton tbody tr:nth-child(4) a {
+  margin-left: 0;
+}*/
+.fc-event-container a .fc-content {
+  width: 100%;
+  text-overflow: ellipsis;
+}
+.fc-event-container a { background-color: var(--secondary-color-1) !important; }
+tr .fc-event-container:nth-child(1) a { background-color: var(--secondary-color-1) !important; }
+tr .fc-event-container:nth-child(2) a { background-color: var(--secondary-color-2) !important; }
+tr .fc-event-container:nth-child(3) a { background-color: var(--primary-color) !important; }
+tr .fc-event-container:nth-child(4) a { background-color: var(--secondary-color-1) !important; }
+tr .fc-event-container:nth-child(5) a { background-color: var(--secondary-color-2) !important; }
+tr .fc-event-container:nth-child(6) a { background-color: var(--primary-color) !important; }
+tr .fc-event-container:nth-child(7) a { background-color: var(--secondary-color-1) !important; }
+.fc a.fc-more {
+  font-size: .8em;
+  font-weight: bold;
+  line-height: 2.2;
+  cursor: pointer;
+}
+.fc .fc-more-cell {
+  text-align: center;
+}
+.fc-popover {
+  background-color: var(--neutral-light-color) !important;
+}
+.fc .fc-popover .fc-header {
+  padding: 5px 8px 4px 8px;
+  font-size: .9em;
+}
+.fc .fc-popover .fc-close {
+  font-size: .9em;
+  top: 5px;
+}
+.fc .fc-more-popover .fc-event-container {
+  padding-top: 0;
+}
+.fc-toolbar .fc-center {
+  text-transform: capitalize;
+  padding-top: 3px;
+  flex: 1;
+}
+.fc-toolbar .fc-center h2 {
+  width: 100%;
+  text-align: center;
+}
+.fc-prev-button, .fc-next-button {
+  border: none !important;
+  font-size: 2rem !important;
+  background: none;
+  height: auto !important;
+  color: var(--primary-color);
+}
+.fc-toolbar .fc-right {
+  order: 3;
+}
+.fc-prev-button {
+  padding-left: 0 !important;
+  padding-right: 5px !important;
+}
+.fc-next-button {
+  order: 4;
+  padding-right: 0 !important;
+}
+.fc-toolbar.fc-header-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.fc .btn-group > .btn {
+  position: relative;
+  float: left;
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+.fc .btn-group > .btn:not(:first-child) {
+  border-left: none;
+}
+.fc .btn-group > .btn.active {
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
+}
+.fc .alert-default:before, .fc .alert-info:before {
+  opacity: 0;
+  display: none;
+}
+.fc-week tr:first-child>td>.fc-day-grid-event {
+  margin-top: 8px;
+}
+.fc-agenda-view .fc-day-grid .fc-row .fc-content-skeleton {
+  padding-bottom: 8px !important;
+}
+
+@media (max-width: 800px) {
+  .fc-toolbar.fc-header-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .fc-prev-button, .fc-next-button {
+    padding: 0 !important;
+  }
+  .fc-toolbar .fc-left { order: 10; }
+  .fc-toolbar .fc-right {
+    order: 11;
+    margin-top: .5rem;
+    flex: 1 1 100%;
+  }
+  .fc-toolbar .fc-right > .btn-group {
+    float: none;
+  }
+  .fc-today-button { display: none; }
+
+  .fc-more-cell > div {
+    height: 2rem;
+    overflow: hidden;
+  }
+}

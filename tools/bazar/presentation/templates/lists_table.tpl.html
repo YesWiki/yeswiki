@@ -1,5 +1,6 @@
 <?php if (count($lists)>0) : ?>
-<table id="existing-lists-table" class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
+<div class="table-responsive">
+<table id="existing-lists-table" class="table table-condensed table-striped">
     <thead>
         <tr>
             <th><?php echo _t('BAZ_TITLE'); ?></th>
@@ -11,12 +12,12 @@
     <tbody>
     		<?php foreach ($lists as $key => $list) : ?>
         <tr>
-            <td><?php echo $list['titre_liste']; ?></td>
+            <td><strong><?php echo $list['titre_liste']; ?></strong></td>
             <td><?php echo $list['values']; ?></td>
             <td><?php echo $key; ?></td>
             <td>
             <?php if ($list['can_edit']) :?>
-                <a class="btn btn-default btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="fa fa-edit"></i> <?php echo _t('BAZ_MODIFIER'); ?></a>
+                <a class="btn btn-default btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_MODIFIER_LISTE . '&amp;idliste='.$key); ?>"><i class="fa fa-pencil-alt"></i></a>
             <?php endif; ?>
             <?php if ($list['can_delete']) :?>
                 <a class="btn btn-danger btn-xs" href="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR . '='.BAZ_VOIR_LISTES . '&amp;'.BAZ_VARIABLE_ACTION . '='.BAZ_ACTION_SUPPRIMER_LISTE . '&amp;idliste='.$key); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_LISTE'); ?> ?');"><i class="fa fa-trash icon-white"></i></a>
@@ -25,7 +26,7 @@
         </tr>
                 <?php endforeach; ?>
     </tbody>
-</table>
+</table></div>
 <?php else : ?>
 <div class="alert alert-info">
 	<a data-dismiss="alert" class="close">&times;</a><?php echo _t('BAZ_INTRO_AJOUT_LISTE'); ?>

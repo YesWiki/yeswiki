@@ -36,6 +36,9 @@ if (empty($elem)) {
             case 'section':
                 echo "\n</div>\n</section> <!-- end of section -->\n";
                 break;
+            case 'label':
+                echo "\n</span> <!-- end of label -->\n";
+                break;
             case 'accordion':
                 echo "\n</div> <!-- end of accordion -->\n";
                 unset($GLOBALS['check_'.$pagetag ]['accordion_uniqueID']);
