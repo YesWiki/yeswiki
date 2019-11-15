@@ -1,7 +1,21 @@
-<?php if (count($fiches)>0) : ?>
-    <div class="row">
-    <?php
-    foreach ($fiches as $fiche) : ?>
+<?php if (count($fiches)>0) :
+	$compteur = 0;
+	foreach ($fiches as $fiche) :
+		// On calcule en quelle colonne on se trouve
+		// afin de savoir si on doit
+		//	- ouvrir le <div class="row">,
+		//	- le fermer
+		//	- ou ne rien faire
+		// En effet, si on ouvre le row tout au début
+		// et qu'on attend la fin pur le fermer,
+		// on a des problèmes d'affichage
+		// quand toutes les tuiles ne font pas la même taille.
+		$compteur ++;
+		$ligne=ceil($compteur / 3);
+		$colonne=$compteur-(3*($ligne-1));
+		if ($colonne == 1) : ?>
+	<div class="row">
+	<?php endif; ?>
         <div class="col-xs-4 col-md-4 bazar-entry" <?php echo $fiche['html_data'];?>>
           <div class="thumbnail">
             <?php
@@ -34,10 +48,13 @@
               </p>
             </div>
           </div>
-        </div>
+		 </div> <!-- /.col-xs-4 col-md-4 bazar-entry -->
     <?php
-    endforeach; ?>
-    </div> <!-- /.row -->
+		if ($colonne == 3) : ?>
+	</div> <!-- /.row -->
+	<?php
+		endif;
+	endforeach; ?>
     <?php
     $js = "
 equalheight = function(container){
