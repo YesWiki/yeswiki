@@ -14,6 +14,9 @@ if (!function_exists('wakka2callbacktableaux')) {
         if ($match[1]) {
             $tableclass = $match[1];
         }
+        $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
+        $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
+        $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
         $table = "<table class=\"table".(!empty($tableclass) ? ' '.$tableclass: ' table-striped table-bordered')."\" $tableclass >\n";
         // suppression de [|xxxx et de |]
         $thing = preg_replace("/^\[\|(.*)$/m", '', $thing);

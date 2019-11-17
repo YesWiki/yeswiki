@@ -27,35 +27,32 @@ if (! $this->UserIsAdmin()) {
     $table = $this->config['table_prefix'];
 
     //Modification de droits
-    if ( isset($_POST['geredroits_modifier'])
-        && ( ($_POST['typemaj']=='default') || isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment'])) ) {
-
+    if (isset($_POST['geredroits_modifier'])
+        && (($_POST['typemaj']=='default') || isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment']))) {
         if (!isset($_POST['selectpage'])) {
             $error = "Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.";
         } else {
-
-            if ( $_POST['typemaj'] != 'default' && (!isset($_POST['modiflire']))
-                 && (!isset($_POST['modifecrire'])) && !(isset($_POST['modifcomment'])))  {
+            if ($_POST['typemaj'] != 'default' && (!isset($_POST['modiflire']))
+                 && (!isset($_POST['modifecrire'])) && !(isset($_POST['modifcomment']))) {
                 $error = "Vous n'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.";
             } else {
                 foreach ($_POST['selectpage'] as $page_cochee) {
-
-                    if( $_POST['typemaj'] == 'default') {
+                    if ($_POST['typemaj'] == 'default') {
                         $this->DeleteAcl($page_cochee);
                     } else {
                         $appendAcl = $_POST['typemaj'] == 'ajouter';
 
                         if (isset($_POST['modiflire'])) {
                             $val = $_POST['newlire_advanced'] ? $_POST['newlire_advanced'] : $_POST['newlire'];
-                            $this->SaveAcl($page_cochee, 'read', $val, $appendAcl );
+                            $this->SaveAcl($page_cochee, 'read', $val, $appendAcl);
                         }
                         if (isset($_POST['modifecrire'])) {
                             $val = $_POST['newecrire_advanced'] ? $_POST['newecrire_advanced'] : $_POST['newecrire'];
-                            $this->SaveAcl($page_cochee, 'write', $val, $appendAcl );
+                            $this->SaveAcl($page_cochee, 'write', $val, $appendAcl);
                         }
                         if (isset($_POST['modifcomment'])) {
                             $val = $_POST['newcomment_advanced'] ? $_POST['newcomment_advanced'] : $_POST['newcomment'];
-                            $this->SaveAcl($page_cochee, 'comment', $val, $appendAcl );
+                            $this->SaveAcl($page_cochee, 'comment', $val, $appendAcl);
                         }
                     }
                 }
@@ -82,14 +79,18 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 
 <?php
 if (isset($error)) {
-  echo "<div class='alert alert-danger'>$error</div>";
-} else if (isset($success)) {
-  echo "<div class='alert alert-success'>$success</div>";
+    echo "<div class='alert alert-danger'>$error</div>";
+} elseif (isset($success)) {
+    echo "<div class='alert alert-success'>$success</div>";
 }
+$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
+$this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
+$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 ?>
 <p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
 <div class="table-responsive">
   <table class="table table-striped table-condensed">
+      <thead>
     <tr>
       <td><label><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"><span></span></label></td>
       <td><div><b>Page</b></div></td>
@@ -97,23 +98,26 @@ if (isset($error)) {
       <td><div align="center"><b>Ecriture</b></div></td>
       <td><div align="center"><b>Commentaires</b></div></td>
     </tr>
+</thead>
+</tbody>
 <?php
-  function display_droit($text) {
-    $values = explode("\n", $text);
-    $values = array_map(function($el) {
-      switch($el) {
+  function display_droit($text)
+  {
+      $values = explode("\n", $text);
+      $values = array_map(function ($el) {
+          switch ($el) {
         case '*': return "<span class='label label-success'>Tout le monde</span>";
         case '+': return "<span class='label label-warning'>Utilisateurs connectés</span>";
         case '%': return "<span class='label label-danger'>Propriétaire</span>";
       }
-      switch ($el[0]) {
+          switch ($el[0]) {
         case '@': return "<span class='label label-primary'>$el</span>";
         case '!': return "<span class='label label-danger'>$el</span>";
       }
-      return "<span class='label label-default'>$el</span>";
-    }, $values);
-    $result = implode('<br>', $values);
-    return nl2br($result);
+          return "<span class='label label-default'>$el</span>";
+      }, $values);
+      $result = implode('<br>', $values);
+      return nl2br($result);
   }
 ?>
 <?php for ($x = 0; $x < $num_page; ++$x) : ?>
@@ -141,7 +145,9 @@ if (isset($error)) {
     </tr>
 
 <?php endfor; ?>
-</table></div>
+</tbody>
+</table>
+</div>
   <p><b>Actions</b></p>
 
   <p class="type-modif-container">

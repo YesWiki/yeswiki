@@ -27,9 +27,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // Verification de securite
-if (!defined("WIKINI_VERSION"))
-{
-	die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 // on supprime la vieille gestion des commentaires
@@ -39,65 +38,54 @@ $plugin_output_new = preg_replace($string, '', $plugin_output_new);
 $output = '';
 
 if ($GLOBALS["open_comments"][$tag]) {
-	if ($HasAccessRead && (!$this->page || !$this->page["comment_on"]))
-	{
-		// load comments for this page
-		$comments = $this->LoadComments($this->tag);
-		
-		// store comments display in session
-		$tag = $this->GetPageTag();
+    if ($HasAccessRead && (!$this->page || !$this->page["comment_on"])) {
+        // load comments for this page
+        $comments = $this->LoadComments($this->tag);
+        
+        // store comments display in session
+        $tag = $this->GetPageTag();
 
-		// display comments!
-		include_once('tools/tags/libs/tags.functions.php');
-		$gestioncommentaire = '<div id="yeswiki-comments-'.$tag.'" class="yeswiki-page-comments accordion hide">
+        // display comments!
+        include_once('tools/tags/libs/tags.functions.php');
+        $gestioncommentaire = '<div id="yeswiki-comments-'.$tag.'" class="yeswiki-page-comments accordion hide">
 	<div class="accordion-group">
 		<div class="accordion-heading">';
-		if (($this->UserIsOwner()) || ($this->UserIsAdmin())) {
-			$gestioncommentaire .= '<a class="btn btn-danger pull-right" href="'.$this->href('closecomments').'" title="'._t('TAGS_DESACTIVATE_COMMENTS_ON_THIS_PAGE').'">'._t('TAGS_DESACTIVATE_COMMENTS').'</a>'."\n";
-		}
+        if (($this->UserIsOwner()) || ($this->UserIsAdmin())) {
+            $gestioncommentaire .= '<a class="btn btn-danger pull-right" href="'.$this->href('closecomments').'" title="'._t('TAGS_DESACTIVATE_COMMENTS_ON_THIS_PAGE').'">'._t('TAGS_DESACTIVATE_COMMENTS').'</a>'."\n";
+        }
 
-		$gestioncommentaire .= '<a class="accordion-toggle comment-title" href="#comments-list-'.$tag.'" data-parent="#yeswiki-comments-'.$tag.'" data-toggle="collapse"><i class="icon-comment"></i>&nbsp;'._t('TAGS_COMMENTS_ON_THIS_PAGE').'</a>'."\n".'<div class="clearfix"></div>'."\n".
-			'</div>
+        $gestioncommentaire .= '<a class="accordion-toggle comment-title" href="#comments-list-'.$tag.'" data-parent="#yeswiki-comments-'.$tag.'" data-toggle="collapse"><i class="icon-comment"></i>&nbsp;'._t('TAGS_COMMENTS_ON_THIS_PAGE').'</a>'."\n".'<div class="clearfix"></div>'."\n".
+            '</div>
 		<div class="accordion-body collapse in comments-list" id="comments-list-'.$tag.'">
 		    <div class="accordion-inner">'."\n";
-		$gestioncommentaire .= '<input type="hidden" id="initialpage" class="initial-page" value="'.$tag.'">'."\n";
-		$gestioncommentaire .= afficher_commentaires_recursif($this->getPageTag(), $this);
-		$gestioncommentaire .= "</div>\n</div>\n</div>\n</div>\n";
-		$output .= $gestioncommentaire;
-	
-	}
-}
-else //commentaire pas ouverts
-{
-	if (($this->UserIsOwner()) || ($this->UserIsAdmin()))
-	{
-		//TODO: le rajouter aux droits acls wiki plutot que les afficher ici
-		$output .= '<div class="well well-small hide"><i class="icon-comment"></i>&nbsp;'._t('TAGS_COMMENTS_DESACTIVATED').' '."\n".'<a class="btn btn-success pull-right" href="'.$this->href('opencomments').'" title="'._t('TAGS_ACTIVATE_COMMENTS_ON_THIS_PAGE').'">'._t('TAGS_ACTIVATE_COMMENTS').'</a><div class="clearfix"></div></div>'."\n";
-	}
+        $gestioncommentaire .= '<input type="hidden" id="initialpage" class="initial-page" value="'.$tag.'">'."\n";
+        $gestioncommentaire .= afficher_commentaires_recursif($this->getPageTag(), $this);
+        $gestioncommentaire .= "</div>\n</div>\n</div>\n</div>\n";
+        $output .= $gestioncommentaire;
+    }
+} else { //commentaire pas ouverts
+    if (($this->UserIsOwner()) || ($this->UserIsAdmin())) {
+        //TODO: le rajouter aux droits acls wiki plutot que les afficher ici
+        $output .= '<div class="well well-small hide"><i class="icon-comment"></i>&nbsp;'._t('TAGS_COMMENTS_DESACTIVATED').' '."\n".'<a class="btn btn-primary pull-right" href="'.$this->href('opencomments').'" title="'._t('TAGS_ACTIVATE_COMMENTS_ON_THIS_PAGE').'">'._t('TAGS_ACTIVATE_COMMENTS').'</a><div class="clearfix"></div></div>'."\n";
+    }
 }
 
-// on affiche la liste des mots cles disponibles pour cette page 
-if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_bazar')))
-{
-	$tabtagsexistants = $this->GetAllTags($this->GetPageTag());
-	$tagspage = array();
-	foreach ($tabtagsexistants as $tab)
-	{
-		$tagspage[] = _convert($tab["value"], 'ISO-8859-1');
-	}
-	if (count($tagspage)>0)
-	{
-		sort($tagspage);
-		$tagsexistants = '';
-		foreach ($tagspage as $tag)
-		{
-			$tag = stripslashes($tag);
-			$tagsexistants .= '&nbsp;<a class="tag-label label label-info" href="'.$this->href('listpages',$this->GetPageTag(),'tags='.urlencode($tag)).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'">'.$tag.'</a>';
-		}
-		$output .= '<i class="icon icon-tags"></i>'."\n".$tagsexistants."\n";
-	}
+// on affiche la liste des mots cles disponibles pour cette page
+if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_bazar'))) {
+    $tabtagsexistants = $this->GetAllTags($this->GetPageTag());
+    $tagspage = array();
+    foreach ($tabtagsexistants as $tab) {
+        $tagspage[] = _convert($tab["value"], 'ISO-8859-1');
+    }
+    if (count($tagspage)>0) {
+        sort($tagspage);
+        $tagsexistants = '';
+        foreach ($tagspage as $tag) {
+            $tag = stripslashes($tag);
+            $tagsexistants .= '&nbsp;<a class="tag-label label label-info" href="'.$this->href('listpages', $this->GetPageTag(), 'tags='.urlencode($tag)).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'">'.$tag.'</a>';
+        }
+        $output .= '<i class="icon icon-tags"></i>'."\n".$tagsexistants."\n";
+    }
 }
 
-$plugin_output_new = preg_replace ('/\<hr class=\"hr_clear\" \/\>/', '<hr class="hr_clear" />'."\n".$output, $plugin_output_new);
-
-?>
+$plugin_output_new = preg_replace('/\<hr class=\"hr_clear\" \/\>/', '<hr class="hr_clear" />'."\n".$output, $plugin_output_new);

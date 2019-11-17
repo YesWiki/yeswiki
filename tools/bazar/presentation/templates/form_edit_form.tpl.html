@@ -1,104 +1,194 @@
-<form action="<?php echo $url ?>&amp;action_formulaire=<?php echo (!empty($idformulaire)) ? 'modif_v' : 'new_v' ?>" method="post" name="formulaire" id="formulaire" class="form-horizontal">
-    <div class="control-group form-group">
-        <label class="control-label col-sm-3"><?php echo _t('BAZ_NOM_FORMULAIRE'); ?><span class="symbole_obligatoire"></span></label>
-        <div class="controls col-sm-9">
-            <input class="form-control input-xxlarge" name="bn_label_nature" type="text" value="<?php echo isset($form['bn_label_nature']) ? $form['bn_label_nature'] : ''; ?>" required>
-        </div>
+<form
+  action="<?php echo $url ?>&amp;action_formulaire=<?php echo (!empty($idformulaire)) ? 'modif_v' : 'new_v' ?>"
+  method="post"
+  name="formulaire"
+  id="formulaire"
+  class="form-horizontal"
+>
+  <div class="control-group form-group">
+    <label class="control-label col-sm-3"
+      ><?php echo _t('BAZ_NOM_FORMULAIRE'); ?><span
+        class="symbole_obligatoire"
+      ></span
+    ></label>
+    <div class="controls col-sm-9">
+      <input
+        class="form-control input-xxlarge"
+        name="bn_label_nature"
+        type="text"
+        value="<?php echo isset($form['bn_label_nature']) ? $form['bn_label_nature'] : ''; ?>"
+        required
+      />
     </div>
-    <div class="control-group form-group">
-        <label class="control-label col-sm-3"><?php echo _t('BAZ_DESCRIPTION'); ?></label>
-        <div class="controls col-sm-9">
-            <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_description"><?php echo isset($form['bn_description']) ? $form['bn_description'] : ''; ?></textarea>
-        </div>
+  </div>
+  <div class="control-group form-group">
+    <label class="control-label col-sm-3"
+      ><?php echo _t('BAZ_DESCRIPTION'); ?></label
+    >
+    <div class="controls col-sm-9">
+      <textarea
+        class="form-control input-xxlarge"
+        cols="20"
+        rows="3"
+        name="bn_description"
+      >
+<?php echo isset($form['bn_description']) ? $form['bn_description'] : ''; ?></textarea
+      >
     </div>
+  </div>
 
-    <div class="control-group form-group">
-        <label class="control-label col-sm-3 form-builder-label"><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire"></span></label>
-        <div class="controls col-sm-9">
-            <ul class="nav nav-tabs" role="tablist">
-                <li role="presentation" class="active"><a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
-                    Constructeur Graphique
-                </a></li>
-                <li role="presentation"><a href="#code" aria-controls="code" role="tab" data-toggle="tab">
-                    Code Wiki (pour faire des copier-coller
-                </a></li>
-            </ul>
+  <div class="control-group form-group">
+    <label class="control-label col-sm-3 form-builder-label"
+      ><?php echo _t('BAZ_TEMPLATE'); ?><span class="symbole_obligatoire"></span
+    ></label>
+    <div class="controls col-sm-9">
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+          <a
+            href="#formbuilder"
+            aria-controls="formbuilder"
+            role="tab"
+            data-toggle="tab"
+          >
+            Constructeur Graphique
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#code" aria-controls="code" role="tab" data-toggle="tab">
+            Code Wiki (pour faire des copier-coller
+          </a>
+        </li>
+      </ul>
 
-            <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="formbuilder">
-                    <!-- container where the form bulder will be rendered -->
-                    <div id="form-builder-container"></div>
-                </div>
-                <div role="tabpanel" class="tab-pane" id="code">
-                    <textarea class="form-control input-xxlarge" id="form-builder-text" cols="20" rows="15" name="bn_template" required><?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea>
-                </div>
-            </div>
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="formbuilder">
+          <!-- container where the form bulder will be rendered -->
+          <div id="form-builder-container"></div>
         </div>
-    </div>
-
-    <div class="control-group form-group">
-      <div class="controls col-sm-9 col-sm-offset-3">
-        <div class="accordion-heading">
-          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour"><?php echo _t('ADVANCED_CONFIGURATION'); ?></a>
+        <div role="tabpanel" class="tab-pane" id="code">
+          <textarea
+            class="form-control input-xxlarge"
+            id="form-builder-text"
+            cols="20"
+            rows="15"
+            name="bn_template"
+            required
+          >
+<?php echo isset($form['bn_template']) ? $form['bn_template'] : ''; ?></textarea
+          >
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="accordion" id="accordion4">
-      <div class="accordion-group">
-        <div id="collapseFour" class="accordion-body collapse">
-          <div class="accordion-inner">
-            <div class="control-group form-group">
-              <label class="control-label col-sm-3"><?php echo _t('BAZ_CONDITION'); ?></label>
-              <div class="controls col-sm-9">
-                <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_condition"><?php echo isset($form['bn_condition']) ? $form['bn_condition'] : ''; ?></textarea>
-              </div>
+  <div class="control-group form-group">
+    <div class="controls col-sm-9 col-sm-offset-3">
+      <div class="accordion-heading">
+        <a
+          class="plusinfos btn btn-xs btn-info"
+          data-toggle="collapse"
+          data-parent="#accordion4"
+          href="#collapseFour"
+          ><?php echo _t('ADVANCED_CONFIGURATION'); ?></a
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="accordion" id="accordion4">
+    <div class="accordion-group">
+      <div id="collapseFour" class="accordion-body collapse">
+        <div class="accordion-inner">
+          <div class="control-group form-group">
+            <label class="control-label col-sm-3"
+              ><?php echo _t('BAZ_CONDITION'); ?></label
+            >
+            <div class="controls col-sm-9">
+              <textarea
+                class="form-control input-xxlarge"
+                cols="20"
+                rows="3"
+                name="bn_condition"
+              >
+<?php echo isset($form['bn_condition']) ? $form['bn_condition'] : ''; ?></textarea
+              >
             </div>
-            <div class="control-group form-group">
-              <label class="control-label col-sm-3"><?php echo _t('BAZ_SEM_CONTEXT'); ?></label>
-              <div class="controls col-sm-9">
-                <textarea class="form-control input-xxlarge" cols="20" rows="3" name="bn_sem_context"><?php echo isset($form['bn_sem_context']) ? $form['bn_sem_context'] : ''; ?></textarea>
-              </div>
+          </div>
+          <div class="control-group form-group">
+            <label class="control-label col-sm-3"
+              ><?php echo _t('BAZ_SEM_CONTEXT'); ?></label
+            >
+            <div class="controls col-sm-9">
+              <textarea
+                class="form-control input-xxlarge"
+                cols="20"
+                rows="3"
+                name="bn_sem_context"
+              >
+<?php echo isset($form['bn_sem_context']) ? $form['bn_sem_context'] : ''; ?></textarea
+              >
             </div>
-            <div class="control-group form-group">
-              <label class="control-label col-sm-3"><?php echo _t('BAZ_SEM_TYPE'); ?></label>
-              <div class="controls col-sm-9">
-                <input class="form-control input-xxlarge" name="bn_sem_type" type="text" value="<?php echo isset($form['bn_sem_type']) ? $form['bn_sem_type'] : ''; ?>">
-              </div>
+          </div>
+          <div class="control-group form-group">
+            <label class="control-label col-sm-3"
+              ><?php echo _t('BAZ_SEM_TYPE'); ?></label
+            >
+            <div class="controls col-sm-9">
+              <input
+                class="form-control input-xxlarge"
+                name="bn_sem_type"
+                type="text"
+                value="<?php echo isset($form['bn_sem_type']) ? $form['bn_sem_type'] : ''; ?>"
+              />
             </div>
-            <div class="control-group form-group">
-              <label class="control-label col-sm-3"><?php echo _t('BAZ_SEM_USE_TEMPLATE'); ?></label>
-              <div class="controls col-sm-9 checkbox">
-                <label>
-                  <input type="checkbox" name="bn_sem_use_template" value="1" <?php if(!isset($form['bn_sem_use_template']) || $form['bn_sem_use_template'] ) echo('checked'); ?>> <?php echo _t('BAZ_SEM_USE_TEMPLATE_DESC'); ?>
-                </label>
-              </div>
+          </div>
+          <div class="control-group form-group">
+            <label class="control-label col-sm-3"
+              ><?php echo _t('BAZ_SEM_USE_TEMPLATE'); ?></label
+            >
+            <div class="controls col-sm-9 checkbox">
+              <label>
+                <input type="checkbox" name="bn_sem_use_template" value="1"
+                <?php if(!isset($form['bn_sem_use_template']) || $form['bn_sem_use_template'] ) echo('checked'); ?>>
+                <?php echo _t('BAZ_SEM_USE_TEMPLATE_DESC'); ?>
+              </label>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="form-group">
-        <div class="col-sm-9 col-sm-offset-3">
-          <button type="submit" class="btn btn-success"><?php echo _t('BAZ_VALIDER'); ?></button>
-          <a class="btn btn-xs btn-danger" href="<?php echo $url ?>"><?php echo _t('BAZ_ANNULER'); ?></a>
-        </div>
+  <div class="form-group">
+    <div class="col-sm-9 col-sm-offset-3">
+      <button type="submit" class="btn btn-primary">
+        <?php echo _t('BAZ_VALIDER'); ?>
+      </button>
+      <a class="btn btn-xs btn-default" href="<?php echo $url ?>"
+        ><?php echo _t('BAZ_ANNULER'); ?></a
+      >
     </div>
-    <div class="col-sm-9 col-sm-offset-3 symbole_obligatoire"><?php echo _t('BAZ_CHAMPS_REQUIS'); ?></div>
-    <?php if (!empty($idformulaire)) : ?>
-    <input type="hidden" name="bn_id_nature" value="<?php echo $idformulaire; ?>">
-    <?php endif; ?>
+  </div>
+  <div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">
+    <?php echo _t('BAZ_CHAMPS_REQUIS'); ?>
+  </div>
+  <?php if (!empty($idformulaire)) : ?>
+  <input
+    type="hidden"
+    name="bn_id_nature"
+    value="<?php echo $idformulaire; ?>"
+  />
+  <?php endif; ?>
 </form>
 
 <script>
-    var formAndListIds = <?php echo json_encode(baz_forms_and_lists_ids()) ?>;
-    document.addEventListener("DOMContentLoaded",function() {
-        initializeFormbuilder(formAndListIds);
-    });
+  var formAndListIds = <?php echo json_encode(baz_forms_and_lists_ids()) ?>;
+  document.addEventListener("DOMContentLoaded",function() {
+      initializeFormbuilder(formAndListIds);
+  });
 </script>
 <?php
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-builder.min.js');
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-edit-template.js');
-    $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/form-edit-template.css');
+$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-edit-template.js');
+$GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/form-edit-template.css');
 ?>

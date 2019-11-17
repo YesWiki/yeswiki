@@ -63,19 +63,18 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
         $writeACL = $this->LoadAcl($this->GetPageTag(), "write");
         $commentACL = $this->LoadAcl($this->GetPageTag(), "comment");
 
-        // show form
-?>
+        // show form ?>
 <h3><?php echo _t('YW_ACLS_LIST').' '.$this->ComposeLinkToPage($this->GetPageTag()) ?></h3><!-- Access Control Lists for-->
 
 <?php echo  $this->FormOpen('acls', '', 'post', 'form-horizontal') ?>
 <div class="form-group">
-  <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_READ');?> : </label>
+  <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_READ'); ?> : </label>
   <div class="controls col-sm-9">
     <textarea class="form-control" name="read_acl" rows="3" cols="20"><?php echo  $readACL["list"] ?></textarea>
   </div>
 </div>
 <div class="form-group">
-  <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_WRITE');?> : </label>
+  <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_WRITE'); ?> : </label>
   <div class="controls col-sm-9">
     <textarea class="form-control" name="write_acl" rows="3" cols="20"><?php echo  $writeACL["list"] ?></textarea>
   </div>
@@ -86,26 +85,25 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
 <?php endif; ?>
 
 <div class="form-group">
-  <label class="control-label col-sm-3"><?php echo _t('YW_CHANGE_OWNER');?> : </label>
+  <label class="control-label col-sm-3"><?php echo _t('YW_CHANGE_OWNER'); ?> : </label>
   <div class="controls col-sm-9">
     <select class="form-control" name="newowner">
-      <option value=""><?php echo _t('YW_CHANGE_NOTHING');?></option><!-- Don't change-->
+      <option value=""><?php echo _t('YW_CHANGE_NOTHING'); ?></option><!-- Don't change-->
       <option value="">&nbsp;</option>
 <?php
 if ($users = $this->LoadUsers()) {
-    foreach ($users as $user) {
-        echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
-    }
-}
-?>
+            foreach ($users as $user) {
+                echo "<option value=\"",htmlspecialchars($user["name"], ENT_COMPAT, YW_CHARSET),"\">",$user["name"],"</option>\n";
+            }
+        } ?>
     </select>
   </div>
 </div>
 
 <div class="form-actions form-group">
     <div class="col-sm-9 col-sm-offset-3">
-      <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-success" accesskey="s" /><!-- Store ACLs-->
-      <input type="button" value="<?php echo _t('YW_CANCEL') ?>" onclick="history.back();" class="btn btn-danger btn-xs" /><!-- Cancel -->
+      <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-primary" accesskey="s" /><!-- Store ACLs-->
+      <input type="button" value="<?php echo _t('YW_CANCEL') ?>" onclick="history.back();" class="btn btn-default btn-xs" /><!-- Cancel -->
     </div>
 </div>
 

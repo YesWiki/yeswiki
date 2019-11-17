@@ -5,7 +5,7 @@ if (!defined("WIKINI_VERSION")) {
 
 // classe css supplémentaire
 $class = $this->GetParameter('class');
-$class = ((!empty($class)) ? $class : 'nav nav-pills');
+$class = ((!empty($class)) ? $class : 'nav nav-tabs');
 
 // data attributes
 $data = getDataParameter();

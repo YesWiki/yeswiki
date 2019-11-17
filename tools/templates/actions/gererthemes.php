@@ -22,14 +22,14 @@ if (!$this->UserIsAdmin()) {
 
 require_once 'tools/templates/libs/templates.functions.php';
 
-$table = $GLOBALS['wiki']->config['table_prefix'];
+$table = $this->config['table_prefix'];
 
 if (isset($_POST['theme_modifier'])) {
     if (!isset($_POST['selectpage'])) {
         $error = 'Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.';
     } else {
         foreach ($_POST['selectpage'] as $page_cochee) {
-            if($_POST['typemaj'] == 'reinitialiser') {
+            if ($_POST['typemaj'] == 'reinitialiser') {
                 $this->SaveMetaDatas($page_cochee, array('theme' => null, 'style' => null, 'squelette' => null));
             } else {
                 $this->SaveMetaDatas($page_cochee, array('theme' => $_POST['theme_select'], 'style' => $_POST['style_select'], 'squelette' => $_POST['squelette_select']));
@@ -48,21 +48,26 @@ while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
 }
 
 if (isset($error)) {
-  echo "<div class='alert alert-danger'>$error</div>";
+    echo "<div class='alert alert-danger'>$error</div>";
 }
-
+$this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
+$this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
+$this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 echo '<form method="post" action="'.$this->href().'">';
 ?>
 <p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
 <div class="table-responsive">
 <table class="table table-striped table-condensed">
-	<tr>
-		<td><label><input type="checkbox" name="id" value="tous" onclick="cocherTout(this.checked)"><span></span></label></td>
-		<td><div><b>Page</b></div></td>
-		<td><div align="center"><b>Theme</b></div></td>
-		<td><div align="center"><b>Squelette</b></div></td>
-		<td><div align="center"><b>Style</b></div></td>
-	</tr>
+<thead>  
+    <tr>
+        <th><label><input type="checkbox" name="id" value="tous" onclick="cocherTout(this.checked)"><span></span></label></th>
+        <th><div><b>Page</b></div></th>
+        <th><div align="center"><b>Theme</b></div></th>
+        <th><div align="center"><b>Squelette</b></div></th>
+        <th><div align="center"><b>Style</b></div></th>
+    </tr>
+</thead>
+<tbody>
 <?php
 for ($x = 0; $x < $num_page; $x++) {
     ?>
@@ -83,7 +88,9 @@ for ($x = 0; $x < $num_page; $x++) {
 <?php
 }
 ?>
-</table></div>
+</tbody>
+</table>
+</div>
 
 <p><b>Actions</b></p>
 

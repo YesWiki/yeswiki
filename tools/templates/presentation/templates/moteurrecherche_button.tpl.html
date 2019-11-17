@@ -1,84 +1,42 @@
-<a href="#search" class="btn btn-default navbar-btn"><span class="fa fa-search"><span class="sr-only"><?php echo _t('TEMPLATE_SEARCH');?></span></span></a>
-<div id="search">
-	<button type="button" class="btn btn-default close-search">&times;</button>
-	<form class="yeswiki-search-form navbar-search navbar-form <?php echo $class;?>" method="get" action="<?php echo $url;?>" role="search">
-		<div class="form-group form-group-lg">
-			<div class="input-group input-append">
-			    <input type="text" class="search-query form-control" placeholder="<?php echo _t('TEMPLATE_SEARCH_PLACEHOLDER');?>" value="<?php echo $phrase;?>" title="<?php echo _t('TEMPLATE_SEARCH_INPUT_TITLE');?>" accesskey="C" tabindex="1" name="phrase">
-			    <span class="input-group-btn">
-			    	<button type="submit" class="btn btn-default btn-lg btn-search search-btn" title="<?php echo _t('TEMPLATE_SEARCH_BUTTON_TITLE');?>"><i class="fa fa-search"></i></button>
-			    </span>
-			</div>
-		</div>
-		<input type="hidden" value="RechercheTexte" name="wiki">
-	</form><!-- /.yeswiki-search-form -->
+<a href="#search" class="btn btn-default navbar-btn">
+  <span class="fa fa-search">
+    <span class="sr-only">
+      <?php echo _t('TEMPLATE_SEARCH');?>
+    </span>
+  </span>
+</a>
+<div id="search" class="hide">
+  <button type="button" class="btn btn-default close-search">&times;</button>
+  <form
+    class="yeswiki-search-form navbar-search navbar-form <?php echo $class;?>"
+    method="get"
+    action="<?php echo $url;?>"
+    role="search"
+  >
+    <div class="form-group form-group-lg">
+      <div class="input-group input-append">
+        <input
+          type="text"
+          class="search-query form-control"
+          placeholder="<?php echo _t('TEMPLATE_SEARCH_PLACEHOLDER');?>"
+          value="<?php echo $phrase;?>"
+          title="<?php echo _t('TEMPLATE_SEARCH_INPUT_TITLE');?>"
+          accesskey="C"
+          tabindex="1"
+          name="phrase"
+        />
+        <span class="input-group-btn">
+          <button
+            type="submit"
+            class="btn btn-default btn-lg btn-search search-btn"
+            title="<?php echo _t('TEMPLATE_SEARCH_BUTTON_TITLE');?>"
+          >
+            <i class="fa fa-search"></i>
+          </button>
+        </span>
+      </div>
+    </div>
+    <input type="hidden" value="RechercheTexte" name="wiki" />
+  </form>
+  <!-- /.yeswiki-search-form -->
 </div>
-
-<?php
-$css = '
-#search {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-
-    -webkit-transition: all 0.3s ease-in-out;
-	-moz-transition: all 0.3s ease-in-out;
-	-o-transition: all 0.3s ease-in-out;
-	-ms-transition: all 0.3s ease-in-out;
-	transition: all 0.3s ease-in-out;
-
-    -webkit-transform: translate(0px, -100%) scale(0, 0);
-	-moz-transform: translate(0px, -100%) scale(0, 0);
-	-o-transform: translate(0px, -100%) scale(0, 0);
-	-ms-transform: translate(0px, -100%) scale(0, 0);
-	transform: translate(0px, -100%) scale(0, 0);
-
-    opacity: 0;
-    overflow:hidden;
-}
-#search.open {
-    -webkit-transform: translate(0px, 0px) scale(1, 1);
-    -moz-transform: translate(0px, 0px) scale(1, 1);
-	-o-transform: translate(0px, 0px) scale(1, 1);
-	-ms-transform: translate(0px, 0px) scale(1, 1);
-	transform: translate(0px, 0px) scale(1, 1);
-    opacity: 1;
-    z-index: 10000;
-    width: 100%;
-    height: 100%;
-}
-
-#search .yeswiki-search-form {
-    position: relative;
-    top: 50%;
-    width: 100%;
-    color: rgb(255, 255, 255);
-    background: rgba(0, 0, 0, 0);
-    font-weight: 300;
-    text-align: center;
-    border: 0px;
-    margin: 0px auto;
-    margin-top: -51px;
-    padding: 0 1rem;
-    outline: none;
-    box-shadow: none;
-}
-#search .btn-search, #search .search-query {
-	font-size: 1.8rem;
-    height:auto !important;
-    line-height: 1em;
-}
-#search .close-search {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-	opacity: 1;
-	padding: 0 15px;
-	font-size: 30px;
-	font-weight: bold;
-}';
-$GLOBALS['wiki']->addCSS($css);
-?>

@@ -1,74 +1,116 @@
-/* ==|== print styles ======================================================= */
-
-@media print {
-  * { background: transparent !important; color: black !important; text-shadow: none !important; filter:none !important; -ms-filter: none !important; }
-  a, a:visited { text-decoration: underline; }
-  a[href]:after { content: " (" attr(href) ")"; }
-  abbr[title]:after { content: " (" attr(title) ")"; }
-  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }
-  pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
-  thead { display: table-header-group; }
-  tr, img { page-break-inside: avoid; }
-  img { max-width: 100% !important; }
-  @page { margin: 0.5cm; }
-  p, h2, h3 { orphans: 3; widows: 3; }
-  h2, h3 { page-break-after: avoid; }
-}
-
 /************************************* CSS Wikini original ****************************************/
 
 /* Mise en forme */
-.indent { margin-left: 40px; }
-.additions { color: #008800; }
-.deletions { color: #880000; }
-.add { font-weight: bold; color: #c00; text-decoration: underline; }
-.del { font-style: italic; color: #c00; text-decoration: line-through; }
+.indent {
+  margin-left: 40px;
+}
+.additions {
+  color: #008800;
+}
+.deletions {
+  color: #880000;
+}
+.add {
+  font-weight: bold;
+  color: #c00;
+  text-decoration: underline;
+}
+.del {
+  font-style: italic;
+  color: #c00;
+  text-decoration: line-through;
+}
 
 /* Navigation par table des matieres */
-.trail_table { line-height: 30px;}
-.trail_button { color: #993333; }
+.trail_table {
+  line-height: 30px;
+}
+.trail_button {
+  color: #993333;
+}
 
 /* Page absentes */
-span.missingpage, .list-inline, .list-inline li {display:inline;}
+span.missingpage,
+.list-inline,
+.list-inline li {
+  display: inline;
+}
 
 /* previsualisation page */
-.page_preview { background-color: #FFFFBF; padding: 10px; border: 1px inset; border-bottom: none; }
-.prev_alert { background-color: red; color: white; font-size: 1.7em; font-weight: bold; margin-bottom: 5px; }
+.page_preview {
+  background-color: #ffffbf;
+  padding: 10px;
+  border: 1px inset;
+  border-bottom: none;
+}
+.prev_alert {
+  background-color: red;
+  color: white;
+  font-size: 1.7em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
 
 /* Divers mise en forme */
-.code { margin: 3px 0; }
-.revisioninfo { color: #AAAAAA; padding-bottom: 20px; }
-.searchbox { background: #FFFFF8; border: 0px; border-bottom: 1px solid #CCCCAA; padding: 0px; margin: 0px; }
-.debug { font-size: 11px; color: #888; background:#FFF; border: 1px dotted #888; padding:10px; margin:0 auto;}
+.code {
+  margin: 3px 0;
+}
+.revisioninfo {
+  color: #aaaaaa;
+  padding-bottom: 20px;
+}
+.searchbox {
+  background: #fffff8;
+  border: 0px;
+  border-bottom: 1px solid #ccccaa;
+  padding: 0px;
+  margin: 0px;
+}
+.debug {
+  font-size: 11px;
+  color: #888;
+  background: #fff;
+  border: 1px dotted #888;
+  padding: 10px;
+  margin: 0 auto;
+}
 /* Fin divers mise en forme */
 
 /* Les 3 colonnes potentielles de la page centrale */
-.page, .menupage, .rightcolumnpage {
-position:relative;
-margin:0;
-min-height:400px;
+.page,
+.menupage,
+.rightcolumnpage {
+  position: relative;
+  margin: 0;
+  min-height: 400px;
 }
 
 .footer {
-margin: 18px 0;
-padding: 0;
-text-align:center;
+  margin: 18px 0;
+  padding: 0;
+  text-align: center;
 }
-.footer a, .footer-hidden a {
-color: #333;
-padding: 2px 5px;
-text-decoration:none;
-display:inline-block;
-*display: inline;
-*zoom: 1;
-margin: 0;
+.footer a,
+.footer-hidden a {
+  color: #333;
+  padding: 2px 5px;
+  text-decoration: none;
+  display: inline-block;
+  *display: inline;
+  *zoom: 1;
+  margin: 0;
 }
-.footer-hidden {float:right;}
-.footer .dropdown-menu a {display:block; text-align: left;}
+.footer-hidden {
+  float: right;
+}
+.footer .dropdown-menu a {
+  display: block;
+  text-align: left;
+}
 
 /* Ajustements mode édition */
 #ACEditor .form-actions {
-    margin: 15px 0;
+  margin: 15px 0;
 }
 
 .img-responsive img {
@@ -78,93 +120,151 @@ margin: 0;
 }
 
 /* Sélecteur de fond d'écran */
-#graphical_options {display: none}
+#graphical_options {
+  display: none;
+}
 #bgCarousel {
   margin-bottom: 20px;
 }
-#bgCarousel img.bgimg, #bgCarousel div.mozaicimg {
-	float:left;
-	margin:2px;
-	border:1px solid #ccc;
-	width:100px;
-	height:75px;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	border-radius:4px;
+#bgCarousel img.bgimg,
+#bgCarousel div.mozaicimg {
+  float: left;
+  margin: 2px;
+  border: 1px solid #ccc;
+  width: 100px;
+  height: 75px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
 }
 #bgCarousel .choosen {
-	-moz-box-shadow: 0px 0px 2px 3px #FFFF21;
-	-webkit-box-shadow: 0px 0px 2px 3px #FFFF21;
-	box-shadow:0px 0px 2px 3px #FFFF21;
+  -moz-box-shadow: 0px 0px 2px 3px #ffff21;
+  -webkit-box-shadow: 0px 0px 2px 3px #ffff21;
+  box-shadow: 0px 0px 2px 3px #ffff21;
 }
 
 #bgCarousel .item {
   display: block;
-	height: 162px;
+  height: 162px;
   margin: 0 53px;
 }
 
 /* lanceur d'accordéon*/
-.accordion-trigger, .panel-heading {
-  cursor:pointer;
+.accordion-trigger,
+.panel-heading {
+  cursor: pointer;
 }
 
 /* table des matieres */
 .toc {
-position:absolute;
-right:0px;
-z-index: 10000;
-top:50px;
-width:300px;
+  position: absolute;
+  right: 0px;
+  z-index: 10000;
+  top: 50px;
+  width: 300px;
 }
 
-li.toc1 {padding-left:0;}
-li.toc2 {padding-left:10px;}
-li.toc3 {padding-left:20px;}
-li.toc4 {padding-left:30px;}
-li.toc5 {padding-left:40px;}
+li.toc1 {
+  padding-left: 0;
+}
+li.toc2 {
+  padding-left: 10px;
+}
+li.toc3 {
+  padding-left: 20px;
+}
+li.toc4 {
+  padding-left: 30px;
+}
+li.toc5 {
+  padding-left: 40px;
+}
 
 .toc-menu {
-max-height: 400px;
-overflow: auto;
+  max-height: 400px;
+  overflow: auto;
 }
 
 /* barres de progression */
-.progressbar {float:left; clear:both; margin:0 5px 0 0 !important;}
+.progressbar {
+  float: left;
+  clear: both;
+  margin: 0 5px 0 0 !important;
+}
 
 /* page wiki en format boite modale */
-#YesWikiModal .page { min-height:auto;}
-#yw-modal-loading {position: absolute; top: 30vh; left: 48%;}
-#yw-modal-iframe {width:100%; height:70vh; border:0;}
+#YesWikiModal .page {
+  min-height: auto;
+}
+#yw-modal-loading {
+  position: absolute;
+  top: 30vh;
+  left: 48%;
+}
+#yw-modal-iframe {
+  width: 100%;
+  height: 70vh;
+  border: 0;
+}
 
 /* menu du haut fixe */
 #yw-topnav.affix {
   position: fixed;
   top: 0;
-  z-index:2000;
+  z-index: 2000;
   right: 0;
   left: 0;
 }
 #yw-topnav.affix-top {
-  position:relative;
+  position: relative;
 }
 
-.aceditor-btn-well:hover .well {color:#333;}
+.aceditor-btn-well:hover .well {
+  color: #333;
+}
 
 /* retour à la ligne pour les éléments flottants */
-.clear, .hr_clear {clear:both; margin:0; padding:0; border:0; height:0; visibility:hidden; background:transparent;}
+.clear,
+.hr_clear {
+  clear: both;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  height: 0;
+  visibility: hidden;
+  background: transparent;
+}
 
-.topbarpage .btn-toolbar, .topbarpage .btn-toolbar a {margin:0;}
-.topbarpage .btn-toolbar a:hover {text-decoration:none;}
-.topbarpage .form-search {margin:0;}
-.topbarpage .dropdown-menu a {display:block;}
-.topbarpage ul ul {display: none;}
+.topbarpage .btn-toolbar,
+.topbarpage .btn-toolbar a {
+  margin: 0;
+}
+.topbarpage .btn-toolbar a:hover {
+  text-decoration: none;
+}
+.topbarpage .form-search {
+  margin: 0;
+}
+.topbarpage .dropdown-menu a {
+  display: block;
+}
+.topbarpage ul ul {
+  display: none;
+}
 
-.dropdown-menu .login-form {margin:0;padding:18px;}
+.dropdown-menu .login-form {
+  margin: 0;
+  padding: 18px;
+}
 
-.form-search {margin:0;}
+.form-search {
+  margin: 0;
+}
 
-.yeswiki-textarea-full {width:100% !important; height:500px !important;}
+.yeswiki-textarea-full {
+  width: 100% !important;
+  height: 500px !important;
+}
 
 .accordion-group {
   cursor: pointer;
@@ -188,17 +288,29 @@ overflow: auto;
   display: inline-block;
 }
 
-
 /* dropdown menu in modal */
-#page_options .typeahead.dropdown-menu { z-index: 200000; }
+#page_options .typeahead.dropdown-menu {
+  z-index: 200000;
+}
 
-#form_page_options .control-label {width:200px;}
-#form_page_options .controls {margin-left:210px;}
+#form_page_options .control-label {
+  width: 200px;
+}
+#form_page_options .controls {
+  margin-left: 210px;
+}
 
-.topbarpage .yeswiki-search-form .input-append, .topbarpage .yeswiki-search-form .input-prepend {margin-top: 0 !important;}
+.topbarpage .yeswiki-search-form .input-append,
+.topbarpage .yeswiki-search-form .input-prepend {
+  margin-top: 0 !important;
+}
 
 /* on /iframe page, we use white background, can be overwritten in the theme */
-.yeswiki-page-widget {padding:15px;background:#FFF; background-image: none;}
+.yeswiki-page-widget {
+  padding: 15px;
+  background: #fff;
+  background-image: none;
+}
 
 .cols2 {
   -webkit-column-count: 2; /* Chrome, Safari, Opera */
@@ -224,51 +336,58 @@ overflow: auto;
   margin-left: -50vw;
   margin-right: -50vw;
 }
-html, body {overflow-x:hidden;} /* hack pour cacher l'ascenseur horizontal */
+html,
+body {
+  overflow-x: hidden;
+} /* hack pour cacher l'ascenseur horizontal */
 
-
-.popover .page { /* gestion des popup au survol modalbox-hover */
-  min-height:auto;
-    }
+.popover .page {
+  /* gestion des popup au survol modalbox-hover */
+  min-height: auto;
+}
 
 .popover .BAZ_label {
-display:none;} /* enlever les label des fiches bazar quand on utilise la fonction glossaire */
+  display: none;
+} /* enlever les label des fiches bazar quand on utilise la fonction glossaire */
 
-.btn-glossaire { /* enlève le padding trop grand qui s'applique sur les boutons en général */
-    padding: 0px !important;
-    font-size: inherit !important;
-    vertical-align: inherit !important;
+.btn-glossaire {
+  /* enlève le padding trop grand qui s'applique sur les boutons en général */
+  padding: 0px !important;
+  font-size: inherit !important;
+  vertical-align: inherit !important;
 }
 
 /* stuff for iframes */
 .iframe-body {
-  background-color : transparent;
-  background-image : none;
-  width : auto;
-  min-width : 0;
-  padding-top : 0;
+  background-color: transparent;
+  background-image: none;
+  width: auto;
+  min-width: 0;
+  padding-top: 0;
 }
 
 .login-body {
-  background-color : transparent;
-  background-image : none;
-  width : auto;
-  min-width : 0;
-  padding : 5em 0;
+  background-color: transparent;
+  background-image: none;
+  width: auto;
+  min-width: 0;
+  padding: 5em 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.yeswiki-page-widget { min-height:auto !important; }
+.yeswiki-page-widget {
+  min-height: auto !important;
+}
 
 .control-label:after {
   content: ":";
-  margin: 0 .25em;
+  margin: 0 0.25em;
 }
 .symbole_obligatoire:after {
   content: "*";
-  margin-right: .25em;
+  margin-right: 0.25em;
 }
 
 .default-right {
@@ -281,43 +400,50 @@ display:none;} /* enlever les label des fiches bazar quand on utilise la fonctio
 }
 
 .acl-single-container {
-   margin-bottom: 10px;
-   display: flex;
-   align-items: center;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 }
-.acl-single-container label { width: 180px; }
-.acl-single-container input { width: calc(100% - 185px) !important; }
-.edit-acl-container label { font-weight: normal; }
+.acl-single-container label {
+  width: 180px;
+}
+.acl-single-container input {
+  width: calc(100% - 185px) !important;
+}
+.edit-acl-container label {
+  font-weight: normal;
+}
 /* Materialize Switch
    ========================================================================== */
 .switch,
 .switch * {
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .switch label {
   cursor: pointer;
 }
 
-.switch label input[type=checkbox] {
+.switch label input[type="checkbox"] {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.switch label input[type=checkbox]:checked + .lever {
+.switch label input[type="checkbox"]:checked + .lever {
   background-color: #84c7c1;
 }
 
-.switch label input[type=checkbox]:checked + .lever:before, .switch label input[type=checkbox]:checked + .lever:after {
+.switch label input[type="checkbox"]:checked + .lever:before,
+.switch label input[type="checkbox"]:checked + .lever:after {
   left: 18px;
 }
 
-.switch label input[type=checkbox]:checked + .lever:after {
+.switch label input[type="checkbox"]:checked + .lever:after {
   background-color: #26a69a;
 }
 
@@ -336,7 +462,8 @@ display:none;} /* enlever les label des fiches bazar quand on utilise la fonctio
   margin: 0 16px;
 }
 
-.switch label .lever:before, .switch label .lever:after {
+.switch label .lever:before,
+.switch label .lever:after {
   content: "";
   position: absolute;
   display: inline-block;
@@ -345,10 +472,15 @@ display:none;} /* enlever les label des fiches bazar quand on utilise la fonctio
   border-radius: 50%;
   left: 0;
   top: -3px;
-  -webkit-transition: left 0.3s ease, background .3s ease, -webkit-box-shadow 0.1s ease, -webkit-transform .1s ease;
-  transition: left 0.3s ease, background .3s ease, -webkit-box-shadow 0.1s ease, -webkit-transform .1s ease;
-  transition: left 0.3s ease, background .3s ease, box-shadow 0.1s ease, transform .1s ease;
-  transition: left 0.3s ease, background .3s ease, box-shadow 0.1s ease, transform .1s ease, -webkit-box-shadow 0.1s ease, -webkit-transform .1s ease;
+  -webkit-transition: left 0.3s ease, background 0.3s ease,
+    -webkit-box-shadow 0.1s ease, -webkit-transform 0.1s ease;
+  transition: left 0.3s ease, background 0.3s ease, -webkit-box-shadow 0.1s ease,
+    -webkit-transform 0.1s ease;
+  transition: left 0.3s ease, background 0.3s ease, box-shadow 0.1s ease,
+    transform 0.1s ease;
+  transition: left 0.3s ease, background 0.3s ease, box-shadow 0.1s ease,
+    transform 0.1s ease, -webkit-box-shadow 0.1s ease,
+    -webkit-transform 0.1s ease;
 }
 
 .switch label .lever:before {
@@ -356,31 +488,100 @@ display:none;} /* enlever les label des fiches bazar quand on utilise la fonctio
 }
 
 .switch label .lever:after {
-  background-color: #F1F1F1;
-  -webkit-box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
-          box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  background-color: #f1f1f1;
+  -webkit-box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
-input[type=checkbox]:checked:not(:disabled) ~ .lever:active::before,
-input[type=checkbox]:checked:not(:disabled).tabbed:focus ~ .lever::before {
+input[type="checkbox"]:checked:not(:disabled) ~ .lever:active::before,
+input[type="checkbox"]:checked:not(:disabled).tabbed:focus ~ .lever::before {
   -webkit-transform: scale(2.4);
-          transform: scale(2.4);
+  transform: scale(2.4);
   background-color: rgba(38, 166, 154, 0.15);
 }
 
-input[type=checkbox]:not(:disabled) ~ .lever:active:before,
-input[type=checkbox]:not(:disabled).tabbed:focus ~ .lever::before {
+input[type="checkbox"]:not(:disabled) ~ .lever:active:before,
+input[type="checkbox"]:not(:disabled).tabbed:focus ~ .lever::before {
   -webkit-transform: scale(2.4);
-          transform: scale(2.4);
+  transform: scale(2.4);
   background-color: rgba(0, 0, 0, 0.08);
 }
 
-.switch input[type=checkbox][disabled] + .lever {
+.switch input[type="checkbox"][disabled] + .lever {
   cursor: default;
   background-color: rgba(0, 0, 0, 0.12);
 }
 
-.switch label input[type=checkbox][disabled] + .lever:after,
-.switch label input[type=checkbox][disabled]:checked + .lever:after {
+.switch label input[type="checkbox"][disabled] + .lever:after,
+.switch label input[type="checkbox"][disabled]:checked + .lever:after {
   background-color: #949494;
+}
+
+#search {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  -o-transition: all 0.3s ease-in-out;
+  -ms-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+
+  -webkit-transform: translate(0px, -100%) scale(0, 0);
+  -moz-transform: translate(0px, -100%) scale(0, 0);
+  -o-transform: translate(0px, -100%) scale(0, 0);
+  -ms-transform: translate(0px, -100%) scale(0, 0);
+  transform: translate(0px, -100%) scale(0, 0);
+
+  opacity: 0;
+  overflow: hidden;
+}
+#search.open {
+  -webkit-transform: translate(0px, 0px) scale(1, 1);
+  -moz-transform: translate(0px, 0px) scale(1, 1);
+  -o-transform: translate(0px, 0px) scale(1, 1);
+  -ms-transform: translate(0px, 0px) scale(1, 1);
+  transform: translate(0px, 0px) scale(1, 1);
+  opacity: 1;
+  z-index: 10000;
+  width: 100%;
+  height: 100%;
+  display: block !important;
+}
+
+#search .yeswiki-search-form {
+  position: relative;
+  top: 50%;
+  width: 100%;
+  color: rgb(255, 255, 255);
+  background: rgba(0, 0, 0, 0);
+  font-weight: 300;
+  text-align: center;
+  border: 0px;
+  margin: 0px auto;
+  margin-top: -51px;
+  padding: 0 1rem;
+  outline: none;
+  box-shadow: none;
+}
+#search .btn-search,
+#search .search-query {
+  font-size: 1.8rem;
+  height: auto !important;
+  line-height: 1em;
+}
+#search .close-search {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  opacity: 1;
+  padding: 0 15px;
+  font-size: 30px;
+  font-weight: bold;
 }

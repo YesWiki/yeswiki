@@ -49,7 +49,7 @@ require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARA
  */
 function baz_afficher_menu($menuitems)
 {
-    $res = '<div class="BAZ_menu">'."\n".'<ul class="nav nav-pills">'.
+    $res = '<div class="BAZ_menu">'."\n".'<ul class="nav nav-tabs">'.
     "\n";
 
     // Gestion de la vue par defaut
@@ -1958,9 +1958,11 @@ function bazPrepareFormData($form)
         }
 
         // traitement sémantique
-        if( !empty($formelem[14])) {
+        if (!empty($formelem[14])) {
             $prepared[$i]['sem_type'] = strpos($formelem[14], ',')
-                ? array_map(function($str) { return trim($str); }, explode(',', $formelem[14]))
+                ? array_map(function ($str) {
+                    return trim($str);
+                }, explode(',', $formelem[14]))
                 : $formelem[14];
         }
 
@@ -2577,11 +2579,15 @@ function baz_valeurs_liste($idliste = '')
 
 function baz_forms_and_lists_ids()
 {
-    foreach(baz_valeurs_liste() as $listId => $list) { $lists[$listId] = $list['titre_liste']; }
+    foreach (baz_valeurs_liste() as $listId => $list) {
+        $lists[$listId] = $list['titre_liste'];
+    }
 
     $requete = 'SELECT bn_id_nature, bn_label_nature FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature';
     $result = $GLOBALS['wiki']->LoadAll($requete);
-    foreach($result as $form) { $forms[$form['bn_id_nature']] = $form['bn_label_nature']; }
+    foreach ($result as $form) {
+        $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
+    }
     return ['lists' => $lists, 'forms' => $forms];
 }
 
@@ -2817,12 +2823,12 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                             $fichebazar['form']['template'][$i],
                             'html',
                             $fichebazar['values']
-                      );
+                        );
                         preg_match_all(
                             '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
                             $html[$id],
                             $matches
-                      );
+                        );
                         if (isset($matches[1][0]) && $matches[1][0] != '') {
                             $html[$id] = $matches[1][0];
                         }
@@ -2840,7 +2846,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 $fiche,
                 strtotime($fichebazar['values']['date_maj_fiche']),
                 baz_get_custom_semantic_template($fichebazar['values'])
-          );
+            );
         }
     } else {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
@@ -2865,7 +2871,9 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 $functionName = $fichebazar['form']['template'][$i][0];
                 if (function_exists($functionName)) {
                     $mode = 'html';
-                    if (!$danslappli && $functionName == "image") $mode = 'html_outside_app';
+                    if (!$danslappli && $functionName == "image") {
+                        $mode = 'html_outside_app';
+                    }
                     $res .= $functionName(
                         $formtemplate,
                         $fichebazar['form']['template'][$i],
@@ -4742,8 +4750,8 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, $is_html_formatted = false)
 {
     $form = baz_valeurs_formulaire($idformulaire);
-    if( !$form['bn_sem_type'] ) {
-        if( $err_if_not_semantic ) {
+    if (!$form['bn_sem_type']) {
+        if ($err_if_not_semantic) {
             exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
         } else {
             return null;
@@ -4755,30 +4763,36 @@ function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, 
 
     // If we have multiple types split by comma, generate an array, otherwise use a string
     $output['@type'] = strpos($form['bn_sem_type'], ',')
-        ? array_map(function($str) { return trim($str); }, explode(',', $form['bn_sem_type']))
+        ? array_map(function ($str) {
+            return trim($str);
+        }, explode(',', $form['bn_sem_type']))
         : $form['bn_sem_type'];
 
     // Add the ID of the Bazar object
     $output['@id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
 
     $fields_infos = bazPrepareFormData($form);
-    foreach( $fields_infos as $field_info ) {
+    foreach ($fields_infos as $field_info) {
         // If the file is not semantically defined, ignore it
-        if( $field_info['sem_type'] ) {
+        if ($field_info['sem_type']) {
             $value = $fiche[$field_info['id']];
-            if( $value ) {
+            if ($value) {
                 // We don't want this additional formatting if we are already dealing with HTML-formatted data
-                if( !$is_html_formatted ) {
+                if (!$is_html_formatted) {
                     // If this is a file or image, add the base URL
-                    if( $field_info['type'] === 'file' ) $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
+                    if ($field_info['type'] === 'file') {
+                        $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
+                    }
 
                     // If this is a linked entity (listefiche), use the URL
-                    if( startsWith($field_info['id'], 'listefiche') ) $value = $GLOBALS['wiki']->href('', $value);
+                    if (startsWith($field_info['id'], 'listefiche')) {
+                        $value = $GLOBALS['wiki']->href('', $value);
+                    }
                 }
 
-                if( is_array($field_info['sem_type']) ) {
+                if (is_array($field_info['sem_type'])) {
                     // If we have multiple fields, duplicate the data
-                    foreach( $field_info['sem_type'] as $sem_type ) {
+                    foreach ($field_info['sem_type'] as $sem_type) {
                         $output[$sem_type] = $value;
                     }
                 } else {
@@ -4797,16 +4811,17 @@ function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, 
  * Retourne un fichier de template custom, s'il existe
  * Regarde d'abord dans themes/tools/bazar/templates, puis cherche dans les templates sémantiques
  */
-function baz_get_custom_template($fiche, $form) {
+function baz_get_custom_template($fiche, $form)
+{
     $custom_templates = [
         'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html'
     ];
 
     // Recherche une template sémantique pour ce type d'objet
-    if( isset($form['bn_sem_use_template']) && $form['bn_sem_use_template'] ) {
+    if (isset($form['bn_sem_use_template']) && $form['bn_sem_use_template']) {
         $custom_semantic_template = baz_get_custom_semantic_template($fiche);
         // Si une template sémantique existe
-        if( $custom_semantic_template ) {
+        if ($custom_semantic_template) {
             // L'ajoute en bas du tableau
             array_push($custom_templates, 'tools/bazar/presentation/templates/' . $custom_semantic_template);
         }
@@ -4826,31 +4841,38 @@ function baz_get_custom_template($fiche, $form) {
     }
 }
 
-function baz_get_custom_semantic_template($fiche) {
-    if( empty($fiche['semantic']) ) return null;
+function baz_get_custom_semantic_template($fiche)
+{
+    if (empty($fiche['semantic'])) {
+        return null;
+    }
 
     // Trouve le contexte principal
-    if( is_array($fiche['semantic']['@context']) ) {
-        foreach( $fiche['semantic']['@context'] as $context ) {
-            if( is_string($context) ) break;
+    if (is_array($fiche['semantic']['@context'])) {
+        foreach ($fiche['semantic']['@context'] as $context) {
+            if (is_string($context)) {
+                break;
+            }
         }
     } else {
         $context = $fiche['semantic']['@context'];
     }
 
     // Si on a trouvé un contexte et qu'un mapping existe pour ce contexte
-    if( isset($context) && $dir_name = $GLOBALS['wiki']->config['baz_semantic_types_mapping'][$context] ) {
+    if (isset($context) && $dir_name = $GLOBALS['wiki']->config['baz_semantic_types_mapping'][$context]) {
 
         // Trouve le type principal
-        if( is_array($fiche['semantic']['@type']) ) {
-            foreach( $fiche['semantic']['@type'] as $type ) {
-                if( is_string($type) ) break;
+        if (is_array($fiche['semantic']['@type'])) {
+            foreach ($fiche['semantic']['@type'] as $type) {
+                if (is_string($type)) {
+                    break;
+                }
             }
         } else {
             $type = $fiche['semantic']['@type'];
         }
 
-        if( isset($type) ) {
+        if (isset($type)) {
             return $dir_name . "/" . strtolower($type) . ".tpl.html";
         }
     }
