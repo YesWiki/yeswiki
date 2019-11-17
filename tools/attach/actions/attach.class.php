@@ -129,12 +129,10 @@ if (!class_exists('attach')) {
             } else {
                 $this->isSafeMode = false;
             }
-
-
         }
-/******************************************************************************
- *    FONCTIONS UTILES
- *******************************************************************************/
+        /******************************************************************************
+         *    FONCTIONS UTILES
+         *******************************************************************************/
         // Returns a file size limit in bytes based on the PHP upload_max_filesize
         // and post_max_size
         public function file_upload_max_size()
@@ -142,18 +140,18 @@ if (!class_exists('attach')) {
             static $max_size = -1;
         
             if ($max_size < 0) {
-            // Start with post_max_size.
-            $post_max_size = $this->parse_size(ini_get('post_max_size'));
-            if ($post_max_size > 0) {
-                $max_size = $post_max_size;
-            }
+                // Start with post_max_size.
+                $post_max_size = $this->parse_size(ini_get('post_max_size'));
+                if ($post_max_size > 0) {
+                    $max_size = $post_max_size;
+                }
         
-            // If upload_max_size is less, then reduce. Except if upload_max_size is
-            // zero, which indicates no limit.
-            $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
-            if ($upload_max > 0 && $upload_max < $max_size) {
-                $max_size = $upload_max;
-            }
+                // If upload_max_size is less, then reduce. Except if upload_max_size is
+                // zero, which indicates no limit.
+                $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
+                if ($upload_max > 0 && $upload_max < $max_size) {
+                    $max_size = $upload_max;
+                }
             }
             return $max_size;
         }
@@ -161,18 +159,17 @@ if (!class_exists('attach')) {
          * transforme des valeurs en mega / kilo / giga octets en entier
          *
          * @param string $size la taille
-         * @return int 
+         * @return int
          */
         public function parse_size($size)
         {
             $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
             $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
             if ($unit) {
-            // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
-            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
-            }
-            else {
-            return round($size);
+                // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
+                return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+            } else {
+                return round($size);
             }
         }
 
@@ -223,7 +220,6 @@ if (!class_exists('attach')) {
                 if (!is_dir($path)) {
                     $this->mkdir_recursif($path);
                 }
-
             }
             return $path;
         }
@@ -248,7 +244,6 @@ if (!class_exists('attach')) {
                 if (!$this->isPicture() && !$this->isAudio() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
                     $file['ext'] .= '_';
                 }
-
             } else {
                 return false;
             }
@@ -578,7 +573,6 @@ if (!class_exists('attach')) {
         // Affiche le fichier liee comme un fichier mind map  freemind
         public function showAsWma($fullFilename)
         {
-
         }
 
         // Affiche le fichier liee comme une video flash
@@ -792,6 +786,7 @@ if (!class_exists('attach')) {
                     break;
                 case 'emptytrash':
                     $this->fmEmptyTrash(); //pas de break car apres un emptytrash => retour au gestionnaire
+                    // no break
                 default:
                     $this->fmShow();
             }
@@ -820,6 +815,7 @@ if (!class_exists('attach')) {
                     break;
                 case 'emptytrash':
                     $this->fmEmptyTrash(); //pas de break car apres un emptytrash => retour au gestionnaire
+                    // no break
                 default:
                     $this->fmShowAction();
             }
@@ -867,7 +863,6 @@ if (!class_exists('attach')) {
          */
         public function fmShowAction($trash = false)
         {
-
             $method = ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : '');
             $output = '<ul id="fmtab' . $this->wiki->tag . '" class="nav nav-tabs">
 				<li' . (($trash) ? '' : ' class="active"') . '><a href="' . $this->wiki->href($method, $this->wiki->tag . '#fmtab' . $this->wiki->tag) . '" title="Gestion des fichiers"><i class="fa fa-file icon-file"></i>&nbsp;Gestion des fichiers</a></li>
@@ -910,7 +905,7 @@ if (!class_exists('attach')) {
                     $restlink = '';
                     if ($trash) {
                         $url = $this->wiki->href('', $this->wiki->GetPageTag(), 'do=restore&file=' . $file['realname']);
-                        $restlink = '<a class="btn btn-mini btn-success" href="' . $url . '" title="Restaurer"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
+                        $restlink = '<a class="btn btn-xs btn-primary" href="' . $url . '" title="Restaurer"><i class="fa fa-refresh icon-refresh icon-white"></i>&nbsp;Restaurer</a>';
                     }
 
                     //lien pour downloader le fichier
@@ -1139,11 +1134,10 @@ if (!class_exists('attach')) {
             if (!$imgTrans->resize()) {
                 // in case of error, show error code
                 return $imgTrans->error;
-                // if there were no errors
+            // if there were no errors
             } else {
                 return $imgTrans->targetFile;
             }
         }
     }
-
 }

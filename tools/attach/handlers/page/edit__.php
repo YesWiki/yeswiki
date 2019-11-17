@@ -33,14 +33,21 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 					<div class="controls col-sm-9">
             <div class="radio">
   					  <label class="radio inline label-image-align-left" for="image-align-left">
-  					    <input type="radio" id="image-align-left" checked="checked" value="left" name="attach_align" class="input_radio image-align-left" /><img src="tools/attach/presentation/images/align-left.png" alt="align-left" /> '._t('LEFT').'
-  					  </label>
+                        <input type="radio" id="image-align-left" checked="checked" value="left" name="attach_align" class="input_radio image-align-left" />
+                        <span></span>
+                          <img src="tools/attach/presentation/images/align-left.png" alt="align-left" /> '._t('LEFT').'
+                      </label>
   					  <label class="radio inline label-image-align-center" for="image-align-center">
-  					    <input type="radio" id="image-align-center" value="center" name="attach_align" class="input_radio image-align-center" /><img src="tools/attach/presentation/images/align-center.png" alt="align-center" /> '._t('CENTER').'
-  					  </label>
+                        <input type="radio" id="image-align-center" value="center" name="attach_align" class="input_radio image-align-center" />
+                        <span></span>
+                          <img src="tools/attach/presentation/images/align-center.png" alt="align-center" /> '._t('CENTER').'
+                      </label>
   					  <label class="radio inline label-image-align-right" for="image-align-right">
-  					    <input type="radio" id="image-align-right" value="right" name="attach_align" class="input_radio image-align-right"><img src="tools/attach/presentation/images/align-right.png" alt="align-right" /> '._t('RIGHT').'
-  					  </label>
+                        <input type="radio" id="image-align-right" value="right" name="attach_align" class="input_radio image-align-right">
+                        <span></span>
+                          <img src="tools/attach/presentation/images/align-right.png" alt="align-right" /> 
+                          '._t('RIGHT').'
+                      </label>
   					</div>
           </div>
 				</div>
@@ -50,20 +57,24 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 					<div class="controls col-sm-9">
             <div class="radio">
   						<label for="image-size-small">
-  						    <input type="radio" id="image-size-small" value="small" name="attach_imagesize" class="input_radio image-size-small">
-  						    '._t('THUMBNAIL').'&nbsp;('.$this->config['image-small-width'].'x'.$this->config['image-small-height'].')
+                          <input type="radio" id="image-size-small" value="small" name="attach_imagesize" class="input_radio image-size-small">
+                          <span></span>
+                              '._t('THUMBNAIL').'&nbsp;('.$this->config['image-small-width'].'x'.$this->config['image-small-height'].')
   					  	</label>
   					  	<label for="image-size-medium">
-  						    <input type="radio" id="image-size-medium" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
-  						    '._t('MEDIUM').'&nbsp;('.$this->config['image-medium-width'].'x'.$this->config['image-medium-height'].')
+                            <input type="radio" id="image-size-medium" value="medium" name="attach_imagesize" class="input_radio image-size-medium">
+                            <span></span>
+                            '._t('MEDIUM').'&nbsp;('.$this->config['image-medium-width'].'x'.$this->config['image-medium-height'].')
   					  	</label>
   						<label for="image-size-big">
-  						    <input type="radio" id="image-size-big" value="big" name="attach_imagesize" class="input_radio image-size-big">
-  						    '._t('BIG').'&nbsp;('.$this->config['image-big-width'].'x'.$this->config['image-big-height'].')
+                          <input type="radio" id="image-size-big" value="big" name="attach_imagesize" class="input_radio image-size-big">
+                          <span></span>
+                            '._t('BIG').'&nbsp;('.$this->config['image-big-width'].'x'.$this->config['image-big-height'].')
   					  	</label>
   					  	<label for="image-size-original">
-  						    <input type="radio" id="image-size-original" checked="checked" value="original" name="attach_imagesize" class="input_radio image-size-original">
-  						    '._t('ORIGINAL_SIZE').'
+                            <input type="radio" id="image-size-original" checked="checked" value="original" name="attach_imagesize" class="input_radio image-size-original">
+                            <span></span>
+                            '._t('ORIGINAL_SIZE').'
   					  	</label>
               </div>
 					</div>
@@ -87,20 +98,23 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 				    <div class="form-group">
 						<label class="control-label col-sm-3">'._t('GRAPHICAL_EFFECTS').'</label>
 						<div class="controls col-sm-9">
-             <div class="checkbox">
-						  <label>
-						    <input type="checkbox" name="attach_css_class" value="whiteborder" />
-						    '._t('WHITE_BORDER').'
-						  </label>
-						  <label>
-						    <input type="checkbox" name="attach_css_class" value="lightshadow" />
-						    '._t('DROP_SHADOW').'
-						  </label>
-						  <label>
-						    <input type="checkbox" name="attach_css_class" value="zoom" />
-						    '._t('ZOOM_HOVER').'
-						  </label>
-             </div>
+                            <div class="checkbox">
+                                <label>
+                                <input type="checkbox" name="attach_css_class" value="whiteborder" />
+                                <span></span>
+                                    '._t('WHITE_BORDER').'
+                                </label>
+                                <label>
+                                <input type="checkbox" name="attach_css_class" value="lightshadow" />
+                                <span></span>
+                                    '._t('DROP_SHADOW').'
+                                </label>
+                                <label>
+                                <input type="checkbox" name="attach_css_class" value="zoom" />
+                                <span></span>
+                                    '._t('ZOOM_HOVER').'
+                                </label>
+                            </div>
 						</div>
 					</div>
 					<div class="form-group">
@@ -119,7 +133,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 	    </div><!-- /.modal-content -->
 	  </div><!-- /.modal-dialog -->
 	</div><!-- /.modal /#UploadModal -->'."\n";
-    $UploadBar =   "<div id=\"attach-file-uploader\" class=\"btn-group\">
+        $UploadBar =   "<div id=\"attach-file-uploader\" class=\"btn-group\">
 					<noscript>
 						<span class=\"alert alert-danger alert-error\">"._t('ACTIVATE_JS_TO_UPLOAD_FILES').".</span>
 					</noscript>
