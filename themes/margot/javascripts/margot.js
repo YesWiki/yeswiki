@@ -26,6 +26,18 @@ $(document).ready(function() {
     var parent = $(this).closest(".form-group");
     parent.addClass("form-control wrapper");
   });
+
+  // ajout du span pour les checkbox/radio oubliés
+  $(":checkbox, :radio").each(function() {
+    if (
+      $(this)
+        .next()
+        .prop("nodeName") !== "SPAN"
+    ) {
+      $(this).after("<span></span>");
+    }
+  });
+  // hack pour la ferme a wiki dont l'input hidden cachait le reste
   $("#bf_dossier-wiki")
     .parents(".control-group.email.password")
     .removeClass("hidden");
