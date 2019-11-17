@@ -288,6 +288,7 @@ li.toc5 {
   display: inline-block;
 }
 
+
 /* dropdown menu in modal */
 #page_options .typeahead.dropdown-menu {
   z-index: 200000;
