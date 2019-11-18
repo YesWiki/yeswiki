@@ -32,7 +32,7 @@ $(document).ready(function() {
     if (
       $(this)
         .next()
-        .prop("nodeName") !== "SPAN"
+        .is("span")
     ) {
       $(this).after("<span></span>");
     }
