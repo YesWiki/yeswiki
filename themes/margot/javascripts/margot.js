@@ -34,7 +34,9 @@ $(document).ready(function() {
         .next()
         .is("span")
     ) {
-      $(this).after("<span></span>");
+      if (!$(this).parents(".switch")) {
+        $(this).after("<span></span>");
+      }
     }
   });
   // hack pour la ferme a wiki dont l'input hidden cachait le reste
@@ -96,6 +98,6 @@ $(document).ready(function() {
 });
 
 function resizeNav() {
-  console.log("resizeNav", $("#yw-topnav").outerHeight());
+  // console.log("resizeNav", $("#yw-topnav").outerHeight());
   $("#yw-header").css("margin-top", $("#yw-topnav").outerHeight() + "px");
 }
