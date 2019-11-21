@@ -187,9 +187,7 @@ li.toc5 {
 
 /* barres de progression */
 .progressbar {
-  float: left;
-  clear: both;
-  margin: 0 5px 0 0 !important;
+  margin: -5px 5px 0 0;
 }
 
 /* page wiki en format boite modale */
@@ -287,7 +285,6 @@ li.toc5 {
 .accordion-group .panel-heading:not(.collapsed) .chevron-up {
   display: inline-block;
 }
-
 
 /* dropdown menu in modal */
 #page_options .typeahead.dropdown-menu {
