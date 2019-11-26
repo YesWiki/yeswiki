@@ -1208,6 +1208,8 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         }
     }
 
+    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
+
     //Affichage a l'ecran
     include_once 'includes/squelettephp.class.php';
     try {
