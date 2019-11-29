@@ -32,9 +32,9 @@ $(document).ready(function() {
     if (
       $(this)
         .next()
-        .is("span")
+        .not("span")
     ) {
-      if (!$(this).parents(".switch")) {
+      if ($(this).parents(".switch").length==0) {
         $(this).after("<span></span>");
       }
     }
