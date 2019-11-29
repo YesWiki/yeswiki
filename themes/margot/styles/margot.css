@@ -98,4 +98,8 @@
    }
 }
 
+/* fix for retro compatibility with cercopitheque */
+.accordion-group .panel-heading.collapsed .panel-title::after {
+    content: "";
+}
 
