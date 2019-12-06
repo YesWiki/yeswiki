@@ -3,6 +3,13 @@
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+$tablistWikinames = $this->LoadAll('SELECT DISTINCT tag FROM '. $this->GetConfigValue('table_prefix') .'pages WHERE latest="Y"');
+foreach ($tablistWikinames as $tag) {
+    $listWikinames[] = '"'.$tag['tag'].'"';
+}
+//$listWikinames = '["'.implode('","', $listWikinames).'"]';
+
 $lang = array(
   'ACEDITOR_SAVE' => _t('ACEDITOR_SAVE'),
   'ACEDITOR_FORMAT' => _t('ACEDITOR_FORMAT'),
@@ -24,6 +31,7 @@ $lang = array(
   'ACEDITOR_LINK_TITLE' => _t('ACEDITOR_LINK_TITLE'),
   'ACEDITOR_HELP' => _t('ACEDITOR_HELP'),
 );
-$js = 'var aceditorlang = '.json_encode($lang);
+$js = 'var aceditorlang = '.json_encode($lang).';'."\n";
+$js .= 'var pagelist = '.json_encode($listWikinames).';'."\n";
 $this->AddJavascript($js);
 $this->AddJavascriptFile('tools/aceditor/libs/ACeditor.js');

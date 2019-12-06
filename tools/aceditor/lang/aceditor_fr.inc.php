@@ -43,8 +43,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_UNDERLINE_TEXT' => 'Souligne le texte s&eacute;lectionn&eacute; ( Ctrl-u )',
     'ACEDITOR_STRIKE_TEXT' => 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
     'ACEDITOR_LINE' => 'Ins&egrave;re une ligne horizontale',
-    'ACEDITOR_LINK' => 'Lien',
+    'ACEDITOR_LINK' => 'Lien / Nouvelle Page',
     'ACEDITOR_LINK_PROMPT' => 'Entrez l\'adresse URL',
-    'ACEDITOR_LINK_TITLE' => 'Ajoute un lien au texte s&eacute;lectionn&eacute;',
+    'ACEDITOR_LINK_TITLE' => 'Ajouter un lien / Créer une page',
     'ACEDITOR_HELP' => 'Aide mémoire'
 ));
