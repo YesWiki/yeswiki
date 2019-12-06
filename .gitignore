@@ -8,7 +8,6 @@ files/*
 !files/README.md
 themes/*
 !themes/README.md
-!themes/margot
 templates/*
 !templates/README.md
 custom/themes/*
