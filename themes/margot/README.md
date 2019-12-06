@@ -1,1 +1,0 @@
-# yeswiki-theme-Margot
