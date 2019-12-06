@@ -142,17 +142,13 @@
               />
             </div>
           </div>
-          <div class="control-group form-group">
-            <label class="control-label col-sm-3"
-              ><?php echo _t('BAZ_SEM_USE_TEMPLATE'); ?></label
-            >
-            <div class="controls col-sm-9 checkbox">
-              <label>
-                <input type="checkbox" name="bn_sem_use_template" value="1"
-                <?php if(!isset($form['bn_sem_use_template']) || $form['bn_sem_use_template'] ) echo('checked'); ?>>
-                <?php echo _t('BAZ_SEM_USE_TEMPLATE_DESC'); ?>
-              </label>
-            </div>
+          <div class="controls checkbox">
+            <label>
+              <input type="checkbox" name="bn_sem_use_template" value="1"
+              <?php if(!isset($form['bn_sem_use_template']) || $form['bn_sem_use_template'] ) echo('checked'); ?>>
+              <span></span>
+              <?php echo _t('BAZ_SEM_USE_TEMPLATE_DESC'); ?>
+            </label>
           </div>
         </div>
       </div>
