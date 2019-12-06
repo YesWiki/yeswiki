@@ -57,8 +57,8 @@ echo '<form method="post" action="'.$this->href().'">';
 ?>
 <p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
 <div class="table-responsive">
-<table class="table table-striped table-condensed">
-<thead>  
+<table class="table table-striped table-condensed gerer-theme">
+<thead>
     <tr>
         <th><label><input type="checkbox" name="id" value="tous" onclick="cocherTout(this.checked)"><span></span></label></th>
         <th><div><b>Page</b></div></th>
