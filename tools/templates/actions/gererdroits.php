@@ -27,13 +27,13 @@ if (! $this->UserIsAdmin()) {
     $table = $this->config['table_prefix'];
 
     //Modification de droits
-    if (isset($_POST['geredroits_modifier'])
-        && (($_POST['typemaj']=='default') || isset($_POST['modiflire']) || isset($_POST['modifecrire']) || isset($_POST['modifcomment']))) {
+    if (isset($_POST['geredroits_modifier'])) {
         if (!isset($_POST['selectpage'])) {
             $error = "Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.";
         } else {
-            if ($_POST['typemaj'] != 'default' && (!isset($_POST['modiflire']))
-                 && (!isset($_POST['modifecrire'])) && !(isset($_POST['modifcomment']))) {
+            if ($_POST['typemaj'] != 'default' && empty($_POST['newlire'])
+            && empty($_POST['newecrire']) && empty($_POST['newcomment']) && empty($_POST['newlire_advanced'])
+            && empty($_POST['newecrire_advanced']) && empty($_POST['newecrire_advanced'])) {
                 $error = "Vous n'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.";
             } else {
                 foreach ($_POST['selectpage'] as $page_cochee) {
@@ -41,18 +41,20 @@ if (! $this->UserIsAdmin()) {
                         $this->DeleteAcl($page_cochee);
                     } else {
                         $appendAcl = $_POST['typemaj'] == 'ajouter';
-
-                        if (isset($_POST['modiflire'])) {
-                            $val = $_POST['newlire_advanced'] ? $_POST['newlire_advanced'] : $_POST['newlire'];
-                            $this->SaveAcl($page_cochee, 'read', $val, $appendAcl);
+                        if (!empty($_POST['newlire_advanced'])) {
+                            $this->SaveAcl($page_cochee, 'read', $_POST['newlire_advanced'], $appendAcl);
+                        } elseif (!empty($_POST['newlire'])) {
+                            $this->SaveAcl($page_cochee, 'read', $_POST['newlire'], $appendAcl);
                         }
-                        if (isset($_POST['modifecrire'])) {
-                            $val = $_POST['newecrire_advanced'] ? $_POST['newecrire_advanced'] : $_POST['newecrire'];
-                            $this->SaveAcl($page_cochee, 'write', $val, $appendAcl);
+                        if (!empty($_POST['newecrire_advanced'])) {
+                            $this->SaveAcl($page_cochee, 'write', $_POST['newecrire_advanced'], $appendAcl);
+                        } elseif (!empty($_POST['newecrire'])) {
+                            $this->SaveAcl($page_cochee, 'write', $_POST['newecrire'], $appendAcl);
                         }
-                        if (isset($_POST['modifcomment'])) {
-                            $val = $_POST['newcomment_advanced'] ? $_POST['newcomment_advanced'] : $_POST['newcomment'];
-                            $this->SaveAcl($page_cochee, 'comment', $val, $appendAcl);
+                        if (!empty($_POST['newecrire_advanced'])) {
+                            $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment_advanced'], $appendAcl);
+                        } elseif (!empty($_POST['newcomment'])) {
+                            $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment'], $appendAcl);
                         }
                     }
                 }
@@ -66,7 +68,7 @@ if (! $this->UserIsAdmin()) {
     $liste_pages = $this->Query('SELECT * FROM '.$table."pages WHERE latest='Y' ORDER BY "
         .$table.'pages.tag ASC');
 
-    echo '<form method="post" action="'.$this->href().'" class="form-inline">';
+    echo '<form method="post" action="'.$this->href().'" class="form-acls form-inline">';
 ?>
 
 <?php
@@ -89,7 +91,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 ?>
 <p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
 <div class="table-responsive">
-  <table class="table table-striped table-condensed">
+  <table class="table table-striped table-condensed table-acls">
       <thead>
     <tr>
       <td><label><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"><span></span></label></td>
@@ -148,29 +150,24 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 </tbody>
 </table>
 </div>
-  <p><b>Actions</b></p>
+  <p><b>Actions pour les pages cochées ci dessus :</b></p>
 
   <p class="type-modif-container">
-    <label for="typemajdefault">
-      <input type=radio name="typemaj" value="default" id="typemajdefault"
-             onClick="$('.edit-acl-container').slideUp()">
-      <span>Réinitialiser (avec les valeurs par défaut définies dans <em>wakka.config.php</em>)</span>
-    </label>
-    <label for="typemajajouter">
-      <input type=radio name="typemaj" value="ajouter" id="typemajajouter" checked
-             onClick="$('.edit-acl-container').slideDown()">
-      <span>Ajouter (Les nouveaux droits seront ajout&eacute;s aux actuels)</span>
-    </label>
     <label for="typemalremplacer">
-      <input type=radio name="typemaj" value="remplacer" id="typemalremplacer"
-             onClick="$('.edit-acl-container').slideDown()">
-      <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
+    <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
+            onClick="$('.edit-acl-container').slideDown()">
+    <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
     </label>
+    <!-- <label for="typemajajouter">
+        <input type=radio name="typemaj" value="ajouter" id="typemajajouter" 
+        onClick="$('.edit-acl-container').slideDown()">
+        <span>Ajouter (Les nouveaux droits seront ajout&eacute;s aux actuels)</span>
+    </label> -->
   </p>
 
   <div class="edit-acl-container">
 
-    <p><b>Cochez le type de droits et choisissez une valeur</b></p>
+    <p><b></b></p>
 
     <div class="switch">
       <label>
@@ -195,11 +192,11 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
       <?php $roles = ['lire' => 'Lecture', 'ecrire' => 'Ecriture', 'comment' => 'Commentaire'];
       foreach ($roles as $role => $label) { ?>
         <div class="acl-single-container">
-          <label for="modif<?php echo $role ?>" data-input="new<?php echo $role ?>" class="control-label">
-            <input type="checkbox" name="modif<?php echo $role ?>" id="modif<?php echo $role ?>" class="form-control">
-            <span><?php echo $label ?></span>
+          <label for="new<?php echo $role ?>" class="control-label">
+            <?php echo $label ?>
           </label>
-          <select name="new<?php echo $role ?>"class="form-control acl-simple">
+          <select name="new<?php echo $role ?>" class="form-control acl-simple">
+            <option value="">Ne rien changer</option>
             <option value="*">Tout le monde</option>
             <option value="+">Utilisateurs connectés</option>
             <option value="%">Propriétaire de la page</option>
@@ -210,9 +207,13 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
       <?php } ?>
     </div>
   </div>
-
+  <label for="typemajdefault">
+        <input type=radio name="typemaj" value="default" id="typemajdefault"
+                onClick="$('.edit-acl-container').slideUp()">
+        <span>Réinitialiser (avec les valeurs par défaut définies dans <em>wakka.config.php</em>)</span>
+    </label>
 	<p>
-		<input name="geredroits_modifier" class="btn btn-primary" value="Mettre &agrave; jour" type="submit">
+		<input name="geredroits_modifier" class="btn btn-primary" onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" value="Mettre &agrave; jour" type="submit">
 	</p>
 <?php
 echo $this->FormClose();

@@ -326,14 +326,16 @@
         // show advanced
         $(".acl-simple")
           .hide()
-          .appendTo($(this).parent());
+          .val(null);
         $(".acl-advanced").slideDown();
       } else {
         $(".acl-single-container label").each(function() {
           $(this).after($("select[name=" + $(this).data("input") + "]"));
         });
         $(".acl-simple").show();
-        $(".acl-advanced").hide();
+        $(".acl-advanced")
+          .hide()
+          .val(null);
       }
     })
     .trigger("change");
