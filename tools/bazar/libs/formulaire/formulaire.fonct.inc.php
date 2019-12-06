@@ -109,7 +109,8 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         }
                     }
                 }
-            } {
+            }
+            {
                 $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
@@ -320,7 +321,8 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         }
                     }
                 }
-            } {
+            }
+            {
                 $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '&nbsp;:</span>' . "\n" . '<span class="BAZ_texte">' . "\n" . $labels_result . "\n" . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
             }
         }
@@ -618,7 +620,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire,, $bulle_d_aide) = $tableau_template;
+    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire, , $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
@@ -727,7 +729,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
             </div>
             </div>
             <div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide ) . '</label>
+            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. (empty($bulledaide) ? '&nbsp;:&nbsp;' : $bulledaide) . '</label>
             <div class="controls col-sm-9">
             <div class="input-group">
             <input class="form-control" type="password" required name="mot_de_passe_repete_wikini" size="'.$tableau_template[3].'" />
@@ -760,7 +762,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         $GLOBALS['utilisateur_wikini'] = $nomwiki;
 
         if (!$GLOBALS['wiki']->LoadUser($nomwiki)) {
-            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
+            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', motto = '', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
             $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini);
             if ($sendmail) {
                 //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
@@ -996,7 +998,7 @@ function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         if (!empty($valeurs_fiche[$identifiant])) {
             return array($tableau_template[1] => md5($valeurs_fiche[$identifiant]));
-        } else if (isset($valeurs_fiche[$identifiant.'-previous']) && !empty($valeurs_fiche[$identifiant.'-previous'])) {
+        } elseif (isset($valeurs_fiche[$identifiant.'-previous']) && !empty($valeurs_fiche[$identifiant.'-previous'])) {
             return array($tableau_template[1] => $valeurs_fiche[$identifiant.'-previous']);
         }
     } elseif ($mode == 'html') {
@@ -1132,8 +1134,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-
-    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire,, $bulle_d_aide) = $tableau_template;
+    list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire, , $bulle_d_aide) = $tableau_template;
     if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
@@ -1651,8 +1652,8 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $valliste = baz_valeurs_liste($liste);
                     $list = explode(',', $valeurs_fiche[$var]);
                     $listlabel = array();
-                    foreach($list as $l) {
-                    $listlabel[] = $valliste['label'][$l];
+                    foreach ($list as $l) {
+                        $listlabel[] = $valliste['label'][$l];
                     }
                     $listlab = implode(', ', $listlabel);
      
@@ -2076,7 +2077,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if (isset($_GET["query"]) && !empty($_GET["query"])) {
         $tableau = array();
         $tab = explode('|', $_GET["query"]);
-         //découpe la requete autour des |
+        //découpe la requete autour des |
         foreach ($tab as $req) {
             $tabdecoup = explode('=', $req, 2);
             $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
@@ -2126,7 +2127,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $tabquery = array();
             $tableau = array();
             $tab = explode('|', $query);
-             //découpe la requete autour des |
+            //découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);
                 $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
