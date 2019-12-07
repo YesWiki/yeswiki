@@ -208,6 +208,8 @@ var yesWikiTypes = {
   "mot_de_passe": { type: "text", subtype: "password" },
   // "nombre": { type: "text", subtype: "tel" },
   "textelong": { type: "textarea", subtype: "textarea"},
+  "listedatedeb": { type: "date"},
+  "listedatefin": { type: "date"},
   "jour": { type: "date"},
   "checkbox": { type: "checkbox-group", subtype2: "list"},
   "liste": { type: "select", subtype2: "list"},
