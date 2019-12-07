@@ -390,7 +390,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         </select></div>
         <div class="select-time' . (($hashour) ? '' : ' hide') . ' input-prepend input-group">
         <span class="add-on input-group-addon">
-        <i class="icon-time fa fa-time"></i></span>
+        <i class="icon-time fa fa-clock"></i></span>
         <select class="form-control select-hour" name="' . $tableau_template[1] . '_hour">
         <option value="00"' . (($hashour) ? '' : ' selected') . (($tabtime[0] == '00') ? 'selected' : '') . '>00</option>
         <option value="01"' . (($tabtime[0] == '01') ? 'selected' : '') . '>01</option>
