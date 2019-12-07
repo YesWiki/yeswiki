@@ -370,6 +370,17 @@ $(document).ready(function () {
     }).attr('autocomplete', 'off');
   }
 
+  // If start_date is greater than en_date, set end_date to start_date
+  $startDate = $('#formulaire #bf_date_debut_evenement')
+    $endDate = $('#formulaire #bf_date_fin_evenement')
+    if ($startDate && $endDate)
+    {
+      $startDate.change(function() {
+        if (new Date($startDate.val()) > new Date($endDate.val()))
+          $endDate.val($startDate.val());
+      })
+    }
+
   // Onglets
   // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
   $('.bazar-entry').each(function (i) {
