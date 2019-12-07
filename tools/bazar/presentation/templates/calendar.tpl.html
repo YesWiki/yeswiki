@@ -1,4 +1,16 @@
 <?php
+
+function formatEndDate($date) {
+  // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
+  // it end one day earlier
+  if (strlen($date) <= 10) {
+    $dateObject = new DateTime($date);
+    $dateObject = $dateObject->modify('+1 day');
+    $date = $dateObject->format("Y-m-d");
+  }
+  return $date;
+}
+
 if(count($fiches)>0) {
   $js = '';
   foreach ($fiches as $fiche) {
@@ -21,8 +33,8 @@ if(count($fiches)>0) {
           $js .= '        {
                       id: "'.$fiche['id_fiche'].'",
                       title: "'.addslashes($titleprefix.$fiche['bf_titre']).'",
-                      start:"'.$fiche['bf_date_debut_evenement'].'",
-                      end:"'.$fiche['bf_date_fin_evenement'].'",
+                      start:"'. $fiche['bf_date_debut_evenement'].'",
+                      end:"'. formatEndDate($fiche['bf_date_fin_evenement']).'",
                       url:"'.$GLOBALS['wiki']->config['base_url'].$fiche['id_fiche'].'",
                       allDay: '.((strlen($fiche['bf_date_debut_evenement'])>10) ? 'false':'true').',
                       className: "bazar-entry",
