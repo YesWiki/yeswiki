@@ -1,5 +1,7 @@
 language: php
 
+dist: trusty
+
 sudo: false
 
 cache:
@@ -7,21 +9,13 @@ cache:
         - vendor
         - $HOME/.composer/cache/files
 
-php:
-    - 5.3
-    - 5.4
-    - 5.5
-    - 5.6
-    - 7.0
-    - 7.1
-    - nightly
 
 env:
-    - TWIG_EXT=no
-    - TWIG_EXT=yes
+    global:
+        - TWIG_EXT=no
+        - SYMFONY_PHPUNIT_REMOVE_RETURN_TYPEHINT=1
 
 before_install:
-    # turn off XDebug
     - phpenv config-rm xdebug.ini || return 0
 
 install:
@@ -31,19 +25,22 @@ before_script:
     - if [ "$TWIG_EXT" == "yes" ]; then sh -c "cd ext/twig && phpize && ./configure --enable-twig && make && make install"; fi
     - if [ "$TWIG_EXT" == "yes" ]; then echo "extension=twig.so" >> `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`; fi
 
-script: |
-    if [[ $TRAVIS_PHP_VERSION = 7.* || $TRAVIS_PHP_VERSION = nightly ]]; then
-        SYMFONY_PHPUNIT_VERSION=6.1 ./vendor/bin/simple-phpunit
-    else
-        ./vendor/bin/simple-phpunit
-    fi
+script: ./vendor/bin/simple-phpunit
 
-matrix:
+jobs:
     fast_finish: true
-    exclude:
+    include:
+        - php: 5.5
+        - php: 5.5
+          env: TWIG_EXT=yes
+        - php: 5.6
+        - php: 5.6
+          env: TWIG_EXT=yes
         - php: 7.0
-          env: TWIG_EXT=yes
         - php: 7.1
-          env: TWIG_EXT=yes
-        - php: nightly
-          env: TWIG_EXT=yes
+        - php: 7.2
+        - php: 7.3
+        - php: 7.4snapshot
+        - stage: integration tests
+          php: 7.3
+          script: ./drupal_test.sh
