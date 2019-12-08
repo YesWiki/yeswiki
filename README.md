@@ -27,11 +27,11 @@ YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedi
 
 ## Authors and contributors
 
-### Initial WakkaWiki
+### Initial WakkaWiki author
 
 - 2002, 2003 Hendrik Mans <hendrik@mans.de>
 
-### Wikini
+### Wikini authors
 
 - 2003 Carlo ZOTTMANN
 - 2002, 2003, 2004 David DELON
@@ -45,6 +45,6 @@ YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedi
 - 2004 David VANTYGHEM
 - 2004 Jean Christophe ANDRE
 
-### YesWiki
+### YesWiki authors
 
 See <https://github.com/YesWiki/yeswiki/graphs/contributors>
