@@ -60,7 +60,12 @@ echo '<form method="post" action="'.$this->href().'">';
 <table class="table table-striped table-condensed gerer-theme">
 <thead>
     <tr>
-        <th><label><input type="checkbox" name="id" value="tous" onclick="cocherTout(this.checked)"><span></span></label></th>
+        <th class="prevent-sorting">
+          <label class="check-all-container">
+            <input type="checkbox" name="id" value="tous" onclick="cocherTout(this.checked)">
+            <span></span>
+          </label>
+        </th>
         <th><div><b>Page</b></div></th>
         <th><div align="center"><b>Theme</b></div></th>
         <th><div align="center"><b>Squelette</b></div></th>

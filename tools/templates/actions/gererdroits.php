@@ -92,15 +92,20 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 <p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
 <div class="table-responsive">
   <table class="table table-striped table-condensed table-acls">
-      <thead>
-    <tr>
-      <td><label><input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)"><span></span></label></td>
-      <td><div><b>Page</b></div></td>
-      <td><div align="center"><b>Lecture</b></div></td>
-      <td><div align="center"><b>Ecriture</b></div></td>
-      <td><div align="center"><b>Commentaires</b></div></td>
-    </tr>
-</thead>
+    <thead>
+      <tr>
+        <th class="prevent-sorting">
+          <label class="check-all-container">
+            <input type="checkbox" name="id" value="tous" onClick="cocherTout(this.checked)">
+            <span></span>
+          </label>
+        </th>
+        <th><div><b>Page</b></div></th>
+        <th><div align="center"><b>Lecture</b></div></th>
+        <th><div align="center"><b>Ecriture</b></div></th>
+        <th><div align="center"><b>Commentaires</b></div></th>
+      </tr>
+    </thead>
 </tbody>
 <?php
   function display_droit($text)
@@ -159,7 +164,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
     <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
     </label>
     <!-- <label for="typemajajouter">
-        <input type=radio name="typemaj" value="ajouter" id="typemajajouter" 
+        <input type=radio name="typemaj" value="ajouter" id="typemajajouter"
         onClick="$('.edit-acl-container').slideDown()">
         <span>Ajouter (Les nouveaux droits seront ajout&eacute;s aux actuels)</span>
     </label> -->
