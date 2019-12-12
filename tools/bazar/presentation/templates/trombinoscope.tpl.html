@@ -1,80 +1,29 @@
-<?php if (count($fiches)>0) :
-	$compteur = 0;
-	foreach ($fiches as $fiche) :
-		// On calcule en quelle colonne on se trouve
-		// afin de savoir si on doit
-		//	- ouvrir le <div class="row">,
-		//	- le fermer
-		//	- ou ne rien faire
-		// En effet, si on ouvre le row tout au début
-		// et qu'on attend la fin pur le fermer,
-		// on a des problèmes d'affichage
-		// quand toutes les tuiles ne font pas la même taille.
-		$compteur ++;
-		$ligne=ceil($compteur / 3);
-		$colonne=$compteur-(3*($ligne-1));
-		if ($colonne == 1) : ?>
-	<div class="row">
-	<?php endif; ?>
-        <div class="col-xs-4 col-md-4 bazar-entry" <?php echo $fiche['html_data'];?>>
-          <div class="thumbnail">
-            <?php
-            if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
-              <img class="img-responsive" alt="<?php echo $fiche['bf_titre'];?>"
-                src="<?php echo redimensionner_image(
+<?php $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/trombinoscope.css'); ?>
+<?php if (count($fiches)>0) : ?>
+	<div class="trombi-container">
+  <?php foreach ($fiches as $fiche) : ?>
+    <a class="bazar-entry modalbox" <?php echo $fiche['html_data'];?>
+       href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>" target="_new"
+       title="<?php echo $fiche['bf_titre'];?>">
+
+      <div class="image-container">
+        <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+          <img class="trombi-image" alt="<?php echo $fiche['bf_titre'];?>"
+               src="<?php echo redimensionner_image(
                     'files/'.$fiche['imagebf_image'],
-                    'cache/image_300_400_'.$fiche['imagebf_image'],
-                    300,
-                    400,
-                    'crop'
-                ); ?>">
-            <?php
-            else : ?>
-              <img class="img-responsive"
-                 src="tools/bazar/libs/vendor/placeholder.php?size=300x400&amp;bg=666&amp;fg=444&amp;text=<?php
-            echo urlencode($fiche['bf_titre']); ?>"
-                alt="<?php
-            echo htmlspecialchars($fiche['bf_titre'], ENT_COMPAT, YW_CHARSET); ?>">
-            <?php
-            endif; ?>
-            <div class="caption">
-              <h5><?php echo $fiche['bf_titre'];?></h5>
-              <p>
-                <a class="btn btn-mini btn-info modalbox"
-                  title="<?php echo $fiche['bf_titre'];?>"
-                  href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>" target="_new">
-                  More info / Plus d'infos
-                </a>
-              </p>
-            </div>
-          </div>
-		 </div> <!-- /.col-xs-4 col-md-4 bazar-entry -->
-    <?php
-		if ($colonne == 3) : ?>
-	</div> <!-- /.row -->
-	<?php
-		endif;
-	endforeach; ?>
-    <?php
-    $js = "
-equalheight = function(container){
-    var highestBox = 0;
-        $(container).each(function(){
-                if($(this).height() > highestBox){
-                highestBox = $(this).height();
-        }
-    });
-    $(container).height(highestBox);
-}
+                    'cache/image_300_300_'.$fiche['imagebf_image'],
+                     300, 300, 'crop'); ?>">
+        <?php else : ?>
+          <img class="trombi-image img-placeholder"
+               src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+          <i class="trombi-image icon-placeholder fa fa-user-circle"></i>
+        <?php endif; ?>
+      </div>
 
-$(window).load(function() {
-  equalheight('.bazar-entry');
-});
-
-
-$(window).resize(function(){
-  equalheight('.bazar-entry');
-});";
-    $GLOBALS['wiki']->AddJavascript($js);
-    ?>
+      <div class="caption trombi-content">
+        <span class="title"><?php echo $fiche['bf_titre'];?></span>
+      </div>
+		</a> <!-- / bazar-entry -->
+  <?php endforeach; ?>
+  </div> <!-- / trombi-container -->
 <?php endif; ?>
