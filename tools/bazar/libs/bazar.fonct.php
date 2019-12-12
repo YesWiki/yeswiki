@@ -3781,8 +3781,9 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     include_once 'includes/squelettephp.class.php';
     try {
         $squel = new SquelettePhp($params['template'], 'bazar');
-        $output = '<div id="bazar-list-'.$params['nbbazarliste'].'" class="bazar-list">
-    <div class="list">'.$squel->render($fiches).'</div></div>';
+        $output = '<div id="bazar-list-'.$params['nbbazarliste'].'"
+                    class="bazar-list" data-template="' . $params['template'] . '">
+                        <div class="list">'.$squel->render($fiches).'</div></div>';
     } catch (Exception $e) {
         $output = '<div class="alert alert-danger">Erreur liste fiches : '.$e->getMessage().'</div>'."\n";
     }
