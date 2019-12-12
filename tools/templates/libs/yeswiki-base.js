@@ -17,7 +17,7 @@
     e.stopPropagation();
     e.preventDefault();
     var $this = $(this);
-    var text = $this.attr("title");
+    var text = $this.attr("title") || "";
     var size = " " + $this.data("size");
     var iframe = $this.data("iframe");
     if (text.length > 0) {
@@ -69,6 +69,7 @@
       $modal
         .find(".modal-body")
         .load(link + " .page", function(response, status, xhr) {
+          $(document).trigger("yw-modal-open");
           return false;
         });
     }
