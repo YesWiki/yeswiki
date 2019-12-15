@@ -1,0 +1,67 @@
+/* ACE EDITOR -> to be moved outside of theme */
+@font-face {
+  font-family: 'Fira Code';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Fira Code'),
+       url('../fonts/fira-code-v7-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+       url('../fonts/fira-code-v7-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
+.ace-editor-container {
+  padding: 1em .7em;
+  border: 2px solid var(--primary-color);
+  border-radius: 0 3px 3px 3px;
+  margin-bottom: 1rem;
+}
+.ace-body {
+  height: 150px;
+  border: none;
+}
+.ace-editor-container.big .ace-body {
+  height: 500px;
+}
+.ace_layer {
+  color: var(--main-text-color);
+}
+.ace-body .ace_cursor {
+  color: var(--neutral-color);
+  border-width: 1px !important;
+}
+.ace-body .ace_marker-layer .ace_active-line {
+  /*background: rgba(0, 0, 0, 0.03);*/
+  background: transparent;
+  margin: 0 4px;
+  border-radius: 3px;
+}
+
+.ace-body .ace_markup {
+  color: #bc1c96;
+}
+.ace-body .ace_bazar.ace_action {
+  color: var(--primary-color);
+}
+.ace-body .ace_list { font-weight: bold; }
+
+.ace-body .ace_attribute-name {
+  color: var(--secondary-color-1);
+}
+.ace-body .ace_string {
+  color: var(--neutral-color);
+}
+.ace-body .ace_markup.ace_html {
+  color: var(--neutral-soft-color);
+}
+.ace-body .ace_headings {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+.ace-body .ace_link {
+  color: var(--primary-color);
+}
+.ace-body .ace_comment {
+  color: var(--neutral-soft-color);
+}
+.ace-body .ace_pre {
+  background-color: #c33ba30f;
+}

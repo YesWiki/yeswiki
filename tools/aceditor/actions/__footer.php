@@ -19,11 +19,17 @@ $lang = array(
   'ACEDITOR_UNDERLINE_TEXT' => _t('ACEDITOR_UNDERLINE_TEXT'),
   'ACEDITOR_STRIKE_TEXT' => _t('ACEDITOR_STRIKE_TEXT'),
   'ACEDITOR_LINE' => _t('ACEDITOR_LINE'),
+  'ACEDITOR_LIST' => _t('ACEDITOR_LIST'),
   'ACEDITOR_LINK' => _t('ACEDITOR_LINK'),
   'ACEDITOR_LINK_PROMPT' => _t('ACEDITOR_LINK_PROMPT'),
   'ACEDITOR_LINK_TITLE' => _t('ACEDITOR_LINK_TITLE'),
   'ACEDITOR_HELP' => _t('ACEDITOR_HELP'),
 );
 $js = 'var aceditorlang = '.json_encode($lang);
+
 $this->AddJavascript($js);
-$this->AddJavascriptFile('tools/aceditor/libs/ACeditor.js');
+$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');
+$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/mode-html.js');
+$this->AddJavascriptFile('tools/aceditor/presentation/javascripts/aceditor.js');
+$this->AddCSSFile('tools/aceditor/presentation/styles/aceditor.css');
+?>

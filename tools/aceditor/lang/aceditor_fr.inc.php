@@ -44,6 +44,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_STRIKE_TEXT' => 'Barre le texte s&eacute;lectionn&eacute; ( Ctrl-y )',
     'ACEDITOR_LINE' => 'Ins&egrave;re une ligne horizontale',
     'ACEDITOR_LINK' => 'Lien',
+    'ACEDITOR_LIST' => 'Liste à puce',
     'ACEDITOR_LINK_PROMPT' => 'Entrez l\'adresse URL',
     'ACEDITOR_LINK_TITLE' => 'Ajoute un lien au texte s&eacute;lectionn&eacute;',
     'ACEDITOR_HELP' => 'Aide mémoire'
