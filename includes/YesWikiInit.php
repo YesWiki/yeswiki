@@ -165,6 +165,7 @@ class Init
             'default_comment_acl' => '@admins',
             'preview_before_save' => 0,
             'allow_raw_html' => false,
+            'disable_wiki_links' => false,
             'timezone'=>'GMT' // Only used if not set in wakka.config.php nor in php.ini
         );
         unset($_rewrite_mode);

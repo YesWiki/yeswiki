@@ -350,7 +350,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return $wiki->Link($thing);
                     }
                     // wiki links!
-                    elseif (preg_match('`^' . WN_WIKI_LINK . '`u', $thing)) {
+                    elseif (!$wiki->GetConfigValue('disable_wiki_links', false) && preg_match('`^' . WN_WIKI_LINK . '`u', $thing)) {
                         return $wiki->Link($thing);
                     }
                     // separators
