@@ -2733,7 +2733,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
 
         // on recupere les infos du type de fiche
         $f = $fichebazar['values']['id_typeannonce'];
-        $fichebazar['form'] = is_array($form[$f]) ? $form[$f] : baz_valeurs_formulaire($f);
+        $fichebazar['form'] = (isset($form[$f]) && is_array($form[$f])) ? $form[$f] : baz_valeurs_formulaire($f);
     }
 
     $res = '';

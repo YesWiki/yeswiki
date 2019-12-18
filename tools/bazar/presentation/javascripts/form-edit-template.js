@@ -265,12 +265,17 @@ var typeUserAttrs = {
 // How a field is represented in the formBuilder view
 var templates = {
   champs_mail: function(fieldData) {
-    return { field: '<input id="' + fieldData.name + '"' + ' type="email"/>' };
+    return { field: `<div class="control-group form-group input text">
+    <label class="control-label col-sm-3">` + (fieldData.value || "") + `<span class="symbole_obligatoire"></span></label>
+    <div class="controls col-sm-9">
+      <input class="form-control input-xxlarge" id="` + fieldData.name + `" type="email" value="" />
+    </div>
+  </div>` };
   },
   carte_google: function(fieldDate) {
     return {
       field:
-        "Geolocolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays"
+        "Geolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays"
     };
   },
   image: function(fieldDate) {
@@ -288,7 +293,12 @@ var templates = {
         (fieldData.maxlength || "") +
         '"/>';
     else string += 'value="' + fieldData.value + '"/>';
-    return { field: string };
+    return { field: `<div class="control-group form-group input text">
+    <label class="control-label col-sm-3">` + (fieldData.value || "") + `<span class="symbole_obligatoire"></span></label>
+    <div class="controls col-sm-9">
+      `+string+`
+    </div>
+  </div>` };
   },
   tags: function(field) {
     return { field: "<input/>" };
