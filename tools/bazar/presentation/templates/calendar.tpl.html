@@ -37,7 +37,7 @@ if(count($fiches)>0) {
                       end:"'. formatEndDate($fiche['bf_date_fin_evenement']).'",
                       url:"'.$GLOBALS['wiki']->config['base_url'].$fiche['id_fiche'].'",
                       allDay: '.((strlen($fiche['bf_date_debut_evenement'])>10) ? 'false':'true').',
-                      className: "bazar-entry",
+                      className: "bazar-entry modalbox",
                       backgroundColor: "'.$color.'",
                       htmlattributes: "'.addslashes($fiche['html_data']).'"
           },';
@@ -79,7 +79,6 @@ if(count($fiches)>0) {
             themeSystem: 'bootstrap3',
             timeFormat: 'HH:mm',
             eventLimit: true, // allow more link when too many events
-            eventClick : calendar_click
         })
       }
       initCal('#calendar".$param['nbbazarliste']."', allEvents);
@@ -103,15 +102,6 @@ if(count($fiches)>0) {
 
   if (!empty($params['minical']) && $params['minical']==1) {
       $script .= '
-      function calendar_click(event) {
-          if (event.url) {
-              var left = (screen.width/2)-(600/2);
-              var top = (screen.height/2)-(400/2);
-              window.open(event.url+\'/iframe\', \'_blank\',"toolbar=no, directories=no, resizable=no, location=no, width=600, height=400, top="+top+", left="+left+", menubar=no, status=no, scrollbars=yes");
-          }
-          return false;
-      }
-
       function init_calendar_tooltip() {
           $(".fc-event-title").each(function() {
               texte = $(this).html();
@@ -119,21 +109,6 @@ if(count($fiches)>0) {
           });
       }
       setTimeout(init_calendar_tooltip,2000);';
-  } else {
-      $script .= "
-      function calendar_click(event) {
-        if (event.url) {
-          $('<div>').attr('id', 'dateModal' ).addClass('modal fade').appendTo($('body'));
-          var modal = $('#dateModal');
-          modal.html('<div class=\"modal-dialog\"><div class=\"modal-content\"><div class=\"modal-header\"><button type=\"button\" class=\"close\" data-dismiss=\"modal\">&times;</button><h3>'+event.title+'</h3></div><div class=\"modal-body\"></div></div></div>').on('hidden', function() {modal.remove()});
-          modal.find('.modal-body').load(event.url + ' .page', function() {
-              $(this).find('.page').append('<a href=\"'+event.url + '/edit' +'\" class=\"btn btn-default pull-right\"><i class=\"fa fa-pencil-alt icon-pencil\"></i> "._t('BAZ_MODIFIER_LA_FICHE')."</a><div class=\"clearfix\"></div>').removeClass('page').find('h1.BAZ_fiche_titre').remove();
-              modal.modal('show');
-          });
-
-          return false;
-        }
-      }";
   }
   $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css');
   $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/moment.min.js');
