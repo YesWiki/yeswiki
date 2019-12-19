@@ -147,21 +147,27 @@ $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.
 <div id="import-forms-result"></div>
 <form id="import-forms-form" action="<?php echo $GLOBALS['wiki']->href('', $GLOBALS['wiki']->GetPageTag(), BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE); ?>" class="hide" method="post">
 <div class="table-responsive">
-<table id="import-forms-table" class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
-    <thead>
-        <tr>
-            <th style="width:25px;"><input data-target="#import-forms-table tbody" type="checkbox" class="selectall"></th>
-            <th><?php echo _t('BAZ_FORMULAIRE'); ?></th>
-            <th style="width:40px;"><?php echo _t('BAZ_ID'); ?></th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
+  <table id="import-forms-table" class="table table-condensed table-striped prevent-auto-init">
+      <thead>
+          <tr>
+              <th class="prevent-sorting">
+                <label class="check-all-container">
+                  <input data-target="#import-forms-table tbody" type="checkbox" class="selectall">
+                  <span></span>
+                </label>
+              </th>
+              <th><?php echo _t('BAZ_FORMULAIRE'); ?></th>
+              <th><?php echo _t('BAZ_ID'); ?></th>
+          </tr>
+      </thead>
+      <tbody>
+      </tbody>
+  </table>
 </div> <!-- /.table-responsive -->
 <div class="checkbox">
 	<label class="checkbox">
-		<input data-target="#import-forms-table tbody" type="checkbox" class="selectall"> <?php echo _t('BAZ_SELECT_ALL'); ?>
+		<input data-target="#import-forms-table tbody" type="checkbox" class="selectall">
+    <span><?php echo _t('BAZ_SELECT_ALL'); ?></span>
 	</label>
 </div>
 <button id="btn-import-selection" type="submit" class="btn btn-primary"><?php echo _t('BAZ_IMPORT_SELECTION'); ?></button>

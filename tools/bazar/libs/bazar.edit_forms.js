@@ -75,7 +75,7 @@ $(document).ready(function() {
               existingmessage = '<br><span class="text-warning">' + formtranslations.existingmessage + '</span>';
             }
 
-            var tablerow = '<tr' + trclass + '><td><input type="checkbox" name="imported-form[' + data[idform].bn_id_nature + ']" value="' + JSON.stringify(data[idform]).replace(/"/g, '&quot;') + '"></td><td><strong>' + data[idform].bn_label_nature + '</strong>';
+            var tablerow = '<tr' + trclass + '><td><label><input type="checkbox" name="imported-form[' + data[idform].bn_id_nature + ']" value="' + JSON.stringify(data[idform]).replace(/"/g, '&quot;') + '"><span></span></label></td><td><strong>' + data[idform].bn_label_nature + '</strong>';
             if (data[idform].bn_description && 0 !== data[idform].bn_description.length) {
               tablerow += '<br>' + data[idform].bn_description;
             }
@@ -86,6 +86,7 @@ $(document).ready(function() {
         }
 
         resultimportform.removeClass('hide');
+        resultimporttable.DataTable(DATATABLE_OPTIONS);
         resultforms.prepend('<div class="alert alert-success">' + formtranslations.nbformsfound + ' : ' + count + '</div>');
       }).fail(function(jqXHR, textStatus, errorThrown) {
         resultforms.html('<div class="alert alert-danger">' + formtranslations.noanswers + '.</div>');
