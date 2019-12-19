@@ -65,6 +65,16 @@ var SYNTAX = {
   }
 };
 
+;(function ( $, window, undefined ) {
+  $.fn.surroundSelectedText = function ( left = "", right = "") {
+    return this.each(function () {
+      var aceditor = $(this).data('aceditor');
+      if (!aceditor) aceditor = $(this).aceditor()
+      aceditor.session.replace(aceditor.getSelectionRange(), left + aceditor.getSelectedText() + right)
+    });
+  }
+}(jQuery, window));
+
 /*
  Transform a textarea into an Ace editor, with toolbar
 */
@@ -91,6 +101,7 @@ var SYNTAX = {
     this._name = pluginName;
 
     this.init();
+    return this.aceditor;
   }
 
   Plugin.prototype.init = function () {
@@ -107,7 +118,7 @@ var SYNTAX = {
       textarea.after(aceeditor);
       textarea.hide();
 
-      var editor = ace.edit(aceeditor.find('pre')[0], {
+      var aceditor = ace.edit(aceeditor.find('pre')[0], {
         printMargin: false,
         // theme: "ace/theme/monokai",
         mode: "ace/mode/" + this.options.syntax,
@@ -116,10 +127,12 @@ var SYNTAX = {
         fontSize: "17px",
         fontFamily: "'Fira Code', monospace"
       });
-      editor.getSession().setValue(textarea.val());
-      editor.getSession().on('change', function(){
-        textarea.val(editor.getSession().getValue());
+      aceditor.getSession().setValue(textarea.val());
+      aceditor.getSession().on('change', function(){
+        textarea.val(aceditor.getSession().getValue());
       });
+
+      textarea.data('aceditor', aceditor);
 
       // ---- TOOLBAR ----
       if (this.options.savebtn) {
@@ -192,7 +205,7 @@ var SYNTAX = {
           if ($(this).data('prompt')) {
             var prompt = window.prompt($(this).data('prompt'), $(this).data('prompt-val'));
             if (prompt != null) {
-              editor.session.replace(editor.getSelectionRange(), $(this).data('lft') + prompt + " " + editor.getSelectedText() + $(this).data('rgt'))
+              textarea.surroundSelectedText($(this).data('lft') + prompt + " ", $(this).data('rgt'))
             }
           } else if ($(this).data('help')) {
               $('body').append('<div class="modal fade" id="YesWikiHelpModal">' +
@@ -221,7 +234,7 @@ var SYNTAX = {
                 $modal.remove();
               });
           } else {
-            editor.session.replace(editor.getSelectionRange(), $(this).data('lft') + editor.getSelectedText() + $(this).data('rgt'))
+            textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'))
           }
 
           $(this).parents('.btn-group').removeClass('open');
@@ -310,6 +323,7 @@ var SYNTAX = {
         }
       });
     }
+    return aceditor;
   };
 
   // A really lightweight plugin wrapper around the constructor,
