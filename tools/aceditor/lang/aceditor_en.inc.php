@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * English translation for ACeditor extension
 *
@@ -45,6 +45,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ACEDITOR_UNDERLINE_TEXT'	=> 'Underline the selected text ( Ctrl-u )',
 'ACEDITOR_STRIKE_TEXT'		=> 'Stroke the selected text ( Ctrl-y )',
 'ACEDITOR_LINE'				=> 'Insert horizontal line',
+'ACEDITOR_LIST'       => 'Insert list',
 'ACEDITOR_LINK'				=> 'Link',
 'ACEDITOR_LINK_PROMPT'		=> 'Enter the link adress',
 'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text'

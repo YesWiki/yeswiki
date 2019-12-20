@@ -31,21 +31,21 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 			    <div class="form-group image-option">
 					<label class="control-label col-sm-3">'._t('IMAGE_ALIGN').'</label>
 					<div class="controls col-sm-9">
-            <div class="radio">
-  					  <label class="radio inline label-image-align-left" for="image-align-left">
+            <div class="radio inline-container">
+  					  <label class="label-image-align-left" for="image-align-left">
                         <input type="radio" id="image-align-left" checked="checked" value="left" name="attach_align" class="input_radio image-align-left" />
                         <span></span>
                           <img src="tools/attach/presentation/images/align-left.png" alt="align-left" /> '._t('LEFT').'
                       </label>
-  					  <label class="radio inline label-image-align-center" for="image-align-center">
+  					  <label class="label-image-align-center" for="image-align-center">
                         <input type="radio" id="image-align-center" value="center" name="attach_align" class="input_radio image-align-center" />
                         <span></span>
                           <img src="tools/attach/presentation/images/align-center.png" alt="align-center" /> '._t('CENTER').'
                       </label>
-  					  <label class="radio inline label-image-align-right" for="image-align-right">
+  					  <label class="label-image-align-right" for="image-align-right">
                         <input type="radio" id="image-align-right" value="right" name="attach_align" class="input_radio image-align-right">
                         <span></span>
-                          <img src="tools/attach/presentation/images/align-right.png" alt="align-right" /> 
+                          <img src="tools/attach/presentation/images/align-right.png" alt="align-right" />
                           '._t('RIGHT').'
                       </label>
   					</div>
@@ -55,7 +55,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 				<div class="form-group image-option">
 					<label class="control-label col-sm-3">'._t('IMAGE_SIZE').'</label>
 					<div class="controls col-sm-9">
-            <div class="radio">
+            <div class="radio inline-container">
   						<label for="image-size-small">
                           <input type="radio" id="image-size-small" value="small" name="attach_imagesize" class="input_radio image-size-small">
                           <span></span>
@@ -89,7 +89,8 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 
 				<a title="'._t('SEE_THE_ADVANCED_PARAMETERS').'" href="#avanced-settings" data-toggle="collapse" class="btn btn-default">'._t('ADVANCED_PARAMETERS').'</a>
 				<div id="avanced-settings" class="collapse">
-					<div class="form-group">
+					<hr>
+          <div class="form-group">
 						<label class="control-label col-sm-3" for="attach_link">'._t('ASSOCIATED_LINK').'</label>
 						<div class="controls col-sm-9">
 						  <input type="text" id="attach_link" name="attach_link" value="" class="attach_link form-control">
@@ -98,7 +99,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 				    <div class="form-group">
 						<label class="control-label col-sm-3">'._t('GRAPHICAL_EFFECTS').'</label>
 						<div class="controls col-sm-9">
-                            <div class="checkbox">
+                            <div class="checkbox inline-container">
                                 <label>
                                 <input type="checkbox" name="attach_css_class" value="whiteborder" />
                                 <span></span>

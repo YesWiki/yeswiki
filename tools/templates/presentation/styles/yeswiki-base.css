@@ -15,7 +15,7 @@
   color: #c00;
   text-decoration: underline;
 }
-.del {
+.del, .ace-body .ace_stroke {
   font-style: italic;
   color: #c00;
   text-decoration: line-through;

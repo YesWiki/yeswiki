@@ -1369,16 +1369,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       setTimeout(function() {
         // on ajoute le code de l'action attach au mode édition
         body.focus();
-        if (body.get(0).setSelectionRange) {
-          body.get(0).setSelectionRange(position.start, position.start);
-        } else if (body.get(0).createTextRange) {
-          var range = body.get(0).createTextRange();
-          range.collapse(true);
-          range.moveEnd('character', position.start);
-          range.moveStart('character', position.start);
-          range.select();
-        }
-        body.surroundSelectedText(actionattach, "", true);
+        body.surroundSelectedText(actionattach, "");
       }, 10);
 
       hideUploadModal();
@@ -1425,11 +1416,6 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
 
     // we move the uploaded file list in the modal
     UploadModal.find('.modal-body').prepend(downloadlist);
-
-    // we save the position of the curson in the textarea to know where to add the attach code
-    $(".qq-upload-button").on('mousedown', function(e) {
-      position = body.getSelection();
-    });
   };
 
   $.fn[pluginName] = function(options) {

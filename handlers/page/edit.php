@@ -151,9 +151,9 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             $output .=
               $this->FormOpen('edit').
               "<input type=\"hidden\" name=\"previous\" value=\"$previous\" />\n".
-              "<textarea id=\"body\" name=\"body\" cols=\"60\" rows=\"40\" wrap=\"soft\" class=\"edit\">\n".
-              htmlspecialchars($body, ENT_COMPAT, YW_CHARSET).
-              "</textarea><br />\n".
+              "<textarea id=\"body\" name=\"body\" style='display: none'>" .
+                htmlspecialchars($body, ENT_COMPAT, YW_CHARSET).
+              "</textarea>".
               "<script type=\"text/javascript\">\n".
               "document.getElementById(\"body\").onkeydown=fKeyDown;\n".
               "</script>\n".
