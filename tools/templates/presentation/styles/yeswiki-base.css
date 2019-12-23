@@ -96,8 +96,6 @@ span.missingpage,
   padding: 2px 5px;
   text-decoration: none;
   display: inline-block;
-  *display: inline;
-  *zoom: 1;
   margin: 0;
 }
 .footer-hidden {
@@ -334,7 +332,6 @@ li.toc5 {
   margin-left: -50vw;
   margin-right: -50vw;
 }
-html,
 body {
   overflow-x: hidden;
 } /* hack pour cacher l'ascenseur horizontal */

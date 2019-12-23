@@ -341,53 +341,55 @@
     return false;
   }
   document.addEventListener('DOMContentLoaded', function(){
-    $('.colorpicker').spectrum({
-      showPalette:true,
-      showAlpha: true,
-      showInput: true,
-      clickoutFiresChange: true,
-      showInitial: true,
-      chooseText: "Sauver",
-      cancelText: "Annuler",
-      change: function(color) {
-        document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
-      },
-      hide: function(color) {
-        document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
-      },
-      move: function(color) {
-        document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
-      },
-      palette: [
-        [
-          getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
-          getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-1'),
-          getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-2')
-        ],
-        [
-          getComputedStyle(document.documentElement).getPropertyValue('--neutral-light-color'),
-          getComputedStyle(document.documentElement).getPropertyValue('--neutral-soft-color'),
-          getComputedStyle(document.documentElement).getPropertyValue('--neutral-color')
+    if (typeof $('.colorpicker').spectrum === "function") { 
+      $('.colorpicker').spectrum({
+        showPalette:true,
+        showAlpha: true,
+        showInput: true,
+        clickoutFiresChange: true,
+        showInitial: true,
+        chooseText: "Sauver",
+        cancelText: "Annuler",
+        change: function(color) {
+          document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
+        },
+        hide: function(color) {
+          document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
+        },
+        move: function(color) {
+          document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
+        },
+        palette: [
+          [
+            getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-1'),
+            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-2')
+          ],
+          [
+            getComputedStyle(document.documentElement).getPropertyValue('--neutral-light-color'),
+            getComputedStyle(document.documentElement).getPropertyValue('--neutral-soft-color'),
+            getComputedStyle(document.documentElement).getPropertyValue('--neutral-color')
+          ]
         ]
-      ]
-    })
-
-    $('.fontpicker')
-    .fontselect({
-      placeholder: 'Choisir une police',
-      placeholderSearch: 'Chercher...',
-    })
-    .on('change', function() {
-      // Replace + signs with spaces for css
-      var font = this.value.replace(/\+/g, ' ');
-
-      // Split font into family and weight
-      font = font.split(':');
-
-      var fontFamily = font[0];
-      var fontWeight = font[1] || 400;
-
-      document.documentElement.style.setProperty('--'+$(this).attr('name'), "'"+fontFamily+"'");
-    });
+      })
+  
+      $('.fontpicker')
+      .fontselect({
+        placeholder: 'Choisir une police',
+        placeholderSearch: 'Chercher...',
+      })
+      .on('change', function() {
+        // Replace + signs with spaces for css
+        var font = this.value.replace(/\+/g, ' ');
+  
+        // Split font into family and weight
+        font = font.split(':');
+  
+        var fontFamily = font[0];
+        var fontWeight = font[1] || 400;
+  
+        document.documentElement.style.setProperty('--'+$(this).attr('name'), "'"+fontFamily+"'");
+      });
+    }
   }, false);
 </script>
