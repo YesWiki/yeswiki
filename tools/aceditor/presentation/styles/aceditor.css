@@ -9,7 +9,7 @@
 }
 
 .ace-editor-container {
-  padding: 1em .7em;
+  padding: 0;
   border: 2px solid var(--primary-color);
   border-radius: 0 3px 3px 3px;
   margin-bottom: 1rem;
@@ -19,7 +19,7 @@
   border: none;
 }
 .ace-editor-container.big .ace-body {
-  height: 500px;
+  min-height: 500px;
 }
 .ace_layer {
   color: var(--main-text-color);
@@ -64,4 +64,14 @@
 }
 .ace-body .ace_pre {
   background-color: #c33ba30f;
+}
+#ACEditor {
+  position: relative;
+  height: auto;
+}
+#ACEditor .btn-toolbar {
+position: sticky;
+top: 0;
+z-index: 6;
+background-color: white;
 }

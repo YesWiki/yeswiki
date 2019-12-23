@@ -57,16 +57,16 @@ var YesWikiHighlightRules = function() {
         "basic": [
         { // strong ** __
             token : "bold",
-            regex : "([*]{2}(?=\\S))(.*[*]*)(\\1)"
+            regex : "([*]{2}(?=.*?))(.*?[*]*)(\\1)"
         }, { // italic //
             token : "italic",
-            regex : "([/]{2}(?=\\S))(.*[/]*)(\\1)"
+            regex : "([/]{2}(?=.*?))(.*?[/]*)(\\1)"
         }, { // underline //
             token : "underline",
-            regex : "([_]{2}(?=\\S))(.*[_]*)(\\1)"
+            regex : "([_]{2}(?=.*?))(.*?[_]*)(\\1)"
         }, { // stroke //
             token : "stroke",
-            regex : "([@]{2}(?=\\S))(.*[@]*)(\\1)"
+            regex : "([@]{2}(?=.*?))(.*?[@]*)(\\1)"
         }, { // link
             token : ["markup", "underline.link", "text", "string", "markup"],
             regex : "(\\[\\[)([^\\s]+)(\\s)(.*)(\\]\\])"

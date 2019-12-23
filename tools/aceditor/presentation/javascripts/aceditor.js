@@ -122,10 +122,14 @@ var SYNTAX = {
         printMargin: false,
         // theme: "ace/theme/monokai",
         mode: "ace/mode/" + this.options.syntax,
-        showGutter: false,
-        wrap: 100,
+        showGutter: true,
+        wrap: 'free',
+        maxLines: Infinity,
+        showFoldWidgets:false,
         fontSize: "17px",
-        fontFamily: "'Fira Code', monospace"
+        fontFamily: "'Fira Code', monospace",
+        highlightActiveLine: true,
+
       });
       aceditor.getSession().setValue(textarea.val());
       aceditor.getSession().on('change', function(){
