@@ -9,9 +9,7 @@
 }
 
 .ace-editor-container {
-  padding: 0;
-  border: 2px solid var(--primary-color);
-  border-radius: 0 3px 3px 3px;
+  padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
 .ace-body {
@@ -70,8 +68,24 @@
   height: auto;
 }
 #ACEditor .btn-toolbar {
-position: sticky;
-top: 0;
-z-index: 6;
-background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background-color: white;
+}
+
+.ace_gutter-cell {
+  padding-left: 12px;
+  padding-top: 3px;
+  color: var(--neutral-soft-color);
+  padding-right: 8px;
+  margin-right: 10px;
+}
+.ace-tm .ace_gutter-active-line {
+  background-color: #f3f1f1;
+}
+.ace-tm .ace_gutter {
+  font-size: 12px;
+  padding-right: 10px;
+  background: none;
 }
