@@ -79,7 +79,7 @@ var YesWikiHighlightRules = function() {
         ],
         "bazar" : [{
             token: "meta.tag.bazar.action",
-            regex: "\\s?[a-zA-Z]+\\s+",
+            regex: "[a-zA-Z]+\\s?",
             next: "bazar-attributes"
         }],
         "bazar-attributes": [{
