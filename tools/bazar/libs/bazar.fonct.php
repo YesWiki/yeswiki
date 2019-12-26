@@ -3596,41 +3596,43 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             if (!empty($value) and is_array($templatef[$fiche['id_typeannonce']]) && $facetteasked) {
                 $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
                 $val = array_shift($val);
-                $islistforeign = (strpos($val['id'], 'listefiche')===0) || (strpos($val['id'], 'checkboxfiche')===0);
-                $islist = in_array($val['type'], array('checkbox', 'select', 'scope', 'radio')) && !$islistforeign;
-                $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
-                if ($islistforeign) {
-                    // listefiche ou checkboxfiche
-                    $facettevalue[$val['id']]['type'] = 'fiche';
-                    $facettevalue[$val['id']]['source'] = $key;
-                    $tabval = explode(',', $value);
-                    foreach ($tabval as $tval) {
-                        if (isset($facettevalue[$val['id']][$tval])) {
-                            ++$facettevalue[$val['id']][$tval];
-                        } else {
-                            $facettevalue[$val['id']][$tval] = 1;
+                if (is_array($val) && !empty($val)) {
+                    $islistforeign = (strpos($val['id'], 'listefiche')===0) || (strpos($val['id'], 'checkboxfiche')===0);
+                    $islist = in_array($val['type'], array('checkbox', 'select', 'scope', 'radio')) && !$islistforeign;
+                    $istext = (!in_array($val['type'], array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
+                    if ($islistforeign) {
+                        // listefiche ou checkboxfiche
+                        $facettevalue[$val['id']]['type'] = 'fiche';
+                        $facettevalue[$val['id']]['source'] = $key;
+                        $tabval = explode(',', $value);
+                        foreach ($tabval as $tval) {
+                            if (isset($facettevalue[$val['id']][$tval])) {
+                                ++$facettevalue[$val['id']][$tval];
+                            } else {
+                                $facettevalue[$val['id']][$tval] = 1;
+                            }
                         }
-                    }
-                } elseif ($islist) {
-                    $facettevalue[$val['id']]['type'] = 'liste';
-                    $facettevalue[$val['id']]['source'] = $val['values']['id'];
-                    // liste ou checkbox
-                    $tabval = explode(',', $value);
-                    foreach ($tabval as $tval) {
-                        if (isset($facettevalue[$val['id']][$tval])) {
-                            ++$facettevalue[$val['id']][$tval];
-                        } else {
-                            $facettevalue[$val['id']][$tval] = 1;
+                    } elseif ($islist) {
+                        $facettevalue[$val['id']]['type'] = 'liste';
+                        $facettevalue[$val['id']]['source'] = $val['values']['id'];
+                        // liste ou checkbox
+                        $tabval = explode(',', $value);
+                        foreach ($tabval as $tval) {
+                            if (isset($facettevalue[$val['id']][$tval])) {
+                                ++$facettevalue[$val['id']][$tval];
+                            } else {
+                                $facettevalue[$val['id']][$tval] = 1;
+                            }
                         }
-                    }
-                } elseif ($istext and !$onlyLists) {
-                    // texte
-                    $facettevalue[$key]['type'] = 'form';
-                    $facettevalue[$key]['source'] = $key;
-                    if (isset($facettevalue[$key][$value])) {
-                        ++$facettevalue[$key][$value];
-                    } else {
-                        $facettevalue[$key][$value] = 1;
+                    } elseif ($istext and !$onlyLists) {
+                        // texte
+                        $facettevalue[$key]['type'] = 'form';
+                        $facettevalue[$key]['source'] = $key;
+                        if (isset($facettevalue[$key][$value])) {
+                            ++$facettevalue[$key][$value];
+                        } else {
+                            $facettevalue[$key][$value] = 1;
+                        }
                     }
                 }
             }
