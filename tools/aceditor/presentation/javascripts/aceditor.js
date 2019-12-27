@@ -127,7 +127,7 @@ var SYNTAX = {
         maxLines: Infinity,
         showFoldWidgets:false,
         fontSize: "17px",
-        fontFamily: "'Fira Code', monospace",
+        fontFamily: "'Fira Mono', monospace",
         highlightActiveLine: true,
 
       });
