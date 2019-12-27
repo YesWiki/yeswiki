@@ -126,8 +126,9 @@ var SYNTAX = {
         wrap: 'free',
         maxLines: Infinity,
         showFoldWidgets:false,
-        fontSize: "16px",
-        fontFamily: 'monospace',
+        fontSize: "18px",
+        fontFamily: '\'Inconsolata\', monospace',
+
         highlightActiveLine: true,
 
       });

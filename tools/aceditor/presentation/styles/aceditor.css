@@ -1,4 +1,13 @@
 /* ACE EDITOR -> to be moved outside of theme */
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Inconsolata'),
+      url('../fonts/inconsolata-v18-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+      url('../fonts/inconsolata-v18-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+}
+
 .ace-editor-container {
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
