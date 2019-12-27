@@ -126,8 +126,8 @@ var SYNTAX = {
         wrap: 'free',
         maxLines: Infinity,
         showFoldWidgets:false,
-        fontSize: "17px",
-        fontFamily: "'Fira Mono', monospace",
+        fontSize: "16px",
+        fontFamily: 'monospace',
         highlightActiveLine: true,
 
       });
