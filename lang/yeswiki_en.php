@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * English translation file for YesWiki's main program
 *
@@ -183,6 +183,7 @@ $GLOBALS['translations'] = array(
 
 // actions/usersettings.php
 'USER_SETTINGS' => 'User settings',
+'USER_SIGN_UP' => 'Sign Up',
 'YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected',
 'PARAMETERS_SAVED' => 'Parameters saved',
 'NO_SPACES_IN_PASSWORD' => 'No spaces allowed in password',
@@ -217,7 +218,7 @@ $GLOBALS['translations'] = array(
 'NEW_ACCOUNT' => 'New account',
 
 
-// actions/wantedpages.php 
+// actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'No page to create',
 
 // setup/header.php

@@ -193,6 +193,7 @@ $GLOBALS['translations'] = array(
 
 // actions/usersettings.php
 'USER_SETTINGS' => 'Paramètres utilisateur',
+'USER_SIGN_UP' => "S'inscrire",
 'YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute;',
 'PARAMETERS_SAVED' => 'Param&egrave;tres sauvegard&eacute;s',
 'NO_SPACES_IN_PASSWORD' => 'Les espaces ne sont pas permis dans les mots de passe',

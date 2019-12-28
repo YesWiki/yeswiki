@@ -9,19 +9,15 @@
 	<?php if ($error) : ?>
 	  <div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button><?php echo  $error; ?></div>
 	<?php endif; ?>
-	<form action="<?php echo $incomingurl; ?>" method="post">
-		<?php if ($signupurl != '' && $signupurl != '0') : ?>
-      <div class="row">
-        <div class="col-xs-6">
-          <h5><?php echo _t('LOGIN_ALREADY_MEMBER'); ?></h5>
-    <?php endif; ?>
+	<form class="login-form" action="<?php echo $incomingurl; ?>" method="post">
+    <h2><?php echo _t('LOGIN_LOGIN'); ?></h2>
 		<div class="form-group">
 			<label for="inputWikiName" class="control-label"><?php echo _t('LOGIN_WIKINAME'); ?></label>
-			<input id="inputWikiName" class="form-control" required placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
+			<input id="inputWikiName" class="form-control" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
     </div>
     <div class="form-group">
 			<label for="inputPassword" class="control-label"><?php echo _t('LOGIN_PASSWORD'); ?></label>
-			<input id="inputPassword" class="form-control" required placeholder="<?php echo _t('LOGIN_PASSWORD'); ?>" name="password" type="password" />
+			<input id="inputPassword" class="form-control" name="password" type="password" />
 		</div>
     <?php if (!empty($lostpasswordurl)) { ?>
 			<small><a href="<?php echo $lostpasswordurl ?>"><?php echo _t('LOGIN_LOST_PASSWORD'); ?></a></small>
@@ -31,17 +27,13 @@
         <input type="checkbox" id="remember-default" name="remember" value="1"> <?php echo _t('LOGIN_REMEMBER_ME'); ?>
       </label>
     </div>
-		<button type="submit" class="btn <?php echo $btnclass; ?> btn-primary"><i class="fa fa-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
+		<button type="submit" class="btn btn-block <?php echo $btnclass; ?> btn-primary"><?php echo _t('LOGIN_LOGIN'); ?></button>
 		<input type="hidden" name="action" value="login" />
 		<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 		<input type="hidden" name="remember" value="0" />
 		<?php if ($signupurl != '' && $signupurl != '0') : ?>
-    </div> <!-- /.col-xs-6 -->
-    <div class="col-xs-6">
-			<h5><?php echo _t('LOGIN_NEW_MEMBER'); ?></h5>
-			<a class="btn <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="fa fa-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a>
-    </div>
-  </div> <!-- /.row -->
+      <hr>
+  		<a class="btn btn-block <?php echo $btnclass; ?> btn-default" href="<?php echo $signupurl; ?>"><?php echo _t('LOGIN_SIGNUP'); ?></a>
 		<?php endif; ?>
 	</form>
 <?php endif; ?>

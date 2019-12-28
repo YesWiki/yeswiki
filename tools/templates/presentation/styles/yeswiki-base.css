@@ -490,20 +490,18 @@ body {
     0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
-input[type="checkbox"]:checked:not(:disabled) ~ .lever:active::before,
-input[type="checkbox"]:checked:not(:disabled).tabbed:focus ~ .lever::before {
-  -webkit-transform: scale(2.4);
-  transform: scale(2.4);
-  background-color: rgba(38, 166, 154, 0.15);
+.form-control[type=checkbox] {
+  border: none;
+  height: auto;
+  display: inline-block;
+  width: auto;
+  box-shadow: none;
 }
 
-input[type="checkbox"]:not(:disabled) ~ .lever:active:before,
-input[type="checkbox"]:not(:disabled).tabbed:focus ~ .lever::before {
-  -webkit-transform: scale(2.4);
-  transform: scale(2.4);
-  background-color: rgba(0, 0, 0, 0.08);
+.login-form-dropdown {
+  padding: 5px 15px 10px 15px;
+  width: 300px;
 }
-
 .switch input[type="checkbox"][disabled] + .lever {
   cursor: default;
   background-color: rgba(0, 0, 0, 0.12);
