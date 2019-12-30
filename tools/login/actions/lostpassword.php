@@ -65,7 +65,7 @@ if (isset($_POST['subStep']) && !isset($_GET['a'])) { // Sous-etape
     }
 }
 
-echo '<h4>'._t('LOGIN_CHANGE_PASSWORD').'</h4>';
+echo '<h2>'._t('LOGIN_CHANGE_PASSWORD').'</h2>';
 switch ($step) {
     case 'userNotFound':
         echo '<div class="alert alert-danger">'._t('LOGIN_UNKNOWN_USER').'</div>'."\n"
@@ -73,16 +73,22 @@ switch ($step) {
         break;
 
     case 'emailForm':
-        echo $this->FormOpen('', '', 'post', 'form-inline');
+        echo $this->FormOpen('', '', 'post', 'form-horizontal');
         if ($error == true) {
             echo '<div class="alert alert-danger">'._t('LOGIN_ADD_EMAIL_TO_CONTINUE').'.</div>'."\n";
         } ?>
-    <div class="form-group">
-      <label for="email"><?php echo _t('LOGIN_EMAIL'); ?></label>
-      <input type="email" class="form-control" name="email" required value="" placeholder="<?php echo _t('LOGIN_EMAIL'); ?>">
+    <div class="control-group form-group">
+      <label class="control-label col-sm-3" for="email"><?php echo _t('LOGIN_EMAIL'); ?></label>
+      <div class="controls col-sm-9">
+          <input type="email" class="form-control" name="email" required value="" placeholder="<?php echo _t('LOGIN_EMAIL'); ?>">
+      </div>
     </div>
-<input type="hidden" name="subStep" value="1" />
-<button type="submit" class="btn btn-primary"><?php echo _t('LOGIN_SEND'); ?></button>
+    <div class="control-group form-group">
+        <input type="hidden" name="subStep" value="1" />
+        <div class="controls col-sm-9 col-sm-offset-3">
+            <button type="submit" class="btn btn-primary"><?php echo _t('LOGIN_SEND'); ?></button>
+        </div>
+    </div>
 <?php
         echo $this->FormClose();
         break;

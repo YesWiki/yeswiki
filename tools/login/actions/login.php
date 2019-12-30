@@ -110,7 +110,7 @@ $class = $this->GetParameter("class");
 // classe css pour les boutons
 $btnclass = $this->GetParameter("btnclass");
 if (empty($btnclass)) {
-    $btnclass = 'btn-default';
+    $btnclass = '';
 }
 $nobtn = $this->GetParameter("nobtn");
 

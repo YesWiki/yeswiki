@@ -1,4 +1,3 @@
-/* ACE EDITOR -> to be moved outside of theme */
 @font-face {
   font-family: 'Inconsolata';
   font-style: normal;
@@ -7,14 +6,21 @@
       url('../fonts/inconsolata-v18-latin-regular.woff2') format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
       url('../fonts/inconsolata-v18-latin-regular.woff') format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
 }
-
 .ace-editor-container {
   padding: 1em .7em 0em 0;
   margin-bottom: 1rem;
 }
+/* Show line numbers only on page edit */
+form:not(#ACEditor) .ace-editor-container .ace_gutter {
+  display: none !important;
+}
+form:not(#ACEditor) .ace-editor-container .ace_scroller {
+  left: .7em !important;
+}
 .ace-body {
   height: 150px;
   border: none;
+  padding: 0;
 }
 .ace-editor-container.big .ace-body {
   min-height: 500px;

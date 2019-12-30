@@ -158,10 +158,16 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
   <p><b>Actions pour les pages cochées ci dessus :</b></p>
 
   <p class="type-modif-container">
+    <label for="typemajdefault">
+        <input type=radio name="typemaj" value="default" id="typemajdefault"
+                onClick="$('.edit-acl-container').slideUp()">
+        <span>Réinitialiser (avec les valeurs par défaut définies dans <em>wakka.config.php</em>)</span>
+    </label>
+
     <label for="typemalremplacer">
-    <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
-            onClick="$('.edit-acl-container').slideDown()">
-    <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
+      <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
+              onClick="$('.edit-acl-container').slideDown()">
+      <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
     </label>
     <!-- <label for="typemajajouter">
         <input type=radio name="typemaj" value="ajouter" id="typemajajouter"
@@ -212,11 +218,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
       <?php } ?>
     </div>
   </div>
-  <label for="typemajdefault">
-        <input type=radio name="typemaj" value="default" id="typemajdefault"
-                onClick="$('.edit-acl-container').slideUp()">
-        <span>Réinitialiser (avec les valeurs par défaut définies dans <em>wakka.config.php</em>)</span>
-    </label>
+
 	<p>
 		<input name="geredroits_modifier" class="btn btn-primary" onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" value="Mettre &agrave; jour" type="submit">
 	</p>

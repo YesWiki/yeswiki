@@ -9,8 +9,8 @@
 	<?php else : ?>
 		<button data-toggle="dropdown" class="btn btn-default dropdown-toggle<?php if ($btnclass!='') echo ' '.$btnclass; ?>"><i class="fa fa-user"></i> <?php echo _t('LOGIN_LOGIN'); ?> <span class="caret"></span></button>
 		<div class="dropdown-menu">
-			<form action="<?php echo $incomingurl; ?>" method="post" style="padding:10px;">
-				<?php if ($signupurl != '' && $signupurl != '0') : ?><h5><?php echo _t('LOGIN_ALREADY_MEMBER'); ?></h5><?php endif; ?>
+			<form action="<?php echo $incomingurl; ?>" class="login-form-dropdown" method="post">
+				<h4 class="text-center"><?php echo _t('LOGIN_LOGIN'); ?></h4>
 				<div class="form-group">
 					<input id="inputWikiName" class="form-control" required placeholder="<?php echo _t('LOGIN_WIKINAME'); ?>" type="text" name="name" value="<?php if($user) echo htmlspecialchars($user, ENT_COMPAT, YW_CHARSET); ?>" />
 				</div>
@@ -22,17 +22,17 @@
     		<?php } ?>
         <div class="checkbox">
           <label>
-            <input type="checkbox" id="remember-default" name="remember" value="1"> <small><?php echo _t('LOGIN_REMEMBER_ME'); ?></small>
+            <input type="checkbox" id="remember-default" name="remember" value="1">
+            <span><?php echo _t('LOGIN_REMEMBER_ME'); ?></span>
           </label>
         </div>
-				<button type="submit" class="btn btn-block <?php echo $btnclass; ?> btn-primary"><i class="fa fa-user"></i> <?php echo _t('LOGIN_LOGIN'); ?></button>
+				<button type="submit" class="btn btn-block <?php echo $btnclass; ?> btn-primary"><?php echo _t('LOGIN_LOGIN'); ?></button>
 				<input type="hidden" name="action" value="login" />
 				<input type="hidden" name="incomingurl" value="<?php echo $userpage; ?>" />
 				<input type="hidden" name="remember" value="0" />
 				<?php if ($signupurl != '' && $signupurl != '0') : ?>
 					<hr>
-					<h5><?php echo _t('LOGIN_NEW_MEMBER'); ?></h5>
-					<a class="btn btn-block <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><i class="fa fa-plus"></i> <?php echo _t('LOGIN_SIGNUP'); ?></a>
+					<a class="btn btn-block btn-default <?php echo $btnclass; ?>" href="<?php echo $signupurl; ?>"><?php echo _t('LOGIN_SIGNUP'); ?></a>
 				<?php endif; ?>
 			</form> <!-- /.login-form -->
 		</div> <!-- /.dropdown-menu -->

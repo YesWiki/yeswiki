@@ -1,4 +1,3 @@
 {{UserSettings}}
-
-**Mot de passe perdu**
+------
 {{lostpassword}}
