@@ -4,7 +4,7 @@ namespace AutoUpdate;
 class PackageCore extends Package
 {
     const CORE_NAME = 'yeswiki';
-    public $ignoredFiles = array('.', '..', 'tools', 'files', 'cache', 'themes',
+    public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes',
         'wakka.config.php');
 
     public function __construct($release, $address, $desc, $doc)
