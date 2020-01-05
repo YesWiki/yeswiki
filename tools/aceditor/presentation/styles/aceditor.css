@@ -103,3 +103,4 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   top: 70px;
   right:0;
 }
+.ace_mobile-menu { display: none; }
