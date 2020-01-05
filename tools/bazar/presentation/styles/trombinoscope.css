@@ -41,6 +41,7 @@
   text-align: center;
   font-size: 10rem;
   top: 15%;
+  left: 0;
   color: var(--neutral-soft-color);
 }
 @media (min-width: 1200px) {
