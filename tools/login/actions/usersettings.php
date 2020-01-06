@@ -255,9 +255,15 @@ if ($action == 'login') {
 
    <div class="control-group form-group">
       <div class="controls col-sm-9 col-sm-offset-3">
-         <input class="btn btn-primary" type="submit" value="<?php echo _t('NEW_ACCOUNT');?>" size="40" />
+         <input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('NEW_ACCOUNT');?>" size="40" />
       </div>
    </div>
 <?php echo $this->FormClose(); ?>
+
+<hr>
+
+<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
+  <?php echo _t('LOGIN_LOGIN'); ?>
+</button>
 
 <?php } ?>
