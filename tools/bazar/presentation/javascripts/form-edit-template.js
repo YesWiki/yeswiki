@@ -64,6 +64,10 @@ var fields = [
     name: "utilisateur_wikini",
     attrs: { type: "utilisateur_wikini" },
     icon: "👤"
+  },
+  {
+    name: 'collaborative_doc',
+    attrs: { type: "collaborative_doc" },
   }
 ];
 
@@ -238,6 +242,7 @@ var typeUserAttrs = {
     image: { label: "Image de fond", placeholder: "foret.jpg..." }
   },
   bookmarklet: {},
+  collaborative_doc: {},
   listefichesliees: {
     id: { label: "id du formulaire lié" },
     query: {
@@ -330,6 +335,9 @@ var templates = {
   },
   listefichesliees: function(field) {
     return { field: "" };
+  },
+  collaborative_doc: function(field) {
+    return { field: "Document collaboratif" };
   }
 };
 
@@ -404,7 +412,8 @@ var yesWikiMapping = {
     4: "number",
     5: "template",
     6: "type_link"
-  }
+  },
+  collaborative_doc: defaultMapping
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
 var yesWikiTypes = {
@@ -439,7 +448,8 @@ function initializeFormbuilder(formAndListIds) {
       "autocomplete",
       "checkbox",
       "paragraph",
-      "header"
+      "header",
+      "collaborative_doc"
     ],
     controlOrder: ["text", , "date", "image", "champs_mail", "tags"],
     disabledAttrs: [
