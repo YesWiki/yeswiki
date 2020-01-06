@@ -1,5 +1,12 @@
 /* Author: Florian Schmitt <florian@outils-reseaux.org> under GPL licence */
-
+function toastMessage(message) {
+  var $toast = $('<div class="toast-message"><div class="alert alert-secondary-1">' + message + '</div></div>');
+  $('body').after($toast);
+  $toast.css('top', $('#yw-topnav').outerHeight(true) + 20 + 'px');
+  $toast.css('opacity', 1);
+  setTimeout(function() { $toast.css('opacity', 0) }, 3000);
+  $toast.addClass('visible');
+}
 // polyfill placeholder
 (function($) {
   // gestion des classes actives pour les menus
