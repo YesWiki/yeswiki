@@ -2887,87 +2887,53 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     $fichebazar['infos'] = '';
 
     // informations complementaires (id fiche, etat publication,... )
-    if ($danslappli === true) {
+    if ($GLOBALS['wiki']->HasAccess('write', $idfiche)) {
+        $fichebazar['infos'] .= '<div class="clearfix"></div>'
+            . '<div class="BAZ_fiche_info well well-sm">'."\n";
+
+        // lien modifier la fiche
         $fichebazar['infos'] .=
-        '<div class="BAZ_fiche_info well well-sm">'."\n";
+            '<div class="pull-right BAZ_actions_fiche">'."\n"
+            . '<a class="btn btn-xs btn-mini btn-default" href="'
+            . $GLOBALS['wiki']->href('edit', $idfiche).'">'
+            . '<i class="fa fa-pencil-alt icon-pencil"></i> '
+            . '<span>' . _t('BAZ_MODIFIER') . '</span>'
+            .'</a>'."\n";
 
-        // obsolète : seul le createur ou un admin peut faire des actions sur la fiche
-        //if (baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']->GetPageOwner($idfiche))) {
-        //
-        // L'utilisateur a-t-il le droit en écriture ?
-        if ($GLOBALS['wiki']->HasAccess('write', $idfiche)) {
+        // lien supprimer la fiche
+        if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
             $fichebazar['infos'] .=
-                '<div class="pull-right BAZ_actions_fiche">'."\n"
-                // lien modifier la fiche
-                . '<a class="btn btn-xs btn-mini btn-default" href="'
-                . $GLOBALS['wiki']->href('edit', $idfiche).'">'
-                . '<i class="fa fa-pencil-alt icon-pencil"></i> '
-                . '<span>' . _t('BAZ_MODIFIER') . '</span>'
-                .'</a>'."\n";
-
-            if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
-                // lien supprimer la fiche
-                $fichebazar['infos'] .=
-                ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
-                . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
-                . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
-                . '<i class="fa fa-trash icon-trash icon-white"></i> '
-                . '<span>' . _t('BAZ_SUPPRIMER').'</span></a>'."\n";
-            }
-
-            // TODO ajouter action de validation (pour les admins)
-            // if (baz_a_le_droit('valider_fiche')) {
-            //     if ($fichebazar['values']['statut_fiche'] == 0 ||
-            //         $fichebazar['values']['statut_fiche'] == 2) {
-            //         $lien_publie = $GLOBALS['wiki']->href(
-            //             '',
-            //             '',
-            //             BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_SAISIR . '&' .
-            //             'id_fiche=' . $idfiche
-            //             . '&' . BAZ_VARIABLE_ACTION . '=' . BAZ_ACTION_PUBLIER
-            //         );
-            //         $label_publie = _t('BAZ_VALIDER_LA_FICHE');
-            //         $class_publie = '_valider';
-            //     } elseif ($fichebazar['values']['statut_fiche'] == 1) {
-            //         $lien_publie = $GLOBALS['wiki']->href(
-            //             '',
-            //             '',
-            //             BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_SAISIR . '&' .
-            //             'id_fiche=' . $idfiche
-            //             . '&' . BAZ_VARIABLE_ACTION . '=' .
-            //             BAZ_ACTION_PAS_PUBLIER
-            //         );
-            //         $label_publie = _t('BAZ_INVALIDER_LA_FICHE');
-            //         $class_publie = '_invalider';
-            //     }
-            //     $fichebazar['infos'] .=
-            //     '<li><a class="btn btn-xs btn-mini btn-default BAZ_lien' .
-            //     $class_publie
-            //     . '" href="' . $lien_publie . '">' . $label_publie .
-            //     '</a></li>' . "\n";
-            // }
-
-            $fichebazar['infos'] .=
-            '</div><!-- /.BAZ_actions_fiche -->'."\n";
+            ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
+            . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
+            . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
+            . '<i class="fa fa-trash icon-trash icon-white"></i> '
+            . '<span>' . _t('BAZ_SUPPRIMER').'</span></a>'."\n";
         }
 
-        // affichage du nom de la PageWiki de la fiche et de son proprietaire
+        $fichebazar['infos'] .= '</div><!-- /.BAZ_actions_fiche -->'."\n";
+
+        // Nom de la PageWiki de la fiche
         $fichebazar['infos'] .= $GLOBALS['wiki']->Format($idfiche)
+            .' <span class="category">('.$fichebazar['form']['bn_label_nature']
+            .')</span>';
 
-        .' <span class="category">('.$fichebazar['form']['bn_label_nature']
-        .')</span>'
-        .(($GLOBALS['wiki']->GetPageOwner($idfiche) != '') ?
-            ', '._t('BAZ_ECRITE').' '
-            .$GLOBALS['wiki']->GetPageOwner($idfiche) : '');
+        $owner = $GLOBALS['wiki']->GetPageOwner($idfiche);
+        // Owner (if exist and does not looks like an Ip address)
+        if ($owner != '' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
+            $fichebazar['infos'] .= ', '._t('BAZ_ECRITE').' '.$GLOBALS['wiki']->GetPageOwner($idfiche);
+        }
 
-        // affichage des infos et du lien pour la mise a jour de la fiche
+        // Created at
         $fichebazar['infos'] .=
-        '<br><small><span class="date_creation">'._t('BAZ_DATE_CREATION').' '
-        .strftime('%d.%m.%Y &agrave; %H:%M', strtotime($fichebazar['values']['date_creation_fiche'])).
-        '</span>';
-        $fichebazar['infos'] .=
-        ', <span class="date_mise_a_jour">'._t('BAZ_DATE_MAJ').' '
-        .strftime('%d.%m.%Y &agrave; %H:%M', strtotime($fichebazar['values']['date_maj_fiche'])).'</span>.</small>';
+            '<br><span class="date_creation">'._t('BAZ_DATE_CREATION').' '
+            .strftime('%d.%m.%Y &agrave; %H:%M', strtotime($fichebazar['values']['date_creation_fiche'])).
+            '</span>';
+        // Updated At (only if different from created at)
+        if ($fichebazar['values']['date_maj_fiche'] != $fichebazar['values']['date_creation_fiche']) {
+            $fichebazar['infos'] .=
+            ', <span class="date_mise_a_jour">'._t('BAZ_DATE_MAJ').' '
+            .strftime('%d.%m.%Y &agrave; %H:%M', strtotime($fichebazar['values']['date_maj_fiche'])).'</span>';
+        }
 
         $fichebazar['infos'] .= '</div><!-- /.BAZ_fiche_info -->'."\n";
     }
