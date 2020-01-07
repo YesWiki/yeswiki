@@ -125,6 +125,7 @@ var SYNTAX = {
         showGutter: true,
         wrap: 'free',
         maxLines: Infinity,
+        minLines: $(this.element).attr('rows'),
         showFoldWidgets:false,
         fontSize: "18px",
         fontFamily: '\'Inconsolata\', monospace',

@@ -1014,6 +1014,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $nb_colonnes, $nb_lignes, $valeur_par_defaut, $longueurmax, $formatage,
          $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
+    if (!$nb_lignes) $nb_lignes = 3;
     if (empty($formatage) || $formatage == 'wiki') {
         $formatage = 'wiki-textarea';
     } elseif ($formatage == 'html') {
@@ -1031,9 +1032,9 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $script = '$(document).ready(function() {
           $(".summernote").summernote({
             '.$langoptions.'
-            height: 300,    // set editor height
-            minHeight: 300, // set minimum height of editor
-            maxHeight: 550,                // set maximum height of editor
+            height: '. $nb_lignes*30 .',    // set editor height
+            minHeight: 100, // set minimum height of editor
+            maxHeight: 350,                // set maximum height of editor
             focus: false,                   // set focus to editable area after initializing summernote
             toolbar: [
                 //[groupname, [button list]]
@@ -1082,7 +1083,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= ($longueurmax != '') ? 'maxlength="'.$longueurmax.'" ' : '';
         $input_html.= ' placeholder="'.htmlspecialchars(strip_tags($label)).'"';
         $input_html.= '>';
-        $input_html.= ($defauts != '') ? htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET) : '';
+        $input_html.= htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET);
         $input_html.= '</textarea>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
 
         return $input_html;
