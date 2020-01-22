@@ -578,3 +578,17 @@ body {
   font-size: 30px;
   font-weight: bold;
 }
+
+.toast-message {
+  position: fixed;
+  top: -5rem;
+  transition: top .5s, opacity .3s;
+  left: 0;
+  right: 0;
+  z-index: 5000;
+  text-align: center;
+}
+.toast-message .alert {
+  display: inline-block;
+  box-shadow: 0 0 9px 1px rgba(0, 0, 0, 0.42);
+}

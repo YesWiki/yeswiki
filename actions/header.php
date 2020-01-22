@@ -55,7 +55,7 @@ $meta_description = $this->GetConfigValue("meta_description");
 $imported_style = isset($_COOKIE["sitestyle"]) ? htmlspecialchars($_COOKIE["sitestyle"], ENT_COMPAT, YW_CHARSET) : 'wakka';
 
 // Page contents
-$body_attr = ($message = $this->GetMessage()) ? "onLoad=\"alert('".addslashes($message)."');\" " : "";
+$body_attr = ($message = $this->GetMessage()) ? "onLoad=\"toastMessage('".addslashes($message)."');\" " : "";
 $wiki_name = $this->GetWakkaName();
 $page_search = $this->href('', 'RechercheTexte', 'phrase=' . urlencode($page_name));
 $root_page = $this->ComposeLinkToPage($this->config["root_page"]);

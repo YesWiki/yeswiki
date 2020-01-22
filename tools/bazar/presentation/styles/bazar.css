@@ -11,6 +11,10 @@ color:#E9322D;
   margin-bottom:20px;
 }
 
+.BAZ_cadre_fiche .BAZ_fiche_info {
+  font-size: .9rem;
+}
+
 .bazar-table {
   table-layout:fixed;
   word-wrap:break-word;
