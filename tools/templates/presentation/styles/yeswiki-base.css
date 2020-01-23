@@ -55,6 +55,8 @@ span.missingpage,
   margin-bottom: 5px;
 }
 
+#form_graphical_options .preset-settings-container { display: none; }
+
 /* Divers mise en forme */
 .code {
   margin: 3px 0;
