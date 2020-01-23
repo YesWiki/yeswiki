@@ -4,6 +4,10 @@
 .indent {
   margin-left: 40px;
 }
+ul.fake-ul {
+  list-style: none;
+  padding-left: 0;
+}
 .additions {
   color: #008800;
 }
