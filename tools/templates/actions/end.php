@@ -37,7 +37,7 @@ if (empty($elem)) {
                 echo "\n</div>\n</section> <!-- end of section -->\n";
                 break;
             case 'label':
-                echo "\n</span> <!-- end of label -->\n";
+                echo "</span>";
                 break;
             case 'accordion':
                 echo "\n</div> <!-- end of accordion -->\n";
