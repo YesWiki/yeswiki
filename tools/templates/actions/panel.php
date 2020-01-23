@@ -42,6 +42,8 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     $collapseID = uniqid('collapse');
     if (isset($GLOBALS['check_'.$pagetag]['accordion_uniqueID'])) {
         $accordionID = $GLOBALS['check_'.$pagetag]['accordion_uniqueID'];
+        $collapsible = true;
+        $collapsed = true;
     } else {
         $accordionID = '';
     }
