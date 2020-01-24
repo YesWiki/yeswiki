@@ -1,4 +1,17 @@
 /************************************* CSS Wikini original ****************************************/
+/* Default color, in case someone use these variable outside of margot template */
+:root {
+ --primary-color: #1A89A0;
+ --secondary-color-1: #d8604c;
+ --secondary-color-2:#D78958;
+ --neutral-color:#4E5056;
+ --neutral-soft-color:#b0b1b3;
+ --neutral-light-color:#fff;
+ --success-color: #5cb75c;
+ --danger-color: #d9534e;
+ --warning-color: #f0ad4e;
+}
+
 
 /* Mise en forme */
 .indent {
