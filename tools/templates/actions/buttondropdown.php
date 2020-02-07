@@ -17,9 +17,18 @@ if ($caret != '0') {
 }
 
 // icone du bouton
-$icon = $this->GetParameter('icon');
+$icon = trim($this->GetParameter('icon'));
 if (!empty($icon)) {
-    $icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
+	// si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
+	if ( preg_match('/\s/', $icon) === 1 )
+	{
+	   $icon = '<i class="'.$icon.'"></i>';
+	}
+	else
+	{
+		$icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
+	}
+	if (!empty($text)) $icon = $icon.' ';
 }
 
 // classe css supplémentaire l'ensemble du
