@@ -127,24 +127,25 @@ padding:3px;
   opacity: 1;
 }
 
-.bazar-marker .bazar-entry .glyphicon {
+.bazar-marker .bazar-entry i {
   color:#FFF;
   font-size: 8px;
   top: -1px;
   left: 1px;
 }
-.bazar-marker .bazar-entry.icon-lightgreen .glyphicon,
-.bazar-marker .bazar-entry.icon-white .glyphicon
+.bazar-marker .bazar-entry.icon-lightgreen i,
+.bazar-marker .bazar-entry.icon-white i
 {
  color:#000;
 }
 
-.bazar-marker.xl .bazar-entry .glyphicon {
+.bazar-marker.xl .bazar-entry i {
   font-size: 16px;
   top: 10px;
-  left: 1px;
+  position: absolute;
+  left: 0;
+  right: 0;
 }
-
 
 .bazar-marker::after {
   content:' ';
