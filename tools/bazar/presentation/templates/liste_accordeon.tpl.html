@@ -1,13 +1,13 @@
 <?php echo $info_res; ?>
 <?php if (count($fiches)>0) : ?>
     <?php echo $pager_links;?>
-    <div class="panel-group accordion-group accordion-template-container no-dblclick" id="accordion<?php echo $param['nbbazarliste']; ?>">
+    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $param['nbbazarliste']; ?>">
     <?php
     foreach($fiches as $fiche): ?>
-        <div class="bazar-entry panel panel-default collapsed" <?php echo $fiche['html_data'];?>>
+        <div class="bazar-entry panel panel-default" <?php echo $fiche['html_data'];?>>
           <div class="panel-heading collapsed"
             data-target="#collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>"
-            data-toggle="collapse" data-parent="#accordion<?php echo $param['nbbazarliste']; ?>">
+            data-toggle="collapse">
             <h4 class="panel-title">
               <?php
               $style = '';
@@ -28,10 +28,16 @@
               );
               if (!empty($icon)) {
                 echo '<i class="'.$icon.'"></i> ';
-              }
+              } ?>
 
-              echo $fiche['bf_titre']; ?>
-            </h4>
+              <?php echo $fiche['bf_titre'];?> </h4>
+              <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
+                $soustitre = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['soustitre']), '<br>')); ?>
+                  <small class='accordion-subtitle'>
+                    <?php echo substr($soustitre, 0, 280) . (strlen($soustitre) > 280 ? '...' : ''); ?>
+                  </small>
+              <?php else : ?>
+              <?php endif; ?>
           </div>
           <div id="collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
             <div class="panel-body">
