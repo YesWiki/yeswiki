@@ -9,7 +9,7 @@ $datejour = time();
 $rowcol = ''; // declaration d'une chaine de char vide
 $modal = ''; // declaration d'une chaine de char vide
 ?>
-<!-- traces : pour avioi date en mois : <?php echo str_replace('00:00', '', date("M", strtotime($fiche['bf_date_debut_evenement']))); ?> -->
+<!-- traces : pour avoir date en mois : <?php echo str_replace('00:00', '', date("M", strtotime($fiche['bf_date_debut_evenement']))); ?> -->
 
 <?php
 /**************************************************************************************************
@@ -170,6 +170,7 @@ $modal = ''; // declaration d'une chaine de char vide
   position: absolute;
   bottom: 0;
   z-index: 1;
+  width: 100%;
 }
 
 .snip1527 fig-caption:before {

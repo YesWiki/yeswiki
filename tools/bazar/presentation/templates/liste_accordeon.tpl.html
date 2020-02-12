@@ -4,7 +4,7 @@
     <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $param['nbbazarliste']; ?>">
     <?php
     foreach($fiches as $fiche): ?>
-        <div class="bazar-entry panel panel-default" <?php echo $fiche['html_data'];?>>
+        <div class="bazar-entry panel panel-default collapsed" <?php echo $fiche['html_data'];?>>
           <div class="panel-heading collapsed"
             data-target="#collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_fiche']; ?>"
             data-toggle="collapse">
