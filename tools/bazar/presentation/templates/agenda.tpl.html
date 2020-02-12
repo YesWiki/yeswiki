@@ -1,0 +1,258 @@
+
+<?php if( count($fiches)>0 ) : ?>
+<?php
+$imgwidth=450;
+$imgheight=450;
+$classnb = 1;
+$agenda = tout;
+$datejour = time();
+$rowcol = ''; // declaration d'une chaine de char vide
+$modal = ''; // declaration d'une chaine de char vide
+?>
+<!-- traces : pour avioi date en mois : <?php echo str_replace('00:00', '', date("M", strtotime($fiche['bf_date_debut_evenement']))); ?> -->
+
+<?php
+/**************************************************************************************************
+ * parametres du template :
+ * ils peuvent être passés dans l'action bazar ou bazarliste, mais sont spécifiques à ce template
+ **************************************************************************************************/
+
+ // test si on veut affichage de toutes les activités (tout) (par défaut) ou seulement celles à venir (futur)
+ $agenda = $GLOBALS['wiki']->GetParameter('agenda');
+ if (empty($agenda)) {
+     $agenda = tout;
+ }
+
+ if ($agenda==futur) {
+
+      if (!function_exists('date_periode')) {
+       function date_periode($fiche) {
+          $nbjour = 290;
+          $datejour = time();
+          $datemax = $datejour + ($nbjour*24*60*60);  // date max � J+ nb de jours
+          $datefiche = strtotime($fiche['bf_date_debut_evenement']);
+        $datefin = strtotime($fiche['bf_date_fin_evenement']);
+          if (($datefiche >=$datejour  && $datefiche <=$datemax ) || ($datefin >=$datejour  && $datefin <=$datemax )) {
+              return true;
+              }
+           else  {
+               return  false;
+          }
+      }
+      }
+      if (!function_exists('date_compare')) {
+          //tri par ordre chronologique
+           function date_compare($a, $b)
+           {
+             $t1 = strtotime($a['bf_date_debut_evenement']);    // strtotime = fonction qui transforme une chaine de caractere en date informatque (= un chiffre calcul� depuis 1970)
+             $t2 = strtotime($b['bf_date_debut_evenement']);
+           return $t1 - $t2;
+         }
+      }
+        $fiches = array_filter($fiches, "date_periode");
+        usort($fiches, 'date_compare');  // http://php.net/manual/fr/function.usort.php (si on veut avoir mal au crane)
+ }
+?>
+
+ <?php
+
+ /**************************************************************************************************
+  * parametres du template :
+  * ils peuvent être passés dans l'action bazar ou bazarliste, mais sont spécifiques à ce template
+  **************************************************************************************************/
+
+  // test si on vveut affichage modal ou pas
+  $modal = $GLOBALS['wiki']->GetParameter('modal');
+  if (empty($modal)) {
+      $modal = non;
+  }
+
+  if ($modal==1) {
+      $modal = modalbox;
+  }
+
+ // test sur nombre de colonne
+ $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
+ if (empty($nbcol)) {
+     $nbcol = 4;
+ }
+
+
+
+ // test sur colonne et transformation en info poour le row
+ if ($nbcol==1) {
+     $rowcol = 12;
+ }
+
+ if ($nbcol==2) {
+     $rowcol = 6;
+ }
+
+ if ($nbcol==3) {
+     $rowcol = 4;
+ }
+
+ if ($nbcol==4) {
+     $rowcol = 3;
+ }
+
+ if ($nbcol==6) {
+     $rowcol = 2;
+ }
+ ?>
+
+<div class="row">
+    <?php foreach($fiches as $fiche): ?>
+      <style>
+      .modal-header {
+          display:none;
+      }
+      </style>
+        <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
+
+                 <figure class="snip1527">
+                    <div class="image">
+                      <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+                        <img class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>">
+                      <?php else : ?>
+                        <img class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php echo redimensionner_image('files/img-placeholder.png', 'cache/image_'.$imgwidth.'x'.$imgheight.'_img-placeholder.png', $imgwidth, $imgheight, 'crop'); ?>">
+                      <?php endif; ?>
+                    </div>
+                      <fig-caption>
+                        <?php $moisen = date("M", strtotime($fiche['bf_date_debut_evenement'])); ?>
+                        <?php  $moisfr = str_replace(array('Feb', 'Apr', 'May', 'Jun', 'Aug') , array('fev', 'avr', 'mai', 'jui', 'aou'), $moisen); ?>
+
+                        <div class="date"><span class="day"><?php echo substr($fiche['bf_date_debut_evenement'],8,2); ?></span><span class="month"><?php echo $moisfr;?></span></div>
+                        <h5><?php echo $fiche['bf_titre'];?></h5>
+                        <p><?php echo $fiche['bf_description_courte'];?>
+
+                        </p>
+                      </fig-caption>
+                      <a class="<?php echo $modal; ?>" title="<?php echo htmlspecialchars($fiche['bf_titre']);?>" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+                      </a>
+                  </figure>
+
+            </div>
+    <?php endforeach; ?>
+</div> <!-- /.row --><!-- permet de fermer la class row si jamais y a que 3 images -->
+<style>
+@import url(https://fonts.googleapis.com/css?family=Lato:400,600,700);
+.snip1527 {
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+  float: left;
+  font-family: 'Lato', Arial, sans-serif;
+  font-size: 16px;
+  margin: 10px 1%;
+  max-width: 310px;
+  /* min-width: 250px; */
+  overflow: hidden;
+  position: relative;
+  text-align: left;
+  width: 100%;
+}
+
+.snip1527 * {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transition: all 0.25s ease;
+  transition: all 0.25s ease;
+}
+
+.snip1527 img {
+  max-width: 100%;
+  vertical-align: top;
+  position: relative;
+}
+
+.snip1527 fig-caption {
+  padding: 25px 20px 25px;
+  position: absolute;
+  bottom: 0;
+  z-index: 1;
+}
+
+.snip1527 fig-caption:before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #700877;
+  content: '';
+  background: -moz-linear-gradient(90deg, #700877 0%, #ff2759 100%, #ff2759 100%);
+  background: -webkit-linear-gradient(90deg, #700877 0%, #ff2759 100%, #ff2759 100%);
+  background: linear-gradient(90deg, #700877 0%, #ff2759 100%, #ff2759 100%);
+  opacity: 0.8 !important;
+  z-index: -1;
+}
+
+.snip1527 .date {
+  background-color: #fff;
+  border-radius: 50%;
+  color: #700877;
+  font-size: 18px;
+  font-weight: 700;
+  min-height: 48px;
+  min-width: 48px;
+  padding: 10px 0;
+  position: absolute;
+  right: 15px;
+  text-align: center;
+  text-transform: uppercase;
+  top: -25px;
+}
+
+.snip1527 .date span {
+  display: block;
+  line-height: 14px;
+}
+
+.snip1527 .date .month {
+  font-size: 11px;
+}
+
+.snip1527 h3,
+.snip1527 h5,
+.snip1527 p {
+  margin: 0;
+  padding: 0;
+}
+
+.snip1527 h3 {
+  display: inline-block;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-bottom: 5px;
+}
+
+.snip1527 h5 {
+  display: inline-block;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+  margin-bottom: 5px;
+}
+
+.snip1527 p {
+  font-size: 0.8em;
+  line-height: 1.6em;
+  margin-bottom: 0px;
+}
+
+.snip1527 a {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  position: absolute;
+  z-index: 1;
+}
+
+.snip1527:hover img,
+.snip1527.hover img {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+</style>
+<?php endif; ?>

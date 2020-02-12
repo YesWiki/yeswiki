@@ -1,0 +1,111 @@
+<?php
+if (!empty($GLOBALS['wiki']->getParameter('header'))) {
+	$premier = false;
+} else {
+	$premier = true;
+}
+if (!empty($GLOBALS['wiki']->getParameter('show_author')) && $GLOBALS['wiki']->getParameter('show_author') == '1') {
+	$showauthor = true;
+} else {
+	$showauthor = false;
+}
+if (!empty($GLOBALS['wiki']->getParameter('show_date')) && $GLOBALS['wiki']->getParameter('show_date') == '1') {
+	$showdate = true;
+} else {
+	$showdate = false;
+}
+$nbcols = $GLOBALS['wiki']->getParameter('nbcols');
+if (!empty($nbcols)) {
+	if (!in_array($nbcols, ['1', '2', '3', '4'])) {
+		$nbcols = 1;
+	}
+} else {
+	$nbcols = 1;
+}
+?>
+<?php if (count($fiches)>0) : ?>
+<div class="cols<?php echo $nbcols; ?>">
+    <?php foreach ($fiches as $fiche) : ?>
+	    <?php if ($premier==true) : $premier = false; ?>
+		    <div class="jumbotron bazar-entry" <?php echo $fiche['html_data']; ?>>
+				<?php if (!empty($fiche['imagebf_image']) && file_exists('files/'.$fiche['imagebf_image'])) : ?>
+					<a class="pull-right" style="margin:0 0 1em 1em;" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
+						src="<?php echo redimensionner_image(
+							'files/'.$fiche['imagebf_image'],
+							'cache/image_400_300_'.$fiche['imagebf_image'],
+							400,
+							300,
+							'crop'
+						); ?>">
+					</a>
+				<?php endif; ?>	  
+				<h2 style="margin-top:0;margin-bottom:.25em;">
+					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+						<?php echo $fiche['bf_titre']; ?>
+					</a>
+				</h2>
+				<?php if ($showdate) : ?>
+				<small>
+					<a href="<?php echo $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']);?>">
+						<i class="far fa-calendar-alt"></i>
+					</a>
+					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['date_maj_fiche'])); ?>
+				</small>
+				<?php endif; ?>
+				<?php if ($showauthor) : ?>
+					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['createur']); ?></small>
+				<?php endif; ?>
+
+				<p class="lead text-justify">
+					<?php echo $GLOBALS['wiki']->Format($fiche['bf_chapeau']); ?></p>
+				<p class="lead">
+					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">Plus d'infos ...</a>
+				</p>
+				<div class="clearfix"></div>
+			</div>
+		<?php else : ?>
+			<?php if ($nbcols == 2) : ?>
+			<?php endif; ?>
+			<div class="article bazar-entry" <?php echo $fiche['html_data']; ?>>
+				<?php if (!empty($fiche['imagebf_image']) && file_exists('files/'.$fiche['imagebf_image'])) : ?>
+					<a class="pull-left" style="margin:0 1em 1em 0;" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+					<img class="img-blog" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
+						src="<?php echo redimensionner_image(
+							'files/'.$fiche['imagebf_image'],
+							'cache/image_200_150_'.$fiche['imagebf_image'],
+							200,
+							150,
+							'crop'
+						); ?>">
+					</a>
+				<?php endif; ?>	  
+				<h4 class="title-article">
+					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+						<?php echo $fiche['bf_titre'];?>
+					</a>
+				</h4>
+				<?php if ($showdate) : ?>
+				<small>
+					<a href="<?php echo $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']);?>">
+						<i class="far fa-calendar-alt"></i>
+					</a>
+					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['date_maj_fiche'])); ?>
+				</small>
+				<?php endif; ?>
+				<?php if ($showauthor) : ?>
+					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['createur']); ?></small>
+				<?php endif; ?>
+	
+				<p class="desc text-justify">
+					<?php echo $GLOBALS['wiki']->Format($fiche['bf_chapeau']); ?>
+				</p>
+				<a class="link-more" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">Plus d'infos ...</a>
+				<div class="clearfix"></div>
+			</div>
+		<?php endif;  ?> 
+	<?php endforeach;  ?>
+</div>
+<?php else : ?>
+   <div class="text-info">Il n 'y a pas de fiche pour cette période.</div>
+<?php endif;  ?>   
