@@ -12,6 +12,9 @@
  --warning-color: #f0ad4e;
 }
 
+html {
+  font-size: 15px !important; /* override bootstrap 10px which make rem unit very small */
+}
 
 /* Mise en forme */
 .indent {
