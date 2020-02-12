@@ -219,7 +219,7 @@ $wakkaConfig['baz_marker_icon_prefix'] = getConfigValue('baz_marker_icon_prefix'
 $wakkaConfig['baz_provider'] = getConfigValue('baz_provider', 'OpenStreetMap.Mapnik', $wakkaConfig);
 
 // icone du marqueur de base
-$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'fa fa-record', $wakkaConfig);
+$wakkaConfig['baz_marker_icon'] = getConfigValue('baz_marker_icon', 'bullseye', $wakkaConfig);
 
 // couleur du marqueur de base
 $wakkaConfig['baz_marker_color'] = getConfigValue('baz_marker_color', 'darkred', $wakkaConfig);
