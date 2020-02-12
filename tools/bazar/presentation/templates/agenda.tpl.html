@@ -92,140 +92,22 @@ $modal = ''; // declaration d'une chaine de char vide
     </figure>
   </div>
   <?php endforeach; ?>
-</div> <!-- /.row --><!-- permet de fermer la class row si jamais y a que 3 images -->
+</div>
+
+<?php $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/agenda.css'); ?>
 <style>
-.agenda-container {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: -1rem;
-  margin-right: -1rem;
-}
-<?php
- // Nombres de colonne
- $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
- $width = empty($nbcol) ? 20 : 100 / $nbcol;
- $width1200 = empty($nbcol) ? 25 : max([$width, 25]);
-?>
-.agenda-entry-container {
-  width: <?php echo $width; ?>%;
-  padding: 1rem;
-}
-@media (max-width: 1200px) { .agenda-entry-container { width: <?php echo $width1200; ?>%; } }
-@media (max-width: 900px) { .agenda-entry-container { width: 33%; } }
-@media (max-width: 700px) { .agenda-entry-container { width: 50%; } }
-
-.agenda-entry {
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
-  color: #ffffff;
-  float: left;
-  font-size: 16px;
-  overflow: hidden;
-  position: relative;
-  text-align: left;
-  height: 100%;
-  width: 100%;
-  background-color: #efefef;
-}
-
-.agenda-entry img {
-  max-width: 100%;
-  vertical-align: top;
-  position: relative;
-  transition: transform 0.2s;
-}
-
-.agenda-entry fig-caption {
-  padding: 25px 20px 25px;
-  position: absolute;
-  bottom: 0;
-  z-index: 1;
-  width: 100%;
-}
-
-.agenda-entry fig-caption:before {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #700877;
-  content: '';
-  background: -moz-linear-gradient(90deg, #700877 0%, #ff2759 100%, #ff2759 100%);
-  background: -webkit-linear-gradient(90deg, #700877 0%, #ff2759 100%, #ff2759 100%);
-  background: linear-gradient(90deg, #700877 0%, #ff2759 100%, #ff2759 100%);
-  opacity: 0.8 !important;
-  z-index: -1;
-}
-
-.agenda-entry fig-caption h5 {
-  color: white;
-}
-
-.agenda-entry .date {
-  background-color: #fff;
-  border-radius: 50%;
-  color: #700877;
-  font-size: 18px;
-  font-weight: 700;
-  min-height: 48px;
-  min-width: 48px;
-  padding: 10px 0;
-  position: absolute;
-  right: 15px;
-  text-align: center;
-  text-transform: uppercase;
-  top: -25px;
-}
-
-.agenda-entry .date span {
-  display: block;
-  line-height: 14px;
-}
-
-.agenda-entry .date .month {
-  font-size: 11px;
-}
-
-.agenda-entry h3,
-.agenda-entry h5,
-.agenda-entry p {
-  margin: 0;
-  padding: 0;
-}
-
-.agenda-entry h3 {
-  display: inline-block;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  margin-bottom: 5px;
-}
-
-.agenda-entry h5 {
-  display: inline-block;
-  font-weight: 500;
-  letter-spacing: -0.4px;
-  margin-bottom: 5px;
-}
-
-.agenda-entry p {
-  font-size: 0.8em;
-  line-height: 1.6em;
-  margin-bottom: 0px;
-}
-
-.agenda-entry a {
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  position: absolute;
-  z-index: 1;
-}
-
-.agenda-entry:hover img,
-.agenda-entry.hover img {
-  transform: scale(1.1);
-}
+  <?php
+   // Nombres de colonne
+   $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
+   $width = empty($nbcol) ? 25 : 100 / $nbcol;
+  ?>
+  .agenda-entry-container {
+    width: <?php echo $width; ?>%;
+    padding: 1rem;
+  }
+  @media (max-width: 900px) { .agenda-entry-container { width: 33%; } }
+  @media (max-width: 700px) { .agenda-entry-container { width: 50%; } }
 
 </style>
+
 <?php endif; ?>
