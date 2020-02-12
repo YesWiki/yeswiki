@@ -64,7 +64,9 @@ $modal = ''; // declaration d'une chaine de char vide
         <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
           <img class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>">
         <?php else : ?>
-          <img class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php echo redimensionner_image('files/img-placeholder.png', 'cache/image_'.$imgwidth.'x'.$imgheight.'_img-placeholder.png', $imgwidth, $imgheight, 'crop'); ?>">
+          <img class="trombi-image img-placeholder"
+               src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+          <i class="trombi-image icon-placeholder fa fa-calendar"></i>
         <?php endif; ?>
       </div>
       <fig-caption>
@@ -82,7 +84,7 @@ $modal = ''; // declaration d'une chaine de char vide
 
         </p>
       </fig-caption>
-      $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1
+      <?php $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1; ?>
       <a class="<?php echo $useModal ? 'modalbox' : ''; ?>"
          title="<?php echo htmlspecialchars($fiche['bf_titre']);?>"
          href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
@@ -120,6 +122,9 @@ $modal = ''; // declaration d'une chaine de char vide
   overflow: hidden;
   position: relative;
   text-align: left;
+  height: 100%;
+  width: 100%;
+  background-color: #efefef;
 }
 
 .agenda-entry img {
