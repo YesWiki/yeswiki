@@ -63,8 +63,8 @@ if ($this->HasAccess("write")) {
         }
     }
 
-    $barreredactionelements['linkreferrers'] = $this->href("referrers", $page);
-    $barreredactionelements['linkdiaporama'] = $this->href("diaporama", $page);
+    //$barreredactionelements['linkreferrers'] = $this->href("referrers", $page);
+    //$barreredactionelements['linkdiaporama'] = $this->href("diaporama", $page);
     $barreredactionelements['linkshare'] = $this->href("share", $page);
 
     include_once 'includes/squelettephp.class.php';

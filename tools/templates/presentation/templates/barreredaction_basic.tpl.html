@@ -19,18 +19,6 @@
 		<i class="fa fa-unlock-alt"></i><span><?php if (isset($owner)) : ?><?php echo $owner;?><?php endif; ?></span>
 	</a>
 <?php endif; ?>
-	<a title="<?php echo _t('TEMPLATE_CLICK_TO_SEE_REFERENCES').' '.$page;?>" href="<?php echo $linkreferrers;?>" class="link-referrers modalbox">
-		<i class="fas fa-info-circle"></i><span><?php echo _t('TEMPLATE_REFERENCES');?></span>
-	</a>
-	<span class="dropdown dropup">
-		<a title="<?php echo _t('TEMPLATE_SLIDESHOW_MODE');?>" href="<?php echo $linkdiaporama;?>" class="link-diaporama dropdown-toggle" data-toggle="dropdown">
-			<i class="fa fa-film"></i><span><?php echo _t('TEMPLATE_SLIDESHOW');?></span><span class="caret"></span>
-		</a>
-		<ul class="dropdown-menu">
-      <li><a href="<?php echo $GLOBALS['wiki']->href('slide_show');?>"><?php echo _t('TEMPLATE_CLASSIC_SLIDESHOW');?></a></li>
-			<li><a href="<?php echo $GLOBALS['wiki']->href('diaporama');?>"><?php echo _t('TEMPLATE_DYNAMIC_SLIDESHOW');?></a></li>
-		</ul>
-	</span>
 	<a title="<?php echo _t('TEMPLATE_SEE_SHARING_OPTIONS').' '.$page;?>" href="<?php echo $linkshare;?>" class="link-share modalbox">
 		<i class="fa fa-share-alt"></i><span><?php echo _t('TEMPLATE_SHARE');?></span>
 	</a>
