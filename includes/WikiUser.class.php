@@ -191,7 +191,9 @@ class User
 		$this->error ='';
 		$newEmail = trim($newEmail);
 		$result = false;
-		if ($this->checkEmail($newEmail)) {
+		if ($newEmail == $this->email) { // That's the same email, do nothing and return True
+			$result = true;
+		} elseif ($this->checkEmail($newEmail)) { // New email, we check
 			$result = true;
 			$this->email = $newEmail;
 		} else { // if checkEmail returns false, $this->error is set to the corresponding error message
@@ -225,13 +227,14 @@ class User
 	public function setRevisionsCount($newRevisionsCount)
 	{
 		$this->error = '';
-		if (intval($newRevisionsCount) > 0) {
+		if (intval($newRevisionsCount) >= 0) {
 			$this->revisioncount = intval($newRevisionsCount);
 			$result = true;
 		} else {
 			$this->error = _t('USER_REVISIONS_COUNT_MUST_BE_A_POSITIVE_INTEGER').'.';
 			$result = false;
 		}
+		return $result;
 	}
 
 	public function getRevisionsCount()
@@ -245,13 +248,14 @@ class User
 	public function setChangesCount($newChangesCount)
 	{
 		$this->error = '';
-		if (intval($newChangesCount) > 0) {
+		if (intval($newChangesCount) >= 0) {
 			$this->changescount = intval($newChangesCount);
 			$result = true;
 		} else {
 			$this->error = _t('USER_CHANGES_COUNT_MUST_BE_A_POSITIVE_INTEGER').'.';
 			$result = false;
 		}
+		return $result;
 	}
 
 	public function getChangesCount()
@@ -261,7 +265,6 @@ class User
 
 	public function setDoubleClickEdit($newDoubleClickEdit)
 	{
-		$this->error = '';
 		if ((strtolower($newDoubleClickEdit) == 'n') || (strtolower($newDoubleClickEdit) == 'no') || (strtolower($newDoubleClickEdit) == 'non')) {
 			$this->doubleclickedit = 'N';
 		} else {
@@ -276,7 +279,6 @@ class User
 
 	public function setShowComments($newShowComments)
 	{
-		$this->error = '';
 		if ((strtolower($newShowComments) == 'o') || (strtolower($newShowComments) == 'oui') || (strtolower($newShowComments) == 'y') || (strtolower($newShowComments) == 'yes')) {
 			$this->show_comments = 'Y';
 		} else {
@@ -307,11 +309,12 @@ class User
 	public function setByAssociativeArray($newValues)
 	{
 		$this->error = '';
+		$error = '';
 		$result = true;
 		if (isset($newValues['name']) && (trim($newValues['name']) != '')) {
 			if (!$this->setName($newValues['name'])) {
 				$result = false;
-				$error = $this->error;
+				$error .= $this->error;
 			}
 		}
 		if (isset($newValues['email']) && (trim($newValues['email']) != '')) {
@@ -347,6 +350,7 @@ class User
 		if (isset($newValues['show_comments']) && (trim($newValues['show_comments']) != '')) {
 			$this->setShowComments($newValues['show_comments']);
 		}
+		$this->error = $error;
 		return $result;
  	}
 
@@ -596,7 +600,7 @@ class User
 
 	public function loadFromSession()
 	{
-		if(isset($_SESSION['user'])) {
+		if(isset($_SESSION['user']) && $_SESSION['user'] != '') {
 			$this->name					= $_SESSION['user']['name'];
 			$this->password			= $_SESSION['user']['password'];
 			$this->email				= $_SESSION['user']['email'];

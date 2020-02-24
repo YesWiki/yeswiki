@@ -83,15 +83,10 @@ foreach ($last_users as $user) {
 	echo '<td>';
 	$loggedUser = $this->GetUser();
 	if (($loggedUser != "") && ($loggedUser['name'] == $user['name'])){ // current user
-		echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur" class="btn btn-sm" role="button">Modifier</a>';
+		echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur" class="btn btn-sm btn-info" role="button">'._t('USER_MODIFY').'</a>';
 	} else { // not the current user, then can be deleted (at least try)
 		if ($isAdmin) {
-		echo $wiki->FormOpen('', '', 'get', 'form-inline');
-		echo '<input type="hidden" name="delete_'.$user['name'].'" value="'.htmlspecialchars($group, ENT_COMPAT, YW_CHARSET).'" />';
-		echo '<input class="btn btn-danger btn-delete" type="submit" value="'._t('USER_DELETE').'" />';
-		echo $wiki->FormClose();
-
-		echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur&user='.$user['name'].'" class="btn btn-sm btn-danger " role="button">USER_MODIFY</a>';
+			echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur&user='.$user['name'].'&from='.$this->tag.'" class="btn btn-sm btn-danger " role="button">'._t('USER_MODIFY').'</a>';
 		}
 	}
 	echo '</td>';

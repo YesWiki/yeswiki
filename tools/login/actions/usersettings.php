@@ -8,18 +8,21 @@ if (!defined('WIKINI_VERSION')) {
  die('acc&egrave;s direct interdit');
 }
 
-$isAdmin = $this->UserIsAdmin();
 require_once 'includes/WikiUser.class.php';
 $user = new \YesWiki\User($this->config, $this->queryLog, $this->CookiePath);
 require_once 'includes/WikiSession.class.php';
 $session = new \YesWiki\Session($this->CookiePath);
+
 $userLoggedIn = false;
+$referrer='';
+$isAdmin = $this->UserIsAdmin();
 if ($isAdmin && isset($_GET['user']) && ($_GET['user'] != '')) { // We are here because an admin comes to manage another user ($_GET['user']
 	$adminIsActing = true;
 	$OK = $user->loadByNameFromDB($_GET['user']);
 	if (!$OK) { // Did not find the user in DB
-		die(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER'));
+		$session->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER').' !');
 	}
+	$referrer = $_GET['from'];
 } else { // Admin isn't acting
 	$adminIsActing = false;
 	if ($user->loadFromSession()) { // Trying to instanciate $user from the session cooky)
@@ -31,27 +34,15 @@ if (isset($_REQUEST['usersettings_action'])) {
 	$action = $_REQUEST['usersettings_action'];
 	if (!$adminIsActing && (stripos($action, 'ByAdmin'))) { // Didn't notice it was admin acting but the action was requested by admin, therefore it's admin acting
 		$adminIsActing = true;
+		$userLoggedIn = false;
+		$OK = $user->loadByEmailFromDB($_REQUEST['email']); // In this case we need to load the right user
+		if (!$OK) { // Did not find the user in DB
+			$session->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER').' !');
+		}
 	}
 } else {
 	$action = '';
 }
-echo '<br/>$adminIsActing = ';
-var_dump($adminIsActing);
-echo '<br/>$userLoggedIn = ';
-var_dump($userLoggedIn);
-echo '<br/>$_GET = ';
-var_dump($_GET);
-echo '<br/>$_POST = ';
-var_dump($_POST);
-echo '<br/>$_REQUEST = ';
-var_dump($_REQUEST);
-echo '<br/>$action = ';
-var_dump($action);
-echo '<br/>$user = ';
-var_dump($user);
-echo '<br/>$_SESSION = ';
-var_dump($_SESSION);
-
 
 if ($action == 'logout') { // User wants to log out
 	$user->logOut();
@@ -59,10 +50,7 @@ if ($action == 'logout') { // User wants to log out
 	$this->Redirect($this->href());
 
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
-	echo '<br/>coucou';
-	var_dump(substr ( $action , 0, 6));
 	if (substr ( $action , 0, 6) == 'update') { // Whoever it is tries to update the user
-		echo '<br/><br/>update ';
 		$OK = $user->setByAssociativeArray(array(
 			'email'	 			=> $_POST['email'],
 			'motto'				=> $_POST['motto'],
@@ -71,23 +59,22 @@ if ($action == 'logout') { // User wants to log out
 			'doubleclickedit'	=> $_POST['doubleclickedit'],
 			'show_comments'	=> $_POST['show_comments'],
 		));
-		echo '<br/>setByAssociativeArray OK = ';
-		var_dump($OK);
 		if ($OK) {
 			$OK = $user->updateIntoDB('email, motto, revisioncount, changescount, doubleclickedit, show_comments',);
 		}
-		echo '<br/>updateIntoDB OK = ';
-		var_dump($OK);
 		if ($OK) {
 			if ($userLoggedIn) { // In case it's the usther trying to update oneself, need to reset the cooky
 				$user->logIn();
 			}
 			// forward
 			$session->setMessage(_t('PARAMETERS_SAVED').' !');
-			$this->Redirect($this->href());
+			if ($userLoggedIn) { // In case it's the usther trying to update oneself
+				$this->Redirect($this->href());
+			} else { // That's the admin acting, we need to pass the user on
+				$this->Redirect($this->href('','','user='.$_GET['user'].'&from='.$referrer,false));
+			}
 		} else { // Unable to update
 			$session->setMessage($user->error);
-			$this->Redirect($this->href());
 		}
 	} // End of update action
 
@@ -96,8 +83,8 @@ if ($action == 'logout') { // User wants to log out
 		if ($action == 'deleteByAdmin') { // Admin trying to delete user
 			$user->delete();
 			// forward
-			$session->setMessage(_t('PARAMETERS_SAVED').' !');
-			$this->Redirect($this->href());
+			$session->setMessage(_t('USER_DELETED').' !');
+			$this->Redirect($this->href('',$referrer));
 		} // End of delete by admin action
 
 	} elseif ($userLoggedIn) { // Admin isn't acting therefore that's an already logged in user
@@ -121,11 +108,23 @@ if ($action == 'logout') { // User wants to log out
 ?>
 
 <!-- FORM UPDATE (user is logged in; display config form) -->
-<h2><?php echo _t('USER_SETTINGS');?></h2>
-<?php echo $this->FormOpen('', '', 'post', 'form-horizontal');
- 	// This form submits
-	//		either something like "update" if requested by the logged user
-	//		or something like "updateByAdmin" if requested by an admin
+<h2><?php
+	echo _t('USER_SETTINGS');
+	if ($adminIsActing) {
+		echo ' — '.$user->getName();
+	}
+?></h2>
+<?php
+if ($adminIsActing) {
+	$href = $this->href('','','user='.$user->getName().'&from='.$referrer,false);
+} else {
+	$href = $this->href();
+}
+?>
+<form action="<?php echo $href; ?>" method="post" class="form-horizontal">
+<?php	// This form submits
+		//		either "update" if requested by the logged user
+		//		or 	 "updateByAdmin" if requested by an admin
 ?>
 	<input type="hidden" name="usersettings_action" value="update<?php echo $adminIsActing ? 'ByAdmin' : '' ?>" />
 	<div class="control-group form-group">
@@ -186,12 +185,23 @@ if ($action == 'logout') { // User wants to log out
 	</div>
 <?php echo $this->FormClose();	 ?>
 
+<!-- FORM DELETE -->
+<?php
+			if ($adminIsActing) { // Admin is acting
+?>
+<form action="<?php echo $this->href('','','user='.$user->getName().'&from='.$referrer, false); ?>" method="post" class="form-horizontal">
+	<input type="hidden" name="usersettings_action" value="deleteByAdmin" />
+	<input class="btn btn-danger" type="submit" value="<?php echo _t('DELETE');?>" />
+<?php echo $this->FormClose();
+			} // End of Admin is acting
+?>
+
 
 <!-- FORM CHANGE PASSWORD  -->
 <?php
 if ($userLoggedIn) { // The one who runs the session is acting
-	echo $this->FormOpen('', '', 'post', 'form-horizontal');
 ?>
+<form action="<?php echo $this->href(); ?>" method="post" class="form-horizontal">
 	<hr>
 	<input type="hidden" name="usersettings_action" value="changepass" />
 	<h2><?php echo _t('CHANGE_THE_PASSWORD');?></h2>
@@ -251,8 +261,7 @@ if ($action == 'login') { // user is trying to log in or register
 
 <!-- FORM SIGN UP -->
 <h2><?php echo _t('USER_SIGN_UP');?></h2>
-<?php echo $this->FormOpen('', '', 'post', 'form-horizontal'); ?>
-
+<form action="<?php echo $this->href(); ?>" method="post" class="form-horizontal">
 	<input type="hidden" name="usersettings_action" value="login" />
 	<?php if (isset($error)) echo '<div class="alert alert-danger">', $error, "</div>\n"; ?>
 	<div class="control-group form-group">
@@ -280,14 +289,12 @@ if ($action == 'login') { // user is trying to log in or register
 			<input class="form-control" type="password" name="password" size="40" />
 		</div>
 	</div>
-
 	<div class="control-group form-group">
 		<label class="control-label col-sm-3"><?php echo _t('PASSWORD_CONFIRMATION');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" type="password" name="confpassword" size="40" />
 		</div>
 	</div>
-
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
 			<input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('NEW_ACCOUNT');?>" size="40" />
@@ -297,8 +304,46 @@ if ($action == 'login') { // user is trying to log in or register
 
 <hr>
 
-<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
+<!-- <button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()"> -->
+<a href="#LoginModal" role="button" class="btn btn-block btn-default" data-toggle="modal">
   <?php echo _t('LOGIN_LOGIN'); ?>
-</button>
+</a><!-- </button> -->
+
+<div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h3 id="LoginModalLabel"><?php echo _t('LOGIN_LOGIN'); ?></h3>
+			</div>
+			<div class="modal-body">
+				<form action="https://osons.cc/?Pageadmin" method="post">
+					<div class="form-group">
+						<input type="text" name="name" class="form-control" value="" required placeholder="Email ou NomWiki">
+					</div>
+					<div class="form-group">
+						<input type="password" class="form-control" name="password" required placeholder="Mot de passe">
+					</div>
+					<small><a href="https://osons.cc/?MotDePassePerdu">Mot de passe perdu ?</a></small>
+					<div class="checkbox">
+						<label for="remember-modal">
+							<input type="checkbox" id="remember-modal" name="remember" value="1" />
+							Se souvenir de moi
+						</label>
+					</div>
+					<input type="submit" name="login" class="btn btn-block  btn-primary" value="Se connecter">
+					<input type="hidden" name="action" value="login" />
+					<input type="hidden" name="incomingurl" value="https://osons.cc/?Pageadmin" />
+					<input type="hidden" name="remember" value="0" />
+				</form>
+				<hr>
+				<a class="btn btn-block " href="https://osons.cc/?ParametresUtilisateur">S'inscrire</a>
+			</div>
+		</div>
+	</div><!-- /.modal-dialog -->
+</div> <!-- /#LoginModal-->
+
+
+
 
 <?php }  // End of neither logged in user nor admin trying to do something ?>
