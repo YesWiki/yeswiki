@@ -1,7 +1,6 @@
 <?php
 /*
 * userstable.php
-* written by Cyrille giquello under the name of listusers2
 * builds a table of the users
 * each line shows, for a user :
 * - his/her user name,
@@ -14,65 +13,89 @@
 * else
 *		all users are shown in alphabetical order (username)
 *
-
-Copyright 2002 Patrick PAUL
-Copyright 2003 David DELON
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+require_once 'includes/constants.php';
+require_once 'includes/WikiUser.class.php';
 global $wiki ;
-
 $groups = $wiki->GetGroupsList();
+
+$isAdmin = $this->UserIsAdmin();
+
 // UserIsInGroup
 // UserIsAdmin
+$sql = 'SELECT name, email, signuptime FROM '.$this->config['table_prefix'].'users ORDER BY ';
 if ($last = $this->GetParameter('last')) {
-    $last= (int) $last ;
-    if ($last == 0) {
-        $last = 12 ;
-    }
-    $last_users = $this->LoadAll('select name, email, signuptime from '.$this->config['table_prefix'].'users order by signuptime desc limit '.$last);
+	$last= (int) $last ;
+	if ($last == 0) {
+		$last = 12 ;
+	}
+	$sql .= 'signuptime DESC LIMIT '.$last;
 } else {
-    $last_users = $this->LoadAll('select name, email, signuptime from '.$this->config['table_prefix'].'users order by name asc');
+	$sql .= 'name ASC';
 }
+$last_users = $this->LoadAll($sql);
+foreach ($last_users as $user) {
+	if (!empty($_GET['delete_'.$user['name']])) {
+		// The form returns a username to delete, therefore
+		// There is a request to delete the user
+		// require_once 'includes/WikiUser.class.php';
+		$rowUser = new \YesWiki\User($wiki->config, $wiki->queryLog, $wiki->CookiePath);
+		$OK= $rowUser->loadByNameFromDB($user['name']);
+		if (!$OK) {
+			die ($rowUser->error);
+		}
+		$OK = $rowUser->delete();
+		if (!$OK) {
+			die ($rowUser->error);
+		}
+		echo "<meta http-equiv='refresh' content='0'>";
+	}
+}
+
+
 $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
 $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 echo '<table class="table table-striped">', "\n";
 echo '<thead>', "\n";
 echo '<tr>
-  <th>Nom</th>
-  <th>Groupe(s)</th>
-  <th>Email</th>
-  <th>Inscription</th>
+	<th>Nom</th>
+	<th>Groupe(s)</th>
+	<th>Email</th>
+	<th>Inscription</th>
+	<th> </th>
 </tr>';
 echo '</thead>', "\n";
 echo '<tbody>', "\n";
 foreach ($last_users as $user) {
-    $ug = array();
-    foreach ($groups as $group) {
-        if ($wiki->UserIsInGroup($group, $user['name'], true)) {
-            $ug[] = $group ;
-        }
-        //error_log($group.' : '.print_r($acl,true));
-    }
-    echo '<tr>';
-    echo '<td>' . $user['name'] . '</td>';
-    echo '<td>', implode(', ', $ug) , '</td>';
-    echo '<td>', $user['email'] , '</td>';
-    echo '<td>', $user['signuptime'] , '</td>';
-    //, ' ', ,' . . . ',$user['signuptime'],' ',,"<br />\n" ;
-    echo '</tr>', "\n";
+	$ug = array();
+	foreach ($groups as $group) {
+		if ($wiki->UserIsInGroup($group, $user['name'], true)) {
+			$ug[] = $group ;
+		}
+		//error_log($group.' : '.print_r($acl,true));
+	}
+	echo '<tr>';
+	echo '<td>' . $user['name'] . '</td>';
+	echo '<td>', implode(', ', $ug) , '</td>';
+	echo '<td>', $user['email'] , '</td>';
+	echo '<td>', $user['signuptime'] , '</td>';
+	echo '<td>';
+	$loggedUser = $this->GetUser();
+	if (($loggedUser != "") && ($loggedUser['name'] == $user['name'])){ // current user
+		echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur" class="btn btn-sm" role="button">Modifier</a>';
+	} else { // not the current user, then can be deleted (at least try)
+		if ($isAdmin) {
+		echo $wiki->FormOpen('', '', 'get', 'form-inline');
+		echo '<input type="hidden" name="delete_'.$user['name'].'" value="'.htmlspecialchars($group, ENT_COMPAT, YW_CHARSET).'" />';
+		echo '<input class="btn btn-danger btn-delete" type="submit" value="'._t('USER_DELETE').'" />';
+		echo $wiki->FormClose();
+
+		echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur&user='.$user['name'].'" class="btn btn-sm btn-danger " role="button">USER_MODIFY</a>';
+		}
+	}
+	echo '</td>';
+	echo '</tr>', "\n";
 }
 echo '</tbody>', "\n";
 echo '</table>', "\n";

@@ -24,8 +24,6 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-include_once 'tools/login/libs/login.functions.php';
-
 header('Content-type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 

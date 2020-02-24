@@ -61,6 +61,17 @@ $GLOBALS['translations'] = array(
 
 // actions/changestyle.php ignoree...
 
+// handlers/page/acls.php
+'YW_ACLS_LIST' => 'List of acces rights to the page',
+'YW_ACLS_UPDATED' => 'Access rights updated',
+'YW_NEW_OWNER' => ' and owner change . New owner: ',
+'YW_CANCEL' => 'Cancel',
+'YW_ACLS_READ' => 'Read rights',
+'YW_ACLS_WRITE' => 'Write rights',
+'YW_CHANGE_OWNER' => 'Change the owner',
+'YW_CHANGE_NOTHING' => 'No changes',
+'YW_CANNOT_CHANGE_ACLS' => 'You cannot change rights on this page',
+
 // actions/editactionsacls.class.php
 'ACTION_RIGHTS' => 'Action\'s rights',
 'SEE' => 'See',
@@ -186,8 +197,6 @@ $GLOBALS['translations'] = array(
 'USER_SIGN_UP' => 'Sign Up',
 'YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected',
 'PARAMETERS_SAVED' => 'Parameters saved',
-'NO_SPACES_IN_PASSWORD' => 'No spaces allowed in password',
-'PASSWORD_TOO_SHORT' => 'Password too short',
 'WRONG_PASSWORD' => 'Wrong password',
 'PASSWORD_CHANGED' => 'Password changed',
 'GREETINGS' => 'Hello',
@@ -202,11 +211,6 @@ $GLOBALS['translations'] = array(
 'YOUR_OLD_PASSWORD' => 'Your former password',
 'NEW_PASSWORD' => 'New password',
 'CHANGE' => 'Change',
-'USERNAME_MUST_BE_WIKINAME' => 'Your username must be a WikiName',
-'YOU_MUST_SPECIFY_AN_EMAIL' => 'You must specify an email address',
-'THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
-'PASSWORDS_NOT_IDENTICAL' => 'The passwords are not identical',
-'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'should contain at least 5 alphanumerical characters',
 'YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'You must accept cookies to get connected',
 'IF_YOU_ARE_REGISTERED_LOGGIN_HERE' => 'If you are already registered, login here',
 'YOUR_WIKINAME' => 'Your WikiName',
@@ -324,6 +328,38 @@ $GLOBALS['translations'] = array(
 'CONFIGURATION_FILE_NOT_CREATED' => 'was not created',
 'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Try to change the write access rights on the file. If not possible, you must create the file and copy those informations inside, then transfert it by FTP on your server in a file ',
 'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directly in the YesWiki root folder. Once you done it, your YesWiki website should work as expected',
-'TRY_AGAIN' => 'Try again'
+'TRY_AGAIN' => 'Try again',
+
+// API
+'USERS' => 'Users',
+'GROUPS' => 'Groups',
+
+// YesWiki\User class
+'USER_CHANGES_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Changes count must be a positive integer',
+'USER_DELETE_QUERY_FAILED' => 'User deletion query failed',
+'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'The user you are trying to delete is the only member of a group',
+'USER_EMAIL_S_MAXIMUM_LENGTH_IS' => 'User email\'s maximum number of characters is',
+'USER_LISTGROUPMEMBERSHIPS_QUERY_FAILED' => 'The query to get the list of groups the user belongs to failed',
+'USER_MUST_BE_ADMIN_TO_DELETE' => 'You must be an admin to delete a user',
+'USER_NAME_S_MAXIMUM_LENGTH_IS' => 'User name\'s maximum number of characters is',
+'USER_NO_SPACES_IN_PASSWORD' => 'No spaces are allowed in password',
+'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'The minimum number of characters for a user password is',
+'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords must be identical',
+'USER_PASSWORD_TOO_SHORT' => 'Password too short',
+'USER_REVISIONS_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Revisions count must be a positive integer',
+'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'The specified email is allready in use on this wiki',
+'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
+'USER_UPDATE_QUERY_FAILED' => 'User update query failed',
+'USER_YOU_MUST_SPECIFY_A_NAME' => 'Please specify a name for the user',
+'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Please specify an email address for the user',
+
+// YesWiki\Database class
+'DATABASE_QUERY_FAILED' => 'Database query failed',
+'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set all arguments for object of \YesWiki\Database class',
+'DATABASE_MISSING_ARGUMENT' => ' missing',
+
+
+// YesWiki\Session class
+'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set argument for object of \YesWiki\Session class',
 
 );
