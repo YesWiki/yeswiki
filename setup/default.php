@@ -31,62 +31,39 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 ?>
-    <div class="jumbotron"><h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></h1>
-
-    <?php
-    if ($wakkaConfig['yeswiki_version'] || $wakkaConfig['wakka_version'] || $wakkaConfig['wikini_version']) {
-        if ($wakkaConfig['yeswiki_version']) {
-            $prog = 'YesWiki';
-            $config = $wakkaConfig['yeswiki_version'];
-        } elseif ($wakkaConfig['wikini_version']) {
-            $prog = 'Wikini';
-            $config = $wakkaConfig['wikini_version'];
-        } else {
-            $prog = 'Wikini';
-            $config = $wakkaConfig['wakka_version'];
-        }
-        echo '<div class="alert alert-info">'._t('YOUR_SYSTEM').' '.$prog.' '._t('EXISTENT_SYSTEM_RECOGNISED_AS_VERSION').' ',$config,
-            '. '._t('YOU_ARE_UPDATING_YESWIKI_TO_VERSION').' ',YESWIKI_VERSION,
-            '. '._t('CHECK_YOUR_CONFIG_INFORMATION_BELOW').".</div>\n";
-        $wiki = new Wiki($wakkaConfig);
-    } else {
-        echo '<h4>('.YESWIKI_VERSION.' - '.YESWIKI_RELEASE.')</h4><p>'._t('FILL_THE_FORM_BELOW')."</p>\n";
-        $wiki = null;
-    }
-    ?>
-
-    </div>
+    
     <form class="form-horizontal form-yeswiki-install" action="<?php echo  myLocation() ?>?PagePrincipale&installAction=install" method="post">
 
-    <fieldset>
-
-      <legend><?php echo _t('GENERAL_CONFIGURATION'); ?>
-        <div class="accordion-heading">
-          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne"><?php echo _t('MORE_INFOS'); ?></a>
-        </div>
-      </legend>
+    <div class="row">
+    <div class="col-md-4">
+      <h3>
+        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion1" href="#collapseOne">
+            <?php echo _t('MORE_INFOS'); ?>
+        </a>
+        <?php echo _t('GENERAL_CONFIGURATION'); ?>
+      </h3>
 
         <div class="accordion" id="accordion1">
           <div class="accordion-group">
             <div id="collapseOne" class="accordion-body collapse">
               <div class="accordion-inner">
-                <dl class="dl-horizontal">
+                <dl>
                     <dt><?php echo _t('DEFAULT_LANGUAGE'); ?></dt>
                     <dd><?php echo _t('DEFAULT_LANGUAGE_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('YOUR_WEBSITE_NAME'); ?></dt>
                     <dd><?php echo _t('YOUR_WEBSITE_NAME_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('DESCRIPTION'); ?></dt>
                     <dd><?php echo _t('DESCRIPTION_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('KEYWORDS'); ?></dt>
                     <dd><?php echo _t('KEYWORDS_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('HOMEPAGE'); ?></dt>
                     <dd><?php echo _t('HOMEPAGE_INFOS'); ?></dd>
                   </dl>
@@ -132,33 +109,36 @@ if (!defined('WIKINI_VERSION')) {
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('HOMEPAGE'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" /> (<?php echo _t('MUST_BE_WIKINAME'); ?>)
+            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" />
+            <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
-
-      <legend><?php echo _t('DATABASE_CONFIGURATION'); ?>
-        <div class="accordion-heading">
-          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo"><?php echo _t('MORE_INFOS'); ?></a>
-        </div>
-      </legend>
+</div>
+<div class="col-md-4">
+    <h3>
+        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+            <?php echo _t('MORE_INFOS'); ?>
+        </a>
+        <?php echo _t('DATABASE_CONFIGURATION'); ?>
+    </h3>
 
         <div class="accordion" id="accordion2">
           <div class="accordion-group">
             <div id="collapseTwo" class="accordion-body collapse">
               <div class="accordion-inner">
-                <dl class="dl-horizontal">
+                <dl>
                     <dt><?php echo _t('MYSQL_SERVER'); ?> </dt>
                     <dd><?php echo _t('MYSQL_SERVER_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('MYSQL_DATABASE'); ?> </dt>
                     <dd><?php echo _t('MYSQL_DATABASE_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('MYSQL_USERNAME'); ?> </dt>
                     <dd><?php echo _t('MYSQL_USERNAME_INFOS'); ?></dd>
                   </dl>
-                  <dl class="dl-horizontal">
+                  <dl>
                     <dt><?php echo _t('TABLE_PREFIX'); ?> </dt>
                     <dd><?php echo _t('TABLE_PREFIX_INFOS'); ?></dd>
                   </dl>
@@ -201,18 +181,19 @@ if (!defined('WIKINI_VERSION')) {
             <input type="text" required class="form-control" name="config[table_prefix]" value="<?php echo $wakkaConfig['table_prefix'] ?>" />
           </div>
         </div>
-
-      <legend><?php echo _t('CREATION_OF_ADMIN_ACCOUNT'); ?>
-        <div class="accordion-heading">
-          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree"><?php echo _t('MORE_INFOS'); ?></a>
-        </div>
-      </legend>
-
+</div>
+<div class="col-md-4">
+    <h3>
+        <a class="pull-right btn btn-sm btn-info" data-toggle="collapse" data-parent="#accordion3" href="#collapseThree">
+            <?php echo _t('MORE_INFOS'); ?>
+        </a>
+        <?php echo _t('CREATION_OF_ADMIN_ACCOUNT'); ?>
+    </h3>
         <div class="accordion" id="accordion3">
           <div class="accordion-group">
             <div id="collapseThree" class="accordion-body collapse">
               <div class="accordion-inner">
-                <dl class="dl-horizontal">
+                <dl>
                   <dt class="admin"><?php echo _t('ADMIN_ACCOUNT_CAN'); ?></dt>
                   <dd class="droits-admin">
                     <ul>
@@ -252,14 +233,16 @@ if (!defined('WIKINI_VERSION')) {
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('ADMIN'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="admin_name" value="WikiAdmin" /> (<?php echo _t('MUST_BE_WIKINAME'); ?>)
+            <input type="text" required class="form-control" name="admin_name" value="WikiAdmin" />
+            <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
 
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('PASSWORD'); ?></label>
           <div class="col-sm-9">
-            <input type="password" required class="form-control" name="admin_password" value="" /> (<?php echo _t('PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM'); ?>)
+            <input type="password" required class="form-control" name="admin_password" value="" />
+            <p class="help-block"><?php echo _t('PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM'); ?></p>
           </div>
         </div>
 
@@ -276,59 +259,52 @@ if (!defined('WIKINI_VERSION')) {
             <input type="email" required class="form-control" name="admin_email" value="" />
           </div>
         </div>
-
-         <legend><?php echo _t('MORE_OPTIONS'); ?></legend>
-
+    </div>
+</div>
         <div class="accordion-heading">
-          <a class="plusinfos btn btn-xs btn-info" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour"><?php echo _t('ADVANCED_CONFIGURATION'); ?></a>
+          <h3>
+          <a class="" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour"><?php echo _t('ADVANCED_CONFIGURATION'); ?></a>
+          </h3>
         </div>
 
         <div class="accordion" id="accordion4">
           <div class="accordion-group">
             <div id="collapseFour" class="accordion-body collapse">
               <div class="accordion-inner">
-
-              <p><legend><span><?php echo _t('URL_REDIRECTION'); ?></span></legend></p>
-              <?php
-              if (!$wakkaConfig['yeswiki_version']) {
-                  echo '<p class="alert">'._t('NEW_INSTALL_VALUES_CHANGE_ONLY_IF_YOU_KNOW_WHAT_YOU_ARE_DOING').'.</p>';
-              }
-              ?>
-
-              <p><?php echo _t('PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION'); ?>.</p>
-
                 <div class="form-group">
-                  <label class="col-sm-3 control-label"><?php echo _t('BASE_URL'); ?> </label>
-                  <div class="col-sm-9">
-                    <input type="text" class="input-xxlarge" name="config[base_url]" value="<?php echo $wakkaConfig['base_url'] ?>" />
-                  </div>
+                    <label class="col-sm-3 control-label"><?php echo _t('BASE_URL'); ?></label>
+                    <div class="col-sm-9">
+                        <input type="text" required class="form-control" name="config[base_url]" value="<?php echo $wakkaConfig['base_url'] ?>" />
+                        <p class="help-block"><?php echo _t('PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION'); ?></p>
+                    </div>
                 </div>
 
-              <p><?php echo _t('REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI'); ?>.</p>
-
-                <div class="form-group">
-                  <label class="checkbox">
+                <div class="checkbox">
+                  <label>
                     <input type="hidden" name="config[rewrite_mode]" value="0" />
-                    <input type="checkbox" name="config[rewrite_mode]" value="1" <?php echo $wakkaConfig['rewrite_mode'] ? 'checked' : '' ?> >  &nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?>
+                    <input type="checkbox" name="config[rewrite_mode]" value="1" <?php echo $wakkaConfig['rewrite_mode'] ? 'checked' : '' ?> >
+                    <span></span>
+                    &nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?>
                   </label>
+                  <p class="help-block"><?php echo _t('REDIRECTION_SHOULD_BE_ACTIVE_ONLY_IF_USED_IN_YESWIKI'); ?>.</p>
                 </div>
 
-              <p><legend><span><?php echo _t('OTHER_OPTIONS'); ?></span></legend></p>
-
-                <!-- option apercu avant sauvegarde de page -->
-                <!--<div class="form-group">
-                  <label class="checkbox">
-                    <input type="hidden" name="config[preview_before_save]" value="0" />
-                    <input type="checkbox" name="config[preview_before_save]" value="1" <?php //echo $wakkaConfig["preview_before_save"] ? "checked" : "" ?> />
-                     &nbsp;<?php echo _t('OBLIGE_TO_PREVIEW_BEFORE_SAVING_PAGE'); ?>
-                  </label>
-                </div>-->
-
-                <div class="form-group">
-                  <label class="checkbox">
+                <div class="checkbox">
+                  <label>
                     <input type="checkbox" name="config[allow_raw_html]" value="1" <?php echo $wakkaConfig['allow_raw_html'] ? '' : 'checked' ?> />
-                     &nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?><br />
+                    <span></span>
+                    &nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?>
                   </label>
+                  <p class="help-block"><?php echo _t('HTML_INSERTION_HELP_TEXT'); ?>.</p>
+                </div>
+
+                <div class="checkbox">
+                  <label>
+                    <input type="checkbox" name="allowRobots" value="1" <?php echo isset($wakkaConfig['allowRobots']) ? '' : 'checked' ?> />
+                    <span></span>
+                    &nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?>
+                  </label>
+                  <p class="help-block"><?php echo _t('INDEX_HELP_TEXT'); ?>.</p>
                 </div>
 
               </div>

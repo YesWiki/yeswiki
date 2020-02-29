@@ -37,12 +37,10 @@ if (empty($_POST['config'])) {
     die(_t('PROBLEM_WHILE_INSTALLING'));
 }
 ?>
-		<div class="jumbotron">
-			<h1><?php echo _t('INSTALLATION_OF_YESWIKI'); ?></h1>
-			<h4>(<?php echo YESWIKI_VERSION.' - '.YESWIKI_RELEASE; ?>)</h4>
-			<p><?php echo _t('VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION'); ?></p>
-		</div>
+
 <?php
+
+echo '<h2>'._t('VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION').'</h2>';
 
 // fetch configuration
 $config = $config2 = $_POST['config'];

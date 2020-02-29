@@ -16,10 +16,10 @@ function test($text, $condition, $errorText = "", $stopOnError = 1)
 {
     echo "$text ";
     if ($condition) {
-        echo "<span class=\"ok\">"._t('OK')."</span><br />\n";
+        echo "<span class=\"text-success\">"._t('OK')."</span><br />\n";
         return 0;
     } else {
-        echo "<span class=\"failed\">"._t('FAIL')."</span>";
+        echo "<span class=\"text-danger\">"._t('FAIL')."</span>";
         if ($errorText) {
             echo ": ",$errorText;
         }
