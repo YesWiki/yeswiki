@@ -57,8 +57,12 @@ if (!empty($nbcols)) {
 					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['createur']); ?></small>
 				<?php endif; ?>
 
-				<p class="lead text-justify">
-					<?php echo $GLOBALS['wiki']->Format($fiche['bf_chapeau']); ?></p>
+        <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
+          $soustitre = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['soustitre']), '<br>')); ?>
+          <p class='lead text-justify'>
+            <?php echo substr($soustitre, 0, 280) . (strlen($soustitre) > 280 ? '...' : ''); ?>
+          </p>
+        <?php endif; ?>
 				<p class="lead">
 					<a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">Plus d'infos ...</a>
 				</p>
@@ -96,16 +100,16 @@ if (!empty($nbcols)) {
 				<?php if ($showauthor) : ?>
 					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['createur']); ?></small>
 				<?php endif; ?>
-	
-				<p class="desc text-justify">
-					<?php echo $GLOBALS['wiki']->Format($fiche['bf_chapeau']); ?>
-				</p>
+        <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
+        $soustitre = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['soustitre']), '<br>')); ?>
+          <p class='desc text-justify'>
+            <?php echo substr($soustitre, 0, 280) . (strlen($soustitre) > 280 ? '...' : ''); ?>
+          </p>
+        <?php endif; ?>
 				<a class="link-more" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">Plus d'infos ...</a>
 				<div class="clearfix"></div>
 			</div>
 		<?php endif;  ?> 
 	<?php endforeach;  ?>
 </div>
-<?php else : ?>
-   <div class="text-info">Il n 'y a pas de fiche pour cette période.</div>
 <?php endif;  ?>   
