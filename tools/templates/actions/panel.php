@@ -3,11 +3,11 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-// taille de la colonne
-$size = $this->GetParameter('title');
-if (empty($size)) {
-    echo '<div><div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_PANEL') . '</strong> : '
-        . _t('TEMPLATE_TITLE_PARAMETER_REQUIRED') . '.</div>' . "\n";
+// Titre du pannel
+$title = $this->GetParameter('title');
+if (empty($title)) {
+    echo '<div><div><div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_PANEL') . '</strong> : '
+        . _t('TEMPLATE_TITLE_PARAMETER_REQUIRED');
     return;
 }
 
@@ -16,6 +16,16 @@ $class = $this->GetParameter('class');
 if (empty($class)) {
     $class = 'panel-default';
 }
+
+// collapsed: initial state is collasped, and the panel is collaspible
+// collaspsible: initial state is displayed, and the panel is collaspible
+// empty: initial state is displayed, and the panel is not collapsable
+$type = $this->GetParameter('type');
+if (empty($type)) {
+    $type = '';
+}
+$collapsible = ($type == "collapsed" || $type == "collapsible");
+$collapsed = ($type == "collapsed");
 
 // data attributes
 $data = getDataParameter();
@@ -32,6 +42,8 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     $collapseID = uniqid('collapse');
     if (isset($GLOBALS['check_'.$pagetag]['accordion_uniqueID'])) {
         $accordionID = $GLOBALS['check_'.$pagetag]['accordion_uniqueID'];
+        $collapsible = true;
+        $collapsed = true;
     } else {
         $accordionID = '';
     }
@@ -43,15 +55,26 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
         }
     }
 
-    echo "<!-- start of panel -->"
+    $result = "<!-- start of panel -->"
     . "<div class=\"panel $class\" $data>
-      <div class=\"panel-heading\" role=\"tab\" id=\"$headingID\" role=\"button\" data-toggle=\"collapse\" data-parent=\"#$accordionID\" href=\"#$collapseID\" aria-expanded=\"true\" aria-controls=\"$collapseID\">
+      <div class=\"panel-heading " . ($collapsed ? "collapsed" : "") ."\" role=\"tab\" id=\"$headingID\" role=\"button\"";
+    if (!empty($accordionID)) $result .= " data-parent=\"#$accordionID\"";
+
+    if ($collapsible) {
+        $result .= " data-toggle=\"collapse\" href=\"#$collapseID\" aria-controls=\"$collapseID\"
+         aria-expanded='" . ($collasped ? "true" : "false") . "'";
+    }
+    $result .= ">";
+    $result .= "
           <h4 class=\"panel-title\">
            $title
           </h4>
       </div>
-      <div id=\"$collapseID\" class=\"panel-collapse".(!empty($accordionID) ? " collapse" : "")."\" role=\"tabpanel\" aria-labelledby=\"$headingID\">
+      <div id=\"$collapseID\" class=\"panel-collapse collapse " . ($collapsed ? "" : "in") ."\"
+        aria-expanded='" . ($collapsed ? "true" : "false") ."' role=\"tabpanel\" aria-labelledby=\"$headingID\">
         <div class=\"panel-body\">";
+
+    echo $result;
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_PANEL') . '</strong> : '
         . _t('TEMPLATE_ELEM_PANEL_NOT_CLOSED') . '.</div>' . "\n";

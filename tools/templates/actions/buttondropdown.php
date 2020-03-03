@@ -17,11 +17,11 @@ if ($caret != '0') {
 }
 
 // icone du bouton
-$icon = $this->GetParameter('icon');
+$icon = trim($this->GetParameter('icon'));
 if (!empty($icon)) {
 	// si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
-	if ( preg_match('/\s/', $icon) )
-	{
+
+	if ( preg_match('/\s/', $icon) === 1 ) {
 	   $icon = '<i class="'.$icon.'"></i>';
 	}
 	else

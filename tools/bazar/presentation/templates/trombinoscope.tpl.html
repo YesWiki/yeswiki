@@ -3,12 +3,12 @@
 	<div class="trombi-container">
   <?php foreach ($fiches as $fiche) : ?>
     <a class="bazar-entry modalbox" <?php echo $fiche['html_data'];?>
-       href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>" target="_new"
-       title="<?php echo $fiche['bf_titre'];?>">
+       href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>"
+       title="<?php echo htmlentities($fiche['bf_titre']);?>">
 
       <div class="image-container">
         <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
-          <img class="trombi-image" alt="<?php echo $fiche['bf_titre'];?>"
+          <img class="trombi-image" alt="<?php echo htmlentities($fiche['bf_titre']);?>"
                src="<?php echo redimensionner_image(
                     'files/'.$fiche['imagebf_image'],
                     'cache/image_300_300_'.$fiche['imagebf_image'],

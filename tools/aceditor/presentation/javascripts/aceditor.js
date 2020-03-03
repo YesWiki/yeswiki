@@ -128,6 +128,8 @@ var SYNTAX = {
         minLines: $(this.element).attr('rows'),
         showFoldWidgets:false,
         fontSize: "18px",
+        useSoftTabs: false,
+        tabSize: 3,
         fontFamily: '\'Inconsolata\', monospace',
 
         highlightActiveLine: true,

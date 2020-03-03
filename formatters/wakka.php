@@ -395,7 +395,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
 
             //calcul de la balise ouvrante/fermante selon le type de liste
             if (!$newIndentType) {
-                $opener = "\n".'<ul style="list-style: none; ">';
+                $opener = "".'<ul class="fake-ul">';
                 $closer = "</li>\n</ul>\n";
             } elseif ($newIndentType == '-') {
                 $opener = "\n<ul>";

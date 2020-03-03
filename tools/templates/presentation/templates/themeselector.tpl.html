@@ -45,7 +45,7 @@
   </div>
 
   <?php if (!empty($themes[$wiki->config['favorite_theme']]['presets'])) : ?>
-    <div class="preset-settings-container" style="display: none">
+    <div class="preset-settings-container">
       <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
       <ul class="css-preset-list list-inline">
       <?php foreach ($themes[$wiki->config['favorite_theme']]['presets'] as $key => $value) : ?>
@@ -58,7 +58,7 @@
       <?php endforeach; ?>
       </ul>
       <a class="btn btn-xs btn-primary btn-new-preset" href="javascript:void(0)" onclick="openNav()">
-        <i class="fa fa-plus"></i><?php echo _t('TEMPLATE_CREATE_PRESET'); ?>
+        </i><?php echo _t('TEMPLATE_CREATE_PRESET'); ?>
       </a>
     </div>
   <?php endif; ?>
@@ -126,13 +126,18 @@
 </form>
 
 <div id="preset-sidenav" class="sidenav">
-  <a href="#" class="closebtn" onclick="closeNav()">&times;</a>
+
   <form id="preset-form" action="#" method="post">
-    <h4><?php echo _t('TEMPLATE_CUSTOMIZE_PRESET'); ?></h4>
+    <h4>
+      <?php echo _t('TEMPLATE_CUSTOMIZE_PRESET'); ?>
+      <span class="closebtn" onclick="closeNav()">&times;</span>
+    </h4>
     <?php
     // TODO : don't use CDN trackers are bad
-    $GLOBALS['wiki']->addJavascriptFile('https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js');
     $GLOBALS['wiki']->addJavascriptFile('https://av01d.github.io/fontselect-jquery-plugin/jquery.fontselect.js');
+    $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css');
+
     foreach ($themes[$wiki->config['favorite_theme']]['presets']['default.json']['variables'] as $varcss) : ?>
 
     <?php if ($varcss['type'] == 'color') : ?>
@@ -156,7 +161,7 @@
     <?php endforeach; ?>
   </form>
 </div>
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.0/spectrum.min.css">
+
 <style>
   /* The side navigation menu */
   #preset-sidenav {
@@ -168,14 +173,14 @@
     /* Stay in place */
     top: 0;
     right: 0;
-    background-color: var(--neutral-color);
-    /* Black*/
+    background-color: #efefef;
+    border-left: 1px solid var(--neutral-soft-color);
     overflow-x: hidden;
     /* Disable horizontal scroll */
     transition: 0.5s;
     /* 0.5 second transition effect to slide in the sidenav */
     z-index: 2000;
-    padding-top: 4em;
+    padding-top: 2rem;
     /* Place content under menu */
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
@@ -186,32 +191,19 @@
     margin: 0 1em;
   }
   #preset-form label {
-    color: var(--neutral-light-color);
     font-size:13px;
+    font-weight: normal;
   }
-
-  /* The navigation menu links */
-  #preset-sidenav a {
-    padding: 8px 8px 8px 32px;
-    text-decoration: none;
-    font-size: 25px;
-    color: #818181;
-    display: block;
-    transition: 0.3s;
-  }
-
-  /* When you mouse over the navigation links, change their color */
-  #preset-sidenav a:hover {
-    color: #f1f1f1;
+  #preset-form h4 {
+    font-size: 1rem;
   }
 
   /* Position and style the close button (top right corner) */
   #preset-sidenav .closebtn {
-    position: absolute;
-    top: 0;
-    right: 25px;
-    font-size: 36px;
-    margin-left: 50px;
+    float: right;
+    font-size: 25px;
+    line-height: 1.1rem;
+    cursor: pointer;
   }
 
   /* Style page content - use this if you want to push the page content to the right when you open the side
@@ -230,6 +222,10 @@
     #preset-sidenav a {
       font-size: 18px;
     }
+  }
+
+  .btn-new-preset {
+    margin-top: .5rem;
   }
 
 
@@ -341,7 +337,7 @@
     return false;
   }
   document.addEventListener('DOMContentLoaded', function(){
-    if (typeof $('.colorpicker').spectrum === "function") { 
+    if (typeof $('.colorpicker').spectrum === "function") {
       $('.colorpicker').spectrum({
         showPalette:true,
         showAlpha: true,
@@ -372,7 +368,7 @@
           ]
         ]
       })
-  
+
       $('.fontpicker')
       .fontselect({
         placeholder: 'Choisir une police',
@@ -381,13 +377,13 @@
       .on('change', function() {
         // Replace + signs with spaces for css
         var font = this.value.replace(/\+/g, ' ');
-  
+
         // Split font into family and weight
         font = font.split(':');
-  
+
         var fontFamily = font[0];
         var fontWeight = font[1] || 400;
-  
+
         document.documentElement.style.setProperty('--'+$(this).attr('name'), "'"+fontFamily+"'");
       });
     }

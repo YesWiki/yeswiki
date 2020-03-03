@@ -21,7 +21,7 @@ if ($this->HasAccess("read")) {
 
         // on ajoute un bouton de partage, si &share=1 est présent dans l'url
         if (isset($_GET['share']) && $_GET['share'] == '1') {
-            $output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="' . $this->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->GetPageTag() . '"><i class="fa fa-share"></i>&nbsp;' . _t('TEMPLATE_SHARE') . '</a>';
+            $output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="' . $this->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->GetPageTag() . '"><i class="fa fa-share-alt"></i>&nbsp;' . _t('TEMPLATE_SHARE') . '</a>';
         }
 
         // affichage de la page formatee

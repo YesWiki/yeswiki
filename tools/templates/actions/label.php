@@ -40,14 +40,13 @@ if (!isset($GLOBALS['check_' . $pagetag]['label'])) {
     $GLOBALS['check_' . $pagetag]['label'] = check_graphical_elements('label', $pagetag, $this->page['body']);
 }
 if ($GLOBALS['check_' . $pagetag]['label']) {
-    echo '<!-- start of label -->
-    <span' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="label '. $class . '"';
+    echo '<span' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="label '. $class . '"';
     if (is_array($data)) {
         foreach ($data as $key => $value) {
             echo ' data-'.$key.'="'.$value.'"';
         }
     }
-    echo '>' . "\n";
+    echo '>';
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_LABEL') . '</strong> : '
         . _t('TEMPLATE_ELEM_LABEL_NOT_CLOSED') . '.</div>' . "\n";

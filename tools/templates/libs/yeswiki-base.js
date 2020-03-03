@@ -5,6 +5,7 @@ function toastMessage(message) {
   $toast.css('top', $('#yw-topnav').outerHeight(true) + 20 + 'px');
   $toast.css('opacity', 1);
   setTimeout(function() { $toast.css('opacity', 0) }, 3000);
+  setTimeout(function() { $toast.remove() }, 4000);
   $toast.addClass('visible');
 }
 // polyfill placeholder
