@@ -383,7 +383,7 @@ class User
 	public function checkPassword($pwd)
 	{
 		if ($this->password != md5($pwd)) {
-			$this->error = _t('USER_WRONG_PASSWORD').' !'; // NOTE: New message
+			$this->error = _t('USER_WRONG_PASSWORD').' !';
 			$result = false;
 		} else {
 			$result = true;
@@ -415,7 +415,7 @@ class User
 			$this->error = _t('USER_NO_SPACES_IN_PASSWORD').'.';
 			$incorrect = true;
 		} elseif (strlen($pwd) < $this->passwordMinimumLength) {
-			$this->error = _t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->passwordMinimumLength.'.'; // NOTE: New message
+			$this->error = _t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->passwordMinimumLength.'.';
 			$incorrect = true;
 		}
 		return $incorrect;
@@ -482,7 +482,7 @@ class User
 	{
 		$this->error = '';
 		if ($this->checkEmailKey($key) === false) { // The password recovery key does not match
-			$this->error = _t('USER_INCORRECT_PASSWORD_KEY').'.'; // NOTE: New message
+			$this->error = _t('USER_INCORRECT_PASSWORD_KEY').'.';
 			$OK = false;
 		} else { // The password recovery key matches
 			if (isset($confPassword) && ($confPassword != '')) {
@@ -532,7 +532,7 @@ class User
 			if ($OK) {
 				$this->password = md5($password);
 			} else {
-				$this->error = _t('USER_PASSWORD_UPDATE_FAILED').'.'; // NOTE: New message
+				$this->error = _t('USER_PASSWORD_UPDATE_FAILED').'.';
 			}
 		}
 		return $OK;
@@ -583,11 +583,11 @@ class User
 	{
 		$OK = true;
 		if (!isset($_SESSION['user'])) { // No one is logged in
-			$this->error = _t('USER_NOT_LOGGED_IN_CANT_LOG_OUT').'.'; // NOTE: NEw message
+			$this->error = _t('USER_NOT_LOGGED_IN_CANT_LOG_OUT').'.';
 			$OK = false;
 		}
 		if ($OK && !$this->isRunner()) { // The user who actually runs this session is not $user. Don't want to log the wrong one out
-			$this->error = _t('USER_TRYING_TO_LOG_WRONG_USER_OUT').'.'; // NOTE: NEw message
+			$this->error = _t('USER_TRYING_TO_LOG_WRONG_USER_OUT').'.';
 			$OK = false;
 		}
 		if ($OK) {
@@ -653,7 +653,7 @@ class User
 		if ($queryResult) {
 			$result = true;
 		} else {
-			$this->error = _t('USER_CREATION_FAILED').'.'; // NOTE: New message remplaces
+			$this->error = _t('USER_CREATION_FAILED').'.';
 		}
 		return $result;
 	}
@@ -688,10 +688,10 @@ class User
 			$this->show_comments		= $row['show_comments'];
 			$result = true;
 		} elseif ($row === false) {
-			$this->error = _t('USER_LOAD_BY_NAME_QUERY_FAILED').'.'; // NOTE: new message
+			$this->error = _t('USER_LOAD_BY_NAME_QUERY_FAILED').'.';
 			$result = false;
 		} else {
-			$this->error = _t('USER_NO_USER_WITH_THAT_NAME').'.'; // NOTE: new message
+			$this->error = _t('USER_NO_USER_WITH_THAT_NAME').'.';
 			$result = false;
 		}
 		return $result;
@@ -726,10 +726,10 @@ class User
 			$this->show_comments		= $row['show_comments'];
 			$result = true;
 		} elseif ($row === false) {
-			$this->error = _t('USER_LOAD_BY_EMAIL_QUERY_FAILED').'.'; // NOTE: new message
+			$this->error = _t('USER_LOAD_BY_EMAIL_QUERY_FAILED').'.';
 			$result = false;
 		} else {
-			$this->error = _t('USER_NO_USER_WITH_THAT_EMAIL').'.'; // NOTE: new message
+			$this->error = _t('USER_NO_USER_WITH_THAT_EMAIL').'.';
 			$result = false;
 		}
 		return $result;
@@ -815,7 +815,7 @@ class User
 				$this->error = _t('USER_UPDATE_QUERY_FAILED').'.';
 			}
 		} else {
-			$this->error = _t('USER_UPDATE_MISSPELLED_PROPERTIES').'.'; // NOTE: New message
+			$this->error = _t('USER_UPDATE_MISSPELLED_PROPERTIES').'.';
 			$result = false;
 		}
 		return $result;
@@ -855,7 +855,7 @@ class User
 			$OK = false;
 		}
 		if ($this->isRunner()) { // actual user is trying to delete oneself
-			$this->error = _t('USER_CANT_DELETE_ONESELF').'.'; // NOTE: New message
+			$this->error = _t('USER_CANT_DELETE_ONESELF').'.';
 			$OK = false;
 		}
 
@@ -866,7 +866,7 @@ class User
 				$groupmembers = explode('\n', $groupmembers);
 				$groupmembers = array_map('trim', $groupmembers);
 				if (count($groupmembers) == 1) { // Only one user in (this user then)
-					$this->error = _t('USER_DELETE_LONE_MEMBER_OF_GROUP').'.'; // NOTE New message
+					$this->error = _t('USER_DELETE_LONE_MEMBER_OF_GROUP').'.';
 					//				$this->error .= 'La suppression de cet utilisateur est impossible car c\'est l\'unique membre du groupe @'.$group.'. Faîtes en sorte que ce ne soit plus le cas avant de tenter à nouveau de le supprimer.';
 					$OK = false;
 				}

@@ -46,7 +46,7 @@ if (isset($_REQUEST['usersettings_action'])) {
 
 if ($action == 'logout') { // User wants to log out
 	$user->logOut();
-	$session->setMessage(_t('YOU_ARE_NOW_DISCONNECTED').' !');
+	$session->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED').' !');
 	$this->Redirect($this->href());
 
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
@@ -67,7 +67,7 @@ if ($action == 'logout') { // User wants to log out
 				$user->logIn();
 			}
 			// forward
-			$session->setMessage(_t('PARAMETERS_SAVED').' !');
+			$session->setMessage(_t('USER_PARAMETERS_SAVED').' !');
 			if ($userLoggedIn) { // In case it's the usther trying to update oneself
 				$this->Redirect($this->href());
 			} else { // That's the admin acting, we need to pass the user on
@@ -95,7 +95,7 @@ if ($action == 'logout') { // User wants to log out
 			} else { // user properly typed his old password in
 				$password = $_POST['password'];
 				if ($user->updatePassword($password)) {
-					$session->setMessage(_t('PASSWORD_CHANGED').' !');
+					$session->setMessage(_t('USER_PASSWORD_CHANGED').' !');
 					$user->logIn();
 					$this->Redirect($this->href());
 				} else { // Something when wrong when updating the user in DB
@@ -128,13 +128,13 @@ if ($adminIsActing) {
 ?>
 	<input type="hidden" name="usersettings_action" value="update<?php echo $adminIsActing ? 'ByAdmin' : '' ?>" />
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('YOUR_EMAIL_ADDRESS');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="email" value="<?php echo htmlspecialchars($user->getEmail(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('DOUBLE_CLICK_TO_EDIT');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_DOUBLE_CLICK_TO_EDIT');?></label>
 		<div class="controls col-sm-9">
 			<input type="hidden" name="doubleclickedit" value="N" />
 			<label>
@@ -144,7 +144,7 @@ if ($adminIsActing) {
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('SHOW_COMMENTS_BY_DEFAULT');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_SHOW_COMMENTS_BY_DEFAULT');?></label>
 		<div class="controls col-sm-9">
 			<input type="hidden" name="show_comments" value="N" />
 			<label>
@@ -154,19 +154,19 @@ if ($adminIsActing) {
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('MAX_NUMBER_OF_LASTEST_COMMENTS');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_MAX_NUMBER_OF_LASTEST_COMMENTS');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="changescount" value="<?php echo htmlspecialchars($user->getChangesCount(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('MAX_NUMBER_OF_VERSIONS');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_MAX_NUMBER_OF_VERSIONS');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="revisioncount" value="<?php echo htmlspecialchars($user->getRevisionsCount(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('YOUR_MOTTO');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_MOTTO');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="motto" value="<?php echo htmlspecialchars($user->getMotto(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
@@ -177,7 +177,7 @@ if ($adminIsActing) {
 <?php
 			if ($userLoggedIn) { // The one who runs the session is acting
 ?>
-				<input class="btn btn-warning" type="button" value="<?php echo _t('DISCONNECT');?>" onclick="document.location='<?php echo $this->href('', '', 'usersettings_action=logout');?>'" />
+				<input class="btn btn-warning" type="button" value="<?php echo _t('USER_DISCONNECT');?>" onclick="document.location='<?php echo $this->href('', '', 'usersettings_action=logout');?>'" />
 <?php
 			} // End of the one who runs the session is acting
 ?>
@@ -191,7 +191,7 @@ if ($adminIsActing) {
 ?>
 <form action="<?php echo $this->href('','','user='.$user->getName().'&from='.$referrer, false); ?>" method="post" class="form-horizontal">
 	<input type="hidden" name="usersettings_action" value="deleteByAdmin" />
-	<input class="btn btn-danger" type="submit" value="<?php echo _t('DELETE');?>" />
+	<input class="btn btn-danger" type="submit" value="<?php echo _t('USER_DELETE');?>" />
 <?php echo $this->FormClose();
 			} // End of Admin is acting
 ?>
@@ -204,23 +204,23 @@ if ($userLoggedIn) { // The one who runs the session is acting
 <form action="<?php echo $this->href(); ?>" method="post" class="form-horizontal">
 	<hr>
 	<input type="hidden" name="usersettings_action" value="changepass" />
-	<h2><?php echo _t('CHANGE_THE_PASSWORD');?></h2>
+	<h2><?php echo _t('USER_CHANGE_THE_PASSWORD');?></h2>
 	<?php if (isset($error)) echo '<div class="alert alert-danger">', $error, "</div>\n"; ?>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('YOUR_OLD_PASSWORD');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_OLD_PASSWORD');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" type="password" name="oldpass" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('NEW_PASSWORD');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_NEW_PASSWORD');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" type="password" name="password" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-			<input class="btn btn-primary" type="submit" value="<?php echo _t('CHANGE');?>" size="40" />
+			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_CHANGE');?>" size="40" />
 		</div>
 	</div>
 <?php
@@ -256,7 +256,7 @@ if ($action == 'login') { // user is trying to log in or register
 		}
 	} // end of new user registration
 } elseif ($action == 'checklogged') {
-	 $error = _t('YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED').'.';
+	 $error = _t('USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED').'.';
 } ?>
 
 <!-- FORM SIGN UP -->
@@ -265,7 +265,7 @@ if ($action == 'login') { // user is trying to log in or register
 	<input type="hidden" name="usersettings_action" value="login" />
 	<?php if (isset($error)) echo '<div class="alert alert-danger">', $error, "</div>\n"; ?>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('YOUR_WIKINAME');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_WIKINAME');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="name" size="40" value="<?php
 				if ($name = $user->getName()){ // If $user object exists, we can get his or her name
@@ -274,7 +274,7 @@ if ($action == 'login') { // user is trying to log in or register
 		</div>
  	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('YOUR_EMAIL_ADDRESS');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="email" size="40" value="<?php
 				if ($email = $user->getEmail()) { // If $user object exists, we can get his or her email
@@ -284,20 +284,20 @@ if ($action == 'login') { // user is trying to log in or register
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('PASSWORD_5_CHARS_MINIMUM');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD_TOO_SHORT');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" type="password" name="password" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('PASSWORD_CONFIRMATION');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD_CONFIRMATION');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" type="password" name="confpassword" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-			<input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('NEW_ACCOUNT');?>" size="40" />
+			<input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('USER_NEW_ACCOUNT');?>" size="40" />
 		</div>
 	</div>
 <?php echo $this->FormClose(); ?>
