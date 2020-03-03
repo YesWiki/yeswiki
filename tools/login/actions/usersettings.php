@@ -173,7 +173,7 @@ if ($adminIsActing) {
 	</div>
 	<div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
-			<input class="btn btn-primary" type="submit" value="<?php echo _t('UPDATE');?>" />
+			<input class="btn btn-primary" type="submit" value="<?php echo _t('USER_UPDATE');?>" />
 <?php
 			if ($userLoggedIn) { // The one who runs the session is acting
 ?>

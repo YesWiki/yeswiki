@@ -206,7 +206,7 @@ $GLOBALS['translations'] = array(
 'MAX_NUMBER_OF_LASTEST_COMMENTS' => 'Maximum number of latest comments',
 'MAX_NUMBER_OF_VERSIONS' => 'Maximum number of versions',
 'YOUR_MOTTO' => 'Your motto',
-'UPDATE' => 'Update',
+'USER_UPDATE' => 'Update',
 'CHANGE_THE_PASSWORD' => 'Change the password',
 'YOUR_OLD_PASSWORD' => 'Your former password',
 'NEW_PASSWORD' => 'New password',
@@ -220,7 +220,7 @@ $GLOBALS['translations'] = array(
 'FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER' => 'Fill the next fields if you register for the first time',
 'PASSWORD_CONFIRMATION' => 'Password confirmation',
 'NEW_ACCOUNT' => 'New account',
-
+'LOGGED_USERS_ONLY_ACTION' => 'You must be logged in to perform this action',
 
 // actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'No page to create',
@@ -352,6 +352,8 @@ $GLOBALS['translations'] = array(
 'USER_UPDATE_QUERY_FAILED' => 'User update query failed',
 'USER_YOU_MUST_SPECIFY_A_NAME' => 'Please specify a name for the user',
 'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Please specify an email address for the user',
+'USER_MODIFY' => 'Modify',
+'USER_DELETE' => 'Delete',
 
 // YesWiki\Database class
 'DATABASE_QUERY_FAILED' => 'Database query failed',

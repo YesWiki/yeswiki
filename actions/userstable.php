@@ -1,6 +1,8 @@
 <?php
 /*
 * userstable.php
+* Orginally written by Cyrille giquello under the name of listusers2
+* Addition of user management (\YesWiki\User class) by Sylvain Boyer
 * builds a table of the users
 * each line shows, for a user :
 * - his/her user name,
@@ -14,6 +16,13 @@
 *		all users are shown in alphabetical order (username)
 *
 */
+
+$loggedUser = $this->GetUser();
+if ($loggedUser == ""){ // no logged user
+	echo '<div class="alert alert-danger alert-error">'._t('LOGGED_USERS_ONLY_ACTION').'</div>';
+	return ;
+}
+
 require_once 'includes/constants.php';
 require_once 'includes/WikiUser.class.php';
 global $wiki ;
@@ -34,13 +43,14 @@ if ($last = $this->GetParameter('last')) {
 	$sql .= 'name ASC';
 }
 $last_users = $this->LoadAll($sql);
-foreach ($last_users as $user) {
-	if (!empty($_GET['delete_'.$user['name']])) {
+if (!empty($_POST['userstable_action'])) { // Check if the page received a post named 'userstable_action'
+	$user = $_POST['userstable_action'];
+	if (substr($user, 0, 7) == 'delete_') { // Check if $_POST['userstable_action'] starts with  'delete_'
 		// The form returns a username to delete, therefore
 		// There is a request to delete the user
-		// require_once 'includes/WikiUser.class.php';
+		$user = substr($user, 7);
 		$rowUser = new \YesWiki\User($wiki->config, $wiki->queryLog, $wiki->CookiePath);
-		$OK= $rowUser->loadByNameFromDB($user['name']);
+		$OK= $rowUser->loadByNameFromDB($user);
 		if (!$OK) {
 			die ($rowUser->error);
 		}
@@ -48,23 +58,29 @@ foreach ($last_users as $user) {
 		if (!$OK) {
 			die ($rowUser->error);
 		}
-		echo "<meta http-equiv='refresh' content='0'>";
+		$wiki->redirect($wiki->href());
+	} else { // We arrived on this page with an unexpected $_POST
+		die (_t('USER_USERSTABLE_MISTAKEN_ARGUMENT'));
 	}
 }
-
 
 $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
 $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 echo '<table class="table table-striped">', "\n";
 echo '<thead>', "\n";
-echo '<tr>
-	<th>Nom</th>
-	<th>Groupe(s)</th>
-	<th>Email</th>
-	<th>Inscription</th>
-	<th> </th>
-</tr>';
+echo '<tr>', "\n";
+echo '	<th>Nom</th>', "\n";
+echo '	<th>Groupe(s)</th>', "\n";
+if ($isAdmin){ // Emails only shown to admins
+	echo '	<th>Email</th>', "\n";
+}
+echo '	<th>Inscription</th>', "\n";
+echo '	<th> </th>', "\n";
+if ($isAdmin){ // Delete buttons only shown to admins
+	echo '	<th> </th>', "\n";
+}
+echo '</tr>', "\n";
 echo '</thead>', "\n";
 echo '<tbody>', "\n";
 foreach ($last_users as $user) {
@@ -73,23 +89,35 @@ foreach ($last_users as $user) {
 		if ($wiki->UserIsInGroup($group, $user['name'], true)) {
 			$ug[] = $group ;
 		}
-		//error_log($group.' : '.print_r($acl,true));
 	}
 	echo '<tr>';
 	echo '<td>' . $user['name'] . '</td>';
 	echo '<td>', implode(', ', $ug) , '</td>';
-	echo '<td>', $user['email'] , '</td>';
+	if ($isAdmin){  // Email only shown to admins
+		echo '<td>', $user['email'] , '</td>';
+	}
 	echo '<td>', $user['signuptime'] , '</td>';
 	echo '<td>';
-	$loggedUser = $this->GetUser();
-	if (($loggedUser != "") && ($loggedUser['name'] == $user['name'])){ // current user
-		echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur" class="btn btn-sm btn-info" role="button">'._t('USER_MODIFY').'</a>';
-	} else { // not the current user, then can be deleted (at least try)
+	if ($loggedUser['name'] == $user['name']) { // $loggedUser fullness allready tested. Current user
+		echo '<a href="'.$this->href('', 'ParametresUtilisateur').'" class="btn btn-sm btn-primary" role="button">'._t('USER_MODIFY').'</a>';
+	} else { // not the current user, then can be modified
 		if ($isAdmin) {
-			echo '<a href="'.$this->config["base_url"].'ParametresUtilisateur&user='.$user['name'].'&from='.$this->tag.'" class="btn btn-sm btn-danger " role="button">'._t('USER_MODIFY').'</a>';
+			echo '<a href="'.$this->href('', 'ParametresUtilisateur', 'user='.$user['name'], false).'&from='.$this->tag.'" class="btn btn-sm btn-warning " role="button">'._t('USER_MODIFY').'</a>';
 		}
 	}
 	echo '</td>';
+	if ($isAdmin && ($loggedUser['name'] != $user['name'])) { // admin and not the current user, then can be deleted
+		echo '<td>';
+		echo '<form action="'.$this->href('',$this->tag).'" method="post" class="form-horizontal">';
+		echo '<input type="hidden" name="userstable_action" value="delete_'.$user['name'].'" />';
+		echo '<input class="btn btn-sm btn-danger" type="submit" value="'._t('USER_DELETE').'" />';
+		echo $this->FormClose();
+
+//		echo '<a href="'.$this->href('', $this->tag,                'user='.$user['name'], false).'" class="btn btn-sm btn-danger" role="button">'._t('USER_DELETE').'</a>';
+
+
+		echo '</td>';
+	}
 	echo '</tr>', "\n";
 }
 echo '</tbody>', "\n";

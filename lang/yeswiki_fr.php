@@ -207,7 +207,7 @@ $GLOBALS['translations'] = array(
 'MAX_NUMBER_OF_LASTEST_COMMENTS' => 'Nombre maximum de derniers commentaires',
 'MAX_NUMBER_OF_VERSIONS' => 'Nombre maximum de versions',
 'YOUR_MOTTO' => 'Votre devise',
-'UPDATE' => 'Mise &agrave; jour',
+'USER_UPDATE' => 'Mise &agrave; jour',
 'CHANGE_THE_PASSWORD' => 'Changement de mot de passe',
 'YOUR_OLD_PASSWORD' => 'Votre ancien mot de passe',
 'NEW_PASSWORD' => 'Nouveau mot de passe',
@@ -226,6 +226,7 @@ $GLOBALS['translations'] = array(
 'FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER' => 'Les champs suivants sont &agrave; remplir si vous vous identifiez pour la premi&egrave;re fois (vous cr&eacute;erez ainsi un compte)',
 'PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
 'NEW_ACCOUNT' => 'Nouveau compte',
+'LOGGED_USERS_ONLY_ACTION' => 'Il faut être connecté pour pouvoir exécuter cette action',
 
 
 // actions/wantedpages.php
@@ -359,6 +360,8 @@ $GLOBALS['translations'] = array(
 'USER_UPDATE_QUERY_FAILED' => 'La requête de mise à jour de l\'utilisateur dans la base de données a échoué',
 'USER_YOU_MUST_SPECIFY_A_NAME' => 'Veuillez saisir un nom pour l\'utilisateur',
 'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Veuillez saisir un email pour l\'utilisateur',
+'USER_MODIFY' => 'Modifier',
+'USER_DELETE' => 'Supprimer',
 
 // YesWiki\Database class
 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',

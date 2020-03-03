@@ -10,10 +10,14 @@ class Database
 	public $error = '';
 
 	/* Constructor
-		Requires parameter:
-			wiki->cookiePath
 		Exemple :
-			$mySession = new WikiDB($this->wiki->cookiePath)
+			Either
+				$myDB = new \YesWiki\Database($config, $queryLog);
+			Or
+				$myDB = new \YesWiki\Database();
+				$myDB->setSQLConnection($config);
+				$myDB->setQueryLog($queryLog);
+		Anyway, if either $config or $queryLog are missing in the end, you will get an error
 		Sets :
 			$cookiePath
 	*/

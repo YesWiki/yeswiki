@@ -2,9 +2,6 @@
 namespace YesWiki;
 class User
 {
-	// require_once 'includes/constants.php';
-	// require_once 'includes/WikiSession.class.php';
-	// require_once 'includes/WikiDB.class.php';
 	// Obviously needs a group or ACLS class. In the meantime, use of $GLOBALS['wiki']->GetGroupACL and so on
 
 	/* ~~~~~~~~~~~~~~~~PROPERTIES~~~~~~~~~~~~~ */
@@ -52,8 +49,7 @@ class User
 		// Set default prefix value of MySQL tables name
 		$this->tablePrefix =  $config['table_prefix'];
 		// Set value of MySQL user table name
-//		$this->setUsersTable($config['user_table_prefix']);
-		$this->setUsersTable();
+		$this->setUsersTable($config['user_table_prefix']);
 		require_once 'includes/WikiDB.class.php';
 		$this->db = new \YesWiki\Database($config, $queryLog);
 		// sets the session with cookiePath
@@ -91,18 +87,22 @@ class User
 	}
 
 
-	/* If there is a specific prefix for user table then returns
-		Otherwise returns the default table prefix
+	/* Sets the user table name
+		In some cases, multiple wikis share a unique users table.
+		This unique users table prefix is the specified in config.
+		Therefore we must build $this->userstable using
+			- this unique users table prefix if specified,
+			or
+			- the wiki default table prefix
 	*/
-//	protected Function setUsersTable($users_table_prefix ='')
-	protected Function setUsersTable()
+	protected Function setUsersTable($users_table_prefix ='')
 	{
-		// if (isset($users_table_prefix) && !empty($users_table_prefix)) {
-		// 	$usersTablePrefix =  $users_table_prefix;
-		// } else {
-		// 	 $usersTablePrefix =  $this->tablePrefix;
-		// }
-		$this->usersTable =  $this->tablePrefix.'users';
+		if (isset($users_table_prefix) && !empty($users_table_prefix)) {
+			$usersTablePrefix =  $users_table_prefix;
+		} else {
+			$usersTablePrefix =  $this->tablePrefix;
+		}
+		$this->usersTable =  $usersTablePrefix.'users';
 	}
 
 	/* ~~~~~~~~~~~~~PROPERTY ACCESS METHODS~~~~~~~~~~~~~~~~~~~ */
@@ -172,7 +172,8 @@ class User
 			$this->error = _t('USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI').'.';
 		} elseif (strlen($newEmail) > $this->emailMaxLength) {
 			$this->error = _t('USER_EMAIL_S_MAXIMUM_LENGTH_IS').' '.$this->emailMaxLength.'.';
-		} elseif (!preg_match("/^.+?\@.+?\..+$/", $newEmail)) {
+//		} elseif (!preg_match("/^.+?\@.+?\..+$/", $newEmail)) {
+		} elseif (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
 			$this->error = _t('USER_THIS_IS_NOT_A_VALID_EMAIL').'.';
 		} else {
 			$result = true;
