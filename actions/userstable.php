@@ -112,10 +112,6 @@ foreach ($last_users as $user) {
 		echo '<input type="hidden" name="userstable_action" value="delete_'.$user['name'].'" />';
 		echo '<input class="btn btn-sm btn-danger" type="submit" value="'._t('USER_DELETE').'" />';
 		echo $this->FormClose();
-
-//		echo '<a href="'.$this->href('', $this->tag,                'user='.$user['name'], false).'" class="btn btn-sm btn-danger" role="button">'._t('USER_DELETE').'</a>';
-
-
 		echo '</td>';
 	}
 	echo '</tr>', "\n";
