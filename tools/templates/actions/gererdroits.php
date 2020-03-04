@@ -103,10 +103,10 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
         <th><div><b>Page</b></div></th>
         <th><div align="center"><b>Lecture</b></div></th>
         <th><div align="center"><b>Ecriture</b></div></th>
-        <th><div align="center"><b>Commentaires</b></div></th>
+        <!-- TODO : repair comments <th><div align="center"><b>Commentaires</b></div></th> -->
       </tr>
     </thead>
-</tbody>
+<tbody>
 <?php
   function display_droit($text)
   {
@@ -146,9 +146,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
       <td align="center">
       	<?php echo display_droit($page_et_droits[$x]['ecrire']); ?>
 	  </td>
-      <td align="center">
-      	<?php echo display_droit($page_et_droits[$x]['comment']); ?>
-      </td>
+      <!-- TODO : repair comments <td align="center"> <?php // echo display_droit($page_et_droits[$x]['comment']); ?> </td> -->
     </tr>
 
 <?php endfor; ?>
@@ -200,7 +198,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
     </div>
 
     <div class="acl-container">
-      <?php $roles = ['lire' => 'Lecture', 'ecrire' => 'Ecriture', 'comment' => 'Commentaire'];
+      <?php $roles = ['lire' => 'Lecture', 'ecrire' => 'Ecriture']; //TODO : repair comments , 'comment' => 'Commentaire'];
       foreach ($roles as $role => $label) { ?>
         <div class="acl-single-container">
           <label for="new<?php echo $role ?>" class="control-label">
