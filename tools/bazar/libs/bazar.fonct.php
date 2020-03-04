@@ -231,16 +231,10 @@ function baz_afficher_formulaire_import()
                 $filename = basename($_FILES['fileimport']['name']);
                 $ext = substr($filename, strrpos($filename, '.') + 1);
                 if ($ext == 'csv') {
-                    $newname = BAZ_CHEMIN_UPLOAD.$filename;
-                    //verification de la presence de ce fichier, s'il existe deja , on le supprime
-                    move_uploaded_file(
-                        $_FILES['fileimport']['tmp_name'],
-                        $newname
-                    );
                     $erreur = false;
                     $outputright = '';
                     $outputerror = '';
-                    if (($handle = fopen($newname, 'r')) !== false) {
+                    if (($handle = fopen($_FILES['fileimport']['tmp_name'], 'r')) !== false) {
                         while (($data = fgetcsv($handle, 0, ',')) !== false) {
                             $valeur = array();
                             $geolocalisation = false;
@@ -264,12 +258,7 @@ function baz_afficher_formulaire_import()
                             } elseif ($row > 1) {
                                 for ($c = $startparsing; $c < $num; ++$c) {
                                     if (isset($nom_champ[$c])) {
-                                        if (YW_CHARSET != 'UTF-8') {
-                                            $valeur[$nom_champ[$c]] =
-                                            utf8_decode($data[$c], ENT_QUOTES, 'ISO-8859-15');
-                                        } else {
-                                            $valeur[$nom_champ[$c]] = $data[$c];
-                                        }
+                                        $valeur[$nom_champ[$c]] = $data[$c];
                                         $valeur[$nom_champ[$c]] = str_replace(
                                             array(
                                                 '&sbquo;', '&fnof;', '&bdquo;',
@@ -294,6 +283,7 @@ function baz_afficher_formulaire_import()
                                             ),
                                             $valeur[$nom_champ[$c]]
                                         );
+
                                         if ($nom_champ[$c] == 'bf_latitude' &&
                                             !empty($data[$c])) {
                                             $bf_latitude = $data[$c];
@@ -340,28 +330,24 @@ function baz_afficher_formulaire_import()
                                         }
 
                                         // traitement des images (doivent être présentes dans le dossier files du wiki)
-                                        if (($type_champ[$c]) == 'image' &&
-                                            isset($data[$c]) && !empty($data[$c])) {
-                                            $imageorig =
-                                            trim($valeur[$nom_champ[$c]]);
-
-                                            //on enleve les accents sur les noms de fichiers, et les espaces
-                                            $nomimage =
-                                            preg_replace(
-                                                '/&([a-z])[a-z]+;/i',
-                                                '$1',
-                                                $imageorig
-                                            );
-                                            $nomimage =
-                                            str_replace(' ', '_', $nomimage);
-                                            unset($valeur['bf_image']);
-                                            $valeur['image'.$nom_champ[$c]] =
-                                            $nomimage;
-                                            if (file_exists(BAZ_CHEMIN_UPLOAD.
-                                                $imageorig)) {
+                                        if (($type_champ[$c]) == 'image' && isset($data[$c]) && !empty($data[$c])) {
+                                            $imageorig = trim($valeur[$nom_champ[$c]]);
+                                            $nomimage = renameUrlToSanitizedFilename($imageorig);
+                                            // test si c'est url vers l'image
+                                            $fileCopied = copyUrlToLocalFile($imageorig, BAZ_CHEMIN_UPLOAD.$nomimage);
+                                            if ($fileCopied) {
+                                                $valeur[$nom_champ[$c]] = $nomimage;
+                                            } elseif (file_exists(BAZ_CHEMIN_UPLOAD.$imageorig)) {
                                                 if (preg_match('/(gif|jpeg|png|jpg)$/i', $nomimage)) {
-                                                    $chemin_destination =
-                                                    BAZ_CHEMIN_UPLOAD.$nomimage;
+                                                    //on enleve les accents sur les noms de fichiers, et les espaces
+                                                    $nomimage = preg_replace(
+                                                        '/&([a-z])[a-z]+;/i',
+                                                        '$1',
+                                                        $imageorig
+                                                    );
+                                                    $nomimage = str_replace(' ', '_', $nomimage);
+                                                    $valeur[$nom_champ[$c]] = $nomimage;
+                                                    $chemin_destination = BAZ_CHEMIN_UPLOAD.$nomimage;
 
                                                     //verification de la presence de ce fichier
                                                     if (!file_exists($chemin_destination)) {
@@ -373,9 +359,7 @@ function baz_afficher_formulaire_import()
                                                         chmod($chemin_destination, 0755);
                                                     }
                                                 } else {
-                                                    $errormsg[] =
-
-                                                    _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
+                                                    $errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
                                                     $erreur = true;
                                                 }
                                             } else {
@@ -386,24 +370,45 @@ function baz_afficher_formulaire_import()
                                             }
                                         }
 
+                                        // traitement des images (doivent être présentes dans le dossier files du wiki)
+                                        if (($type_champ[$c]) == 'fichier' && isset($data[$c]) && !empty($data[$c])) {
+                                            $fileUrl = trim($valeur[$nom_champ[$c]]);
+                                            $file = renameUrlToSanitizedFilename($fileUrl);
+                                            // test si c'est url vers l'image
+                                            $fileCopied = copyUrlToLocalFile($fileUrl, BAZ_CHEMIN_UPLOAD.$file);
+                                            if ($fileCopied) {
+                                                $valeur[$nom_champ[$c]] = $file;
+                                            } elseif (file_exists(BAZ_CHEMIN_UPLOAD.$fileUrl)) {
+                                                $valeur[$nom_champ[$c]] = $file;
+                                                $chemin_destination = BAZ_CHEMIN_UPLOAD.$file;
+                                                //verification de la presence de ce fichier
+                                                if (!file_exists($chemin_destination)) {
+                                                    rename(
+                                                        BAZ_CHEMIN_UPLOAD.$fileUrl,
+                                                        $chemin_destination
+                                                    );
+                                                    chmod($chemin_destination, 0755);
+                                                }
+                                            } else {
+                                                $errormsg[] = _t('BAZ_FILE_NOT_FOUND').' : '.$fileUrl;
+                                                $erreur = true;
+                                            }
+                                        }
+
                                         if ($geolocalisation) {
                                             $valeur['carte_google'] =
                                             $bf_latitude.'|'.$bf_longitude;
                                         }
                                     }
                                 }
-                                $valeur['id_fiche'] =
-                                genere_nom_wiki($valeur['bf_titre']);
+                                $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']).$row;
                                 $valeur['id_typeannonce'] = $id;
-                                $valeur['date_creation_fiche'] =
-                                date('Y-m-d H:i:s', time());
-                                $valeur['date_maj_fiche'] =
-                                date('Y-m-d H:i:s', time());
+                                $valeur['date_creation_fiche'] = date('Y-m-d H:i:s', time());
+                                $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
                                 if ($GLOBALS['wiki']->UserIsAdmin()) {
                                     $valeur['statut_fiche'] = 1;
                                 } else {
-                                    $valeur['statut_fiche'] =
-                                    $GLOBALS['wiki']->config['BAZ_ETAT_VALIDATION'];
+                                    $valeur['statut_fiche'] = $GLOBALS['wiki']->config['BAZ_ETAT_VALIDATION'];
                                 }
                                 $user = $GLOBALS['wiki']->GetUser();
                                 if ($user) {
@@ -411,10 +416,8 @@ function baz_afficher_formulaire_import()
                                 } else {
                                     $valeur['createur'] = _t('BAZ_ANONYME');
                                 }
-                                $valeur['date_debut_validite_fiche'] =
-                                date('Y-m-d', time());
-                                $valeur['date_fin_validite_fiche'] =
-                                '0000-00-00';
+                                $valeur['date_debut_validite_fiche'] = date('Y-m-d', time());
+                                $valeur['date_fin_validite_fiche'] = '0000-00-00';
 
                                 if (count($errormsg) > 0) {
                                     $outputerror .=

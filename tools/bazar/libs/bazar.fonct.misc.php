@@ -251,3 +251,35 @@ function testUrlInIframe($url = '')
         return '';
     }
 }
+
+function renameUrlToSanitizedFilename($url) 
+{
+    $str = preg_replace('/[\r\n\t ]+/', ' ', basename($url));
+    $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
+    $str = str_replace(' ', '-', $str);
+    return preg_replace('/-+/', '-', $str);
+}
+
+function copyUrlToLocalFile($url, $localPath)
+{
+    // teste l'existance du fichier
+    if ($ch = curl_init($url)) {
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $imgcontent = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+        $file = fopen($localPath, "w+");
+        fputs($file, $imgcontent);
+        fclose($file);
+        if ($error) {
+            echo $error;
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        echo _t('BAZ_IMAGE_FILE_NOT_FOUND').' : '.$url;
+        return false;
+    }
+}
