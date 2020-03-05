@@ -52,12 +52,12 @@ if ($action == 'logout') { // User wants to log out
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
 	if (substr ( $action , 0, 6) == 'update') { // Whoever it is tries to update the user
 		$OK = $user->setByAssociativeArray(array(
-			'email'	 			=> $_POST['email'],
-			'motto'				=> $_POST['motto'],
-			'revisioncount'	=> $_POST['revisioncount'],
-			'changescount'		=> $_POST['changescount'],
-			'doubleclickedit'	=> $_POST['doubleclickedit'],
-			'show_comments'	=> $_POST['show_comments'],
+			'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
+			'motto'				=> isset($_POST['motto']) ? $_POST['motto'] : '',
+			'revisioncount'	=> isset($_POST['revisioncount']) ? $_POST['revisioncount'] : '',
+			'changescount'		=> isset($_POST['changescount']) ? $_POST['changescount'] : '',
+			'doubleclickedit'	=> isset($_POST['doubleclickedit']) ? $_POST['doubleclickedit'] : '',
+			'show_comments'	=> isset($_POST['show_comments']) ? $_POST['show_comments'] : '',
 		));
 		if ($OK) {
 			$OK = $user->updateIntoDB('email, motto, revisioncount, changescount, doubleclickedit, show_comments',);
@@ -133,7 +133,7 @@ if ($adminIsActing) {
 			<input class="form-control" name="email" value="<?php echo htmlspecialchars($user->getEmail(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
 	</div>
-	<div class="control-group form-group">
+	<!-- <div class="control-group form-group">
 		<label class="control-label col-sm-3"><?php echo _t('USER_DOUBLE_CLICK_TO_EDIT');?></label>
 		<div class="controls col-sm-9">
 			<input type="hidden" name="doubleclickedit" value="N" />
@@ -160,15 +160,15 @@ if ($adminIsActing) {
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_MAX_NUMBER_OF_VERSIONS');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" name="revisioncount" value="<?php echo htmlspecialchars($user->getRevisionsCount(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
-		</div>
-	</div>
-	<div class="control-group form-group">
 		<label class="control-label col-sm-3"><?php echo _t('USER_MOTTO');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="motto" value="<?php echo htmlspecialchars($user->getMotto(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
+		</div>
+	</div> -->
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><?php echo _t('USER_MAX_NUMBER_OF_VERSIONS');?></label>
+		<div class="controls col-sm-9">
+			<input class="form-control" name="revisioncount" value="<?php echo htmlspecialchars($user->getRevisionsCount(), ENT_COMPAT, YW_CHARSET) ?>" size="40" />
 		</div>
 	</div>
 	<div class="control-group form-group">
