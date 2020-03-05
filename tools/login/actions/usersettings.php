@@ -60,7 +60,7 @@ if ($action == 'logout') { // User wants to log out
 			'show_comments'	=> $_POST['show_comments'],
 		));
 		if ($OK) {
-			$OK = $user->updateIntoDB('email, motto, revisioncount, changescount, doubleclickedit, show_comments',);
+			$OK = $user->updateIntoDB('email, motto, revisioncount, changescount, doubleclickedit, show_comments');
 		}
 		if ($OK) {
 			if ($userLoggedIn) { // In case it's the usther trying to update oneself, need to reset the cooky
