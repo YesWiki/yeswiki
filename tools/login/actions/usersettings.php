@@ -241,9 +241,14 @@ if ($action == 'login') { // user is trying to log in or register
 			$error = $user->error;
 		} else { // Password is correct
 			if ($user->setByAssociativeArray(array(
-				'name'		=> trim($_POST['name']),
-				'email'		=> trim($_POST['email']),
-				'password'	=> $_POST['password'],))) { // User properties set without any problem
+				'name'				=> trim($_POST['name']),
+				'email'				=> trim($_POST['email']),
+				'password'			=> $_POST['password'],
+				'revisioncount'	=> 20,
+				'changescount'		=> 0,
+				'doubleclickedit'	=> 'Y',
+				'show_comments'	=> 'N',
+			))) { // User properties set without any problem
 				if ($user->createIntoDB()) { // No problem with user creation in DB
 					$user->logIn();
 					$this->Redirect($this->href()); // forward

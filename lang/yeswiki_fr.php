@@ -397,6 +397,7 @@ $GLOBALS['translations'] = array(
 'USER_WIKINAME' => 'Votre NomWiki',
 'USER_PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
 'USER_NEW_ACCOUNT' => 'Nouveau compte',
+'USER_PASSWORD' => 'Mot de passe',
 
 // YesWiki\Database class
 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
