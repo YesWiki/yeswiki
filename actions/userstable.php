@@ -43,7 +43,7 @@ if ($last = $this->GetParameter('last')) {
 	$sql .= 'name ASC';
 }
 $last_users = $this->LoadAll($sql);
-if (!empty($_POST['userstable_action'])) { // Check if the page received a post named 'userstable_action'
+if ($isAdmin && (!empty($_POST['userstable_action']))) { // Check if the page received a post named 'userstable_action'
 	$user = $_POST['userstable_action'];
 	if (substr($user, 0, 7) == 'delete_') { // Check if $_POST['userstable_action'] starts with  'delete_'
 		// The form returns a username to delete, therefore
