@@ -304,46 +304,6 @@ if ($action == 'login') { // user is trying to log in or register
 
 <hr>
 
-<!-- <button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()"> -->
-<a href="#LoginModal" role="button" class="btn btn-block btn-default" data-toggle="modal">
-  <?php echo _t('LOGIN_LOGIN'); ?>
-</a><!-- </button> -->
-
-<div class="modal fade" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-sm">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h3 id="LoginModalLabel"><?php echo _t('LOGIN_LOGIN'); ?></h3>
-			</div>
-			<div class="modal-body">
-				<form action="https://osons.cc/?Pageadmin" method="post">
-					<div class="form-group">
-						<input type="text" name="name" class="form-control" value="" required placeholder="Email ou NomWiki">
-					</div>
-					<div class="form-group">
-						<input type="password" class="form-control" name="password" required placeholder="Mot de passe">
-					</div>
-					<small><a href="https://osons.cc/?MotDePassePerdu">Mot de passe perdu ?</a></small>
-					<div class="checkbox">
-						<label for="remember-modal">
-							<input type="checkbox" id="remember-modal" name="remember" value="1" />
-							Se souvenir de moi
-						</label>
-					</div>
-					<input type="submit" name="login" class="btn btn-block  btn-primary" value="Se connecter">
-					<input type="hidden" name="action" value="login" />
-					<input type="hidden" name="incomingurl" value="https://osons.cc/?Pageadmin" />
-					<input type="hidden" name="remember" value="0" />
-				</form>
-				<hr>
-				<a class="btn btn-block " href="https://osons.cc/?ParametresUtilisateur">S'inscrire</a>
-			</div>
-		</div>
-	</div><!-- /.modal-dialog -->
-</div> <!-- /#LoginModal-->
-
-
-
-
+<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
+<?php echo _t('LOGIN_LOGIN'); ?>
 <?php }  // End of neither logged in user nor admin trying to do something ?>
