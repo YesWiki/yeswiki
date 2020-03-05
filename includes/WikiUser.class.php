@@ -638,10 +638,10 @@ class User
 			$sql .= ', motto = "'.$this->db->escapeString($this->motto).'"';
 		}
 		if (isset($this->revisioncount)) {
-			$sql .= ', revisioncount = "'.$revisioncount.'"';
+			$sql .= ', revisioncount = "'.$this->revisioncount.'"';
 		}
 		if (isset($this->changescount)) {
-			$sql .= ', changescount = "'.$changescount.'"';
+			$sql .= ', changescount = "'.$this->changescount.'"';
 		}
 		if (isset($this->doubleclickedit)) {
 			$sql .= ', doubleclickedit = "'.$this->db->escapeString($this->doubleclickedit).'"';
