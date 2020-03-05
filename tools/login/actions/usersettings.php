@@ -50,7 +50,7 @@ if ($action == 'logout') { // User wants to log out
 	$this->Redirect($this->href());
 
 } elseif ($adminIsActing || $userLoggedIn) { // Admin or user wants to manage the user
-	if (substr ( $action , 0, 6) == 'update') { // Whoever it is tries to update the user
+    if (substr ( $action , 0, 6) == 'update') { // Whoever it is tries to update the user
 		$OK = $user->setByAssociativeArray(array(
 			'email'	 			=> isset($_POST['email']) ? $_POST['email'] : '',
 			'motto'				=> isset($_POST['motto']) ? $_POST['motto'] : '',

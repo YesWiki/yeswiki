@@ -48,8 +48,9 @@ class User
 		// $this->runnerIsAdmin =  $this->setRunnerIsAdmin();
 		// Set default prefix value of MySQL tables name
 		$this->tablePrefix =  $config['table_prefix'];
-		// Set value of MySQL user table name
-		$this->setUsersTable($config['user_table_prefix']);
+        // Set value of MySQL user table name
+        $userTable = isset($config['user_table_prefix']) ? $config['user_table_prefix'] : '';
+		$this->setUsersTable($userTable);
 		require_once 'includes/WikiDB.class.php';
 		$this->db = new \YesWiki\Database($config, $queryLog);
 		// sets the session with cookiePath
@@ -761,7 +762,7 @@ class User
 		$setClause ='';
 		foreach ($fieldsTab as $field) {
 			switch ($field) {
-				case '':
+				case 'email':
 					if ($prefixe){
 						$setClause .= ',';
 					}
@@ -807,7 +808,7 @@ class User
 		} // End foreach
 		if ($prefixe) { // At least one field to update
 			$sql = 'UPDATE '.$this->usersTable.' SET '.$setClause;
-			$sql .= ' WHERE name = "'.$this->db->escapeString($this->name).'" LIMIT 1;';
+            $sql .= ' WHERE name = "'.$this->db->escapeString($this->name).'" LIMIT 1;';
 			$result = $this->db->query($sql);
 			if ($result) {
 				$error = '';
