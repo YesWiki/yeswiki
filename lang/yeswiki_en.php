@@ -61,6 +61,17 @@ $GLOBALS['translations'] = array(
 
 // actions/changestyle.php ignoree...
 
+// handlers/page/acls.php
+'YW_ACLS_LIST' => 'List of acces rights to the page',
+'YW_ACLS_UPDATED' => 'Access rights updated',
+'YW_NEW_OWNER' => ' and owner change . New owner: ',
+'YW_CANCEL' => 'Cancel',
+'YW_ACLS_READ' => 'Read rights',
+'YW_ACLS_WRITE' => 'Write rights',
+'YW_CHANGE_OWNER' => 'Change the owner',
+'YW_CHANGE_NOTHING' => 'No changes',
+'YW_CANNOT_CHANGE_ACLS' => 'You cannot change rights on this page',
+
 // actions/editactionsacls.class.php
 'ACTION_RIGHTS' => 'Action\'s rights',
 'SEE' => 'See',
@@ -186,8 +197,6 @@ $GLOBALS['translations'] = array(
 'USER_SIGN_UP' => 'Sign Up',
 'YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected',
 'PARAMETERS_SAVED' => 'Parameters saved',
-'NO_SPACES_IN_PASSWORD' => 'No spaces allowed in password',
-'PASSWORD_TOO_SHORT' => 'Password too short',
 'WRONG_PASSWORD' => 'Wrong password',
 'PASSWORD_CHANGED' => 'Password changed',
 'GREETINGS' => 'Hello',
@@ -197,16 +206,10 @@ $GLOBALS['translations'] = array(
 'MAX_NUMBER_OF_LASTEST_COMMENTS' => 'Maximum number of latest comments',
 'MAX_NUMBER_OF_VERSIONS' => 'Maximum number of versions',
 'YOUR_MOTTO' => 'Your motto',
-'UPDATE' => 'Update',
 'CHANGE_THE_PASSWORD' => 'Change the password',
 'YOUR_OLD_PASSWORD' => 'Your former password',
 'NEW_PASSWORD' => 'New password',
 'CHANGE' => 'Change',
-'USERNAME_MUST_BE_WIKINAME' => 'Your username must be a WikiName',
-'YOU_MUST_SPECIFY_AN_EMAIL' => 'You must specify an email address',
-'THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
-'PASSWORDS_NOT_IDENTICAL' => 'The passwords are not identical',
-'PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM' => 'should contain at least 5 alphanumerical characters',
 'YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'You must accept cookies to get connected',
 'IF_YOU_ARE_REGISTERED_LOGGIN_HERE' => 'If you are already registered, login here',
 'YOUR_WIKINAME' => 'Your WikiName',
@@ -216,7 +219,7 @@ $GLOBALS['translations'] = array(
 'FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER' => 'Fill the next fields if you register for the first time',
 'PASSWORD_CONFIRMATION' => 'Password confirmation',
 'NEW_ACCOUNT' => 'New account',
-
+'LOGGED_USERS_ONLY_ACTION' => 'You must be logged in to perform this action',
 
 // actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'No page to create',
@@ -329,6 +332,74 @@ $GLOBALS['translations'] = array(
 'CONFIGURATION_FILE_NOT_CREATED' => 'was not created',
 'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'Try to change the write access rights on the file. If not possible, you must create the file and copy those informations inside, then transfert it by FTP on your server in a file ',
 'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'directly in the YesWiki root folder. Once you done it, your YesWiki website should work as expected',
-'TRY_AGAIN' => 'Try again'
+'TRY_AGAIN' => 'Try again',
+
+// API
+'USERS' => 'Users',
+'GROUPS' => 'Groups',
+
+// YesWiki\User class
+'USER_CHANGES_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Changes count must be a positive integer',
+'USER_DELETE_QUERY_FAILED' => 'User deletion query failed',
+'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'The user you are trying to delete is the only member of a group',
+'USER_EMAIL_S_MAXIMUM_LENGTH_IS' => 'User email\'s maximum number of characters is',
+'USER_LISTGROUPMEMBERSHIPS_QUERY_FAILED' => 'The query to get the list of groups the user belongs to failed',
+'USER_MUST_BE_ADMIN_TO_DELETE' => 'You must be an admin to delete a user',
+'USER_NAME_S_MAXIMUM_LENGTH_IS' => 'User name\'s maximum number of characters is',
+'USER_NO_SPACES_IN_PASSWORD' => 'No spaces are allowed in password',
+'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'The minimum number of characters for a user password is',
+'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords must be identical',
+'USER_PASSWORD_TOO_SHORT' => 'Password too short',
+'USER_REVISIONS_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Revisions count must be a positive integer',
+'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'The specified email is allready in use on this wiki',
+'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
+'USER_UPDATE_QUERY_FAILED' => 'User update query failed',
+'USER_YOU_MUST_SPECIFY_A_NAME' => 'Please specify a name for the user',
+'USER_YOU_MUST_SPECIFY_AN_EMAIL' => 'Please specify an email address for the user',
+'USER_MODIFY' => 'Modify',
+'USER_DELETE' => 'Delete',
+'USER_USERSTABLE_MISTAKEN_ARGUMENT' => 'Action usertable received an unexpected argument',
+'USER_WRONG_PASSWORD' => 'Wrong password',
+'USER_INCORRECT_PASSWORD_KEY' => 'Incorrect password validation key',
+'USER_PASSWORD_UPDATE_FAILED' => 'Password update failed',
+'USER_NOT_LOGGED_IN_CANT_LOG_OUT' => 'log out failed because no one is logged in',
+'USER_TRYING_TO_LOG_WRONG_USER_OUT' => 'Trying to log someone else out',
+'USER_CREATION_FAILED' => 'User creation failed',
+'USER_LOAD_BY_NAME_QUERY_FAILED' => 'The query to retreive the user from the database by its name failed',
+'USER_NO_USER_WITH_THAT_NAME' => 'There isn\'t any user with that name',
+'USER_LOAD_BY_EMAIL_QUERY_FAILED' => 'The query to retreive the user from the database by its email failed',
+'USER_NO_USER_WITH_THAT_EMAIL' => 'There isn\'t any user with that email',
+'USER_UPDATE_MISSPELLED_PROPERTIES' => 'The list of fields to update with updateIntoDB certainly contains an error',
+'USER_CANT_DELETE_ONESELF' => 'You cannot delete your own account',
+'USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER' => 'Trying to modify an user that doesn\'t exist in the database',
+'USER_YOU_ARE_NOW_DISCONNECTED' => 'You are now disconnected',
+'USER_PARAMETERS_SAVED' => 'Parameters saved',
+'USER_DELETED' => 'User deleted',
+'USER_PASSWORD_CHANGED' => 'Password changed',
+'USER_EMAIL_ADDRESS' => 'Email address',
+'USER_DOUBLE_CLICK_TO_EDIT' => 'Double click to edit',
+'USER_SHOW_COMMENTS_BY_DEFAULT' => 'By default, show the comments',
+'USER_MAX_NUMBER_OF_LASTEST_COMMENTS' => 'Maximum number of latest comments',
+'USER_MAX_NUMBER_OF_VERSIONS' => 'Maximum number of versions',
+'USER_MOTTO' => 'Your motto',
+'USER_UPDATE' => 'Update',
+'USER_DISCONNECT' => 'Disconnect',
+'USER_CHANGE_THE_PASSWORD' => 'Change the password',
+'USER_OLD_PASSWORD' => 'Your former password',
+'USER_NEW_PASSWORD' => 'New password',
+'USER_CHANGE' => 'Change',
+'USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'You must accept cookies to get connected',
+'USER_WIKINAME' => 'Your WikiName',
+'USER_PASSWORD_CONFIRMATION' => 'Password confirmation',
+'USER_NEW_ACCOUNT' => 'New account',
+
+// YesWiki\Database class
+'DATABASE_QUERY_FAILED' => 'Database query failed',
+'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set all arguments for object of \YesWiki\Database class',
+'DATABASE_MISSING_ARGUMENT' => ' missing',
+
+
+// YesWiki\Session class
+'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'You must set argument for object of \YesWiki\Session class',
 
 );
