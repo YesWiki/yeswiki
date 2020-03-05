@@ -284,7 +284,7 @@ if ($action == 'login') { // user is trying to log in or register
 		</div>
 	</div>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD_TOO_SHORT');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" type="password" name="password" size="40" />
 		</div>
