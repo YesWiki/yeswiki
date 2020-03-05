@@ -329,6 +329,33 @@ function baz_afficher_formulaire_import()
                                             $valeur[$nom_champ[$c]] = $idval;
                                         }
 
+                                        // recuperer les id pour les listefiche et checkboxfiche plutot que leur bf_titre
+                                        if (($type_champ[$c] == 'checkboxfiche' || $type_champ[$c] == 'listefiche') &&
+                                            isset($data[$c]) && !empty($data[$c])) {
+                                            $tab_chkb = explode(',', $data[$c]);
+                                            $tab_chkb = array_map('trim', $tab_chkb);
+                                            $tab_id = array();
+                                            $idfiche = str_replace($type_champ[$c], '', $nom_champ[$c]);
+                                            if (!isset($allentries[$idfiche])) {
+                                                $fa = baz_requete_recherche_fiches('', $idfiche);
+                                                $tabfa = array();
+                                                foreach ($fa as $fares) {
+                                                    $valfa = json_decode($fares['body'], true);
+                                                    $tabfa[$valfa['id_fiche']] = $valfa['bf_titre'];
+                                                }
+                                                $allentries[$id] = $tabfa;
+                                            }                   
+                                            foreach ($tab_chkb as $value) {
+                                                $idval = array_search(
+                                                    $value,
+                                                    $allentries[$id]
+                                                );
+                                                $tab_id[] = $idval;
+                                            }
+                                            $idval = implode(',', $tab_id);
+                                            $valeur[$nom_champ[$c]] = $idval;
+                                        }
+
                                         // traitement des images (doivent être présentes dans le dossier files du wiki)
                                         if (($type_champ[$c]) == 'image' && isset($data[$c]) && !empty($data[$c])) {
                                             $imageorig = trim($valeur[$nom_champ[$c]]);
@@ -401,7 +428,7 @@ function baz_afficher_formulaire_import()
                                         }
                                     }
                                 }
-                                $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']).$row;
+                                $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
                                 $valeur['id_typeannonce'] = $id;
                                 $valeur['date_creation_fiche'] = date('Y-m-d H:i:s', time());
                                 $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
@@ -428,17 +455,11 @@ function baz_afficher_formulaire_import()
                                     '
                                             </label>
                                             <a class="btn-mini btn-xs btn btn-default" data-target="#collapse'
-
-                                    .$valeur['id_fiche'].
-                                    '" data-toggle="collapse">'
-
-                                    .
-
-                                    '<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
-
+                                    .$valeur['id_fiche'].$row.'" data-toggle="collapse">'
+                                    .'<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
                                     ._t('BAZ_SEE_ENTRY').'</a>
                                 <div class="panel panel-danger">
-                                    <div id="collapse'.$valeur['id_fiche'].'" class="panel-collapse collapse">
+                                    <div id="collapse'.$valeur['id_fiche'].$row.'" class="panel-collapse collapse">
                                       <div class="panel-body">
                                         <div class="alert alert-danger">'.
                                     implode('<br>', $errormsg).'</div>'.
@@ -448,27 +469,22 @@ function baz_afficher_formulaire_import()
                                   </div>'."\n";
                                 } else {
                                     $outputright .=
-
                                     '<label>
-                                            <input type="checkbox" name="importfiche['.$valeur['id_fiche'].']" value=\''
-
+                                            <input type="checkbox" name="importfiche['.$valeur['id_fiche'].$row.']" value=\''
                                     .base64_encode(serialize($valeur)).
                                     '\'> '.$valeur['bf_titre'].
-
                                     '
                                             </label>
                                             <a class="btn-mini btn-xs btn btn-default" data-target="#collapse'.
 
-                                    $valeur['id_fiche'].
+                                    $valeur['id_fiche'].$row.
                                     '" data-toggle="collapse">'
-
                                     .
-
                                     '<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
                                     ._t('BAZ_SEE_ENTRY').'</a>
                                     <div class="panel panel-default">
                                         <div id="collapse'.
-                                    $valeur['id_fiche'].'" class="panel-collapse collapse">
+                                    $valeur['id_fiche'].$row.'" class="panel-collapse collapse">
                                           <div class="panel-body">'.
                                     baz_voir_fiche(0, $valeur).'
                                           </div>
@@ -486,9 +502,7 @@ function baz_afficher_formulaire_import()
                     '<div class="checkbox">
                                 <label class="checkbox">
                                     <input data-target="#accordion-import" type="checkbox" class="selectall"> '
-
                     ._t('BAZ_SELECT_ALL').
-
                     '
                                 </label>
                             </div>
