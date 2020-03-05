@@ -262,8 +262,9 @@ function renameUrlToSanitizedFilename($url)
 
 function copyUrlToLocalFile($url, $localPath)
 {
-    // teste l'existance du fichier
-    if ($ch = curl_init($url)) {
+    if (file_exists($localPath)) {
+        return true;
+    } elseif ($ch = curl_init($url)) { // teste l'existance du fichier a distance
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $imgcontent = curl_exec($ch);
