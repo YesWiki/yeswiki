@@ -1546,7 +1546,12 @@ class Wiki
 
     public function LoadUsers()
     {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'users order by name');
+        if (isset($this->config['user_table_prefix']) && !empty($this->config['user_table_prefix'])) {
+            $prefix = $this->config['user_table_prefix'];
+        } else {
+            $prefix = $this->config["table_prefix"];
+        }
+        return $this->LoadAll('select * from ' . $prefix . 'users order by name');
     }
 
     public function GetUserName()
