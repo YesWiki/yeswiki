@@ -35,8 +35,6 @@
          class="no-dblclick"
          style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
 
-<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-
 <script src="//cdn.jsdelivr.net/npm/velocity-animate@2.0/velocity.min.js"></script>
 
 <script>
@@ -96,7 +94,7 @@
     // Load gogocartoJs now (after jquery and bootstrap are already loaded) so there is no conflict
     var jsElm = document.createElement("script");
     jsElm.type = "application/javascript";
-    jsElm.src = "/tools/bazar/presentation/javascripts/gogocarto.min.js";
+    jsElm.src = "tools/bazar/presentation/javascripts/gogocarto.min.js";
     document.body.appendChild(jsElm);
 
     interval = setInterval(function() {
