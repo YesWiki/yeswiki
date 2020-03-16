@@ -25,11 +25,33 @@ if (!empty($titles)) {
     $titles = array_map('trim', $titles);
 }
 
+// icônes des titres
+$icons = $this->GetParameter('icons');
+if (!empty($icons)) {
+    $icons = explode(',', $icons);
+    foreach ($icons as $key => $icon){
+        $icon = trim($icon);
+        if (!empty($icon)) {
+            // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
+            if ( preg_match('/\s/', $icon) )
+            {
+                $icon = '<i class="'.$icon.'"></i>';
+            }
+            else
+            {
+                $icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
+            }
+            if (!empty($text)) $icon = $icon.' ';
+        }
+        $icons[$key] = $icon;
+    }
+}
+
 $listlinks = '';
 foreach ($titles as $key => $title) {
     $url = $this->IsWikiName($links[$key], WN_CAMEL_CASE_EVOLVED) ? $this->href('', $links[$key]) : $links[$key];
     $listclass = ($url == $this->href('', $this->GetPageTag())) ? ' class="active"' : '';
-    $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.$title.'</a></li>'."\n";
+    $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.$icons[$key].$title.'</a></li>'."\n";
 }
 
 $navID = uniqid('nav_');
@@ -40,5 +62,5 @@ if (is_array($data)) {
     }
 }
 
-    echo ' <!-- start of nav -->
+echo ' <!-- start of nav -->
         <ul class="'.$class.'" id="'.$navID.'" '.$data.'>'.$listlinks.'</ul>'."\n";
