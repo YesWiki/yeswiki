@@ -410,23 +410,23 @@ $(document).ready(function () {
   });
 
   // cocher / decocher tous
-  var $checkboxselectall = $('.selectall');
-  $checkboxselectall.click(function (event) {
+  var checkboxselectall = $('.selectall');
+  checkboxselectall.click(function (event) {
     var $this = $(this);
     var target = $this.parents('.controls').find('.yeswiki-checkbox');
     if ($this.data('target')) {
-      $target = $($this.data('target'));
+      target = $($this.data('target'));
     }
 
     if (this.checked) { // check select status
-      $target.each(function () {
+      target.each(function () {
         $(this).find(':checkbox').prop('checked', true);
-        $checkboxselectall.prop('checked', true);
+        $(this).prop('checked', true);
       });
     } else {
-      $target.each(function () {
+      target.each(function () {
         $(this).find(':checkbox').prop('checked', false);
-        $checkboxselectall.prop('checked', false);
+        $(this).prop('checked', false);
       });
     }
   });
