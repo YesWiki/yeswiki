@@ -1755,6 +1755,25 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $http = 'http';
         }
+        // on recupere d eventuels id et token pour les providers en ayant besoin
+  		  $bazProvider = $GLOBALS['wiki']->config['baz_provider'];
+  		  $bazProviderId = $GLOBALS['wiki']->config['baz_provider_id'];
+  		  $bazProviderPass = $GLOBALS['wiki']->config['baz_provider_pass'];
+        if (!empty($bazProviderId) && !empty($bazProviderPass)) {
+          if ($bazProvider == 'MapBox') {
+              $providerCredentials = ', {id: \''.$bazProviderId
+                .'\', accessToken: \''.$bazProviderPass.'\'}';
+          } else {
+              $providerCredentials = ', {
+                  app_id: \''.$bazProviderId.'\',
+                  app_code: \''.$bazProviderPass.'\'
+              }';
+          }
+        } else {
+            $$providerCredentials = '';
+        }
+
+
         $initmapscript = '
 $(document).ready(function() {
     // Init leaflet map
@@ -1762,12 +1781,12 @@ $(document).ready(function() {
         scrollWheelZoom:'.$GLOBALS['wiki']->config['baz_wheel_zoom'].',
         zoomControl:'.$GLOBALS['wiki']->config['baz_show_nav'].'
     });
-    var geocodedmarker;
-    var OsmLayer = new L.TileLayer(\''.$http.'://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png\', {
-      maxZoom: 18,
-      attribution: \'<a href="https://wikimediafoundation.org/wiki/Maps_Terms_of_Use">Wikimedia</a> | Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>\'
-    });
-    map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].').addLayer(OsmLayer);
+    var geocodedmarker;';
+	 $initmapscript .= '
+var provider = L.tileLayer.provider("'.$bazProvider.'"'.$providerCredentials.');
+map.addLayer(provider);
+
+		map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].').addLayer(OsmLayer);
 
     $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
       var pattern = /^-?[\d]{1,3}[.][\d]+$/;
@@ -1841,7 +1860,10 @@ $(document).ready(function() {
             map.panTo( geocodedmarker.getLatLng(), {animate:true});
         }
     });
-    ';
+    '; // End of $initmapscript declaration
+
+
+
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
 
         $geocodingscript = '';
@@ -1870,6 +1892,7 @@ $(document).ready(function() {
         $geocodingscript .= '});';
         $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
         $GLOBALS['wiki']->AddJavascript($initmapscript.$geocodingscript);
         return
             '<div class="control-group form-group">
