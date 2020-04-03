@@ -26,7 +26,10 @@
 .form-wrap.form-builder .frmb .form-elements .input-wrap { width: 70%; }
 .form-wrap.form-builder .frmb .form-elements .false-label:first-child, .form-wrap.form-builder .frmb .form-elements label:first-child { width: 25%; }
 
-.titre-field .form-group:not(.label-wrap) { display: none !important; }
+.titre-field .required-wrap,
+.titre-field .name-wrap {
+  display: none !important;
+}
 
 .carte_google-field .label-wrap,
 .carte_google-field .value-wrap,

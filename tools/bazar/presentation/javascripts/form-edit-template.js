@@ -68,6 +68,12 @@ var fields = [
   {
     name: 'collaborative_doc',
     attrs: { type: "collaborative_doc" },
+  },
+  {
+    label: "Titre Automatique",
+    name: 'titre',
+    attrs: { type: "titre" },
+    icon: "👤"
   }
 ];
 
@@ -243,6 +249,7 @@ var typeUserAttrs = {
   },
   bookmarklet: {},
   collaborative_doc: {},
+  titre: {},
   listefichesliees: {
     id: { label: "id du formulaire lié" },
     query: {
@@ -338,7 +345,10 @@ var templates = {
   },
   collaborative_doc: function(field) {
     return { field: "Document collaboratif" };
-  }
+  },
+  titre: function(field) {
+    return { field: field.value };
+  },
 };
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
@@ -400,6 +410,7 @@ var yesWikiMapping = {
   },
   labelhtml: { 0: "type", 1: "content_saisie", 2: "", 3: "content_display" },
   utilisateur_wikini: { 0: "type", 1: "name_field", 2: "email_field" },
+  titre: { 0: "type", 1: "value" },
   acls: { 0: "type", 1: "read", 2: "write", 3: "comment" },
   metadatas: { 0: "type", 1: "theme", 2: "squelette", 3: "style", 4: "image" },
   hidden: { 0: "type", 1: "name", 2: "value" },
