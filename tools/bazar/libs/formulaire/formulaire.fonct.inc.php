@@ -1243,7 +1243,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 return '<div class="control-group form-group">
     <label class="control-label col-sm-3">'.$label.'</label>
     <div class="controls col-sm-9">
-    <input name="'.$type . $identifiant.'" type="file" '.((isset($obligatoire) && $obligatoire == 1) ? 'required':'').'>
+    <input name="'.$type . $identifiant.'" type="file" class="form-control" '.((isset($obligatoire) && $obligatoire == 1) ? 'required':'').'>
     </div>
     </div>';
             }
@@ -1257,7 +1257,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             return '<div class="control-group form-group">
 <label class="control-label col-sm-3">'.$label.'</label>
 <div class="controls col-sm-9">
-<input name="'.$type . $identifiant.'" type="file" '.((isset($obligatoire) && $obligatoire == 1) ? 'required':'').'>
+<input name="'.$type . $identifiant.'" type="file" class="form-control" '.((isset($obligatoire) && $obligatoire == 1) ? 'required':'').'>
 </div>
 </div>';
         }
