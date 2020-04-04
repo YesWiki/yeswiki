@@ -1786,7 +1786,7 @@ $(document).ready(function() {
 var provider = L.tileLayer.provider("'.$bazProvider.'"'.$providerCredentials.');
 map.addLayer(provider);
 
-		map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].').addLayer(OsmLayer);
+		map.setView(new L.LatLng('.$GLOBALS['wiki']->config['baz_map_center_lat'].', '.$GLOBALS['wiki']->config['baz_map_center_lon'].'), '.$GLOBALS['wiki']->config['baz_map_zoom'].');
 
     $("body").on("keyup keypress", "#bf_latitude, #bf_longitude", function(){
       var pattern = /^-?[\d]{1,3}[.][\d]+$/;
