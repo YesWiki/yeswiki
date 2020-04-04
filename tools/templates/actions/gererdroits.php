@@ -18,7 +18,7 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
 
 //action réservée aux admins
 if (! $this->UserIsAdmin()) {
-    echo '<div class="alert alert-danger alert-error">Cette action est r&eacute;serv&eacute;e aux admins</div>';
+    echo '<div class="alert alert-danger alert-error">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
     return ;
 }
 
@@ -29,12 +29,12 @@ if (! $this->UserIsAdmin()) {
     //Modification de droits
     if (isset($_POST['geredroits_modifier'])) {
         if (!isset($_POST['selectpage'])) {
-            $error = "Aucune page n'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.";
+            $error = _t('ACLS_NO_SELECTED_PAGE');
         } else {
             if ($_POST['typemaj'] != 'default' && empty($_POST['newlire'])
             && empty($_POST['newecrire']) && empty($_POST['newcomment']) && empty($_POST['newlire_advanced'])
             && empty($_POST['newecrire_advanced']) && empty($_POST['newecrire_advanced'])) {
-                $error = "Vous n'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.";
+                $error = _t('ACLS_NO_SELECTED_RIGHTS');
             } else {
                 foreach ($_POST['selectpage'] as $page_cochee) {
                     if ($_POST['typemaj'] == 'default') {
@@ -59,7 +59,7 @@ if (! $this->UserIsAdmin()) {
                     }
                 }
 
-                $success = 'Droit modifi&eacute;s avec succ&egrave;s';
+                $success = _t('ACLS_RIGHTS_WERE_SUCCESFULLY_CHANGED');
             }
         }
     }
@@ -89,7 +89,7 @@ $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTabl
 $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 ?>
-<p>Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page</p>
+<p><?php echo _t('ACLS_SELECT_PAGES_TO_MODIFY'); ?></p>
 <div class="table-responsive">
   <table class="table table-striped table-condensed table-acls">
     <thead>
@@ -100,22 +100,23 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
             <span></span>
           </label>
         </th>
-        <th><div><b>Page</b></div></th>
-        <th><div align="center"><b>Lecture</b></div></th>
-        <th><div align="center"><b>Ecriture</b></div></th>
+        <th><div><b><?php echo _t('ACLS_PAGE'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('YW_ACLS_READ'); ?></b></div></th>
+        <th><div align="center"><b><?php echo _t('YW_ACLS_WRITE'); ?></b></div></th>
         <!-- TODO : repair comments <th><div align="center"><b>Commentaires</b></div></th> -->
       </tr>
     </thead>
 <tbody>
+
 <?php
   function display_droit($text)
   {
       $values = explode("\n", $text);
       $values = array_map(function ($el) {
           switch ($el) {
-        case '*': return "<span class='label label-success'>Tout le monde</span>";
-        case '+': return "<span class='label label-warning'>Utilisateurs connectés</span>";
-        case '%': return "<span class='label label-danger'>Propriétaire</span>";
+        case '*': return '<span class="label label-success">'._t('ACLS_EVERYBODY').'</span>';
+        case '+': return '<span class="label label-warning">'._t('ACLS_AUTHENTIFICATED_USERS').'</span>';
+        case '%': return '<span class="label label-danger">'._t('ACLS_OWNER').'</span>';
       }
           switch ($el[0]) {
         case '@': return "<span class='label label-primary'>$el</span>";
@@ -153,25 +154,20 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 </tbody>
 </table>
 </div>
-  <p><b>Actions pour les pages cochées ci dessus :</b></p>
+  <p><b><?php echo _t('ACLS_FOR_SELECTED_PAGES'); ?> :</b></p>
 
   <p class="type-modif-container">
     <label for="typemajdefault">
         <input type=radio name="typemaj" value="default" id="typemajdefault"
                 onClick="$('.edit-acl-container').slideUp()">
-        <span>Réinitialiser (avec les valeurs par défaut définies dans <em>wakka.config.php</em>)</span>
+        <span><?php echo _t('ACLS_RESET_SELECTED_PAGES'); ?> <em>wakka.config.php</em>)</span>
     </label>
 
     <label for="typemalremplacer">
       <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
               onClick="$('.edit-acl-container').slideDown()">
-      <span>Remplacer (Les droits actuels seront supprim&eacute;s)</span>
+      <span><?php echo _t('ACLS_REPLACE_SELECTED_PAGES'); ?></span>
     </label>
-    <!-- <label for="typemajajouter">
-        <input type=radio name="typemaj" value="ajouter" id="typemajajouter"
-        onClick="$('.edit-acl-container').slideDown()">
-        <span>Ajouter (Les nouveaux droits seront ajout&eacute;s aux actuels)</span>
-    </label> -->
   </p>
 
   <div class="edit-acl-container">
@@ -180,45 +176,39 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 
     <div class="switch">
       <label>
-        Mode simple
+        <?php echo _t('ACLS_MODE_SIMPLE'); ?>
         <input type="checkbox" id="acl-switch-mode">
         <span class="lever"></span>
-        Mode avancé
+        <?php echo _t('ACLS_MODE_ADVANCED'); ?>
       </label>
     </div>
 
     <div class="alert alert-default acl-advanced">
-      Séparez chaque entrée par un retour à la ligne, par example</br>
-      <b>*</b> (tous les utilisateurs)</br>
-      <b>+</b> (utilisateurs enregistrés)</br>
-      <b>%</b> (créateur de la fiche/page)</br>
-      <b>@nom_du_groupe</b> (groupe d'utilisateur, ex: @admins)</br>
-      <b>JamesBond</b> (nom YesWiki d'un utilisateur)</br>
-      <b>!SuperCat</b> (négation, SuperCat n'est pas autorisé)</br>
+        <?php echo _t('ACLS_HELPER'); ?>
     </div>
 
     <div class="acl-container">
-      <?php $roles = ['lire' => 'Lecture', 'ecrire' => 'Ecriture']; //TODO : repair comments , 'comment' => 'Commentaire'];
+      <?php $roles = ['lire' => _t('YW_ACLS_READ'), 'ecrire' => _t('YW_ACLS_WRITE')]; //TODO : repair comments , 'comment' => 'Commentaire'];
       foreach ($roles as $role => $label) { ?>
         <div class="acl-single-container">
           <label for="new<?php echo $role ?>" class="control-label">
             <?php echo $label ?>
           </label>
           <select name="new<?php echo $role ?>" class="form-control acl-simple">
-            <option value="">Ne rien changer</option>
-            <option value="*">Tout le monde</option>
-            <option value="+">Utilisateurs connectés</option>
-            <option value="%">Propriétaire de la page</option>
-            <option value="@admins">Groupe admin</option>
+            <option value=""><?php echo _t('ACLS_NO_CHANGE'); ?></option>
+            <option value="*"><?php echo _t('ACLS_EVERYBODY'); ?></option>
+            <option value="+"><?php echo _t('ACLS_AUTHENTIFICATED_USERS'); ?></option>
+            <option value="%"><?php echo _t('ACLS_OWNER'); ?></option>
+            <option value="@admins"><?php echo _t('ACLS_ADMIN_GROUP'); ?></option>
           </select>
-          <input placeholder="Liste des droits séparés par des virgules" name="new<?php echo $role ?>_advanced" class="acl-advanced form-control"></textarea>
+          <input placeholder="<?php echo _t('ACLS_LIST_OF_ACLS'); ?>" name="new<?php echo $role ?>_advanced" class="acl-advanced form-control" />
         </div>
       <?php } ?>
     </div>
   </div>
 
 	<p>
-		<input name="geredroits_modifier" class="btn btn-primary" onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" value="Mettre &agrave; jour" type="submit">
+		<input name="geredroits_modifier" class="btn btn-primary" onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" value="<?php echo _t('ACLS_UPDATE'); ?>" type="submit">
 	</p>
 <?php
 echo $this->FormClose();

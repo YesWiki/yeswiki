@@ -407,4 +407,30 @@ $GLOBALS['translations'] = array(
 // YesWiki\Session class
 'SESSION_YOU_MUST_FIRST_SET_ARGUMENT' => 'Il manque l\'argument pour un objet de la classe \YesWiki\Session',
 
+// gererdroits
+'ACLS_RESERVED_FOR_ADMINS' => 'Cette action est r&eacute;serv&eacute;e aux admins',
+'ACLS_NO_SELECTED_PAGE' => 'Aucune page n\'a &eacute;t&eacute; s&eacute;lectionn&eacute;e.',
+'ACLS_NO_SELECTED_RIGHTS' => 'Vous n\'avez pas s&eacute;lectionn&eacute; de droits &agrave; modifier.',
+'ACLS_RIGHTS_WERE_SUCCESFULLY_CHANGED' => 'Droit modifi&eacute;s avec succ&egrave;s',
+'ACLS_SELECT_PAGES_TO_MODIFY' => 'Cochez les pages que vous souhaitez modifier et choisissez une action en bas de page',
+'ACLS_PAGE' => 'Page',
+'ACLS_FOR_SELECTED_PAGES' => 'Actions pour les pages cochées ci dessus',
+'ACLS_RESET_SELECTED_PAGES' => 'Réinitialiser (avec les valeurs par défaut définies dans',
+'ACLS_REPLACE_SELECTED_PAGES' => 'Remplacer (Les droits actuels seront supprim&eacute;s)',
+'ACLS_HELPER' => 'Séparez chaque entrée par un retour à la ligne, par example</br>
+<b>*</b> (tous les utilisateurs)</br>
+<b>+</b> (utilisateurs enregistrés)</br>
+<b>%</b> (créateur de la fiche/page)</br>
+<b>@nom_du_groupe</b> (groupe d\'utilisateur, ex: @admins)</br>
+<b>JamesBond</b> (nom YesWiki d\'un utilisateur)</br>
+<b>!SuperCat</b> (négation, SuperCat n\'est pas autorisé)</br>',
+'ACLS_MODE_SIMPLE' => 'Mode simple',
+'ACLS_MODE_ADVANCED' => 'Mode avancé',
+'ACLS_NO_CHANGE' => 'Ne rien changer',
+'ACLS_EVERYBODY' => 'Tout le monde',
+'ACLS_AUTHENTIFICATED_USERS' => 'Utilisateurs connectés',
+'ACLS_OWNER' => 'Propriétaire de la page',
+'ACLS_ADMIN_GROUP' => 'Groupe admin',
+'ACLS_LIST_OF_ACLS' => 'Liste des droits séparés par des virgules',
+'ACLS_UPDATE' => 'Mettre &agrave; jour',
 );
