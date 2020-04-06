@@ -6,6 +6,9 @@ cache/*
 files/*
 !files/backgrounds
 !files/README.md
+!files/AdaLovelace_ada_byron.jpg
+!files/ElizabethJFeinler_elizabethfeinler.jpg
+!files/yeswiki-logo.png
 themes/*
 !themes/README.md
 templates/*

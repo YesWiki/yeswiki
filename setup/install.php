@@ -105,239 +105,32 @@ if (!$version || empty($_POST['admin_login'])) {
 
 // all in utf8mb4
 mysqli_set_charset($dblink, 'utf8mb4');
-mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
+mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
+$replacements = [
+    'prefix' => $config['table_prefix'],
+    'siteTitle' => $config['wakka_name'],
+    'WikiName' => $admin_name,
+    'password' => $admin_password,
+    'email' => $admin_email,
+    'rootPage' => $config['root_page'],
+];
 
-// do installation stuff
-switch ($version) {
-    // new installation
-    case '0':
-        echo '<br /><b>'._t('DATABASE_INSTALLATION')."</b><br>\n";
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'pages ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE '.$config['table_prefix'].'pages ('.
-                'id int(10) unsigned NOT NULL auto_increment,'.
-                "tag varchar(50) NOT NULL default '',".
-                "time datetime NOT NULL,".
-                'body longtext NOT NULL,'.
-                'body_r text,'.
-                "owner varchar(50) NOT NULL default '',".
-                "user varchar(50) NOT NULL default '',".
-                "latest enum('Y','N') NOT NULL default 'N',".
-                "handler varchar(30) NOT NULL default 'page',".
-                "comment_on varchar(50) NOT NULL default '',".
-                'PRIMARY KEY  (id),'.
-                'KEY idx_tag (tag),'.
-                'KEY idx_time (time),'.
-                'KEY idx_latest (latest),'.
-                'KEY idx_comment_on (comment_on)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'acls ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE '.$config['table_prefix'].'acls ('.
-                "page_tag varchar(50) NOT NULL default '',".
-                "privilege varchar(20) NOT NULL default '',".
-                'list text NOT NULL,'.
-                'PRIMARY KEY  (page_tag,privilege)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'links ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE '.$config['table_prefix'].'links ('.
-                "from_tag char(50) NOT NULL default '',".
-                "to_tag char(50) NOT NULL default '',".
-                'UNIQUE KEY from_tag (from_tag,to_tag),'.
-                'KEY idx_from (from_tag),'.
-                'KEY idx_to (to_tag)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'referrers ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE '.$config['table_prefix'].'referrers ('.
-                "page_tag char(50) NOT NULL default '',".
-                "referrer text NOT NULL default '',".
-                "time datetime NOT NULL,".
-                'KEY idx_page_tag (page_tag),'.
-                'KEY idx_time (time)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'users ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE '.$config['table_prefix'].'users ('.
-                "name varchar(80) NOT NULL default '',".
-                "password varchar(32) NOT NULL default '',".
-                "email varchar(250) NOT NULL default '',".
-                'motto text NOT NULL default \'\','.
-                "revisioncount int(10) unsigned NOT NULL default '20',".
-                "changescount int(10) unsigned NOT NULL default '50',".
-                "doubleclickedit enum('Y','N') NOT NULL default 'Y',".
-                "signuptime datetime NOT NULL,".
-                "show_comments enum('Y','N') NOT NULL default 'N',".
-                'PRIMARY KEY  (name),'.
-                'KEY idx_name (name),'.
-                'KEY idx_signuptime (signuptime)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'triples ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE `'.$config['table_prefix'].'triples` ('.
-                '  `id` int(10) unsigned NOT NULL auto_increment,'.
-                '  `resource` varchar(191) NOT NULL default \'\','.
-                '  `property` varchar(191) NOT NULL default \'\','.
-                '  `value` text NOT NULL,'.
-                '  PRIMARY KEY  (`id`),'.
-                '  KEY `resource` (`resource`),'.
-                '  KEY `property` (`property`)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        test(
-            _t('ADMIN_ACCOUNT_CREATION').' ...',
-            @mysqli_query(
-                $dblink,
-                'insert into '.$config['table_prefix'].'users set '.
-                'signuptime = now(), '.
-                "name = '".mysqli_real_escape_string($dblink, $admin_name)."', ".
-                "email = '".mysqli_real_escape_string($dblink, $admin_email)."', ".
-                "motto = '', ".
-                "password = md5('".mysqli_real_escape_string($dblink, $admin_password)."')"
-            ),
-            _t('ALREADY_EXISTING').'.',
-            0
-        );
+// tables, admin user and admin group creation
+echo '<br /><b>'._t('DATABASE_INSTALLATION')."</b><br>\n";
+test(
+    _t('CREATION_OF_TABLES').' ...',
+    @querySqlFile($dblink, 'setup/sql/create-tables.sql', $replacements),
+    _t('ALREADY_CREATED').' ?',
+    0
+);
 
-        test(
-            _t('INSERTION_OF_USER_IN_ADMIN_GROUP').' ...',
-            @mysqli_query(
-                $dblink,
-                'INSERT INTO '.$config['table_prefix'].'triples SET '.
-                'id = "1", '.
-                'resource = "ThisWikiGroup:admins", '.
-                'property = "http://www.wikini.net/_vocabulary/acls", '.
-                'value = "'.mysqli_real_escape_string($dblink, $admin_name).'"'
-            ),
-            _t('ALREADY_EXISTING').'.',
-            0
-        );
-
-
-        //insertion des pages de documentation et des pages standards
-    $setupDocDir = 'setup/doc/' ;
-        $d = dir($setupDocDir);
-        while ($doc = $d->read()) {
-            if (is_dir($setupDocDir.$doc) || substr($doc, -4) != '.txt') {
-                continue;
-            }
-            $pagecontent = str_replace('{{root_page}}', $config['root_page'], implode('', file("setup/doc/$doc")));
-            if ($doc == '_root_page.txt') {
-                $pagename = $config['root_page'];
-            } else {
-                $pagename = substr($doc, 0, strpos($doc, '.txt'));
-            }
-
-            $sql = 'Select tag from '.$config['table_prefix']."pages where tag='$pagename'";
-
-            // Insert documentation page if not present (a previous failed installation ?)
-            if (($r = @mysqli_query($dblink, $sql)) && (mysqli_num_rows($r) == 0)) {
-                $sql = 'Insert into '.$config['table_prefix'].'pages '.
-                    "set tag = '$pagename', ".
-                    "body = '".mysqli_real_escape_string($dblink, $pagecontent)."', ".
-                    "body_r = '',".
-                    "user = '".mysqli_real_escape_string($dblink, $admin_name)."', ".
-                    "owner = '".mysqli_real_escape_string($dblink, $admin_name)."', ".
-                    'time = now(), '.
-                    "latest = 'Y'";
-                test(_t('INSERTION_OF_PAGE')." $pagename ...", @mysqli_query($dblink, $sql), '?', 0);
-
-            // update table_links
-                // $wiki->SetPage($wiki->LoadPage($pagename, '', 0));
-                // $wiki->ClearLinkTable();
-                // $wiki->StartLinkTracking();
-                // $wiki->TrackLinkTo($pagename);
-                // $dummy = $wiki->Header();
-                // $dummy .= $wiki->Format($pagecontent);
-                // $dummy .= $wiki->Footer();
-                // $wiki->StopLinkTracking();
-                // $wiki->WriteLinkTable();
-                // $wiki->ClearLinkTable();
-            } else {
-                test(_t('INSERTION_OF_PAGE')." $pagename ...", 0, _t('ALREADY_EXISTING').'.', 0);
-            }
-        }
-        break;
-
-    // The funny upgrading stuff. Make sure these are in order! //
-    case '0.1':
-    case '0.4.0':
-    case '0.4.1':
-    case '0.4.2':
-    case '0.4.3':
-    case '0.4.4':
-    case '0.5.0':
-        test(
-            _t('CREATION_OF_TABLE').' '.$config['table_prefix'].'triples ...',
-            @mysqli_query(
-                $dblink,
-                'CREATE TABLE `'.$config['table_prefix'].'triples` ('.
-                '  `id` int(10) unsigned NOT NULL auto_increment,'.
-                '  `resource` varchar(255) NOT NULL default \'\','.
-                '  `property` varchar(255) NOT NULL default \'\','.
-                '  `value` text NOT NULL,'.
-                '  PRIMARY KEY  (`id`),'.
-                '  KEY `resource` (`resource`),'.
-                '  KEY `property` (`property`)'.
-                ') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-            ),
-            _t('ALREADY_CREATED').' ?',
-            0
-        );
-        if (!empty($admin_password)) {
-            test(
-                _t('ADMIN_ACCOUNT_CREATION').' ...',
-                @mysqli_query(
-                    $dblink,
-                    'insert into '.$config['table_prefix'].'users set '.
-                    'signuptime = now(), '.
-                    "name = '".mysqli_real_escape_string($dblink, $admin_name)."', ".
-                    "email = '".mysqli_real_escape_string($dblink, $admin_email)."', ".
-                    "motto = '', ".
-                    "password = md5('".mysqli_real_escape_string($dblink, $admin_password)."')"
-                ),
-                0
-            );
-        }
-        $wiki = new \Yeswiki\Wiki($config);
-        test(_t('INSERTION_OF_USER_IN_ADMIN_GROUP').' ...', !$wiki->SetGroupACL('admins', $admin_name), 0);
-}
+// Default pages content
+test(
+    _t('INSERTION_OF_PAGES').' ...',
+    @querySqlFile($dblink, 'setup/sql/default-content.sql', $replacements),
+    _t('ALREADY_CREATED').' ?',
+    0
+);
 
 ?>
 <br />

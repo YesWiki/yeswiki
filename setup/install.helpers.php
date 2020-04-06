@@ -41,3 +41,24 @@ function myLocation()
     list($url, ) = explode("?", $_SERVER["REQUEST_URI"]);
     return $url;
 }
+
+function querySqlFile($dblink, $sqlFile, $replacements = [])
+{
+    if ($sql = file_get_contents($sqlFile)) {
+        foreach($replacements as $keyword => $replace) {
+            $sql = str_replace(
+                '{{'.$keyword.'}}',
+                $replace,
+                $sql
+            );
+        }
+        # echo '<hr><pre>';var_dump($sql);echo '</pre><hr>'; # DEBUG SQL 
+        mysqli_multi_query($dblink, $sql);
+        do {
+            ;
+        } while (mysqli_next_result($dblink));
+        return true;
+    } else {
+        die(_t('SQL_FILE_NOT_FOUND').' "'.$sqlFile.'".');
+    }
+}

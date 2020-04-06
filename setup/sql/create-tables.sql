@@ -7,10 +7,10 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}acls` (
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}links` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `from_tag` char(50) NOT NULL,
-  `to_tag` char(50) NOT NULL,
+  `from_tag` char(191) NOT NULL,
+  `to_tag` char(191) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `from_tag` (`from_tag`,`to_tag`),
+  UNIQUE KEY `from_tag` (`from_tag`,`to_tag`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL,
   PRIMARY KEY (`bn_id_nature`)
-) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}pages` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
