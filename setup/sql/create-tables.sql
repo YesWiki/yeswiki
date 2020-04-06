@@ -1,11 +1,11 @@
-CREATE TABLE IF NOT EXISTS `{{prefix}}__acls` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}acls` (
   `page_tag` varchar(191) NOT NULL,
   `privilege` varchar(20) NOT NULL,
   `list` text NOT NULL,
   PRIMARY KEY (`page_tag`,`privilege`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `{{prefix}}__links` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}links` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `from_tag` char(50) NOT NULL,
   `to_tag` char(50) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}__links` (
   UNIQUE KEY `from_tag` (`from_tag`,`to_tag`),
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `{{prefix}}__nature` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
   `bn_id_nature` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `bn_label_nature` varchar(255) DEFAULT NULL,
   `bn_description` text  DEFAULT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}__nature` (
   PRIMARY KEY (`bn_id_nature`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `{{prefix}}__pages` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}pages` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tag` varchar(191) NOT NULL,
   `time` datetime NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}__pages` (
   FULLTEXT KEY `tag` (`tag`,`body`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `{{prefix}}__referrers` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}referrers` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `page_tag` varchar(191) NOT NULL,
   `referrer` text NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}__referrers` (
   KEY `idx_time` (`time`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `{{prefix}}__triples` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}triples` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `resource` varchar(255) NOT NULL,
   `property` varchar(255) NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}__triples` (
   KEY `property` (`property`)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS `{{prefix}}__users` (
+CREATE TABLE IF NOT EXISTS `{{prefix}}users` (
   `name` varchar(80) NOT NULL,
   `password` varchar(32) NOT NULL,
   `email` varchar(191) NOT NULL,
@@ -81,8 +81,8 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}__users` (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 # Creation of admins group and admin user
-INSERT INTO `{{prefix}}__triples` (`id`, `resource`, `property`, `value`) VALUES
+INSERT INTO `{{prefix}}triples` (`id`, `resource`, `property`, `value`) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO `{{prefix}}__users` (`name`, `password`, `email`, `motto`, `revisioncount`, `changescount`, `doubleclickedit`, `signuptime`, `show_comments`) VALUES
+INSERT INTO `{{prefix}}users` (`name`, `password`, `email`, `motto`, `revisioncount`, `changescount`, `doubleclickedit`, `signuptime`, `show_comments`) VALUES
 ('{{WikiName}}', md5('{{password}}'), '{{email}}', '', 20, 50, 'Y',  now(), 'N');
