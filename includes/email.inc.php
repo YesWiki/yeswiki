@@ -51,17 +51,23 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         $mail->isSendmail();
     }
 
-    //Set who the message is to be sent from
-    if (empty($name_sender)) {
-        $name_sender = $mail_sender;
-    }
-    $mail->setFrom($mail_sender, $name_sender);
     //Set an alternative reply-to address
     if (!empty($GLOBALS['wiki']->config['contact_reply_to'])) {
         $mail->addReplyTo($GLOBALS['wiki']->config['contact_reply_to']);
     } else {
         $mail->addReplyTo($mail_sender, $name_sender);
     }
+    // Set always the same 'from' address (to avoid spam, it's a good practice to set the from field with an address from
+    // the same domain than the sending mail server)
+    if (!empty($GLOBALS['wiki']->config['contact_from'])) {
+        $mail_sender = $GLOBALS['wiki']->config['contact_from'];
+    }
+    //Set who the message is to be sent from
+    if (empty($name_sender)) {
+        $name_sender = $mail_sender;
+    }
+    $mail->setFrom($mail_sender, $name_sender);
+
     //Set who the message is to be sent to
     $mail->addAddress($mail_receiver, $mail_receiver);
     //Set the subject line

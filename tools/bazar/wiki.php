@@ -203,6 +203,8 @@ $wakkaConfig['BAZ_MODE_DIVISION'] = getConfigValue('BAZ_MODE_DIVISION', 'Jumping
 // Le nombre de page a afficher avant le 'next';
 $wakkaConfig['BAZ_DELTA'] = getConfigValue('BAZ_DELTA', 12, $wakkaConfig);
 
+// Le nombre maximum de fiches affichées par checkboxliste sans que les champs 'Filter' et 'Cocher tout' ne soient affichés
+$wakkaConfig['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] = getConfigValue('BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE', 6, $wakkaConfig);
 
 //=========================== PARAMETRAGE GOOGLE MAP API ===========================
 // parametres pour la carto google

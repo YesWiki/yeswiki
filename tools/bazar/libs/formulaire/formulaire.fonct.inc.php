@@ -2217,9 +2217,10 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->AddJavascript($script);
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
             } else {
-                $checkbox_html.= '<input type="text" class="pull-left filter-entries" value="" placeholder="'.
+                $checkbox_filter = '<input type="text" class="pull-left filter-entries" value="" placeholder="'.
                     _t('BAZAR_FILTER').'"><label class="pull-right"><input type="checkbox" class="selectall" /> '.
-                    _t('BAZAR_CHECKALL') . '</label>' . "\n" . '<div class="clearfix"></div>' . "\n" .
+                    _t('BAZAR_CHECKALL') . '</label>' . "\n" . '<div class="clearfix"></div>' . "\n";
+                $checkbox_html.= (count($checkboxtab) > $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ? $checkbox_filter : '') .
                     '<ul class="list-bazar-entries list-unstyled">';
                 foreach ($checkboxtab as $key => $label) {
                     $checkbox_html.= '<div class="yeswiki-checkbox checkbox">

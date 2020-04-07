@@ -448,7 +448,7 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
     column-count: 3;
 }
 .entries-list, .list-bazar-entries {
-	height:200px;
+	max-height: 200px;
 	overflow: auto;
 }
 .entries-list .yeswiki-checkbox {width:100% !important;}
