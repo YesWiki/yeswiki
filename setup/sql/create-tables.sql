@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}pages` (
   `user` varchar(191) NOT NULL,
   `latest` enum('Y','N') NOT NULL DEFAULT 'N',
   `handler` varchar(30) NOT NULL DEFAULT 'page',
-  `comment_on` varchar(191) NOT NULL,
+  `comment_on` varchar(191) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `idx_tag` (`tag`),
   KEY `idx_time` (`time`),
