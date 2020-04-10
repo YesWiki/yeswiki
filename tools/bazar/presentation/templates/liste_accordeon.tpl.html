@@ -37,7 +37,7 @@
                   // if any <br> at the beginning, remove it
                   $soustitre = preg_replace('!^\s*<br */?>!i', '', $soustitre);
                   // replace the consecutives <br> by one
-                  $soustitre = preg_replace('#(<br */?>\s*)+#i', '<br>', $soustitre); ?>
+                  $soustitre = preg_replace('#(<br */?>\s*)+#i', '<br />', $soustitre); ?>
                   <small class='accordion-subtitle'>
                     <?php echo substr($soustitre, 0, 280) . (strlen($soustitre) > 280 ? '...' : ''); ?>
                   </small>
