@@ -14,11 +14,15 @@ class AutoUpdate
         $this->wiki = $wiki;
     }
 
-    public function initRepository()
-    {
-        $this->repository = new Repository($this->repositoryAddress());
-        return $this->repository->load();
-    }
+	/*	Parameter $requestedVersion contains the name of the YesWiki version
+		requested by version parameter of {{update}} action
+		if empty, no specifc version is requested
+	*/
+	public function initRepository($requestedVersion='')
+	{
+		$this->repository = new Repository($this->repositoryAddress($requestedVersion));
+		return $this->repository->load();
+	}
 
     public function isAdmin()
     {
@@ -44,28 +48,36 @@ class AutoUpdate
         return dirname(dirname(dirname(__DIR__)));
     }
 
-    private function repositoryAddress()
-    {
-        $repositoryAddress = $this::DEFAULT_REPO;
+	/*	Parameter $requestedVersion contains the name of the YesWiki version
+		requested by version parameter of {{update}} action
+		if empty, no specifc version is requested
+	*/
+	private function repositoryAddress($requestedVersion='')
+	{
+		$repositoryAddress = $this::DEFAULT_REPO;
 
-        if (isset($this->wiki->config['yeswiki_repository'])) {
-            $repositoryAddress = $this->wiki->config['yeswiki_repository'];
-        }
+		if (isset($this->wiki->config['yeswiki_repository'])) {
+			$repositoryAddress = $this->wiki->config['yeswiki_repository'];
+		}
 
-        if (substr($repositoryAddress, -1, 1) !== '/') {
-            $repositoryAddress .= '/';
-        }
+		if (substr($repositoryAddress, -1, 1) !== '/') {
+			$repositoryAddress .= '/';
+		}
 
-        $repositoryAddress .= $this->getYesWikiVersion();
-        return $repositoryAddress;
-    }
+		if ($requestedVersion != ''){
+			$repositoryAddress = strtolower($requestedVersion);
+		} else {
+			$repositoryAddress .= $this->getYesWikiVersion();
+		}
+		return $repositoryAddress;
+	}
 
-    private function getYesWikiVersion()
-    {
-        $version = $this::DEFAULT_VERS;
-        if (isset($this->wiki->config['yeswiki_version'])) {
-            $version = $this->wiki->config['yeswiki_version'];
-        }
-        return strtolower($version);
-    }
+	private function getYesWikiVersion()
+	{
+		$version = $this::DEFAULT_VERS;
+		if (isset($this->wiki->config['yeswiki_version'])) {
+			$version = $this->wiki->config['yeswiki_version'];
+		}
+		return strtolower($version);
+	}
 }
