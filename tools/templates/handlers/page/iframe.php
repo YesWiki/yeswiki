@@ -30,18 +30,36 @@ if ($this->HasAccess("read")) {
             $output .= $this->Format($this->page["body"], 'wakka', $this->GetPageTag());
         } else {
             // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
-            $pattern = ',' . preg_quote($this->config['base_url']) . '(\w+)([&#?].*?)?(["<]),';
-            $pagebody = preg_replace(
+            $pattern = '~(<a.*?href.*?)' . preg_quote($this->config['base_url']) . '([\w\-_]+)([&#?].*?)?(["\'<])([^>]*?>)~i';
+            $pagebody = preg_replace_callback(
                 $pattern,
-                $this->config['base_url'] . "$1/iframe$2$3",
+                function ($matches) {
+                    // on vérifie si le lien ne s'ouvre pas dans une nouvelle fenêtre, c'est à dire s'il n'y a pas d'attribut
+                    // target="_blank" ou class="new window" avant ou après le href
+                    // et si le lien ne s'ouvre dans une autre fenêtre, on insère /iframe à l'url
+                    $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
+                    if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match($NEW_WINDOW_PATTERN, $matches[5]))
+                        return $matches[1] . $this->config['base_url'] . $matches[2]. $matches[3] . $matches[4] . $matches[5];
+                    else
+                        return $matches[1] . $this->config['base_url'] . $matches[2]. '/iframe' . $matches[3] . $matches[4] . $matches[5];
+                },
                 $this->Format($this->page["body"], 'wakka', $this->GetPageTag())
             );
 
             // pattern qui rajoute le /editiframe pour les liens au bon endroit
-            $pattern = ',' . preg_quote($this->config['base_url']) . '(\w+)\/edit([&#?].*?)?(["<]),';
-            $pagebody = preg_replace(
+            $pattern = '~(<a.*?href.*?)' . preg_quote($this->config['base_url']) . '([\w\-_]+)\/edit([&#?].*?)?(["\'<])([^>]*?>)~i';
+            $pagebody = preg_replace_callback(
                 $pattern,
-                $this->config['base_url'] . "$1/editiframe$2$3",
+                function ($matches) {
+                    // on vérifie si le lien ne s'ouvre pas dans une nouvelle fenêtre, c'est à dire s'il n'y a pas d'attribut
+                    // target="_blank" ou class="new window" avant ou après le href
+                    // et si le lien ne s'ouvre dans une autre fenêtre, on insère /editiframe à l'url
+                    $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
+                    if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match($NEW_WINDOW_PATTERN, $matches[5]))
+                        return $matches[1] . $this->config['base_url'] . $matches[2]. '/edit' . $matches[3] . $matches[4] . $matches[5];
+                    else
+                        return $matches[1] . $this->config['base_url'] . $matches[2]. '/editiframe' . $matches[3] . $matches[4] . $matches[5];
+                },
                 $pagebody
             );
 
