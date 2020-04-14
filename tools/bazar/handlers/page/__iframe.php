@@ -56,7 +56,7 @@ if (!empty($bazaroutput)) {
     $output = '';
     // on recupere les entetes html mais pas ce qu'il y a dans le body
     $header = explode('<body', $this->Header());
-    $output .= $header[0] . "<body class=\"yeswiki-body\">\n<div class=\"yeswiki-page-widget page-widget page\">\n";
+    $output .= $header[0] . "<body class=\"yeswiki-body\">\n<div class=\"container\">\n<div class=\"yeswiki-page-widget page-widget page\">\n";
 
     // affichage de la page formatee
     if (isset($_GET['iframelinks']) && $_GET['iframelinks'] == '0') {
@@ -68,32 +68,10 @@ if (!empty($bazaroutput)) {
         $pattern = ',' . preg_quote($this->config['base_url']) . '(\w+)([&#?].*?)?(["<]),';
         $output .= preg_replace($pattern, $this->config['base_url'] . "$1/iframe$2$3", $bazaroutput);
     }
-    $output .= "</div><!-- end div.page-widget -->";
+    $output .= "</div></div><!-- end div container & page-widget -->";
 
-    // on efface le style par defaut du fond pour l'iframe
-    $styleiframe = '<style>
-  html {
-    overflow-y: auto;
-    background-color : transparent;
-    background-image : none;
-  }
-  .yeswiki-body {
-    background-color : transparent;
-    background-image : none;
-    text-align : left;
-    width : auto;
-    min-width : 0;
-    padding-top : 0;
-  }
-  .yeswiki-page-widget { padding:0 !important;min-height:auto !important; background-color : transparent;}
-  .yeswiki-page-widget .facette-container {
-      margin: 0;
-      padding:0;
-      background-color : transparent;
-  }
-  </style>' . "\n";
     $this->AddJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
     // on recupere juste les javascripts et la fin des balises body et html
-    $output .= preg_replace('/^.+<script/Us', $styleiframe . '<script', $this->Footer());
+    $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
     die($output);
 }
