@@ -30,7 +30,7 @@ if ($this->HasAccess("read")) {
             $output .= $this->Format($this->page["body"], 'wakka', $this->GetPageTag());
         } else {
             // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
-            $pattern = '~(<a.*?href.*?)' . preg_quote($this->config['base_url']) . '([\w\-_]+)([&#?].*?)?(["\'<])([^>]*?>)~i';
+            $pattern = '~(<a.*?href.*?)' . preg_quote($this->config['base_url']) . '([\w\-_]+)([&#?].*?)?(["\'])([^>]*?>)~i';
             $pagebody = preg_replace_callback(
                 $pattern,
                 function ($matches) {
@@ -47,7 +47,7 @@ if ($this->HasAccess("read")) {
             );
 
             // pattern qui rajoute le /editiframe pour les liens au bon endroit
-            $pattern = '~(<a.*?href.*?)' . preg_quote($this->config['base_url']) . '([\w\-_]+)\/edit([&#?].*?)?(["\'<])([^>]*?>)~i';
+            $pattern = '~(<a.*?href.*?)' . preg_quote($this->config['base_url']) . '([\w\-_]+)\/edit([&#?].*?)?(["\'])([^>]*?>)~i';
             $pagebody = preg_replace_callback(
                 $pattern,
                 function ($matches) {
