@@ -517,6 +517,18 @@ function initializeFormbuilder(formAndListIds) {
       })
       .trigger("change");
 
+    // For checkbox, select etc... the name should be blank by default
+    // so we replace the generated value by blank
+    $('.radio-group-field .fld-name').each(function() {
+      if ($(this).val().includes('radio_group_')) $(this).val('');
+    })
+    $('.checkbox-group-field .fld-name').each(function() {
+      if ($(this).val().includes('checkbox_group_')) $(this).val('');
+    })
+    $('.select-field .fld-name').each(function() {
+      if ($(this).val().includes('select_')) $(this).val('');
+    })
+
     $(".text-field select[name=subtype]:not(.initialized)")
       .change(function() {
         $(this).addClass("initialized");
@@ -583,7 +595,7 @@ function ensureFieldsNamesAreUnique() {
       currValue = $(this).val();
     for (var i = 0; i < allNames.length; ++i)
       if (allNames[i] == currValue) count++;
-    if (count > 1) $(this).val(currValue + "_bis");
+    if (count > 1 && currValue != '') $(this).val(currValue + "_bis");
   });
 }
 
