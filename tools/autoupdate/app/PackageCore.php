@@ -73,6 +73,45 @@ class PackageCore extends Package
         return $this::CORE_NAME;
     }
 
+	public function localVersion()
+	{
+		$configuration = new Configuration('wakka.config.php');
+		$configuration->load();
+
+		$version = AutoUpdate::DEFAULT_VERS;
+		if (isset($this->wiki->config['yeswiki_version'])) {
+			$version = $this->wiki->config['yeswiki_version'];
+		}
+		return strtolower($version);
+	}
+
+	public function requestedVersion()
+	{
+		$configuration = new Configuration('wakka.config.php');
+		$configuration->load();
+
+		$version = AutoUpdate::DEFAULT_VERS;
+		if (isset($this->wiki->config['yeswiki_version'])) {
+			$version = $this->wiki->config['yeswiki_version'];
+		}
+		$requestedVersion = $GLOBALS['wiki']->getParameter('version');
+		if (isset($requestedVersion) && $requestedVersion != '') {
+			$version = $requestedVersion;
+		}
+		return strtolower($version);
+	}
+
+	public function newVersionRequested()
+	{
+		$result = false;
+		$localVersion = $this->localVersion();
+		$requestedVersion = $this->requestedVersion();
+		if ($localVersion != $requestedVersion) {
+			$result = true;
+		}
+		return $result;
+	}
+
     /***************************************************************************
      * Méthodes privée
      **************************************************************************/
@@ -90,7 +129,7 @@ class PackageCore extends Package
         return $release;
     }
 
-    protected function updateAvailable()
+	 protected function updateAvailable()
     {
         if ($this->release->compare($this->localRelease()) > 0) {
             return true;
