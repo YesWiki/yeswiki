@@ -51,7 +51,7 @@ $listlinks = '';
 foreach ($titles as $key => $title) {
     $url = $this->IsWikiName($links[$key], WN_CAMEL_CASE_EVOLVED) ? $this->href('', $links[$key]) : $links[$key];
     $listclass = ($url == $this->href('', $this->GetPageTag())) ? ' class="active"' : '';
-    $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.$icons[$key].$title.'</a></li>'."\n";
+    $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.(isset($icons[$key]) ? $icons[$key] : '').$title.'</a></li>'."\n";
 }
 
 $navID = uniqid('nav_');

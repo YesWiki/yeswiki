@@ -1115,7 +1115,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } elseif ($formatage == 'nohtml') {
                 $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, YW_CHARSET);
             } elseif ($formatage == 'html') {
-                $html .= $valeurs_fiche[$identifiant];
+                $html .= str_replace('""','" "',$valeurs_fiche[$identifiant]);
             }
             $html .= '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
         }

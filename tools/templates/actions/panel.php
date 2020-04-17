@@ -62,7 +62,7 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
 
     if ($collapsible) {
         $result .= " data-toggle=\"collapse\" href=\"#$collapseID\" aria-controls=\"$collapseID\"
-         aria-expanded='" . ($collasped ? "true" : "false") . "'";
+         aria-expanded='" . ($collapsed ? "true" : "false") . "'";
     }
     $result .= ">";
     $result .= "
