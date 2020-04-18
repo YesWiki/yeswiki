@@ -4,7 +4,7 @@ namespace AutoUpdate;
 class PackageCore extends Package
 {
     const CORE_NAME = 'yeswiki';
-	 public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes', 'wakka.config.php');
+	public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes', 'wakka.config.php');
 
     public function __construct($release, $address, $desc, $doc)
     {
@@ -77,10 +77,10 @@ class PackageCore extends Package
 		$configuration = new Configuration('wakka.config.php');
 		$configuration->load();
 
-		$version = AutoUpdate::DEFAULT_VERS;
-		if (isset($this->wiki->config['yeswiki_version'])) {
-			$version = $this->wiki->config['yeswiki_version'];
-		}
+        $version = AutoUpdate::DEFAULT_VERS;
+		if (!empty($configuration['yeswiki_version'])) {
+			$version = $configuration['yeswiki_version'];
+        }
 		return strtolower($version);
 	}
 
@@ -90,8 +90,8 @@ class PackageCore extends Package
 		$configuration->load();
 
 		$version = AutoUpdate::DEFAULT_VERS;
-		if (isset($this->wiki->config['yeswiki_version'])) {
-			$version = $this->wiki->config['yeswiki_version'];
+		if (isset($configuration['yeswiki_version'])) {
+			$version = $configuration['yeswiki_version'];
 		}
 		$requestedVersion = $GLOBALS['wiki']->getParameter('version');
 		if (isset($requestedVersion) && $requestedVersion != '') {
