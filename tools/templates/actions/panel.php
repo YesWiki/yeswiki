@@ -17,9 +17,9 @@ if (empty($class)) {
     $class = 'panel-default';
 }
 
-// collapsed: initial state is collasped, and the panel is collaspible
+// collapsed: initial state is collapsed, and the panel is collaspible
 // collaspsible: initial state is displayed, and the panel is collaspible
-// empty: initial state is displayed, and the panel is not collapsable
+// empty: initial state is displayed, and the panel is not collapsible
 $type = $this->GetParameter('type');
 if (empty($type)) {
     $type = '';
@@ -42,8 +42,14 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     $collapseID = uniqid('collapse');
     if (isset($GLOBALS['check_'.$pagetag]['accordion_uniqueID'])) {
         $accordionID = $GLOBALS['check_'.$pagetag]['accordion_uniqueID'];
+        $collapsible = ($type == "collapsible");
+        if ($collapsible && !isset($GLOBALS['check_'.$pagetag]['accordion_collapsible'])){
+            $collapsed = false;
+            $GLOBALS['check_'.$pagetag]['accordion_collapsible'] = true;
+        } else {
+            $collapsed = true;
+        }
         $collapsible = true;
-        $collapsed = true;
     } else {
         $accordionID = '';
     }

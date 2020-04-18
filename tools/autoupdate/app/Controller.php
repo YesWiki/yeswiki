@@ -21,39 +21,43 @@ class Controller
         $this->messages = $messages;
     }
 
-    public function run($get)
-    {
-        if (!isset($get['autoupdate'])) {
-            $get['autoupdate'] = "default";
-        }
+	/*	Parameter $requestedVersion contains the name of the YesWiki version
+		requested by version parameter of {{update}} action
+		if empty, no specifc version is requested
+	*/
+	public function run($get, $requestedVersion='')
+	{
+		if (!isset($get['autoupdate'])) {
+			$get['autoupdate'] = "default";
+		}
 
-        if (!$this->autoUpdate->initRepository()) {
-            $view = new ViewNoRepo($this->autoUpdate);
-            $view->show();
-            return;
-        }
+		if (!$this->autoUpdate->initRepository($requestedVersion)) {
+			$view = new ViewNoRepo($this->autoUpdate);
+			$view->show();
+			return;
+		}
 
-        if (isset($get['upgrade'])
-            and $this->autoUpdate->isAdmin()
-        ) {
-            $this->upgrade($get['upgrade']);
-            $view = new ViewUpdate($this->autoUpdate, $this->messages);
-            $view->show();
-            return;
-        }
+		if (isset($get['upgrade'])
+			and $this->autoUpdate->isAdmin()
+			) {
+			$this->upgrade($get['upgrade']);
+			$view = new ViewUpdate($this->autoUpdate, $this->messages);
+			$view->show();
+			return;
+		}
 
-        if (isset($get['delete'])
-            and $this->autoUpdate->isAdmin()
-        ) {
-            $this->delete($get['delete']);
-            $view = new ViewUpdate($this->autoUpdate, $this->messages);
-            $view->show();
-            return;
-        }
+		if (isset($get['delete'])
+			and $this->autoUpdate->isAdmin()
+			) {
+			$this->delete($get['delete']);
+			$view = new ViewUpdate($this->autoUpdate, $this->messages);
+			$view->show();
+			return;
+		}
 
-        $view = new ViewStatus($this->autoUpdate, $this->messages);
-        $view->show();
-    }
+		$view = new ViewStatus($this->autoUpdate, $this->messages);
+		$view->show();
+	}
 
     private function delete($packageName)
     {
