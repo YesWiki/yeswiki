@@ -17,8 +17,8 @@ if (empty($class)) {
     $class = 'panel-default';
 }
 
-// collapsed: initial state is collapsed, and the panel is collaspible
-// collaspsible: initial state is displayed, and the panel is collaspible
+// collapsed: initial state is collapsed, and the panel is collapsible
+// collapsible: initial state is displayed, and the panel is collapsible
 // empty: initial state is displayed, and the panel is not collapsible
 $type = $this->GetParameter('type');
 if (empty($type)) {
@@ -62,13 +62,12 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     }
 
     $result = "<!-- start of panel -->"
-    . "<div class=\"panel $class\" $data>
-      <div class=\"panel-heading " . ($collapsed ? "collapsed" : "") ."\" role=\"tab\" id=\"$headingID\" role=\"button\"";
-    if (!empty($accordionID)) $result .= " data-parent=\"#$accordionID\"";
+        . "<div class=\"panel $class\" $data>
+      <div class=\"panel-heading " . ($collapsed ? "collapsed" : "") ."\" id=\"$headingID\"";
 
     if ($collapsible) {
-        $result .= " data-toggle=\"collapse\" href=\"#$collapseID\" aria-controls=\"$collapseID\"
-         aria-expanded='" . ($collapsed ? "true" : "false") . "'";
+        $result .= " role=\"tab\" data-toggle=\"collapse\"" . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : "")
+            . " href=\"#$collapseID\" aria-expanded=\"" . ($collapsed ? "false" : "true") . "\" aria-controls=\"$collapseID\"";
     }
     $result .= ">";
     $result .= "
@@ -76,8 +75,8 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
            $title
           </h4>
       </div>
-      <div id=\"$collapseID\" class=\"panel-collapse collapse " . ($collapsed ? "" : "in") ."\"
-        aria-expanded='" . ($collapsed ? "true" : "false") ."' role=\"tabpanel\" aria-labelledby=\"$headingID\">
+      <div id=\"$collapseID\" class=\"panel-collapse collapse " . ($collapsed ? "" : "in") . "\" role=\"tabpanel\""
+        . " aria-labelledby=\"$headingID\">
         <div class=\"panel-body\">";
 
     echo $result;
