@@ -1,22 +1,25 @@
+<h2>YesWiki</h2>
 <p>
-    {{ AU_VERSION_WIKI }} :
-    <span class="label {{ core.updateAvailable ? 'label-warning' : 'label-primary' }}">{{ core.localRelease }}</span>
+    {{ AU_VERSION_WIKI }} : <span class="label {{ (core.updateAvailable or core.newVersionRequested) ? 'label-warning' : 'label-primary' }}">{{ core.localVersion }} {{ core.localRelease }}</span>
 </p>
 <p>
-    {{ AU_VERSION_REPO }} : <span class="label label-primary">{{ core.release }}</span>
+    {{ AU_VERSION_REPO }} : <span class="label label-primary">{{ core.requestedVersion }} {{ core.release }}</span>
 </p>
 
-{% if isAdmin and core.updateAvailable %}
+{% if isAdmin and core.newVersionRequested %}
+    <a  href="{{ baseUrl }}{{ core.updateLink }}"
+        class="btn btn-danger" title="{{ AU_VERSION_UPDATE }}">
+        {{ AU_VERSION_UPDATE }}
+    </a>
+{% elseif isAdmin and core.updateAvailable %}
     <p> {{ AU_WARNING }} </p>
     <a  href="{{ baseUrl}}{{ core.updateLink }}"
         class="btn btn-primary" title="{{ AU_UPDATE }}">
         {{ AU_UPDATE }}
     </a>
-{% endif %}
-
-{% if isAdmin and not core.updateAvailable %}
+{% elseif isAdmin and not core.updateAvailable %}
     <a  href="{{ baseUrl }}{{ core.updateLink }}"
-        class="btn btn-danger" title="{{ AU_FORCE_UPDATE }}">
+        class="btn btn-warning" title="{{ AU_FORCE_UPDATE }}">
         {{ AU_FORCE_UPDATE }}
     </a>
 {% endif %}

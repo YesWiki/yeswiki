@@ -65,7 +65,7 @@ class AutoUpdate
 		}
 
 		if ($requestedVersion != ''){
-			$repositoryAddress = strtolower($requestedVersion);
+			$repositoryAddress .= strtolower($requestedVersion);
 		} else {
 			$repositoryAddress .= $this->getYesWikiVersion();
 		}
