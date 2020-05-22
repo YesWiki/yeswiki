@@ -160,7 +160,7 @@ if ($_REQUEST["action"] == "login") {
         if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
             $_POST["email"] = $_POST["name"];
         }
-        if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = loadUserbyEmail($_POST["email"])) {
+        if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = $this->loadUserByEmail($_POST["email"])) {
             // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
             if ($existingUser["password"] == md5($_POST["password"])) {
                 $this->SetUser($existingUser, $_POST["remember"]);

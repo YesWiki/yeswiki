@@ -1544,6 +1544,11 @@ class Wiki
         return $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "users where name = '" . mysqli_real_escape_string($this->dblink, $name) . "' " . ($password === 0 ? "" : "and password = '" . mysqli_real_escape_string($this->dblink, $password) . "'") . ' limit 1');
     }
 
+    public function loadUserByEmail($mail, $password = 0)
+    {
+        return $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "users where email = '" . mysqli_real_escape_string($this->dblink, $mail) . "' " . ($password === 0 ? "" : "and password = '" . mysqli_real_escape_string($this->dblink, $password) . "'") . ' limit 1');
+    }
+
     public function LoadUsers()
     {
         if (isset($this->config['user_table_prefix']) && !empty($this->config['user_table_prefix'])) {
