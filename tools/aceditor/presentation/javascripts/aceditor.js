@@ -130,7 +130,7 @@ var SYNTAX = {
         fontSize: "18px",
         useSoftTabs: false,
         tabSize: 3,
-        fontFamily: '\'Inconsolata\', monospace',
+        fontFamily: 'monospace',
 
         highlightActiveLine: true,
 
