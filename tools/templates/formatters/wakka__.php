@@ -3,6 +3,9 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+// Hack Hack Hack!! 
+// We just check if class attributes for js library exists to load the corresponding library and initialise it
+
 // wow
 if (preg_match('/(?=<[^>]+(?=[\s+\"\']wow[\s+\"\']).+)([^>]+>)/uU', $plugin_output_new)) {
     $this->addCSSFile('tools/templates/presentation/styles/animate.css');
