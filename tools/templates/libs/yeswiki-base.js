@@ -306,6 +306,29 @@ function toastMessage(message) {
       });
   }
 
+  // Use mermaid for charts and graphs
+  var mermaidclass = $(".mermaid");
+  if (mermaidclass.length > 0) {
+    $.getScript("tools/templates/libs/vendor/mermaid/mermaid.min.js")
+      .done(function(script, textStatus) {
+        // var config = {
+        //     startOnLoad:true,
+        //     flowchart:{
+        //         useMaxWidth:false,
+        //         htmlLabels:true
+        //     }
+        // };
+        // mermaid.initialize(config);
+        mermaid.init(undefined, mermaidclass);
+      })
+      .fail(function(jqxhr, settings, exception) {
+        console.log(
+          "Error getting script tools/templates/libs/vendor/mermaid/mermaid.min.js",
+          exception
+        );
+      });
+  }
+
   // get the html from a yeswiki page
   function getText(url, link) {
     var html;
