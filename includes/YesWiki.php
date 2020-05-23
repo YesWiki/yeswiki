@@ -1384,6 +1384,7 @@ class Wiki
             );
         }
 
+        $included = array();
         $included['before'] = array();
         $included['new'] = array();
         $included['after'] = array();
