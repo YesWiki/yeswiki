@@ -150,40 +150,6 @@ class Wiki
         return ((float) $usec + (float) $sec);
     }
 
-    // public function IncludeBuffered($filename, $notfoundText = '', $vars = [], $path = '')
-    // {
-    //     if ($path) {
-    //         $dirs = explode(':', $path);
-    //     } else {
-    //         $dirs = array(
-    //             ''
-    //         );
-    //     }
-
-    //     foreach ($dirs as $dir) {
-    //         if ($dir) {
-    //             $dir .= '/';
-    //         }
-
-    //         $fullfilename = $dir . $filename;
-    //         if (file_exists($fullfilename)) {
-    //             if (is_array($vars) && !empty($vars)) {
-    //                 extract($vars);
-    //             }
-
-    //             ob_start();
-    //             include $fullfilename;
-    //             $output = ob_get_contents();
-    //             ob_end_clean();
-    //             return $output;
-    //         }
-    //     }
-    //     if ($notfoundText) {
-    //         return $notfoundText;
-    //     } else {
-    //         return false;
-    //     }
-    // }
 
     // VARIABLES
     public function GetPageTag()
@@ -1401,11 +1367,8 @@ class Wiki
     public function Format($text, $formatter = 'wakka', $fullPageName = '')
     {
         if (!empty($fullPageName)) {
-            if (empty($this->pageCacheFormatted[$fullPageName])) {
-                $this->pageCacheFormatted[$fullPageName] = $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
-                $this->IncludeBuffered('formatters/' . $formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'));
-            }
-            return $this->pageCacheFormatted[$fullPageName];
+            //if (empty($this->pageCacheFormatted[$fullPageName])) {
+            return $this->IncludeBuffered($formatter . '.php', '<i>' . _t('FORMATTER_NOT_FOUND') . " \"$formatter\"</i>", compact('text'), $this->config['formatter_path']);
         } else {
             return $this->IncludeBuffered($formatter . '.php', "<i>Impossible de trouver le formateur \"$formatter\"</i>", compact("text"), $this->config['formatter_path']);
         }
@@ -1420,14 +1383,16 @@ class Wiki
                 ''
             );
         }
-        
+
         $included['before'] = array();
         $included['new'] = array();
         $included['after'] = array();
-        
+
         foreach ($dirs as $dir) {
             if ($dir) {
-                $dir .= '/';
+                if (!preg_match('~/$~', $dir)) {
+                    $dir .= '/';
+                }
             }
             $fullfilename = $dir . $filename;
             if (strstr($filename, 'page/')) {
@@ -1436,30 +1401,28 @@ class Wiki
             } else {
                 $beforefullfilename = $dir . '__' . $filename;
             }
-            
+
             list($file, $extension) = explode('.', $filename);
             $afterfullfilename = $dir . $file . '__.' . $extension;
-            
             if (file_exists($beforefullfilename)) {
                 $included['before'][] = $beforefullfilename;
             }
-            
+
             if (file_exists($fullfilename)) {
                 $included['new'][] = $fullfilename;
             }
-            
+
             if (file_exists($afterfullfilename)) {
                 $included['after'][] = $afterfullfilename;
             }
         }
-        
         $plugin_output_new = '';
         $found = 0;
-        
+
         if (is_array($vars)) {
             extract($vars);
         }
-        
+
         foreach ($included['before'] as $before) {
             $found = 1;
             ob_start();
@@ -1470,7 +1433,7 @@ class Wiki
         foreach ($included['new'] as $new) {
             $found = 1;
             ob_start();
-            require($new);
+            include($new);
             $plugin_output_new = ob_get_contents();
             ob_end_clean();
             break;
