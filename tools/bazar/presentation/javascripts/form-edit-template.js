@@ -115,6 +115,9 @@ var selectConf = {
   },
   listId: { label: "", options: formAndListIds.lists },
   formId: { label: "", options: formAndListIds.forms },
+  defaultValue: {
+    label: "Valeur par défaut",
+  },
   hint: { label: "Texte d'aide" },
   read: readConf,
   write: writeconf,
@@ -186,7 +189,13 @@ var typeUserAttrs = {
     semantic: semanticConf
   },
   select: selectConf,
-  "checkbox-group": selectConf,
+  "checkbox-group": { ...selectConf, ...{ fillingMode: {
+    label: "Mode de saisie",
+    options: {
+      "": "Normal",
+      tags: "En Tags"
+    }
+  }} },
   "radio-group": selectConf,
   textarea: {
     syntax: {
@@ -368,7 +377,7 @@ var defaultMapping = {
   12: "write",
   14: "semantic"
 };
-var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 6: "name" } };
+var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 5: "defaultValue", 6: "name" } };
 var yesWikiMapping = {
   text: defaultMapping,
   number: defaultMapping,
@@ -396,7 +405,7 @@ var yesWikiMapping = {
     }
   },
   select: lists,
-  "checkbox-group": lists,
+  "checkbox-group": { ...lists, ...{ 7: "fillingMode" } },
   "radio-group": lists,
   textarea: { ...defaultMapping, ...{ 4: "rows", 7: "syntax" } },
   file: { ...defaultMapping, ...{ 3: "maxsize" } },
@@ -462,7 +471,7 @@ function initializeFormbuilder(formAndListIds) {
       "header",
       "collaborative_doc"
     ],
-    controlOrder: ["text", , "date", "image", "champs_mail", "tags"],
+    controlOrder: ["text", "date", "image", "champs_mail", "tags"],
     disabledAttrs: [
       "access",
       "placeholder",
