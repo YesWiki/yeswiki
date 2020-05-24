@@ -150,41 +150,6 @@ class Wiki
         return ((float) $usec + (float) $sec);
     }
 
-    // public function IncludeBuffered($filename, $notfoundText = '', $vars = [], $path = '')
-    // {
-    //     if ($path) {
-    //         $dirs = explode(':', $path);
-    //     } else {
-    //         $dirs = array(
-    //             ''
-    //         );
-    //     }
-
-    //     foreach ($dirs as $dir) {
-    //         if ($dir) {
-    //             $dir .= '/';
-    //         }
-
-    //         $fullfilename = $dir . $filename;
-    //         if (file_exists($fullfilename)) {
-    //             if (is_array($vars) && !empty($vars)) {
-    //                 extract($vars);
-    //             }
-
-    //             ob_start();
-    //             include $fullfilename;
-    //             $output = ob_get_contents();
-    //             ob_end_clean();
-    //             return $output;
-    //         }
-    //     }
-    //     if ($notfoundText) {
-    //         return $notfoundText;
-    //     } else {
-    //         return false;
-    //     }
-    // }
-
     // VARIABLES
     public function GetPageTag()
     {
@@ -1420,6 +1385,7 @@ class Wiki
             );
         }
 
+        $included = array();
         $included['before'] = array();
         $included['new'] = array();
         $included['after'] = array();

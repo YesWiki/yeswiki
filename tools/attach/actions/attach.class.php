@@ -514,21 +514,19 @@ if (!class_exists('attach')) {
                     //modifie $link pour ?tre un lien vers un autre wiki
                     $this->link = $this->wiki->GetInterWikiUrl($matches[1], $matches[2]);
                 }
-                //calcule du lien
-                $output = $this->wiki->Format('[[' . $this->link . " $this->file]]");
-                $output = preg_replace("/\>$this->file\</iU", ">$img<", $output); //insertion du tag <img...> dans le lien
+                $link = '<a href="'.$this->link.'">';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
-                    $output = '<a href="' . $this->GetScriptPath() . $fullFilename . '">' . $img . '</a>';
-                } else {
-                    $output = $img;
+                    $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '">';
                 }
             }
+            $caption = '';
             if (!empty($this->caption)) {
-                $output .= '<figcaption>' . $this->caption . '</figcaption>';
+                $caption .= '<figcaption>' . $this->caption . '</figcaption>';
             }
+            $legend = '';
             if (!empty($this->legend)) {
-                $output .= '<div class="legend">' . $this->legend . '</div>';
+                $legend .= '<div class="legend">' . $this->legend . '</div>';
             }
             $data = '';
             if (is_array($this->data)) {
@@ -536,7 +534,8 @@ if (!class_exists('attach')) {
                     $data .= ' data-'.$key.'="'.$value.'"';
                 }
             }
-            $output = "<figure class=\"$this->classes\" $data>$output</figure>";
+
+            $output = (isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '');
 
             echo $output;
             //$this->showUpdateLink();

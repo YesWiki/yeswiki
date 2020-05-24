@@ -103,4 +103,11 @@
   display: none !important;
 }
 
+.custom-field .required-wrap,
+.custom-field .name-wrap,
+.custom-field .value-wrap,
+.custom-field .label-wrap {
+  display: none !important;
+}
+
 xmp { overflow: auto; }
