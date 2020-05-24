@@ -17,7 +17,7 @@ if (preg_match('/(?=<[^>]+(?=[\s+\"\']markdown[\s+\"\']).+)([^>]+>)/uU', $plugin
     $this->addJavascriptFile('tools/templates/libs/vendor/marked/marked.min.js');
     $this->addJavascript('$(document).ready(function() {
         $(\'.markdown\').each(function() {
-            $(this).html(marked($(this).text()));
+            $(this).html(marked($(this).text(), {breaks: true, gfm: true,}));
         }) 
     });');
 }
