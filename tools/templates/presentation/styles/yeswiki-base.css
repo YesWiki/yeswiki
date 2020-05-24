@@ -76,6 +76,12 @@ span.missingpage,
 /* Divers mise en forme */
 .code {
   margin: 3px 0;
+  display: flex;
+}
+.code pre.hljs {
+  width: 200px; /* fake width overwrittent by flex: 1 auto; but needed for flexbox to work correctly */
+  flex: 1 auto;
+  padding: .5em .5em .3em .5em;
 }
 .revisioninfo {
   color: #aaaaaa;
