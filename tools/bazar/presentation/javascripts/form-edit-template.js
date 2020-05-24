@@ -597,15 +597,6 @@ function ensureFieldsNamesAreUnique() {
     // collect names
     allNames.push($(this).val());
   });
-
-  $(".fld-name:visible").each(function() {
-    // Check names are unique
-    var count = 0,
-      currValue = $(this).val();
-    for (var i = 0; i < allNames.length; ++i)
-      if (allNames[i] == currValue) count++;
-    if (count > 1 && currValue != '') $(this).val(currValue + "_bis");
-  });
 }
 
 // transform a json object like "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
