@@ -74,7 +74,13 @@ var fields = [
     name: 'titre',
     attrs: { type: "titre" },
     icon: "👤"
-  }
+  },
+  {
+    label: "Custom",
+    name: 'custom',
+    attrs: { type: "custom" },
+    icon: "👤"
+  },
 ];
 
 // Some attributes configuration used in multiple fields
@@ -280,6 +286,18 @@ var typeUserAttrs = {
       placeholder:
         "mettre checkbox ici si vos fiches liées le sont via un checkbox"
     }
+  },
+  custom: {
+    param0: { label: "Param0"},
+    param1: { label: "Param1"},
+    param2: { label: "Param2"},
+    param3: { label: "Param3"},
+    param4: { label: "Param4"},
+    param5: { label: "Param5"},
+    param6: { label: "Param6"},
+    param7: { label: "Param7"},
+    param8: { label: "Param8"},
+    param9: { label: "Param9"}
   }
 };
 
@@ -358,6 +376,9 @@ var templates = {
   titre: function(field) {
     return { field: field.value };
   },
+  custom: function(field) {
+    return { field: "" };
+  }
 };
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
@@ -433,7 +454,19 @@ var yesWikiMapping = {
     5: "template",
     6: "type_link"
   },
-  collaborative_doc: defaultMapping
+  collaborative_doc: defaultMapping,
+  custom: {
+    0: "param0",
+    1: "param1",
+    2: "param2",
+    3: "param3",
+    4: "param4",
+    5: "param5",
+    6: "param6",
+    7: "param7",
+    8: "param8",
+    9: "param9",
+  },
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
 var yesWikiTypes = {
@@ -610,7 +643,6 @@ function formatJsonDataIntoWikiText(formData) {
     var formElement = formData[i];
     var mapping = yesWikiMapping[formElement.type];
 
-    var wikiType = formElement.type;
     for (var type in yesWikiTypes)
       if (
         formElement.type == yesWikiTypes[type].type &&
@@ -619,9 +651,7 @@ function formatJsonDataIntoWikiText(formData) {
         (!formElement.subtype2 ||
           formElement.subtype2 == yesWikiTypes[type].subtype2)
       )
-        wikiType = type;
-
-    wikiProps[0] = wikiType;
+        wikiProps[0] = type;
 
     for (var key in mapping) {
       var property = mapping[key];
@@ -656,8 +686,7 @@ function parseWikiTextIntoJsonData(text) {
     var fieldObject = {};
     if (fieldValues.length > 1) {
       var wikiType = fieldValues[0];
-      var fieldType =
-        wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : wikiType;
+      var fieldType = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : 'custom';
       var mapping = yesWikiMapping[fieldType];
 
       fieldObject["type"] = fieldType;
@@ -665,7 +694,8 @@ function parseWikiTextIntoJsonData(text) {
         wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype : "";
       fieldObject["subtype2"] =
         wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype2 : "";
-      for (var j = 1; j < fieldValues.length; j++) {
+      var start = fieldType == 'custom' ? 0 : 1;
+      for (var j = start; j < fieldValues.length; j++) {
         var value = fieldValues[j];
         var field = mapping && j in mapping ? mapping[j] : j;
         if (field == "required") value = value == "1" ? true : false;
