@@ -826,9 +826,9 @@ function getDescriptionFromBody($page, $length = 300)
         return '';
     }
     $desc = '';
-    // si la page est de type fiche_bazar, alors on affiche la fiche plutot que de formater en wiki
+
     $type = $GLOBALS['wiki']->GetTripleValue(
-        $page['tag'],
+        $GLOBALS['wiki']->GetPageTag(),
         'http://outils-reseaux.org/_vocabulary/type',
         '',
         ''
