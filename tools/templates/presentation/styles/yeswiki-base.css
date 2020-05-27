@@ -177,7 +177,7 @@ span.missingpage,
 
 /* lanceur d'accordéon*/
 .accordion-trigger,
-.panel-heading {
+.panel-heading[data-toggle=collapse] {
   cursor: pointer;
 }
 

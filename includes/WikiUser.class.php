@@ -449,7 +449,7 @@ class User
 		// Generate the password recovery key
 		$key = md5($this->name . '_' . $this->email . rand(0, 10000) . date('Y-m-d H:i:s') . PW_SALT);
 		// Store the (name, vocabulary, key) triple in triples table
-		$res = $wiki->InsertTriple($this->name, 'http://outils-reseaux.org/_vocabulary/key', $key);
+		$res = $wiki->InsertTriple($this->name, 'http://outils-reseaux.org/_vocabulary/key', $key, '', '');
 
 		// Generate the recovery email
 		$passwordLink = $wiki->Href() . '&a=recover&email=' . $key . '&u=' . urlencode(base64_encode($this->name));
@@ -466,9 +466,9 @@ class User
 		$subject = _t('LOGIN_PASSWORD_LOST_FOR').' ' . $domain;
 		// Send the email
 		if (!function_exists('send_mail')) {
-		require_once('includes/email.inc.php');
-		}
-		send_mail($wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $this->email, $subject, $message);
+		    require_once('includes/email.inc.php');
+        }
+		return send_mail($wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $this->email, $subject, $message);
 	}
 
 	/* replaces updateUserPassword($userID, $password, $key) from login.functions.php

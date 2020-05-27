@@ -63,20 +63,23 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
 
     $result = "<!-- start of panel -->"
         . "<div class=\"panel $class\" $data>
-      <div class=\"panel-heading " . ($collapsed ? "collapsed" : "") ."\" id=\"$headingID\"";
-
+      <div class=\"panel-heading" . ($collapsed ? " collapsed" : "") . "\"";
     if ($collapsible) {
-        $result .= " role=\"tab button\" data-toggle=\"collapse\"" . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : "")
+        $result .= " id=\"$headingID\"" . " role=\"tab button\" data-toggle=\"collapse\"" . (!empty($accordionID) ? " data-parent=\"#$accordionID\"" : "")
             . " href=\"#$collapseID\" aria-expanded=\"" . ($collapsed ? "false" : "true") . "\" aria-controls=\"$collapseID\"";
     }
-    $result .= ">";
-    $result .= "
+    $result .= ">
           <h4 class=\"panel-title\">
            $title
           </h4>
       </div>
-      <div id=\"$collapseID\" class=\"panel-collapse collapse " . ($collapsed ? "" : "in") . "\" role=\"tabpanel\""
-        . " aria-labelledby=\"$headingID\">
+      
+      <div id=\"$collapseID\"";
+    if ($collapsible) {
+        $result .= " class=\"panel-collapse collapse " . ($collapsed ? "" : "in") . "\" role=\"tabpanel\""
+            . " aria-labelledby=\"$headingID\"";
+    }
+    $result .= ">
         <div class=\"panel-body\">";
 
     echo $result;
