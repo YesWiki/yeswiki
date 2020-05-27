@@ -17,7 +17,7 @@ require_once 'includes/WikiUser.class.php';
 
 $error = false;
 $step = 'emailForm'; // Formulaire par defaut
-$user = new \YesWiki\User($this->wiki->config, $this->queryLog, $this->wiki["CookiePath"]);
+$user = new \YesWiki\User($this->config, $this->queryLog, $this->CookiePath);
 
 if (isset($_POST['subStep']) && !isset($_GET['a'])) { // Sub step
 	switch ($_POST['subStep']) {
