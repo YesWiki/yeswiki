@@ -46,7 +46,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
     if (isset($_POST['type']) and $_POST['type'] == 'mail') {
         $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
-        $message_html = $infomsg.html_entity_decode(_convert($this->Format($this->page["body"], 'wakka', $this->GetPageTag()), YW_CHARSET));
+        $message_html = html_entity_decode(_convert($this->Format($this->page["body"], 'wakka', $this->GetPageTag()), YW_CHARSET));
         $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
     } elseif (isset($_POST['type']) and ($_POST['type'] == 'abonnement' or $_POST['type'] == 'desabonnement')) {
         $message_html = $message_txt = 'Mailinglist : '.$_POST['type'];
@@ -55,9 +55,10 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
           ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false) .
           (($name_sender) ? ' ' . _t('CONTACT_FROM') . ' ' . $name_sender : '');
-        $message = (isset($_POST['message'])) ? $infomsg."\n\n".stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
-        $message_html = trim($message);
+        $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
         $message_txt = trim(strip_tags($message));
+        // euro symbol is not replaced by htmlspecialchar
+        $message_html = trim(nl2br(str_replace('€','&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));
     }
 
     // on verifie si tous les parametres sont bons
@@ -69,6 +70,12 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $subject,
         $message_txt
     );
+
+    // adding the infomsg after checking the size of the message
+    if (!(isset($_POST['type']) and ($_POST['type'] == 'abonnement' or $_POST['type'] == 'desabonnement'))) {
+        $message_txt = strip_tags($infomsg) . '\n\n' . $message_txt;
+        $message_html = $infomsg . $message_html;
+    }
 
     // si pas d'erreur on envoie
     if ($message['class'] == 'success') {
