@@ -45,7 +45,7 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
     }
 
     // Check message (length)
-    if ($type == 'contact' && (!$messagebody || strlen($messagebody) < 10)) {
+    if ($type != 'abonnement' && $type != 'desabonnement' && (!$messagebody || strlen($messagebody) < 10)) {
         $message['message'] .= _t('CONTACT_ENTER_MESSAGE') . '<br />';
     }
 

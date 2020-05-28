@@ -13,19 +13,23 @@ $output = '';
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
 if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
-    // pied de page pour mails envoyés
+    // entête de mail qd le champ $_GET['field'] est spécifié
     $infomsg = '';
 
     //initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
-    if (isset($_GET['field']) and !empty($_GET['field'])) {
+    if (!empty($_GET['field'])) {
         $mail_receiver = '';
         $val = baz_valeurs_fiche($this->GetPageTag());
         if (is_array($val) and isset($val[$_GET['field']])) {
             $mail_receiver = $val[$_GET['field']];
         }
         $form = baz_valeurs_formulaire($val['id_typeannonce']);
-        $infomsg .= '<i>'._t('CONTACT_THIS_MESSAGE').' "<a href="'.$this->href('', $val['id_fiche']).'">'.$val['bf_titre'].'</a>" '._t('CONTACT_FROM_FORM').' "'.$form['bn_label_nature'].'" '._t('CONTACT_FROM_WEBSITE').' "'.$this->config['wakka_name'].'".</i><br><br>';
+        $infomsg .= '<em>'._t('CONTACT_THIS_MESSAGE').' « <a href="'.$this->href('', $val['id_fiche']).'">'
+            . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['bn_label_nature'] . ' » '
+            . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->config['wakka_name'] . ' ». ' .
+            ($mail_sender ? _t('CONTACT_REPLY') . ' <strong>' . $mail_sender . '</strong> '
+                . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
     } else {
         $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
     }
@@ -42,19 +46,20 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
             FindMailFromWikiPage($body, $_POST['nbactionmail']) : false;
     }
     $name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
+    // when a mail is send from a bazar entry (no POST parameter 'type'), the type is ''
+    $type = !empty($_POST['type']) ? $_POST['type'] : '';
 
     // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
-    if (isset($_POST['type']) and $_POST['type'] == 'mail') {
+    if ($type == 'mail') {
         $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
         $message_html = html_entity_decode(_convert($this->Format($this->page["body"], 'wakka', $this->GetPageTag()), YW_CHARSET));
         $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
-    } elseif (isset($_POST['type']) and ($_POST['type'] == 'abonnement' or $_POST['type'] == 'desabonnement')) {
-        $message_html = $message_txt = 'Mailinglist : '.$_POST['type'];
+    } elseif ($type == 'abonnement' or $type == 'desabonnement') {
+        $message_html = $message_txt = 'Mailinglist : ' . $type;
     } else {
         // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
-          ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false) .
-          (($name_sender) ? ' ' . _t('CONTACT_FROM') . ' ' . $name_sender : '');
+          ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
         $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
         $message_txt = trim(strip_tags($message));
         // euro symbol is not replaced by htmlspecialchar
@@ -63,7 +68,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
 
     // on verifie si tous les parametres sont bons
     $message = check_parameters_mail(
-        isset($_POST['type']) ? $_POST['type'] : '',
+        $type,
         $mail_sender,
         $name_sender,
         $mail_receiver,
@@ -72,7 +77,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
     );
 
     // adding the infomsg after checking the size of the message
-    if (!(isset($_POST['type']) and ($_POST['type'] == 'abonnement' or $_POST['type'] == 'desabonnement'))) {
+    if ($type != 'abonnement' && $type != 'desabonnement' && !empty($infomsg)) {
         $message_txt = strip_tags($infomsg) . '\n\n' . $message_txt;
         $message_html = $infomsg . $message_html;
     }
@@ -90,9 +95,9 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
             $listname = $tabmail[0];
             $listdomain = $tabmail[1];
             $mail_receiver = 'sympa@'.$listdomain;
-            if ($_POST['type'] == 'abonnement') {
+            if ($type == 'abonnement') {
                 $subject = 'subscribe '.$listname;
-            } elseif ($_POST['type'] == 'desabonnement') {
+            } elseif ($type == 'desabonnement') {
                 $subject = 'unsubscribe '.$listname;
             }
         }
@@ -102,11 +107,11 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         }
 
         if (send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html)) {
-            if (!isset($_POST['type']) or $_POST['type'] == 'contact' or $_POST['type'] == 'mail') {
+            if (empty($type) || $type == 'contact' || $type == 'mail') {
                 $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');
-            } elseif ($_POST['type'] == 'abonnement') {
+            } elseif ($type == 'abonnement') {
                 $message['message'] = _t('CONTACT_SUBSCRIBE_ORDER_SENT');
-            } elseif ($_POST['type'] == 'desabonnement') {
+            } elseif ($type == 'desabonnement') {
                 $message['message'] = _t('CONTACT_UNSUBSCRIBE_ORDER_SENT');
             }
         } else {

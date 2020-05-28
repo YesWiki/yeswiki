@@ -105,6 +105,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_THIS_MESSAGE' => 'Ce message est envoyé par un visiteur depuis la fiche',
 'CONTACT_FROM_FORM' => 'du formulaire',
 'CONTACT_FROM_WEBSITE' => 'du site',
+'CONTACT_REPLY' => 'Vous pouvez lui écrire un message à',
+'CONTACT_REPLY2' => 'en répondant à ce mail',
 
 
 
