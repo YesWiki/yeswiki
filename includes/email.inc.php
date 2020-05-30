@@ -93,7 +93,8 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         $mail->send();
         return true;
     } catch (Exception $e) {
-        echo $e->errorMessage();
+        if ($GLOBALS['wiki']->UserIsAdmin())
+            echo $e->errorMessage();
         return false;
     }
 }
