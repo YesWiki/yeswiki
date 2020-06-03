@@ -79,7 +79,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_ENTER_MESSAGE' => 'Veuillez entrer un message. Il doit faire au minimum 10 caract&egrave;res.',
 
 'CONTACT_MESSAGE_SUCCESSFULLY_SENT' => 'Votre message a bien &eacute;t&eacute; envoy&eacute;. Merci!',
-'CONTACT_MESSAGE_NOT_SENT' => 'Le message n\'a pas pu &ecirc;tre envoy&eacute;... Probleme du cot&eacute; de la configuration du serveur?',
+'CONTACT_MESSAGE_NOT_SENT' => 'Une erreur s\'est produite lors de l\'envoi du message. Veuillez contacter l\'administrateur du site pour qu\'il puisse régler le problème.',
 'CONTACT_SUBSCRIBE_ORDER_SENT' => 'Votre demande concernant votre abonnement a bien &eacute;t&eacute; prise en compte. Merci!',
 'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'Votre demande concernant votre d&eacute;sabonnement a bien &eacute;t&eacute; prise en compte. Merci!',
 
@@ -105,6 +105,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_THIS_MESSAGE' => 'Ce message est envoyé par un visiteur depuis la fiche',
 'CONTACT_FROM_FORM' => 'du formulaire',
 'CONTACT_FROM_WEBSITE' => 'du site',
+'CONTACT_REPLY' => 'Vous pouvez lui écrire un message à',
+'CONTACT_REPLY2' => 'en répondant à ce mail',
 
 
 
