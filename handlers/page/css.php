@@ -15,4 +15,5 @@ if (!defined("WIKINI_VERSION"))
 }
 
 header('Content-Type: text/css');
-echo $this->page['body'];
+if ($this->HasAccess("read") && $this->page && isset($this->page['body']))
+    echo $this->page['body'];
