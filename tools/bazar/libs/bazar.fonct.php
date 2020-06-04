@@ -2695,7 +2695,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
             $form = array_shift($form);
             $html = $func($dummy, $form, 'html', $fiche);
             preg_match_all(
-                '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
+                '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
                 $html,
                 $matches
             );
@@ -2832,7 +2832,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                             $fichebazar['values']
                         );
                         preg_match_all(
-                            '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
+                            '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
                             $html[$id],
                             $matches
                         );
