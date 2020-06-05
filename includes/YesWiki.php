@@ -24,7 +24,10 @@ require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
-require_once 'includes/yeswiki.api.php';
+require_once 'includes/Api.class.php';
+require_once 'includes/Database.class.php';
+require_once 'includes/Session.class.php';
+require_once 'includes/User.class.php';
 
  /**
   * Main YesWiki class
@@ -47,26 +50,19 @@ require_once 'includes/yeswiki.api.php';
 class Wiki
 {
     public $dblink;
-
     public $page;
-
     public $tag;
-
     public $parameter = array();
-
     public $queryLog = array();
-
     public $interWiki = array();
-
     public $VERSION;
-
     public $CookiePath = '/';
-
     public $inclusions = array();
-
     public $extensions = array();
-
-
+    protected $api;
+    protected $db;
+    protected $session;
+    protected $user;
 
     /**
      * An array containing all the actions that are implemented by an object
@@ -77,14 +73,10 @@ class Wiki
 
     // LinkTrackink
     public $isTrackingLinks = false;
-
     public $linktable = array();
-
     public $pageCache = array();
     public $pageCacheFormatted = array();
-
     public $_groupsCache = array();
-
     public $_actionsAclsCache = array();
 
     /**
@@ -98,6 +90,10 @@ class Wiki
         $this->tag = $init->page;
         $this->method = $init->method;
         $this->dblink = $init->initDb();
+        $this->api = new \YesWiki\Api($this);
+        $this->db = new \YesWiki\Database($this);
+        $this->session = new \YesWiki\Session($this);
+        $this->user = new \YesWiki\User($this);
     }
 
     // DATABASE
