@@ -24,7 +24,7 @@ if ($loggedUser == ""){ // no logged user
 }
 
 require_once 'includes/constants.php';
-require_once 'includes/WikiUser.class.php';
+require_once 'includes/User.class.php';
 global $wiki ;
 $groups = $wiki->GetGroupsList();
 
@@ -49,7 +49,7 @@ if ($isAdmin && (!empty($_POST['userstable_action']))) { // Check if the page re
 		// The form returns a username to delete, therefore
 		// There is a request to delete the user
 		$user = substr($user, 7);
-		$rowUser = new \YesWiki\User($wiki->config, $wiki->queryLog, $wiki->CookiePath);
+		$rowUser = new \YesWiki\User($wiki);
 		$OK= $rowUser->loadByNameFromDB($user);
 		if (!$OK) {
 			die ($rowUser->error);
