@@ -2930,9 +2930,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             // write also a link to the user profile when the parameter ''bazar_user_entry_id' is defined in the config file
             // and an bazar entry corresponding to his username exists
             // TODO once the integration of login-sso is done, replace the $this->LoadPage with the function bazarUserEntryExists
-            if (!empty($GLOBALS['wiki']->config['sso_config']) && isset($GLOBALS['wiki']->config['sso_config']['bazar_user_entry_id']) &&
-                    $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->GetPageOwner($idfiche)))
-               $profilLink = true;
+            $profilLink = (!empty($GLOBALS['wiki']->config['sso_config']) && isset($GLOBALS['wiki']->config['sso_config']['bazar_user_entry_id']) &&
+                    $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->GetPageOwner($idfiche)));
 
             $fichebazar['infos'] .= ', ' . _t('BAZ_ECRITE') . ' ' . ($profilLink ?
                     $GLOBALS['wiki']->Format('[[' . $GLOBALS['wiki']->GetPageOwner($idfiche) . ' ' .
