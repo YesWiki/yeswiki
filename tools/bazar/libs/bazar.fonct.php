@@ -2920,19 +2920,28 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['infos'] .= '</div><!-- /.BAZ_actions_fiche -->'."\n";
 
         // Nom de la PageWiki de la fiche
-        $fichebazar['infos'] .= $GLOBALS['wiki']->Format($idfiche)
-            .' <span class="category">('.$fichebazar['form']['bn_label_nature']
-            .')</span>';
+        $fichebazar['infos'] .= '<span class="BAZ_main_fiche_info">' . $GLOBALS['wiki']->Format('[['. $idfiche . ' ' . $idfiche . ']]')
+            . ' <span class="category">(' . $fichebazar['form']['bn_label_nature']
+            . ')</span>';
 
         $owner = $GLOBALS['wiki']->GetPageOwner($idfiche);
         // Owner (if exist and does not looks like an Ip address)
         if ($owner != '' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
-            $fichebazar['infos'] .= ', '._t('BAZ_ECRITE').' '.$GLOBALS['wiki']->GetPageOwner($idfiche);
+            // write also a link to the user profile when the parameter ''bazar_user_entry_id' is defined in the config file
+            // and an bazar entry corresponding to his username exists
+            // TODO once the integration of login-sso is done, replace the $this->LoadPage with the function bazarUserEntryExists
+            if (!empty($GLOBALS['wiki']->config['sso_config']) && isset($GLOBALS['wiki']->config['sso_config']['bazar_user_entry_id']) &&
+                    $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->GetPageOwner($idfiche)))
+               $profilLink = true;
+
+            $fichebazar['infos'] .= ', ' . _t('BAZ_ECRITE') . ' ' . ($profilLink ?
+                    $GLOBALS['wiki']->Format('[[' . $GLOBALS['wiki']->GetPageOwner($idfiche) . ' ' .
+                        $GLOBALS['wiki']->GetPageOwner($idfiche) . ']]') : $GLOBALS['wiki']->GetPageOwner($idfiche));
         }
 
         // Created at
         $fichebazar['infos'] .=
-            '<br><span class="date_creation">'._t('BAZ_DATE_CREATION').' '
+            '</span><br><span class="date_creation">'._t('BAZ_DATE_CREATION').' '
             .strftime('%d.%m.%Y &agrave; %H:%M', strtotime($fichebazar['values']['date_creation_fiche'])).
             '</span>';
         // Updated At (only if different from created at)
