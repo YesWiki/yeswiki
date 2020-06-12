@@ -46,23 +46,34 @@ class User
     }
 
     /* ~~~~~~~~~~~~~~SETS PROPERTY METHODS ~~~~~~~~~~~~~~~~*/
-    /*	True if the user who actually runs this wiki session is admin
-        false otherwise
-    */
+
+    /**
+     * Tells if the user who actually runs the wiki session is admin
+     *
+     * @param none
+     * 
+     * @return boolean True if the user who actually runs the session is admin, false otherwise.
+     */
     protected function runnerIsAdmin()
     {
         return $this->wiki->UserIsAdmin();
     }
 
-    /* Sets the user table name
-        In some cases, multiple wikis share a unique users table.
-        This unique users table prefix is the specified in config.
-        Therefore we must build $this->userstable using
-            - this unique users table prefix if specified,
-            or
-            - the wiki default table prefix
-    */
-    protected function initUsersTable()
+    /**
+     * Sets the users table name
+     * 
+     * In some cases, multiple wikis share a unique users table.
+     * This unique users table prefix is the one specified in config.
+     * Therefore we must build $this->userstable using
+     * - this unique users table prefix if specified,
+     *   or
+     * - the wiki default table prefix
+     *
+     * @param none
+     *
+     * @return void
+     */ 
+     protected function initUsersTable()
     {
         // Set value of MySQL user table name
         if (!empty($this->wiki->config['user_table_prefix'])) {
@@ -74,7 +85,16 @@ class User
     }
     
     /**
+     * Initializes object limitation properties using values from the config file
+     * 
+     * Initialiezd properties are:
+     * - $this->nameMaxLength (default value = 80)
+     * - $this->emailMaxLength (default value = 254)
+     * - $this->passwordMinimumLength (default value = 5)
+     * 
+     * @param none
      *
+     * @return void
      */
     protected function initLimitations()
     {
@@ -102,7 +122,15 @@ class User
     }
 
     /* ~~~~~~~~~~~~~PROPERTY ACCESS METHODS~~~~~~~~~~~~~~~~~~~ */
-
+    /**
+     * Checks that a given value complies with the requirements for a given property
+     * 
+     * In case of failure $this->error contains the error message
+     *
+     * @param string $propertyName Name of the property to check against.
+     * @param string $newValue Value to check.
+     * @return boolean true if worked all right and false otherwise
+     */
     public function checkProperty($propertyName, $newValue)
     {
         $result = false;
@@ -142,10 +170,16 @@ class User
     }
 
 
-    /*	Returns true if worked all right and false otherwise
-        In case of failure $this->error contains the error message
-    */
-    
+    /**
+     * Sets a given property to a given value
+     * 
+     * In case of failure $this->error contains the error message
+     *
+     * @param string $propertyName Name of the property to set.
+     * @param string $newValue Value to set the property with.
+     * @param string $confValue optional Only used when property name egals 'password'. Confirmation value of the password.
+     * @return boolean true if worked all right and false otherwise
+     */
     public function setProperty($propertyName, $newValue, $confValue = '')
     {
         $this->error ='';
@@ -184,6 +218,12 @@ class User
         return $result;
     }
 
+     /**
+     * Gets the value of a given property
+     * 
+     * @param string $propertyName Name of the property from which the value is retrieved.
+     * @return mixed The property value (string) or false in case of failure.
+     */
     public function getProperty($propertyName)
     {
         if (isset($this->properties[$propertyName])) {
@@ -193,12 +233,15 @@ class User
         }
     }
 
-    /*	Name must be set and its lenght must be less than 254 characters
-         returns
-            true if OK
-            or false if any problems
-        In case of failure $this->error contains the error message
-    */
+    /**
+     * Checks if a value is fit for name property.
+     *
+     * Name must be set and its lenght must be less than nameMaxLength characters
+     * In case of failure $this->error contains the error message
+     * 
+     * @param string $newName
+     * @return boolean True if OK or false if any problems
+     */	
     protected function checkName($newName)
     {
         $this->error = '';
@@ -213,11 +256,14 @@ class User
         return $result;
     }
 
-    /*	returns
-            true if OK
-            or false if any problems
-        In case of failure $this->error contains the error message
-    */
+    /**
+     * Checks if a value is fit for email property.
+     *
+     * In case of failure $this->error contains the error message
+     * 
+     * @param string $newEmail
+     * @return boolean True if OK or false if any problems
+     */	
     protected function checkEmail($newEmail)
     {
         // NOTE: Can we change name ?
@@ -240,20 +286,22 @@ class User
     }
 
 
-    /*	sets user properties using an associative array
-        Requires parametre $newValues => array()
-            ['name'] 				=> string()	Optional
-            ['email']	 			=> string()	Optional
-            ['password']			=> string()	Optional
-            ['motto']				=> string()	Optional
-            ['revisioncount']		=> integer()Optional
-            ['changescount']		=> integer()Optional
-            ['doubleclickedit']	=> string()	Optional
-            ['show_comments']		=> string()	Optional
-         returns
-            if OK 	 => true
-            otherwise => false
-                             $this->error contains the concatenation of the error messages
+    /**	sets user properties using an associative array
+     * 
+     * In case of failure $this->error contains the error message
+     * parameter $newValues = Array(
+     *      ['name'] 			=> string()	Optional
+     *      ['email']	 		=> string()	Optional
+     *      ['password']		=> string()	Optional
+     *      ['motto']			=> string()	Optional
+     *      ['revisioncount']	=> integer()Optional
+     *      ['changescount']	=> integer()Optional
+     *      ['doubleclickedit'] => string()	Optional
+     *      ['show_comments']	=> string()	Optional
+     *      )
+     * 
+     * @param string[] $newValues Associative array containing object property values
+     * @return boolean True if OK or false if any problems
     */
     public function setByAssociativeArray($newValues)
     {
@@ -303,6 +351,23 @@ class User
         return $result;
     }
 
+    /**	gets every user properties and put them into an associative array
+     * 
+     * If parameter $format is set to 'array', then returns an associative array:
+     *  Array(
+     *      ['name'] 			=> string()	Optional
+     *      ['email']	 		=> string()	Optional
+     *      ['password']		=> string()	Optional
+     *      ['motto']			=> string()	Optional
+     *      ['revisioncount']	=> integer()Optional
+     *      ['changescount']	=> integer()Optional
+     *      ['doubleclickedit'] => string()	Optional
+     *      ['show_comments']	=> string()	Optional
+     *      )
+     * 
+     * @param string $format optional describes the type of return (array by default or json)
+     * @return mixed An array or a json depending on parameter value
+    */
     public function getAllProperties($format = 'array')
     {
         if ($format == 'array') {
