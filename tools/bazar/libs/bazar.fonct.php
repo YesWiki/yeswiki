@@ -2920,9 +2920,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['infos'] .= '</div><!-- /.BAZ_actions_fiche -->'."\n";
 
         // Nom de la PageWiki de la fiche
-        $fichebazar['infos'] .= '<span class="BAZ_main_fiche_info">' . $GLOBALS['wiki']->Format('[['. $idfiche . ' ' . $idfiche . ']]')
-            . ' <span class="category">(' . $fichebazar['form']['bn_label_nature']
-            . ')</span>';
+        $fichebazar['infos'] .= '<span class="BAZ_main_fiche_info"><a href="' . $GLOBALS['wiki']->href('', $idfiche) . '">'
+            . $idfiche . '</a> <span class="category">(' . $fichebazar['form']['bn_label_nature'] . ')</span>';
 
         $owner = $GLOBALS['wiki']->GetPageOwner($idfiche);
         // Owner (if exist and does not looks like an Ip address)
