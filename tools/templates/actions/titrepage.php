@@ -3,5 +3,10 @@ if (!defined("WIKINI_VERSION"))
 {
         die ("acc&egrave;s direct interdit");
 }
-echo $this->GetWakkaName()." : ".$this->GetPageTag();
+
+$title = htmlspecialchars(getTitleFromBody($this->page), ENT_COMPAT | ENT_HTML5);
+if ($title)
+    echo $title;
+else
+    echo $this->GetPageTag();
 ?>

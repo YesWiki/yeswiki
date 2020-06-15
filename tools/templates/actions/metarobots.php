@@ -30,7 +30,9 @@ if ($this->GetMethod() != 'show') {
       .$this->config['wakka_name'].'" />'."\n";
     $title = htmlspecialchars(getTitleFromBody($this->page), ENT_COMPAT | ENT_HTML5);
     if ($title) {
-        echo '  <meta property="og:title" content="'.$title.'" />'."\n";
+        echo '  <meta property="og:title" content="' . $title . '" />'."\n";
+    } else {
+        echo '  <meta property="og:title" content="' . $GLOBALS['wiki']->config['wakka_name'] . '" />'."\n";
     }
     $desc = htmlspecialchars(getDescriptionFromBody($this->page), ENT_COMPAT | ENT_HTML5);
     if ($desc) {
