@@ -779,7 +779,6 @@ function getImageFromBody($page, $width, $height)
 
     return $image;
 }
-
 /**
  * Get the first title in page
  *
@@ -809,7 +808,7 @@ function getTitleFromBody($page)
         }
     }
 
-    return empty($title) ? $GLOBALS['wiki']->config['wakka_name'] : strip_tags($title);
+    return empty($title) ? '' : strip_tags($title);
 }
 
 /**
