@@ -85,9 +85,9 @@ var fields = [
 
 // Some attributes configuration used in multiple fields
 var visibilityOptions = {
-  "": "Tout le monde",
-  "+": "Utilisateurs identifiés",
-  "%": "Propriétaire de la fiche et admins",
+  " * ": "Tout le monde",
+  " + ": "Utilisateurs identifiés",
+  " % ": "Propriétaire de la fiche et admins",
   "@admins": "Membre du groupe admin"
 };
 var aclsOptions = {
@@ -209,14 +209,16 @@ var typeUserAttrs = {
       options: {
         wiki: "Wiki",
         html: "Editeur Wysiwyg",
-        nohtml: "Html non interprété"
+        texte: "Html non interprété"
       }
     },
+    hint: { label: "Texte d'aide" },
     size: { label: "Largeur champ de saisie" },
     semantic: semanticConf
   },
   file: {
     maxsize: { label: "Taille max" },
+    hint: { label: "Texte d'aide" },
     semantic: semanticConf
   },
   tags: {
@@ -470,10 +472,10 @@ var yesWikiMapping = {
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
 var yesWikiTypes = {
-  texte: { type: "text", subtype: "text" },
   lien_internet: { type: "text", subtype: "url" },
   mot_de_passe: { type: "text", subtype: "password" },
   // "nombre": { type: "text", subtype: "tel" },
+  texte: { type: "text" }, // all other type text subtype (range, text, tel)
   "textelong": { type: "textarea", subtype: "textarea"},
   "listedatedeb": { type: "date"},
   "listedatefin": { type: "date"},
@@ -485,7 +487,9 @@ var yesWikiTypes = {
   "listefiche": { type: "select", subtype2: "form"},
   "radiofiche": { type: "radio-group", subtype2: "form"},
   "fichier": { type: "file", subtype: "file" },
-  "champs_cache": { type: "hidden" }
+  "champs_cache": { type: "hidden" },
+  "acls": { type: "acls" },
+  "labelhtml": { type: "labelhtml" }
 }
 
 function initializeFormbuilder(formAndListIds) {
@@ -646,12 +650,14 @@ function formatJsonDataIntoWikiText(formData) {
     for (var type in yesWikiTypes)
       if (
         formElement.type == yesWikiTypes[type].type &&
-        (!formElement.subtype ||
+        (!formElement.subtype || !yesWikiTypes[type].subtype ||
           formElement.subtype == yesWikiTypes[type].subtype) &&
         (!formElement.subtype2 ||
           formElement.subtype2 == yesWikiTypes[type].subtype2)
-      )
+      ) {
         wikiProps[0] = type;
+        break;
+      }
 
     for (var key in mapping) {
       var property = mapping[key];
