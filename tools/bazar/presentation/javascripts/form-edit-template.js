@@ -487,9 +487,7 @@ var yesWikiTypes = {
   "listefiche": { type: "select", subtype2: "form"},
   "radiofiche": { type: "radio-group", subtype2: "form"},
   "fichier": { type: "file", subtype: "file" },
-  "champs_cache": { type: "hidden" },
-  "acls": { type: "acls" },
-  "labelhtml": { type: "labelhtml" }
+  "champs_cache": { type: "hidden" }
 }
 
 function initializeFormbuilder(formAndListIds) {
@@ -658,6 +656,8 @@ function formatJsonDataIntoWikiText(formData) {
         wikiProps[0] = type;
         break;
       }
+    // for non mapped fields, we just keep the form type
+    if (!wikiProps[0]) wikiProps[0] = formElement.type;
 
     for (var key in mapping) {
       var property = mapping[key];
