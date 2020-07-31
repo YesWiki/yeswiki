@@ -138,7 +138,7 @@ if ($adminIsActing) {
 <?php
 			if ($userLoggedIn) { // The one who runs the session is acting
 ?>
-				<input class="btn btn-warning" type="button" value="<?php echo _t('USER_DISCONNECT');?>" onclick="document.location='<?php echo $this->href('', '', 'usersettings_action=logout');?>'" />
+				<input class="btn btn-warning" type="button" value="<?php echo _t('USER_DISCONNECT');?>" onclick="document.location='<?php echo $this->href('', '', 'action=logout');?>'" />
 <?php
 			} // End of the one who runs the session is acting
 ?>
@@ -188,89 +188,50 @@ if ($userLoggedIn) { // The one who runs the session is acting
 	echo $this->FormClose();
 } // End of the one who runs the session is acting
 } else { // Neither logged in user nor admin trying to do something
-
-if ($action == 'login') { // user is trying to log in or register
-	if ($this->user->loadByNameFromDB($_POST['name'])) { // if user name already exists, check password
-		if ($this->user->checkPassword($_POST['password'])) { // Password is correct
-			$this->user->logIn($_POST['remember']);
-			$this->Redirect($this->href('', '', 'usersettings_action=checklogged', false));
-		} else { // Password is not correct
-			$error = $this->user->error;
-		}
-	} else { // user does not exist in DB, therefore it's a new user registration
-		if ($this->user->passwordIsIncorrect($_POST['password'], $_POST['confpassword'])) {
-			$error = $this->user->error;
-		} else { // Password is correct
-			if ($this->user->setByAssociativeArray(array(
-				'name'				=> trim($_POST['name']),
-				'email'				=> trim($_POST['email']),
-				'password'			=> $_POST['password'],
-				'revisioncount'	=> 20,
-				'changescount'		=> 0,
-				'doubleclickedit'	=> 'Y',
-				'show_comments'	=> 'N',
-			))) { // User properties set without any problem
-                echo 'toto';exit;
+    if ($action == 'signup') { // user is trying to register
+        if (!$this->user->passwordIsCorrect($_POST['password'], $_POST['confpassword'])) {
+            $error = $this->user->error;
+        } else { // Password is correct
+            if ($this->user->setByAssociativeArray(
+                array(
+                    'name'				=> trim($_POST['name']),
+                    'email'				=> trim($_POST['email']),
+                    'password'			=> md5($_POST['password']),
+                    'revisioncount'	    => 20,
+                    'changescount'		=> 100,
+                    'doubleclickedit'	=> 'Y',
+                    'show_comments'	    => 'N',
+                )
+            )) { // User properties set without any problem
                 if ($this->user->createIntoDB()) { // No problem with user creation in DB
-					$this->user->logIn();
-					$this->Redirect($this->href()); // forward
-				} else { // PB while creating user in DB
-					$error = $this->user->error;
-				}
-			} else { // We had problems with the properties setting
-				$error = $this->user->error;
-			}
-		}
-	} // end of new user registration
-} elseif ($action == 'checklogged') {
-	 $error = _t('USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED').'.';
-} ?>
+                    $this->user->logIn();
+                    $this->Redirect($this->href()); // forward
+                } else { // PB while creating user in DB
+                    $error = $this->user->error;
+                }
+            } else { // We had problems with the properties setting
+                $error = $this->user->error;
+            }
+        } // end of new user registration
+    } elseif ($action == 'checklogged') {
+        $error = _t('USER_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED').'.';
+    }
 
-<!-- FORM SIGN UP -->
-<h2><?php echo _t('USER_SIGN_UP');?></h2>
-<form action="<?php echo $this->href(); ?>" method="post" class="form-horizontal">
-	<input type="hidden" name="usersettings_action" value="login" />
-	<?php if (isset($error)) echo '<div class="alert alert-danger">', $error, "</div>\n"; ?>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_WIKINAME');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" name="name" size="40" value="<?php
-				if ($name = $this->user->getProperty('name')){ // If $user object exists, we can get his or her name
-					echo htmlspecialchars($name, ENT_COMPAT, YW_CHARSET);
-				}?>" />
-		</div>
- 	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" name="email" size="40" value="<?php
-				if ($email = $this->user->getProperty('email')) { // If $user object exists, we can get his or her email
-					 echo htmlspecialchars($email, ENT_COMPAT, YW_CHARSET);
-				}
-				?>" />
-		</div>
-	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" type="password" name="password" size="40" />
-		</div>
-	</div>
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD_CONFIRMATION');?></label>
-		<div class="controls col-sm-9">
-			<input class="form-control" type="password" name="confpassword" size="40" />
-		</div>
-	</div>
-	<div class="control-group form-group">
-		<div class="controls col-sm-9 col-sm-offset-3">
-			<input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('USER_NEW_ACCOUNT');?>" size="40" />
-		</div>
-	</div>
-<?php echo $this->FormClose(); ?>
-
-<hr>
-
-<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
-<?php echo _t('LOGIN_LOGIN'); ?>
-<?php }  // End of neither logged in user nor admin trying to do something ?>
+    $name = htmlspecialchars(!empty($_POST['name']) ? $_POST['name'] : $this->user->getProperty('name'), ENT_COMPAT, YW_CHARSET);
+    $email = htmlspecialchars(!empty($_POST['email']) ? $_POST['email'] : $this->user->getProperty('email'), ENT_COMPAT, YW_CHARSET);
+    include_once 'includes/squelettephp.class.php';
+    try {
+        $squel = new SquelettePhp('user-signup-form.tpl.html', 'login');
+        $output = $squel->render(
+            array(
+                "link" => $this->href(),
+                "error" => !empty($error) ? $error : '',
+                "name" => $name,
+                "email" => $email 
+            )
+        );
+    } catch (Exception $e) {
+        $output = '<div class="alert alert-danger">Erreur action {{usersettings ..}} : '.  $e->getMessage(). '</div>'."\n";
+    }
+    echo $output;
+}  // End of neither logged in user nor admin trying to do something ?>

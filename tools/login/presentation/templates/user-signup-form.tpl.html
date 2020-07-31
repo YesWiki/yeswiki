@@ -1,0 +1,43 @@
+<!-- FORM SIGN UP -->
+<h2><?php echo _t('USER_SIGN_UP'); ?></h2>
+<form action="<?php echo $link; ?>" method="post" class="form-horizontal">
+	<input type="hidden" name="usersettings_action" value="signup" />
+  <?php if (!empty($error)) : ?>
+      <div class="alert alert-danger"><?php echo $error; ?></div>          
+  <?php endif; ?>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><?php echo _t('USER_WIKINAME');?></label>
+		<div class="controls col-sm-9">
+			<input class="form-control" name="name" size="40" value="<?php echo $name; ?>" />
+		</div>
+ 	</div>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
+		<div class="controls col-sm-9">
+			<input class="form-control" name="email" size="40" value="<?php echo $email; ?>" />
+		</div>
+	</div>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD');?></label>
+		<div class="controls col-sm-9">
+			<input class="form-control" type="password" name="password" size="40" />
+		</div>
+	</div>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD_CONFIRMATION');?></label>
+		<div class="controls col-sm-9">
+			<input class="form-control" type="password" name="confpassword" size="40" />
+		</div>
+	</div>
+	<div class="control-group form-group">
+		<div class="controls col-sm-9 col-sm-offset-3">
+			<input class="btn btn-block btn-primary" type="submit" value="<?php echo _t('USER_NEW_ACCOUNT');?>" size="40" />
+		</div>
+	</div>
+</form>
+
+<hr>
+
+<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
+  <?php echo _t('LOGIN_LOGIN'); ?>
+</button>

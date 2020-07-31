@@ -29,24 +29,6 @@ require_once 'includes/Database.class.php';
 require_once 'includes/Session.class.php';
 require_once 'includes/User.class.php';
 
- /**
-  * Main YesWiki class
-  *
-  * @category Wiki
-  * @package  YesWiki
-  * @author   2002, Hendrik Mans <hendrik@mans.de>
-  * @author   2003 Carlo Zottmann <secret@mail.com>
-  * @author   2002, 2003, 2005 David DELON <secret@mail.com>
-  * @author   2002, 2003, 2004, 2006 Charles NEPOTE <secret@mail.com>
-  * @author   2002, 2003 Patrick PAUL <secret@mail.com>
-  * @author   2003 Eric DELORD <secret@mail.com>
-  * @author   2003 Eric FELDSTEIN <secret@mail.com>
-  * @author   2004-2006 Jean-Christophe ANDRE <secret@mail.com>
-  * @author   2005-2006 Didier LOISEAU <secret@mail.com>
-  * @author   2009-2018 Florian Schmitt <mrflos@lilo.org>
-  * @license  GNU/GPL version 3
-  * @link     https://yeswiki.net
-  */
 class Wiki
 {
     public $dblink;
@@ -59,10 +41,10 @@ class Wiki
     public $CookiePath = '/';
     public $inclusions = array();
     public $extensions = array();
-    protected $api;
-    protected $db;
-    protected $session;
-    protected $user;
+    public $api;
+    public $db;
+    public $session;
+    public $user;
 
     /**
      * An array containing all the actions that are implemented by an object
