@@ -27,9 +27,6 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-require_once 'includes/User.class.php';
-$user = new \YesWiki\User($this);
-
 // Lecture des parametres de l'action
 
 // NOTE: à mettre dans la classe ?
@@ -142,10 +139,10 @@ if ($_REQUEST["action"] == "login") {
             $_POST["email"] = $_POST["name"];
         }
 
-        if (isset($_POST["email"]) && $_POST["email"] != '' && $user->loadByEmailFromDB($_POST["email"])) {
+        if (isset($_POST["email"]) && $_POST["email"] != '' && $this->user->loadByEmailFromDB($_POST["email"])) {
             // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-            if ($user->checkPassword($_POST['password'])) {
-                $this->SetUser($user->getAllInAssociativeArray(), $_POST["remember"]);
+            if ($this->user->checkPassword($_POST['password'])) {
+                $this->SetUser($this->user->getAllProperties(), $_POST["remember"]);
 
                 // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
                 if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {

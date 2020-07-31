@@ -397,6 +397,8 @@ $GLOBALS['translations'] = array(
 'USER_PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
 'USER_NEW_ACCOUNT' => 'Nouveau compte',
 'USER_PASSWORD' => 'Mot de passe',
+'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
+'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
 
 // YesWiki\Database class
 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',

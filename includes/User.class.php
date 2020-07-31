@@ -112,16 +112,9 @@ class User
     }
     /* ~~~~~~~~~~~~~~~~~~ END OF SETS PROPERTY METHODS ~~~~~~~~~~~~~~~~~~~~~ */
 
-    /* ~~~~~~~~~~~~~~~~~~~~~~ PROPERTY ACCESS METHODS ~~~~~~~~~~~~~~~~~~~~~~ */
-    /** Checks that a given value complies with the requirements for a given property
-     * 
-     * In case of failure $this->error contains the error message
-     *
-     * @param string $propertyName Name of the property to check against.
-     * @param string $newValue Value to check.
-     * @return boolean true if worked all right and false otherwise
-     */
-    public function checkProperty($propertyName, $newValue)
+    /* ~~~~~~~~~~~~~PROPERTY ACCESS METHODS~~~~~~~~~~~~~~~~~~~ */
+
+    public function checkProperty($propertyName, $newValue, $confValue = '')
     {
         $result = false;
         $newValue = trim($newValue);
@@ -133,7 +126,7 @@ class User
                 $result = $this->checkEmail($newValue);
                 break;
             case 'password':
-                $result = $this->checkPassword($newValue);
+                $result = $this->checkPassword($newValue, $confValue);
                 break;
             case 'revisioncount':
             case 'changescount':
@@ -147,7 +140,7 @@ class User
             case 'show_comments':
             case 'doubleclickedit':
                 $value = strtolower($newValue);
-                if (in_array($value, ['o', 'oui', 'y', 'yes', 'n', 'non', 'no', '0', '1'])) {
+                if (!in_array($value, ['o', 'oui', 'y', 'yes', 'n', 'non', 'no', '0', '1'])) {
                     $this->error = _t('USER_YOU_MUST_SPECIFY_YES_OR_NO').' '.$propertyName.'.';
                 } else {
                     $result = true;
@@ -173,13 +166,13 @@ class User
     {
         $this->error ='';
         $newValue = trim($newValue);
-        if ($this->checkProperty($propertyName, $newValue)) {
+        if ($this->checkProperty($propertyName, $newValue, $confValue)) {
             switch ($propertyName) {
                 case 'password':
                     if (!empty($confValue)) {
-                        $OK = !$this->passwordIsIncorrect($newValue, $confValue);
+                        $OK = $this->passwordIsCorrect($newValue, $confValue);
                     } else {
-                        $OK = !$this->passwordIsIncorrect($newValue);
+                        $OK = $this->passwordIsCorrect($newValue);
                     } // $result is true if password IS correct and $this->error contains error if any
                     if ($OK) { // password is correct
                         $newValue = MD5($newValue);
@@ -190,7 +183,7 @@ class User
                     $newValue = intval($newValue);
                     break;
                 case 'show_comments':
-                case 'doubleclickedit':
+                case 'doubleclickedit':                     
                     $value = strtolower($newValue);
                     if (in_array($value, ['o', 'oui', 'y', 'yes', '1'])) {
                         $newValue = 'Y';
@@ -199,7 +192,7 @@ class User
                     }
                     break;
             }
-            $this->$propertyName = $newValue;
+            $this->properties[$propertyName] = $newValue;
             $result = true;
         } else {
             $result = false;
@@ -292,24 +285,24 @@ class User
     public function setByAssociativeArray($newValues)
     {
         $this->error = '';
-        $error = '';
+        $error = [];
         $result = true;
         if (isset($newValues['name']) && (trim($newValues['name']) != '')) {
             if (!$this->setProperty('name', $newValues['name'])) {
                 $result = false;
-                $error .= $this->error;
+                $error[] = $this->error;
             }
         }
         if (isset($newValues['email']) && (trim($newValues['email']) != '')) {
             if (!$this->setProperty('email', $newValues['email'])) {
                 $result = false;
-                $error .= '\n'.$this->error;
+                $error[] = $this->error;
             }
         }
         if (isset($newValues['password']) && (trim($newValues['password']) != '')) {
-            if (!$this->setProperty('password', $newValues['password'])) {
+            if (!$this->setProperty('password', $newValues['password'], isset($_POST['confpassword']) ? '1' : '')) {
                 $result = false;
-                $error .= '\n'.$this->error;
+                $error[]= $this->error;
             }
         }
         if (isset($newValues['motto']) && trim($newValues['motto']) != '') {
@@ -318,13 +311,13 @@ class User
         if (isset($newValues['revisioncount']) && (trim($newValues['revisioncount']) != '')) {
             if (!$this->setProperty('revisioncount', $newValues['revisioncount'])) {
                 $result = false;
-                $error .= '\n'.$this->error;
+                $error[] = $this->error;
             }
         }
         if (isset($newValues['changescount']) && (trim($newValues['changescount']) != '')) {
             if (!$this->setProperty('changescount', $newValues['changescount'])) {
                 $result = false;
-                $error .= '\n'.$this->error;
+                $error[] = $this->error;
             }
         }
         if (isset($newValues['doubleclickedit']) && (trim($newValues['doubleclickedit']) != '')) {
@@ -333,7 +326,10 @@ class User
         if (isset($newValues['show_comments']) && (trim($newValues['show_comments']) != '')) {
             $this->setProperty('show_comments', $newValues['show_comments']);
         }
-        $this->error = $error;
+        if (count($error) > 0) {
+            $this->error = '<strong>'._t('USER_ERRORS_FOUND').'</strong> :'."\n"
+              .'<ul><li>'.implode('</li><li>', $error).'</li></ul>'."\n";
+        }
         return $result;
     }
 
@@ -371,15 +367,14 @@ class User
      * @param string $pwd The password to check
      * @return boolean True if OK or false if any problems
      */
-    public function checkPassword($pwd)
+    public function checkPassword($pwd, $newUser = '')
     {
-        if ($this->properties['password'] != md5($pwd)) {
+        if (empty($newUser) && $this->properties['password'] != md5($pwd)) {
             $this->error = _t('USER_WRONG_PASSWORD').' !';
-            $result = false;
+            return false;
         } else {
-            $result = true;
+            return true;
         }
-        return $result;
     }
 
     /**	Checks if the given password complies with the rules 
@@ -398,21 +393,21 @@ class User
      *           $this->error contains the error message
      *       False
      *           if the password looks good
-    */
-    public function passwordIsIncorrect($pwd, $confPassword = '')
+     */
+    public function passwordIsCorrect($pwd, $confPassword = '')
     {
-        $incorrect = false;
+        $correct = true;
         if (isset($confPassword) && (trim($confPassword) !='')) {
             if ($confPassword != $pwd) {
                 $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL').'.';
-                $incorrect = true;
+                $correct = false;
             }
         }
         if (strlen($pwd) < $this->passwordMinimumLength) {
             $this->error = _t('USER_PASSWORD_TOO_SHORT').'. '._t('USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS').' ' .$this->passwordMinimumLength.'.';
-            $incorrect = true;
+            $correct = false;
         }
-        return $incorrect;
+        return $correct;
     }
 
     /* Password recovery process (AKA reset password)
@@ -488,7 +483,7 @@ class User
                 $OK = $this->updatePassword($password);
             }
             if ($OK) {// Was able to update password => Remove the key from triples table
-                $res = $this->wiki->DeleteTriple($userID, $this->keyVocabulary, $key, '', '');
+                $res = $this->wiki->DeleteTriple($user, 'http://outils-reseaux.org/_vocabulary/key', $key, '', '');
             }
         }
         return $OK;
@@ -508,7 +503,7 @@ class User
     public function checkEmailKey($hash, $user)
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        $res = $this->wiki->GetTripleValue(base64_decode($user), $this->keyVocabulary, '', '');
+        $res = $this->wiki->GetTripleValue($user, 'http://outils-reseaux.org/_vocabulary/key', '', '');
         if ($res == $hash) {
             $result = true;
         } else {
@@ -531,9 +526,9 @@ class User
     {
         $this->error = '';
         if (isset($confPassword) && ($confPassword != '')) {
-            $OK = !$this->passwordIsIncorrect($password, $confPassword);
+            $OK = $this->passwordIsCorrect($password, $confPassword);
         } else {
-            $OK = !$this->passwordIsIncorrect($password);
+            $OK = $this->passwordIsCorrect($password);
         } // $result is true if password IS correct and $this->error contains error if any
         if ($OK) { // password is correct
             // Update user's password
@@ -646,7 +641,7 @@ class User
     {
         $this->error = '';
         $result = false;
-        $sql = 'insert into '.$this->usersTable.' set '.
+        $sql = 'INSERT INTO `'.$this->usersTable.'` SET '.
             'signuptime = now(), '.
             'name = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['name']).'", '.
             'email = "'.mysqli_real_escape_string($this->wiki->dblink, $this->properties['email']).'", '.
