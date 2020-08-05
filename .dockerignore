@@ -1,0 +1,5 @@
+docker-compose.yml
+
+./files/*.*
+./cache/*.*
+./vendor/*
