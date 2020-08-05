@@ -4,5 +4,8 @@ FROM lavoweb/php-7.3
 RUN docker-php-ext-install mysqli
 
 # Add Chromium browser to enable pdf creation
-RUN rm -rf /var/cache/apk/* && rm -rf /tmp/* && \
-    apt install -y --no-install-recommends chromium
+RUN apt-get update \
+    && apt install -y --no-install-recommends chromium \
+    && rm -rf /var/cache/apk/* \
+    && rm -rf /tmp/*
+    
