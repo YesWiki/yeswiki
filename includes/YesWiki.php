@@ -24,49 +24,27 @@ require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
-require_once 'includes/yeswiki.api.php';
+require_once 'includes/Api.class.php';
+require_once 'includes/Database.class.php';
+require_once 'includes/Session.class.php';
+require_once 'includes/User.class.php';
 
- /**
-  * Main YesWiki class
-  *
-  * @category Wiki
-  * @package  YesWiki
-  * @author   2002, Hendrik Mans <hendrik@mans.de>
-  * @author   2003 Carlo Zottmann <secret@mail.com>
-  * @author   2002, 2003, 2005 David DELON <secret@mail.com>
-  * @author   2002, 2003, 2004, 2006 Charles NEPOTE <secret@mail.com>
-  * @author   2002, 2003 Patrick PAUL <secret@mail.com>
-  * @author   2003 Eric DELORD <secret@mail.com>
-  * @author   2003 Eric FELDSTEIN <secret@mail.com>
-  * @author   2004-2006 Jean-Christophe ANDRE <secret@mail.com>
-  * @author   2005-2006 Didier LOISEAU <secret@mail.com>
-  * @author   2009-2018 Florian Schmitt <mrflos@lilo.org>
-  * @license  GNU/GPL version 3
-  * @link     https://yeswiki.net
-  */
 class Wiki
 {
     public $dblink;
-
     public $page;
-
     public $tag;
-
     public $parameter = array();
-
     public $queryLog = array();
-
     public $interWiki = array();
-
     public $VERSION;
-
     public $CookiePath = '/';
-
     public $inclusions = array();
-
     public $extensions = array();
-
-
+    public $api;
+    public $db;
+    public $session;
+    public $user;
 
     /**
      * An array containing all the actions that are implemented by an object
@@ -77,14 +55,10 @@ class Wiki
 
     // LinkTrackink
     public $isTrackingLinks = false;
-
     public $linktable = array();
-
     public $pageCache = array();
     public $pageCacheFormatted = array();
-
     public $_groupsCache = array();
-
     public $_actionsAclsCache = array();
 
     /**
@@ -98,6 +72,10 @@ class Wiki
         $this->tag = $init->page;
         $this->method = $init->method;
         $this->dblink = $init->initDb();
+        $this->api = new \YesWiki\Api($this);
+        $this->db = new \YesWiki\Database($this);
+        $this->session = new \YesWiki\Session($this);
+        $this->user = new \YesWiki\User($this);
     }
 
     // DATABASE

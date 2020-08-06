@@ -1044,11 +1044,19 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
                 [\'insert\', [\'hr\', \'link\', \'table\', \'picture\', \'video\']],
-                [\'misc\', [\'fullscreen\', \'codeview\']]
+                //[\'misc\', [\'fullscreen\', \'codeview\']]
             ],
-            styleTags: [\'h1\', \'h2\', \'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
+            isNotSplitEdgePoint : true,
+            styleTags: [\'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
             oninit: function() {
               //$(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
+            },
+            callbacks: {
+                onPaste: function (e) {
+                    var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData(\'Text\');
+                    e.preventDefault();
+                    document.execCommand(\'insertText\', false, bufferText);
+                }
             }
           });
         });';

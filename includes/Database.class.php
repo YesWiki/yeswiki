@@ -4,8 +4,7 @@ class Database
 {
 	// Properties
 	protected $link;
-	protected $debug = False;
-	protected $queryLog = array();
+	protected $wiki;
 	protected $missingArg = ''; // If empty False, otherwise True and contains the name of the class missing attributes
 	public $error = '';
 
@@ -21,18 +20,11 @@ class Database
 		Sets :
 			$cookiePath
 	*/
-	public function __construct($config = null, &$queryLog = null)
+	public function __construct($wiki)
 	{
-		if ($config == null) {
-			$this->missingArg = 'Wiki_config';
-		} else {
-			$this->setSQLConnection($config);
-		}
-		if ($queryLog == null) {
-			$this->missingArg .= 'Wiki_queryLog';
-		} else {
-			$this->setQueryLog($queryLog);
-		}
+        $this->wiki = $wiki;
+		$this->setSQLConnection($wiki->config);
+		$this->setQueryLog($wiki->queryLog);
 	}
 
 	public function setSQLConnection($config)

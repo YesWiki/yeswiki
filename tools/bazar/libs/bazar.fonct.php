@@ -2201,7 +2201,7 @@ function baz_gestion_formulaire()
                     // si un formulaire existant porte le meme id on enregistre un nouvel id
                     $searchformid = multiArraySearch($forms, 'bn_id_nature', $id);
                     if (count($searchformid) > 0) {
-                        $id = baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']);
+                        $id = baz_nextId();
                     }
                     $requete =
                     'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix'].
@@ -2588,20 +2588,32 @@ function baz_forms_and_lists_ids()
 }
 
 
-/** baz_nextId () Renvoie le prochain identifiant numerique libre d'une table
- *   @param  string  Nom de la table
- *   @param  string  Nom du champs identifiant
- *   @param  mixed   Objet DB de PEAR pour la connexion a la base de donnees
- *
- *   return  integer Le prochain numero d'identifiant disponible
+/**
+ *  Renvoie le prochain ID libre de la table nature.
+ *  Si aucun formulaire, l'ID 1 est assigné.
+ *  Les ID de 1000 à 10000 sont réservés pour les fonctionnalités des extensions. Ainsi si l'id 999 est déjà pris,
+ *  on rend ensuite comme premier id disponible 10001.
+ *  @return integer   Le prochain ID libre
  */
-function baz_nextId($table, $colonne_identifiant, $bdd)
+function baz_nextId()
 {
-    $requete = 'SELECT MAX('.$colonne_identifiant.') AS maxi FROM '.
-    $table;
+    $requete = 'SELECT MAX(bn_id_nature) AS maxi FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature'
+        . ' where bn_id_nature < 1000';
     $ligne = $GLOBALS['wiki']->LoadSingle($requete);
 
-    return $ligne['maxi'] + 1;
+    if (!$ligne['maxi'])
+        return 1;
+    if ($ligne['maxi'] < 999)
+        return $ligne['maxi'] + 1;
+
+    $requete = 'SELECT MAX(bn_id_nature) AS maxi FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature'
+        . ' where bn_id_nature > 10000';
+    $ligne = $GLOBALS['wiki']->LoadSingle($requete);
+
+    if (!$ligne['maxi'])
+        return 10001;
+    else
+        return $ligne['maxi'] + 1;
 }
 
 function getHtmlDataAttributes($fiche, $formtab = '')
@@ -2683,7 +2695,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
             $form = array_shift($form);
             $html = $func($dummy, $form, 'html', $fiche);
             preg_match_all(
-                '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
+                '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
                 $html,
                 $matches
             );
@@ -2768,8 +2780,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     $GLOBALS['wiki']->tag = $idfiche;
 
     // debut de la fiche
-    $res .= '<div class="BAZ_cadre_fiche id'.
-    $fichebazar['form']['bn_id_nature'].'">'."\n";
+    $res .= '<div class="BAZ_cadre_fiche id' . $fichebazar['form']['bn_id_nature'].'">'."\n";
 
     $custom_template = baz_get_custom_template($fichebazar['values'], $fichebazar['form']);
 
@@ -2821,7 +2832,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                             $fichebazar['values']
                         );
                         preg_match_all(
-                            '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/Uim',
+                            '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
                             $html[$id],
                             $matches
                         );
@@ -2909,19 +2920,26 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['infos'] .= '</div><!-- /.BAZ_actions_fiche -->'."\n";
 
         // Nom de la PageWiki de la fiche
-        $fichebazar['infos'] .= $GLOBALS['wiki']->Format($idfiche)
-            .' <span class="category">('.$fichebazar['form']['bn_label_nature']
-            .')</span>';
+        $fichebazar['infos'] .= '<span class="BAZ_main_fiche_info"><a href="' . $GLOBALS['wiki']->href('', $idfiche) . '">'
+            . $idfiche . '</a> <span class="category">(' . $fichebazar['form']['bn_label_nature'] . ')</span>';
 
         $owner = $GLOBALS['wiki']->GetPageOwner($idfiche);
         // Owner (if exist and does not looks like an Ip address)
         if ($owner != '' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
-            $fichebazar['infos'] .= ', '._t('BAZ_ECRITE').' '.$GLOBALS['wiki']->GetPageOwner($idfiche);
+            // write also a link to the user profile when the parameter ''bazar_user_entry_id' is defined in the config file
+            // and an bazar entry corresponding to his username exists
+            // TODO once the integration of login-sso is done, replace the $this->LoadPage with the function bazarUserEntryExists
+            $profilLink = (!empty($GLOBALS['wiki']->config['sso_config']) && isset($GLOBALS['wiki']->config['sso_config']['bazar_user_entry_id']) &&
+                    $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->GetPageOwner($idfiche)));
+
+            $fichebazar['infos'] .= ', ' . _t('BAZ_ECRITE') . ' ' . ($profilLink ?
+                    $GLOBALS['wiki']->Format('[[' . $GLOBALS['wiki']->GetPageOwner($idfiche) . ' ' .
+                        $GLOBALS['wiki']->GetPageOwner($idfiche) . ']]') : $GLOBALS['wiki']->GetPageOwner($idfiche));
         }
 
         // Created at
         $fichebazar['infos'] .=
-            '<br><span class="date_creation">'._t('BAZ_DATE_CREATION').' '
+            '</span><br><span class="date_creation">'._t('BAZ_DATE_CREATION').' '
             .strftime('%d.%m.%Y &agrave; %H:%M', strtotime($fichebazar['values']['date_creation_fiche'])).
             '</span>';
         // Updated At (only if different from created at)
@@ -4779,7 +4797,8 @@ function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, 
 function baz_get_custom_template($fiche, $form)
 {
     $custom_templates = [
-        'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html'
+        'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
+        'custom/themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
     ];
 
     // Recherche une template sémantique pour ce type d'objet
