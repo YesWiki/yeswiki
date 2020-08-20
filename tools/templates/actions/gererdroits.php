@@ -109,24 +109,26 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 <tbody>
 
 <?php
-  function display_droit($text)
-  {
-      $values = explode("\n", $text);
-      $values = array_map(function ($el) {
-          switch ($el) {
-        case '*': return '<span class="label label-success">'._t('ACLS_EVERYBODY').'</span>';
-        case '+': return '<span class="label label-warning">'._t('ACLS_AUTHENTIFICATED_USERS').'</span>';
-        case '%': return '<span class="label label-danger">'._t('ACLS_OWNER').'</span>';
-      }
-          switch ($el[0]) {
-        case '@': return "<span class='label label-primary'>$el</span>";
-        case '!': return "<span class='label label-danger'>$el</span>";
-      }
-          return "<span class='label label-default'>$el</span>";
-      }, $values);
-      $result = implode('<br>', $values);
-      return nl2br($result);
-  }
+if (!function_exists('display_droit')) {
+    function display_droit($text)
+    {
+        $values = explode("\n", $text);
+        $values = array_map(function ($el) {
+            switch ($el) {
+                case '*': return '<span class="label label-success">'._t('ACLS_EVERYBODY').'</span>';
+                case '+': return '<span class="label label-warning">'._t('ACLS_AUTHENTIFICATED_USERS').'</span>';
+                case '%': return '<span class="label label-danger">'._t('ACLS_OWNER').'</span>';
+            }
+            switch ($el[0]) {
+                case '@': return "<span class='label label-primary'>$el</span>";
+                case '!': return "<span class='label label-danger'>$el</span>";
+            }
+            return "<span class='label label-default'>$el</span>";
+        }, $values);
+        $result = implode('<br>', $values);
+        return nl2br($result);
+    }
+}
 ?>
 <?php for ($x = 0; $x < $num_page; ++$x) : ?>
     <tr>

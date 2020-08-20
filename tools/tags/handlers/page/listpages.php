@@ -47,7 +47,7 @@ $selectiontags = ' AND value IN ("'.implode(",",$tab_selected_tags).'")';
 // on recupere tous les tags existants
 $sql = 'SELECT DISTINCT value FROM '.$this->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ORDER BY value ASC';
 $tab_tous_les_tags = $this->LoadAll($sql);
-
+$tab_tag = array();
 if (is_array($tab_tous_les_tags)) {	
 	foreach ($tab_tous_les_tags as $tag) {
 		$tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
@@ -59,7 +59,7 @@ if (is_array($tab_tous_les_tags)) {
 		}
 	}
 	$outputselecttag = '';
-	if (is_array($tab_tag))	{
+	if (!empty($tab_tag))	{
 		$outputselecttag .= '<strong><i class="icon icon-tags"></i> '._t('TAGS_FILTER').' : </strong>';
 		foreach ($tab_tag as $tag) {
 			$outputselecttag .= $tag;
