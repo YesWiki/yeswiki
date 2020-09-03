@@ -2142,22 +2142,36 @@ class Wiki
         }
 
         if ($tag == 'api') {
-            $func = $this->method;
-            if (function_exists($func)) {
-                echo $func($GLOBALS['api_args']);
-            } else {
-                echo $this->Header();
-                echo documentationYesWiki();
-                $extensions = array_keys($this->extensions);
-                foreach ($extensions as $extension) {
-                    $func = 'documentation'.ucfirst(strtolower($extension));
-                    if (function_exists($func)) {
-                        echo $func();
+            $apiKey = $this->api->getBearerToken();
+            // test if key exists in order to authorize access
+            if (empty($this->config['api_allowed_keys'])) {
+                http_response_code(403);
+                header("Access-Control-Allow-Origin: * ");
+                header("Content-Type: application/json; charset=UTF-8");
+                echo json_encode(array("message" => "No api keys found, api is unavailable for this yeswiki."));
+            } elseif(!empty($this->config['api_allowed_keys']['public']) || in_array($apiKey, $this->config['api_allowed_keys']) ) {
+                $func = $this->method;
+                if (function_exists($func)) {
+                    echo $func($GLOBALS['api_args']);
+                } else {
+                    echo $this->Header();
+                    echo $this->api->documentationYesWiki();
+                    $extensions = array_keys($this->extensions);
+                    foreach ($extensions as $extension) {
+                        $func = 'documentation'.ucfirst(strtolower($extension));
+                        if (function_exists($func)) {
+                            echo $func();
+                        }
                     }
+                    echo $this->Footer();
                 }
-                echo $this->Footer();
+            } else {
+                http_response_code(401);
+                header("Access-Control-Allow-Origin: * ");
+                header("Content-Type: application/json; charset=UTF-8");
+                echo json_encode(array("message" => "You are not allowed to use this api, check your api key."));
             }
-            //cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
+            //TODO : add jwt token auth cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
             exit();
         }
 
