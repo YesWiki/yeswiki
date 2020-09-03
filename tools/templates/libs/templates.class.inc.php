@@ -21,8 +21,8 @@ class Templates extends \YesWiki\Wiki
     public function generateCacheId($tool, $file, $lastModified, $semantic_template = null)
     {
         $filename = basename($file);
-        // On cherche si le theme existe dans theme custom
-        $templatefile = 'custom/themes/tools/' . $tool . '/templates/' . $filename;
+        // On cherche si le template existe dans theme custom
+        $templatefile = 'custom/templates/' . $tool . '/templates/' . $filename;
         if (!is_file($templatefile)) {
             // On cherche si le theme existe dans le theme custom de l'outil
             $templatefile = 'custom/themes/tools/' . $tool . '/templates/' . $filename;
@@ -30,8 +30,8 @@ class Templates extends \YesWiki\Wiki
                 // On cherche si le theme existe dans le theme courant
                 $templatefile = 'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename;
                 if (!is_file($templatefile)) {
-                    // On cherche si le theme existe dans themes/tools
-                    $templatefile = 'themes/tools/' . $tool . '/templates/' . $filename;
+                    // On cherche si le templates existe dans themes/tools
+                    $templatefile = 'templates/' . $tool . '/templates/' . $filename;
                     if (!is_file($templatefile)) {
                         // On cherche dans les templates du tools
                         $templatefile = 'tools/' . $tool . '/presentation/templates/' . $filename;

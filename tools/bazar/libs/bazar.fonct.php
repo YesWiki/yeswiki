@@ -2783,7 +2783,6 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     $res .= '<div class="BAZ_cadre_fiche id' . $fichebazar['form']['bn_id_nature'].'">'."\n";
 
     $custom_template = baz_get_custom_template($fichebazar['values'], $fichebazar['form']);
-
     // si un template specifique pour un type de fiche existe
     if ($custom_template) {
         // on genere un nom unique pour le cache
@@ -4797,8 +4796,10 @@ function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, 
 function baz_get_custom_template($fiche, $form)
 {
     $custom_templates = [
-        'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
+        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
         'custom/themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
+        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
+        'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
     ];
 
     // Recherche une template sémantique pour ce type d'objet
