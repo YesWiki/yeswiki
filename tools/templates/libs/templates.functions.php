@@ -747,7 +747,7 @@ function getImageFromBody($page, $width, $height)
             $imagefile = utf8_decode(
                 preg_replace_callback(
                     '/\\\\u([a-f0-9]{4})/',
-                    'encodingFromUTF8',
+                    'utf8_encode',
                     $image[1][0]
                 )
             );
