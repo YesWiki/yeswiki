@@ -223,14 +223,14 @@ class Wiki
             $res_op = '=';
         }
 
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource ' . $res_op . ' "' . addslashes($resource) . '"';
+        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource ' . $res_op . ' "' . mysqli_real_escape_string($this->dblink, $resource) . '"';
         if ($property !== null) {
             $prop_op = strtoupper($prop_op);
             if (! in_array($prop_op, $operators)) {
                 $prop_op = '=';
             }
 
-            $sql .= ' AND property ' . $prop_op . ' "' . addslashes($property) . '"';
+            $sql .= ' AND property ' . $prop_op . ' "' . mysqli_real_escape_string($this->dblink, $property) . '"';
         }
         return $this->LoadAll($sql);
     }
@@ -268,7 +268,7 @@ class Wiki
         }
         //error_log(__METHOD__.' cache miss ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
         $this->triplesCacheByResource[$res] = array();
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . addslashes($res) . '"' ;
+        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $res) . '"' ;
         foreach ($this->LoadAll($sql) as $triple) {
             if (! isset($this->triplesCacheByResource[$res][ $triple['property'] ])) {
                 $this->triplesCacheByResource[$res][ $triple['property'] ] = array();
@@ -323,7 +323,7 @@ class Wiki
      */
     public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-        $sql = 'SELECT id FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . addslashes($re_prefix . $resource) . '" ' . 'AND property = "' . addslashes($prop_prefix . $property) . '" ' . 'AND value = "' . addslashes($value) . '"';
+        $sql = 'SELECT id FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $re_prefix . $resource) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '" ' . 'AND value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
         $res = $this->LoadSingle($sql);
         if (! $res) {
             return 0;
@@ -360,7 +360,7 @@ class Wiki
             unset($this->triplesCacheByResource[$res]);
         }
 
-        $sql = 'INSERT INTO ' . $this->GetConfigValue('table_prefix') . 'triples (resource, property, value)' . 'VALUES ("' . addslashes($res) . '", "' . addslashes($prop_prefix . $property) . '", "' . addslashes($value) . '")';
+        $sql = 'INSERT INTO ' . $this->GetConfigValue('table_prefix') . 'triples (resource, property, value)' . 'VALUES ("' . mysqli_real_escape_string($this->dblink, $res) . '", "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '", "' . mysqli_real_escape_string($this->dblink, $value) . '")';
         return $this->Query($sql) ? 0 : 1;
     }
 
@@ -401,7 +401,7 @@ class Wiki
             unset($this->triplesCacheByResource[$res]);
         }
 
-        $sql = 'UPDATE ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'SET value = "' . addslashes($newvalue) . '" ' . 'WHERE id = ' . $id;
+        $sql = 'UPDATE ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'SET value = "' . mysqli_real_escape_string($this->dblink, $newvalue) . '" ' . 'WHERE id = ' . $id;
         return $this->Query($sql) ? 0 : 1;
     }
 
@@ -424,9 +424,9 @@ class Wiki
     {
         $res = $re_prefix . $resource ;
 
-        $sql = 'DELETE FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . addslashes($res) . '" ' . 'AND property = "' . addslashes($prop_prefix . $property) . '" ';
+        $sql = 'DELETE FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $res) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '" ';
         if ($value !== null) {
-            $sql .= 'AND value = "' . addslashes($value) . '"';
+            $sql .= 'AND value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
         }
 
         // invalidate the cache
@@ -816,7 +816,7 @@ class Wiki
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
-            $sql = 'SELECT DISTINCT a.id FROM ' . $wnPages . ' a,' . $wnPages . ' b WHERE a.latest = \'N\' AND a.time < date_sub(now(), INTERVAL \'' . addslashes($days) . '\' DAY) AND a.tag = b.tag AND a.time < b.time AND b.time < date_sub(now(), INTERVAL \'' . addslashes($days) . '\' DAY)';
+            $sql = 'SELECT DISTINCT a.id FROM ' . $wnPages . ' a,' . $wnPages . ' b WHERE a.latest = \'N\' AND a.time < date_sub(now(), INTERVAL \'' . mysqli_real_escape_string($this->dblink, $days) . '\' DAY) AND a.tag = b.tag AND a.time < b.time AND b.time < date_sub(now(), INTERVAL \'' . mysqli_real_escape_string($this->dblink, $days) . '\' DAY)';
             $ids = $this->LoadAll($sql);
 
             if (count($ids)) {
