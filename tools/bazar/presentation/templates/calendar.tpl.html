@@ -1,14 +1,16 @@
 <?php
 
-function formatEndDate($date) {
-  // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
-  // it end one day earlier
-  if (strlen($date) <= 10) {
-    $dateObject = new DateTime($date);
-    $dateObject = $dateObject->modify('+1 day');
-    $date = $dateObject->format("Y-m-d");
+if(!function_exists("formatEndDate")) {
+  function formatEndDate($date) {
+    // Fixs bug, when no time is specified, is the event is on multiple day, calendJs show it like
+    // it end one day earlier
+    if (strlen($date) <= 10) {
+      $dateObject = new DateTime($date);
+      $dateObject = $dateObject->modify('+1 day');
+      $date = $dateObject->format("Y-m-d");
+    }
+    return $date;
   }
-  return $date;
 }
 
 if(count($fiches)>0) {
