@@ -85,9 +85,9 @@ var fields = [
 
 // Some attributes configuration used in multiple fields
 var visibilityOptions = {
-  "": "Tout le monde",
-  "+": "Utilisateurs identifiés",
-  "%": "Propriétaire de la fiche et admins",
+  " * ": "Tout le monde",
+  " + ": "Utilisateurs identifiés",
+  " % ": "Propriétaire de la fiche et admins",
   "@admins": "Membre du groupe admin"
 };
 var aclsOptions = {
