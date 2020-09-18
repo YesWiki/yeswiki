@@ -744,6 +744,7 @@ function getImageFromBody($page, $width, $height)
     } else {
         preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
         if (is_array($image[1]) && !empty($image[1][0])) {
+            include_once 'tools/tags/libs/tags.functions.php';
             $imagefile = utf8_decode(
                 preg_replace_callback(
                     '/\\\\u([a-f0-9]{4})/',
@@ -788,22 +789,29 @@ function getImageFromBody($page, $width, $height)
  */
 function getTitleFromBody($page)
 {
-    if (!isset($page['body'])) {
-        return $GLOBALS['wiki']->config['wakka_name'];
+    if (!isset($page['body']) || !isset($page['tag'])) {
+        return '';
     }
     $title = '';
-    // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
-    preg_match_all('/<h1.*>\s*(.*)\s*<\/h1>/mU', $page['body'], $titles);
-    if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-        $title = $titles[1][0];
+    $type = $GLOBALS['wiki']->GetTripleValue($page['tag'], 'http://outils-reseaux.org/_vocabulary/type', '', '');
+    if ($type == 'fiche_bazar') {
+        $tab_valeurs_fiche = json_decode($page['body'], true);
+        if (isset($tab_valeurs_fiche['bf_titre'])){
+            $title = _convert($tab_valeurs_fiche['bf_titre'], 'UTF-8');
+        }
     } else {
-        preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
-        if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-            $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+        // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
+        if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $page['body'], $titles)) {
+            $title = $titles[1];
         } else {
-            preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
+            preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
                 $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+            } else {
+                preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
+                if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
+                    $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+                }
             }
         }
     }
@@ -815,11 +823,12 @@ function getTitleFromBody($page)
  * Get the first title in page
  *
  * @param array $page   Page informations
+ * @param string $title The page title
  * @param int   $length Max number of chars (default 300)
  *
  * @return string The title string
  */
-function getDescriptionFromBody($page, $length = 300)
+function getDescriptionFromBody($page, $title, $length = 300)
 {
     if (!isset($page['body'])) {
         return '';
@@ -850,7 +859,7 @@ function getDescriptionFromBody($page, $length = 300)
             str_replace(
                 array("\r", "\n"),
                 ' ',
-                html_entity_decode(str_replace(getTitleFromBody($page), '', strip_tags($desc)), ENT_COMPAT | ENT_HTML5)
+                html_entity_decode(str_replace($title, '', strip_tags($desc)), ENT_COMPAT | ENT_HTML5)
             )
         )
     );
