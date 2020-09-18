@@ -590,7 +590,15 @@ $(document).ready(function () {
     }
 
     // on compte les résultats visibles
-    e.data.$nbresults.html(e.data.$entries.filter(':visible').length);
+    var nbresults = e.data.$entries.filter(':visible').length;
+    e.data.$nbresults.html(nbresults);
+    if (nbresults > 1) {
+      e.data.$resultlabel.hide();
+      e.data.$resultslabel.show();
+    } else {
+      e.data.$resultlabel.show();
+      e.data.$resultslabel.hide();
+    }
   }
 
   // process changes on visible entries according to filters
@@ -601,6 +609,8 @@ $(document).ready(function () {
       $nbresults: $('.nb-results', $container),
       $filterboxes: $('.filter-box', $container),
       $entries: $('.bazar-entry', $container),
+      $resultlabel : $('.result-label', $container),
+      $resultslabel : $('.results-label', $container),
     };
     $filters.on('click', data, updateFilters);
     jQuery(window).ready(function(e) {
@@ -633,6 +643,8 @@ $(document).ready(function () {
           $nbresults: $('.nb-results', $container),
           $filterboxes: $('.filter-box', $container),
           $entries: $('.bazar-entry', $container),
+          $resultlabel : $('.result-label', $container),
+          $resultslabel : $('.results-label', $container),
         };
         e.data = data;
         updateFilters(e);
@@ -678,7 +690,15 @@ $(document).ready(function () {
     $('#'+target+' .bazar-entry').filter(function(i) {
       return bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1;
     }).show()
-    $(this).parents('.facette-container').find('.nb-results').html($('#'+target+' .bazar-entry:visible').length)
+    var nbresults = $('#'+target+' .bazar-entry:visible').length;
+    $(this).parents('.facette-container').find('.nb-results').html(nbresults)
+    if (nbresults > 1) {
+      $(this).parents('.facette-container').find('.result-label').hide();
+      $(this).parents('.facette-container').find('.results-label').show();
+    } else {
+      $(this).parents('.facette-container').find('.result-label').show();
+      $(this).parents('.facette-container').find('.results-label').hide();
+    }
   });
 })
 
