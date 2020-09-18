@@ -71,11 +71,11 @@ if (!class_exists('attach')) {
             }
 
             if (empty($this->attachConfig["ext_images"])) {
-                $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg|webp";
+                $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg";
             }
 
             if (empty($this->attachConfig["ext_audio"])) {
-                $this->attachConfig["ext_audio"] = "mp3|aac";
+                $this->attachConfig["ext_audio"] = "mp3";
             }
 
             if (empty($this->attachConfig["ext_video"])) {
