@@ -164,7 +164,9 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
 
             if ($def == '' && ($tableau_template[4] == '' || $tableau_template[4] <= 1) || $def == 0) {
-                $select_html.= '<option value="" selected="selected">' . _t('BAZ_CHOISIR') . '</option>' . "\n";
+                // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
+                // wakka as a beginning of html code
+                $select_html.= '<option value=\'\' selected="selected">' . _t('BAZ_CHOISIR') . '</option>' . "\n";
             }
             if (is_array($valliste['label'])) {
                 foreach ($valliste['label'] as $key => $label) {
@@ -234,7 +236,8 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
                 $checkbox_html.= '>' . "\n";
                 foreach ($choixcheckbox as $key => $title) {
-                    $tabfiches[$key] = '{"id":"'.$key.'", "title":"'.str_replace('"', '\"', $title).'"}';
+                    $tabfiches[$key] = '{"id":"' . $key . '", "title":"'
+                        . str_replace('\'','&#39;', str_replace('"', '\"', $title)) . '"}';
                 }
                 $script = '$(function(){
                     var tagsexistants = [' . implode(',', $tabfiches) . '];
@@ -380,7 +383,9 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $date_html.= ' value="' . date("Y-m-d", strtotime($tableau_template[5])) . '" />';
                 }
             } else {
-                $date_html.= ' value="" />';
+                // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
+                // wakka as a beginning of html code
+                $date_html.= ' value=\'\' />';
             }
         }
 
@@ -558,7 +563,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= '<input type="text"';
         $input_html.= ($defauts != '') ?
             ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET).'"' : '';
-        $input_html.= ' name="' . $tableau_template[1] . '" size="'.$tableau_template[3].'" class="form-control yeswiki-input-pagetag" id="' . $tableau_template[1] . '"';
+        $input_html.= ' name="' . $tableau_template[1] . (empty($tableau_template[3]) ? '' : '" size="' . $tableau_template[3]) . '" class="form-control yeswiki-input-pagetag" id="' . $tableau_template[1] . '"';
         $input_html.= ($tableau_template[9] == 1) ? ' required' : '';
         $input_html.= '>' . "\n";
         $input_html.= '</div>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
@@ -1017,7 +1022,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     if (!$nb_lignes) $nb_lignes = 3;
     if (empty($formatage) || $formatage == 'wiki') {
         $formatage = 'wiki-textarea';
-    } elseif ($formatage == 'html') {
+    } elseif ($formatage == 'html' && $mode == 'saisie') {
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
         $langfile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langpref.'.js';
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
@@ -1043,8 +1048,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                [\'insert\', [\'hr\', \'link\', \'table\', \'picture\', \'video\']],
-                //[\'misc\', [\'fullscreen\', \'codeview\']]
+                [\'insert\', [\'hr\', \'link\', \'table\']], // \'picture\', \'video\' removed because of the storage in the field
+                [\'misc\', [\'codeview\']]
             ],
             isNotSplitEdgePoint : true,
             styleTags: [\'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
@@ -1087,7 +1092,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<textarea id="'.$identifiant.'" name="'.$identifiant.'" '.((isset($obligatoire) && $obligatoire == 1) ? 'required ' : '');
         $input_html.= 'class="form-control '.(($formatage == 'html') ? 'summernote' : $formatage).'" ';
-        $input_html.= 'rows="'.$nb_lignes.'" cols="'.$nb_colonnes.'" ';
+        $input_html.= 'rows="'.$nb_lignes.'" ' . (!empty($nb_colonnes) ?  'cols="' . $nb_colonnes . '" ' : '');
         $input_html.= ($longueurmax != '') ? 'maxlength="'.$longueurmax.'" ' : '';
         $input_html.= ' placeholder="'.htmlspecialchars(strip_tags($label)).'"';
         $input_html.= '>';
@@ -1108,18 +1113,17 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $html = '<div class="BAZ_rubrique" data-id="' . $identifiant . '">' . "\n" . '<span class="BAZ_label">' . $label . '</span>' . "\n";
             $html.= '<span class="BAZ_texte"> ';
             if ($formatage == 'wiki-textarea') {
-                $containsattach = (strpos($valeurs_fiche[$identifiant], '{{attach') !== false);
-                if ($containsattach) {
-                    $oldpage = $GLOBALS['wiki']->GetPageTag();
-                    $oldpagearray = $GLOBALS['wiki']->page;
-                    $GLOBALS['wiki']->tag = $valeurs_fiche['id_fiche'];
-                    $GLOBALS['wiki']->page = $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->tag);
-                }
+                // do the page changement in any case  (usefull for attach or grid)
+                $oldpage = $GLOBALS['wiki']->GetPageTag();
+                $oldpagearray = $GLOBALS['wiki']->page;
+                $GLOBALS['wiki']->tag = $valeurs_fiche['id_fiche'];
+                $GLOBALS['wiki']->page = $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->tag);
+                $GLOBALS['wiki']->page['body'] = $valeurs_fiche[$identifiant];
+
                 $html.= $GLOBALS['wiki']->Format($valeurs_fiche[$identifiant]);
-                if ($containsattach) {
-                    $GLOBALS['wiki']->tag = $oldpage;
-                    $GLOBALS['wiki']->page = $oldpagearray;
-                }
+
+                $GLOBALS['wiki']->tag = $oldpage;
+                $GLOBALS['wiki']->page = $oldpagearray;
             } elseif ($formatage == 'nohtml') {
                 $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, YW_CHARSET);
             } elseif ($formatage == 'html') {
@@ -1476,9 +1480,11 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 
                 $inputhtml .= '</div>'."\n";
+                // caution the followed "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
+                // wakka as a beginning of html code
                 $inputhtml .= '<output id="img-'.$type . $identifiant.'" class="col-xs-9">'.afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, 'img-responsive', $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image).'</output>
-              <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'."\n"
-                .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
+              <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value=\'\'>'."\n"
+                .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value=\'\'>'."\n"
                 .'<input name="'.'oldimage_'.$type.$identifiant.'" value="'.$valeurs_fiche[$type.$identifiant].'" type="hidden">'."\n"
                 .'</div>'."\n".'</div>'."\n".'</div>'."\n";
                 return $inputhtml;
@@ -1502,13 +1508,15 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
         } else {
             //cas ou il n'y a pas d'image dans la base de donnees, on affiche le formulaire d'envoi d'image
+            // caution the followed "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
+            // wakka as a beginning of html code
             $inputhtml = '<div class="control-group form-group">
               <label class="control-label col-sm-3">'.$label.'</label>
               <div class="controls col-sm-9">
                 <input type="file" class="yw-image-upload form-control" id="'.$type . $identifiant.'" name="'.$type . $identifiant.'" accept=".jpeg, .jpg, .gif, .png" '.((isset($obligatoire) && $obligatoire == 1) ? 'required': '').'>
                 <output id="img-'.$type . $identifiant.'" class="col-xs-6"></output>
-                <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value="">'
-                        .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value="">'."\n"
+                <input type="hidden" id="data-'.$type . $identifiant.'" name="data-'.$type . $identifiant.'" value=\'\'>'
+                        .'<input type="hidden" id="filename-'.$type . $identifiant.'" name="filename-'.$type . $identifiant.'" value=\'\'>'."\n"
                         .'</div>
             </div>' . "\n";
             return $inputhtml;
@@ -1991,7 +1999,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         /*$valliste = baz_valeurs_liste($tableau_template[1]);*/
         if ($def == '' && ($tableau_template[4] == '' || $tableau_template[4] <= 1) || $def == 0) {
-            $select_html.= '<option value="" selected="selected">' . _t('BAZ_CHOISIR') . '</option>' . "\n";
+            // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
+            // wakka as a beginning of html code
+            $select_html.= '<option value=\'\' selected="selected">' . _t('BAZ_CHOISIR') . '</option>' . "\n";
         }
         $select = array();
         if ($isUrl === false) {
@@ -2225,7 +2235,9 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->AddJavascript($script);
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
             } else {
-                $checkbox_filter = '<input type="text" class="pull-left filter-entries" value="" placeholder="'.
+                // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
+                // wakka as a beginning of html code
+                $checkbox_filter = '<input type="text" class="pull-left filter-entries" value=\'\' placeholder="'.
                     _t('BAZAR_FILTER').'"><label class="pull-right"><input type="checkbox" class="selectall" /> '.
                     _t('BAZAR_CHECKALL') . '</label>' . "\n" . '<div class="clearfix"></div>' . "\n";
                 $checkbox_html.= (count($checkboxtab) > $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ? $checkbox_filter : '') .

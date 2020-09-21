@@ -28,13 +28,9 @@ if ($this->GetMethod() != 'show') {
     echo "\n".'  <!-- opengraph -->'."\n";
     echo '  <meta property="og:site_name" content="'
       .$this->config['wakka_name'].'" />'."\n";
-    $title = htmlspecialchars(getTitleFromBody($this->page), ENT_COMPAT | ENT_HTML5);
-    if ($title) {
-        echo '  <meta property="og:title" content="' . $title . '" />'."\n";
-    } else {
-        echo '  <meta property="og:title" content="' . $GLOBALS['wiki']->config['wakka_name'] . '" />'."\n";
-    }
-    $desc = htmlspecialchars(getDescriptionFromBody($this->page), ENT_COMPAT | ENT_HTML5);
+    $title = getTitleFromBody($this->page);
+    echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['wakka_name']) . '" />'."\n";
+    $desc = htmlspecialchars(getDescriptionFromBody($this->page, $title), ENT_COMPAT | ENT_HTML5);
     if ($desc) {
         echo '  <meta property="og:description" content="'.$desc.'" />'."\n";
     }
@@ -50,5 +46,4 @@ if ($this->GetMethod() != 'show') {
         echo '  <meta property="og:image:width" content="'.$w.'" />'."\n";
         echo '  <meta property="og:image:height" content="'.$h.'" />'."\n";
     }
-
 }
