@@ -48,7 +48,8 @@ function getAuth($username = '')
 function documentationLogin()
 {
     global $wiki;
+    $urlAuth = $wiki->href('', 'api/auth');
     $output = '<h2>Extension login</h2>'."\n".
-    'GET <code>'.$wiki->href('', 'api/auth').'</code><br />';
+    'GET <code><a href="'.$urlAuth.'">'.$urlAuth.'</a></code><br />';
     return $output;
 }

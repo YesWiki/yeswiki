@@ -340,7 +340,6 @@ $GLOBALS['translations'] = array(
 'GROUPS' => 'Groups',
 
 // YesWiki\User class
-'USER_CHANGES_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Changes count must be a positive integer',
 'USER_DELETE_QUERY_FAILED' => 'User deletion query failed',
 'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'The user you are trying to delete is the only member of a group',
 'USER_EMAIL_S_MAXIMUM_LENGTH_IS' => 'User email\'s maximum number of characters is',
@@ -351,7 +350,6 @@ $GLOBALS['translations'] = array(
 'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'The minimum number of characters for a user password is',
 'USER_PASSWORDS_NOT_IDENTICAL' => 'Both passwords must be identical',
 'USER_PASSWORD_TOO_SHORT' => 'Password too short',
-'USER_REVISIONS_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Revisions count must be a positive integer',
 'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'The specified email is allready in use on this wiki',
 'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'This is not a valid email address',
 'USER_UPDATE_QUERY_FAILED' => 'User update query failed',

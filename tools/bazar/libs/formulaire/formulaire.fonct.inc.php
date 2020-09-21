@@ -504,7 +504,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         //gestion des mots cles deja entres
         if (isset($valeurs_fiche[$tableau_template[1]])) {
-            $tags = explode(",", str_replace('\'','&#39;', $valeurs_fiche[$tableau_template[1]]));
+            $tags = explode(",", mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[1]]));
             if (is_array($tags)) {
                 sort($tags);
                 foreach ($tags as $tag) {
@@ -518,8 +518,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $tab_tous_les_tags = $GLOBALS['wiki']->GetAllTags();
         if (is_array($tab_tous_les_tags)) {
             foreach ($tab_tous_les_tags as $tab_les_tags) {
-                // TODO why ISO-8859-15 ? fix the encoding ???
-                $response[] = _convert(str_replace('\'','&#39;', $tab_les_tags['value']), 'ISO-8859-15');
+                $response[] = _convert($tab_les_tags['value'], 'ISO-8859-15');
             }
         }
         sort($response);
@@ -578,7 +577,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         //on decoupe les tags pour les mettre dans un tableau
-        $tags = explode(",", $valeurs_fiche[$tableau_template[1]]);
+        $tags = explode(",", mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[1]]));
 
         //on ajoute les tags postés
         foreach ($tags as $tag) {
@@ -1050,7 +1049,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 [\'color\', [\'color\']],
                 [\'para\', [\'ul\', \'ol\', \'paragraph\']],
                 [\'insert\', [\'hr\', \'link\', \'table\']], // \'picture\', \'video\' removed because of the storage in the field
-                //[\'misc\', [\'fullscreen\', \'codeview\']]
+                [\'misc\', [\'codeview\']]
             ],
             isNotSplitEdgePoint : true,
             styleTags: [\'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],

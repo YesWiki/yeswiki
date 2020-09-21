@@ -13,60 +13,59 @@ if (!defined('PW_SALT')) {
     define('PW_SALT', 'FBcA');
 }
 
-require_once 'includes/WikiUser.class.php';
+require_once 'includes/User.class.php';
 
 $error = false;
 $step = 'emailForm'; // Formulaire par defaut
-$user = new \YesWiki\User($this->config, $this->queryLog, $this->CookiePath);
+
 
 if (isset($_POST['subStep']) && !isset($_GET['a'])) { // Sub step
 	switch ($_POST['subStep']) {
 		case 1:
 			// we just submitted an email or username for verification
-			$error = !($user->loadByEmailFromDB($_POST['email']));
+			$error = !($this->user->loadByEmailFromDB($_POST['email']));
 			if ($error) {
 				$step = 'userNotFound';
 			} else {
 				$step = 'successPage';
-				$user->sendPasswordRecoveryEmail();
+				$this->user->sendPasswordRecoveryEmail();
 			}
 			break;
-		case 2:
+        case 2:
 			// we are submitting a new password (only for encrypted)
 			if ($_POST['userID'] == '' || $_POST['key'] == '') {
-				header('location: login.php');
+                $this->Redirect($this->href("", $this->config['root_page']));
 			}
 			if ((strcmp($_POST['pw0'], $_POST['pw1']) != 0) || (trim($_POST['pw0']) == '')) { // No pw0 or different pwd
 				$error = true;
-				$user->loadByNameFromDB($_POST['userID']);
+				$this->user->loadByNameFromDB($_POST['userID']);
 				$step = 'recoverForm';
 			} else {
-				$error = false;
+                $error = false;
 				$step = 'recoverSuccess';
-				if ($user->loadByNameFromDB($_POST['userID'])) {
-					if ($user->resetPassword($_POST['key'], $_POST['pw0'])) { // entails password recovery key ckeck
-						$user->logIn(); // Set session cookie
+				if ($this->user->loadByNameFromDB($_POST['userID'])) {
+                    if ($this->user->resetPassword($_POST['userID'], $_POST['key'], $_POST['pw0'])) { // entails password recovery key ckeck
+						$this->user->logIn(); // Set session cookie
 					} else { // Not able to update password
-						$error = true;
+                        $error = true;
 					}
 				} else { // Not able to load the user from DB
-					$error = true;
+                    $error = true;
 				}
 			}
 			break;
 		} // End switch
 } elseif (isset($_GET['a']) && $_GET['a'] == 'recover' && $_GET['email'] != '') {
-	$step = 'invalidKey';
-	if ($user->loadByEmailFromDB($_GET['email'])) {
-		$result = $user->checkEmailKey(urldecode(base64_decode($_GET['u'])));
-		if ($result == false) {
-			$error = true;
-			$step = 'invalidKey';
-		} else {
-			$error = false;
-			$step = 'recoverForm';
-		}
-	} // else impossible to retrieve user => Error handling?
+    $step = 'invalidKey';
+    $result = $this->user->checkEmailKey($_GET['email'], $_GET['u']);
+    if ($result == false) {
+        $error = true;
+        $step = 'invalidKey';
+    } else {
+        $error = false;
+        $this->user->loadByNameFromDB(base64_decode($_GET['u']));
+        $step = 'recoverForm';
+    }
 }
 
 echo '<h2>'._t('LOGIN_CHANGE_PASSWORD').'</h2>';
@@ -102,8 +101,10 @@ switch ($step) {
         break;
 
     case 'recoverForm':
-        echo '<h5>'._t('LOGIN_WELCOME').' '.$user->getName().'</h5>'."\n";
-        echo '<p>'._t('LOGIN_WRITE_PASSWORD').'.</p>'."\n";
+        echo '<p class="welcome-text">'
+          .'<strong>'._t('LOGIN_WELCOME').' '.$this->user->getProperty('name').'</strong><br />'
+          ._t('LOGIN_WRITE_PASSWORD')
+          .'.</p>'."\n";
         if ($error == true) {
             echo '<div class="alert alert-danger">'._t('LOGIN_PASSWORD_SHOULD_BE_IDENTICAL').'.</div>'."\n";
         }
@@ -118,8 +119,8 @@ switch ($step) {
   <input type="password" class="form-control" name="pw1" id="pw1" value="" maxlength="40" required>
 </div>
 <input type="hidden" name="subStep" value="2" />
-<input type="hidden" name="userID" value="<?php echo $user->getName() == '' ? $_POST['userID'] : $user->getName; ?>" />
-<input type="hidden" name="key" value="<?php echo (!isset($_GET['email']) || $_GET['email'] == '') ? $_POST['key'] : $_GET['email']; ?>" />
+<input type="hidden" name="userID" value="<?php echo (empty($this->user->getProperty('name')) ? $_POST['userID'] : $this->user->getProperty('name')); ?>" />
+<input type="hidden" name="key" value="<?php echo (empty($_GET['email']) ? $_POST['key'] : $_GET['email']); ?>" />
 <button type="submit" class="btn btn-primary"><?php echo _t('LOGIN_SEND'); ?></button>
 <?php
         echo $this->FormClose();

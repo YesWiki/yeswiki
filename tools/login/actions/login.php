@@ -21,28 +21,6 @@
  *
  * Copyright 2010  Florian SCHMITT
  *
-All rights reserved.
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
-3. The name of the author may not be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
-IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
-INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
-NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
-THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 if (!defined('WIKINI_VERSION')) {
@@ -160,10 +138,11 @@ if ($_REQUEST["action"] == "login") {
         if (isset($_POST["name"]) && strstr($_POST["name"], '@')) {
             $_POST["email"] = $_POST["name"];
         }
-        if (isset($_POST["email"]) && $_POST["email"] != '' && $existingUser = $this->loadUserByEmail($_POST["email"])) {
+
+        if (isset($_POST["email"]) && $_POST["email"] != '' && $this->user->loadByEmailFromDB($_POST["email"])) {
             // si le mot de passe est bon, on créée le cookie et on redirige sur la bonne page
-            if ($existingUser["password"] == md5($_POST["password"])) {
-                $this->SetUser($existingUser, $_POST["remember"]);
+            if ($this->user->checkPassword($_POST['password'])) {
+                $this->SetUser($this->user->getAllProperties(), $_POST["remember"]);
 
                 // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
                 if ($userpage == 'user' && $this->LoadPage($existingUser["name"])) {

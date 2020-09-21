@@ -1,4 +1,7 @@
-version: '2'
+version: '3.7'
+
+volumes:
+  yeswiki-db:
 
 services:
     yeswiki:
@@ -6,25 +9,45 @@ services:
         container_name: yeswiki
         ports:
             - "80:80"
+        # these volumes help develop locally, close to what is shipped on Docker Hub
         volumes:
-            - .:/var/www/html
-        links:
-            - db:db
+            - ./wakka.config.php:/var/www/html/wakka.config.php
+            - ./actions:/var/www/html/actions
+            - ./files:/var/www/html/files
+            - ./formatters:/var/www/html/formatters
+            - ./handlers:/var/www/html/handlers
+            - ./includes:/var/www/html/includes
+            - ./lang:/var/www/html/lang
+        #    - ../yeswiki-extension-ebook:/var/www/html/tools/publication
+        depends_on:
+            - db
+        environment:
+            YESWIKI_MYSQL_HOST: db
+            YESWIKI_MYSQL_USER: root
+            YESWIKI_MYSQL_PASSWORD: root
+            YESWIKI_MYSQL_DATABASE: yeswiki_dev
 
     db:
-        image: mysql:5.5
+        image: mysql:5.6
         container_name: db
         volumes:
-            - ./.db:/var/lib/mysql
-        ports:
-            - "3306:3306"
+            - yeswiki-db:/var/lib/mysql
         environment:
+            - MYSQL_DATABASE=yeswiki_dev
             - MYSQL_ROOT_PASSWORD=root
+        healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+            timeout: 20s
+            retries: 10
 
     myadmin:
         image: phpmyadmin/phpmyadmin
         container_name: myadmin
         ports:
             - "8080:80"
-        links:
-            - db:db
+        depends_on:
+            - db
+        environment:
+            PMA_HOST: db
+            PMA_USER: root
+            PMA_PASSWORD: root

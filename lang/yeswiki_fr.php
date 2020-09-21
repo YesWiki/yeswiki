@@ -345,7 +345,6 @@ $GLOBALS['translations'] = array(
 'GROUPS' => 'Groupes',
 
 // YesWiki\User class
-'USER_CHANGES_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Le nombre de Changements doit être un entier positif',
 'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'Vous ne pouvez pas supprimer un utilisateur qui est seul dans au moins un groupe',
 'USER_DELETE_QUERY_FAILED' => 'La requête de suppression de l\'utilisateur dans la base de données a échoué',
 'USER_EMAIL_S_MAXIMUM_LENGTH_IS' => 'Le nomnbre maximum de caractères d\'un email d\'utilisateur est',
@@ -356,7 +355,6 @@ $GLOBALS['translations'] = array(
 'USER_PASSWORD_MINIMUM_NUMBER_OF_CHARACTERS_IS' => 'Le nombre minimum de caractères d\'un mot de passe est',
 'USER_PASSWORDS_NOT_IDENTICAL' => 'Les deux mots de passe saisis doivent être identiques',
 'USER_PASSWORD_TOO_SHORT' => 'Mot de passe trop court',
-'USER_REVISIONS_COUNT_MUST_BE_A_POSITIVE_INTEGER' => 'Le nombre de versions doit être un entier positif',
 'USER_THIS_EMAIL_IS_ALLREADY_USED_ON_THIS_WIKI' => 'L\'email saisi est déjà utilisé sur ce wiki',
 'USER_THIS_IS_NOT_A_VALID_EMAIL' => 'Ceci n\'est pas un email valide',
 'USER_UPDATE_QUERY_FAILED' => 'La requête de mise à jour de l\'utilisateur dans la base de données a échoué',
@@ -399,6 +397,8 @@ $GLOBALS['translations'] = array(
 'USER_PASSWORD_CONFIRMATION' => 'Confirmation du mot de passe',
 'USER_NEW_ACCOUNT' => 'Nouveau compte',
 'USER_PASSWORD' => 'Mot de passe',
+'USER_ERRORS_FOUND' => 'Erreur(s) trouvée(s)',
+'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => 'Il faut une valeur entier positif pour ',
 
 // YesWiki\Database class
 'DATABASE_QUERY_FAILED' => 'La requête a échoué {\YesWiki\Database}',
