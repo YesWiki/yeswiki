@@ -23,7 +23,7 @@ if ($this->HasAccess("write")) {
         $template = 'barreredaction_basic.tpl.html';
     }
 
-    // on peut ajouter des classes é la classe par défaut .footer
+    // on peut ajouter des classes, la classe par défaut est .footer
     $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
 
     // on ajoute le lien d'édition si l'action est autorisée
@@ -41,7 +41,7 @@ if ($this->HasAccess("write")) {
     // if this page exists
     if ($content) {
         // if owner is current user
-        if ($this->UserIsOwner($page) || $this->UserIsAdmin($page)) {
+        if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
             $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : "._t('TEMPLATE_YOU').' - '._t('TEMPLATE_PERMISSIONS');
             $barreredactionelements['linkacls'] = $this->href("acls", $page);
             $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);

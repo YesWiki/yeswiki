@@ -56,7 +56,7 @@ if (!empty($bazaroutput)) {
     $output = '';
     // on recupere les entetes html mais pas ce qu'il y a dans le body
     $header = explode('<body', $this->Header());
-    $output .= $header[0] . "<body class=\"yeswiki-body\">\n<div class=\"container\">\n<div class=\"yeswiki-page-widget page-widget page\">\n";
+    $output .= $header[0] . "<body class=\"yeswiki-iframe-body\">\n<div class=\"container\">\n<div class=\"yeswiki-page-widget page-widget page\">\n";
 
     // affichage de la page formatee
     if (isset($_GET['iframelinks']) && $_GET['iframelinks'] == '0') {

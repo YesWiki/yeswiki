@@ -15,7 +15,7 @@ if ($this->HasAccess("read")) {
         $output = '';
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->Header());
-        $output .= $header[0] . '<body class="iframe-body">'."\n"
+        $output .= $header[0] . '<body class="yeswiki-iframe-body">'."\n"
             .'<div class="container">'."\n"
             .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
 

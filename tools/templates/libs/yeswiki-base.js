@@ -4,8 +4,8 @@ function toastMessage(message) {
   $('body').after($toast);
   $toast.css('top', $('#yw-topnav').outerHeight(true) + 20 + 'px');
   $toast.css('opacity', 1);
-  setTimeout(function() { $toast.css('opacity', 0) }, 3000);
-  setTimeout(function() { $toast.remove() }, 4000);
+  setTimeout(function() { $toast.css('opacity', 0) }, 10000);
+  setTimeout(function() { $toast.remove() }, 11000);
   $toast.addClass('visible');
 }
 // polyfill placeholder
@@ -161,6 +161,7 @@ function toastMessage(message) {
   /* tooltips */
   $("[data-toggle='tooltip']").tooltip();
 
+  /* not usefull for the Jdn YesWiki
   // detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
   var $topnav = $("#yw-topnav.fixable");
   if ($topnav.length > 0) {
@@ -168,7 +169,7 @@ function toastMessage(message) {
     $topnav.affix({
       offset: topoffset
     });
-  }
+  }*/
 
   // moteur de recherche utilisé dans un template
   $('a[href="#search"]').on("click", function(e) {
