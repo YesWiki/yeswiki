@@ -1,0 +1,14 @@
+<div id="bazar-actions-builder-app">
+  <h1>Bazar Actions Builder</h1>
+</div>
+
+<script>
+  // Not very elegant, but avoid doing an ajax request from vue component to retrieve the Json data
+  var data = <?php echo json_encode($data) ?>;
+</script>
+
+<?php
+  $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/vue.min.js');
+  $GLOBALS['wiki']->addJavascriptFile('tools/aceditor/presentation/javascripts/bazar-actions-builder.js');
+  $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/bazar-actions-builder.css');
+?>
