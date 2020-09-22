@@ -2007,9 +2007,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($isUrl === false) {
             $val_type = baz_valeurs_formulaire($tableau_template[1]);
             $tabquery = array();
-            if (!empty($tableau_template[12])) {
+            if (!empty($tableau_template[15])) {
                 $tableau = array();
-                $tab = explode('|', $tableau_template[12]);
+                $tab = explode('|', $tableau_template[15]);
                 //découpe la requete autour des |
                 foreach ($tab as $req) {
                     $tabdecoup = explode('=', $req, 2);
@@ -2159,14 +2159,14 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         //on recupere les parameres pour une requete specifique
         if ($GLOBALS['wiki']->config['global_query'] && isset($_GET['query'])) {
-            $query = $tableau_template[12];
+            $query = $tableau_template[15];
             if (!empty($query)) {
                 $query.= '|' . $_GET['query'];
             } else {
                 $query = $_GET['query'];
             }
         } else {
-            $query = $tableau_template[12];
+            $query = $tableau_template[15];
         }
         if (!empty($query)) {
             $tabquery = array();
@@ -2192,7 +2192,6 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             true,
             (!empty($tableau_template[13])) ? $tableau_template[13] : ''
         );
-
 
         $checkboxtab = array();
         foreach ($tab_result as $fiche) {
