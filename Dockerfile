@@ -13,7 +13,3 @@ RUN apt-get update \
 RUN mkdir -p themes/margot \
     && curl -o - -sSL https://github.com/YesWiki/yeswiki-theme-margot/archive/master.tar.gz \
         | tar xzfv - --strip-components 1 -C themes/margot
-
-
-# Enable UI plugins/theme updates
-RUN composer install --working-dir tools/autoupdate
