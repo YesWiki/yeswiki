@@ -195,7 +195,7 @@ var SYNTAX = {
             '</div>');
 
       // help
-      toolbar.append( '<div class="btn-group">' +
+      toolbar.append( '<div class="btn-group pull-right">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
                 '<i class="fa fa-question-circle"></i></a>' +
             '</div>');

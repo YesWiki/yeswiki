@@ -48,6 +48,7 @@ $GLOBALS['translations'] = array_merge(
         // handler edit
         'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activar el JavaScript para adjuntar archivos',
         'UPLOAD_A_FILE' => 'Adjuntar / Insertar un archivo',
+        'UPLOAD_A_FILE_SHORT' => 'Archivo',
         'UPLOAD_FILE' => 'Descargar archivo',
         'CANCEL_THIS_UPLOAD' => 'Cancelar este envio',
         'INSERT' => 'Insertar',

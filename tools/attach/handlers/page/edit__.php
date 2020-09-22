@@ -139,7 +139,7 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar
 						<span class=\"alert alert-danger alert-error\">"._t('ACTIVATE_JS_TO_UPLOAD_FILES').".</span>
 					</noscript>
 					<div class=\"qq-uploader\">
-						<div class=\"qq-upload-button btn btn-default\"><i class=\"fa fa-upload icon-upload\"></i>&nbsp;"._t('UPLOAD_A_FILE')."</div>
+						<div class=\"qq-upload-button btn btn-default\" title=\""._t('UPLOAD_A_FILE')."\"><i class=\"fa fa-upload icon-upload\"></i>&nbsp;"._t('UPLOAD_A_FILE_SHORT')."</div>
 						<ul class=\"qq-upload-list\"></ul>
 					</div>
 					<div class=\"sample-upload-list hide\">
