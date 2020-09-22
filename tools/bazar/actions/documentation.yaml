@@ -1,0 +1,18 @@
+bazarcarto:
+  label: Cartographie
+  description: Les fiches seront sous forme de marqueur. Un champ de type XXX doit être présent dans votre formulaire
+  properties:
+    provider:
+      label: Fond de carte
+      required: true
+      type: list
+      value: "OpenStreetMap"
+      options:
+        - OpenStreetMap
+        - Google
+    lat:
+      label: Latitude du centre de la carte
+      type: text
+    lon:
+      label: Longitude
+      type: text

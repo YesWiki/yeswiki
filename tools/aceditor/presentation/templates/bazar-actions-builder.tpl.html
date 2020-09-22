@@ -1,5 +1,45 @@
 <div id="bazar-actions-builder-app">
   <h1>Bazar Actions Builder</h1>
+
+  <div class="form-group">
+    <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_FORM'); ?></label>
+    <select v-model="formId" required class="form-control">
+      <option v-for="(name, id) in forms" :value="id">{{ name }}</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?></label>
+    <select v-model="selectedActionId" required class="form-control">
+      <option v-for="(action, actionId) in actions" :value="actionId">{{ action.label }}</option>
+    </select>
+  </div>
+
+  <div v-if="selectedAction">
+    <div class="alert alert-info">{{ selectedAction.description }}</div>
+
+    <h2><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h2>
+    <div class="form-group" v-for="(property, propName) in selectedAction.properties">
+        <label v-if="property.label" class="control-label">{{ property.label }}</label>
+        <!-- Text Property -->
+        <template v-if="property.type == 'text'">
+          <input type="text" v-model="values[propName]" class="form-control" :required="property.required"/>
+        </template>
+        <!-- List Property -->
+        <template v-else-if="property.type == 'list'">
+          <select class="form-control" v-model="values[propName]" :required="property.required">
+            <option v-for="option in property.options" :value="option" >{{ option }}</option>
+          </select>
+        </template>
+        <!-- Other Property -->
+        <template v-else>
+          <input type="hidden" v-model="values[propName]" />
+        </template>
+    </div>
+
+    <h2><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h2>
+    <pre class="result">{{ wikiCode }}</pre>
+  </div>
 </div>
 
 <script>

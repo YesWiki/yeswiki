@@ -6,7 +6,7 @@
 $data = baz_forms_and_lists_ids();
 // Bazar actions documentation, read from Yaml file
 require_once "vendor/Spyc.php";
-$data['config'] = Spyc::YAMLLoad('tools/bazar/actions/documentation.yaml');
+$data['actions'] = Spyc::YAMLLoad('tools/bazar/actions/documentation.yaml');
 
 
 // ---------------

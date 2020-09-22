@@ -1,0 +1,11 @@
+.result {
+  border: 1px dashed #c1c1c1;
+}
+
+h2 {
+  margin-top: 2rem;
+}
+
+select, select option {
+  text-transform: capitalize;
+}
