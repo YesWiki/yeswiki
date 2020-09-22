@@ -24,6 +24,8 @@ $lang = array(
   'ACEDITOR_LINK_PROMPT' => _t('ACEDITOR_LINK_PROMPT'),
   'ACEDITOR_LINK_TITLE' => _t('ACEDITOR_LINK_TITLE'),
   'ACEDITOR_HELP' => _t('ACEDITOR_HELP'),
+  'ACEDITOR_ACTIONS' => _t('ACEDITOR_ACTIONS'),
+  'ACEDITOR_ACTIONS_BAZAR' => _t('ACEDITOR_ACTIONS_BAZAR'),
 );
 $js = 'var aceditorlang = '.json_encode($lang);
 

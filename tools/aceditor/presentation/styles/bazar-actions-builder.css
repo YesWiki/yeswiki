@@ -1,8 +1,13 @@
 .result {
   border: 1px dashed #c1c1c1;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+  font-size: 1rem;
+}
+.result-container {
+  margin: 1rem 0;
 }
 
-h2 {
+h3 {
   margin-top: 2rem;
 }
 

@@ -17,8 +17,20 @@ new Vue({
     wikiCode() {
       var result = `{{ ${this.selectedActionId} id="${this.formId}" `
       for(var key in this.values) result += `${key}="${this.values[key]}" `
-      result += ' }}'
+      result += '}}'
       return result
+    }
+  },
+  methods: {
+    selectFullText() {
+      var range = document.createRange();
+      range.selectNode(this.$refs.wikiCode);
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+    },
+    copyContent() {
+      this.selectFullText();
+      document.execCommand('copy');
     }
   },
   watch: {

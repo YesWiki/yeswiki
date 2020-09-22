@@ -194,9 +194,17 @@ var SYNTAX = {
                 '<i class="fa fa-link"></i></a>' +
             '</div>');
 
+      // Actions Builder
+      toolbar.append( '<div class="btn-group">' +
+              '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
+              '<ul class="dropdown-menu">' +
+                '<li><a class="aceditor-btn-actions-bazar" data-toggle="modal" data-target="#bazar-actions-modal">'+this.lang['ACEDITOR_ACTIONS_BAZAR']+'</a></li>' +
+              '</ul>' +
+            '</div>');
+
       // help
       toolbar.append( '<div class="btn-group pull-right">' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-remote="true" href="wakka.php?wiki=ReglesDeFormatage" title="'+this.lang['ACEDITOR_HELP']+'">' +
                 '<i class="fa fa-question-circle"></i></a>' +
             '</div>');
 
@@ -215,8 +223,8 @@ var SYNTAX = {
             if (prompt != null) {
               textarea.surroundSelectedText($(this).data('lft') + prompt + " ", $(this).data('rgt'))
             }
-          } else if ($(this).data('help')) {
-              $('body').append('<div class="modal fade" id="YesWikiHelpModal">' +
+          } else if ($(this).data('remote')) {
+              var $modal = $('<div class="modal fade">' +
                 '<div class="modal-dialog modal-lg">' +
                 '<div class="modal-content">' +
                 '<div class="modal-header">' +
@@ -229,13 +237,10 @@ var SYNTAX = {
                 '</div>' +
                 '</div>' +
                 '</div>');
-
-              var link = 'wakka.php?wiki=ReglesDeFormatage';
-              var $modal = $('#YesWikiHelpModal');
-              $modal.find('.modal-body').load(link + ' .page', function (response, status, xhr) {
+              $('body').append($modal);
+              $modal.find('.modal-body').load($(this).attr('href') + ' .page', function (response, status, xhr) {
                 return false;
               });
-
               $modal.modal({
                 keyboard: false,
               }).modal('show').on('hidden hidden.bs.modal', function () {
