@@ -2,17 +2,30 @@ bazarcarto:
   label: Cartographie
   description: Les fiches seront sous forme de marqueur. Un champ de type XXX doit être présent dans votre formulaire
   properties:
+    template:
+      value: 'map.tpl.html'
+      type: 'hidden'
     provider:
       label: Fond de carte
       required: true
       type: list
-      value: "OpenStreetMap"
+      default: "OpenStreetMap"
       options:
         - OpenStreetMap
         - Google
     lat:
-      label: Latitude du centre de la carte
+      label: Latitude
       type: text
     lon:
       label: Longitude
       type: text
+    zoom:
+      label: Zoom
+      type: number
+      min: 1
+      max: 12
+
+bazarliste:
+  label: List
+  template:
+    value: 'liste_accordeon.tpl.html'

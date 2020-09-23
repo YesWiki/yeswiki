@@ -5,4 +5,5 @@
  **/
 
 // pour retro-compatibilité
-include( __DIR__.'/bazarcarto.php');
+$this->setParameter('template', 'map.tpl.html');
+include( __DIR__.'/bazar_show.php');

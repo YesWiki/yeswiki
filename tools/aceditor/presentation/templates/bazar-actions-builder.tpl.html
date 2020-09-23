@@ -11,8 +11,8 @@
         <!-- Choose form -->
         <div class="form-group">
           <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_FORM'); ?></label>
-          <select v-model="formId" required class="form-control">
-            <option v-for="(name, id) in forms" :value="id">{{ name }}</option>
+          <select v-model="selectedFormId" required class="form-control">
+            <option v-for="(name, id) in formIds" :value="id">{{ name }}</option>
           </select>
         </div>
 
@@ -30,13 +30,17 @@
             <div class="alert alert-info">{{ selectedAction.description }}</div>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-md-2">
             <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
             <div class="form-group" v-for="(property, propName) in selectedAction.properties">
                 <label v-if="property.label" class="control-label">{{ property.label }}</label>
                 <!-- Text Property -->
                 <template v-if="property.type == 'text'">
                   <input type="text" v-model="values[propName]" class="form-control" :required="property.required"/>
+                </template>
+                <!-- Number Property -->
+                <template v-if="property.type == 'number'">
+                  <input type="number" v-model="values[propName]" class="form-control" :required="property.required" :min="property.min" :max="property.max"/>
                 </template>
                 <!-- List Property -->
                 <template v-else-if="property.type == 'list'">
@@ -50,8 +54,74 @@
                 </template>
             </div>
           </div>
-          <div class="col-md-6">
+
+          <div class="col-md-6 widget-iframe-container">
+            <h3>Preview (non clickable)</h3>
+            <iframe class="iframe-preview" width="200%" height="500px" frameborder="0" :src="previewIframeUrl"></iframe>
+            <div class="iframe-blocker"></div>
+          </div>
+
+          <div class="col-md-4 filter-parameters-container">
             <h3>Filtres / Recherche</h3>
+
+            <label>
+              <input type="checkbox" v-model="values.search" />
+              <span>Barre de recherche</span>
+            </label>
+
+            <div class="form-group">
+              <label class="control-label">Nombre de fiches par page</label>
+              <input type="number" v-model="values.pagination" class='form-control' />
+            </div>
+
+            <label>
+              <input type="checkbox" v-model="showFiltersConfig"/>
+              <span>Filtrer avec des Facettes</span>
+            </label>
+
+            <!-- Facettes Config -->
+            <template v-if="showFiltersConfig">
+              <div class="filter-group-form" v-if="selectedForm" v-for="filter in filterGroups">
+                <div class="col-sm-4 form-group">
+                  <label class="control-label">Champ</label>
+                  <select v-model="filter.field" class="form-control">
+                    <option v-for="field in selectedForm.prepared" :value="field.id">{{ field.label }} - {{ field.id }}</option>
+                  </select>
+                </div>
+                <div v-if="selectedForm" class="col-sm-4 form-group">
+                  <label class="control-label">Titre</label>
+                  <input type="text" v-model="filter.title" class="form-control" />
+                </div>
+                <div v-if="selectedForm" class="col-sm-3 form-group">
+                  <label class="control-label">Icone </label>
+                  <input type="text" v-model="filter.icon" class="form-control" />
+                </div>
+                <div class="form-group col-sm-1">
+                  <i class="btn-remove-group fa fa-times" @click="removeFilterGroup(filter)"></i>
+                </div>
+
+              </div>
+              <button v-if="selectedForm" @click="addEmptyFilterGroup" class="btn btn-info btn-add-group">Ajouter une Facette</button>
+
+              <div class="form-group">
+                <label class="control-label">Affichage initial des facettes</label>
+                <select v-model="values.groupsexpanded" class="form-control">
+                    <option value="0">Non dépliées</option>
+                    <option value="1">Dépliées</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="control-label">Position des facettes</label>
+                <select v-model="values.filterposition" class="form-control">
+                    <option value="right">Droite</option>
+                    <option value="left">Gauche</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="control-label">Largeur des facettes (1 à 12)</label>
+                <input type="number" min="1" max="12" v-model="values.filtercolsize" class="form-control"/>
+              </div>
+            </template>
           </div>
 
           <!-- vue="rechercher" voirmenu="0" -->
