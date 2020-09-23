@@ -9,9 +9,9 @@ var YesWikiHighlightRules = function() {
 
     this.$rules = {
         "start" : [{
-            token : "markup.bazar.open",
+            token : "markup.yw-action.open",
             regex : "\\{\\{",
-            next: "bazar"
+            next: "yw-action"
         }, {
             token: "markup.html",
             regex: "\"\"",
@@ -77,16 +77,16 @@ var YesWikiHighlightRules = function() {
             {token : "empty_line", regex : '^$', next: "allowBlock"},
             {token : "empty", regex : "", next : "start"}
         ],
-        "bazar" : [{
-            token: "meta.tag.bazar.action",
-            regex: "[a-zA-Z]+\\s?",
-            next: "bazar-attributes"
+        "yw-action" : [{
+            token: "meta.tag.yw-action",
+            regex: "[a-zA-Z0-9-_]+\\s?",
+            next: "yw-action-attributes"
         }],
-        "bazar-attributes": [{
-            token : ["entity.other.attribute-name.xml.bazar", "equal", "string.attribute-value.xml.bazar"],
+        "yw-action-attributes": [{
+            token : ["entity.other.attribute-name.xml.yw-action", "equal", "string.attribute-value.xml.yw-action"],
             regex : "([-_a-zA-Z0-9]+)(=)(\"[^\"]*\")"
         },{
-            token: "markup.bazar.end",
+            token: "markup.yw-action.end",
             regex: "\\}\\}",
             next: "start"
         }],
@@ -176,10 +176,3 @@ exports.Mode = Mode;
                         }
                     });
                 })();
-
-
-
-
-
-
-
