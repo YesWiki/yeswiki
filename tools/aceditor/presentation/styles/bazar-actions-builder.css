@@ -32,7 +32,7 @@ h3 {
 .btn-add-group {
   margin-top: 1rem;
 }
-.filter-group-form .form-group .control-label {
+.modal .form-group .control-label {
   left: .9rem !important;
 }
 
@@ -40,6 +40,7 @@ h3 {
   position: relative;
   padding: 0;
   max-height: 300px;
+  overflow: hidden;
 }
 .widget-iframe-container h3 {
   color: inherit;
@@ -69,4 +70,11 @@ iframe {
   iframe {
     zoom: 1;
   }
+}
+
+.modal .checkbox label {
+  font-size: .9em;
+}
+.modal [type="checkbox"] + span:not(.lever) {
+  padding-left: 1.5rem;
 }

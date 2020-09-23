@@ -1,18 +1,86 @@
+order: &order
+  nb:
+    label: Limitation
+    type: text
+  ordre:
+    label: Ordre de classement
+    type: list
+    default: "asc"
+    options:
+      - asc
+      - desc
+  champ:
+    label: Champ pour le tri
+    type: form_field
+
 bazarcarto:
   label: Cartographie
   description: Les fiches seront sous forme de marqueur. Un champ de type XXX doit être présent dans votre formulaire
   properties:
     template:
-      value: 'map.tpl.html'
-      type: 'hidden'
+      value: map
     provider:
       label: Fond de carte
       required: true
       type: list
       default: "OpenStreetMap"
       options:
-        - OpenStreetMap
-        - Google
+        - OpenStreetMap.Mapnik
+        - OpenStreetMap.BlackAndWhite
+        - OpenStreetMap.DE
+        - OpenStreetMap.France
+        - OpenStreetMap.HOT
+        - OpenTopoMap
+        - Thunderforest.OpenCycleMap
+        - Thunderforest.Transport
+        - Thunderforest.TransportDark
+        - Thunderforest.SpinalMap
+        - Thunderforest.Landscape
+        - Thunderforest.Outdoors
+        - Thunderforest.Pioneer
+        - OpenMapSurfer.Roads
+        - OpenMapSurfer.Grayscale
+        - Hydda.Full
+        - Hydda.Base
+        - MapBox
+        - Stamen.Toner
+        - Stamen.TonerBackground
+        - Stamen.TonerLite
+        - Stamen.Watercolor
+        - Stamen.Terrain
+        - Stamen.TerrainBackground
+        - Stamen.TopOSMRelief
+        - Esri.WorldStreetMap
+        - Esri.DeLorme
+        - Esri.WorldTopoMap
+        - Esri.WorldImagery
+        - Esri.WorldTerrain
+        - Esri.WorldShadedRelief
+        - Esri.WorldPhysical
+        - Esri.OceanBasemap
+        - Esri.NatGeoWorldMap
+        - Esri.WorldGrayCanvas
+        - HERE.normalDay
+        - HERE.basicMap
+        - HERE.hybridDay
+        - FreeMapSK
+        - MtbMap
+        - CartoDB.Positron
+        - CartoDB.PositronNoLabels
+        - CartoDB.PositronOnlyLabels
+        - CartoDB.DarkMatter
+        - CartoDB.DarkMatterNoLabels
+        - CartoDB.DarkMatterOnlyLabels
+        - HikeBike.HikeBike
+        - HikeBike.HillShading
+        - BasemapAT.basemap
+        - BasemapAT.grau
+        - BasemapAT.overlay
+        - BasemapAT.highdpi
+        - BasemapAT.orthofoto
+        - NASAGIBS.ModisTerraTrueColorCR
+        - NASAGIBS.ModisTerraBands367CR
+        - NASAGIBS.ViirsEarthAtNight2012
     lat:
       label: Latitude
       type: text
@@ -22,10 +90,83 @@ bazarcarto:
     zoom:
       label: Zoom
       type: number
+      default: 8
       min: 1
-      max: 12
+      max: 15
+    spider:
+      label: Eclate un regroupement de point
+      type: checkbox
+      default: false
+    cluster:
+      label: Regroupe les points par zone
+      type: checkbox
+      default: false
+    barregestion:
+      label: Affichage de la barre de gestion des
+      type: checkbox
+      default: false
+
+bazaragenda:
+  label: Calendrier
+  description: Les fiches seront sous forme d'événement dans un calendrier. Un champ de type bf_date_debut_evenement et bf_date_fin_evenement doit être présent dans votre formulaire
+  properties:
+    template:
+      value: agenda
 
 bazarliste:
-  label: List
-  template:
-    value: 'liste_accordeon.tpl.html'
+  label: Liste
+  description: Les fiches seront sous forme d'accordéons
+  properties:
+    template:
+      value: ''
+    <<: *order
+
+bazartrombi:
+  label: Trombinoscope
+  description: Les fiches seront sous forme de Trombinoscope. Un champ de type bf_image est nécessaire
+  properties:
+    template:
+      value: trombinoscope
+    <<: *order
+
+bazarmodalbox:
+  label: Modal box
+  description: Les fiches seront sous forme de boite modale. Un champ de type bf_image, bf_baseline sont nécessaire
+  properties:
+    template:
+      value: material-card
+    <<: *order
+    nbcol:
+      label: Nombre de colonnes
+      type: list
+      default: 4
+      options:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 6
+    type:
+      label: Affichage sans effet
+      type: checkbox
+      default: false
+      checkedvalue: simple
+    modal:
+      label: Affichage d'une fenêtre modale lors du clic
+      type: checkbox
+      default: false
+      checkedvalue: 1
+
+bazarannuaire:
+  label: Annuaire
+  description: Affiche les fiches sous forme d'annuaire alphabétique
+  properties:
+    template:
+      value: annuaire_alphabetique
+
+bazartimeline:
+  label: Time line
+  description: Affiche les fiches dans une time line. Un champ de type bf_image, bf_date_debut_evenement,
+  properties:
+    template:
+      value: timeline
