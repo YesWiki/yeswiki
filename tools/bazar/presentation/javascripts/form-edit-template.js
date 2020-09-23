@@ -2,6 +2,22 @@ var $formBuilderTextInput = $("#form-builder-text");
 var $formBuilderContainer = $("#form-builder-container");
 var formBuilder;
 
+// When user add manuall via wikiCode a list or a formId that does not exist, keep the value
+// so it can be added the select option list
+var listAndFormUserValues = {};
+// Fill the listAndFormUserValues
+var text = $formBuilderTextInput.val().trim();
+var textFields = text.split("\n");
+for (var i = 0; i < textFields.length; i++) {
+  var textField = textFields[i];
+  var fieldValues = textField.split("***");
+  if (fieldValues.length > 1) {
+    var wikiType = fieldValues[0];
+    if (['checkboxfiche', 'checkbox', 'liste', 'radio', 'listefiche', 'radiofiche'].indexOf(wikiType) > -1 && fieldValues[1] && !(fieldValues[1] in formAndListIds)) {
+      listAndFormUserValues[fieldValues[1]] = fieldValues[1];
+    }
+  }
+}
 // Custom fields to add to form builder
 var fields = [
   {
@@ -117,10 +133,10 @@ var selectConf = {
   },
   listeOrFormId: {
     label: "Choix de la liste/du formulaire",
-    options: { ...{ "": "" }, ...formAndListIds.lists, ...formAndListIds.forms }
+    options: { ...{ "": "" }, ...formAndListIds.lists, ...formAndListIds.forms, ...listAndFormUserValues }
   },
-  listId: { label: "", options: formAndListIds.lists },
-  formId: { label: "", options: formAndListIds.forms },
+  listId: { label: "", options: { ...formAndListIds.lists, ...listAndFormUserValues } },
+  formId: { label: "", options: { ...formAndListIds.forms, ...listAndFormUserValues } },
   defaultValue: {
     label: "Valeur par défaut",
   },
@@ -534,9 +550,11 @@ function initializeFormbuilder(formAndListIds) {
     if ($formBuilderTextInput.is(":focus")) return;
     ensureFieldsNamesAreUnique();
 
-    var formData = formBuilder.actions.getData();
-    var wikiText = formatJsonDataIntoWikiText(formData);
-    if (wikiText) $formBuilderTextInput.val(wikiText);
+    if ($("#form-builder-container").is(':visible')) {
+      var formData = formBuilder.actions.getData();
+      var wikiText = formatJsonDataIntoWikiText(formData);
+      if (wikiText) $formBuilderTextInput.val(wikiText);
+    }
 
     // when selecting between data source lists or forms, we need to populate again the listOfFormId select with the
     // proper set of options
@@ -612,12 +630,12 @@ function initializeFormbuilder(formAndListIds) {
     $("a[type=edit].icon-pencil").attr("title", "Editer/Masquer");
   }, 300);
 
-  $formBuilderTextInput.change(initializeBuilderFromTextInput);
+  $("#formbuilder-link").click(initializeBuilderFromTextInput);
 }
 
 function initializeBuilderFromTextInput() {
-  var jsondData = parseWikiTextIntoJsonData($formBuilderTextInput.val());
-  formBuilder.actions.setData(JSON.stringify(jsondData));
+  var jsonData = parseWikiTextIntoJsonData($formBuilderTextInput.val());
+  formBuilder.actions.setData(JSON.stringify(jsonData));
 }
 
 // prevent user to create two fields with the same name
