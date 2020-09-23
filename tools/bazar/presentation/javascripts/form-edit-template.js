@@ -487,10 +487,12 @@ var yesWikiTypes = {
   "listefiche": { type: "select", subtype2: "form"},
   "radiofiche": { type: "radio-group", subtype2: "form"},
   "fichier": { type: "file", subtype: "file" },
-  "champs_cache": { type: "hidden" }
+  "champs_cache": { type: "hidden" },
+  "acls": { type: "acls" }
 }
 
 function initializeFormbuilder(formAndListIds) {
+
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
     showActionButtons: false,
