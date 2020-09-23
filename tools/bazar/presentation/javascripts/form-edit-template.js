@@ -503,8 +503,8 @@ var yesWikiTypes = {
   "listefiche": { type: "select", subtype2: "form"},
   "radiofiche": { type: "radio-group", subtype2: "form"},
   "fichier": { type: "file", subtype: "file" },
-  "champs_cache": { type: "hidden" },
-  "acls": { type: "acls" }
+  "champs_cache": { type: "hidden" }
+
 }
 
 function initializeFormbuilder(formAndListIds) {
@@ -703,7 +703,6 @@ function formatJsonDataIntoWikiText(formData) {
 // into a json object "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
 function parseWikiTextIntoJsonData(text) {
   var result = [];
-  console.log(text);
   var text = text.trim();
   var textFields = text.split("\n");
   for (var i = 0; i < textFields.length; i++) {
@@ -712,7 +711,10 @@ function parseWikiTextIntoJsonData(text) {
     var fieldObject = {};
     if (fieldValues.length > 1) {
       var wikiType = fieldValues[0];
-      var fieldType = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : 'custom';
+      var fieldType = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : wikiType;
+      // check that the fieldType really exists in our form builder
+      if (!(fieldType in yesWikiMapping)) fieldType = 'custom'
+
       var mapping = yesWikiMapping[fieldType];
 
       fieldObject["type"] = fieldType;
