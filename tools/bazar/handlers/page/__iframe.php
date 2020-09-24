@@ -35,15 +35,16 @@ if ($bazarFiche->isFiche($this->GetPageTag())) {
 
     // tableau des fiches correspondantes aux critères
     if (is_array($params['idtypeannonce'])) {
+        // TODO see if we could use multiple form IDs, as is allowed by search function
         $results = array();
-        foreach ($params['idtypeannonce'] as $formid) {
+        foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, $q)
+                $bazarFiche->search(['tabquery' => $params['query'], 'formsIds' => [$formId], 'q' => $q])
             );
         }
     } else {
-        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, $q);
+        $results = $bazarFiche->search(['tabquery' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'q' => $q]);
     }
 
     // affichage à l'écran

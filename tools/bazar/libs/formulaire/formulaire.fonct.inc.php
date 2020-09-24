@@ -2019,17 +2019,11 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 $tabquery = '';
             }
-            $tab_result = baz_requete_recherche_fiches(
-                $tabquery,
-                'alphabetique',
-                $tableau_template[1],
-                '',
-                1,
-                '',
-                '',
-                true,
-                (!empty($tableau_template[13])) ? $tableau_template[13] : ''
-            );
+            $tab_result = $GLOBALS['bazarFiche']->search([
+                'tabquery' => $tabquery,
+                'formsIds' => $tableau_template[1],
+                'q' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+            ]);
             foreach ($tab_result as $fiche) {
                 $valeurs_fiche_liste = json_decode($fiche["body"], true);
                 if (YW_CHARSET != 'UTF-8') {
@@ -2181,18 +2175,11 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $tabquery = '';
         }
-        $tab_result = baz_requete_recherche_fiches(
-            $tabquery,
-            'alphabetique',
-            $tableau_template[1],
-            '',
-            1,
-            '',
-            '',
-            true,
-            (!empty($tableau_template[13])) ? $tableau_template[13] : ''
-        );
-
+        $tab_result = $GLOBALS['bazarFiche']->search([
+            'tabquery' => $tabquery,
+            'formsIds' => $tableau_template[1],
+            'q' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+        ]);
 
         $checkboxtab = array();
         foreach ($tab_result as $fiche) {

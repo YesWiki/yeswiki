@@ -55,18 +55,8 @@ class BazarFiche
      */
     public function getList($formId, $semantic = false)
     {
-        // on recupere toutes les fiches du formulaire donné
-        $results = baz_requete_recherche_fiches(
-            '',
-            'alphabetique',
-            $formId,
-            '',
-            1,
-            '',
-            '',
-            true,
-            ''
-        );
+        // On recupère toutes les fiches du formulaire donné
+        $results = $this->search(['formsIds' => [$formId]]);
 
         $tab_entries = array();
         foreach ($results as $wikipage) {
@@ -311,5 +301,227 @@ class BazarFiche
                 send_mail($this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
             }
         }
+    }
+
+    public function search($params = [])
+    {
+        // Merge les paramètres passé avec des paramètres par défaut
+        $params = array_merge(
+            [
+                'tabquery' => '',
+                'formsIds' => [], // Types de fiches (par ID de formulaire)
+                'state' => 1, // Etat de validation de la fiche
+                'user' => '', // N'affiche que les fiches d'un utilisateur
+                'keywords' => true,
+                'q' => '',
+                'filterSearch' => 'OR'
+            ], 
+            $params
+        );
+
+        // requete pour recuperer toutes les PageWiki etant des fiches bazar
+        $requete_pages_wiki_bazar_fiches =
+            'SELECT DISTINCT resource FROM '.$this->wiki->config['table_prefix'].'triples '.
+            'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
+            'ORDER BY resource ASC';
+
+        $requete =
+            'SELECT DISTINCT * FROM '.$this->wiki->config['table_prefix'].
+            'pages WHERE latest="Y" AND comment_on = \'\'';
+
+        // On limite au type de fiche
+        if (!empty($params['formsIds'])) {
+            if (is_array($params['formsIds'])) {
+                $requete .= ' AND ' . join(' OR ', array_map(function ($formId) {
+                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
+                }, $params['formsIds']));
+            } else {
+                // on a une chaine de caractere pour l'id plutot qu'un tableau
+                $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
+            }
+        }
+
+        // statut de validation
+        $requete .= ' AND body LIKE \'%"statut_fiche":"'.$params['state'].'"%\'';
+
+        // periode de modification
+        if (!empty($GLOBALS['params']['datemin'])) {
+            $requete .= ' AND time >= "'.$GLOBALS['params']['datemin'].'"';
+        }
+
+        // si une personne a ete precisee, on limite la recherche sur elle
+        if ($params['user'] !== '') {
+            $params['user'] = mysqli_escape_string(
+                $this->wiki->dblink,
+                preg_replace('/^"(.*)"$/', '$1', json_encode($params['user']))
+            );
+            // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
+            $params['user'] = str_replace('\\u00', '\\\\\u00', $params['user']);
+
+            $requete .= ' AND body LIKE _utf8\'%"createur":"'.$params['user'].'"%\'';
+        }
+
+        $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
+
+        $requeteSQL = '';
+
+        //preparation de la requete pour trouver les mots cles
+        if (trim($params['q']) != '' && $params['q'] !=_t('BAZ_MOT_CLE')) {
+            $this->wiki->Query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
+            $search = str_replace(array('["', '"]'), '', json_encode(array(removeAccents($params['q']))));
+            $recherche = explode(' ', $search);
+            $nbmots = count($recherche);
+            $requeteSQL .= ' AND (';
+            for ($i = 0; $i < $nbmots; ++$i) {
+                if ($i > 0) {
+                    $requeteSQL .= ' OR ';
+                }
+                $requeteSQL .= ' body LIKE \'%'.mysqli_escape_string($this->wiki->dblink, $recherche[$i]).'%\'';
+            }
+            $requeteSQL .= ')';
+        }
+
+        //on ajoute dans la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
+        if ($params['tabquery'] == '') {
+            $params['tabquery'] = array();
+
+            // on transforme les specifications de recherche sur les liste et checkbox
+            if (isset($_REQUEST['rechercher'])) {
+                reset($_REQUEST);
+
+                foreach ($_REQUEST as $nom => $val) {
+                    if (((substr($nom, 0, 5) == 'liste') || (substr($nom, 0, 8) ==
+                                'checkbox')) && $val != '0' && $val != '') {
+                        if (is_array($val)) {
+                            $val = implode(',', array_keys($val));
+                        }
+                        $params['tabquery'][$nom] = $val;
+                    }
+                }
+            }
+        }
+
+        // cas des criteres passés en parametres get
+        if (isset($_GET['query'])) {
+            $query = $_GET['query'];
+            $tableau = array();
+            $tab = explode('|', $query);
+            //découpe la requete autour des |
+            foreach ($tab as $req) {
+                $tabdecoup = explode('=', $req, 2);
+                if (count($tabdecoup)>1) {
+                    $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+                }
+            }
+            $params['tabquery'] = array_merge($params['tabquery'], $tableau);
+        }
+
+        if ($params['keywords'] == true) {
+            reset($params['tabquery']);
+            foreach ($params['tabquery'] as $nom => $val) {
+                if (!empty($nom) && !empty($val)) {
+                    $valcrit = explode(',', $val);
+                    if (is_array($valcrit) && count($valcrit) > 1) {
+                        $requeteSQL .= ' AND (';
+                        $first = true;
+                        foreach ($valcrit as $critere) {
+                            if (!$first) {
+                                $requeteSQL .= ' '.$params['filterSearch'].' ';
+                            }
+
+                            if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                                $requeteSQL .=
+                                    'body REGEXP \'"'.$nom.'":"'.$critere.'"\'';
+                            } else {
+                                $requeteSQL .=
+                                    'body REGEXP \'"'.$nom.'":("'.$critere.
+                                    '"|"[^"]*,'.$critere.'"|"'.$critere.',[^"]*"|"[^"]*,'
+                                    .$critere.',[^"]*")\'';
+                            }
+
+                            $first = false;
+                        }
+                        $requeteSQL .= ')';
+                    } else {
+                        if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                            $requeteSQL .=
+                                ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                        } else {
+                            $requeteSQL .=
+                                ' AND (body REGEXP \'"'.$nom.'":("'.$val.
+                                '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
+                                .$val.',[^"]*")\')';
+                        }
+                    }
+                }
+            }
+        }
+
+        // requete de jointure : reprend la requete precedente et ajoute des criteres
+        if (isset($_GET['joinquery'])) {
+            $joinrequeteSQL = '';
+            $tableau = array();
+            $tab = explode('|', $_GET['joinquery']);
+            //découpe la requete autour des |
+            foreach ($tab as $req) {
+                $tabdecoup = explode('=', $req, 2);
+                $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+            }
+            $first = true;
+
+            foreach ($tableau as $nom => $val) {
+                if (!empty($nom) && !empty($val)) {
+                    $valcrit = explode(',', $val);
+                    if (is_array($valcrit) && count($valcrit) > 1) {
+                        foreach ($valcrit as $critere) {
+                            if (!$first) {
+                                $joinrequeteSQL .= ' AND ';
+                            } else {
+                                $first = false;
+                            }
+                            $joinrequeteSQL .=
+                                '(body REGEXP \'"'.$nom.'":"[^"]*'.$critere.
+                                '[^"]*"\')';
+                        }
+                        $joinrequeteSQL .= ')';
+                    } else {
+                        if (!$first) {
+                            $joinrequeteSQL .= ' AND ';
+                        } else {
+                            $first = false;
+                        }
+                        if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                            $joinrequeteSQL .=
+                                '(body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                        } else {
+                            $joinrequeteSQL .=
+                                '(body REGEXP \'"'.$nom.'":("'.$val.
+                                '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
+                                .$val.',[^"]*")\')';
+                        }
+                    }
+                }
+            }
+            if ($requeteSQL != '') {
+                $requeteSQL .= ' UNION
+            '.$requete.' AND ('.$joinrequeteSQL.')';
+            } else {
+                $requeteSQL .= ' AND ('.$joinrequeteSQL.')';
+            }
+            $requete .= $requeteSQL;
+        } elseif ($requeteSQL != '') {
+            $requete .= $requeteSQL;
+        }
+
+        // systeme de cache des recherches
+        $reqid = 'bazar-search-'.md5($requete);
+        // debug
+        if (isset($_GET['showreq'])) {
+            echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
+        }
+        if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
+            $GLOBALS['_BAZAR_'][$reqid] = $this->wiki->LoadAll($requete);
+        }
+        return $GLOBALS['_BAZAR_'][$reqid];
     }
 }

@@ -19,7 +19,8 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-// js lib
+global $bazarFiche;
+
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
@@ -35,14 +36,6 @@ if (!function_exists('champCompare')) {
     }
 }
 
-//recuperation des parametres wikini
-$categorie_nature = $this->GetParameter("categorienature");
-
-// permet de reuperer la valeur passée en parametres de l'action ici {{bazarliste categorienature="actus"}}
-// va mettre dans la variable $categorie_nature la valeur "actus"
-if (empty($categorie_nature)) { // dans le cas ou il n'y a pas de valeur précisée, alors il les prend toutes
-    $categorie_nature = 'toutes';
-}
 $id_typeannonce = $this->GetParameter("idtypeannonce");
 if (empty($id_typeannonce)) {
     $id_typeannonce = 'toutes';
@@ -89,15 +82,8 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tableau_resultat = baz_requete_recherche_fiches(
-        $tabquery,
-        'alphabetique',
-        $id_typeannonce,
-        $categorie_nature,
-        1,
-        '',
-        ''
-    );
+    $tableau_resultat = $bazarFiche->search([ 'tabquery' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';
     $fiches['fiches'] = array();

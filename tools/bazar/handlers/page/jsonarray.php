@@ -196,49 +196,49 @@ if (isset($_REQUEST['demand'])) {
             $formval = _convert($formval, 'UTF-8');
             echo json_encode($formval);
             break;
-        case "entries":
-            // liste de fiches bazar
-
-            // chaine de recherche
-            $q = '';
-            if (isset($_GET['q']) and !empty($_GET['q'])) {
-                $q = $_GET['q'];
-            }
-
-            // TODO : gerer les queries
-            $query = '';
-
-            //on recupere toutes les fiches du type choisi et on les met au format csv
-            $results = baz_requete_recherche_fiches(
-                $tabquery,
-                $order,
-                $form,
-                '',
-                1,
-                '',
-                '',
-                true,
-                $q
-            );
-
-            foreach ($results as $wikipage) {
-                $decoded_entry = json_decode($wikipage['body'], true);
-                //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
-                if ($html == '1') {
-                    $fichehtml = baz_voir_fiche(0, $decoded_entry);
-                    $regexp = '/<div.*data-id="(.*)".*>\s*<span class="BAZ_label.*">.*<\/span>\s*'.
-                    '<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
-                    preg_match_all($regexp, $fichehtml, $matches);
-                    if (isset($matches[1]) && count($matches[1]) > 0) {
-                        foreach ($matches[1] as $key => $value) {
-                            $decoded_entry[$value] = $matches[2][$key];
-                        }
-                    }
-                }
-                $tab_entries[] = array_map('strval', $decoded_entry);
-            }
-            echo json_encode($tab_entries);
-            break;
+//        case "entries":
+//            // liste de fiches bazar
+//
+//            // chaine de recherche
+//            $q = '';
+//            if (isset($_GET['q']) and !empty($_GET['q'])) {
+//                $q = $_GET['q'];
+//            }
+//
+//            // TODO : gerer les queries
+//            $query = '';
+//
+//            //on recupere toutes les fiches du type choisi et on les met au format csv
+//            $results = baz_requete_recherche_fiches(
+//                $tabquery,
+//                $order,
+//                $form,
+//                '',
+//                1,
+//                '',
+//                '',
+//                true,
+//                $q
+//            );
+//
+//            foreach ($results as $wikipage) {
+//                $decoded_entry = json_decode($wikipage['body'], true);
+//                //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
+//                if ($html == '1') {
+//                    $fichehtml = baz_voir_fiche(0, $decoded_entry);
+//                    $regexp = '/<div.*data-id="(.*)".*>\s*<span class="BAZ_label.*">.*<\/span>\s*'.
+//                    '<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
+//                    preg_match_all($regexp, $fichehtml, $matches);
+//                    if (isset($matches[1]) && count($matches[1]) > 0) {
+//                        foreach ($matches[1] as $key => $value) {
+//                            $decoded_entry[$value] = $matches[2][$key];
+//                        }
+//                    }
+//                }
+//                $tab_entries[] = array_map('strval', $decoded_entry);
+//            }
+//            echo json_encode($tab_entries);
+//            break;
         case "pages":
             // recuperation des pages wikis
             $sql = 'SELECT * FROM '.$this->GetConfigValue('table_prefix').'pages';

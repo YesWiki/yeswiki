@@ -15,7 +15,8 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-// js lib
+global $bazarFiche;
+
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
 // Recuperation de tous les parametres
@@ -23,14 +24,14 @@ $GLOBALS['params'] = getAllParameters($this);
 // tableau des fiches correspondantes aux critères
 if (is_array($GLOBALS['params']['idtypeannonce'])) {
     $results = array();
-    foreach ($GLOBALS['params']['idtypeannonce'] as $formid) {
+    foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+            $bazarFiche->search(['tabquery' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', '', '', 1, '', '', true, '');
+    $results = $bazarFiche->search(['tabquery' => $GLOBALS['params']['query']]);
 }
 
 // affichage à l'écran

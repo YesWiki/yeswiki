@@ -133,15 +133,7 @@ function baz_afficher_liste_fiches_utilisateur()
 
     //test si l'on est identifie pour voir les fiches
     if (baz_a_le_droit('voir_mes_fiches') && isset($nomwiki['name'])) {
-        $tableau_dernieres_fiches = baz_requete_recherche_fiches(
-            '',
-            '',
-            $GLOBALS['params']['idtypeannonce'],
-            $GLOBALS['params']['categorienature'],
-            1,
-            $nomwiki['name'],
-            10
-        );
+        $tableau_dernieres_fiches = $GLOBALS['bazarFiche']->search([ 'formsIds'=>$GLOBALS['params']['idtypeannonce'], 'user'=>$nomwiki['name'] ]);
         $res .= exturl($tableau_dernieres_fiches, $GLOBALS['params'], false);
     } else {
         $res .= '<div class="alert alert-info">'."\n"
@@ -337,7 +329,7 @@ function baz_afficher_formulaire_import()
                                             $tab_id = array();
                                             $idfiche = str_replace($type_champ[$c], '', $nom_champ[$c]);
                                             if (!isset($allentries[$idfiche])) {
-                                                $fa = baz_requete_recherche_fiches('', $idfiche);
+                                                $fa = $GLOBALS['bazarFiche']->search();
                                                 $tabfa = array();
                                                 foreach ($fa as $fares) {
                                                     $valfa = json_decode($fares['body'], true);
@@ -835,17 +827,7 @@ function baz_afficher_formulaire_export()
         $query = '';
 
         //on recupere toutes les fiches du type choisi et on les met au format csv
-        $tableau_fiches = baz_requete_recherche_fiches(
-            $query,
-            'alphabetique',
-            $id,
-            '',
-            1,
-            '',
-            '',
-            true,
-            $q
-        );
+        $tableau_fiches = $GLOBALS['bazarFiche']->search([ 'tabquery'=>$query, 'formsIds'=>[$id], 'q' => $q ]);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
             // create date and latest date
@@ -1503,17 +1485,12 @@ function bazPrepareFormData($form)
                 }
                 $hash = md5($formelem[1].serialize($tabquery));
                 if (!isset($result[$hash])) {
-                    $result[$hash] = baz_requete_recherche_fiches(
-                        $tabquery,
-                        '',
-                        $formelem[1],
-                        '',
-                        1,
-                        '',
-                        '',
-                        false,
-                        (!empty($formelem[13])) ? $formelem[13] : ''
-                    );
+                    $result[$hash] = $GLOBALS['bazarFiche']->search([
+                        'tabquery'=>$tabquery,
+                        'formsIds'=>$formelem[1],
+                        'keywords'=>false,
+                        'q'=>(!empty($formelem[13])) ? $formelem[13] : ''
+                    ]);
                 }
                 $prepared[$i]['values']['titre_liste'] = $formelem[2];
                 foreach ($result[$hash] as $res) {
@@ -2935,17 +2912,11 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
         $res .= '<div class="alert alert-danger">Erreur template search_form.tpl.html : '.$e->getMessage().'</div>'."\n";
     }
 
-    $fiches = baz_requete_recherche_fiches(
-        $GLOBALS['params']['query'],
-        '',
-        $data['idform'],
-        $categorienature,
-        1,
-        '',
-        '',
-        true,
-        $data['search']
-    );
+    $fiches = $GLOBALS['bazarFiche']->search([
+        'tabquery'=>$GLOBALS['params']['query'],
+        'formsIds'=>$data['idform'],
+        'q'=>$data['search']
+    ]);
     $shownbres = count($GLOBALS['params']['groups']) == 0 || count($fiches) == 0;
     $res .= displayResultList($fiches, $GLOBALS['params'], $shownbres).'</div>';
     return $res;
@@ -2988,238 +2959,6 @@ function formulaire_valeurs_template_champs($template)
     return $tableau_template;
 }
 
-
-/**
- * Cette fonction recupere tous les parametres passes pour la recherche, et retourne un tableau de valeurs des fiches.
- */
-function baz_requete_recherche_fiches(
-    $tableau_criteres = '',
-    $tri = '',
-    $id = '',
-    $categorie_fiche = '',
-    $statut = 1,
-    $personne = '',
-    $nb_limite = '',
-    $motcles = true,
-    $q = '',
-    $facettesearch = 'OR'
-) {
-    //requete pour recuperer toutes les PageWiki etant des fiches bazar
-    $requete_pages_wiki_bazar_fiches =
-    'SELECT DISTINCT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples '.
-    'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
-    'ORDER BY resource ASC';
-
-    $requete =
-    'SELECT DISTINCT * FROM '.$GLOBALS['wiki']->config['table_prefix'].
-    'pages WHERE latest="Y" AND comment_on = \'\'';
-
-    //on limite au type de fiche
-    if (!empty($id)) {
-        if (is_array($id)) {
-            if (count($id) == 1) {
-                // on a qu'un id dans le tableau
-                $id = array_shift($id);
-                $requete .= ' AND body LIKE \'%"id_typeannonce":"'.$id.'"%\'';
-            } else {
-                // on a plusieurs id dans le tableau
-                $requete .= ' AND ';
-                $first = true;
-                foreach ($id as $formid) {
-                    if ($first) {
-                        $first = false;
-                    } else {
-                        $requete .= ' OR ';
-                    }
-                    $requete .= 'body LIKE \'%"id_typeannonce":"'.$formid.'"%\'';
-                }
-            }
-        } else {
-            // on a une chaine de caractere pour l'id plutot qu'un tableau
-            $requete .= ' AND body LIKE \'%"id_typeannonce":"'.$id.'"%\'';
-        }
-    }
-
-    //statut de validation
-    $requete .= ' AND body LIKE \'%"statut_fiche":"'.$statut.'"%\'';
-
-    // periode de modification
-    if (!empty($GLOBALS['params']['datemin'])) {
-        $requete .= ' AND time >= "'.$GLOBALS['params']['datemin'].'"';
-    }
-
-    //si une personne a ete precisee, on limite la recherche sur elle
-    if ($personne != '') {
-        $personne = mysqli_escape_string(
-            $GLOBALS['wiki']->dblink,
-            preg_replace('/^"(.*)"$/', '$1', json_encode($personne))
-        );
-        // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
-        $personne = str_replace('\\u00', '\\\\\u00', $personne);
-        $requete .= ' AND body LIKE _utf8\'%"createur":"'.$personne.'"%\'';
-    }
-
-    $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
-
-    $requeteSQL = '';
-    //preparation de la requete pour trouver les mots cles
-    if (trim($q) != '' && $q !=_t('BAZ_MOT_CLE')) {
-        $GLOBALS['wiki']->Query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
-        $search = str_replace(array('["', '"]'), '', json_encode(array(removeAccents($q))));
-        $recherche = explode(' ', $search);
-        $nbmots = count($recherche);
-        $requeteSQL .= ' AND (';
-        for ($i = 0; $i < $nbmots; ++$i) {
-            if ($i > 0) {
-                $requeteSQL .= ' OR ';
-            }
-            $requeteSQL .= ' body LIKE \'%'.mysqli_escape_string($GLOBALS['wiki']->dblink, $recherche[$i]).'%\'';
-        }
-        $requeteSQL .= ')';
-    }
-    //on ajoute dans la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
-    if ($tableau_criteres == '') {
-        $tableau_criteres = array();
-
-        // on transforme les specifications de recherche sur les liste et checkbox
-        if (isset($_REQUEST['rechercher'])) {
-            reset($_REQUEST);
-
-            foreach ($_REQUEST as $nom => $val) {
-                if (((substr($nom, 0, 5) == 'liste') || (substr($nom, 0, 8) ==
-                    'checkbox')) && $val != '0' && $val != '') {
-                    if (is_array($val)) {
-                        $val = implode(',', array_keys($val));
-                    }
-                    $tableau_criteres[$nom] = $val;
-                }
-            }
-        }
-    }
-
-    // cas des criteres passés en parametres get
-    if (isset($_GET['query'])) {
-        $query = $_GET['query'];
-        $tableau = array();
-        $tab = explode('|', $query);
-        //découpe la requete autour des |
-        foreach ($tab as $req) {
-            $tabdecoup = explode('=', $req, 2);
-            if (count($tabdecoup)>1) {
-                $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-            }
-        }
-        $tableau_criteres = array_merge($tableau_criteres, $tableau);
-    }
-
-    if ($motcles == true) {
-        reset($tableau_criteres);
-        foreach ($tableau_criteres as $nom => $val) {
-            if (!empty($nom) && !empty($val)) {
-                $valcrit = explode(',', $val);
-                if (is_array($valcrit) && count($valcrit) > 1) {
-                    $requeteSQL .= ' AND (';
-                    $first = true;
-                    foreach ($valcrit as $critere) {
-                        if (!$first) {
-                            $requeteSQL .= ' '.$facettesearch.' ';
-                        }
-
-                        if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
-                            $requeteSQL .=
-                            'body REGEXP \'"'.$nom.'":"'.$critere.'"\'';
-                        } else {
-                            $requeteSQL .=
-                            'body REGEXP \'"'.$nom.'":("'.$critere.
-                            '"|"[^"]*,'.$critere.'"|"'.$critere.',[^"]*"|"[^"]*,'
-                            .$critere.',[^"]*")\'';
-                        }
-
-                        $first = false;
-                    }
-                    $requeteSQL .= ')';
-                } else {
-                    if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
-                        $requeteSQL .=
-                        ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
-                    } else {
-                        $requeteSQL .=
-                        ' AND (body REGEXP \'"'.$nom.'":("'.$val.
-                        '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
-                        .$val.',[^"]*")\')';
-                    }
-                }
-            }
-        }
-    }
-
-    // requete de jointure : reprend la requete precedente et ajoute des criteres
-    if (isset($_GET['joinquery'])) {
-        $joinrequeteSQL = '';
-        $tableau = array();
-        $tab = explode('|', $_GET['joinquery']);
-        //découpe la requete autour des |
-        foreach ($tab as $req) {
-            $tabdecoup = explode('=', $req, 2);
-            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-        }
-        $first = true;
-
-        foreach ($tableau as $nom => $val) {
-            if (!empty($nom) && !empty($val)) {
-                $valcrit = explode(',', $val);
-                if (is_array($valcrit) && count($valcrit) > 1) {
-                    foreach ($valcrit as $critere) {
-                        if (!$first) {
-                            $joinrequeteSQL .= ' AND ';
-                        } else {
-                            $first = false;
-                        }
-                        $joinrequeteSQL .=
-                        '(body REGEXP \'"'.$nom.'":"[^"]*'.$critere.
-                        '[^"]*"\')';
-                    }
-                    $joinrequeteSQL .= ')';
-                } else {
-                    if (!$first) {
-                        $joinrequeteSQL .= ' AND ';
-                    } else {
-                        $first = false;
-                    }
-                    if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
-                        $joinrequeteSQL .=
-                        '(body REGEXP \'"'.$nom.'":"'.$val.'"\')';
-                    } else {
-                        $joinrequeteSQL .=
-                        '(body REGEXP \'"'.$nom.'":("'.$val.
-                        '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
-                        .$val.',[^"]*")\')';
-                    }
-                }
-            }
-        }
-        if ($requeteSQL != '') {
-            $requeteSQL .= ' UNION
-            '.$requete.' AND ('.$joinrequeteSQL.')';
-        } else {
-            $requeteSQL .= ' AND ('.$joinrequeteSQL.')';
-        }
-        $requete .= $requeteSQL;
-    } elseif ($requeteSQL != '') {
-        $requete .= $requeteSQL;
-    }
-
-    // systeme de cache des recherches
-    $reqid = 'bazar-search-'.md5($requete);
-    // debug
-    if (isset($_GET['showreq'])) {
-        echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
-    }
-    if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
-        $GLOBALS['_BAZAR_'][$reqid] = $GLOBALS['wiki']->LoadAll($requete);
-    }
-    return $GLOBALS['_BAZAR_'][$reqid];
-}
 
 /**
  * Mets dans le cache une url .
@@ -3740,17 +3479,14 @@ function baz_afficher_flux_RSS()
         $query = '';
     }
 
-    $tableau_flux_rss = baz_requete_recherche_fiches(
-        $query,
-        '',
-        $id,
-        '',
-        $statut,
-        $utilisateur,
-        '',
-        true,
-        $q
-    );
+    $tableau_flux_rss = $GLOBALS['bazarFiche']->search([
+        'tabquery'=>$query,
+        'formsIds'=>$id,
+        'state'=>$statut,
+        'user'=>$utilisateur,
+        'q'=>$q
+    ]);
+
     $tableau_flux_rss = searchResultstoArray($tableau_flux_rss, array());
     $GLOBALS['ordre'] = 'desc';
     $GLOBALS['champ'] = 'date_creation_fiche';
