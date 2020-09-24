@@ -46,6 +46,8 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+global $bazarFiche;
+
 // recuperation des parametres
 $GLOBALS['params'] = getAllParameters($this);
 
@@ -116,7 +118,8 @@ switch ($GLOBALS['params']['vue']) {
     case BAZ_VOIR_SAISIR:
         switch ($GLOBALS['params']['action']) {
             case BAZ_ACTION_SUPPRESSION:
-                echo baz_suppression($_REQUEST['id_fiche']);
+                $bazarFiche->delete($_REQUEST['id_fiche']);
+                header('Location: '.$this->href('', $_REQUEST['id_fiche'], 'message=delete_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER));
                 break;
             case BAZ_ACTION_PUBLIER:
                 echo publier_fiche(1).baz_voir_fiche(1, $_REQUEST['id_fiche']);

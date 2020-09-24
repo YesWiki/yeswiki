@@ -106,7 +106,7 @@ class BazarFiche
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
     {
-        $data['id_typeannonce'] = "$formId";
+        $data['id_typeannonce'] = "$formId"; // Must be a string
 
         if( $semantic ) {
             $data = $this->convertSemanticData($formId, $data);
@@ -220,6 +220,18 @@ class BazarFiche
      */
     public function delete($tag)
     {
+        if( !$this->wiki->HasAccess('write', $tag) ) {
+            throw new \Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
+        }
+
+        $fiche = $this->getOne($tag);
+
+        // Si besoin, on supprime l'utilisateur associé
+        if (isset($fiche['nomwiki'])) {
+            $request = 'DELETE FROM `'.$this->wiki->config['table_prefix'].'users` WHERE `name` = "'. $fiche['nomwiki'].'"';
+            $this->wiki->query($request);
+        }
+
         $this->wiki->DeleteOrphanedPage($tag);
         $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
         $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/sourceUrl', null, '', '');

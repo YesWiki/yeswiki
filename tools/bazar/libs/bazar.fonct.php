@@ -1344,39 +1344,6 @@ function baz_requete_bazar_fiche($valpost)
     return $valpost;
 }
 
-/** baz_suppression() - Supprime une fiche
- * @global   L'identifiant de la fiche a supprimer
- */
-function baz_suppression($idfiche)
-{
-    if ($idfiche != '') {
-        $valeur = baz_valeurs_fiche($idfiche);
-        if (baz_a_le_droit('saisie_fiche', $valeur['bf_ce_utilisateur'])) {
-            //on supprime l'utilisateur associe
-            if (isset($valeur['nomwiki'])) {
-                $requete =
-                'DELETE FROM `'.$GLOBALS['wiki']->config['table_prefix'].'users` WHERE `name` = "'.
-                $valeur['nomwiki'].'"';
-                $GLOBALS['wiki']->query($requete);
-            }
-
-            //on supprime les pages wiki crees
-            $GLOBALS['wiki']->DeleteOrphanedPage($idfiche);
-            $GLOBALS['wiki']->DeleteTriple($idfiche, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
-
-            //on nettoie l'url, on retourne a la consultation des fiches
-            $urlParams = 'message=delete_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER;
-            header('Location: '.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams));
-            exit;
-        } else {
-            echo
-            '<div class="alert alert-error alert-danger">'._t('BAZ_PAS_DROIT_SUPPRIMER').'</div>'."\n";
-        }
-    }
-
-    return;
-}
-
 /** publier_fiche () - Publie ou non dans les fichiers XML la fiche bazar d'un utilisateur
  * @global boolean Valide: oui ou non
  */

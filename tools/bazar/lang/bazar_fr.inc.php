@@ -105,6 +105,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_RECHERCHER_2POINTS' => 'Rechercher : ',
         'BAZ_TOUS_TYPES_FICHES' => 'Tous types de fiches',
         'BAZ_ERROR_EDIT_UNAUTHORIZED' => 'Vous n\'avez pas les permissions pour éditer ce fichier',
+        'BAZ_ERROR_DELETE_UNAUTHORIZED' => 'Vous n\'avez pas les permissions pour supprimer ce fichier',
         'BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE' => 'La fiche n\'a pas pu &ecirc;tre sauv&eacute;e car elle ne poss&egrave;de pas de titre.',
         'BAZ_FLUX_RSS_GENERAL' => 'Flux RSS de toutes les fiches',
         'BAZ_MOT_CLE' => 'mots recherch&eacute;s',
