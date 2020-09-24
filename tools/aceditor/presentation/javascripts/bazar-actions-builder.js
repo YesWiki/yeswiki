@@ -28,7 +28,7 @@ new Vue({
       return result
     },
     wikiCode() {
-      var result = `{{ bazarliste`
+      var result = `{{bazarliste`
       for(var key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
       }
@@ -46,6 +46,10 @@ new Vue({
     copyContent() {
       this.selectFullText();
       document.execCommand('copy');
+    },
+    insertCodeInEditor() {
+      $('textarea#body').surroundSelectedText(this.wikiCode, '')
+      $('#bazar-actions-modal').modal('hide')
     },
     getSelectedForm() {
       if (!this.selectedFormId) return;

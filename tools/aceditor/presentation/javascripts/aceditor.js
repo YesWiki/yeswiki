@@ -162,6 +162,14 @@ var SYNTAX = {
               '</ul>' +
             '</div>');
 
+      // Actions Builder
+      toolbar.append( '<div class="btn-group">' +
+              '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
+              '<ul class="dropdown-menu">' +
+                '<li><a class="aceditor-btn-actions-bazar" data-toggle="modal" data-target="#bazar-actions-modal">'+this.lang['ACEDITOR_ACTIONS_BAZAR']+'</a></li>' +
+              '</ul>' +
+            '</div>');
+
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax['BOLD_LFT']+'" data-rgt="'+this.syntax['BOLD_RGT']+'" title="'+this.lang['ACEDITOR_BOLD_TEXT']+'">' +
@@ -192,14 +200,6 @@ var SYNTAX = {
               '</a>' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="'+this.lang['ACEDITOR_LINK_PROMPT']+'" data-prompt-val="http://" data-lft="'+this.syntax['LINK_LFT']+'" data-rgt="'+this.syntax['LINK_RGT']+'" title="'+this.lang['ACEDITOR_LINK_TITLE']+'" class="btn">' +
                 '<i class="fa fa-link"></i></a>' +
-            '</div>');
-
-      // Actions Builder
-      toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
-              '<ul class="dropdown-menu">' +
-                '<li><a class="aceditor-btn-actions-bazar" data-toggle="modal" data-target="#bazar-actions-modal">'+this.lang['ACEDITOR_ACTIONS_BAZAR']+'</a></li>' +
-              '</ul>' +
             '</div>');
 
       // help

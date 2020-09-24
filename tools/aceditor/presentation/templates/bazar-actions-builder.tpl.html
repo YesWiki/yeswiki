@@ -1,4 +1,4 @@
-<div class="modal fade" id="bazar-actions-modal" tabindex="-1" role="dialog" >
+<div class="modal" id="bazar-actions-modal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -145,8 +145,9 @@
           <div class="col-md-12 result-container">
             <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>
             <div class="input-group">
-              <div class="input-group-addon btn btn-primary" @click="copyContent"><?php echo _t('ACTION_BUILDER_COPY') ?></div>
+              <div class="input-group-addon btn btn-primary" @click="insertCodeInEditor">Insérer</div>
               <input type="text" class="result form-control" @click="selectFullText" :value="wikiCode" ref="wikiCode">
+              <div class="input-group-addon btn btn-default" @click="copyContent"><?php echo _t('ACTION_BUILDER_COPY') ?></div>
             </div>
           </div>
         </div>

@@ -78,3 +78,11 @@ iframe {
 .modal [type="checkbox"] + span:not(.lever) {
   padding-left: 1.5rem;
 }
+
+.input-group-addon {
+  padding: 0 1.8rem 0 1.5rem;
+}
+.input-group-addon.btn-default {
+  background-color: #727479;
+  border-color: #727479;
+}
