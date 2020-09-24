@@ -1,7 +1,15 @@
-console.log("data", data)
-// data global variable has been defined in bazar-actions-builder.tpl.html
+import FormSegment from './components/FormSegment.js'
+
+console.log("data", data) // data global variable has been defined in bazar-actions-builder.tpl.html
+
+// Handle oldbrowser not supporting ES6
+if (!('noModule' in HTMLScriptElement.prototype)) {
+  $('#bazar-actions-builder-app').empty().append('<p>Désolé, votre Navigateur est trop vieux pour utiliser cette fonctionalité.. Mettez le à jour ! ou <a href="https://www.mozilla.org/fr/firefox/new/">installez Firefox</a> </p>')
+} else {
+
 new Vue({
   el: "#bazar-actions-builder-app",
+  components: { FormSegment },
   data: {
     formIds: data.forms,
     selectedFormId: "",
@@ -190,7 +198,6 @@ new Vue({
       $('textarea#body').before(flyingActionBar);
 
       this.editor.selection.on('changeCursor', (event) => {
-        console.log(event)
         let line = this.editor.session.getLine(this.editorCurrLineNumber())
         let isBazarLine = line.match(/^\s*\{\{\s*bazar.*/g) != null
         // wait for editor to change cursor
@@ -198,7 +205,6 @@ new Vue({
           flyingActionBar.toggleClass('active', isBazarLine);
           if (isBazarLine) {
             let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + flyingActionBar.height()
-            console.log("top", top)
             flyingActionBar.css('top', top + 'px')
           }
         }, 100)
@@ -211,3 +217,5 @@ new Vue({
     this.initActionValues()
   }
 });
+
+}

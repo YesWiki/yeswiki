@@ -32,6 +32,13 @@ h3 {
 .btn-add-group {
   margin-top: 1rem;
 }
+.btn-add-group + .form-group {
+  margin-top: 25px;
+}
+.form-group {
+  margin-top: 15px;
+}
+
 .modal .form-group .control-label {
   left: .9rem !important;
 }
@@ -98,6 +105,9 @@ iframe {
 .input-group-addon {
   padding: 0 1.8rem 0 1.5rem;
 }
+.input-group-addon.btn {
+  overflow: visible;
+}
 .input-group-addon.btn-default {
   background-color: #727479;
   border-color: #727479;
@@ -105,12 +115,4 @@ iframe {
 
 [type="checkbox"] + span:not(.lever):before, [type="checkbox"] + span:not(.lever):after {
   margin-top: 2px;
-}
-
-.form-group {
-  margin-top: 15px;
-}
-
-.input-group-addon.btn {
-  overflow: visible;
 }

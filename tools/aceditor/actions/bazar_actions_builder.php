@@ -8,7 +8,6 @@ $data = baz_forms_and_lists_ids();
 require_once "vendor/Spyc.php";
 $data['actions'] = Spyc::YAMLLoad('tools/bazar/actions/documentation.yaml');
 
-
 // ---------------
 // Render Template
 // ---------------

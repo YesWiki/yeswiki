@@ -25,7 +25,7 @@
         </div>
 
         <!-- Action Parameters -->
-        <div v-if="selectedAction" class="row" class="action-parameters-container">
+        <div v-if="selectedAction && selectedForm" class="row" class="action-parameters-container">
           <div class="col-md-12">
             <div class="alert alert-info">{{ selectedAction.description }}</div>
           </div>
@@ -40,83 +40,36 @@
           <!-- Action Params -->
           <div class="col-md-3">
             <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
-            <div class="form-group" :class="property.type" v-for="(property, propName)  in selectedAction.properties">
-                <label v-if="property.label && property.type != 'checkbox'" class="control-label">{{ property.label }}</label>
-                <!-- Text Property -->
-                <template v-if="property.type == 'text'">
-                  <input type="text" v-model="values[propName]" class="form-control" :required="property.required"/>
-                </template>
-                <!-- Number Property -->
-                <template v-else-if="property.type == 'number'">
-                  <input type="number" v-model="values[propName]" class="form-control" :required="property.required" :min="property.min" :max="property.max"/>
-                </template>
-                <!-- Color Property -->
-                <template v-else-if="property.type == 'color'">
-                  <input type="color" v-model="values[propName]" class="form-control" :required="property.required"/>
-                </template>
-                <!-- List Property -->
-                <template v-else-if="property.type == 'list'">
-                  <select class="form-control" v-model="values[propName]" :required="property.required">
-                    <option value=""></option>
-                    <option v-for="option in property.options" :value="option" >{{ option }}</option>
-                  </select>
-                </template>
-                <!-- Checkbox Property -->
-                <template v-else-if="property.type == 'checkbox'">
-                  <label>
-                    <input type="checkbox" v-model="values[propName]"/>
-                    <span>{{ property.label }}</span>
-                  </label>
-                </template>
-                <!-- Field Property -->
-                <template v-else-if="property.type == 'form_field'">
-                  <select v-model="values[propName]" class="form-control">
-                    <option value=""></option>
-                    <option v-for="field in selectedForm.prepared" v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
-                  </select>
-                </template>
-                <!-- Other Property -->
-                <template v-else>
-                  <input type="hidden" v-model="values[propName]" />
-                </template>
-            </div>
+            <form-segment v-for="(property, propName) in selectedAction.properties"
+                          :name="propName" :config="property" :key="propName"
+                          :value="values[propName]" v-on:update:value="values[propName] = $event"
+                          :form-field-options=selectedForm.prepared></form-segment>
           </div>
 
           <!-- Filters Params -->
           <div class="col-md-4 filter-parameters-container">
-            <h3>Filtres / Recherche</h3>
-            <!-- Search -->
-            <label>
-              <input type="checkbox" v-model="values.search" />
-              <span>Barre de recherche</span>
-            </label>
-            <!-- Pagination -->
-            <div class="form-group">
-              <label class="control-label">Nombre de fiches par page</label>
-              <input type="number" v-model="values.pagination" class='form-control' />
-            </div>
-            <!-- Query -->
-            <div class="form-group">
-              <label class="control-label">Requête SQL (avancé)</label>
-              <input type="text" v-model="values.query" class='form-control' />
-            </div>
+            <h3>Affichage</h3>
+            <form-segment v-for="(property, propName) in actions.common"
+                          :name="propName" :config="property" :key="propName"
+                          :value="values[propName]" v-on:update:value="values[propName] = $event"
+                          :form-field-options=selectedForm.prepared></form-segment>
           </div>
 
           <div class="col-md-5">
-            <h3>Facettes</h3>
+            <h3>Filtres / Facettes</h3>
             <!-- Facettes Config -->
-            <div class="filter-group-form" v-if="selectedForm" v-for="filter in filterGroups">
+            <div class="filter-group-form" v-for="filter in filterGroups">
               <div class="col-sm-4 form-group">
                 <label class="control-label">Champ</label>
                 <select v-model="filter.field" class="form-control">
                   <option v-for="field in selectedForm.prepared" v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
                 </select>
               </div>
-              <div v-if="selectedForm" class="col-sm-4 form-group">
+              <div class="col-sm-4 form-group">
                 <label class="control-label">Titre</label>
                 <input type="text" v-model="filter.title" class="form-control" />
               </div>
-              <div v-if="selectedForm" class="col-sm-3 form-group">
+              <div class="col-sm-3 form-group">
                 <label class="control-label">Icone </label>
                 <input type="text" v-model="filter.icon" class="form-control" />
               </div>
@@ -127,34 +80,35 @@
               </div>
             </div>
             <!-- Add Facette -->
-            <button v-if="selectedForm" @click="addEmptyFilterGroup" class="btn btn-info btn-add-group">Ajouter une Facette</button>
-            <hr />
+            <button @click="addEmptyFilterGroup" class="btn btn-info btn-add-group">Ajouter une Facette</button>
 
             <!-- Facette display -->
-            <div class="form-group">
-              <label class="control-label">Affichage initial des facettes</label>
-              <select v-model="values.groupsexpanded" class="form-control">
-                  <option value=""></option>
-                  <option value="0">Non dépliées</option>
-                  <option value="1">Dépliées</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="control-label">Position des facettes</label>
-              <select v-model="values.filterposition" class="form-control">
-                  <option value=""></option>
-                  <option value="right">Droite</option>
-                  <option value="left">Gauche</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="control-label">Largeur des facettes (1 à 12)</label>
-              <input type="number" min="1" max="12" v-model="values.filtercolsize" class="form-control"/>
-            </div>
+            <template v-if="filterGroups.length > 0">
+              <div class="form-group">
+                <label class="control-label">Affichage initial des facettes</label>
+                <select v-model="values.groupsexpanded" class="form-control">
+                    <option value=""></option>
+                    <option value="0">Non dépliées</option>
+                    <option value="1">Dépliées</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="control-label">Position des facettes</label>
+                <select v-model="values.filterposition" class="form-control">
+                    <option value=""></option>
+                    <option value="right">Droite</option>
+                    <option value="left">Gauche</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="control-label">Largeur des facettes (1 à 12)</label>
+                <input type="number" min="1" max="12" v-model="values.filtercolsize" class="form-control"/>
+              </div>
+            </template>
             <hr />
-            
+
             <!-- Icons -->
-            <div class="form-group" v-if="selectedForm">
+            <div class="form-group">
               <label class="control-label">Champ pour la couleur</label>
               <select v-model="values.iconfield" class="form-control">
                 <option value=""></option>
@@ -181,7 +135,6 @@
             <button v-if="values.iconfield" @click="addEmptyIconMapping" class="btn btn-info btn-icon btn-add-group">
               <i class="fa fa-plus"></i>
             </button>
-            <hr />
           </div>
 
           <div class="col-md-12 result-container">
@@ -209,9 +162,10 @@
   var data = <?php echo json_encode($data) ?>;
 </script>
 
+<!-- Load manually script because we need to use type="module" for ES6 import to work -->
+<script src="libs/vue.js"></script>
+<script type="module" src="tools/aceditor/presentation/javascripts/bazar-actions-builder.js"></script>
+
 <?php
-  // $GLOBALS['wiki']->addJavascriptFile('libs/vue.min.js');
-  $GLOBALS['wiki']->addJavascriptFile('libs/vue.js'); // For dev only
-  $GLOBALS['wiki']->addJavascriptFile('tools/aceditor/presentation/javascripts/bazar-actions-builder.js');
   $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/bazar-actions-builder.css');
 ?>

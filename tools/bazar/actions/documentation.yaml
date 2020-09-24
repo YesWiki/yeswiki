@@ -1,17 +1,29 @@
-order: &order
+common:
+  search:
+    label: Barre de recherche
+    type: checkbox
+  pagination:
+    label: Nombre de fiches par page
+    hint: Laisser vide pour ne pas utiliser la pagination
+    type: number
   nb:
     label: Limitation
-    type: text
+    type: number
+  champ:
+    label: Champ pour le tri
+    type: form_field
+    default: bf_titre
   ordre:
     label: Ordre de classement
     type: list
     default: "asc"
     options:
-      - asc
-      - desc
-  champ:
-    label: Champ pour le tri
-    type: form_field
+      - asc:Croissant
+      - desc:Décroissant
+  query:
+    label: "Requête SQL (avancé)"
+    type: text
+
 
 bazarcarto:
   label: Cartographie
