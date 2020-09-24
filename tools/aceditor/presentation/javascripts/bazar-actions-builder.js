@@ -4,16 +4,17 @@ new Vue({
   el: "#bazar-actions-builder-app",
   data: {
     formIds: data.forms,
-    selectedFormId: "2",
+    selectedFormId: "",
     forms: {},
     selectedForm: null,
     actions: data.actions,
-    selectedActionId: "bazarcarto",
-    filtersProperties: ['groups', 'groupsexpanded', 'titles', 'groupicons', 'filterposition', 'filtercolsize'],
-    values: { iconfield: 'checkboxListeCategories' },
+    selectedActionId: "",
+    values: {},
     filterGroups: [],
     actionParams: {},
-    iconMapping: []
+    iconMapping: [],
+    editor: null, // aceditor
+    isEditingExistingAction: false,
   },
   computed: {
     selectedAction() {
@@ -42,6 +43,58 @@ new Vue({
     }
   },
   methods: {
+    editorCurrLineNumber() {
+      return this.editor.selection.getRange().start.row
+    },
+    init() {
+      let line = this.editor.session.getLine(this.editorCurrLineNumber())
+      let newValues = {}
+      if (line.match(/^\s*\{\{\s*bazar.*/g) != null) {
+        this.isEditingExistingAction = true
+        const attributes = $(line.replace(/\s*{{\s*/, '<').replace('}}', '/>'))[0].attributes
+        for(let attribute of attributes) {
+          newValues[attribute.name] = attribute.value
+        }
+        this.selectedFormId = newValues.id
+        for(let actionId in this.actions) {
+          let action = this.actions[actionId]
+          if (action && action.properties && action.properties.template.value == newValues.template) {
+            this.selectedActionId = actionId
+          }
+        }
+        if (newValues.icon) {
+          this.iconMapping = []
+          newValues.icon.split(',').each(el => {
+            this.iconMapping.push({icon: el.split('=')[0], id: el.split('=')[1]})
+          })
+        }
+        if (newValues.groups) {
+          this.filterGroups = []
+          let groups = newValues.groups.split(',')
+          let titles = newValues.titles ? newValues.titles.split(',') : []
+          let icons = newValues.groupicons ? newValues.groupicons.split(',') : []
+          for(var i = 0; i < groups.length; i++) {
+            this.filterGroups.push({
+              field: groups[i],
+              title: titles.length >= i ? titles[i] : '' ,
+              icon: icons.length >= i ? icons[i] : ''
+            })
+          }
+        }
+        this.values.groups = this.filterGroups.map(g => g.field).filter(e => e != "").join(',')
+        this.values.titles = this.filterGroups.map(g => g.title).filter(e => e != "").join(',')
+        this.values.groupicons = this.filterGroups.map(g => g.icon).filter(e => e != "").join(',')
+        this.values.icon = this.iconMapping.filter(m => m.id && m.icon).map(m => `${m.icon}=${m.id}`).join(',')
+
+        this.values = newValues
+        this.updateActionParams();
+      } else {
+        this.isEditingExistingAction = false
+        this.values = {}
+        this.selectedFormId = ''
+        this.selectedActionId = ''
+      }
+    },
     selectFullText() {
       var range = document.createRange();
       range.selectNode(this.$refs.wikiCode);
@@ -53,8 +106,15 @@ new Vue({
       document.execCommand('copy');
     },
     insertCodeInEditor() {
-      $('textarea#body').surroundSelectedText(this.wikiCode, '')
       $('#bazar-actions-modal').modal('hide')
+      if (this.isEditingExistingAction) {
+        let line = this.editorCurrLineNumber()
+        this.editor.session.replace(new ace.Range(line, 0, line + 1, 0), this.wikiCode + "\n");
+        this.editor.gotoLine(line + 1)
+      } else {
+        this.editor.insert(this.wikiCode)
+      }
+      this.editor.selection.selectLine()
     },
     getSelectedForm() {
       if (!this.selectedFormId) return;
@@ -120,6 +180,32 @@ new Vue({
     },
   },
   mounted() {
+    $(document).ready(() => {
+      this.editor = $('textarea#body').data('aceditor');
+      var flyingActionBar = $(`<div class="flying-action-bar">
+        <a data-toggle="modal" data-target="#bazar-actions-modal" class="aceditor-btn-actions-bazar btn btn-primary btn-icon">
+          <i class="fa fa-pencil-alt"></i>
+        </a>
+      </div>`)
+      $('textarea#body').before(flyingActionBar);
+
+      this.editor.selection.on('changeCursor', (event) => {
+        console.log(event)
+        let line = this.editor.session.getLine(this.editorCurrLineNumber())
+        let isBazarLine = line.match(/^\s*\{\{\s*bazar.*/g) != null
+        // wait for editor to change cursor
+        setTimeout(() => {
+          flyingActionBar.toggleClass('active', isBazarLine);
+          if (isBazarLine) {
+            let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + flyingActionBar.height()
+            console.log("top", top)
+            flyingActionBar.css('top', top + 'px')
+          }
+        }, 100)
+      })
+
+      $('.aceditor-btn-actions-bazar').click(this.init)
+    })
     this.addEmptyIconMapping()
     this.getSelectedForm()
     this.initActionValues()

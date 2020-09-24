@@ -15,12 +15,15 @@ order: &order
 
 bazarcarto:
   label: Cartographie
-  description: Les fiches seront sous forme de marqueur. Un champ de type XXX doit être présent dans votre formulaire
+  description: Les fiches seront sous forme de marqueur.
+  hint: "Des champ de type bf_latitude et bf_longitude remplis via à minima bf_ville doivent être présent dans votre formulaire"
   properties:
     template:
       value: map
     provider:
       label: Fond de carte
+      hint: "Explications"
+      doclink:
       required: true
       type: list
       default: "OpenStreetMap"
@@ -83,6 +86,7 @@ bazarcarto:
         - NASAGIBS.ViirsEarthAtNight2012
     lat:
       label: Latitude
+      doclink: https://yeswiki.net/?CommentFairePourTrouverLaLatitudeLongitu
       type: text
     lon:
       label: Longitude
@@ -93,6 +97,21 @@ bazarcarto:
       default: 8
       min: 1
       max: 15
+    width:
+      label: Largeur de la carte
+      hint: la largeur en pixels doit être indiqué sous forme 500px , accepte aussi la valeur 100%
+      type: texte
+      default: 100%
+    height:
+      label: Hauteur de la carte
+      hint: la hauteur en pixels doit être indiqué sous forme 500px
+      type: texte
+      default: 600px
+    smallmarker:
+      label: taille du marqueur
+      type: checkbox
+      default: false
+      checkedvalue: 1
     spider:
       label: Eclate un regroupement de point
       type: checkbox
@@ -102,13 +121,20 @@ bazarcarto:
       type: checkbox
       default: false
     barregestion:
-      label: Affichage de la barre de gestion des
+      label: Affichage de la barre de gestion des fiches
       type: checkbox
+      default: false
+    navigation:
+      label: Boutons de contrôle du zoom
+      default: true
+    zoommolette:
+      label: Zoom à l'aide de la molette de la souris
       default: false
 
 bazaragenda:
   label: Calendrier
-  description: Les fiches seront sous forme d'événement dans un calendrier. Un champ de type bf_date_debut_evenement et bf_date_fin_evenement doit être présent dans votre formulaire
+  description: Les fiches seront sous forme d'événement dans un calendrier.
+  hint: Un champ de type bf_date_debut_evenement et bf_date_fin_evenement doit être présent dans votre formulaire
   properties:
     template:
       value: agenda
@@ -123,15 +149,17 @@ bazarliste:
 
 bazartrombi:
   label: Trombinoscope
-  description: Les fiches seront sous forme de Trombinoscope. Un champ de type bf_image est nécessaire
+  description: Les fiches seront sous forme de Trombinoscope.
+  hint: Un champ de type bf_image est nécessaire
   properties:
     template:
       value: trombinoscope
     <<: *order
 
-bazarmodalbox:
-  label: Modal box
-  description: Les fiches seront sous forme de boite modale. Un champ de type bf_image, bf_baseline sont nécessaire
+bazarmaterialcard:
+  label: Material card
+  description: Les fiches seront sous forme de boite modale.
+  hint: Un champ de type bf_image, bf_baseline sont nécessaire
   properties:
     template:
       value: material-card
@@ -166,7 +194,8 @@ bazarannuaire:
 
 bazartimeline:
   label: Time line
-  description: Affiche les fiches dans une time line. Un champ de type bf_image, bf_date_debut_evenement,
+  description: Affiche les fiches dans une time line.
+  hint: Un champ de type bf_image, bf_date_debut_evenement sont nécessaire.
   properties:
     template:
       value: timeline
