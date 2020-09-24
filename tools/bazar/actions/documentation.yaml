@@ -18,23 +18,42 @@ common:
     type: list
     default: "asc"
     options:
-      - asc:Croissant
-      - desc:Décroissant
+      - asc->Croissant
+      - desc->Décroissant
   query:
     label: "Requête SQL (avancé)"
     type: text
+
+facettes:
+  groupsexpanded:
+    label: Affichage initial des facettes
+    type: list
+    options:
+      - 0->Non dépliées
+      - 1->Dépliées
+  filterposition:
+    label: Position des facettes
+    type: list
+    options:
+      - right->Droite
+      - left->Gauche
+  filtercolsize:
+    label: Largeur des facettes (1 à 12)
+    type: range
+    min: 1
+    max: 12
+
 
 
 bazarcarto:
   label: Cartographie
   description: Les fiches seront sous forme de marqueur.
-  hint: "Des champ de type bf_latitude et bf_longitude remplis via à minima bf_ville doivent être présent dans votre formulaire"
+  hint: "Le champ géolocalisation doit être présent dans votre formulaire"
   properties:
     template:
       value: map
     provider:
       label: Fond de carte
-      hint: "Explications"
       required: true
       type: list
       default: "OpenStreetMap"
@@ -104,7 +123,7 @@ bazarcarto:
       type: text
     zoom:
       label: Zoom
-      type: number
+      type: range
       default: 8
       min: 1
       max: 15

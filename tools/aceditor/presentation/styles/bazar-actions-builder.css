@@ -38,6 +38,15 @@ h3 {
 .form-group {
   margin-top: 15px;
 }
+.form-group.range {
+  margin-top: 25px;
+}
+.form-group.range .control-label {
+  top: -1.2em !important;
+}
+input[type=range] {
+  box-shadow: none !important;
+}
 
 .modal .form-group .control-label {
   left: .9rem !important;

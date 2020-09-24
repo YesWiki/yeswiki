@@ -20,14 +20,14 @@
         <div class="form-group">
           <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?></label>
           <select v-model="selectedActionId" required class="form-control">
-            <option v-for="(action, actionId) in actions" :value="actionId">{{ action.label }}</option>
+            <option v-for="(action, actionId) in actions" :value="actionId">{{ action.label }} - {{ action.description }}</option>
           </select>
         </div>
 
         <!-- Action Parameters -->
         <div v-if="selectedAction && selectedForm" class="row" class="action-parameters-container">
-          <div class="col-md-12">
-            <div class="alert alert-info">{{ selectedAction.description }}</div>
+          <div class="col-md-12" v-if="selectedAction.hint">
+            <div class="alert alert-warning">{{ selectedAction.hint }}</div>
           </div>
 
           <!-- Iframe Preview -->
@@ -82,28 +82,11 @@
 
             <!-- Facette display -->
             <template v-if="filterGroups.length > 0">
-              <div class="form-group">
-                <label class="control-label">Affichage initial des facettes</label>
-                <select v-model="values.groupsexpanded" class="form-control">
-                    <option value=""></option>
-                    <option value="0">Non dépliées</option>
-                    <option value="1">Dépliées</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="control-label">Position des facettes</label>
-                <select v-model="values.filterposition" class="form-control">
-                    <option value=""></option>
-                    <option value="right">Droite</option>
-                    <option value="left">Gauche</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="control-label">Largeur des facettes (1 à 12)</label>
-                <input type="number" min="1" max="12" v-model="values.filtercolsize" class="form-control"/>
-              </div>
+              <form-segment v-for="(property, propName) in actions.facettes"
+                            :name="propName" :config="property" :key="propName"
+                            :value="values[propName]" v-on:update:value="setValue(propName, $event)">
+              </form-segment>
             </template>
-            <hr />
 
             <!-- Icons -->
             <div class="form-group">

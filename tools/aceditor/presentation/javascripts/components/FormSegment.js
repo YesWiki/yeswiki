@@ -18,7 +18,7 @@ export default {
     },
     optionsList() {
       let result = this.config.options.map(el => {
-        const splited = el.split(':')
+        const splited = el.split('->')
         return { value: splited[0], label: splited.length > 1 ? splited[1] : splited[0] }
       })
       result.unshift({value: '', label: ''})
@@ -28,8 +28,8 @@ export default {
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label && config.type != 'checkbox'" class="control-label">{{ config.label }}</label>
-      <!-- Text/Number/Color -->
-      <template v-if="['text', 'number', 'color'].includes(config.type)">
+      <!-- Text/Number/Color/slider -->
+      <template v-if="['text', 'number', 'color', 'range'].includes(config.type)">
         <input :type="config.type" v-model="value" class="form-control" :required="config.required"
                :min="config.min" :max="config.max"
                />
