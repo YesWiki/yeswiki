@@ -1731,9 +1731,9 @@ function bazPrepareFormData($form)
                 $prepared[$i]['values']['id'] = $formelem[1];
             } else {
                 $tabquery = array();
-                if (!empty($formelem[12])) {
+                if (!empty($formelem[15])) {
                     $tableau = array();
-                    $tab = explode('|', $formelem[12]);
+                    $tab = explode('|', $formelem[15]);
                     //découpe la requete autour des |
                     foreach ($tab as $req) {
                         $tabdecoup = explode('=', $req, 2);
