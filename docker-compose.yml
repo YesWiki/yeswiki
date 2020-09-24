@@ -1,24 +1,14 @@
-version: '3.7'
-
-volumes:
-  yeswiki-db:
+version: '3.3'
 
 services:
     yeswiki:
         build: .
         container_name: yeswiki
         ports:
-            - "80:80"
+            - "81:80"
         # these volumes help develop locally, close to what is shipped on Docker Hub
         volumes:
-            - ./wakka.config.php:/var/www/html/wakka.config.php
-            - ./actions:/var/www/html/actions
-            - ./files:/var/www/html/files
-            - ./formatters:/var/www/html/formatters
-            - ./handlers:/var/www/html/handlers
-            - ./includes:/var/www/html/includes
-            - ./lang:/var/www/html/lang
-        #    - ../yeswiki-extension-ebook:/var/www/html/tools/publication
+            - .:/var/www/html
         depends_on:
             - db
         environment:
@@ -31,7 +21,7 @@ services:
         image: mysql:5.6
         container_name: db
         volumes:
-            - yeswiki-db:/var/lib/mysql
+            - ./.db:/var/lib/mysql
         environment:
             - MYSQL_DATABASE=yeswiki_dev
             - MYSQL_ROOT_PASSWORD=root

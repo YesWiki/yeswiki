@@ -14,12 +14,11 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 	{
 		foreach ($tab_tous_les_tags as $tab_les_tags)
 		{
-			$response[] = _convert($tab_les_tags['value'], 'ISO-8859-1');
+			$response[] = str_replace('\'','&#39;', str_replace('"', '\"', $tab_les_tags['value']));
 		}
 	}
 	sort($response);
 	$tagsexistants = '\''.implode('\',\'', $response).'\'';
-
 	
 	// on recupere les tags de la page courante
 	$tabtagsexistants = $this->GetAllTags($this->GetPageTag());

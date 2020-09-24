@@ -9,9 +9,6 @@ RUN apt-get update \
     && rm -rf /var/cache/apk/* \
     && rm -rf /tmp/*
 
-# Copy main assets
-COPY . ./
-
 # Add default theme
 RUN mkdir -p themes/margot \
     && curl -o - -sSL https://github.com/YesWiki/yeswiki-theme-margot/archive/master.tar.gz \
