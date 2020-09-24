@@ -75,9 +75,9 @@ if ($isAdmin){ // Emails only shown to admins
 	echo '	<th>Email</th>', "\n";
 }
 echo '	<th>Inscription</th>', "\n";
-echo '	<th> </th>', "\n";
+echo '	<th>Modifier</th>', "\n";
 if ($isAdmin){ // Delete buttons only shown to admins
-	echo '	<th> </th>', "\n";
+	echo '	<th>Supprimer</th>', "\n";
 }
 echo '</tr>', "\n";
 echo '</thead>', "\n";
@@ -112,7 +112,9 @@ foreach ($last_users as $user) {
 		echo '<input class="btn btn-sm btn-danger" type="submit" value="'._t('USER_DELETE').'" />';
 		echo $this->FormClose();
 		echo '</td>';
-	}
+	} else {
+        echo '<td></td>';
+    }
 	echo '</tr>', "\n";
 }
 echo '</tbody>', "\n";
