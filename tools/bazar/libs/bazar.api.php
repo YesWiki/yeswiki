@@ -48,6 +48,67 @@ function getForm($form = '')
     }
 }
 
+function getFiche($args) {
+    global $bazarFiche, $wiki;
+
+    if( $args ) {
+        if( $args[0]==='url' && $args[1] ) {
+            $triples = $wiki->GetMatchingTriples(null, 'http://outils-reseaux.org/_vocabulary/sourceUrl', urldecode($args[1]) );
+            $resources = array_map(function($triple) use($wiki) {
+                return $wiki->href('', $triple['resource']);
+            }, $triples);
+
+            header("Content-type: application/json; charset=UTF-8");
+            header("Access-Control-Allow-Origin: *");
+            exit(json_encode($resources));
+        } else {
+            $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
+            $contentType = $semantic ? 'application/ld+json' : 'application/json';
+
+            $data = $bazarFiche->getList($args[0], $semantic);
+
+            // Put data inside LDP container
+            if( $semantic ) {
+                $data = [
+                    '@context' => $data[0]['@context'],
+                    '@id' => $wiki->href('fiche/' . $args[0], 'api'),
+                    '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
+                    'ldp:contains' => array_map(function($resource) {
+                        unset($resource['@context']);
+                        return $resource;
+                    }, $data)
+                ];
+            }
+
+            header("Content-type: $contentType; charset=UTF-8");
+            header("Access-Control-Allow-Origin: *");
+            exit(json_encode($data));
+        }
+    } else {
+        http_response_code(404);
+        exit(json_encode(['error' => array('Missing fiche ID')]));
+    }
+}
+
+function postFiche($args) {
+    if( $args ) {
+        global $bazarFiche;
+
+        $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false;
+        $fiche = $bazarFiche->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
+
+        if( $fiche ) {
+            exit(json_encode(['success' => $GLOBALS['wiki']->href('', $fiche['id_fiche'])]));
+        } else {
+            http_response_code(400);
+            exit(json_encode(['error' => 'Invalid data']));
+        }
+    } else {
+        http_response_code(404);
+        exit(json_encode(['error' => 'Missing form ID']));
+    }
+}
+
 /**
  * Display bazar api documentation
  *
@@ -57,7 +118,21 @@ function documentationBazar()
 {
     global $wiki;
     $output = '<h2>Extension bazar</h2>'."\n";
-    $link = $wiki->href('', 'api/form');
-    $output .= 'GET <code><a href="'.$link.'">'.$link.'</a></code><br />';
+
+    $form = $wiki->href('', 'api/form');
+    $output .= 'GET <code><a href="'.$form.'">'.$form.'</a></code><br />';
+
+    $form = $wiki->href('', 'api/form/{formId}');
+    $output .= 'GET <code><a href="'.$form.'">'.$form.'</a></code><br />';
+
+    $fiche = $wiki->href('', 'api/fiche/url/{sourceUrl}');
+    $output .= 'GET <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
+
+    $fiche = $wiki->href('', 'api/fiche/{formId}');
+    $output .= 'GET <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
+
+    $fiche = $wiki->href('', 'api/fiche/{formId}');
+    $output .= 'POST <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
+
     return $output;
 }

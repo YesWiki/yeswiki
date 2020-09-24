@@ -31,20 +31,25 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+global $bazarFiche;
+
 //si la page est de type fiche_bazar, alors on affiche la fiche plutot que de formater en wiki
 $type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
 if ($type == 'fiche_bazar') {
-    $entry = baz_valeurs_fiche($this->GetPageTag());
+    if( strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false ) {
+        $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
+        $contentType = $semantic ? 'application/ld+json' : 'application/json';
 
-    if( strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false ) {
-        header('Content-type: application/ld+json; charset=UTF-8');
-        header('Access-Control-Allow-Origin: *');
-        echo json_encode(baz_append_semantic_data($entry, $entry['id_typeannonce'], true));
-        exit();
+        header("Content-type: $contentType; charset=UTF-8");
+        header("Access-Control-Allow-Origin: *");
+
+        $data = $bazarFiche->getOne($this->GetPageTag(), $semantic);
+        exit(json_encode($data));
     } else {
         // js lib
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
+        $entry = baz_valeurs_fiche($this->GetPageTag());
         $this->page["body"] = '""'.baz_voir_fiche(0, $entry).'""';
     }
 }
