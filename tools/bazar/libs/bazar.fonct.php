@@ -1104,22 +1104,19 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     // CAS DE LA MODIFICATION D'UNE FICHE (VALIDATION ET MAJ)
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_MODIFIER_V) {
-        $valid = validateForm($_POST);
-        if ($valid['result'] && baz_a_le_droit('saisie_fiche', $GLOBALS['wiki']
-                ->GetPageOwner($_POST['id_fiche']))) {
-            $valeur = baz_mise_a_jour_fiche($_POST);
-
-            if ($GLOBALS['wiki']->GetPageTag() != $valeur['id_fiche']) {
-                // Redirection pour eviter la revalidation du formulaire
+        try {
+            $fiche = $bazarFiche->update($_POST['id_fiche'], $_POST);
+            if ($GLOBALS['wiki']->GetPageTag() != $fiche['id_fiche']) {
+                // Redirection pour éviter la revalidation du formulaire
                 $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
-                  .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
-                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, true));
+                  .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
+                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             } else {
                 header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag()));
             }
             exit;
-        } else {
-            echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
+        } catch(\Exception $e) {
+            echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
         }
     }
 
@@ -1377,51 +1374,6 @@ function validateForm($valeur)
 
     // form validates!
     return array('result' => true);
-}
-
-/** baz_mise_a_jour() - Mettre a jour une fiche
- * @global   Le contenu du formulaire de saisie de l'annonce
- */
-function baz_mise_a_jour_fiche($valeur)
-{
-    $valeur = baz_requete_bazar_fiche($valeur);
-    // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-    $GLOBALS['wiki']->SavePage($valeur['id_fiche'], json_encode($valeur));
-
-    // Envoie d un mail aux administrateurs
-    if ($GLOBALS['wiki']->config['BAZ_ENVOI_MAIL_ADMIN']) {
-        include_once 'tools/contact/libs/contact.functions.php';
-        $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
-                ->config['base_url']);
-        $sujet = removeAccents('['.str_replace('http://', '', $lien).'] fiche modifiee : '.$_POST['bf_titre']);
-        $text =
-        'Voir la fiche sur le site pour l\'administrer : '.$GLOBALS['wiki']->href('', $valeur['_BAZAR_']['id_fiche']);
-        $texthtml = '<br /><br /><a href="'.$GLOBALS['wiki']->href('', $valeur['_BAZAR_']['id_fiche']).
-        '" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-        $fichier = 'tools/bazar/presentation/styles/bazar.css';
-        $style = file_get_contents($fichier);
-        $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
-        $fiche = str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $valeur['id_fiche'])).$texthtml;
-        $html =
-        '<html><head><style type="text/css">'.$style.
-        '</style></head><body>'.$fiche.'</body></html>';
-
-        //on va chercher les admins
-        $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']
-            ->config['table_prefix'].'triples '
-
-        .
-
-        'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-        $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
-        $tabadmin = explode("\n", $ligne['value']);
-        foreach ($tabadmin as $line) {
-            $admin = $GLOBALS['wiki']->LoadUser(trim($line));
-            send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
-        }
-    }
-
-    return $valeur;
 }
 
 /** baz_suppression() - Supprime une fiche
@@ -2670,14 +2622,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         }
         if ($_GET['message'] == 'modif_ok') {
             $res .= _t('BAZ_FICHE_MODIFIEE').'  <a href="'.$GLOBALS['wiki']
-                ->href(
-                    '',
-                    $GLOBALS['wiki']->getPageTag(),
-                    BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR.
-                    '&id_typeannonce='.
-                    $fichebazar['values']['id_typeannonce']
-                ).'" class="pull-right btn-sm btn btn-primary">'.
-            _t('BAZ_ADD_MODIFY_ENTRY_AGAIN').'</a>';
+                ->href('edit', $GLOBALS['wiki']->getPageTag()).'" class="pull-right btn-sm btn btn-primary">'.
+            _t('BAZ_MODIFY_ENTRY_AGAIN').'</a>';
         }
         $res .= '<div class="clearfix"></div></div>'."\n";
     }
