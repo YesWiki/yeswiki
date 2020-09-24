@@ -1478,6 +1478,8 @@ function baz_insertion_fiche($valeur)
 function baz_mise_a_jour_fiche($valeur)
 {
     $valeur = baz_requete_bazar_fiche($valeur);
+    $valeur = assign_restricted_fields($valeur);
+
     // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
     $GLOBALS['wiki']->SavePage($valeur['id_fiche'], json_encode($valeur));
 
@@ -1501,11 +1503,7 @@ function baz_mise_a_jour_fiche($valeur)
 
         //on va chercher les admins
         $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']
-            ->config['table_prefix'].'triples '
-
-        .
-
-        'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
+            ->config['table_prefix'].'triples ' . 'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
         $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
         $tabadmin = explode("\n", $ligne['value']);
         foreach ($tabadmin as $line) {
@@ -1514,6 +1512,41 @@ function baz_mise_a_jour_fiche($valeur)
         }
     }
 
+    return $valeur;
+}
+
+/**
+ * Met à jour les valeurs des champs qui sont restreints en écriture
+ *
+ * @param array $valeur l'objet contenant les valeurs issues de la saisie du formulaire
+ * @return array tableau des valeurs de la fiche à sauver
+ */
+function assign_restricted_fields(array $valeur)
+{
+    // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
+    // (un LoadPage qui passe les droits ACLS est nécéssaire)
+    $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
+    $template = baz_valeurs_formulaire($valeur['id_typeannonce'])['template'];
+    $protected_fields_index = [];
+    for ($i = 0; $i < count($template); ++$i) {
+        if (!empty($template[$i][12]) && !$GLOBALS['wiki']->CheckACL($template[$i][12])) {
+            $protected_fields_index[] = $i;
+        }
+    }
+    if (!empty($protected_fields_index)) {
+        $sql = 'SELECT * FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'pages' . " WHERE tag = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeur['id_fiche']) . "' AND latest = 'Y'" . " LIMIT 1";
+        $valjson = $GLOBALS['wiki']->LoadSingle($sql);
+        $old_fiche = json_decode($valjson['body'], true);
+        foreach ($old_fiche as $key => $value) {
+            $old_fiche[$key] = _convert($value, 'UTF-8');
+        }
+        foreach ($protected_fields_index as $index) {
+            if (in_array($template[$index][0], $INDEX_CHELOUS))
+                $valeur[$template[$index][0] . $template[$index][1] . $template[$index][6]] = $old_fiche[$template[$index][0] . $template[$index][1] . $template[$index][6]];
+            else
+                $valeur[$template[$index][1]] = $old_fiche[$template[$index][1]];
+        }
+    }
     return $valeur;
 }
 
@@ -1704,7 +1737,8 @@ function bazPrepareFormData($form)
                     //découpe la requete autour des |
                     foreach ($tab as $req) {
                         $tabdecoup = explode('=', $req, 2);
-                        $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+                        if (count($tabdecoup) == 2)
+                            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
                     }
                     $tabquery = array_merge($tabquery, $tableau);
                 } else {
@@ -2801,12 +2835,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             $html = $formtemplate = [];
             for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
                 // Champ  acls  present
-                if (isset($fichebazar['form']['template'][$i][11]) &&
-                  $fichebazar['form']['template'][$i][11] != '' &&
-                  !$GLOBALS['wiki']
-                  ->CheckACL($fichebazar['form']['template'][$i][11])) {
-                    // Non autorise : non ne fait rien
-                } else {
+                if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
+                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
                     if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
                       function_exists($fichebazar['form']['template'][$i][0])) {
                         if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
@@ -2859,11 +2889,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
                 // Champ  acls  present
-                if (!$GLOBALS['wiki']
-                    ->CheckACL($fichebazar['form']['template'][$i][11])) {
-                    // Non autorise : non ne fait rien
-                } else {
-                    // Mauvais style de programmation ...
+                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                    // si le champ est autorisé, génère son contenu
                     if (function_exists($fichebazar['form']['template'][$i][0])) {
                         $res .= $fichebazar['form']['template'][$i][0](
                             $formtemplate,
