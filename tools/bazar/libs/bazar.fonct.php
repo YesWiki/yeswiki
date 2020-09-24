@@ -162,8 +162,6 @@ function baz_afficher_liste_fiches_utilisateur()
  */
 function baz_afficher_formulaire_import()
 {
-    global $bazarFiche;
-
     $output = '';
     if ($GLOBALS['wiki']->UserIsAdmin()) {
         $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
@@ -536,7 +534,7 @@ function baz_afficher_formulaire_import()
                     $fiche = array_map('strval', $fiche);
 
                     $fiche['antispam'] = 1;
-                    $fiche = $bazarFiche->create($id, $fiche);
+                    $fiche = $GLOBALS['bazarFiche']->create($id, $fiche);
 
                     ++$nb;
                     $importList .= ' '.$nb.') [['.$fiche['id_fiche'].' '. $fiche['bf_titre'].']]'."\n";
@@ -942,7 +940,6 @@ function baz_afficher_formulaire_export()
  */
 function baz_formulaire($mode, $url = '', $valeurs = '')
 {
-    global $bazarFiche;
     $res = '';
 
     if ($url == '') {
@@ -1084,7 +1081,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_NOUVEAU_V) {
         try {
-            $fiche = $bazarFiche->create($_POST['id_typeannonce'], $_POST);
+            $fiche = $GLOBALS['bazarFiche']->create($_POST['id_typeannonce'], $_POST);
 
             if (!empty($GLOBALS['params']['redirecturl'])) {
                 header('Location: '.$GLOBALS['params']['redirecturl']);
@@ -1105,7 +1102,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_MODIFIER_V) {
         try {
-            $fiche = $bazarFiche->update($_POST['id_fiche'], $_POST);
+            $fiche = $GLOBALS['bazarFiche']->update($_POST['id_fiche'], $_POST);
             if ($GLOBALS['wiki']->GetPageTag() != $fiche['id_fiche']) {
                 // Redirection pour éviter la revalidation du formulaire
                 $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
@@ -1178,7 +1175,7 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         $tableau = formulaire_valeurs_template_champs($form['bn_template']);
         if (!is_array($valeurs) && !empty($valeurs) && $GLOBALS['wiki']->isWikiName($valeurs)) {
             // ajout des valeurs par defaut pour une modification
-            $valeurs = baz_valeurs_fiche($valeurs);
+            $valeurs = $GLOBALS['bazarFiche']->getOne($valeurs);
         }
         $data['content'] = '';
         $formtemplate = '';
@@ -2259,51 +2256,6 @@ function baz_gestion_listes()
     return $res;
 }
 
-/** baz_valeurs_fiche() - Renvoie un tableau avec les valeurs par defaut du formulaire d'inscription
- * @param    string Identifiant de la fiche
- *
- * @return array Valeurs enregistrees pour cette fiche
- */
-function baz_valeurs_fiche($idfiche = '', $formtab = '')
-{
-    if ($idfiche != '') {
-        $type_page = $GLOBALS['wiki']->GetTripleValue($idfiche, 'http://outils-reseaux.org/_vocabulary/type', '', '');
-        //on verifie que la page en question est bien une page wiki
-        if ($type_page == 'fiche_bazar') {
-            // on recupere une autre version en cas de consultation de l'historique
-            $time = isset($_REQUEST['time']) ? $_REQUEST['time'] : '';
-            $valjson = $GLOBALS['wiki']->LoadPage($idfiche, $time);
-
-            $tab_valeurs_fiche = json_decode($valjson['body'], true);
-
-            foreach ($tab_valeurs_fiche as $key => $value) {
-                $valeurs_fiche[$key] = _convert($value, 'UTF-8');
-            }
-
-            //cas ou on ne trouve pas les valeurs id_fiche et id_typeannonce
-            if (!isset($valeurs_fiche['id_fiche'])) {
-                $valeurs_fiche['id_fiche'] = $idfiche;
-            }
-            if (!isset($valeurs_fiche['id_typeannonce'])) {
-                $valeurs_fiche['id_typeannonce'] =
-                $valeurs_fiche['id_typeannonce'];
-            }
-
-            // on ajoute des attributs html pour tous les champs qui pourraient faire des filtres)
-            $valeurs_fiche['html_data'] = getHtmlDataAttributes($valeurs_fiche, $formtab);
-
-            // ajout des données sémantiques, s'il y en a
-            baz_append_semantic_data($valeurs_fiche, $valeurs_fiche['id_typeannonce'], false);
-
-            return $valeurs_fiche;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
-}
-
 /** baz_valeurs_liste() - Renvoie un tableau avec les valeurs d'une liste
  * @param    string NomWiki de la liste
  *
@@ -2531,7 +2483,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['form'] = (is_array($form) and is_array($form[$fichebazar['values']['id_typeannonce']])) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     } else {
         // on recupere les valeurs de la fiche
-        $fichebazar['values'] = baz_valeurs_fiche($idfiche);
+        $fichebazar['values'] = $GLOBALS['bazarFiche']->getOne($idfiche);
 
         // on recupere les infos du type de fiche
         $f = $fichebazar['values']['id_typeannonce'];
@@ -3596,7 +3548,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                     $list['titre_liste'] = $form['bn_label_nature'];
                     foreach ($facettevalue[$id] as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
-                            $f = baz_valeurs_fiche($idfiche);
+                            $f = $GLOBALS['bazarFiche']->getOne($idfiche);
                             $list['label'][$idfiche] = $f['bf_titre'];
                         }
                     }

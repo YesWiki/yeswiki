@@ -31,35 +31,28 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-if ($this->HasAccess('write')) {
-    $type = $this->GetTripleValue(
-        $this->GetPageTag(),
-        'http://outils-reseaux.org/_vocabulary/type',
-        '',
-        ''
-    );
+global $bazarFiche;
 
-    if ($type == 'fiche_bazar') {
-        // js lib
-        $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+if ($this->HasAccess('write') && $bazarFiche->isFiche($this->GetPageTag())) {
+    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        // dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
-        if (isset($_POST['bf_titre'])) {
-            baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href(), $_POST);
-        } else {
-            $fiche = baz_valeurs_fiche($this->GetPageTag());
-            $pageeditionfiche = baz_formulaire(
-                BAZ_ACTION_MODIFIER,
-                $this->href('edit'),
-                $fiche
-            );
-            // on peut tout de suite afficher le resultat a l'ecran
-            $plugin_output_new  = $this->Header();
-            $plugin_output_new .= $pageeditionfiche;
-            $plugin_output_new .= $this->Footer();
-            
-            // we use die so that the script stop there and the default handler of wiki isn't called 
-            die($plugin_output_new);
-        }
+    // Si on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
+    if (isset($_POST['bf_titre'])) {
+        baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href(), $_POST);
+    } else {
+        $fiche = $bazarFiche->getOne($this->GetPageTag());
+
+        $pageeditionfiche = baz_formulaire(
+            BAZ_ACTION_MODIFIER,
+            $this->href('edit'),
+            $fiche
+        );
+        // on peut tout de suite afficher le resultat a l'ecran
+        $plugin_output_new  = $this->Header();
+        $plugin_output_new .= $pageeditionfiche;
+        $plugin_output_new .= $this->Footer();
+
+        // we use die so that the script stop there and the default handler of wiki isn't called
+        die($plugin_output_new);
     }
 }

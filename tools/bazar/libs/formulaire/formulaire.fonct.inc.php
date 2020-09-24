@@ -1665,8 +1665,8 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (isset($valeurs_fiche[$var])) {
                 //pour une listefiche ou une checkboxfiche on cherche le titre de la fiche
                 if (preg_match('#^listefiche#', $var) != false || preg_match('#^checkboxfiche#', $var) != false) {
-                    $tab_fiche = baz_valeurs_fiche($valeurs_fiche[$var]);
-                    $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', ($tab_fiche['bf_titre'] != null) ? $tab_fiche['bf_titre'] : '', $valeurs_fiche['bf_titre']);
+                    $fiche = $GLOBALS['bazarFiche']->getOne($valeurs_fiche[$var]);
+                    $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $valeurs_fiche['bf_titre']);
                 } elseif (preg_match('#^liste#', $var) != false || preg_match('#^checkbox#', $var) != false) {
                     $liste = preg_replace('#^(liste|checkbox)(.*)#', '$2', $var);
                     $valliste = baz_valeurs_liste($liste);
@@ -2068,9 +2068,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                 } else {
-                    $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                    $val_fiche = $GLOBALS['bazarFiche']->getOne($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                     $html = '';
-                    if (is_array($val_fiche)) {
+                    if ($val_fiche) {
                         $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
                         $html.= '<span class="BAZ_texte">';
                         $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -2277,12 +2277,12 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $html.= '<span class="BAZ_texte">' . "\n";
             $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
 
-            foreach ($tab_fiche as $fiche) {
+            foreach ($tab_fiche as $idfiche) {
                 $html .= '<ul>';
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
-                    $html.= baz_voir_fiche(0, $fiche);
+                    $html.= baz_voir_fiche(0, $idfiche);
                 } else {
-                    $val_fiche = baz_valeurs_fiche($fiche);
+                    $val_fiche = $GLOBALS['bazarFiche']->getOne($idfiche);
 
                     // il y a des filtres à faire sur les fiches
                     if (count($tabquery) > 0) {
@@ -2297,7 +2297,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         }
                     }
                     if (is_array($val_fiche) && (!isset($match) || $match == true)) {
-                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
+                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $idfiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
                     }
                 }
                 $html .= '</ul>';

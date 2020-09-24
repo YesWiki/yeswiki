@@ -6,8 +6,7 @@ if (!defined("WIKINI_VERSION")) {
 
 global $bazarFiche;
 
-$type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
-if ($type == 'fiche_bazar') {
+if ($bazarFiche->isFiche($this->GetPageTag())) {
     if ($this->api->isAuthorized()) {
         $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false;
         $bazarFiche->update($this->GetPageTag(), $_POST, $semantic, true);

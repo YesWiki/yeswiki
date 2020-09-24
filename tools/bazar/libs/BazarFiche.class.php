@@ -11,15 +11,23 @@ class BazarFiche
         $this->wiki = $wiki;
     }
 
+    public function isFiche($tag)
+    {
+        $pageType = $this->wiki->GetTripleValue($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '');
+        return ($pageType === 'fiche_bazar');
+    }
+
     /**
      * @param $tag
      * @param false $semantic
-     * @param string $time
+     * @param string $time pour consulter une fiche dans l'historique
      * @return mixed|null
      */
-    public function getOne($tag, $semantic = false, $time = '')
+    public function getOne($tag, $semantic = false, $time = null)
     {
-        $page = $this->wiki->LoadPage($tag, $time);
+        if( !$this->isFiche($tag) ) return false;
+
+        $page = $this->wiki->LoadPage($tag, $time || '');
         $data = json_decode($page['body'], true);
 
         foreach ($data as $key => $value) {
@@ -31,7 +39,9 @@ class BazarFiche
             $data['id_fiche'] = $tag;
         }
 
-        if( $semantic ) {
+        $data['html_data'] = getHtmlDataAttributes($data);
+
+        if ($semantic) {
             $data = baz_append_semantic_data($data, $data['id_typeannonce'], true);
         }
 

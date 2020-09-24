@@ -77,8 +77,8 @@ switch ($GLOBALS['params']['vue']) {
                 break;
             case BAZ_VOIR_FICHE:
                 if (isset($_REQUEST['id_fiche'])) {
-                    $fiche = baz_valeurs_fiche($_REQUEST['id_fiche']);
-                    if (!is_array($fiche)) {
+                    $fiche = $bazarFiche->getOne($_REQUEST['id_fiche'], false, $_REQUEST['time']);
+                    if (!$fiche) {
                         echo '<div class="alert alert-danger">'
                             ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '
                             .htmlspecialchars($_REQUEST['id_fiche']).'</div>';

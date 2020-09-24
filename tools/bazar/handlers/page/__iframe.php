@@ -4,13 +4,12 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
-$bazaroutput = '';
-if ($type == 'fiche_bazar') {
-    // js lib
-    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+global $bazarFiche;
 
-    // si la page est de type fiche_bazar, alors on affiche la fiche plutot que de formater en wiki
+$bazaroutput = '';
+if ($bazarFiche->isFiche($this->GetPageTag())) {
+    // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
+    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $valjson = $this->page["body"];
     $tab_valeurs = json_decode($valjson, true);
     if (YW_CHARSET != 'UTF-8') {
