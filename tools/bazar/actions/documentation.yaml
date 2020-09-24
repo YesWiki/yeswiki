@@ -180,7 +180,7 @@ bazarliste:
   description: Les fiches seront sous forme d'accordéons
   properties:
     template:
-      value: ''
+      value: 'liste_accordeon'
 
 bazartrombi:
   label: Trombinoscope

@@ -20,7 +20,7 @@
         <div class="form-group">
           <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?></label>
           <select v-model="selectedActionId" required class="form-control">
-            <option v-for="(action, actionId) in actions" :value="actionId">{{ action.label }} - {{ action.description }}</option>
+            <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
           </select>
         </div>
 
@@ -68,7 +68,7 @@
                 <input type="text" v-model="filter.title" class="form-control" />
               </div>
               <div class="col-sm-3 form-group">
-                <label class="control-label">Icone </label>
+                <label class="control-label">Icone</label>
                 <input type="text" v-model="filter.icon" class="form-control" />
               </div>
               <div class="form-group col-sm-1">

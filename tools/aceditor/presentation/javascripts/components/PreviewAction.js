@@ -12,7 +12,7 @@ export default {
   },
   template: `
     <div class="widget-iframe-container">
-      <h3>Apperçu (non clickable)</h3>
+      <h3>Aperçu (non clickable)</h3>
       <iframe class="iframe-preview" width="100%" height="350px" frameborder="0" :src="previewIframeUrl"></iframe>
       <div class="iframe-blocker"></div>
     </div>
