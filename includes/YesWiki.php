@@ -181,16 +181,18 @@ class Wiki
      * Does not use the cache $this->triplesCacheByResource.
      *
      * @param string $resource
-     *            The resource of the triples
+     *            The resource of the triples or null
      * @param string $property
      *            The property of the triple to retrieve or null
+     * @param string $value
+     *            The value of the triple to retrieve or null
      * @param string $res_op
      *            The operator of comparison between the effective resource and $resource (default: 'LIKE')
      * @param string $prop_op
      *            The operator of comparison between the effective property and $property (default: '=')
      * @return array The list of all the triples that match the asked criteria
      */
-    public function GetMatchingTriples($resource, $property = null, $res_op = 'LIKE', $prop_op = '=')
+    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=')
     {
         static $operators = array(
             '=',
@@ -201,14 +203,24 @@ class Wiki
             $res_op = '=';
         }
 
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource ' . $res_op . ' "' . mysqli_real_escape_string($this->dblink, $resource) . '"';
+        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ';
+        $where = [];
+        if ($resource !== null) {
+            $where[] = 'resource ' . $res_op . ' "' . mysqli_real_escape_string($this->dblink, $resource) . '"';
+        }
         if ($property !== null) {
             $prop_op = strtoupper($prop_op);
             if (! in_array($prop_op, $operators)) {
                 $prop_op = '=';
             }
 
-            $sql .= ' AND property ' . $prop_op . ' "' . mysqli_real_escape_string($this->dblink, $property) . '"';
+            $where[] = ' property ' . $prop_op . ' "' . mysqli_real_escape_string($this->dblink, $property) . '"';
+        }
+        if ($value !== null) {
+            $where[] = ' value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
+        }
+        if( count($where)>0 ) {
+            $sql .= ' WHERE ' . implode(' AND ', $where);
         }
         return $this->LoadAll($sql);
     }
@@ -2142,14 +2154,7 @@ class Wiki
         }
 
         if ($tag == 'api') {
-            $apiKey = $this->api->getBearerToken();
-            // test if key exists in order to authorize access
-            if (empty($this->config['api_allowed_keys'])) {
-                http_response_code(403);
-                header("Access-Control-Allow-Origin: * ");
-                header("Content-Type: application/json; charset=UTF-8");
-                echo json_encode(array("message" => "No api keys found, api is unavailable for this yeswiki."));
-            } elseif(!empty($this->config['api_allowed_keys']['public']) || in_array($apiKey, $this->config['api_allowed_keys']) ) {
+            if ($this->api->isAuthorized()) {
                 $func = $this->method;
                 if (function_exists($func)) {
                     echo $func($GLOBALS['api_args']);
