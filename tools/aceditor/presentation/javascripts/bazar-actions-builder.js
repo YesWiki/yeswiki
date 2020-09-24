@@ -9,11 +9,11 @@ new Vue({
     selectedForm: null,
     actions: data.actions,
     selectedActionId: "bazarcarto",
-    showFiltersConfig: false,
     filtersProperties: ['groups', 'groupsexpanded', 'titles', 'groupicons', 'filterposition', 'filtercolsize'],
-    values: {},
+    values: { iconfield: 'checkboxListeCategories' },
     filterGroups: [],
-    actionParams: {}
+    actionParams: {},
+    iconMapping: []
   },
   computed: {
     selectedAction() {
@@ -34,6 +34,11 @@ new Vue({
       }
       result += ' }}'
       return result
+    },
+    iconOptions() {
+      if (!this.selectedForm || !this.values.iconfield) return []
+      var config = this.selectedForm.prepared.filter(e => e.id == this.values.iconfield)[0]
+      return config ? config.values.label : []
     }
   },
   methods: {
@@ -83,14 +88,20 @@ new Vue({
       this.values.groups = this.filterGroups.map(g => g.field).filter(e => e != "").join(',')
       this.values.titles = this.filterGroups.map(g => g.title).filter(e => e != "").join(',')
       this.values.groupicons = this.filterGroups.map(g => g.icon).filter(e => e != "").join(',')
+      this.values.icon = this.iconMapping.filter(m => m.id && m.icon).map(m => `${m.icon}=${m.id}`).join(',')
       for(var key in this.values) {
-        if (!this.showFiltersConfig && this.filtersProperties.includes(key)) continue;
         let value = this.values[key]
         if (value === false || value === "") continue
         result[key] = value
       }
       this.actionParams = result
     },
+    addEmptyIconMapping() {
+      this.iconMapping.push({id: '', icon: ''})
+    },
+    removeIconMapping(mapping) {
+      this.iconMapping = this.iconMapping.filter(el => el.id != mapping.id)
+    }
   },
   watch: {
     selectedFormId: function() { this.getSelectedForm() },
@@ -103,12 +114,13 @@ new Vue({
       handler(val){ this.updateActionParams(val) },
       deep: true
     },
-    showFiltersConfig: function() {
-      this.updateActionParams()
-    }
+    iconMapping: {
+      handler(val){ this.updateActionParams(val) },
+      deep: true
+    },
   },
   mounted() {
-    this.addEmptyFilterGroup()
+    this.addEmptyIconMapping()
     this.getSelectedForm()
     this.initActionValues()
   }

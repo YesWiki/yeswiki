@@ -26,8 +26,7 @@ h3 {
   margin: 1rem 0 0 0;
 }
 .btn-remove-group {
-  float: right;
-  padding: 10px 5px;
+  margin-top: 5px;
 }
 .btn-add-group {
   margin-top: 1rem;
@@ -39,12 +38,14 @@ h3 {
 .widget-iframe-container {
   position: relative;
   padding: 0;
-  max-height: 300px;
-  overflow: hidden;
 }
 .widget-iframe-container h3 {
   color: inherit;
   opacity: .8;
+}
+iframe {
+  max-height: 350px;
+  overflow: hidden;
 }
 .iframe-blocker {
   position: absolute;
@@ -56,13 +57,13 @@ h3 {
   opacity: 0;
 }
 
-iframe {
-  zoom: 0.5;
-  -moz-transform: scale(0.5);
+/* iframe {
+  zoom: 0.8;
+  -moz-transform: scale(0.8);
   -moz-transform-origin: 0 0;
-  -o-transform: scale(0.5);
+  -o-transform: scale(0.8);
   -o-transform-origin: 0 0;
-  -webkit-transform: scale(0.5);
+  -webkit-transform: scale(0.8);
   -webkit-transform-origin: 0 0;
 }
 
@@ -70,7 +71,7 @@ iframe {
   iframe {
     zoom: 1;
   }
-}
+} */
 
 .modal .checkbox label {
   font-size: .9em;

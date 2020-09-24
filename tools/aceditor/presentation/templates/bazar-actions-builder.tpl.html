@@ -30,7 +30,15 @@
             <div class="alert alert-info">{{ selectedAction.description }}</div>
           </div>
 
-          <div class="col-md-2">
+          <!-- Iframe Preview -->
+          <div class="col-md-12 widget-iframe-container">
+            <h3>Apperçu (non clickable)</h3>
+            <iframe class="iframe-preview" width="100%" height="350px" frameborder="0" :src="previewIframeUrl"></iframe>
+            <div class="iframe-blocker"></div>
+          </div>
+
+          <!-- Action Params -->
+          <div class="col-md-3">
             <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
             <div class="form-group" v-for="(property, propName) in selectedAction.properties">
                 <label v-if="property.label && property.type != 'checkbox'" class="control-label">{{ property.label }}</label>
@@ -68,59 +76,26 @@
             </div>
           </div>
 
-          <div class="col-md-6 widget-iframe-container">
-            <h3>Preview (non clickable)</h3>
-            <iframe class="iframe-preview" width="200%" height="500px" frameborder="0" :src="previewIframeUrl"></iframe>
-            <div class="iframe-blocker"></div>
-          </div>
-
+          <!-- Filters Params -->
           <div class="col-md-4 filter-parameters-container">
             <h3>Filtres / Recherche</h3>
-
+            <!-- Search -->
             <label>
               <input type="checkbox" v-model="values.search" />
               <span>Barre de recherche</span>
             </label>
-
+            <!-- Pagination -->
             <div class="form-group">
               <label class="control-label">Nombre de fiches par page</label>
               <input type="number" v-model="values.pagination" class='form-control' />
             </div>
-
+            <!-- Query -->
             <div class="form-group">
               <label class="control-label">Requête SQL (avancé)</label>
-              <input type="number" v-model="values.query" class='form-control' />
+              <input type="text" v-model="values.query" class='form-control' />
             </div>
 
-            <label>
-              <input type="checkbox" v-model="showFiltersConfig"/>
-              <span>Filtrer avec des Facettes</span>
-            </label>
-
-            <!-- Facettes Config -->
-            <template v-if="showFiltersConfig">
-              <div class="filter-group-form" v-if="selectedForm" v-for="filter in filterGroups">
-                <div class="col-sm-4 form-group">
-                  <label class="control-label">Champ</label>
-                  <select v-model="filter.field" class="form-control">
-                    <option v-for="field in selectedForm.prepared" v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
-                  </select>
-                </div>
-                <div v-if="selectedForm" class="col-sm-4 form-group">
-                  <label class="control-label">Titre</label>
-                  <input type="text" v-model="filter.title" class="form-control" />
-                </div>
-                <div v-if="selectedForm" class="col-sm-3 form-group">
-                  <label class="control-label">Icone </label>
-                  <input type="text" v-model="filter.icon" class="form-control" />
-                </div>
-                <div class="form-group col-sm-1">
-                  <i class="btn-remove-group fa fa-times" @click="removeFilterGroup(filter)"></i>
-                </div>
-
-              </div>
-              <button v-if="selectedForm" @click="addEmptyFilterGroup" class="btn btn-info btn-add-group">Ajouter une Facette</button>
-
+              <!-- Facette display -->
               <div class="form-group">
                 <label class="control-label">Affichage initial des facettes</label>
                 <select v-model="values.groupsexpanded" class="form-control">
@@ -139,7 +114,64 @@
                 <label class="control-label">Largeur des facettes (1 à 12)</label>
                 <input type="number" min="1" max="12" v-model="values.filtercolsize" class="form-control"/>
               </div>
-            </template>
+          </div>
+
+          <div class="col-md-5">
+            <h3>Facettes</h3>
+            <!-- Facettes Config -->
+            <div class="filter-group-form" v-if="selectedForm" v-for="filter in filterGroups">
+              <div class="col-sm-4 form-group">
+                <label class="control-label">Champ</label>
+                <select v-model="filter.field" class="form-control">
+                  <option v-for="field in selectedForm.prepared" v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
+                </select>
+              </div>
+              <div v-if="selectedForm" class="col-sm-4 form-group">
+                <label class="control-label">Titre</label>
+                <input type="text" v-model="filter.title" class="form-control" />
+              </div>
+              <div v-if="selectedForm" class="col-sm-3 form-group">
+                <label class="control-label">Icone </label>
+                <input type="text" v-model="filter.icon" class="form-control" />
+              </div>
+              <div class="form-group col-sm-1">
+                <button class="btn btn-default btn-icon" @click="removeFilterGroup(filter)">
+                  <i class="btn-remove-group fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Add Facette -->
+            <button v-if="selectedForm" @click="addEmptyFilterGroup" class="btn btn-info btn-add-group">Ajouter une Facette</button>
+            <hr />
+
+            <!-- Icons -->
+            <div class="form-group" v-if="selectedForm">
+              <label class="control-label">Champ pour la couleur</label>
+              <select v-model="values.iconfield" class="form-control">
+                <option v-for="field in selectedForm.prepared.filter(a => typeof a.values == 'object')" :value="field.id">{{ field.id }}</option>
+              </select>
+            </div>
+            <div class="filter-group-form" v-if="values.iconfield" v-for="mapping in iconMapping">
+              <div class="col-sm-6 form-group">
+                <label class="control-label">Valeur</label>
+                <select v-model="mapping.id" class="form-control">
+                  <option v-for="(optionName, optionId) in iconOptions" :value="optionId">{{ optionName }}</option>
+                </select>
+              </div>
+              <div class="col-sm-5 form-group">
+                <label class="control-label">Icone</label>
+                <input type="text" v-model="mapping.icon" class="form-control" />
+              </div>
+              <div class="form-group col-sm-1">
+                <button class="btn btn-default btn-icon" @click="removeIconMapping(mapping)">
+                  <i class="btn-remove-group fa fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <button v-if="values.iconfield" @click="addEmptyIconMapping" class="btn btn-info btn-icon btn-add-group">
+              <i class="fa fa-plus"></i>
+            </button>
+            <hr />
           </div>
 
           <div class="col-md-12 result-container">
