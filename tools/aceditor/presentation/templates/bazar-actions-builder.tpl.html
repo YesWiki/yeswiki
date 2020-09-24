@@ -31,10 +31,8 @@
           </div>
 
           <!-- Iframe Preview -->
-          <div class="col-md-12 widget-iframe-container">
-            <h3>Apperçu (non clickable)</h3>
-            <iframe class="iframe-preview" width="100%" height="350px" frameborder="0" :src="previewIframeUrl"></iframe>
-            <div class="iframe-blocker"></div>
+          <div class="col-md-12">
+            <preview-action :action-params="actionParams"></preview-action>
           </div>
 
           <!-- Action Params -->
@@ -42,7 +40,7 @@
             <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
             <form-segment v-for="(property, propName) in selectedAction.properties"
                           :name="propName" :config="property" :key="propName"
-                          :value="values[propName]" v-on:update:value="values[propName] = $event"
+                          :value="values[propName]" v-on:update:value="setValue(propName, $event)"
                           :form-field-options=selectedForm.prepared></form-segment>
           </div>
 
@@ -51,7 +49,7 @@
             <h3>Affichage</h3>
             <form-segment v-for="(property, propName) in actions.common"
                           :name="propName" :config="property" :key="propName"
-                          :value="values[propName]" v-on:update:value="values[propName] = $event"
+                          :value="values[propName]" v-on:update:value="setValue(propName, $event)"
                           :form-field-options=selectedForm.prepared></form-segment>
           </div>
 
@@ -139,13 +137,8 @@
 
           <div class="col-md-12 result-container">
             <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>
-            <div class="input-group">
-              <div class="input-group-addon btn btn-primary" @click="insertCodeInEditor">
-                {{ isEditingExistingAction ? 'Mettre à jour le code' : 'Insérer dans la page' }}
-              </div>
-              <input type="text" class="result form-control" @click="selectFullText" :value="wikiCode" ref="wikiCode">
-              <div class="input-group-addon btn btn-default" @click="copyContent"><?php echo _t('ACTION_BUILDER_COPY') ?></div>
-            </div>
+            <wiki-code-input :action-params="actionParams" :is-editing="isEditingExistingAction"
+                             :editor="editor"></wiki-code-input>
           </div>
         </div>
       </div>

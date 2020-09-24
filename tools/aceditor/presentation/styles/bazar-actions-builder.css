@@ -92,6 +92,9 @@ iframe {
   z-index: 50;
   left: -45px;
 }
+.flying-action-bar .btn {
+  border-radius: 5px 0 0 5px;
+}
 .flying-action-bar.active {
   opacity: 1;
 }

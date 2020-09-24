@@ -1,4 +1,8 @@
 import FormSegment from './components/FormSegment.js'
+import WikiCodeInput from './components/WikiCodeInput.js'
+import PreviewAction from './components/PreviewAction.js'
+import AceEditorWrapper from './components/aceditor-wrapper.js'
+import FlyingActionBar from './components/flying-action-bar.js'
 
 console.log("data", data) // data global variable has been defined in bazar-actions-builder.tpl.html
 
@@ -9,7 +13,7 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 new Vue({
   el: "#bazar-actions-builder-app",
-  components: { FormSegment },
+  components: { FormSegment, WikiCodeInput, PreviewAction },
   data: {
     formIds: data.forms,
     selectedFormId: "",
@@ -21,28 +25,12 @@ new Vue({
     filterGroups: [],
     actionParams: {},
     iconMapping: [],
-    editor: null, // aceditor
+    editor: null, // editor
     isEditingExistingAction: false,
   },
   computed: {
     selectedAction() {
       return this.actions[this.selectedActionId]
-    },
-    previewIframeUrl() {
-      if (!this.selectedFormId || !this.selectedActionId) return ""
-      let result = '/?BazaR/iframe'
-      for(var key in this.actionParams) {
-        result += `&${key}=${encodeURIComponent(this.actionParams[key])}`
-      }
-      return result
-    },
-    wikiCode() {
-      var result = `{{bazarliste`
-      for(var key in this.actionParams) {
-        result += ` ${key}="${this.actionParams[key]}"`
-      }
-      result += ' }}'
-      return result
     },
     iconOptions() {
       if (!this.selectedForm || !this.values.iconfield) return []
@@ -51,11 +39,12 @@ new Vue({
     }
   },
   methods: {
-    editorCurrLineNumber() {
-      return this.editor.selection.getRange().start.row
+    setValue(propName, value) {
+      this.values[propName] = value
+      this.updateActionParams()
     },
     init() {
-      let line = this.editor.session.getLine(this.editorCurrLineNumber())
+      const line = this.editor.currentLine
       let newValues = {}
       if (line.match(/^\s*\{\{\s*bazar.*/g) != null) {
         this.isEditingExistingAction = true
@@ -102,27 +91,6 @@ new Vue({
         this.selectedFormId = ''
         this.selectedActionId = ''
       }
-    },
-    selectFullText() {
-      var range = document.createRange();
-      range.selectNode(this.$refs.wikiCode);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
-    },
-    copyContent() {
-      this.selectFullText();
-      document.execCommand('copy');
-    },
-    insertCodeInEditor() {
-      $('#bazar-actions-modal').modal('hide')
-      if (this.isEditingExistingAction) {
-        let line = this.editorCurrLineNumber()
-        this.editor.session.replace(new ace.Range(line, 0, line + 1, 0), this.wikiCode + "\n");
-        this.editor.gotoLine(line + 1)
-      } else {
-        this.editor.insert(this.wikiCode)
-      }
-      this.editor.selection.selectLine()
     },
     getSelectedForm() {
       if (!this.selectedFormId) return;
@@ -189,28 +157,9 @@ new Vue({
   },
   mounted() {
     $(document).ready(() => {
-      this.editor = $('textarea#body').data('aceditor');
-      var flyingActionBar = $(`<div class="flying-action-bar">
-        <a data-toggle="modal" data-target="#bazar-actions-modal" class="aceditor-btn-actions-bazar btn btn-primary btn-icon">
-          <i class="fa fa-pencil-alt"></i>
-        </a>
-      </div>`)
-      $('textarea#body').before(flyingActionBar);
-
-      this.editor.selection.on('changeCursor', (event) => {
-        let line = this.editor.session.getLine(this.editorCurrLineNumber())
-        let isBazarLine = line.match(/^\s*\{\{\s*bazar.*/g) != null
-        // wait for editor to change cursor
-        setTimeout(() => {
-          flyingActionBar.toggleClass('active', isBazarLine);
-          if (isBazarLine) {
-            let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + flyingActionBar.height()
-            flyingActionBar.css('top', top + 'px')
-          }
-        }, 100)
-      })
-
-      $('.aceditor-btn-actions-bazar').click(this.init)
+      this.editor = new AceEditorWrapper()
+      new FlyingActionBar(this.editor)
+      $('.editor-btn-actions-bazar').click(this.init)
     })
     this.addEmptyIconMapping()
     this.getSelectedForm()
