@@ -95,6 +95,8 @@ function postFiche($args) {
         global $bazarFiche;
 
         $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false;
+
+        $_POST['antispam'] = 1;
         $fiche = $bazarFiche->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
 
         if( $fiche ) {

@@ -162,6 +162,8 @@ function baz_afficher_liste_fiches_utilisateur()
  */
 function baz_afficher_formulaire_import()
 {
+    global $bazarFiche;
+
     $output = '';
     if ($GLOBALS['wiki']->UserIsAdmin()) {
         $id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
@@ -527,26 +529,20 @@ function baz_afficher_formulaire_import()
             if (!isset($GLOBALS['importdone'])) {
                 // Pour les traitements particulier lors de l import
                 $GLOBALS['_BAZAR_']['provenance'] = 'import';
-
-                // des fiches ont été sélectionnées pour l'import
-                $val_formulaire = baz_valeurs_formulaire($id);
-                $importlist = '';
+                $importList = '';
                 $nb = 0;
-                foreach ($_POST['importfiche'] as $valeur) {
-                    $valeur = unserialize(base64_decode($valeur));
-                    $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
-                    $valeur['id_typeannonce'] = $id;
-                    $valeur = array_map('strval', $valeur);
-                    baz_insertion_fiche($valeur);
+                foreach ($_POST['importfiche'] as $fiche) {
+                    $fiche = unserialize(base64_decode($fiche));
+                    $fiche = array_map('strval', $fiche);
+
+                    $fiche['antispam'] = 1;
+                    $fiche = $bazarFiche->create($id, $fiche);
+
                     ++$nb;
-                    $importlist .=
-                    ' '.$nb.') [['.$valeur['id_fiche'].' '.
-                    $valeur['bf_titre'].']]'."\n";
+                    $importList .= ' '.$nb.') [['.$fiche['id_fiche'].' '. $fiche['bf_titre'].']]'."\n";
                 }
-                $output .=
-                '<div class="alert alert-success">'.
-                _t('BAZ_NOMBRE_FICHE_IMPORTE').' '.$nb.'</div>'."\n".
-                $GLOBALS['wiki']->Format($importlist);
+                $output .= '<div class="alert alert-success">'. _t('BAZ_NOMBRE_FICHE_IMPORTE').' '.$nb.'</div>'."\n".
+                $GLOBALS['wiki']->Format($importList);
                 $GLOBALS['importdone'] = true;
             }
         } else {
@@ -946,6 +942,7 @@ function baz_afficher_formulaire_export()
  */
 function baz_formulaire($mode, $url = '', $valeurs = '')
 {
+    global $bazarFiche;
     $res = '';
 
     if ($url == '') {
@@ -1086,20 +1083,20 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     // CAS DE L'AJOUT D'UNE FICHE
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_NOUVEAU_V) {
-        $valid = validateForm($_POST);
-        if ($valid['result']) {
-            $valeur = baz_insertion_fiche($_POST);
+        try {
+            $fiche = $bazarFiche->create($_POST['id_typeannonce'], $_POST);
+
             if (!empty($GLOBALS['params']['redirecturl'])) {
                 header('Location: '.$GLOBALS['params']['redirecturl']);
             } else {
                 // Redirection pour eviter la revalidation du formulaire
                 $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
-              .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$valeur['id_fiche'];
+                    .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
                 header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             }
             exit;
-        } else {
-            echo '<div class="alert alert-danger">'.$valid['error'].'</div>';
+        } catch(\Exception $e) {
+            echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
         }
     }
 
@@ -1380,96 +1377,6 @@ function validateForm($valeur)
 
     // form validates!
     return array('result' => true);
-}
-
-/** baz_insertion_fiche() - inserer une nouvelle fiche
- * @array   Le tableau des valeurs a inserer
- * @boolen  True : insertion en lot
- */
-function baz_insertion_fiche($valeur)
-{
-    $valeur = baz_requete_bazar_fiche($valeur);
-
-    // on change provisoirement d'utilisateur
-    if (isset($GLOBALS['utilisateur_wikini'])) {
-        $olduser = $GLOBALS['wiki']->GetUser();
-        $GLOBALS['wiki']->LogoutUser();
-
-        // On s'identifie de facon a attribuer la propriete de la fiche a
-        // l'utilisateur qui vient d etre cree
-        $user = $GLOBALS['wiki']->LoadUser($GLOBALS['utilisateur_wikini']);
-        $GLOBALS['wiki']->SetUser($user);
-    }
-
-    $ignoreAcls = true;
-    if (isset($GLOBALS['wiki']->config['bazarIgnoreAcls'])) {
-        $ignoreAcls = $GLOBALS['wiki']->config['bazarIgnoreAcls'];
-    }
-
-    // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
-    $saved = $GLOBALS['wiki']->SavePage(
-        $valeur['id_fiche'],
-        json_encode($valeur),
-        '',
-        $ignoreAcls // Ignore les ACLs
-    );
-
-    // on cree un triple pour specifier que la page wiki creee est une fiche
-    // bazar
-    if ($saved == 0) {
-        $GLOBALS['wiki']->InsertTriple(
-            $valeur['id_fiche'],
-            'http://outils-reseaux.org/_vocabulary/type',
-            'fiche_bazar',
-            '',
-            ''
-        );
-    }
-
-    // on remet l'utilisateur initial
-    if (isset($GLOBALS['utilisateur_wikini'])) {
-        $GLOBALS['wiki']->LogoutUser();
-        if (!empty($olduser)) {
-            $GLOBALS['wiki']->SetUser($olduser, 1);
-        }
-    }
-
-    // Envoi d un mail aux administrateurs
-    if ($GLOBALS['wiki']->config['BAZ_ENVOI_MAIL_ADMIN']) {
-        include_once 'tools/contact/libs/contact.functions.php';
-
-        $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']
-                ->config['base_url']);
-        $sujet = removeAccents('['.str_replace('http://', '', $lien)
-            .'] nouvelle fiche ajoutee : '.$valeur['bf_titre']);
-        $text =
-        'Voir la fiche sur le site pour l\'administrer : '.$GLOBALS['wiki']->href('', $valeur['id_fiche']);
-        $texthtml = '<br /><br /><a href="'.$GLOBALS['wiki']->href('', $valeur['id_fiche']).'" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-        $fichier = 'tools/bazar/presentation/styles/bazar.css';
-        $style = file_get_contents($fichier);
-        $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
-        $fiche = str_replace(
-            'src="tools',
-            'src="'.$lien.'/tools',
-            baz_voir_fiche(0, $valeur['id_fiche'])
-        ).$texthtml;
-        $html =
-        '<html><head><style type="text/css">'.$style.
-        '</style></head><body>'.$fiche.'</body></html>';
-
-        //on va chercher les admins
-        $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']
-            ->config['table_prefix'].'triples '
-        .'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-        $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
-        $tabadmin = explode("\n", $ligne['value']);
-        foreach ($tabadmin as $line) {
-            $admin = $GLOBALS['wiki']->LoadUser(trim($line));
-            send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
-        }
-    }
-
-    return $valeur;
 }
 
 /** baz_mise_a_jour() - Mettre a jour une fiche

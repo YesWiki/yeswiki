@@ -96,27 +96,6 @@ if (isset($_REQUEST['demand'])) {
                 }
             }
             break;
-        case "save_entry":
-        // sauver une fiche bazar
-            if (!isset($form) || empty($form)) {
-                echo json_encode(array('error' => _t('BAZ_NO_FORMS_FOUND')));
-            } else {
-                $_POST['id_typeannonce'] = $form;
-                $formdata = baz_valeurs_formulaire($form);
-                $res = validateForm($_POST);
-                if ($res['result']) {
-                    $fiche = baz_insertion_fiche($_POST);
-                    echo json_encode($fiche);
-                } else {
-                    echo json_encode(
-                        array(
-                            'error' => $res['error'],
-                            'post' => $_POST
-                        )
-                    );
-                }
-            }
-            break;
         case "template":
             // les templates bazar, pour afficher dans d'autres applis
             // on peut préciser dans l'url type=form (template formulaire) ou type=entry (template fiche)
