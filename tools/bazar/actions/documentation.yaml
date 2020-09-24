@@ -121,8 +121,9 @@ bazarcarto:
     smallmarker:
       label: Petit marqueurs
       type: checkbox
-      default: false
+      default: 0
       checkedvalue: 1
+      uncheckedvalue: 0
     spider:
       label: Mode spider
       hint: Éclate un group de point lors du click
@@ -190,13 +191,15 @@ bazarmaterialcard:
     type:
       label: Affichage sans effet
       type: checkbox
-      default: false
+      default:
       checkedvalue: simple
+      uncheckedvalue:
     modal:
       label: Affichage d'une fenêtre modale lors du clic
       type: checkbox
-      default: false
+      default:
       checkedvalue: 1
+      uncheckedvalue:
 
 bazarannuaire:
   label: Annuaire
@@ -246,8 +249,9 @@ bazarcarousel:
     sanstitre:
       label: Cacher le titre de la fiche sur l'image
       type: checkbox
-      default: false
+      default:
       checkedvalue: oui
+      uncheckedvalue:
 
 bazargaleriephoto:
   label: Galerie photo

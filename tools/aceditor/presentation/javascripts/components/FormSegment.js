@@ -2,8 +2,27 @@ export default {
   props: [ 'name', 'config', 'parentValue', 'formFieldOptions' ],
   computed: {
     value: {
-      get() { return this.parentValue },
-      set(newValue) { this.$emit('update:value', newValue) }
+      get() {
+        let result = this.parentValue
+        if (this.config.type == "checkbox" && this.config.checkedvalue) {
+          result = this.parentValue == this.config.checkedvalue
+        }
+        return this.parentValue
+      },
+      set(newValue) {
+        if (this.config.type == "checkbox" && this.config.checkedvalue) {
+          newValue = newValue ? this.config.checkedvalue : this.config.uncheckedvalue
+        }
+        this.$emit('update:value', newValue)
+      }
+    },
+    optionsList() {
+      let result = this.config.options.map(el => {
+        const splited = el.split(':')
+        return { value: splited[0], label: splited.length > 1 ? splited[1] : splited[0] }
+      })
+      result.unshift({value: '', label: ''})
+      return result
     }
   },
   template: `
@@ -18,14 +37,13 @@ export default {
       <!-- List -->
       <template v-else-if="config.type == 'list'">
         <select class="form-control" v-model="value" :required="config.required">
-          <option value=""></option>
-          <option v-for="option in config.options" :value="option" >{{ option }}</option>
+          <option v-for="option in optionsList" :value="option.value" >{{ option.label }}</option>
         </select>
       </template>
       <!-- Checkbox -->
       <template v-else-if="config.type == 'checkbox'">
         <label>
-          <input type="checkbox" v-model="value"/>
+          <input type="checkbox" v-model="value" />
           <span>{{ config.label }}</span>
         </label>
       </template>
