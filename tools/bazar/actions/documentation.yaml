@@ -23,7 +23,6 @@ bazarcarto:
     provider:
       label: Fond de carte
       hint: "Explications"
-      doclink:
       required: true
       type: list
       default: "OpenStreetMap"
@@ -100,35 +99,40 @@ bazarcarto:
     width:
       label: Largeur de la carte
       hint: la largeur en pixels doit être indiqué sous forme 500px , accepte aussi la valeur 100%
-      type: texte
+      type: text
       default: 100%
     height:
       label: Hauteur de la carte
       hint: la hauteur en pixels doit être indiqué sous forme 500px
-      type: texte
+      type: text
       default: 600px
     smallmarker:
-      label: taille du marqueur
+      label: Petit marqueurs
       type: checkbox
       default: false
       checkedvalue: 1
     spider:
-      label: Eclate un regroupement de point
+      label: Mode spider
+      hint: Éclate un group de point lors du click
       type: checkbox
       default: false
     cluster:
-      label: Regroupe les points par zone
+      label: Activer les cluster
+      hint: Regroupe les points par zone
       type: checkbox
       default: false
     barregestion:
-      label: Affichage de la barre de gestion des fiches
+      label: Barre de gestion des fiches
       type: checkbox
       default: false
     navigation:
       label: Boutons de contrôle du zoom
+      type: checkbox
       default: true
     zoommolette:
-      label: Zoom à l'aide de la molette de la souris
+      label: Zoom molette
+      hint: Zoom à l'aide de la molette de la souris
+      type: checkbox
       default: false
 
 bazaragenda:
@@ -145,7 +149,6 @@ bazarliste:
   properties:
     template:
       value: ''
-    <<: *order
 
 bazartrombi:
   label: Trombinoscope
@@ -154,7 +157,6 @@ bazartrombi:
   properties:
     template:
       value: trombinoscope
-    <<: *order
 
 bazarmaterialcard:
   label: Material card
@@ -163,7 +165,6 @@ bazarmaterialcard:
   properties:
     template:
       value: material-card
-    <<: *order
     nbcol:
       label: Nombre de colonnes
       type: list
@@ -192,6 +193,29 @@ bazarannuaire:
     template:
       value: annuaire_alphabetique
 
+bazardamier:
+  label: Damier
+  description: Affiche les fiches sous forme de damier paramétrable
+  hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_description, bf_lien, bf_fichier, bf_bouton
+ sont utilisés
+  doclink: https://yeswiki.net/?DamierTplHtml2
+  properties:
+    template:
+      value: damier
+    nbcol:
+      label: Nombre de colonnes
+      type: list
+      default: 4
+      options:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 6
+    couleur:
+      label: Couleur utilisée pour réaliser le damier
+      type: color
+
 bazartimeline:
   label: Time line
   description: Affiche les fiches dans une time line.
@@ -199,3 +223,62 @@ bazartimeline:
   properties:
     template:
       value: timeline
+
+bazarcarousel:
+  label: Carousel
+  description: Affiche les images des fiches sous forme de carousel
+  hint: Un champ de type bf_image est nécessaire.
+  properties:
+    template:
+      value: carousel
+    sanstitre:
+      label: Cacher le titre de la fiche sur l'image
+      type: checkbox
+      default: false
+      checkedvalue: oui
+
+bazargaleriephoto:
+  label: Galerie photo
+  description: Affiche les images des fiches sous forme de galerie photo.
+  hint: Un champ de type bf_image est nécessaire.
+  properties:
+    template:
+      value: galerie_photos
+
+bazarlistegalerie:
+  label: Liste Galerie photo
+  description: Affiche les images des fiches sous forme de galerie photo.
+  hint: Un champ de type bf_image est nécessaire.
+  properties:
+    template:
+      value: liste_galerie
+
+bazarlistephotobox:
+  label: Photobox
+  description: Affiche les images des fiches sous forme de galerie photo.
+  hint: Un champ de type bf_image est nécessaire.
+  properties:
+    template:
+      value: photobox
+
+bazarlisteliens:
+  label: Liste des liens
+  description:  Affiche les liens vers les fiches sous forme de liste à puces.
+  properties:
+    template:
+      value: liste_liens
+
+bazarlisteliensdates:
+  label: Liste des liens avec dates
+  description:  Affiche les liens vers les fiches sous forme de liste avec les dates de création.
+  properties:
+    template:
+      value: liste_liens_dates
+
+bazarmail:
+  label: Ecrire à tous
+  description: Affiche uniquement la liste des mails trouvées dans le formulaire
+  hint: Un champ de type bf_mail est nécessaire.
+  properties:
+    template:
+      value: liste_mails_seuls

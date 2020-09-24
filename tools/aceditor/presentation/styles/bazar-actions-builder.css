@@ -11,6 +11,7 @@
 }
 h3 {
   text-align: center;
+  margin-bottom: 30px;
 }
 @media (min-width: 800px) {
   .filter-parameters-container {
@@ -38,10 +39,14 @@ h3 {
 .widget-iframe-container {
   position: relative;
   padding: 0;
+  border-bottom: 1px solid #e2e2e2;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
 }
 .widget-iframe-container h3 {
   color: inherit;
   opacity: .8;
+  margin-bottom: 10px;
 }
 iframe {
   max-height: 350px;
@@ -96,4 +101,16 @@ iframe {
 .input-group-addon.btn-default {
   background-color: #727479;
   border-color: #727479;
+}
+
+[type="checkbox"] + span:not(.lever):before, [type="checkbox"] + span:not(.lever):after {
+  margin-top: 2px;
+}
+
+.form-group {
+  margin-top: 15px;
+}
+
+.input-group-addon.btn {
+  overflow: visible;
 }
