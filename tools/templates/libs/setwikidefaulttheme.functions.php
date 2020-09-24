@@ -4,7 +4,7 @@ function getTemplatesList()
 {
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles
     //et squelettes, et on les range dans le tableau $wakkaConfig['templates']
-    $repertoire_initial = 'tools' . DIRECTORY_SEPARATOR . 'templates'.DIRECTORY_SEPARATOR.'themes';
+    $repertoire_initial = 'themes';
     $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
 
     //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans

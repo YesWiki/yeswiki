@@ -1,4 +1,36 @@
 /* Author: Florian Schmitt <florian@outils-reseaux.org> under GPL licence */
+
+var DATATABLE_OPTIONS = {
+  paging: false,
+  language: {
+    "sProcessing": "Traitement en cours...",
+    "sSearch": "Rechercher&nbsp;:",
+    "sLengthMenu": "Afficher _MENU_ &eacute;l&eacute;ments",
+    "sInfo": "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+    "sInfoEmpty": "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
+    "sInfoFiltered": "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
+    "sInfoPostFix": "",
+    "sLoadingRecords": "Chargement en cours...",
+    "sZeroRecords": "Aucun &eacute;l&eacute;ment &agrave; afficher",
+    "sEmptyTable": "Aucune donn&eacute;e disponible dans le tableau",
+    "oPaginate": {
+      "sFirst": "Premier",
+      "sPrevious": "Pr&eacute;c&eacute;dent",
+      "sNext": "Suivant",
+      "sLast": "Dernier"
+    },
+    "oAria": {
+      "sSortAscending": ": activer pour trier la colonne par ordre croissant",
+      "sSortDescending": ": activer pour trier la colonne par ordre d&eacute;croissant"
+    }
+  },
+  fixedHeader: {
+    header: true,
+    footer: false
+}
+}
+
+
 function toastMessage(message) {
   var $toast = $('<div class="toast-message"><div class="alert alert-secondary-1">' + message + '</div></div>');
   $('body').after($toast);
@@ -161,7 +193,6 @@ function toastMessage(message) {
   /* tooltips */
   $("[data-toggle='tooltip']").tooltip();
 
-  /* not usefull for the Jdn YesWiki
   // detecte quand on scrolle en dessus de la barre horizontale, afin de la fixer en haut
   var $topnav = $("#yw-topnav.fixable");
   if ($topnav.length > 0) {
@@ -169,7 +200,7 @@ function toastMessage(message) {
     $topnav.affix({
       offset: topoffset
     });
-  }*/
+  }
 
   // moteur de recherche utilisé dans un template
   $('a[href="#search"]').on("click", function(e) {
@@ -355,37 +386,3 @@ function toastMessage(message) {
     $(".table:not(.prevent-auto-init)").DataTable(DATATABLE_OPTIONS);
   }
 })(jQuery);
-
-var DATATABLE_OPTIONS = {
-  pageLength: 25,
-  lengthMenu: [
-    [25, 50, 100, 250, -1],
-    [25, 50, 100, 250, "Tous"]
-  ],
-  language: {
-    processing: "Traitement en cours...",
-    search: "Rechercher&nbsp;:",
-    lengthMenu: "Afficher _MENU_ &eacute;l&eacute;ments",
-    info:
-      "Affichage de l'&eacute;lement _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-    infoEmpty:
-      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
-    infoFiltered:
-      "(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)",
-    infoPostFix: "",
-    loadingRecords: "Chargement en cours...",
-    zeroRecords: "Aucun &eacute;l&eacute;ment &agrave; afficher",
-    emptyTable: "Aucune donnée disponible dans le tableau",
-    paginate: {
-      first: "Premier",
-      previous: "Pr&eacute;c&eacute;dent",
-      next: "Suivant",
-      last: "Dernier"
-    },
-    aria: {
-      sortAscending: ": activer pour trier la colonne par ordre croissant",
-      sortDescending:
-        ": activer pour trier la colonne par ordre décroissant"
-    }
-  }
-}

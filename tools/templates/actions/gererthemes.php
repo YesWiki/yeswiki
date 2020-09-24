@@ -51,7 +51,6 @@ if (isset($error)) {
     echo "<div class='alert alert-danger'>$error</div>";
 }
 $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-$this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 echo '<form method="post" action="'.$this->href().'">';
 ?>

@@ -588,15 +588,15 @@ function recup_droits($page)
     return $acls ;
 }
 
-//Récupère les droits de la page désignée en argument et renvoie un tableau
+//Récupère les metas de la page désignée en argument et renvoie un tableau
 function recup_meta($page)
 {
     $metas = $GLOBALS['wiki']->GetMetaDatas($page);
 
     return array('page' => $page,
-        'theme' => $metas['theme'],
-        'squelette' => $metas['squelette'],
-        'style' => $metas['style'],
+        'theme' => empty($metas['theme']) ? '' : $metas['theme'],
+        'squelette' => empty($metas['squelette']) ? '' : $metas['squelette'],
+        'style' => empty($metas['style']) ? '' : $metas['style'],
     );
 }
 
