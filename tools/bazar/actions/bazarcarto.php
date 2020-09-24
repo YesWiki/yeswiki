@@ -25,11 +25,11 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            $bazarFiche->search(['tabquery' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
+            $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = $bazarFiche->search(['tabquery' => $GLOBALS['params']['query']]);
+    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // a la place du choix par défaut, on affiche en carte

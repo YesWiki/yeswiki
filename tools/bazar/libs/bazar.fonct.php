@@ -827,7 +827,7 @@ function baz_afficher_formulaire_export()
         $query = '';
 
         //on recupere toutes les fiches du type choisi et on les met au format csv
-        $tableau_fiches = $GLOBALS['bazarFiche']->search([ 'tabquery'=>$query, 'formsIds'=>[$id], 'q' => $q ]);
+        $tableau_fiches = $GLOBALS['bazarFiche']->search([ 'queries'=>$query, 'formsIds'=>[$id], 'keywords' => $q ]);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
             // create date and latest date
@@ -1486,10 +1486,9 @@ function bazPrepareFormData($form)
                 $hash = md5($formelem[1].serialize($tabquery));
                 if (!isset($result[$hash])) {
                     $result[$hash] = $GLOBALS['bazarFiche']->search([
-                        'tabquery'=>$tabquery,
+                        'queries'=>$tabquery,
                         'formsIds'=>$formelem[1],
-                        'keywords'=>false,
-                        'q'=>(!empty($formelem[13])) ? $formelem[13] : ''
+                        'keywords'=>(!empty($formelem[13])) ? $formelem[13] : ''
                     ]);
                 }
                 $prepared[$i]['values']['titre_liste'] = $formelem[2];
@@ -2913,9 +2912,9 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     }
 
     $fiches = $GLOBALS['bazarFiche']->search([
-        'tabquery'=>$GLOBALS['params']['query'],
+        'queries'=>$GLOBALS['params']['query'],
         'formsIds'=>$data['idform'],
-        'q'=>$data['search']
+        'keywords'=>$data['search']
     ]);
     $shownbres = count($GLOBALS['params']['groups']) == 0 || count($fiches) == 0;
     $res .= displayResultList($fiches, $GLOBALS['params'], $shownbres).'</div>';
@@ -3450,13 +3449,6 @@ function baz_afficher_flux_RSS()
         $utilisateur = '';
     }
 
-    if (isset($_GET['statut'])) {
-        $statut = $_GET['statut'];
-        $urlrss .= '&amp;statut='.$statut;
-    } else {
-        $statut = 1;
-    }
-
     // chaine de recherche
     $q = '';
     if (isset($_GET['q']) and !empty($_GET['q'])) {
@@ -3480,11 +3472,10 @@ function baz_afficher_flux_RSS()
     }
 
     $tableau_flux_rss = $GLOBALS['bazarFiche']->search([
-        'tabquery'=>$query,
+        'queries'=>$query,
         'formsIds'=>$id,
-        'state'=>$statut,
         'user'=>$utilisateur,
-        'q'=>$q
+        'keywords'=>$q
     ]);
 
     $tableau_flux_rss = searchResultstoArray($tableau_flux_rss, array());

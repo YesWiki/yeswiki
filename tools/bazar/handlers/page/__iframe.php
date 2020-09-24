@@ -40,11 +40,11 @@ if ($bazarFiche->isFiche($this->GetPageTag())) {
         foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                $bazarFiche->search(['tabquery' => $params['query'], 'formsIds' => [$formId], 'q' => $q])
+                $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
             );
         }
     } else {
-        $results = $bazarFiche->search(['tabquery' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'q' => $q]);
+        $results = $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
 
     // affichage à l'écran

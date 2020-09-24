@@ -82,7 +82,7 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tableau_resultat = $bazarFiche->search([ 'tabquery' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+    $tableau_resultat = $bazarFiche->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';

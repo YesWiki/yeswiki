@@ -2020,9 +2020,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $tabquery = '';
             }
             $tab_result = $GLOBALS['bazarFiche']->search([
-                'tabquery' => $tabquery,
+                'queries' => $tabquery,
                 'formsIds' => $tableau_template[1],
-                'q' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+                'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
             ]);
             foreach ($tab_result as $fiche) {
                 $valeurs_fiche_liste = json_decode($fiche["body"], true);
@@ -2176,9 +2176,9 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $tabquery = '';
         }
         $tab_result = $GLOBALS['bazarFiche']->search([
-            'tabquery' => $tabquery,
+            'queries' => $tabquery,
             'formsIds' => $tableau_template[1],
-            'q' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+            'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
         ]);
 
         $checkboxtab = array();

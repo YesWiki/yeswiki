@@ -48,7 +48,7 @@ function getForm($form = '') {
 
 function getFiche($args) {
     if( $args ) {
-        if( $args[0]==='url' && $args[1] ) {
+        if( $args[0]==='url' ) {
             $triples = $GLOBALS['wiki']->GetMatchingTriples(null, 'http://outils-reseaux.org/_vocabulary/sourceUrl', urldecode($args[1]) );
             $resources = array_map(function($triple) {
                 return $GLOBALS['wiki']->href('', $triple['resource']);
@@ -58,10 +58,9 @@ function getFiche($args) {
             header("Access-Control-Allow-Origin: *");
             exit(json_encode($resources));
         } else {
-            $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
-            $contentType = $semantic ? 'application/ld+json' : 'application/json';
+            $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false || $args[1] === 'json-ld';
 
-            $data = $GLOBALS['bazarFiche']->getList($args[0], $semantic);
+            $data = $GLOBALS['bazarFiche']->getList([ 'formsIds'=>$args[0], 'semantic'=>$semantic ]);
 
             // Put data inside LDP container
             if( $semantic ) {
@@ -76,7 +75,7 @@ function getFiche($args) {
                 ];
             }
 
-            header("Content-type: $contentType; charset=UTF-8");
+            header("Content-type: ".($semantic ? 'application/ld+json' : 'application/json')."; charset=UTF-8");
             header("Access-Control-Allow-Origin: *");
             exit(json_encode($data));
         }
@@ -88,7 +87,7 @@ function getFiche($args) {
 
 function postFiche($args) {
     if( $args ) {
-        $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false;
+        $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false || $args[1] === 'json-ld';
 
         $_POST['antispam'] = 1;
         $fiche = $GLOBALS['bazarFiche']->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
@@ -125,7 +124,13 @@ function documentationBazar() {
     $fiche = $GLOBALS['wiki']->href('', 'api/fiche/{formId}');
     $output .= 'GET <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
 
+    $fiche = $GLOBALS['wiki']->href('', 'api/fiche/{formId}/json-ld');
+    $output .= 'GET <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
+
     $fiche = $GLOBALS['wiki']->href('', 'api/fiche/{formId}');
+    $output .= 'POST <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
+
+    $fiche = $GLOBALS['wiki']->href('', 'api/fiche/{formId}/json-ld');
     $output .= 'POST <code><a href="'.$fiche.'">'.$fiche.'</a></code><br />';
 
     return $output;

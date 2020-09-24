@@ -53,11 +53,11 @@ if (isset($_GET['id'])) {
         foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                $bazarFiche->search(['tabquery' => $params['query'], 'formsIds' => [$formId], 'q' => $q])
+                $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
             );
         }
     } else {
-        $bazarFiche->search(['tabquery' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'q' => $q]);
+        $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
     //$params['groups'][0] = 'all';
     //$results = searchResultstoArray($results, $params);
