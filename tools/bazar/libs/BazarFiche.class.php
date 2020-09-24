@@ -11,6 +11,12 @@ class BazarFiche
         $this->wiki = $wiki;
     }
 
+    /**
+     * @param $tag
+     * @param false $semantic
+     * @param string $time
+     * @return mixed|null
+     */
     public function getOne($tag, $semantic = false, $time = '')
     {
         $page = $this->wiki->LoadPage($tag, $time);
@@ -32,6 +38,11 @@ class BazarFiche
         return $data;
     }
 
+    /**
+     * @param $formId
+     * @param false $semantic
+     * @return array
+     */
     public function getList($formId, $semantic = false)
     {
         // on recupere toutes les fiches du formulaire donné
@@ -62,6 +73,157 @@ class BazarFiche
         }
 
         return $tab_entries;
+    }
+
+    /**
+     * @param $data
+     * @throws \Exception
+     */
+    public function validate($data)
+    {
+        if (!isset($data['antispam']) or !$data['antispam'] == 1) {
+            throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+        }
+
+        // On teste le titre car ça peut bugguer sérieusement sans
+        if (!isset($data['bf_titre'])) {
+            throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+        }
+
+        // form metadata
+        if (!isset($data['id_typeannonce'])) {
+            throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
+        }
+    }
+
+    /**
+     * @param $formId
+     * @param $data
+     * @param false $semantic
+     * @param null $sourceUrl
+     * @return array
+     * @throws \Exception
+     */
+    public function create($formId, $data, $semantic = false, $sourceUrl = null)
+    {
+        $data['id_typeannonce'] = "$formId";
+
+        if( $semantic ) {
+            $data = $this->convertSemanticData($formId, $data);
+        }
+
+        $this->validate($data);
+
+        $data = baz_requete_bazar_fiche($data);
+
+        // on change provisoirement d'utilisateur
+        if (isset($GLOBALS['utilisateur_wikini'])) {
+            $olduser = $this->wiki->GetUser();
+            $this->wiki->LogoutUser();
+
+            // On s'identifie de facon a attribuer la propriete de la fiche a
+            // l'utilisateur qui vient d etre cree
+            $user = $this->wiki->LoadUser($GLOBALS['utilisateur_wikini']);
+            $this->wiki->SetUser($user);
+        }
+
+        $ignoreAcls = true;
+        if (isset($this->wiki->config['bazarIgnoreAcls'])) {
+            $ignoreAcls = $this->wiki->config['bazarIgnoreAcls'];
+        }
+
+        // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
+        $saved = $this->wiki->SavePage(
+            $data['id_fiche'],
+            json_encode($data),
+            '',
+            $ignoreAcls // Ignore les ACLs
+        );
+
+        // on cree un triple pour specifier que la page wiki creee est une fiche
+        // bazar
+        if ($saved == 0) {
+            $this->wiki->InsertTriple(
+                $data['id_fiche'],
+                'http://outils-reseaux.org/_vocabulary/type',
+                'fiche_bazar',
+                '',
+                ''
+            );
+        }
+
+        if ($sourceUrl) {
+            $this->wiki->InsertTriple(
+                $data['id_fiche'],
+                'http://outils-reseaux.org/_vocabulary/sourceUrl',
+                $sourceUrl,
+                '',
+                ''
+            );
+        }
+
+        // on remet l'utilisateur initial
+        if (isset($GLOBALS['utilisateur_wikini'])) {
+            $this->wiki->LogoutUser();
+            if (!empty($olduser)) {
+                $this->wiki->SetUser($olduser, 1);
+            }
+        }
+
+        // Envoi d'un mail aux administrateurs
+        $this->notifyAdmins($data, true);
+
+        return $data;
+    }
+
+    /**
+     * @param $tag
+     * @param $data
+     * @param false $semantic
+     * @param false $replace
+     * @throws \Exception
+     */
+    public function update($tag, $data, $semantic = false, $replace = false)
+    {
+        if( !$this->wiki->HasAccess('write', $tag) ) {
+            throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
+        }
+
+        $previousData = $this->getOne($tag);
+
+        if( $semantic ) {
+            $data = $this->convertSemanticData($previousData['id_typeannonce'], $data);
+        }
+
+        if( $replace ) {
+            $data['id_typeannonce'] = $previousData['id_typeannonce'];
+        } else {
+            // If PATCH, overwrite previous data with new data
+            $data = array_merge($previousData, $data);
+        }
+
+        $this->validate($data);
+
+        $data = baz_requete_bazar_fiche($data);
+
+        // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
+        $this->wiki->SavePage($data['id_fiche'], json_encode($data));
+
+        // Envoi d'un mail aux administrateurs
+        $this->notifyAdmins($data, false);
+
+        return $data;
+    }
+
+    /**
+     * @param $tag
+     */
+    public function delete($tag)
+    {
+        $this->wiki->DeleteOrphanedPage($tag);
+        $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
+        $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/sourceUrl', null, '', '');
+        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
     protected function convertSemanticData($formId, $data)
@@ -96,130 +258,11 @@ class BazarFiche
         return $nonSemanticData;
     }
 
-    public function create($formId, $data, $semantic = false, $sourceUrl = null)
-    {
-        $data['id_typeannonce'] = "$formId";
-
-        if( $semantic ) {
-            $data = $this->convertSemanticData($formId, $data);
-        }
-
-        $valid = validateForm($data);
-
-        if ($valid['result']) {
-            $data = baz_requete_bazar_fiche($data);
-
-            // on change provisoirement d'utilisateur
-            if (isset($GLOBALS['utilisateur_wikini'])) {
-                $olduser = $this->wiki->GetUser();
-                $this->wiki->LogoutUser();
-
-                // On s'identifie de facon a attribuer la propriete de la fiche a
-                // l'utilisateur qui vient d etre cree
-                $user = $this->wiki->LoadUser($GLOBALS['utilisateur_wikini']);
-                $this->wiki->SetUser($user);
-            }
-
-            $ignoreAcls = true;
-            if (isset($this->wiki->config['bazarIgnoreAcls'])) {
-                $ignoreAcls = $this->wiki->config['bazarIgnoreAcls'];
-            }
-
-            // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
-            $saved = $this->wiki->SavePage(
-                $data['id_fiche'],
-                json_encode($data),
-                '',
-                $ignoreAcls // Ignore les ACLs
-            );
-
-            // on cree un triple pour specifier que la page wiki creee est une fiche
-            // bazar
-            if ($saved == 0) {
-                $this->wiki->InsertTriple(
-                    $data['id_fiche'],
-                    'http://outils-reseaux.org/_vocabulary/type',
-                    'fiche_bazar',
-                    '',
-                    ''
-                );
-            }
-
-            if ($sourceUrl) {
-                $this->wiki->InsertTriple(
-                    $data['id_fiche'],
-                    'http://outils-reseaux.org/_vocabulary/sourceUrl',
-                    $sourceUrl,
-                    '',
-                    ''
-                );
-            }
-
-            // on remet l'utilisateur initial
-            if (isset($GLOBALS['utilisateur_wikini'])) {
-                $this->wiki->LogoutUser();
-                if (!empty($olduser)) {
-                    $this->wiki->SetUser($olduser, 1);
-                }
-            }
-
-            // Envoi d'un mail aux administrateurs
-            $this->notifyAdmins($data, true);
-
-            return $data;
-        } else {
-            throw new \Exception($valid['error']);
-        }
-    }
-
-    public function update($tag, $data, $semantic = false, $replace = false)
-    {
-        if( !$this->wiki->HasAccess('write', $tag) ) {
-            throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
-        }
-
-        $previousData = $this->getOne($tag);
-
-        if( $semantic ) {
-            $data = $this->convertSemanticData($previousData['id_typeannonce'], $data);
-        }
-
-        if( $replace ) {
-            $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        } else {
-            // If PATCH, overwrite previous data with new data
-            $data = array_merge($previousData, $data);
-        }
-
-        $valid = validateForm($data);
-
-        if ($valid['result']) {
-            $data = baz_requete_bazar_fiche($data);
-
-            // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-            $this->wiki->SavePage($data['id_fiche'], json_encode($data));
-
-            // Envoi d'un mail aux administrateurs
-            $this->notifyAdmins($data, false);
-        } else {
-            throw new \Exception($valid['error']);
-        }
-    }
-
-    public function delete($tag)
-    {
-        $this->wiki->DeleteOrphanedPage($tag);
-        $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
-        $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/sourceUrl', null, '', '');
-        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
-    }
-
     protected function notifyAdmins($data, $new)
     {
         include_once 'tools/contact/libs/contact.functions.php';
 
         if ($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
-
             $lien = str_replace('/wakka.php?wiki=', '', $this->wiki->config['base_url']);
             $sujet = removeAccents('[' . str_replace('http://', '', $lien) . '] nouvelle fiche ' . ($new ? 'ajoutee' : 'modifiee') . ' : ' . $data['bf_titre']);
             $text = 'Voir la fiche sur le site pour l\'administrer : ' . $this->wiki->href('', $data['id_fiche']);

@@ -1108,15 +1108,14 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             $fiche = $bazarFiche->update($_POST['id_fiche'], $_POST);
             if ($GLOBALS['wiki']->GetPageTag() != $fiche['id_fiche']) {
                 // Redirection pour éviter la revalidation du formulaire
-                $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
-                  .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
+                $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
                 header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             } else {
                 header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag()));
             }
             exit;
         } catch(\Exception $e) {
-            echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
+            exit($e->getMessage());
         }
     }
 
@@ -1343,37 +1342,6 @@ function baz_requete_bazar_fiche($valpost)
     }
 
     return $valpost;
-}
-
-/**  validateForm() - inserer une nouvelle fiche
- * @array   Le tableau des valeurs a inserer
- */
-function validateForm($valeur)
-{
-    if (!isset($valeur['antispam']) or !$valeur['antispam'] == 1) {
-        return array(
-            'result' => false,
-            'error' => _t('BAZ_PROTECTION_ANTISPAM')
-        );
-    }
-    // On teste le titre car ça peut bugguer sérieusement sans
-    if (!isset($valeur['bf_titre'])) {
-        return array(
-            'result' => false,
-            'error' => _t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE')
-        );
-    }
-
-    // form metadata
-    if (!isset($valeur['id_typeannonce'])) {
-        return array(
-            'result' => false,
-            'error' => _t('BAZ_NO_FORMS_FOUND')
-        );
-    }
-
-    // form validates!
-    return array('result' => true);
 }
 
 /** baz_suppression() - Supprime une fiche
