@@ -26,7 +26,6 @@ new Vue({
     actionParams: {},
     iconMapping: [],
     editor: null, // editor
-    isEditingExistingAction: false,
   },
   computed: {
     selectedAction() {
@@ -36,6 +35,9 @@ new Vue({
       if (!this.selectedForm || !this.values.iconfield) return []
       var config = this.selectedForm.prepared.filter(e => e.id == this.values.iconfield)[0]
       return config ? config.values.label : []
+    },
+    isEditingExistingAction() {
+      return this.editor.currentLine.match(/^\s*\{\{\s*bazar.*/g) != null
     }
   },
   methods: {
@@ -44,11 +46,11 @@ new Vue({
       this.updateActionParams()
     },
     init() {
-      const line = this.editor.currentLine
       let newValues = {}
-      if (line.match(/^\s*\{\{\s*bazar.*/g) != null) {
-        this.isEditingExistingAction = true
-        const attributes = $(line.replace(/\s*{{\s*/, '<').replace('}}', '/>'))[0].attributes
+      if (this.isEditingExistingAction) {
+        // use a fake dom to parse wiki code attributes
+        let fakeDom = this.editor.currentLine.replace(/\s*{{\s*/, '<').replace('}}', '/>')
+        const attributes = $(fakeDom)[0].attributes
         for(let attribute of attributes) {
           newValues[attribute.name] = attribute.value
         }
@@ -82,15 +84,13 @@ new Vue({
         this.values.titles = this.filterGroups.map(g => g.title).filter(e => e != "").join(',')
         this.values.groupicons = this.filterGroups.map(g => g.icon).filter(e => e != "").join(',')
         this.values.icon = this.iconMapping.filter(m => m.id && m.icon).map(m => `${m.icon}=${m.id}`).join(',')
-
         this.values = newValues
-        this.updateActionParams();
       } else {
-        this.isEditingExistingAction = false
         this.values = {}
         this.selectedFormId = ''
         this.selectedActionId = ''
       }
+      this.updateActionParams();
     },
     getSelectedForm() {
       if (!this.selectedFormId) return;
@@ -102,7 +102,7 @@ new Vue({
         })
       }
     },
-    initActionValues() {
+    initValuesOnActionSelected() {
       if (!this.selectedActionId) return;
       // Populate the values field from the config
       for(var propName in this.selectedAction.properties) {
@@ -141,7 +141,7 @@ new Vue({
   },
   watch: {
     selectedFormId: function() { this.getSelectedForm() },
-    selectedActionId: function() { this.initActionValues() },
+    selectedActionId: function() { this.initValuesOnActionSelected() },
     values: {
       handler(val){ this.updateActionParams(val) },
       deep: true
@@ -159,12 +159,14 @@ new Vue({
     $(document).ready(() => {
       this.editor = new AceEditorWrapper()
       new FlyingActionBar(this.editor)
-      $('.editor-btn-actions-bazar').click(this.init)
+      $('.editor-btn-actions-bazar').click(() => {
+        $('#bazar-actions-modal').modal('show')
+        this.init()
+      })
     })
     this.addEmptyIconMapping()
     this.getSelectedForm()
-    this.initActionValues()
+    this.initValuesOnActionSelected()
   }
 });
-
 }
