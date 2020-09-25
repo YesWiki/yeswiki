@@ -486,7 +486,7 @@ class BazarFiche
     protected function convertSemanticData($formId, $data)
     {
         // Initialize by copying basic information
-        $nonSemanticData = ['antispam' => $data['antispam'], 'id_typeannonce' => $data['id_typeannonce']];
+        $nonSemanticData = ['id_fiche' => $data['id_fiche'], 'antispam' => $data['antispam'], 'id_typeannonce' => $data['id_typeannonce']];
 
         $form = baz_valeurs_formulaire($formId);
 
