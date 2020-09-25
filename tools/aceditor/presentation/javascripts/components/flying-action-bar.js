@@ -8,7 +8,7 @@ export default class {
 
   initialize() {
     var flyingActionBar = $(`<div class="flying-action-bar">
-      <a class="editor-btn-actions-bazar btn btn-primary btn-icon">
+      <a class="open-actions-builder-btn btn btn-primary btn-icon">
         <i class="fa fa-pencil-alt"></i>
       </a>
     </div>`)

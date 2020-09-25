@@ -1,0 +1,78 @@
+<div class="modal" id="actions-builder-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h2 class="modal-title"><?php echo _t('ACEDITOR_ACTIONS_BAZAR'); ?></h2>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body" id="actions-builder-app">
+        <!-- Choose form (only for bazar actions) -->
+        <div v-if="needFormField" class="form-group">
+          <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_FORM'); ?></label>
+          <select v-model="selectedFormId" required class="form-control">
+            <option v-for="(name, id) in formIds" :value="id">{{ name }}</option>
+          </select>
+        </div>
+
+        <!-- Choose Action -->
+        <div class="form-group">
+          <label class="control-label">{{ needFormField ? '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' : 'Actions' }}</label>
+          <select v-model="selectedActionId" required class="form-control">
+            <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
+          </select>
+        </div>
+
+        <!-- Action Configuration -->
+        <div v-if="selectedAction && selectedForm" class="row" class="action-parameters-container">
+          <div class="col-md-12" v-if="selectedAction.hint">
+            <div class="alert alert-warning">{{ selectedAction.hint }}</div>
+          </div>
+
+          <!-- Iframe Preview -->
+          <div class="col-md-12">
+            <preview-action :wiki-code="wikiCode"></preview-action>
+          </div>
+
+          <!-- Specific Action Config -->
+          <div class="config-panel specific-actions-config">
+            <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
+            <template v-for="(property, propName) in selectedAction.properties">
+              <component :is="`input-${['text', 'number', 'color', 'range'].includes(property.type) ? 'text' : (property.type || 'hidden')}`"
+                         v-model="values[propName]" :key="propName" :name="propName"
+                         :config="property" :selected-form="selectedForm">
+              </component>
+            </template>
+          </div>
+
+          <div class="col-md-12 result-container">
+            <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>
+            <wiki-code-input :action-params="actionParams" :is-editing="isEditingExistingAction"
+                             :editor="editor" :wiki-code="wikiCode"></wiki-code-input>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default btn-block" data-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // Not very elegant, but avoid doing an ajax request from vue component to retrieve the Json data
+  var data = <?php echo json_encode($data) ?>;
+</script>
+
+<!-- Load manually script because we need to use type="module" for ES6 import to work -->
+<script src="tools/templates/libs/vendor/vue/vue.js"></script>
+<script type="module" src="tools/aceditor/presentation/javascripts/actions-builder.js"></script>
+
+<?php
+  $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
+  $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
+  $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
+?>

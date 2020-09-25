@@ -166,7 +166,7 @@ var SYNTAX = {
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
               '<ul class="dropdown-menu">' +
-                '<li><a class="editor-btn-actions-bazar">'+this.lang['ACEDITOR_ACTIONS_BAZAR']+'</a></li>' +
+                '<li><a class="open-actions-builder-btn">'+this.lang['ACEDITOR_ACTIONS_BAZAR']+'</a></li>' +
               '</ul>' +
             '</div>');
 

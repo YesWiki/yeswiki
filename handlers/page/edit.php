@@ -175,7 +175,7 @@ if (!isset($GLOBALS['inIframe'])) {
 echo '<div class="page">'."\n".$output."\n".'<hr class="hr_clear" />'."\n".'</div>'."\n";
 
 // Popups for aceditor toolbar
-include 'tools/aceditor/actions/bazar_actions_builder.php';
+include 'tools/aceditor/actions/actions_builder.php';
 
 // Footer
 if (!isset($GLOBALS['inIframe'])) {

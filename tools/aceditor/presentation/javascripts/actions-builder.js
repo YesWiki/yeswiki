@@ -1,36 +1,50 @@
-import InputSegment from './components/InputSegment.js'
-import IconPicker from './components/InputSegmentIconPicker.js'
+import InputHidden from './components/InputHidden.js'
+import InputText from './components/InputText.js'
+import InputCheckbox from './components/InputCheckbox.js'
+import InputList from './components/InputList.js'
+import InputIcon from './components/InputIcon.js'
+import InputFacette from './components/InputFacette.js'
+import InputIconMapping from './components/InputIconMapping.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 
-console.log("data", data) // data global variable has been defined in bazar-actions-builder.tpl.html
+console.log("data", data) // data variable has been defined in actions-builder.tpl.html
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {
-  $('#bazar-actions-builder-app').empty().append('<p>Désolé, votre Navigateur est trop vieux pour utiliser cette fonctionalité.. Mettez le à jour ! ou <a href="https://www.mozilla.org/fr/firefox/new/">installez Firefox</a> </p>')
+  $('#actions-builder-app').empty().append('<p>Désolé, votre Navigateur est trop vieux pour utiliser cette fonctionalité.. Mettez le à jour ! ou <a href="https://www.mozilla.org/fr/firefox/new/">installez Firefox</a> </p>')
 } else {
 
 new Vue({
-  el: "#bazar-actions-builder-app",
-  components: { InputSegment, IconPicker, WikiCodeInput, PreviewAction },
+  el: "#actions-builder-app",
+  components: { InputText, InputCheckbox, InputList, InputIcon, InputFacette, InputIconMapping, InputHidden,
+                WikiCodeInput, PreviewAction },
   data: {
-    formIds: data.forms,
-    selectedFormId: "",
-    forms: {},
-    selectedForm: null,
+    // Available Actions
     actions: data.actions,
-    selectedActionId: "",
+    selectedActionId: "test",
+    // Some Actions require to select a Form (like bazar actions)
+    formIds: data.forms, // list of this YesWiki Forms
+    selectedFormId: "2",
+    selectedForm: null, // used only when useFormField is present
+    loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
+    // Values
     values: {},
     filterGroups: [],
     actionParams: {},
     iconMapping: [],
-    editor: null, // editor
+    editor: null, // Aceditor
   },
   computed: {
+    needFormField() {
+      return true
+    },
     wikiCode() {
-      var result = `{{bazarliste`
+      let actionId = this.selectedActionId
+      if (actionId.match(/^bazar.*/g) != null) actionId = 'bazarliste'
+      var result = `{{${actionId}`
       for(var key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
       }
@@ -40,36 +54,35 @@ new Vue({
     selectedAction() {
       return this.actions[this.selectedActionId]
     },
-    iconOptions() {
-      if (!this.selectedForm || !this.values.iconfield) return []
-      var config = this.selectedForm.prepared.filter(e => e.id == this.values.iconfield)[0]
-      return config ? config.values.label : []
-    },
     isEditingExistingAction() {
-      return this.editor.currentLine.match(/^\s*\{\{\s*bazar.*/g) != null
+      if (!this.editor) return false;
+      return this.editor.currentLine.match(/\{\{.*\}\}/g) != null
     }
   },
   methods: {
-    setValue(propName, value) {
-      this.values[propName] = value
-      this.updateActionParams()
-    },
     init() {
       let newValues = {}
       if (this.isEditingExistingAction) {
         // use a fake dom to parse wiki code attributes
         let fakeDom = this.editor.currentLine.replace(/\s*{{\s*/, '<').replace('}}', '/>')
+        const newActionId = 'bazarliste' // TODO read from fakeDom -> fakeDom.tag ?
         const attributes = $(fakeDom)[0].attributes
         for(let attribute of attributes) {
           newValues[attribute.name] = attribute.value
         }
         this.selectedFormId = newValues.id
-        for(let actionId in this.actions) {
-          let action = this.actions[actionId]
-          if (action && action.properties && action.properties.template.value == newValues.template) {
-            this.selectedActionId = actionId
+
+        this.selectedActionId = newActionId
+        // For bazar action, name is contained inside the template attribute
+        if (newActionId == 'bazarliste') {
+          for(let actionId in this.actions) {
+            let action = this.actions[actionId]
+            if (action && action.properties && action.properties.template && action.properties.template.value == newValues.template) {
+              this.selectedActionId = actionId
+            }
           }
         }
+
         if (newValues.icon) {
           this.iconMapping = []
           newValues.icon.split(',').forEach(el => {
@@ -101,18 +114,18 @@ new Vue({
       }
       this.updateActionParams();
     },
-    getSelectedForm() {
+    getSelectedFormByAjax() {
       if (!this.selectedFormId) return;
-      if (this.forms[this.selectedFormId]) this.selectedForm = this.forms[this.selectedFormId]
+      if (this.loadedForms[this.selectedFormId]) this.selectedForm = this.loadedForms[this.selectedFormId]
       else {
         $.getJSON(`/?root/bazar_api&object=form&id=${this.selectedFormId}`, data => {
-          this.forms[this.selectedFormId] = data
+          this.loadedForms[this.selectedFormId] = data
           this.selectedForm = data
         })
       }
     },
     initValuesOnActionSelected() {
-      if (!this.selectedActionId) return;
+      if (!this.selectedAction) return;
       // Populate the values field from the config
       for(var propName in this.selectedAction.properties) {
         var configValue = this.selectedAction.properties[propName].value
@@ -128,6 +141,7 @@ new Vue({
       this.filterGroups = this.filterGroups.filter( el => el.field != group.field)
     },
     updateActionParams() {
+      if (!this.selectedAction) return {}
       let result = {}
       this.values.id = this.selectedFormId
       this.values.groups = this.filterGroups.map(g => g.field).filter(e => e != "").join(',')
@@ -135,8 +149,9 @@ new Vue({
       this.values.groupicons = this.filterGroups.map(g => g.icon).filter(e => e != "").join(',')
       this.values.icon = this.iconMapping.filter(m => m.id && m.icon).map(m => `${m.icon}=${m.id}`).join(',')
       for(var key in this.values) {
+        let config = this.selectedAction.properties[key]
         let value = this.values[key]
-        if (value === false || value === "") continue
+        if (!config || value === config.default || value === "") continue
         result[key] = value
       }
       this.actionParams = result
@@ -149,7 +164,7 @@ new Vue({
     }
   },
   watch: {
-    selectedFormId: function() { this.getSelectedForm() },
+    selectedFormId: function() { this.getSelectedFormByAjax() },
     selectedActionId: function() { this.initValuesOnActionSelected() },
     values: {
       handler(val){ this.updateActionParams(val) },
@@ -165,16 +180,19 @@ new Vue({
     },
   },
   mounted() {
+    // Add a fake selected Form when we do not need it
+    if (!this.needFormField) this.selectedForm = { prepared: [] }
+
     $(document).ready(() => {
       this.editor = new AceEditorWrapper()
       new FlyingActionBar(this.editor)
-      $('.editor-btn-actions-bazar').click(() => {
-        $('#bazar-actions-modal').modal('show')
+      $('.open-actions-builder-btn').click(() => {
+        $('#actions-builder-modal').modal('show')
         this.init()
       })
     })
     this.addEmptyIconMapping()
-    this.getSelectedForm()
+    this.getSelectedFormByAjax()
     this.initValuesOnActionSelected()
   }
 });

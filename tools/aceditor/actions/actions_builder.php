@@ -13,7 +13,7 @@ $data['actions'] = Spyc::YAMLLoad('tools/bazar/actions/documentation.yaml');
 // ---------------
 include_once 'includes/squelettephp.class.php';
 try {
-    $squel = new SquelettePhp('bazar-actions-builder.tpl.html', 'aceditor');
+    $squel = new SquelettePhp('actions-builder.tpl.html', 'aceditor');
     echo $squel->render(['data' => $data]);
 } catch (Exception $e) {
     echo '<div class="alert alert-danger">Erreur handler widget : ',  $e->getMessage(), '</div>'."\n";

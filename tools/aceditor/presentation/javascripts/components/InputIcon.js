@@ -1,5 +1,5 @@
 export default {
-  props: [ 'value' ],
+  props: [ 'value', 'config' ],
   mounted() {
     $(this.$refs.input).iconpicker(pickerConfig).on('iconpickerSelected', (event) => {
       // handle this event with jquery cause vue does not support camelCase event
@@ -7,11 +7,13 @@ export default {
     });
   },
   template: `
-    <div class="input-group">
-      <input type="text" v-bind:value="value" v-on:input="$emit('input', $event.target.value)"
-             v-on:iconpicker-selected="$emit('input', $event.iconpickerValue)"
-             class="form-control" ref="input"/>
-      <span class="input-group-addon"></span>
+    <div class="form-group" :class="config.type" :title="config.hint" >
+      <label v-if="config.label" class="control-label">{{ config.label }}</label>
+      <div class="input-group">
+        <input type="text" :value="value" v-on:input="$emit('input', $event.target.value)"
+               class="form-control" ref="input"/>
+        <span class="input-group-addon"></span>
+      </div>
     </div>
   `
 }

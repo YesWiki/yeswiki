@@ -12,7 +12,7 @@ export default {
       document.execCommand('copy');
     },
     insertCodeInEditor() {
-      $('#bazar-actions-modal').modal('hide')
+      $('#actions-builder-modal').modal('hide')
       if (this.isEditing) {
         this.editor.replaceCurrentLineBy(this.wikiCode)
       } else {
