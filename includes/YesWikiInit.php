@@ -359,17 +359,18 @@ class Init
     {
         // call to YesWiki api
         if (isset($args[1]) and !empty($args[1])) {
+            header('Access-Control-Allow-Origin: *');
+            header('Access-Control-Allow-Credentials: true');
+            header('Access-Control-Allow-Headers: X-Requested-With, Location, Slug, Accept, Content-Type');
+            header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
+            header('Access-Control-Max-Age: 86400');
+
             array_shift($args);
             $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD']).ucwords(strtolower($args[0]));
             array_shift($args);
 
             if (function_exists($apiFunctionName)) {
-                header('Access-Control-Allow-Origin: *');
-                header('Access-Control-Allow-Credentials: true');
-                header('Access-Control-Allow-Headers: X-Requested-With, Location, Slug, Accept, Content-Type');
-                header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
-                header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
-                header('Access-Control-Max-Age: 86400');
 
                 // We may need to parse the body manually
                 if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
