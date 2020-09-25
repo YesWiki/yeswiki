@@ -64,10 +64,13 @@ function getFiche($args) {
 
             // Put data inside LDP container
             if( $semantic ) {
+                $form = baz_valeurs_formulaire($args[0]);
+
                 $data = [
                     '@context' => $data[0]['@context'],
                     '@id' => $GLOBALS['wiki']->href('fiche/' . $args[0], 'api'),
                     '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
+                    'dcterms:title' => $form['bn_label_nature'],
                     'ldp:contains' => array_map(function($resource) {
                         unset($resource['@context']);
                         return $resource;
@@ -93,7 +96,17 @@ function postFiche($args) {
         $fiche = $GLOBALS['bazarFiche']->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
 
         if( $fiche ) {
-            exit(json_encode(['success' => $GLOBALS['wiki']->href('', $fiche['id_fiche'])]));
+            http_response_code(201);
+
+            if( $semantic ) {
+                // Standard LDP headers
+                header('Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"');
+                header('Location: ' . $GLOBALS['wiki']->href('', $fiche['id_fiche']) );
+                header('Content-Length: 0');
+                exit();
+            } else {
+                exit(json_encode(['success' => $GLOBALS['wiki']->href('', $fiche['id_fiche'])]));
+            }
         } else {
             http_response_code(400);
             exit(json_encode(['error' => 'Invalid data']));
