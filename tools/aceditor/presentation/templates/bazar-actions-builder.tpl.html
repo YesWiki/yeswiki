@@ -38,19 +38,17 @@
           <!-- Action Params -->
           <div class="col-md-3">
             <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
-            <form-segment v-for="(property, propName) in selectedAction.properties"
-                          :name="propName" :config="property" :key="propName"
-                          :value="values[propName]" v-on:update:value="setValue(propName, $event)"
-                          :form-field-options=selectedForm.prepared></form-segment>
+            <input-segment v-for="(property, propName) in selectedAction.properties"
+                           :name="propName" :config="property" :key="propName"
+                           v-model="values[propName]" :form-field-options=selectedForm.prepared></input-segment>
           </div>
 
           <!-- Filters Params -->
           <div class="col-md-4 filter-parameters-container">
             <h3>Affichage</h3>
-            <form-segment v-for="(property, propName) in actions.common"
-                          :name="propName" :config="property" :key="propName"
-                          :value="values[propName]" v-on:update:value="setValue(propName, $event)"
-                          :form-field-options=selectedForm.prepared></form-segment>
+            <input-segment v-for="(property, propName) in actions.common"
+                           :name="propName" :config="property" :key="propName"
+                           v-model="values[propName]" :form-field-options=selectedForm.prepared></input-segment>
           </div>
 
           <div class="col-md-5">
@@ -69,7 +67,9 @@
               </div>
               <div class="col-sm-3 form-group">
                 <label class="control-label">Icone</label>
-                <input type="text" v-model="filter.icon" class="form-control" />
+                <div class="input-group">
+                  <icon-picker v-model="filter.icon"></icon-picker>
+                </div>
               </div>
               <div class="form-group col-sm-1">
                 <button class="btn btn-default btn-icon" @click="removeFilterGroup(filter)">
@@ -82,10 +82,10 @@
 
             <!-- Facette display -->
             <template v-if="filterGroups.length > 0">
-              <form-segment v-for="(property, propName) in actions.facettes"
+              <input-segment v-for="(property, propName) in actions.facettes"
                             :name="propName" :config="property" :key="propName"
                             :value="values[propName]" v-on:update:value="setValue(propName, $event)">
-              </form-segment>
+              </input-segment>
             </template>
 
             <!-- Icons -->
@@ -105,7 +105,7 @@
               </div>
               <div class="col-sm-5 form-group">
                 <label class="control-label">Icone</label>
-                <input type="text" v-model="mapping.icon" class="form-control" />
+                <icon-picker v-model="mapping.icon"></icon-picker>
               </div>
               <div class="form-group col-sm-1">
                 <button class="btn btn-default btn-icon" @click="removeIconMapping(mapping)">
@@ -144,4 +144,6 @@
 
 <?php
   $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/bazar-actions-builder.css');
+  $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
+  $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
 ?>

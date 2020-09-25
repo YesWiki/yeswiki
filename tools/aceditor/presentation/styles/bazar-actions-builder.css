@@ -114,9 +114,6 @@ iframe {
   padding-left: 1.5rem;
 }
 
-.input-group-addon {
-  padding: 0 1.8rem 0 1.5rem;
-}
 .input-group-addon.btn {
   overflow: visible;
 }
@@ -127,4 +124,18 @@ iframe {
 
 [type="checkbox"] + span:not(.lever):before, [type="checkbox"] + span:not(.lever):after {
   margin-top: 2px;
+}
+
+.iconpicker-popover.popover {
+  width: 400px;
+}
+.iconpicker .iconpicker-item {
+  width: 20px;
+  height: 20px;
+  padding: 8px;
+  margin: 0 5px 5px 0;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 20px;
 }

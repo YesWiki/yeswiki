@@ -1,4 +1,5 @@
-import FormSegment from './components/FormSegment.js'
+import InputSegment from './components/InputSegment.js'
+import IconPicker from './components/InputSegmentIconPicker.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
@@ -13,7 +14,7 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 new Vue({
   el: "#bazar-actions-builder-app",
-  components: { FormSegment, WikiCodeInput, PreviewAction },
+  components: { InputSegment, IconPicker, WikiCodeInput, PreviewAction },
   data: {
     formIds: data.forms,
     selectedFormId: "",
@@ -63,7 +64,7 @@ new Vue({
         }
         if (newValues.icon) {
           this.iconMapping = []
-          newValues.icon.split(',').each(el => {
+          newValues.icon.split(',').forEach(el => {
             this.iconMapping.push({icon: el.split('=')[0], id: el.split('=')[1]})
           })
         }
