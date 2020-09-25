@@ -1,12 +1,9 @@
 export default {
-  props: [ 'actionParams' ],
+  props: [ 'wikiCode' ],
   computed: {
     previewIframeUrl() {
-      if (!this.actionParams) return ""
-      let result = '/?BazaR/iframe'
-      for(var key in this.actionParams) {
-        result += `&${key}=${encodeURIComponent(this.actionParams[key])}`
-      }
+      if (!this.wikiCode) return ""
+      let result = `/?root/render&content=${encodeURIComponent(this.wikiCode)}`
       return result
     },
   },

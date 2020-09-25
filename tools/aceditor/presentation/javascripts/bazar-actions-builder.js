@@ -29,6 +29,14 @@ new Vue({
     editor: null, // editor
   },
   computed: {
+    wikiCode() {
+      var result = `{{bazarliste`
+      for(var key in this.actionParams) {
+        result += ` ${key}="${this.actionParams[key]}"`
+      }
+      result += ' }}'
+      return result
+    },
     selectedAction() {
       return this.actions[this.selectedActionId]
     },

@@ -1,15 +1,5 @@
 export default {
-  props: [ 'actionParams', 'isEditing', 'editor' ],
-  computed: {
-    wikiCode() {
-      var result = `{{bazarliste`
-      for(var key in this.actionParams) {
-        result += ` ${key}="${this.actionParams[key]}"`
-      }
-      result += ' }}'
-      return result
-    }
-  },
+  props: [ 'isEditing', 'editor', 'wikiCode' ],
   methods: {
     selectFullText() {
       var range = document.createRange();

@@ -32,7 +32,7 @@
 
           <!-- Iframe Preview -->
           <div class="col-md-12">
-            <preview-action :action-params="actionParams"></preview-action>
+            <preview-action :wiki-code="wikiCode"></preview-action>
           </div>
 
           <!-- Action Params -->
@@ -121,7 +121,7 @@
           <div class="col-md-12 result-container">
             <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>
             <wiki-code-input :action-params="actionParams" :is-editing="isEditingExistingAction"
-                             :editor="editor"></wiki-code-input>
+                             :editor="editor" :wiki-code="wikiCode"></wiki-code-input>
           </div>
         </div>
       </div>
