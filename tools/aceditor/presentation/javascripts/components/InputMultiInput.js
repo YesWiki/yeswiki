@@ -4,11 +4,12 @@ import InputText from './InputText.js'
 import InputCheckbox from './InputCheckbox.js'
 import InputList from './InputList.js'
 import InputIcon from './InputIcon.js'
+import InputColor from './InputColor.js'
 import InputFormField from './InputFormField.js'
 
 export default {
   props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
-  components: { InputText, InputCheckbox, InputList, InputIcon, InputFormField, InputHidden },
+  components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden },
   mixins: [ InputHelper ],
   data() {
     return {
@@ -49,9 +50,8 @@ export default {
     <div class="multi-input-container">
       <div class="inline-form" v-for="element in elements">
         <template v-for="(property, propName) in config.subproperties">
-          <component :is="componentIdFrom(property)" :key="name + '-' + propName" :ref="refFrom(property)"
-                     v-model="element[propName]" v-show="showIfFrom(property)"
-                     :name="propName" :values="values"
+          <component :is="componentIdFrom(property)" v-model="element[propName]"
+                     v-show="showIfFrom(property)" :name="propName" :values="values"
                      :config="property" :selected-form="selectedForm">
           </component>
         </template>

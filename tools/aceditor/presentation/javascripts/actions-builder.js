@@ -4,6 +4,7 @@ import InputText from './components/InputText.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
 import InputIcon from './components/InputIcon.js'
+import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
 import InputFacette from './components/InputFacette.js'
 import InputIconMapping from './components/InputIconMapping.js'
@@ -28,17 +29,17 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 
 window.myapp = new Vue({
   el: "#actions-builder-app",
-  components: { InputText, InputCheckbox, InputList, InputIcon, InputFormField, InputHidden,
+  components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
                 InputFacette, InputIconMapping, InputColorMapping,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
   data: {
     // Available Actions
     actions: data.actions,
-    selectedActionId: "test",
+    selectedActionId: "",
     // Some Actions require to select a Form (like bazar actions)
     formIds: data.forms, // list of this YesWiki Forms
-    selectedFormId: "2",
+    selectedFormId: "",
     selectedForm: null, // used only when useFormField is present
     loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
     // Values
@@ -83,16 +84,17 @@ window.myapp = new Vue({
     }
   },
   methods: {
-    init() {
+    initValues() {
       this.values = {}
       if (this.isEditingExistingAction) {
         // use a fake dom to parse wiki code attributes
         let fakeDom = $(this.editor.currentLine.replace(/\s*{{\s*/, '<').replace('}}', '/>'))[0]
 
-        for(let attribute of fakeDom.attributes) {
-          this.values[attribute.name] = attribute.value
+        for(let attribute of fakeDom.attributes) this.values[attribute.name] = attribute.value
+        if (this.needFormField) {
+          this.selectedFormId = this.values.id
+          this.getSelectedFormByAjax()
         }
-        this.selectedFormId = this.values.id
 
         const newActionId = fakeDom.tagName.toLowerCase()
         this.selectedActionId = newActionId
@@ -100,14 +102,13 @@ window.myapp = new Vue({
         if (newActionId == 'bazarliste') {
           for(let actionId in this.actions) {
             let action = this.actions[actionId]
-            if (action && action.properties && action.properties.template && action.properties.template.value == this.values.template) {
+            if (action && action.properties && action.properties.template && action.properties.template.value == this.values.template)
               this.selectedActionId = actionId
-            }
           }
         }
-        if (this.$refs.specialInput) this.$refs.specialInput.parseNewValues(this.values)
+        if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.parseNewValues(this.values))
       } else {
-        if (this.$refs.specialInput) this.$refs.specialInput.resetValues()
+        if (this.$refs.specialInput) this.$refs.specialInput.forEach(component => component.resetValues())
         this.selectedFormId = ''
         this.selectedActionId = ''
       }
@@ -119,6 +120,8 @@ window.myapp = new Vue({
       else {
         $.getJSON(`/?root/bazar_api&object=form&id=${this.selectedFormId}`, data => {
           this.loadedForms[this.selectedFormId] = data
+          // On first form loaded, we load again the values so the special components are rendered
+          if (!this.selectedForm) setTimeout(() => this.initValues(), 0)
           this.selectedForm = data
         })
       }
@@ -136,19 +139,21 @@ window.myapp = new Vue({
     updateActionParams() {
       if (!this.selectedAction) return {}
       let result = {}
-      this.values.id = this.selectedFormId
+      if (this.needFormField) result.id = this.selectedFormId
 
-      for(var key in this.values) {
+      for(let key in this.values) {
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
-        if (!config || value === config.default || typeof value == "object") continue
+        if (result.hasOwnProperty(key) || !config || value === config.default || typeof value == "object") continue
         result[key] = value
       }
-      // Adds values from advanced features
+      // Adds values from special components
       if (this.$refs.specialInput) this.$refs.specialInput.forEach(p => result = {...result, ...p.getValues()})
-      // remove empty values
-      result = Object.filter(result, value => value != "")
-      this.actionParams = result
+
+      // Order params, and remove empty values
+      const orderedResult = { id: result.id, template: result.template };
+      Object.keys(result).sort().forEach(key => { if (result[key] != "") orderedResult[key] = result[key] })
+      this.actionParams = orderedResult
     },
     addEmptyIconMapping() {
       this.iconMapping.push({id: '', icon: ''})
@@ -178,11 +183,9 @@ window.myapp = new Vue({
       new FlyingActionBar(this.editor)
       $('.open-actions-builder-btn').click(() => {
         $('#actions-builder-modal').modal('show')
-        this.init()
+        this.initValues()
       })
     })
-    this.getSelectedFormByAjax()
-    this.initValuesOnActionSelected()
   }
 });
 }

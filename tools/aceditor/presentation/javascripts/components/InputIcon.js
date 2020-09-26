@@ -6,6 +6,12 @@ export default {
       this.$emit('input', event.iconpickerValue)
     });
   },
+  watch: {
+    value(newVal) {
+      $(this.$refs.input).data('iconpicker').setValue(this.value)
+      $(this.$refs.input).data('iconpicker').update()
+    }
+  },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label" class="control-label">{{ config.label || 'Icone' }}</label>

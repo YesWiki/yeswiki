@@ -94,7 +94,7 @@ commons2:
           label: Valeur
           type: list
           dataFromFormField: colorfield
-        icon:
+        color:
           label: Couleur
           type: color
 
