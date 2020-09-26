@@ -1,20 +1,6 @@
 // ext/Number/Color/slider
 export default {
   props: [ 'value', 'config' ],
-  mounted() {
-    if (this.config.type == 'color') {
-      $(this.$refs.input).spectrum({
-        type: "text"
-      }).change((event) => {
-        this.$emit('input', event.target.value)
-      });
-    }
-  },
-  watch: {
-    value(newVal) {
-      if (this.config.type == 'color') $(this.$refs.input).spectrum('set', this.value)
-    }
-  },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
