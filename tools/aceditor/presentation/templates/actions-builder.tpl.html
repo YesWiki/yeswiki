@@ -25,25 +25,24 @@
         </div>
 
         <!-- Action Configuration -->
-        <div v-if="selectedAction && selectedForm" class="row" class="action-parameters-container">
-          <div class="col-md-12" v-if="selectedAction.hint">
-            <div class="alert alert-warning">{{ selectedAction.hint }}</div>
-          </div>
+        <div v-if="selectedAction && selectedForm" class="action-parameters-container">
+
+          <div v-if="selectedAction.hint" class="alert alert-warning">{{ selectedAction.hint }}</div>
 
           <!-- Iframe Preview -->
-          <div class="col-md-12">
-            <preview-action :wiki-code="wikiCode"></preview-action>
-          </div>
+          <preview-action :wiki-code="wikiCode"></preview-action>
 
-          <!-- Specific Action Config -->
-          <div class="config-panel specific-actions-config">
-            <h3><?php echo _t('ACTION_BUILDER_PARAMETERS') ?></h3>
-            <template v-for="(property, propName) in selectedAction.properties">
-              <component :is="`input-${['text', 'number', 'color', 'range'].includes(property.type) ? 'text' : (property.type || 'hidden')}`"
-                         v-model="values[propName]" :key="propName" :name="propName"
-                         :config="property" :selected-form="selectedForm">
-              </component>
-            </template>
+          <div class="panels-config-container">
+            <div v-for="panel in configPanels" class="config-panel" :style="{width: panel.width}">
+              <h3>{{ panel.title ? panel.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
+              <template v-for="(property, propName) in panel.properties">
+                <component :is="componentIdFrom(property)" :key="propName" :ref="refFrom(property)"
+                           v-model="values[propName]" v-show="showIfFrom(property)"
+                           :name="propName" :values="values"
+                           :config="property" :selected-form="selectedForm">
+                </component>
+              </template>
+            </div>
           </div>
 
           <div class="col-md-12 result-container">

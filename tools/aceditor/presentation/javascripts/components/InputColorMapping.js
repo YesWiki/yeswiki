@@ -7,16 +7,16 @@ export default {
   },
   methods: {
     parseNewValues(newValues) {
-      if (newValues.icon) {
+      if (newValues.color) {
         this.elements = []
-        newValues.icon.split(',').forEach(el => {
-          this.elements.push({icon: el.split('=')[0], id: el.split('=')[1]})
+        newValues.color.split(',').forEach(el => {
+          this.elements.push({color: el.split('=')[0], id: el.split('=')[1]})
         })
       }
     },
     getValues() {
       return {
-        icon: this.elements.filter(m => m.id && m.icon).map(m => `${m.icon}=${m.id}`).join(',')
+        color: this.elements.filter(m => m.id && m.color).map(m => `${m.color}=${m.id}`).join(',')
       }
     }
   }

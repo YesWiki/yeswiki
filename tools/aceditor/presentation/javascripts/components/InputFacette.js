@@ -1,30 +1,29 @@
+import InputMultiInput from './InputMultiInput.js'
+
 export default {
-  template: `
-    <h3>Filtres / Facettes</h3>
-    <!-- Facettes Config -->
-    <div class="filter-group-form" v-for="filter in filterGroups">
-      <div class="col-sm-4 form-group">
-        <label class="control-label">Champ</label>
-        <select v-model="filter.field" class="form-control">
-          <option v-for="field in selectedForm.prepared" v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
-        </select>
-      </div>
-      <div class="col-sm-4 form-group">
-        <label class="control-label">Titre</label>
-        <input type="text" v-model="filter.title" class="form-control" />
-      </div>
-      <div class="col-sm-3 form-group">
-        <label class="control-label">Icone</label>
-        <div class="input-group">
-          <icon-picker v-model="filter.icon"></icon-picker>
-        </div>
-      </div>
-      <div class="form-group col-sm-1">
-        <button class="btn btn-default btn-icon" @click="removeFilterGroup(filter)">
-          <i class="btn-remove-group fa fa-times"></i>
-        </button>
-      </div>
-    </div>
-    <!-- Add Facette -->
-    <button @click="addEmptyFilterGroup" class="btn btn-info btn-add-group">Ajouter une Facette</button>`
-}
+  mixins: [InputMultiInput],
+  methods: {
+    parseNewValues(newValues) {
+      if (newValues.groups) {
+        this.elements = []
+        let groups = newValues.groups.split(',')
+        let titles = newValues.titles ? newValues.titles.split(',') : []
+        let icons = newValues.groupicons ? newValues.groupicons.split(',') : []
+        for(var i = 0; i < groups.length; i++) {
+          this.elements.push({
+            field: groups[i],
+            title: titles.length >= i ? titles[i] : '' ,
+            icon: icons.length >= i ? icons[i] : ''
+          })
+        }
+      }
+    },
+    getValues() {
+      return {
+        groups: this.elements.map(g => g.field).filter(e => e != "").join(','),
+        titles: this.elements.map(g => g.title).filter(e => e != "").join(','),
+        groupicons: this.elements.map(g => g.icon).filter(e => e != "").join(',')
+      }
+    }
+  }
+};

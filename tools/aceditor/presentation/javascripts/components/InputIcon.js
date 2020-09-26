@@ -8,7 +8,7 @@ export default {
   },
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
-      <label v-if="config.label" class="control-label">{{ config.label }}</label>
+      <label v-if="config.label" class="control-label">{{ config.label || 'Icone' }}</label>
       <div class="input-group">
         <input type="text" :value="value" v-on:input="$emit('input', $event.target.value)"
                class="form-control" ref="input"/>

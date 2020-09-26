@@ -1,54 +1,108 @@
-common:
-  search:
-    label: Barre de recherche
-    type: checkbox
-  pagination:
-    label: Nombre de fiches par page
-    hint: Laisser vide pour ne pas utiliser la pagination
-    type: number
-  nb:
-    label: Limitation
-    type: number
-  champ:
-    label: Champ pour le tri
-    type: form_field
-    default: bf_titre
-  ordre:
-    label: Ordre de classement
-    type: list
-    default: "asc"
-    options:
-      - asc->Croissant
-      - desc->Décroissant
-  query:
-    label: "Requête SQL (avancé)"
-    type: text
+commons:
+  title: Affichage
+  width: 30%
+  properties:
+    search:
+      label: Barre de recherche
+      type: checkbox
+    pagination:
+      label: Nombre de fiches par page
+      hint: Laisser vide pour ne pas utiliser la pagination
+      type: number
+    nb:
+      label: Limitation
+      type: number
+    champ:
+      label: Champ pour le tri
+      type: form-field
+      default: bf_titre
+    ordre:
+      label: Ordre de classement
+      type: list
+      default: asc
+      options:
+        - asc->Croissant
+        - desc->Décroissant
+    query:
+      label: "Requête SQL (avancé)"
+      type: text
 
-facettes:
-  groupsexpanded:
-    label: Affichage initial des facettes
-    type: list
-    options:
-      - 0->Non dépliées
-      - 1->Dépliées
-  filterposition:
-    label: Position des facettes
-    type: list
-    options:
-      - right->Droite
-      - left->Gauche
-  filtercolsize:
-    label: Largeur des facettes (1 à 12)
-    type: range
-    min: 1
-    max: 12
-
+commons2:
+  title: Facettes
+  width: 40%
+  properties:
+    facettes:
+      type: facette
+      btn-label-add: Ajouter Une Facette
+      specialInput: true
+      subproperties:
+        field:
+          label: Champ
+          type: form-field
+        title:
+          label: Titre
+          type: text
+        icon:
+          label: Icone
+          type: icon
+    groupsexpanded:
+      label: Affichage initial des facettes
+      type: list
+      options:
+        - 0->Non dépliées
+        - 1->Dépliées
+      showif: facettes
+    filterposition:
+      label: Position des facettes
+      type: list
+      options:
+        - right->Droite
+        - left->Gauche
+      showif: facettes
+    filtercolsize:
+      label: Largeur des facettes
+      type: range
+      min: 1
+      max: 12
+      showif: facettes
+    iconfield:
+      label: Champ pour l'icone
+      type: form-field
+      only: lists # ce champ doit être de type checkboxListe, listeListe ...
+    iconmapping:
+      type: icon-mapping
+      showif: iconfield
+      specialInput: true
+      subproperties:
+        id:
+          label: Valeur
+          type: list
+          dataFromFormField: iconfield
+        icon:
+          label: Icone
+          type: icon
+    colorfield:
+      label: Champ pour la couleur
+      type: form-field
+      only: lists # ce champ doit être de type checkboxListe, listeListe ...
+    colormapping:
+      type: color-mapping
+      showif: colorfield
+      specialInput: true
+      subproperties:
+        id:
+          label: Valeur
+          type: list
+          dataFromFormField: colorfield
+        icon:
+          label: Couleur
+          type: color
 
 
 bazarcarto:
   label: Cartographie
   description: Les fiches seront sous forme de marqueur.
-  hint: "Le champ géolocalisation doit être présent dans votre formulaire"
+  hint: Le champ géolocalisation doit être présent dans votre formulaire
   properties:
     template:
       value: map
@@ -56,7 +110,7 @@ bazarcarto:
       label: Fond de carte
       required: true
       type: list
-      default: "OpenStreetMap"
+      default: OpenStreetMap
       options:
         - OpenStreetMap.Mapnik
         - OpenStreetMap.BlackAndWhite
