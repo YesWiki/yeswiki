@@ -2,7 +2,7 @@ export default {
   props: [ 'value', 'config' ],
   mounted() {
     $(this.$refs.input).spectrum({
-      type: "text"
+      type: "component"
     }).change((event) => {
       this.$emit('input', event.target.value)
     });

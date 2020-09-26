@@ -44,6 +44,12 @@ input[type=range] {
   border-radius: 3px;
   font-size: 20px;
 }
+.form-group.color .sp-original-input-container .sp-add-on {
+  order: 2;
+  border-radius: 0 3px 3px 0 !important;
+  border: none !important;
+  width: 4rem !important;
+}
 
 /* CONFIG PARAMETERS */
 .panels-config-container {
