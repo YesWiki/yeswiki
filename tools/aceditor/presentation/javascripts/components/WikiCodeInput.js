@@ -14,7 +14,7 @@ export default {
     insertCodeInEditor() {
       $('#actions-builder-modal').modal('hide')
       if (this.isEditing) {
-        this.editor.replaceCurrentLineBy(this.wikiCode)
+        this.editor.replaceCurrentActionBy(this.wikiCode)
       } else {
         this.editor.insert(this.wikiCode)
       }

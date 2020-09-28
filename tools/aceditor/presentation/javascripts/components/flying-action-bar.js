@@ -15,11 +15,10 @@ export default class {
     $('textarea#body').before(flyingActionBar);
 
     this.editor.onCursorChange( () => {
-      let isBazarLine = this.editor.currentLine.match(/^\s*\{\{\s*bazar.*/g) != null
       // wait for editor to change cursor
       setTimeout(() => {
-        flyingActionBar.toggleClass('active', isBazarLine);
-        if (isBazarLine) {
+        flyingActionBar.toggleClass('active', this.editor.currentSelectedAction != "");
+        if (this.editor.currentSelectedAction) {
           let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + flyingActionBar.height()
           flyingActionBar.css('top', top + 'px')
         }

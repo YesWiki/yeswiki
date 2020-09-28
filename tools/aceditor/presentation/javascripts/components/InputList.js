@@ -26,7 +26,7 @@ export default {
       <select :value="value" v-on:input="$emit('input', $event.target.value)"
               :required="config.required" class="form-control">
         <option value=""></option>
-        <option v-for="(label, value) in optionsList" :value="value" >{{ label }}</option>
+        <option v-for="(optLabel, optValue) in optionsList" :value="optValue" :selected="value == optValue">{{ optLabel }}</option>
       </select>
     </div>
     `

@@ -162,13 +162,18 @@ var SYNTAX = {
               '</ul>' +
             '</div>');
 
-      // Actions Builder
-      toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
-              '<ul class="dropdown-menu">' +
-                '<li><a class="open-actions-builder-btn">'+this.lang['ACEDITOR_ACTIONS_BAZAR']+'</a></li>' +
-              '</ul>' +
-            '</div>');
+      // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
+      if (actionsBuilderData) {
+        var result = '<div class="btn-group">' +
+               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
+               '<ul class="dropdown-menu">';
+        for(var actionGroupName in actionsBuilderData.action_groups) {      
+            result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
+                        actionsBuilderData.action_groups[actionGroupName].label+
+                      '</a></li>'
+        }
+        toolbar.append(result + '</ul></div>')
+      }
 
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +

@@ -1,3 +1,5 @@
+// Some methods to be reused as mixins for component who want to build dynamically
+// input components
 export default {
   methods: {
     componentIdFrom(config) {
@@ -11,7 +13,7 @@ export default {
     return !hideIf
     },
     refFrom(config) {
-      return config.specialInput || config.type == "geo" ? 'specialInput' : ''
+      return config.subproperties || config.type == "geo" ? 'specialInput' : ''
     }
   }
 }

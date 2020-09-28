@@ -58,13 +58,21 @@ input[type=range] {
 /* CONFIG PARAMETERS */
 .panels-config-container {
   display: flex;
+  justify-content: center;
 }
 .config-panel:not(:last-child) {
   margin-right: 2rem;
 }
+.config-panel {
+  min-width: 250px;
+}
+.config-panel.specific-action-params {
+  flex: 1 auto;
+  max-width: 400px;
+}
 .config-panel-content {
-  max-height: 600px;
-  overflow-y: auto;
+  /* max-height: 600px;
+  overflow-y: auto; */
   padding-right: 1rem;
 }
 h3 {
@@ -80,6 +88,9 @@ h3 {
 /* ADVANCED PROPERTIES */
 .multi-input-container {
   margin-bottom: 2rem;
+}
+.multi-input-container.facettes {
+  text-align: center;
 }
 .btn-remove-group {
   margin-top: 5px;

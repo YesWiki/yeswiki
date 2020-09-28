@@ -21,6 +21,9 @@ export default {
       return Object.keys(this.config.subproperties)
     }
   },
+  mounted() {
+    this.parseNewValues(this.values)
+  },
   methods: {
     addElement() {
       let element = {}
@@ -47,7 +50,7 @@ export default {
     },
   },
   template: `
-    <div class="multi-input-container">
+    <div class="multi-input-container" :class="name">
       <div class="inline-form" v-for="element in elements">
         <template v-for="(property, propName) in config.subproperties">
           <component :is="componentIdFrom(property)" v-model="element[propName]"

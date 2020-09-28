@@ -1,13 +1,13 @@
 <div class="modal" id="actions-builder-modal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg">
-    <div class="modal-content">
+    <div class="modal-content" id="actions-builder-app">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h2 class="modal-title"><?php echo _t('ACEDITOR_ACTIONS_BAZAR'); ?></h2>
+        <h2 class="modal-title">{{ actionGroup.label }}</h2>
       </div>
 
       <!-- Modal Body -->
-      <div class="modal-body" id="actions-builder-app">
+      <div class="modal-body">
         <!-- Choose form (only for bazar actions) -->
         <div v-if="needFormField" class="form-group">
           <label class="control-label"><?php echo _t('ACTION_BUILDER_CHOOSE_FORM'); ?></label>
@@ -17,7 +17,7 @@
         </div>
 
         <!-- Choose Action -->
-        <div class="form-group">
+        <div class="form-group" v-show="Object.keys(this.actions).length > 1">
           <label class="control-label">{{ needFormField ? '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' : 'Actions' }}</label>
           <select v-model="selectedActionId" required class="form-control">
             <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
@@ -25,18 +25,18 @@
         </div>
 
         <!-- Action Configuration -->
-        <div v-if="selectedAction && selectedForm" class="action-parameters-container">
+        <div v-if="selectedAction && (!needFormField || selectedForm)" class="action-parameters-container">
 
           <div v-if="selectedAction.hint" class="alert alert-warning">{{ selectedAction.hint }}</div>
 
           <!-- Iframe Preview -->
-          <preview-action :wiki-code="wikiCode"></preview-action>
+          <preview-action :wiki-code="wikiCode" :height="actionGroup.previewHeight"></preview-action>
 
           <div class="panels-config-container">
-            <div v-for="panel in configPanels" class="config-panel" :style="{width: panel.width}">
+            <div v-for="panel in configPanels" class="config-panel" :class="panel.class" :style="{width: panel.params.width}">
               <h3>{{ panel.title ? panel.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
               <div class="config-panel-content">
-                <template v-for="(config, propName) in panel.properties">
+                <template v-for="(config, propName) in panel.params.properties">
                   <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
                              v-show="showIfFrom(config)"
@@ -69,7 +69,7 @@
 
 <script>
   // Not very elegant, but avoid doing an ajax request from vue component to retrieve the Json data
-  var data = <?php echo json_encode($data) ?>;
+  var actionsBuilderData = <?php echo json_encode($data) ?>;
 </script>
 
 <!-- Load manually script because we need to use type="module" for ES6 import to work -->
