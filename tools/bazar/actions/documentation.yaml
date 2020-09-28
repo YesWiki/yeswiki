@@ -195,19 +195,9 @@ bazarcarto:
         - NASAGIBS.ModisTerraTrueColorCR
         - NASAGIBS.ModisTerraBands367CR
         - NASAGIBS.ViirsEarthAtNight2012
-    lat:
-      label: Latitude
-      doclink: https://yeswiki.net/?CommentFairePourTrouverLaLatitudeLongitu
-      type: text
-    lon:
-      label: Longitude
-      type: text
-    zoom:
-      label: Zoom
-      type: range
-      default: 8
-      min: 1
-      max: 15
+    coordinates:
+      label: Vue initiale
+      type: geo
     width:
       advanced: true
       label: Largeur de la carte

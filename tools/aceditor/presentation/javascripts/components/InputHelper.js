@@ -11,7 +11,7 @@ export default {
     return !hideIf
     },
     refFrom(config) {
-      return config.specialInput ? 'specialInput' : ''
+      return config.specialInput || config.type == "geo" ? 'specialInput' : ''
     }
   }
 }

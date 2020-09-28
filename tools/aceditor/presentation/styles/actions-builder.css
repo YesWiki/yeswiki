@@ -6,6 +6,10 @@
 .form-group.range {
   margin-top: 25px;
 }
+.form-group.geo .leaflet-container {
+  height: 200px;
+  border-radius: 5px;
+}
 .form-group.range .control-label {
   top: -1.2em !important;
 }
@@ -56,7 +60,7 @@ input[type=range] {
   display: flex;
 }
 .config-panel:not(:last-child) {
-  margin-right: 1rem;
+  margin-right: 2rem;
 }
 .config-panel-content {
   max-height: 600px;

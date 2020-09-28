@@ -9,6 +9,7 @@ import InputFormField from './components/InputFormField.js'
 import InputFacette from './components/InputFacette.js'
 import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
+import InputGeo from './components/InputGeo.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
@@ -24,7 +25,7 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 window.myapp = new Vue({
   el: "#actions-builder-app",
   components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
-                InputFacette, InputIconMapping, InputColorMapping,
+                InputFacette, InputIconMapping, InputColorMapping, InputGeo,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
   data: {
