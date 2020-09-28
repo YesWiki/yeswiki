@@ -4,7 +4,7 @@ export default {
   data() {
     return {
       defaultLatitude: 46.22763,
-      defaultLongitude: 2.213749,
+      defaultLongitude: 2.21374,
       defaultZoom: 5,
       map: null
     }
