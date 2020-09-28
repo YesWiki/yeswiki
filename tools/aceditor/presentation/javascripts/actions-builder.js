@@ -190,7 +190,7 @@ window.myapp = new Vue({
       $('.open-actions-builder-btn').click((event) => {
         $('#actions-builder-modal').modal('show')
         this.currentGroupId = $(event.target).data('group-name')
-        this.initValues()
+        setTimeout(() => this.initValues(), 0)
       })
     })
   }
