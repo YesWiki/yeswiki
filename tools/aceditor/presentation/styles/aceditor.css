@@ -68,6 +68,9 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   position: relative;
   height: auto;
 }
+@media (max-width: 1200px) {
+  #ACEditor { margin-left: 1rem; } /* Space for the dlying action bar */
+}
 #ACEditor .btn-toolbar {
   position: sticky;
   top: 0;

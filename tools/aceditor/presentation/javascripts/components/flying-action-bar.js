@@ -19,7 +19,7 @@ export default class {
       setTimeout(() => {
         flyingActionBar.toggleClass('active', this.editor.currentSelectedAction != "");
         if (this.editor.currentSelectedAction) {
-          let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + flyingActionBar.height()
+          let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + $('.aceditor-toolbar').height()
           flyingActionBar.css('top', top + 'px')
         }
       }, 100)

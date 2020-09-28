@@ -157,10 +157,16 @@ iframe {
   transition: opacity .3s;
   position: absolute;
   z-index: 50;
-  left: -45px;
+  left: -3rem;
 }
 .flying-action-bar .btn {
   border-radius: 5px 0 0 5px;
+  padding: .5rem 0;
+  width: 3rem;
+}
+@media (max-width: 1200px) {
+  .flying-action-bar { left: -2rem; }
+  .flying-action-bar .btn { width: 2rem; }
 }
 .flying-action-bar.active {
   opacity: 1;
