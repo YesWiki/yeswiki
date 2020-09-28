@@ -9,28 +9,85 @@ commons:
       label: Nombre de fiches par page
       hint: Laisser vide pour ne pas utiliser la pagination
       type: number
+    colorfield:
+      label: Champ pour la couleur de la fiche
+      type: form-field
+      only: lists # ce champ doit être de type checkboxListe, listeListe ...
+      showOnlyFor:
+        - bazarcarto
+        - bazarliste
+    colormapping:
+      type: color-mapping
+      showif: colorfield
+      specialInput: true
+      showOnlyFor:
+        - bazarcarto
+        - bazarliste
+      subproperties:
+        id:
+          label: Valeur
+          type: list
+          dataFromFormField: colorfield
+        color:
+          label: Couleur
+          type: color
+    iconfield:
+      label: Champ pour l'icone de la fiche
+      type: form-field
+      only: lists # ce champ doit être de type checkboxListe, listeListe ...
+      showOnlyFor:
+        - bazarcarto
+        - bazarliste
+    iconmapping:
+      type: icon-mapping
+      showif: iconfield
+      specialInput: true
+      showOnlyFor:
+        - bazarcarto
+        - bazarliste
+      subproperties:
+        id:
+          label: Valeur
+          type: list
+          dataFromFormField: iconfield
+        icon:
+          label: Icone
+          type: icon
+
+
+commons2:
+  title: Filtres / Facettes
+  width: 40%
+  properties:
     nb:
       label: Limitation
       type: number
+      advanced: true
     champ:
       label: Champ pour le tri
       type: form-field
       default: bf_titre
+      advanced: true
+      showExceptFor:
+        - bazarcarto
+        - bazartimeline
+        - bazarannuaire
     ordre:
       label: Ordre de classement
       type: list
       default: asc
+      advanced: true
       options:
         - asc->Croissant
         - desc->Décroissant
+      showExceptFor:
+        - bazarcarto
+        - bazartimeline
+        - bazarannuaire
     query:
+      advanced: true
       label: "Requête SQL (avancé)"
       type: text
-
-commons2:
-  title: Facettes
-  width: 40%
-  properties:
     facettes:
       type: facette
       btn-label-add: Ajouter Une Facette
@@ -48,6 +105,7 @@ commons2:
     groupsexpanded:
       label: Affichage initial des facettes
       type: list
+      advanced: true
       options:
         - 0->Non dépliées
         - 1->Dépliées
@@ -55,49 +113,18 @@ commons2:
     filterposition:
       label: Position des facettes
       type: list
+      advanced: true
       options:
         - right->Droite
         - left->Gauche
       showif: facettes
     filtercolsize:
       label: Largeur des facettes
+      advanced: true
       type: range
       min: 1
       max: 12
       showif: facettes
-    iconfield:
-      label: Champ pour l'icone
-      type: form-field
-      only: lists # ce champ doit être de type checkboxListe, listeListe ...
-    iconmapping:
-      type: icon-mapping
-      showif: iconfield
-      specialInput: true
-      subproperties:
-        id:
-          label: Valeur
-          type: list
-          dataFromFormField: iconfield
-        icon:
-          label: Icone
-          type: icon
-    colorfield:
-      label: Champ pour la couleur
-      type: form-field
-      only: lists # ce champ doit être de type checkboxListe, listeListe ...
-    colormapping:
-      type: color-mapping
-      showif: colorfield
-      specialInput: true
-      subproperties:
-        id:
-          label: Valeur
-          type: list
-          dataFromFormField: colorfield
-        color:
-          label: Couleur
-          type: color
-
 
 bazarcarto:
   label: Cartographie
@@ -182,22 +209,26 @@ bazarcarto:
       min: 1
       max: 15
     width:
+      advanced: true
       label: Largeur de la carte
       hint: la largeur en pixels doit être indiqué sous forme 500px , accepte aussi la valeur 100%
       type: text
       default: 100%
     height:
+      advanced: true
       label: Hauteur de la carte
       hint: la hauteur en pixels doit être indiqué sous forme 500px
       type: text
       default: 600px
     smallmarker:
+      advanced: true
       label: Petit marqueurs
       type: checkbox
       default: 0
       checkedvalue: 1
       uncheckedvalue: 0
     spider:
+      advanced: true
       label: Mode spider
       hint: Éclate un group de point lors du click
       type: checkbox
@@ -208,14 +239,17 @@ bazarcarto:
       type: checkbox
       default: false
     barregestion:
+      advanced: true
       label: Barre de gestion des fiches
       type: checkbox
       default: false
     navigation:
+      advanced: true
       label: Boutons de contrôle du zoom
       type: checkbox
       default: true
     zoommolette:
+      advanced: true
       label: Zoom molette
       hint: Zoom à l'aide de la molette de la souris
       type: checkbox

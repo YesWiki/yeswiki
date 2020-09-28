@@ -35,16 +35,21 @@
           <div class="panels-config-container">
             <div v-for="panel in configPanels" class="config-panel" :style="{width: panel.width}">
               <h3>{{ panel.title ? panel.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
-              <template v-for="(property, propName) in panel.properties">
-                <component :is="componentIdFrom(property)" :key="propName" :ref="refFrom(property)"
-                           :value="values[propName]" v-on:input="updateValue(propName, $event)"
-                           v-show="showIfFrom(property)"
-                           :name="propName" :values="values"
-                           :config="property" :selected-form="selectedForm">
-                </component>
-              </template>
+              <div class="config-panel-content">
+                <template v-for="(config, propName) in panel.properties">
+                  <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
+                             :value="values[propName]" v-on:input="updateValue(propName, $event)"
+                             v-show="showIfFrom(config)"
+                             :name="propName" :values="values"
+                             :config="config" :selected-form="selectedForm">
+                  </component>
+                </template>
+              </div>                
             </div>
           </div>
+
+          <!-- Advanced Params Checkbox -->
+          <input-checkbox v-model="displayAdvancedParams" :config="{label: 'Paramètres Avancés'}" class="advanced-params"></input-checkbox>
 
           <div class="col-md-12 result-container">
             <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>

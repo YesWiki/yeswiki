@@ -14,12 +14,6 @@ import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 
-// Helper method to filter object based on their values
-Object.filter = (obj, predicate) =>
-    Object.keys(obj)
-          .filter( key => predicate(obj[key]) )
-          .reduce( (res, key) => (res[key] = obj[key], res), {} );
-
 console.log("data", data) // data variable has been defined in actions-builder.tpl.html
 
 // Handle oldbrowser not supporting ES6
@@ -46,7 +40,8 @@ window.myapp = new Vue({
     values: {},
     actionParams: {},
     // Aceditor
-    editor: null
+    editor: null,
+    displayAdvancedParams: false
   },
   computed: {
     needFormField() {
@@ -67,7 +62,10 @@ window.myapp = new Vue({
     },
     // Some action group (like bazar) have common properties available for each actions
     configPanels() {
-      let result = [this.selectedAction]
+      let result = []
+      if (Object.values(this.selectedAction.properties).some(conf => conf.type)) {
+        result.push(this.selectedAction)
+      }
       for(let actionName in this.actions) {
         if (actionName.startsWith('common')) result.push(this.actions[actionName])
       }

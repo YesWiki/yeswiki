@@ -1,6 +1,6 @@
 
 /* CUSTOM FORM */
-.form-group {
+.form-group, #actions-builder-app .form-group:first-child {
   margin-top: 15px;
 }
 .form-group.range {
@@ -12,13 +12,13 @@
 input[type=range] {
   box-shadow: none !important;
 }
-.modal .form-group .control-label {
+#actions-builder-app .form-group .control-label {
   left: .9rem !important;
 }
-.modal .checkbox label {
+#actions-builder-app .checkbox label {
   font-size: .9em;
 }
-.modal [type="checkbox"] + span:not(.lever) {
+#actions-builder-app [type="checkbox"] + span:not(.lever) {
   padding-left: 1.5rem;
 }
 .input-group-addon.btn {
@@ -56,11 +56,20 @@ input[type=range] {
   display: flex;
 }
 .config-panel:not(:last-child) {
-  padding-right: 2rem;
+  margin-right: 1rem;
+}
+.config-panel-content {
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 1rem;
 }
 h3 {
   text-align: center;
   margin-bottom: 30px;
+}
+.advanced-params {
+  text-align: center;
+  margin-top: 2rem;
 }
 
 
@@ -153,4 +162,5 @@ iframe {
 }
 .result-container h3 {
   margin-bottom: 1.5rem;
+  color: var(--secondary-color-1);
 }

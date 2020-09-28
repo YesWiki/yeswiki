@@ -18,7 +18,7 @@ export default {
     }
   },
   template: `
-    <div class="form-group" :class="config.type" :title="config.hint" >
+    <div class="form-group checkbox" :title="config.hint" >
       <label>
         <input type="checkbox" v-model="customValue" />
         <span>{{ config.label }}</span>
