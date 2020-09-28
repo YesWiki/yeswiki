@@ -110,7 +110,7 @@ bazarcarto:
       label: Fond de carte
       required: true
       type: list
-      default: OpenStreetMap
+      default: OpenStreetMap.Mapnik
       options:
         - OpenStreetMap.Mapnik
         - OpenStreetMap.BlackAndWhite

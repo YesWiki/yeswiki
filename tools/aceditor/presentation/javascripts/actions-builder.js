@@ -120,17 +120,21 @@ window.myapp = new Vue({
       else {
         $.getJSON(`/?root/bazar_api&object=form&id=${this.selectedFormId}`, data => {
           this.loadedForms[this.selectedFormId] = data
-          // On first form loaded, we load again the values so the special components are rendered
-          if (!this.selectedForm) setTimeout(() => this.initValues(), 0)
+          // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
+          if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
           this.selectedForm = data
         })
       }
+    },
+    updateValue(propName, value) {
+      this.values[propName] = value
+      this.updateActionParams()
     },
     initValuesOnActionSelected() {
       if (!this.selectedAction) return;
       // Populate the values field from the config
       for(var propName in this.selectedAction.properties) {
-        var configValue = this.selectedAction.properties[propName].value
+        var configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
         if (configValue && !this.values[propName]) this.values[propName] = configValue
       }
       this.values.template = this.selectedAction.properties.template.value
@@ -152,27 +156,13 @@ window.myapp = new Vue({
 
       // Order params, and remove empty values
       const orderedResult = { id: result.id, template: result.template };
-      Object.keys(result).sort().forEach(key => { if (result[key] != "") orderedResult[key] = result[key] })
+      Object.keys(result).sort().forEach(key => { if (result[key] !== "") orderedResult[key] = result[key] })
       this.actionParams = orderedResult
-    },
-    addEmptyIconMapping() {
-      this.iconMapping.push({id: '', icon: ''})
-    },
-    removeIconMapping(mapping) {
-      this.iconMapping = this.iconMapping.filter(el => el.id != mapping.id)
     }
   },
   watch: {
     selectedFormId: function() { this.getSelectedFormByAjax() },
-    selectedActionId: function() { this.initValuesOnActionSelected() },
-    values: {
-      handler(val){ this.updateActionParams(val) },
-      deep: true
-    },
-    iconMapping: {
-      handler(val){ this.updateActionParams(val) },
-      deep: true
-    },
+    selectedActionId: function() { this.initValuesOnActionSelected() }
   },
   mounted() {
     // Add a fake selected Form when we do not need it

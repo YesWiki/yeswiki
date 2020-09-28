@@ -37,7 +37,8 @@
               <h3>{{ panel.title ? panel.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
               <template v-for="(property, propName) in panel.properties">
                 <component :is="componentIdFrom(property)" :key="propName" :ref="refFrom(property)"
-                           v-model="values[propName]" v-show="showIfFrom(property)"
+                           :value="values[propName]" v-on:input="updateValue(propName, $event)"
+                           v-show="showIfFrom(property)"
                            :name="propName" :values="values"
                            :config="property" :selected-form="selectedForm">
                 </component>
