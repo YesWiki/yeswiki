@@ -15,6 +15,10 @@ import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
 
+const ACTIONS_BACKWARD_COMPATIBILITY = {
+  calendrier: 'bazaragenda',
+  map: 'bazarcarto'
+}
 console.log("data", data) // data variable has been defined in actions-builder.tpl.html
 
 // Handle oldbrowser not supporting ES6
@@ -95,7 +99,9 @@ window.myapp = new Vue({
           this.getSelectedFormByAjax()
         }
 
-        const newActionId = fakeDom.tagName.toLowerCase()
+        let newActionId = fakeDom.tagName.toLowerCase()
+        // backward compatibilty
+        if (newActionId in ACTIONS_BACKWARD_COMPATIBILITY) newActionId = ACTIONS_BACKWARD_COMPATIBILITY[newActionId]
         this.selectedActionId = newActionId
         // For bazar action, name is contained inside the template attribute
         if (newActionId == 'bazarliste') {
@@ -147,14 +153,14 @@ window.myapp = new Vue({
       for(let key in this.values) {
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
-        if (result.hasOwnProperty(key) || !config || value === config.default || typeof value == "object") continue
+        if (result.hasOwnProperty(key) || value === undefined || config && value === config.default || typeof value == "object") continue
         result[key] = value
       }
       // Adds values from special components
       if (this.$refs.specialInput) this.$refs.specialInput.forEach(p => result = {...result, ...p.getValues()})
 
       // Order params, and remove empty values
-      const orderedResult = { id: result.id, template: result.template };
+      const orderedResult = this.needFormField ? { id: result.id, template: result.template || 'liste_accordeon' } : {}
       Object.keys(result).sort().forEach(key => { if (result[key] !== "") orderedResult[key] = result[key] })
       this.actionParams = orderedResult
     }

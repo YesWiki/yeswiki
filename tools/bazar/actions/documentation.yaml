@@ -53,6 +53,11 @@ commons:
         icon:
           label: Icone
           type: icon
+      iconprefix:
+        advanced: true
+        type: text
+        label: Prefixe pour les icones
+        hint: Si vous utilisez le selecteur d'icone, vous n'avez pas besoin de ce champ
 
 
 commons2:
