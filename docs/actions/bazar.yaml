@@ -17,8 +17,10 @@ actions:
         label: Nombre de fiches par page
         hint: Laisser vide pour ne pas utiliser la pagination
         type: number
+        showExceptFor:
+          - bazarcarto
       colorfield:
-        label: Champ pour la couleur de la fiche
+        label: Champ pour la couleur
         type: form-field
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
@@ -39,7 +41,7 @@ actions:
             label: Couleur
             type: color
       iconfield:
-        label: Champ pour l'icone de la fiche
+        label: Champ pour l'icone
         type: form-field
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
