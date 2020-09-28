@@ -5,5 +5,5 @@
  **/
 
 // pour retro-compatibilité
-$this->setParameter('template', 'map.tpl.html');
-include( __DIR__.'/bazar_show.php');
+$this->setParameter('template', 'map');
+include( __DIR__.'/bazarliste.php');
