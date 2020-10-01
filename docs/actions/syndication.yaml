@@ -1,0 +1,54 @@
+label: "Syndication"
+position: 3
+previewHeight: 70px
+actions:
+  syndication:
+    label: Syndication
+    description: Syndiquer le flux RSS d'un site tiers
+    properties:
+      title:
+        label: Nom du site proposant le flux
+        type: text
+      url:
+        label: Addresse du flux RSS
+        default: https://
+        type: url
+        required: true
+      source:
+        label: Sources des flux
+        hint: source du flux1, source du flux2... indique en cas de sources multiples le source du flux
+      nb:
+        label: Nbre d'info à afficher
+        type: number
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          pull:
+            advanced: true
+            label: Position
+            type: list
+            options:
+              - pull-left->Gauche
+              - pull-right->Droite
+
+   syndicationaccordeon:
+     label: accordéons
+     description: Affiche les flux sous forme d'accordéons
+     properties:
+       template:
+         value: accordeon
+
+   syndicationliste:
+     label: liste
+     description: Affiche les flux sous forme de liste
+     properties:
+       template:
+         value: liste
+
+   syndicationlistedescription:
+     label: liste avec description
+     description: Affiche les flux sous forme de liste avec un peu de contenus
+     properties:
+       template:
+         value: liste_description
