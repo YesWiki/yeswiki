@@ -1,47 +1,54 @@
 label: "Syndication"
 position: 3
-previewHeight: 300px
+previewHeight: 70px
 actions:
   syndication:
     label: Syndication
     description: Syndiquer le flux RSS d'un site tiers
     properties:
+      title:
+        label: Nom du site proposant le flux
+        type: text
       url:
-        label: Adresse du flux RSS
+        label: Addresse du flux RSS
         default: https://
         type: url
         required: true
-      title:
-        label: Titre du flux      
-        type: text
       source:
         label: Sources des flux
         hint: source du flux1, source du flux2... indique en cas de sources multiples le source du flux
-        type: text
       nb:
         label: Nbre d'info à afficher
         type: number
-      template:
-      	type: list
-      	label: Template de visualisation
-      	default: accordeon.tpl.html
-      	options:
-      	  - accordeon.tpl.html->Flux sous forme d'accordéons
-      	  - liste.tpl.html->Flux sous forme de liste
-      	  - liste_description.tpl.html->Flux sous forme de liste avec description
-      nouvellefenetre:
-        advanced: true
-        label: Les liens s'ouvrent dans un nouvel onglet
-        type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
-      formatdate:
-        advanced: true
-        label: Affiche les dates de publication
-        type: list
-        options:
-          - jm->Jour mois
-          - jma-> Jour Mois année
-          - jmh-> Jour mois heure
-          - jmah-> Jour mois année heure
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          pull:
+            advanced: true
+            label: Position
+            type: list
+            options:
+              - pull-left->Gauche
+              - pull-right->Droite
+
+   syndicationaccordeon:
+     label: accordéons
+     description: Affiche les flux sous forme d'accordéons
+     properties:
+       template:
+         value: accordeon
+
+   syndicationliste:
+     label: liste
+     description: Affiche les flux sous forme de liste
+     properties:
+       template:
+         value: liste
+
+   syndicationlistedescription:
+     label: liste avec description
+     description: Affiche les flux sous forme de liste avec un peu de contenus
+     properties:
+       template:
+         value: liste_description
