@@ -6,18 +6,18 @@ actions:
     label: Syndication
     description: Syndiquer le flux RSS d'un site tiers
     properties:
-      title:
-        label: Titre du flux
-        advanced: true        
-        type: text
       url:
         label: Adresse du flux RSS
         default: https://
         type: url
         required: true
+      title:
+        label: Titre du flux      
+        type: text
       source:
         label: Sources des flux
         hint: source du flux1, source du flux2... indique en cas de sources multiples le source du flux
+        type: text
       nb:
         label: Nbre d'info à afficher
         type: number
