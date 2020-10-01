@@ -35,4 +35,13 @@ actions:
         type: checkbox
         default: 0
         checkedvalue: 1
-        uncheckedvalue: 0	
+        uncheckedvalue: 0
+      formatdate:
+        advanced: true
+        label: Affiche les dates de publication
+        type: list
+        options:
+          - jm->Jour mois
+          - jma-> Jour Mois année
+          - jmh-> Jour mois heure
+          - jmah-> Jour mois année heure
