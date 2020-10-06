@@ -16,7 +16,6 @@ if ($this->UserIsAdmin()) {
 
     if (is_array($tab_tous_les_tags) && count($tab_tous_les_tags)>1) {
         $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
-        $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
         $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
         echo '<table class="table table-striped table-condensed">
         <thead>
@@ -63,7 +62,7 @@ if ($this->UserIsAdmin()) {
                 if ($nb_pages>1) {
                     $liste_page .= '<tr><td></td><td></td><td class="delete_all_tags"><a class="btn btn-xs btn-mini btn-error btn-danger" href="'.$this->href().'&amp;delete_tag='.urlencode($tagsid).'"><strong><i class="icon icon-trash icon-white"></i> '._t('TAGS_DELETE_MINUSCULE').'&nbsp;<span class="tag-label label label-primary">'.$tag_precedent.'</span> '._t('TAGS_FROM_ALL_PAGES').'.</strong></a></td></tr>'."\n";
                 }
-                echo $liste_page.'<tr><td class="spacer" colspan="3">&nbsp;</td></tr>';
+                echo $liste_page;
 
                 // on reinitialise les variables
                 if ($tagstripped != 'fin') {

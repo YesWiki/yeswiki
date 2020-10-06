@@ -238,9 +238,9 @@ if (!class_exists('attach')) {
         public function GetFullFilename($newName = false)
         {
             $pagedate = $this->convertDate($this->wiki->page['time']);
-            //decompose le nom du fichier en nom+extension
-            if (preg_match('`^(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
-                list(, $file['name'], $file['ext']) = $match;
+            //decompose le nom du fichier en nom+extension ou en page/nom+extension
+            if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
+                list(,, $file['page'], $file['name'], $file['ext']) = $match;
                 if (!$this->isPicture() && !$this->isAudio() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
                     $file['ext'] .= '_';
                 }
@@ -252,8 +252,9 @@ if (!class_exists('attach')) {
             //generation du nom ou recherche de fichier ?
             if ($newName) {
                 $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
+                $page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
                 if ($this->isSafeMode) {
-                    $full_file_name = $path . '/' . $this->wiki->GetPageTag() . '_' . $full_file_name;
+                    $full_file_name = $path . '/' . $page_tag . '_' . $full_file_name;
                 } else {
                     $full_file_name = $path . '/' . $full_file_name;
                 }

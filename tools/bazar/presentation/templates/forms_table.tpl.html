@@ -9,9 +9,9 @@ $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.
         <tr>
             <th><?php echo _t('BAZ_FORMULAIRE'); ?></th>
             <th style="width:100px;"><?php echo _t('BAZ_ACTIONS_FICHES'); ?></th>
-            <th style="width:250px;"><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
+            <th style="width:240px;"><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
             <th style="width:40px;"><?php echo _t('BAZ_ID'); ?></th>
-            <th style="width:80px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
+            <th style="width:100px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
         </tr>
     </thead>
     <tbody>
@@ -94,6 +94,14 @@ $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.
             <?php
             if ($form['can_delete']) :?>
             	<a class="btn btn-danger btn-xs"
+                data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_VIDER_FORMULAIRE'); ?>"
+                href="<?php
+                    echo $GLOBALS['wiki']->href(
+                        '',
+                        $GLOBALS['wiki']->GetPageTag(),
+                        BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=empty&amp;idformulaire='.$key
+                    ); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_VIDER_FORMULAIRE'); ?> ?');"><i class="fas fa-eraser"></i></a>
+            	<a class="btn btn-danger btn-xs"
                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_SUPPRIMER_FORMULAIRE'); ?>"
                 href="<?php
                     echo $GLOBALS['wiki']->href(
@@ -102,6 +110,7 @@ $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.
                         BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE.'&amp;action_formulaire=delete&amp;idformulaire='.$key
                     ); ?>"  onclick="javascript:return confirm('<?php echo _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE'); ?> ?');"><i class="fa fa-trash"></i></a>
             <?php else : ?>
+                      <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="fas fa-eraser"></i></button>
                       <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_DROIT_INSUFFISANT'); ?>"><i class="fa fa-trash"></i></button>
             <?php
             endif; ?>

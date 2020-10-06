@@ -28,19 +28,23 @@ class Templates extends \YesWiki\Wiki
             $templatefile = 'custom/themes/tools/' . $tool . '/templates/' . $filename;
             if (!is_file($templatefile)) {
                 // On cherche si le theme existe dans le theme courant
-                $templatefile = 'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename;
+                $templatefile = 'themes/tools/' . $tool . '/templates/' . $filename;
                 if (!is_file($templatefile)) {
-                    // On cherche si le templates existe dans themes/tools
-                    $templatefile = 'templates/' . $tool . '/templates/' . $filename;
+                    // On cherche si le theme existe dans le theme courant
+                    $templatefile = 'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename;
                     if (!is_file($templatefile)) {
-                        // On cherche dans les templates du tools
-                        $templatefile = 'tools/' . $tool . '/presentation/templates/' . $filename;
+                        // On cherche si le templates existe dans themes/tools
+                        $templatefile = 'templates/' . $tool . '/templates/' . $filename;
                         if (!is_file($templatefile)) {
-                            $templatefile = 'tools/' . $tool . '/presentation/templates/' . $semantic_template;
+                            // On cherche dans les templates du tools
+                            $templatefile = 'tools/' . $tool . '/presentation/templates/' . $filename;
                             if (!is_file($templatefile)) {
-                                // on quitte si aucun template de trouvé
-                                echo '<div class="alert alert-danger">' . _t('TEMPLATE_FILE_NOT_FOUND') . ' : "' . $filename . '".</div>';
-                                exit;
+                                $templatefile = 'tools/' . $tool . '/presentation/templates/' . $semantic_template;
+                                if (!is_file($templatefile)) {
+                                    // on quitte si aucun template de trouvé
+                                    echo '<div class="alert alert-danger">' . _t('TEMPLATE_FILE_NOT_FOUND') . ' : "' . $filename . '".</div>';
+                                    exit;
+                                }
                             }
                         }
                     }

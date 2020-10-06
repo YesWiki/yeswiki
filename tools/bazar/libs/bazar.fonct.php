@@ -1477,7 +1477,7 @@ function bazPrepareFormData($form)
                     //découpe la requete autour des |
                     foreach ($tab as $req) {
                         $tabdecoup = explode('=', $req, 2);
-                        $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+                        $tableau[$tabdecoup[0]] = isset($tabdecoup[1]) ? trim($tabdecoup[1]) : '';
                     }
                     $tabquery = array_merge($tabquery, $tableau);
                 } else {
@@ -1926,6 +1926,21 @@ function baz_gestion_formulaire()
         '<div class="alert alert-success">'."\n".
         '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
         _t('BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES').'</div>'."\n";
+    } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'empty' && baz_a_le_droit('saisie_formulaire')) {
+        // il y a un id de formulaire a supprimer, suppression de l'entree dans la table nature
+        $query = 'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'acls WHERE page_tag IN (SELECT tag FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE tag IN (SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$_GET['idformulaire'].'"%\' );';
+        $resultat = $GLOBALS['wiki']->query($query);
+
+        $query = 'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE tag IN (SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$_GET['idformulaire'].'"%\';';
+        $resultat = $GLOBALS['wiki']->query($query);
+        
+        $query = 'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE resource NOT IN (SELECT tag FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";';
+        $resultat = $GLOBALS['wiki']->query($query);
+
+        $res .=
+        '<div class="alert alert-success">'."\n".
+        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
+        _t('BAZ_FORMULAIRE_VIDE').'</div>'."\n";
     }
 
     // affichage de la liste des templates a modifier ou supprimer
@@ -2501,19 +2516,19 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     $custom_template = baz_get_custom_template($fichebazar['values'], $fichebazar['form']);
     // si un template specifique pour un type de fiche existe
     if ($custom_template) {
-        // on genere un nom unique pour le cache
-        $cacheid = $GLOBALS['wiki']->generateCacheId(
-            'bazar',
-            $custom_template,
-            strtotime($fichebazar['values']['date_maj_fiche']),
-            baz_get_custom_semantic_template($fichebazar['values'])
-        );
+        // // on genere un nom unique pour le cache
+        // $cacheid = $GLOBALS['wiki']->generateCacheId(
+        //     'bazar',
+        //     $custom_template,
+        //     strtotime($fichebazar['values']['date_maj_fiche']),
+        //     baz_get_custom_semantic_template($fichebazar['values'])
+        // );
 
-        if ($GLOBALS['wiki']->isTemplateCached($cacheid)) {
-            $fp = @fopen($cacheid, 'r');
-            $res .= fread($fp, filesize($cacheid));
-            fclose($fp);
-        } else {
+        // if ($GLOBALS['wiki']->isTemplateCached($cacheid)) {
+        //     $fp = @fopen($cacheid, 'r');
+        //     $res .= fread($fp, filesize($cacheid));
+        //     fclose($fp);
+        // } else {
             $html = $formtemplate = [];
             for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
                 // Champ  acls  present
@@ -2569,7 +2584,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 strtotime($fichebazar['values']['date_maj_fiche']),
                 baz_get_custom_semantic_template($fichebazar['values'])
             );
-        }
+        //}
     } else {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
@@ -3961,7 +3976,7 @@ function getAllParameters_carto($wiki, array &$param)
      * - OPTIONS: facultatif ex: "color:red; opacity:0.3"
      * nota bene: le séparateur d'options est le ';' et pas la ',' qui est déjà utilisée pour séparer les LAYERS.
      * - TYPE: Tiles ou GeoJson
-     * - URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
+     * - URL: Attention au Blocage d'une requête multi-origines (Cross-Origin Request).
      *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
      *
      * TODO: ajouter gestion "layers_credentials"
