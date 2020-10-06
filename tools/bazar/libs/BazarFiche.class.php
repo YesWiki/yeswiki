@@ -433,6 +433,7 @@ class BazarFiche
         }
 
         $previousData = $this->getOne($tag);
+        $previousData = $this->assignRestrictedFields($previousData);
 
         if( $semantic ) {
             $data = $this->convertSemanticData($previousData['id_typeannonce'], $data);
@@ -546,5 +547,40 @@ class BazarFiche
                 send_mail($this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
             }
         }
+    }
+
+    /**
+     * Met à jour les valeurs des champs qui sont restreints en écriture
+     *
+     * @param array $data l'objet contenant les valeurs issues de la saisie du formulaire
+     * @return array tableau des valeurs de la fiche à sauver
+     */
+    protected function assignRestrictedFields(array $data)
+    {
+        // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
+        // (un LoadPage qui passe les droits ACLS est nécéssaire)
+        $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
+        $template = baz_valeurs_formulaire($data['id_typeannonce'])['template'];
+        $protected_fields_index = [];
+        for ($i = 0; $i < count($template); ++$i) {
+            if (!empty($template[$i][12]) && !$this->wiki->CheckACL($template[$i][12])) {
+                $protected_fields_index[] = $i;
+            }
+        }
+        if (!empty($protected_fields_index)) {
+            $sql = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages' . " WHERE tag = '" . mysqli_real_escape_string($this->wiki->dblink, $data['id_fiche']) . "' AND latest = 'Y'" . " LIMIT 1";
+            $valjson = $this->wiki->LoadSingle($sql);
+            $old_fiche = json_decode($valjson['body'], true);
+            foreach ($old_fiche as $key => $value) {
+                $old_fiche[$key] = _convert($value, 'UTF-8');
+            }
+            foreach ($protected_fields_index as $index) {
+                if (in_array($template[$index][0], $INDEX_CHELOUS))
+                    $data[$template[$index][0] . $template[$index][1] . $template[$index][6]] = $old_fiche[$template[$index][0] . $template[$index][1] . $template[$index][6]];
+                else
+                    $data[$template[$index][1]] = $old_fiche[$template[$index][1]];
+            }
+        }
+        return $data;
     }
 }
