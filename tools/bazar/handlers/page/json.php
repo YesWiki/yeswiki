@@ -96,27 +96,6 @@ if (isset($_REQUEST['demand'])) {
                 }
             }
             break;
-        case "save_entry":
-        // sauver une fiche bazar
-            if (!isset($form) || empty($form)) {
-                echo json_encode(array('error' => _t('BAZ_NO_FORMS_FOUND')));
-            } else {
-                $_POST['id_typeannonce'] = $form;
-                $formdata = baz_valeurs_formulaire($form);
-                $res = validateForm($_POST);
-                if ($res['result']) {
-                    $fiche = baz_insertion_fiche($_POST);
-                    echo json_encode($fiche);
-                } else {
-                    echo json_encode(
-                        array(
-                            'error' => $res['error'],
-                            'post' => $_POST
-                        )
-                    );
-                }
-            }
-            break;
         case "template":
             // les templates bazar, pour afficher dans d'autres applis
             // on peut préciser dans l'url type=form (template formulaire) ou type=entry (template fiche)
@@ -220,57 +199,7 @@ if (isset($_REQUEST['demand'])) {
             echo json_encode($formval);
             break;
         case "entries":
-            // liste de fiches bazar
-
-            // chaine de recherche
-            $q = '';
-            if (isset($_GET['q']) and !empty($_GET['q'])) {
-                $q = $_GET['q'];
-            }
-
-            // TODO : gerer les queries
-            $query = '';
-
-            //on recupere toutes les fiches du type choisi et on les met au format csv
-            $results = baz_requete_recherche_fiches(
-                $tabquery,
-                $order,
-                $form,
-                '',
-                1,
-                '',
-                '',
-                true,
-                $q
-            );
-
-            $tab_entries = array();
-            foreach ($results as $wikipage) {
-                $decoded_entry = json_decode($wikipage['body'], true);
-                //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
-                if ($html == '1') {
-                    $fichehtml = baz_voir_fiche(0, $decoded_entry);
-                    $regexp = '/<div.*data-id="(.*)".*>\s*<span class="BAZ_label.*">.*<\/span>\s*'.
-                    '<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
-                    preg_match_all($regexp, $fichehtml, $matches);
-                    if (isset($matches[1]) && count($matches[1]) > 0) {
-                        foreach ($matches[1] as $key => $value) {
-                            $decoded_entry[$value] = $matches[2][$key];
-                        }
-                    }
-                }
-
-                // Output JSON-LD
-                if( $is_semantic ) {
-                    $tab_entries[] = baz_append_semantic_data($decoded_entry, $decoded_entry['id_typeannonce'], true);
-                } else {
-                    $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
-                }
-            }
-            if (count($tab_entries)>0) {
-                ksort($tab_entries);
-                echo json_encode($tab_entries);
-            }
+            header("Location: ".$this->href('', 'api/fiche/'.$form.($is_semantic ? '/json-ld' : '')));
             break;
         case "pages":
             // recuperation des pages wikis

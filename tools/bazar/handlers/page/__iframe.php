@@ -4,13 +4,12 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$type = $this->GetTripleValue($this->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/type', '', '');
-$bazaroutput = '';
-if ($type == 'fiche_bazar') {
-    // js lib
-    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+global $bazarFiche;
 
-    // si la page est de type fiche_bazar, alors on affiche la fiche plutot que de formater en wiki
+$bazaroutput = '';
+if ($bazarFiche->isFiche($this->GetPageTag())) {
+    // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
+    $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $valjson = $this->page["body"];
     $tab_valeurs = json_decode($valjson, true);
     if (YW_CHARSET != 'UTF-8') {
@@ -36,15 +35,16 @@ if ($type == 'fiche_bazar') {
 
     // tableau des fiches correspondantes aux critères
     if (is_array($params['idtypeannonce'])) {
+        // TODO see if we could use multiple form IDs, as is allowed by search function
         $results = array();
-        foreach ($params['idtypeannonce'] as $formid) {
+        foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, $q)
+                $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
             );
         }
     } else {
-        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, $q);
+        $results = $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
 
     // affichage à l'écran

@@ -43,6 +43,13 @@ class Api
         }
         return null;
     }
+    public function isAuthorized() {
+        $apiKey = $this->getBearerToken();
+        return(
+            $this->wiki->config['api_allowed_keys'] &&
+            ( $this->wiki->config['api_allowed_keys']['public'] === true || in_array($apiKey, $this->wiki->config['api_allowed_keys']) )
+        );
+    }
     public function getUser($username = '')
     {
         if (!empty($username[0])) {

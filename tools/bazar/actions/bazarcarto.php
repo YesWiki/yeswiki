@@ -8,7 +8,8 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-// js lib
+global $bazarFiche;
+
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
 // test de sécurité pour vérifier si on passe par wiki
@@ -21,14 +22,14 @@ $GLOBALS['params'] = getAllParameters($this);
 // tableau des fiches correspondantes aux critères
 if (is_array($GLOBALS['params']['idtypeannonce'])) {
     $results = array();
-    foreach ($GLOBALS['params']['idtypeannonce'] as $formid) {
+    foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+            $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', '', '', 1, '', '', true, '');
+    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // a la place du choix par défaut, on affiche en carte

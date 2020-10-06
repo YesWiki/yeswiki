@@ -17,7 +17,8 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-// js lib
+global $bazarFiche;
+
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
 $nomwiki = $GLOBALS['wiki']->getUser();
@@ -36,7 +37,8 @@ if ($nomwiki) {
     if (empty($GLOBALS['_BAZAR_']['templates'])) {
         $GLOBALS['_BAZAR_']['templates'] = $GLOBALS['wiki']->config['default_bazar_template'];
     }
-    $tableau_dernieres_fiches = baz_requete_recherche_fiches('', '', '', '', 1, addslashes($nomwiki['name']));
+
+    $tableau_dernieres_fiches = $bazarFiche->search(['user' => addslashes($nomwiki['name'])]);
     if (count($tableau_dernieres_fiches)>0) {
         echo '<h2 class="titre_mes_fiches">'._t('BAZ_VOS_FICHES').'</h2>'."\n";
         // Recuperation de tous les parametres

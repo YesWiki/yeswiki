@@ -30,6 +30,9 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
+
+global $bazarFiche;
+
 if (isset($_GET['id'])) {
     // js lib
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
@@ -47,14 +50,14 @@ if (isset($_GET['id'])) {
     // tableau des fiches correspondantes aux critères
     if (is_array($params['idtypeannonce'])) {
         $results = array();
-        foreach ($params['idtypeannonce'] as $formid) {
+        foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                baz_requete_recherche_fiches($params['query'], 'alphabetique', $formid, '', 1, '', '', true, $q)
+                $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
             );
         }
     } else {
-        $results = baz_requete_recherche_fiches($params['query'], 'alphabetique', $params['idtypeannonce'], '', 1, '', '', true, $q);
+        $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
     //$params['groups'][0] = 'all';
     //$results = searchResultstoArray($results, $params);

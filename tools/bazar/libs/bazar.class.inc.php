@@ -20,8 +20,7 @@ class Bazar extends \YesWiki\Wiki
                 $page["metadatas"] = $this->GetMetaDatas($tag);
             }
 
-            $type = $this->GetTripleValue($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '');
-            if ($type == 'fiche_bazar') {
+            if ($GLOBALS['bazarFiche']->isFiche($tag)) {
                 $page = $this->checkBazarAcls($page, $tag);
             }
 
