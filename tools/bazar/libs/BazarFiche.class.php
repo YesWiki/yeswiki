@@ -559,6 +559,8 @@ class BazarFiche
     {
         // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
         // (un LoadPage qui passe les droits ACLS est nécéssaire)
+
+        // if the field type (index 0) is in the $INDEX_CHELOUS, the name used to identified the field is a concatenation of the index 0, 1 and 6
         $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
         $template = baz_valeurs_formulaire($data['id_typeannonce'])['template'];
         $protected_fields_index = [];
