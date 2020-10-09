@@ -54,7 +54,10 @@
  */
 function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide.= ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -127,7 +130,10 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $valliste = baz_valeurs_liste($tableau_template[1]);
         if ($valliste) {
             $bulledaide = '';
@@ -205,7 +211,10 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide = ' <img class="tooltip_aide" title="'
@@ -302,10 +311,9 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
         }
     } elseif ($mode == 'requete') {
-        return array(
-            $tableau_template[0].$tableau_template[1].$tableau_template[6] =>
-                $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]
-        );
+        $key = $tableau_template[0].$tableau_template[1].$tableau_template[6];
+        return array_key_exists($key, $valeurs_fiche) ?
+            array($key => $valeurs_fiche[$key]) : array($key => null);
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
@@ -341,7 +349,10 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
         $bulledaide = '';
         if (isset($tableau_template[10]) && $tableau_template[10] != '') {
@@ -507,7 +518,10 @@ function listedatefin(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $tags_javascript = '';
 
         //gestion des mots cles deja entres
@@ -633,7 +647,15 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire,, $bulle_d_aide) = $tableau_template;
-    if ($mode == 'saisie') {
+
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+            return "";
+    } else if ($mode == 'saisie') {
+        // en mode saisie et pas de restriction de modification
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
             $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -665,32 +687,33 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
-        $input_html.= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
-        $input_html.= '<div class="controls col-sm-9">' . "\n";
-        $input_html.= '<div class="input-group">' . "\n";
-        $input_html.= '<input type="' . $type_input . '"';
-        $input_html.= ($defauts != '') ?
-            ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET).'"' : '';
-        $input_html.= ' name="' . $identifiant . '" class="form-control input-xxlarge" id="' . $identifiant . '"';
-        $input_html.= (($type_input == 'number' || $type_input == 'range') && $nb_min_car != '') ?
+        $input_html .= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html .= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
+        $input_html .= '<div class="controls col-sm-9">' . "\n";
+        $input_html .= '<div class="input-group">' . "\n";
+        $input_html .= '<input type="' . $type_input . '"';
+        $input_html .= ($defauts != '') ?
+            ' value="' . htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '"' : '';
+        $input_html .= ' name="' . $identifiant . '" class="form-control input-xxlarge" id="' . $identifiant . '"';
+        $input_html .= (($type_input == 'number' || $type_input == 'range') && $nb_min_car != '') ?
             ' min="' . $nb_min_car . '"' :
             ' maxlength="' . $nb_max_car . '" size="' . $nb_max_car . '"';
-        $input_html.= ($type_input == 'number' || $type_input == 'range') ? ' max="' . $nb_max_car . '"' : '';
-        $input_html.= ($type_input == 'range') ? ' oninput="this.form.'.$identifiant.'number.value=this.value"' : '';
-        $input_html.= ($regexp != '') ? ' pattern="' . $regexp . '"' : '';
-        $input_html.= ($obligatoire == 1) ? ' required' : '';
-        $input_html.= ' placeholder="'.htmlspecialchars(strip_tags($label)).'"';
-        $input_html.= '>' . "\n";
-        $input_html.= ($type_input == 'range') ?
-            '<output class="input-group-addon" name="'.$identifiant.'number">'.$defauts.'</output>' :
+        $input_html .= ($type_input == 'number' || $type_input == 'range') ? ' max="' . $nb_max_car . '"' : '';
+        $input_html .= ($type_input == 'range') ? ' oninput="this.form.' . $identifiant . 'number.value=this.value"' : '';
+        $input_html .= ($regexp != '') ? ' pattern="' . $regexp . '"' : '';
+        $input_html .= ($obligatoire == 1) ? ' required' : '';
+        $input_html .= ' placeholder="' . htmlspecialchars(strip_tags($label)) . '"';
+        $input_html .= '>' . "\n";
+        $input_html .= ($type_input == 'range') ?
+            '<output class="input-group-addon" name="' . $identifiant . 'number">' . $defauts . '</output>' :
             '';
-        $input_html.= '</div>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
+        $input_html .= '</div>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
 
         return $input_html;
     } elseif ($mode == 'requete') {
-        // TODO tester
-        return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
+        // TODO tester la validation des champs
+        return array_key_exists($tableau_template[1], $valeurs_fiche) ?
+            array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
     } elseif ($mode == 'html') {
         // TODO tester
         $html = '';
@@ -722,7 +745,10 @@ function yeswiki_user(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $option = array('maxlength' => 60, 'id' => 'nomwiki');
         if (!isset($valeurs_fiche['nomwiki'])) {
             //mot de passe
@@ -829,7 +855,10 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
         $valunsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valunsub);
     }
 
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $input_html = '<div class="control-group form-group">
       <label class="control-label col-sm-3"></label>
                     <div class="controls col-sm-9">
@@ -886,10 +915,14 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
  */
 function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         return '<input type="hidden" id="'.$tableau_template[1].'" name="'.$tableau_template[1].'" value="'.$tableau_template[2].'">';
     } elseif ($mode == 'requete') {
-        return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
+        return array_key_exists($tableau_template[1], $valeurs_fiche) ?
+            array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
     }
 }
 
@@ -903,7 +936,10 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $showform, $type_input, $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
             $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -951,7 +987,8 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($sendmail == 1) {
             $valeurs_fiche['sendmail'] = $identifiant;
         }
-        return array($tableau_template[1] => isset($valeurs_fiche[$tableau_template[1]]) ? $valeurs_fiche[$tableau_template[1]] : '');
+        return array_key_exists($tableau_template[1], $valeurs_fiche) ?
+            array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
@@ -983,7 +1020,10 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, , , $valeur_par_defaut, , , $obligatoire, , $bulle_d_aide) = $tableau_template;
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
             $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -1029,7 +1069,10 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     list($type, $identifiant, $label, $nb_colonnes, $nb_lignes, $valeur_par_defaut, $longueurmax, $formatage,
          $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
     if (!$nb_lignes) $nb_lignes = 3;
-    if (empty($formatage) || $formatage == 'wiki') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if (empty($formatage) || $formatage == 'wiki') {
         $formatage = 'wiki-textarea';
     } elseif ($formatage == 'html' && $mode == 'saisie') {
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
@@ -1156,7 +1199,10 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
 
     list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire,, $bulle_d_aide) = $tableau_template;
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         // on prepare le html de la bulle d'aide, si elle existe
         if ($bulle_d_aide != '') {
             $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -1200,7 +1246,8 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         //on supprime la valeur, si elle est restée par défaut
         if ($valeurs_fiche[$tableau_template[1]] != 'http://') {
-            return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
+            return array_key_exists($tableau_template[1], $valeurs_fiche) ?
+                array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
         } else {
             return;
         }
@@ -1231,7 +1278,10 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $taille_maxi, $taille_maxi2, $hauteur, $largeur, $alignement, $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
     $option = array();
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $html = '';
         $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' . $label : $label;
         if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '') {
@@ -1335,7 +1385,10 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide, $maxsize) = $tableau_template;
 
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $label = ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' . $label : $label;
         // javascript pour gerer la previsualisation
         $js = 'function getOrientation(file, callback) {
@@ -1591,7 +1644,10 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $texte_saisie, $texte_recherche, $texte_fiche) = $tableau_template;
 
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         return $texte_saisie . "\n";
     } elseif ($mode == 'html') {
         return $texte_fiche . "\n";
@@ -1660,7 +1716,12 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $template) = $tableau_template;
 
-    if ($mode == 'saisie') {
+    /*if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12]) && !empty($valeurs_fiche['id_fiche'])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        // pour ce champ uniquement, on masque le champ uniquement à la modification (une fiche doit avoir une valeur initiale pour être enregistrée)
+        return "";
+        TODO empêcher que les bf_titre ne soit modifiables, la validation du formulaire ne passe pas
+    }*/if ($mode == 'saisie') {
         return '<input type="hidden" name="bf_titre" value="'.htmlspecialchars($template).'" id="bf_titre">';
     } elseif ($mode == 'requete') {
         if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
@@ -1674,8 +1735,8 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (isset($valeurs_fiche[$var])) {
                 //pour une listefiche ou une checkboxfiche on cherche le titre de la fiche
                 if (preg_match('#^listefiche#', $var) != false || preg_match('#^checkboxfiche#', $var) != false) {
-                    $tab_fiche = baz_valeurs_fiche($valeurs_fiche[$var]);
-                    $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', ($tab_fiche['bf_titre'] != null) ? $tab_fiche['bf_titre'] : '', $valeurs_fiche['bf_titre']);
+                    $fiche = $GLOBALS['bazarFiche']->getOne($valeurs_fiche[$var]);
+                    $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $valeurs_fiche['bf_titre']);
                 } elseif (preg_match('#^liste#', $var) != false || preg_match('#^checkbox#', $var) != false) {
                     $liste = preg_replace('#^(liste|checkbox)(.*)#', '$2', $var);
                     $valliste = baz_valeurs_liste($liste);
@@ -1774,7 +1835,10 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
       });';
         $GLOBALS['wiki']->AddJavascript($js);
     }
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') {
             $http = 'https';
         } else {
@@ -1953,7 +2017,10 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     $isUrl = filter_var($tableau_template[1], FILTER_VALIDATE_URL);
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -2016,9 +2083,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($isUrl === false) {
             $val_type = baz_valeurs_formulaire($tableau_template[1]);
             $tabquery = array();
-            if (!empty($tableau_template[12])) {
+            if (!empty($tableau_template[15])) {
                 $tableau = array();
-                $tab = explode('|', $tableau_template[12]);
+                $tab = explode('|', $tableau_template[15]);
                 //découpe la requete autour des |
                 foreach ($tab as $req) {
                     $tabdecoup = explode('=', $req, 2);
@@ -2028,17 +2095,11 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 $tabquery = '';
             }
-            $tab_result = baz_requete_recherche_fiches(
-                $tabquery,
-                'alphabetique',
-                $tableau_template[1],
-                '',
-                1,
-                '',
-                '',
-                true,
-                (!empty($tableau_template[13])) ? $tableau_template[13] : ''
-            );
+            $tab_result = $GLOBALS['bazarFiche']->search([
+                'queries' => $tabquery,
+                'formsIds' => $tableau_template[1],
+                'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+            ]);
             foreach ($tab_result as $fiche) {
                 $valeurs_fiche_liste = json_decode($fiche["body"], true);
                 if (YW_CHARSET != 'UTF-8') {
@@ -2077,9 +2138,9 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                 } else {
-                    $val_fiche = baz_valeurs_fiche($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                    $val_fiche = $GLOBALS['bazarFiche']->getOne($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                     $html = '';
-                    if (is_array($val_fiche)) {
+                    if ($val_fiche) {
                         $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
                         $html.= '<span class="BAZ_texte">';
                         $html.= '<a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -2139,7 +2200,10 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $tabquery = array_merge($tabquery, $tableau);
     }
 
-    if ($mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'saisie') {
         $bulledaide = '';
         if ($mode == 'saisie' && isset($tableau_template[10]) && $tableau_template[10] != '') {
             $bulledaide = ' <img class="tooltip_aide" title="' . htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
@@ -2168,14 +2232,14 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         //on recupere les parameres pour une requete specifique
         if ($GLOBALS['wiki']->config['global_query'] && isset($_GET['query'])) {
-            $query = $tableau_template[12];
+            $query = $tableau_template[15];
             if (!empty($query)) {
                 $query.= '|' . $_GET['query'];
             } else {
                 $query = $_GET['query'];
             }
         } else {
-            $query = $tableau_template[12];
+            $query = $tableau_template[15];
         }
         if (!empty($query)) {
             $tabquery = array();
@@ -2190,18 +2254,11 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $tabquery = '';
         }
-        $tab_result = baz_requete_recherche_fiches(
-            $tabquery,
-            'alphabetique',
-            $tableau_template[1],
-            '',
-            1,
-            '',
-            '',
-            true,
-            (!empty($tableau_template[13])) ? $tableau_template[13] : ''
-        );
-
+        $tab_result = $GLOBALS['bazarFiche']->search([
+            'queries' => $tabquery,
+            'formsIds' => $tableau_template[1],
+            'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
+        ]);
 
         $checkboxtab = array();
         foreach ($tab_result as $fiche) {
@@ -2286,12 +2343,12 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             $html.= '<span class="BAZ_texte">' . "\n";
             $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
 
-            foreach ($tab_fiche as $fiche) {
+            foreach ($tab_fiche as $idfiche) {
                 $html .= '<ul>';
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
-                    $html.= baz_voir_fiche(0, $fiche);
+                    $html.= baz_voir_fiche(0, $idfiche);
                 } else {
-                    $val_fiche = baz_valeurs_fiche($fiche);
+                    $val_fiche = $GLOBALS['bazarFiche']->getOne($idfiche);
 
                     // il y a des filtres à faire sur les fiches
                     if (count($tabquery) > 0) {
@@ -2306,7 +2363,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         }
                     }
                     if (is_array($val_fiche) && (!isset($match) || $match == true)) {
-                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $fiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
+                        $html.= '<li><a href="' . str_replace('&', '&amp;', $GLOBALS['wiki']->href('', $idfiche)) . '" class="modalbox" title="Voir la fiche ' . htmlspecialchars($val_fiche['bf_titre'], ENT_COMPAT | ENT_HTML401, YW_CHARSET) . '">' . $val_fiche['bf_titre'] . '</a></li>' . "\n";
                     }
                 }
                 $html .= '</ul>';
@@ -2360,7 +2417,10 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $template = $GLOBALS['wiki']->config['default_bazar_template'];
     }
     $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
-    if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
         return $html;
     } elseif ($mode == 'html') {
@@ -2375,10 +2435,12 @@ function listefichesliees(&$formtemplate, $tableau_template, $mode, $valeurs_fic
     return listefiches($formtemplate, $tableau_template, $mode, $valeurs_fiche);
 }
 
-
 function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if ($mode == 'html') {
+    if ($mode == 'saisie' && !empty($tableau_template[12]) && !$GLOBALS['wiki']->CheckACL($tableau_template[12])) {
+        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
+        return "";
+    } else if ($mode == 'html') {
         if ($GLOBALS['wiki']->GetMethod() == 'iframe') {
             return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
         }
