@@ -2671,6 +2671,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                                         'tags',
                                         'jour',
                                         'scope',
+                                        'radio',
                                         //'texte'
                                     )
                                 )
