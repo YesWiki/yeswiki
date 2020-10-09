@@ -1,0 +1,66 @@
+label: "Boutons"
+position: 1
+previewHeight: 70px
+actions:
+  button:
+    label: Bouton
+    description: Créer un bouton cliquable
+    properties:
+      text:
+        label: Texte du bouton
+        type: text
+      link:
+        label: Address du lien
+        default: https://
+        type: url
+        required: true
+      icon:
+        label: Icone
+        type: icon
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          color:
+            label: Couleur
+            type: list
+            default: btn-default
+            options:
+              - btn-default->Default
+              - btn-primary->Primaire
+              - btn-info->Info
+              - btn-warning->Attention
+              - btn-danger->Danger
+          size:
+            label: Taille
+            type: list
+            options:
+              - ->Normal
+              - btn-xs->Petit
+          modal:
+            advanced: true
+            label: Popup
+            hint: Permet de d'afficher la page liée dans une pop up.
+            type: list
+            options:
+              - modalbox->Pop up lors du clic
+              - modalbox-hover->Pop up au survol
+          pull:
+            advanced: true
+            label: Position
+            type: list
+            options:
+              - pull-left->Gauche
+              - pull-right->Droite
+              - btn-block->Toute la largeur
+      title:
+        advanced: true
+        label: Texte affiché au survol
+        type: text
+      nobtn:
+        advanced: true
+        label: Bouton invisible
+        type: checkbox
+        default: 0
+        checkedvalue: 1
+        uncheckedvalue: 0

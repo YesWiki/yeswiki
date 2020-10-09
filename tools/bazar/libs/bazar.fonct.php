@@ -344,7 +344,7 @@ function baz_afficher_formulaire_import()
                                                     $tabfa[$valfa['id_fiche']] = $valfa['bf_titre'];
                                                 }
                                                 $allentries[$id] = $tabfa;
-                                            }                   
+                                            }
                                             foreach ($tab_chkb as $value) {
                                                 $idval = array_search(
                                                     $value,
@@ -2671,6 +2671,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                                         'tags',
                                         'jour',
                                         'scope',
+                                        'radio',
                                         //'texte'
                                     )
                                 )
@@ -4324,10 +4325,10 @@ function getAllParameters($wiki)
 
     // template utilisé pour l'affichage
     $param['template'] = isset($_GET['template']) ? $_GET['template'] : $wiki->GetParameter('template');
+    if (strpos($param['template'], '.html') === false) $param['template'] = $param['template'] . '.tpl.html';
     if (empty($param['template']) ||
-        (!is_file('themes/tools/bazar/templates/'.$param['template']) &&
-            !is_file('tools/bazar/presentation/templates/'.
-                $param['template']))) {
+        (!is_file('themes/tools/bazar/templates/'.$param['template'])
+         && !is_file('tools/bazar/presentation/templates/'. $param['template']))) {
         $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
     }
 

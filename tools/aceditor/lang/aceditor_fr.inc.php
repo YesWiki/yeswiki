@@ -47,5 +47,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_LIST' => 'Liste à puce',
     'ACEDITOR_LINK_PROMPT' => 'Entrez l\'adresse URL',
     'ACEDITOR_LINK_TITLE' => 'Ajoute un lien au texte s&eacute;lectionn&eacute;',
-    'ACEDITOR_HELP' => 'Aide mémoire'
+    'ACEDITOR_HELP' => 'Aide mémoire',
+    'ACEDITOR_ACTIONS' => "Composants",
+    'ACEDITOR_ACTIONS_BAZAR' => "Afficher les données d'un formulaire",
+
+    'ACTION_BUILDER_CHOOSE_FORM' => 'Choisissez un Formulaire',
+    'ACTION_BUILDER_CHOOSE_ACTION' => 'Sous quelle forme voulez-vous afficher les données?',
+    'ACTION_BUILDER_WIKI_CODE_TITLE' => "Code à include dans la page",
+    'ACTION_BUILDER_PARAMETERS' => 'Paramètres',
+    'ACTION_BUILDER_COPY' => 'Copier'
 ));

@@ -1193,7 +1193,7 @@ class Wiki
         $cmd = str_replace("\n", ' ', $cmd);
 
         // extract $action and $vars_temp ("raw" attributes)
-        if (! preg_match("/^([a-zA-Z-0-9]+)\/?(.*)$/", $cmd, $matches)) {
+        if (! preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
         }
         list(, $action, $vars_temp) = $matches;
@@ -1448,7 +1448,7 @@ class Wiki
         foreach ($dirs as $dir) {
             if ($dh = opendir($dir)) {
                 while (($file = readdir($dh)) !== false) {
-                    if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
+                    if (preg_match('/^([a-zA-Z0-9_-]+)(.class)?.php$/', $file, $matches)) {
                         $list[] = $matches[1];
                     }
                 }
@@ -1472,7 +1472,7 @@ class Wiki
             $dir .= '/page';
             if ($dh = opendir($dir)) {
                 while (($file = readdir($dh)) !== false) {
-                    if (preg_match('/^([a-zA-Z-0-9]+)(.class)?.php$/', $file, $matches)) {
+                    if (preg_match('/^([a-zA-Z0-9_-]+)(.class)?.php$/', $file, $matches)) {
                         $list[] = $matches[1];
                     }
                 }
