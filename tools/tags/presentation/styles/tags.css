@@ -70,6 +70,7 @@ color:#e13728;
 
 /******************************** icone rss *********************************/
 .rss-icon {
+    position: relative;
     background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACK0lEQVQ4jZ3Ty0tUYRjH8fcfcD3/QS3aRdOmsEVBlCiIiEq4bGFNFy3KQE0NSZls8FYKmgw2YlqUpOY4GTaOpWimRHb1wiiFMjnnzDmeOTf4tgimRiciX/gt3geez/s8i1cIIUTs7inklnzk5jzkplzkxhzkhmxkTxbS7Uyk+gwk93GkumNItUeJ1hwhWpOOEEKIWGsh9loIe3UcKxzECo9hrYxiLQewloYxF4cwvzzF/PwE89NDzA+9mAvdmO99RG8cQsgt+dir4xjzHah9Nag9Vai+MpSuUrShSjR/BfpENfHxcuIvrxF/cRnt+UWMd51EKw8i5OY8rHAQ420b248++Rgt0I7acx5tsCTRrI24MOY72Kw4gJCbcrHCYxizd7A35rHX57DXZ5MgYy6ANnKLrf6zaCMutGen0d808ePKHoTcmIO1Moox04g+7UGfcqO/vok+UY39ber3NDODqI+uovadRPWlEw+WEXE5EHJDNtZyAH3ag9J5iVj7BWKtRagPitnqL0bzFyUQzd+GVLcXxev8A/BkYS0No0+5k/efGUC5V4Lk3ofidSbqat+5ZEC6nYm5OIQ+WYv9fRp7LZQEqb4zKF4n5sdeAJSu0m1AfQbm1wHioetsDRSi3D+c9KLmb0PxOpNqO4GFbtTeE2wUpLFRkJayQfE60V95dwKb5fvRQ1X/bPgrEHE5iAfLUgKJvVPcUwL/kx3AbhJxOX79yIjLwW4ihBA/AUnxGQfZBYPZAAAAAElFTkSuQmCC);
     width:16px;
     height:16px;
