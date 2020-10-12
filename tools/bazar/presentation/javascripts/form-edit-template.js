@@ -208,6 +208,8 @@ var typeUserAttrs = {
       value: "right",
       options: { left: "Gauche", center: "Centre", right: "Droite" }
     },
+    read: readConf,
+    write: writeconf,
     semantic: semanticConf
   },
   select: selectConf,
@@ -230,11 +232,15 @@ var typeUserAttrs = {
     },
     hint: { label: "Texte d'aide" },
     size: { label: "Largeur champ de saisie" },
+    read: readConf,
+    write: writeconf,
     semantic: semanticConf
   },
   file: {
     maxsize: { label: "Taille max" },
-    hint: { label: "Texte d'aide" },
+    hint: { label: "Texte d'aide" }, 
+    read: readConf,
+    write: writeconf,
     semantic: semanticConf
   },
   tags: {
@@ -303,7 +309,10 @@ var typeUserAttrs = {
       label: "Type de fiche liee",
       placeholder:
         "mettre checkbox ici si vos fiches liées le sont via un checkbox"
-    }
+    },
+    read: readConf,
+    write: writeconf,
+    semantic: semanticConf
   },
   custom: {
     param0: { label: "Param0"},
@@ -315,7 +324,12 @@ var typeUserAttrs = {
     param6: { label: "Param6"},
     param7: { label: "Param7"},
     param8: { label: "Param8"},
-    param9: { label: "Param9"}
+    param9: { label: "Param9"},
+    param10: { label: "Param10"},
+    param11: { label: "Param11"},
+    param12: { label: "Param12"},
+    param13: { label: "Param13"},
+    param14: { label: "Param14"}
   }
 };
 
