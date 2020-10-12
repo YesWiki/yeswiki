@@ -1979,8 +1979,11 @@ class Wiki
         if ($admincheck && $this->UserIsAdmin($user)) {
             return true;
         }
-
-        foreach (explode("\n", $acl) as $line) {
+		
+		$acl = trim($acl);
+		foreach (explode(" ", $acl) as $blockLine) {
+		  /* Explode by " " to manage several ACL on same line */
+		  foreach (explode("\n", $blockLine) as $line) {
             $line = trim($line);
 
             // check for inversion character "!"
@@ -2005,6 +2008,11 @@ class Wiki
                             return ! $negate;
                         }
                         // no break
+					case '%': // owner
+                        if ($this->UserIsOwner()) {
+							return ! $negate;
+						}
+                        // no break
                     case '@': // groups
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
@@ -2018,7 +2026,8 @@ class Wiki
                         }
                 }
             }
-        }
+          }
+		}
 
         // tough luck.
         return false;
