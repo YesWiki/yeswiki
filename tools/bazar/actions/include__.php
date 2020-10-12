@@ -31,10 +31,10 @@ if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-// si la page est de type fiche_bazar, alors on affiche la fiche plutot que de formater en wiki
-$type = $this->GetTripleValue($incPageName, 'http://outils-reseaux.org/_vocabulary/type', '', '');
+global $bazarFiche;
 
-if ($type == 'fiche_bazar') {
+// Si la page est une fiche bazar, alors on affiche la fiche plutôt que de formater en wiki
+if ($bazarFiche->isFiche($incPageName)) {
     $plugin_output_new = '<div class="'.$class.'">'."\n".baz_voir_fiche(0, $incPageName)."\n".'</div>'."\n";
 } else {
 	$type = '';

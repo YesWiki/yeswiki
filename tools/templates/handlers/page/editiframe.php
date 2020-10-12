@@ -1,19 +1,14 @@
 <?php
 
-if ($this->HasAccess('write')) {
-    $type = $this->GetTripleValue(
-        $this->GetPageTag(),
-        'http://outils-reseaux.org/_vocabulary/type',
-        '',
-        ''
-    );
+global $bazarFiche;
 
-    if ($type == 'fiche_bazar') {
+if ($this->HasAccess('write')) {
+    if ($bazarFiche->isFiche($this->GetPageTag())) {
         // dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
         if (isset($_POST['bf_titre'])) {
             baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href('iframe'), $_POST);
         } else {
-            $fiche = baz_valeurs_fiche($this->GetPageTag());
+            $fiche = $bazarFiche->getOne($this->GetPageTag());
             $pageeditionfiche = baz_formulaire(
                 BAZ_ACTION_MODIFIER,
                 $this->href('editiframe'),

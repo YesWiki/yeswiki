@@ -36,6 +36,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // handler edit
 'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activa el JavaScript per adjuntar fitxers',
 'UPLOAD_A_FILE' => 'Afegir/Inserir un fitxer',
+'UPLOAD_A_FILE_SHORT' => 'Fitxer',
 'UPLOAD_FILE' => 'Carrega el fitxer',
 'CANCEL_THIS_UPLOAD' => 'Cancel·la la pujada',
 'INSERT' => 'Insereix',

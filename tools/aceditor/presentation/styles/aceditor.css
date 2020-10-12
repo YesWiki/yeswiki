@@ -34,8 +34,8 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
 .ace-body .ace_markup {
   color: #bc1c96;
 }
-.ace-body .ace_bazar.ace_action {
-  color: #bc1c96;
+.ace-body .ace_tag.ace_yw-action {
+  color: #bc1c96 !important;
 }
 .ace-body .ace_list { font-weight: bold; }
 
@@ -67,6 +67,9 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
 #ACEditor {
   position: relative;
   height: auto;
+}
+@media (max-width: 1200px) {
+  #ACEditor { margin-left: 1rem; } /* Space for the dlying action bar */
 }
 #ACEditor .btn-toolbar {
   position: sticky;

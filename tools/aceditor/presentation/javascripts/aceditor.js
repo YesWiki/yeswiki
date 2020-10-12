@@ -162,6 +162,19 @@ var SYNTAX = {
               '</ul>' +
             '</div>');
 
+      // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
+      if (actionsBuilderData) {
+        var result = '<div class="btn-group">' +
+               '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
+               '<ul class="dropdown-menu">';
+        for(var actionGroupName in actionsBuilderData.action_groups) {      
+            result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
+                        actionsBuilderData.action_groups[actionGroupName].label+
+                      '</a></li>'
+        }
+        toolbar.append(result + '</ul></div>')
+      }
+
       // Bold Italic Underline Stroke
       toolbar.append( '<div class="btn-group">' +
               '<a class="btn btn-default aceditor-btn aceditor-btn-bold" data-lft="'+this.syntax['BOLD_LFT']+'" data-rgt="'+this.syntax['BOLD_RGT']+'" title="'+this.lang['ACEDITOR_BOLD_TEXT']+'">' +
@@ -195,8 +208,8 @@ var SYNTAX = {
             '</div>');
 
       // help
-      toolbar.append( '<div class="btn-group">' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-help="1" data-lft="" data-rgt="" title="'+this.lang['ACEDITOR_HELP']+'">' +
+      toolbar.append( '<div class="btn-group pull-right">' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-help" data-remote="true" href="wakka.php?wiki=ReglesDeFormatage" title="'+this.lang['ACEDITOR_HELP']+'">' +
                 '<i class="fa fa-question-circle"></i></a>' +
             '</div>');
 
@@ -215,8 +228,8 @@ var SYNTAX = {
             if (prompt != null) {
               textarea.surroundSelectedText($(this).data('lft') + prompt + " ", $(this).data('rgt'))
             }
-          } else if ($(this).data('help')) {
-              $('body').append('<div class="modal fade" id="YesWikiHelpModal">' +
+          } else if ($(this).data('remote')) {
+              var $modal = $('<div class="modal fade">' +
                 '<div class="modal-dialog modal-lg">' +
                 '<div class="modal-content">' +
                 '<div class="modal-header">' +
@@ -229,13 +242,10 @@ var SYNTAX = {
                 '</div>' +
                 '</div>' +
                 '</div>');
-
-              var link = 'wakka.php?wiki=ReglesDeFormatage';
-              var $modal = $('#YesWikiHelpModal');
-              $modal.find('.modal-body').load(link + ' .page', function (response, status, xhr) {
+              $('body').append($modal);
+              $modal.find('.modal-body').load($(this).attr('href') + ' .page', function (response, status, xhr) {
                 return false;
               });
-
               $modal.modal({
                 keyboard: false,
               }).modal('show').on('hidden hidden.bs.modal', function () {

@@ -793,8 +793,7 @@ function getTitleFromBody($page)
         return '';
     }
     $title = '';
-    $type = $GLOBALS['wiki']->GetTripleValue($page['tag'], 'http://outils-reseaux.org/_vocabulary/type', '', '');
-    if ($type == 'fiche_bazar') {
+    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
         $tab_valeurs_fiche = json_decode($page['body'], true);
         if (isset($tab_valeurs_fiche['bf_titre'])){
             $title = _convert($tab_valeurs_fiche['bf_titre'], 'UTF-8');
@@ -835,16 +834,9 @@ function getDescriptionFromBody($page, $title, $length = 300)
     }
     $desc = '';
 
-    $type = $GLOBALS['wiki']->GetTripleValue(
-        $GLOBALS['wiki']->GetPageTag(),
-        'http://outils-reseaux.org/_vocabulary/type',
-        '',
-        ''
-    );
-
-    if ($type == 'fiche_bazar') {
-        $entry = baz_valeurs_fiche($GLOBALS['wiki']->GetPageTag());
-        $desc = baz_voir_fiche(0, $entry);
+    if ($GLOBALS['bazarFiche']->isFiche($GLOBALS['wiki']->GetPageTag())) {
+        $fiche = $GLOBALS['bazarFiche']->getOne($GLOBALS['wiki']->GetPageTag());
+        $desc = baz_voir_fiche(0, $fiche);
     } else {
         //$desc = $GLOBALS['wiki']->Format($page['body'], 'wakka', $page["tag"]);
     }

@@ -1,37 +1,34 @@
 <?php
 
-/**
- * bazarliste : programme affichant les fiches du bazar sous forme de liste accordeon (ou autre template).
- *
- *
- *
- *@author        Florian SCHMITT <florian@outils-reseaux.org>
- *
- *@version       $Revision: 1.5 $ $Date: 2010/03/04 14:19:03 $
- **/
+// Display data collected by a specific Form
+// A lot of parameters are available to customize the display (List, Map, Calendar, pagination, filtering...)
 
-// test de sécurité pour vérifier si on passe par wiki
+// Security test
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-// js lib
-$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
+global $bazarFiche;
 
-// Recuperation de tous les parametres
+$this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 $GLOBALS['params'] = getAllParameters($this);
-// tableau des fiches correspondantes aux critères
+
+// Get results
 if (is_array($GLOBALS['params']['idtypeannonce'])) {
     $results = array();
-    foreach ($GLOBALS['params']['idtypeannonce'] as $formid) {
+    foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+            $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', '', '', 1, '', '', true, '');
+    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
 }
 
-// affichage à l'écran
-echo displayResultList($results, $GLOBALS['params'], false);
+// Render the view
+if (getParameter_boolean($this, 'search', false)) {
+  echo baz_rechercher($GLOBALS['params']['idtypeannonce'], $GLOBALS['params']['categorienature']);
+} else {
+  echo displayResultList($results, $GLOBALS['params'], false);
+}
