@@ -545,7 +545,7 @@ class BazarFiche
      * Add data needed for display
      * TODO move this to a class dedicated to display
      */
-    protected function addDisplayData(&$fiche, $semantic = false, $correspondance = '')
+    public function addDisplayData(&$fiche, $semantic = false, $correspondance = '')
     {
         // champs correspondants
         if (!empty($correspondance)) {
