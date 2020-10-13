@@ -753,7 +753,7 @@ function baz_afficher_formulaire_export()
         foreach ($tableau as $ligne) {
             if ($ligne[0] != 'labelhtml') {
                 // listes
-                if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox'
+                if ($ligne[0] == 'radio' || $ligne[0] == 'liste' || $ligne[0] == 'checkbox'
                     || $ligne[0] == 'listefiche' || $ligne[0] ==
                     'checkboxfiche') {
                     $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.
@@ -842,7 +842,7 @@ function baz_afficher_formulaire_export()
                 $index = str_replace('|', '', $index);
 
                 //ces types de champs necessitent un traitement particulier
-                if ($tabindex[0] == 'liste' || $tabindex[0] == 'checkbox'
+                if ($tabindex[0] == 'radio' || $tabindex[0] == 'liste' || $tabindex[0] == 'checkbox'
                     || $tabindex[0] == 'listefiche' || $tabindex[0] ==
                     'checkboxfiche') {
                     // ???  FIXME ?
