@@ -75,7 +75,7 @@ function getFiche($args) {
                         $resource = $GLOBALS['bazarFiche']->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
                         unset($resource['@context']);
                         return $resource;
-                    }, $data)
+                    }, array_values($data))
                 ];
             }
 
