@@ -15,20 +15,20 @@ $GLOBALS['params'] = getAllParameters($this);
 
 // Get results
 if (is_array($GLOBALS['params']['idtypeannonce'])) {
-    $results = array();
+    $fiches = array();
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
-        $results = array_merge(
-            $results,
+        $fiches = array_merge(
+            $fiches,
             $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
+    $fiches = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // Render the view
 if (getParameter_boolean($this, 'search', false)) {
   echo baz_rechercher($GLOBALS['params']['idtypeannonce'], $GLOBALS['params']['categorienature']);
 } else {
-  echo displayResultList($results, $GLOBALS['params'], false);
+  echo displayResultList($fiches, $GLOBALS['params'], false);
 }

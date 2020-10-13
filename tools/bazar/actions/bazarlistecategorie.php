@@ -82,40 +82,31 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tableau_resultat = $bazarFiche->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+    $tabfiches = $bazarFiche->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';
     $fiches['fiches'] = array();
-    foreach ($tableau_resultat as $fiche) {
-        //json = norme d'ecriture utilisée pour les fiches bazar (en utf8)
-        $valeurs_fiche = json_decode($fiche['body'], true);
-        if (YW_CHARSET != 'UTF-8') {
-            $valeurs_fiche = array_map('utf8_decode', $valeurs_fiche);
-        }
+    foreach ($tabfiches as $fiche) {
         // pour les checkbox, on crée une fiche par case cochée pour apparaitre é différents endroits
-        $tabcheckbox = explode(',', $valeurs_fiche[$id]);
+        $tabcheckbox = explode(',', $fiche[$id]);
         foreach ($tabcheckbox as $value) {
             // on sauve les multiples valeurs pour les retablir é l'affichage
-            $multiplecheckbox[$valeurs_fiche['id_fiche']] = $valeurs_fiche[$id];
-            $valeurs_fiche[$id] = $value;
+            $multiplecheckbox[$fiche['id_fiche']] = $fiche[$id];
+            $fiche[$id] = $value;
 
             // permet de voir la fiche
-            $valeurs_fiche['html'] = baz_voir_fiche(0, $valeurs_fiche);
+            $fiche['html'] = baz_voir_fiche(0, $fiche);
             // lien de suppression visible pour le super admin
-            if (baz_a_le_droit('supp_fiche', $valeurs_fiche['createur'])) {
-                $valeurs_fiche['lien_suppression'] = '<a class="btn-delete-page-confirm" href="'.
-                    $this->href('deletepage', $valeurs_fiche['id_fiche']).'"></a>'."\n";
+            if (baz_a_le_droit('supp_fiche', $fiche['createur'])) {
+                $fiche['lien_suppression'] = '<a class="btn-delete-page-confirm" href="'.$this->href('deletepage', $fiche['id_fiche']).'"></a>'."\n";
             }
-            if (baz_a_le_droit('modif_fiche', $valeurs_fiche['createur'])) {
-                $valeurs_fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="'.
-                    $this->href('edit', $valeurs_fiche['id_fiche']).'"></a>'."\n";
+            if (baz_a_le_droit('modif_fiche', $fiche['createur'])) {
+                $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="'.$this->href('edit', $fiche['id_fiche']).'"></a>'."\n";
             }
-            $valeurs_fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'.
-                $this->href('', $valeurs_fiche['id_fiche']) .'">'.$valeurs_fiche['bf_titre'].'</a>'."\n";
-            $valeurs_fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'.
-                $this->href('', $valeurs_fiche['id_fiche']) .'"></a>'."\n";
-            $fiches['fiches'][] = $valeurs_fiche;
+            $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'.$this->href('', $fiche['id_fiche']) .'">'.$fiche['bf_titre'].'</a>'."\n";
+            $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="'.$this->href('', $fiche['id_fiche']) .'"></a>'."\n";
+            $fiches['fiches'][] = $fiche;
         }
     }
     // trie par liste choisie
