@@ -57,7 +57,7 @@ if (isset($_GET['id'])) {
             );
         }
     } else {
-        $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
+        $results = $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
     //$params['groups'][0] = 'all';
     //$results = searchResultstoArray($results, $params);
