@@ -64,7 +64,7 @@ function searchResultstoArray($pages, $params, $formtab = '')
 
     foreach ($pages as $page) {
         $fiche = $GLOBALS['bazarFiche']->decode($page['body']);
-        $GLOBALS['bazarFiche']->addDisplayData($fiche, false, $params['correspondance']);
+        $GLOBALS['bazarFiche']->appendDisplayData($fiche, false, $params['correspondance']);
         $fiches[$fiche['id_fiche']] = $fiche;
     }
 

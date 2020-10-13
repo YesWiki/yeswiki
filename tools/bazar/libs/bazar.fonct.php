@@ -3127,7 +3127,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
     // Add display data to all fiches
     $fiches['fiches'] = array_map(function($fiche) use($params) {
-        $GLOBALS['bazarFiche']->addDisplayData($fiche, false, $params['correspondance']);
+        $GLOBALS['bazarFiche']->appendDisplayData($fiche, false, $params['correspondance']);
         return $fiche;
     }, $tableau_fiches);
 

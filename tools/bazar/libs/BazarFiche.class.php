@@ -42,7 +42,7 @@ class BazarFiche
         }
 
         // TODO call this function only when necessary
-        $this->addDisplayData($data, $semantic);
+        $this->appendDisplayData($data, $semantic);
 
         return $data;
     }
@@ -542,10 +542,10 @@ class BazarFiche
     }
 
     /*
-     * Add data needed for display
+     * Append data needed for display
      * TODO move this to a class dedicated to display
      */
-    public function addDisplayData(&$fiche, $semantic = false, $correspondance = '')
+    public function appendDisplayData(&$fiche, $semantic = false, $correspondance = '')
     {
         // champs correspondants
         if (!empty($correspondance)) {
