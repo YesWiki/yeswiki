@@ -60,18 +60,19 @@ function getFiche($args) {
         } else {
             $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false || $args[1] === 'json-ld';
 
-            $data = $GLOBALS['bazarFiche']->getList([ 'formsIds'=>$args[0], 'semantic'=>$semantic ]);
+            $data = $GLOBALS['bazarFiche']->search([ 'formsIds'=>$args[0] ]);
 
             // Put data inside LDP container
             if( $semantic ) {
                 $form = baz_valeurs_formulaire($args[0]);
 
                 $data = [
-                    '@context' => $data[0]['@context'],
+                    '@context' => (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'],
                     '@id' => $GLOBALS['wiki']->href('fiche/' . $args[0], 'api'),
                     '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
                     'dcterms:title' => $form['bn_label_nature'],
-                    'ldp:contains' => array_map(function($resource) {
+                    'ldp:contains' => array_map(function($fiche) {
+                        $resource = $GLOBALS['bazarFiche']->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
                         unset($resource['@context']);
                         return $resource;
                     }, $data)
