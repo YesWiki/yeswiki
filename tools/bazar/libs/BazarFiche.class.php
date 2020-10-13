@@ -34,69 +34,21 @@ class BazarFiche
         if( !$this->isFiche($tag) ) return false;
 
         $page = $this->wiki->LoadPage($tag, $time || '');
-        $data = json_decode($page['body'], true);
-
-        foreach ($data as $key => $value) {
-            $data[$key] = _convert($value, 'UTF-8');
-        }
+        $data = $this->decode($page['body']);
 
         // cas ou on ne trouve pas les valeurs id_fiche
         if (!isset($data['id_fiche'])) {
             $data['id_fiche'] = $tag;
         }
 
-        $data['html_data'] = getHtmlDataAttributes($data);
-
-        if ($semantic) {
-            $data = baz_append_semantic_data($data, $data['id_typeannonce'], true);
-        }
+        // TODO call this function only when necessary
+        $this->addDisplayData($data, $semantic);
 
         return $data;
     }
 
     /**
-     * Get a list of fiches
-     * @param array $params
-     * @return array
-     */
-    public function getList($params = [])
-    {
-        // Merge les paramètres passé avec des paramètres par défaut
-        $params = array_merge(
-            [
-                'queries' => '', // Sélection par clé-valeur
-                'formsIds' => [], // Types de fiches (par ID de formulaire)
-                'user' => '', // N'affiche que les fiches d'un utilisateur
-                'keywords' => '', // Mots-clés pour la recherche fulltext
-                'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
-                'semantic' => false // Format the results as JSON-LD
-            ],
-            $params
-        );
-
-        // On recupère toutes les fiches du formulaire donné
-        $results = $this->search($params);
-
-        $tab_entries = array();
-        foreach ($results as $wikipage) {
-            $decoded_entry = json_decode($wikipage['body'], true);
-            // Output JSON-LD
-            if( $params['semantic'] ) {
-                $tab_entries[] = baz_append_semantic_data($decoded_entry, $decoded_entry['id_typeannonce'], true);
-            } else {
-                $tab_entries[$decoded_entry['id_fiche']] = array_map('strval', $decoded_entry);
-            }
-        }
-        if (count($tab_entries)>0) {
-            ksort($tab_entries);
-        }
-
-        return $tab_entries;
-    }
-
-    /**
-     * Return the wiki pages based on search parameters
-     * The body in JSON must be decoded before being used
+     * Return an array of fiches based on search parameters
      * @param array $params
      * @return mixed
      */
@@ -303,14 +255,21 @@ class BazarFiche
             $requete .= $requeteSQL;
         }
 
-        // systeme de cache des recherches
-        $reqid = 'bazar-search-'.md5($requete);
         // debug
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
         }
+
+        // systeme de cache des recherches
+        // TODO voir si ça sert à quelque chose
+        $reqid = 'bazar-search-'.md5($requete);
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
-            $GLOBALS['_BAZAR_'][$reqid] = $this->wiki->LoadAll($requete);
+            $GLOBALS['_BAZAR_'][$reqid] = array();
+            $results = $this->wiki->LoadAll($requete);
+            foreach ($results as $page) {
+                $json = $this->decode($page['body']);
+                $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+            }
         }
         return $GLOBALS['_BAZAR_'][$reqid];
     }
@@ -351,7 +310,7 @@ class BazarFiche
         $data['id_typeannonce'] = "$formId"; // Must be a string
 
         if( $semantic ) {
-            $data = $this->convertSemanticData($formId, $data);
+            $data = $this->convertFromSemanticData($formId, $data);
         }
 
         $this->validate($data);
@@ -436,7 +395,7 @@ class BazarFiche
         $previousData = $this->assignRestrictedFields($previousData);
 
         if( $semantic ) {
-            $data = $this->convertSemanticData($previousData['id_typeannonce'], $data);
+            $data = $this->convertFromSemanticData($previousData['id_typeannonce'], $data);
         }
 
         if( $replace ) {
@@ -484,7 +443,61 @@ class BazarFiche
         $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
-    protected function convertSemanticData($formId, $data)
+    public function convertToSemanticData($formId, $data, $isHtmlFormatted = false)
+    {
+        $form = baz_valeurs_formulaire($formId);
+        if (!$form['bn_sem_type']) {
+            throw new \Exception(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
+        }
+
+        // If context is a JSON decode it, otherwise use the string
+        $semanticData['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
+
+        // If we have multiple types split by comma, generate an array, otherwise use a string
+        $semanticData['@type'] = strpos($form['bn_sem_type'], ',')
+            ? array_map(function ($str) {
+                return trim($str);
+            }, explode(',', $form['bn_sem_type']))
+            : $form['bn_sem_type'];
+
+        // Add the ID of the Bazar object
+        $semanticData['@id'] = $GLOBALS['wiki']->href('', $data['id_fiche']);
+
+        $fields_infos = bazPrepareFormData($form);
+        foreach ($fields_infos as $field_info) {
+            // If the file is not semantically defined, ignore it
+            if ($field_info['sem_type']) {
+                $value = $data[$field_info['id']];
+                if ($value) {
+                    // We don't want this additional formatting if we are already dealing with HTML-formatted data
+                    if (!$isHtmlFormatted) {
+                        // If this is a file or image, add the base URL
+                        if ($field_info['type'] === 'file') {
+                            $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
+                        }
+
+                        // If this is a linked entity (listefiche), use the URL
+                        if (startsWith($field_info['id'], 'listefiche')) {
+                            $value = $GLOBALS['wiki']->href('', $value);
+                        }
+                    }
+
+                    if (is_array($field_info['sem_type'])) {
+                        // If we have multiple fields, duplicate the data
+                        foreach ($field_info['sem_type'] as $sem_type) {
+                            $semanticData[$sem_type] = $value;
+                        }
+                    } else {
+                        $semanticData[$field_info['sem_type']] = $value;
+                    }
+                }
+            }
+        }
+
+        return $semanticData;
+    }
+
+    protected function convertFromSemanticData($formId, $data)
     {
         // Initialize by copying basic information
         $nonSemanticData = ['id_fiche' => $data['id_fiche'], 'antispam' => $data['antispam'], 'id_typeannonce' => $data['id_typeannonce']];
@@ -514,6 +527,65 @@ class BazarFiche
         }
 
         return $nonSemanticData;
+    }
+
+    /*
+     * Convert body to JSON object
+     */
+    protected function decode($body)
+    {
+        $data = json_decode($body, true);
+        foreach ($data as $key => $value) {
+            $data[$key] = _convert($value, 'UTF-8');
+        }
+        return $data;
+    }
+
+    /*
+     * Add data needed for display
+     * TODO move this to a class dedicated to display
+     */
+    protected function addDisplayData(&$fiche, $semantic = false, $correspondance = '')
+    {
+        // champs correspondants
+        if (!empty($correspondance)) {
+            $tabcorrespondances = getMultipleParameters($correspondance, ',', '=');
+            if ($tabcorrespondances['fail'] != 1) {
+                foreach ($tabcorrespondances as $key=>$data) {
+                    if (isset($key)) {
+                        if (isset($data) && isset($fiche[$data])) {
+                            $fiche[$key] = $fiche[$data];
+                        } else {
+                            $fiche[$key] = '';
+                        }
+                    } else {
+                        echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+                    }
+                }
+            } else {
+                echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
+            }
+        }
+
+        // HTML data
+        $fiche['html_data'] = getHtmlDataAttributes($fiche);
+        $fiche['datastr'] = $fiche['html_data'];
+
+        // Fiche URL
+        $exturl = $GLOBALS['wiki']->GetParameter('url');
+        if (isset($exturl)) {
+            // WIP concernant l'action bazarlisteexterne
+            $arr = explode('/wakka.php', $exturl, 2);
+            $exturl = $arr[0];
+            $fiche['url'] = $exturl.'/wakka.php?wiki='.$fiche['id_fiche'];
+        } else {
+            $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+        }
+
+        // Données sémantiques
+        if( $semantic ) {
+            $fiche['semantic'] = $this->convertToSemanticData($fiche['id_typeannonce'], $fiche);
+        }
     }
 
     protected function notifyAdmins($data, $new)

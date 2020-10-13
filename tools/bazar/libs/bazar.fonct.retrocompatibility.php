@@ -54,3 +54,16 @@ function validateForm($data)
         return array('result' => false, 'error' => $e->getMessage());
     }
 }
+
+function searchResultstoArray($pages, $params, $formtab = '')
+{
+    $fiches = array();
+
+    foreach ($pages as $page) {
+        $fiche = $GLOBALS['bazarFiche']->decode($page['body']);
+        $GLOBALS['bazarFiche']->addDisplayData($fiche, false, $params['correspondance']);
+        $fiches[$fiche['id_fiche']] = $fiche;
+    }
+
+    return $fiches;
+}
