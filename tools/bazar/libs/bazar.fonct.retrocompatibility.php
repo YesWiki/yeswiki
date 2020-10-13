@@ -36,13 +36,16 @@ function baz_requete_recherche_fiches(
 {
     if( $id==='' ) $id = [];
 
-    return $GLOBALS['bazarFiche']->search([
+    $fiches = $GLOBALS['bazarFiche']->search([
         'queries' => $tableau_criteres,
         'formsIds' => $id, // Types de fiches (par ID de formulaire)
         'user' => $personne, // N'affiche que les fiches d'un utilisateur
         'keywords' => $q, // Mots-clés pour la recherche fulltext
         'searchOperator' => $facettesearch // Opérateur à appliquer aux mots-clés
     ]);
+
+    // Re-encode fiche as Wiki page
+    return array_map(function ($fiche) { return ['body' => json_encode($fiche)]; }, $fiches);
 }
 
 function validateForm($data)
