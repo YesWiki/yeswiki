@@ -1970,7 +1970,7 @@ class Wiki
      *            the current remote user.
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
-    public function CheckACL($acl, $user = null, $admincheck = true)
+    public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
     {
         if (! $user) {
             $user = $this->GetUserName();
@@ -2009,8 +2009,19 @@ class Wiki
                         }
                         // no break
 					case '%': // owner
-                        if ($this->UserIsOwner()) {
+						if ($mode == 'creation') {
+							// in creation mode, there is no tag
+							// but current user can access to field
 							return ! $negate;
+						} elseif ($tag == '') {
+							// no test for empty tag
+							// because we are not certain that the current Tag
+							// is the one of the aimed tag
+							return false;
+						} elseif ($this->UserIsOwner($tag)) {
+							return ! $negate;
+						} else {
+							return  $negate ;
 						}
                         // no break
                     case '@': // groups

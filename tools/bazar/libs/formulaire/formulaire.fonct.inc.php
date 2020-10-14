@@ -45,7 +45,13 @@
 
 function testACLsiSaisir($mode, $acl, $valeurs_fiche)
 {
-		return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl) && ((strpos($acl,'%') === FALSE) || (("" . $valeurs_fiche[id_fiche]) != '')) ;
+		$tag = "" . $valeurs_fiche[id_fiche] ;
+		$mode = '' ;
+		if ( $tag == '') {
+			$mode = 'creation' ;
+		}
+		
+		return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag , $mode)  ;
 }
 
 /** radio() - Ajoute un element de type radio au formulaire
