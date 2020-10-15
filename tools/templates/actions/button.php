@@ -7,6 +7,7 @@ if (!defined("WIKINI_VERSION"))
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');
 if ($this->IsWikiName($link, WN_CAMEL_CASE_EVOLVED)) {
+	$linkTag = $link;
 	$link = $this->href('', $link);
 }
 
@@ -40,10 +41,12 @@ if (!strstr($class, 'btn-')) $class .= ' btn-default';
 $nobtn = $this->GetParameter('nobtn');
 if (!empty($nobtn) && $nobtn == '1') $class = str_replace(array('btn ', 'btn-default'), array('',''), $class);
 
-if (empty($link)) {
-        echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_BUTTON').'</strong> : '._t('TEMPLATE_LINK_PARAMETER_REQUIRED').'.</div>'."\n";
-}
-else {
+$hideIfNoAccess = $this->GetParameter('hideifnoaccess');
+if ($hideIfNoAccess == "true" && isset($linkTag) && !$GLOBALS['wiki']->HasAccess('read', $linkTag)) {
+	echo '';
+} else if (empty($link)) {
+	echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_BUTTON').'</strong> : '._t('TEMPLATE_LINK_PARAMETER_REQUIRED').'.</div>'."\n";
+} else {
 	$btn = '<a href="'.$link.'" class="'.$class.'"';
 	if (!empty($title)) $btn .= ' title="'.htmlentities($title, ENT_COMPAT,YW_CHARSET).'"';
 	$btn .= '>'.$icon.(!empty($text)? htmlentities($text, ENT_COMPAT,YW_CHARSET) : '').'</a>'."\n";
