@@ -76,7 +76,10 @@ class Bazar extends \YesWiki\Wiki
                         }
                     }
                     if (isset($line[11]) && $line[11] != '') {
-                        if (!$this->CheckAcl($line[11],null,true,$tag)) {
+                        if ($this->CheckAcl($line[11]) == "%") {
+                            $line[11] = $this->GetUserName();
+                        }
+                        if (!$this->CheckACL($line[11])) {
                             // on memorise les champs non autorisés
                             if (in_array($line[0], $INDEX_CHELOUS))
                                 $fieldname[] = $line[0] . $line[1] . $line[6];
