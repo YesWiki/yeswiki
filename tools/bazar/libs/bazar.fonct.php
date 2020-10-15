@@ -2534,7 +2534,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
                 // Champ  acls  present
                 if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
-                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
                     if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
                       function_exists($fichebazar['form']['template'][$i][0])) {
                         if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
@@ -2590,7 +2590,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
                 // Champ  acls  present
-                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
                     // si le champ est autorisé, génère son contenu
                     if (function_exists($fichebazar['form']['template'][$i][0])) {
                         $res .= $fichebazar['form']['template'][$i][0](

@@ -43,15 +43,49 @@
 //-------------------FONCTIONS DE MISE EN PAGE DES FORMULAIRES
 // pour chaque element du formulaire, le mode saisie, la requete au moment de la saisie dans la base de donnees, le rendu en html pour la consultation
 
+
+/** testACLsiSaisir() - test si le mode est saisir et si l'utilisateur a accés à l'écriture de ce champ
+ *
+ * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par defaut
+ * @param    string  ACL pour le champ en question
+ * @param    mixed   L'objet contenant les valeurs de la fiche, dans le cas d'une modification
+ * @return   boolean 'True' lorsqu'on ne peut pas 'saisir' ce champ
+ */
+ 
 function testACLsiSaisir($mode, $acl, $valeurs_fiche)
 {
-		$tag = "" . $valeurs_fiche[id_fiche] ;
-		$mode = '' ;
+		if (isset($valeurs_fiche['id_fiche'])) {
+			$tag = $valeurs_fiche['id_fiche'] ;
+		} else {
+			$tag = '' ;
+		}
+		$mode_creation = '' ;
 		if ( $tag == '') {
-			$mode = 'creation' ;
+			$mode_creation = 'creation' ;
 		}
 		
-		return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag , $mode)  ;
+		return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag , $mode_creation)  ;
+}
+
+/** testACLlecture() - test s'il est possible de lire le contenu de ce champ
+ *
+ * @param    string  ACL pour le champ en question
+ * @param    mixed   L'objet contenant les valeurs de la fiche, dans le cas d'une modification
+ * @return   boolean 'True' lorsqu'on peut 'lire' ce champ
+ */
+ 
+function testACLlecture($acl, $valeurs_fiche)
+{
+		if (isset($valeurs_fiche['id_fiche'])) {
+			$tag = $valeurs_fiche['id_fiche'] ;
+		} else {
+			$tag = '' ;
+		}
+		if (empty($acl)) {
+			$acl = '' ;
+		}
+		
+		return true ; // $GLOBALS['wiki']->CheckACL($acl, null, true, $tag)  ;
 }
 
 /** radio() - Ajoute un element de type radio au formulaire
@@ -103,10 +137,9 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         </div>';
 
         return $radio_html;
-    } elseif ($mode == 'requete') {
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             $tabresult = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -199,7 +232,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             if (isset($valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]])) {
@@ -325,7 +358,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             array($key => $valeurs_fiche[$key]) : array($key => null);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             $tabresult = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -480,7 +513,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $res = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) and !empty($valeurs_fiche[$tableau_template[1]])) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) and !empty($valeurs_fiche[$tableau_template[1]]) && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $res .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             if (strlen($valeurs_fiche[$tableau_template[1]]) > 10) {
                 $res .= '<span class="BAZ_texte">' . strftime('%d.%m.%Y - %H:%M', strtotime($valeurs_fiche[$tableau_template[1]])) . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -624,7 +657,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $html = '<div class="BAZ_rubrique tags_' . $tableau_template[1] . '" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<div class="BAZ_texte"> ';
             $tabtagsexistants = explode(',', $valeurs_fiche[$tableau_template[1]]);
@@ -723,7 +756,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         // TODO tester
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             if ($tableau_template[1] == 'bf_titre') {
                 // Le titre
                 $html.= '<h1 class="BAZ_fiche_titre">' . $valeurs_fiche[$tableau_template[1]] . '</h1>' . "\n";
@@ -828,7 +861,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         return array('nomwiki' => $nomwiki);
     } elseif ($mode == 'html') {
         $html= '';
-        if (isset($valeurs_fiche['nomwiki']) and !empty($valeurs_fiche['nomwiki'])) {
+        if (isset($valeurs_fiche['nomwiki']) and !empty($valeurs_fiche['nomwiki']) && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $html .= '<div class="BAZ_rubrique" data-id="nomwiki">' . "\n" . '<span class="BAZ_label">'._t('BAZ_GIVEN_ID').' :</span>' . "\n";
             $html .= '<span class="BAZ_texte"> ';
             $html .= $valeurs_fiche['nomwiki'];
@@ -997,7 +1030,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             if ($showform == 'form') {
                 // js necessaire pour valider le formulaire et faire l'envoi ajax
@@ -1167,7 +1200,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return array($identifiant => $valeurs_fiche[$identifiant]);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$identifiant]) && $valeurs_fiche[$identifiant] != '') {
+        if (isset($valeurs_fiche[$identifiant]) && $valeurs_fiche[$identifiant] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $html = '<div class="BAZ_rubrique" data-id="' . $identifiant . '">' . "\n" . '<span class="BAZ_label">' . $label . '</span>' . "\n";
             $html.= '<span class="BAZ_texte"> ';
             if ($formatage == 'wiki-textarea') {
@@ -1261,7 +1294,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $link = $valeurs_fiche[$tableau_template[1]];
             if (!preg_match('/https?:\/\//s', $link)) {
                 $link = 'http://'.$link;
@@ -1370,7 +1403,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '') {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $html = '<div class="BAZ_rubrique" data-id="'.
                         htmlentities($type.$identifiant, ENT_QUOTES, YW_CHARSET).'">'."\n".
                     '   <span class="BAZ_label">'._t('BAZ_DOWNLOAD_FILE').' :</span>'."\n".
@@ -1631,11 +1664,13 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             );
         }
     } elseif ($mode == 'html') {
-        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])
+			   && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
         }
     } elseif ($mode == 'html_outside_app') {
-        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant]) 
+			   && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_image, $hauteur_image, $largeur_image, $hauteur_image, 'fit', $show_vignette = false);
         }
     }
@@ -1658,7 +1693,10 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } else if ($mode == 'saisie') {
         return $texte_saisie . "\n";
     } elseif ($mode == 'html') {
-        return $texte_fiche . "\n";
+		if (testACLlecture($tableau_template[11],$valeurs_fiche)) {
+			return $texte_fiche . "\n";
+		}
+		return '' ;
     }
 }
 
@@ -2142,7 +2180,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $html = '';
         if ($isUrl === false) {
             if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])
-                && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+                && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != ''  && testACLlecture($tableau_template[11],$valeurs_fiche)) {
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                 } else {
@@ -2346,7 +2384,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != ''  && testACLlecture($tableau_template[11],$valeurs_fiche)) {
             $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
             $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -2432,7 +2470,10 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
         return $html;
     } elseif ($mode == 'html') {
-        $html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
+		$html = '' ;
+		if (testACLlecture($tableau_template[11],$valeurs_fiche)) {
+			$html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
+		}
         return $html;
     }
 }
