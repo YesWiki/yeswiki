@@ -32,7 +32,7 @@ class Bazar extends \YesWiki\Wiki
         return $page;
     }
 
-    public function checkBazarOwner($page, $tag)
+    public function checkBazarOwner($page)
     {
         // check if user is logged in
         if (!$this->GetUser()) {
@@ -57,7 +57,7 @@ class Bazar extends \YesWiki\Wiki
         //
 
         $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
-        if ($this->checkBazarOwner($page, $tag)) {
+        if ($this->checkBazarOwner($page)) {
             // Pas de controle si proprietaire
             return $page;
         }
@@ -76,10 +76,7 @@ class Bazar extends \YesWiki\Wiki
                         }
                     }
                     if (isset($line[11]) && $line[11] != '') {
-                        if ($this->CheckAcl($line[11]) == "%") {
-                            $line[11] = $this->GetUserName();
-                        }
-                        if (!$this->CheckACL($line[11])) {
+                        if (!$this->CheckAcl($line[11],null,true,$tag)) {
                             // on memorise les champs non autorisés
                             if (in_array($line[0], $INDEX_CHELOUS))
                                 $fieldname[] = $line[0] . $line[1] . $line[6];

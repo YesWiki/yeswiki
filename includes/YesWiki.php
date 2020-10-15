@@ -1981,6 +1981,8 @@ class Wiki
         }
 		
 		$acl = trim($acl);
+		$result = false ; // result by default , this function is like a big "OR LOGICAL"
+		
 		foreach (explode(" ", $acl) as $blockLine) {
 		  /* Explode by " " to manage several ACL on same line */
 		  foreach (explode("\n", $blockLine) as $line) {
@@ -1988,10 +1990,10 @@ class Wiki
 
             // check for inversion character "!"
             if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                $negate = true ;
+                $std_response = false ;
                 $line = $matches[1];
             } else {
-                $negate = false;
+                $std_response = true;
             }
 
             // if there's still anything left... lines with just a "!" don't count!
@@ -2000,42 +2002,56 @@ class Wiki
                     case '#': // comments
                         break;
                     case '*': // everyone
-                        return ! $negate;
+                        $result = $std_response;
+						break;
                     case '+': // registered users
                         if (! $this->LoadUser($user)) {
-                            return $negate;
+                            $result = ! $std_response ;
                         } else {
-                            return ! $negate;
+                            $result = $std_response ;
                         }
-                        // no break
+                        break;
 					case '%': // owner
 						if ($mode == 'creation') {
-							// in creation mode, there is no tag
-							// but current user can access to field
-							return ! $negate;
+							// in creation mode, even if there is a tag
+							// the current user can access to field
+							$result = $std_response ;
 						} elseif ($tag == '') {
-							// no test for empty tag
-							// because we are not certain that the current Tag
-							// is the one of the aimed tag
-							return false;
+							// CheckACL() is called from several functions without $tag defined.
+							// Without $tag defined, UserIsOwner() tests if the current user is the
+							// owner of the current page that could be different of 
+							// the aimed record displayed inside this page.
+							// So no test of owner without $tag
+							$result = false;
 						} elseif ($this->UserIsOwner($tag)) {
-							return ! $negate;
+							$result = $std_response ;
 						} else {
-							return  $negate ;
+							$result = ! $std_response ;
 						}
-                        // no break
+                        break;
                     case '@': // groups
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
-                        if ($gname && $this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
-                            return ! $negate;
+                        if ($gname) {
+							if ($this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
+								$result = $std_response ;
+							} else {
+								$result = ! $std_response ;
+							}
+						} else {
+							$result = false ; // line '@'
                         }
                         break;
                     default: // simple user entry
                         if ($line == $user) {
-                            return ! $negate;
-                        }
+                            $result = $std_response ;
+                        } else {
+							$result = ! $std_response ;
+						}
                 }
+				if ($result) {
+					return true ;
+				} // else continue like a big logical OR
             }
           }
 		}
