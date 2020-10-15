@@ -47,13 +47,15 @@
 /** testACLsiSaisir() - test si le mode est saisir et si l'utilisateur a accés à l'écriture de ce champ
  *
  * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par defaut
- * @param    string  ACL pour le champ en question
+ * @param    mixed   Le tableau des valeurs des differentes option pour l'element liste
  * @param    mixed   L'objet contenant les valeurs de la fiche, dans le cas d'une modification
  * @return   boolean 'True' lorsqu'on ne peut pas 'saisir' ce champ
  */
  
-function testACLsiSaisir($mode, $acl, $valeurs_fiche)
+function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
 {
+		$acl = $tableau_template[12] ; // acl pour l'écriture
+		
 		if (isset($valeurs_fiche['id_fiche'])) {
 			$tag = $valeurs_fiche['id_fiche'] ;
 		} else {
@@ -67,27 +69,6 @@ function testACLsiSaisir($mode, $acl, $valeurs_fiche)
 		return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag , $mode_creation)  ;
 }
 
-/** testACLlecture() - test s'il est possible de lire le contenu de ce champ
- *
- * @param    string  ACL pour le champ en question
- * @param    mixed   L'objet contenant les valeurs de la fiche, dans le cas d'une modification
- * @return   boolean 'True' lorsqu'on peut 'lire' ce champ
- */
- 
-function testACLlecture($acl, $valeurs_fiche)
-{
-		if (isset($valeurs_fiche['id_fiche'])) {
-			$tag = $valeurs_fiche['id_fiche'] ;
-		} else {
-			$tag = '' ;
-		}
-		if (empty($acl)) {
-			$acl = '' ;
-		}
-		
-		return true ; // $GLOBALS['wiki']->CheckACL($acl, null, true, $tag)  ;
-}
-
 /** radio() - Ajoute un element de type radio au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire
@@ -97,7 +78,7 @@ function testACLlecture($acl, $valeurs_fiche)
  */
 function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -139,7 +120,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return $radio_html;
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             $tabresult = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -172,7 +153,7 @@ function radio(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -232,7 +213,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             if (isset($valliste["label"][$valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]])) {
@@ -253,7 +234,7 @@ function liste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -358,7 +339,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             array($key => $valeurs_fiche[$key]) : array($key => null);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
             $valliste = baz_valeurs_liste($tableau_template[1]);
 
             $tabresult = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -391,7 +372,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -513,7 +494,7 @@ function jour(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $res = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) and !empty($valeurs_fiche[$tableau_template[1]]) && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) and !empty($valeurs_fiche[$tableau_template[1]])) {
             $res .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             if (strlen($valeurs_fiche[$tableau_template[1]]) > 10) {
                 $res .= '<span class="BAZ_texte">' . strftime('%d.%m.%Y - %H:%M', strtotime($valeurs_fiche[$tableau_template[1]])) . '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
@@ -560,7 +541,7 @@ function listedatefin(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -657,7 +638,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
             $html = '<div class="BAZ_rubrique tags_' . $tableau_template[1] . '" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<div class="BAZ_texte"> ';
             $tabtagsexistants = explode(',', $valeurs_fiche[$tableau_template[1]]);
@@ -690,7 +671,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire,, $bulle_d_aide) = $tableau_template;
 
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -756,7 +737,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'html') {
         // TODO tester
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
             if ($tableau_template[1] == 'bf_titre') {
                 // Le titre
                 $html.= '<h1 class="BAZ_fiche_titre">' . $valeurs_fiche[$tableau_template[1]] . '</h1>' . "\n";
@@ -784,7 +765,7 @@ function yeswiki_user(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
 function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -861,7 +842,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         return array('nomwiki' => $nomwiki);
     } elseif ($mode == 'html') {
         $html= '';
-        if (isset($valeurs_fiche['nomwiki']) and !empty($valeurs_fiche['nomwiki']) && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche['nomwiki']) and !empty($valeurs_fiche['nomwiki'])) {
             $html .= '<div class="BAZ_rubrique" data-id="nomwiki">' . "\n" . '<span class="BAZ_label">'._t('BAZ_GIVEN_ID').' :</span>' . "\n";
             $html .= '<span class="BAZ_texte"> ';
             $html .= $valeurs_fiche['nomwiki'];
@@ -894,7 +875,7 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
         $valunsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valunsub);
     }
 
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -954,7 +935,7 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
  */
 function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -975,7 +956,7 @@ function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $showform, $type_input, $obligatoire, $sendmail, $bulle_d_aide) = $tableau_template;
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -1030,7 +1011,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
             $html = '<div class="BAZ_rubrique" data-id="' . $tableau_template[1] . '">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             if ($showform == 'form') {
                 // js necessaire pour valider le formulaire et faire l'envoi ajax
@@ -1059,7 +1040,7 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, , , $valeur_par_defaut, , , $obligatoire, , $bulle_d_aide) = $tableau_template;
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -1108,7 +1089,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     list($type, $identifiant, $label, $nb_colonnes, $nb_lignes, $valeur_par_defaut, $longueurmax, $formatage,
          $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
     if (!$nb_lignes) $nb_lignes = 3;
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if (empty($formatage) || $formatage == 'wiki') {
@@ -1200,7 +1181,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return array($identifiant => $valeurs_fiche[$identifiant]);
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$identifiant]) && $valeurs_fiche[$identifiant] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$identifiant]) && $valeurs_fiche[$identifiant] != '') {
             $html = '<div class="BAZ_rubrique" data-id="' . $identifiant . '">' . "\n" . '<span class="BAZ_label">' . $label . '</span>' . "\n";
             $html.= '<span class="BAZ_texte"> ';
             if ($formatage == 'wiki-textarea') {
@@ -1240,7 +1221,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
 
     list($type, $identifiant, $label, $nb_min_car, $nb_max_car, $valeur_par_defaut, $regexp, $type_input, $obligatoire,, $bulle_d_aide) = $tableau_template;
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -1294,7 +1275,7 @@ function lien_internet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[1]]) && $valeurs_fiche[$tableau_template[1]] != '') {
             $link = $valeurs_fiche[$tableau_template[1]];
             if (!preg_match('/https?:\/\//s', $link)) {
                 $link = 'http://'.$link;
@@ -1319,7 +1300,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $taille_maxi, $taille_maxi2, $hauteur, $largeur, $alignement, $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
     $option = array();
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -1403,7 +1384,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '') {
             $html = '<div class="BAZ_rubrique" data-id="'.
                         htmlentities($type.$identifiant, ENT_QUOTES, YW_CHARSET).'">'."\n".
                     '   <span class="BAZ_label">'._t('BAZ_DOWNLOAD_FILE').' :</span>'."\n".
@@ -1426,7 +1407,7 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide, $maxsize) = $tableau_template;
 
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -1664,13 +1645,11 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             );
         }
     } elseif ($mode == 'html') {
-        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])
-			   && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
             return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_vignette, $hauteur_vignette, $largeur_image, $hauteur_image);
         }
     } elseif ($mode == 'html_outside_app') {
-        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant]) 
-			   && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$type . $identifiant]) && $valeurs_fiche[$type . $identifiant] != '' && file_exists(BAZ_CHEMIN_UPLOAD . $valeurs_fiche[$type . $identifiant])) {
             return afficher_image($identifiant, $valeurs_fiche[$type . $identifiant], $label, $class, $largeur_image, $hauteur_image, $largeur_image, $hauteur_image, 'fit', $show_vignette = false);
         }
     }
@@ -1687,16 +1666,13 @@ function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $texte_saisie, $texte_recherche, $texte_fiche) = $tableau_template;
 
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
         return $texte_saisie . "\n";
     } elseif ($mode == 'html') {
-		if (testACLlecture($tableau_template[11],$valeurs_fiche)) {
-			return $texte_fiche . "\n";
-		}
-		return '' ;
+        return $texte_fiche . "\n";
     }
 }
 
@@ -1762,7 +1738,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     list($type, $template) = $tableau_template;
 
-    /*if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche) && !empty($valeurs_fiche['id_fiche'])) {
+    /*if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche) && !empty($valeurs_fiche['id_fiche'])) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         // pour ce champ uniquement, on masque le champ uniquement à la modification (une fiche doit avoir une valeur initiale pour être enregistrée)
         return "";
@@ -1881,7 +1857,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
       });';
         $GLOBALS['wiki']->AddJavascript($js);
     }
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -2063,7 +2039,7 @@ function carte_google(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
     $isUrl = filter_var($tableau_template[1], FILTER_VALIDATE_URL);
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -2180,7 +2156,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $html = '';
         if ($isUrl === false) {
             if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]])
-                && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != ''  && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+                && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' ) {
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                 } else {
@@ -2246,7 +2222,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $tabquery = array_merge($tabquery, $tableau);
     }
 
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'saisie') {
@@ -2384,7 +2360,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != ''  && testACLlecture($tableau_template[11],$valeurs_fiche)) {
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '' ) {
             $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
             $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
@@ -2463,17 +2439,14 @@ function listefiches(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $template = $GLOBALS['wiki']->config['default_bazar_template'];
     }
     $actionbazarliste = '{{bazarliste id="' . $tableau_template[1] . '" query="' . $query . '" nb="' . $nb . '" ' . $otherparams . ' template="' . $template . '"}}';
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if (isset($valeurs_fiche['id_fiche']) && $mode == 'saisie') {
         $html = $GLOBALS['wiki']->Format($actionbazarliste);
         return $html;
     } elseif ($mode == 'html') {
-		$html = '' ;
-		if (testACLlecture($tableau_template[11],$valeurs_fiche)) {
-			$html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
-		}
+		$html = '<span class="BAZ_texte">'.$GLOBALS['wiki']->Format($actionbazarliste).'</span>';
         return $html;
     }
 }
@@ -2486,7 +2459,7 @@ function listefichesliees(&$formtemplate, $tableau_template, $mode, $valeurs_fic
 
 function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    if (testACLsiSaisir($mode, $tableau_template[12], $valeurs_fiche)) {
+    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
         return "";
     } else if ($mode == 'html') {
