@@ -2001,9 +2001,7 @@ function baz_gestion_formulaire()
                 $GLOBALS['wiki']->query($requete);
             }
             ksort($forms);
-            $res .=
-            '<div class="alert alert-success">'.
-            _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
+            $res .= '<div class="alert alert-success">'. _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
         }
         if (is_array($forms)) {
             foreach ($forms as $key => $ligne) {
@@ -2016,13 +2014,6 @@ function baz_gestion_formulaire()
         }
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
-
-        // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-        $templatetoload = 'themes/tools/bazar/templates/';
-        if (!is_file($templatetoload)) {
-            $templatetoload =
-            'tools/bazar/presentation/templates/forms_table.tpl.html';
-        }
 
         include_once 'includes/squelettephp.class.php';
         try {
@@ -2913,7 +2904,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     }
 
     // affichage du formulaire
-    include_once 'includes/squelettephp.class.php';
     $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">';
     include_once 'includes/squelettephp.class.php';
     try {
