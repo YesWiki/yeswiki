@@ -3737,12 +3737,8 @@ function getAllParameters($wiki)
 
     // template utilisé pour l'affichage
     $param['template'] = isset($_GET['template']) ? $_GET['template'] : $wiki->GetParameter('template');
+    if (empty($param['template'])) $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
     if (strpos($param['template'], '.html') === false) $param['template'] = $param['template'] . '.tpl.html';
-    if (empty($param['template']) ||
-        (!is_file('themes/tools/bazar/templates/'.$param['template'])
-         && !is_file('tools/bazar/presentation/templates/'. $param['template']))) {
-        $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
-    }
 
     // nombre maximal de résultats à afficher
     $param['nb'] = $wiki->GetParameter('nb');
