@@ -9,9 +9,9 @@ $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.
         <tr>
             <th><?php echo _t('BAZ_FORMULAIRE'); ?></th>
             <th style="width:100px;"><?php echo _t('BAZ_ACTIONS_FICHES'); ?></th>
-            <th style="width:250px;"><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
+            <th style="width:240px;"><?php echo _t('BAZ_DATA_FORMAT'); ?></th>
             <th style="width:40px;"><?php echo _t('BAZ_ID'); ?></th>
-            <th style="width:80px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
+            <th style="width:100px;"><?php echo _t('BAZ_ACTIONS'); ?></th>
         </tr>
     </thead>
     <tbody>
@@ -56,22 +56,12 @@ $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.
               CSV</a>
               <a class="btn btn-default btn-mini btn-xs" target="_blank"
               data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON'); ?>"
-              href="<?php
-              echo $GLOBALS['wiki']->href(
-              'json',
-              $GLOBALS['wiki']->getPageTag(),
-              'demand=entries&id='.$key
-              ); ?>">
+              href="<?php echo $GLOBALS['wiki']->href('', 'api/fiche/'.$key); ?>">
               JSON</a>
               <?php if($form['is_semantic']): ?>
               <a class="btn btn-default btn-mini btn-xs" target="_blank"
-                 data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON_LD'); ?>"
-                 href="<?php
-              echo $GLOBALS['wiki']->href(
-              'json',
-              $GLOBALS['wiki']->getPageTag(),
-              'demand=entries&id='.$key.'&ld=true'
-              ); ?>">
+              data-toggle="tooltip" data-placement="bottom" title="<?php echo _t('BAZ_JSON_LD'); ?>"
+              href="<?php echo $GLOBALS['wiki']->href('', 'api/fiche/'.$key.'/json-ld'); ?>">
               JSON-LD</a>
               <?php endif; ?>
               <a class="btn btn-default btn-mini btn-xs"

@@ -8,20 +8,22 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+global $bazarFiche;
+
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 $GLOBALS['params'] = getAllParameters($this);
 
 // Get results
 if (is_array($GLOBALS['params']['idtypeannonce'])) {
     $results = array();
-    foreach ($GLOBALS['params']['idtypeannonce'] as $formid) {
+    foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', $formid, '', 1, '', '', true, '')
+            $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = baz_requete_recherche_fiches($GLOBALS['params']['query'], 'alphabetique', '', '', 1, '', '', true, '');
+    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // Render the view

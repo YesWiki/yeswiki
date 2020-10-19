@@ -1,4 +1,3 @@
-// ext/Number/Color/slider
 export default {
   props: [ 'name', 'value', 'config', 'selectedForm', 'values' ],
   computed: {
@@ -13,7 +12,7 @@ export default {
       else {
         let result = {}
         this.config.options.forEach(el => {
-          const splited = el.split('->')
+          const splited = `${el}`.split('->')
           result[splited[0]] = splited.length > 1 ? splited[1] : splited[0]
         })
         return result

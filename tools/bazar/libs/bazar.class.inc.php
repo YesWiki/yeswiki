@@ -20,8 +20,7 @@ class Bazar extends \YesWiki\Wiki
                 $page["metadatas"] = $this->GetMetaDatas($tag);
             }
 
-            $type = $this->GetTripleValue($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '');
-            if ($type == 'fiche_bazar') {
+            if ($GLOBALS['bazarFiche']->isFiche($tag)) {
                 $page = $this->checkBazarAcls($page, $tag);
             }
 
@@ -56,6 +55,8 @@ class Bazar extends \YesWiki\Wiki
         // bazarliste ...
         // champ mot de passe ?
         //
+
+        $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
         if ($this->checkBazarOwner($page, $tag)) {
             // Pas de controle si proprietaire
             return $page;
@@ -79,8 +80,11 @@ class Bazar extends \YesWiki\Wiki
                             $line[11] = $this->GetUserName();
                         }
                         if (!$this->CheckACL($line[11])) {
-                            // On memorise les champs non autorise
-                            $fieldname[] = $line[1];
+                            // on memorise les champs non autorisés
+                            if (in_array($line[0], $INDEX_CHELOUS))
+                                $fieldname[] = $line[0] . $line[1] . $line[6];
+                            else
+                                $fieldname[] = $line[1];
                         }
                     }
                 }

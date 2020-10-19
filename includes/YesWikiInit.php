@@ -123,6 +123,33 @@ class Init
                     exit();
                 }
 
+                if( !$this->method ) {
+                    // We must manually parse the body data for the PUT or PATCH methods
+                    // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+                    if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+                        $_POST = json_decode(file_get_contents('php://input'), true);
+                    }
+
+                    header('Access-Control-Allow-Origin: *');
+                    header('Access-Control-Allow-Credentials: true');
+                    header('Access-Control-Allow-Headers: X-Requested-With, Location, Link, Slug, Accept, Content-Type');
+                    header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
+                    header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
+                    header('Access-Control-Max-Age: 86400');
+
+                    switch($_SERVER['REQUEST_METHOD']) {
+                        case 'DELETE':
+                            $this->method = 'api_delete';
+                            break;
+                        case 'PATCH':
+                            $this->method = 'api_patch';
+                            break;
+                        case 'PUT':
+                            $this->method = 'api_put';
+                            break;
+                    }
+                }
+
                 $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
             }
         }
@@ -332,30 +359,24 @@ class Init
     {
         // call to YesWiki api
         if (isset($args[1]) and !empty($args[1])) {
+            header('Access-Control-Allow-Origin: *');
+            header('Access-Control-Allow-Credentials: true');
+            header('Access-Control-Allow-Headers: X-Requested-With, Location, Slug, Accept, Content-Type');
+            header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
+            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
+            header('Access-Control-Max-Age: 86400');
+
             array_shift($args);
-            $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD'])
-            .ucwords(strtolower($args[0]));
+            $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD']).ucwords(strtolower($args[0]));
             array_shift($args);
+
             if (function_exists($apiFunctionName)) {
-                header('Content-type: application/json; charset=UTF-8');
-                header('Access-Control-Allow-Origin: *');
-                if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-                    if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])
-                        && ($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST'
-                        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE'
-                        || $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT')
-                    ) {
-                        header('Access-Control-Allow-Credentials: true');
-                        header('Access-Control-Allow-Headers: X-Requested-With');
-                        header('Access-Control-Allow-Headers: Content-Type');
-                        header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT');
-                        header('Access-Control-Max-Age: 86400');
-                    }
-                    exit;
-                }
-                if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
+
+                // We may need to parse the body manually
+                if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
                     $_POST = json_decode(file_get_contents('php://input'), true);
                 }
+
                 return array('function' => $apiFunctionName, 'args' => $args);
             } else {
                 return array('function' => 'getApiDocumentation', 'args' => '');

@@ -793,11 +793,11 @@ function getTitleFromBody($page)
         return '';
     }
     $title = '';
-    $type = $GLOBALS['wiki']->GetTripleValue($page['tag'], 'http://outils-reseaux.org/_vocabulary/type', '', '');
-    if ($type == 'fiche_bazar') {
-        $tab_valeurs_fiche = json_decode($page['body'], true);
-        if (isset($tab_valeurs_fiche['bf_titre'])){
-            $title = _convert($tab_valeurs_fiche['bf_titre'], 'UTF-8');
+
+    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
+        $entry = $GLOBALS['bazarFiche']->getOne($page['tag']);
+        if (isset($entry['bf_titre'])){
+            $title = _convert($entry['bf_titre'], 'UTF-8');
         }
     } else {
         // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
@@ -835,18 +835,16 @@ function getDescriptionFromBody($page, $title, $length = 300)
     }
     $desc = '';
 
-    $type = $GLOBALS['wiki']->GetTripleValue(
-        $GLOBALS['wiki']->GetPageTag(),
-        'http://outils-reseaux.org/_vocabulary/type',
-        '',
-        ''
-    );
-
-    if ($type == 'fiche_bazar') {
-        $entry = baz_valeurs_fiche($GLOBALS['wiki']->GetPageTag());
-        $desc = baz_voir_fiche(0, $entry);
+    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
+        $entry = $GLOBALS['bazarFiche']->getOne($page['tag']);
+        foreach(['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
+            if (isset($entry[$prop])) {
+                $desc = _convert($entry[$prop], 'UTF-8');
+            }
+        }
+        if ($desc == '') $desc = baz_voir_fiche(0, $entry);
     } else {
-        //$desc = $GLOBALS['wiki']->Format($page['body'], 'wakka', $page["tag"]);
+        // $desc = $GLOBALS['wiki']->Format($page['body'], 'wakka', $page["tag"]);
     }
     // no javascript
     $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', "", $desc);
