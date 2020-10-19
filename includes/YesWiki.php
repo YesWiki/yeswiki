@@ -1968,6 +1968,13 @@ class Wiki
      * @param string $user
      *            The name of the user that must satisfy the ACL. By default
      *            the current remote user.
+     * @param string $tag
+     *            The name of the page or form to be tested when $acl contains '%'. 
+	 *            By Default ''
+     * @param string $mode
+     *            Mode for case $acl contains '%'	 
+     *            Default '', standard case. $mode = 'creation', the test returns true	 
+     *            even if the user is connected	 
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
     public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
@@ -2005,11 +2012,7 @@ class Wiki
                         $result = $std_response;
 						break;
                     case '+': // registered users
-                        if (! $this->LoadUser($user)) {
-                            $result = ! $std_response ;
-                        } else {
-                            $result = $std_response ;
-                        }
+                        $result = ($this->LoadUser($user)) ? $std_response : !$std_response ;
                         break;
 					case '%': // owner
 						if ($mode == 'creation') {
@@ -2017,16 +2020,11 @@ class Wiki
 							// the current user can access to field
 							$result = $std_response ;
 						} elseif ($tag == '') {
-							// CheckACL() is called from several functions without $tag defined.
-							// Without $tag defined, UserIsOwner() tests if the current user is the
-							// owner of the current page that could be different of 
-							// the aimed record displayed inside this page.
-							// So no test of owner without $tag
+							// to manage retrocompatibility without usage of CheckACL without $tag
+							// and no management of '%'
 							$result = false;
-						} elseif ($this->UserIsOwner($tag)) {
-							$result = $std_response ;
 						} else {
-							$result = ! $std_response ;
+							$result = ($this->UserIsOwner($tag)) ? $std_response : !$std_response ;
 						}
                         break;
                     case '@': // groups
