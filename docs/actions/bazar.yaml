@@ -121,8 +121,8 @@ actions:
         type: list
         advanced: true
         options:
-          - 0->Non dépliées
-          - 1->Dépliées
+          - false->Uniquement la première dépliée
+          - true->Toutes Dépliées
         showif: facettes
       filterposition:
         label: Position des facettes
