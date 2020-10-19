@@ -49,7 +49,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_LINK_TITLE' => 'Ajoute un lien au texte s&eacute;lectionn&eacute;',
     'ACEDITOR_HELP' => 'Aide mémoire',
     'ACEDITOR_ACTIONS' => "Composants",
-    'ACEDITOR_ACTIONS_BAZAR' => "Afficher les données d'un formulaire",
+    'ACEDITOR_ACTIONS_EDIT_CURRENT' => "Éditer le composant sélectionné",
 
     'ACTION_BUILDER_CHOOSE_FORM' => 'Choisissez un Formulaire',
     'ACTION_BUILDER_CHOOSE_ACTION' => 'Sous quelle forme voulez-vous afficher les données?',

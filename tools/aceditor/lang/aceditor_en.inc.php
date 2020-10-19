@@ -45,9 +45,16 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ACEDITOR_UNDERLINE_TEXT'	=> 'Underline the selected text ( Ctrl-u )',
 'ACEDITOR_STRIKE_TEXT'		=> 'Stroke the selected text ( Ctrl-y )',
 'ACEDITOR_LINE'				=> 'Insert horizontal line',
-'ACEDITOR_LIST'       => 'Insert list',
+'ACEDITOR_LIST'             => 'Insert list',
 'ACEDITOR_LINK'				=> 'Link',
 'ACEDITOR_LINK_PROMPT'		=> 'Enter the link adress',
-'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text'
+'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text',
+'ACEDITOR_ACTIONS'              => "Components",
+'ACEDITOR_ACTIONS_EDIT_CURRENT' => "Edit selected component",
 
+'ACTION_BUILDER_CHOOSE_FORM'     => 'Pick a form',
+'ACTION_BUILDER_CHOOSE_ACTION'   => 'How do you want to display the data',
+'ACTION_BUILDER_WIKI_CODE_TITLE' => "Code to insert in the page",
+'ACTION_BUILDER_PARAMETERS'      => 'Paremeters',
+'ACTION_BUILDER_COPY'            => 'Copy'
 ));
