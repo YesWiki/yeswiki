@@ -1,7 +1,7 @@
 label: Afficher les données d'un formulaire
 position: 2
 needFormField: true
-previewHeight: 350px
+previewHeight: 450px
 actions:
   # -------------------------------------
   # Champs Communs concernant l'affichage
@@ -269,7 +269,6 @@ actions:
       template:
         value: agenda
       correspondence:
-        label: Champs nécessaires
         type: correspondance
         subproperties:
           bf_date_debut_evenement:
@@ -324,7 +323,6 @@ actions:
         checkedvalue: 1
         uncheckedvalue:
       correspondence:
-        label: Champs nécessaires
         type: correspondance
         subproperties:
           bf_baseline:
@@ -357,10 +355,9 @@ actions:
           - 4
           - 6
       couleur:
-        label: Couleur utilisée pour réaliser le damier
+        label: Couleur du damier
         type: color
       correspondence:
-        label: Champs nécessaires
         type: correspondance
         subproperties:
           bf_description:
@@ -375,7 +372,6 @@ actions:
       template:
         value: timeline
       correspondence:
-        label: Champs nécessaires
         type: correspondance
         subproperties:
           bf_date_debut_evenement:
@@ -395,22 +391,28 @@ actions:
         default:
         checkedvalue: oui
         uncheckedvalue:
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_titre:
+            type: form-field
+            label: Champ pour le texte affiché
 
-  bazargaleriephoto:
-    label: Galerie photo
-    description: Affiche les images des fiches sous forme de galerie photo.
-    hint: Un champ de type bf_image est nécessaire.
-    properties:
-      template:
-        value: galerie_photos
+  # bazargaleriephoto:
+  #   label: Galerie photo
+  #   description: Affiche les images des fiches sous forme de galerie photo.
+  #   hint: Un champ de type bf_image est nécessaire.
+  #   properties:
+  #     template:
+  #       value: galerie_photos
 
-  bazarlistegalerie:
-    label: Liste Galerie photo
-    description: Affiche les images des fiches sous forme de galerie photo.
-    hint: Un champ de type bf_image est nécessaire.
-    properties:
-      template:
-        value: liste_galerie
+  # bazarlistegalerie:
+  #   label: Liste Galerie photo
+  #   description: Affiche les images des fiches sous forme de galerie photo.
+  #   hint: Un champ de type bf_image est nécessaire.
+  #   properties:
+  #     template:
+  #       value: liste_galerie
 
   bazarlistephotobox:
     label: Photobox
@@ -432,12 +434,12 @@ actions:
     description:  Affiche les liens vers les fiches sous forme de liste avec les dates de création.
     properties:
       template:
-        value: liste_liens_dates
+        value: liste_liens_date
 
-  bazarmail:
-    label: Ecrire à tous
-    description: Affiche uniquement la liste des mails trouvées dans le formulaire
-    hint: Un champ de type bf_mail est nécessaire.
-    properties:
-      template:
-        value: liste_mails_seuls
+  # bazarmail:
+  #   label: Ecrire à tous
+  #   description: Affiche uniquement la liste des mails trouvées dans le formulaire
+  #   hint: Un champ de type bf_mail est nécessaire.
+  #   properties:
+  #     template:
+  #       value: liste_mails_seuls
