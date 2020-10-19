@@ -186,7 +186,7 @@ window.myapp = new Vue({
   mounted() {
     $(document).ready(() => {
       this.editor = new AceEditorWrapper()
-      new FlyingActionBar(this.editor)
+      new FlyingActionBar(this.editor, this.actionGroups)
       $('.open-actions-builder-btn').click((event) => {
         $('#actions-builder-modal').modal('show')
         this.currentGroupId = $(event.target).data('group-name')
