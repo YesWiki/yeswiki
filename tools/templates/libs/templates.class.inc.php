@@ -23,6 +23,7 @@ class Templates extends \YesWiki\Wiki
         $filename = basename($file);
         $paths = [
             'custom/templates/' . $tool . '/templates/' . $filename,
+            'custom/templates/' . $tool . '/' . $filename,
             'custom/themes/tools/' . $tool . '/templates/' . $filename,
             'themes/tools/' . $tool . '/templates/' . $filename,
             'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename,
