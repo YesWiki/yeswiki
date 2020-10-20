@@ -5,7 +5,6 @@
 // ---------------------
 $data = baz_forms_and_lists_ids();
 // Bazar actions documentation, read from Yaml file
-require_once "vendor/Spyc.php";
 $docFiles = glob('docs/actions/*.{yml,yaml}', GLOB_BRACE);
 $extenstionDocFiles = glob('tools/**/actions/documentation.{yml,yaml}', GLOB_BRACE);
 $docFiles = array_merge($docFiles, $extenstionDocFiles);
