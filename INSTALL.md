@@ -28,7 +28,7 @@ If you do `docker-compose up`, 3 Docker containers will be launched:
 - db: the MySQL database
 - myadmin: phpMyAdmin to see/modify the database
 
-Then go to http://localhost. In the setup, you will need to use these informations for the MySQL serveur:
+Then go to http://localhost:81. In the setup, you will need to use these informations for the MySQL serveur:
 
 - Host ("Machine MySQL"): db
 - Port: 3306

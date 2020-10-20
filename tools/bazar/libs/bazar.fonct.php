@@ -2534,7 +2534,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
                 // Champ  acls  present
                 if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
-                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
                     if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
                       function_exists($fichebazar['form']['template'][$i][0])) {
                         if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
@@ -2569,8 +2569,11 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     }
                 }
             }
-            // Map les données HTML sur les propriétés sémantiques
-            baz_append_semantic_data($html, $fichebazar['form']['bn_id_nature'], false, true);
+            try {
+                $html['semantic'] = $GLOBALS['bazarFiche']->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
+            } catch(\Exception $e) {
+                // Do nothing if semantic type is not available
+            }
             $fiche['html'] = $html;
             $fiche['fiche'] = $fichebazar['values'];
             $fiche['form'] = $fichebazar['form'];
@@ -2587,7 +2590,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
                 // Champ  acls  present
-                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
                     // si le champ est autorisé, génère son contenu
                     if (function_exists($fichebazar['form']['template'][$i][0])) {
                         $res .= $fichebazar['form']['template'][$i][0](
@@ -3107,62 +3110,6 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
     return $facettevalue;
 }
 
-function searchResultstoArray($tableau_fiches, $params, $formtab = '')
-{
-    // tableau qui contiendra les fiches
-    $fiches['fiches'] = array();
-    $exturl = $GLOBALS['wiki']->GetParameter('url');
-    foreach ($tableau_fiches as $fiche) {
-        if (isset($fiche['body'])) {
-            $fiche = json_decode($fiche['body'], true);
-            if (YW_CHARSET != 'UTF-8') {
-                $fiche = array_map('utf8_decode', $fiche);
-            }
-        }
-        if (is_array($fiche)) {
-            // champs correspondants
-            if (!empty($params['correspondance'])) {
-                $tabcorrespondances = array();
-                $tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
-                if ($tabcorrespondances['fail'] != 1) {
-                    foreach ($tabcorrespondances as $key=>$data) {
-                        if (isset($key)) {
-                            if (isset($data) && isset($fiche[$data])) {
-                                $fiche[$key] = $fiche[$data];
-                            } else {
-                                $fiche[$key] = '';
-                            }
-                        } else {
-                            echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
-                        }
-                    }
-                } else {
-                    echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
-                }
-            }
-            $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
-            $fiche['datastr'] = $fiche['html_data'];
-
-            // les fiches concernent un wiki externe
-            if (isset($exturl)) {
-                $arr = explode('/wakka.php', $exturl, 2);
-                $exturl = $arr[0];
-                $fiche['url'] = $exturl.'/wakka.php?wiki='.$fiche['id_fiche'];
-            } else {
-                $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
-            }
-            //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
-
-            // ajout des données sémantiques, s'il y en a
-            baz_append_semantic_data($fiche, $fiche['id_typeannonce'], false);
-
-            // tableau qui contient le contenu de toutes les fiches
-            $fiches['fiches'][$fiche['id_fiche']] = $fiche;
-        }
-    }
-    return $fiches['fiches'];
-}
-
 /**
  * Affiche la liste des resultats d'une recherche.
  *
@@ -3177,7 +3124,13 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     ++$GLOBALS['_BAZAR_']['nbbazarliste'];
     $params['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
-    $fiches['fiches'] = searchResultstoArray($tableau_fiches, $params, $formtab);
+
+    // Add display data to all fiches
+    $fiches['fiches'] = array_map(function($fiche) use($params) {
+        $GLOBALS['bazarFiche']->appendDisplayData($fiche, false, $params['correspondance']);
+        return $fiche;
+    }, $tableau_fiches);
+
     // tri des fiches
     if ($params['random']) {
         shuffle($fiches['fiches']);
@@ -3487,7 +3440,6 @@ function baz_afficher_flux_RSS()
         'keywords'=>$q
     ]);
 
-    $tableau_flux_rss = searchResultstoArray($tableau_flux_rss, array());
     $GLOBALS['ordre'] = 'desc';
     $GLOBALS['champ'] = 'date_creation_fiche';
     usort($tableau_flux_rss, 'champCompare');
@@ -4203,66 +4155,6 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
         $tabparam['fail'] = 1;
     }
     return $tabparam;
-}
-
-function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, $is_html_formatted = false)
-{
-    $form = baz_valeurs_formulaire($idformulaire);
-    if (!$form['bn_sem_type']) {
-        if ($err_if_not_semantic) {
-            exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
-        } else {
-            return null;
-        }
-    }
-
-    // If context is a JSON decode it, otherwise use the string
-    $output['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
-
-    // If we have multiple types split by comma, generate an array, otherwise use a string
-    $output['@type'] = strpos($form['bn_sem_type'], ',')
-        ? array_map(function ($str) {
-            return trim($str);
-        }, explode(',', $form['bn_sem_type']))
-        : $form['bn_sem_type'];
-
-    // Add the ID of the Bazar object
-    $output['@id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
-
-    $fields_infos = bazPrepareFormData($form);
-    foreach ($fields_infos as $field_info) {
-        // If the file is not semantically defined, ignore it
-        if ($field_info['sem_type']) {
-            $value = $fiche[$field_info['id']];
-            if ($value) {
-                // We don't want this additional formatting if we are already dealing with HTML-formatted data
-                if (!$is_html_formatted) {
-                    // If this is a file or image, add the base URL
-                    if ($field_info['type'] === 'file') {
-                        $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
-                    }
-
-                    // If this is a linked entity (listefiche), use the URL
-                    if (startsWith($field_info['id'], 'listefiche')) {
-                        $value = $GLOBALS['wiki']->href('', $value);
-                    }
-                }
-
-                if (is_array($field_info['sem_type'])) {
-                    // If we have multiple fields, duplicate the data
-                    foreach ($field_info['sem_type'] as $sem_type) {
-                        $output[$sem_type] = $value;
-                    }
-                } else {
-                    $output[$field_info['sem_type']] = $value;
-                }
-            }
-        }
-    }
-
-    $fiche['semantic'] = $output;
-
-    return $output;
 }
 
 /**
