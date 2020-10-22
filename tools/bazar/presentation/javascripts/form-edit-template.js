@@ -498,6 +498,11 @@ var yesWikiMapping = {
     7: "param7",
     8: "param8",
     9: "param9",
+    10: "param10",
+    11: "param11",
+    12: "param12",
+    13: "param13",
+    14: "param14",
   },
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
