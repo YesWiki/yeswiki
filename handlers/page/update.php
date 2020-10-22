@@ -45,4 +45,4 @@ if ($this->UserIsAdmin()) {
 } else {
     $output .= '<div class="alert alert-danger">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
 }
-echo $output.$this->footer();
+echo $output.'<!-- end handler /update -->'.$this->footer(); // ATTENTION <!-- end handler /update --> va etre utilisé pour que les extensions puissent ajouter du contenu juste au dessus!

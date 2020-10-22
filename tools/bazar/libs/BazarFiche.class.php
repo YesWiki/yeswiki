@@ -592,7 +592,7 @@ class BazarFiche
     {
         include_once 'tools/contact/libs/contact.functions.php';
 
-        if ($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
+        if (!empty($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) && $this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
             $lien = str_replace('/wakka.php?wiki=', '', $this->wiki->config['base_url']);
             $sujet = removeAccents('[' . str_replace('http://', '', $lien) . '] nouvelle fiche ' . ($new ? 'ajoutee' : 'modifiee') . ' : ' . $data['bf_titre']);
             $text = 'Voir la fiche sur le site pour l\'administrer : ' . $this->wiki->href('', $data['id_fiche']);

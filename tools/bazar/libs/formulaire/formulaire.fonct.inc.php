@@ -54,7 +54,7 @@
  
 function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
 {
-		$acl = $tableau_template[12] ; // acl pour l'écriture
+		$acl = empty($tableau_template[12]) ? '' : $tableau_template[12] ; // acl pour l'écriture
 		
 		if (isset($valeurs_fiche['id_fiche'])) {
 			$tag = $valeurs_fiche['id_fiche'] ;
@@ -1881,7 +1881,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
               }';
           }
         } else {
-            $$providerCredentials = '';
+            $providerCredentials = '';
         }
 
 
