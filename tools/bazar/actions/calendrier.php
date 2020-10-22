@@ -6,7 +6,6 @@
 
 // pour retro-compatibilité
 $this->setParameter('template', 'calendar');
-include( __DIR__.'/bazarliste.php');
 
 global $bazarFiche;
 
