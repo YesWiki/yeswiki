@@ -1,6 +1,6 @@
 label: "Boutons"
 position: 1
-previewHeight: 70px
+previewHeight: 100px
 actions:
   button:
     label: Bouton
@@ -14,6 +14,9 @@ actions:
         default: https://
         type: url
         required: true
+      title:
+        label: Texte affiché au survol
+        type: text
       icon:
         label: Icone
         type: icon
@@ -24,7 +27,7 @@ actions:
           color:
             label: Couleur
             type: list
-            default: btn-default
+            default: btn-primary
             options:
               - btn-default->Default
               - btn-primary->Primaire
@@ -37,8 +40,9 @@ actions:
             options:
               - ->Normal
               - btn-xs->Petit
+              - btn-sm->Moyen
+              - btn-lg->Grand
           modal:
-            advanced: true
             label: Popup
             hint: Permet de d'afficher la page liée dans une pop up.
             type: list
@@ -46,17 +50,11 @@ actions:
               - modalbox->Pop up lors du clic
               - modalbox-hover->Pop up au survol
           pull:
-            advanced: true
             label: Position
             type: list
             options:
-              - pull-left->Gauche
               - pull-right->Droite
               - btn-block->Toute la largeur
-      title:
-        advanced: true
-        label: Texte affiché au survol
-        type: text
       nobtn:
         advanced: true
         label: Bouton invisible

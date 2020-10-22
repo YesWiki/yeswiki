@@ -3,8 +3,9 @@
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+global $bazarFiche;
 
-if ($this->HasAccess("write") && $this->HasAccess("read") && $type!='fiche_bazar' && !isset($this->page["metadatas"]["ebook-title"])) {
+if ($this->HasAccess("write") && $this->HasAccess("read") && !$bazarFiche->isFiche($this->tag) && !isset($this->page["metadatas"]["ebook-title"])) {
     // preview?
     if (isset($_POST["submit"]) && $_POST["submit"] == "Apercu") {
         // Rien
