@@ -136,7 +136,7 @@ class Wiki
 
     public function GetPageTime()
     {
-        return $this->page['time'];
+        return empty($this->page['time']) ?  '' : $this->page['time'];
     }
 
     public function GetMethod()
@@ -562,9 +562,11 @@ class Wiki
 
     public function SetPage($page)
     {
-        $this->page = $page;
-        if ($this->page['tag']) {
-            $this->tag = $this->page['tag'];
+        if (!empty($page)) {
+            $this->page = $page;
+            if (!empty($this->page['tag'])) {
+                $this->tag = $this->page['tag'];
+            }
         }
     }
 
@@ -737,7 +739,7 @@ class Wiki
 
             // -- Chargement de la page
             $result = $this->LoadPage($page);
-            $body = $result['body'];
+            $body = empty($result['body']) ? '' : $result['body'];
             // -- Ajout du contenu a la fin de la page
             $body .= $content;
 
