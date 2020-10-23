@@ -1405,9 +1405,7 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
-	
-	$maxsize = $GLOBALS['wiki']->config['BAZ_TAILLE_MAX_FICHIER'] ;
+    list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide, $maxsize) = $tableau_template;
 
     if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
