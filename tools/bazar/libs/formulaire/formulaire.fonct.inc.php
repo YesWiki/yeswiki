@@ -2125,10 +2125,6 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
             ]);
             foreach ($tab_result as $fiche) {
-                $valeurs_fiche_liste = json_decode($fiche["body"], true);
-                if (YW_CHARSET != 'UTF-8') {
-                    $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
-                }
                 $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
             }
         } else {
@@ -2286,11 +2282,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $checkboxtab = array();
         foreach ($tab_result as $fiche) {
-            $valeurs_fiche_liste = json_decode($fiche["body"], true);
-            if (YW_CHARSET != 'UTF-8') {
-                $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
-            }
-            $checkboxtab[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
+            $checkboxtab[$fiche['id_fiche']] = $fiche['bf_titre'];
         }
         if (count($checkboxtab) > 0) {
             asort($checkboxtab, SORT_NATURAL | SORT_FLAG_CASE);
