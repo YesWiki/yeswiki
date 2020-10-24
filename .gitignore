@@ -13,12 +13,7 @@ themes/*
 !themes/README.md
 templates/*
 !templates/README.md
-custom/themes/*
-!custom/themes/README.md
-custom/templates/*
-!custom/templates/README.md
-custom/tools/*
-!custom/tools/README.md
+custom
 
 # tools
 tools/*
