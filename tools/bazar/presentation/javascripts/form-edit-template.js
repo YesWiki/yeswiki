@@ -258,7 +258,7 @@ var typeUserAttrs = {
     },
     mailing_list_tool: {
       label: "Type de service de diffusion",
-      options: { "": "", ezmlm: "Ezmlm" }
+      options: { "": "", ezmlm: "Ezmlm", sympa: "Sympa" }
     }
   },
   labelhtml: {
