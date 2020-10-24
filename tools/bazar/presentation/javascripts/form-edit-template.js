@@ -200,6 +200,7 @@ var typeUserAttrs = {
   },
   image: {
     hint: { label: "Texte d'aide" },
+    name2: { label: "Name", value: "bf_image" },
     thumb_height: { label: "Hauteur Vignette", value: "140" },
     thumb_width: { label: "Largeur Vignette", value: "140" },
     resize_height: { label: "Hauteur redimension", value: "600" },
@@ -451,6 +452,7 @@ var yesWikiMapping = {
   image: {
     ...defaultMapping,
     ...{
+      1: "name2",
       3: "thumb_height",
       4: "thumb_width",
       5: "resize_height",
