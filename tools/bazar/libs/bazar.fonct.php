@@ -2565,13 +2565,13 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             } catch(\Exception $e) {
                 // Do nothing if semantic type is not available
             }
-            $fiche['html'] = $html;
-            $fiche['fiche'] = $fichebazar['values'];
-            $fiche['form'] = $fichebazar['form'];
+            $values['html'] = $html;
+            $values['fiche'] = $fichebazar['values'];
+            $values['form'] = $fichebazar['form'];
             $res .= $GLOBALS['wiki']->renderTemplate(
                 'bazar',
                 $custom_template,
-                $fiche,
+                $values,
                 strtotime($fichebazar['values']['date_maj_fiche']),
                 baz_get_custom_semantic_template($fichebazar['values'])
             );
