@@ -4150,10 +4150,12 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 function baz_get_custom_template($fiche, $form)
 {
     $custom_templates = [
-        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'custom/templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
+        'custom/templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html', 
+        // backward compatibility
+        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',              
+        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html', 
+        'templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',             
         'custom/themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
         'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
     ];
 

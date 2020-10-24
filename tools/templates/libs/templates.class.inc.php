@@ -28,6 +28,7 @@ class Templates extends \YesWiki\Wiki
             'themes/tools/' . $tool . '/templates/' . $filename,
             'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename,
             'templates/' . $tool . '/templates/' . $filename,
+            'templates/' . $tool . '/' . $filename,
             'tools/' . $tool . '/presentation/templates/' . $filename,
             'tools/' . $tool . '/presentation/templates/' . $semantic_template
         ];
