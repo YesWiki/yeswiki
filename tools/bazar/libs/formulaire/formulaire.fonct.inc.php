@@ -684,7 +684,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         //si la valeur de nb_max_car est vide, on la mets au maximum
-        if ($nb_max_car == '') {
+        if ($nb_max_car == '' && $type_input == 'text') {
             $nb_max_car = 255;
         }
 

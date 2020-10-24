@@ -158,6 +158,7 @@ var typeUserAttrs = {
       label: "Type",
       options: {
         text: "Texte",
+        number: "Number",
         range: "Slider",
         url: "Url",
         password: "Mot de passe",
@@ -356,7 +357,7 @@ var templates = {
     var string = '<input type="' + fieldData.subtype + '"';
     if (fieldData.subtype == "url")
       string += 'placeholder="' + (fieldData.value || "") + '"/>';
-    else if (fieldData.subtype == "range")
+    else if (fieldData.subtype == "range" || fieldData.subtype == "number")
       string +=
         'min="' +
         (fieldData.size || "") +
@@ -616,7 +617,7 @@ function initializeFormbuilder(formAndListIds) {
       .change(function() {
         $(this).addClass("initialized");
         $parent = $(this).closest(".form-field");
-        if ($(this).val() == "range") {
+        if ($(this).val() == "range" || $(this).val() == "number") {
           $parent.find(".maxlength-wrap label").text("Valeur max");
           $parent.find(".size-wrap label").text("Valeur min");
         } else {
