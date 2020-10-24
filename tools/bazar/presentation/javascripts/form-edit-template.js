@@ -191,8 +191,8 @@ var typeUserAttrs = {
   },
   date: {
     today_button: {
-      label: "Btn Aujourd'hui",
-      options: { "": "Non", "1": "Oui" }
+      label: "Initialiser à Aujourd'hui",
+      options: { "": "Non", "today": "Oui" }
     },
     read: readConf,
     write: writeconf,
