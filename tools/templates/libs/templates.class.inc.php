@@ -21,36 +21,28 @@ class Templates extends \YesWiki\Wiki
     public function generateCacheId($tool, $file, $lastModified, $semantic_template = null)
     {
         $filename = basename($file);
-        // On cherche si le template existe dans theme custom
-        $templatefile = 'custom/templates/' . $tool . '/templates/' . $filename;
-        if (!is_file($templatefile)) {
-            // On cherche si le theme existe dans le theme custom de l'outil
-            $templatefile = 'custom/themes/tools/' . $tool . '/templates/' . $filename;
-            if (!is_file($templatefile)) {
-                // On cherche si le theme existe dans le theme courant
-                $templatefile = 'themes/tools/' . $tool . '/templates/' . $filename;
-                if (!is_file($templatefile)) {
-                    // On cherche si le theme existe dans le theme courant
-                    $templatefile = 'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename;
-                    if (!is_file($templatefile)) {
-                        // On cherche si le templates existe dans themes/tools
-                        $templatefile = 'templates/' . $tool . '/templates/' . $filename;
-                        if (!is_file($templatefile)) {
-                            // On cherche dans les templates du tools
-                            $templatefile = 'tools/' . $tool . '/presentation/templates/' . $filename;
-                            if (!is_file($templatefile)) {
-                                $templatefile = 'tools/' . $tool . '/presentation/templates/' . $semantic_template;
-                                if (!is_file($templatefile)) {
-                                    // on quitte si aucun template de trouvé
-                                    echo '<div class="alert alert-danger">' . _t('TEMPLATE_FILE_NOT_FOUND') . ' : "' . $filename . '".</div>';
-                                    exit;
-                                }
-                            }
-                        }
-                    }
-                }
+        $paths = [
+            'custom/templates/' . $tool . '/templates/' . $filename,
+            'custom/themes/tools/' . $tool . '/templates/' . $filename,
+            'themes/tools/' . $tool . '/templates/' . $filename,
+            'themes/' . $this->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename,
+            'templates/' . $tool . '/templates/' . $filename,
+            'tools/' . $tool . '/presentation/templates/' . $filename,
+            'tools/' . $tool . '/presentation/templates/' . $semantic_template
+        ];
+        $templatefile = null;
+        foreach($paths as $path) {
+            if (is_file($path)) {
+                $templatefile = $path;
+                break;
             }
         }
+        // on quitte si aucun template de trouvé
+        if (!$templatefile) {
+            echo '<div class="alert alert-danger">' . _t('TEMPLATE_FILE_NOT_FOUND') . ' : "' . $filename . '".</div>';
+            exit;
+        }
+
         $cacheid = 'cache/'.$this->getPageTag().'-'.$tool.'-'.$filename.($lastModified ? '-last-modified-'.$lastModified : '');
         $this->template[$cacheid]['file'] = $templatefile;
 
