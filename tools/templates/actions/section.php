@@ -78,8 +78,13 @@ if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
     $GLOBALS['check_' . $pagetag]['section'] = check_graphical_elements('section', $pagetag, $this->page['body']);
 }
 if ($GLOBALS['check_' . $pagetag]['section']) {
+
+    // specify the role to be checked ( *, +, %, @admins)
+    $role = $this->GetParameter('visibility');
+    $visible = ($GLOBALS['wiki']->CheckACL($role));
+    
     echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . (!empty($class) ? ' ' . $class : '') . '" style="'
+    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . ($visible ? '' : ' remove-this-div-on-page-load ') . (!empty($class) ? ' ' . $class : '') . '" style="'
         .(!empty($bgcolor) ? 'background:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';

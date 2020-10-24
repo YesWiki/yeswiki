@@ -625,3 +625,7 @@ body {
   margin: 0 !important;
   width: 100% !important;
 }
+
+.remove-this-div-on-page-load {
+  display: none !important;
+}
