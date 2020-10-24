@@ -1237,7 +1237,6 @@ class Wiki
                 $result = $actionObj;
             }
         } else { // $actionObj == null (not found, no error message)
-
             $this->parameter = &$vars;
             $result = $this->IncludeBuffered(strtolower($action) . '.php', '<div class="alert alert-danger">' . _t('UNKNOWN_ACTION') . " &quot;$action&quot;</div>\n", $vars, $this->config['action_path']);
             unset($this->parameter);
@@ -2346,9 +2345,12 @@ class Wiki
         $objPlugins = new \YesWiki\Plugins($plugins_root);
         $objPlugins->getPlugins(true);
         $pluginsList = $objPlugins->getPluginsList();
+        foreach($pluginsList as $pluginName => $pluginInfo) {
+            $pluginsList[$pluginName] = $plugins_root . $pluginName . '/';
+        }
+        $pluginsList['custom'] = 'custom/'; // Wil load custom/actions, custom/handlers etc...
         $yeswikiClasses = [];
-        foreach ($pluginsList as $k => $v) {
-            $pluginBase = $plugins_root . $k . '/';
+        foreach ($pluginsList as $k => $pluginBase) {
 
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
