@@ -57,6 +57,10 @@ if ($pageCss && !empty($pageCss['body'])){
     $styles .= '  <link rel="stylesheet" href="' . $this->href('css', 'PageCss') .'" />'."\n";
 }
 
+if (file_exists('custom/styles/custom.css')) {
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/custom/styles/custom.css" />' . "\n";
+}
+
 // on ajoute aux css le background personnalise
 if (isset($this->config['favorite_background_image']) && $this->config['favorite_background_image']!='') {
     $imgextension = strtolower(substr($this->config['favorite_background_image'], -4, 4));
