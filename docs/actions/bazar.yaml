@@ -1,4 +1,4 @@
-label: Afficher les données d'un formulaire
+label: _t(AB_bazar_label)
 position: 2
 needFormField: true
 previewHeight: 450px
@@ -11,7 +11,7 @@ actions:
     width: 30%
     properties:
       search:
-        label: Barre de recherche
+        label: _t(AB_bazar_commons_search_label)
         type: checkbox
       pagination:
         label: Nombre de fiches par page

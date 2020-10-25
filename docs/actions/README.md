@@ -16,6 +16,34 @@ actions:
   # La liste des actions de ce groupe
 ```
 
+## Internationalisation
+
+Afin de rendre le fichier traductible, il est préférable de fournir une clé de translation
+```yaml
+label: _t(AB_mongroupe_label) # AB = ActionsBuilder
+actions:
+  myaction:
+    label: _(AB_mongroupe_myaction_label)
+```
+
+```php
+// docs/actions/lang/actionsbuilde_fr.inc.php
+  'AB_mongroupe_label' => "Ajouter un boutton",
+  'AB_mongroupe_myaction_label' => "Mon Action"
+```
+
+Pour faciliter la maintenance, on peut essayer de construire le nom de la clé de traduction en respectant l'arborescence du YAML
+
+```yaml
+label: _t(AB_mongroupe_label) # AB = ActionsBuilder
+actions:
+  myaction:
+    label: _(AB_mongroupe_myaction_label)
+    properties:
+      latitude:
+        label: _t(AB_mongroupe_myaction_latitude_label)
+```
+
 ## Documenter une action
 
 _Une action est une manière d'afficher des composants élaborés. Elle est déclarée avec un nom unique en miniscule, et une série de paramètres qui permettent de la configurer/personaliser. Elle s'écrit dans l'éditeur sous la forme {{nomaction param1="" param2="" ...}}_
