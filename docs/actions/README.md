@@ -56,6 +56,7 @@ actions:
     description: Une description courte
     hint: Le champ XX doit être présent... # Information importante à savoir si on utilise cette action
     isWrapper: true # rajouter cette ligne pour les actions qui doivent se fermer avec un {{end elem="action"}}
+    wrappedContentExample: "Teeest" # si l'action est un wrapper, le texte à inclure dans l'action à titre d'exemple
     properties:
       # La liste des paramètres de l'action.
 ```
