@@ -1,0 +1,16 @@
+label: "Section"
+position: 1
+previewHeight: 200px
+actions:
+  section:
+    label: Section
+    isWrapper: true
+    properties:
+      visibility:
+        type: list
+        label: Visible par 
+        options:
+          '': Tout le monde
+          '+': Utilisateur connecté
+          '%': Propriétaire de la page
+          '@admins': Admins seulement

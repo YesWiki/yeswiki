@@ -30,7 +30,7 @@
           <div v-if="selectedAction.hint" class="alert alert-warning">{{ selectedAction.hint }}</div>
 
           <!-- Iframe Preview -->
-          <preview-action :wiki-code="wikiCode" :height="actionGroup.previewHeight"></preview-action>
+          <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup.previewHeight"></preview-action>
 
           <div class="panels-config-container">
             <div v-for="panel in configPanels" class="config-panel" :class="panel.class" :style="{width: panel.params.width}">

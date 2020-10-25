@@ -10,7 +10,7 @@ Voilà le contenu du fichier
 ```yaml
 label: Ajouter un boutton # Nom affiché dans la barre d'action de l'étiteur
 position: 3 # en 3ème position dans l liste des groupe d'actions diposnibles
-previewHeight: 350px # La hauteur de la zone d'aperçu
+previewHeight: 350px # La hauteur de la zone d'aperçu. Mettre à 0 pour désactiver l'appercu
 needFormField: false # Est ce qu'un formulaire doit être choisi en même temps que l'action? (c'est le cas pour bazar)
 actions:
   # La liste des actions de ce groupe
@@ -53,7 +53,9 @@ Voilà la liste des champs possible pour documenter une action
 actions:
   myaction:
     label: Mon Action # Nom de l'action
+    description: Une description courte
     hint: Le champ XX doit être présent... # Information importante à savoir si on utilise cette action
+    isWrapper: true # rajouter cette ligne pour les actions qui doivent se fermer avec un {{end elem="action"}}
     properties:
       # La liste des paramètres de l'action.
 ```
