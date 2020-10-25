@@ -1,5 +1,5 @@
 label: "Boutons"
-position: 1
+position: 2
 previewHeight: 100px
 actions:
   button:
