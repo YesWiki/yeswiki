@@ -81,7 +81,7 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
 
     // specify the role to be checked ( *, +, %, @admins)
     $role = $this->GetParameter('visibility');
-    $visible = ($GLOBALS['wiki']->CheckACL($role));
+    $visible = !$role || ($GLOBALS['wiki']->CheckACL($role));
     
     echo '<!-- start of section -->
     <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . ($visible ? '' : ' remove-this-div-on-page-load ') . (!empty($class) ? ' ' . $class : '') . '" style="'
