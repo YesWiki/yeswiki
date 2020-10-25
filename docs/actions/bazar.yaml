@@ -93,8 +93,8 @@ actions:
         default: asc
         advanced: true
         options:
-          - asc->Croissant
-          - desc->Décroissant
+          asc: Croissant
+          desc: Décroissant
         showExceptFor:
           - bazarcarto
           - bazartimeline
@@ -121,16 +121,16 @@ actions:
         type: list
         advanced: true
         options:
-          - false->Uniquement la première dépliée
-          - true->Toutes Dépliées
+          false: _t(AB_bazar_facettes_groupsexpanded_false)
+          true: _t(AB_bazar_facettes_groupsexpanded_true)
         showif: facettes
       filterposition:
         label: Position des facettes
         type: list
         advanced: true
         options:
-          - right->Droite
-          - left->Gauche
+          right: Droite
+          left: Gauche
         showif: facettes
       filtercolsize:
         label: Largeur des facettes

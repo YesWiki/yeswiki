@@ -10,12 +10,10 @@ export default {
       }
       // Options are provided in configuration
       else {
-        let result = {}
-        this.config.options.forEach(el => {
-          const splited = `${el}`.split('->')
-          result[splited[0]] = splited.length > 1 ? splited[1] : splited[0]
-        })
-        return result
+        if (Array.isArray(this.config.options)) {
+          return this.config.options.reduce((result,option)=> (result[option] = option, result), {});
+        }
+        return this.config.options;
       }
     }
   },

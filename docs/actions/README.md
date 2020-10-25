@@ -94,14 +94,31 @@ modal:
 #### list
 Vous devez renseigner les options possibles
 ```yaml
-provider:
-  label: Fond de carte
+color:
+  label: Couleur
   type: list
-  default: OpenStreetMap.Mapnik
+  default: btn-primary
   options:
-    - OpenStreetMap.Mapnik
-    - OpenStreetMap.BlackAndWhite
-    - OpenStreetMap.DE
+    btn-default: Default
+    btn-primary: Primaire
+    btn-info: Info
+    btn-warning: Attention
+    btn-danger: Danger
+```
+
+Si les options ont la valeur que leur clé, on peut donner un tableau pour simplifier
+```yaml
+options:
+  - OpenStreetMap.Mapnik
+  - OpenStreetMap.BlackAndWhite
+  - OpenStreetMap.DE
+```
+au lieu de
+```yaml
+options:
+  OpenStreetMap.Mapnik: OpenStreetMap.Mapnik
+  OpenStreetMap.BlackAndWhite: OpenStreetMap.BlackAndWhite
+  OpenStreetMap.DE: OpenStreetMap.DE
 ```
 
 #### form-field
@@ -117,14 +134,14 @@ class:
       label: Couleur
       type: list
       options:
-        - btn-default->Default
-        - btn-primary->Primaire
-        - btn-info->Info
+        btn-default: Default
+        btn-primary: Primaire
+        btn-info: Info
     size:
       label: Taille
       type: list
       options:
-        - btn->Normal
-        - btn-xs->Petit
+        btn: Normal
+        btn-xs: Petit
 ```
 Ainsi, plutôt que `{{button color="btn-default" size="btn-xs"}}` le résultat sera `{{button class="btn-default btn-xs"}}

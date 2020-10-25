@@ -29,32 +29,32 @@ actions:
             type: list
             default: btn-primary
             options:
-              - btn-default->Default
-              - btn-primary->Primaire
-              - btn-info->Info
-              - btn-warning->Attention
-              - btn-danger->Danger
+              btn-default: Default
+              btn-primary: Primaire
+              btn-info: Info
+              btn-warning: Attention
+              btn-danger: Danger
           size:
             label: Taille
             type: list
             options:
-              - ->Normal
-              - btn-xs->Petit
-              - btn-sm->Moyen
-              - btn-lg->Grand
+              '': Normal
+              btn-xs: Petit
+              btn-sm: Moyen
+              btn-lg: Grand
           modal:
             label: Popup
             hint: Permet de d'afficher la page liée dans une pop up.
             type: list
             options:
-              - modalbox->Pop up lors du clic
-              - modalbox-hover->Pop up au survol
+              modalbox: Pop up lors du clic
+              modalbox-hover: Pop up au survol
           pull:
             label: Position
             type: list
             options:
-              - pull-right->Droite
-              - btn-block->Toute la largeur
+              pull-right: Droite
+              btn-block: Toute la largeur
       nobtn:
         advanced: true
         label: Bouton invisible

@@ -22,13 +22,13 @@ actions:
         label: Nbre d'info à afficher
         type: number
       template:
-      	type: list
-      	label: Template de visualisation
-      	default: accordeon.tpl.html
-      	options:
-      	  - accordeon.tpl.html->Flux sous forme d'accordéons
-      	  - liste.tpl.html->Flux sous forme de liste
-      	  - liste_description.tpl.html->Flux sous forme de liste avec description
+        type: list
+        label: Template de visualisation
+        default: accordeon.tpl.html
+        options:
+          accordeon.tpl.html: Flux sous forme d'accordéons
+          liste.tpl.html: Flux sous forme de liste
+          liste_description.tpl.html: Flux sous forme de liste avec description
       nouvellefenetre:
         advanced: true
         label: Les liens s'ouvrent dans un nouvel onglet
@@ -41,7 +41,7 @@ actions:
         label: Affiche les dates de publication
         type: list
         options:
-          - jm->Jour mois
-          - jma-> Jour Mois année
-          - jmh-> Jour mois heure
-          - jmah-> Jour mois année heure
+          jm: Jour mois
+          jma:  Jour Mois année
+          jmh:  Jour mois heure
+          jmah:  Jour mois année heure
