@@ -16,7 +16,8 @@ themes/*
 !themes/README.md
 templates/*
 !templates/README.md
-custom
+custom/*
+!custom/.gitkeep
 
 # tools
 tools/*
