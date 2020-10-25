@@ -1,7 +1,10 @@
 # Custom directory
 
-The folder `custom` will be used for all your specific changes in yeswiki views.  
-You need to create this folder in the root path of your wiki
+The folder `custom` will be used for all your specific changes in yeswiki views.
+
+An example of how a custom folder look like can be found at https://github.com/YesWiki/yeswiki-custom-code-example
+
+(Advanced) You can clone this example in your wiki by manually deleting the custom folder, and then running the command `git clone https://github.com/YesWiki/yeswiki-custom-code-example.git custom`
 
 ## Custom templates
 
