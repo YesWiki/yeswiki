@@ -8,17 +8,17 @@ _Chaque groupe est visible dans le menu de l'éditeur. Un groupe peut contenir b
 
 Voilà le contenu du fichier
 ```yaml
-label: Ajouter un boutton # Nom affiché dans la barre d'action de l'étiteur
-position: 3 # en 3ème position dans l liste des groupe d'actions diposnibles
+label: Ajouter un bouton # Nom affiché dans la barre d'action de l'éditeur
+position: 3 # en 3ème position dans l liste des groupe d'actions disponibles
 previewHeight: 350px # La hauteur de la zone d'aperçu
-needFormField: false # Est ce qu'un formulaire doit être choisi en même temps que l'action? (c'est le cas pour bazar)
+needFormField: false # Est ce qu'un formulaire doit être choisi en même temps que l'action ? (c'est le cas pour bazar)
 actions:
   # La liste des actions de ce groupe
 ```
 
 ## Documenter une action
 
-_Une action est une manière d'afficher des composants élaborés. Elle est déclarée avec un nom unique en miniscule, et une série de paramètres qui permettent de la configurer/personaliser. Elle s'écrit dans l'éditeur sous la forme {{nomaction param1="" param2="" ...}}_
+_Une action est une manière d'afficher des composants élaborés. Elle est déclarée avec un nom unique en minuscule, et une série de paramètres qui permettent de la configurer/personaliser. Elle s'écrit dans l'éditeur sous la forme {{nomaction param1="" param2="" ...}}_
 
 Voilà la liste des champs possible pour documenter une action
 ```yaml
@@ -53,7 +53,7 @@ Les type sont
   - form-field
 
 #### checkbox
-Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur d'un paramètre checkbox est "true" ou "false", si par example vous vous que lorsqu'on coche la case la valeur soit "1", alors renseignez checkvalue: 1 et uncheckedvalue: 0
+Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur d'un paramètre checkbox est "true" ou "false", si par exemple vous voulez que lorsqu'on coche la case, la valeur soit "1", alors renseignez checkvalue: 1 et uncheckedvalue: 0
 ```yaml
 modal:
   label: Affichage d'une fenêtre modale lors du clic
@@ -77,7 +77,7 @@ provider:
 ```
 
 #### form-field
-Permet de choisir un champ du formulaire préalablement sélectioné (voir `needFormField` dans la configuration du gorupe d'action)
+Permet de choisir un champ du formulaire préalablement sélectioné (voir `needFormField` dans la configuration du groupe d'action)
 
 ### type class
 Le type class va concaténer la valeur de plusieurs champs et la mettre dans le paramètre class. On utilise `subproperties` pour déclarer les différents champs qui vont être concaténé
