@@ -26,6 +26,8 @@ if (!defined("WIKINI_VERSION"))
 include_once('includes/squelettephp.class.php');
 include_once 'tools/tags/libs/tags.functions.php';
 
+$tagsManager = $this->services->get('tags.manager');
+
 // recuperation de tous les parametres
 $tags = (isset($_GET['tags'])) ? $_GET['tags'] : '';
 $type = (isset($_GET['type'])) ? $_GET['type'] : '';
@@ -71,7 +73,7 @@ if (is_array($tab_tous_les_tags)) {
 
 $text = '';
 // affiche le resultat de la recherche
-$resultat = $this->PageList($tags,$type,$nb,$tri,$template,$class,$lienedit);
+$resultat = $tagsManager->getPagesByTags($tags,$type,$nb,$tri,$template,$class,$lienedit);
 if ($resultat) {
 	$nb_total = count($resultat);
 

@@ -3,8 +3,11 @@
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+$tagsManager = $this->services->get('tags.manager');
+
 $response = array();
-$tab_tous_les_tags = $this->GetAllTags();
+$tab_tous_les_tags = $tagsManager->getAll();
 if (is_array($tab_tous_les_tags)) {
     foreach ($tab_tous_les_tags as $tab_les_tags) {
         $tab_les_tags['value'] = _convert($tab_les_tags['value'], 'ISO-8859-1');

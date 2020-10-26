@@ -8,7 +8,7 @@
 $this->setParameter('template', 'agenda');
 include( __DIR__.'/bazarliste.php');
 
-global $bazarFiche;
+$ficheManager = $this->services->get('bazar.fiche.manager');
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -20,11 +20,11 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
+            $ficheManager->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
+    $results = $ficheManager->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // a la place du choix par défaut, on affiche en calendrier

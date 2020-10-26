@@ -27,6 +27,8 @@ if (!defined("WIKINI_VERSION"))
 	die ("acc&egrave;s direct interdit");
 }
 
+$tagsManager = $this->services->get('tags.manager');
+
 // on ne fait quelque chose uniquement dans le cas d'une requete jsonp
 if (isset($_GET['jsonp_callback'])) 
 {
@@ -36,7 +38,7 @@ if (isset($_GET['jsonp_callback']))
 		$tag = $this->GetPageTag();
 		$this->DeleteOrphanedPage($tag);
 		// on supprime les mots cles associes a la page
-		$this->DeleteAllTags($tag);
+        $tagsManager->deleteAll($tag);
 		$this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
 		echo $_GET['jsonp_callback']."(".json_encode(array("reponse"=>utf8_encode("succes"))).")";
 	} 

@@ -1,0 +1,5 @@
+services:
+  tags.manager:
+    class: YesWiki\Tags\Service\TagsManager
+    arguments: ['%wiki%']
+    public: true

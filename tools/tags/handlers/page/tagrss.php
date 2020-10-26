@@ -23,6 +23,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+$tagsManager = $this->services->get('tags.manager');
+
 $oldpagetag = $this->GetPageTag();
 $oldpage = $this->LoadPage($oldpagetag);
 $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
@@ -38,7 +41,7 @@ if (!empty($tags)) {
     //texte utilisé pour la description du flux RSS
     $textetitre.= ', contenant les tags ' . $tags;
     
-    $results = $this->PageList($tags, $type, 20, 'date');
+    $results = $tagsManager->getPagesByTags($tags, $type, 20, 'date');
     if ($results) {
         header('Content-type: text/xml; charset=UTF-8');
         $output = '<?xml version="1.0" encoding="UTF-8"?>';

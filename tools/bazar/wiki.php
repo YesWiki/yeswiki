@@ -56,9 +56,6 @@ define('BAZ_CHEMIN_UPLOAD', 'files/');
 require_once BAZ_CHEMIN.'libs/bazar.fonct.php';
 require_once BAZ_CHEMIN.'libs/bazar.fonct.misc.php';
 require_once BAZ_CHEMIN.'libs/bazar.fonct.retrocompatibility.php';
-require_once BAZ_CHEMIN.'libs/BazarFiche.class.php';
-
-$GLOBALS['bazarFiche'] = new YesWiki\BazarFiche($this);
 
 // +------------------------------------------------------------------------------------------------------+
 // |                                            CORPS du PROGRAMME                                        |

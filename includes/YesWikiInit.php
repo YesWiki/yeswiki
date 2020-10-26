@@ -35,6 +35,10 @@
 
 namespace YesWiki;
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+
 /**
  * Yeswiki initialization class
  *
@@ -291,6 +295,28 @@ class Init
         return $dblink;
     }
 
+    /**
+     * Initialize YesWiki core services
+     * Extensions services will be loaded in the YesWiki::loadExtensions method
+     */
+    public function initCoreServices($wiki)
+    {
+        $containerBuilder = new ContainerBuilder();
+
+        // Set all wakka configs as container's parameters
+        foreach($this->config as $key => $value) {
+            $containerBuilder->setParameter($key, $value);
+        }
+
+        // Set main YesWiki object as a parameter
+        // TODO remove this when the refactoring will be done
+        $containerBuilder->setParameter('wiki', $wiki);
+
+        $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
+        $loader->load('services.yml');
+
+        return $containerBuilder;
+    }
 
     /**
      * Initialize the cookie

@@ -29,6 +29,10 @@ require_once 'includes/Database.class.php';
 require_once 'includes/Session.class.php';
 require_once 'includes/User.class.php';
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
+
 class Wiki
 {
     public $dblink;
@@ -45,6 +49,7 @@ class Wiki
     public $db;
     public $session;
     public $user;
+    public $services;
 
     /**
      * An array containing all the actions that are implemented by an object
@@ -72,6 +77,7 @@ class Wiki
         $this->tag = $init->page;
         $this->method = $init->method;
         $this->dblink = $init->initDb();
+        $this->services = $init->initCoreServices($this);
         $this->api = new \YesWiki\Api($this);
         $this->db = new \YesWiki\Database($this);
         $this->session = new \YesWiki\Session($this);
@@ -2327,26 +2333,42 @@ class Wiki
 
     /**
      * Load all extensions
-     *
-     * @param mixed $wiki main YesWiki object
-     *
      * @return void
      */
     public function loadExtensions()
     {
-        $wakkaConfig = $this->config;
-        $wiki = $this;
-        $page = $wiki->tag;
-        loadpreferredI18n($page);
-        $plugins_root = 'tools/';
+        loadpreferredI18n($this->tag);
+        $pluginsRoot = 'tools/';
 
         include_once 'includes/YesWikiPlugins.php';
-        $objPlugins = new \YesWiki\Plugins($plugins_root);
+        $objPlugins = new \YesWiki\Plugins($pluginsRoot);
         $objPlugins->getPlugins(true);
-        $pluginsList = $objPlugins->getPluginsList();
-        $yeswikiClasses = [];
-        foreach ($pluginsList as $k => $v) {
-            $pluginBase = $plugins_root . $k . '/';
+        $this->extensions = $objPlugins->getPluginsList();
+
+        // Load all services
+        // This must be done before including the other files below
+        foreach ($this->extensions as $k => $v) {
+            $pluginBase = $pluginsRoot . $k . '/';
+
+            if (file_exists($pluginBase . 'services.yml')) {
+                $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
+                $loader->load('services.yml');
+            }
+        }
+
+        // Now we have loaded all the services, compile them
+        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
+        $this->services->compile();
+
+        // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
+        // TODO refactor all extensions to use the correct variable name
+        // TODO remove this when the retrocompatibility is no longer necessary
+        $wakkaConfig = $this->config;
+        $wiki = $this;
+        $page = $this->tag;
+
+        foreach ($this->extensions as $k => $v) {
+            $pluginBase = $pluginsRoot . $k . '/';
 
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
@@ -2365,12 +2387,6 @@ class Wiki
                 include $pluginBase . 'libs/' . $k . '.api.php';
             }
 
-            // YesWiki Classes
-            $currentClassFile = $pluginBase . 'libs/' . $k . '.class.inc.php';
-            if (file_exists($currentClassFile)) {
-                $yeswikiClasses['\YesWiki\\'.ucfirst(strtolower($k))] = $currentClassFile;
-            }
-
             if (file_exists($pluginBase . 'actions')) {
                 $wakkaConfig['action_path'] = $pluginBase . 'actions/' . ':' . $wakkaConfig['action_path'];
             }
@@ -2382,21 +2398,28 @@ class Wiki
             }
         }
 
-        $previous = false;
-        foreach ($yeswikiClasses as $yeswikiClass => $path) {
-            $classContent = file_get_contents($path);
-            if (!$previous) {
-                $previous = $yeswikiClass;
-            } else {
-                $classContent = str_replace('extends \YesWiki\Wiki', 'extends '.$previous, $classContent);
-                $previous = $yeswikiClass;
-            }
-            eval('?>' . $classContent);
-            $wiki = new $yeswikiClass($wakkaConfig);
-        }
-        $wiki->config = $wakkaConfig;
-        $wiki->extensions = $pluginsList;
+        // TODO remove this when retrocompatibility is no longer necessary
+        $this->config = $wakkaConfig;
+    }
 
-        return $wiki;
+    /*
+     * RETRO-COMPATIBILITY
+     * These methods were previously added by extensions
+     */
+
+    public function DeleteAllTags($page) {
+        return $this->services->get('tags.manager')->deleteAll($page);
+    }
+
+    public function SaveTags($page, $liste_tags) {
+        return $this->services->get('tags.manager')->save($page, $liste_tags);
+    }
+
+    public function GetAllTags($page = '') {
+        return $this->services->get('tags.manager')->getAll($page);
+    }
+
+    public function PageList($tags = '', $type = '', $nb = '', $tri = '') {
+        return $this->services->get('tags.manager')->getPagesByTags($tags, $type, $nb, $tri);
     }
 }

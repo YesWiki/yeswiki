@@ -1,14 +1,18 @@
 <?php
 
-namespace YesWiki;
+namespace YesWiki\Bazar\Service;
 
-class BazarFiche
+class FicheManager
 {
-    protected $wiki = ''; // give access to the main wiki object
+    protected $wiki;
+    protected $mailer;
+    protected $notifyAdmins;
 
-    public function __construct($wiki)
+    public function __construct($wiki, $mailer, $notifyAdmins)
     {
         $this->wiki = $wiki;
+        $this->mailer = $mailer;
+        $this->notifyAdmins = $notifyAdmins;
     }
 
     /**
@@ -371,8 +375,10 @@ class BazarFiche
             }
         }
 
-        // Envoi d'un mail aux administrateurs
-        $this->notifyAdmins($data, true);
+        if( $this->notifyAdmins ) {
+            // Envoi d'un mail aux administrateurs
+            $this->mailer->notifyAdmins($data, true);
+        }
 
         return $data;
     }
@@ -412,8 +418,10 @@ class BazarFiche
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
 
-        // Envoi d'un mail aux administrateurs
-        $this->notifyAdmins($data, false);
+        if( $this->notifyAdmins ) {
+            // Envoi d'un mail aux administrateurs
+            $this->mailer->notifyAdmins($data, false);
+        }
 
         return $data;
     }
@@ -585,39 +593,6 @@ class BazarFiche
         // Données sémantiques
         if( $semantic ) {
             $fiche['semantic'] = $this->convertToSemanticData($fiche['id_typeannonce'], $fiche);
-        }
-    }
-
-    protected function notifyAdmins($data, $new)
-    {
-        include_once 'tools/contact/libs/contact.functions.php';
-
-        if ($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
-            $lien = str_replace('/wakka.php?wiki=', '', $this->wiki->config['base_url']);
-            $sujet = removeAccents('[' . str_replace('http://', '', $lien) . '] nouvelle fiche ' . ($new ? 'ajoutee' : 'modifiee') . ' : ' . $data['bf_titre']);
-            $text = 'Voir la fiche sur le site pour l\'administrer : ' . $this->wiki->href('', $data['id_fiche']);
-            $texthtml = '<br /><br /><a href="' . $this->wiki->href('', $data['id_fiche']) . '" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-            $fichier = 'tools/bazar/presentation/styles/bazar.css';
-            $style = file_get_contents($fichier);
-            $style = str_replace('url(', 'url(' . $lien . '/tools/bazar/presentation/', $style);
-            $fiche = str_replace(
-                    'src="tools',
-                    'src="' . $lien . '/tools',
-                    baz_voir_fiche(0, $data['id_fiche'])
-                ) . $texthtml;
-            $html =
-                '<html><head><style type="text/css">' . $style .
-                '</style></head><body>' . $fiche . '</body></html>';
-
-            // on va chercher les admins
-            $requeteadmins = 'SELECT value FROM ' . $this->wiki->config['table_prefix'] . 'triples '
-                . 'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-            $ligne = $this->wiki->LoadSingle($requeteadmins);
-            $tabadmin = explode("\n", $ligne['value']);
-            foreach ($tabadmin as $line) {
-                $admin = $this->wiki->LoadUser(trim($line));
-                send_mail($this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
-            }
         }
     }
 

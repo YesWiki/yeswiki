@@ -31,9 +31,9 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get('bazar.fiche.manager');
 
-if ($bazarFiche->isFiche($this->GetPageTag())) {
+if ($ficheManager->isFiche($this->GetPageTag())) {
     if( strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false ) {
         $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
         $contentType = $semantic ? 'application/ld+json' : 'application/json';
@@ -41,12 +41,12 @@ if ($bazarFiche->isFiche($this->GetPageTag())) {
         header("Content-type: $contentType; charset=UTF-8");
         header("Access-Control-Allow-Origin: *");
 
-        $fiche = $bazarFiche->getOne($this->GetPageTag(), $semantic);
+        $fiche = $ficheManager->getOne($this->GetPageTag(), $semantic);
         exit(json_encode($fiche));
     } else {
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        $fiche = $bazarFiche->getOne($this->GetPageTag());
+        $fiche = $ficheManager->getOne($this->GetPageTag());
         $this->page["body"] = '""'.baz_voir_fiche(0, $fiche).'""';
     }
 }

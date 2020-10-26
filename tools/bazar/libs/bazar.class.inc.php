@@ -20,7 +20,7 @@ class Bazar extends \YesWiki\Wiki
                 $page["metadatas"] = $this->GetMetaDatas($tag);
             }
 
-            if ($GLOBALS['bazarFiche']->isFiche($tag)) {
+            if ($GLOBALS['wiki']->services->get('bazar.fiche.manager')->isFiche($tag)) {
                 $page = $this->checkBazarAcls($page, $tag);
             }
 

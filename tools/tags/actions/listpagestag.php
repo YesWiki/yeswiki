@@ -21,6 +21,8 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
+$tagsManager = $this->services->get('tags.manager');
+
 include_once 'tools/tags/libs/tags.functions.php';
 $nbcartrunc = 200;
 $tags = $this->GetParameter('tags');
@@ -38,7 +40,7 @@ if (empty($template)) {
 $output = '';
 
 // affiche le resultat de la recherche
-$resultat = $this->PageList($tags, $type, $nb, $tri);
+$resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri);
 if ($resultat) {
     $nb_total = count($resultat);
     // affichage des resultats

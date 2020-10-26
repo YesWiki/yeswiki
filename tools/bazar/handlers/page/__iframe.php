@@ -4,10 +4,10 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get('bazar.fiche.manager');
 
 $bazaroutput = '';
-if ($bazarFiche->isFiche($this->GetPageTag())) {
+if ($ficheManager->isFiche($this->GetPageTag())) {
     // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $valjson = $this->page["body"];
@@ -40,11 +40,11 @@ if ($bazarFiche->isFiche($this->GetPageTag())) {
         foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
+                $ficheManager->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
             );
         }
     } else {
-        $results = $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
+        $results = $ficheManager->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
 
     // affichage à l'écran

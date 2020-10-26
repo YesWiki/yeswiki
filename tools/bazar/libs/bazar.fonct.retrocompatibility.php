@@ -3,22 +3,22 @@
 function baz_insertion_fiche($data)
 {
     $data['antispam'] = 1;
-    return $GLOBALS['bazarFiche']->create($data['id_fiche'], $data);
+    return $GLOBALS['wiki']->services->get('bazar.fiche.manager')->create($data['id_fiche'], $data);
 }
 
 function baz_mise_a_jour_fiche($data)
 {
-    return $GLOBALS['bazarFiche']->update($data['id_fiche'], $data);
+    return $GLOBALS['wiki']->services->get('bazar.fiche.manager')->update($data['id_fiche'], $data);
 }
 
 function baz_suppression($idFiche)
 {
-    return $GLOBALS['bazarFiche']->delete($idFiche);
+    return $GLOBALS['wiki']->services->get('bazar.fiche.manager')->delete($idFiche);
 }
 
 function baz_valeurs_fiche($idFiche)
 {
-    return $GLOBALS['bazarFiche']->getOne($idFiche);
+    return $GLOBALS['wiki']->services->get('bazar.fiche.manager')->getOne($idFiche);
 }
 
 function baz_requete_recherche_fiches(
@@ -36,7 +36,7 @@ function baz_requete_recherche_fiches(
 {
     if( $id==='' ) $id = [];
 
-    $fiches = $GLOBALS['bazarFiche']->search([
+    $fiches = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->search([
         'queries' => $tableau_criteres,
         'formsIds' => $id, // Types de fiches (par ID de formulaire)
         'user' => $personne, // N'affiche que les fiches d'un utilisateur
@@ -51,7 +51,7 @@ function baz_requete_recherche_fiches(
 function validateForm($data)
 {
     try {
-        $GLOBALS['bazarFiche']->validate($data);
+        $GLOBALS['wiki']->services->get('bazar.fiche.manager')->validate($data);
         return array('result' => true);
     } catch(\Exception $e) {
         return array('result' => false, 'error' => $e->getMessage());
@@ -63,8 +63,8 @@ function searchResultstoArray($pages, $params, $formtab = '')
     $fiches = array();
 
     foreach ($pages as $page) {
-        $fiche = $GLOBALS['bazarFiche']->decode($page['body']);
-        $GLOBALS['bazarFiche']->appendDisplayData($fiche, false, $params['correspondance']);
+        $fiche = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->decode($page['body']);
+        $GLOBALS['wiki']->services->get('bazar.fiche.manager')->appendDisplayData($fiche, false, $params['correspondance']);
         $fiches[$fiche['id_fiche']] = $fiche;
     }
 

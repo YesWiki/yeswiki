@@ -4,11 +4,11 @@ if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get('bazar.fiche.manager');
 
-if ($bazarFiche->isFiche($this->GetPageTag())) {
+if ($ficheManager->isFiche($this->GetPageTag())) {
     if ($this->api->isAuthorized()) {
-        $bazarFiche->delete($this->GetPageTag());
+        $ficheManager->delete($this->GetPageTag());
         http_response_code(204);
     } else {
         http_response_code(304);

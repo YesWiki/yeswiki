@@ -19,7 +19,7 @@ if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get('bazar.fiche.manager');
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -82,7 +82,7 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tabfiches = $bazarFiche->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+    $tabfiches = $ficheManager->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';

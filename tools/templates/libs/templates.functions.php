@@ -789,13 +789,15 @@ function getImageFromBody($page, $width, $height)
  */
 function getTitleFromBody($page)
 {
+    $ficheManager = $GLOBALS['wiki']->services->get('bazar.fiche.manager');
+
     if (!isset($page['body']) || !isset($page['tag'])) {
         return '';
     }
     $title = '';
 
-    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
-        $entry = $GLOBALS['bazarFiche']->getOne($page['tag']);
+    if ($ficheManager->isFiche($page['tag'])) {
+        $entry = $ficheManager->getOne($page['tag']);
         if (isset($entry['bf_titre'])){
             $title = _convert($entry['bf_titre'], 'UTF-8');
         }
@@ -830,13 +832,15 @@ function getTitleFromBody($page)
  */
 function getDescriptionFromBody($page, $title, $length = 300)
 {
+    $ficheManager = $GLOBALS['wiki']->services->get('bazar.fiche.manager');
+
     if (!isset($page['body'])) {
         return '';
     }
     $desc = '';
 
-    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
-        $entry = $GLOBALS['bazarFiche']->getOne($page['tag']);
+    if ($ficheManager->isFiche($page['tag'])) {
+        $entry = $ficheManager->getOne($page['tag']);
         foreach(['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
             if (isset($entry[$prop])) {
                 $desc = _convert($entry[$prop], 'UTF-8');

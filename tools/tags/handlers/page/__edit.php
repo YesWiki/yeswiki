@@ -5,11 +5,13 @@ if (!defined("WIKINI_VERSION"))
             die ("acc&egrave;s direct interdit");
 }
 
+$tagsManager = $this->services->get('tags.manager');
+
 if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 {
 	$response = array();
 	// on recupere tous les tags du site
-	$tab_tous_les_tags = $this->GetAllTags();
+	$tab_tous_les_tags = $tagsManager->getAll();
 	if (is_array($tab_tous_les_tags))
 	{
 		foreach ($tab_tous_les_tags as $tab_les_tags)
@@ -21,7 +23,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 	$tagsexistants = '\''.implode('\',\'', $response).'\'';
 	
 	// on recupere les tags de la page courante
-	$tabtagsexistants = $this->GetAllTags($this->GetPageTag());
+	$tabtagsexistants = $tagsManager->getAll($this->GetPageTag());
 	foreach ($tabtagsexistants as $tab)
 	{
 		$tagspage[] = _convert($tab["value"], 'ISO-8859-1');
@@ -60,5 +62,5 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") &&
 	isset($_POST["submit"]) && $_POST["submit"] == 'Sauver' && 
 	isset($_POST["pagetags"]) && $_POST['antispam']==1 )
 {
-	$this->SaveTags($this->GetPageTag(), stripslashes($_POST["pagetags"]));
+    $tagsManager->save($this->GetPageTag(), stripslashes($_POST["pagetags"]));
 }

@@ -31,10 +31,10 @@ if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get('bazar.fiche.manager');
 
-if ($bazarFiche->isFiche($this->GetPageTag())) {
+if ($ficheManager->isFiche($this->GetPageTag())) {
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
-    $fiche = $bazarFiche->getOne($this->GetPageTag());
+    $fiche = $ficheManager->getOne($this->GetPageTag());
     $this->page["body"] = '""'.baz_voir_fiche(0, $fiche).'""';
 }
