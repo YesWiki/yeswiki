@@ -2577,7 +2577,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             $fiche['html'] = $html;
             $fiche['fiche'] = $fichebazar['values'];
             $fiche['form'] = $fichebazar['form'];
-            $res .= $GLOBALS['wiki']->renderTemplate(
+            $res .= $GLOBALS['wiki']->services->get('templates.engine')->render(
                 'bazar',
                 $custom_template,
                 $fiche,

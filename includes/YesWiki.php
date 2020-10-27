@@ -146,7 +146,13 @@ class Wiki
 
     public function GetMethod()
     {
-        return $this->method;
+        if ($this->method=='iframe') {
+            return 'show';
+        } elseif ($this->method=='editiframe') {
+            return 'edit';
+        } else {
+            return $this->method;
+        }
     }
 
     public function GetConfigValue($name, $default=null)

@@ -1,0 +1,5 @@
+services:
+  templates.engine:
+    class: YesWiki\Templates\Service\TemplatesEngine
+    arguments: ['%wiki%']
+    public: true
