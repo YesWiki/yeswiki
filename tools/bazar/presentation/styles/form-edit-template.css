@@ -112,3 +112,38 @@
 }
 
 xmp { overflow: auto; }
+/* Apply icon- class only for form, defined in form-builder-min*/
+[class*=" icon-"]::before, [class^="icon-"]::before {
+    font-family: initial;
+    font-style: initial;
+    font-weight: initial;
+    speak: initial;
+    display: initial;
+    text-decoration: initial;
+    width: initial;
+    margin-right: initial;
+    text-align: initial;
+    font-variant: initial;
+    text-transform: initial;
+    line-height: initial;
+    margin-left: initial;
+    -webkit-font-smoothing: initial;
+    -moz-osx-font-smoothing: initial;
+}
+#formulaire [class*=" icon-"]::before, #formulaire [class^="icon-"]::before {
+    font-family: form-builder-font;
+    font-style: normal;
+    font-weight: 400;
+    speak: none;
+    display: inline-block;
+    text-decoration: inherit;
+    width: 1em;
+    margin-right: .2em;
+    text-align: center;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1em;
+    margin-left: .2em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
