@@ -519,15 +519,22 @@ class Wiki
     {
         // retrieve from cache
         if (! $time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false)) {
+            if ($cachedPage and !isset($cachedPage["metadatas"])) {
+                $cachedPage["metadatas"] = $this->GetMetaDatas($tag);
+            }
             $page = $cachedPage;
         } else { // load page
 
             $sql = 'SELECT * FROM ' . $this->config['table_prefix'] . 'pages' . " WHERE tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' AND " . ($time ? "time = '" . mysqli_real_escape_string($this->dblink, $time) . "'" : "latest = 'Y'") . " LIMIT 1";
             $page = $this->LoadSingle($sql);
 
-            // the database is in ISO-8859-15, it must be converted
-            if (isset($page['body'])) {
-                $page['body'] = _convert($page['body'], 'ISO-8859-15');
+            // si la page existe, on charge les meta-donnees
+            if ($page) {
+                $page["metadatas"] = $this->GetMetaDatas($tag);
+            }
+
+            if ($this->services->get('bazar.fiche.manager')->isFiche($tag)) {
+                $page = $this->services->get('bazar.guard')->checkAcls($page, $tag);
             }
 
             // cache result

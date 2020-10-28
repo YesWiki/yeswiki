@@ -4,6 +4,7 @@
         "phpmailer/phpmailer": "6.0.7",
         "symfony/dependency-injection": "^5.1",
         "symfony/config": "^5.1",
-        "symfony/yaml": "^5.1"
+        "symfony/yaml": "^5.1",
+        "ext-json": "*"
     }
 }

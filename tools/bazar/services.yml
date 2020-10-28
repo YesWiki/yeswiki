@@ -7,3 +7,8 @@ services:
     class: YesWiki\Bazar\Service\FicheManager
     arguments: ['%wiki%', '@mailer', '%BAZ_ENVOI_MAIL_ADMIN%']
     public: true
+
+  bazar.guard:
+    class: YesWiki\Bazar\Service\Guard
+    arguments: ['%wiki%']
+    public: true
