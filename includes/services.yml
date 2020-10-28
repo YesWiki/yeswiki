@@ -1,7 +1,4 @@
 # Default parameters
-parameters:
-  BAZ_ADRESSE_MAIL_ADMIN: host@domain.com
-
 services:
   mailer:
     class: YesWiki\Core\Service\Mailer

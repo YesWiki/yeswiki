@@ -1,7 +1,3 @@
-# Default parameters
-parameters:
-  BAZ_ENVOI_MAIL_ADMIN: true
-
 services:
   bazar.fiche.manager:
     class: YesWiki\Bazar\Service\FicheManager

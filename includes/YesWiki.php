@@ -2373,21 +2373,6 @@ class Wiki
         $objPlugins->getPlugins(true);
         $this->extensions = $objPlugins->getPluginsList();
 
-        // Load all services
-        // This must be done before including the other files below
-        foreach ($this->extensions as $k => $v) {
-            $pluginBase = $pluginsRoot . $k . '/';
-
-            if (file_exists($pluginBase . 'services.yml')) {
-                $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
-                $loader->load('services.yml');
-            }
-        }
-
-        // Now we have loaded all the services, compile them
-        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
-        $this->services->compile();
-
         // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
         // TODO refactor all extensions to use the correct variable name
         // TODO remove this when the retrocompatibility is no longer necessary
@@ -2395,11 +2380,23 @@ class Wiki
         $wiki = $this;
         $page = $this->tag;
 
+        // Load all services
+        // This must be done before including the other files below
         foreach ($this->extensions as $k => $v) {
             $pluginBase = $pluginsRoot . $k . '/';
 
+            // Load the default parameters. This must be done before loading the services
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
+            }
+
+            // Set all wakka configs as default service parameters
+            // TODO improve the performances as we pass multiple times through the whole $wakkaConfig
+            foreach($wakkaConfig as $key => $value) {
+                // Avoid overwriting user-defined parameters
+                if( !$this->services->hasParameter($key) ) {
+                    $this->services->setParameter($key, $value);
+                }
             }
 
             // language files : first default language, then preferred language
@@ -2424,10 +2421,19 @@ class Wiki
             if (file_exists($pluginBase . 'formatters')) {
                 $wakkaConfig['formatter_path'] = $pluginBase . 'formatters/' . ':' . $wakkaConfig['formatter_path'];
             }
+
+            if (file_exists($pluginBase . 'services.yml')) {
+                $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
+                $loader->load('services.yml');
+            }
         }
 
         // TODO remove this when retrocompatibility is no longer necessary
         $this->config = $wakkaConfig;
+
+        // Now we have loaded all the services, compile them
+        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
+        $this->services->compile();
     }
 
     /*
