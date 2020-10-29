@@ -5,6 +5,7 @@ namespace YesWiki\Templates\Service;
 class TemplatesEngine
 {
     protected $wiki;
+    protected $templates;
 
     public function __construct($wiki)
     {
