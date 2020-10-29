@@ -177,267 +177,6 @@ class Wiki
         return WIKINI_VERSION;
     }
 
-    /**
-     * A very simple Request level cache for triple resources
-     *
-     * @var array
-     */
-    protected $triplesCacheByResource = array();
-
-    /**
-     * Retrieves all the triples that match some criteria.
-     * This allows to search triples by their approximate resource or property names.
-     * The allowed operators are the sql "LIKE" and the sql "=".
-     *
-     * Does not use the cache $this->triplesCacheByResource.
-     *
-     * @param string $resource
-     *            The resource of the triples or null
-     * @param string $property
-     *            The property of the triple to retrieve or null
-     * @param string $value
-     *            The value of the triple to retrieve or null
-     * @param string $res_op
-     *            The operator of comparison between the effective resource and $resource (default: 'LIKE')
-     * @param string $prop_op
-     *            The operator of comparison between the effective property and $property (default: '=')
-     * @return array The list of all the triples that match the asked criteria
-     */
-    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=')
-    {
-        static $operators = array(
-            '=',
-            'LIKE'
-        ); // we might want to add other operators later
-        $res_op = strtoupper($res_op);
-        if (! in_array($res_op, $operators)) {
-            $res_op = '=';
-        }
-
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ';
-        $where = [];
-        if ($resource !== null) {
-            $where[] = 'resource ' . $res_op . ' "' . mysqli_real_escape_string($this->dblink, $resource) . '"';
-        }
-        if ($property !== null) {
-            $prop_op = strtoupper($prop_op);
-            if (! in_array($prop_op, $operators)) {
-                $prop_op = '=';
-            }
-
-            $where[] = ' property ' . $prop_op . ' "' . mysqli_real_escape_string($this->dblink, $property) . '"';
-        }
-        if ($value !== null) {
-            $where[] = ' value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
-        }
-        if( count($where)>0 ) {
-            $sql .= ' WHERE ' . implode(' AND ', $where);
-        }
-        return $this->LoadAll($sql);
-    }
-
-    /**
-     * Retrieves all the values for a given couple (resource, property)
-     *
-     * @param string $resource
-     *            The resource of the triples
-     * @param string $property
-     *            The property of the triple to retrieve
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to THISWIKI_PREFIX)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to WIKINI_VOC_PREFIX)
-     * @return array An array of the retrieved values, in the form
-     *         array(
-     *         0 => array(id = 7 , 'value' => $value1),
-     *         1 => array(id = 34, 'value' => $value2),
-     *         ...
-     *         )
-     */
-    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-        $prop = $prop_prefix . $property ;
-        if (isset($this->triplesCacheByResource[$res])) {
-            // All resource's properties was previously loaded.
-            //error_log(__METHOD__.' cache hits ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
-            if (isset($this->triplesCacheByResource[$res][$prop])) {
-                return $this->triplesCacheByResource[$res][$prop] ;
-            }
-            // LoadAll($sql) return an empty array when no result, do the same.
-            return array();
-        }
-        //error_log(__METHOD__.' cache miss ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
-        $this->triplesCacheByResource[$res] = array();
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $res) . '"' ;
-        foreach ($this->LoadAll($sql) as $triple) {
-            if (! isset($this->triplesCacheByResource[$res][ $triple['property'] ])) {
-                $this->triplesCacheByResource[$res][ $triple['property'] ] = array();
-            }
-            $this->triplesCacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value']) ;
-        }
-        if (isset($this->triplesCacheByResource[$res][$prop])) {
-            return $this->triplesCacheByResource[$res][$prop] ;
-        }
-        return array() ;
-    }
-
-    /**
-     * Retrieves a single value for a given couple (resource, property)
-     *
-     * @param string $resource
-     *            The resource of the triples
-     * @param string $property
-     *            The property of the triple to retrieve
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @return string The value corresponding to ($resource, $property) or null if
-     *         there is no such couple in the triples table.
-     */
-    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $this->GetAllTriplesValues($resource, $property, $re_prefix, $prop_prefix);
-        if ($res) {
-            return $res[0]['value'];
-        }
-
-        return null;
-    }
-
-    /**
-     * Checks whether a triple exists or not
-     *
-     * @param string $resource
-     *            The resource of the triple to find
-     * @param string $property
-     *            The property of the triple to find
-     * @param string $value
-     *            The value of the triple to find
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @param
-     *            int The id of the found triple or 0 if there is no such triple.
-     */
-    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $sql = 'SELECT id FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $re_prefix . $resource) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '" ' . 'AND value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
-        $res = $this->LoadSingle($sql);
-        if (! $res) {
-            return 0;
-        }
-
-        return $res['id'];
-    }
-
-    /**
-     * Inserts a new triple ($resource, $property, $value) in the triples' table
-     *
-     * @param string $resource
-     *            The resource of the triple to insert
-     * @param string $property
-     *            The property of the triple to insert
-     * @param string $value
-     *            The value of the triple to insert
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @return int An error code: 0 (success), 1 (failure) or 3 (already exists)
-     */
-    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-
-        if ($this->TripleExists($res, $property, $value, '', $prop_prefix)) {
-            return 3;
-        }
-
-        // invalidate the cache
-        if (isset($this->triplesCacheByResource[$res])) {
-            unset($this->triplesCacheByResource[$res]);
-        }
-
-        $sql = 'INSERT INTO ' . $this->GetConfigValue('table_prefix') . 'triples (resource, property, value)' . 'VALUES ("' . mysqli_real_escape_string($this->dblink, $res) . '", "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '", "' . mysqli_real_escape_string($this->dblink, $value) . '")';
-        return $this->Query($sql) ? 0 : 1;
-    }
-
-    /**
-     * Updates a triple ($resource, $property, $value) in the triples' table
-     *
-     * @param string $resource
-     *            The resource of the triple to update
-     * @param string $property
-     *            The property of the triple to update
-     * @param string $oldvalue
-     *            The old value of the triple to update
-     * @param string $newvalue
-     *            The new value of the triple to update
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @return int An error code: 0 (succ?s), 1 (?chec),
-     *         2 ($resource, $property, $oldvalue does not exist)
-     *         or 3 ($resource, $property, $newvalue already exists)
-     */
-    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-
-        $id = $this->TripleExists($res, $property, $oldvalue, '', $prop_prefix);
-        if (! $id) {
-            return 2;
-        }
-
-        if ($this->TripleExists($res, $property, $newvalue, '', $prop_prefix)) {
-            return 3;
-        }
-
-        // invalidate the cache
-        if (isset($this->triplesCacheByResource[$res])) {
-            unset($this->triplesCacheByResource[$res]);
-        }
-
-        $sql = 'UPDATE ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'SET value = "' . mysqli_real_escape_string($this->dblink, $newvalue) . '" ' . 'WHERE id = ' . $id;
-        return $this->Query($sql) ? 0 : 1;
-    }
-
-    /**
-     * Deletes a triple ($resource, $property, $value) from the triples' table
-     *
-     * @param string $resource
-     *            The resource of the triple to delete
-     * @param string $property
-     *            The property of the triple to delete
-     * @param string $value
-     *            The value of the triple to delete. If set to <tt>null</tt>,
-     *            deletes all the triples corresponding to ($resource, $property). (defaults to <tt>null</tt>)
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     */
-    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-
-        $sql = 'DELETE FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $res) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '" ';
-        if ($value !== null) {
-            $sql .= 'AND value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
-        }
-
-        // invalidate the cache
-        if (isset($this->triplesCacheByResource[$res])) {
-            unset($this->triplesCacheByResource[$res]);
-        }
-
-        $this->Query($sql);
-    }
-
     // inclusions
     /**
      * Enregistre une nouvelle inclusion dans la pile d'inclusions.
@@ -2455,5 +2194,33 @@ class Wiki
 
     public function PageList($tags = '', $type = '', $nb = '', $tri = '') {
         return $this->services->get('tags.manager')->getPagesByTags($tags, $type, $nb, $tri);
+    }
+
+    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get('triple.store')->getOne($resource, $property, $re_prefix, $prop_prefix);
+    }
+
+    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') {
+        return $this->services->get('triple.store')->getMatching($resource, $property, $value, $res_op, $prop_op);
+    }
+
+    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX){
+        return $this->services->get('triple.store')->getAll($resource, $property, $re_prefix, $prop_prefix);
+    }
+
+    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get('triple.store')->exist($resource, $property, $value, $re_prefix, $prop_prefix);
+    }
+
+    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get('triple.store')->create($resource, $property, $value, $re_prefix, $prop_prefix);
+    }
+
+    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get('triple.store')->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
+    }
+
+    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get('triple.store')->delete($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 }

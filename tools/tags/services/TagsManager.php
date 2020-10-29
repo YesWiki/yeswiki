@@ -2,22 +2,26 @@
 
 namespace YesWiki\Tags\Service;
 
+use YesWiki\Core\Service\TripleStore;
+
 class TagsManager
 {
     protected $wiki;
+    protected $tripleStore;
 
-    public function __construct($wiki)
+    public function __construct($wiki, TripleStore $tripleStore)
     {
         $this->wiki = $wiki;
+        $this->tripleStore = $tripleStore;
     }
 
     public function deleteAll($page)
     {
         //on recupere les anciens tags de la page courante
-        $tabtagsexistants = $this->wiki->GetAllTriplesValues($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+        $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         if (is_array($tabtagsexistants)) {
             foreach ($tabtagsexistants as $tab) {
-                $this->wiki->DeleteTriple($page, 'http://outils-reseaux.org/_vocabulary/tag', $tab['value'], '', '');
+                $this->tripleStore->delete($page, 'http://outils-reseaux.org/_vocabulary/tag', $tab['value'], '', '');
             }
         }
 
@@ -29,7 +33,7 @@ class TagsManager
         $tags = explode(',', mysqli_real_escape_string($this->wiki->dblink, _convert($liste_tags, YW_CHARSET, true)));
 
         //on recupere les anciens tags de la page courante
-        $tabtagsexistants = $this->wiki->GetAllTriplesValues($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+        $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         if (is_array($tabtagsexistants)) {
             foreach ($tabtagsexistants as $tab) {
                 $tags_restants_a_effacer[] = $tab['value'];
@@ -40,8 +44,8 @@ class TagsManager
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                if (!$this->wiki->TripleExists($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '')) {
-                    $this->wiki->InsertTriple($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
+                if (!$this->tripleStore->exist($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '')) {
+                    $this->tripleStore->create($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
                 }
                 //on supprime ce tag du tableau des tags restants a effacer
                 if (isset($tags_restants_a_effacer)) {
@@ -53,7 +57,7 @@ class TagsManager
         //on supprime les tags restants a effacer
         if (isset($tags_restants_a_effacer)) {
             foreach ($tags_restants_a_effacer as $tag) {
-                $this->wiki->DeleteTriple($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
+                $this->tripleStore->delete($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
             }
         }
 
@@ -64,10 +68,9 @@ class TagsManager
     {
         if ($page == '') {
             $sql = 'SELECT DISTINCT value FROM '.$this->wiki->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
-
             return $this->wiki->LoadAll($sql);
         } else {
-            return $this->wiki->GetAllTriplesValues($this->wiki->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+            return $this->tripleStore->getAll($this->wiki->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         }
     }
 
