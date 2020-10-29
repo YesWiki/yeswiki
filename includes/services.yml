@@ -1,9 +1,13 @@
-# Default parameters
 services:
-  mailer:
-    class: YesWiki\Core\Service\Mailer
-    arguments: ['%wiki%', '%BAZ_ADRESSE_MAIL_ADMIN%']
+  _defaults:
+    autowire: true
+    public: true
 
-  triple.store:
-    class: YesWiki\Core\Service\TripleStore
-    arguments: ['%wiki%']
+  YesWiki\Core\Service\Mailer:
+    arguments:
+      $wiki: '%wiki%'
+      $adminEmails: '%BAZ_ADRESSE_MAIL_ADMIN%'
+
+  YesWiki\Core\Service\TripleStore:
+    arguments:
+      $wiki: '%wiki%'

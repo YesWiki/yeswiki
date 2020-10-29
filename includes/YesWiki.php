@@ -31,6 +31,10 @@ require_once 'includes/User.class.php';
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Service\TripleStore;
+use YesWiki\Tags\Service\TagsManager;
 
 class Wiki
 {
@@ -272,8 +276,8 @@ class Wiki
                 $page["metadatas"] = $this->GetMetaDatas($tag);
             }
 
-            if ($this->services->get('bazar.fiche.manager')->isFiche($tag)) {
-                $page = $this->services->get('bazar.guard')->checkAcls($page, $tag);
+            if ($this->services->get(FicheManager::class)->isFiche($tag)) {
+                $page = $this->services->get(Guard::class)->checkAcls($page, $tag);
             }
 
             // cache result
@@ -2177,50 +2181,49 @@ class Wiki
 
     /*
      * RETRO-COMPATIBILITY
-     * These methods were previously added by extensions
      */
 
     public function DeleteAllTags($page) {
-        return $this->services->get('tags.manager')->deleteAll($page);
+        return $this->services->get(TagsManager::class)->deleteAll($page);
     }
 
     public function SaveTags($page, $liste_tags) {
-        return $this->services->get('tags.manager')->save($page, $liste_tags);
+        return $this->services->get(TagsManager::class)->save($page, $liste_tags);
     }
 
     public function GetAllTags($page = '') {
-        return $this->services->get('tags.manager')->getAll($page);
+        return $this->services->get(TagsManager::class)->getAll($page);
     }
 
     public function PageList($tags = '', $type = '', $nb = '', $tri = '') {
-        return $this->services->get('tags.manager')->getPagesByTags($tags, $type, $nb, $tri);
+        return $this->services->get(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
     }
 
     public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
-        return $this->services->get('triple.store')->getOne($resource, $property, $re_prefix, $prop_prefix);
+        return $this->services->get(TripleStore::class)->getOne($resource, $property, $re_prefix, $prop_prefix);
     }
 
     public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') {
-        return $this->services->get('triple.store')->getMatching($resource, $property, $value, $res_op, $prop_op);
+        return $this->services->get(TripleStore::class)->getMatching($resource, $property, $value, $res_op, $prop_op);
     }
 
     public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX){
-        return $this->services->get('triple.store')->getAll($resource, $property, $re_prefix, $prop_prefix);
+        return $this->services->get(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
     }
 
     public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
-        return $this->services->get('triple.store')->exist($resource, $property, $value, $re_prefix, $prop_prefix);
+        return $this->services->get(TripleStore::class)->exist($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 
     public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
-        return $this->services->get('triple.store')->create($resource, $property, $value, $re_prefix, $prop_prefix);
+        return $this->services->get(TripleStore::class)->create($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 
     public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
-        return $this->services->get('triple.store')->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
+        return $this->services->get(TripleStore::class)->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
     }
 
     public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
-        return $this->services->get('triple.store')->delete($resource, $property, $value, $re_prefix, $prop_prefix);
+        return $this->services->get(TripleStore::class)->delete($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 }

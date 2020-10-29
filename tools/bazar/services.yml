@@ -1,10 +1,15 @@
 services:
-  bazar.fiche.manager:
-    class: YesWiki\Bazar\Service\FicheManager
-    arguments: ['%wiki%', '@mailer', '@triple.store' '%BAZ_ENVOI_MAIL_ADMIN%']
+  _defaults:
+    autowire: true
     public: true
 
-  bazar.guard:
-    class: YesWiki\Bazar\Service\Guard
-    arguments: ['%wiki%']
-    public: true
+  YesWiki\Bazar\Service\FicheManager:
+    arguments:
+      $wiki: '%wiki%'
+      $notifyAdmins: '%BAZ_ENVOI_MAIL_ADMIN%'
+
+  YesWiki\Bazar\Service\Guard:
+    arguments:
+      $wiki: '%wiki%'
+
+  bazar.fiche.manager: '@YesWiki\Bazar\Service\FicheManager'
