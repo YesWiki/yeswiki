@@ -1,5 +1,7 @@
 <?php
 
+use Symfony\Component\Yaml\Yaml;
+
 // ---------------------
 // Data for the template
 // ---------------------
@@ -11,7 +13,7 @@ $docFiles = array_merge($docFiles, $extenstionDocFiles);
 $data['action_groups'] = [];
 foreach($docFiles as $filePath) {
   $filename = pathinfo($filePath)['filename'];
-  $data['action_groups'][$filename] = Spyc::YAMLLoad($filePath);
+  $data['action_groups'][$filename] = Yaml::parseFile($filePath);
   // When order is not defined, put at the end
   if (!$data['action_groups'][$filename]['position']) $data['action_groups'][$filename]['position'] = 1000;
 }
