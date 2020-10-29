@@ -53,14 +53,15 @@ define('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 // Pour que seul le propriétaire et l'admin puissent changer de theme
 define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);
 
-//on récupère les metadonnées de la page
-$metadatas = $wiki->GetTripleValue(
-    $page,
-    'http://outils-reseaux.org/_vocabulary/metadata',
-    '',
-    '',
-    ''
-);
+// TODO mettre ça ailleurs car les services ne sont pas encore prêts au chargement des fichiers wiki.php
+////on récupère les metadonnées de la page
+//$metadatas = $wiki->GetTripleValue(
+//    $page,
+//    'http://outils-reseaux.org/_vocabulary/metadata',
+//    '',
+//    '',
+//    ''
+//);
 
 if (!empty($metadatas)) {
     if (YW_CHARSET != 'UTF-8') {
