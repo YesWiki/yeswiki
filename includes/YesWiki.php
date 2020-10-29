@@ -2108,7 +2108,6 @@ class Wiki
      */
     public function loadExtensions()
     {
-        loadpreferredI18n($this->tag);
         $pluginsRoot = 'tools/';
 
         include_once 'includes/YesWikiPlugins.php';
@@ -2177,6 +2176,9 @@ class Wiki
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
+
+        // This must be done after service initialization, as it uses services
+        loadpreferredI18n($this->tag);
     }
 
     /*
