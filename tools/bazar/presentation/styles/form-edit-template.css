@@ -112,3 +112,18 @@
 }
 
 xmp { overflow: auto; }
+
+/* Redefine .fa class when icon- class exists, because redefined by form-builder.min.js*/
+.fa[class*=" icon-"]::before, .fa[class^="icon-"]::before {
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  margin: 0;
+  font-variant: inherit;
+  line-height: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: inherit;
+  text-transform: inherit;
+}
+	
