@@ -40,7 +40,8 @@
 
 .date-field .value-wrap { display: none !important; }
 
-.image-field .value-wrap { display: none !important; }
+.image-field .value-wrap, .image-field .name-wrap { display: none !important; }
+.image-field .name2-wrap { order: 1 !important; }
 
 .select-field .field-options, .radio-group-field .field-options, .checkbox-group-field .field-options { display: none !important; }
 

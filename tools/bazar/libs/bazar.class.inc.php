@@ -32,7 +32,7 @@ class Bazar extends \YesWiki\Wiki
         return $page;
     }
 
-    public function checkBazarOwner($page, $tag)
+    public function checkBazarOwner($page)
     {
         // check if user is logged in
         if (!$this->GetUser()) {
@@ -57,7 +57,7 @@ class Bazar extends \YesWiki\Wiki
         //
 
         $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
-        if ($this->checkBazarOwner($page, $tag)) {
+        if ($this->checkBazarOwner($page)) {
             // Pas de controle si proprietaire
             return $page;
         }

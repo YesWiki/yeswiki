@@ -155,6 +155,9 @@ function toastMessage(message) {
   // deplacer les fenetres modales en bas de body pour eviter que des styles s'appliquent
   $(".modal").appendTo(document.body);
 
+  // Remove hidden div by ACL
+  $('.remove-this-div-on-page-load').remove();
+
   // Pour l'apercu des themes, on recharge la page avec le theme selectionne
   $("#form_theme_selector select").on("change", function() {
     if ($(this).attr("id") === "changetheme") {

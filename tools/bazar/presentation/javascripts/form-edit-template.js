@@ -158,6 +158,7 @@ var typeUserAttrs = {
       label: "Type",
       options: {
         text: "Texte",
+        number: "Number",
         range: "Slider",
         url: "Url",
         password: "Mot de passe",
@@ -190,8 +191,8 @@ var typeUserAttrs = {
   },
   date: {
     today_button: {
-      label: "Btn Aujourd'hui",
-      options: { "": "Non", "1": "Oui" }
+      label: "Initialiser à Aujourd'hui",
+      options: { "": "Non", "today": "Oui" }
     },
     read: readConf,
     write: writeconf,
@@ -199,6 +200,7 @@ var typeUserAttrs = {
   },
   image: {
     hint: { label: "Texte d'aide" },
+    name2: { label: "Name", value: "bf_image" },
     thumb_height: { label: "Hauteur Vignette", value: "140" },
     thumb_width: { label: "Largeur Vignette", value: "140" },
     resize_height: { label: "Hauteur redimension", value: "600" },
@@ -257,7 +259,7 @@ var typeUserAttrs = {
     },
     mailing_list_tool: {
       label: "Type de service de diffusion",
-      options: { "": "", ezmlm: "Ezmlm" }
+      options: { "": "", ezmlm: "Ezmlm", sympa: "Sympa" }
     }
   },
   labelhtml: {
@@ -356,7 +358,7 @@ var templates = {
     var string = '<input type="' + fieldData.subtype + '"';
     if (fieldData.subtype == "url")
       string += 'placeholder="' + (fieldData.value || "") + '"/>';
-    else if (fieldData.subtype == "range")
+    else if (fieldData.subtype == "range" || fieldData.subtype == "number")
       string +=
         'min="' +
         (fieldData.size || "") +
@@ -450,6 +452,7 @@ var yesWikiMapping = {
   image: {
     ...defaultMapping,
     ...{
+      1: "name2",
       3: "thumb_height",
       4: "thumb_width",
       5: "resize_height",
@@ -498,6 +501,11 @@ var yesWikiMapping = {
     7: "param7",
     8: "param8",
     9: "param9",
+    10: "param10",
+    11: "param11",
+    12: "param12",
+    13: "param13",
+    14: "param14",
   },
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
@@ -611,7 +619,7 @@ function initializeFormbuilder(formAndListIds) {
       .change(function() {
         $(this).addClass("initialized");
         $parent = $(this).closest(".form-field");
-        if ($(this).val() == "range") {
+        if ($(this).val() == "range" || $(this).val() == "number") {
           $parent.find(".maxlength-wrap label").text("Valeur max");
           $parent.find(".size-wrap label").text("Valeur min");
         } else {

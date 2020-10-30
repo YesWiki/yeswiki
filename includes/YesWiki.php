@@ -136,7 +136,7 @@ class Wiki
 
     public function GetPageTime()
     {
-        return $this->page['time'];
+        return empty($this->page['time']) ?  '' : $this->page['time'];
     }
 
     public function GetMethod()
@@ -562,9 +562,11 @@ class Wiki
 
     public function SetPage($page)
     {
-        $this->page = $page;
-        if ($this->page['tag']) {
-            $this->tag = $this->page['tag'];
+        if (!empty($page)) {
+            $this->page = $page;
+            if (!empty($this->page['tag'])) {
+                $this->tag = $this->page['tag'];
+            }
         }
     }
 
@@ -737,7 +739,7 @@ class Wiki
 
             // -- Chargement de la page
             $result = $this->LoadPage($page);
-            $body = $result['body'];
+            $body = empty($result['body']) ? '' : $result['body'];
             // -- Ajout du contenu a la fin de la page
             $body .= $content;
 
@@ -1235,7 +1237,6 @@ class Wiki
                 $result = $actionObj;
             }
         } else { // $actionObj == null (not found, no error message)
-
             $this->parameter = &$vars;
             $result = $this->IncludeBuffered(strtolower($action) . '.php', '<div class="alert alert-danger">' . _t('UNKNOWN_ACTION') . " &quot;$action&quot;</div>\n", $vars, $this->config['action_path']);
             unset($this->parameter);
@@ -1968,9 +1969,16 @@ class Wiki
      * @param string $user
      *            The name of the user that must satisfy the ACL. By default
      *            the current remote user.
+     * @param string $tag
+     *            The name of the page or form to be tested when $acl contains '%'. 
+	 *            By Default ''
+     * @param string $mode
+     *            Mode for case $acl contains '%'	 
+     *            Default '', standard case. $mode = 'creation', the test returns true	 
+     *            even if the user is connected	 
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
-    public function CheckACL($acl, $user = null, $admincheck = true)
+    public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
     {
         if (! $user) {
             $user = $this->GetUserName();
@@ -1979,16 +1987,21 @@ class Wiki
         if ($admincheck && $this->UserIsAdmin($user)) {
             return true;
         }
-
-        foreach (explode("\n", $acl) as $line) {
+		
+		$acl = trim($acl);
+		$result = false ; // result by default , this function is like a big "OR LOGICAL"
+		
+		foreach (explode(" ", $acl) as $blockLine) {
+		  /* Explode by " " to manage several ACL on same line */
+		  foreach (explode("\n", $blockLine) as $line) {
             $line = trim($line);
 
             // check for inversion character "!"
             if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                $negate = true ;
+                $std_response = false ;
                 $line = $matches[1];
             } else {
-                $negate = false;
+                $std_response = true;
             }
 
             // if there's still anything left... lines with just a "!" don't count!
@@ -1997,28 +2010,50 @@ class Wiki
                     case '#': // comments
                         break;
                     case '*': // everyone
-                        return ! $negate;
+                        $result = $std_response;
+						break;
                     case '+': // registered users
-                        if (! $this->LoadUser($user)) {
-                            return $negate;
-                        } else {
-                            return ! $negate;
-                        }
-                        // no break
+                        $result = ($this->LoadUser($user)) ? $std_response : !$std_response ;
+                        break;
+					case '%': // owner
+						if ($mode == 'creation') {
+							// in creation mode, even if there is a tag
+							// the current user can access to field
+							$result = $std_response ;
+						} elseif ($tag == '') {
+							// to manage retrocompatibility without usage of CheckACL without $tag
+							// and no management of '%'
+							$result = false;
+						} else {
+							$result = ($this->UserIsOwner($tag)) ? $std_response : !$std_response ;
+						}
+                        break;
                     case '@': // groups
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
-                        if ($gname && $this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
-                            return ! $negate;
+                        if ($gname) {
+							if ($this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
+								$result = $std_response ;
+							} else {
+								$result = ! $std_response ;
+							}
+						} else {
+							$result = false ; // line '@'
                         }
                         break;
                     default: // simple user entry
                         if ($line == $user) {
-                            return ! $negate;
-                        }
+                            $result = $std_response ;
+                        } else {
+							$result = ! $std_response ;
+						}
                 }
+				if ($result) {
+					return true ;
+				} // else continue like a big logical OR
             }
-        }
+          }
+		}
 
         // tough luck.
         return false;
@@ -2310,9 +2345,13 @@ class Wiki
         $objPlugins = new \YesWiki\Plugins($plugins_root);
         $objPlugins->getPlugins(true);
         $pluginsList = $objPlugins->getPluginsList();
+        foreach($pluginsList as $pluginName => $pluginInfo) {
+            $pluginsList[$pluginName] = $plugins_root . $pluginName . '/';
+        }
+        $pluginsList['custom'] = 'custom/'; // Wil load custom/actions, custom/handlers etc...
+        $pluginsList['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
         $yeswikiClasses = [];
-        foreach ($pluginsList as $k => $v) {
-            $pluginBase = $plugins_root . $k . '/';
+        foreach ($pluginsList as $k => $pluginBase) {
 
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';

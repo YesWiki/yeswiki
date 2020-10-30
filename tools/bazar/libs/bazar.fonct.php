@@ -331,8 +331,7 @@ function baz_afficher_formulaire_import()
                                             if (!isset($allentries[$idfiche])) {
                                                 $fa = $GLOBALS['bazarFiche']->search();
                                                 $tabfa = array();
-                                                foreach ($fa as $fares) {
-                                                    $valfa = json_decode($fares['body'], true);
+                                                foreach ($fa as $valfa) {
                                                     $tabfa[$valfa['id_fiche']] = $valfa['bf_titre'];
                                                 }
                                                 $allentries[$id] = $tabfa;
@@ -420,68 +419,71 @@ function baz_afficher_formulaire_import()
                                         }
                                     }
                                 }
-                                $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
-                                $valeur['id_typeannonce'] = $id;
-                                $valeur['date_creation_fiche'] = date('Y-m-d H:i:s', time());
-                                $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                                if ($GLOBALS['wiki']->UserIsAdmin()) {
-                                    $valeur['statut_fiche'] = 1;
-                                } else {
-                                    $valeur['statut_fiche'] = $GLOBALS['wiki']->config['BAZ_ETAT_VALIDATION'];
-                                }
-                                $user = $GLOBALS['wiki']->GetUser();
-                                if ($user) {
-                                    $valeur['createur'] = $user['name'];
-                                } else {
-                                    $valeur['createur'] = _t('BAZ_ANONYME');
-                                }
-                                $valeur['date_debut_validite_fiche'] = date('Y-m-d', time());
-                                $valeur['date_fin_validite_fiche'] = '0000-00-00';
+                                // test si $valeur contient au moins un titre
+                                if (!empty($valeur['bf_titre'])) {
+                                    $valeur['id_fiche'] = genere_nom_wiki($valeur['bf_titre']);
+                                    $valeur['id_typeannonce'] = $id;
+                                    $valeur['date_creation_fiche'] = date('Y-m-d H:i:s', time());
+                                    $valeur['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+                                    if ($GLOBALS['wiki']->UserIsAdmin()) {
+                                        $valeur['statut_fiche'] = 1;
+                                    } else {
+                                        $valeur['statut_fiche'] = $GLOBALS['wiki']->config['BAZ_ETAT_VALIDATION'];
+                                    }
+                                    $user = $GLOBALS['wiki']->GetUser();
+                                    if ($user) {
+                                        $valeur['createur'] = $user['name'];
+                                    } else {
+                                        $valeur['createur'] = _t('BAZ_ANONYME');
+                                    }
+                                    $valeur['date_debut_validite_fiche'] = date('Y-m-d', time());
+                                    $valeur['date_fin_validite_fiche'] = '0000-00-00';
 
-                                if (count($errormsg) > 0) {
-                                    $outputerror .=
-                                    '<label>
-                                            <input type="checkbox" disabled> '
-                                    .$valeur['bf_titre'].
+                                    if (count($errormsg) > 0) {
+                                        $outputerror .=
+                                        '<label>
+                                                <input type="checkbox" disabled> '
+                                        .$valeur['bf_titre'].
 
-                                    '
-                                            </label>
-                                            <a class="btn-mini btn-xs btn btn-default" data-target="#collapse'
-                                    .$valeur['id_fiche'].$row.'" data-toggle="collapse">'
-                                    .'<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
-                                    ._t('BAZ_SEE_ENTRY').'</a>
-                                <div class="panel panel-danger">
-                                    <div id="collapse'.$valeur['id_fiche'].$row.'" class="panel-collapse collapse">
-                                      <div class="panel-body">
-                                        <div class="alert alert-danger">'.
-                                    implode('<br>', $errormsg).'</div>'.
-                                    baz_voir_fiche(0, $valeur).'
-                                      </div>
-                                    </div>
-                                  </div>'."\n";
-                                } else {
-                                    $outputright .=
-                                    '<label>
-                                            <input type="checkbox" name="importfiche['.$valeur['id_fiche'].$row.']" value=\''
-                                    .base64_encode(serialize($valeur)).
-                                    '\'> '.$valeur['bf_titre'].
-                                    '
-                                            </label>
-                                            <a class="btn-mini btn-xs btn btn-default" data-target="#collapse'.
-
-                                    $valeur['id_fiche'].$row.
-                                    '" data-toggle="collapse">'
-                                    .
-                                    '<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
-                                    ._t('BAZ_SEE_ENTRY').'</a>
-                                    <div class="panel panel-default">
-                                        <div id="collapse'.
-                                    $valeur['id_fiche'].$row.'" class="panel-collapse collapse">
-                                          <div class="panel-body">'.
-                                    baz_voir_fiche(0, $valeur).'
-                                          </div>
+                                        '
+                                                </label>
+                                                <a class="btn-mini btn-xs btn btn-default" data-target="#collapse'
+                                        .$valeur['id_fiche'].$row.'" data-toggle="collapse">'
+                                        .'<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
+                                        ._t('BAZ_SEE_ENTRY').'</a>
+                                    <div class="panel panel-danger">
+                                        <div id="collapse'.$valeur['id_fiche'].$row.'" class="panel-collapse collapse">
+                                        <div class="panel-body">
+                                            <div class="alert alert-danger">'.
+                                        implode('<br>', $errormsg).'</div>'.
+                                        baz_voir_fiche(0, $valeur).'
                                         </div>
-                                      </div>'."\n";
+                                        </div>
+                                    </div>'."\n";
+                                    } else {
+                                        $outputright .=
+                                        '<label>
+                                                <input type="checkbox" name="importfiche['.$valeur['id_fiche'].$row.']" value=\''
+                                        .base64_encode(serialize($valeur)).
+                                        '\'> '.$valeur['bf_titre'].
+                                        '
+                                                </label>
+                                                <a class="btn-mini btn-xs btn btn-default" data-target="#collapse'.
+
+                                        $valeur['id_fiche'].$row.
+                                        '" data-toggle="collapse">'
+                                        .
+                                        '<i class="fa fa-eye-open icon-eye-open icon-white"></i> '
+                                        ._t('BAZ_SEE_ENTRY').'</a>
+                                        <div class="panel panel-default">
+                                            <div id="collapse'.
+                                        $valeur['id_fiche'].$row.'" class="panel-collapse collapse">
+                                            <div class="panel-body">'.
+                                        baz_voir_fiche(0, $valeur).'
+                                            </div>
+                                            </div>
+                                        </div>'."\n";
+                                    }
                                 }
                             }
                             ++$row;
@@ -831,10 +833,9 @@ function baz_afficher_formulaire_export()
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
             // create date and latest date
-            $fiche_time_create = date_create_from_format('Y-m-d H:i:s', $GLOBALS['wiki']->GetPageCreateTime($fiche['tag']));
-            $fiche_time_latest = date_create_from_format('Y-m-d H:i:s', $fiche['time']);
+            $fiche_time_create = date_create_from_format('Y-m-d H:i:s', $fiche['date_creation_fiche']);
+            $fiche_time_latest = date_create_from_format('Y-m-d H:i:s', $fiche['date_maj_fiche']);
 
-            $tab_valeurs = json_decode($fiche['body'], true);
             $tab_csv = array();
 
             foreach ($tab_champs as $index) {
@@ -856,25 +857,25 @@ function baz_afficher_formulaire_export()
                             6 => $tabindex[2],
                         ),
                         'html',
-                        array($index => isset($tab_valeurs[$index]) ?
-                            $tab_valeurs[$index] : '', )
+                        array($index => isset($tficheab_valeurs[$index]) ?
+                            $fiche[$index] : '', )
                     );
                     $tabhtml = explode('</span>', $html);
-                    $tab_valeurs[$index] = isset($tabhtml[1]) ?
+                    $fiche[$index] = isset($tabhtml[1]) ?
                     html_entity_decode(trim(strip_tags($tabhtml[1]))) : '';
                 }
 
                 // si la valeur existe, on l'affiche
-                if (isset($tab_valeurs[$index])) {
+                if (isset($fiche[$index])) {
                     if ($index == 'mot_de_passe_wikini') {
-                        $tab_valeurs[$index] = md5($tab_valeurs[$index]);
+                        $fiche[$index] = md5($fiche[$index]);
                     }
                     // ajoute l'URL de base aux images et fichiers
                     if ($tabindex[0] == 'image' || $tabindex[0] == 'fichier') {
-                        $tab_valeurs[$index] = $GLOBALS['wiki']->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $tab_valeurs[$index];
+                        $fiche[$index] = $GLOBALS['wiki']->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fiche[$index];
                     }
                     $tab_csv[] = html_entity_decode(
-                        '"'.str_replace('"', '""', $tab_valeurs[$index]).'"'
+                        '"'.str_replace('"', '""', $fiche[$index]).'"'
                     );
                 } else {
                     $tab_csv[] = '';
@@ -882,9 +883,9 @@ function baz_afficher_formulaire_export()
             }
 
             //$csv .= implode(',', $tab_csv)."\r\n";
-            $csv.= date_format($fiche_time_create, 'd/m/Y H:i:s')
-                .','.date_format($fiche_time_latest, 'd/m/Y H:i:s')
-                .','.implode(',', $tab_csv)."\n";
+            $csv.= '"'.date_format($fiche_time_create, 'd/m/Y H:i:s')
+                .'","'.date_format($fiche_time_latest, 'd/m/Y H:i:s')
+                .'",'.implode(',', $tab_csv)."\n";
         }
 
         //$csv = _convert( $csv );
@@ -1492,9 +1493,8 @@ function bazPrepareFormData($form)
                     ]);
                 }
                 $prepared[$i]['values']['titre_liste'] = $formelem[2];
-                foreach ($result[$hash] as $res) {
-                    $valeurs_fiche = json_decode($res['body'], true);
-                    $prepared[$i]['values']['label'][$valeurs_fiche['id_fiche']] = $valeurs_fiche['bf_titre'];
+                foreach ($result[$hash] as $values) {
+                    $prepared[$i]['values']['label'][$values['id_fiche']] = $values['bf_titre'];
                 }
             }
 
@@ -2534,7 +2534,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
                 // Champ  acls  present
                 if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
-                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
                     if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
                       function_exists($fichebazar['form']['template'][$i][0])) {
                         if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
@@ -2569,8 +2569,11 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     }
                 }
             }
-            // Map les données HTML sur les propriétés sémantiques
-            baz_append_semantic_data($html, $fichebazar['form']['bn_id_nature'], false, true);
+            try {
+                $html['semantic'] = $GLOBALS['bazarFiche']->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
+            } catch(\Exception $e) {
+                // Do nothing if semantic type is not available
+            }
             $fiche['html'] = $html;
             $fiche['fiche'] = $fichebazar['values'];
             $fiche['form'] = $fichebazar['form'];
@@ -2587,7 +2590,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
                 // Champ  acls  present
-                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11])) {
+                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
                     // si le champ est autorisé, génère son contenu
                     if (function_exists($fichebazar['form']['template'][$i][0])) {
                         $res .= $fichebazar['form']['template'][$i][0](
@@ -3107,62 +3110,6 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
     return $facettevalue;
 }
 
-function searchResultstoArray($tableau_fiches, $params, $formtab = '')
-{
-    // tableau qui contiendra les fiches
-    $fiches['fiches'] = array();
-    $exturl = $GLOBALS['wiki']->GetParameter('url');
-    foreach ($tableau_fiches as $fiche) {
-        if (isset($fiche['body'])) {
-            $fiche = json_decode($fiche['body'], true);
-            if (YW_CHARSET != 'UTF-8') {
-                $fiche = array_map('utf8_decode', $fiche);
-            }
-        }
-        if (is_array($fiche)) {
-            // champs correspondants
-            if (!empty($params['correspondance'])) {
-                $tabcorrespondances = array();
-                $tabcorrespondances = getMultipleParameters($params['correspondance'], ',', '=');
-                if ($tabcorrespondances['fail'] != 1) {
-                    foreach ($tabcorrespondances as $key=>$data) {
-                        if (isset($key)) {
-                            if (isset($data) && isset($fiche[$data])) {
-                                $fiche[$key] = $fiche[$data];
-                            } else {
-                                $fiche[$key] = '';
-                            }
-                        } else {
-                            echo '<div class="alert alert-danger">action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
-                        }
-                    }
-                } else {
-                    echo '<div class="alert alert-danger">action bazarliste : le paramètre correspondance est mal rempli.<br />Il doit être de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"</div>';
-                }
-            }
-            $fiche['html_data'] = getHtmlDataAttributes($fiche, $formtab);
-            $fiche['datastr'] = $fiche['html_data'];
-
-            // les fiches concernent un wiki externe
-            if (isset($exturl)) {
-                $arr = explode('/wakka.php', $exturl, 2);
-                $exturl = $arr[0];
-                $fiche['url'] = $exturl.'/wakka.php?wiki='.$fiche['id_fiche'];
-            } else {
-                $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
-            }
-            //$fiche['html'] = baz_voir_fiche($params['barregestion'], $fiche);
-
-            // ajout des données sémantiques, s'il y en a
-            baz_append_semantic_data($fiche, $fiche['id_typeannonce'], false);
-
-            // tableau qui contient le contenu de toutes les fiches
-            $fiches['fiches'][$fiche['id_fiche']] = $fiche;
-        }
-    }
-    return $fiches['fiches'];
-}
-
 /**
  * Affiche la liste des resultats d'une recherche.
  *
@@ -3177,7 +3124,13 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     }
     ++$GLOBALS['_BAZAR_']['nbbazarliste'];
     $params['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
-    $fiches['fiches'] = searchResultstoArray($tableau_fiches, $params, $formtab);
+
+    // Add display data to all fiches
+    $fiches['fiches'] = array_map(function($fiche) use($params) {
+        $GLOBALS['bazarFiche']->appendDisplayData($fiche, false, $params['correspondance']);
+        return $fiche;
+    }, $tableau_fiches);
+
     // tri des fiches
     if ($params['random']) {
         shuffle($fiches['fiches']);
@@ -3481,7 +3434,6 @@ function baz_afficher_flux_RSS()
         'keywords'=>$q
     ]);
 
-    $tableau_flux_rss = searchResultstoArray($tableau_flux_rss, array());
     $GLOBALS['ordre'] = 'desc';
     $GLOBALS['champ'] = 'date_creation_fiche';
     usort($tableau_flux_rss, 'champCompare');
@@ -4198,66 +4150,6 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
         $tabparam['fail'] = 1;
     }
     return $tabparam;
-}
-
-function baz_append_semantic_data(&$fiche, $idformulaire, $err_if_not_semantic, $is_html_formatted = false)
-{
-    $form = baz_valeurs_formulaire($idformulaire);
-    if (!$form['bn_sem_type']) {
-        if ($err_if_not_semantic) {
-            exit(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
-        } else {
-            return null;
-        }
-    }
-
-    // If context is a JSON decode it, otherwise use the string
-    $output['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
-
-    // If we have multiple types split by comma, generate an array, otherwise use a string
-    $output['@type'] = strpos($form['bn_sem_type'], ',')
-        ? array_map(function ($str) {
-            return trim($str);
-        }, explode(',', $form['bn_sem_type']))
-        : $form['bn_sem_type'];
-
-    // Add the ID of the Bazar object
-    $output['@id'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
-
-    $fields_infos = bazPrepareFormData($form);
-    foreach ($fields_infos as $field_info) {
-        // If the file is not semantically defined, ignore it
-        if ($field_info['sem_type']) {
-            $value = $fiche[$field_info['id']];
-            if ($value) {
-                // We don't want this additional formatting if we are already dealing with HTML-formatted data
-                if (!$is_html_formatted) {
-                    // If this is a file or image, add the base URL
-                    if ($field_info['type'] === 'file') {
-                        $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
-                    }
-
-                    // If this is a linked entity (listefiche), use the URL
-                    if (startsWith($field_info['id'], 'listefiche')) {
-                        $value = $GLOBALS['wiki']->href('', $value);
-                    }
-                }
-
-                if (is_array($field_info['sem_type'])) {
-                    // If we have multiple fields, duplicate the data
-                    foreach ($field_info['sem_type'] as $sem_type) {
-                        $output[$sem_type] = $value;
-                    }
-                } else {
-                    $output[$field_info['sem_type']] = $value;
-                }
-            }
-        }
-    }
-
-    $fiche['semantic'] = $output;
-
-    return $output;
 }
 
 /**

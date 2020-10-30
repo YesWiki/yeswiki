@@ -78,7 +78,7 @@ window.myapp = new Vue({
       this.configPanels.forEach(panel => result = {...result, ...panel.properties })
       return result
     },
-    wikiCode() {
+    wikiCodeBase() {
       let actionId = this.selectedActionId
       if (actionId.startsWith('bazar')) actionId = 'bazarliste'
       var result = `{{${actionId}`
@@ -86,6 +86,19 @@ window.myapp = new Vue({
         result += ` ${key}="${this.actionParams[key]}"`
       }
       result += ' }}'
+      return result
+    },
+    wikiCode() {
+      let result = this.wikiCodeBase;
+      if (this.selectedAction.isWrapper && !this.isEditingExistingAction) result += `\n{{end elem="${this.selectedActionId}"}}`
+      return result
+    },
+    wikiCodeForIframe() {
+      let result = this.wikiCodeBase;
+      if (this.selectedAction.isWrapper && result) {
+        result += `${this.selectedAction.wrappedContentExample}\n`
+        result += `{{end elem="${this.selectedActionId}"}}`
+      }
       return result
     }
   },

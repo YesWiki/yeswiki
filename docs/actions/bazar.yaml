@@ -1,5 +1,5 @@
-label: Afficher les données d'un formulaire
-position: 2
+label: _t(AB_bazar_label)
+position: 1
 needFormField: true
 previewHeight: 450px
 actions:
@@ -11,7 +11,7 @@ actions:
     width: 30%
     properties:
       search:
-        label: Barre de recherche
+        label: _t(AB_bazar_commons_search_label)
         type: checkbox
       pagination:
         label: Nombre de fiches par page
@@ -93,8 +93,8 @@ actions:
         default: asc
         advanced: true
         options:
-          - asc->Croissant
-          - desc->Décroissant
+          asc: Croissant
+          desc: Décroissant
         showExceptFor:
           - bazarcarto
           - bazartimeline
@@ -121,16 +121,16 @@ actions:
         type: list
         advanced: true
         options:
-          - false->Uniquement la première dépliée
-          - true->Toutes Dépliées
+          false: _t(AB_bazar_facettes_groupsexpanded_false)
+          true: _t(AB_bazar_facettes_groupsexpanded_true)
         showif: facettes
       filterposition:
         label: Position des facettes
         type: list
         advanced: true
         options:
-          - right->Droite
-          - left->Gauche
+          right: Droite
+          left: Gauche
         showif: facettes
       filtercolsize:
         label: Largeur des facettes

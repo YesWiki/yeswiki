@@ -21,15 +21,15 @@ if (!defined('WIKINI_VERSION')) {
 $GLOBALS['params'] = getAllParameters($this);
 // tableau des fiches correspondantes aux critères
 if (is_array($GLOBALS['params']['idtypeannonce'])) {
-    $results = array();
+    $fiches = array();
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
-        $results = array_merge(
-            $results,
+        $fiches = array_merge(
+            $fiches,
             $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
+    $fiches = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // a la place du choix par défaut, on affiche en carte
@@ -38,4 +38,4 @@ if ($GLOBALS['params']['template'] == $GLOBALS['wiki']->config['default_bazar_te
 }
 
 // affichage à l'écran
-echo displayResultList($results, $GLOBALS['params'], false);
+echo displayResultList($fiches, $GLOBALS['params'], false);
