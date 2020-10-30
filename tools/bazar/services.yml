@@ -1,7 +1,7 @@
 services:
   bazar.fiche.manager:
     class: YesWiki\Bazar\Service\FicheManager
-    arguments: ['%wiki%', '@mailer', '@triple.store' '%BAZ_ENVOI_MAIL_ADMIN%']
+    arguments: ['%wiki%', '@mailer', '@triple.store', '%BAZ_ENVOI_MAIL_ADMIN%']
     public: true
 
   bazar.guard:
