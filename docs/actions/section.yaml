@@ -22,12 +22,17 @@ actions:
         label: Image de fond de la section
         type: text
         hint: Votre fichier doit être un .jpg, .png ou .gif
+      height:
+        label: Hauteur de la section
+        type: text
+        hint: en pixels
       class:
-       label: Classe
+        label: Classe
         type: class
         subproperties:
           height:
-            label: Taille de la section
+            advanced: true
+            label: Hauteur préfigurée de la section
             type: list
             options:
               one-quarter-height: un quart de la hauteur
@@ -36,3 +41,35 @@ actions:
               two-third-height: deux tiers
               three-quarter-height: trois quarts
               full-height: 100% hauteur
+          textcolor:
+            label: Tonalité du texte
+            type: list
+            default: black
+            options:
+              white: Claire
+              black: Foncée
+          textalign:
+            label: Centrage du texte
+            type: list
+            default : text-left
+            options :
+              text-left: Calé à gauche
+              text-right: Calé à droite
+              text-center: Centré
+              text-justify: Justifié
+          image:
+            advanced: true
+            label: Comportement de l'image
+            type: list
+            options:
+              cover: couvre section avec l'image
+              fixed: l'image est bloquée lors du scroll
+              center: l'image reste centré
+              parallax: l'image remonte au scroll genre parallax
+          animation:
+            advanced: true
+            label: animation
+            type: list
+            options:
+              wow bounce: bondir
+              wow flash: flasher
