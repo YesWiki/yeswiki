@@ -7,14 +7,6 @@ actions:
     isWrapper: true
     wrappedContentExample: Si tu vois tout en gris, déplace l'éléphant !
     properties:
-      visibility:
-        type: list
-        label: Visible par 
-        options:
-          '': Tout le monde
-          '+': Utilisateur connecté
-          '%': Propriétaire de la page
-          '@admins': Admins seulement
       bgcolor:
         label: Couleur de fond de la section
         type: color
@@ -26,6 +18,15 @@ actions:
         label: Hauteur de la section
         type: text
         hint: en pixels
+      visibility:
+        advanced: true
+        type: list
+        label: Visible par 
+        options:
+          '': Tout le monde
+          '+': Utilisateur connecté
+          '%': Propriétaire de la page
+          '@admins': Admins seulement
       class:
         label: Classe
         type: class
@@ -62,14 +63,40 @@ actions:
             label: Comportement de l'image
             type: list
             options:
-              cover: couvre section avec l'image
-              fixed: l'image est bloquée lors du scroll
-              center: l'image reste centré
-              parallax: l'image remonte au scroll genre parallax
+              cover: Couvre section avec l'image
+              fixed: L'image est bloquée lors du scroll
+              center: L'image reste centré
+              parallax: L'image remonte au scroll genre parallax
           animation:
-            advanced: true
             label: animation
             type: list
             options:
-              wow bounce: bondir
-              wow flash: flasher
+              wow bounce: Bonds
+              wow flash: Flash
+              wow pulse: Pulse
+              wow rubberBand: Elastique
+              wow shakeX: Gauche à droite
+              wow shakeY: Bas en haut
+              wow headShake: Secoué
+              wow swing: Swing
+              wow tada: Tada
+              wow wobble: Essuie glace
+              wow jello: Danse
+              wow heartBeat: Bat
+#      data:
+#        label: Data wow
+#        type: text
+#        subproperties:
+#          wow-iteration:
+#            label: Nb d'itération souhaitée
+#            default: 2
+#            type: number
+#          wow-length:
+#            label: Durée de l'effet (en sec)
+#            type: number
+#          wow-offset:
+#            label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
+#            type: number
+#          wow-delay:
+#            label: Délais de l'animation quand la page est chargée (en sec)
+#            type: number
