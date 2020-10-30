@@ -5,7 +5,7 @@ actions:
   section:
     label: Section
     isWrapper: true
-    wrappedContentExample: Si tu vois tout en gris, déplace l'éléphant !
+    wrappedContentExample: Si tu vois tout en gris, déplace l'éléphante !
     properties:
       visibility:
         type: list
