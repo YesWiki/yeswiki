@@ -1,0 +1,16 @@
+label: "Navigation"
+previewHeight: 400px
+actions:
+  nav:
+    label: Navigation
+    description: Générer un sous menu
+    properties:
+      links:
+        label: Liens vers vos pages wiki
+        type: text
+        default: LeNomDeVotrePage, LaSecondePage, LaTroisiemePage
+        hint: LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action
+      titles:
+        label: Intitulés de vos pages
+        default: Première page, Seconde page, Troisième page
+        type: text
