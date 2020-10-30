@@ -15,3 +15,24 @@ actions:
           '+': Utilisateur connecté
           '%': Propriétaire de la page
           '@admins': Admins seulement
+      bgcolor:
+        label: Couleur de fond de la section
+        type: color
+      file:
+        label: Image de fond de la section
+        type: text
+        hint: Votre fichier doit être un .jpg, .png ou .gif
+      class:
+       label: Classe
+        type: class
+        subproperties:
+          height:
+            label: Taille de la section
+            type: list
+            options:
+              one-quarter-height: un quart de la hauteur
+              one-third-height: un tiers
+              half-height: une moitié
+              two-third-height: deux tiers
+              three-quarter-height: trois quarts
+              full-height: 100% hauteur
