@@ -29,8 +29,11 @@ actions:
             type: list
             default: btn-primary
             options:
-              btn-default: Default
+              btn-default: Défaut
               btn-primary: Primaire
+              btn-secondary-1: Secondaire-1
+              btn-secondary-2: Secondaire-2
+              btn-success: Succès
               btn-info: Info
               btn-warning: Attention
               btn-danger: Danger
