@@ -70,6 +70,7 @@ actions:
           animation:
             label: animation
             type: list
+            hint: Beaucoup plus d'effets disponibles sur https://animate.style/
             options:
               wow bounce: Bonds
               wow flash: Flash
