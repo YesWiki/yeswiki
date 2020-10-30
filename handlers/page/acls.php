@@ -103,7 +103,7 @@ if ($users = $this->LoadUsers()) {
 <div class="form-actions form-group">
     <div class="col-sm-9 col-sm-offset-3">
       <input type="submit" value="<?php echo _t('SAVE') ?>" class="btn btn-primary" accesskey="s" /><!-- Store ACLs-->
-      <input type="button" value="<?php echo _t('YW_CANCEL') ?>" onclick="history.back();" class="btn btn-default btn-xs" /><!-- Cancel -->
+      <input type="button" value="<?php echo _t('YW_CANCEL') ?>" onclick="if(history.length>1){history.back();}else{location.href='<?php echo $this->Href(); ?>';}" class="btn btn-default btn-xs" /><!-- Cancel -->
     </div>
 </div>
 
