@@ -5,59 +5,45 @@ actions:
     label: Attach
     description: Attacher un fichier
     properties:
-      text:
-        label: Texte du bouton
+      file:
+        label: nom du fichier
         type: text
+        hint: Doit être un fichier .jpg, .gif, .png
       link:
-        label: Addresse du lien
+        label: Lien quand on cliquera sur l'image
         default: https://
         type: url
-        required: true
-      title:
+      caption:
         label: Texte affiché au survol
         type: text
-      icon:
-        label: Icone
-        type: icon
+      size:
+        label: Taille de l'image
+        type: list
+        options:
+          small: Petite
+          medium: Moyenne
+          big: Grosse
+          original: Taille d'origine
+      desc:
+        label: Description
+        type: text
       class:
         label: Classe
         type: class
         subproperties:
-          color:
-            label: Couleur
-            type: list
-            default: btn-primary
-            options:
-              btn-default: Default
-              btn-primary: Primaire
-              btn-info: Info
-              btn-warning: Attention
-              btn-danger: Danger
-          size:
-            label: Taille
-            type: list
-            options:
-              '': Normal
-              btn-xs: Petit
-              btn-sm: Moyen
-              btn-lg: Grand
-          modal:
-            label: Popup
-            hint: Permet de d'afficher la page liée dans une pop up.
-            type: list
-            options:
-              modalbox: Pop up lors du clic
-              modalbox-hover: Pop up au survol
-          pull:
+          position:
             label: Position
             type: list
             options:
-              pull-right: Droite
-              btn-block: Toute la largeur
-      nobtn:
-        advanced: true
-        label: Bouton invisible
-        type: checkbox
-        default: 0
-        checkedvalue: 1
-        uncheckedvalue: 0
+              left: Gauche
+              center: Centre
+              right: Droit
+          effect:
+            label: Effet
+            type: list
+            options:
+              lightshadow: Ombre portée
+              whiteborder: Bord blanc
+              zoom: Agrandissement au survol
+
+
