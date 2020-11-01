@@ -457,15 +457,31 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
   min-height: auto;
 }
 
-.bazar-date  {width: 150px !important;}
+/* BAZAR DATE FIELD */
+.bazar-date, .bazar-date.form-control {
+  width: 133px ;
+}
+.form-group.date .controls {
+  display: flex;  
+}
+@media (max-width: 600px) {
+  .form-group.date .controls {
+    flex-wrap: wrap;
+  }
+  .form-group.date .select-time {
+    width: 100%;
+    margin: 1rem 0 0 0;
+  }
+}
+.select-hour, .select-minutes {
+  width: 76px !important;
+}
 input::-webkit-calendar-picker-indicator{
-    display: none;
+  display: none;
 }
 input[type="date"]::-webkit-input-placeholder{
-    visibility: hidden !important;
+  visibility: hidden !important;
 }
-.select-allday {width: 180px !important;}
-.select-hour, .select-minutes {width: 76px !important;}
 
 /*!
  * Datepicker for Bootstrap v1.7.1 (https://github.com/uxsolutions/bootstrap-datepicker)
