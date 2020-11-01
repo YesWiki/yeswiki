@@ -27,8 +27,8 @@ export default {
         let optionsList = []
         for(let classValue of classes) {
           for(let propName in this.config.subproperties) {
-            optionsList = Object.values(this.config.subproperties[propName].options)
-            if (optionsList.find(o => o.split('->')[0] == classValue)) this.classValues[propName] = classValue
+            optionsList = Object.keys(this.config.subproperties[propName].options)
+            if (optionsList.find(o => o == classValue)) this.classValues[propName] = classValue
           }
         }
       }
