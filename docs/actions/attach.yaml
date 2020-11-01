@@ -2,14 +2,10 @@ label: "Attach"
 previewHeight: 400px
 onlyEdit: true
 actions:
-  attach:
-    label: Attach
-    description: Attacher un fichier
+  commons:
+    title: Pour les images
+    width: 40%
     properties:
-      file:
-        label: nom du fichier
-        type: text
-        hint: Doit être un fichier .jpg, .gif, .png
       link:
         label: Lien quand on cliquera sur l'image
         default: https://
@@ -18,7 +14,7 @@ actions:
         label: Texte affiché au survol
         type: text
       legend:
-        label: Légende de l'image
+        label: Légende
         type: text
       size:
         label: Taille de l'image
@@ -36,9 +32,6 @@ actions:
         label: Hauteur
         type: number
         advanced: true
-      desc:
-        label: Description
-        type: text
       class:
         label: Classe
         type: class
@@ -69,6 +62,18 @@ actions:
               c4-izmir c4-reveal-up: Texte surgissant
               c4-izmir c4-gradient-top: Gradiant
               C4-izmir c4-layout-top-center: Texte en haut
+  attach:
+    width: 40%
+    title: Paramètres Généraux
+    label: Attach
+    description: Attacher un fichier
+    properties:
+      file:
+        label: Nom du fichier uploadé
+        type: text    
+      desc:
+        label: Description
+        type: text
 
 
 

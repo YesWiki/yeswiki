@@ -1,4 +1,4 @@
-label: "Syndication"
+label: Syndication / Flux RSS
 position: 4
 previewHeight: 300px
 actions:
@@ -8,9 +8,10 @@ actions:
     properties:
       url:
         label: Adresse du flux RSS
-        default: https://
+        default: https://yeswiki.net
         type: url
         required: true
+        doclink: https://yeswiki.net/?DemoSyndication
       title:
         label: Titre du flux      
         type: text

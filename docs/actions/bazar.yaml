@@ -218,13 +218,12 @@ actions:
       width:
         advanced: true
         label: Largeur de la carte
-        hint: la largeur en pixels doit être indiqué sous forme 500px , accepte aussi la valeur 100%
+        hint: 500px, 100%...
         type: text
         default: 100%
       height:
         advanced: true
         label: Hauteur de la carte
-        hint: la hauteur en pixels doit être indiqué sous forme 500px
         type: text
         default: 600px
       smallmarker:
@@ -237,12 +236,11 @@ actions:
       spider:
         advanced: true
         label: Mode spider
-        hint: Éclate un group de point lors du click
+        hint: Éclate un groupe de point lors du click
         type: checkbox
         default: false
       cluster:
-        label: Activer les cluster
-        hint: Regroupe les points par zone
+        label: Regroupe les points par zone (clusters)
         type: checkbox
         default: false
       barregestion:
@@ -257,8 +255,7 @@ actions:
         default: true
       zoommolette:
         advanced: true
-        label: Zoom molette
-        hint: Zoom à l'aide de la molette de la souris
+        label: Pouvoir zoomer avec la molette de la souris
         type: checkbox
         default: false
 

@@ -13,11 +13,10 @@ actions:
       file:
         label: Image de fond de la section
         type: text
-        hint: Votre fichier doit être un .jpg, .png ou .gif
+        hint: Entrez le nom d'une image déjà uploadé, ou le nom d'une nouvelle image pour faire apparaitre le boutton d'upload
       height:
-        label: Hauteur de la section
+        label: Hauteur de la section (en pixels)
         type: text
-        hint: en pixels
       visibility:
         advanced: true
         type: list
@@ -68,8 +67,9 @@ actions:
               center: L'image reste centré
               parallax: L'image remonte au scroll genre parallax
           animation:
-            label: animation
+            label: Animation
             type: list
+            advanced: true
             hint: Beaucoup plus d'effets disponibles sur https://animate.style/
             options:
               wow bounce: Bonds

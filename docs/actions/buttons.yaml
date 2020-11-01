@@ -46,12 +46,12 @@ actions:
               btn-sm: Moyen
               btn-lg: Grand
           modal:
-            label: Popup
-            hint: Permet de d'afficher la page liée dans une pop up.
+            label: Ouvrir le contenu du lien dans une popup
             type: list
+            advanced: true
             options:
-              modalbox: Pop up lors du clic
-              modalbox-hover: Pop up au survol
+              modalbox: Lors du clic
+              modalbox-hover: Au survol
           pull:
             label: Position
             type: list
