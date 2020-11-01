@@ -32,7 +32,8 @@ input[type=range] {
   background-color: #727479;
   border-color: #727479;
 }
-[type="checkbox"] + span:not(.lever):before, [type="checkbox"] + span:not(.lever):after {
+#actions-builder-app [type="checkbox"] + span:not(.lever):before, 
+#actions-builder-app [type="checkbox"] + span:not(.lever):after {
   margin-top: 2px;
 }
 .iconpicker-popover.popover {
@@ -78,8 +79,11 @@ input[type=range] {
 .config-panel-content .hint {
   font-size: .9rem;
   margin-bottom: 1.5rem;
+  margin-top: 5px;
   opacity: .9;
   font-style: italic;
+  line-height: 1rem;
+  text-align: justify;
 }
 .config-panel-content .hint + .hint {
   margin-top: -1.5rem;
