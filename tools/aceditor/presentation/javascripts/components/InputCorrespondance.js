@@ -56,5 +56,6 @@ export default {
                    :config="property" :selected-form="selectedForm">
         </component>
       </template>
+      <input-hint :config="config"></input-hint>
     </div>`
 }

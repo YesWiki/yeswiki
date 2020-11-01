@@ -25,6 +25,7 @@ export default {
         <option value=""></option>
         <option v-for="(optLabel, optValue) in optionsList" :value="optValue" :selected="value == optValue">{{ optLabel }}</option>
       </select>
+      <input-hint :config="config"></input-hint>
     </div>
     `
 }

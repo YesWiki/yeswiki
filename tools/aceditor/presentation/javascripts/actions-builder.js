@@ -16,12 +16,16 @@ import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
+import InputHint from './components/InputHint.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazaragenda',
   map: 'bazarcarto'
 }
 console.log("actionsBuilderData", actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
+
+// Declare this one globally because we use it everywhere
+Vue.component('input-hint', InputHint)
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {

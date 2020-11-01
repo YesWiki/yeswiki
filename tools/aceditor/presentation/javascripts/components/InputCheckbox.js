@@ -23,5 +23,6 @@ export default {
         <input type="checkbox" v-model="customValue" />
         <span>{{ config.label }}</span>
       </label>
+      <input-hint :config="config"></input-hint>
     </div>`
 }

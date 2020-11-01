@@ -16,6 +16,7 @@ export default {
         <option value=""></option>
         <option v-for="field in fieldOptions" v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
       </select>
+      <input-hint :config="config"></input-hint>
     </div>
     `
 }
