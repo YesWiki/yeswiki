@@ -1,6 +1,7 @@
 export default class {
   editor = null;
   actionGroups = {}
+  flyingActionBar
 
   constructor(editor, actionGroups) {
     this.editor = editor
@@ -21,23 +22,26 @@ export default class {
   }
 
   initialize() {
-    var flyingActionBar = $(`<div class="flying-action-bar">
+    this.flyingActionBar = $(`<div class="flying-action-bar">
       <a class="open-actions-builder-btn btn btn-primary btn-icon">
         <i class="fa fa-pencil-alt"></i>
       </a>
     </div>`)
-    $('textarea#body').before(flyingActionBar);
+    $('textarea#body').before(this.flyingActionBar);
 
-    this.editor.onCursorChange( () => {
-      // wait for editor to change cursor
-      setTimeout(() => {
-        flyingActionBar.toggleClass('active', this.actionIsSelected);
-        $('.component-action-list').toggleClass('only-edit', this.actionIsSelected)
-        if (this.actionIsSelected) {
-          let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + $('.aceditor-toolbar').height()
-          flyingActionBar.css('top', top + 'px')
-        }
-      }, 100)
-    })
+    this.editor.onCursorChange(() => this.onCusrorChange())
+    this.onCusrorChange()
+  }
+
+  onCusrorChange() {
+    // wait for editor to change cursor
+    setTimeout(() => {
+      this.flyingActionBar.toggleClass('active', this.actionIsSelected);
+      $('.component-action-list').toggleClass('only-edit', this.actionIsSelected)
+      if (this.actionIsSelected) {
+        let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + $('.aceditor-toolbar').height()
+        this.flyingActionBar.css('top', top + 'px')
+      }
+    }, 100)
   }
 }

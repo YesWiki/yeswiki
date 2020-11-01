@@ -75,7 +75,7 @@ window.myapp = new Vue({
     // Are we editing an action or creating a new one?
     isEditingExistingAction() {
       if (!this.editor) return false;
-      return this.editor.currentLine.match(/\{\{.*\}\}/g) != null
+      return this.editor.currentSelectedAction != ""
     },
     selectedActionAllConfigs() {
       let result = {}
