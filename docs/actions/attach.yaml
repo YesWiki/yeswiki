@@ -1,5 +1,6 @@
 label: "Attach"
 previewHeight: 400px
+onlyEdit: true
 actions:
   attach:
     label: Attach

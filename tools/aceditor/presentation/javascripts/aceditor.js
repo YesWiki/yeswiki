@@ -167,9 +167,11 @@ var SYNTAX = {
         var result = '<div class="btn-group">' +
                '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
                '<ul class="dropdown-menu component-action-list">';
-        for(var actionGroupName in actionsBuilderData.action_groups) {      
+        for(var actionGroupName in actionsBuilderData.action_groups) {     
+            var groupConfig = actionsBuilderData.action_groups[actionGroupName]
+            if (groupConfig.onlyEdit) continue 
             result += '<li><a class="open-actions-builder-btn" data-group-name="' + actionGroupName + '">'+
-                        actionsBuilderData.action_groups[actionGroupName].label+
+                        groupConfig.label+
                       '</a></li>'
         }
         result += '<li class="open-actions-builder-btn open-existing-action"><a>'+ this.lang['ACEDITOR_ACTIONS_EDIT_CURRENT'] +'</a></li>'
