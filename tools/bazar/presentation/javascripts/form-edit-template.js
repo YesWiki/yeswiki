@@ -178,7 +178,7 @@ var typeUserAttrs = {
     },
     send_form_content_to_this_email: {
       label: "Envoyer le contenu du formulaire à cet email",
-      options: { "": "Non", "1": "Oui" }
+      options: { "1": "Oui", " ": "Non" }
     },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
@@ -192,7 +192,7 @@ var typeUserAttrs = {
   date: {
     today_button: {
       label: "Initialiser à Aujourd'hui",
-      options: { "": "Non", "today": "Oui" }
+      options: { " ": "Non", "today": "Oui" }
     },
     read: readConf,
     write: writeconf,
