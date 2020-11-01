@@ -94,7 +94,9 @@ window.myapp = new Vue({
     },
     wikiCode() {
       let result = this.wikiCodeBase;
-      if (this.selectedAction.isWrapper && !this.isEditingExistingAction) result += `\n{{end elem="${this.selectedActionId}"}}`
+      if (this.selectedAction.isWrapper && !this.isEditingExistingAction) {
+        result += `\n${this.selectedAction.wrappedContentExample}{{end elem="${this.selectedActionId}"}}`
+      }
       return result
     },
     wikiCodeForIframe() {
