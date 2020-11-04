@@ -61,7 +61,7 @@ actions:
       # La liste des paramètres de l'action.
 ```
 
-Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représente un champ que l'utilisateur peut remplir pour personnaliser l'action. La forme d'un paramètre est la suivante :
+Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représentent un champ que l'utilisateur peut remplir pour personnaliser l'action. La forme d'un paramètre est la suivante :
 
 ```yaml
 label: Texte à Afficher # Nom du champ que l'utilisateur peut remplir
@@ -109,7 +109,7 @@ color:
     btn-danger: Danger
 ```
 
-Si les options ont la valeur que leur clé, on peut donner un tableau pour simplifier
+Si les options ont la même valeur que leur clé, on peut donner un tableau pour simplifier
 ```yaml
 options:
   - OpenStreetMap.Mapnik
