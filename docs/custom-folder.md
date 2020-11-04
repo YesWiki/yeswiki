@@ -31,10 +31,10 @@ Puts your Css code in `custom\styles\custom.css`
 
 ## Custom Squelette
 
-Override the theme squelette following the path `custom\themes\THEME_TO_OVERRIDE\squelttes\SQUELETTE_TO_OVERRIDE.tpl.html`
+Override the theme squelette following the path `custom\themes\THEME_TO_OVERRIDE\squelettes\SQUELETTE_TO_OVERRIDE.tpl.html`
 
 For example with the theme margot -> 
-`custom\themes\margot\squelettes\1col.tpl.html`
+`custom\themes\margot\squelettes\1col.tpl.html`  
 `custom\themes\margot\squelettes\2cols-right.tpl.html`
 
 ## Custom Actions
