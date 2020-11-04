@@ -23,31 +23,31 @@ Available variables inside the template are
 
 ## Custom Javascript
 
-Puts your javascript code in `custom\javascripts\custom.js`
+Puts your javascript code in `custom/javascripts/custom.js`
 
 ## Custom Css
 
-Puts your Css code in `custom\styles\custom.css`
+Puts your Css code in `custom/styles/custom.css`
 
 ## Custom Squelette
 
-Override the theme squelette following the path `custom\themes\THEME_TO_OVERRIDE\squelettes\SQUELETTE_TO_OVERRIDE.tpl.html`
+Override the theme squelette following the path `custom/themes/THEME_TO_OVERRIDE/squelettes/SQUELETTE_TO_OVERRIDE.tpl.html`
 
-For example with the theme margot -> 
-`custom\themes\margot\squelettes\1col.tpl.html`  
-`custom\themes\margot\squelettes\2cols-right.tpl.html`
+For example with the theme margot ->  
+`custom/themes/margot/squelettes/1col.tpl.html`  
+`custom/themes/margot/squelettes/2cols-right.tpl.html`
 
 ## Custom Actions
 
-Puts your custom actions in `custom\actions`
+Puts your custom actions in `custom/actions`
 You can access the action params with `$this->GetParameter('myparam');`
 Names of the param can only be lower case character
 
 ## Custom Handlers
 
-Puts your custom actions in `custom\handlers\page`
+Puts your custom handlers in `custom/handlers/page`
 
 ## Custom Langs
 
-Puts your custom translations in `custom\lang\custom_LOCALE.inc.php`, where LOCALE is `fr` `en` `es`...
+Puts your custom translations in `custom/lang/custom_LOCALE.inc.php`, where LOCALE is `fr` `en` `es`...
 you can then use your translation with following code `<?php echo _t('MY_TRANSLATION_KEY'); ?>`
