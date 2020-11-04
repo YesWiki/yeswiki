@@ -37,6 +37,7 @@ actions:
               btn-info: Info
               btn-warning: Attention
               btn-danger: Danger
+              btn-link: Lien
           size:
             label: Taille
             type: list
