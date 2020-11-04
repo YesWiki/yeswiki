@@ -34,6 +34,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ATTACH_CANCEL' => 'Cancel',
 'ATTACH_SAVE' => 'Save',
 
+// actions/video.php
+'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'The action video must be called with parameters « id » and « serveur ». For « serveur », only values « vimeo » or « youtube » or « peertube » are allowed.',
+
 // handler edit
 'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activate JavaScript to upload files',
 'UPLOAD_A_FILE' => 'Upload a file',

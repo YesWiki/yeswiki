@@ -33,6 +33,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ATTACH_CANCEL' => 'Cancel·la',
 'ATTACH_SAVE' => 'Desa',
 
+// actions/video.php
+'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'El acció video s\'ha de cridar amb els paràmetres «id» i «serveur». Per a «serveur», només es permeten els valors «vimeo» o «youtube» o «peertube».',
+
 // handler edit
 'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activa el JavaScript per adjuntar fitxers',
 'UPLOAD_A_FILE' => 'Afegir/Inserir un fitxer',
