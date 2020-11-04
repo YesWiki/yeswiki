@@ -14,3 +14,15 @@ actions:
         label: Intitulés de vos pages
         default: Première page, Seconde page, Troisième page
         type: text
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          type:
+            label: class
+            type: list
+            default: 
+            options:
+              nav nav-tabs: Horizontal souligné
+              nav nav-pills: Horizontal sobre
+              nav nav-stacked: Vertical
