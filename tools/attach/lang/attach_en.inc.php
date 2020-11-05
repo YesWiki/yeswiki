@@ -36,6 +36,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 // actions/video.php
 'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'The action video must be called with parameters « id » and « serveur ». For « serveur », only values « vimeo » or « youtube » or « peertube » are allowed.',
+		
+// actions/pdf.php
+'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'The action pdf must be called with parameter « url » and the given url must be on the same host than the wiki(for example \'xxx.yyy.com\'), same schema (for example \'https\') and the same port if specified (for example \'8080\').',
 
 // handler edit
 'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activate JavaScript to upload files',

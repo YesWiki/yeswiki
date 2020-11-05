@@ -15,5 +15,16 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 	'AB_attach_video_position_label' => "Position de la vidéo",
 	'AB_attach_video_largeur_max_label' => "Largeur maximale de la vidéo (vide par défaut)",
 	'AB_attach_video_hauteur_max_label' => "Hauteur maximale de la vidéo (vide par défaut)",
+	//pdf
+	'AB_attach_pdf_label' => "Fichier pdf intégré",
+	'AB_attach_pdf_description' => "Intégration d'un fichier pdf de ce site.",
+	'AB_attach_pdf_url_label' => "URL du fichier",
+	'AB_attach_pdf_forme_label' => "Ratio pour l'affichage",
+	'AB_attach_pdf_forme_option_portrait' => "portrait",
+	'AB_attach_pdf_forme_option_paysage' => "paysage",
+	'AB_attach_pdf_forme_option_carre' => "carre",
+	'AB_attach_pdf_position_label' => "Position du pdf",
+	'AB_attach_pdf_largeur_max_label' => "Largeur maximale du pdf (vide par défaut)",
+	'AB_attach_pdf_hauteur_max_label' => "Hauteur maximale du pdf (vide par défaut)",
 ));
 ?>

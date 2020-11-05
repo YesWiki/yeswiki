@@ -41,5 +41,4 @@ actions:
         options:
           '': standard
           left: float left
-          center: float center
           right: float right

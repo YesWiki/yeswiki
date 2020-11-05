@@ -7,7 +7,7 @@
  * @param ratio  the ratio to display the video. By defaut, it's a 16/9 ration, if '4par3' is specified a 4/3 ration
  * @param largeurmax  the maximum wanted width ; number without "px"
  * @param hauteurmax  the maximum wanted heigth ; number without "px"
- * @param position position for the container ; 'right' - 'left' - 'center'
+ * @param position position for the container ; 'right' - 'left'
  * is applied.
  *
  * @category YesWiki
@@ -63,7 +63,7 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
 	
 	$position = $this->GetParameter("position");
 	$managePosition = false ;
-	if (!empty($position) && in_array(strtolower($position), array('left','right','center'))) {
+	if (!empty($position) && in_array(strtolower($position), array('left','right') && $manageSize)) {
 		$manageSize = false ;
 		$managePosition = true ;
 		$divHTML = '<div style="width:' . $maxWidth . 'px;height:' . $maxHeight . 'px;max-width:100%;' ;
