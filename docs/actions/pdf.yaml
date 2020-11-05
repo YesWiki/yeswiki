@@ -20,11 +20,11 @@ actions:
           carre: _t(AB_attach_pdf_forme_option_carre)
       largeurmax:
         label: _t(AB_attach_pdf_largeur_max_label)
-        type: text
+        type: number
         advanced: true
       hauteurmax:
         label: _t(AB_attach_pdf_hauteur_max_label)
-        type: text
+        type: number
         advanced: true
       position:
         label: _t(AB_attach_pdf_position_label)

@@ -27,11 +27,11 @@ actions:
           4par3: 4/3
       largeurmax:
         label: _t(AB_attach_video_largeur_max_label)
-        type: text
+        type: number
         advanced: true
       hauteurmax:
         label: _t(AB_attach_video_hauteur_max_label)
-        type: text
+        type: number
         advanced: true
       position:
         label: _t(AB_attach_video_position_label)

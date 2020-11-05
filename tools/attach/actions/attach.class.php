@@ -459,7 +459,7 @@ if (!class_exists('attach')) {
             $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
             $this->height = $this->wiki->GetParameter('height');
             $this->width = $this->wiki->GetParameter('width');
-			$this->displayPDF = $this->wiki->GetParameter('displayPDF');
+			$this->displayPDF = $this->wiki->GetParameter('displaypdf');
             $this->data = getDataParameter();
 
             //test de validit&eacute; des parametres
