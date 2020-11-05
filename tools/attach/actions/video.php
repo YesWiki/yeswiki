@@ -63,7 +63,7 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
 	
 	$position = $this->GetParameter("position");
 	$managePosition = false ;
-	if (!empty($position) && in_array(strtolower($position), array('left','right') && $manageSize)) {
+	if (!empty($position) && in_array(strtolower($position), array('left','right')) && $manageSize) {
 		$manageSize = false ;
 		$managePosition = true ;
 		$divHTML = '<div style="width:' . $maxWidth . 'px;height:' . $maxHeight . 'px;max-width:100%;' ;
