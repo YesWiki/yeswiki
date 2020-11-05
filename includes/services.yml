@@ -3,7 +3,9 @@ services:
   mailer:
     class: YesWiki\Core\Service\Mailer
     arguments: ['%wiki%', '%BAZ_ADRESSE_MAIL_ADMIN%']
+    public: true
 
   triple.store:
     class: YesWiki\Core\Service\TripleStore
     arguments: ['%wiki%']
+    public: true
