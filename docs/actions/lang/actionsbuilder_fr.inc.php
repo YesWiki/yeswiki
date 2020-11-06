@@ -11,10 +11,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 	'AB_attach_video_description' => "Intégration d'une vidéo youtube, vimeo ou peertube.",
 	'AB_attach_video_serveur_label' => "Serveur de la video",
 	'AB_attach_video_id_label' => "Identifiant de la vidéo",
+	'AB_attach_video_peertubeinstance_label' => "Instance du serveur PeerTube",
 	'AB_attach_video_ratio_label' => "Ratio de la vidéo",
 	'AB_attach_video_position_label' => "Position de la vidéo",
-	'AB_attach_video_largeur_max_label' => "Largeur maximale de la vidéo (vide par défaut)",
-	'AB_attach_video_hauteur_max_label' => "Hauteur maximale de la vidéo (vide par défaut)",
+	'AB_attach_video_largeur_max_label' => "Largeur maximale",
+	'AB_attach_video_hauteur_max_label' => "Hauteur maximale",
 	//pdf
 	'AB_attach_pdf_label' => "Fichier pdf intégré",
 	'AB_attach_pdf_description' => "Intégration d'un fichier pdf de ce site.",
@@ -24,7 +25,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 	'AB_attach_pdf_forme_option_paysage' => "paysage",
 	'AB_attach_pdf_forme_option_carre' => "carre",
 	'AB_attach_pdf_position_label' => "Position du pdf",
-	'AB_attach_pdf_largeur_max_label' => "Largeur maximale du pdf (vide par défaut)",
-	'AB_attach_pdf_hauteur_max_label' => "Hauteur maximale du pdf (vide par défaut)",
+	'AB_attach_pdf_largeur_max_label' => "Largeur maximale",
+	'AB_attach_pdf_hauteur_max_label' => "Hauteur maximale",
 ));
 ?>

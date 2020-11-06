@@ -634,10 +634,11 @@ if (!class_exists('attach')) {
 			$this->wiki->setParameter('hauteurmax',$this->wiki->GetParameter('height'));
 			$this->wiki->setParameter('largeurmax',$this->wiki->GetParameter('width'));
 			// position
+			$newclass = '' ;
 			if (strstr($this->classes, 'right')) {
-                $this->wiki->setParameter('position','right');
+                $newclass = str_replace('right','pull-right',$this->classes) ; 
             } elseif (strstr($this->classes, 'left')) {
-                $this->wiki->setParameter('position','left');
+                $newclass = str_replace('left','pull-left',$this->classes) ; 
             } 
 			// forme
 			if (strstr($this->classes, 'portrait')) {
@@ -647,6 +648,10 @@ if (!class_exists('attach')) {
             } elseif (strstr($this->classes, 'carre')) {
                 $this->wiki->setParameter('forme','carre');
             } 
+			// define class
+			if ($newclass != ''){
+				$this->wiki->setParameter('class',$newclass) ;
+			}
 			
 			// Call pdf actions
 			include('pdf.php');

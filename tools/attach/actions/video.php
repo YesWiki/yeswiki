@@ -4,10 +4,11 @@
  *
  * @param id    the video id, for vimeo it's a series of figures whereas for youtube it's a series of letters
  * @param serveur  the serveur used, only 'vimeo' and 'youtube' are allowed
+ * @param peertubeinstance  Instance of the serveur for PeerTube
  * @param ratio  the ratio to display the video. By defaut, it's a 16/9 ration, if '4par3' is specified a 4/3 ration
  * @param largeurmax  the maximum wanted width ; number without "px"
  * @param hauteurmax  the maximum wanted heigth ; number without "px"
- * @param position position for the container ; 'right' - 'left'
+ * @param class class add class to the container : use "pull-right" and "pull-left" for position
  * is applied.
  *
  * @category YesWiki
@@ -26,6 +27,16 @@ if (!defined("WIKINI_VERSION")) {
 
 $id = $this->GetParameter("id");
 $serveur = $this->GetParameter("serveur");
+if (empty($serveur)) { 
+    $serveur = $this->config['attach-video-config']['default_video_service'];
+}
+if ($serveur == 'peertube') {
+    $peertubeinstance = $this->GetParameter("peertubeinstance");
+    if (empty($peertubeinstance)) { 
+        $peertubeinstance = $this->config['attach-video-config']['default_peertube_instance'];
+    }
+
+}
 
 if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SERVERS)){
     echo '<div class="alert alert-danger">' . _t('ATTACH_ACTION_VIDEO_PARAM_ERROR') . '</div>'."\n";
@@ -61,19 +72,34 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
 	}
 	$styleForSize = ($manageSize) ? ' style="max-width:'.$maxWidth.'px;max-height:'.$maxHeight .'px;"' : '' ;
 	
-	$position = $this->GetParameter("position");
+	$class = $this->GetParameter("class");
 	$managePosition = false ;
-	if (!empty($position) && in_array(strtolower($position), array('left','right')) && $manageSize) {
-		$manageSize = false ;
-		$managePosition = true ;
-		$divHTML = '<div style="width:' . $maxWidth . 'px;height:' . $maxHeight . 'px;max-width:100%;' ;
-		$divHTML .= 'float:' . strtolower($position) . ';' ;
-		$divHTML .= '">' ;
-		echo $divHTML ;
+	$class_for_div = '' ;
+	$class_for_embed = '' ;
+	if (!empty($class) && ($class != '') ){
+		if (!(strpos($class,'pull-left') === false) || !(strpos($class,'pull-right') === false)) {
+			if ($manageSize) {
+				$manageSize = false ;
+				$managePosition = true ;
+				$divHTML = '<div style="width:' . $maxWidth . 'px;height:' . $maxHeight . 'px;max-width:100%;' ;
+				$divHTML .= '" class="' . $class . '">' ;
+				echo $divHTML ;
+			} else {
+				// remove class because not usefull
+				$class_for_embed  = ' ' . str_replace('pull-right','',str_replace('pull-left','',$class)) ;
+			}
+		} else {
+			
+			if ($manageSize) {
+				$class_for_div = 'class="' . $class . '"';
+			} else {
+				$class_for_embed = ' ' . $class ;
+			}
+		}
 	}
 
-	if($manageSize) { echo '<div'. $styleForSize .'>' ;}
-	echo '<div class="embed-responsive ' . $ratioCss . '"'. $styleForSize . '>' ;
+	if($manageSize) { echo '<div'. $styleForSize . $class_for_div . '>' ;}
+	echo '<div class="embed-responsive ' . $ratioCss . $class_for_embed . '"'. $styleForSize . '>' ;
     if ($serveur == 'vimeo')
         echo '<iframe src="https://player.vimeo.com/video/' . $id
             . '?color=ffffff&title=0&byline=0&portrait=0" class="embed-responsive-item" frameborder="0"'
@@ -81,7 +107,7 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
             . 'allowfullscreen></iframe>';
 		
     elseif ($serveur == 'peertube')
-        echo '<iframe src="https://peer.tube/videos/embed/' . $id
+        echo '<iframe src="'.$peertubeinstance.'videos/embed/' . $id
             . '" class="embed-responsive-item" sandbox="allow-same-origin allow-scripts" frameborder="0"'
             . 'allowfullscreen></iframe>';
     else
