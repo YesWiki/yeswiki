@@ -9,9 +9,12 @@
         "php": "^7.1",
         "mustangostang/spyc": "^0.6.3",
         "phpmailer/phpmailer": "6.1.6",
-        "yeswiki/theme-margot": "*"
+        "yeswiki/theme-margot": "*",
+        "oomphinc/composer-installers-extender": "^2.0"
     },
+    "installer-types": ["library"],
     "extra": {
+        "installer-types": ["yeswiki-extension", "yeswiki-theme"],
         "installer-paths": {
             "tools/{$name}" : ["type:yeswiki-extension"],
             "themes/{$name}": ["type:yeswiki-theme"]
