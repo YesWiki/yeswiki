@@ -267,3 +267,14 @@ box-shadow: 2px 2px 15px 0px #444;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+
+/* embeded pdf*/
+.embed-responsive.pdf {
+	padding-bottom: 138%;
+}
+.embed-responsive.pdf-landscape {
+	padding-bottom: 75%; /* 1/138%*/
+}
+.embed-responsive.pdf-square {
+	padding-bottom: 100%;
+}

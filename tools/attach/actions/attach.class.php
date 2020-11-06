@@ -53,6 +53,8 @@ if (!class_exists('attach')) {
         public $isAudio = 0; //indique si c'est un fichier audio
         public $isFreeMindMindMap = 0; //indique si c'est un fichier mindmap freemind
         public $isWma = 0; //indique si c'est un fichier wma
+        public $isPDF = 0; //indique si c'est un fichier pdf
+        public $displayPDF = 0; //indique s'il faut afficher le fichier pdf
         public $classes = 'attached_file'; //classe pour afficher une image
         public $attachErr = ''; //message d'erreur
         public $pageId = 0; //identifiant de la page
@@ -84,6 +86,10 @@ if (!class_exists('attach')) {
 
             if (empty($this->attachConfig["ext_wma"])) {
                 $this->attachConfig["ext_wma"] = "wma";
+            }
+			
+            if (empty($this->attachConfig["ext_pdf"])) {
+                $this->attachConfig["ext_pdf"] = "pdf";
             }
 
             if (empty($this->attachConfig["ext_freemind"])) {
@@ -253,10 +259,10 @@ if (!class_exists('attach')) {
             }
             //recuperation du chemin d'upload
             $path = $this->GetUploadPath($this->isSafeMode);
+			$page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
             //generation du nom ou recherche de fichier ?
             if ($newName) {
                 $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
-                $page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
                 if ($this->isSafeMode) {
                     $full_file_name = $path . '/' . $page_tag . '_' . $full_file_name;
                 } else {
@@ -270,7 +276,7 @@ if (!class_exists('attach')) {
                     $searchPattern = '`' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 } else if ($this->isSafeMode) {
                     //TODO Recherche dans le cas ou safe_mode=on
-                    $searchPattern = '`^' . $this->wiki->GetPageTag() . '_' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
+                    $searchPattern = '`^' . $page_tag . '_' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 } else {
                     $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 }
@@ -339,6 +345,14 @@ if (!class_exists('attach')) {
         public function isWma()
         {
             return preg_match("/.(" . $this->attachConfig["ext_wma"] . ")$/i", $this->file) == 1;
+        }
+		
+        /**
+         * Test si le fichier est un fichier pdf
+         */
+        public function isPDF()
+        {
+            return preg_match("/.(" . $this->attachConfig["ext_pdf"] . ")$/i", $this->file) == 1;
         }
 
         /**
@@ -445,6 +459,7 @@ if (!class_exists('attach')) {
             $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
             $this->height = $this->wiki->GetParameter('height');
             $this->width = $this->wiki->GetParameter('width');
+			$this->displayPDF = $this->wiki->GetParameter('displaypdf');
             $this->data = getDataParameter();
 
             //test de validit&eacute; des parametres
@@ -487,10 +502,11 @@ if (!class_exists('attach')) {
             if (empty($this->height) && !empty($this->width)) {
                 // on ajuste la hauteur
                 $this->height = $this->width;
-            } elseif (!empty($this->height) && !empty($this->width)) {
+            } elseif (!empty($this->height) && empty($this->width)) {
                 // on ajuste la largeur
                 $this->width = $this->height;
             }
+			
         }
         /**
          * Affiche le fichier li&eacute; comme une image
@@ -606,6 +622,41 @@ if (!class_exists('attach')) {
         }
 
         // End Paste
+		
+		// Affiche le fichier liee comme un fichier pdf
+        public function showAsPDF($fullFilename)
+        {
+			// Defines parameters for pdf action
+			// remove '?' and following
+			$base_url = explode('?',$this->wiki->config["base_url"])[0] ;
+			$url = $base_url . $fullFilename ;
+			$this->wiki->setParameter('url',$url);
+			$this->wiki->setParameter('hauteurmax',$this->wiki->GetParameter('height'));
+			$this->wiki->setParameter('largeurmax',$this->wiki->GetParameter('width'));
+			// position
+			$newclass = '' ;
+			if (strstr($this->classes, 'right')) {
+                $newclass = str_replace('right','pull-right',$this->classes) ; 
+            } elseif (strstr($this->classes, 'left')) {
+                $newclass = str_replace('left','pull-left',$this->classes) ; 
+            } 
+			// forme
+			if (strstr($this->classes, 'portrait')) {
+                $this->wiki->setParameter('forme','portrait');
+            } elseif (strstr($this->classes, 'paysage')) {
+                $this->wiki->setParameter('forme','paysage');
+            } elseif (strstr($this->classes, 'carre')) {
+                $this->wiki->setParameter('forme','carre');
+            } 
+			// define class
+			if ($newclass != ''){
+				$this->wiki->setParameter('class',$newclass) ;
+			}
+			
+			// Call pdf actions
+			include('pdf.php');
+        }
+
 
         /**
          * Affiche le lien de mise a jour
@@ -650,6 +701,8 @@ if (!class_exists('attach')) {
                 $this->showAsFreeMindMindMap($fullFilename);
             } elseif ($this->isWma()) {
                 $this->showAsWma($fullFilename);
+            } elseif ($this->isPDF() && $this->displayPDF) {
+                $this->showAsPDF($fullFilename);
             } else {
                 $this->showAsLink($fullFilename);
             }

@@ -46,6 +46,12 @@ $GLOBALS['translations'] = array_merge(
         'ATTACH_DESCRIPTION' => 'Description',
         'ATTACH_CANCEL' => 'Annuler',
         'ATTACH_SAVE' => 'Sauver',
+		
+		// actions/video.php
+		'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'L\'action video doit être appelée avec les paramètres « id » et « serveur ». Pour « serveur », seules les valeurs « vimeo » ou « youtube » ou « peertube » sont acceptées.',
+		
+		// actions/pdf.php
+		'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'L\'action pdf doit être appelée avec le paramètre « url » et l\'url renseignée doit provenir de la même origine que le wiki : c\'est à dire du même sous-domaine du serveur (par exemple \'xxx.yyy.com\'), du même schéma (par exemple \'https\') et du même port s\'il est spécifié (par exemple \'8080\').',
 
         // handler edit
         'ACTIVATE_JS_TO_UPLOAD_FILES' => 'Activer JavaScript pour joindre des fichiers',
