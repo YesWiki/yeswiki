@@ -2155,14 +2155,6 @@ class Wiki
         $wiki = $this;
         $page = $this->tag;
 
-        $metadata = $this->GetMetaDatas($this->tag);
-
-        if (isset($metadata['lang'])) {
-            $this->services->setParameter('lang', $metadata['lang']);
-        } elseif (!isset($wakkaConfig['lang'])) {
-            $this->services->setParameter('lang', 'fr');
-        }
-
         // TODO put elsewhere
         $fullDomain = parse_url($this->Href());
         $this->services->setParameter('host', $fullDomain['host']);
@@ -2178,17 +2170,13 @@ class Wiki
                 include $pluginBase . 'wiki.php';
             }
 
-            // TODO merge two files
+            if (file_exists($pluginBase . 'vendor/autoload.php')) {
+                include $pluginBase . 'vendor/autoload.php';
+            }
+
             // TODO load the user-defined configs after this loop
             if (file_exists($pluginBase . 'config.yml')) {
                 $loader->load('config.yml');
-            }
-            if (file_exists($pluginBase . 'services.yml')) {
-                $loader->load('services.yml');
-            }
-
-            if (file_exists($pluginBase . 'vendor/autoload.php')) {
-                include $pluginBase . 'vendor/autoload.php';
             }
 
             // language files : first default language, then preferred language
@@ -2217,18 +2205,26 @@ class Wiki
             }
         }
 
-        // TODO Don't put templates in configs
-        // TODO avoid modifying the $wakkaConfig array
-        $this->services->setParameter('templates', loadTemplates($metadata, $wakkaConfig));
-
-        $this->config = array_merge($this->services->getParameterBag()->all(), $wakkaConfig);
-
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
 
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this->tag);
+
+        $metadata = $this->GetMetaDatas($this->tag);
+
+        if (isset($metadata['lang'])) {
+            $wakkaConfig['lang'] = $metadata['lang'];
+        } elseif (!isset($wakkaConfig['lang'])) {
+            $wakkaConfig['lang'] = 'fr';
+        }
+
+        // TODO Don't put templates in configs
+        // TODO avoid modifying the $wakkaConfig array
+        $wakkaConfig['templates'] = loadTemplates($metadata, $wakkaConfig);
+
+        $this->config = array_merge($this->services->getParameterBag()->all(), $wakkaConfig);
     }
 
     /*

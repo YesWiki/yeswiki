@@ -86,3 +86,19 @@ parameters:
   baz_wheel_zoom: 'false'
   # image marqueur
   baz_marker_image_file: 'tools/bazar/presentation/images/marker.png'
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Bazar\Service\FicheManager:
+    arguments:
+      $wiki: '%wiki%'
+      $notifyAdmins: '%BAZ_ENVOI_MAIL_ADMIN%'
+
+  YesWiki\Bazar\Service\Guard:
+    arguments:
+      $wiki: '%wiki%'
+
+  bazar.fiche.manager: '@YesWiki\Bazar\Service\FicheManager'

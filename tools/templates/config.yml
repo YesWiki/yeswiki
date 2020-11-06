@@ -4,3 +4,12 @@ parameters:
   favorite_squelette: '1col.tpl.html'
   favorite_background_image: ''
   hide_action_template: false
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Templates\Service\TemplatesEngine:
+    arguments:
+      $wiki: '%wiki%'
