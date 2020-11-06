@@ -12,7 +12,6 @@
         "yeswiki/theme-margot": "*",
         "oomphinc/composer-installers-extender": "^2.0"
     },
-    "installer-types": ["library"],
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
         "installer-paths": {
