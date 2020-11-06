@@ -74,6 +74,13 @@ actions:
       desc:
         label: Description
         type: text
+      displaypdf:
+        label: Afficher le fichier PDF
+        type: list
+        default: ''
+        options:
+          1: Oui
+          0: Non
 
 
 
