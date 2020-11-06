@@ -325,8 +325,7 @@ actions:
   bazardamier:
     label: Damier
     description: Affiche les fiches sous forme de damier paramétrable
-    hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_description, bf_lien, bf_fichier, bf_bouton
-   sont utilisés
+    hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_description, bf_lien, bf_fichier, bf_bouton sont utilisés
     doclink: https://yeswiki.net/?DamierTplHtml2
     properties:
       template:

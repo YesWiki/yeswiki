@@ -2102,6 +2102,39 @@ class Wiki
         return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
     }
 
+    public function parse_size($size)
+    {
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
+        $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
+        if ($unit) {
+            // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
+            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+        } else {
+            return round($size);
+        }
+    }
+
+    // Drupal code under GPL2 cf. http://stackoverflow.com/questions/13076480/php-get-actual-maximum-upload-size#25370978
+    // Returns a file size limit in bytes based on the PHP upload_max_filesize
+    // and post_max_size
+    public function file_upload_max_size()
+    {
+        static $max_size = -1;
+
+        if ($max_size < 0) {
+            // Start with post_max_size.
+            $max_size = $this->parse_size(ini_get('post_max_size'));
+
+            // If upload_max_size is less, then reduce. Except if upload_max_size is
+            // zero, which indicates no limit.
+            $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
+            if ($upload_max > 0 && $upload_max < $max_size) {
+                $max_size = $upload_max;
+            }
+        }
+        return $max_size;
+    }
+
     /**
      * Load all extensions
      * @return void
@@ -2122,23 +2155,40 @@ class Wiki
         $wiki = $this;
         $page = $this->tag;
 
+        $metadata = $this->GetMetaDatas($this->tag);
+
+        if (isset($metadata['lang'])) {
+            $this->services->setParameter('lang', $metadata['lang']);
+        } elseif (!isset($wakkaConfig['lang'])) {
+            $this->services->setParameter('lang', 'fr');
+        }
+
+        // TODO put elsewhere
+        $fullDomain = parse_url($this->Href());
+        $this->services->setParameter('host', $fullDomain['host']);
+        $this->services->setParameter('max-upload-size', $this->file_upload_max_size());
+
         // Load all services
-        // This must be done before including the other files below
         foreach ($this->extensions as $k => $v) {
             $pluginBase = $pluginsRoot . $k . '/';
+            $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
 
-            // Load the default parameters. This must be done before loading the services
+            // Load the initialization file (constants and includes)
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
             }
 
-            // Set all wakka configs as default service parameters
-            // TODO improve the performances as we pass multiple times through the whole $wakkaConfig
-            foreach($wakkaConfig as $key => $value) {
-                // Avoid overwriting user-defined parameters
-                if( !$this->services->hasParameter($key) ) {
-                    $this->services->setParameter($key, $value);
-                }
+            // TODO merge two files
+            // TODO load the user-defined configs after this loop
+            if (file_exists($pluginBase . 'config.yml')) {
+                $loader->load('config.yml');
+            }
+            if (file_exists($pluginBase . 'services.yml')) {
+                $loader->load('services.yml');
+            }
+
+            if (file_exists($pluginBase . 'vendor/autoload.php')) {
+                include $pluginBase . 'vendor/autoload.php';
             }
 
             // language files : first default language, then preferred language
@@ -2154,6 +2204,8 @@ class Wiki
                 include $pluginBase . 'libs/' . $k . '.api.php';
             }
 
+            // Generate the path to all the extensions' actions, handlers and formatters directories (separated by :)
+            // TODO Put this in the YesWikiPlugins class, as a protected variable name, instead of a config
             if (file_exists($pluginBase . 'actions')) {
                 $wakkaConfig['action_path'] = $pluginBase . 'actions/' . ':' . $wakkaConfig['action_path'];
             }
@@ -2163,15 +2215,13 @@ class Wiki
             if (file_exists($pluginBase . 'formatters')) {
                 $wakkaConfig['formatter_path'] = $pluginBase . 'formatters/' . ':' . $wakkaConfig['formatter_path'];
             }
-
-            if (file_exists($pluginBase . 'services.yml')) {
-                $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
-                $loader->load('services.yml');
-            }
         }
 
-        // TODO remove this when retrocompatibility is no longer necessary
-        $this->config = $wakkaConfig;
+        // TODO Don't put templates in configs
+        // TODO avoid modifying the $wakkaConfig array
+        $this->services->setParameter('templates', loadTemplates($metadata, $wakkaConfig));
+
+        $this->config = array_merge($this->services->getParameterBag()->all(), $wakkaConfig);
 
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
