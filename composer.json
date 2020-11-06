@@ -1,6 +1,16 @@
 {
+    "name": "yeswiki/yeswiki",
+    "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
     "require": {
+        "php": "^7.1",
         "mustangostang/spyc": "^0.6.3",
-        "phpmailer/phpmailer": "6.1.6"
+        "phpmailer/phpmailer": "6.1.6",
+        "yeswiki/theme-margot": "1.0.0"
+    },
+    "extra": {
+        "installer-paths": {
+            "tools/{$name}" : ["type:yeswiki-extension"],
+            "themes/{$name}": ["type:yeswiki-theme"]
+        }
     }
 }
