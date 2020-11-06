@@ -19,12 +19,13 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Vérification de sécurité
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$tagsManager = $this->services->get('tags.manager');
+$tagsManager = $this->services->get(TagsManager::class);
 
 $oldpagetag = $this->GetPageTag();
 $oldpage = $this->LoadPage($oldpagetag);

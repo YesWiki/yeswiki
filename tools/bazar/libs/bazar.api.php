@@ -9,6 +9,8 @@
  * @link     https://yeswiki.net
  */
 
+use YesWiki\Bazar\Service\FicheManager;
+
 /**
  * Get all form or one form's informations
  *
@@ -60,7 +62,7 @@ function getFiche($args) {
         } else {
             $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false || $args[1] === 'json-ld';
 
-            $data = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->search([ 'formsIds'=>$args[0] ]);
+            $data = $GLOBALS['wiki']->services->get(FicheManager::class)->search([ 'formsIds'=>$args[0] ]);
 
             // Put data inside LDP container
             if( $semantic ) {
@@ -72,7 +74,7 @@ function getFiche($args) {
                     '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
                     'dcterms:title' => $form['bn_label_nature'],
                     'ldp:contains' => array_map(function($fiche) {
-                        $resource = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
+                        $resource = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
                         unset($resource['@context']);
                         return $resource;
                     }, array_values($data))
@@ -94,7 +96,7 @@ function postFiche($args) {
         $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false || $args[1] === 'json-ld';
 
         $_POST['antispam'] = 1;
-        $fiche = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
+        $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
 
         if( $fiche ) {
             http_response_code(201);

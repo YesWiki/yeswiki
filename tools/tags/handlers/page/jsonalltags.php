@@ -1,10 +1,12 @@
 <?php
-// Verification de securite
+
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$tagsManager = $this->services->get('tags.manager');
+$tagsManager = $this->services->get(TagsManager::class);
 
 $response = array();
 $tab_tous_les_tags = $tagsManager->getAll();

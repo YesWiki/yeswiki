@@ -22,7 +22,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$tagsManager = $this->services->get('tags.manager');
+use YesWiki\Tags\Service\TagsManager;
+
+$tagsManager = $this->services->get(TagsManager::class);
 
 if ($pages = $tagsManager->getPagesByTags('', 'wiki', '', ''))
 {

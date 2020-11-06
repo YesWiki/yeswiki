@@ -17,16 +17,19 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined("WIKINI_VERSION"))
 {
-            die ("acc&egrave;s direct interdit");
+    die ("acc&egrave;s direct interdit");
 }
 
 // fonctions a inclure
 include_once('includes/squelettephp.class.php');
 include_once 'tools/tags/libs/tags.functions.php';
 
-$tagsManager = $this->services->get('tags.manager');
+$tagsManager = $this->services->get(TagsManager::class);
 
 // recuperation de tous les parametres
 $tags = (isset($_GET['tags'])) ? $_GET['tags'] : '';

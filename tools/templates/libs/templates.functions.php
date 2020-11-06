@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -789,7 +792,7 @@ function getImageFromBody($page, $width, $height)
  */
 function getTitleFromBody($page)
 {
-    $ficheManager = $GLOBALS['wiki']->services->get('bazar.fiche.manager');
+    $ficheManager = $GLOBALS['wiki']->services->get(FicheManager::class);
 
     if (!isset($page['body']) || !isset($page['tag'])) {
         return '';
@@ -832,7 +835,7 @@ function getTitleFromBody($page)
  */
 function getDescriptionFromBody($page, $title, $length = 300)
 {
-    $ficheManager = $GLOBALS['wiki']->services->get('bazar.fiche.manager');
+    $ficheManager = $GLOBALS['wiki']->services->get(FicheManager::class);
 
     if (!isset($page['body'])) {
         return '';

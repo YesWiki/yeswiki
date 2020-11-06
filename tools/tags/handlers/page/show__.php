@@ -26,12 +26,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Verification de securite
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$tagsManager = $this->services->get('tags.manager');
+$tagsManager = $this->services->get(TagsManager::class);
 
 // on supprime la vieille gestion des commentaires
 $string = '/\<div class="commentsheader"\>.*\<\/div\>/Uis';

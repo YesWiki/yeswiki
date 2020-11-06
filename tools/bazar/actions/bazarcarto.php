@@ -4,11 +4,13 @@
  *  Programme gerant les fiches bazar depuis une interface de type geographique.
  **/
 
+use YesWiki\Bazar\Service\FicheManager;
+
 // pour retro-compatibilité
 $this->setParameter('template', 'map');
 include( __DIR__.'/bazarliste.php');
 
-$ficheManager = $this->services->get('bazar.fiche.manager');
+$ficheManager = $this->services->get(FicheManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 

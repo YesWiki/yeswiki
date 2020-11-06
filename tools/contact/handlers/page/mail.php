@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -8,7 +10,7 @@ if (!defined("WIKINI_VERSION")) {
 include_once 'includes/email.inc.php';
 include_once 'tools/contact/libs/contact.functions.php';
 
-$ficheManager = $this->services->get('bazar.fiche.manager');
+$ficheManager = $this->services->get(FicheManager::class);
 $output = '';
 
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax

@@ -43,6 +43,9 @@
 //-------------------FONCTIONS DE MISE EN PAGE DES FORMULAIRES
 // pour chaque element du formulaire, le mode saisie, la requete au moment de la saisie dans la base de donnees, le rendu en html pour la consultation
 
+use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Tags\Service\TagsManager;
+
 
 /** testACLsiSaisir() - test si le mode est saisir et si l'utilisateur a accés à l'écriture de ce champ
  *
@@ -541,7 +544,7 @@ function listedatefin(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    $tagsManager = $GLOBALS['wiki']->services->get('tags.manager');
+    $tagsManager = $GLOBALS['wiki']->services->get(TagsManager::class);
 
     if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
@@ -1761,7 +1764,7 @@ function titre(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             if (isset($valeurs_fiche[$var])) {
                 //pour une listefiche ou une checkboxfiche on cherche le titre de la fiche
                 if (preg_match('#^listefiche#', $var) != false || preg_match('#^checkboxfiche#', $var) != false) {
-                    $fiche = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->getOne($valeurs_fiche[$var]);
+                    $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($valeurs_fiche[$var]);
                     $valeurs_fiche['bf_titre'] = str_replace('{{' . $var . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $valeurs_fiche['bf_titre']);
                 } elseif (preg_match('#^liste#', $var) != false || preg_match('#^checkbox#', $var) != false) {
                     $liste = preg_replace('#^(liste|checkbox)(.*)#', '$2', $var);
@@ -2121,7 +2124,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             } else {
                 $tabquery = '';
             }
-            $tab_result = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->search([
+            $tab_result = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
                 'queries' => $tabquery,
                 'formsIds' => $tableau_template[1],
                 'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
@@ -2160,7 +2163,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html = baz_voir_fiche(0, $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                 } else {
-                    $val_fiche = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->getOne($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+                    $val_fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
                     $html = '';
                     if ($val_fiche) {
                         $html .= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
@@ -2276,7 +2279,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         } else {
             $tabquery = '';
         }
-        $tab_result = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->search([
+        $tab_result = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
             'queries' => $tabquery,
             'formsIds' => $tableau_template[1],
             'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
@@ -2366,7 +2369,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
                     $html.= baz_voir_fiche(0, $idfiche);
                 } else {
-                    $val_fiche = $GLOBALS['wiki']->services->get('bazar.fiche.manager')->getOne($idfiche);
+                    $val_fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($idfiche);
 
                     // il y a des filtres à faire sur les fiches
                     if (count($tabquery) > 0) {

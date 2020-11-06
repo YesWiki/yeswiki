@@ -100,5 +100,3 @@ services:
   YesWiki\Bazar\Service\Guard:
     arguments:
       $wiki: '%wiki%'
-
-  bazar.fiche.manager: '@YesWiki\Bazar\Service\FicheManager'

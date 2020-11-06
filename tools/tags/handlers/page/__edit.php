@@ -1,11 +1,13 @@
 <?php
 
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined("WIKINI_VERSION"))
 {
-            die ("acc&egrave;s direct interdit");
+    die ("acc&egrave;s direct interdit");
 }
 
-$tagsManager = $this->services->get('tags.manager');
+$tagsManager = $this->services->get(TagsManager::class);
 
 if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read"))
 {

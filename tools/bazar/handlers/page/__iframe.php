@@ -1,10 +1,12 @@
 <?php
-// Vérification de sécurité
+
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get('bazar.fiche.manager');
+$ficheManager = $this->services->get(FicheManager::class);
 
 $bazaroutput = '';
 if ($ficheManager->isFiche($this->GetPageTag())) {

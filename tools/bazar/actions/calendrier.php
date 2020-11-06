@@ -4,10 +4,12 @@
 *
 */
 
+use YesWiki\Bazar\Service\FicheManager;
+
 // pour retro-compatibilité
 $this->setParameter('template', 'calendar');
 
-$ficheManager = $this->services->get('bazar.fiche.manager');
+$ficheManager = $this->services->get(FicheManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 

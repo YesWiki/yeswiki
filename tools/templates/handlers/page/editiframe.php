@@ -1,6 +1,8 @@
 <?php
 
-$ficheManager = $this->services->get('bazar.fiche.manager');
+use YesWiki\Bazar\Service\FicheManager;
+
+$ficheManager = $this->services->get(FicheManager::class);
 
 if ($this->HasAccess('write')) {
     if ($ficheManager->isFiche($this->GetPageTag())) {

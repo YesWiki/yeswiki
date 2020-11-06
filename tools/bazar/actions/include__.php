@@ -26,12 +26,14 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+use YesWiki\Bazar\Service\FicheManager;
+
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get('bazar.fiche.manager');
+$ficheManager = $this->services->get(FicheManager::class);
 
 // Si la page est une fiche bazar, alors on affiche la fiche plutôt que de formater en wiki
 if ($ficheManager->isFiche($incPageName)) {

@@ -6,5 +6,3 @@ services:
   YesWiki\Tags\Service\TagsManager:
     arguments:
       $wiki: '%wiki%'
-
-  tags.manager: '@YesWiki\Tags\Service\TagsManager'
