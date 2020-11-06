@@ -14,7 +14,7 @@ foreach($docFiles as $filePath) {
   $filename = pathinfo($filePath)['filename'];
   $data['action_groups'][$filename] = Spyc::YAMLLoad($filePath);
   // When order is not defined, put at the end
-  if (!$data['action_groups'][$filename]['position']) $data['action_groups'][$filename]['position'] = 1000;
+  if (empty($data['action_groups'][$filename]['position'])) $data['action_groups'][$filename]['position'] = 1000;
 }
 // Sort by position
 uasort($data['action_groups'], function($a, $b) {
