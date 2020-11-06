@@ -7,7 +7,7 @@
         "php": "^7.1",
         "mustangostang/spyc": "^0.6.3",
         "phpmailer/phpmailer": "6.1.6",
-        "yeswiki/theme-margot": "master"
+        "yeswiki/theme-margot": "dev-master"
     },
     "extra": {
         "installer-paths": {
