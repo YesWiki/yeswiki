@@ -112,14 +112,6 @@ if (empty($list)) {
     // trie par liste choisie
     usort($fiches['fiches'], 'champCompare');
 
-    // preparation du template
-    include_once 'includes/squelettephp.class.php';
-    // On cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-    $templatetoload = 'themes/tools/bazar/templates/'.$template;
-    if (!is_file($templatetoload)) {
-        $templatetoload = 'tools/bazar/presentation/templates/'.$template;
-    }
-
     $listvalues = baz_valeurs_liste($list);
     $currentlabel = 'this is an impossible label';
     $fichescat = [];
@@ -131,7 +123,7 @@ if (empty($list)) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat)>0) {
                     include_once 'includes/squelettephp.class.php';
-                    try {
+                    try {                        
                         $squel = new SquelettePhp($template, 'bazar');
                         $output .= $squel->render($fichescat);
                     } catch (Exception $e) {

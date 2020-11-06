@@ -20,6 +20,7 @@ export default {
                class="form-control" ref="input"/>
         <span class="input-group-addon"></span>
       </div>
+      <input-hint :config="config"></input-hint>
     </div>
   `
 }

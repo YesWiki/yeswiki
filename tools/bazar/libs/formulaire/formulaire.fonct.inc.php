@@ -54,7 +54,7 @@
  
 function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
 {
-		$acl = $tableau_template[12] ; // acl pour l'écriture
+		$acl = empty($tableau_template[12]) ? '' : $tableau_template[12] ; // acl pour l'écriture
 		
 		if (isset($valeurs_fiche['id_fiche'])) {
 			$tag = $valeurs_fiche['id_fiche'] ;
@@ -686,7 +686,7 @@ function texte(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         //si la valeur de nb_max_car est vide, on la mets au maximum
-        if ($nb_max_car == '') {
+        if ($nb_max_car == '' && $type_input == 'text') {
             $nb_max_car = 255;
         }
 
@@ -1407,7 +1407,9 @@ function fichier(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
  */
 function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 {
-    list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide, $maxsize) = $tableau_template;
+    list($type, $identifiant, $label, $hauteur_vignette, $largeur_vignette, $hauteur_image, $largeur_image, $class, $obligatoire, $apparait_recherche, $bulle_d_aide) = $tableau_template;
+	
+	$maxsize = $GLOBALS['wiki']->config['BAZ_TAILLE_MAX_FICHIER'] ;
 
     if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
         // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
@@ -1883,7 +1885,7 @@ function map(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
               }';
           }
         } else {
-            $$providerCredentials = '';
+            $providerCredentials = '';
         }
 
 
@@ -2125,10 +2127,6 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
             ]);
             foreach ($tab_result as $fiche) {
-                $valeurs_fiche_liste = json_decode($fiche["body"], true);
-                if (YW_CHARSET != 'UTF-8') {
-                    $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
-                }
                 $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
             }
         } else {
@@ -2286,11 +2284,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         $checkboxtab = array();
         foreach ($tab_result as $fiche) {
-            $valeurs_fiche_liste = json_decode($fiche["body"], true);
-            if (YW_CHARSET != 'UTF-8') {
-                $valeurs_fiche_liste = array_map('utf8_decode', $valeurs_fiche_liste);
-            }
-            $checkboxtab[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
+            $checkboxtab[$fiche['id_fiche']] = $fiche['bf_titre'];
         }
         if (count($checkboxtab) > 0) {
             asort($checkboxtab, SORT_NATURAL | SORT_FLAG_CASE);

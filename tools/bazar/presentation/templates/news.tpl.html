@@ -1,0 +1,103 @@
+<!-- this template is a duplicate of the agenda template, with some modification
+To be relevant for news, like displaying news that have a date before today -->
+
+
+<?php if( count($fiches)>0 ) : ?>
+<?php
+$imgwidth=450;
+$imgheight=450;
+$classnb = 1;
+$agenda = 'tout';
+$datejour = time();
+$rowcol = ''; // declaration d'une chaine de char vide
+$modal = ''; // declaration d'une chaine de char vide
+?>
+<!-- traces : pour avoir date en mois : <?php echo str_replace('00:00', '', date("M", strtotime($fiche['date']))); ?> -->
+
+<?php
+if (!function_exists('date_periode')) {
+  function date_periode($fiche) {
+     $nbjour = 290;
+     $datejour = time();
+     $datemax = $datejour - ($nbjour*24*60*60);  // date max � J+ nb de jours
+     $datefiche = strtotime($fiche['date']);
+     if (($datefiche <= $datejour && $datefiche >= $datemax )) {
+         return true;
+         }
+      else  {
+          return  false;
+     }
+  }
+  }
+  if (!function_exists('date_compare')) {
+    //tri par ordre chronologique
+    function date_compare($a, $b)
+    {
+      $t1 = strtotime($a['date']);    // strtotime = fonction qui transforme une chaine de caractere en date informatque (= un chiffre calcul� depuis 1970)
+      $t2 = strtotime($b['date']);
+      return $t2 - $t1;
+    }
+  }
+  $fiches = array_filter($fiches, "date_periode");  
+  usort($fiches, 'date_compare');
+  array_slice($fiches, 0, 9)
+?>
+
+
+
+<div class="agenda-container">
+  <?php foreach($fiches as $fiche): ?>
+  <div class="agenda-entry-container">
+    <figure class="bazar-entry agenda-entry" <?php echo $fiche['html_data'];?>>
+      <div class="image">
+        <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+          <img class="img-responsive" alt="<?php echo htmlspecialchars($fiche['bf_titre']);?>" src="<?php echo redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>">
+        <?php else : ?>
+          <img class="trombi-image img-placeholder"
+               src="tools/bazar/libs/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+          <i class="trombi-image icon-placeholder fa fa-calendar"></i>
+        <?php endif; ?>
+      </div>
+      <fig-caption>
+        <?php $moisen = date("M", strtotime($fiche['date'])); ?>
+        <?php $moisfr = str_replace(array('Feb', 'Apr', 'May', 'Jun', 'Aug') , array('fev', 'avr', 'mai', 'jui', 'aou'), $moisen); ?>
+
+        <div class="date"><span class="day"><?php echo date("d", strtotime($fiche['date'])); ?></span><span class="month"><?php echo $moisfr;?></span></div>
+        <h5><?php echo $fiche['bf_titre'];?></h5>
+        <?php if (isset($fiche['content']) && !empty($fiche['content'])) :
+          $content = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['content']), '<br>')); ?>
+            <div class='agenda-subtitle'>
+              <?php echo strip_tags($fiche['content']); ?>
+            </div>
+        <?php endif; ?>
+
+        </p>
+      </fig-caption>
+      <?php $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1; ?>
+      <a class="<?php echo $useModal ? 'modalbox' : ''; ?>"
+         href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+      </a>
+    </figure>
+  </div>
+  <?php endforeach; ?>
+</div>
+
+<?php $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/agenda.css'); ?>
+<?php $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/news.css'); ?>
+<?php
+   // Nombres de colonne
+   $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
+   $width = empty($nbcol) ? 25 : 100 / $nbcol;
+?>
+
+<?php endif; ?>
+
+<style>
+  .agenda-entry-container {
+    width: <?php echo $width; ?>%;
+    padding: 1rem;
+  }
+  @media (max-width: 900px) { .agenda-entry-container { width: 33%; } }
+  @media (max-width: 700px) { .agenda-entry-container { width: 50%; } }
+
+</style>

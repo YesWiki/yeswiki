@@ -1,7 +1,7 @@
-label: Afficher les données d'un formulaire
-position: 2
+label: _t(AB_bazar_label)
+position: 1
 needFormField: true
-previewHeight: 350px
+previewHeight: 450px
 actions:
   # -------------------------------------
   # Champs Communs concernant l'affichage
@@ -11,7 +11,7 @@ actions:
     width: 30%
     properties:
       search:
-        label: Barre de recherche
+        label: _t(AB_bazar_commons_search_label)
         type: checkbox
       pagination:
         label: Nombre de fiches par page
@@ -93,8 +93,8 @@ actions:
         default: asc
         advanced: true
         options:
-          - asc->Croissant
-          - desc->Décroissant
+          asc: Croissant
+          desc: Décroissant
         showExceptFor:
           - bazarcarto
           - bazartimeline
@@ -121,16 +121,16 @@ actions:
         type: list
         advanced: true
         options:
-          - 0->Non dépliées
-          - 1->Dépliées
+          false: _t(AB_bazar_facettes_groupsexpanded_false)
+          true: _t(AB_bazar_facettes_groupsexpanded_true)
         showif: facettes
       filterposition:
         label: Position des facettes
         type: list
         advanced: true
         options:
-          - right->Droite
-          - left->Gauche
+          right: Droite
+          left: Gauche
         showif: facettes
       filtercolsize:
         label: Largeur des facettes
@@ -218,13 +218,12 @@ actions:
       width:
         advanced: true
         label: Largeur de la carte
-        hint: la largeur en pixels doit être indiqué sous forme 500px , accepte aussi la valeur 100%
+        hint: 500px, 100%...
         type: text
         default: 100%
       height:
         advanced: true
         label: Hauteur de la carte
-        hint: la hauteur en pixels doit être indiqué sous forme 500px
         type: text
         default: 600px
       smallmarker:
@@ -237,12 +236,11 @@ actions:
       spider:
         advanced: true
         label: Mode spider
-        hint: Éclate un group de point lors du click
+        hint: Éclate un groupe de point lors du click
         type: checkbox
         default: false
       cluster:
-        label: Activer les cluster
-        hint: Regroupe les points par zone
+        label: Regroupe les points par zone (clusters)
         type: checkbox
         default: false
       barregestion:
@@ -257,18 +255,25 @@ actions:
         default: true
       zoommolette:
         advanced: true
-        label: Zoom molette
-        hint: Zoom à l'aide de la molette de la souris
+        label: Pouvoir zoomer avec la molette de la souris
         type: checkbox
         default: false
 
   bazaragenda:
     label: Calendrier
     description: Les fiches seront sous forme d'événement dans un calendrier.
-    hint: Un champ de type bf_date_debut_evenement et bf_date_fin_evenement doit être présent dans votre formulaire
     properties:
       template:
         value: agenda
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_date_debut_evenement:
+            type: form-field
+            label: Champ pour la date de début
+          bf_date_fin_evenement:
+            type: form-field
+            label: Champ pour la date de fin
 
   bazarliste:
     label: Liste
@@ -288,7 +293,7 @@ actions:
   bazarmaterialcard:
     label: Material card
     description: Les fiches seront sous forme de boite modale.
-    hint: Un champ de type bf_image, bf_baseline sont nécessaire
+    hint: Un champ de type bf_image est nécessaire
     properties:
       template:
         value: material-card
@@ -314,6 +319,12 @@ actions:
         default:
         checkedvalue: 1
         uncheckedvalue:
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_baseline:
+            type: form-field
+            label: Champ pour le sous titre
 
   bazarannuaire:
     label: Annuaire
@@ -325,7 +336,7 @@ actions:
   bazardamier:
     label: Damier
     description: Affiche les fiches sous forme de damier paramétrable
-    hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_description, bf_lien, bf_fichier, bf_bouton sont utilisés
+    hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_lien, bf_fichier, bf_bouton sont utilisés
     doclink: https://yeswiki.net/?DamierTplHtml2
     properties:
       template:
@@ -341,16 +352,28 @@ actions:
           - 4
           - 6
       couleur:
-        label: Couleur utilisée pour réaliser le damier
+        label: Couleur du damier
         type: color
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_description:
+            type: form-field
+            label: Champ pour la description
 
   bazartimeline:
     label: Time line
     description: Affiche les fiches dans une time line.
-    hint: Un champ de type bf_image, bf_date_debut_evenement sont nécessaire.
+    hint: Un champ de type bf_image est nécessaire.
     properties:
       template:
         value: timeline
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_date_debut_evenement:
+            type: form-field
+            label: Champ pour la date de début
 
   bazarcarousel:
     label: Carousel
@@ -365,22 +388,28 @@ actions:
         default:
         checkedvalue: oui
         uncheckedvalue:
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_titre:
+            type: form-field
+            label: Champ pour le texte affiché
 
-  bazargaleriephoto:
-    label: Galerie photo
-    description: Affiche les images des fiches sous forme de galerie photo.
-    hint: Un champ de type bf_image est nécessaire.
-    properties:
-      template:
-        value: galerie_photos
+  # bazargaleriephoto:
+  #   label: Galerie photo
+  #   description: Affiche les images des fiches sous forme de galerie photo.
+  #   hint: Un champ de type bf_image est nécessaire.
+  #   properties:
+  #     template:
+  #       value: galerie_photos
 
-  bazarlistegalerie:
-    label: Liste Galerie photo
-    description: Affiche les images des fiches sous forme de galerie photo.
-    hint: Un champ de type bf_image est nécessaire.
-    properties:
-      template:
-        value: liste_galerie
+  # bazarlistegalerie:
+  #   label: Liste Galerie photo
+  #   description: Affiche les images des fiches sous forme de galerie photo.
+  #   hint: Un champ de type bf_image est nécessaire.
+  #   properties:
+  #     template:
+  #       value: liste_galerie
 
   bazarlistephotobox:
     label: Photobox
@@ -402,12 +431,12 @@ actions:
     description:  Affiche les liens vers les fiches sous forme de liste avec les dates de création.
     properties:
       template:
-        value: liste_liens_dates
+        value: liste_liens_date
 
-  bazarmail:
-    label: Ecrire à tous
-    description: Affiche uniquement la liste des mails trouvées dans le formulaire
-    hint: Un champ de type bf_mail est nécessaire.
-    properties:
-      template:
-        value: liste_mails_seuls
+  # bazarmail:
+  #   label: Ecrire à tous
+  #   description: Affiche uniquement la liste des mails trouvées dans le formulaire
+  #   hint: Un champ de type bf_mail est nécessaire.
+  #   properties:
+  #     template:
+  #       value: liste_mails_seuls

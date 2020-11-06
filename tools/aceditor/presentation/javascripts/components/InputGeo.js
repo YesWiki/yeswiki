@@ -47,6 +47,7 @@ export default {
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label class="text-center">{{ config.label }}</label>
       <div id="center-position-map"></div>
+      <input-hint :config="config"></input-hint>
     </div>
     `
 }

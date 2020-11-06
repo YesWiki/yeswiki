@@ -99,3 +99,7 @@ form:not(#ACEditor) .ace-editor-container .ace_scroller {
   right:0;
 }
 .ace_mobile-menu { display: none; }
+
+.component-action-list > li.open-existing-action { display: none; }
+.component-action-list.only-edit > li.open-existing-action { display: block; }
+.component-action-list.only-edit > li:not(.open-existing-action) { display: none; }

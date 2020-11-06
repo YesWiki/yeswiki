@@ -16,7 +16,6 @@
     margin-right: 7px;
 }
 
-.qq-upload-file {}
 .qq-upload-spinner {display:inline-block; background: url("../images/loading.gif"); width:15px; height:15px; vertical-align:text-bottom;}
 .qq-upload-failed-text {display:none;}
 .qq-upload-fail .qq-upload-failed-text {display:inline;}
@@ -238,4 +237,33 @@ box-shadow: 2px 2px 15px 0px #444;
 
 .white, .white h1, .white h2, .white h3, .white h4, .white h5, .white h6, .white a, .white a:hover {
   color:#fff !important;
+}
+
+
+/* Custom video player */
+
+.jp-jplayer-video {
+  background: black;
+  text-align: center;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+  width:100% !important;
+}
+
+.jp-jplayer-video video {
+  max-width: 100%;
+  height: auto;
+}
+
+.jp-video .btn-group span.btn {
+  flex: 1;
+}
+.jp-video .btn-group {
+  display: flex;
+}
+
+.jp-video  .btn-group > .btn:first-child,
+.jp-video  .btn-group > .btn:last-child {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }

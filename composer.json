@@ -1,6 +1,6 @@
 {
     "require": {
-        "phpmailer/phpmailer": "6.0.7",
+        "phpmailer/phpmailer": "6.1.6",
         "symfony/dependency-injection": "^5.1",
         "symfony/config": "^5.1",
         "symfony/yaml": "^5.1",

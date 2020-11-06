@@ -11,16 +11,21 @@ import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
 import InputGeo from './components/InputGeo.js'
 import InputClass from './components/InputClass.js'
+import InputCorrespondance from './components/InputCorrespondance.js'
 import WikiCodeInput from './components/WikiCodeInput.js'
 import PreviewAction from './components/PreviewAction.js'
 import AceEditorWrapper from './components/aceditor-wrapper.js'
 import FlyingActionBar from './components/flying-action-bar.js'
+import InputHint from './components/InputHint.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazaragenda',
   map: 'bazarcarto'
 }
 console.log("actionsBuilderData", actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
+
+// Declare this one globally because we use it everywhere
+Vue.component('input-hint', InputHint)
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {
@@ -30,7 +35,7 @@ if (!('noModule' in HTMLScriptElement.prototype)) {
 window.myapp = new Vue({
   el: "#actions-builder-app",
   components: { InputText, InputCheckbox, InputList, InputIcon, InputColor, InputFormField, InputHidden,
-                InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass,
+                InputFacette, InputIconMapping, InputColorMapping, InputGeo, InputClass, InputCorrespondance,
                 WikiCodeInput, PreviewAction },
   mixins: [ InputHelper ],
   data: {
@@ -70,14 +75,14 @@ window.myapp = new Vue({
     // Are we editing an action or creating a new one?
     isEditingExistingAction() {
       if (!this.editor) return false;
-      return this.editor.currentLine.match(/\{\{.*\}\}/g) != null
+      return this.editor.currentSelectedAction != ""
     },
     selectedActionAllConfigs() {
       let result = {}
       this.configPanels.forEach(panel => result = {...result, ...panel.properties })
       return result
     },
-    wikiCode() {
+    wikiCodeBase() {
       let actionId = this.selectedActionId
       if (actionId.startsWith('bazar')) actionId = 'bazarliste'
       var result = `{{${actionId}`
@@ -85,6 +90,21 @@ window.myapp = new Vue({
         result += ` ${key}="${this.actionParams[key]}"`
       }
       result += ' }}'
+      return result
+    },
+    wikiCode() {
+      let result = this.wikiCodeBase;
+      if (this.selectedAction.isWrapper && !this.isEditingExistingAction) {
+        result += `\n${this.selectedAction.wrappedContentExample}{{end elem="${this.selectedActionId}"}}`
+      }
+      return result
+    },
+    wikiCodeForIframe() {
+      let result = this.wikiCodeBase;
+      if (this.selectedAction.isWrapper && result) {
+        result += `${this.selectedAction.wrappedContentExample}\n`
+        result += `{{end elem="${this.selectedActionId}"}}`
+      }
       return result
     }
   },
@@ -157,7 +177,7 @@ window.myapp = new Vue({
         if (configValue && !this.values[propName]) this.values[propName] = configValue
       }
       if (this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
-      this.updateActionParams()
+      setTimeout(() => this.updateActionParams(), 0);
     },
     updateActionParams() {
       if (!this.selectedAction) return
@@ -186,7 +206,7 @@ window.myapp = new Vue({
   mounted() {
     $(document).ready(() => {
       this.editor = new AceEditorWrapper()
-      new FlyingActionBar(this.editor)
+      new FlyingActionBar(this.editor, this.actionGroups)
       $('.open-actions-builder-btn').click((event) => {
         $('#actions-builder-modal').modal('show')
         this.currentGroupId = $(event.target).data('group-name')

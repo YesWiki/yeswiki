@@ -1,0 +1,36 @@
+label: "Panel"
+position: 3
+previewHeight: 200px
+actions:
+  panel:
+    label: Encadré
+    isWrapper: true
+    wrappedContentExample: Si tu vois tout en gris, déplace l'éléphant !
+    properties:
+      title:
+        label: Titre
+        type: text
+        required: true
+      type:
+        label: Type
+        type: list
+        options:
+          default: Simple encadré
+          collapsible: Accordéon ouvert
+          collapsed: Accordéon fermé
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          label:
+            label: Couleur
+            type: list
+            options:
+              panel-default: Défaut
+              panel-primary: Primaire
+              panel-secondary-1: Secondaire-1
+              panel-secondary-2: Secondaire-2
+              panel-success: Succès
+              panel-info: Info
+              panel-warning: Attention
+              panel-danger: Danger

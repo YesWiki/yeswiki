@@ -1,6 +1,6 @@
 label: "Boutons"
-position: 1
-previewHeight: 70px
+position: 2
+previewHeight: 100px
 actions:
   button:
     label: Bouton
@@ -14,6 +14,9 @@ actions:
         default: https://
         type: url
         required: true
+      title:
+        label: Texte affiché au survol
+        type: text
       icon:
         label: Icone
         type: icon
@@ -24,39 +27,38 @@ actions:
           color:
             label: Couleur
             type: list
-            default: btn-default
+            default: btn-primary
             options:
-              - btn-default->Default
-              - btn-primary->Primaire
-              - btn-info->Info
-              - btn-warning->Attention
-              - btn-danger->Danger
+              btn-default: Défaut
+              btn-primary: Primaire
+              btn-secondary-1: Secondaire-1
+              btn-secondary-2: Secondaire-2
+              btn-success: Succès
+              btn-info: Info
+              btn-warning: Attention
+              btn-danger: Danger
+              btn-link: Lien
           size:
             label: Taille
             type: list
             options:
-              - ->Normal
-              - btn-xs->Petit
+              '': Normal
+              btn-xs: Petit
+              btn-sm: Moyen
+              btn-lg: Grand
           modal:
-            advanced: true
-            label: Popup
-            hint: Permet de d'afficher la page liée dans une pop up.
+            label: Ouvrir le contenu du lien dans une popup
             type: list
-            options:
-              - modalbox->Pop up lors du clic
-              - modalbox-hover->Pop up au survol
-          pull:
             advanced: true
+            options:
+              modalbox: Lors du clic
+              modalbox-hover: Au survol
+          pull:
             label: Position
             type: list
             options:
-              - pull-left->Gauche
-              - pull-right->Droite
-              - btn-block->Toute la largeur
-      title:
-        advanced: true
-        label: Texte affiché au survol
-        type: text
+              pull-right: Droite
+              btn-block: Toute la largeur
       nobtn:
         advanced: true
         label: Bouton invisible

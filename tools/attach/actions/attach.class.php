@@ -71,11 +71,15 @@ if (!class_exists('attach')) {
             }
 
             if (empty($this->attachConfig["ext_images"])) {
-                $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg";
+                $this->attachConfig["ext_images"] = "gif|jpeg|png|jpg|svg|webp";
             }
 
             if (empty($this->attachConfig["ext_audio"])) {
-                $this->attachConfig["ext_audio"] = "mp3";
+                $this->attachConfig["ext_audio"] = "mp3|aac";
+            }
+
+            if (empty($this->attachConfig["ext_video"])) {
+                $this->attachConfig["ext_video"] = "mp4|webm|ogg";
             }
 
             if (empty($this->attachConfig["ext_wma"])) {
@@ -241,7 +245,7 @@ if (!class_exists('attach')) {
             //decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(,, $file['page'], $file['name'], $file['ext']) = $match;
-                if (!$this->isPicture() && !$this->isAudio() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
+                if (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
                     $file['ext'] .= '_';
                 }
             } else {
@@ -259,13 +263,18 @@ if (!class_exists('attach')) {
                     $full_file_name = $path . '/' . $full_file_name;
                 }
             } else {
+                $isActionBuilderPreview = $this->wiki->GetPageTag() == 'root';
                 //recherche du fichier
-                if ($this->isSafeMode) {
+                if ($isActionBuilderPreview) {
+                    // bazar action builder, preview action
+                    $searchPattern = '`' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
+                } else if ($this->isSafeMode) {
                     //TODO Recherche dans le cas ou safe_mode=on
                     $searchPattern = '`^' . $this->wiki->GetPageTag() . '_' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 } else {
                     $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 }
+
                 $files = $this->searchFiles($searchPattern, $path);
 
                 $unedate = 0;
@@ -278,6 +287,9 @@ if (!class_exists('attach')) {
                             $unedate = $file['dateupload'];
                         }
                     }
+                }
+                if ($isActionBuilderPreview && count($files) > 0) {
+                    $theFile = $files[0];
                 }
                 $full_file_name = '';
                 if (isset($theFile) && is_array($theFile)) {
@@ -299,6 +311,13 @@ if (!class_exists('attach')) {
         public function isAudio()
         {
             return preg_match("/.(" . $this->attachConfig["ext_audio"] . ")$/i", $this->file) == 1;
+        }
+        /**
+         * Test si le fichier est un fichier vidéo
+         */
+        public function isVideo()
+        {
+            return preg_match("/.(" . $this->attachConfig["ext_video"] . ")$/i", $this->file) == 1;
         }
         /**
          * Test si le fichier est un fichier freemind mind map
@@ -550,10 +569,21 @@ if (!class_exists('attach')) {
             echo '<a href="' . $url . '">' . ($this->desc ? $this->desc : $this->file) . "</a>";
             $this->showUpdateLink();
         }
+        // Affiche le fichier liee comme un fichier video
+        public function showAsVideo($fullFilename)
+        {
+            $output = $this->wiki->format(
+                '{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" type="video" '.
+                'height="'.(!empty($height) ? $height : '300px').'" '.
+                'width="'.(!empty($width) ? $width : '400px').'"}}'
+            );
+            echo $output;
+            $this->showUpdateLink();
+        }
         // Affiche le fichier liee comme un fichier audio
         public function showAsAudio($fullFilename)
         {
-            $output = $this->wiki->format('{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'"}}');
+            $output = $this->wiki->format('{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" type="audio"}}');
             echo $output;
             $this->showUpdateLink();
         }
@@ -573,18 +603,6 @@ if (!class_exists('attach')) {
         // Affiche le fichier liee comme un fichier mind map  freemind
         public function showAsWma($fullFilename)
         {
-        }
-
-        // Affiche le fichier liee comme une video flash
-        public function showAsFlashvideo($fullFilename)
-        {
-            $output = $this->wiki->format(
-                '{{player url="'.$this->wiki->getBaseUrl().'/'.$fullFilename.'" '.
-                'height="'.(!empty($height) ? $height : '300px').'" '.
-                'width="'.(!empty($width) ? $width : '400px').'"}}'
-            );
-            echo $output;
-            $this->showUpdateLink();
         }
 
         // End Paste
@@ -616,7 +634,6 @@ if (!class_exists('attach')) {
                 return;
             }
             $fullFilename = $this->GetFullFilename();
-
             //test d'existance du fichier
             if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
                 $this->showFileNotExits();
@@ -625,12 +642,12 @@ if (!class_exists('attach')) {
             //le fichier existe : affichage en fonction du type
             if ($this->isPicture()) {
                 $this->showAsImage($fullFilename);
+            } elseif ($this->isVideo() || $this->isFlashvideo()) {
+                $this->showAsVideo($fullFilename);
             } elseif ($this->isAudio()) {
                 $this->showAsAudio($fullFilename);
             } elseif ($this->isFreeMindMindMap()) {
                 $this->showAsFreeMindMindMap($fullFilename);
-            } elseif ($this->isFlashvideo()) {
-                $this->showAsFlashvideo($fullFilename);
             } elseif ($this->isWma()) {
                 $this->showAsWma($fullFilename);
             } else {

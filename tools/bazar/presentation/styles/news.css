@@ -1,0 +1,34 @@
+/* News template is a copy of agenda template, that's why we use agenda-entry selector */
+
+.agenda-entry fig-caption {
+  max-height: 50%;
+  color: #4e5055;
+  transition: max-height .2s;
+}
+.agenda-entry:hover fig-caption {
+  max-height: 55%;
+}
+.agenda-entry:hover img,
+.agenda-entry.hover img {
+  transform: none;
+}
+.agenda-entry fig-caption .date {
+  top: -35px;
+}
+.agenda-entry fig-caption:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background-image: linear-gradient(#ffffff00, var(--primary-color));
+}
+.agenda-subtitle {
+  font-size: .9rem;
+}
+.agenda-entry h5 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
