@@ -1,5 +1,8 @@
 services:
-  templates.engine:
-    class: YesWiki\Templates\Service\TemplatesEngine
-    arguments: ['%wiki%']
+  _defaults:
+    autowire: true
     public: true
+
+  YesWiki\Templates\Service\TemplatesEngine:
+    arguments:
+      $wiki: '%wiki%'

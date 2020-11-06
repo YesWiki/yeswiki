@@ -1,5 +1,10 @@
 services:
-  tags.manager:
-    class: YesWiki\Tags\Service\TagsManager
-    arguments: ['%wiki%', '@triple.store']
+  _defaults:
+    autowire: true
     public: true
+
+  YesWiki\Tags\Service\TagsManager:
+    arguments:
+      $wiki: '%wiki%'
+
+  tags.manager: '@YesWiki\Tags\Service\TagsManager'
