@@ -40,14 +40,21 @@ class SquelettePhp
     {
         $dirs = $GLOBALS['wiki']->config['template_directories'];
         $found = false;
+        $paths = [];
+        // Collecting path possibilities
         foreach ($dirs as $dir) {
-            if ($dir == 'themes/tools') {
-                // historical templates are in templates folder
-                $path = $dir.'/'.$templateDir.'/templates/'.$templateFile;
-            } else {
-                // other have their name as folder
-                $path = $dir.'/'.$templateDir.'/'.preg_replace('/.tpl.html$/Ui', '', $templateFile).'/'.$templateFile;
-            }
+            // XXX/bazar/templates/my-template.tpl.html
+            $paths[] = $dir.'/'.$templateDir.'/templates/'.$templateFile;
+            // XXX/bazar/my-template.tpl.html
+            $paths[] = $dir.'/'.$templateDir.'/'.$templateFile;
+            // XXX/bazar/my-template/my-template.tpl.html
+            $paths[] = $dir.'/'.$templateDir.'/'.preg_replace('/.tpl.html$/Ui', '', $templateFile).'/'.$templateFile;
+        }
+        // default path
+        $paths[] = 'tools/'.$templateDir.'/presentation/templates/'.$templateFile;
+        
+        // Look for the template in the different paths
+        foreach($paths as $path) {
             if (file_exists($path)) {
                 $this->templateFile = $templateFile;
                 $this->templatePath = str_replace($templateFile, '', $path);
@@ -56,13 +63,7 @@ class SquelettePhp
             }
         }
         if (!$found) {
-            $defaultpath = 'tools/'.$templateDir.'/presentation/templates';
-            if (file_exists($defaultpath.'/'.$templateFile)) {
-                $this->templateFile = $templateFile;
-                $this->templatePath = $defaultpath.'/';
-            } else {
-                throw new Exception(_t('TEMPLATE_FILE_NOT_FOUND').' : '.$templateFile);
-            }
+            throw new Exception(_t('TEMPLATE_FILE_NOT_FOUND').' : '.$templateFile);
         }
     }
 
