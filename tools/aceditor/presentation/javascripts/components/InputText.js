@@ -8,6 +8,7 @@ export default {
              v-on:input="$emit('input', $event.target.value)" class="form-control"
              :required="config.required" :min="config.min" :max="config.max" ref="input"
       />
+      <input-hint :config="config"></input-hint>
     </div>
     `
 }

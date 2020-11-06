@@ -263,13 +263,18 @@ if (!class_exists('attach')) {
                     $full_file_name = $path . '/' . $full_file_name;
                 }
             } else {
+                $isActionBuilderPreview = $this->wiki->GetPageTag() == 'root';
                 //recherche du fichier
-                if ($this->isSafeMode) {
+                if ($isActionBuilderPreview) {
+                    // bazar action builder, preview action
+                    $searchPattern = '`' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
+                } else if ($this->isSafeMode) {
                     //TODO Recherche dans le cas ou safe_mode=on
                     $searchPattern = '`^' . $this->wiki->GetPageTag() . '_' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 } else {
                     $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 }
+
                 $files = $this->searchFiles($searchPattern, $path);
 
                 $unedate = 0;
@@ -282,6 +287,9 @@ if (!class_exists('attach')) {
                             $unedate = $file['dateupload'];
                         }
                     }
+                }
+                if ($isActionBuilderPreview && count($files) > 0) {
+                    $theFile = $files[0];
                 }
                 $full_file_name = '';
                 if (isset($theFile) && is_array($theFile)) {
@@ -626,7 +634,6 @@ if (!class_exists('attach')) {
                 return;
             }
             $fullFilename = $this->GetFullFilename();
-
             //test d'existance du fichier
             if ((!file_exists($fullFilename)) || ($fullFilename == '')) {
                 $this->showFileNotExits();

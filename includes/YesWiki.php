@@ -2348,7 +2348,9 @@ class Wiki
         foreach($pluginsList as $pluginName => $pluginInfo) {
             $pluginsList[$pluginName] = $plugins_root . $pluginName . '/';
         }
-        $pluginsList['custom'] = 'custom/'; // Wil load custom/actions, custom/handlers etc...
+        $pluginsList['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
+        $pluginsList['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
+
         $yeswikiClasses = [];
         foreach ($pluginsList as $k => $pluginBase) {
 

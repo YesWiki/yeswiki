@@ -70,5 +70,6 @@ export default {
         <span v-if="config['btn-label-add']">{{ config['btn-label-add'] }}</span>
         <i v-else class="fa fa-plus"></i>
       </button>
+      <input-hint :config="config"></input-hint>
     </div>`
 }

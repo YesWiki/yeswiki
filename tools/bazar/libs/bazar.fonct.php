@@ -3278,13 +3278,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
               (isset($params['titles'][$i]) && !empty($params['titles'][$i])) ?
                 $params['titles'][$i] : $list['titre_liste'];
 
-            $facettableValues[$idkey]['collapsed'] =
-              (!$first and $params['groupsexpanded'] == 'false') ?
-                ' collapsed' : '';
-
-            $facettableValues[$idkey]['opened'] =
-              (!$first and $params['groupsexpanded'] == 'false') ?
-                ' in' : '';
+            $facettableValues[$idkey]['collapsed'] = !$first && !$params['groupsexpanded'];
 
             foreach ($list['label'] as $listkey => $label) {
                 if (isset($facettevalue[$id][$listkey]) && !empty($facettevalue[$id][$listkey])) {
@@ -3826,6 +3820,7 @@ function getAllParameters($wiki)
     if (empty($param['groupsexpanded'])) {
         $param['groupsexpanded'] = 'true';
     }
+    $param['groupsexpanded'] = $param['groupsexpanded'] == "true"; // convert to boolean
 
     /*
      * Facette: template pour les facettes

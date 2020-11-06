@@ -16,6 +16,34 @@ actions:
   # La liste des actions de ce groupe
 ```
 
+## Internationalisation
+
+Afin de rendre le fichier traductible, il est préférable de fournir une clé de translation
+```yaml
+label: _t(AB_mongroupe_label) # AB = ActionsBuilder
+actions:
+  myaction:
+    label: _(AB_mongroupe_myaction_label)
+```
+
+```php
+// docs/actions/lang/actionsbuilde_fr.inc.php
+  'AB_mongroupe_label' => "Ajouter un boutton",
+  'AB_mongroupe_myaction_label' => "Mon Action"
+```
+
+Pour faciliter la maintenance, on peut essayer de construire le nom de la clé de traduction en respectant l'arborescence du YAML
+
+```yaml
+label: _t(AB_mongroupe_label) # AB = ActionsBuilder
+actions:
+  myaction:
+    label: _(AB_mongroupe_myaction_label)
+    properties:
+      latitude:
+        label: _t(AB_mongroupe_myaction_latitude_label)
+```
+
 ## Documenter une action
 
 _Une action est une manière d'afficher des composants élaborés. Elle est déclarée avec un nom unique en minuscule, et une série de paramètres qui permettent de la configurer/personaliser. Elle s'écrit dans l'éditeur sous la forme {{nomaction param1="" param2="" ...}}_
@@ -25,12 +53,15 @@ Voilà la liste des champs possible pour documenter une action
 actions:
   myaction:
     label: Mon Action # Nom de l'action
+    description: Une description courte
     hint: Le champ XX doit être présent... # Information importante à savoir si on utilise cette action
+    isWrapper: true # rajouter cette ligne pour les actions qui doivent se fermer avec un {{end elem="action"}}
+    wrappedContentExample: "Teeest" # si l'action est un wrapper, le texte à inclure dans l'action à titre d'exemple
     properties:
       # La liste des paramètres de l'action.
 ```
 
-Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représente un champ que l'utilisateur peut remplir pour personnaliser l'action. La forme d'un paramètre est la suivante :
+Vous pouvez ajouter autant de **paramètres** que vous voulez. Ils représentent un champ que l'utilisateur peut remplir pour personnaliser l'action. La forme d'un paramètre est la suivante :
 
 ```yaml
 label: Texte à Afficher # Nom du champ que l'utilisateur peut remplir
@@ -66,14 +97,31 @@ modal:
 #### list
 Vous devez renseigner les options possibles
 ```yaml
-provider:
-  label: Fond de carte
+color:
+  label: Couleur
   type: list
-  default: OpenStreetMap.Mapnik
+  default: btn-primary
   options:
-    - OpenStreetMap.Mapnik
-    - OpenStreetMap.BlackAndWhite
-    - OpenStreetMap.DE
+    btn-default: Default
+    btn-primary: Primaire
+    btn-info: Info
+    btn-warning: Attention
+    btn-danger: Danger
+```
+
+Si les options ont la même valeur que leur clé, on peut donner un tableau pour simplifier
+```yaml
+options:
+  - OpenStreetMap.Mapnik
+  - OpenStreetMap.BlackAndWhite
+  - OpenStreetMap.DE
+```
+au lieu de
+```yaml
+options:
+  OpenStreetMap.Mapnik: OpenStreetMap.Mapnik
+  OpenStreetMap.BlackAndWhite: OpenStreetMap.BlackAndWhite
+  OpenStreetMap.DE: OpenStreetMap.DE
 ```
 
 #### form-field
@@ -89,14 +137,14 @@ class:
       label: Couleur
       type: list
       options:
-        - btn-default->Default
-        - btn-primary->Primaire
-        - btn-info->Info
+        btn-default: Default
+        btn-primary: Primaire
+        btn-info: Info
     size:
       label: Taille
       type: list
       options:
-        - btn->Normal
-        - btn-xs->Petit
+        btn: Normal
+        btn-xs: Petit
 ```
 Ainsi, plutôt que `{{button color="btn-default" size="btn-xs"}}` le résultat sera `{{button class="btn-default btn-xs"}}

@@ -9,8 +9,8 @@ export default {
       const hideIf = (config.showif && !this.values[config.showif])
                   || (config.showOnlyFor && !config.showOnlyFor.includes(this.selectedActionId))
                   || (config.showExceptFor && config.showExceptFor.includes(this.selectedActionId))
-                  || (config.advanced && !this.displayAdvancedParams)
-    return !hideIf
+                  || (config.advanced && !this.$root.displayAdvancedParams)
+      return !hideIf
     },
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''

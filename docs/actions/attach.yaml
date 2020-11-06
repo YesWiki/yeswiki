@@ -1,0 +1,80 @@
+label: "Attach"
+previewHeight: 400px
+onlyEdit: true
+actions:
+  commons:
+    title: Pour les images
+    width: 40%
+    properties:
+      link:
+        label: Lien quand on cliquera sur l'image
+        default: https://
+        type: url
+      caption:
+        label: Texte affiché au survol
+        type: text
+      legend:
+        label: Légende
+        type: text
+      size:
+        label: Taille de l'image
+        type: list
+        options:
+          small: Petite
+          medium: Moyenne
+          big: Grosse
+          original: Taille d'origine
+      width: 
+        label: Largeur
+        type: number
+        advanced: true
+      height:
+        label: Hauteur
+        type: number
+        advanced: true
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          position:
+            label: Position
+            type: list
+            options:
+              left: Gauche
+              center: Centre
+              right: Droit
+          effect:
+            label: Effet
+            type: list
+            options:
+              lightshadow: Ombre portée
+              whiteborder: Bord blanc
+              zoom: Agrandissement au survol
+          izmir:
+            label: Effets izmir
+            type: list
+            advanced: true
+            hint: Et beaucoup plus d'effets disponibles sur https://ciar4n.com/izmir
+            options:
+              c4-izmir: Izmir
+              c4-izmir c4-border-cc-3: Bordure
+              c4-izmir c4-image-zoom-in: Zoom
+              c4-izmir c4-reveal-up: Texte surgissant
+              c4-izmir c4-gradient-top: Gradiant
+              C4-izmir c4-layout-top-center: Texte en haut
+  attach:
+    width: 40%
+    title: Paramètres Généraux
+    label: Attach
+    description: Attacher un fichier
+    properties:
+      file:
+        label: Nom du fichier uploadé
+        type: text    
+      desc:
+        label: Description
+        type: text
+
+
+
+

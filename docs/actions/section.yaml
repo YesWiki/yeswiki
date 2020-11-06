@@ -1,0 +1,103 @@
+label: "Section"
+position: 3
+previewHeight: 200px
+actions:
+  section:
+    label: Section
+    isWrapper: true
+    wrappedContentExample: Si tu vois tout en gris, déplace l'éléphant !
+    properties:
+      bgcolor:
+        label: Couleur de fond de la section
+        type: color
+      file:
+        label: Image de fond de la section
+        type: text
+        hint: Entrez le nom d'une image déjà uploadé, ou le nom d'une nouvelle image pour faire apparaitre le boutton d'upload
+      height:
+        label: Hauteur de la section (en pixels)
+        type: text
+      visibility:
+        advanced: true
+        type: list
+        label: Visible par 
+        options:
+          '': Tout le monde
+          '+': Utilisateur connecté
+          '%': Propriétaire de la page
+          '@admins': Admins seulement
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          height:
+            advanced: true
+            label: Hauteur préfigurée de la section
+            type: list
+            options:
+              one-quarter-height: un quart de la hauteur
+              one-third-height: un tiers
+              half-height: une moitié
+              two-third-height: deux tiers
+              three-quarter-height: trois quarts
+              full-height: 100% hauteur
+          textcolor:
+            label: Tonalité du texte
+            type: list
+            default: black
+            options:
+              white: Claire
+              black: Foncée
+          textalign:
+            label: Centrage du texte
+            type: list
+            default : text-left
+            options :
+              text-left: Calé à gauche
+              text-right: Calé à droite
+              text-center: Centré
+              text-justify: Justifié
+          image:
+            advanced: true
+            label: Comportement de l'image
+            type: list
+            options:
+              cover: Couvre section avec l'image
+              fixed: L'image est bloquée lors du scroll
+              center: L'image reste centré
+              parallax: L'image remonte au scroll genre parallax
+          animation:
+            label: Animation
+            type: list
+            advanced: true
+            hint: Beaucoup plus d'effets disponibles sur https://animate.style/
+            options:
+              wow bounce: Bonds
+              wow flash: Flash
+              wow pulse: Pulse
+              wow rubberBand: Elastique
+              wow shakeX: Gauche à droite
+              wow shakeY: Bas en haut
+              wow headShake: Secoué
+              wow swing: Swing
+              wow tada: Tada
+              wow wobble: Essuie glace
+              wow jello: Danse
+              wow heartBeat: Bat
+#      data:
+#        label: Data wow
+#        type: text
+#        subproperties:
+#          wow-iteration:
+#            label: Nb d'itération souhaitée
+#            default: 2
+#            type: number
+#          wow-length:
+#            label: Durée de l'effet (en sec)
+#            type: number
+#          wow-offset:
+#            label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
+#            type: number
+#          wow-delay:
+#            label: Délais de l'animation quand la page est chargée (en sec)
+#            type: number
