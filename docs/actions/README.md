@@ -69,6 +69,13 @@ type: text # Type de champ
 default:  # valeur par défault
 required: true # true/false, est ce que ce champ doit absolument être configuré par l'utilisateur
 advanced: true # sera masqué tant que l'utilisateur ne coche pas la case "paramètres avancés"
+hint: Mon Texte # Indications
+doclink: https://... # Lien vers une documentation en ligne
+showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre colorfield n'est pas vie
+showif:
+  format: portrait # Uniquement visible quand le paramètre "format" est égal à "portait"
+  type: notNull # et quand le paramètre "type" n'est pas vide
+  class: btn-primary # et quand le paramètre "class" contient "btn-primary" (class est un peu spécial, donc la condition est "contient" et non pas "est égal à")
 ```
 
 ## Types de paramètres
