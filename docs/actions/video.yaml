@@ -9,19 +9,20 @@ actions:
         label: _t(AB_attach_video_serveur_label)
         type: list
         required: true
-        Default: peertube
+        default: peertube
         options:
           peertube: PeerTube
           youtube: Youtube
           vimeo: Vimeo
+      peertubeinstance:
+        label: _t(AB_attach_video_peertubeinstance_label)
+        showif:
+          serveur: peertube
+        type: url
       id:
         label: _t(AB_attach_video_id_label)
         type: text
-        required: true
-      peertubeinstance:
-        label: _t(AB_attach_video_peertubeinstance_label)
-        type: text
-        advanced: true
+        required: true      
       ratio:
         label: _t(AB_attach_video_ratio_label)
         type: list
