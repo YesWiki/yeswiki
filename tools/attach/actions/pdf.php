@@ -3,7 +3,7 @@
  * Action to display a pdf in an embedded reader
  *
  * @param url  required The url of the pdf file. The url has to be from the same origin than the wiki (same schema, same host & same port)
- * @param forme shape for the container : possible values empty (default), 'portrait' - 'paysage' - 'carre'
+ * @param format shape for the container : possible values empty (default), 'portrait' - 'paysage' - 'carre'
  * @param largeurmax  the maximum wanted width ; number without "px"
  * @param hauteurmax  the maximum wanted heigth ; number without "px"
  * @param class class add class to the container : use "pull-right" and "pull-left" for position
@@ -34,7 +34,7 @@ if (empty($url) || parse_url($url, PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
     parse_url($url, PHP_URL_SCHEME) != $_SERVER['REQUEST_SCHEME']){
     echo '<div class="alert alert-danger">' . _t('ATTACH_ACTION_PDF_PARAM_URL_ERROR') . '</div>' . "\n";
 } else {
-	$forme = $baseObject->GetParameter("forme");
+	$forme = $baseObject->GetParameter("format");
 	switch ($forme){
 		case "portrait":
 			$forme = "pdf" ;
@@ -56,9 +56,9 @@ if (empty($url) || parse_url($url, PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
 	$maxWidth = $baseObject->GetParameter("largeurmax");
 	$maxHeight = $baseObject->GetParameter("hauteurmax");
 	$manageSize = false ;
-	if (!empty($maxWidth) && $maxWidth != '' && is_numeric($maxWidth)) {
+	if (!empty($maxWidth) && is_numeric($maxWidth)) {
 		$manageSize = true ;
-		if (empty($maxHeight) || $maxHeight == '' || !(is_numeric($maxHeight))) {
+		if (empty($maxHeight) || !(is_numeric($maxHeight))) {
 			$maxHeight = $maxWidth * $ratio ;
 		} else {
 			// calculte the minimum between width and height
@@ -67,9 +67,9 @@ if (empty($url) || parse_url($url, PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
 			$maxHeight = $newMaxHeight ;
 			$maxWidth = $newMaxWidth ;
 		}
-	} elseif (!empty($maxHeight) && $maxHeight != '' && is_numeric($maxHeight)) {
+	} elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
 		$manageSize = true ;
-		if (empty($maxWidth) || $maxWidth != '' || !(is_numeric($maxWidth))) {
+		if (empty($maxWidth) || !(is_numeric($maxWidth))) {
 			$maxWidth = $maxHeight / $ratio ;
 		}
 	}
@@ -80,7 +80,7 @@ if (empty($url) || parse_url($url, PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
 	$managePosition = false ;
 	$class_for_div = '' ;
 	$class_for_embed = '' ;
-	if (!empty($class) && ($class != '') ){
+	if (!empty($class)){
 		if (!(strpos($class,'pull-left') === false) || !(strpos($class,'pull-right') === false)) {
 			if ($manageSize) {
 				$manageSize = false ;

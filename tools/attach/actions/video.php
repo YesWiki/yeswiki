@@ -3,7 +3,7 @@
  * Action to display a responsive Vimeo video.
  *
  * @param id    the video id, for vimeo it's a series of figures whereas for youtube it's a series of letters
- * @param serveur  the serveur used, only 'vimeo' and 'youtube' are allowed
+ * @param serveur  the serveur used, only 'peertube', 'vimeo' and 'youtube' are allowed
  * @param peertubeinstance  Instance of the serveur for PeerTube
  * @param ratio  the ratio to display the video. By defaut, it's a 16/9 ration, if '4par3' is specified a 4/3 ration
  * @param largeurmax  the maximum wanted width ; number without "px"
@@ -53,9 +53,9 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
 	$maxHeight = $this->GetParameter("hauteurmax");
 	
 	$manageSize = false ;
-	if (!empty($maxWidth) && $maxWidth != '' && is_numeric($maxWidth)) {
+	if (!empty($maxWidth) && is_numeric($maxWidth)) {
 		$manageSize = true ;
-		if (empty($maxHeight) || $maxHeight == '' || !(is_numeric($maxHeight))) {
+		if (empty($maxHeight) || !(is_numeric($maxHeight))) {
 			$maxHeight = ($ratio == '4par3') ? ($maxWidth * 3 /4) : ($maxWidth * 9 /16) ;
 		} else {
 			// calculte the minimum between width and height
@@ -64,9 +64,9 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
 			$maxHeight = $newMaxHeight ;
 			$maxWidth = $newMaxWidth ;
 		}
-	} elseif (!empty($maxHeight) && $maxHeight != '' && is_numeric($maxHeight)) {
+	} elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
 		$manageSize = true ;
-		if (empty($maxWidth) || $maxWidth != '' || !(is_numeric($maxWidth))) {
+		if (empty($maxWidth) || !(is_numeric($maxWidth))) {
 			$maxWidth = ($ratio == '4par3') ? ($maxHeight * 4 /3) : ($maxHeight * 16 /9) ;
 		}
 	}
@@ -76,7 +76,7 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
 	$managePosition = false ;
 	$class_for_div = '' ;
 	$class_for_embed = '' ;
-	if (!empty($class) && ($class != '') ){
+	if (!empty($class)){
 		if (!(strpos($class,'pull-left') === false) || !(strpos($class,'pull-right') === false)) {
 			if ($manageSize) {
 				$manageSize = false ;

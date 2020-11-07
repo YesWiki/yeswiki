@@ -11,9 +11,9 @@ actions:
         required: true
         Default: peertube
         options:
+          peertube: PeerTube
           youtube: Youtube
           vimeo: Vimeo
-          peertube: PeerTube
       id:
         label: _t(AB_attach_video_id_label)
         type: text

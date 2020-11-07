@@ -642,11 +642,11 @@ if (!class_exists('attach')) {
             } 
 			// forme
 			if (strstr($this->classes, 'portrait')) {
-                $this->wiki->setParameter('forme','portrait');
+                $this->wiki->setParameter('format','portrait');
             } elseif (strstr($this->classes, 'paysage')) {
-                $this->wiki->setParameter('forme','paysage');
+                $this->wiki->setParameter('format','paysage');
             } elseif (strstr($this->classes, 'carre')) {
-                $this->wiki->setParameter('forme','carre');
+                $this->wiki->setParameter('format','carre');
             } 
 			// define class
 			if ($newclass != ''){
