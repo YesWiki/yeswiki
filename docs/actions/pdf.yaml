@@ -9,15 +9,15 @@ actions:
         label: _t(AB_attach_pdf_url_label)
         type: text
         required: true
-      format:
-        label: _t(AB_attach_pdf_format_label)
+      ratio:
+        label: _t(AB_attach_pdf_ratio_label)
         type: list
         advanced: true
         default: ''
         options:
-          portrait: _t(AB_attach_pdf_format_option_portrait)
-          paysage: _t(AB_attach_pdf_format_option_paysage)
-          carre: _t(AB_attach_pdf_format_option_carre)
+          portrait: _t(AB_attach_pdf_ratio_option_portrait)
+          paysage: _t(AB_attach_pdf_ratio_option_paysage)
+          carre: _t(AB_attach_pdf_ratio_option_carre)
       largeurmax:
         label: _t(AB_attach_pdf_largeur_max_label)
         type: number

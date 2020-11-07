@@ -19,6 +19,7 @@ actions:
         showif:
           serveur: peertube
         type: url
+        advanced: true
       id:
         label: _t(AB_attach_video_id_label)
         type: text

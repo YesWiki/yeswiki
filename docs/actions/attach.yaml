@@ -85,6 +85,29 @@ actions:
         options:
           1: Oui
           0: Non
+      ratio:
+        label: _t(AB_attach_pdf_ratio_label)
+        type: list
+        advanced: true
+        showif:
+          displaypdf: 1
+        default: ''
+        options:
+          portrait: _t(AB_attach_pdf_ratio_option_portrait)
+          paysage: _t(AB_attach_pdf_ratio_option_paysage)
+          carre: _t(AB_attach_pdf_ratio_option_carre)
+      largeurmax:
+        label: _t(AB_attach_pdf_largeur_max_label)
+        type: number
+        advanced: true
+        showif:
+          displaypdf: 1
+      hauteurmax:
+        label: _t(AB_attach_pdf_hauteur_max_label)
+        type: number
+        advanced: true
+        showif:
+          displaypdf: 1
 
 
 
