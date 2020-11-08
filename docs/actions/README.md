@@ -75,7 +75,7 @@ showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre
 showif:
   format: portrait # Uniquement visible quand le paramètre "format" est égal à "portait"
   type: notNull # et quand le paramètre "type" n'est pas vide
-  class: btn-primary # et quand le paramètre "class" contient "btn-primary" (class est un peu spécial, donc la condition est "contient" et non pas "est égal à")
+  filename: .*(png|jpg) # support regular expression
 ```
 
 ## Types de paramètres

@@ -14,15 +14,15 @@ export default {
         let showIfConf = config.showif
         if (typeof showIfConf === 'string') { // allow shortcut conf like showif: myfield
           showIfConf = {}
-          showIfConf[config.showif] = 'notNull' 
+          showIfConf[config.showif] = 'notNull'
         }
         // Check every condition is respected
-        for(const field in showIfConf) {          
+        for(const field in showIfConf) {
           const value = this.values[field]
           const expectedValue = showIfConf[field]
           if (expectedValue == 'notNull') showIfResult = showIfResult && !!value
           else if (Array.isArray(expectedValue)) showIfResult = showIfResult && expectedValue.includes(value)
-          else if (value) showIfResult = showIfResult && (value == expectedValue || field == 'class' && value.class.includes(expectedValue))
+          else if (value) showIfResult = showIfResult && new RegExp(expectedValue, 'i').exec(value) != null
         }
       }
       // Other conditions
