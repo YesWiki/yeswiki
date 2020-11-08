@@ -1,5 +1,5 @@
-label: "Syndication"
-position: 3
+label: Syndication / Flux RSS
+position: 4
 previewHeight: 300px
 actions:
   syndication:
@@ -8,9 +8,10 @@ actions:
     properties:
       url:
         label: Adresse du flux RSS
-        default: https://
+        default: https://yeswiki.net
         type: url
         required: true
+        doclink: https://yeswiki.net/?DemoSyndication
       title:
         label: Titre du flux      
         type: text
@@ -22,13 +23,13 @@ actions:
         label: Nbre d'info à afficher
         type: number
       template:
-      	type: list
-      	label: Template de visualisation
-      	default: accordeon.tpl.html
-      	options:
-      	  - accordeon.tpl.html->Flux sous forme d'accordéons
-      	  - liste.tpl.html->Flux sous forme de liste
-      	  - liste_description.tpl.html->Flux sous forme de liste avec description
+        type: list
+        label: Template de visualisation
+        default: accordeon.tpl.html
+        options:
+          accordeon.tpl.html: Flux sous forme d'accordéons
+          liste.tpl.html: Flux sous forme de liste
+          liste_description.tpl.html: Flux sous forme de liste avec description
       nouvellefenetre:
         advanced: true
         label: Les liens s'ouvrent dans un nouvel onglet
@@ -41,7 +42,7 @@ actions:
         label: Affiche les dates de publication
         type: list
         options:
-          - jm->Jour mois
-          - jma-> Jour Mois année
-          - jmh-> Jour mois heure
-          - jmah-> Jour mois année heure
+          jm: Jour mois
+          jma:  Jour Mois année
+          jmh:  Jour mois heure
+          jmah:  Jour mois année heure

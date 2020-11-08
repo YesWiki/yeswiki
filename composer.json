@@ -1,0 +1,22 @@
+{
+    "name": "yeswiki/yeswiki",
+    "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
+    "homepage": "https://yeswiki.net",
+    "license": "AGPL-3.0",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.1",
+        "mustangostang/spyc": "^0.6.3",
+        "phpmailer/phpmailer": "6.1.6",
+        "yeswiki/theme-margot": "*",
+        "oomphinc/composer-installers-extender": "^2.0"
+    },
+    "extra": {
+        "installer-types": ["yeswiki-extension", "yeswiki-theme"],
+        "installer-paths": {
+            "tools/{$name}" : ["type:yeswiki-extension"],
+            "themes/{$name}": ["type:yeswiki-theme"]
+        }
+    }
+}

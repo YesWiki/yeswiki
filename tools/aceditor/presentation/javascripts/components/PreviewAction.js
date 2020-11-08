@@ -8,7 +8,7 @@ export default {
     },
   },
   template: `
-    <div class="widget-iframe-container">
+    <div class="widget-iframe-container" v-if="height != '0'">
       <h3>Aperçu (non clickable)</h3>
       <iframe class="iframe-preview" width="100%" :height="height || '350px'" frameborder="0" :src="previewIframeUrl"></iframe>
       <div class="iframe-blocker"></div>

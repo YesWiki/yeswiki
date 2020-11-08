@@ -311,6 +311,7 @@ li.toc5 {
 .accordion-group .panel-heading:not(.collapsed) .chevron-up {
   display: inline-block;
 }
+.panel-heading > i { margin-right: 8px; }
 
 /* dropdown menu in modal */
 #page_options .typeahead.dropdown-menu {
@@ -624,4 +625,8 @@ body {
 .yeswiki-iframe-body .container {
   margin: 0 !important;
   width: 100% !important;
+}
+
+.remove-this-div-on-page-load {
+  display: none !important;
 }

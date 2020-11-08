@@ -1,0 +1,54 @@
+label: _t(AB_attach_video_label)
+previewHeight: 100px
+actions:
+  video:
+    label: _t(AB_attach_video_label)
+    description: _t(AB_attach_video_description)
+    properties:
+      serveur:
+        label: _t(AB_attach_video_serveur_label)
+        type: list
+        required: true
+        default: peertube
+        options:
+          peertube: PeerTube
+          youtube: Youtube
+          vimeo: Vimeo
+      peertubeinstance:
+        label: _t(AB_attach_video_peertubeinstance_label)
+        showif:
+          serveur: peertube
+        type: url
+        advanced: true
+      id:
+        label: _t(AB_attach_video_id_label)
+        type: text
+        required: true      
+      ratio:
+        label: _t(AB_attach_video_ratio_label)
+        type: list
+        advanced: true
+        default: ''
+        options:
+          '': 16/9
+          4par3: 4/3
+      largeurmax:
+        label: _t(AB_attach_video_largeur_max_label)
+        type: number
+        advanced: true
+      hauteurmax:
+        label: _t(AB_attach_video_hauteur_max_label)
+        type: number
+        advanced: true
+      label: Classe
+        type: class
+        subproperties:
+          position:
+            label: _t(AB_attach_video_position_label)
+            type: list
+            advanced: true
+            default: ''
+            options:
+              '': standard
+             pull-left: float left
+             pull-right: float right

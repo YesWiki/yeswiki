@@ -54,7 +54,7 @@ export default {
       <div class="inline-form" v-for="element in elements">
         <template v-for="(property, propName) in config.subproperties">
           <component :is="componentIdFrom(property)" v-model="element[propName]"
-                     v-show="showIfFrom(property)" :name="propName" :values="values"
+                     v-show="checkVisibility(property)" :name="propName" :values="values"
                      :config="property" :selected-form="selectedForm">
           </component>
         </template>
@@ -70,5 +70,6 @@ export default {
         <span v-if="config['btn-label-add']">{{ config['btn-label-add'] }}</span>
         <i v-else class="fa fa-plus"></i>
       </button>
+      <input-hint :config="config"></input-hint>
     </div>`
 }

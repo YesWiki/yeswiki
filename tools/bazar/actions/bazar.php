@@ -77,7 +77,7 @@ switch ($GLOBALS['params']['vue']) {
                 break;
             case BAZ_VOIR_FICHE:
                 if (isset($_REQUEST['id_fiche'])) {
-                    $fiche = $bazarFiche->getOne($_REQUEST['id_fiche'], false, $_REQUEST['time']);
+                    $fiche = $bazarFiche->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
                     if (!$fiche) {
                         echo '<div class="alert alert-danger">'
                             ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '

@@ -38,3 +38,10 @@ $wakkaConfig['authorized_extensions'] = isset($wakkaConfig['authorized_extension
     // open document format
     'odt' => 'opendocument text', 'ods' => 'opendocument spreadsheet', 'odp' => 'opendocument presentation', 'odg' => 'opendocument graphics', 'odc' => 'opendocument chart', 'odf' => 'opendocument formula', 'odb' => 'opendocument database', 'odi' => 'opendocument image', 'odm' => 'opendocument text-master', 'ott' => 'opendocument text-template', 'ots' => 'opendocument spreadsheet-template', 'otp' => 'opendocument presentation-template', 'otg' => 'opendocument graphics-template',
 );
+
+// Configuration for video action
+if (!isset($wakkaConfig['attach-video-config'])) {
+    $wakkaConfig['attach-video-config'] = [];
+}
+$wakkaConfig['attach-video-config']['default_video_service'] = empty($wakkaConfig['attach-video-config']['default_video_service']) ? 'peertube' : $wakkaConfig['attach-video-config']['default_video_service'];
+$wakkaConfig['attach-video-config']['default_peertube_instance'] = empty($wakkaConfig['attach-video-config']['default_peertube_instance']) ? 'https://framatube.org/' : $wakkaConfig['attach-video-config']['default_peertube_instance'];

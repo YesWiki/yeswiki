@@ -27,8 +27,8 @@ export default {
         let optionsList = []
         for(let classValue of classes) {
           for(let propName in this.config.subproperties) {
-            optionsList = Object.values(this.config.subproperties[propName].options)
-            if (optionsList.find(o => o.split('->')[0] == classValue)) this.classValues[propName] = classValue
+            optionsList = Object.keys(this.config.subproperties[propName].options)
+            if (optionsList.find(o => o == classValue)) this.classValues[propName] = classValue
           }
         }
       }
@@ -46,7 +46,7 @@ export default {
   template: `
     <div class="multi-input-container">
       <template v-for="(property, propName) in config.subproperties">
-        <component :is="componentIdFrom(property)" v-show="showIfFrom(property)"
+        <component :is="componentIdFrom(property)" v-show="checkVisibility(property)"
                    :value="classValues[propName]" v-on:input="updateValue(propName, $event)"
                    :name="propName" :values="values"
                    :config="property" :selected-form="selectedForm">

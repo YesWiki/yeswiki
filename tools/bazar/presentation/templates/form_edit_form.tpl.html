@@ -183,6 +183,14 @@
       initializeFormbuilder(formAndListIds);
   });
 </script>
+<?php /* Hack temporaire pour ne pas utiliser radiofiche tant que la fonction n'existe pas */
+if (!function_exists('radiofiche')) : ?>
+<style>
+.radio-group-field[type=radio-group] .form-group.subtype2-wrap{
+	display:none;
+}
+</style>
+<?php endif; ?>
 <?php
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-builder.min.js');
 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/form-edit-template.js');

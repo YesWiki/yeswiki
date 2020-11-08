@@ -35,6 +35,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+require_once 'vendor/autoload.php';
 require_once 'includes/YesWiki.php';
 $wiki = new \YesWiki\Wiki();
 $wiki = $wiki->loadExtensions();

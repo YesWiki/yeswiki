@@ -1,0 +1,41 @@
+label: _t(AB_attach_pdf_label)
+previewHeight: 100px
+actions:
+  pdf:
+    label: _t(AB_attach_pdf_label)
+    description: _t(AB_attach_pdf_description)
+    doclink: https://yeswiki.net/?DocumentationActionPDF
+    properties:
+      url:
+        label: _t(AB_attach_pdf_url_label)
+        type: text
+        required: true
+      ratio:
+        label: _t(AB_attach_pdf_ratio_label)
+        type: list
+        advanced: true
+        default: ''
+        options:
+          portrait: _t(AB_attach_pdf_ratio_option_portrait)
+          paysage: _t(AB_attach_pdf_ratio_option_paysage)
+          carre: _t(AB_attach_pdf_ratio_option_carre)
+      largeurmax:
+        label: _t(AB_attach_pdf_largeur_max_label)
+        type: number
+        advanced: true
+      hauteurmax:
+        label: _t(AB_attach_pdf_hauteur_max_label)
+        type: number
+        advanced: true
+      label: Classe
+        type: class
+        subproperties:
+          position:
+            label: _t(AB_attach_pdf_position_label)
+            type: list
+            advanced: true
+            default: ''
+            options:
+              '': standard
+             pull-left: float left
+             pull-right: float right

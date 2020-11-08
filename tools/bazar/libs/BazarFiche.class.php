@@ -532,7 +532,7 @@ class BazarFiche
     /*
      * Convert body to JSON object
      */
-    protected function decode($body)
+    public function decode($body)
     {
         $data = json_decode($body, true);
         foreach ($data as $key => $value) {

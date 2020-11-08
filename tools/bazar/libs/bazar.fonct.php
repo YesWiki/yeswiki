@@ -2001,9 +2001,7 @@ function baz_gestion_formulaire()
                 $GLOBALS['wiki']->query($requete);
             }
             ksort($forms);
-            $res .=
-            '<div class="alert alert-success">'.
-            _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
+            $res .= '<div class="alert alert-success">'. _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
         }
         if (is_array($forms)) {
             foreach ($forms as $key => $ligne) {
@@ -2016,13 +2014,6 @@ function baz_gestion_formulaire()
         }
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
-
-        // on cherche un template personnalise dans le repertoire themes/tools/bazar/templates
-        $templatetoload = 'themes/tools/bazar/templates/';
-        if (!is_file($templatetoload)) {
-            $templatetoload =
-            'tools/bazar/presentation/templates/forms_table.tpl.html';
-        }
 
         include_once 'includes/squelettephp.class.php';
         try {
@@ -2574,13 +2565,13 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             } catch(\Exception $e) {
                 // Do nothing if semantic type is not available
             }
-            $fiche['html'] = $html;
-            $fiche['fiche'] = $fichebazar['values'];
-            $fiche['form'] = $fichebazar['form'];
+            $values['html'] = $html;
+            $values['fiche'] = $fichebazar['values'];
+            $values['form'] = $fichebazar['form'];
             $res .= $GLOBALS['wiki']->renderTemplate(
                 'bazar',
                 $custom_template,
-                $fiche,
+                $values,
                 strtotime($fichebazar['values']['date_maj_fiche']),
                 baz_get_custom_semantic_template($fichebazar['values'])
             );
@@ -2913,7 +2904,6 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     }
 
     // affichage du formulaire
-    include_once 'includes/squelettephp.class.php';
     $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">';
     include_once 'includes/squelettephp.class.php';
     try {
@@ -3288,13 +3278,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
               (isset($params['titles'][$i]) && !empty($params['titles'][$i])) ?
                 $params['titles'][$i] : $list['titre_liste'];
 
-            $facettableValues[$idkey]['collapsed'] =
-              (!$first and $params['groupsexpanded'] == 'false') ?
-                ' collapsed' : '';
-
-            $facettableValues[$idkey]['opened'] =
-              (!$first and $params['groupsexpanded'] == 'false') ?
-                ' in' : '';
+            $facettableValues[$idkey]['collapsed'] = !$first && !$params['groupsexpanded'];
 
             foreach ($list['label'] as $listkey => $label) {
                 if (isset($facettevalue[$id][$listkey]) && !empty($facettevalue[$id][$listkey])) {
@@ -3737,12 +3721,8 @@ function getAllParameters($wiki)
 
     // template utilisé pour l'affichage
     $param['template'] = isset($_GET['template']) ? $_GET['template'] : $wiki->GetParameter('template');
+    if (empty($param['template'])) $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
     if (strpos($param['template'], '.html') === false) $param['template'] = $param['template'] . '.tpl.html';
-    if (empty($param['template']) ||
-        (!is_file('themes/tools/bazar/templates/'.$param['template'])
-         && !is_file('tools/bazar/presentation/templates/'. $param['template']))) {
-        $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
-    }
 
     // nombre maximal de résultats à afficher
     $param['nb'] = $wiki->GetParameter('nb');
@@ -3840,6 +3820,7 @@ function getAllParameters($wiki)
     if (empty($param['groupsexpanded'])) {
         $param['groupsexpanded'] = 'true';
     }
+    $param['groupsexpanded'] = $param['groupsexpanded'] == "true"; // convert to boolean
 
     /*
      * Facette: template pour les facettes
@@ -4164,9 +4145,12 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
 function baz_get_custom_template($fiche, $form)
 {
     $custom_templates = [
-        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
+        'custom/templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html', 
+        // backward compatibility
+        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',              
+        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html', 
+        'templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',             
         'custom/themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
         'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
     ];
 

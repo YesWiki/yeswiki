@@ -64,6 +64,10 @@ if (!$yeswikijs) {
     $this->addJavascriptFile('tools/templates/libs/yeswiki-base.js');
 }
 
+if (file_exists('custom/javascripts/custom.js')) {
+    $this->addJavascriptFile('custom/javascripts/custom.js');
+}
+
 // si quelque chose est passée dans la variable globale pour le javascript, on l'intègre
 $yeswiki_javascripts .= isset($GLOBALS['js']) ? $GLOBALS['js'] : '';
 

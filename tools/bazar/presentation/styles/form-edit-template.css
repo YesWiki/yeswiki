@@ -40,7 +40,8 @@
 
 .date-field .value-wrap { display: none !important; }
 
-.image-field .value-wrap { display: none !important; }
+.image-field .value-wrap, .image-field .name-wrap { display: none !important; }
+.image-field .name2-wrap { order: 1 !important; }
 
 .select-field .field-options, .radio-group-field .field-options, .checkbox-group-field .field-options { display: none !important; }
 
@@ -111,3 +112,18 @@
 }
 
 xmp { overflow: auto; }
+
+/* Redefine .fa class when icon- class exists, because redefined by form-builder.min.js*/
+.fa[class*=" icon-"]::before, .fa[class^="icon-"]::before {
+  font-family: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  margin: 0;
+  font-variant: inherit;
+  line-height: inherit;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  width: inherit;
+  text-transform: inherit;
+}
+	
