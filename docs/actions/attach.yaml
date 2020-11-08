@@ -5,6 +5,8 @@ actions:
   commons:
     title: Pour les images
     width: 40%
+    showif:
+      file: \.(png|jpg|jpeg|gif)$
     properties:
       link:
         label: Lien quand on cliquera sur l'image
@@ -69,7 +71,7 @@ actions:
     description: Attacher un fichier
     properties:
       file:
-        label: Nom du fichier uploadé
+        label: Fichier uploadé
         type: text    
       desc:
         label: Description
@@ -78,6 +80,8 @@ actions:
         label: Afficher le fichier PDF
         type: list
         default: ''
+        showif:
+          file: \.pdf$
         options:
           1: Oui
           0: Non
