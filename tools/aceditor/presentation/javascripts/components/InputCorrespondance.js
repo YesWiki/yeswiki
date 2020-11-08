@@ -50,7 +50,7 @@ export default {
   template: `
     <div class="multi-input-container">
       <template v-for="(property, propName) in config.subproperties">
-        <component :is="componentIdFrom(property)" v-show="showIfFrom(property)"
+        <component :is="componentIdFrom(property)" v-show="checkVisibility(property)"
                    :value="mappingValues[propName]" v-on:input="updateValue(propName, $event)"
                    :name="propName" :values="values"
                    :config="property" :selected-form="selectedForm">

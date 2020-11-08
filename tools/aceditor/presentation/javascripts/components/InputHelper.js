@@ -5,9 +5,11 @@ export default {
     componentIdFrom(config) {
       return `input-${['text', 'number', 'range', 'url'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
     },
-    showIfFrom(config) {
+    // Whether or not display this field (and include it's key/value in the action params)
+    display(config) {
+      if (!config) return false
       let showIfResult = true
-      // visbility condition with showif attribute
+      // condition with showif attribute
       if (config.showif) {
         let showIfConf = config.showif
         if (typeof showIfConf === 'string') { // allow shortcut conf like showif: myfield
@@ -23,12 +25,14 @@ export default {
           else if (value) showIfResult = showIfResult && (value == expectedValue || field == 'class' && value.class.includes(expectedValue))
         }
       }
-      // Other visbility conditions
+      // Other conditions
       const hideIf = (config.showif && !showIfResult)
                   || (config.showOnlyFor && !config.showOnlyFor.includes(this.selectedActionId))
                   || (config.showExceptFor && config.showExceptFor.includes(this.selectedActionId))
-                  || (config.advanced && !this.$root.displayAdvancedParams)
       return !hideIf
+    },
+    checkVisibility(config) {
+      return this.display(config) && (!config.advanced || this.$root.displayAdvancedParams)
     },
     refFrom(config) {
       return config.subproperties || config.type == "geo" ? 'specialInput' : ''
