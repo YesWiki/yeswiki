@@ -4,6 +4,7 @@ actions:
   pdf:
     label: _t(AB_attach_pdf_label)
     description: _t(AB_attach_pdf_description)
+    doclink: https://yeswiki.net/?DocumentationActionPDF
     properties:
       url:
         label: _t(AB_attach_pdf_url_label)

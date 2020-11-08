@@ -73,6 +73,7 @@ actions:
       file:
         label: Fichier uploadé
         type: text    
+        hint: Pour afficher le fichier d'une autre page, taper "NomDePage/NomDeFicher.ext"
       desc:
         label: Description
         type: text
