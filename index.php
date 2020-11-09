@@ -51,5 +51,4 @@ spl_autoload_register(function ($className) {
 require_once 'vendor/autoload.php';
 require_once 'includes/YesWiki.php';
 $wiki = new \YesWiki\Wiki();
-$wiki->loadExtensions();
 $wiki->Run($wiki->tag, $wiki->method);

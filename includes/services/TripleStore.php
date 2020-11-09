@@ -4,12 +4,13 @@ namespace YesWiki\Core\Service;
 
 class TripleStore
 {
-    protected $wiki;
+    protected $dbService;
+
     protected $cacheByResource;
 
-    public function __construct($wiki)
+    public function __construct(DbService $dbService)
     {
-        $this->wiki = $wiki;
+        $this->dbService = $dbService;
         $this->cacheByResource = array();
     }
 
@@ -67,10 +68,10 @@ class TripleStore
             $res_op = '=';
         }
 
-        $sql = 'SELECT * FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'triples ';
+        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples');
         $where = [];
         if ($resource !== null) {
-            $where[] = 'resource ' . $res_op . ' "' . mysqli_real_escape_string($this->wiki->dblink, $resource) . '"';
+            $where[] = ' resource ' . $res_op . ' "' . $this->dbService->escape($resource) . '"';
         }
         if ($property !== null) {
             $prop_op = strtoupper($prop_op);
@@ -78,15 +79,15 @@ class TripleStore
                 $prop_op = '=';
             }
 
-            $where[] = ' property ' . $prop_op . ' "' . mysqli_real_escape_string($this->wiki->dblink, $property) . '"';
+            $where[] = ' property ' . $prop_op . ' "' . $this->dbService->escape($property) . '"';
         }
         if ($value !== null) {
-            $where[] = ' value = "' . mysqli_real_escape_string($this->wiki->dblink, $value) . '"';
+            $where[] = ' value = "' . $this->dbService->escape($value) . '"';
         }
         if( count($where)>0 ) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
-        return $this->wiki->LoadAll($sql);
+        return $this->dbService->loadAll($sql);
     }
 
     /**
@@ -120,8 +121,8 @@ class TripleStore
             return array();
         }
         $this->cacheByResource[$res] = array();
-        $sql = 'SELECT * FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->wiki->dblink, $res) . '"' ;
-        foreach ($this->wiki->LoadAll($sql) as $triple) {
+        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '"' ;
+        foreach ($this->dbService->loadAll($sql) as $triple) {
             if (! isset($this->cacheByResource[$res][ $triple['property'] ])) {
                 $this->cacheByResource[$res][ $triple['property'] ] = array();
             }
@@ -151,12 +152,11 @@ class TripleStore
      */
     public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-        $sql = 'SELECT id FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->wiki->dblink, $re_prefix . $resource) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->wiki->dblink, $prop_prefix . $property) . '" ' . 'AND value = "' . mysqli_real_escape_string($this->wiki->dblink, $value) . '"';
-        $res = $this->wiki->LoadSingle($sql);
-        if (! $res) {
+        $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($re_prefix . $resource) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ' . 'AND value = "' . $this->dbService->escape($value) . '"';
+        $res = $this->dbService->loadSingle($sql);
+        if (!$res) {
             return 0;
         }
-
         return $res['id'];
     }
 
@@ -188,8 +188,8 @@ class TripleStore
             unset($this->cacheByResource[$res]);
         }
 
-        $sql = 'INSERT INTO ' . $this->wiki->GetConfigValue('table_prefix') . 'triples (resource, property, value)' . 'VALUES ("' . mysqli_real_escape_string($this->wiki->dblink, $res) . '", "' . mysqli_real_escape_string($this->wiki->dblink, $prop_prefix . $property) . '", "' . mysqli_real_escape_string($this->wiki->dblink, $value) . '")';
-        return $this->wiki->Query($sql) ? 0 : 1;
+        $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . ' (resource, property, value)' . 'VALUES ("' . $this->dbService->escape($res) . '", "' . $this->dbService->escape($prop_prefix . $property) . '", "' . $this->dbService->escape($value) . '")';
+        return $this->dbService->query($sql) ? 0 : 1;
     }
 
     /**
@@ -229,8 +229,8 @@ class TripleStore
             unset($this->cacheByResource[$res]);
         }
 
-        $sql = 'UPDATE ' . $this->wiki->GetConfigValue('table_prefix') . 'triples ' . 'SET value = "' . mysqli_real_escape_string($this->wiki->dblink, $newvalue) . '" ' . 'WHERE id = ' . $id;
-        return $this->wiki->Query($sql) ? 0 : 1;
+        $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . ' SET value = "' . $this->dbService->escape($newvalue) . '" ' . 'WHERE id = ' . $id;
+        return $this->dbService->query($sql) ? 0 : 1;
     }
 
     /**
@@ -252,9 +252,9 @@ class TripleStore
     {
         $res = $re_prefix . $resource ;
 
-        $sql = 'DELETE FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->wiki->dblink, $res) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->wiki->dblink, $prop_prefix . $property) . '" ';
+        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ';
         if ($value !== null) {
-            $sql .= 'AND value = "' . mysqli_real_escape_string($this->wiki->dblink, $value) . '"';
+            $sql .= 'AND value = "' . $this->dbService->escape($value) . '"';
         }
 
         // invalidate the cache
@@ -262,6 +262,6 @@ class TripleStore
             unset($this->cacheByResource[$res]);
         }
 
-        $this->wiki->Query($sql);
+        $this->dbService->query($sql);
     }
 }

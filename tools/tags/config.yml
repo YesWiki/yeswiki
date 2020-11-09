@@ -3,6 +3,5 @@ services:
     autowire: true
     public: true
 
-  YesWiki\Tags\Service\TagsManager:
-    arguments:
-      $wiki: '%wiki%'
+  YesWiki\Tags\Service\:
+    resource: 'services/*'

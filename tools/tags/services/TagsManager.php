@@ -2,17 +2,24 @@
 
 namespace YesWiki\Tags\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Wiki;
 
 class TagsManager
 {
     protected $wiki;
+    protected $dbService;
     protected $tripleStore;
+    protected $params;
 
-    public function __construct($wiki, TripleStore $tripleStore)
+    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
+        $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
+        $this->params = $params;
     }
 
     public function deleteAll($page)
@@ -30,7 +37,8 @@ class TagsManager
 
     public function save($page, $liste_tags)
     {
-        $tags = explode(',', mysqli_real_escape_string($this->wiki->dblink, _convert($liste_tags, YW_CHARSET, true)));
+        // TODO check if we need to escape here, or if we can do that in the tripleStore methods
+        $tags = explode(',', $this->dbService->escape(_convert($liste_tags, YW_CHARSET, true)));
 
         //on recupere les anciens tags de la page courante
         $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
@@ -67,8 +75,9 @@ class TagsManager
     public function getAll($page = '')
     {
         if ($page == '') {
-            $sql = 'SELECT DISTINCT value FROM '.$this->wiki->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
-            return $this->wiki->LoadAll($sql);
+            // TODO use tripleStore service
+            $sql = 'SELECT DISTINCT value FROM'.$this->dbService->prefixTable('triples').'WHERE property="http://outils-reseaux.org/_vocabulary/tag"';
+            return $this->dbService->loadAll($sql);
         } else {
             return $this->tripleStore->getAll($this->wiki->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         }
@@ -77,12 +86,12 @@ class TagsManager
     public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
     {
         if (!empty($tags)) {
-            $req_from = ', '.$this->wiki->config['table_prefix'].'triples tags ';
+            $req_from = ', '.$this->dbService->prefixTable('triples').$this->dbService->prefixTable('tags');
             $tags = trim($tags);
             $tab_tags = explode(',', $tags);
             $nbdetags = count($tab_tags);
             $tags = implode(',', $tab_tags);
-            $tags = '"'.str_replace(',', '","', _convert(mysqli_real_escape_string($this->wiki->dblink, addslashes($tags)), YW_CHARSET, true)).'"';
+            $tags = '"'.str_replace(',', '","', _convert($this->dbService->escape(addslashes($tags)), YW_CHARSET, true)).'"';
             $req = ' AND tags.value IN ('.$tags.') ';
             $req .= ' AND tags.property="http://outils-reseaux.org/_vocabulary/tag" AND tags.resource=tag ';
             $req_having = ' HAVING COUNT(tag)='.$nbdetags.' ';
@@ -99,26 +108,26 @@ class TagsManager
                 $req .= ' ORDER BY time DESC ';
             }
 
-            $requete = 'SELECT * FROM '.$this->wiki->config['table_prefix'].'pages'.$req_from." WHERE latest = 'Y' and comment_on = '' ".$req;
+            $requete = 'SELECT * FROM '.$this->dbService->prefixTable('pages').$req_from." WHERE latest = 'Y' and comment_on = '' ".$req;
 
-            return $this->wiki->LoadAll($requete);
+            return $this->dbService->loadAll($requete);
         } else {
             // recuperation des pages wikis
-            $sql = 'SELECT * FROM '.$this->wiki->GetConfigValue('table_prefix').'pages';
+            $sql = 'SELECT * FROM '.$this->dbService->prefixTable('pages');
             if (!empty($taglist)) {
-                $sql .= ', '.$this->wiki->config['table_prefix'].'triples tags';
+                $sql .= ', '.$this->dbService->prefixTable('triples').$this->dbService->prefixTable('tags');
             }
             $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
 
             if ($type == 'wiki') {
-                $sql .= ' AND tag NOT IN (SELECT resource FROM '.$this->wiki->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
+                $sql .= ' AND tag NOT IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').'WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
             } elseif ($type == 'bazar') {
-                $sql .= ' AND tag IN (SELECT resource FROM '.$this->wiki->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")';
+                $sql .= ' AND tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")';
             }
 
             $sql .= ' ORDER BY tag ASC';
 
-            return $this->wiki->LoadAll($sql);
+            return $this->dbService->loadAll($sql);
         }
     }
 }

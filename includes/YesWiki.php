@@ -25,7 +25,6 @@ require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
 require_once 'includes/Api.class.php';
-require_once 'includes/Database.class.php';
 require_once 'includes/Session.class.php';
 require_once 'includes/User.class.php';
 
@@ -33,6 +32,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Tags\Service\TagsManager;
 
@@ -42,14 +42,12 @@ class Wiki
     public $page;
     public $tag;
     public $parameter = array();
-    public $queryLog = array();
     public $interWiki = array();
     public $VERSION;
     public $CookiePath = '/';
     public $inclusions = array();
     public $extensions = array();
     public $api;
-    public $db;
     public $session;
     public $user;
     public $services;
@@ -79,55 +77,13 @@ class Wiki
         $this->CookiePath = $init->initCookies();
         $this->tag = $init->page;
         $this->method = $init->method;
-        $this->dblink = $init->initDb();
+
         $this->services = $init->initCoreServices($this);
+        $this->loadExtensions();
+
         $this->api = new \YesWiki\Api($this);
-        $this->db = new \YesWiki\Database($this);
         $this->session = new \YesWiki\Session($this);
         $this->user = new \YesWiki\User($this);
-    }
-
-    // DATABASE
-    public function Query($query)
-    {
-        if ($this->GetConfigValue('debug')) {
-            $start = $this->GetMicroTime();
-        }
-
-        if (! $result = mysqli_query($this->dblink, $query)) {
-            ob_end_clean();
-            die('Query failed: ' . $query . ' (' . mysqli_error($this->dblink) . ')');
-        }
-        if ($this->GetConfigValue('debug')) {
-            $time = $this->GetMicroTime() - $start;
-            $this->queryLog[] = array(
-                'query' => $query,
-                'time' => $time
-            );
-        }
-        return $result;
-    }
-
-    public function LoadSingle($query)
-    {
-        if ($data = $this->LoadAll($query)) {
-            return $data[0];
-        }
-
-        return null;
-    }
-
-    public function LoadAll($query)
-    {
-        $data = array();
-        if ($r = $this->Query($query)) {
-            while ($row = mysqli_fetch_assoc($r)) {
-                $data[] = $row;
-            }
-
-            mysqli_free_result($r);
-        }
-        return $data;
     }
 
     // MISC
@@ -2216,8 +2172,10 @@ class Wiki
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
 
+        $this->dblink = $this->services->get(DbService::class)->getLink();
+
         // This must be done after service initialization, as it uses services
-        loadpreferredI18n($this->tag);
+        loadpreferredI18n($this, $this->tag);
 
         $metadata = $this->GetMetaDatas($this->tag);
 
@@ -2237,6 +2195,18 @@ class Wiki
     /*
      * RETRO-COMPATIBILITY
      */
+
+    public function Query($query) {
+        return $this->services->get(DbService::class)->query($query);
+    }
+
+    public function LoadSingle($query) {
+        return $this->services->get(DbService::class)->loadSingle($query);
+    }
+
+    public function LoadAll($query) {
+        return $this->services->get(DbService::class)->loadAll($query);
+    }
 
     public function DeleteAllTags($page) {
         return $this->services->get(TagsManager::class)->deleteAll($page);

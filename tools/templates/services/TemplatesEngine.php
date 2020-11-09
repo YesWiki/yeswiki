@@ -2,14 +2,19 @@
 
 namespace YesWiki\Templates\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Wiki;
+
 class TemplatesEngine
 {
     protected $wiki;
+    protected $params;
     protected $templates;
 
-    public function __construct($wiki)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
+        $this->params = $params;
         $this->templates = [];
     }
 
@@ -57,7 +62,7 @@ class TemplatesEngine
             'custom/templates/' . $tool . '/' . $filename,
             'custom/themes/tools/' . $tool . '/templates/' . $filename,
             'themes/tools/' . $tool . '/templates/' . $filename,
-            'themes/' . $this->wiki->config["favorite_theme"] . '/tools/' . $tool . '/templates/' . $filename,
+            'themes/' . $this->params->get('favorite_theme') . '/tools/' . $tool . '/templates/' . $filename,
             'templates/' . $tool . '/templates/' . $filename,
             'templates/' . $tool . '/' . $filename,
             'tools/' . $tool . '/presentation/templates/' . $filename,

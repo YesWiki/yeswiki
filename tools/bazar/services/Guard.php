@@ -2,11 +2,13 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Wiki;
+
 class Guard
 {
     protected $wiki;
 
-    public function __construct($wiki)
+    public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
     }
