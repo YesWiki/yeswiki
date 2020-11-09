@@ -28,14 +28,14 @@ actions:
         type: number
         advanced: true
       label: Classe
-        type: class
-        subproperties:
-          position:
-            label: _t(AB_attach_pdf_position_label)
-            type: list
-            advanced: true
-            default: ''
-            options:
-              '': standard
-             pull-left: float left
-             pull-right: float right
+      type: class
+      subproperties:
+        position:
+          label: _t(AB_attach_pdf_position_label)
+          type: list
+          advanced: true
+          default: ''
+          options:
+            '': standard
+            pull-left: float left
+            pull-right: float right
