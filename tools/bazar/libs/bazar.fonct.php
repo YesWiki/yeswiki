@@ -41,6 +41,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Templates\Service\TemplatesEngine;
 
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR
 .'formulaire.fonct.inc.php';
@@ -2570,7 +2571,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             $values['html'] = $html;
             $values['fiche'] = $fichebazar['values'];
             $values['form'] = $fichebazar['form'];
-            $res .= $GLOBALS['wiki']->services->get('templates.engine')->render(
+            $res .= $GLOBALS['wiki']->services->get(TemplatesEngine::class)->render(
                 'bazar',
                 $custom_template,
                 $values,

@@ -54,7 +54,7 @@ export default {
       <div class="inline-form" v-for="element in elements">
         <template v-for="(property, propName) in config.subproperties">
           <component :is="componentIdFrom(property)" v-model="element[propName]"
-                     v-show="showIfFrom(property)" :name="propName" :values="values"
+                     v-show="checkVisibility(property)" :name="propName" :values="values"
                      :config="property" :selected-form="selectedForm">
           </component>
         </template>

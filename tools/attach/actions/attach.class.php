@@ -631,23 +631,27 @@ if (!class_exists('attach')) {
 			$base_url = explode('?',$this->wiki->config["base_url"])[0] ;
 			$url = $base_url . $fullFilename ;
 			$this->wiki->setParameter('url',$url);
-			$this->wiki->setParameter('hauteurmax',$this->wiki->GetParameter('height'));
-			$this->wiki->setParameter('largeurmax',$this->wiki->GetParameter('width'));
+			if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
+				$this->wiki->setParameter('hauteurmax',$this->wiki->GetParameter('height'));
+				$this->wiki->setParameter('largeurmax',$this->wiki->GetParameter('width'));
+			}
 			// position
 			$newclass = '' ;
 			if (strstr($this->classes, 'right')) {
-                $newclass = str_replace('right','pull-right',$this->classes) ; 
-            } elseif (strstr($this->classes, 'left')) {
-                $newclass = str_replace('left','pull-left',$this->classes) ; 
-            } 
-			// forme
-			if (strstr($this->classes, 'portrait')) {
-                $this->wiki->setParameter('forme','portrait');
-            } elseif (strstr($this->classes, 'paysage')) {
-                $this->wiki->setParameter('forme','paysage');
-            } elseif (strstr($this->classes, 'carre')) {
-                $this->wiki->setParameter('forme','carre');
-            } 
+				if (strstr($this->classes, 'pull-right')){
+					$newclass = str_replace('right','',$this->classes) ;
+				} else {
+					$newclass = str_replace('right','pull-right',$this->classes) ; 
+				}
+            }
+			if (strstr($this->classes, 'left')) {
+				if (strstr($this->classes, 'pull-left')){
+					$newclass = str_replace('left','',$this->classes) ;
+				} else {
+					$newclass = str_replace('left','pull-left',$this->classes) ; 
+				}
+            }
+			
 			// define class
 			if ($newclass != ''){
 				$this->wiki->setParameter('class',$newclass) ;

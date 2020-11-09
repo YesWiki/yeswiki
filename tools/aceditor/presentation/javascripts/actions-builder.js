@@ -79,7 +79,7 @@ window.myapp = new Vue({
     },
     selectedActionAllConfigs() {
       let result = {}
-      this.configPanels.forEach(panel => result = {...result, ...panel.properties })
+      this.configPanels.forEach(panel => result = {...result, ...panel.params.properties })
       return result
     },
     wikiCodeBase() {
@@ -187,7 +187,9 @@ window.myapp = new Vue({
       for(let key in this.values) {
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
-        if (result.hasOwnProperty(key) || value === undefined || config && value === config.default || typeof value == "object") continue
+        if (result.hasOwnProperty(key) || value === undefined || config && value === config.default 
+            || typeof value == "object" || config && !this.display(config) ) 
+          continue
         result[key] = value
       }
       // Adds values from special components

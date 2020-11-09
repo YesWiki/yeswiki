@@ -13,3 +13,6 @@ RUN apt-get update \
 RUN mkdir -p themes/margot \
     && curl -o - -sSL https://github.com/YesWiki/yeswiki-theme-margot/archive/master.tar.gz \
         | tar xzfv - --strip-components 1 -C themes/margot
+
+# Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

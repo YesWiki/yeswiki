@@ -5,20 +5,30 @@ actions:
   commons:
     title: Pour les images
     width: 40%
+    showif:
+      file: \.(png|jpg|jpeg|gif|pdf)$
     properties:
       link:
         label: Lien quand on cliquera sur l'image
         default: https://
         type: url
+        showif:
+          file: \.(png|jpg|jpeg|gif)$
       caption:
         label: Texte affiché au survol
         type: text
+        showif:
+          file: \.(png|jpg|jpeg|gif)$
       legend:
         label: Légende
         type: text
+        showif:
+          file: \.(png|jpg|jpeg|gif)$
       size:
         label: Taille de l'image
         type: list
+        showif:
+          file: \.(png|jpg|jpeg|gif)$
         options:
           small: Petite
           medium: Moyenne
@@ -28,10 +38,14 @@ actions:
         label: Largeur
         type: number
         advanced: true
+        showif:
+          file: \.(png|jpg|jpeg|gif)$
       height:
         label: Hauteur
         type: number
         advanced: true
+        showif:
+          file: \.(png|jpg|jpeg|gif)$
       class:
         label: Classe
         type: class
@@ -39,6 +53,8 @@ actions:
           position:
             label: Position
             type: list
+            showif:
+              file: \.(png|jpg|jpeg|gif|pdf)$
             options:
               left: Gauche
               center: Centre
@@ -46,6 +62,8 @@ actions:
           effect:
             label: Effet
             type: list
+            showif:
+              file: \.(png|jpg|jpeg|gif|pdf)$
             options:
               lightshadow: Ombre portée
               whiteborder: Bord blanc
@@ -55,6 +73,8 @@ actions:
             type: list
             advanced: true
             hint: Et beaucoup plus d'effets disponibles sur https://ciar4n.com/izmir
+            showif:
+              file: \.(png|jpg|jpeg|gif)$
             options:
               c4-izmir: Izmir
               c4-izmir c4-border-cc-3: Bordure
@@ -69,8 +89,9 @@ actions:
     description: Attacher un fichier
     properties:
       file:
-        label: Nom du fichier uploadé
+        label: Fichier uploadé
         type: text    
+        hint: Pour afficher le fichier d'une autre page, taper "NomDePage/NomDeFicher.ext"
       desc:
         label: Description
         type: text
@@ -78,9 +99,37 @@ actions:
         label: Afficher le fichier PDF
         type: list
         default: ''
+        showif:
+          file: \.pdf$
         options:
           1: Oui
           0: Non
+      ratio:
+        label: _t(AB_attach_pdf_ratio_label)
+        type: list
+        advanced: true
+        showif:
+          displaypdf: 1
+          file: \.pdf$
+        default: ''
+        options:
+          portrait: _t(AB_attach_pdf_ratio_option_portrait)
+          paysage: _t(AB_attach_pdf_ratio_option_paysage)
+          carre: _t(AB_attach_pdf_ratio_option_carre)
+      largeurmax:
+        label: _t(AB_attach_pdf_largeur_max_label)
+        type: number
+        advanced: true
+        showif:
+          displaypdf: 1
+          file: \.pdf$
+      hauteurmax:
+        label: _t(AB_attach_pdf_hauteur_max_label)
+        type: number
+        advanced: true
+        showif:
+          displaypdf: 1
+          file: \.pdf$
 
 
 

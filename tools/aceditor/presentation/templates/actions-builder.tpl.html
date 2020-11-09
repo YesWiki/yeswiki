@@ -33,13 +33,14 @@
           <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup.previewHeight"></preview-action>
 
           <div class="panels-config-container">
-            <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class" :style="{width: panel.params.width || '50%'}">
+            <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class" 
+                 :style="{width: panel.params.width || '50%'}" v-show="checkVisibility(panel.params)">
               <h3>{{ panel.params.title ? panel.params.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
               <div class="config-panel-content">
                 <template v-for="(config, propName) in panel.params.properties">
                   <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
-                             v-show="showIfFrom(config)"
+                             v-show="checkVisibility(config)"
                              :name="propName" :values="values"
                              :config="config" :selected-form="selectedForm">
                   </component>
