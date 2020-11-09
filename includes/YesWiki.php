@@ -33,6 +33,7 @@ use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Tags\Service\TagsManager;
 
@@ -62,7 +63,6 @@ class Wiki
     // LinkTrackink
     public $isTrackingLinks = false;
     public $linktable = array();
-    public $pageCache = array();
     public $pageCacheFormatted = array();
     public $_groupsCache = array();
     public $_actionsAclsCache = array();
@@ -213,70 +213,6 @@ class Wiki
         return $temp;
     }
 
-    // PAGES
-    public function LoadPage($tag, $time = "", $cache = 1)
-    {
-        // retrieve from cache
-        if (! $time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false)) {
-            if ($cachedPage and !isset($cachedPage["metadatas"])) {
-                $cachedPage["metadatas"] = $this->GetMetaDatas($tag);
-            }
-            $page = $cachedPage;
-        } else { // load page
-
-            $sql = 'SELECT * FROM ' . $this->config['table_prefix'] . 'pages' . " WHERE tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' AND " . ($time ? "time = '" . mysqli_real_escape_string($this->dblink, $time) . "'" : "latest = 'Y'") . " LIMIT 1";
-            $page = $this->LoadSingle($sql);
-
-            // si la page existe, on charge les meta-donnees
-            if ($page) {
-                $page["metadatas"] = $this->GetMetaDatas($tag);
-            }
-
-            if ($this->services->get(FicheManager::class)->isFiche($tag)) {
-                $page = $this->services->get(Guard::class)->checkAcls($page, $tag);
-            }
-
-            // cache result
-            if (! $time) {
-                $this->CachePage($page, $tag);
-            }
-        }
-        return $page;
-    }
-
-    /**
-     * Retrieves the cached version of a page.
-     *
-     * Notice that this method null or false, use
-     * $this->GetCachedPage($tag) === false
-     * to check if a page is not in the cache.
-     *
-     * @return mixed The cached version of a page:
-     *         - the page DB line if the page exists and is in cache
-     *         - null if the cache knows that the page does not exists
-     *         - false is the cache does not know the page
-     */
-    public function GetCachedPage($tag)
-    {
-        return (array_key_exists($tag, $this->pageCache) ? $this->pageCache[$tag] : false);
-    }
-
-    /**
-     * Caches a page's DB line.
-     *
-     * @param array $page
-     *            The page (full) DB line or null if the page does not exists
-     * @param string $pageTag
-     *            The tag of the page to cache. Defaults to $page['tag'] but is mendatory when $page === null
-     */
-    public function CachePage($page, $pageTag = null)
-    {
-        if ($pageTag === null) {
-            $pageTag = $page['tag'];
-        }
-        $this->pageCache[$pageTag] = $page;
-    }
-
     public function SetPage($page)
     {
         if (!empty($page)) {
@@ -284,152 +220,6 @@ class Wiki
             if (!empty($this->page['tag'])) {
                 $this->tag = $this->page['tag'];
             }
-        }
-    }
-
-    public function LoadPageById($id)
-    {
-        return $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . mysqli_real_escape_string($this->dblink, $id) . "' limit 1");
-    }
-
-    public function LoadRevisions($page)
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where tag = '" . mysqli_real_escape_string($this->dblink, $page) . "' order by time desc");
-    }
-
-    public function LoadPagesLinkingTo($tag)
-    {
-        return $this->LoadAll('select from_tag as tag from ' . $this->config['table_prefix'] . "links where to_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' order by tag");
-    }
-
-    public function LoadRecentlyChanged($limit = 50, $minDate = '')
-    {
-        if (!empty($minDate)) {
-            if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
-                //foreach ($pages as $page) {
-                //    $this->CachePage($page);
-                //}
-                return $pages;
-            }
-        } else {
-            $limit = (int) $limit;
-            if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
-                //foreach ($pages as $page) {
-                //    $this->CachePage($page);
-                //}
-                return $pages;
-            }
-        }
-    }
-
-    public function LoadAllPages()
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' order by tag");
-    }
-
-    public function GetPageCreateTime($pageTag)
-    {
-        $sql = 'SELECT time FROM '.$this->config['table_prefix'].'pages'
-            .' WHERE tag = "'.mysqli_real_escape_string($this->dblink, $pageTag).'"'
-            .' AND comment_on = ""'
-            .' ORDER BY `time` ASC LIMIT 1';
-        $page = $this->LoadSingle($sql);
-        if ($page) {
-            return $page['time'];
-        }
-        return null ;
-    }
-
-    public function FullTextSearch($phrase)
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and (body LIKE '%" . mysqli_real_escape_string($this->dblink, $phrase) . "%' OR tag LIKE '%" . mysqli_real_escape_string($this->dblink, $phrase) . "%')");
-    }
-
-    public function LoadWantedPages()
-    {
-        $p = $this->config['table_prefix'];
-        $r = "SELECT ${p}links.to_tag AS tag, COUNT(${p}links.from_tag) AS count " . "FROM ${p}links LEFT JOIN ${p}pages ON ${p}links.to_tag = ${p}pages.tag " . "WHERE ${p}pages.tag IS NULL GROUP BY ${p}links.to_tag ORDER BY count DESC, tag ASC";
-        return $this->LoadAll($r);
-    }
-
-    public function LoadOrphanedPages()
-    {
-        return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.comment_on = '' and p.latest = 'Y' order by tag");
-    }
-
-    public function IsOrphanedPage($tag)
-    {
-        return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.latest = 'Y' and tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'");
-    }
-
-    public function DeleteOrphanedPage($tag)
-    {
-        $p = $this->config['table_prefix'];
-        $this->Query("DELETE FROM ${p}pages WHERE tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' OR comment_on='" . mysqli_real_escape_string($this->dblink, $tag) . "'");
-        $this->Query("DELETE FROM ${p}links WHERE from_tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' ");
-        $this->Query("DELETE FROM ${p}acls WHERE page_tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' ");
-        $this->Query("DELETE FROM ${p}referrers WHERE page_tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' ");
-    }
-
-    /**
-     * SavePage
-     * Sauvegarde un contenu dans une page donnee
-     *
-     * @param string $body
-     *            Contenu a sauvegarder dans la page
-     * @param string $tag
-     *            Nom de la page
-     * @param string $comment_on
-     *            Indication si c'est un commentaire
-     * @param boolean $bypass_acls
-     *            Indication si on bypasse les droits d'ecriture
-     * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
-     */
-    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
-    {
-        // get current user
-        $user = $this->GetUserName();
-
-        // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->HasAccess('comment', $comment_on) : $this->HasAccess('write', $tag));
-
-        if ($rights) {
-            // is page new?
-            if (! $oldPage = $this->LoadPage($tag)) {
-                // create default write acl. store empty write ACL for comments.
-                $this->SaveAcl($tag, 'write', ($comment_on ? $user : $this->GetConfigValue('default_write_acl')));
-
-                // create default read acl
-                $this->SaveAcl($tag, 'read', $this->GetConfigValue('default_read_acl'));
-
-                // create default comment acl.
-                $this->SaveAcl($tag, 'comment', ($comment_on ? '' : $this->GetConfigValue('default_comment_acl')));
-
-                // current user is owner; if user is logged in! otherwise, no owner.
-                if ($this->GetUser()) {
-                    $owner = $user;
-                } else {
-                    $owner = '';
-                }
-            } else {
-                // aha! page isn't new. keep owner!
-                $owner = $oldPage['owner'];
-
-                // ...and comment_on, eventualy?
-                if ($comment_on == '') {
-                    $comment_on = $oldPage['comment_on'];
-                }
-            }
-
-            // set all other revisions to old
-            $this->Query('update ' . $this->config['table_prefix'] . "pages set latest = 'N' where tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'");
-
-            // add new revision
-            $this->Query('insert into ' . $this->config['table_prefix'] . 'pages set ' . "tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', " . ($comment_on ? "comment_on = '" . mysqli_real_escape_string($this->dblink, $comment_on) . "', " : "") . "time = now(), " . "owner = '" . mysqli_real_escape_string($this->dblink, $owner) . "', " . "user = '" . mysqli_real_escape_string($this->dblink, $user) . "', " . "latest = 'Y', " . "body = '" . mysqli_real_escape_string($this->dblink, chop($body)) . "', " . "body_r = ''");
-            unset($this->pageCache[$tag]);
-            return 0;
-        } else {
-            return 1;
         }
     }
 
@@ -2196,58 +1986,205 @@ class Wiki
      * RETRO-COMPATIBILITY
      */
 
+    /**
+     * @deprecated Use DbService::query instead
+     */
     public function Query($query) {
         return $this->services->get(DbService::class)->query($query);
     }
 
+    /**
+     * @deprecated Use DbService::loadSingle instead
+     */
     public function LoadSingle($query) {
         return $this->services->get(DbService::class)->loadSingle($query);
     }
 
+    /**
+     * @deprecated Use DbService::loadAll instead
+     */
     public function LoadAll($query) {
         return $this->services->get(DbService::class)->loadAll($query);
     }
 
+    /**
+     * @deprecated Use PageManager::getOne instead
+     */
+    public function LoadPage($tag, $time = "", $cache = 1) {
+        return $this->services->get(PageManager::class)->getOne($tag, $time, $cache);
+    }
+
+    /**
+     * @deprecated Use PageManager::getCached instead
+     */
+    public function GetCachedPage($tag) {
+        return $this->services->get(PageManager::class)->getCached($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::cache instead
+     */
+    public function CachePage($page, $pageTag = null) {
+        return $this->services->get(PageManager::class)->cache($page, $pageTag);
+    }
+
+    /**
+     * @deprecated Use PageManager::getById instead
+     */
+    public function LoadPageById($id) {
+        return $this->services->get(PageManager::class)->getById($id);
+    }
+
+    /**
+     * @deprecated Use PageManager::getRevisions instead
+     */
+    public function LoadRevisions($page) {
+        return $this->services->get(PageManager::class)->getRevisions($page);
+    }
+
+    /**
+     * @deprecated Use PageManager::getLinkingTo instead
+     */
+    public function LoadPagesLinkingTo($tag) {
+        return $this->services->get(PageManager::class)->getLinkingTo($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::getRecentlyChanged instead
+     */
+    public function LoadRecentlyChanged($limit = 50, $minDate = '') {
+        return $this->services->get(PageManager::class)->getRecentlyChanged($limit, $minDate);
+    }
+
+    /**
+     * @deprecated Use PageManager::getAll instead
+     */
+    public function LoadAllPages() {
+        return $this->services->get(PageManager::class)->getAll();
+    }
+
+    /**
+     * @deprecated Use PageManager::getCreateTime instead
+     */
+    public function GetPageCreateTime($pageTag) {
+        return $this->services->get(PageManager::class)->getCreateTime($pageTag);
+    }
+
+    /**
+     * @deprecated Use PageManager::searchFullText instead
+     */
+    public function FullTextSearch($phrase) {
+        return $this->services->get(PageManager::class)->searchFullText($phrase);
+    }
+
+    /**
+     * @deprecated Use PageManager::getWanted instead
+     */
+    public function LoadWantedPages() {
+        return $this->services->get(PageManager::class)->getWanted();
+    }
+
+    /**
+     * @deprecated Use PageManager::getOrphaned instead
+     */
+    public function LoadOrphanedPages() {
+        return $this->services->get(PageManager::class)->getOrphaned();
+    }
+
+    /**
+     * @deprecated Use PageManager::isOrphaned instead
+     */
+    public function IsOrphanedPage($tag) {
+        return $this->services->get(PageManager::class)->isOrphaned($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::deletedOrphaned instead
+     */
+    public function DeleteOrphanedPage($tag) {
+        return $this->services->get(PageManager::class)->deletedOrphaned($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::save instead
+     */
+    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false) {
+        return $this->services->get(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
+    }
+
+    /**
+     * @deprecated Use TagsManager::deleteAll instead
+     */
     public function DeleteAllTags($page) {
         return $this->services->get(TagsManager::class)->deleteAll($page);
     }
 
+    /**
+     * @deprecated Use TagsManager::save instead
+     */
     public function SaveTags($page, $liste_tags) {
         return $this->services->get(TagsManager::class)->save($page, $liste_tags);
     }
 
+    /**
+     * @deprecated Use TagsManager::getAll instead
+     */
     public function GetAllTags($page = '') {
         return $this->services->get(TagsManager::class)->getAll($page);
     }
 
+    /**
+     * @deprecated Use TagsManager::getPagesByTags instead
+     */
     public function PageList($tags = '', $type = '', $nb = '', $tri = '') {
         return $this->services->get(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
     }
 
+    /**
+     * @deprecated Use TripleStore::getOne instead
+     */
     public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
         return $this->services->get(TripleStore::class)->getOne($resource, $property, $re_prefix, $prop_prefix);
     }
 
+    /**
+     * @deprecated Use TripleStore::getMatching instead
+     */
     public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') {
         return $this->services->get(TripleStore::class)->getMatching($resource, $property, $value, $res_op, $prop_op);
     }
 
+    /**
+     * @deprecated Use TripleStore::getAll instead
+     */
     public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX){
         return $this->services->get(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
     }
 
+    /**
+     * @deprecated Use TripleStore::exist instead
+     */
     public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
         return $this->services->get(TripleStore::class)->exist($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 
+    /**
+     * @deprecated Use TripleStore::create instead
+     */
     public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
         return $this->services->get(TripleStore::class)->create($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 
+    /**
+     * @deprecated Use TripleStore::update instead
+     */
     public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
         return $this->services->get(TripleStore::class)->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
     }
 
+    /**
+     * @deprecated Use TripleStore::delete instead
+     */
     public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
         return $this->services->get(TripleStore::class)->delete($resource, $property, $value, $re_prefix, $prop_prefix);
     }
