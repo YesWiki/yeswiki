@@ -121,8 +121,8 @@ actions:
         type: list
         advanced: true
         options:
-          false: _t(AB_bazar_facettes_groupsexpanded_false)
-          true: _t(AB_bazar_facettes_groupsexpanded_true)
+          'false': _t(AB_bazar_facettes_groupsexpanded_false)
+          'true': _t(AB_bazar_facettes_groupsexpanded_true)
         showif: facettes
       filterposition:
         label: Position des facettes
