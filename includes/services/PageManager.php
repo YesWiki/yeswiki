@@ -187,7 +187,7 @@ class PageManager
      *            Indication si on bypasse les droits d'ecriture
      * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
      */
-    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
+    public function save($tag, $body, $comment_on = "", $bypass_acls = false)
     {
         // get current user
         $user = $this->wiki->GetUserName();
