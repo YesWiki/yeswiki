@@ -26,12 +26,11 @@ class TemplatesEngine
         $cacheid = $this->generateCacheId($tool, $file, $lastModified, $semantic_template);
         $this->templates[$cacheid]['cached']   = false;
         $this->templates[$cacheid]['vars']     = array();
-
-        if (!($this->isTemplateCached($cacheid))) {
+        $this->templates[$cacheid]['file']     = $file;
+        if (!($this->isCached($cacheid))) {
             foreach ($values as $key => $val) {
                 $this->templates[$cacheid]['vars'][$key] = $val;
             }
-
             extract($this->templates[$cacheid]['vars']); // Extract the vars to local namespace
             ob_start();                       // Start output buffering
             include($this->templates[$cacheid]['file']); // Include the file
