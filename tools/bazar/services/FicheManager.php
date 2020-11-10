@@ -133,7 +133,7 @@ class FicheManager
                 if ($i > 0) {
                     $requeteSQL .= ' OR ';
                 }
-                $requeteSQL .= ' body LIKE \'%'.$this->dbService($recherche[$i]).'%\'';
+                $requeteSQL .= ' body LIKE \'%'.$this->dbService->escape($recherche[$i]).'%\'';
             }
             $requeteSQL .= ')';
         }
