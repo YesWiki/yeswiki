@@ -163,7 +163,7 @@ var SYNTAX = {
             '</div>');
 
       // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
-      if (actionsBuilderData) {
+      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData) {
         var result = '<div class="btn-group">' +
                '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
                '<ul class="dropdown-menu component-action-list">';
