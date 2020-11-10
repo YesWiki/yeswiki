@@ -1,0 +1,7 @@
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Tags\Service\:
+    resource: 'services/*'

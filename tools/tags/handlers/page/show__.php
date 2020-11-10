@@ -26,10 +26,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Verification de securite
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+$tagsManager = $this->services->get(TagsManager::class);
 
 // on supprime la vieille gestion des commentaires
 $string = '/\<div class="commentsheader"\>.*\<\/div\>/Uis';
@@ -72,7 +75,7 @@ if ($GLOBALS["open_comments"][$tag]) {
 
 // on affiche la liste des mots cles disponibles pour cette page
 if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_bazar'))) {
-    $tabtagsexistants = $this->GetAllTags($this->GetPageTag());
+    $tabtagsexistants = $tagsManager->getAll($this->GetPageTag());
     $tagspage = array();
     foreach ($tabtagsexistants as $tab) {
         $tagspage[] = _convert($tab["value"], 'ISO-8859-1');

@@ -42,11 +42,13 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get(FicheManager::class);
 
 // recuperation des parametres
 $GLOBALS['params'] = getAllParameters($this);
@@ -77,7 +79,7 @@ switch ($GLOBALS['params']['vue']) {
                 break;
             case BAZ_VOIR_FICHE:
                 if (isset($_REQUEST['id_fiche'])) {
-                    $fiche = $bazarFiche->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
+                    $fiche = $ficheManager->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
                     if (!$fiche) {
                         echo '<div class="alert alert-danger">'
                             ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '
@@ -118,7 +120,7 @@ switch ($GLOBALS['params']['vue']) {
     case BAZ_VOIR_SAISIR:
         switch ($GLOBALS['params']['action']) {
             case BAZ_ACTION_SUPPRESSION:
-                $bazarFiche->delete($_REQUEST['id_fiche']);
+                $ficheManager->delete($_REQUEST['id_fiche']);
                 header('Location: '.$this->href('', $_REQUEST['id_fiche'], 'message=delete_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER));
                 break;
             case BAZ_ACTION_PUBLIER:

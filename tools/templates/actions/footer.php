@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Core\Service\DbService;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -38,7 +41,9 @@ if ($act = preg_match_all("/".'(\\{\\{)'.'(.*?)'.'(\\}\\})'."/is", $template_foo
 if ($this->GetConfigValue('debug')=='yes') {
     $debug_log_sql_queries = '';
     $T_SQL=0;
-    foreach ($this->queryLog as $query) {
+
+    $queryLog = $this->services->get(DbService::class)->getQueryLog();
+    foreach ($queryLog as $query) {
         $debug_log_sql_queries .= $query['query'].' ('.round($query['time'], 4).")<br />\n";
         $T_SQL = $T_SQL + $query['time'];
     }
@@ -47,7 +52,7 @@ if ($this->GetConfigValue('debug')=='yes') {
     $debug_log = "<div class=\"debug\">\n<h4>Query log</h4>\n";
     $debug_log .= "<strong>".round($end-T_START, 4)." s total time<br />\n";
     $debug_log .= round($T_SQL, 4)." s total SQL time</strong> (".round((($T_SQL/($end-T_START))*100), 2)."% of total time)<br />\n";
-    $debug_log .= "<strong>".count($this->queryLog)." queries :</strong><br />\n";
+    $debug_log .= "<strong>".count($queryLog)." queries :</strong><br />\n";
     $debug_log .= $debug_log_sql_queries;
     $debug_log .= "</div>\n";
     $template_footer = str_replace('</body>', $debug_log.'</body>', $template_footer);

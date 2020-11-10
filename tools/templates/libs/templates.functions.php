@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -789,13 +792,15 @@ function getImageFromBody($page, $width, $height)
  */
 function getTitleFromBody($page)
 {
+    $ficheManager = $GLOBALS['wiki']->services->get(FicheManager::class);
+
     if (!isset($page['body']) || !isset($page['tag'])) {
         return '';
     }
     $title = '';
 
-    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
-        $entry = $GLOBALS['bazarFiche']->getOne($page['tag']);
+    if ($ficheManager->isFiche($page['tag'])) {
+        $entry = $ficheManager->getOne($page['tag']);
         if (isset($entry['bf_titre'])){
             $title = _convert($entry['bf_titre'], 'UTF-8');
         }
@@ -830,13 +835,15 @@ function getTitleFromBody($page)
  */
 function getDescriptionFromBody($page, $title, $length = 300)
 {
+    $ficheManager = $GLOBALS['wiki']->services->get(FicheManager::class);
+
     if (!isset($page['body'])) {
         return '';
     }
     $desc = '';
 
-    if ($GLOBALS['bazarFiche']->isFiche($page['tag'])) {
-        $entry = $GLOBALS['bazarFiche']->getOne($page['tag']);
+    if ($ficheManager->isFiche($page['tag'])) {
+        $entry = $ficheManager->getOne($page['tag']);
         foreach(['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
             if (isset($entry[$prop])) {
                 $desc = _convert($entry[$prop], 'UTF-8');
@@ -863,4 +870,111 @@ function getDescriptionFromBody($page, $title, $length = 300)
     );
     $desc = strtok(wordwrap($desc, $length, "…\n"), "\n");
     return $desc;
+}
+
+function loadTemplates($metadata, &$config)
+{
+    // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
+    if (isset($config['hide_action_template']) && $config['hide_action_template'] == '1') {
+        if (!isset($config['favorite_theme'])) {
+            $config['favorite_theme'] = THEME_PAR_DEFAUT;
+        }
+        if (!isset($config['favorite_style'])) {
+            $config['favorite_style'] = CSS_PAR_DEFAUT;
+        }
+        if (!isset($config['favorite_squelette'])) {
+            $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+        }
+        if (!isset($config['favorite_background_image'])) {
+            $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+        }
+    } else {
+        // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
+        if (isset($_REQUEST['theme']) && (is_dir('custom/themes/'.$_REQUEST['theme']) || is_dir('themes/'.$_REQUEST['theme'])) &&
+            isset($_REQUEST['style']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style']) || is_file('themes/'.$_REQUEST['theme'].'/styles/'.$_REQUEST['style'])) &&
+            isset($_REQUEST['squelette']) && (is_file('custom/themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']) || is_file('themes/'.$_REQUEST['theme'].'/squelettes/'.$_REQUEST['squelette']))
+        ) {
+            $config['favorite_theme'] = $_REQUEST['theme'];
+            $config['favorite_style'] = $_REQUEST['style'];
+            $config['favorite_squelette'] = $_REQUEST['squelette'];
+
+            if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
+                $config['favorite_background_image'] = $_REQUEST['bgimg'];
+            } else {
+                $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+            }
+        } else {
+            // si les metas sont présentes on les utilise
+            if (isset($metadata['theme']) && isset($metadata['style']) && isset($metadata['squelette'])) {
+                $config['favorite_theme'] = $metadata['theme'];
+                $config['favorite_style'] = $metadata['style'];
+                $config['favorite_squelette'] = $metadata['squelette'];
+                if (isset($metadata['bgimg'])) {
+                    $config['favorite_background_image'] = $metadata['bgimg'];
+                } else {
+                    $config['favorite_background_image'] = '';
+                }
+            } else {
+                if (!isset($config['favorite_theme'])) {
+                    $config['favorite_theme'] = THEME_PAR_DEFAUT;
+                }
+                if (!isset($config['favorite_style'])) {
+                    $config['favorite_style'] = CSS_PAR_DEFAUT;
+                }
+                if (!isset($config['favorite_squelette'])) {
+                    $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+                }
+                if (!isset($config['favorite_background_image'])) {
+                    $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+                }
+            }
+        }
+    }
+
+    // Test existence du template, on utilise le template par defaut sinon==============================
+    if (
+        (!file_exists('custom/themes/'.$config['favorite_theme'].'/squelettes/'.$config['favorite_squelette'])
+            and !file_exists('themes/'.$config['favorite_theme'].'/squelettes/'.$config['favorite_squelette']))
+        || (!file_exists('custom/themes/'.$config['favorite_theme'].'/styles/'.$config['favorite_style'])
+            && !file_exists('themes/'.$config['favorite_theme'].'/styles/'.$config['favorite_style']))
+    ) {
+        if (
+            $config['favorite_theme'] != THEME_PAR_DEFAUT ||
+            (
+                $config['favorite_theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.$config['favorite_squelette'])  or
+                    !file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.$config['favorite_style']))
+            )
+        ) {
+            if (
+                file_exists('themes/'.THEME_PAR_DEFAUT.'/squelettes/'.SQUELETTE_PAR_DEFAUT)
+                && file_exists('themes/'.THEME_PAR_DEFAUT.'/styles/'.CSS_PAR_DEFAUT)
+            ) {
+                $GLOBALS['template-error']['type'] = 'theme-not-found';
+                $GLOBALS['template-error']['theme'] = $config['favorite_theme'];
+                $GLOBALS['template-error']['style'] = $config['favorite_style'];
+                $GLOBALS['template-error']['squelette'] = $config['favorite_squelette'];
+                $config['favorite_theme'] = THEME_PAR_DEFAUT;
+                $config['favorite_style'] = CSS_PAR_DEFAUT;
+                $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
+                $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
+            } else {
+                exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
+            }
+        }
+        $config['use_fallback_theme'] = true;
+    }
+
+    $templates = [];
+
+    // themes folder (used by {{update}})
+    if (is_dir('themes')) {
+        $templates = array_merge($templates, search_template_files('themes'));
+    }
+    // custom themes folder
+    if (is_dir('custom/themes')) {
+        $templates = array_merge($templates, search_template_files('custom/themes'));
+    }
+    ksort($templates);
+
+    return $templates;
 }

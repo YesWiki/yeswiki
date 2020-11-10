@@ -17,9 +17,14 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+
+use YesWiki\Tags\Service\TagsManager;
+
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
+
+$tagsManager = $this->services->get(TagsManager::class);
 
 include_once 'tools/tags/libs/tags.functions.php';
 $nbcartrunc = 200;
@@ -38,7 +43,7 @@ if (empty($template)) {
 $output = '';
 
 // affiche le resultat de la recherche
-$resultat = $this->PageList($tags, $type, $nb, $tri);
+$resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri);
 if ($resultat) {
     $nb_total = count($resultat);
     // affichage des resultats

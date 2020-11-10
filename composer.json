@@ -7,8 +7,11 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.1",
-        "mustangostang/spyc": "^0.6.3",
+        "ext-json": "*",
         "phpmailer/phpmailer": "6.1.6",
+        "symfony/dependency-injection": "^5.1",
+        "symfony/config": "^5.1",
+        "symfony/yaml": "^5.1",
         "yeswiki/theme-margot": "*",
         "oomphinc/composer-installers-extender": "^2.0"
     },

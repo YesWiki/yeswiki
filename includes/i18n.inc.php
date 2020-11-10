@@ -116,7 +116,7 @@ function detectAvailableLanguages()
  *  @string $http_accept_language a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
  *  @string $page    name of WikiPage to check for informations on language
  */
-function detectPreferedLanguage($available_languages, $http_accept_language = "auto", $page = '')
+function detectPreferedLanguage($wiki, $available_languages, $http_accept_language = "auto", $page = '')
 {
     if (isset($_GET['lang']) && in_array($_GET['lang'], $available_languages)) {
         // first choice : if lang changed in url
@@ -155,16 +155,16 @@ function detectPreferedLanguage($available_languages, $http_accept_language = "a
         }
     } elseif ($page!='') {
         // page's metadata lang
-        $GLOBALS['wiki']->metadatas = $GLOBALS['wiki']->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-        if (!empty($GLOBALS['wiki']->metadatas)) {
-            $GLOBALS['wiki']->metadatas =  json_decode($GLOBALS['wiki']->metadatas, true);
+        $wiki->metadatas = $wiki->GetTripleValue($page, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
+        if (!empty($wiki->metadatas)) {
+            $wiki->metadatas =  json_decode($wiki->metadatas, true);
         }
-        if (isset($GLOBALS['wiki']->metadatas['lang']) && in_array($GLOBALS['wiki']->metadatas['lang'], $available_languages)) {
-            return $GLOBALS['wiki']->metadatas['lang'];
+        if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $available_languages)) {
+            return $wiki->metadatas['lang'];
         }
         // default language from config file
-        if (isset($GLOBALS['wiki']->config['default_language']) && in_array($GLOBALS['wiki']->config['default_language'], $available_languages)) {
-            return $GLOBALS['wiki']->config['default_language'];
+        if (isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $available_languages)) {
+            return $wiki->config['default_language'];
         }
     } elseif ($http_accept_language == "auto") {
         // if $http_accept_language was left out, read it from the HTTP-Header of the browser
@@ -237,7 +237,7 @@ function initI18n()
     require_once 'lang/yeswiki_fr.php';
 
     $GLOBALS['available_languages'] = detectAvailableLanguages();
-    $GLOBALS['prefered_language'] = detectPreferedLanguage($GLOBALS['available_languages']);
+    $GLOBALS['prefered_language'] = detectPreferedLanguage($GLOBALS['wiki'], $GLOBALS['available_languages']);
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
@@ -252,9 +252,9 @@ function initI18n()
  *
  *  @string $page    name of current WikiPage to check for informations on language
  */
-function loadpreferredI18n($page = '')
+function loadpreferredI18n($wiki, $page = '')
 {
-    $GLOBALS['prefered_language'] = detectPreferedLanguage($GLOBALS['available_languages'], 'auto', $page);
+    $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages'], 'auto', $page);
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language

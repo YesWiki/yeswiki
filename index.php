@@ -35,8 +35,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+spl_autoload_register(function ($className) {
+    $classNameArray = explode('\\', $className);
+    // Autoload services
+    if($classNameArray[2]==='Service') {
+        if ($classNameArray[1] === 'Core') {
+            require 'includes/services/' . $classNameArray[3] . '.php';
+        } else {
+            $extension = strtolower($classNameArray[1]);
+            require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
+        }
+    }
+});
+
 require_once 'vendor/autoload.php';
 require_once 'includes/YesWiki.php';
 $wiki = new \YesWiki\Wiki();
-$wiki = $wiki->loadExtensions();
 $wiki->Run($wiki->tag, $wiki->method);

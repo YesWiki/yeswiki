@@ -1,14 +1,28 @@
 <?php
 
-namespace YesWiki;
+namespace YesWiki\Bazar\Service;
 
-class BazarFiche
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\Mailer;
+use YesWiki\Core\Service\TripleStore;
+use YesWiki\Wiki;
+
+class FicheManager
 {
-    protected $wiki = ''; // give access to the main wiki object
+    protected $wiki;
+    protected $mailer;
+    protected $tripleStore;
+    protected $dbService;
+    protected $params;
 
-    public function __construct($wiki)
+    public function __construct(Wiki $wiki, Mailer $mailer, TripleStore $tripleStore, DbService $dbService, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
+        $this->mailer = $mailer;
+        $this->tripleStore = $tripleStore;
+        $this->dbService = $dbService;
+        $this->params = $params;
     }
 
     /**
@@ -18,7 +32,7 @@ class BazarFiche
      */
     public function isFiche($tag)
     {
-        $pageType = $this->wiki->GetTripleValue($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '');
+        $pageType = $this->tripleStore->getOne($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '');
         return ($pageType === 'fiche_bazar');
     }
 
@@ -68,13 +82,13 @@ class BazarFiche
 
         // requete pour recuperer toutes les PageWiki etant des fiches bazar
         $requete_pages_wiki_bazar_fiches =
-            'SELECT DISTINCT resource FROM '.$this->wiki->config['table_prefix'].'triples '.
+            'SELECT DISTINCT resource FROM '.$this->dbService->prefixTable('triples').
             'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
             'ORDER BY resource ASC';
 
         $requete =
-            'SELECT DISTINCT * FROM '.$this->wiki->config['table_prefix'].
-            'pages WHERE latest="Y" AND comment_on = \'\'';
+            'SELECT DISTINCT * FROM '.$this->dbService->prefixTable('pages').
+            'WHERE latest="Y" AND comment_on = \'\'';
 
         // On limite au type de fiche
         if (!empty($params['formsIds'])) {
@@ -95,8 +109,7 @@ class BazarFiche
 
         // si une personne a ete precisee, on limite la recherche sur elle
         if ($params['user'] !== '') {
-            $params['user'] = mysqli_escape_string(
-                $this->wiki->dblink,
+            $params['user'] = $this->dbService->escape(
                 preg_replace('/^"(.*)"$/', '$1', json_encode($params['user']))
             );
             // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
@@ -111,7 +124,7 @@ class BazarFiche
 
         //preparation de la requete pour trouver les mots cles
         if (trim($params['keywords']) != '' && $params['keywords'] !=_t('BAZ_MOT_CLE')) {
-            $this->wiki->Query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
+            $this->dbService->query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
             $search = str_replace(array('["', '"]'), '', json_encode(array(removeAccents($params['keywords']))));
             $recherche = explode(' ', $search);
             $nbmots = count($recherche);
@@ -120,7 +133,7 @@ class BazarFiche
                 if ($i > 0) {
                     $requeteSQL .= ' OR ';
                 }
-                $requeteSQL .= ' body LIKE \'%'.mysqli_escape_string($this->wiki->dblink, $recherche[$i]).'%\'';
+                $requeteSQL .= ' body LIKE \'%'.$this->dbService->escape($recherche[$i]).'%\'';
             }
             $requeteSQL .= ')';
         }
@@ -265,7 +278,7 @@ class BazarFiche
         $reqid = 'bazar-search-'.md5($requete);
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
             $GLOBALS['_BAZAR_'][$reqid] = array();
-            $results = $this->wiki->LoadAll($requete);
+            $results = $this->dbService->loadAll($requete);
             foreach ($results as $page) {
                 $json = $this->decode($page['body']);
                 $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
@@ -329,8 +342,8 @@ class BazarFiche
         }
 
         $ignoreAcls = true;
-        if (isset($this->wiki->config['bazarIgnoreAcls'])) {
-            $ignoreAcls = $this->wiki->config['bazarIgnoreAcls'];
+        if ($this->params->has('bazarIgnoreAcls')) {
+            $ignoreAcls = $this->params->get('bazarIgnoreAcls');
         }
 
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
@@ -344,7 +357,7 @@ class BazarFiche
         // on cree un triple pour specifier que la page wiki creee est une fiche
         // bazar
         if ($saved == 0) {
-            $this->wiki->InsertTriple(
+            $this->tripleStore->create(
                 $data['id_fiche'],
                 'http://outils-reseaux.org/_vocabulary/type',
                 'fiche_bazar',
@@ -354,7 +367,7 @@ class BazarFiche
         }
 
         if ($sourceUrl) {
-            $this->wiki->InsertTriple(
+            $this->tripleStore->create(
                 $data['id_fiche'],
                 'http://outils-reseaux.org/_vocabulary/sourceUrl',
                 $sourceUrl,
@@ -371,8 +384,10 @@ class BazarFiche
             }
         }
 
-        // Envoi d'un mail aux administrateurs
-        $this->notifyAdmins($data, true);
+        if( $this->params->get('BAZ_ENVOI_MAIL_ADMIN') ) {
+            // Envoi d'un mail aux administrateurs
+            $this->mailer->notifyAdmins($data, true);
+        }
 
         return $data;
     }
@@ -412,8 +427,10 @@ class BazarFiche
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
 
-        // Envoi d'un mail aux administrateurs
-        $this->notifyAdmins($data, false);
+        if( $this->params->get('BAZ_ENVOI_MAIL_ADMIN') ) {
+            // Envoi d'un mail aux administrateurs
+            $this->mailer->notifyAdmins($data, false);
+        }
 
         return $data;
     }
@@ -433,13 +450,13 @@ class BazarFiche
 
         // Si besoin, on supprime l'utilisateur associé
         if (isset($fiche['nomwiki'])) {
-            $request = 'DELETE FROM `'.$this->wiki->config['table_prefix'].'users` WHERE `name` = "'. $fiche['nomwiki'].'"';
-            $this->wiki->query($request);
+            $request = 'DELETE FROM '.$this->dbService->prefixTable('users').' WHERE `name` = "'. $fiche['nomwiki'].'"';
+            $this->dbService->query($request);
         }
 
         $this->wiki->DeleteOrphanedPage($tag);
-        $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
-        $this->wiki->DeleteTriple($tag, 'http://outils-reseaux.org/_vocabulary/sourceUrl', null, '', '');
+        $this->tripleStore->delete($tag, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
+        $this->tripleStore->delete($tag, 'http://outils-reseaux.org/_vocabulary/sourceUrl', null, '', '');
         $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
@@ -588,39 +605,6 @@ class BazarFiche
         }
     }
 
-    protected function notifyAdmins($data, $new)
-    {
-        include_once 'tools/contact/libs/contact.functions.php';
-
-        if (!empty($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) && $this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
-            $lien = str_replace('/wakka.php?wiki=', '', $this->wiki->config['base_url']);
-            $sujet = removeAccents('[' . str_replace('http://', '', $lien) . '] nouvelle fiche ' . ($new ? 'ajoutee' : 'modifiee') . ' : ' . $data['bf_titre']);
-            $text = 'Voir la fiche sur le site pour l\'administrer : ' . $this->wiki->href('', $data['id_fiche']);
-            $texthtml = '<br /><br /><a href="' . $this->wiki->href('', $data['id_fiche']) . '" title="Voir la fiche">Voir la fiche sur le site pour l\'administrer</a>';
-            $fichier = 'tools/bazar/presentation/styles/bazar.css';
-            $style = file_get_contents($fichier);
-            $style = str_replace('url(', 'url(' . $lien . '/tools/bazar/presentation/', $style);
-            $fiche = str_replace(
-                    'src="tools',
-                    'src="' . $lien . '/tools',
-                    baz_voir_fiche(0, $data['id_fiche'])
-                ) . $texthtml;
-            $html =
-                '<html><head><style type="text/css">' . $style .
-                '</style></head><body>' . $fiche . '</body></html>';
-
-            // on va chercher les admins
-            $requeteadmins = 'SELECT value FROM ' . $this->wiki->config['table_prefix'] . 'triples '
-                . 'WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
-            $ligne = $this->wiki->LoadSingle($requeteadmins);
-            $tabadmin = explode("\n", $ligne['value']);
-            foreach ($tabadmin as $line) {
-                $admin = $this->wiki->LoadUser(trim($line));
-                send_mail($this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $this->wiki->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
-            }
-        }
-    }
-
     /**
      * Met à jour les valeurs des champs qui sont restreints en écriture
      *
@@ -642,8 +626,8 @@ class BazarFiche
             }
         }
         if (!empty($protected_fields_index)) {
-            $sql = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages' . " WHERE tag = '" . mysqli_real_escape_string($this->wiki->dblink, $data['id_fiche']) . "' AND latest = 'Y'" . " LIMIT 1";
-            $valjson = $this->wiki->LoadSingle($sql);
+            $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE tag = '" . $this->dbService->escape($data['id_fiche']) . "' AND latest = 'Y'" . " LIMIT 1";
+            $valjson = $this->dbService->loadSingle($sql);
             $old_fiche = json_decode($valjson['body'], true);
             foreach ($old_fiche as $key => $value) {
                 $old_fiche[$key] = _convert($value, 'UTF-8');

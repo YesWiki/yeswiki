@@ -1,0 +1,96 @@
+parameters:
+  # Indique les onglets de vues à afficher
+  # Possibilités: mes_fiches,consulter,rss,saisir,formulaire,listes,importer,exporter
+  baz_menu: 'formulaire,consulter,saisir,listes,importer,exporter'
+  # Envoi automatique de mail aux admins ?
+  BAZ_ENVOI_MAIL_ADMIN: false
+  # Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
+  BAZ_ADRESSE_MAIL_ADMIN: 'noreply@%host%'
+  # Choix du look du template par défaut $GLOBALS['wiki']->config['default_bazar_template']
+  default_bazar_template: 'liste_accordeon.tpl.html'
+  # Si un formulaire est sémantique et qu'il a un des contextes ci-dessous, nous allons chercher dans
+  # /tools/bazar/presentation/templates/{cle} pour voir si une template prédéfinie existe pour ce type sémantique
+  baz_semantic_types_mapping:
+    https://www.w3.org/ns/activitystreams: 'activitystreams'
+  # les passages de parametres query en get affectent-ils les resultats de fiches croisees avec checkboxfiche?
+  global_query: 'true'
+
+  # Valeurs liees aux flux RSS
+
+  # Nom du site indique dans les flux rss
+  BAZ_RSS_NOMSITE: '%wakka_name%'
+  # Adresse Internet du site indique dans les flux rss
+  BAZ_RSS_ADRESSESITE: '%base_url%'
+  # Description du site indiquee dans les flux rss
+  BAZ_RSS_DESCRIPTIONSITE: '%meta_description%'
+  # nombre maximum d'articles présents dans le flux rss
+  BAZ_NB_ENTREES_FLUX_RSS: 20
+  # Logo du site indique dans les flux rss
+  BAZ_RSS_LOGOSITE: 'https:#yeswiki.net/themes/margot/images/apple-touch-icon.png'
+  # Managing editor du site
+  BAZ_RSS_MANAGINGEDITOR: 'contact@yeswiki.net (Mr YesWiki)'
+  # Mail Webmaster du site
+  BAZ_RSS_WEBMASTER: '%BAZ_RSS_MANAGINGEDITOR%'
+  # Categorie du flux RSS
+  BAZ_RSS_CATEGORIE: 'Economie Sociale et Solidaire'
+
+  # Pour regler certaines fonctionnalites de l'application
+
+  # Valeur par defaut d'etat de la fiche annonce apres saisie
+  # 0 pour 'en attente de validation', 1 pour 'directement validee'
+  BAZ_ETAT_VALIDATION: '1'
+  # Valeur maximale en octets pour la taille d'un fichier joint a telecharger
+  BAZ_TAILLE_MAX_FICHIER: '%max-upload-size%'
+  # Type d'affichage des dates dans la liste
+  # Mettre jma pour jour mois annee, ou jm, ou jmah
+  BAZ_TYPE_AFFICHAGE_LISTE: 'jma'
+  # Reglage de l'affichage de la liste deroulante pour la saisie des dates Mettre a true pour afficher une liste deroulante vide pour la saisie des dates
+  BAZ_DATE_VIDE: false
+  # Option concernant la division des resultats en pages
+  BAZ_NOMBRE_RES_PAR_PAGE: 50
+  # 'Jumping' ou 'Sliding' voir http:#pear.php.net/manual/fr/package.html.pager.compare.php
+  BAZ_MODE_DIVISION: 'Jumping'
+  # Le nombre de page a afficher avant le 'next';
+  BAZ_DELTA: 12
+  # Le nombre maximum de fiches affichées par checkboxliste sans que les champs 'Filter' et 'Cocher tout' ne soient affichés
+  BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE: 6
+
+  # Parametres pour la carto google
+
+  # Coordonnees du centre de la carte : France par defaut
+  baz_map_center_lat: '46.22763'
+  baz_map_center_lon: '2.213749'
+  # prefixe des classes CSS pour les icones du marqueur
+  baz_marker_icon_prefix: 'fa fa-'
+  # nom court du provider de carto
+  baz_provider: 'OpenStreetMap.Mapnik'
+  # id du provider de carto
+  baz_provider_id: ''
+  # pwd du provider de carto
+  baz_provider_pass: ''
+  # icone du marqueur de base
+  baz_marker_icon: 'bullseye'
+  # couleur du marqueur de base
+  baz_marker_color: 'darkred'
+  # petit marqueur (par defaut : non)
+  baz_small_marker: ''
+  # niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
+  baz_map_zoom: 5
+  # taille de la carte a l'ecran: valeur de l'attribut css width de la carte
+  baz_map_width: '100%'
+  # taille de la carte a l'ecran : valeur de l'attribut css height de la carte
+  baz_map_height: '300px'
+  # afficher la navigation : true ou false
+  baz_show_nav: 'true'
+  # zoom a la roulette de souris : true ou false
+  baz_wheel_zoom: 'false'
+  # image marqueur
+  baz_marker_image_file: 'tools/bazar/presentation/images/marker.png'
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Bazar\Service\:
+    resource: 'services/*'

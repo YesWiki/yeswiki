@@ -1,11 +1,14 @@
 <?php
 
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
-global $bazarFiche;
 
-if ($this->HasAccess("write") && $this->HasAccess("read") && !$bazarFiche->isFiche($this->tag) && !isset($this->page["metadatas"]["ebook-title"])) {
+$ficheManager = $this->services->get(FicheManager::class);
+
+if ($this->HasAccess("write") && $this->HasAccess("read") && !$ficheManager->isFiche($this->tag) && !isset($this->page["metadatas"]["ebook-title"])) {
     // preview?
     if (isset($_POST["submit"]) && $_POST["submit"] == "Apercu") {
         // Rien

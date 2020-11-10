@@ -1,0 +1,14 @@
+parameters:
+  favorite_theme: 'margot'
+  favorite_style: 'margot.css'
+  favorite_squelette: '1col.tpl.html'
+  favorite_background_image: ''
+  hide_action_template: false
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Templates\Service\:
+    resource: 'services/*'

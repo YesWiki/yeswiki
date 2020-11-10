@@ -1,19 +1,21 @@
 <?php
 
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get(FicheManager::class);
 
-if ($bazarFiche->isFiche($this->GetPageTag())) {
+if ($ficheManager->isFiche($this->GetPageTag())) {
     if ($this->api->isAuthorized()) {
         $semantic = true; // strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false;
 
         $_POST['id_fiche'] = $this->GetPageTag();
         $_POST['antispam'] = 1;
 
-        $bazarFiche->update($this->GetPageTag(), $_POST, $semantic, true);
+        $ficheManager->update($this->GetPageTag(), $_POST, $semantic, true);
         http_response_code(204);
     } else {
         http_response_code(304);

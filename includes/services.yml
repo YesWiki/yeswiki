@@ -1,0 +1,17 @@
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  # Manually set inside the initCoreService method
+  # Allow to imitate Symfony https://symfony.com/doc/current/service_container/synthetic_services.html
+  Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface:
+    synthetic: true
+
+  # Manually set inside the initCoreService method
+  # TODO remove this object when refactoring will be finished
+  YesWiki\Wiki:
+    synthetic: true
+
+  YesWiki\Core\Service\:
+    resource: 'services/*'

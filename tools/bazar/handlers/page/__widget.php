@@ -26,12 +26,13 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get(FicheManager::class);
 
 if (isset($_GET['id'])) {
     // js lib
@@ -53,11 +54,11 @@ if (isset($_GET['id'])) {
         foreach ($params['idtypeannonce'] as $formId) {
             $results = array_merge(
                 $results,
-                $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
+                $ficheManager->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
             );
         }
     } else {
-        $results = $bazarFiche->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
+        $results = $ficheManager->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
     }
     //$params['groups'][0] = 'all';
     //$results = searchResultstoArray($results, $params);

@@ -30,6 +30,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+use YesWiki\Core\Service\DbService;
+
 $search_page = $this->href("", "RechercheTexte", "");
 $edit_link = $this->HasAccess("write") ? "<a href=\"".$this->href("edit")."\" title=\"Cliquez pour &eacute;diter cette page.\">&Eacute;diter cette page</a> ::\n" : "";
 $revisions_link = $this->GetPageTime() ? "<a href=\"".$this->href("revisions")."\" title=\"Cliquez pour voir les derni&egrave;res modifications sur cette page.\">".$this->GetPageTime()."</a> ::\n" : "";
@@ -72,7 +75,8 @@ if ($this->GetConfigValue("debug")=="yes")
 {
 	$debug_log = "<span class=\"debug\"><b>Query log :</b><br />\n";
 	$T_SQL=0;
-	foreach ($this->queryLog as $query)
+    $queryLog = $this->services->get(DbService::class)->getQueryLog();
+	foreach ($queryLog as $query)
 	{
 		$debug_log .= $query["query"]." (".round($query["time"],4).")<br />\n";
 		$T_SQL = $T_SQL + $query["time"];

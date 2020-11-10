@@ -26,15 +26,16 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-// Vérification de sécurité
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
     die ("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get(FicheManager::class);
 
-if ($bazarFiche->isFiche($this->GetPageTag())) {
+if ($ficheManager->isFiche($this->GetPageTag())) {
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
-    $fiche = $bazarFiche->getOne($this->GetPageTag());
+    $fiche = $ficheManager->getOne($this->GetPageTag());
     $this->page["body"] = '""'.baz_voir_fiche(0, $fiche).'""';
 }

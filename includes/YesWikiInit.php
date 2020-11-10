@@ -35,6 +35,11 @@
 
 namespace YesWiki;
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+
 /**
  * Yeswiki initialization class
  *
@@ -261,36 +266,30 @@ class Init
     }
 
     /**
-     * Initialize the database
-     *
-     * @return mixed $dblink database link object
+     * Initialize YesWiki core services
+     * Extensions services will be loaded in the YesWiki::loadExtensions method
      */
-    public function initDb()
+    public function initCoreServices($wiki)
     {
-        $dblink = @mysqli_connect(
-            $this->config['mysql_host'],
-            $this->config['mysql_user'],
-            $this->config['mysql_password'],
-            $this->config['mysql_database'],
-            isset($this->config['mysql_port']) ? $this->config['mysql_port'] : ini_get("mysqli.default_port")
-        );
-        if ($dblink) {
-            if (isset($this->config['db_charset']) and $this->config['db_charset'] === 'utf8mb4') {
-                // necessaire pour les versions de mysql qui ont un autre encodage par defaut
-                mysqli_set_charset($dblink, 'utf8mb4');
+        $containerBuilder = new ContainerBuilder();
 
-                // dans certains cas (ovh), set_charset ne passe pas, il faut faire une requete sql
-                $charset = mysqli_character_set_name($dblink);
-                if ($charset != 'utf8mb4') {
-                    mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
-                }
-            }
-        } else {
-            exit(_t('DB_CONNECT_FAIL'));
+        // Set all wakka configs as container's parameters
+        foreach($this->config as $key => $value) {
+            $containerBuilder->setParameter($key, $value);
         }
-        return $dblink;
-    }
 
+        // Set main YesWiki object as a parameter
+        // TODO remove this when the refactoring will be done
+        $containerBuilder->setParameter('wiki', $wiki);
+
+        $containerBuilder->set(Wiki::class, $wiki);
+        $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
+
+        $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
+        $loader->load('services.yml');
+
+        return $containerBuilder;
+    }
 
     /**
      * Initialize the cookie

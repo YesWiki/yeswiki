@@ -14,12 +14,13 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-// test de sécurité pour vérifier si on passe par wiki
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined("WIKINI_VERSION")) {
         die ("acc&egrave;s direct interdit");
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get(FicheManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -82,7 +83,7 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tabfiches = $bazarFiche->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+    $tabfiches = $ficheManager->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';

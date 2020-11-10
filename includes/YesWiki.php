@@ -25,9 +25,17 @@ require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
 require_once 'includes/Api.class.php';
-require_once 'includes/Database.class.php';
 require_once 'includes/Session.class.php';
 require_once 'includes/User.class.php';
+
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TripleStore;
+use YesWiki\Tags\Service\TagsManager;
 
 class Wiki
 {
@@ -35,16 +43,15 @@ class Wiki
     public $page;
     public $tag;
     public $parameter = array();
-    public $queryLog = array();
     public $interWiki = array();
     public $VERSION;
     public $CookiePath = '/';
     public $inclusions = array();
     public $extensions = array();
     public $api;
-    public $db;
     public $session;
     public $user;
+    public $services;
 
     /**
      * An array containing all the actions that are implemented by an object
@@ -56,7 +63,6 @@ class Wiki
     // LinkTrackink
     public $isTrackingLinks = false;
     public $linktable = array();
-    public $pageCache = array();
     public $pageCacheFormatted = array();
     public $_groupsCache = array();
     public $_actionsAclsCache = array();
@@ -71,54 +77,13 @@ class Wiki
         $this->CookiePath = $init->initCookies();
         $this->tag = $init->page;
         $this->method = $init->method;
-        $this->dblink = $init->initDb();
+
+        $this->services = $init->initCoreServices($this);
+        $this->loadExtensions();
+
         $this->api = new \YesWiki\Api($this);
-        $this->db = new \YesWiki\Database($this);
         $this->session = new \YesWiki\Session($this);
         $this->user = new \YesWiki\User($this);
-    }
-
-    // DATABASE
-    public function Query($query)
-    {
-        if ($this->GetConfigValue('debug')) {
-            $start = $this->GetMicroTime();
-        }
-
-        if (! $result = mysqli_query($this->dblink, $query)) {
-            ob_end_clean();
-            die('Query failed: ' . $query . ' (' . mysqli_error($this->dblink) . ')');
-        }
-        if ($this->GetConfigValue('debug')) {
-            $time = $this->GetMicroTime() - $start;
-            $this->queryLog[] = array(
-                'query' => $query,
-                'time' => $time
-            );
-        }
-        return $result;
-    }
-
-    public function LoadSingle($query)
-    {
-        if ($data = $this->LoadAll($query)) {
-            return $data[0];
-        }
-
-        return null;
-    }
-
-    public function LoadAll($query)
-    {
-        $data = array();
-        if ($r = $this->Query($query)) {
-            while ($row = mysqli_fetch_assoc($r)) {
-                $data[] = $row;
-            }
-
-            mysqli_free_result($r);
-        }
-        return $data;
     }
 
     // MISC
@@ -141,7 +106,13 @@ class Wiki
 
     public function GetMethod()
     {
-        return $this->method;
+        if ($this->method=='iframe') {
+            return 'show';
+        } elseif ($this->method=='editiframe') {
+            return 'edit';
+        } else {
+            return $this->method;
+        }
     }
 
     public function GetConfigValue($name, $default=null)
@@ -164,267 +135,6 @@ class Wiki
     public function GetWikiNiVersion()
     {
         return WIKINI_VERSION;
-    }
-
-    /**
-     * A very simple Request level cache for triple resources
-     *
-     * @var array
-     */
-    protected $triplesCacheByResource = array();
-
-    /**
-     * Retrieves all the triples that match some criteria.
-     * This allows to search triples by their approximate resource or property names.
-     * The allowed operators are the sql "LIKE" and the sql "=".
-     *
-     * Does not use the cache $this->triplesCacheByResource.
-     *
-     * @param string $resource
-     *            The resource of the triples or null
-     * @param string $property
-     *            The property of the triple to retrieve or null
-     * @param string $value
-     *            The value of the triple to retrieve or null
-     * @param string $res_op
-     *            The operator of comparison between the effective resource and $resource (default: 'LIKE')
-     * @param string $prop_op
-     *            The operator of comparison between the effective property and $property (default: '=')
-     * @return array The list of all the triples that match the asked criteria
-     */
-    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=')
-    {
-        static $operators = array(
-            '=',
-            'LIKE'
-        ); // we might want to add other operators later
-        $res_op = strtoupper($res_op);
-        if (! in_array($res_op, $operators)) {
-            $res_op = '=';
-        }
-
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ';
-        $where = [];
-        if ($resource !== null) {
-            $where[] = 'resource ' . $res_op . ' "' . mysqli_real_escape_string($this->dblink, $resource) . '"';
-        }
-        if ($property !== null) {
-            $prop_op = strtoupper($prop_op);
-            if (! in_array($prop_op, $operators)) {
-                $prop_op = '=';
-            }
-
-            $where[] = ' property ' . $prop_op . ' "' . mysqli_real_escape_string($this->dblink, $property) . '"';
-        }
-        if ($value !== null) {
-            $where[] = ' value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
-        }
-        if( count($where)>0 ) {
-            $sql .= ' WHERE ' . implode(' AND ', $where);
-        }
-        return $this->LoadAll($sql);
-    }
-
-    /**
-     * Retrieves all the values for a given couple (resource, property)
-     *
-     * @param string $resource
-     *            The resource of the triples
-     * @param string $property
-     *            The property of the triple to retrieve
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to THISWIKI_PREFIX)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to WIKINI_VOC_PREFIX)
-     * @return array An array of the retrieved values, in the form
-     *         array(
-     *         0 => array(id = 7 , 'value' => $value1),
-     *         1 => array(id = 34, 'value' => $value2),
-     *         ...
-     *         )
-     */
-    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-        $prop = $prop_prefix . $property ;
-        if (isset($this->triplesCacheByResource[$res])) {
-            // All resource's properties was previously loaded.
-            //error_log(__METHOD__.' cache hits ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
-            if (isset($this->triplesCacheByResource[$res][$prop])) {
-                return $this->triplesCacheByResource[$res][$prop] ;
-            }
-            // LoadAll($sql) return an empty array when no result, do the same.
-            return array();
-        }
-        //error_log(__METHOD__.' cache miss ['.$res.']['.$prop.'] '. count($this->triplesCacheByResource));
-        $this->triplesCacheByResource[$res] = array();
-        $sql = 'SELECT * FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $res) . '"' ;
-        foreach ($this->LoadAll($sql) as $triple) {
-            if (! isset($this->triplesCacheByResource[$res][ $triple['property'] ])) {
-                $this->triplesCacheByResource[$res][ $triple['property'] ] = array();
-            }
-            $this->triplesCacheByResource[$res][ $triple['property'] ][] = array( 'id'=>$triple['id'], 'value'=>$triple['value']) ;
-        }
-        if (isset($this->triplesCacheByResource[$res][$prop])) {
-            return $this->triplesCacheByResource[$res][$prop] ;
-        }
-        return array() ;
-    }
-
-    /**
-     * Retrieves a single value for a given couple (resource, property)
-     *
-     * @param string $resource
-     *            The resource of the triples
-     * @param string $property
-     *            The property of the triple to retrieve
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @return string The value corresponding to ($resource, $property) or null if
-     *         there is no such couple in the triples table.
-     */
-    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $this->GetAllTriplesValues($resource, $property, $re_prefix, $prop_prefix);
-        if ($res) {
-            return $res[0]['value'];
-        }
-
-        return null;
-    }
-
-    /**
-     * Checks whether a triple exists or not
-     *
-     * @param string $resource
-     *            The resource of the triple to find
-     * @param string $property
-     *            The property of the triple to find
-     * @param string $value
-     *            The value of the triple to find
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @param
-     *            int The id of the found triple or 0 if there is no such triple.
-     */
-    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $sql = 'SELECT id FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $re_prefix . $resource) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '" ' . 'AND value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
-        $res = $this->LoadSingle($sql);
-        if (! $res) {
-            return 0;
-        }
-
-        return $res['id'];
-    }
-
-    /**
-     * Inserts a new triple ($resource, $property, $value) in the triples' table
-     *
-     * @param string $resource
-     *            The resource of the triple to insert
-     * @param string $property
-     *            The property of the triple to insert
-     * @param string $value
-     *            The value of the triple to insert
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @return int An error code: 0 (success), 1 (failure) or 3 (already exists)
-     */
-    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-
-        if ($this->TripleExists($res, $property, $value, '', $prop_prefix)) {
-            return 3;
-        }
-
-        // invalidate the cache
-        if (isset($this->triplesCacheByResource[$res])) {
-            unset($this->triplesCacheByResource[$res]);
-        }
-
-        $sql = 'INSERT INTO ' . $this->GetConfigValue('table_prefix') . 'triples (resource, property, value)' . 'VALUES ("' . mysqli_real_escape_string($this->dblink, $res) . '", "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '", "' . mysqli_real_escape_string($this->dblink, $value) . '")';
-        return $this->Query($sql) ? 0 : 1;
-    }
-
-    /**
-     * Updates a triple ($resource, $property, $value) in the triples' table
-     *
-     * @param string $resource
-     *            The resource of the triple to update
-     * @param string $property
-     *            The property of the triple to update
-     * @param string $oldvalue
-     *            The old value of the triple to update
-     * @param string $newvalue
-     *            The new value of the triple to update
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @return int An error code: 0 (succ?s), 1 (?chec),
-     *         2 ($resource, $property, $oldvalue does not exist)
-     *         or 3 ($resource, $property, $newvalue already exists)
-     */
-    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-
-        $id = $this->TripleExists($res, $property, $oldvalue, '', $prop_prefix);
-        if (! $id) {
-            return 2;
-        }
-
-        if ($this->TripleExists($res, $property, $newvalue, '', $prop_prefix)) {
-            return 3;
-        }
-
-        // invalidate the cache
-        if (isset($this->triplesCacheByResource[$res])) {
-            unset($this->triplesCacheByResource[$res]);
-        }
-
-        $sql = 'UPDATE ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'SET value = "' . mysqli_real_escape_string($this->dblink, $newvalue) . '" ' . 'WHERE id = ' . $id;
-        return $this->Query($sql) ? 0 : 1;
-    }
-
-    /**
-     * Deletes a triple ($resource, $property, $value) from the triples' table
-     *
-     * @param string $resource
-     *            The resource of the triple to delete
-     * @param string $property
-     *            The property of the triple to delete
-     * @param string $value
-     *            The value of the triple to delete. If set to <tt>null</tt>,
-     *            deletes all the triples corresponding to ($resource, $property). (defaults to <tt>null</tt>)
-     * @param string $re_prefix
-     *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
-     * @param string $prop_prefix
-     *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     */
-    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        $res = $re_prefix . $resource ;
-
-        $sql = 'DELETE FROM ' . $this->GetConfigValue('table_prefix') . 'triples ' . 'WHERE resource = "' . mysqli_real_escape_string($this->dblink, $res) . '" ' . 'AND property = "' . mysqli_real_escape_string($this->dblink, $prop_prefix . $property) . '" ';
-        if ($value !== null) {
-            $sql .= 'AND value = "' . mysqli_real_escape_string($this->dblink, $value) . '"';
-        }
-
-        // invalidate the cache
-        if (isset($this->triplesCacheByResource[$res])) {
-            unset($this->triplesCacheByResource[$res]);
-        }
-
-        $this->Query($sql);
     }
 
     // inclusions
@@ -503,63 +213,6 @@ class Wiki
         return $temp;
     }
 
-    // PAGES
-    public function LoadPage($tag, $time = "", $cache = 1)
-    {
-        // retrieve from cache
-        if (! $time && $cache && (($cachedPage = $this->GetCachedPage($tag)) !== false)) {
-            $page = $cachedPage;
-        } else { // load page
-
-            $sql = 'SELECT * FROM ' . $this->config['table_prefix'] . 'pages' . " WHERE tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' AND " . ($time ? "time = '" . mysqli_real_escape_string($this->dblink, $time) . "'" : "latest = 'Y'") . " LIMIT 1";
-            $page = $this->LoadSingle($sql);
-
-            // the database is in ISO-8859-15, it must be converted
-            if (isset($page['body'])) {
-                $page['body'] = _convert($page['body'], 'ISO-8859-15');
-            }
-
-            // cache result
-            if (! $time) {
-                $this->CachePage($page, $tag);
-            }
-        }
-        return $page;
-    }
-
-    /**
-     * Retrieves the cached version of a page.
-     *
-     * Notice that this method null or false, use
-     * $this->GetCachedPage($tag) === false
-     * to check if a page is not in the cache.
-     *
-     * @return mixed The cached version of a page:
-     *         - the page DB line if the page exists and is in cache
-     *         - null if the cache knows that the page does not exists
-     *         - false is the cache does not know the page
-     */
-    public function GetCachedPage($tag)
-    {
-        return (array_key_exists($tag, $this->pageCache) ? $this->pageCache[$tag] : false);
-    }
-
-    /**
-     * Caches a page's DB line.
-     *
-     * @param array $page
-     *            The page (full) DB line or null if the page does not exists
-     * @param string $pageTag
-     *            The tag of the page to cache. Defaults to $page['tag'] but is mendatory when $page === null
-     */
-    public function CachePage($page, $pageTag = null)
-    {
-        if ($pageTag === null) {
-            $pageTag = $page['tag'];
-        }
-        $this->pageCache[$pageTag] = $page;
-    }
-
     public function SetPage($page)
     {
         if (!empty($page)) {
@@ -567,152 +220,6 @@ class Wiki
             if (!empty($this->page['tag'])) {
                 $this->tag = $this->page['tag'];
             }
-        }
-    }
-
-    public function LoadPageById($id)
-    {
-        return $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . mysqli_real_escape_string($this->dblink, $id) . "' limit 1");
-    }
-
-    public function LoadRevisions($page)
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where tag = '" . mysqli_real_escape_string($this->dblink, $page) . "' order by time desc");
-    }
-
-    public function LoadPagesLinkingTo($tag)
-    {
-        return $this->LoadAll('select from_tag as tag from ' . $this->config['table_prefix'] . "links where to_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' order by tag");
-    }
-
-    public function LoadRecentlyChanged($limit = 50, $minDate = '')
-    {
-        if (!empty($minDate)) {
-            if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
-                //foreach ($pages as $page) {
-                //    $this->CachePage($page);
-                //}
-                return $pages;
-            }
-        } else {
-            $limit = (int) $limit;
-            if ($pages = $this->LoadAll('select id, tag, time, user, owner from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
-                //foreach ($pages as $page) {
-                //    $this->CachePage($page);
-                //}
-                return $pages;
-            }
-        }
-    }
-
-    public function LoadAllPages()
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' order by tag");
-    }
-
-    public function GetPageCreateTime($pageTag)
-    {
-        $sql = 'SELECT time FROM '.$this->config['table_prefix'].'pages'
-            .' WHERE tag = "'.mysqli_real_escape_string($this->dblink, $pageTag).'"'
-            .' AND comment_on = ""'
-            .' ORDER BY `time` ASC LIMIT 1';
-        $page = $this->LoadSingle($sql);
-        if ($page) {
-            return $page['time'];
-        }
-        return null ;
-    }
-
-    public function FullTextSearch($phrase)
-    {
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . "pages where latest = 'Y' and (body LIKE '%" . mysqli_real_escape_string($this->dblink, $phrase) . "%' OR tag LIKE '%" . mysqli_real_escape_string($this->dblink, $phrase) . "%')");
-    }
-
-    public function LoadWantedPages()
-    {
-        $p = $this->config['table_prefix'];
-        $r = "SELECT ${p}links.to_tag AS tag, COUNT(${p}links.from_tag) AS count " . "FROM ${p}links LEFT JOIN ${p}pages ON ${p}links.to_tag = ${p}pages.tag " . "WHERE ${p}pages.tag IS NULL GROUP BY ${p}links.to_tag ORDER BY count DESC, tag ASC";
-        return $this->LoadAll($r);
-    }
-
-    public function LoadOrphanedPages()
-    {
-        return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.comment_on = '' and p.latest = 'Y' order by tag");
-    }
-
-    public function IsOrphanedPage($tag)
-    {
-        return $this->LoadAll('select distinct tag from ' . $this->config['table_prefix'] . 'pages as p left join ' . $this->config['table_prefix'] . "links as l on p.tag = l.to_tag where l.to_tag is NULL and p.latest = 'Y' and tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'");
-    }
-
-    public function DeleteOrphanedPage($tag)
-    {
-        $p = $this->config['table_prefix'];
-        $this->Query("DELETE FROM ${p}pages WHERE tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' OR comment_on='" . mysqli_real_escape_string($this->dblink, $tag) . "'");
-        $this->Query("DELETE FROM ${p}links WHERE from_tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' ");
-        $this->Query("DELETE FROM ${p}acls WHERE page_tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' ");
-        $this->Query("DELETE FROM ${p}referrers WHERE page_tag='" . mysqli_real_escape_string($this->dblink, $tag) . "' ");
-    }
-
-    /**
-     * SavePage
-     * Sauvegarde un contenu dans une page donnee
-     *
-     * @param string $body
-     *            Contenu a sauvegarder dans la page
-     * @param string $tag
-     *            Nom de la page
-     * @param string $comment_on
-     *            Indication si c'est un commentaire
-     * @param boolean $bypass_acls
-     *            Indication si on bypasse les droits d'ecriture
-     * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
-     */
-    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
-    {
-        // get current user
-        $user = $this->GetUserName();
-
-        // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->HasAccess('comment', $comment_on) : $this->HasAccess('write', $tag));
-
-        if ($rights) {
-            // is page new?
-            if (! $oldPage = $this->LoadPage($tag)) {
-                // create default write acl. store empty write ACL for comments.
-                $this->SaveAcl($tag, 'write', ($comment_on ? $user : $this->GetConfigValue('default_write_acl')));
-
-                // create default read acl
-                $this->SaveAcl($tag, 'read', $this->GetConfigValue('default_read_acl'));
-
-                // create default comment acl.
-                $this->SaveAcl($tag, 'comment', ($comment_on ? '' : $this->GetConfigValue('default_comment_acl')));
-
-                // current user is owner; if user is logged in! otherwise, no owner.
-                if ($this->GetUser()) {
-                    $owner = $user;
-                } else {
-                    $owner = '';
-                }
-            } else {
-                // aha! page isn't new. keep owner!
-                $owner = $oldPage['owner'];
-
-                // ...and comment_on, eventualy?
-                if ($comment_on == '') {
-                    $comment_on = $oldPage['comment_on'];
-                }
-            }
-
-            // set all other revisions to old
-            $this->Query('update ' . $this->config['table_prefix'] . "pages set latest = 'N' where tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'");
-
-            // add new revision
-            $this->Query('insert into ' . $this->config['table_prefix'] . 'pages set ' . "tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', " . ($comment_on ? "comment_on = '" . mysqli_real_escape_string($this->dblink, $comment_on) . "', " : "") . "time = now(), " . "owner = '" . mysqli_real_escape_string($this->dblink, $owner) . "', " . "user = '" . mysqli_real_escape_string($this->dblink, $user) . "', " . "latest = 'Y', " . "body = '" . mysqli_real_escape_string($this->dblink, chop($body)) . "', " . "body_r = ''");
-            unset($this->pageCache[$tag]);
-            return 0;
-        } else {
-            return 1;
         }
     }
 
@@ -893,9 +400,15 @@ class Wiki
     // returns the full url to a page/method.
     public function Href($method = '', $tag = '', $params = '', $htmlspchars = true)
     {
+        if (!$tag = trim($tag)) {
+            $tag = $this->tag;
+        }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
         if ($params) {
             $href .= ($this->config['rewrite_mode'] ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
+        }
+        if (isset($_GET['lang']) && $_GET['lang']!='') {
+            $href .= '&lang='.$GLOBALS['prefered_language'];
         }
         return $href;
     }
@@ -1104,13 +617,23 @@ class Wiki
     // FORMS
     public function FormOpen($method = '', $tag = '', $formMethod = 'post', $class = '')
     {
-        $result = "<form action=\"" . $this->href($method, $tag) . "\" method=\"" . $formMethod . "\"";
-        $result .= ((! empty($class)) ? " class=\"" . $class . "\"" : "");
-        $result .= ">\n";
-        if (! $this->config['rewrite_mode']) {
-            $result .= "<input type=\"hidden\" name=\"wiki\" value=\"" . $this->MiniHref($method, $tag) . "\" />\n";
+        if ($method=='edit') {
+            $result  = '<form id="ACEditor" name="ACEditor" enctype="multipart/form-data" action="'.$this->href($method, $tag).'" method="'.$formMethod.'"';
+            $result .= !empty($class) ? ' class="'.$class.'"' : '';
+            $result .= ">\n";
+            if (isset($this->config['password_for_editing']) and !empty($this->config['password_for_editing'])
+                and isset($_POST['password_for_editing'])) {
+                $result .= '<input type="hidden" name="password_for_editing" value="'.$_POST['password_for_editing'].'" />'."\n";
+            }
+        } else {
+            $result = '<form action="'.$this->href($method, $tag).'" method="'.$formMethod.'"';
+            $result .= !empty($class) ? ' class="'.$class.'"' : '';
+            $result .= ">\n";
         }
 
+        if (!$this->config["rewrite_mode"]) {
+            $result .= '<input type="hidden" name="wiki" value="'.$this->MiniHref($method, $tag).'" />'."\n";
+        }
         return $result;
     }
 
@@ -2326,36 +1849,87 @@ class Wiki
         return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
     }
 
+    public function parse_size($size)
+    {
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
+        $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
+        if ($unit) {
+            // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
+            return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
+        } else {
+            return round($size);
+        }
+    }
+
+    // Drupal code under GPL2 cf. http://stackoverflow.com/questions/13076480/php-get-actual-maximum-upload-size#25370978
+    // Returns a file size limit in bytes based on the PHP upload_max_filesize
+    // and post_max_size
+    public function file_upload_max_size()
+    {
+        static $max_size = -1;
+
+        if ($max_size < 0) {
+            // Start with post_max_size.
+            $max_size = $this->parse_size(ini_get('post_max_size'));
+
+            // If upload_max_size is less, then reduce. Except if upload_max_size is
+            // zero, which indicates no limit.
+            $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
+            if ($upload_max > 0 && $upload_max < $max_size) {
+                $max_size = $upload_max;
+            }
+        }
+        return $max_size;
+    }
+
     /**
      * Load all extensions
-     *
-     * @param mixed $wiki main YesWiki object
-     *
      * @return void
      */
     public function loadExtensions()
     {
-        $wakkaConfig = $this->config;
-        $wiki = $this;
-        $page = $wiki->tag;
-        loadpreferredI18n($page);
-        $plugins_root = 'tools/';
+        $pluginsRoot = 'tools/';
 
         include_once 'includes/YesWikiPlugins.php';
-        $objPlugins = new \YesWiki\Plugins($plugins_root);
+        $objPlugins = new \YesWiki\Plugins($pluginsRoot);
         $objPlugins->getPlugins(true);
-        $pluginsList = $objPlugins->getPluginsList();
-        foreach($pluginsList as $pluginName => $pluginInfo) {
-            $pluginsList[$pluginName] = $plugins_root . $pluginName . '/';
+        $this->extensions = $objPlugins->getPluginsList();
+
+        // TODO refactor as custom and actionsbuilder are not extensions
+        foreach($this->extensions as $pluginName => $pluginInfo) {
+            $this->extensions[$pluginName] = $pluginsRoot . $pluginName . '/';
         }
-        $pluginsList['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
-        $pluginsList['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
+        $this->extensions['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
+        $this->extensions['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
 
-        $yeswikiClasses = [];
-        foreach ($pluginsList as $k => $pluginBase) {
+        // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
+        // TODO refactor all extensions to use the correct variable name
+        // TODO remove this when the retrocompatibility is no longer necessary
+        $wakkaConfig = $this->config;
+        $wiki = $this;
+        $page = $this->tag;
 
+        // TODO put elsewhere
+        $fullDomain = parse_url($this->Href());
+        $this->services->setParameter('host', $fullDomain['host']);
+        $this->services->setParameter('max-upload-size', $this->file_upload_max_size());
+
+        // Load all services
+        foreach ($this->extensions as $k => $pluginBase) {
+            $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
+
+            // Load the initialization file (constants and includes)
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
+            }
+
+            if (file_exists($pluginBase . 'vendor/autoload.php')) {
+                include $pluginBase . 'vendor/autoload.php';
+            }
+
+            // TODO load the user-defined configs after this loop
+            if (file_exists($pluginBase . 'config.yml')) {
+                $loader->load('config.yml');
             }
 
             // language files : first default language, then preferred language
@@ -2371,12 +1945,8 @@ class Wiki
                 include $pluginBase . 'libs/' . $k . '.api.php';
             }
 
-            // YesWiki Classes
-            $currentClassFile = $pluginBase . 'libs/' . $k . '.class.inc.php';
-            if (file_exists($currentClassFile)) {
-                $yeswikiClasses['\YesWiki\\'.ucfirst(strtolower($k))] = $currentClassFile;
-            }
-
+            // Generate the path to all the extensions' actions, handlers and formatters directories (separated by :)
+            // TODO Put this in the YesWikiPlugins class, as a protected variable name, instead of a config
             if (file_exists($pluginBase . 'actions')) {
                 $wakkaConfig['action_path'] = $pluginBase . 'actions/' . ':' . $wakkaConfig['action_path'];
             }
@@ -2388,21 +1958,234 @@ class Wiki
             }
         }
 
-        $previous = false;
-        foreach ($yeswikiClasses as $yeswikiClass => $path) {
-            $classContent = file_get_contents($path);
-            if (!$previous) {
-                $previous = $yeswikiClass;
-            } else {
-                $classContent = str_replace('extends \YesWiki\Wiki', 'extends '.$previous, $classContent);
-                $previous = $yeswikiClass;
-            }
-            eval('?>' . $classContent);
-            $wiki = new $yeswikiClass($wakkaConfig);
-        }
-        $wiki->config = $wakkaConfig;
-        $wiki->extensions = $pluginsList;
+        // Now we have loaded all the services, compile them
+        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
+        $this->services->compile();
 
-        return $wiki;
+        $this->dblink = $this->services->get(DbService::class)->getLink();
+
+        // This must be done after service initialization, as it uses services
+        loadpreferredI18n($this, $this->tag);
+
+        $metadata = $this->GetMetaDatas($this->tag);
+
+        if (isset($metadata['lang'])) {
+            $wakkaConfig['lang'] = $metadata['lang'];
+        } elseif (!isset($wakkaConfig['lang'])) {
+            $wakkaConfig['lang'] = 'fr';
+        }
+
+        // TODO Don't put templates in configs
+        // TODO avoid modifying the $wakkaConfig array
+        $wakkaConfig['templates'] = loadTemplates($metadata, $wakkaConfig);
+
+        $this->config = array_merge($this->services->getParameterBag()->all(), $wakkaConfig);
+    }
+
+    /*
+     * RETRO-COMPATIBILITY
+     */
+
+    /**
+     * @deprecated Use DbService::query instead
+     */
+    public function Query($query) {
+        return $this->services->get(DbService::class)->query($query);
+    }
+
+    /**
+     * @deprecated Use DbService::loadSingle instead
+     */
+    public function LoadSingle($query) {
+        return $this->services->get(DbService::class)->loadSingle($query);
+    }
+
+    /**
+     * @deprecated Use DbService::loadAll instead
+     */
+    public function LoadAll($query) {
+        return $this->services->get(DbService::class)->loadAll($query);
+    }
+
+    /**
+     * @deprecated Use PageManager::getOne instead
+     */
+    public function LoadPage($tag, $time = "", $cache = 1) {
+        return $this->services->get(PageManager::class)->getOne($tag, $time, $cache);
+    }
+
+    /**
+     * @deprecated Use PageManager::getCached instead
+     */
+    public function GetCachedPage($tag) {
+        return $this->services->get(PageManager::class)->getCached($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::cache instead
+     */
+    public function CachePage($page, $pageTag = null) {
+        return $this->services->get(PageManager::class)->cache($page, $pageTag);
+    }
+
+    /**
+     * @deprecated Use PageManager::getById instead
+     */
+    public function LoadPageById($id) {
+        return $this->services->get(PageManager::class)->getById($id);
+    }
+
+    /**
+     * @deprecated Use PageManager::getRevisions instead
+     */
+    public function LoadRevisions($page) {
+        return $this->services->get(PageManager::class)->getRevisions($page);
+    }
+
+    /**
+     * @deprecated Use PageManager::getLinkingTo instead
+     */
+    public function LoadPagesLinkingTo($tag) {
+        return $this->services->get(PageManager::class)->getLinkingTo($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::getRecentlyChanged instead
+     */
+    public function LoadRecentlyChanged($limit = 50, $minDate = '') {
+        return $this->services->get(PageManager::class)->getRecentlyChanged($limit, $minDate);
+    }
+
+    /**
+     * @deprecated Use PageManager::getAll instead
+     */
+    public function LoadAllPages() {
+        return $this->services->get(PageManager::class)->getAll();
+    }
+
+    /**
+     * @deprecated Use PageManager::getCreateTime instead
+     */
+    public function GetPageCreateTime($pageTag) {
+        return $this->services->get(PageManager::class)->getCreateTime($pageTag);
+    }
+
+    /**
+     * @deprecated Use PageManager::searchFullText instead
+     */
+    public function FullTextSearch($phrase) {
+        return $this->services->get(PageManager::class)->searchFullText($phrase);
+    }
+
+    /**
+     * @deprecated Use PageManager::getWanted instead
+     */
+    public function LoadWantedPages() {
+        return $this->services->get(PageManager::class)->getWanted();
+    }
+
+    /**
+     * @deprecated Use PageManager::getOrphaned instead
+     */
+    public function LoadOrphanedPages() {
+        return $this->services->get(PageManager::class)->getOrphaned();
+    }
+
+    /**
+     * @deprecated Use PageManager::isOrphaned instead
+     */
+    public function IsOrphanedPage($tag) {
+        return $this->services->get(PageManager::class)->isOrphaned($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::deletedOrphaned instead
+     */
+    public function DeleteOrphanedPage($tag) {
+        return $this->services->get(PageManager::class)->deletedOrphaned($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::save instead
+     */
+    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false) {
+        return $this->services->get(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
+    }
+
+    /**
+     * @deprecated Use TagsManager::deleteAll instead
+     */
+    public function DeleteAllTags($page) {
+        return $this->services->get(TagsManager::class)->deleteAll($page);
+    }
+
+    /**
+     * @deprecated Use TagsManager::save instead
+     */
+    public function SaveTags($page, $liste_tags) {
+        return $this->services->get(TagsManager::class)->save($page, $liste_tags);
+    }
+
+    /**
+     * @deprecated Use TagsManager::getAll instead
+     */
+    public function GetAllTags($page = '') {
+        return $this->services->get(TagsManager::class)->getAll($page);
+    }
+
+    /**
+     * @deprecated Use TagsManager::getPagesByTags instead
+     */
+    public function PageList($tags = '', $type = '', $nb = '', $tri = '') {
+        return $this->services->get(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
+    }
+
+    /**
+     * @deprecated Use TripleStore::getOne instead
+     */
+    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get(TripleStore::class)->getOne($resource, $property, $re_prefix, $prop_prefix);
+    }
+
+    /**
+     * @deprecated Use TripleStore::getMatching instead
+     */
+    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') {
+        return $this->services->get(TripleStore::class)->getMatching($resource, $property, $value, $res_op, $prop_op);
+    }
+
+    /**
+     * @deprecated Use TripleStore::getAll instead
+     */
+    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX){
+        return $this->services->get(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
+    }
+
+    /**
+     * @deprecated Use TripleStore::exist instead
+     */
+    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get(TripleStore::class)->exist($resource, $property, $value, $re_prefix, $prop_prefix);
+    }
+
+    /**
+     * @deprecated Use TripleStore::create instead
+     */
+    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get(TripleStore::class)->create($resource, $property, $value, $re_prefix, $prop_prefix);
+    }
+
+    /**
+     * @deprecated Use TripleStore::update instead
+     */
+    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get(TripleStore::class)->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
+    }
+
+    /**
+     * @deprecated Use TripleStore::delete instead
+     */
+    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+        return $this->services->get(TripleStore::class)->delete($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 }

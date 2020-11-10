@@ -3,12 +3,13 @@
 // Display data collected by a specific Form
 // A lot of parameters are available to customize the display (List, Map, Calendar, pagination, filtering...)
 
-// Security test
+use YesWiki\Bazar\Service\FicheManager;
+
 if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-global $bazarFiche;
+$ficheManager = $this->services->get(FicheManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 $GLOBALS['params'] = getAllParameters($this);
@@ -19,11 +20,11 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $fiches = array_merge(
             $fiches,
-            $bazarFiche->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
+            $ficheManager->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $fiches = $bazarFiche->search(['queries' => $GLOBALS['params']['query']]);
+    $fiches = $ficheManager->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // Render the view
