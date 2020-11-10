@@ -35,7 +35,7 @@ if (!defined("WIKINI_VERSION")) {
 $ficheManager = $this->services->get(FicheManager::class);
 
 if ($ficheManager->isFiche($this->GetPageTag())) {
-    if( strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false ) {
+    if (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
         $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
         $contentType = $semantic ? 'application/ld+json' : 'application/json';
 

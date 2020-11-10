@@ -53,7 +53,7 @@ function _convert($text, $fromencoding, $database = false)
     include_once 'includes/Encoding.php';
     if (isset($GLOBALS['wiki']->config['db_charset']) and $GLOBALS['wiki']->config['db_charset'] == 'utf8mb4') {
         return $text;
-    } else if (is_array($text)) {
+    } elseif (is_array($text)) {
         $arraytext = array();
         foreach ($text as $key => $value) {
             $arraytext[$key] = _convert($value, $fromencoding, $database);
@@ -67,7 +67,7 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, "UTF-8, ISO-8859-1, ISO-8859-15", true)
                 );
-                //return \ForceUTF8\Encoding::toLatin1($text);
+            //return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }
@@ -77,11 +77,11 @@ function _convert($text, $fromencoding, $database = false)
                 return \ForceUTF8\Encoding::fixUTF8($text);
             } else {
                 //return $text;
-// if (strstr($text, 'disposition selon'))  {
-//   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
-//   exit;
+                // if (strstr($text, 'disposition selon'))  {
+                //   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
+                //   exit;
 //
-// }
+                // }
 
                 return \ForceUTF8\Encoding::fixUTF8($text);
             }
@@ -131,8 +131,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
                 $allowed_classes = false;
                 $_POST["config"] = preg_replace_callback(
                     '/(?=^|:)(O|C):\d+:"([^"]*)":(\d+):{/',
-                    function ($matches) use ($allowed_classes)
-                    {
+                    function ($matches) use ($allowed_classes) {
                         if (is_array($allowed_classes) && in_array($matches[2], $allowed_classes)) {
                             return $matches[0];
                         } else {
@@ -209,7 +208,7 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
         if (in_array($language, $available_languages) && ($qvalue > $bestqval)) {
             $bestlang = $language;
             $bestqval = $qvalue;
-        } else if (in_array($langprefix, $available_languages) && (($qvalue*0.9) > $bestqval)) {
+        } elseif (in_array($langprefix, $available_languages) && (($qvalue*0.9) > $bestqval)) {
             // if no direct hit, try the prefix only but decrease q-value by 10% (as http_negotiate_language does)
             $bestlang = $langprefix;
             $bestqval = $qvalue*0.9;
@@ -237,7 +236,8 @@ function initI18n()
     require_once 'lang/yeswiki_fr.php';
 
     $GLOBALS['available_languages'] = detectAvailableLanguages();
-    $GLOBALS['prefered_language'] = detectPreferedLanguage($GLOBALS['wiki'], $GLOBALS['available_languages']);
+    $wiki = isset($GLOBALS['wiki']) ? $GLOBALS['wiki'] : '';
+    $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages']);
 
     if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_'.$GLOBALS['prefered_language'].'.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language

@@ -37,7 +37,9 @@ $user = $this->GetUser();
 // récupérer le paramétre de l'action
 $paramPhrase = $phrase;
 // ou, le cas échéant, récupérer le paramétre du CGI
-if (!$phrase && isset($_GET['phrase'])) $phrase = $_GET['phrase'];
+if (!$phrase && isset($_GET['phrase'])) {
+    $phrase = $_GET['phrase'];
+}
 
 // s'il y a un paramétre d'action "phrase", on affiche uniquement le résultat
 // dans le cas contraire, présenter une zone de saisie
@@ -108,7 +110,7 @@ if ($phrase) {
         // affichage des résultats en liste
         if (empty($separator)) {
             echo $this->Format('---- --- **Résultats de la recherche [""'.$phrase.'""] :---**');
-            echo ('<ol>');
+            echo('<ol>');
             foreach ($resultat as $i => $page) {
                 if ($this->HasAccess("read", $page["tag"])) {
                     $lien = $this->ComposeLinkToPage($page["tag"]);
@@ -117,12 +119,12 @@ if ($phrase) {
                     echo "</li>\n";
                 }
             }
-            echo ('</ol>');
+            echo('</ol>');
 
-            // affichage des résultats en ligne
+        // affichage des résultats en ligne
         } else {
             foreach ($resultat as $line) {
-                echo ($this->ComposeLinkToPage($line['tag']).' ');
+                echo($this->ComposeLinkToPage($line['tag']).' ');
             }
         }
         $GLOBALS['js'] = $js;

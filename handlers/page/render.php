@@ -11,4 +11,3 @@ $output .= '</div><!-- end .page-widget -->'."\n";
 // on recupere juste les javascripts et la fin des balises body et html
 $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
 echo $output;
-?>

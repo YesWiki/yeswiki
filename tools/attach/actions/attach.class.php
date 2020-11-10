@@ -87,7 +87,7 @@ if (!class_exists('attach')) {
             if (empty($this->attachConfig["ext_wma"])) {
                 $this->attachConfig["ext_wma"] = "wma";
             }
-			
+            
             if (empty($this->attachConfig["ext_pdf"])) {
                 $this->attachConfig["ext_pdf"] = "pdf";
             }
@@ -250,7 +250,7 @@ if (!class_exists('attach')) {
             $pagedate = $this->convertDate($this->wiki->page['time']);
             //decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
-                list(,, $file['page'], $file['name'], $file['ext']) = $match;
+                list(, , $file['page'], $file['name'], $file['ext']) = $match;
                 if (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
                     $file['ext'] .= '_';
                 }
@@ -259,7 +259,7 @@ if (!class_exists('attach')) {
             }
             //recuperation du chemin d'upload
             $path = $this->GetUploadPath($this->isSafeMode);
-			$page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
+            $page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
             //generation du nom ou recherche de fichier ?
             if ($newName) {
                 $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
@@ -274,7 +274,7 @@ if (!class_exists('attach')) {
                 if ($isActionBuilderPreview) {
                     // bazar action builder, preview action
                     $searchPattern = '`' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
-                } else if ($this->isSafeMode) {
+                } elseif ($this->isSafeMode) {
                     //TODO Recherche dans le cas ou safe_mode=on
                     $searchPattern = '`^' . $page_tag . '_' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 } else {
@@ -346,7 +346,7 @@ if (!class_exists('attach')) {
         {
             return preg_match("/.(" . $this->attachConfig["ext_wma"] . ")$/i", $this->file) == 1;
         }
-		
+        
         /**
          * Test si le fichier est un fichier pdf
          */
@@ -459,7 +459,7 @@ if (!class_exists('attach')) {
             $this->nofullimagelink = $this->wiki->GetParameter("nofullimagelink");
             $this->height = $this->wiki->GetParameter('height');
             $this->width = $this->wiki->GetParameter('width');
-			$this->displayPDF = $this->wiki->GetParameter('displaypdf');
+            $this->displayPDF = $this->wiki->GetParameter('displaypdf');
             $this->data = getDataParameter();
 
             //test de validit&eacute; des parametres
@@ -506,7 +506,6 @@ if (!class_exists('attach')) {
                 // on ajuste la largeur
                 $this->width = $this->height;
             }
-			
         }
         /**
          * Affiche le fichier li&eacute; comme une image
@@ -622,43 +621,43 @@ if (!class_exists('attach')) {
         }
 
         // End Paste
-		
-		// Affiche le fichier liee comme un fichier pdf
+        
+        // Affiche le fichier liee comme un fichier pdf
         public function showAsPDF($fullFilename)
         {
-			// Defines parameters for pdf action
-			// remove '?' and following
-			$base_url = explode('?',$this->wiki->config["base_url"])[0] ;
-			$url = $base_url . $fullFilename ;
-			$this->wiki->setParameter('url',$url);
-			if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
-				$this->wiki->setParameter('hauteurmax',$this->wiki->GetParameter('height'));
-				$this->wiki->setParameter('largeurmax',$this->wiki->GetParameter('width'));
-			}
-			// position
-			$newclass = '' ;
-			if (strstr($this->classes, 'right')) {
-				if (strstr($this->classes, 'pull-right')){
-					$newclass = str_replace('right','',$this->classes) ;
-				} else {
-					$newclass = str_replace('right','pull-right',$this->classes) ; 
-				}
+            // Defines parameters for pdf action
+            // remove '?' and following
+            $base_url = explode('?', $this->wiki->config["base_url"])[0] ;
+            $url = $base_url . $fullFilename ;
+            $this->wiki->setParameter('url', $url);
+            if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
+                $this->wiki->setParameter('hauteurmax', $this->wiki->GetParameter('height'));
+                $this->wiki->setParameter('largeurmax', $this->wiki->GetParameter('width'));
             }
-			if (strstr($this->classes, 'left')) {
-				if (strstr($this->classes, 'pull-left')){
-					$newclass = str_replace('left','',$this->classes) ;
-				} else {
-					$newclass = str_replace('left','pull-left',$this->classes) ; 
-				}
+            // position
+            $newclass = '' ;
+            if (strstr($this->classes, 'right')) {
+                if (strstr($this->classes, 'pull-right')) {
+                    $newclass = str_replace('right', '', $this->classes) ;
+                } else {
+                    $newclass = str_replace('right', 'pull-right', $this->classes) ;
+                }
             }
-			
-			// define class
-			if ($newclass != ''){
-				$this->wiki->setParameter('class',$newclass) ;
-			}
-			
-			// Call pdf actions
-			include('pdf.php');
+            if (strstr($this->classes, 'left')) {
+                if (strstr($this->classes, 'pull-left')) {
+                    $newclass = str_replace('left', '', $this->classes) ;
+                } else {
+                    $newclass = str_replace('left', 'pull-left', $this->classes) ;
+                }
+            }
+            
+            // define class
+            if ($newclass != '') {
+                $this->wiki->setParameter('class', $newclass) ;
+            }
+            
+            // Call pdf actions
+            include('pdf.php');
         }
 
 

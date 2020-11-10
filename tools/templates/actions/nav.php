@@ -29,19 +29,18 @@ if (!empty($titles)) {
 $icons = $this->GetParameter('icons');
 if (!empty($icons)) {
     $icons = explode(',', $icons);
-    foreach ($icons as $key => $icon){
+    foreach ($icons as $key => $icon) {
         $icon = trim($icon);
         if (!empty($icon)) {
             // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
-            if ( preg_match('/\s/', $icon) )
-            {
+            if (preg_match('/\s/', $icon)) {
                 $icon = '<i class="'.$icon.'"></i>';
-            }
-            else
-            {
+            } else {
                 $icon = '<i class="icon-'.$icon.' fa fa-'.$icon.'"></i>';
             }
-            if (!empty($text)) $icon = $icon.' ';
+            if (!empty($text)) {
+                $icon = $icon.' ';
+            }
         }
         $icons[$key] = $icon;
     }

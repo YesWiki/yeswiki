@@ -27,18 +27,17 @@ if (!defined("WIKINI_VERSION")) {
 
 $id = $this->GetParameter("id");
 $serveur = $this->GetParameter("serveur");
-if (empty($serveur)) { 
+if (empty($serveur)) {
     $serveur = $this->config['attach-video-config']['default_video_service'];
 }
 if ($serveur == 'peertube') {
     $peertubeinstance = $this->GetParameter("peertubeinstance");
-    if (empty($peertubeinstance)) { 
+    if (empty($peertubeinstance)) {
         $peertubeinstance = $this->config['attach-video-config']['default_peertube_instance'];
     }
-
 }
 
-if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SERVERS)){
+if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SERVERS)) {
     echo '<div class="alert alert-danger">' . _t('ATTACH_ACTION_VIDEO_PARAM_ERROR') . '</div>'."\n";
 } else {
     $ratio = $this->GetParameter("ratio");
@@ -47,50 +46,54 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
         $ratioCss = 'embed-responsive-4by3';
     } else {
         $ratioCss = 'embed-responsive-16by9';
-	}
+    }
 
-	$maxWidth = $this->GetParameter("largeurmax");
-	$maxHeight = $this->GetParameter("hauteurmax");
-	
-	$manageSize = false ;
-	if (!empty($maxWidth) && is_numeric($maxWidth)) {
-		$manageSize = true ;
-		if (empty($maxHeight) || !(is_numeric($maxHeight))) {
-			$maxHeight = ($ratio == '4par3') ? ($maxWidth * 3 /4) : ($maxWidth * 9 /16) ;
-		} else {
-			// calculte the minimum between width and height
-			$newMaxHeight = min(($ratio == '4par3') ? ($maxWidth * 3 /4) : ($maxWidth * 9 /16),$maxHeight) ;
-			$newMaxWidth = min(($ratio == '4par3') ? ($maxHeight * 4 /3) : ($maxHeight * 16 /9),$maxWidth) ;
-			$maxHeight = $newMaxHeight ;
-			$maxWidth = $newMaxWidth ;
-		}
-	} elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
-		$manageSize = true ;
-		if (empty($maxWidth) || !(is_numeric($maxWidth))) {
-			$maxWidth = ($ratio == '4par3') ? ($maxHeight * 4 /3) : ($maxHeight * 16 /9) ;
-		}
-	}
-	
-	$baseObject = $this ; // for compatibility with php actions
-	include dirname(dirname(__FILE__)). DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'commons-video-pdf.php' ;
-	
-	echo '<div class="' . $class_for_embed . ' embed-responsive ' . $ratioCss . '"'. $styleForSize . '>' ;
-    if ($serveur == 'vimeo')
+    $maxWidth = $this->GetParameter("largeurmax");
+    $maxHeight = $this->GetParameter("hauteurmax");
+    
+    $manageSize = false ;
+    if (!empty($maxWidth) && is_numeric($maxWidth)) {
+        $manageSize = true ;
+        if (empty($maxHeight) || !(is_numeric($maxHeight))) {
+            $maxHeight = ($ratio == '4par3') ? ($maxWidth * 3 /4) : ($maxWidth * 9 /16) ;
+        } else {
+            // calculte the minimum between width and height
+            $newMaxHeight = min(($ratio == '4par3') ? ($maxWidth * 3 /4) : ($maxWidth * 9 /16), $maxHeight) ;
+            $newMaxWidth = min(($ratio == '4par3') ? ($maxHeight * 4 /3) : ($maxHeight * 16 /9), $maxWidth) ;
+            $maxHeight = $newMaxHeight ;
+            $maxWidth = $newMaxWidth ;
+        }
+    } elseif (!empty($maxHeight) && is_numeric($maxHeight)) {
+        $manageSize = true ;
+        if (empty($maxWidth) || !(is_numeric($maxWidth))) {
+            $maxWidth = ($ratio == '4par3') ? ($maxHeight * 4 /3) : ($maxHeight * 16 /9) ;
+        }
+    }
+    
+    $baseObject = $this ; // for compatibility with php actions
+    include dirname(dirname(__FILE__)). DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'commons-video-pdf.php' ;
+    
+    echo '<div class="' . $class_for_embed . ' embed-responsive ' . $ratioCss . '"'. $styleForSize . '>' ;
+    if ($serveur == 'vimeo') {
         echo '<iframe src="https://player.vimeo.com/video/' . $id
             . '?color=ffffff&title=0&byline=0&portrait=0" class="embed-responsive-item" frameborder="0"'
             . 'allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" '
             . 'allowfullscreen></iframe>';
-		
-    elseif ($serveur == 'peertube')
+    } elseif ($serveur == 'peertube') {
         echo '<iframe src="'.$peertubeinstance.'videos/embed/' . $id
             . '" class="embed-responsive-item" sandbox="allow-same-origin allow-scripts" frameborder="0"'
             . 'allowfullscreen></iframe>';
-    else
+    } else {
         echo '<iframe src="https://www.youtube-nocookie.com/embed/' . $id
             . '?cc_load_policy=1&iv_load_policy=3&modestbranding=1" class="embed-responsive-item" frameborder="0"'
             . 'allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen" '
             . 'allowfullscreen></iframe>';
-	echo '</div>' ;
-	if($manageSize) { echo '</div>' ;}
-	if($managePosition) { echo '</div>' ;}
+    }
+    echo '</div>' ;
+    if ($manageSize) {
+        echo '</div>' ;
+    }
+    if ($managePosition) {
+        echo '</div>' ;
+    }
 }

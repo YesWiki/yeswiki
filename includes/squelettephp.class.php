@@ -54,7 +54,7 @@ class SquelettePhp
         $paths[] = 'tools/'.$templateDir.'/presentation/templates/'.$templateFile;
         
         // Look for the template in the different paths
-        foreach($paths as $path) {
+        foreach ($paths as $path) {
             if (file_exists($path)) {
                 $this->templateFile = $templateFile;
                 $this->templatePath = str_replace($templateFile, '', $path);

@@ -904,7 +904,6 @@ function baz_afficher_formulaire_export()
         '<a href="#" onclick="downloadCSV($(\'.precsv\').text(), \'export-bazar-'.$id.'.csv\');return false;" class="btn btn-neutral link-csv-file">'.
         '<i class="fa fa-download"></i>'.
         _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
-
     } else {
         $output .= '<div class="alert alert-error alert-danger">'.
         _t('BAZ_NEED_ADMIN_RIGHTS').'.</div>'."\n";
@@ -1078,7 +1077,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
             }
             exit;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
         }
     }
@@ -1097,7 +1096,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
                 header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag()));
             }
             exit;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             exit($e->getMessage());
         }
     }
@@ -2332,19 +2331,22 @@ function baz_nextId()
         . ' where bn_id_nature < 1000';
     $ligne = $GLOBALS['wiki']->LoadSingle($requete);
 
-    if (!$ligne['maxi'])
+    if (!$ligne['maxi']) {
         return 1;
-    if ($ligne['maxi'] < 999)
+    }
+    if ($ligne['maxi'] < 999) {
         return $ligne['maxi'] + 1;
+    }
 
     $requete = 'SELECT MAX(bn_id_nature) AS maxi FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature'
         . ' where bn_id_nature > 10000';
     $ligne = $GLOBALS['wiki']->LoadSingle($requete);
 
-    if (!$ligne['maxi'])
+    if (!$ligne['maxi']) {
         return 10001;
-    else
+    } else {
         return $ligne['maxi'] + 1;
+    }
 }
 
 function getHtmlDataAttributes($fiche, $formtab = '')
@@ -2524,67 +2526,67 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         //     $res .= fread($fp, filesize($cacheid));
         //     fclose($fp);
         // } else {
-            $html = $formtemplate = [];
-            for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
-                // Champ  acls  present
-                if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
-                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
-                    if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
+        $html = $formtemplate = [];
+        for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
+            // Champ  acls  present
+            if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
+                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
+                if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
                       function_exists($fichebazar['form']['template'][$i][0])) {
-                        if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
+                    if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
                           $fichebazar['form']['template'][$i][0] == 'liste' ||
                           $fichebazar['form']['template'][$i][0] ==
                           'checkboxfiche' ||
                           $fichebazar['form']['template'][$i][0] ==
                           'listefiche') {
-                            $id =
+                        $id =
                           $fichebazar['form']['template'][$i][0].
                           $fichebazar['form']['template'][$i][1].
                           $fichebazar['form']['template'][$i][6];
-                        } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
-                            $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
-                        } else {
-                            $id = $fichebazar['form']['template'][$i][1];
-                        }
-                        $html[$id] = $fichebazar['form']['template'][$i][0](
-                            $formtemplate,
-                            $fichebazar['form']['template'][$i],
-                            'html',
-                            $fichebazar['values']
-                        );
-                        preg_match_all(
-                            '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
-                            $html[$id],
-                            $matches
-                        );
-                        if (isset($matches[1][0]) && $matches[1][0] != '') {
-                            $html[$id] = $matches[1][0];
-                        }
+                    } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
+                        $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
+                    } else {
+                        $id = $fichebazar['form']['template'][$i][1];
+                    }
+                    $html[$id] = $fichebazar['form']['template'][$i][0](
+                        $formtemplate,
+                        $fichebazar['form']['template'][$i],
+                        'html',
+                        $fichebazar['values']
+                    );
+                    preg_match_all(
+                        '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
+                        $html[$id],
+                        $matches
+                    );
+                    if (isset($matches[1][0]) && $matches[1][0] != '') {
+                        $html[$id] = $matches[1][0];
                     }
                 }
             }
-            try {
-                $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
-            } catch(\Exception $e) {
-                // Do nothing if semantic type is not available
-            }
-            $values['html'] = $html;
-            $values['fiche'] = $fichebazar['values'];
-            $values['form'] = $fichebazar['form'];
-            $res .= $GLOBALS['wiki']->services->get(TemplatesEngine::class)->render(
-                'bazar',
-                $custom_template,
-                $values,
-                strtotime($fichebazar['values']['date_maj_fiche']),
-                baz_get_custom_semantic_template($fichebazar['values'])
-            );
-        //}
+        }
+        try {
+            $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
+        } catch (\Exception $e) {
+            // Do nothing if semantic type is not available
+        }
+        $values['html'] = $html;
+        $values['fiche'] = $fichebazar['values'];
+        $values['form'] = $fichebazar['form'];
+        $res .= $GLOBALS['wiki']->services->get(TemplatesEngine::class)->render(
+            'bazar',
+            $custom_template,
+            $values,
+            strtotime($fichebazar['values']['date_maj_fiche']),
+            baz_get_custom_semantic_template($fichebazar['values'])
+        );
+    //}
     } else {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
                 // Champ  acls  present
-                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11],null,true,$idfiche)) {
+                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
                     // si le champ est autorisé, génère son contenu
                     if (function_exists($fichebazar['form']['template'][$i][0])) {
                         $res .= $fichebazar['form']['template'][$i][0](
@@ -3119,7 +3121,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     $params['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
     // Add display data to all fiches
-    $fiches['fiches'] = array_map(function($fiche) use($params) {
+    $fiches['fiches'] = array_map(function ($fiche) use ($params) {
         $GLOBALS['wiki']->services->get(FicheManager::class)->appendDisplayData($fiche, false, $params['correspondance']);
         return $fiche;
     }, $tableau_fiches);
@@ -3724,8 +3726,12 @@ function getAllParameters($wiki)
 
     // template utilisé pour l'affichage
     $param['template'] = isset($_GET['template']) ? $_GET['template'] : $wiki->GetParameter('template');
-    if (empty($param['template'])) $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
-    if (strpos($param['template'], '.html') === false) $param['template'] = $param['template'] . '.tpl.html';
+    if (empty($param['template'])) {
+        $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
+    }
+    if (strpos($param['template'], '.html') === false) {
+        $param['template'] = $param['template'] . '.tpl.html';
+    }
 
     // nombre maximal de résultats à afficher
     $param['nb'] = $wiki->GetParameter('nb');

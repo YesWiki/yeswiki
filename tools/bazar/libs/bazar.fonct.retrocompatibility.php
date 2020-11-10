@@ -34,9 +34,10 @@ function baz_requete_recherche_fiches(
     $motcles = true,
     $q = '',
     $facettesearch = 'OR'
-)
-{
-    if( $id==='' ) $id = [];
+) {
+    if ($id==='') {
+        $id = [];
+    }
 
     $fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
         'queries' => $tableau_criteres,
@@ -47,7 +48,9 @@ function baz_requete_recherche_fiches(
     ]);
 
     // Re-encode fiche as Wiki page
-    return array_map(function ($fiche) { return ['body' => json_encode($fiche)]; }, $fiches);
+    return array_map(function ($fiche) {
+        return ['body' => json_encode($fiche)];
+    }, $fiches);
 }
 
 function validateForm($data)
@@ -55,7 +58,7 @@ function validateForm($data)
     try {
         $GLOBALS['wiki']->services->get(FicheManager::class)->validate($data);
         return array('result' => true);
-    } catch(\Exception $e) {
+    } catch (\Exception $e) {
         return array('result' => false, 'error' => $e->getMessage());
     }
 }

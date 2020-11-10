@@ -38,7 +38,7 @@ if (!empty($file)) {
     // test of image extension
     $supported_image_extensions = array('svg', 'gif', 'jpg', 'jpeg', 'png');
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-     // Using strtolower to overcome case sensitive
+    // Using strtolower to overcome case sensitive
     if (!in_array($ext, $supported_image_extensions)) {
         echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_BACKGROUNDIMAGE') . '</strong> : '
               . _t('ATTACH_PARAM_FILE_MUST_BE_IMAGE') . '.</div>' . "\n";

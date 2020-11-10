@@ -30,7 +30,7 @@ use YesWiki\Bazar\Service\FicheManager;
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 $ficheManager = $this->services->get(FicheManager::class);
@@ -39,5 +39,5 @@ $ficheManager = $this->services->get(FicheManager::class);
 if ($ficheManager->isFiche($incPageName)) {
     $plugin_output_new = '<div class="'.$class.'">'."\n".baz_voir_fiche(0, $incPageName)."\n".'</div>'."\n";
 } else {
-	$type = '';
+    $type = '';
 }

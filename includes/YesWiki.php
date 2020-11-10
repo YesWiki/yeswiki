@@ -1401,7 +1401,7 @@ class Wiki
     {
         // if list is comma separated, convert into to line break separated
         if (strpos($list, ',') !== false) {
-           $list = preg_replace('/\s*,\s*/', "\n", $list);
+            $list = preg_replace('/\s*,\s*/', "\n", $list);
         }
         $acl = $this->LoadAcl($tag, $privilege, false);
 
@@ -1493,12 +1493,12 @@ class Wiki
      *            The name of the user that must satisfy the ACL. By default
      *            the current remote user.
      * @param string $tag
-     *            The name of the page or form to be tested when $acl contains '%'. 
-	 *            By Default ''
+     *            The name of the page or form to be tested when $acl contains '%'.
+     *            By Default ''
      * @param string $mode
-     *            Mode for case $acl contains '%'	 
-     *            Default '', standard case. $mode = 'creation', the test returns true	 
-     *            even if the user is connected	 
+     *            Mode for case $acl contains '%'
+     *            Default '', standard case. $mode = 'creation', the test returns true
+     *            even if the user is connected
      * @return bool True if the $user satisfies the $acl, false otherwise
      */
     public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
@@ -1510,73 +1510,73 @@ class Wiki
         if ($admincheck && $this->UserIsAdmin($user)) {
             return true;
         }
-		
-		$acl = trim($acl);
-		$result = false ; // result by default , this function is like a big "OR LOGICAL"
-		
-		foreach (explode(" ", $acl) as $blockLine) {
-		  /* Explode by " " to manage several ACL on same line */
-		  foreach (explode("\n", $blockLine) as $line) {
-            $line = trim($line);
+        
+        $acl = trim($acl);
+        $result = false ; // result by default , this function is like a big "OR LOGICAL"
+        
+        foreach (explode(" ", $acl) as $blockLine) {
+            /* Explode by " " to manage several ACL on same line */
+            foreach (explode("\n", $blockLine) as $line) {
+                $line = trim($line);
 
-            // check for inversion character "!"
-            if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                $std_response = false ;
-                $line = $matches[1];
-            } else {
-                $std_response = true;
-            }
+                // check for inversion character "!"
+                if (preg_match('/^[!](.*)$/', $line, $matches)) {
+                    $std_response = false ;
+                    $line = $matches[1];
+                } else {
+                    $std_response = true;
+                }
 
-            // if there's still anything left... lines with just a "!" don't count!
-            if ($line) {
-                switch ($line[0]) {
+                // if there's still anything left... lines with just a "!" don't count!
+                if ($line) {
+                    switch ($line[0]) {
                     case '#': // comments
                         break;
                     case '*': // everyone
                         $result = $std_response;
-						break;
+                        break;
                     case '+': // registered users
                         $result = ($this->LoadUser($user)) ? $std_response : !$std_response ;
                         break;
-					case '%': // owner
-						if ($mode == 'creation') {
-							// in creation mode, even if there is a tag
-							// the current user can access to field
-							$result = $std_response ;
-						} elseif ($tag == '') {
-							// to manage retrocompatibility without usage of CheckACL without $tag
-							// and no management of '%'
-							$result = false;
-						} else {
-							$result = ($this->UserIsOwner($tag)) ? $std_response : !$std_response ;
-						}
+                    case '%': // owner
+                        if ($mode == 'creation') {
+                            // in creation mode, even if there is a tag
+                            // the current user can access to field
+                            $result = $std_response ;
+                        } elseif ($tag == '') {
+                            // to manage retrocompatibility without usage of CheckACL without $tag
+                            // and no management of '%'
+                            $result = false;
+                        } else {
+                            $result = ($this->UserIsOwner($tag)) ? $std_response : !$std_response ;
+                        }
                         break;
                     case '@': // groups
                         $gname = substr($line, 1);
                         // paranoiac: avoid line = '@'
                         if ($gname) {
-							if ($this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
-								$result = $std_response ;
-							} else {
-								$result = ! $std_response ;
-							}
-						} else {
-							$result = false ; // line '@'
+                            if ($this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
+                                $result = $std_response ;
+                            } else {
+                                $result = ! $std_response ;
+                            }
+                        } else {
+                            $result = false ; // line '@'
                         }
                         break;
                     default: // simple user entry
                         if ($line == $user) {
                             $result = $std_response ;
                         } else {
-							$result = ! $std_response ;
-						}
+                            $result = ! $std_response ;
+                        }
                 }
-				if ($result) {
-					return true ;
-				} // else continue like a big logical OR
+                    if ($result) {
+                        return true ;
+                    } // else continue like a big logical OR
+                }
             }
-          }
-		}
+        }
 
         // tough luck.
         return false;
@@ -1896,7 +1896,7 @@ class Wiki
         $this->extensions = $objPlugins->getPluginsList();
 
         // TODO refactor as custom and actionsbuilder are not extensions
-        foreach($this->extensions as $pluginName => $pluginInfo) {
+        foreach ($this->extensions as $pluginName => $pluginInfo) {
             $this->extensions[$pluginName] = $pluginsRoot . $pluginName . '/';
         }
         $this->extensions['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
@@ -1989,203 +1989,232 @@ class Wiki
     /**
      * @deprecated Use DbService::query instead
      */
-    public function Query($query) {
+    public function Query($query)
+    {
         return $this->services->get(DbService::class)->query($query);
     }
 
     /**
      * @deprecated Use DbService::loadSingle instead
      */
-    public function LoadSingle($query) {
+    public function LoadSingle($query)
+    {
         return $this->services->get(DbService::class)->loadSingle($query);
     }
 
     /**
      * @deprecated Use DbService::loadAll instead
      */
-    public function LoadAll($query) {
+    public function LoadAll($query)
+    {
         return $this->services->get(DbService::class)->loadAll($query);
     }
 
     /**
      * @deprecated Use PageManager::getOne instead
      */
-    public function LoadPage($tag, $time = "", $cache = 1) {
+    public function LoadPage($tag, $time = "", $cache = 1)
+    {
         return $this->services->get(PageManager::class)->getOne($tag, $time, $cache);
     }
 
     /**
      * @deprecated Use PageManager::getCached instead
      */
-    public function GetCachedPage($tag) {
+    public function GetCachedPage($tag)
+    {
         return $this->services->get(PageManager::class)->getCached($tag);
     }
 
     /**
      * @deprecated Use PageManager::cache instead
      */
-    public function CachePage($page, $pageTag = null) {
+    public function CachePage($page, $pageTag = null)
+    {
         return $this->services->get(PageManager::class)->cache($page, $pageTag);
     }
 
     /**
      * @deprecated Use PageManager::getById instead
      */
-    public function LoadPageById($id) {
+    public function LoadPageById($id)
+    {
         return $this->services->get(PageManager::class)->getById($id);
     }
 
     /**
      * @deprecated Use PageManager::getRevisions instead
      */
-    public function LoadRevisions($page) {
+    public function LoadRevisions($page)
+    {
         return $this->services->get(PageManager::class)->getRevisions($page);
     }
 
     /**
      * @deprecated Use PageManager::getLinkingTo instead
      */
-    public function LoadPagesLinkingTo($tag) {
+    public function LoadPagesLinkingTo($tag)
+    {
         return $this->services->get(PageManager::class)->getLinkingTo($tag);
     }
 
     /**
      * @deprecated Use PageManager::getRecentlyChanged instead
      */
-    public function LoadRecentlyChanged($limit = 50, $minDate = '') {
+    public function LoadRecentlyChanged($limit = 50, $minDate = '')
+    {
         return $this->services->get(PageManager::class)->getRecentlyChanged($limit, $minDate);
     }
 
     /**
      * @deprecated Use PageManager::getAll instead
      */
-    public function LoadAllPages() {
+    public function LoadAllPages()
+    {
         return $this->services->get(PageManager::class)->getAll();
     }
 
     /**
      * @deprecated Use PageManager::getCreateTime instead
      */
-    public function GetPageCreateTime($pageTag) {
+    public function GetPageCreateTime($pageTag)
+    {
         return $this->services->get(PageManager::class)->getCreateTime($pageTag);
     }
 
     /**
      * @deprecated Use PageManager::searchFullText instead
      */
-    public function FullTextSearch($phrase) {
+    public function FullTextSearch($phrase)
+    {
         return $this->services->get(PageManager::class)->searchFullText($phrase);
     }
 
     /**
      * @deprecated Use PageManager::getWanted instead
      */
-    public function LoadWantedPages() {
+    public function LoadWantedPages()
+    {
         return $this->services->get(PageManager::class)->getWanted();
     }
 
     /**
      * @deprecated Use PageManager::getOrphaned instead
      */
-    public function LoadOrphanedPages() {
+    public function LoadOrphanedPages()
+    {
         return $this->services->get(PageManager::class)->getOrphaned();
     }
 
     /**
      * @deprecated Use PageManager::isOrphaned instead
      */
-    public function IsOrphanedPage($tag) {
+    public function IsOrphanedPage($tag)
+    {
         return $this->services->get(PageManager::class)->isOrphaned($tag);
     }
 
     /**
      * @deprecated Use PageManager::deletedOrphaned instead
      */
-    public function DeleteOrphanedPage($tag) {
+    public function DeleteOrphanedPage($tag)
+    {
         return $this->services->get(PageManager::class)->deletedOrphaned($tag);
     }
 
     /**
      * @deprecated Use PageManager::save instead
      */
-    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false) {
+    public function SavePage($tag, $body, $comment_on = "", $bypass_acls = false)
+    {
         return $this->services->get(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
     }
 
     /**
      * @deprecated Use TagsManager::deleteAll instead
      */
-    public function DeleteAllTags($page) {
+    public function DeleteAllTags($page)
+    {
         return $this->services->get(TagsManager::class)->deleteAll($page);
     }
 
     /**
      * @deprecated Use TagsManager::save instead
      */
-    public function SaveTags($page, $liste_tags) {
+    public function SaveTags($page, $liste_tags)
+    {
         return $this->services->get(TagsManager::class)->save($page, $liste_tags);
     }
 
     /**
      * @deprecated Use TagsManager::getAll instead
      */
-    public function GetAllTags($page = '') {
+    public function GetAllTags($page = '')
+    {
         return $this->services->get(TagsManager::class)->getAll($page);
     }
 
     /**
      * @deprecated Use TagsManager::getPagesByTags instead
      */
-    public function PageList($tags = '', $type = '', $nb = '', $tri = '') {
+    public function PageList($tags = '', $type = '', $nb = '', $tri = '')
+    {
         return $this->services->get(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
     }
 
     /**
      * @deprecated Use TripleStore::getOne instead
      */
-    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    {
         return $this->services->get(TripleStore::class)->getOne($resource, $property, $re_prefix, $prop_prefix);
     }
 
     /**
      * @deprecated Use TripleStore::getMatching instead
      */
-    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') {
+    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=')
+    {
         return $this->services->get(TripleStore::class)->getMatching($resource, $property, $value, $res_op, $prop_op);
     }
 
     /**
      * @deprecated Use TripleStore::getAll instead
      */
-    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX){
+    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    {
         return $this->services->get(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
     }
 
     /**
      * @deprecated Use TripleStore::exist instead
      */
-    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    {
         return $this->services->get(TripleStore::class)->exist($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 
     /**
      * @deprecated Use TripleStore::create instead
      */
-    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    {
         return $this->services->get(TripleStore::class)->create($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 
     /**
      * @deprecated Use TripleStore::update instead
      */
-    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    {
         return $this->services->get(TripleStore::class)->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
     }
 
     /**
      * @deprecated Use TripleStore::delete instead
      */
-    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) {
+    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    {
         return $this->services->get(TripleStore::class)->delete($resource, $property, $value, $re_prefix, $prop_prefix);
     }
 }

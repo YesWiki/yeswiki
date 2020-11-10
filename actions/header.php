@@ -40,15 +40,12 @@ header("Content-Type: text/html; charset=$charset");
 
 // <head> : metas & style
 if ($this->GetMethod() != 'show'
-	|| !empty($_REQUEST['phrase'])
-	|| !empty($_REQUEST['show_comments'])
-	|| isset($_REQUEST['time']))
-{
-	$additionnal_metas = "<meta name=\"robots\" content=\"noindex, nofollow\" />\n";
-}
-else
-{
-	$additionnal_metas = '';
+    || !empty($_REQUEST['phrase'])
+    || !empty($_REQUEST['show_comments'])
+    || isset($_REQUEST['time'])) {
+    $additionnal_metas = "<meta name=\"robots\" content=\"noindex, nofollow\" />\n";
+} else {
+    $additionnal_metas = '';
 }
 $meta_keywords = $this->GetConfigValue("meta_keywords");
 $meta_description = $this->GetConfigValue("meta_description");

@@ -29,7 +29,7 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
 
 // Render the view
 if (getParameter_boolean($this, 'search', false)) {
-  echo baz_rechercher($GLOBALS['params']['idtypeannonce'], $GLOBALS['params']['categorienature']);
+    echo baz_rechercher($GLOBALS['params']['idtypeannonce'], $GLOBALS['params']['categorienature']);
 } else {
-  echo displayResultList($fiches, $GLOBALS['params'], false);
+    echo displayResultList($fiches, $GLOBALS['params'], false);
 }

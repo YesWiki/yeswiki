@@ -80,7 +80,6 @@ if (isset($this)) {
             }
             $this->query('ALTER TABLE '.$table.' ENGINE=InnoDB;');
             $output .=  "Complete Table: <b>".$table."</b><br>";
-
         }
 
         $output .=  "<h3>Complete ALL</h3>";

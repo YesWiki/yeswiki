@@ -12,8 +12,8 @@
 /**
  * Get all users or one user's information
  *
- * @param string $username specify username 
- * 
+ * @param string $username specify username
+ *
  * @return string json
  */
 function getAuth($username = '')

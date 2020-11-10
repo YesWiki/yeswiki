@@ -22,9 +22,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION"))
-{
-	die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 if ($this->UserIsOwner() || $this->UserIsAdmin()) {
@@ -78,5 +77,3 @@ echo "<div class=\"page\">\n";
 echo $msg;
 echo "</div>\n";
 echo $this->Footer();
-
-?>

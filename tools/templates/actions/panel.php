@@ -43,7 +43,7 @@ if ($GLOBALS['check_' . $pagetag]['panel']) {
     if (isset($GLOBALS['check_'.$pagetag]['accordion_uniqueID'])) {
         $accordionID = $GLOBALS['check_'.$pagetag]['accordion_uniqueID'];
         $collapsible = ($type == "collapsible");
-        if ($collapsible && !isset($GLOBALS['check_'.$pagetag]['accordion_collapsible'])){
+        if ($collapsible && !isset($GLOBALS['check_'.$pagetag]['accordion_collapsible'])) {
             $collapsed = false;
             $GLOBALS['check_'.$pagetag]['accordion_collapsible'] = true;
         } else {

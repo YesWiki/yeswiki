@@ -19,41 +19,40 @@
  * @param    $class_for_embed  string  Référence vers la chaîne de texte représentant la classe pour le container embed
  */
 $styleForSize = ($manageSize) ? ' style="max-width:'.$maxWidth.'px;max-height:'.$maxHeight .'px;"' : '' ;
-	
+    
 //position
 $class = $baseObject->GetParameter("class");
 $managePosition = false ;
 $class_for_div = '' ;
 $class_for_embed = '' ;
 
-if (!empty($class)){
-	$class = str_replace('attached_file','',$class) ; // to avoid display troubles
-	if (!(strpos($class,'pull-left') === false) || !(strpos($class,'pull-right') === false)) {
-		if ($manageSize) {
-			$manageSize = false ;
-			$managePosition = true ;
-			$divHTML = '<div style="width:' . $maxWidth . 'px;height:' . $maxHeight . 'px;max-width:100%;' ;
-			$divHTML .= '" class="' . $class . '">' ;
-			echo $divHTML ;
-		} else {
-			// remove class because not usefull
-			//$class_for_embed  = ' ' . str_replace('pull-right','',str_replace('pull-left','',$class)) ;
-			
-			$managePosition = true ;
-			$divHTML = '<div style="width:100%;' ;
-			$divHTML .= '" class="' . $class . '">' ;
-			echo $divHTML ;
-		}
-	} else {
-		if ($manageSize) {
-			$class_for_div = 'class="' . $class . '"';
-		} else {
-			$class_for_embed = ' ' . $class ;
-		}
-	}
+if (!empty($class)) {
+    $class = str_replace('attached_file', '', $class) ; // to avoid display troubles
+    if (!(strpos($class, 'pull-left') === false) || !(strpos($class, 'pull-right') === false)) {
+        if ($manageSize) {
+            $manageSize = false ;
+            $managePosition = true ;
+            $divHTML = '<div style="width:' . $maxWidth . 'px;height:' . $maxHeight . 'px;max-width:100%;' ;
+            $divHTML .= '" class="' . $class . '">' ;
+            echo $divHTML ;
+        } else {
+            // remove class because not usefull
+            //$class_for_embed  = ' ' . str_replace('pull-right','',str_replace('pull-left','',$class)) ;
+            
+            $managePosition = true ;
+            $divHTML = '<div style="width:100%;' ;
+            $divHTML .= '" class="' . $class . '">' ;
+            echo $divHTML ;
+        }
+    } else {
+        if ($manageSize) {
+            $class_for_div = 'class="' . $class . '"';
+        } else {
+            $class_for_embed = ' ' . $class ;
+        }
+    }
 }
 
-if($manageSize) { echo '<div'. $styleForSize . $class_for_div . '>' ;}
-
- 
-?>
+if ($manageSize) {
+    echo '<div'. $styleForSize . $class_for_div . '>' ;
+}

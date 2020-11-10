@@ -53,22 +53,17 @@
 $set = isset($_GET["set"]) ? $_GET["set"] : '';
 
 
-if ($this->GetParameter("link"))
-{
-	echo	"<a href=\"".$this->href()."&set=".$this->GetParameter("link")."\">";
-	echo	(!$this->GetParameter("title")) ? "Feuille de style ".$this->GetParameter("link") : $this->GetParameter("title");
-	echo	"</a>";
+if ($this->GetParameter("link")) {
+    echo	"<a href=\"".$this->href()."&set=".$this->GetParameter("link")."\">";
+    echo	(!$this->GetParameter("title")) ? "Feuille de style ".$this->GetParameter("link") : $this->GetParameter("title");
+    echo	"</a>";
 }
 
 
 // Do it.
-if (preg_match("/^[[:alnum:]][[:alnum:]]+$/", $set))
-{
-	$this->SetPersistentCookie('sitestyle', $set, 1);
-	header("Location: ".$this->href());
+if (preg_match("/^[[:alnum:]][[:alnum:]]+$/", $set)) {
+    $this->SetPersistentCookie('sitestyle', $set, 1);
+    header("Location: ".$this->href());
+} elseif ($set) {
+    $this->SetMessage("Le nom '".htmlspecialchars($set, ENT_COMPAT, YW_CHARSET)."' n'est pas conforme é la r&egrave;gle de nommage impos&eacute;e par l'action ChangeStyle. Reportez-vous &agrave; la documentation de cette action pour plus de pr&eacute;cisions.");
 }
-else if ($set)
-{
-	$this->SetMessage("Le nom '".htmlspecialchars($set, ENT_COMPAT, YW_CHARSET)."' n'est pas conforme é la r&egrave;gle de nommage impos&eacute;e par l'action ChangeStyle. Reportez-vous &agrave; la documentation de cette action pour plus de pr&eacute;cisions.");
-}
-?>

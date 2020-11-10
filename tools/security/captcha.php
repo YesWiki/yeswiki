@@ -49,7 +49,6 @@ if (isset($GLOBALS['wiki']->config['captcha_words']) and is_array($GLOBALS['wiki
 
 class TheCaptcha
 {
-
     public $image;
     public $size;
     public $text;
@@ -84,7 +83,7 @@ class TheCaptcha
             }
         }
 
-        $size = ( (strlen($theLongWord) * 27) + (15 * 2) );
+        $size = ((strlen($theLongWord) * 27) + (15 * 2));
         unset($theLongWord);
         return $size;
     }

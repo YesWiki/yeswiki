@@ -31,7 +31,6 @@ if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config["table_prefix"] 
             }
             echo "<b>$firstChar</b><br />\n" ;
             $curChar = $firstChar;
-
         }
         $buffer .= '[['.$tag.' '.$page.']]'."\n";
     }

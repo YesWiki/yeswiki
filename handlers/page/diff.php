@@ -51,9 +51,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION"))
-{
-	die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 require_once 'includes/diff/side.class.php';
@@ -65,153 +64,142 @@ ob_start();
 <div class="page">
 <?php
 
-if ($this->HasAccess("read"))
-{
+if ($this->HasAccess("read")) {
 
 // If asked, call original diff
 
-	if (!empty($_REQUEST["fastdiff"])) {
+    if (!empty($_REQUEST["fastdiff"])) {
 
-		/* NOTE: This is a really cheap way to do it. I think it may be more intelligent to write the two pages to temporary files and run /usr/bin/diff over them. Then again, maybe not.        */
-		// load pages
-		  $pageA = $this->LoadPageById($_REQUEST["a"]);
-		  $pageB = $this->LoadPageById($_REQUEST["b"]);
+        /* NOTE: This is a really cheap way to do it. I think it may be more intelligent to write the two pages to temporary files and run /usr/bin/diff over them. Then again, maybe not.        */
+        // load pages
+        $pageA = $this->LoadPageById($_REQUEST["a"]);
+        $pageB = $this->LoadPageById($_REQUEST["b"]);
 
-		// prepare bodies
-		  $bodyA = explode("\n", $pageA["body"]);
-		  $bodyB = explode("\n", $pageB["body"]);
+        // prepare bodies
+        $bodyA = explode("\n", $pageA["body"]);
+        $bodyB = explode("\n", $pageB["body"]);
 
-		  $added = array_diff($bodyA, $bodyB);
-		  $deleted = array_diff($bodyB, $bodyA);
-		  if (!isset($output)) $output = '';
+        $added = array_diff($bodyA, $bodyB);
+        $deleted = array_diff($bodyB, $bodyA);
+        if (!isset($output)) {
+            $output = '';
+        }
 
-		  $output .= "<b>Comparaison de <a href=\"".$this->href("", "", "time=".urlencode($pageA["time"]))."\">".$pageA["time"]."</a> &agrave; <a href=\"".$this->href("", "", "time=".urlencode($pageB["time"]))."\">".$pageB["time"]."</a></b><br />\n";
+        $output .= "<b>Comparaison de <a href=\"".$this->href("", "", "time=".urlencode($pageA["time"]))."\">".$pageA["time"]."</a> &agrave; <a href=\"".$this->href("", "", "time=".urlencode($pageB["time"]))."\">".$pageB["time"]."</a></b><br />\n";
 
-		  $this->RegisterInclusion($this->GetPageTag());
-		  if ($added)
-		  {
-			// remove blank lines
-			$output .= "<br />\n<b>Ajouts:</b><br />\n";
-			$output .= "<div class=\"additions\">".$this->Format(implode("\n", $added))."</div>";
-		  }
+        $this->RegisterInclusion($this->GetPageTag());
+        if ($added) {
+            // remove blank lines
+            $output .= "<br />\n<b>Ajouts:</b><br />\n";
+            $output .= "<div class=\"additions\">".$this->Format(implode("\n", $added))."</div>";
+        }
 
-		  if ($deleted)
-		  {
-			$output .= "<br />\n<b>Suppressions:</b><br />\n";
-			$output .= "<div class=\"deletions\">".$this->Format(implode("\n", $deleted))."</div>";
-		  }
-		  $this->UnregisterLastInclusion();
+        if ($deleted) {
+            $output .= "<br />\n<b>Suppressions:</b><br />\n";
+            $output .= "<div class=\"deletions\">".$this->Format(implode("\n", $deleted))."</div>";
+        }
+        $this->UnregisterLastInclusion();
 
-		  if (!$added && !$deleted)
-		  {
-			$output .= "<br />\nPas de diff&eacute;rences.";
-		  }
-		  echo _convert($output, 'ISO-8859-15');
+        if (!$added && !$deleted) {
+            $output .= "<br />\nPas de diff&eacute;rences.";
+        }
+        echo _convert($output, 'ISO-8859-15');
+    } else {
 
-	}
+    // load pages
 
-	else {
+        $pageA = $this->LoadPageById($_REQUEST["b"]);
+        $pageB = $this->LoadPageById($_REQUEST["a"]);
 
-	// load pages
+        // extract text from bodies
+        $textA = _convert($pageA["body"], "ISO-8859-15");
+        $textB = _convert($pageB["body"], "ISO-8859-15");
 
-		$pageA = $this->LoadPageById($_REQUEST["b"]);
-		$pageB = $this->LoadPageById($_REQUEST["a"]);
+        $sideA = new Side($textA);
+        $sideB = new Side($textB);
 
-		// extract text from bodies
-		$textA = _convert($pageA["body"], "ISO-8859-15");
-		$textB = _convert($pageB["body"], "ISO-8859-15");
+        $bodyA='';
+        $sideA->split_file_into_words($bodyA);
 
-		$sideA = new Side($textA);
-		$sideB = new Side($textB);
+        $bodyB='';
+        $sideB->split_file_into_words($bodyB);
 
-		$bodyA='';
-		$sideA->split_file_into_words($bodyA);
+        // diff on these two file
+        $diff = new Diff(explode("\n", $bodyA), explode("\n", $bodyB));
 
-		$bodyB='';
-		$sideB->split_file_into_words($bodyB);
+        // format output
+        $fmt = new DiffFormatter();
 
-		// diff on these two file
-		$diff = new Diff(explode("\n",$bodyA),explode("\n",$bodyB));
+        $sideO = new Side($fmt->format($diff));
 
-		// format output
-		$fmt = new DiffFormatter();
+        $resync_left=0;
+        $resync_right=0;
 
-		$sideO = new Side($fmt->format($diff));
+        $count_total_right=$sideB->getposition() ;
 
-		$resync_left=0;
-		$resync_right=0;
+        $sideA->init();
+        $sideB->init();
 
-		$count_total_right=$sideB->getposition() ;
+        $output='';
 
-		$sideA->init();
-		$sideB->init();
+        while (1) {
+            $sideO->skip_line();
+            if ($sideO->isend()) {
+                break;
+            }
 
-		$output='';
+            if ($sideO->decode_directive_line()) {
+                $argument=$sideO->getargument();
+                $letter=$sideO->getdirective();
+                switch ($letter) {
+                case 'a':
+                  $resync_left = $argument[0];
+                  $resync_right = $argument[2] - 1;
+                  break;
 
-		  while (1) {
+                case 'd':
+                  $resync_left = $argument[0] - 1;
+                  $resync_right = $argument[2];
+                  break;
 
-		      $sideO->skip_line();
-		      if ($sideO->isend()) {
-			  break;
-		      }
+                case 'c':
+                  $resync_left = $argument[0] - 1;
+                  $resync_right = $argument[2] - 1;
+                  break;
 
-		      if ($sideO->decode_directive_line()) {
-			$argument=$sideO->getargument();
-			$letter=$sideO->getdirective();
-		      switch ($letter) {
-			    case 'a':
-			      $resync_left = $argument[0];
-			      $resync_right = $argument[2] - 1;
-			      break;
+                }
 
-			    case 'd':
-			      $resync_left = $argument[0] - 1;
-			      $resync_right = $argument[2];
-			      break;
+                $sideA->skip_until_ordinal($resync_left);
+                $sideB->copy_until_ordinal($resync_right, $output);
 
-			    case 'c':
-			      $resync_left = $argument[0] - 1;
-			      $resync_right = $argument[2] - 1;
-			      break;
+                // deleted word
 
-			    }
+                if (($letter=='d') || ($letter=='c')) {
+                    $sideA->copy_whitespace($output);
+                    $output .="@@";
+                    $sideA->copy_word($output);
+                    $sideA->copy_until_ordinal($argument[1], $output);
+                    $output .="@@";
+                }
 
-			    $sideA->skip_until_ordinal($resync_left);
-			    $sideB->copy_until_ordinal($resync_right,$output);
+                // inserted word
+                if ($letter == 'a' || $letter == 'c') {
+                    $sideB->copy_whitespace($output);
+                    $output .="££";
+                    $sideB->copy_word($output);
+                    $sideB->copy_until_ordinal($argument[3], $output);
+                    $output .="££";
+                }
+            }
+        }
 
-	// deleted word
-
-			    if (($letter=='d') || ($letter=='c')) {
-			      $sideA->copy_whitespace($output);
-			      $output .="@@";
-			      $sideA->copy_word($output);
-			      $sideA->copy_until_ordinal($argument[1],$output);
-			      $output .="@@";
-			    }
-
-	// inserted word
-			    if ($letter == 'a' || $letter == 'c') {
-				$sideB->copy_whitespace($output);
-				$output .="££";
-				$sideB->copy_word($output);
-				$sideB->copy_until_ordinal($argument[3],$output);
-				$output .="££";
-			    }
-
-		  }
-
-		}
-
-		  $sideB->copy_until_ordinal($count_total_right,$output);
-		  $sideB->copy_whitespace($output);
-		  $out=$this->Format($output);
-		  echo _convert($out, 'ISO-8859-15');
-
-	}
-
-}
-else{
-	echo "<i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; lire cette page.</i>" ;
+        $sideB->copy_until_ordinal($count_total_right, $output);
+        $sideB->copy_whitespace($output);
+        $out=$this->Format($output);
+        echo _convert($out, 'ISO-8859-15');
+    }
+} else {
+    echo "<i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; lire cette page.</i>" ;
 }
 
 ?>

@@ -28,7 +28,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 echo $this->Header();
@@ -36,7 +36,6 @@ echo '<h1>Export</h1>'."\n";
 
 if (isset($_POST['submit_export'])) {
     echo "export!";
-
 } else {
     echo $this->FormOpen('export');
     $requete = "SELECT DISTINCT tag FROM ".$this->config["table_prefix"]."pages WHERE latest = 'Y' and comment_on = '' ORDER BY tag";

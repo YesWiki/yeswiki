@@ -25,7 +25,6 @@
  */
 
 if (!class_exists('imageTransform')) {
-
     class imageTransform
     {
 
@@ -34,14 +33,14 @@ if (!class_exists('imageTransform')) {
          *
          *  @var    string
          */
-        var $sourceFile;
+        public $sourceFile;
         
         /**
          *  Path and name of transformed image file
          *
          *  @var    string
          */
-        var $targetFile;
+        public $targetFile;
         
         /**
          *  Available only for the {@link resize} method
@@ -54,7 +53,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var    integer
          */
-        var $resizeToWidth;
+        public $resizeToWidth;
         
         /**
          *  Available only for the {@link resize} method
@@ -67,7 +66,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var    integer
          */
-        var $resizeToHeight;
+        public $resizeToHeight;
         
         /**
          *  Available only for the {@link resize} method
@@ -81,7 +80,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var boolean
          */
-        var $maintainAspectRatio;
+        public $maintainAspectRatio;
         
         /**
          *  Available only for the {@link resize} method
@@ -93,7 +92,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var boolean
          */
-        var $resizeIfSmaller;
+        public $resizeIfSmaller;
         
         /**
          *  Available only for the {@link resize} method
@@ -105,7 +104,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var boolean
          */
-        var $resizeIfGreater;
+        public $resizeIfGreater;
         
         /**
          *  Available only for the {@link resize} method and only if the {@link targetFile}'s extension is jpg/jpeg
@@ -119,7 +118,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var integer
          */
-        var $jpegOutputQuality;
+        public $jpegOutputQuality;
         
         /**
          *  what rights should the transformed file have
@@ -143,7 +142,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var integer
          */
-        var $chmodValue;
+        public $chmodValue;
         
         /**
          *  Sets weather the target file should have have the same date/time as the source file
@@ -154,7 +153,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @var boolean
          */
-        var $preserveSourceFileTime;
+        public $preserveSourceFileTime;
 
         /**
          *  in case of an error read this property's value to find out what went wrong
@@ -172,14 +171,14 @@ if (!class_exists('imageTransform')) {
          *
          *  @var integer
          */
-        var $error;
+        public $error;
         
         /**
          *  Constructor of the class.
          *
          *  @access private
          */
-        function imageTransform()
+        public function imageTransform()
         {
         
             // Sets default values of the class' properties
@@ -206,7 +205,6 @@ if (!class_exists('imageTransform')) {
             $this->targetFile = "";
 
             $this->sourceFile = "";
-
         }
         
         /**
@@ -215,7 +213,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @access private
          */
-        function create_image_from_source_file()
+        public function create_image_from_source_file()
         {
         
             // performs some error checking first
@@ -269,12 +267,11 @@ if (!class_exists('imageTransform')) {
                         
                         $result = fread($fp, 13);
                         
-                        $colorFlag = ord(substr($result,10,1)) >> 7;
+                        $colorFlag = ord(substr($result, 10, 1)) >> 7;
 
-                        $background = ord(substr($result,11));
+                        $background = ord(substr($result, 11));
 
                         if ($colorFlag) {
-
                             $tableSizeNeeded = ($background + 1) * 3;
 
                             $result = fread($fp, $tableSizeNeeded);
@@ -284,7 +281,6 @@ if (!class_exists('imageTransform')) {
                             $this->transparentColorGreen = ord(substr($result, $background * 3 + 1, 1));
 
                             $this->transparentColorBlue = ord(substr($result, $background * 3 + 2, 1));
-
                         }
 
                         fclose($fp);
@@ -322,7 +318,6 @@ if (!class_exists('imageTransform')) {
                         return false;
                         
                 }
-                
             }
             
             // if the date/time of the target file should be the same as the source file's
@@ -330,12 +325,10 @@ if (!class_exists('imageTransform')) {
             
                 // read the source file's date/time
                 $this->sourceFileTime = filemtime($this->sourceFile);
-            
             }
 
             // returns an image identifier representing the image obtained from sourceFile and the image's width and height
             return array($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType);
-            
         }
 
         /**
@@ -343,7 +336,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @access private
          */
-        function create_target_image_identifier($width, $height)
+        public function create_target_image_identifier($width, $height)
         {
         
             // creates a blank image
@@ -351,18 +344,15 @@ if (!class_exists('imageTransform')) {
             
             // if we have transparency in the image
             if (isset($this->transparentColorRed) && isset($this->transparentColorGreen) && isset($this->transparentColorBlue)) {
-            
                 $transparent = imagecolorallocate($targetImageIdentifier, $this->transparentColorRed, $this->transparentColorGreen, $this->transparentColorBlue);
 
                 imagefilledrectangle($targetImageIdentifier, 0, 0, $width, $height, $transparent);
 
                 imagecolortransparent($targetImageIdentifier, $transparent);
-                
             }
             
             // return target image identifier
             return $targetImageIdentifier;
-            
         }
 
         /**
@@ -370,7 +360,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @access private
          */
-        function output_target_image($targetImageIdentifier)
+        public function output_target_image($targetImageIdentifier)
         {
         
             // get target file extension
@@ -397,7 +387,6 @@ if (!class_exists('imageTransform')) {
                         $this->error = 3;
 
                         return false;
-                        
                     }
                     
                     break;
@@ -421,7 +410,6 @@ if (!class_exists('imageTransform')) {
                         $this->error = 3;
 
                         return false;
-                        
                     }
                     
                     break;
@@ -443,7 +431,6 @@ if (!class_exists('imageTransform')) {
                         $this->error = 3;
 
                         return false;
-                        
                     }
                     
                     break;
@@ -467,12 +454,10 @@ if (!class_exists('imageTransform')) {
             
                 // touch the newly created file
                 @touch($this->targetFile, $this->sourceFileTime);
-                
             }
             
             // and return true
             return true;
-            
         }
 
         /**
@@ -482,7 +467,7 @@ if (!class_exists('imageTransform')) {
          *  @return boolean     TRUE on success, FALSE on error.
          *                      If FALSE is returned, check the {@link error} property to see what went wrong
          */
-        function resize()
+        public function resize()
         {
 
             // tries to create an image from sourceFile
@@ -490,7 +475,6 @@ if (!class_exists('imageTransform')) {
             
             // if operation was successful
             if (is_array($result)) {
-            
                 list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType) = $result;
             
                 // if aspect ratio needs to be maintained
@@ -516,7 +500,6 @@ if (!class_exists('imageTransform')) {
                         // this can be later altered by the script but we need it for
                         // the case when the script skips the following if() block
                         $lockedTargetImageWidth = $this->resizeToWidth;
-
                     }
 
                     // if width of image is greater than resizeToWidth property and resizeIfGreater property is TRUE
@@ -543,7 +526,6 @@ if (!class_exists('imageTransform')) {
                                 
                         // saves the got width in case the next section wants to change it
                         $lockedTargetImageWidth = $targetImageWidth;
-                        
                     }
                     
                     // if height of image is greater than resizeToHeight property and resizeIfGreater property is TRUE
@@ -579,7 +561,6 @@ if (!class_exists('imageTransform')) {
                         
                             // adjust the height so that the width remains as set before
                             while ($targetImageWidth > $lockedTargetImageWidth) {
-                            
                                 $targetImageHeight--;
 
                                 $targetImageWidth =
@@ -589,20 +570,15 @@ if (!class_exists('imageTransform')) {
                                         $targetImageHeight / $aspectRatio :
 
                                         $targetImageHeight * $aspectRatio;
-
                             }
-                            
                         }
-                        
                     }
                     
-                // if aspect ratio does not need to be maintained
+                    // if aspect ratio does not need to be maintained
                 } else {
-                
                     $targetImageWidth = ($this->resizeToWidth >= 0 ? $this->resizeToWidth : $sourceImageWidth);
 
                     $targetImageHeight = ($this->resizeToHeight >= 0 ? $this->resizeToHeight : $sourceImageHeight);
-                    
                 }
                 
                 // prepares the target image
@@ -612,7 +588,6 @@ if (!class_exists('imageTransform')) {
                 // but first if source image is png take care of transparency
                 // this is to maintain transparency of png24 files
                 if ($sourceImageType == 3) {
-                
                     imagealphablending($targetImageIdentifier, false);
 
                     imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, 0, 0, 0, 0, $targetImageWidth, $targetImageHeight, $sourceImageWidth, $sourceImageHeight);
@@ -621,9 +596,7 @@ if (!class_exists('imageTransform')) {
                     
                 // if image is something other than png
                 } else {
-                
                     imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, 0, 0, 0, 0, $targetImageWidth, $targetImageHeight, $sourceImageWidth, $sourceImageHeight);
-                    
                 }
                 
                 // writes image
@@ -636,7 +609,6 @@ if (!class_exists('imageTransform')) {
                 // note that we do not set the error level as it has been already set
                 // by the create_image_from_source_file() method earlier
                 return false;
-                
             }
         }
         
@@ -653,7 +625,7 @@ if (!class_exists('imageTransform')) {
          *  @return boolean     TRUE on success, FALSE on error.
          *                      If FALSE is returned, check the {@link error} property to see what went wrong
          */
-        function crop($src_x, $src_y, $dst_x, $dst_y)
+        public function crop($src_x, $src_y, $dst_x, $dst_y)
         {
         
             // tries to create an image from sourceFile
@@ -661,20 +633,17 @@ if (!class_exists('imageTransform')) {
 
             // if operation was successful
             if (is_array($result)) {
-
                 list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight) = $result;
 
                 // prepares the target image
                 $targetImageIdentifier = $this->create_target_image_identifier($dst_x - $src_x, $dst_y - $src_y);
 
                 // crops the image
-               imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, 0, 0, $src_x, $src_y, $dst_x - $src_x, $dst_y - $src_y, $dst_x - $src_x, $dst_y - $src_y);
+                imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, 0, 0, $src_x, $src_y, $dst_x - $src_x, $dst_y - $src_y, $dst_x - $src_x, $dst_y - $src_y);
 
                 // writes image
                 return $this->output_target_image($targetImageIdentifier);
-                
             }
-
         }
 
         /**
@@ -683,7 +652,7 @@ if (!class_exists('imageTransform')) {
          *  @return boolean     TRUE on success, FALSE on error.
          *                      If FALSE is returned, check the {@link error} property to see what went wrong
          */
-        function flip_horizontal()
+        public function flip_horizontal()
         {
         
             // tries to create an image from sourceFile
@@ -691,7 +660,6 @@ if (!class_exists('imageTransform')) {
 
             // if operation was successful
             if (is_array($result)) {
-
                 list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight) = $result;
             
                 // prepares the target image
@@ -699,9 +667,7 @@ if (!class_exists('imageTransform')) {
                 
                 // flips image horizontally
                 for ($x = 0; $x < $sourceImageWidth; $x++) {
-
-                   imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, $x, 0, $sourceImageWidth - $x - 1, 0, 1, $sourceImageHeight);
-
+                    imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, $x, 0, $sourceImageWidth - $x - 1, 0, 1, $sourceImageHeight);
                 }
                 
                 // writes image
@@ -714,9 +680,7 @@ if (!class_exists('imageTransform')) {
                 // note that we do not set the error level as it has been already set
                 // by the create_image_from_source_file() method earlier
                 return false;
-                
             }
-            
         }
 
         /**
@@ -725,7 +689,7 @@ if (!class_exists('imageTransform')) {
          *  @return boolean     TRUE on success, FALSE on error.
          *                      If FALSE is returned, check the {@link error} property to see what went wrong
          */
-        function flip_vertical()
+        public function flip_vertical()
         {
         
             // tries to create an image from sourceFile
@@ -733,7 +697,6 @@ if (!class_exists('imageTransform')) {
 
             // if operation was successful
             if (is_array($result)) {
-
                 list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight) = $result;
             
                 // prepares the target image
@@ -741,9 +704,7 @@ if (!class_exists('imageTransform')) {
                 
                 // flips image vertically
                 for ($y = 0; $y < $sourceImageHeight; $y++) {
-
                     imagecopyresampled($targetImageIdentifier, $sourceImageIdentifier, 0, $y, 0, $sourceImageHeight - $y - 1, $sourceImageWidth, 1);
-
                 }
                 
                 // writes image
@@ -756,9 +717,7 @@ if (!class_exists('imageTransform')) {
                 // note that we do not set the error level as it has been already set
                 // by the create_image_from_source_file() method earlier
                 return false;
-                
             }
-            
         }
 
         /**
@@ -773,7 +732,7 @@ if (!class_exists('imageTransform')) {
          *  @return boolean     TRUE on success, FALSE on error.
          *                      If FALSE is returned, check the {@link error} property to see what went wrong
          */
-        function rotate($angle, $bgColor)
+        public function rotate($angle, $bgColor)
         {
         
             // tries to create an image from sourceFile
@@ -781,7 +740,6 @@ if (!class_exists('imageTransform')) {
 
             // if operation was successful
             if (is_array($result)) {
-
                 list($sourceImageIdentifier, $sourceImageWidth, $sourceImageHeight, $sourceImageType) = $result;
             
                 // rotates image
@@ -797,10 +755,7 @@ if (!class_exists('imageTransform')) {
                 // note that we do not set the error level as it has been already set
                 // by the create_image_from_source_file() method earlier
                 return false;
-                
             }
-            
         }
-        
     }
 }

@@ -16,7 +16,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     //Create a new PHPMailer instance
     $mail = new PHPMailer(true);
 
-    try{
+    try {
         $mail->set('CharSet', 'utf-8');
 
         if ($GLOBALS['wiki']->config['contact_mail_func'] == 'smtp') {
@@ -89,8 +89,9 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         $mail->send();
         return true;
     } catch (Exception $e) {
-        if ($GLOBALS['wiki']->UserIsAdmin())
+        if ($GLOBALS['wiki']->UserIsAdmin()) {
             echo $e->errorMessage();
+        }
         return false;
     }
 }

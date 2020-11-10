@@ -28,7 +28,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 echo $this->Header();
@@ -36,10 +36,8 @@ echo '<h1>Import</h1>'."\n";
 
 if (isset($_POST['submit_url'])) {
     echo "URL";
-
 } elseif (isset($_POST['submit_file'])) {
     echo "file";
-
 } else {
     echo $this->FormOpen('import');
     echo '<label for="urlimport">Entrez l\'URL du YesWiki d\'oé vous souhaitez importer des données</label>'."\n";

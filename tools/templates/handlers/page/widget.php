@@ -1,9 +1,8 @@
 <?php
 /*
 */
-if (!defined("WIKINI_VERSION"))
-{
-            die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 $width = (isset($_GET['width'])) ? $_GET['width'] : '100%';
@@ -17,5 +16,3 @@ echo '</pre>'."\n";
 echo '<div class="alert alert-info">'._t('TEMPLATE_WIDGET_COPY_PASTE').'</div>'."\n";
 echo '<iframe class="yeswiki_frame" width="'.$width.'" height="'.$height.'" frameborder="0" src="'.$this->Href('iframe').'"></iframe>';
 echo $this->Footer();
-
-?>

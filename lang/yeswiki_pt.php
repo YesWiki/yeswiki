@@ -19,7 +19,7 @@
 // | License along with this library; if not, write to the Free Software                                  |
 // | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Arquivo de tradução em português (do Brasil) da Yeswiki
 *
@@ -215,7 +215,7 @@ $GLOBALS['translations'] = array(
 'NEW_ACCOUNT' => 'Nova conta',
 
 
-// actions/wantedpages.php 
+// actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'Nenhuma página para criar',
 
 // setup/header.php

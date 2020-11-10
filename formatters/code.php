@@ -1,6 +1,6 @@
 
 <pre>
-<?php 
+<?php
 /*
 code.php
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>

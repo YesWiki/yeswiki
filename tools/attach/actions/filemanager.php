@@ -37,16 +37,16 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //vérification de sécurité
 if (!WIKINI_VERSION) {
-     die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
-if($this->HasAccess('write')){
-	if (!class_exists('attach')){
-		include('tools/attach/actions/attach.class.php');
-	}
-	$att = new attach($this);
-	$att->doFilemanagerAction();
-	unset($att);
+if ($this->HasAccess('write')) {
+    if (!class_exists('attach')) {
+        include('tools/attach/actions/attach.class.php');
+    }
+    $att = new attach($this);
+    $att->doFilemanagerAction();
+    unset($att);
 } else {
-	echo '<div class="alert alert-danger">'._t('ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER').'.</div>'."\n";
+    echo '<div class="alert alert-danger">'._t('ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER').'.</div>'."\n";
 }

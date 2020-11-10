@@ -34,11 +34,11 @@ if (!defined('WIKINI_VERSION')) {
 $signupurl = $this->GetParameter('signupurl');
 // si pas d'url d'inscription renseignée, on utilise ParametresUtilisateur
 if (empty($signupurl) || $signupurl === "0") {
-	$signupurl = $this->href("", "ParametresUtilisateur", "");
+    $signupurl = $this->href("", "ParametresUtilisateur", "");
 } else {
-	if ($this->IsWikiName($signupurl, WN_CAMEL_CASE_EVOLVED)) {
-		$signupurl = $this->href('', $signupurl);
-	}
+    if ($this->IsWikiName($signupurl, WN_CAMEL_CASE_EVOLVED)) {
+        $signupurl = $this->href('', $signupurl);
+    }
 }
 
 // url du profil
@@ -47,24 +47,24 @@ $profileurl = $this->GetParameter('profileurl');
 // sauvegarde de l'url d'ou on vient
 $incomingurl = $this->GetParameter('incomingurl');
 if (empty($incomingurl)) {
-	$url = explode('?', $_SERVER['REQUEST_URI']);
-	$d = dirname($url[0].'?');
-	$t = ($d != '/' ? str_replace($d, '', $_SERVER['REQUEST_URI']) : $_SERVER['REQUEST_URI']);
-	$incomingurl = $this->getBaseUrl().$t;
+    $url = explode('?', $_SERVER['REQUEST_URI']);
+    $d = dirname($url[0].'?');
+    $t = ($d != '/' ? str_replace($d, '', $_SERVER['REQUEST_URI']) : $_SERVER['REQUEST_URI']);
+    $incomingurl = $this->getBaseUrl().$t;
 }
 
 $userpage = $this->GetParameter("userpage");
 // si pas d'url de page de sortie renseignée, on retourne sur la page courante
 if (empty($userpage)) {
-	$userpage = $incomingurl;
-	// si l'url de sortie contient le passage de parametres de déconnexion, on l'efface
-	if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout") {
-		$userpage = str_replace('&action=logout', '', $userpage);
-	}
+    $userpage = $incomingurl;
+    // si l'url de sortie contient le passage de parametres de déconnexion, on l'efface
+    if (isset($_REQUEST["action"]) && $_REQUEST["action"] == "logout") {
+        $userpage = str_replace('&action=logout', '', $userpage);
+    }
 } else {
-	if ($this->IsWikiName($userpage, WN_CAMEL_CASE_EVOLVED)) {
-		$userpage = $this->href('', $userpage);
-	}
+    if ($this->IsWikiName($userpage, WN_CAMEL_CASE_EVOLVED)) {
+        $userpage = $this->href('', $userpage);
+    }
 }
 
 /*

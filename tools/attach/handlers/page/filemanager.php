@@ -37,21 +37,21 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //vérification de sécurité
 if (!WIKINI_VERSION) {
-     die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 echo $this->Header();
 ?>
 <div class="page">
 <?php
-if($this->UserIsOwner()){
-	if (!class_exists('attach')){
-		include('tools/attach/actions/attach.class.php');
-	}
-	$att = new attach($this);
-	$att->doFilemanager();
-	unset($att);
-}else{
-	echo $this->Format("//Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché//");
+if ($this->UserIsOwner()) {
+    if (!class_exists('attach')) {
+        include('tools/attach/actions/attach.class.php');
+    }
+    $att = new attach($this);
+    $att->doFilemanager();
+    unset($att);
+} else {
+    echo $this->Format("//Seul le propriétaire de cette page peut accéder au gestionnaire des fichiers attaché//");
 }
 ?>
 </div>

@@ -66,7 +66,7 @@ if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUEST
         $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
         $message_txt = trim(strip_tags($message));
         // euro symbol is not replaced by htmlspecialchar
-        $message_html = trim(nl2br(str_replace('€','&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));
+        $message_html = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));
     }
 
     // on verifie si tous les parametres sont bons

@@ -28,7 +28,6 @@ if ($GLOBALS['check_'.$pagetag]['accordion']) {
 
     echo " <!-- start of accordion -->
         <div class=\"panel-group $class \" role=\"tablist\" aria-multiselectable=\"true\" id=\"$accordionID\" $data>";
-
 } else {
     echo '<div class="alert alert-danger"><strong>'._t('TEMPLATE_ACTION_ACCORDION').'</strong> : '._t('TEMPLATE_ELEM_ACORDION_NOT_CLOSED').'.</div>'."\n";
     return;

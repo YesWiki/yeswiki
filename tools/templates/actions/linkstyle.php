@@ -53,7 +53,7 @@ if (!empty($othercss)) {
 
 // if exists and not empty, add the 'PageCss' yeswiki page to the styles (the PageCss content must respect the CSS syntax)
 $pageCss = $this->LoadPage('PageCss');
-if ($pageCss && !empty($pageCss['body'])){
+if ($pageCss && !empty($pageCss['body'])) {
     $styles .= '  <link rel="stylesheet" href="' . $this->href('css', 'PageCss') .'" />'."\n";
 }
 

@@ -212,20 +212,16 @@ if (!defined('WIKINI_VERSION')) {
 
     <?php
     if ($wiki && $users = $wiki->LoadUsers()) {
-                ?>
-    <div class="col-sm-9"><p><?php echo _t('USE_AN_EXISTING_ACCOUNT');
-                ?> :</p><br>
+        ?>
+    <div class="col-sm-9"><p><?php echo _t('USE_AN_EXISTING_ACCOUNT'); ?> :</p><br>
         <select name="admin_login">
-        <option selected="selected"><?php echo _t('NO');
-                ?></option>
+        <option selected="selected"><?php echo _t('NO'); ?></option>
     <?php
     foreach ($users as $user) {
-          echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), "</option>\n";
-    }
-    ?>
+        echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), "</option>\n";
+    } ?>
       </select>
-      <p><?php echo _t('OR_CREATE_NEW_ACCOUNT');
-                ?> :</p></div>
+      <p><?php echo _t('OR_CREATE_NEW_ACCOUNT'); ?> :</p></div>
     <?php
     }
         ?>

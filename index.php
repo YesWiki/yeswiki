@@ -38,7 +38,7 @@
 spl_autoload_register(function ($className) {
     $classNameArray = explode('\\', $className);
     // Autoload services
-    if($classNameArray[2]==='Service') {
+    if (isset($classNameArray[2]) && $classNameArray[2] === 'Service') {
         if ($classNameArray[1] === 'Core') {
             require 'includes/services/' . $classNameArray[3] . '.php';
         } else {

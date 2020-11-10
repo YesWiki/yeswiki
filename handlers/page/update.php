@@ -8,8 +8,8 @@ $output = $this->header();
 if ($this->UserIsAdmin()) {
 
     // drop old nature table fields
-    $result = $this->Query("SHOW COLUMNS FROM ".$this->config['table_prefix']."nature WHERE FIELD IN ('bn_ce_id_menu' ,'bn_commentaire' , 'bn_appropriation' , 'bn_image_titre' , 'bn_image_logo' , 'bn_couleur_calendrier' , 'bn_picto_calendrier' , 'bn_type_fiche' , 'bn_label_class')");   
-    if( @mysqli_num_rows($result) > 0) {
+    $result = $this->Query("SHOW COLUMNS FROM ".$this->config['table_prefix']."nature WHERE FIELD IN ('bn_ce_id_menu' ,'bn_commentaire' , 'bn_appropriation' , 'bn_image_titre' , 'bn_image_logo' , 'bn_couleur_calendrier' , 'bn_picto_calendrier' , 'bn_type_fiche' , 'bn_label_class')");
+    if (@mysqli_num_rows($result) > 0) {
         $output .= 'ℹ️ Removing old fields from ' . $this->config['table_prefix'].'nature table.<br />';
         echo('Adding fields bn_sem_context, bn_sem_type and bn_sem_use_template to ' . $this->config['table_prefix'].'nature table...</br>');
     
@@ -29,8 +29,8 @@ if ($this->UserIsAdmin()) {
     }
   
     // add semantic bazar fields
-    $result = $this->Query("SHOW COLUMNS FROM ".$this->config['table_prefix']."nature LIKE 'bn_sem_context'");   
-    if( @mysqli_num_rows($result) === 0) {
+    $result = $this->Query("SHOW COLUMNS FROM ".$this->config['table_prefix']."nature LIKE 'bn_sem_context'");
+    if (@mysqli_num_rows($result) === 0) {
         $output .= 'ℹ️ Adding fields bn_sem_context, bn_sem_type and bn_sem_use_template to ' . $this->config['table_prefix'].'nature table.<br />';
     
         $this->Query("ALTER TABLE ".$this->config['table_prefix']."nature ADD COLUMN bn_sem_context text COLLATE utf8mb4_unicode_ci AFTER bn_condition");
@@ -41,7 +41,6 @@ if ($this->UserIsAdmin()) {
     } else {
         $output .= '✅The table '.$this->config['table_prefix'].'nature is already up-to-date with semantic fields!<hr />';
     }
-
 } else {
     $output .= '<div class="alert alert-danger">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
 }

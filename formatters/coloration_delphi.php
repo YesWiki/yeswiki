@@ -25,15 +25,15 @@ $DH->isCaseSensitiv = false;
 
 //************* commentaires *************
 $DH->comment = array('({[^$][^}]*})',			//commentaires: { ... }
-					'(\(\*[^$](.*)\*\))'		      //commentaires: (* ... *)
+                    '(\(\*[^$](.*)\*\))'		      //commentaires: (* ... *)
                 );
 $DH->commentLine = array('(//.*(\n|$))'); 			//commentaire //
 $DH->commentStyle = "color: red; font-style: italic";	//style CSS pour balise SPAN
 
 //************* directives de compilation *************
 $DH->directive = array('({\\$[^{}]*})',			//directive {$....}
-					'(\(\*\\$(.*)\*\))'			      //directive (*$....*)
-				);
+                    '(\(\*\\$(.*)\*\))'			      //directive (*$....*)
+                );
 $DH->directiveStyle = "color: green";			   //style CSS pour balise SPAN
 
 //************* chaines de caracteres *************
@@ -50,31 +50,31 @@ $DH->numberStyle = 'color: blue';
 
 //************* mots clé *************
 $DH->keywords['MotCle']['words'] = array('absolute','abstract','and','array','as','asm',
-						'begin',
-						'case','class','const','constructor',
-						'default','destructor','dispinterface','div','do','downto',
-						'else','end','except','exports','external',
-						'file','finalization','finally','for','function',
-						'goto',
-						'if','implementation','inherited','initialization','inline','interface','is',
-						'label','library','loop','message',
-						'mod',
-						'nil','not',
-						'object','of','or','out','overload','override',
-						'packed','private','procedure','program','property','protected','public','published',
-						'raise','read','record','repeat','resourcestring',
-						'set','shl','shr','stdcall','string',
-						'then','threadvar','to','try','type','unit','until',
-						'use','uses',
-						'var','virtual','while',
-						'with','write',
-						'xor'
-					);
+                        'begin',
+                        'case','class','const','constructor',
+                        'default','destructor','dispinterface','div','do','downto',
+                        'else','end','except','exports','external',
+                        'file','finalization','finally','for','function',
+                        'goto',
+                        'if','implementation','inherited','initialization','inline','interface','is',
+                        'label','library','loop','message',
+                        'mod',
+                        'nil','not',
+                        'object','of','or','out','overload','override',
+                        'packed','private','procedure','program','property','protected','public','published',
+                        'raise','read','record','repeat','resourcestring',
+                        'set','shl','shr','stdcall','string',
+                        'then','threadvar','to','try','type','unit','until',
+                        'use','uses',
+                        'var','virtual','while',
+                        'with','write',
+                        'xor'
+                    );
 $DH->keywords['MotCle']['style'] = 'font-weight: bold';   //style CSS pour balise SPAN
 
 //************* liste des symboles *************
 $DH->symboles = array('#','$','&','(','(.',')','*','+',',','-','.','.)','..',
-					'/',':',':=',';','<','<=','<>','=','>','>=','@','[',']','^');
+                    '/',':',':=',';','<','<=','<>','=','>','>=','@','[',']','^');
 $DH->symbolesStyle = '';
 
 //************* identifiants *************
@@ -83,4 +83,3 @@ $DH->identStyle = '';
 
 echo "<pre>".$DH->Analyse($text)."</pre>";
 unset($DH);
-?>

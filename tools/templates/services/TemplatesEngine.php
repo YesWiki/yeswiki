@@ -69,7 +69,7 @@ class TemplatesEngine
             'tools/' . $tool . '/presentation/templates/' . $semantic_template
         ];
         $templatefile = null;
-        foreach($paths as $path) {
+        foreach ($paths as $path) {
             if (is_file($path)) {
                 $templatefile = $path;
                 break;

@@ -1,7 +1,6 @@
 <?php
-if (!defined("WIKINI_VERSION"))
-{
-  die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 
@@ -16,5 +15,3 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 
 ));
-
-?>

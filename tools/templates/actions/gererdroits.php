@@ -149,7 +149,7 @@ if (!function_exists('display_droit')) {
       <td align="center">
       	<?php echo display_droit($page_et_droits[$x]['ecrire']); ?>
 	  </td>
-      <!-- TODO : repair comments <td align="center"> <?php // echo display_droit($page_et_droits[$x]['comment']); ?> </td> -->
+      <!-- TODO : repair comments <td align="center"> <?php // echo display_droit($page_et_droits[$x]['comment']);?> </td> -->
     </tr>
 
 <?php endfor; ?>

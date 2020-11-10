@@ -8,6 +8,4 @@ switch ($_GET['object']) {
     $result = "Type is not supported"; break;
 }
 
-echo json_encode($result)
-
-?>
+echo json_encode($result);

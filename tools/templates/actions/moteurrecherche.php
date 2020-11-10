@@ -1,12 +1,12 @@
 <?php
 if (!defined("WIKINI_VERSION")) {
-        die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 // on choisit le template utilisé
-$template = $this->GetParameter('template'); 
+$template = $this->GetParameter('template');
 if (empty($template)) {
-	$template = 'moteurrecherche_basic.tpl.html';
+    $template = 'moteurrecherche_basic.tpl.html';
 }
 
 // on peut ajouter des classes à la classe par défaut .searchform
@@ -27,4 +27,3 @@ try {
 } catch (Exception $e) {
     echo '<div class="alert alert-danger">Erreur action {{moteurrecherche ..}} : ',  $e->getMessage(), '</div>'."\n";
 }
-?>

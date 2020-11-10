@@ -1,9 +1,7 @@
 <?php
-	if (!defined("WIKINI_VERSION"))
-	{
-	        die ("acc&egrave;s direct interdit");
-	}
+    if (!defined("WIKINI_VERSION")) {
+        die("acc&egrave;s direct interdit");
+    }
 
-	$this->tag = $oldpage;
-	$this->page = $this->LoadPage($oldpage);
-?>
+    $this->tag = $oldpage;
+    $this->page = $this->LoadPage($oldpage);

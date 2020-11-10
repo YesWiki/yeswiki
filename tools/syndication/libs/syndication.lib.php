@@ -177,7 +177,7 @@ function getRelativeDate($date)
         } elseif ($time >= $before) {
             $relative = strftime('%A', $time).' dernier';
         }
-    // sinon on retourne une date complète.
+        // sinon on retourne une date complète.
     } else {
         $relative = 'Le '.strftime('%A %d %B %Y', $time);
     }

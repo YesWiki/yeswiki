@@ -29,7 +29,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 use YesWiki\Bazar\Service\FicheManager;
 
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 $ficheManager = $this->services->get(FicheManager::class);

@@ -19,7 +19,7 @@
 // | License; altrament, escriviu a la Free Software Foundation,                                          |
 // | Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                                        |
 // +------------------------------------------------------------------------------------------------------+
-// 
+//
 /**
 * Fitxer de traducció al català de YesWiki
 *
@@ -215,7 +215,7 @@ $GLOBALS['translations'] = array(
 'NEW_ACCOUNT' => 'Crea un compte nou',
 
 
-// actions/wantedpages.php 
+// actions/wantedpages.php
 'NO_PAGE_TO_CREATE' => 'No hi ha cap pàgina per crear',
 
 // setup/header.php

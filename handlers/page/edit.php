@@ -87,7 +87,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
         case 'Sauver':
             // check for overwriting
             if ($this->page && $this->page['id'] != $_POST['previous']) {
-                  $error = 'ALERTE : '.
+                $error = 'ALERTE : '.
                 "Cette page a &eacute;t&eacute; modifi&eacute;e par quelqu'un d'autre pendant que vous l'&eacute;ditiez.<br />\n".
                 "Veuillez copier vos changements et r&eacute;&eacute;diter cette page.\n";
             } else { // store
@@ -137,6 +137,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                 exit;
             }
         // NB.: en cas d'erreur on arrive ici, donc default sera exécuté...
+        // no break
         default:
             // display form
             if (isset($error)) {

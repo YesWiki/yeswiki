@@ -19,4 +19,3 @@ default:
     echo $this->GetPageTag();
     break;
 }
-

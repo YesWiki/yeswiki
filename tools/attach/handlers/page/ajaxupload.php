@@ -7,18 +7,20 @@ if ($this->HasAccess('write')) {
     /**
      * Handle file uploads via XMLHttpRequest
      */
-    class qqUploadedFileXhr {
+    class qqUploadedFileXhr
+    {
         /**
          * Save the file to the specified path
          * @return boolean TRUE on success
          */
-        function save($path) {
+        public function save($path)
+        {
             $input = fopen("php://input", "r");
             $temp = tmpfile();
             $realSize = stream_copy_to_stream($input, $temp);
             fclose($input);
 
-            if ($realSize != $this->getSize()){
+            if ($realSize != $this->getSize()) {
                 return false;
             }
 
@@ -29,11 +31,13 @@ if ($this->HasAccess('write')) {
 
             return true;
         }
-        function getName() {
+        public function getName()
+        {
             return $_GET['qqfile'];
         }
-        function getSize() {
-            if (isset($_SERVER["CONTENT_LENGTH"])){
+        public function getSize()
+        {
+            if (isset($_SERVER["CONTENT_LENGTH"])) {
                 return (int)$_SERVER["CONTENT_LENGTH"];
             } else {
                 throw new Exception('Getting content length is not supported.');
@@ -44,31 +48,37 @@ if ($this->HasAccess('write')) {
     /**
      * Handle file uploads via regular form post (uses the $_FILES array)
      */
-    class qqUploadedFileForm {
+    class qqUploadedFileForm
+    {
         /**
          * Save the file to the specified path
          * @return boolean TRUE on success
          */
-        function save($path) {
-            if(!move_uploaded_file($_FILES['qqfile']['tmp_name'], $path)){
+        public function save($path)
+        {
+            if (!move_uploaded_file($_FILES['qqfile']['tmp_name'], $path)) {
                 return false;
             }
             return true;
         }
-        function getName() {
+        public function getName()
+        {
             return $_FILES['qqfile']['name'];
         }
-        function getSize() {
+        public function getSize()
+        {
             return $_FILES['qqfile']['size'];
         }
     }
 
-    class qqFileUploader {
+    class qqFileUploader
+    {
         private $allowedExtensions = array();
         private $sizeLimit = '10000';
         private $file;
 
-        function __construct(array $allowedExtensions = array(), $sizeLimit = '10000'){
+        public function __construct(array $allowedExtensions = array(), $sizeLimit = '10000')
+        {
             $allowedExtensions = array_map("strtolower", $allowedExtensions);
 
             $this->allowedExtensions = $allowedExtensions;
@@ -85,7 +95,8 @@ if ($this->HasAccess('write')) {
             }
         }
 
-        private function checkServerSettings(){
+        private function checkServerSettings()
+        {
             $postSize = $this->toBytes(ini_get('post_max_size'));
             $uploadSize = $this->toBytes(ini_get('upload_max_filesize'));
 
@@ -95,14 +106,17 @@ if ($this->HasAccess('write')) {
             }    */
         }
 
-        private function toBytes($str){
+        private function toBytes($str)
+        {
             $val = trim($str);
             $val = settype($val, 'integer');
             $l = strlen($str)-1;
             $last = strtolower($str[$l]);
-            switch($last) {
+            switch ($last) {
                 case 'g': $val *= 1024;
+                // no break
                 case 'm': $val *= 1024;
+                // no break
                 case 'k': $val *= 1024;
             }
             return $val;
@@ -111,7 +125,8 @@ if ($this->HasAccess('write')) {
         /**
          * Returns array('success'=>true) or array('error'=>'error message')
          */
-        function handleUpload($uploadDirectory, $replaceOldFile = false) {
+        public function handleUpload($uploadDirectory, $replaceOldFile = false)
+        {
             if (!is_writable($uploadDirectory)) {
                 return array('error' => "Le dossier de téléchargement n'est pas accessible en écriture.");
             }
@@ -148,8 +163,8 @@ if ($this->HasAccess('write')) {
             }*/
 
             // on enleve les espaces et les accents pour le nom de fichier
-            $search = array ('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_]@');
-            $replace = array ('e','a','i','u','o','c','_','');
+            $search = array('@[éèêëÊË]@i','@[àâäÂÄ]@i','@[îïÎÏ]@i','@[ûùüÛÜ]@i','@[ôöÔÖ]@i','@[ç]@i','@[ ]@i','@[^a-zA-Z0-9_]@');
+            $replace = array('e','a','i','u','o','c','_','');
             $filename = preg_replace($search, $replace, utf8_decode($filename));
 
             $attach = new Attach($GLOBALS['wiki']);
@@ -157,7 +172,9 @@ if ($this->HasAccess('write')) {
             $GLOBALS['wiki']->setParameter("file", $filename . '.' . $ext);
 
             // dans le cas d'une nouvelle page, on donne une valeur a la date de création
-            if ($GLOBALS['wiki']->page['time'] == '') $GLOBALS['wiki']->page['time'] = date('YmdHis');
+            if ($GLOBALS['wiki']->page['time'] == '') {
+                $GLOBALS['wiki']->page['time'] = date('YmdHis');
+            }
 
             // on envoi l'attachement en retenant l'affichage du résultat dans un buffer
             ob_start();
@@ -175,7 +192,6 @@ if ($this->HasAccess('write')) {
                     )
                 );
             }
-
         }
     }
 

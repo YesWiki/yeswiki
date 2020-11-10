@@ -31,46 +31,34 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION"))
-{
-	die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
-if ($this->HasAccess("comment") && $this->page && !$this->page['comment_on'])
-{
-	// find number
-	$sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
-		. ' FROM ' . $this->GetConfigValue('table_prefix') . 'pages'
-		. ' WHERE comment_on != ""';
-	if ($lastComment = $this->LoadSingle($sql))
-	{
-		$num = $lastComment['comment_id'] + 1;
-	}
-	else
-	{
-		$num = "1";
-	}
+if ($this->HasAccess("comment") && $this->page && !$this->page['comment_on']) {
+    // find number
+    $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
+        . ' FROM ' . $this->GetConfigValue('table_prefix') . 'pages'
+        . ' WHERE comment_on != ""';
+    if ($lastComment = $this->LoadSingle($sql)) {
+        $num = $lastComment['comment_id'] + 1;
+    } else {
+        $num = "1";
+    }
 
-	$body = trim($_POST["body"]);
-	if (!$body)
-	{
-		$this->SetMessage("Commentaire vide  -- pas de sauvegarde !");
-	}
-	else
-	{
-		// store new comment
-		$this->SavePage("Comment".$num, $body, $this->tag);
-	}
+    $body = trim($_POST["body"]);
+    if (!$body) {
+        $this->SetMessage("Commentaire vide  -- pas de sauvegarde !");
+    } else {
+        // store new comment
+        $this->SavePage("Comment".$num, $body, $this->tag);
+    }
 
-	
-	// redirect to page
-	$this->redirect($this->href());
-}
-else
-{
+    
+    // redirect to page
+    $this->redirect($this->href());
+} else {
     echo $this->Header();
-	echo"<div class=\"page\"><i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; commenter cette page.</i></div>\n";
+    echo"<div class=\"page\"><i>Vous n'&ecirc;tes pas autoris&eacute; &agrave; commenter cette page.</i></div>\n";
     echo $this->Footer();
 }
-
-?>

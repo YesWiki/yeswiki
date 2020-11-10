@@ -45,14 +45,14 @@ function myLocation()
 function querySqlFile($dblink, $sqlFile, $replacements = [])
 {
     if ($sql = file_get_contents($sqlFile)) {
-        foreach($replacements as $keyword => $replace) {
+        foreach ($replacements as $keyword => $replace) {
             $sql = str_replace(
                 '{{'.$keyword.'}}',
                 $replace,
                 $sql
             );
         }
-        # echo '<hr><pre>';var_dump($sql);echo '</pre><hr>'; # DEBUG SQL 
+        # echo '<hr><pre>';var_dump($sql);echo '</pre><hr>'; # DEBUG SQL
         mysqli_multi_query($dblink, $sql);
         do {
             ;

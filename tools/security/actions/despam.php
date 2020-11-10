@@ -53,8 +53,8 @@ if ($this->UserIsAdmin()) {
           "</form>\n".
           "</div>\n\n";
     } elseif (!isset($_POST['clean'])) {
-    // -- (2) Page de resultats et form. de selection des pages a effacer ----
-    //
+        // -- (2) Page de resultats et form. de selection des pages a effacer ----
+        //
         if (isset($_POST['from']) && isset($_POST['2'])) {
             $requete =
               "select *
@@ -125,8 +125,8 @@ if ($this->UserIsAdmin()) {
         echo "</form>\n";
         echo "</div>\n\n";
     } elseif (isset($_POST['clean'])) {
-    // -- (3) Nettoyage des pages et affichage de la page de resultats -------
-    //
+        // -- (3) Nettoyage des pages et affichage de la page de resultats -------
+        //
         $deletedPages = "";
         $restoredPages = "";
 
@@ -166,7 +166,7 @@ if ($this->UserIsAdmin()) {
                 $this->Query($requeteUpdate);
                 $restoredPages .= $revision["tag"] . ", ";
 
-                 // add new revision
+                // add new revision
                 $this->Query("insert into ".$this->config["table_prefix"]."pages set ".
                  "tag = '".mysqli_real_escape_string($this->dblink, $revision['tag'])."', ".
                  "time = now(), ".

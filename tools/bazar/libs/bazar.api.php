@@ -15,10 +15,11 @@ use YesWiki\Bazar\Service\FicheManager;
  * Get all form or one form's informations
  *
  * @param string $form ID of the form
- * 
+ *
  * @return string json
  */
-function getForm($form = '') {
+function getForm($form = '')
+{
     if ($GLOBALS['wiki']->UserIsAdmin()) {
         $formval = baz_valeurs_formulaire($form);
         // si un seul formulaire, on cree un tableau à une entrée
@@ -31,7 +32,7 @@ function getForm($form = '') {
              *
              * @param array $a first form array
              * @param array $b second form array
-             * 
+             *
              * @return void
              */
             function sortByLabel($a, $b)
@@ -39,7 +40,7 @@ function getForm($form = '') {
                 return $a['bn_label_nature'] < $b['bn_label_nature'];
             }
         }
-        usort($formval, 'sortByLabel');      
+        usort($formval, 'sortByLabel');
         echo json_encode($formval);
     } else {
         return json_encode(
@@ -48,11 +49,12 @@ function getForm($form = '') {
     }
 }
 
-function getFiche($args) {
-    if( $args ) {
-        if( $args[0]==='url' ) {
-            $triples = $GLOBALS['wiki']->GetMatchingTriples(null, 'http://outils-reseaux.org/_vocabulary/sourceUrl', urldecode($args[1]) );
-            $resources = array_map(function($triple) {
+function getFiche($args)
+{
+    if ($args) {
+        if ($args[0]==='url') {
+            $triples = $GLOBALS['wiki']->GetMatchingTriples(null, 'http://outils-reseaux.org/_vocabulary/sourceUrl', urldecode($args[1]));
+            $resources = array_map(function ($triple) {
                 return $GLOBALS['wiki']->href('', $triple['resource']);
             }, $triples);
 
@@ -65,7 +67,7 @@ function getFiche($args) {
             $data = $GLOBALS['wiki']->services->get(FicheManager::class)->search([ 'formsIds'=>$args[0] ]);
 
             // Put data inside LDP container
-            if( $semantic ) {
+            if ($semantic) {
                 $form = baz_valeurs_formulaire($args[0]);
 
                 $data = [
@@ -73,7 +75,7 @@ function getFiche($args) {
                     '@id' => $GLOBALS['wiki']->href('fiche/' . $args[0], 'api'),
                     '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
                     'dcterms:title' => $form['bn_label_nature'],
-                    'ldp:contains' => array_map(function($fiche) {
+                    'ldp:contains' => array_map(function ($fiche) {
                         $resource = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
                         unset($resource['@context']);
                         return $resource;
@@ -91,20 +93,21 @@ function getFiche($args) {
     }
 }
 
-function postFiche($args) {
-    if( $args ) {
+function postFiche($args)
+{
+    if ($args) {
         $semantic = strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false || $args[1] === 'json-ld';
 
         $_POST['antispam'] = 1;
         $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->create($args[0], $_POST, $semantic, $_SERVER['HTTP_SOURCE_URL']);
 
-        if( $fiche ) {
+        if ($fiche) {
             http_response_code(201);
 
-            if( $semantic ) {
+            if ($semantic) {
                 // Standard LDP headers
                 header('Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"');
-                header('Location: ' . $GLOBALS['wiki']->href('', $fiche['id_fiche']) );
+                header('Location: ' . $GLOBALS['wiki']->href('', $fiche['id_fiche']));
                 header('Content-Length: 0');
                 exit();
             } else {
@@ -125,7 +128,8 @@ function postFiche($args) {
  *
  * @return void
  */
-function documentationBazar() {
+function documentationBazar()
+{
     $output = '<h2>Bazar</h2>'."\n";
 
     $output .= '

@@ -1,9 +1,8 @@
 <?php
 
 // Vérification de sécurité
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 $GLOBALS['tocaction'] = 0;
@@ -14,7 +13,9 @@ $toc_body = $page["body"];
 $class = $this->GetParameter("class");
 $closed = $this->GetParameter("closed");
 $title = $this->GetParameter("title");
-if (empty($title)) $title = _t('TOC_TABLE_OF_CONTENTS');
+if (empty($title)) {
+    $title = _t('TOC_TABLE_OF_CONTENTS');
+}
 
 
 
@@ -29,8 +30,7 @@ echo    "<div class=\"toc-title accordion-trigger\" data-toggle=\"collapse\" dat
 global $wiki;
 $wiki=$this;
 
-if (!function_exists("translate2toc"))
-{
+if (!function_exists("translate2toc")) {
     function translate2toc($text)
     {
         global $wiki;
@@ -41,34 +41,51 @@ if (!function_exists("translate2toc"))
         $l4=0;
         $l5=0;
 
-        while ($cur_text)
-        {
-            if (! preg_match("/(={2,6})(.*)/ms", $cur_text, $matches))
+        while ($cur_text) {
+            if (! preg_match("/(={2,6})(.*)/ms", $cur_text, $matches)) {
                 break;
+            }
 
             $cur_text=$matches[2];
             $class="";
             $endmatch="";
-            if ($matches[1] == "======")
-            { $l1++; $class="toc1"; $toc="TOC_1_".(2*$l1 - 1);$l1++;
-                $endmatch="/(.*)======(.*?)/msU"; }
-            else if ($matches[1] == "=====")
-            { $l2++; $class="toc2"; $toc="TOC_2_".(2*$l2 - 1);$l2++;
-                $endmatch="/(.*)=====(.*?)/msU"; }
-            else if ($matches[1] == "====")
-            { $l3++; $class="toc3"; $toc="TOC_3_".(2*$l3 - 1);$l3++;
-                $endmatch="/(.*)====(.*?)/msU"; }
-            else if ($matches[1] == "===")
-            { $l4++; $class="toc4"; $toc="TOC_4_".(2*$l4 - 1);$l4++;
-                $endmatch="/(.*)===(.*?)/msU"; }
-            else if ($matches[1] == "==")
-            { $l5++; $class="toc5"; $toc="TOC_5_".(2*$l5 - 1);$l5++;
-                $endmatch="/(.*)==(.*?)/msU"; }
-            else
+            if ($matches[1] == "======") {
+                $l1++;
+                $class="toc1";
+                $toc="TOC_1_".(2*$l1 - 1);
+                $l1++;
+                $endmatch="/(.*)======(.*?)/msU";
+            } elseif ($matches[1] == "=====") {
+                $l2++;
+                $class="toc2";
+                $toc="TOC_2_".(2*$l2 - 1);
+                $l2++;
+                $endmatch="/(.*)=====(.*?)/msU";
+            } elseif ($matches[1] == "====") {
+                $l3++;
+                $class="toc3";
+                $toc="TOC_3_".(2*$l3 - 1);
+                $l3++;
+                $endmatch="/(.*)====(.*?)/msU";
+            } elseif ($matches[1] == "===") {
+                $l4++;
+                $class="toc4";
+                $toc="TOC_4_".(2*$l4 - 1);
+                $l4++;
+                $endmatch="/(.*)===(.*?)/msU";
+            } elseif ($matches[1] == "==") {
+                $l5++;
+                $class="toc5";
+                $toc="TOC_5_".(2*$l5 - 1);
+                $l5++;
+                $endmatch="/(.*)==(.*?)/msU";
+            } else {
                 echo "????\n";
+            }
 
-            if (! preg_match($endmatch, $cur_text, $matches))
+            if (! preg_match($endmatch, $cur_text, $matches)) {
                 break;
+            }
 
             echo "<li class=\"$class\"><a href=\"#$toc\">"
                 .trim($matches[1])."</a></li>\n";

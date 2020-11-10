@@ -4,10 +4,6 @@
 // opérations réservées é l'administrateur technique de Wikini.
 
 // Vérification de sécurité
-if (!defined("TOOLS_MANAGER"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("TOOLS_MANAGER")) {
+    die("acc&egrave;s direct interdit");
 }
-
-
-?>

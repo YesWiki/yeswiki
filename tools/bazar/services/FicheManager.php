@@ -45,7 +45,9 @@ class FicheManager
      */
     public function getOne($tag, $semantic = false, $time = null)
     {
-        if( !$this->isFiche($tag) ) return false;
+        if (!$this->isFiche($tag)) {
+            return false;
+        }
 
         $page = $this->wiki->LoadPage($tag, $time || '');
         $data = $this->decode($page['body']);
@@ -94,8 +96,8 @@ class FicheManager
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
                 $requete .= ' AND ' . join(' OR ', array_map(function ($formId) {
-                        return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                    }, $params['formsIds']));
+                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
+                }, $params['formsIds']));
             } else {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
                 $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
@@ -322,7 +324,7 @@ class FicheManager
     {
         $data['id_typeannonce'] = "$formId"; // Must be a string
 
-        if( $semantic ) {
+        if ($semantic) {
             $data = $this->convertFromSemanticData($formId, $data);
         }
 
@@ -384,7 +386,7 @@ class FicheManager
             }
         }
 
-        if( $this->params->get('BAZ_ENVOI_MAIL_ADMIN') ) {
+        if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, true);
         }
@@ -402,18 +404,18 @@ class FicheManager
      */
     public function update($tag, $data, $semantic = false, $replace = false)
     {
-        if( !$this->wiki->HasAccess('write', $tag) ) {
+        if (!$this->wiki->HasAccess('write', $tag)) {
             throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
         $previousData = $this->getOne($tag);
         $previousData = $this->assignRestrictedFields($previousData);
 
-        if( $semantic ) {
+        if ($semantic) {
             $data = $this->convertFromSemanticData($previousData['id_typeannonce'], $data);
         }
 
-        if( $replace ) {
+        if ($replace) {
             $data['id_typeannonce'] = $previousData['id_typeannonce'];
         } else {
             // If PATCH, overwrite previous data with new data
@@ -427,7 +429,7 @@ class FicheManager
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
 
-        if( $this->params->get('BAZ_ENVOI_MAIL_ADMIN') ) {
+        if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, false);
         }
@@ -442,7 +444,7 @@ class FicheManager
      */
     public function delete($tag)
     {
-        if( !$this->wiki->HasAccess('write', $tag) ) {
+        if (!$this->wiki->HasAccess('write', $tag)) {
             throw new \Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
         }
 
@@ -521,7 +523,7 @@ class FicheManager
 
         $form = baz_valeurs_formulaire($formId);
 
-        if( ($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type'] ) {
+        if (($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type']) {
             exit('The @type of the sent data must be ' . $form['bn_sem_type']);
         }
 
@@ -529,7 +531,7 @@ class FicheManager
         foreach ($fields_infos as $field_info) {
             // If the file is not semantically defined, ignore it
             if ($field_info['sem_type'] && $data[$field_info['sem_type']]) {
-                if( $field_info['type'] === 'date') {
+                if ($field_info['type'] === 'date') {
                     $date = new \DateTime($data[$field_info['sem_type']]);
                     $nonSemanticData[$field_info['id']] = $date->format('Y-m-d');
                     $nonSemanticData[$field_info['id'] . '_allday'] = 0;
@@ -600,7 +602,7 @@ class FicheManager
         }
 
         // Données sémantiques
-        if( $semantic ) {
+        if ($semantic) {
             $fiche['semantic'] = $this->convertToSemanticData($fiche['id_typeannonce'], $fiche);
         }
     }
@@ -633,10 +635,11 @@ class FicheManager
                 $old_fiche[$key] = _convert($value, 'UTF-8');
             }
             foreach ($protected_fields_index as $index) {
-                if (in_array($template[$index][0], $INDEX_CHELOUS))
+                if (in_array($template[$index][0], $INDEX_CHELOUS)) {
                     $data[$template[$index][0] . $template[$index][1] . $template[$index][6]] = $old_fiche[$template[$index][0] . $template[$index][1] . $template[$index][6]];
-                else
+                } else {
                     $data[$template[$index][1]] = $old_fiche[$template[$index][1]];
+                }
             }
         }
         return $data;

@@ -31,10 +31,10 @@ class Mailer
         $style = file_get_contents($fichier);
         $style = str_replace('url(', 'url(' . $lien . '/tools/bazar/presentation/', $style);
         $fiche = str_replace(
-                'src="tools',
-                'src="' . $lien . '/tools',
-                baz_voir_fiche(0, $data['id_fiche'])
-            ) . $texthtml;
+            'src="tools',
+            'src="' . $lien . '/tools',
+            baz_voir_fiche(0, $data['id_fiche'])
+        ) . $texthtml;
         $html =
             '<html><head><style type="text/css">' . $style .
             '</style></head><body>' . $fiche . '</body></html>';

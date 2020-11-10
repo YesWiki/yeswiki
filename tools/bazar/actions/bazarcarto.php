@@ -8,7 +8,7 @@ use YesWiki\Bazar\Service\FicheManager;
 
 // pour retro-compatibilité
 $this->setParameter('template', 'map');
-include( __DIR__.'/bazarliste.php');
+include(__DIR__.'/bazarliste.php');
 
 $ficheManager = $this->services->get(FicheManager::class);
 

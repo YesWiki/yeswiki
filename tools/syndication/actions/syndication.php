@@ -82,8 +82,7 @@ if (!empty($urls)) {
                     // Gestion du titre
                     if (empty($titre)) {
                         $aso_page['titre_site'] = '';
-                    }
-                    elseif ($titre == 'rss') {
+                    } elseif ($titre == 'rss') {
                         $aso_page['titre_site'] = $feed->get_title();
                     } else {
                         $aso_page['titre_site'] = $titre;

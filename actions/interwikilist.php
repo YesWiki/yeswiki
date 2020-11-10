@@ -27,4 +27,3 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 $file = implode("", file("interwiki.conf", 1));
 echo $this->Format("%%".$file."%%") ;
-?>

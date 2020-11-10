@@ -35,18 +35,21 @@ $type = $this->getParameter('type');
 
 if (!empty($url)) {
     $height = $this->GetParameter('height');
-    if (empty($height)) $height = "300px";
+    if (empty($height)) {
+        $height = "300px";
+    }
 
     $width = $this->GetParameter('width');
-    if (empty($width)) $width = "400px";
+    if (empty($width)) {
+        $width = "400px";
+    }
 
     $extension = strtolower(substr(strrchr($url, '.'), 1));
     if ($type=="audio" || $extension=="mp3" || $extension=="m4a") {
         if (!isset($GLOBALS['jplayer'])) {
             $GLOBALS['jplayer'] = 1;
             $this->AddJavascriptFile('tools/attach/libs/vendor/jplayer/jquery.jplayer.min.js');
-        }
-        else {
+        } else {
             $GLOBALS['jplayer']++;
         }
         $script = '$(document).ready(function(){
@@ -117,8 +120,7 @@ if (!empty($url)) {
         if (!isset($GLOBALS['jplayer'])) {
             $GLOBALS['jplayer'] = 1;
             $this->AddJavascriptFile('tools/attach/libs/vendor/jplayer/jquery.jplayer.min.js');
-        }
-        else {
+        } else {
             $GLOBALS['jplayer']++;
         }
         switch ($extension) {
@@ -205,7 +207,9 @@ if (!empty($url)) {
         $output = '<embed id="visorFreeMind" height="'.$height.'" align="middle" width="'.$width.'" flashvars="openUrl=_blank&initLoadFile='.$url.'&startCollapsedToLevel=5" quality="high" bgcolor="#ffffff" src="tools/attach/players/visorFreemind.swf" type="application/x-shockwave-flash"/>';
         $output .="[<a href=\"$url\" title=\""._t('ATTACH_DOWNLOAD_THE_FILE')."\">mm</a>]";
         echo $output;
-    } else echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE').' ('.$url.') '._t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION').'.</div>'."\n";
+    } else {
+        echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '._t('ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE').' ('.$url.') '._t('ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION').'.</div>'."\n";
+    }
 } else {
     echo '<div class="alert alert-danger"><strong>'._t('ATTACH_ACTION_PLAYER').'</strong> : '
       ._t('ATTACH_PARAM_URL_REQUIRED').'.</div>'."\n";

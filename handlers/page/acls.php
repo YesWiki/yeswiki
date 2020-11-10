@@ -63,7 +63,7 @@ if ($this->page && ($this->UserIsOwner() || $this->UserIsAdmin())) {
         $writeACL = $this->LoadAcl($this->GetPageTag(), "write");
         $commentACL = $this->LoadAcl($this->GetPageTag(), "comment");
 
-        // show form ?>
+        // show form?>
 <h3><?php echo _t('YW_ACLS_LIST').' '.$this->ComposeLinkToPage($this->GetPageTag()) ?></h3><!-- Access Control Lists for-->
 
 <?php echo  $this->FormOpen('acls', '', 'post', 'form-horizontal') ?>

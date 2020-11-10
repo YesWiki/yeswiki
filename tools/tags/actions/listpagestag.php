@@ -71,7 +71,6 @@ if ($resultat) {
         $output = $squel->render(
             array('elements' => $element)
         );
-
     } catch (Exception $e) {
         $output = '<div class="alert alert-danger">Erreur action {{listpagestag ..}} : '.  $e->getMessage(). '</div>'."\n";
     }

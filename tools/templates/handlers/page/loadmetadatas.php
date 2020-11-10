@@ -32,18 +32,15 @@
 *@version       $Revision: 0.1 $ $Date: 2010/03/04 14:19:03 $
 */
 
-if (!defined("WIKINI_VERSION"))
-{
-            die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 header('Content-type: application/json; charset=UTF-8');
 
 // on teste si on a le droit d'accés aux meta-données
 if ($this->HasAccess("read")) {
-	echo json_encode(array('result' => $this->GetMetaDatas($this->GetPageTag())));
+    echo json_encode(array('result' => $this->GetMetaDatas($this->GetPageTag())));
 } else {
-	echo json_encode(array('result' => 'ERREUR : pas les droits d\'acc&eacute;s.'));
+    echo json_encode(array('result' => 'ERREUR : pas les droits d\'acc&eacute;s.'));
 }
-
-?>

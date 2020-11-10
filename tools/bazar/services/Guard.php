@@ -50,10 +50,11 @@ class Guard
                         }
                         if (!$this->wiki->CheckACL($line[11])) {
                             // on memorise les champs non autorisés
-                            if (in_array($line[0], $INDEX_CHELOUS))
+                            if (in_array($line[0], $INDEX_CHELOUS)) {
                                 $fieldname[] = $line[0] . $line[1] . $line[6];
-                            else
+                            } else {
                                 $fieldname[] = $line[1];
+                            }
                         }
                     }
                 }

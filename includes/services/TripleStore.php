@@ -84,7 +84,7 @@ class TripleStore
         if ($value !== null) {
             $where[] = ' value = "' . $this->dbService->escape($value) . '"';
         }
-        if( count($where)>0 ) {
+        if (count($where)>0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
         return $this->dbService->loadAll($sql);

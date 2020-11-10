@@ -1,6 +1,6 @@
 <?php
 if (!defined("WIKINI_VERSION")) {
-    die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 if ($this->HasAccess("write")) {
@@ -18,7 +18,7 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['linkpage'] = $this->href('', $page);
 
     // on choisit le template utilisé
-    $template = $this->GetParameter('template'); 
+    $template = $this->GetParameter('template');
     if (empty($template)) {
         $template = 'barreredaction_basic.tpl.html';
     }
@@ -27,11 +27,11 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
 
     // on ajoute le lien d'édition si l'action est autorisée
-    if ( $this->HasAccess("write", $page) ) {
+    if ($this->HasAccess("write", $page)) {
         $barreredactionelements['linkedit'] = $this->href("edit", $page);
     }
 
-    if ( $time ) {
+    if ($time) {
         // hack to hide E_STRICT error if no timezone set
         date_default_timezone_set(@date_default_timezone_get());
         $barreredactionelements['linkrevisions'] = $this->href("revisions", $page);
@@ -47,17 +47,18 @@ if ($this->HasAccess("write")) {
             $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
         } else {
             if ($owner = $this->GetPageOwner($page)) {
-                    $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
-                    if ($this->UserIsAdmin()) { 
-                            $barreredactionelements['linkacls'] = $this->href("acls", $page);
-                            $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
-                    }   
-                    else {
-                            //$barreredactionelements['linkacls'] = $this->href('', $owner);
-                    }             
+                $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
+                if ($this->UserIsAdmin()) {
+                    $barreredactionelements['linkacls'] = $this->href("acls", $page);
+                    $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
+                } else {
+                    //$barreredactionelements['linkacls'] = $this->href('', $owner);
+                }
             } else {
                 $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER').($this->GetUser() ? " - "._t('TEMPLATE_CLAIM') : "");
-                if ($this->GetUser()) $barreredactionelements['linkacls'] = $this->href("claim", $page);
+                if ($this->GetUser()) {
+                    $barreredactionelements['linkacls'] = $this->href("claim", $page);
+                }
                 //else $barreredactionelements['linkacls'] = $this->href("claim", $page);
             }
         }
@@ -76,4 +77,3 @@ if ($this->HasAccess("write")) {
     }
     echo ' <!-- /.footer -->'."\n";
 }
-?>

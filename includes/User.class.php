@@ -43,7 +43,7 @@ class User
     /** Tells if the user who actually runs the wiki session is admin
      *
      * @param none
-     * 
+     *
      * @return boolean True if the user who actually runs the session is admin, false otherwise.
      */
     protected function runnerIsAdmin()
@@ -52,7 +52,7 @@ class User
     }
 
     /** Sets the users table name
-     * 
+     *
      * In some cases, multiple wikis share a unique users table.
      * This unique users table prefix is the one specified in config.
      * Therefore we must build $this->userstable using
@@ -63,8 +63,8 @@ class User
      * @param none
      *
      * @return void
-     */ 
-     protected function initUsersTable()
+     */
+    protected function initUsersTable()
     {
         // Set value of MySQL user table name
         if (!empty($this->wiki->config['user_table_prefix'])) {
@@ -76,12 +76,12 @@ class User
     }
     
     /** Initializes object limitation properties using values from the config file
-     * 
+     *
      * Initialiezd properties are:
      * - $this->nameMaxLength (default value = 80)
      * - $this->emailMaxLength (default value = 254)
      * - $this->passwordMinimumLength (default value = 5)
-     * 
+     *
      * @param none
      *
      * @return void
@@ -154,7 +154,7 @@ class User
 
 
     /** Sets a given property to a given value
-     * 
+     *
      * In case of failure $this->error contains the error message
      *
      * @param string $propertyName Name of the property to set.
@@ -183,7 +183,7 @@ class User
                     $newValue = intval($newValue);
                     break;
                 case 'show_comments':
-                case 'doubleclickedit':                     
+                case 'doubleclickedit':
                     $value = strtolower($newValue);
                     if (in_array($value, ['o', 'oui', 'y', 'yes', '1'])) {
                         $newValue = 'Y';
@@ -200,12 +200,12 @@ class User
         return $result;
     }
 
-     /**
-     * Gets the value of a given property
-     * 
-     * @param string $propertyName Name of the property from which the value is retrieved.
-     * @return mixed The property value (string) or false in case of failure.
-     */
+    /**
+    * Gets the value of a given property
+    *
+    * @param string $propertyName Name of the property from which the value is retrieved.
+    * @return mixed The property value (string) or false in case of failure.
+    */
     public function getProperty($propertyName)
     {
         if (isset($this->properties[$propertyName])) {
@@ -219,10 +219,10 @@ class User
      *
      * Name must be set and its lenght must be less than nameMaxLength characters
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string $newName
      * @return boolean True if OK or false if any problems
-     */	
+     */
     protected function checkName($newName)
     {
         $this->error = '';
@@ -240,10 +240,10 @@ class User
     /** Checks if a value is fit for email property.
      *
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string $newEmail
      * @return boolean True if OK or false if any problems
-     */	
+     */
     protected function checkEmail($newEmail)
     {
         // NOTE: Can we change name ?
@@ -266,9 +266,9 @@ class User
     }
 
     /** sets user properties using an associative array
-     * 
+     *
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string[] $newValues Associative array containing object property values
      *  $newValues = Array(
      *      ['name'] 			=> string()	Optional
@@ -334,7 +334,7 @@ class User
     }
 
     /**	gets every user properties and put them into an associative array
-     * 
+     *
      * If parameter $format is set to 'array', then returns an associative array:
      *  Array(
      *      ['name'] 			=> string()	Optional
@@ -346,7 +346,7 @@ class User
      *      ['doubleclickedit'] => string()	Optional
      *      ['show_comments']	=> string()	Optional
      *      )
-     * 
+     *
      * @param string $format optional describes the type of return (array by default or json)
      * @return mixed An array or a json depending on parameter value
     */
@@ -377,8 +377,8 @@ class User
         }
     }
 
-    /**	Checks if the given password complies with the rules 
-     * 
+    /**	Checks if the given password complies with the rules
+     *
      * BEWARE returns true or false the other way around from other functions
      * In case of failure $this->error contains the error message
      *
@@ -419,7 +419,7 @@ class User
     */
 
     /** Part of the Password recovery process: Handles the password recovery email process
-     * 
+     *
      * Generates the password recovery key
      * Stores the (name, vocabulary, key) triple in triples table
      * Generates the recovery email
@@ -455,19 +455,19 @@ class User
     }
 
     /** Part of the Password recovery process: sets the password to a new value if given the the proper recovery key (sent in a recovery email).
-     * 
+     *
      * In order to update h·er·is password, the user provides a key (sent using sendPasswordRecoveryEmail())
      * The new password is accepted only if the key matches with the value in triples table.
      * The corresponding row is the removed from triples table.
      * See Password recovery process above
      * replaces updateUserPassword($userID, $password, $key) from login.functions.php
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string $user The user login
      * @param string $key The password recovery key (sent by email)
      * @param string $pwd the new password value
      * @param string $confPassword optional The confirmation password if any
-     * 
+     *
      * @return boolean True if OK or false if any problems
     */
     public function resetPassword($user, $key, $password, $confPassword='')
@@ -490,14 +490,14 @@ class User
     }
 
     /** Part of the Password recovery process: Checks the provided key against the value stored for the provided user in triples table
-     * 
+     *
      * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, key) triple in the triples table. This function checks wether the key is right or not.
      * See Password recovery process above
      * replaces checkEmailKey($hash, $key) from login.functions.php
      *         TODO : Add error handling
      * @param string $hash The key to check
      * @param string $user The user for whom we check the key
-     * 
+     *
      * @return boolean True if success and false otherwise.
     */
     public function checkEmailKey($hash, $user)
@@ -514,14 +514,14 @@ class User
     /* End of Password recovery process (AKA reset password)   */
 
     /** Normal change of password (requested via the usersettings page)
-     * 
+     *
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string $password the new password value
      * @param string $confPassword optional The confirmation password if any
-     * 
+     *
      * @return boolean True if OK or false if any problems
-     */   
+     */
     public function updatePassword($password, $confPassword='')
     {
         $this->error = '';
@@ -549,14 +549,14 @@ class User
     /* ~~~~~~~~~~~~~~~~~~~~~~~~ WEB SESSION METHODS ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     /** Sets the http session and the cookie
-     * 
+     *
      * For a user to be logged in requires:
      * -	a corresponding http session record
      *     (ie containing the database row converted to an associative array)
      * -	a cookie set to the corresponding name and password
      * Replaces $wiki->SetUser
      *         // TODO: Error handling
-     * 
+     *
      * @param int $remember sets the cookie duration (0 means "ends with the session")
     */
     public function logIn($remember = 0)
@@ -577,13 +577,13 @@ class User
     }
 
     /** Deletes the http session and cookie
-     * 
+     *
      * To log a user out, we:
      *  -	delete the corresponding http session record
      *  -	delete the cookie set to the corresponding name and password
      * In case of failure $this->error contains the error message
      * Replaces $wiki->logOut()
-     * 
+     *
      * @return boolean True if OK or false if any problems
     */
     public function logOut()
@@ -607,7 +607,7 @@ class User
     }
 
     /** Loads user's ($this) properties from session cookie
-     * 
+     *
      * @return boolean True if OK or false if any problems
     */
     public function loadFromSession()
@@ -632,9 +632,9 @@ class User
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~ DATABASE METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     /**	Creates  into database user table the row correponding to the user object ($this)
-     * 
+     *
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @return boolean true if worked all right and false otherwise
     */
     public function createIntoDB()
@@ -672,13 +672,13 @@ class User
     }
 
     /**	Populates the user object's properties ($this->properties[]) from the database record.
-     * 
+     *
      * Uses user's name to retrieve the user.
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string $name The name of the user to retrieve
      * @param string $password optional The user's password
-     * 
+     *
      * @return boolean true if worked all right and false otherwise
    */
     public function loadByNameFromDB($name, $password = 0)
@@ -713,13 +713,13 @@ class User
     }
 
     /**	Populates the user object's properties ($this->properties[]) from the database record.
-     * 
+     *
      * Uses user's email to retrieve the user.
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string $email The email of the user to retrieve
      * @param string $password optional The user's password
-     * 
+     *
      * @return boolean true if worked all right and false otherwise
    */
     public function loadByEmailFromDB($email, $password = 0)
@@ -736,7 +736,7 @@ class User
         if ($row) {
             $this->properties['name']				= $row['name'];
             $this->properties['password']			= $row['password'];
-            $this->properties['email']				= $row['email']; 
+            $this->properties['email']				= $row['email'];
             $this->properties['motto']				= $row['motto'];
             $this->properties['revisioncount']		= $row['revisioncount'];
             $this->properties['changescount']		= $row['changescount'];
@@ -754,15 +754,15 @@ class User
     }
 
     /**	Updates the row corresponding to the user in the database.
-     * 
+     *
      * BEWARE * You cannot modify password using that fonction, use updatePassword() instead.
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @param string fieldsToUpdate lists the fields to update in the DB using $this properties. Values are comma separated i.e.: 'motto, changescount'
-     * 
+     *
      * @return boolean true if worked all right and false otherwise
    */
-  public function updateIntoDB($fieldsToUpdate = '')
+    public function updateIntoDB($fieldsToUpdate = '')
     {
         // NOTE: Can we update name ?
         $this->error = '';
@@ -852,7 +852,7 @@ class User
     */
 
     /** Deletes the user from the wiki.
-     * 
+     *
      * Only Admins can delete a user and can't delete themselves.
      * Users are not only a row in users database table. They also may appear in groups and as owners of pages.
      * If the user is the only member of at least one group, an error is raised and the deletion is not performed.
@@ -860,9 +860,9 @@ class User
      * - The user is removed from every group
      * - The ownership of each page owned by this user is set to NULL
      * - The user row is deleted from user table
-     * 
+     *
      * In case of failure $this->error contains the error message
-     * 
+     *
      * @return boolean true if worked all right and false otherwise
     */
     public function delete()
@@ -944,7 +944,7 @@ class User
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~ INFO METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
     /** Tells if $this user is the one who actually runs this wiki session.
-     * 
+     *
      * @return boolean True if $user is the one who actually runs this wiki session. False otherwise
     */
     public function isRunner()
@@ -957,7 +957,7 @@ class User
     }
 
     /** Tells if $this user is member of @admins group.
-     *  
+     *
      * @return boolean True if $user is member of @admins group. False otherwise
     */
     public function isAdmin()
@@ -966,9 +966,9 @@ class User
     }
 
     /** Tells if the database user table contains users with that email.
-     *  
+     *
      * @param string $email The email to look for in the DB
-     * 
+     *
      * @return string[] Array of user names (ie true) or, if no matches, an empty array (ie false)
     */
     protected function emailExistsInDB($email)
@@ -982,9 +982,9 @@ class User
     }
 
     /** Tells if $this user is member of the specified group.
-     *  
+     *
      * @param string $groupName The name of the group for wich we are testing membership
-     * 
+     *
      * @return boolean True if the $this user is member of $groupName, false otherwise
     */
     public function isInGroup($groupName)
@@ -1018,5 +1018,4 @@ class User
         }
     }
     /* ~~~~~~~~~~~~~~~~~~~~~~~ END OF INFO METHODS ~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
 } //end User class

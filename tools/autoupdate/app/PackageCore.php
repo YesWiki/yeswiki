@@ -4,7 +4,7 @@ namespace AutoUpdate;
 class PackageCore extends Package
 {
     const CORE_NAME = 'yeswiki';
-	public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes', 'wakka.config.php');
+    public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes', 'wakka.config.php');
 
     public function __construct($release, $address, $desc, $doc)
     {
@@ -72,44 +72,44 @@ class PackageCore extends Package
         return $this::CORE_NAME;
     }
 
-	public function localVersion()
-	{
-		$configuration = new Configuration('wakka.config.php');
-		$configuration->load();
+    public function localVersion()
+    {
+        $configuration = new Configuration('wakka.config.php');
+        $configuration->load();
 
         $version = AutoUpdate::DEFAULT_VERS;
-		if (!empty($configuration['yeswiki_version'])) {
-			$version = $configuration['yeswiki_version'];
+        if (!empty($configuration['yeswiki_version'])) {
+            $version = $configuration['yeswiki_version'];
         }
-		return strtolower($version);
-	}
+        return strtolower($version);
+    }
 
-	public function requestedVersion()
-	{
-		$configuration = new Configuration('wakka.config.php');
-		$configuration->load();
+    public function requestedVersion()
+    {
+        $configuration = new Configuration('wakka.config.php');
+        $configuration->load();
 
-		$version = AutoUpdate::DEFAULT_VERS;
-		if (isset($configuration['yeswiki_version'])) {
-			$version = $configuration['yeswiki_version'];
-		}
-		$requestedVersion = $GLOBALS['wiki']->getParameter('version');
-		if (isset($requestedVersion) && $requestedVersion != '') {
-			$version = $requestedVersion;
-		}
-		return strtolower($version);
-	}
+        $version = AutoUpdate::DEFAULT_VERS;
+        if (isset($configuration['yeswiki_version'])) {
+            $version = $configuration['yeswiki_version'];
+        }
+        $requestedVersion = $GLOBALS['wiki']->getParameter('version');
+        if (isset($requestedVersion) && $requestedVersion != '') {
+            $version = $requestedVersion;
+        }
+        return strtolower($version);
+    }
 
-	public function newVersionRequested()
-	{
-		$result = false;
-		$localVersion = $this->localVersion();
-		$requestedVersion = $this->requestedVersion();
-		if ($localVersion != $requestedVersion) {
-			$result = true;
-		}
-		return $result;
-	}
+    public function newVersionRequested()
+    {
+        $result = false;
+        $localVersion = $this->localVersion();
+        $requestedVersion = $this->requestedVersion();
+        if ($localVersion != $requestedVersion) {
+            $result = true;
+        }
+        return $result;
+    }
 
     /***************************************************************************
      * Méthodes privée
@@ -128,7 +128,7 @@ class PackageCore extends Package
         return $release;
     }
 
-	 protected function updateAvailable()
+    protected function updateAvailable()
     {
         if ($this->release->compare($this->localRelease()) > 0) {
             return true;

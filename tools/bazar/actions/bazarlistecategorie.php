@@ -17,7 +17,7 @@
 use YesWiki\Bazar\Service\FicheManager;
 
 if (!defined("WIKINI_VERSION")) {
-        die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 
 $ficheManager = $this->services->get(FicheManager::class);
@@ -124,7 +124,7 @@ if (empty($list)) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat)>0) {
                     include_once 'includes/squelettephp.class.php';
-                    try {                        
+                    try {
                         $squel = new SquelettePhp($template, 'bazar');
                         $output .= $squel->render($fichescat);
                     } catch (Exception $e) {

@@ -16,7 +16,7 @@
 
 
 if ($max = $this->GetParameter("nb")) {
-      $max = (int) $max;
+    $max = (int) $max;
 } else {
     $max=4;
 }
@@ -42,22 +42,22 @@ if (preg_match(
 
 # Find out if the breadcrumbs were already stored.
 if (!isset($_SESSION['breadcrumbs'])) {
-# Not stored yet, so set the current page name in the crumbs array.
+    # Not stored yet, so set the current page name in the crumbs array.
     $crumbs[0]=$PageTag;
 } else {
-# The crumbs are already stored, so get them and put them in the crumbs array.
+    # The crumbs are already stored, so get them and put them in the crumbs array.
     $crumbs=$_SESSION['breadcrumbs'];
 
     if ($crumbs[count($crumbs)-1] != $this->GetPageTag()) {
-# Test for the maximum amount of crumbs and if the last pagetag is not
-# the same as the last stored tag. If it is a duplicate we'll get rid of it later.
+        # Test for the maximum amount of crumbs and if the last pagetag is not
+        # the same as the last stored tag. If it is a duplicate we'll get rid of it later.
         if (count($crumbs) >= $max and $PageTag != $crumbs[$max - 1]) {
-# Drop the first element in the crumbs array.
+            # Drop the first element in the crumbs array.
             array_shift($crumbs);
-# Add the new page name to the last position in the array.
+            # Add the new page name to the last position in the array.
             $crumbs[$max - 1]= $PageTag;
         } else {
-# Not at the maximum yet, then just add to page to the end of the array.
+            # Not at the maximum yet, then just add to page to the end of the array.
             $crumbs[count($crumbs)]= $PageTag;
         }
     }

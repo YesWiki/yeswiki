@@ -37,15 +37,15 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //vérification de sécurité
 if (!WIKINI_VERSION) {
-     die ("acc&egrave;s direct interdit");
+    die("acc&egrave;s direct interdit");
 }
 echo $this->Header();
 ?>
 <div class="page">
 <?php
 
-if (!class_exists('attach')){
-	include('tools/attach/actions/attach.class.php');
+if (!class_exists('attach')) {
+    include('tools/attach/actions/attach.class.php');
 }
 $att = new attach($this);
 $att->doUpload();

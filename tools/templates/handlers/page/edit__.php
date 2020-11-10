@@ -124,6 +124,6 @@ if (!$this->HasAccess('write')) {
     .$this->Format('{{login signupurl="0"}}'."\n\n")
     .'</div><!-- end .page -->'."\n";
     // on recupere juste les javascripts et la fin des balises body et html
-    $output .= preg_replace('/^.+<script/Us',  '<script', $this->Footer());
+    $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
     exit($output);
 }

@@ -31,35 +31,27 @@
 *@author        Florian SCHMITT <florian@outils-reseaux.org>
 *@copyright     outils-reseaux.org 2013
 */
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 // valable que pour les utilisateurs connectes
 if ($user = $this->GetUser()) {
-	if ($user['email'] != '') {
-		//recuperation des parametres
-		$list = $this->GetParameter('list');
-		if (!empty($list)) {
-			$output =  '<div class="note"></div>
+    if ($user['email'] != '') {
+        //recuperation des parametres
+        $list = $this->GetParameter('list');
+        if (!empty($list)) {
+            $output =  '<div class="note"></div>
 				<form id="ajax-abonne-form" class="form-mail" action="'.$this->href('mail').'">
 					'.$list.' : '."\n".
-				'</form>'."\n";
-				$this->addJavascriptFile('tools/contact/libs/contact.js');
-		} 
-		else {
-			echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_LIST_REQUIRED').'.</div>';
-		}
-		
-		
-	}
-	else {
-		echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_USER_NO_EMAIL').'</div>';
-	}	
+                '</form>'."\n";
+            $this->addJavascriptFile('tools/contact/libs/contact.js');
+        } else {
+            echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_LIST_REQUIRED').'.</div>';
+        }
+    } else {
+        echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_USER_NO_EMAIL').'</div>';
+    }
+} else {
+    echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_USER_NOT_LOGGED_IN').'</div>';
 }
-else {
-	echo '<div class="alert alert-danger"><strong>'._t('CONTACT_ACTION_LISTSUBSCRIPTION').'</strong> : '._t('CONTACT_USER_NOT_LOGGED_IN').'</div>';
-}
-
-?>

@@ -197,7 +197,7 @@ function obtenir_extension($filename)
 {
     $pos = strrpos($filename, '.');
     if ($pos === false) {
-         // dot is not found in the filename
+        // dot is not found in the filename
         return ''; // no extension
     } else {
         $extension = substr($filename, $pos + 1);
@@ -219,7 +219,7 @@ function testUrlInIframe($url = '')
     }
 }
 
-function renameUrlToSanitizedFilename($url) 
+function renameUrlToSanitizedFilename($url)
 {
     $str = preg_replace('/[\r\n\t ]+/', ' ', basename($url));
     $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);

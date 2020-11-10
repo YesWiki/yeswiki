@@ -28,7 +28,7 @@ $bootstrapjs = false;
 $yeswikijs = false;
 $dir = (is_dir($repertoire) ? opendir($repertoire) : false);
 while ($dir && ($file = readdir($dir)) !== false) {
-    if (substr($file, -3, 3) == '.js') { 
+    if (substr($file, -3, 3) == '.js') {
         $scripts[] =  $repertoire . '/' . $file;
         if (strstr($file, 'bootstrap.min.') || strstr($file, 'bs.')) {
             // le theme contient deja le js de bootstrap
@@ -38,7 +38,6 @@ while ($dir && ($file = readdir($dir)) !== false) {
             // le theme contient deja le js de yeswiki
             $yeswikijs = true;
         }
-
     }
 }
 if (is_dir($repertoire)) {

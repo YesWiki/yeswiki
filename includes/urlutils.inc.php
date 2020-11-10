@@ -29,17 +29,25 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 function getURLAbsolutePath($url = null)
 {
-    if (!$url) $url = $_SERVER['REQUEST_URI'];
+    if (!$url) {
+        $url = $_SERVER['REQUEST_URI'];
+    }
 
     $pieces = @parse_url($url);
-    if ($pieces === false) return false;
+    if ($pieces === false) {
+        return false;
+    }
 
-    if (empty($pieces['path'])) return '/';
+    if (empty($pieces['path'])) {
+        return '/';
+    }
 
     $path = $pieces['path'];
     $path_len = strlen($path);
 
-    if ($path[$path_len - 1] == '/') return $path;
+    if ($path[$path_len - 1] == '/') {
+        return $path;
+    }
 
     $expl = explode('/', $path); // here $expl[0] should be the empty string
     $expl[count($expl) - 1] = ''; // this makes the path /look/like/this/
@@ -56,7 +64,7 @@ function getURLAbsolutePath($url = null)
  */
 function computeBaseURL($rewrite_mode = false)
 {
-$protocol = 'http://';
+    $protocol = 'http://';
     if (!empty($_SERVER['HTTPS'])) {
         $protocol = 'https://';
     }

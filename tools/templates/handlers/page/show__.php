@@ -48,7 +48,7 @@ if (!$this->HasAccess('read')) {
         );
     }
     // on recupere juste les javascripts et la fin des balises body et html
-    $output .= preg_replace('/^.+<script/Us',  '<script', $this->Footer());
+    $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
     exit($output);
 }
 

@@ -8,19 +8,19 @@ class DbService
 {
     protected $params;
 
-	protected $link;
+    protected $link;
     protected $queryLog;
 
-	public function __construct(ParameterBagInterface $params)
-	{
+    public function __construct(ParameterBagInterface $params)
+    {
         $this->params = $params;
         $this->queryLog = [];
 
-		$this->initSqlConnection();
-	}
+        $this->initSqlConnection();
+    }
 
     protected function initSqlConnection()
-	{
+    {
         $this->link = @mysqli_connect(
             $this->params->get('mysql_host'),
             $this->params->get('mysql_user'),
@@ -42,9 +42,9 @@ class DbService
         } else {
             exit(_t('DB_CONNECT_FAIL'));
         }
-	}
+    }
 
-	public function getLink()
+    public function getLink()
     {
         return $this->link;
     }
@@ -59,19 +59,19 @@ class DbService
         return ' ' . $this->params->get('table_prefix') . $tableName . ' ';
     }
 
-	public function escape($string)
-	{
-		return (mysqli_real_escape_string($this->link, $string));
-	}
+    public function escape($string)
+    {
+        return (mysqli_real_escape_string($this->link, $string));
+    }
 
 
-	/*	Should it Returns FALSE on failure? => For the time being dies in case of failure
-		For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries mysqli_query() will return a mysqli_result object.
-		For other successful will return TRUE.
-		In case of failure $this->error contains the error message
-	*/
-	public function query($query)
-	{
+    /*	Should it Returns FALSE on failure? => For the time being dies in case of failure
+        For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries mysqli_query() will return a mysqli_result object.
+        For other successful will return TRUE.
+        In case of failure $this->error contains the error message
+    */
+    public function query($query)
+    {
         if ($this->params->get('debug')) {
             $start = $this->getMicroTime();
         }
@@ -90,32 +90,32 @@ class DbService
         }
 
         return $result;
-	}
+    }
 
-	protected function getMicroTime()
+    protected function getMicroTime()
     {
         list($usec, $sec) = explode(" ", microtime());
         return ((float) $usec + (float) $sec);
     }
 
-	/*
-	 * Returns the first result of the query
-	 * If query fails returns null
-	 */
-	public function loadSingle($query)
-	{
+    /*
+     * Returns the first result of the query
+     * If query fails returns null
+     */
+    public function loadSingle($query)
+    {
         if ($data = $this->LoadAll($query)) {
             return $data[0];
         }
         return null;
-	}
+    }
 
-	/*
-	 * Fills and returns a table with the results of the query
-	 * Frees the SQL results set afterwards
-	 */
-	public function loadAll($query)
-	{
+    /*
+     * Fills and returns a table with the results of the query
+     * Frees the SQL results set afterwards
+     */
+    public function loadAll($query)
+    {
         $data = array();
         if ($r = $this->query($query)) {
             while ($row = mysqli_fetch_assoc($r)) {
@@ -124,7 +124,5 @@ class DbService
             mysqli_free_result($r);
         }
         return $data;
-	}
+    }
 }
-
-?>

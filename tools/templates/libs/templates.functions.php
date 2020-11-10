@@ -63,7 +63,7 @@ function search_template_files($directory)
                 }
                 $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
                 if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
-                    while (false !== ($file4 = readdir($dir4))) {                    
+                    while (false !== ($file4 = readdir($dir4))) {
                         if (substr($file4, -5, 5)=='.json' && file_exists($pathToPresets.'/'.$file4)) {
                             $json = file_get_contents($pathToPresets.'/'.$file4);
                             if (!empty($json)) {
@@ -801,7 +801,7 @@ function getTitleFromBody($page)
 
     if ($ficheManager->isFiche($page['tag'])) {
         $entry = $ficheManager->getOne($page['tag']);
-        if (isset($entry['bf_titre'])){
+        if (isset($entry['bf_titre'])) {
             $title = _convert($entry['bf_titre'], 'UTF-8');
         }
     } else {
@@ -844,12 +844,14 @@ function getDescriptionFromBody($page, $title, $length = 300)
 
     if ($ficheManager->isFiche($page['tag'])) {
         $entry = $ficheManager->getOne($page['tag']);
-        foreach(['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
+        foreach (['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
             if (isset($entry[$prop])) {
                 $desc = _convert($entry[$prop], 'UTF-8');
             }
         }
-        if ($desc == '') $desc = baz_voir_fiche(0, $entry);
+        if ($desc == '') {
+            $desc = baz_voir_fiche(0, $entry);
+        }
     } else {
         // $desc = $GLOBALS['wiki']->Format($page['body'], 'wakka', $page["tag"]);
     }

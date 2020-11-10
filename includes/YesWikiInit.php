@@ -98,7 +98,7 @@ class Init
                 $tab = $this->initApi($args);
                 $this->page = $_GET['wiki'] = 'api';
                 $this->method = $tab['function'];
-                $GLOBALS['api_args'] = $tab['args'];            
+                $GLOBALS['api_args'] = $tab['args'];
             } else {
                 // if old school wiki url
                 if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
@@ -128,7 +128,7 @@ class Init
                     exit();
                 }
 
-                if( !$this->method ) {
+                if (!$this->method) {
                     // We must manually parse the body data for the PUT or PATCH methods
                     // See https://www.php.net/manual/fr/features.file-upload.put-method.php
                     if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
@@ -142,7 +142,7 @@ class Init
                     header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
                     header('Access-Control-Max-Age: 86400');
 
-                    switch($_SERVER['REQUEST_METHOD']) {
+                    switch ($_SERVER['REQUEST_METHOD']) {
                         case 'DELETE':
                             $this->method = 'api_delete';
                             break;
@@ -274,7 +274,7 @@ class Init
         $containerBuilder = new ContainerBuilder();
 
         // Set all wakka configs as container's parameters
-        foreach($this->config as $key => $value) {
+        foreach ($this->config as $key => $value) {
             $containerBuilder->setParameter($key, $value);
         }
 

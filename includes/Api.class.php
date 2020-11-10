@@ -1,5 +1,6 @@
 <?php
 namespace YesWiki;
+
 class Api
 {
     protected $wiki = ''; // give access to the main wiki object
@@ -8,15 +9,15 @@ class Api
     {
         $this->wiki = $wiki;
     }
-    /** 
+    /**
      * Get header Authorization
      * */
-    public function getAuthorizationHeader(){
+    public function getAuthorizationHeader()
+    {
         $headers = null;
         if (isset($_SERVER['Authorization'])) {
             $headers = trim($_SERVER["Authorization"]);
-        }
-        else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
+        } elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
             $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
         } elseif (function_exists('apache_request_headers')) {
             $requestHeaders = apache_request_headers();
@@ -33,7 +34,8 @@ class Api
     /**
     * get access token from header
     * */
-    public function getBearerToken() {
+    public function getBearerToken()
+    {
         $headers = $this->getAuthorizationHeader();
         // HEADER: Get the access token from the header
         if (!empty($headers)) {
@@ -43,11 +45,12 @@ class Api
         }
         return null;
     }
-    public function isAuthorized() {
+    public function isAuthorized()
+    {
         $apiKey = $this->getBearerToken();
         return(
             $this->wiki->config['api_allowed_keys'] &&
-            ( $this->wiki->config['api_allowed_keys']['public'] === true || in_array($apiKey, $this->wiki->config['api_allowed_keys']) )
+            ($this->wiki->config['api_allowed_keys']['public'] === true || in_array($apiKey, $this->wiki->config['api_allowed_keys']))
         );
     }
     public function getUser($username = '')

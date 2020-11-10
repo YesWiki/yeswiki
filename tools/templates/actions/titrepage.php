@@ -1,12 +1,11 @@
 <?php
-if (!defined("WIKINI_VERSION"))
-{
-        die ("acc&egrave;s direct interdit");
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
 }
 
 $title = htmlspecialchars(getTitleFromBody($this->page), ENT_COMPAT | ENT_HTML5);
-if ($title)
+if ($title) {
     echo $title;
-else
+} else {
     echo $this->GetPageTag();
-?>
+}
