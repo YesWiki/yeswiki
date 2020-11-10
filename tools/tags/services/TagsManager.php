@@ -86,7 +86,7 @@ class TagsManager
     public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
     {
         if (!empty($tags)) {
-            $req_from = ', '.$this->dbService->prefixTable('triples').$this->dbService->prefixTable('tags');
+            $req_from = ', '.$this->dbService->prefixTable('triples') . 'tags';
             $tags = trim($tags);
             $tab_tags = explode(',', $tags);
             $nbdetags = count($tab_tags);
