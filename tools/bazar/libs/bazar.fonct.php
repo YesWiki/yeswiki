@@ -3382,6 +3382,9 @@ function baz_afficher_flux_RSS()
     if (isset($_GET['id'])) {
         $id = $_GET['id'];
         $urlrss .= '&amp;id='.$id;
+    } elseif (isset($_GET['id_typeannonce'])) {
+        $id = $_GET['id_typeannonce'];
+        $urlrss .= '&amp;id='.$id;
     } else {
         $id = '';
     }
