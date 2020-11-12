@@ -4,10 +4,11 @@ FROM lavoweb/php-7.3:composer
 RUN docker-php-ext-install mysqli
 
 # Add Chromium browser to enable pdf creation
-RUN apt-get update \
-    && apt install -y --no-install-recommends chromium \
-    && rm -rf /var/cache/apk/* \
-    && rm -rf /tmp/*
+RUN apt-get update && apt install -y --no-install-recommends \
+    chromium \
+    git
+RUN rm -rf /var/cache/apk/* \
+    rm -rf /tmp/*
 
 # Add default theme
 RUN mkdir -p themes/margot \
