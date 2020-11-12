@@ -2119,7 +2119,7 @@ class Wiki
      */
     public function DeleteOrphanedPage($tag)
     {
-        return $this->services->get(PageManager::class)->deletedOrphaned($tag);
+        return $this->services->get(PageManager::class)->deleteOrphaned($tag);
     }
 
     /**
