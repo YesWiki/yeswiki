@@ -3,8 +3,8 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$displayLastChanges = $this->HasAccess('read', 'DerniersChangementsRSS') ;
-$displayLastComments = $this->HasAccess('read', 'DerniersCommentairesRSS') ;
+$displayLastChanges = $this->HasAccess('read', 'DerniersChangementsRSS') && !(empty($this->LoadPage('DerniersChangementsRSS')['tag'])) ;
+$displayLastComments = $this->HasAccess('read', 'DerniersCommentairesRSS') && !(empty($this->LoadPage('DerniersCommentairesRSS')['tag'])) ;
 
 if ($displayLastChanges || $displayLastComments) {
 	echo "\n".
