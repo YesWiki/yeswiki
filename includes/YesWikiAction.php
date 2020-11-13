@@ -5,10 +5,10 @@ use YesWiki\Core\Service\TemplateEngine;
 /**
  * This class should be extended by each class that reprensents a WikiNi action.
  */
-class YesWikiAction
+abstract class YesWikiAction
 {
     public $wiki;
-
+    public $arguments = [];
     /**
      * Creates a YesWikiAction object associated with the given
      * wiki object.
@@ -21,7 +21,7 @@ class YesWikiAction
 
     /**
      * Performs an action asked by a user in a wiki page.
-     * @param array $argz An array containing the value of each parameter
+     * @param array $arguments An array containing the value of each parameter
      * given to the action, where the names of the parameters are the key,
      * corresponding to the given string value.
      * @param string $command The full command which was in the page
@@ -35,8 +35,11 @@ class YesWikiAction
      */
     public function performAction($arguments, $command)
     {
-        return '';
+        $this->arguments = $arguments;
+        return $this->runAction($arguments,$command);
     }
+
+    abstract public function runAction($arguments, $command);
 
     /**
      * Shortcut to render twig template
@@ -67,7 +70,7 @@ class YesWikiAction
  * This will help access rights management. Currently its only particularity is to have a its
  * default ACL set to @admins.
  */
-class YesWikiAdminAction extends YesWikiAction
+abstract class YesWikiAdminAction extends YesWikiAction
 {
     public function getDefaultACL()
     {

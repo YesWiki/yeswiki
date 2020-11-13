@@ -51,6 +51,10 @@ class TemplateEngine
 
     public function render($templatePath, $data = [])
     {
+        $data = array_merge($data, [
+            'config' => $this->wiki->config,
+            'request' => $_GET,
+        ]);
         return $this->twig->render($templatePath, $data);
     }
 }
