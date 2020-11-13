@@ -37,6 +37,7 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Tags\Service\TagsManager;
+use YesWiki\Core\YesWikiAction;
 
 class Wiki
 {
@@ -756,7 +757,7 @@ class Wiki
 
         if ($actionObj = &$this->GetActionObject($action)) {
             if (is_object($actionObj)) {
-                $result = $actionObj->PerformAction($vars, $cmd);
+                $result = $actionObj->performAction($vars, $cmd);
             } else { // $actionObj is an error message
                 $result = $actionObj;
             }
@@ -808,18 +809,17 @@ class Wiki
         }
 
         // object not loaded, try to load it
-        $filename = $name . '.class.php';
+        $className = ucfirst($name) . 'Action';
         // include the action file, this should return an empty string
-        $result = $this->IncludeBuffered($filename, null, null, $this->GetConfigValue('action_path'));
+        $result = $this->IncludeBuffered($className . '.php', null, null, $this->GetConfigValue('action_path'));
         if ($result) {
             // the result was not an empty string, certainly an error message
             $actionObj = $result;
         } elseif ($result !== false) {
             // the result was empty but the file was found
-            $class = 'Action' . ucfirst($name);
-            if (class_exists($class)) {
-                $actionObj = new $class($this);
-                if (! is_a($actionObj, 'YesWikiAction')) {
+            if (class_exists($className)) {
+                $actionObj = new $className($this);
+                if (! is_a($actionObj, YesWikiAction::class)) {
                     die(_t('INVALID_ACTION') . " '$name': " . _t('INCORRECT_CLASS'));
                 }
             }
@@ -1609,7 +1609,7 @@ class Wiki
                 if ($acl === null) {
                     $action = &$this->GetActionObject($module);
                     if (is_object($action)) {
-                        return $this->_actionsAclsCache[$module] = $action->GetDefaultACL();
+                        return $this->_actionsAclsCache[$module] = $action->getDefaultACL();
                     }
                 }
                 break;

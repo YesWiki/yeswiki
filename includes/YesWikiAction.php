@@ -1,4 +1,5 @@
 <?php
+namespace YesWiki\Core;
 
 use YesWiki\Core\Service\TemplateEngine;
 /**
@@ -28,11 +29,11 @@ class YesWikiAction
      * not use the conventionnal syntax in the 'param="value"' format.
      * @example if a page contains
      * 	{{include page="PageTag"}}
-     * $argz will be array('page' => 'PageTag');
+     * $arguments will be array('page' => 'PageTag');
      * $command wil be 'include page="PageTag"'
      * @return string The result of the action
      */
-    public function PerformAction($argz, $command)
+    public function performAction($arguments, $command)
     {
         return '';
     }
@@ -54,7 +55,7 @@ class YesWikiAction
     /**
      * @return string The default ACL for this action (usually '*', '+' or '@'.ADMIN_GROUP)
      */
-    public function GetDefaultACL()
+    public function getDefaultACL()
     {
         return '*';
     }
@@ -68,7 +69,7 @@ class YesWikiAction
  */
 class YesWikiAdminAction extends YesWikiAction
 {
-    public function GetDefaultACL()
+    public function getDefaultACL()
     {
         return '@'.ADMIN_GROUP;
     }
