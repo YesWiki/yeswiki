@@ -22,5 +22,8 @@
             "tools/{$name}" : ["type:yeswiki-extension"],
             "themes/{$name}": ["type:yeswiki-theme"]
         }
+    },
+    "require-dev": {
+        "symfony/var-dumper": "^5.1"
     }
 }
