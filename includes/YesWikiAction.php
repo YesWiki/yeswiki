@@ -3,12 +3,12 @@
 /**
  * This class should be extended by each class that reprensents a WikiNi action.
  */
-class WikiniAction
+class YesWikiAction
 {
     public $wiki;
 
     /**
-     * Creates a WikiniAction object associated with the given
+     * Creates a YesWikiAction object associated with the given
      * wiki object.
      */
     public function __construct(&$wiki)
@@ -50,7 +50,7 @@ class WikiniAction
  * This will help access rights management. Currently its only particularity is to have a its
  * default ACL set to @admins.
  */
-class WikiNiAdminAction extends WikiNiAction
+class YesWikiAdminAction extends YesWikiAction
 {
     public function GetDefaultACL()
     {

@@ -809,7 +809,7 @@ class Wiki
         // object not loaded, try to load it
         $filename = $name . '.class.php';
         // load parent class for all action objects (only once)
-        require_once 'includes/action.class.php';
+        require_once 'includes/YesWikiAction.php';
         // include the action file, this should return an empty string
         $result = $this->IncludeBuffered($filename, null, null, $this->GetConfigValue('action_path'));
         if ($result) {
@@ -820,7 +820,7 @@ class Wiki
             $class = 'Action' . ucfirst($name);
             if (class_exists($class)) {
                 $actionObj = new $class($this);
-                if (! is_a($actionObj, 'WikiniAction')) {
+                if (! is_a($actionObj, 'YesWikiAction')) {
                     die(_t('INVALID_ACTION') . " '$name': " . _t('INCORRECT_CLASS'));
                 }
             }

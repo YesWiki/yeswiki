@@ -21,7 +21,7 @@ if (!defined("WIKINI_VERSION")) {
     die("accés direct interdit");
 }
 
-class ActionEditgroups extends WikiniAdminAction
+class ActionEditgroups extends YesWikiAdminAction
 {
     public function PerformAction($args, $command)
     {

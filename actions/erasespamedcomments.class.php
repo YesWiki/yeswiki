@@ -33,7 +33,7 @@ if (!defined('WIKINI_VERSION')) {
     die('acc&egrave;s direct interdit');
 }
 
-class ActionErasespamedcomments extends WikiniAdminAction
+class ActionErasespamedcomments extends YesWikiAdminAction
 {
     public function PerformAction($args, $command)
     {
