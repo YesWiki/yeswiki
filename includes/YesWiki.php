@@ -27,6 +27,7 @@ require_once 'includes/YesWikiInit.php';
 require_once 'includes/Api.class.php';
 require_once 'includes/Session.class.php';
 require_once 'includes/User.class.php';
+require_once 'includes/YesWikiAction.php';
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
@@ -808,8 +809,6 @@ class Wiki
 
         // object not loaded, try to load it
         $filename = $name . '.class.php';
-        // load parent class for all action objects (only once)
-        require_once 'includes/YesWikiAction.php';
         // include the action file, this should return an empty string
         $result = $this->IncludeBuffered($filename, null, null, $this->GetConfigValue('action_path'));
         if ($result) {

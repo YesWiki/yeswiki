@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\TemplateEngine;
 /**
  * This class should be extended by each class that reprensents a WikiNi action.
  */
@@ -14,6 +15,7 @@ class YesWikiAction
     public function __construct(&$wiki)
     {
         $this->wiki = &$wiki;
+        $this->twig = $this->wiki->services->get(TemplateEngine::class);
     }
 
     /**
@@ -33,6 +35,20 @@ class YesWikiAction
     public function PerformAction($argz, $command)
     {
         return '';
+    }
+
+    /**
+     * Shortcut to render twig template
+     *
+     * @param string $templatePath path to twig template. you can use full path
+     * like tools/bazar/template/myfile.twig, or namespace like @bazar/myfile.twig
+     * @param array $data An array with data to pass to the template
+     * @return void
+     */
+    public function render($templatePath, $data = [])
+    {        
+        $data = array_merge($data, ['arguments' => $this->arguments]);
+        echo $this->twig->render($templatePath, $data);
     }
 
     /**
