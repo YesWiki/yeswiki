@@ -292,10 +292,10 @@ function baz_afficher_formulaire_import()
 
                                         // recuperer les id pour les listes et checkbox plutot que leur labels
                                         if (($type_champ[$c] == 'checkbox' ||
-                                            $type_champ[$c] == 'liste') &&
-                                            isset($data[$c]) &&
+                                            $type_champ[$c] == 'liste'||
+                                            $type_champ[$c] == 'radio') &&
                                             !empty($data[$c])) {
-                                            if ($type_champ[$c] == 'liste') {
+                                            if ($type_champ[$c] == 'liste' || $type_champ[$c] == 'radio') {
                                                 $idval = array_search(
                                                     $data[$c],
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
@@ -609,7 +609,7 @@ function baz_afficher_formulaire_import()
                             $ligne[0] == 'listefiche' || $ligne[0] ==
                             'checkboxfiche') {
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                         } elseif ($ligne[0] == 'carte_google') {
@@ -626,29 +626,29 @@ function baz_afficher_formulaire_import()
                         } elseif ($ligne[0] == 'titre') {
                             // Champ titre aggregeant plusieurs champs
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', 'Titre calculé').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', 'Titre calculé').((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                         } elseif ($ligne[0] == 'utilisateur_wikini') {
                             // utilisateur et mot de passe
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', 'NomWiki').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', 'NomWiki').((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', 'Mot de passe').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', 'Mot de passe').((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                             ++$nb;
                         } elseif ($ligne[0] == 'inscriptionliste') {
                             // Nom de la liste et etat de l'abonnement
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', $ligne[1]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', $ligne[1]).((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                         } else {
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *': '').'",',
+                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[8]) && $ligne[8] == 1) ? ' *': '').'",',
                                 YW_CHARSET
                             );
                         }
@@ -764,13 +764,13 @@ function baz_afficher_formulaire_export()
                     $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.
                     $ligne[6];
                     $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'image' || $ligne[0] == 'fichier') {
                     // image et fichiers
                     $tab_champs[] = $ligne[0].'|'.$ligne[1];
                     $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'carte_google') {
                     // cas de la carto
@@ -788,17 +788,17 @@ function baz_afficher_formulaire_export()
                     // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'bf_titre';
                     $csv .= '"'.str_replace('"', '""', 'Titre calculé')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'utilisateur_wikini') {
                     // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'nomwiki';
                     $tab_champs[] = 'mot_de_passe_wikini';
                     $csv .= '"'.str_replace('"', '""', 'NomWiki')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                     $csv .= '"'.str_replace('"', '""', 'Mot de passe')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'inscriptionliste') {
                     // Nom de la liste et etat de l'abonnement
@@ -806,12 +806,12 @@ function baz_afficher_formulaire_export()
                         '', ), $ligne[1]);
                     // nom de la liste
                     $csv .= '"'.str_replace('"', '""', $ligne[1])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } else {
                     $tab_champs[] = $ligne[1];
                     $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 }
                 ++$nb;
@@ -860,7 +860,7 @@ function baz_afficher_formulaire_export()
                             6 => $tabindex[2],
                         ),
                         'html',
-                        array($index => isset($tficheab_valeurs[$index]) ?
+                        array($index => isset($fiche[$index]) ?
                             $fiche[$index] : '', )
                     );
                     $tabhtml = explode('</span>', $html);
