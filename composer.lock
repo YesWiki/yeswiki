@@ -131,6 +131,10 @@
                 "zend",
                 "zikula"
             ],
+            "support": {
+                "issues": "https://github.com/composer/installers/issues",
+                "source": "https://github.com/composer/installers/tree/v1.9.0"
+            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -194,6 +198,10 @@
             ],
             "description": "Extend the composer/installers plugin to accept any arbitrary package type.",
             "homepage": "http://www.oomphinc.com/",
+            "support": {
+                "issues": "https://github.com/oomphinc/composer-installers-extender/issues",
+                "source": "https://github.com/oomphinc/composer-installers-extender/tree/2.0.0"
+            },
             "time": "2020-08-11T21:06:11+00:00"
         },
         {
@@ -256,6 +264,10 @@
                 }
             ],
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
+            "support": {
+                "issues": "https://github.com/PHPMailer/PHPMailer/issues",
+                "source": "https://github.com/PHPMailer/PHPMailer/tree/master"
+            },
             "funding": [
                 {
                     "url": "https://github.com/synchro",
@@ -944,6 +956,7 @@
             "require": {
                 "composer/installers": "~1.0"
             },
+            "default-branch": true,
             "type": "yeswiki-theme",
             "extra": {
                 "installer-name": "margot"
@@ -952,6 +965,10 @@
             "license": [
                 "AGPL-3.0"
             ],
+            "support": {
+                "issues": "https://github.com/YesWiki/yeswiki-theme-margot/issues",
+                "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/master"
+            },
             "time": "2020-11-06T19:09:58+00:00"
         }
     ],
