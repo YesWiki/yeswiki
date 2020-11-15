@@ -198,14 +198,20 @@ class PageManager
         if ($rights) {
             // is page new?
             if (!$oldPage = $this->getOne($tag)) {
+				
+				// LoadACL (if defined by acls)
+				$defaultWrite = $this->wiki->LoadAcl($tag, 'write', true)['list'] ;
+				$defaultRead = $this->wiki->LoadAcl($tag, 'read', true)['list'];
+				$defaultComment = $this->wiki->LoadAcl($tag, 'comment', true)['list'] ;
+				
                 // create default write acl. store empty write ACL for comments.
-                $this->wiki->SaveAcl($tag, 'write', ($comment_on ? $user : $this->params->get('default_write_acl')));
+                $this->wiki->SaveAcl($tag, 'write', ($comment_on ? $user : $defaultWrite));
 
                 // create default read acl
-                $this->wiki->SaveAcl($tag, 'read', $this->params->get('default_read_acl'));
+                $this->wiki->SaveAcl($tag, 'read', $defaultRead);
 
                 // create default comment acl.
-                $this->wiki->SaveAcl($tag, 'comment', ($comment_on ? '' : $this->params->get('default_comment_acl')));
+                $this->wiki->SaveAcl($tag, 'comment', ($comment_on ? '' : $defaultComment));
 
                 // current user is owner; if user is logged in! otherwise, no owner.
                 if ($this->wiki->GetUser()) {
