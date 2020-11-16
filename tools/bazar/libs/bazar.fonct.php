@@ -849,23 +849,51 @@ function baz_afficher_formulaire_export()
                 if ($tabindex[0] == 'radio' || $tabindex[0] == 'liste' || $tabindex[0] == 'checkbox'
                     || $tabindex[0] == 'listefiche' || $tabindex[0] ==
                     'checkboxfiche') {
-                    // ???  FIXME ?
-                    $toto = 'dummy';
-                    $html = $tabindex[0](
-                        $toto,
-                        array(
-                            0 => $tabindex[0],
-                            1 => $tabindex[1],
-                            2 => '',
-                            6 => $tabindex[2],
-                        ),
-                        'html',
-                        array($index => isset($fiche[$index]) ?
-                            $fiche[$index] : '', )
-                    );
-                    $tabhtml = explode('</span>', $html);
-                    $fiche[$index] = isset($tabhtml[1]) ?
-                    html_entity_decode(trim(strip_tags($tabhtml[1]))) : '';
+                        
+                    // liste ou fiche
+                    if ($tabindex[0] == 'radio' || $tabindex[0] == 'liste' || $tabindex[0] == 'checkbox') {
+                        
+                        $values_liste = baz_valeurs_liste($tabindex[1]);
+
+                        $tabresult = isset($fiche[$index]) ? explode(',', $fiche[$index]) : null ;
+                        if (is_array($tabresult)) {
+                            $labels_result = '';
+                            foreach ($tabresult as $id) {
+                                $res_value = $values_liste["label"][$id] ;
+                                if (isset($res_value)) {
+                                    if (strpos($res_value,',') !== false) {
+                                        $res_value = '"' .$res_value . '"' ;
+                                    }
+                                    if ($labels_result == '') {
+                                        $labels_result = $res_value;
+                                    } else {
+                                        $labels_result.= ', ' . $res_value;
+                                    }
+                                }
+                            }
+                            $fiche[$index] = $labels_result ;
+                        }
+                    } else {
+                        $tabresult = isset($fiche[$index]) ? explode(',', $fiche[$index]) : null ;
+                        if (is_array($tabresult)) {
+                            $labels_result = '';
+                            foreach ($tabresult as $id) {
+                                $val_fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($id);
+                                if (is_array($val_fiche)) {
+                                    $res_value = $val_fiche['bf_titre'] ;
+                                    if (strpos($res_value,',') !== false) {
+                                        $res_value = '"' .$res_value . '"' ;
+                                    }
+                                    if ($labels_result == '') {
+                                        $labels_result = $res_value;
+                                    } else {
+                                        $labels_result.= ', ' . $res_value;
+                                    }
+                                }
+                            }
+                            $fiche[$index] = $labels_result ;
+                        }
+                    }
                 }
 
                 // si la valeur existe, on l'affiche
@@ -877,6 +905,8 @@ function baz_afficher_formulaire_export()
                     if ($tabindex[0] == 'image' || $tabindex[0] == 'fichier') {
                         $fiche[$index] = $GLOBALS['wiki']->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fiche[$index];
                     }
+                    $fiche[$index] = str_replace("\n", "\\n", $fiche[$index]);
+                    $fiche[$index] = str_replace("\r", "\\r", $fiche[$index]);
                     $tab_csv[] = html_entity_decode(
                         '"'.str_replace('"', '""', $fiche[$index]).'"'
                     );
@@ -901,7 +931,7 @@ function baz_afficher_formulaire_export()
 
         //on cree le lien vers ce fichier
         $output .=
-        '<a href="#" onclick="downloadCSV($(\'.precsv\').text(), \'export-bazar-'.$id.'.csv\');return false;" class="btn btn-neutral link-csv-file">'.
+        '<a href="#" onclick="downloadCSV($(\'.precsv\').html(), \'export-bazar-'.$id.'.csv\');return false;" class="btn btn-neutral link-csv-file">'.
         '<i class="fa fa-download"></i>'.
         _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
     } else {
