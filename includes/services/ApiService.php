@@ -23,6 +23,7 @@ class ApiService
         } elseif( !isset($apiArgs[0]) ) {
             $this->showDocumentation();
         } else {
+            header("Content-Type: application/json; charset=UTF-8");
             header('Access-Control-Allow-Origin: *');
             header('Access-Control-Allow-Credentials: true');
             header('Access-Control-Allow-Headers: X-Requested-With, Location, Slug, Accept, Content-Type');
@@ -40,6 +41,7 @@ class ApiService
                 }
 
                 echo $apiFunctionName($apiArgs);
+                exit();
             } else {
                 $this->showDocumentation();
             }
