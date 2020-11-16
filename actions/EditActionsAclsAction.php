@@ -17,16 +17,15 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-if (!defined("WIKINI_VERSION")) {
-    die("accés direct interdit");
-}
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Core\Service\Performer;
 
-class ActionEditactionsacls extends YesWikiAdminAction
+class EditActionsAclsAction extends YesWikiAction
 {
-    public function PerformAction($args, $command)
+    public function run($args)
     {
         $wiki = &$this->wiki;
-        $list = $wiki->GetActionsList();
+        $list = $wiki->services->get(Performer::class)->list('action');
         sort($list);
         $res = $wiki->FormOpen('', '', 'get');
         $res .= _t('ACTION_RIGHTS').' <select name="actionname">';
