@@ -296,11 +296,17 @@ function baz_afficher_formulaire_import()
                                             $type_champ[$c] == 'radio') &&
                                             !empty($data[$c])) {
                                             if ($type_champ[$c] == 'liste' || $type_champ[$c] == 'radio') {
+                                                
+                                                //remove '"'
+                                                $data[$c] = trim($data[$c],'"') ;
+                                            
                                                 $idval = array_search(
                                                     $data[$c],
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
                                                 );
-                                                if ((! $idval) && (is_numeric($data[$c]))) {
+                                                if ((! $idval) && (is_numeric($data[$c]) || 
+                                                        array_key_exists($data[$c],
+                                                        $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']))) {
                                                     $idval = $data[$c] ;
                                                 }
                                             } elseif ($type_champ[$c] ==
@@ -316,7 +322,11 @@ function baz_afficher_formulaire_import()
                                                     if (is_numeric($value)) {
                                                         $tab_id[] = $value ;
                                                     } else {
-                                                        $tab_id[] = array_search($value, $refList);
+                                                        $res = array_search($value, $refList);
+                                                        if ($res === false && array_key_exists($value, $refList)) {
+                                                            $res = $value;
+                                                        }
+                                                        $tab_id[] = $res ;
                                                     }
                                                 }
                                                 $idval = implode(',', $tab_id);
@@ -344,6 +354,11 @@ function baz_afficher_formulaire_import()
                                                     $value,
                                                     $allentries[$id]
                                                 );
+                                                if ($idval === false && array_key_exists(
+                                                        $value,
+                                                        $allentries[$id])) {
+                                                    $idval = $value;
+                                                }
                                                 $tab_id[] = $idval;
                                             }
                                             $idval = implode(',', $tab_id);
@@ -862,7 +877,8 @@ function baz_afficher_formulaire_export()
                                 $res_value = $values_liste["label"][$id] ;
                                 if (isset($res_value)) {
                                     if (strpos($res_value,',') !== false) {
-                                        $res_value = '"' .$res_value . '"' ;
+                                        // if contains ',' add '"' for liste and radio or give id for checkbox
+                                        $res_value = ($tabindex[0] == 'checkbox') ? $id : '"' .$res_value . '"' ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
@@ -882,7 +898,8 @@ function baz_afficher_formulaire_export()
                                 if (is_array($val_fiche)) {
                                     $res_value = $val_fiche['bf_titre'] ;
                                     if (strpos($res_value,',') !== false) {
-                                        $res_value = '"' .$res_value . '"' ;
+                                        // to manage name with coma, gives id
+                                        $res_value =  $id  ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
@@ -905,8 +922,6 @@ function baz_afficher_formulaire_export()
                     if ($tabindex[0] == 'image' || $tabindex[0] == 'fichier') {
                         $fiche[$index] = $GLOBALS['wiki']->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fiche[$index];
                     }
-                    $fiche[$index] = str_replace("\n", "\\n", $fiche[$index]);
-                    $fiche[$index] = str_replace("\r", "\\r", $fiche[$index]);
                     $tab_csv[] = html_entity_decode(
                         '"'.str_replace('"', '""', $fiche[$index]).'"'
                     );
