@@ -620,7 +620,7 @@ function baz_afficher_formulaire_import()
                 $csv = '';
                 foreach ($tableau as $ligne) {
                     if ($ligne[0] != 'labelhtml') {
-                        if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' ||
+                        if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'radio' ||
                             $ligne[0] == 'listefiche' || $ligne[0] ==
                             'checkboxfiche') {
                             $csv .= _convert(
