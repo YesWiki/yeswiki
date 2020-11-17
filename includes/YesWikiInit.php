@@ -185,8 +185,6 @@ class Init
             'rewrite_mode' => $_rewrite_mode,
             'meta_keywords' => '',
             'meta_description' => '',
-            'action_path' => 'actions',
-            'handler_path' => 'handlers',
             'header_action' => 'header',
             'footer_action' => 'footer',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
@@ -259,8 +257,6 @@ class Init
         if ($wakkaConfig['wakka_version'] && (! $wakkaConfig['wikini_version'])) {
             $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
-
-        $wakkaConfig['formatter_path'] = 'formatters';
 
         return $wakkaConfig;
     }

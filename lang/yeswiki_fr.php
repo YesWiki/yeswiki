@@ -31,13 +31,9 @@
 $GLOBALS['translations'] = array(
 
 // wakka.php
-'UNKNOWN_ACTION' => 'Action inconnue',
 'INVALID_ACTION' => 'Action invalide',
-'ERROR_NO_ACCESS' => 'Erreur: vous n\'avez pas acc&egrave;s &agrave; l\'action',
-'INCORRECT_CLASS' => 'classe incorrecte',
-'UNKNOWN_METHOD' => 'M&eacute;thode inconnue',
-'FORMATTER_NOT_FOUND' => 'Impossible de trouver le formateur',
-'HANDLER_NO_ACCESS' => 'Vous ne pouvez pas acc&eacute;der &agrave; cette page par le handler sp&eacute;cifi&eacute;.',
+'ERROR_NO_ACCESS' => 'Accès interdit',
+'NOT_FOUND' => "N'existe pas",
 'NO_REQUEST_FOUND' => '$_REQUEST[] pas trouv&eacute;. Wakka n&eacute;cessite PHP 4.1.0 ou plus r&eacute;cent!',
 'SITE_BEING_UPDATED' => 'Ce site est en cours de mise &agrave; jour. Veuillez essayer plus tard.',
 'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'acc&egrave;s &agrave; la base de donn&eacute;es a &eacute;chou&eacute;. <br><br>Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
