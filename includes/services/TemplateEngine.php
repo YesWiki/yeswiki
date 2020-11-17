@@ -49,6 +49,14 @@ class TemplateEngine
         ]);
     }
 
+    public function renderInSquelette($templatePath, $data = []) 
+    {
+        $result = '';
+        $result .= $this->wiki->Header();
+        $result .= $this->render($templatePath, $data);
+        $result .= $this->wiki->Footer();
+        return $result;
+    }
     public function render($templatePath, $data = [])
     {
         $data = array_merge($data, [

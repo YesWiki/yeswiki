@@ -69,10 +69,15 @@ abstract class YesWikiPerformable
      * @param array $data An array with data to pass to the template
      * @return void
      */
-    public function render($templatePath, $data = [])
+    public function render($templatePath, $data = [], $method = 'render')
     {        
         $data = array_merge($data, ['arguments' => $this->arguments]);
-        return $this->twig->render($templatePath, $data);
+        return $this->twig->$method($templatePath, $data);
+    }
+
+    public function renderInSquelette($templatePath, $data = [])
+    {        
+        return $this->render($templatePath, $data, 'renderInSquelette');
     }
 
     //  Shortcut to access services
