@@ -65,15 +65,7 @@ if ($resultat) {
             }
         }
     }
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($template, 'tags');
-        $output = $squel->render(
-            array('elements' => $element)
-        );
-    } catch (Exception $e) {
-        $output = '<div class="alert alert-danger">Erreur action {{listpagestag ..}} : '.  $e->getMessage(). '</div>'."\n";
-    }
+    $output = $this->render("@tags/$template", ['elements' => $element]);
 } else {
     $nb_total = 0;
 }

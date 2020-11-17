@@ -272,22 +272,14 @@ function print_diaporama($pagetag, $template = 'diaporama_slides.tpl.html', $cla
             $buttons .= '<a class="btn" href="'.$GLOBALS['wiki']->href('', $pagetag).'">&times;</a>'."\n";
         }
 
-        //on affiche le template
-        include_once 'includes/squelettephp.class.php';
-        try {
-            $squel = new SquelettePhp($template, 'templates');
-            $output = $squel->render(
-                array(
-                    "pagetag" => $pagetag,
-                    "slides" => $slides,
-                    "titles" => $titles,
-                    "buttons" => $buttons,
-                    "class" => $class
-                )
-            );
-        } catch (Exception $e) {
-            $output = '<div class="alert alert-danger">Erreur slides : '.  $e->getMessage(). '</div>'."\n";
-        }
+        // on affiche le template
+        $output = $GLOBALS['wiki']->render("@templates/$template", [
+            "pagetag" => $pagetag,
+            "slides" => $slides,
+            "titles" => $titles,
+            "buttons" => $buttons,
+            "class" => $class
+        ]);
 
         return $output;
     }
@@ -398,24 +390,16 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     }
     $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
-
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('themeselector.tpl.html', 'templates');
-        $selecteur = $squel->render([
-            'mode' => $mode,
-            'wiki' => $GLOBALS['wiki'],
-            'id' => $id,
-            'class' => $formclass,
-            'bgselector' => $bgselector,
-            'themeNames' => array_keys($GLOBALS['wiki']->config['templates']),
-            'themes' => $GLOBALS['wiki']->config['templates'],
-            'listWikinames' => $listWikinames,
-        ]);
-    } catch (Exception $e) {
-        $selecteur = '<div class="alert alert-danger">Erreur template themeselector : '.$e->getMessage().'</div>'."\n";
-    }
-
+    $selecteur = $GLOBALS['wiki']->render("@templates/themeselector.tpl.html", [
+        'mode' => $mode,
+        'wiki' => $GLOBALS['wiki'],
+        'id' => $id,
+        'class' => $formclass,
+        'bgselector' => $bgselector,
+        'themeNames' => array_keys($GLOBALS['wiki']->config['templates']),
+        'themes' => $GLOBALS['wiki']->config['templates'],
+        'listWikinames' => $listWikinames,
+    ]);
 
     $js = add_templates_list_js();
     $js .= "

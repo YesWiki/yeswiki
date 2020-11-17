@@ -76,13 +76,7 @@ if (empty($listelements['mail'])) {
     $listelements['demand'] = 'desabonnement';
     $listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($template, 'contact');
-        echo $squel->render($listelements);
-    } catch (Exception $e) {
-        echo '<div class="alert alert-danger">Erreur action {{desabonnement ..}} : '.$e->getMessage().'</div>'."\n";
-    }
+    echo $this->render("@contact/$template", $listelements);
 
     $this->addJavascriptFile('tools/contact/libs/contact.js');
 }

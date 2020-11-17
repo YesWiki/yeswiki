@@ -1182,14 +1182,8 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         }
     }
 
-    //Affichage a l'ecran
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('form_edit_entry.tpl.html', 'bazar');
-        $res .=  $squel->render($data);
-    } catch (Exception $e) {
-        $res .= '<div class="alert alert-danger">Erreur form edit fiche : '.$e->getMessage().'</div>'."\n";
-    }
+    // Affichage a l'ecran
+    $res .= $GLOBALS['wiki']->render("@bazar/form_edit_entry.tpl.html", $data);
     return $res;
 }
 
@@ -1423,13 +1417,7 @@ function baz_formulaire_des_formulaires($mode, $form = '')
     // champs du formulaire
     $data['idformulaire'] = isset($_GET['idformulaire']) ? $_GET['idformulaire'] : '';
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('form_edit_form.tpl.html', 'bazar');
-        return $squel->render($data);
-    } catch (Exception $e) {
-        return '<div class="alert alert-danger">Erreur form edit form : '.$e->getMessage().'</div>'."\n";
-    }
+    return $GLOBALS['wiki']->render("@bazar/form_edit_form.tpl.html", $data);
 }
 
 /*
@@ -1837,13 +1825,7 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
 
     // affichage du template du formulaire
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('lists_edit.tpl.html', 'bazar');
-        return $squel->render($tab_formulaire);
-    } catch (Exception $e) {
-        return '<div class="alert alert-danger">Erreur form edit listes : '.$e->getMessage().'</div>'."\n";
-    }
+    return $GLOBALS['wiki']->render("@bazar/lists_edit.tpl.html", $tab_formulaire);
 }
 
 function multiArraySearch($array, $key, $value)
@@ -2017,13 +1999,7 @@ function baz_gestion_formulaire()
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
 
-        include_once 'includes/squelettephp.class.php';
-        try {
-            $squel = new SquelettePhp('forms_table.tpl.html', 'bazar');
-            $res .=  $squel->render($tab_forms);
-        } catch (Exception $e) {
-            $res .= '<div class="alert alert-danger">Erreur tableau des formulaires  : '.$e->getMessage().'</div>'."\n";
-        }
+        $res .= $GLOBALS['wiki']->render("@bazar/forms_table.tpl.html", $tab_forms);
     }
     return $res;
 }
@@ -2097,13 +2073,8 @@ function baz_gestion_listes()
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
 
-        include_once 'includes/squelettephp.class.php';
-        try {
-            $squel = new SquelettePhp('lists_table.tpl.html', 'bazar');
-            $res .=  $squel->render($tab_lists);
-        } catch (Exception $e) {
-            $res .= '<div class="alert alert-danger">Erreur table des listes : '.$e->getMessage().'</div>'."\n";
-        }
+        $res .= $GLOBALS['wiki']->render("@bazar/lists_table.tpl.html", $tab_lists);
+
     } elseif ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE) {
         // il y a une liste a modifier, recuperation des informations
         $valeursliste = baz_valeurs_liste($_GET['idliste']);
@@ -2861,13 +2832,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 
     // affichage du formulaire
     $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">';
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('search_form.tpl.html', 'bazar');
-        $res .=  $squel->render($data);
-    } catch (Exception $e) {
-        $res .= '<div class="alert alert-danger">Erreur template search_form.tpl.html : '.$e->getMessage().'</div>'."\n";
-    }
+    $res .= $GLOBALS['wiki']->render("@bazar/search_form.tpl.html", $data);
 
     $fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
         'queries'=>$GLOBALS['params']['query'],
@@ -3145,15 +3110,10 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     $fiches['param'] = $params;
 
     // affichage des resultats
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($params['template'], 'bazar');
-        $output = '<div id="bazar-list-'.$params['nbbazarliste'].'"
+    $result = $GLOBALS['wiki']->render("@bazar/{$params['template']}", $fiches);
+    $output = '<div id="bazar-list-'.$params['nbbazarliste'].'"
                     class="bazar-list" data-template="' . $params['template'] . '">
-                        <div class="list">'.$squel->render($fiches).'</div></div>';
-    } catch (Exception $e) {
-        $output = '<div class="alert alert-danger">Erreur liste fiches : '.$e->getMessage().'</div>'."\n";
-    }
+                        <div class="list">'.$result.'</div></div>';
 
     // affichage spécifique pour facette
     if (count($facettevalue) > 0) {
@@ -3251,17 +3211,12 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             ++$i;
             $first = false;
         }
-        try {
-            $squel = new SquelettePhp($params['facettetemplate'], 'bazar');
-            $output = $squel->render([
-                'content' => $output,
-                'filters' => $facettableValues,
-                'nbfiches' => count($fiches['fiches']),
-                'params' => $params,
-            ]);
-        } catch (Exception $e) {
-            $output = '<div class="alert alert-danger">Erreur liste fiches template facette '.$params['facettetemplate'].' : '.$e->getMessage().'</div>'."\n";
-        }
+        $output = $GLOBALS['wiki']->render("@bazar/{$params['facettetemplate']}", [
+            'content' => $output,
+            'filters' => $facettableValues,
+            'nbfiches' => count($fiches['fiches']),
+            'params' => $params
+        ]);
     }
     // affiche les possibilités d'export
     if (!preg_match('/\/iframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
