@@ -14,11 +14,13 @@ class Controller
 {
     private $autoUpdate;
     private $messages;
+    private $wiki;
 
-    public function __construct($autoUpdate, $messages)
+    public function __construct($autoUpdate, $messages, $wiki)
     {
         $this->autoUpdate = $autoUpdate;
         $this->messages = $messages;
+        $this->wiki = $wiki;
     }
 
     /*	Parameter $requestedVersion contains the name of the YesWiki version
@@ -32,31 +34,53 @@ class Controller
         }
 
         if (!$this->autoUpdate->initRepository($requestedVersion)) {
-            $view = new ViewNoRepo($this->autoUpdate);
-            $view->show();
-            return;
+            return $this->wiki->render("@autoupdate/views/norepo.twig", [
+                'AU_REPO_ERROR' => _t('AU_REPO_ERROR'),
+                'AU_VERSION_REPO' => _t('AU_VERSION_REPO'),
+                'AU_VERSION_WIKI' => _t('AU_VERSION_WIKI'),
+            ]);
         }
 
         if (isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
             ) {
             $this->upgrade($get['upgrade']);
-            $view = new ViewUpdate($this->autoUpdate, $this->messages);
-            $view->show();
-            return;
+            return $this->wiki->render("@autoupdate/views/update.twig", [
+                'messages' => $this->messages,
+                'baseUrl' => $this->autoUpdate->baseUrl(),
+            ]);
         }
 
         if (isset($get['delete'])
             and $this->autoUpdate->isAdmin()
             ) {
             $this->delete($get['delete']);
-            $view = new ViewUpdate($this->autoUpdate, $this->messages);
-            $view->show();
-            return;
+            return $this->wiki->render("@autoupdate/views/update.twig", [
+                'messages' => $this->messages,
+                'baseUrl' => $this->autoUpdate->baseUrl(),
+            ]);
         }
 
-        $view = new ViewStatus($this->autoUpdate, $this->messages);
-        $view->show();
+        return $this->wiki->render("@autoupdate/views/status.twig", [
+            'baseUrl' => $this->autoUpdate->baseUrl(),
+            'isAdmin' => $this->autoUpdate->isAdmin(),
+            'AU_UPDATE' => _t('AU_UPDATE'),
+            'AU_FORCE_UPDATE' => _t('AU_FORCE_UPDATE'),
+            'AU_VERSION_UPDATE' => _t('AU_VERSION_UPDATE'),
+            'AU_WARNING' => _t('AU_WARNING'),
+            'AU_VERSION_REPO' => _t('AU_VERSION_REPO'),
+            'AU_VERSION_WIKI' => _t('AU_VERSION_WIKI'),
+            'AU_INSTALL' => _t('AU_INSTALL'),
+            'AU_ABSENT' => _t('AU_ABSENT'),
+            'AU_DELETE_EXT' => _t('AU_DELETE_EXT'),
+            'AU_DOCUMENTATION_LINK' => _t('AU_DOCUMENTATION_LINK'),
+            'core' => $this->autoUpdate->repository->getCorePackage(),
+            'themes' => $this->autoUpdate->repository->getThemesPackages(),
+            'tools' => $this->autoUpdate->repository->getToolsPackages(),
+            'showCore' => true,
+            'showThemes' => true,
+            'showTools' => true
+        ]);
     }
 
     private function delete($packageName)
