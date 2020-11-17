@@ -53,6 +53,10 @@ class TemplateEngine
             'cache' => 'cache/templates/',
             'auto_reload' => true
         ]);
+        
+        // Adds YesWiki translations to Twig
+        $function = new \Twig\TwigFunction('_t', function ($key) { return html_entity_decode(_t($key)); });
+        $this->twig->addFunction($function);
     }
 
     // second argument provide namespace, so we when we render '@bazar/bazaraliste.twig'
