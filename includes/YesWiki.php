@@ -40,6 +40,7 @@ use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -1717,6 +1718,18 @@ class Wiki
         $wakkaConfig['templates'] = loadTemplates($metadata, $wakkaConfig);
 
         $this->config = array_merge($this->services->getParameterBag()->all(), $wakkaConfig);
+    }
+
+    /**
+     * Shortcut to be used in the old plain PHP Actions and Handlers (instead of using SquelettePhp class)
+     */
+    public function render($templatePath, $data)
+    {
+        try {
+            return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
+        } catch (\Exception $e) {
+            return '<div class="alert alert-danger">Erreur rendering $templatePath : '.  $e->getMessage(). '</div>'."\n";
+        }
     }
 
     /*
