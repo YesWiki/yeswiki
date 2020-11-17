@@ -38,11 +38,10 @@ class SquelettePhp
      */
     public function __construct($templateFile, $templateDir)
     {
-        $dirs = $GLOBALS['wiki']->config['template_directories'];
         $found = false;
         $paths = [];
         // Collecting path possibilities
-        foreach ($dirs as $dir) {
+        foreach (['custom/templates', 'templates', 'themes/tools'] as $dir) {
             // XXX/bazar/templates/my-template.tpl.html
             $paths[] = $dir.'/'.$templateDir.'/templates/'.$templateFile;
             // XXX/bazar/my-template.tpl.html

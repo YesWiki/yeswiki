@@ -216,12 +216,6 @@ class Init
             date_default_timezone_set($yeswikiDefaultConfig['timezone']);
         }
 
-        // Array of paths where to find templates (order is important)
-        $wakkaConfig['template_directories'] = isset($wakkaConfig['template_directories']) ?
-                                               $wakkaConfig['template_directories']
-                                               : ['custom/templates', 'templates', 'themes/tools'];
-
-
         // check for locking
         if (file_exists('locked')) {
             // read password from lockfile

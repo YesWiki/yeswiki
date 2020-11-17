@@ -41,7 +41,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Service\FicheManager;
-use YesWiki\Templates\Service\TemplatesEngine;
+use YesWiki\Core\Service\TemplateEngine;
 
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR
 .'formulaire.fonct.inc.php';
@@ -2510,78 +2510,29 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     // debut de la fiche
     $res .= '<div class="BAZ_cadre_fiche id' . $fichebazar['form']['bn_id_nature'].'">'."\n";
 
-    $custom_template = baz_get_custom_template($fichebazar['values'], $fichebazar['form']);
-    // si un template specifique pour un type de fiche existe
-    if ($custom_template) {
-        // // on genere un nom unique pour le cache
-        // $cacheid = $GLOBALS['wiki']->generateCacheId(
-        //     'bazar',
-        //     $custom_template,
-        //     strtotime($fichebazar['values']['date_maj_fiche']),
-        //     baz_get_custom_semantic_template($fichebazar['values'])
-        // );
+    $templateEngine = $GLOBALS['wiki']->services->get(TemplateEngine::class);
+    $customTemplateValues = getValuesForCustomTemplate($fichebazar, $idfiche);
+    $customTemplateFound = true;        
+    // Try rendering a custom template
+    try {
+        $custom_template = baz_get_custom_template($fichebazar['values']);
+        $res .= $templateEngine->render("custom/templates/bazar/$custom_template", $customTemplateValues);
+    } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
+        $customTemplateFound = false;
+    }
 
-        // if ($GLOBALS['wiki']->isTemplateCached($cacheid)) {
-        //     $fp = @fopen($cacheid, 'r');
-        //     $res .= fread($fp, filesize($cacheid));
-        //     fclose($fp);
-        // } else {
-        $html = $formtemplate = [];
-        for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
-            // Champ  acls  present
-            if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
-                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
-                if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
-                      function_exists($fichebazar['form']['template'][$i][0])) {
-                    if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
-                          $fichebazar['form']['template'][$i][0] == 'liste' ||
-                          $fichebazar['form']['template'][$i][0] ==
-                          'checkboxfiche' ||
-                          $fichebazar['form']['template'][$i][0] ==
-                          'listefiche') {
-                        $id =
-                          $fichebazar['form']['template'][$i][0].
-                          $fichebazar['form']['template'][$i][1].
-                          $fichebazar['form']['template'][$i][6];
-                    } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
-                        $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
-                    } else {
-                        $id = $fichebazar['form']['template'][$i][1];
-                    }
-                    $html[$id] = $fichebazar['form']['template'][$i][0](
-                        $formtemplate,
-                        $fichebazar['form']['template'][$i],
-                        'html',
-                        $fichebazar['values']
-                    );
-                    preg_match_all(
-                        '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
-                        $html[$id],
-                        $matches
-                    );
-                    if (isset($matches[1][0]) && $matches[1][0] != '') {
-                        $html[$id] = $matches[1][0];
-                    }
-                }
-            }
+    // if not found, try with semantic tmeplate
+    if (!$customTemplateFound) {
+        try {           
+            $custom_template = baz_get_custom_semantic_template($fichebazar['values']);
+            $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
+        } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
+            $customTemplateFound = false;
         }
-        try {
-            $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
-        } catch (\Exception $e) {
-            // Do nothing if semantic type is not available
-        }
-        $values['html'] = $html;
-        $values['fiche'] = $fichebazar['values'];
-        $values['form'] = $fichebazar['form'];
-        $res .= $GLOBALS['wiki']->services->get(TemplatesEngine::class)->render(
-            'bazar',
-            $custom_template,
-            $values,
-            strtotime($fichebazar['values']['date_maj_fiche']),
-            baz_get_custom_semantic_template($fichebazar['values'])
-        );
-    //}
-    } else {
+    }        
+    
+    // If not foud, use default templating
+    if (!$customTemplateFound) {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
@@ -4154,41 +4105,9 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
  * Retourne un fichier de template custom, s'il existe
  * Regarde d'abord dans themes/tools/bazar/templates, puis cherche dans les templates sémantiques
  */
-function baz_get_custom_template($fiche, $form)
+function baz_get_custom_template($fiche)
 {
-    $custom_templates = [
-        'custom/templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        // backward compatibility
-        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'custom/themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-    ];
-
-    // Recherche une template sémantique pour ce type d'objet
-    if (isset($form['bn_sem_use_template']) && $form['bn_sem_use_template']) {
-        $custom_semantic_template = baz_get_custom_semantic_template($fiche);
-        // Si une template sémantique existe
-        if ($custom_semantic_template) {
-            // L'ajoute en bas du tableau
-            array_push($custom_templates, 'tools/bazar/presentation/templates/' . $custom_semantic_template);
-        }
-    }
-
-    // Filtre les templates possibles pour ne retourner que celles qui existent
-    $existing_custom_templates = array_filter($custom_templates, function ($custom_template) {
-        return $custom_template && file_exists($custom_template);
-    });
-
-    // Si un template specifique pour un type de fiche existe
-    if (count($existing_custom_templates) > 0) {
-        // Retourne la première template disponible
-        $vals = array_values($existing_custom_templates);
-        return array_shift($vals);
-    } else {
-        return null;
-    }
+    return "fiche-{$fiche['id_typeannonce']}.tpl.html";
 }
 
 function baz_get_custom_semantic_template($fiche)
@@ -4228,4 +4147,57 @@ function baz_get_custom_semantic_template($fiche)
     }
 
     return null;
+}
+
+function getValuesForCustomTemplate($fichebazar, $idfiche) 
+{
+    $html = $formtemplate = [];
+    for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
+        // Champ  acls  present
+        if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
+                $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
+            if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
+                  function_exists($fichebazar['form']['template'][$i][0])) {
+                if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
+                      $fichebazar['form']['template'][$i][0] == 'liste' ||
+                      $fichebazar['form']['template'][$i][0] ==
+                      'checkboxfiche' ||
+                      $fichebazar['form']['template'][$i][0] ==
+                      'listefiche') {
+                    $id =
+                      $fichebazar['form']['template'][$i][0].
+                      $fichebazar['form']['template'][$i][1].
+                      $fichebazar['form']['template'][$i][6];
+                } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
+                    $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
+                } else {
+                    $id = $fichebazar['form']['template'][$i][1];
+                }
+                $html[$id] = $fichebazar['form']['template'][$i][0](
+                    $formtemplate,
+                    $fichebazar['form']['template'][$i],
+                    'html',
+                    $fichebazar['values']
+                );
+                preg_match_all(
+                    '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
+                    $html[$id],
+                    $matches
+                );
+                if (isset($matches[1][0]) && $matches[1][0] != '') {
+                    $html[$id] = $matches[1][0];
+                }
+            }
+        }
+    } 
+    try {
+        $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
+    } catch (\Exception $e) {
+        // Do nothing if semantic type is not available
+    }   
+
+    $values['html'] = $html;
+    $values['fiche'] = $fichebazar['values'];
+    $values['form'] = $fichebazar['form'];
+    return $values;
 }
