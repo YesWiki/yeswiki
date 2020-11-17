@@ -938,9 +938,10 @@ function baz_afficher_formulaire_export()
                             foreach ($tabresult as $id) {
                                 $res_value = $values_liste["label"][$id] ;
                                 if (isset($res_value)) {
-                                    if (strpos($res_value,',') !== false && $tabindex[0] == 'checkbox') {
-                                        //  for checkbox if value contains ',' add '"' before and after
-                                        $res_value = '"' . $res_value . '"' ;
+                                    if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
+                                            && $tabindex[0] == 'checkbox') {
+                                        //  for checkbox if value contains ',' or begin with '"' add '"' before and after
+                                        $res_value = (strpos($res_value,'",') === false) ? '"' . $res_value . '"' : $id ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
