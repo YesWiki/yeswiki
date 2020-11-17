@@ -23,11 +23,11 @@ Available variables inside the template are
 
 ## Custom Javascript
 
-Puts your javascript code in `custom/javascripts/custom.js`
+All the javascript files in the `custom/javascripts/` directory are included.
 
 ## Custom Css
 
-Puts your Css code in `custom/styles/custom.css`
+All the css files in the `custom/styles/` directory are included.
 
 ## Custom Squelette
 
