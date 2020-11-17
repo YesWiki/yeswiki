@@ -152,6 +152,72 @@ function baz_afficher_liste_fiches_utilisateur()
     return $res;
 }
 
+/* function extractComaFromStringThenExplode
+ *
+ * search coma in blocks separated from " then explode by ","
+ * trim each elem
+ *
+ * @param $input_string string to use
+ * @return array containing strings
+ */
+ 
+function extractComaFromStringThenExplode($input_string)
+{
+    $temporary_string = trim($input_string) ;
+    $result = array() ;
+    // for loop to prevent infinite looping, instead of while
+    for ($i = 0 ; $i < strlen($input_string) ; $i++) {
+        if (empty($temporary_string)) {
+            break ;
+        }
+        $temporary_string = trim($temporary_string) ;
+        // remove coma if first
+        if (substr($temporary_string,0,1) == ',') {
+            if (strlen($temporary_string) == 1){
+                break ;
+            }
+            $temporary_string = substr($temporary_string,1) ;
+        }
+        if (substr($temporary_string,0,1) == '"'){
+            // empty string
+            if (strlen($temporary_string) == 1) {
+                break ;
+            }
+            // search next '",' as end caracter of name with coma
+            $search_result = strpos($temporary_string,'",',1) ;
+            if ($search_result !== false) {
+                // remove first '"' and last '",'
+                $result[] = substr($temporary_string,1,$search_result - 1) ;
+                $temporary_string = substr($temporary_string,$search_result + 2) ;
+            } else {
+                // search next ','
+                $search_result = strpos($temporary_string,',',1) ;
+                if ($search_result !== false) {
+                    // remove only last ','
+                    $result[] = substr($temporary_string,0,$search_result) ;
+                    $temporary_string = substr($temporary_string,$search_result + 1) ;
+                } else {
+                    $result[] = $temporary_string ;
+                    break ;
+                }
+            }
+        } else {
+            // search next ','
+            $search_result = strpos($temporary_string,',') ;
+            if ($search_result !== false) {
+                // remove only last ','
+                $result[] = substr($temporary_string,0,$search_result) ;
+                $temporary_string = substr($temporary_string,$search_result + 1) ;
+            } else {
+                $result[] = $temporary_string ;
+                break ;
+            }
+        }
+    }
+    $result = array_map('trim',$result);
+    return $result ;
+}
+
 /**
  * interface de choix des fiches a importer.
  */
@@ -290,20 +356,17 @@ function baz_afficher_formulaire_import()
                                             $geolocalisation = true;
                                         }
 
-                                        // recuperer les id pour les listes et checkbox plutot que leur labels
+                                        // recuperer les labels pour les listes et checkbox sinon, id ou index
                                         if (($type_champ[$c] == 'checkbox' ||
                                             $type_champ[$c] == 'liste'||
                                             $type_champ[$c] == 'radio') &&
                                             !empty($data[$c])) {
                                             if ($type_champ[$c] == 'liste' || $type_champ[$c] == 'radio') {
-                                                
-                                                //remove '"'
-                                                $data[$c] = trim($data[$c],'"') ;
-                                            
                                                 $idval = array_search(
                                                     $data[$c],
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
                                                 );
+                                                // le label n'est pas trouvé, vérifier si c'est un nombre ou une clé
                                                 if ((! $idval) && (is_numeric($data[$c]) || 
                                                         array_key_exists($data[$c],
                                                         $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']))) {
@@ -311,8 +374,7 @@ function baz_afficher_formulaire_import()
                                                 }
                                             } elseif ($type_champ[$c] ==
                                                 'checkbox') {
-                                                $tab_chkb = explode(',', $data[$c]);
-                                                $tab_chkb = array_map('trim', $tab_chkb);
+                                                $tab_chkb = extractComaFromStringThenExplode($data[$c]);
                                                 $k = strtolower($idliste_champ[$nom_champ[$c]]);
                                                 $refList = $alllists[$k]['label'];
                                                 $tab_id = array();
@@ -323,6 +385,7 @@ function baz_afficher_formulaire_import()
                                                         $tab_id[] = $value ;
                                                     } else {
                                                         $res = array_search($value, $refList);
+                                                        // le label n'est pas trouvé, vérifier si c'est une clé et l'utiliser
                                                         if ($res === false && array_key_exists($value, $refList)) {
                                                             $res = $value;
                                                         }
@@ -337,8 +400,7 @@ function baz_afficher_formulaire_import()
                                         // recuperer les id pour les listefiche et checkboxfiche plutot que leur bf_titre
                                         if (($type_champ[$c] == 'checkboxfiche' || $type_champ[$c] == 'listefiche') &&
                                             isset($data[$c]) && !empty($data[$c])) {
-                                            $tab_chkb = explode(',', $data[$c]);
-                                            $tab_chkb = array_map('trim', $tab_chkb);
+                                            $tab_chkb = extractComaFromStringThenExplode($data[$c]);
                                             $tab_id = array();
                                             $idfiche = str_replace($type_champ[$c], '', $nom_champ[$c]);
                                             if (!isset($allentries[$idfiche])) {
@@ -876,9 +938,9 @@ function baz_afficher_formulaire_export()
                             foreach ($tabresult as $id) {
                                 $res_value = $values_liste["label"][$id] ;
                                 if (isset($res_value)) {
-                                    if (strpos($res_value,',') !== false) {
-                                        // if contains ',' add '"' for liste and radio or give id for checkbox
-                                        $res_value = ($tabindex[0] == 'checkbox') ? $id : '"' .$res_value . '"' ;
+                                    if (strpos($res_value,',') !== false && $tabindex[0] == 'checkbox') {
+                                        //  for checkbox if value contains ',' add '"' before and after
+                                        $res_value = '"' . $res_value . '"' ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
@@ -897,9 +959,12 @@ function baz_afficher_formulaire_export()
                                 $val_fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($id);
                                 if (is_array($val_fiche)) {
                                     $res_value = $val_fiche['bf_titre'] ;
-                                    if (strpos($res_value,',') !== false) {
-                                        // to manage name with coma, gives id
-                                        $res_value =  $id  ;
+                                    if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
+                                            && $tabindex[0] == 'checkboxfiche') {
+                                        //  for checkboxfiches if title contains ',' or begin with "
+                                        //  add '"' before and after 
+                                        //  except if '",' for compatibility for import
+                                        $res_value = (strpos($res_value,'",') === false) ? '"' . $res_value . '"' : $id ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
