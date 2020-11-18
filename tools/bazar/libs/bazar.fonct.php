@@ -40,6 +40,7 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
+use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Templates\Service\TemplatesEngine;
 
@@ -1275,9 +1276,13 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         }
         $data['content'] = '';
         $formtemplate = '';
-        for ($i = 0; $i < count($tableau); ++$i) {
+        for ($i = 0; $i < count($form['prepared']); ++$i) {
             // Render each field
-            $data['content'] .= $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
+            if( $form['prepared'][$i] instanceof BazarField ) {
+                $data['content'] .= $form['prepared'][$i]->showInput($valeurs);
+            } else {
+                $data['content'] .= $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
+            }
         }
         $data['idtypeannonce'] = $form['bn_id_nature'];
 
