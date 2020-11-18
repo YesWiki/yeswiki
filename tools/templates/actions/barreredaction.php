@@ -68,12 +68,6 @@ if ($this->HasAccess("write")) {
     //$barreredactionelements['linkdiaporama'] = $this->href("diaporama", $page);
     $barreredactionelements['linkshare'] = $this->href("share", $page);
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($template, 'templates');
-        echo $squel->render($barreredactionelements);
-    } catch (Exception $e) {
-        echo '<div class="alert alert-danger">Erreur action {{barreredaction ..}} : ',  $e->getMessage(), '</div>'."\n";
-    }
+    echo $this->render("@templates/$template", $barreredactionelements);
     echo ' <!-- /.footer -->'."\n";
 }

@@ -42,7 +42,7 @@
 
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\FicheManager;
-use YesWiki\Templates\Service\TemplatesEngine;
+use YesWiki\Core\Service\TemplateEngine;
 
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR
 .'formulaire.fonct.inc.php';
@@ -1299,14 +1299,8 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         }
     }
 
-    //Affichage a l'ecran
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('form_edit_entry.tpl.html', 'bazar');
-        $res .=  $squel->render($data);
-    } catch (Exception $e) {
-        $res .= '<div class="alert alert-danger">Erreur form edit fiche : '.$e->getMessage().'</div>'."\n";
-    }
+    // Affichage a l'ecran
+    $res .= $GLOBALS['wiki']->render("@bazar/form_edit_entry.tpl.html", $data);
     return $res;
 }
 
@@ -1541,13 +1535,7 @@ function baz_formulaire_des_formulaires($mode, $form = '')
     // champs du formulaire
     $data['idformulaire'] = isset($_GET['idformulaire']) ? $_GET['idformulaire'] : '';
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('form_edit_form.tpl.html', 'bazar');
-        return $squel->render($data);
-    } catch (Exception $e) {
-        return '<div class="alert alert-danger">Erreur form edit form : '.$e->getMessage().'</div>'."\n";
-    }
+    return $GLOBALS['wiki']->render("@bazar/form_edit_form.tpl.html", $data);
 }
 
 /** baz_formulaire_des_listes() retourne le formulaire de saisie des listes
@@ -1586,13 +1574,7 @@ function baz_formulaire_des_listes($mode, $valeursliste = '')
     $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
 
     // affichage du template du formulaire
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('lists_edit.tpl.html', 'bazar');
-        return $squel->render($tab_formulaire);
-    } catch (Exception $e) {
-        return '<div class="alert alert-danger">Erreur form edit listes : '.$e->getMessage().'</div>'."\n";
-    }
+    return $GLOBALS['wiki']->render("@bazar/lists_edit.tpl.html", $tab_formulaire);
 }
 
 function multiArraySearch($array, $key, $value)
@@ -1766,13 +1748,7 @@ function baz_gestion_formulaire()
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_forms.js');
 
-        include_once 'includes/squelettephp.class.php';
-        try {
-            $squel = new SquelettePhp('forms_table.tpl.html', 'bazar');
-            $res .=  $squel->render($tab_forms);
-        } catch (Exception $e) {
-            $res .= '<div class="alert alert-danger">Erreur tableau des formulaires  : '.$e->getMessage().'</div>'."\n";
-        }
+        $res .= $GLOBALS['wiki']->render("@bazar/forms_table.tpl.html", $tab_forms);
     }
     return $res;
 }
@@ -1846,13 +1822,8 @@ function baz_gestion_listes()
         // on rajoute les bibliothèques js nécéssaires
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
 
-        include_once 'includes/squelettephp.class.php';
-        try {
-            $squel = new SquelettePhp('lists_table.tpl.html', 'bazar');
-            $res .=  $squel->render($tab_lists);
-        } catch (Exception $e) {
-            $res .= '<div class="alert alert-danger">Erreur table des listes : '.$e->getMessage().'</div>'."\n";
-        }
+        $res .= $GLOBALS['wiki']->render("@bazar/lists_table.tpl.html", $tab_lists);
+
     } elseif ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE) {
         // il y a une liste a modifier, recuperation des informations
         $valeursliste = baz_valeurs_liste($_GET['idliste']);
@@ -2259,78 +2230,29 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     // debut de la fiche
     $res .= '<div class="BAZ_cadre_fiche id' . $fichebazar['form']['bn_id_nature'].'">'."\n";
 
-    $custom_template = baz_get_custom_template($fichebazar['values'], $fichebazar['form']);
-    // si un template specifique pour un type de fiche existe
-    if ($custom_template) {
-        // // on genere un nom unique pour le cache
-        // $cacheid = $GLOBALS['wiki']->generateCacheId(
-        //     'bazar',
-        //     $custom_template,
-        //     strtotime($fichebazar['values']['date_maj_fiche']),
-        //     baz_get_custom_semantic_template($fichebazar['values'])
-        // );
+    $templateEngine = $GLOBALS['wiki']->services->get(TemplateEngine::class);
+    $customTemplateValues = getValuesForCustomTemplate($fichebazar, $idfiche);
+    $customTemplateFound = true;        
+    // Try rendering a custom template
+    try {
+        $custom_template = baz_get_custom_template($fichebazar['values']);
+        $res .= $templateEngine->render("custom/templates/bazar/$custom_template", $customTemplateValues);
+    } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
+        $customTemplateFound = false;
+    }
 
-        // if ($GLOBALS['wiki']->isTemplateCached($cacheid)) {
-        //     $fp = @fopen($cacheid, 'r');
-        //     $res .= fread($fp, filesize($cacheid));
-        //     fclose($fp);
-        // } else {
-        $html = $formtemplate = [];
-        for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
-            // Champ  acls  present
-            if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
-                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
-                if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
-                      function_exists($fichebazar['form']['template'][$i][0])) {
-                    if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
-                          $fichebazar['form']['template'][$i][0] == 'liste' ||
-                          $fichebazar['form']['template'][$i][0] ==
-                          'checkboxfiche' ||
-                          $fichebazar['form']['template'][$i][0] ==
-                          'listefiche') {
-                        $id =
-                          $fichebazar['form']['template'][$i][0].
-                          $fichebazar['form']['template'][$i][1].
-                          $fichebazar['form']['template'][$i][6];
-                    } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
-                        $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
-                    } else {
-                        $id = $fichebazar['form']['template'][$i][1];
-                    }
-                    $html[$id] = $fichebazar['form']['template'][$i][0](
-                        $formtemplate,
-                        $fichebazar['form']['template'][$i],
-                        'html',
-                        $fichebazar['values']
-                    );
-                    preg_match_all(
-                        '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
-                        $html[$id],
-                        $matches
-                    );
-                    if (isset($matches[1][0]) && $matches[1][0] != '') {
-                        $html[$id] = $matches[1][0];
-                    }
-                }
-            }
+    // if not found, try with semantic tmeplate
+    if (!$customTemplateFound) {
+        try {           
+            $custom_template = baz_get_custom_semantic_template($fichebazar['values']);
+            $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
+        } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
+            $customTemplateFound = false;
         }
-        try {
-            $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
-        } catch (\Exception $e) {
-            // Do nothing if semantic type is not available
-        }
-        $values['html'] = $html;
-        $values['fiche'] = $fichebazar['values'];
-        $values['form'] = $fichebazar['form'];
-        $res .= $GLOBALS['wiki']->services->get(TemplatesEngine::class)->render(
-            'bazar',
-            $custom_template,
-            $values,
-            strtotime($fichebazar['values']['date_maj_fiche']),
-            baz_get_custom_semantic_template($fichebazar['values'])
-        );
-    //}
-    } else {
+    }        
+    
+    // If not foud, use default templating
+    if (!$customTemplateFound) {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
                 $fichebazar['form']['template'][$i][11] != '') {
@@ -2659,13 +2581,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
 
     // affichage du formulaire
     $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">';
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('search_form.tpl.html', 'bazar');
-        $res .=  $squel->render($data);
-    } catch (Exception $e) {
-        $res .= '<div class="alert alert-danger">Erreur template search_form.tpl.html : '.$e->getMessage().'</div>'."\n";
-    }
+    $res .= $GLOBALS['wiki']->render("@bazar/search_form.tpl.html", $data);
 
     $fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
         'queries'=>$GLOBALS['params']['query'],
@@ -2905,15 +2821,10 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     $fiches['param'] = $params;
 
     // affichage des resultats
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($params['template'], 'bazar');
-        $output = '<div id="bazar-list-'.$params['nbbazarliste'].'"
+    $result = $GLOBALS['wiki']->render("@bazar/{$params['template']}", $fiches);
+    $output = '<div id="bazar-list-'.$params['nbbazarliste'].'"
                     class="bazar-list" data-template="' . $params['template'] . '">
-                        <div class="list">'.$squel->render($fiches).'</div></div>';
-    } catch (Exception $e) {
-        $output = '<div class="alert alert-danger">Erreur liste fiches : '.$e->getMessage().'</div>'."\n";
-    }
+                        <div class="list">'.$result.'</div></div>';
 
     // affichage spécifique pour facette
     if (count($facettevalue) > 0) {
@@ -3011,17 +2922,12 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             ++$i;
             $first = false;
         }
-        try {
-            $squel = new SquelettePhp($params['facettetemplate'], 'bazar');
-            $output = $squel->render([
-                'content' => $output,
-                'filters' => $facettableValues,
-                'nbfiches' => count($fiches['fiches']),
-                'params' => $params,
-            ]);
-        } catch (Exception $e) {
-            $output = '<div class="alert alert-danger">Erreur liste fiches template facette '.$params['facettetemplate'].' : '.$e->getMessage().'</div>'."\n";
-        }
+        $output = $GLOBALS['wiki']->render("@bazar/{$params['facettetemplate']}", [
+            'content' => $output,
+            'filters' => $facettableValues,
+            'nbfiches' => count($fiches['fiches']),
+            'params' => $params
+        ]);
     }
     // affiche les possibilités d'export
     if (!preg_match('/\/iframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
@@ -3865,41 +3771,9 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
  * Retourne un fichier de template custom, s'il existe
  * Regarde d'abord dans themes/tools/bazar/templates, puis cherche dans les templates sémantiques
  */
-function baz_get_custom_template($fiche, $form)
+function baz_get_custom_template($fiche)
 {
-    $custom_templates = [
-        'custom/templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        // backward compatibility
-        'custom/templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'templates/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'templates/bazar/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'custom/themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-        'themes/tools/bazar/templates/fiche-'.$fiche['id_typeannonce'].'.tpl.html',
-    ];
-
-    // Recherche une template sémantique pour ce type d'objet
-    if (isset($form['bn_sem_use_template']) && $form['bn_sem_use_template']) {
-        $custom_semantic_template = baz_get_custom_semantic_template($fiche);
-        // Si une template sémantique existe
-        if ($custom_semantic_template) {
-            // L'ajoute en bas du tableau
-            array_push($custom_templates, 'tools/bazar/presentation/templates/' . $custom_semantic_template);
-        }
-    }
-
-    // Filtre les templates possibles pour ne retourner que celles qui existent
-    $existing_custom_templates = array_filter($custom_templates, function ($custom_template) {
-        return $custom_template && file_exists($custom_template);
-    });
-
-    // Si un template specifique pour un type de fiche existe
-    if (count($existing_custom_templates) > 0) {
-        // Retourne la première template disponible
-        $vals = array_values($existing_custom_templates);
-        return array_shift($vals);
-    } else {
-        return null;
-    }
+    return "fiche-{$fiche['id_typeannonce']}.tpl.html";
 }
 
 function baz_get_custom_semantic_template($fiche)
@@ -3939,4 +3813,57 @@ function baz_get_custom_semantic_template($fiche)
     }
 
     return null;
+}
+
+function getValuesForCustomTemplate($fichebazar, $idfiche) 
+{
+    $html = $formtemplate = [];
+    for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
+        // Champ  acls  present
+        if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
+                $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
+            if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
+                  function_exists($fichebazar['form']['template'][$i][0])) {
+                if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
+                      $fichebazar['form']['template'][$i][0] == 'liste' ||
+                      $fichebazar['form']['template'][$i][0] ==
+                      'checkboxfiche' ||
+                      $fichebazar['form']['template'][$i][0] ==
+                      'listefiche') {
+                    $id =
+                      $fichebazar['form']['template'][$i][0].
+                      $fichebazar['form']['template'][$i][1].
+                      $fichebazar['form']['template'][$i][6];
+                } elseif ($fichebazar['form']['template'][$i][0] == 'fichier' or $fichebazar['form']['template'][$i][0] == 'image') {
+                    $id = $fichebazar['form']['template'][$i][0].$fichebazar['form']['template'][$i][1];
+                } else {
+                    $id = $fichebazar['form']['template'][$i][1];
+                }
+                $html[$id] = $fichebazar['form']['template'][$i][0](
+                    $formtemplate,
+                    $fichebazar['form']['template'][$i],
+                    'html',
+                    $fichebazar['values']
+                );
+                preg_match_all(
+                    '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
+                    $html[$id],
+                    $matches
+                );
+                if (isset($matches[1][0]) && $matches[1][0] != '') {
+                    $html[$id] = $matches[1][0];
+                }
+            }
+        }
+    } 
+    try {
+        $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
+    } catch (\Exception $e) {
+        // Do nothing if semantic type is not available
+    }   
+
+    $values['html'] = $html;
+    $values['fiche'] = $fichebazar['values'];
+    $values['form'] = $fichebazar['form'];
+    return $values;
 }

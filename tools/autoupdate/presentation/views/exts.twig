@@ -14,7 +14,7 @@
             <td>
                 <strong>{{ ext.name }}</strong>
                 <a class="small" href="{{ ext.documentation }}">
-                    ({{ AU_DOCUMENTATION_LINK }})
+                    ({{ _t('AU_DOCUMENTATION_LINK') }})
                 </a>
                 <br />
                 <small>{{ ext.description }}</small>
@@ -23,7 +23,7 @@
                 {% if ext.installed %}
                     {{ ext.localRelease }}
                 {% else %}
-                    {{ AU_ABSENT }}
+                    {{ _t('AU_ABSENT') }}
                 {% endif %}
             </td>
             <td>
@@ -33,9 +33,9 @@
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
                     <a  href="{{ baseUrl }}{{ ext.updateLink }}"
                         class="btn btn-xs btn-primary"
-                        title="{{ AU_UPDATE }}"
+                        title="{{ _t('AU_UPDATE') }}"
                     >
-                        {{ AU_UPDATE }}
+                        {{ _t('AU_UPDATE') }}
                     </a>
                 {% endif %}
 
@@ -45,18 +45,18 @@
                 {% if isAdmin and not ext.installed %}
                     <a  href="{{ baseUrl }}{{ ext.updateLink }}"
                         class="btn btn-xs btn-primary"
-                        title="{{ AU_INSTALL }}"
+                        title="{{ _t('AU_INSTALL') }}"
                     >
-                        {{ AU_INSTALL }}
+                        {{ _t('AU_INSTALL') }}
                     </a>
                 {% endif %}
 
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     <a  href="{{ baseUrl }}{{ ext.deleteLink }}"
                         class="btn btn-xs btn-danger"
-                        title="{{ AU_DELETE_EXT }}"
+                        title="{{ _t('AU_DELETE_EXT') }}"
                     >
-                        {{ AU_DELETE_EXT }}
+                        {{ _t('AU_DELETE_EXT') }}
                     </a>
                 {% endif %}
             </td>

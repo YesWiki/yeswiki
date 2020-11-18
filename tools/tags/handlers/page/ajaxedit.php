@@ -104,13 +104,8 @@ if (isset($_GET['jsonp_callback'])) {
                         $valcomment['commentaires'][0]['hasrighttomodifycomment'] = $this->HasAccess('write', $comment['tag']) || $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
                         $valcomment['commentaires'][0]['hasrighttodeletecomment'] = $this->UserIsOwner($comment['tag']) || $this->UserIsAdmin();
                         $valcomment['commentaires'][0]['replies'] = '';
-                        include_once 'includes/squelettephp.class.php';
-                        try {
-                            $squel = new SquelettePhp('comment_list.tpl.html', 'tags');
-                            $content = $squel->render($valcomment);
-                        } catch (Exception $e) {
-                            $content = '<div class="alert alert-danger">Erreur list comment : '.  $e->getMessage(). '</div>'."\n";
-                        }
+                        
+                        $content = $this->render("@tags/comment_list.tpl.html", $valcomment);
                         echo $_GET['jsonp_callback']."(".json_encode(array("html"=>utf8_encode($content))).")";
                     }
                     

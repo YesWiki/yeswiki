@@ -55,15 +55,7 @@ if (empty($pages)) {
         }
     }
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($template, 'tags');
-        $output .= $squel->render(
-            array('elements' => $element)
-        );
-    } catch (Exception $e) {
-        $output .= '<div class="alert alert-danger">Erreur action {{includepages ..}} : '.  $e->getMessage(). '</div>'."\n";
-    }
+    $output .= $this->render("@tags/$template", ['elements' => $element]);
 }
 
 if (empty($class)) {

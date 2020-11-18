@@ -215,19 +215,11 @@ if ($userLoggedIn) { // The one who runs the session is acting
 
     $name = htmlspecialchars(!empty($_POST['name']) ? $_POST['name'] : $this->user->getProperty('name'), ENT_COMPAT, YW_CHARSET);
     $email = htmlspecialchars(!empty($_POST['email']) ? $_POST['email'] : $this->user->getProperty('email'), ENT_COMPAT, YW_CHARSET);
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('user-signup-form.tpl.html', 'login');
-        $output = $squel->render(
-            array(
-                "link" => $this->href(),
-                "error" => !empty($error) ? $error : '',
-                "name" => $name,
-                "email" => $email
-            )
-        );
-    } catch (Exception $e) {
-        $output = '<div class="alert alert-danger">Erreur action {{usersettings ..}} : '.  $e->getMessage(). '</div>'."\n";
-    }
-    echo $output;
+    
+    echo $this->render("@login/user-signup-form.tpl.html", [
+        "link" => $this->href(),
+        "error" => !empty($error) ? $error : '',
+        "name" => $name,
+        "email" => $email
+    ]);
 }  // End of neither logged in user nor admin trying to do something?>

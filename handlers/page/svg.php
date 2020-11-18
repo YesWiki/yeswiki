@@ -18,7 +18,7 @@ if (isset($_GET['svg'])) {
     $svg = "reseaupagecourante";
 }
 if (preg_match("/^[a-z0-9]*$/", $svg)) {
-    $url = $this->config["handler_path"]."/page/svg/".$svg.".php";
+    $url = "handlers/page/svg/".$svg.".php";
     if (is_file($url)) {
         include($url);
     }

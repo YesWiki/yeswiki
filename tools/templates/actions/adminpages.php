@@ -9,19 +9,7 @@ if ($this->UserIsAdmin()) {
            'ORDER BY tag';
     $pages = $this->LoadAll($sql);
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('pages_table.tpl.html', 'templates');
-        $output = $squel->render(
-            array(
-                'pages' => $pages
-            )
-        );
-    } catch (Exception $e) {
-        $output = '<div class="alert alert-danger">Erreur action {{adminpages ..}} : '.  $e->getMessage(). '</div>'."\n";
-    }
-
-    echo $output;
+    echo $this->render("@templates/pages_table.tpl.html", ['pages' => $pages]);
 } else {
     echo '<div class="alert alert-danger">'.
          '    <strong>Action {{adminpages}}</strong> : '._t('TEMPLATE_ACTION_FOR_ADMINS_ONLY').

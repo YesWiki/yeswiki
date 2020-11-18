@@ -25,7 +25,6 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 // fonctions a inclure
-include_once('includes/squelettephp.class.php');
 include_once 'tools/tags/libs/tags.functions.php';
 
 $tagsManager = $this->services->get(TagsManager::class);
@@ -94,13 +93,7 @@ if ($resultat) {
             $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">'.$tag['value'].'</span>&nbsp;';
         }
     }
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($template, 'tags');
-        $text .=  $squel->render(array('elements' => $element));
-    } catch (Exception $e) {
-        $text .=  '<div class="alert alert-danger">Erreur action {{login (oauth) ..}} : '.  $e->getMessage(). '</div>'."\n";
-    }
+    $text .= $this->render("@tags/$template", ['elements' => $element]);
 } else {
     $nb_total = 0;
 }

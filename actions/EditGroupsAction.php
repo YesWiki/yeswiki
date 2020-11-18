@@ -17,13 +17,12 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-if (!defined("WIKINI_VERSION")) {
-    die("accés direct interdit");
-}
 
-class ActionEditgroups extends WikiniAdminAction
+use YesWiki\Core\YesWikiAction;
+
+class EditGroupsAction extends YesWikiAction
 {
-    public function PerformAction($args, $command)
+    public function run($args)
     {
         // Form definition
         $wiki = &$this->wiki;
