@@ -120,7 +120,7 @@ if ( count($fiches)>0 ) : ?>
               <a href="<?php echo $GLOBALS['wiki']->href('edit', $fiche['id_fiche']); ?>" class="fa fa-fw fa-pencil-square-o"></a>
               <?php endif; ?>
               <?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
-              <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>" class="fa fa-fw fa-trash btn-delete-page-confirm"></a>
+              <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $fiche['id_fiche']); ?>" class="fa fa-fw fa-trash modalbox"></a>
               <?php endif; ?>
             </div>
           </div>

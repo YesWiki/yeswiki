@@ -2666,7 +2666,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         // lien supprimer la fiche
         if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
             $fichebazar['infos'] .=
-            ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
+            ' <a class="btn btn-xs btn-mini btn-danger modalbox" href="'
             . $GLOBALS['wiki']->href('deletepage', $idfiche, 'incomingurl='
                 . urlencode($GLOBALS['wiki']->getAbsoluteUrl()))
             . '" data-confirm-text="'
