@@ -2,8 +2,12 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Psr\Container\ContainerInterface;
+
 abstract class BazarField
 {
+    protected $services;
+
     protected $id;
     protected $recordId; // How the field is identified in the Bazar record
     protected $type;
@@ -31,8 +35,10 @@ abstract class BazarField
     protected const FIELD_SEMANTIC = 14;
     protected const FIELD_QUERIES = 15;
 
-    public function __construct(array $values)
+    public function __construct(array $values, ContainerInterface $services)
     {
+        $this->services = $services;
+
         // champs obligatoire
         if ($values[self::FIELD_REQUIRED]==1) {
             $this->required = true;
@@ -55,6 +61,11 @@ abstract class BazarField
 
         // texte d'aide
         $this->helper = $values[self::FIELD_HELP];
+    }
+
+    public function getService($class)
+    {
+        return $this->services->get($class);
     }
 
     abstract public function showInput($record);

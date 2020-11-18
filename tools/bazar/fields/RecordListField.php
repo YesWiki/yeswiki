@@ -2,11 +2,14 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Service\FicheManager;
+
 abstract class RecordListField extends BazarField
 {
-    public function __construct(array $values)
+    public function __construct(array $values, ContainerInterface $services)
     {
-        parent::__construct($values);
+        parent::__construct($values, $services);
 
         $this->recordId = $values[self::FIELD_TYPE] . $values[self::FIELD_ID] . $values[6];
 
@@ -25,7 +28,7 @@ abstract class RecordListField extends BazarField
         }
         $hash = md5($values[self::FIELD_ID] . serialize($tabquery));
         if (!isset($result[$hash])) {
-            $result[$hash] = $this->ficheManager->search([
+            $result[$hash] = $services->get(FicheManager::class)->search([
                 'queries' => $tabquery,
                 'formsIds' => $values[self::FIELD_ID],
                 'keywords' => (!empty($values[self::FIELD_KEYWORDS])) ? $values[self::FIELD_KEYWORDS] : ''

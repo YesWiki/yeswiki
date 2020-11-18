@@ -2,11 +2,13 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Psr\Container\ContainerInterface;
+
 class RadioField extends ListField
 {
-    public function __construct(array $values)
+    public function __construct(array $values, ContainerInterface $services)
     {
-        parent::__construct($values);
+        parent::__construct($values, $services);
 
         $this->type = 'radio';
     }

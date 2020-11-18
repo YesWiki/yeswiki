@@ -2,11 +2,13 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Psr\Container\ContainerInterface;
+
 abstract class ListField extends BazarField
 {
-    public function __construct(array $values)
+    public function __construct(array $values, ContainerInterface $services)
     {
-        parent::__construct($values);
+        parent::__construct($values, $services);
 
         $this->recordId = $values[self::FIELD_TYPE] . $values[self::FIELD_ID] . $values[6];
 
