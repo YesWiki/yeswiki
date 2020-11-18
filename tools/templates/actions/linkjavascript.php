@@ -53,7 +53,7 @@ if (!$bootstrapjs) {
 // on trie les javascripts du theme par ordre alphabéthique et on les insere
 if (isset($scripts) && is_array($scripts)) {
     asort($scripts);
-    foreach ($scripts as $key => $val) {
+    foreach ($scripts as $val) {
         $this->addJavascriptFile($val);
     }
 }
@@ -63,8 +63,13 @@ if (!$yeswikijs) {
     $this->addJavascriptFile('tools/templates/libs/yeswiki-base.js');
 }
 
-if (file_exists('custom/javascripts/custom.js')) {
-    $this->addJavascriptFile('custom/javascripts/custom.js');
+// add javascript files which are included in the custom javascript directory
+$customJsPath = 'custom/javascripts';
+$customJsDir = is_dir($customJsPath) ? opendir($customJsPath) : false;
+while ($customJsDir && ($file = readdir($customJsDir)) !== false) {
+    if (substr($file, -3, 3) == '.js') {
+        $this->addJavascriptFile($customJsPath . '/' . $file);
+    }
 }
 
 // si quelque chose est passée dans la variable globale pour le javascript, on l'intègre

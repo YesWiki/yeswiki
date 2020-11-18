@@ -57,8 +57,13 @@ if ($pageCss && !empty($pageCss['body'])) {
     $styles .= '  <link rel="stylesheet" href="' . $this->href('css', 'PageCss') .'" />'."\n";
 }
 
-if (file_exists('custom/styles/custom.css')) {
-    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/custom/styles/custom.css" />' . "\n";
+// add css files which are included in the custom styles directory
+$customCssPath = 'custom/styles';
+$customCssDir = is_dir($customCssPath) ? opendir($customCssPath) : false;
+while ($customCssDir && ($file = readdir($customCssDir)) !== false) {
+    if (substr($file, -4, 4) == '.css') {
+        $styles .= '  <link rel="stylesheet" href="' . $this->getBaseUrl() . '/' . $customCssPath . '/' . $file .'" />' . "\n";
+    }
 }
 
 // on ajoute aux css le background personnalise
