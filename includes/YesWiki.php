@@ -24,7 +24,6 @@ require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
-require_once 'includes/Api.class.php';
 require_once 'includes/Session.class.php';
 require_once 'includes/User.class.php';
 require_once 'includes/YesWikiPerformable.php';
@@ -34,8 +33,7 @@ require_once 'includes/objects/YesWikiFormatter.php';
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use YesWiki\Bazar\Service\FicheManager;
-use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
@@ -55,7 +53,6 @@ class Wiki
     public $CookiePath = '/';
     public $inclusions = array();
     public $extensions = array();
-    public $api;
     public $session;
     public $user;
     public $services;
@@ -88,7 +85,6 @@ class Wiki
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 
-        $this->api = new \YesWiki\Api($this);
         $this->session = new \YesWiki\Session($this);
         $this->user = new \YesWiki\User($this);
     }
@@ -1466,31 +1462,8 @@ class Wiki
             $this->SetUser($user, $_COOKIE['remember']);
         }
 
-        if ($tag == 'api') {
-            if ($this->api->isAuthorized()) {
-                $func = $this->method;
-                if (function_exists($func)) {
-                    echo $func($GLOBALS['api_args']);
-                } else {
-                    echo $this->Header();
-                    echo $this->api->documentationYesWiki();
-                    $extensions = array_keys($this->extensions);
-                    foreach ($extensions as $extension) {
-                        $func = 'documentation'.ucfirst(strtolower($extension));
-                        if (function_exists($func)) {
-                            echo $func();
-                        }
-                    }
-                    echo $this->Footer();
-                }
-            } else {
-                http_response_code(401);
-                header("Access-Control-Allow-Origin: * ");
-                header("Content-Type: application/json; charset=UTF-8");
-                echo json_encode(array("message" => "You are not allowed to use this api, check your api key."));
-            }
-            //TODO : add jwt token auth cf. https://github.com/tecnom1k3/sp-simple-jwt/blob/master/public/login.php
-            exit();
+        if ($tag === 'api') {
+            $this->services->get(ApiService::class)->process($GLOBALS['api_args']);
         }
 
         $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));

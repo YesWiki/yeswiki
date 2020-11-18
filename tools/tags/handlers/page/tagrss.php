@@ -19,14 +19,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-use YesWiki\Tags\Service\TagsManager;
-
+// Vérification de sécurité
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
-
-$tagsManager = $this->services->get(TagsManager::class);
-
 $oldpagetag = $this->GetPageTag();
 $oldpage = $this->LoadPage($oldpagetag);
 $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
@@ -42,7 +38,7 @@ if (!empty($tags)) {
     //texte utilisé pour la description du flux RSS
     $textetitre.= ', contenant les tags ' . $tags;
     
-    $results = $tagsManager->getPagesByTags($tags, $type, 20, 'date');
+    $results = $this->PageList($tags, $type, 20, 'date');
     if ($results) {
         header('Content-type: text/xml; charset=UTF-8');
         $output = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -73,14 +69,7 @@ if (!empty($tags)) {
             //on enleve les actions recentchangesrssplus pour eviter les boucles infinies
             $page["body"] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page["body"]);
             $page["body"] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page["body"]);
-            if (strstr($page["body"], "bf_titre")) {
-                $tab_valeurs = json_decode($page["body"], true);
-                $tab_valeurs = _convert($tab_valeurs, 'UTF-8');
-                $page["body"] = '""' . baz_voir_fiche(0, $tab_valeurs) . '""';
-            } else {
-                $page["body"] = _convert($page["body"], 'ISO-8859-1');
-            }
-            $texteformat = htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET);
+            $texteformat = $this->Format($page['body'], 'wakka', $page['tag']);
             
             $items.= $texteformat . "]]></description>\r\n";
             $items.= "<dc:creator>by ".htmlspecialchars($page["user"], ENT_COMPAT, YW_CHARSET).

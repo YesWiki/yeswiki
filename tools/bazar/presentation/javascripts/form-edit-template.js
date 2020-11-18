@@ -13,89 +13,118 @@ for (var i = 0; i < textFields.length; i++) {
   var fieldValues = textField.split("***");
   if (fieldValues.length > 1) {
     var wikiType = fieldValues[0];
-    if (['checkboxfiche', 'checkbox', 'liste', 'radio', 'listefiche', 'radiofiche'].indexOf(wikiType) > -1 && fieldValues[1] && !(fieldValues[1] in formAndListIds)) {
+    if (
+      [
+        "checkboxfiche",
+        "checkbox",
+        "liste",
+        "radio",
+        "listefiche",
+        "radiofiche",
+      ].indexOf(wikiType) > -1 &&
+      fieldValues[1] &&
+      !(fieldValues[1] in formAndListIds)
+    ) {
       listAndFormUserValues[fieldValues[1]] = fieldValues[1];
     }
   }
 }
 // Custom fields to add to form builder
 var fields = [
+  // {
+  //   label: "Sélecteur de date",
+  //   name: "jour",
+  //   attrs: { type: "date" },
+  //   icon: '<i class="far fa-calendar-alt"></i>',
+  // },
   {
-    label: "Texte, Nombre, Couleur, Url",
+    label: "Texte court",
     name: "text",
-    attrs: { type: "text" }
+    attrs: { type: "text" },
+    icon:
+      '<svg height="512pt" viewBox="0 -90 512 512" width="512pt" xmlns="http://www.w3.org/2000/svg"><path d="m452 0h-392c-33.085938 0-60 26.914062-60 60v212c0 33.085938 26.914062 60 60 60h392c33.085938 0 60-26.914062 60-60v-212c0-33.085938-26.914062-60-60-60zm20 272c0 11.027344-8.972656 20-20 20h-392c-11.027344 0-20-8.972656-20-20v-212c0-11.027344 8.972656-20 20-20h392c11.027344 0 20 8.972656 20 20zm-295-151v131h-40v-131h-57v-40h152v40zm40 91h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm0 0"/></svg>',
   },
   {
-    label: "Carte Geolocalisation",
+    label: "Géolocalisation sur une carte",
     name: "carte_google",
     attrs: { type: "carte_google" },
-    icon: "🌎"
+    icon: '<i class="fas fa-map-marked-alt"></i>',
   },
-  { label: "Image", name: "image", attrs: { type: "image" }, icon: "🖼" },
+  {
+    label: "Image",
+    name: "image",
+    attrs: { type: "image" },
+    icon: '<i class="fas fa-image"></i>',
+  },
   {
     label: "Email",
     name: "champs_mail",
     attrs: { type: "champs_mail" },
-    icon: "✉️"
+    icon: '<i class="fas fa-envelope"></i>',
   },
-  { label: "Tags", name: "tags", attrs: { type: "tags" }, icon: "🏷" },
+  {
+    label: "Mots clés",
+    name: "tags",
+    attrs: { type: "tags" },
+    icon: '<i class="fas fa-tags"></i>',
+  },
   {
     label: "Inscription Liste Diffusion",
     name: "inscriptionliste",
     attrs: { type: "inscriptionliste" },
-    icon: "📫"
+    icon: '<i class="fas fa-mail-bulk"></i>',
   },
   {
     label: "Custom HTML",
     name: "labelhtml",
     attrs: { type: "labelhtml" },
-    icon: "📜"
+    icon: '<i class="fas fa-code"></i>',
   },
   {
     label: "Config Droits d'accès",
     name: "acls",
     attrs: { type: "acls" },
-    icon: "🔒"
+    icon: '<i class="fas fa-user-lock"></i>',
   },
   {
     label: "Config Thème de la fiche",
     name: "metadatas",
     attrs: { type: "metadatas" },
-    icon: "🎨"
+    icon: '<i class="fas fa-palette"></i>',
   },
   {
     label: "Bookmarklet",
     name: "bookmarklet",
     attrs: { type: "bookmarklet" },
-    icon: "🗃"
+    icon: '<i class="fas fa-bookmark"></i>',
   },
   {
     label: "Liste des fiches liées",
     name: "listefichesliees",
     attrs: { type: "listefichesliees" },
-    icon: "🖇"
+    icon: '<i class="fas fa-th-list"></i>',
   },
   {
     label: "Créer un utilisateur lorsque la fiche est validée",
     name: "utilisateur_wikini",
     attrs: { type: "utilisateur_wikini" },
-    icon: "👤"
+    icon: '<i class="fas fa-user"></i>',
   },
   {
-    name: 'collaborative_doc',
+    name: "collaborative_doc",
     attrs: { type: "collaborative_doc" },
   },
   {
     label: "Titre Automatique",
-    name: 'titre',
+    name: "titre",
     attrs: { type: "titre" },
-    icon: "👤"
+    icon: '<i class="fas fa-heading"></i>',
   },
   {
     label: "Custom",
-    name: 'custom',
+    name: "custom",
     attrs: { type: "custom" },
-    icon: "👤"
+    icon: '<i class="fas fa-question-circle"></i>',
   },
 ];
 
@@ -104,99 +133,110 @@ var visibilityOptions = {
   " * ": "Tout le monde",
   " + ": "Utilisateurs identifiés",
   " % ": "Propriétaire de la fiche et admins",
-  "@admins": "Membre du groupe admin"
+  "@admins": "Membre du groupe admin",
 };
 var aclsOptions = {
   ...visibilityOptions,
   ...{
     user:
-      "Utilisateur (lorsqu'on créé un utilisateur en même temps que la fiche)"
-  }
+      "Utilisateur (lorsqu'on créé un utilisateur en même temps que la fiche)",
+  },
 };
 var readConf = { label: "Peut être lu par", options: visibilityOptions };
 var writeconf = { label: "Peut être saisi par", options: visibilityOptions };
 var searchableConf = {
   label: "Présence dans le moteur de recherche",
-  options: { "": "Non", "1": "Oui" }
+  options: { "": "Non", 1: "Oui" },
 };
 var semanticConf = {
   label: "Type sémantique du champ",
-  placeholder: "Exple: https://schema.org/name"
+  placeholder: "Ex: https://schema.org/name",
 };
 var selectConf = {
   subtype2: {
     label: "Origine des données",
     options: {
       list: "Une liste",
-      form: "Un Formulaire Bazar"
-    }
+      form: "Un Formulaire Bazar",
+    },
   },
   listeOrFormId: {
     label: "Choix de la liste/du formulaire",
-    options: { ...{ "": "" }, ...formAndListIds.lists, ...formAndListIds.forms, ...listAndFormUserValues }
+    options: {
+      ...{ "": "" },
+      ...formAndListIds.lists,
+      ...formAndListIds.forms,
+      ...listAndFormUserValues,
+    },
   },
-  listId: { label: "", options: { ...formAndListIds.lists, ...listAndFormUserValues } },
-  formId: { label: "", options: { ...formAndListIds.forms, ...listAndFormUserValues } },
+  listId: {
+    label: "",
+    options: { ...formAndListIds.lists, ...listAndFormUserValues },
+  },
+  formId: {
+    label: "",
+    options: { ...formAndListIds.forms, ...listAndFormUserValues },
+  },
   defaultValue: {
     label: "Valeur par défaut",
   },
   hint: { label: "Texte d'aide" },
   read: readConf,
   write: writeconf,
-  semantic: semanticConf
+  semantic: semanticConf,
   // searchable: searchableConf -> 10/19 Florian say that this conf is not working for now
 };
 
 // Attributes to be configured for each field
 var typeUserAttrs = {
   text: {
-    size: { label: "Nbre caractères visibles" },
-    maxlength: { label: "Longueur Max." },
+    size: { label: "Nb caractères visibles" },
+    maxlength: { label: "Longueur max" },
     hint: { label: "Texte d'aide" },
     separator: { label: "" }, // separate important attrs from others
     subtype: {
       label: "Type",
       options: {
         text: "Texte",
-        number: "Number",
+        number: "Nombre",
         range: "Slider",
-        url: "Url",
+        url: "Adresse url",
         password: "Mot de passe",
-        color: "Couleur"
-      }
+        color: "Couleur",
+      },
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   champs_mail: {
     hint: { label: "Texte d'aide" },
     separator: { label: "" }, // separate important attrs from others
     replace_email_by_button: {
       label: "Remplacer l'email par un bouton contact",
-      options: { "": "Non", form: "Oui" }
+      options: { "": "Non", form: "Oui" },
     },
     send_form_content_to_this_email: {
-      label: "Envoyer le contenu du formulaire à cet email",
-      options: { "1": "Oui", " ": "Non" }
+      label: "Envoyer le contenu de la fiche à cet email",
+      options: { 1: "Oui", " ": "Non" },
     },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   carte_google: {
     name_latitude: { label: "Nom champ latitude", value: "bf_latitude" },
-    name_longitude: { label: "Nom champ longitude", value: "bf_longitude" }
+    name_longitude: { label: "Nom champ longitude", value: "bf_longitude" },
   },
   date: {
     today_button: {
       label: "Initialiser à Aujourd'hui",
-      options: { " ": "Non", "today": "Oui" }
+      options: { " ": "Non", today: "Oui" },
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   image: {
     hint: { label: "Texte d'aide" },
@@ -208,20 +248,25 @@ var typeUserAttrs = {
     align: {
       label: "Alignement",
       value: "right",
-      options: { left: "Gauche", center: "Centre", right: "Droite" }
+      options: { left: "Gauche", center: "Centre", right: "Droite" },
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   select: selectConf,
-  "checkbox-group": { ...selectConf, ...{ fillingMode: {
-    label: "Mode de saisie",
-    options: {
-      "": "Normal",
-      tags: "En Tags"
-    }
-  }} },
+  "checkbox-group": {
+    ...selectConf,
+    ...{
+      fillingMode: {
+        label: "Mode de saisie",
+        options: {
+          "": "Normal",
+          tags: "En Tags",
+        },
+      },
+    },
+  },
   "radio-group": selectConf,
   textarea: {
     syntax: {
@@ -229,64 +274,64 @@ var typeUserAttrs = {
       options: {
         wiki: "Wiki",
         html: "Editeur Wysiwyg",
-        texte: "Html non interprété"
-      }
+        nohtml: "Html non interprété",
+      },
     },
     hint: { label: "Texte d'aide" },
     size: { label: "Largeur champ de saisie" },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   file: {
     maxsize: { label: "Taille max" },
-    hint: { label: "Texte d'aide" }, 
+    hint: { label: "Texte d'aide" },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   tags: {
     hint: { label: "Texte d'aide" },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   inscriptionliste: {
     subscription_email: { label: "Email pour s'inscrire" },
     email_field_id: {
       label: "Champ du formulaire fournissant l'email à inscire",
-      value: "bf_mail"
+      value: "bf_mail",
     },
     mailing_list_tool: {
       label: "Type de service de diffusion",
-      options: { "": "", ezmlm: "Ezmlm", sympa: "Sympa" }
-    }
+      options: { "": "", ezmlm: "Ezmlm", sympa: "Sympa" },
+    },
   },
   labelhtml: {
-    label: { value: "Custom HT" },
+    label: { value: "Custom HTML" },
     content_saisie: { label: "Contenu lors la saisie" },
-    content_display: { label: "Contenu lors de l'affichage d'une fiche" }
+    content_display: { label: "Contenu lors de l'affichage d'une fiche" },
   },
   utilisateur_wikini: {
     name_field: { label: "Champ pour le nom d'utilisateur", value: "bf_titre" },
     email_field: {
       label: "Champ pour l'email de l'utilisateur",
-      value: "bf_mail"
-    }
+      value: "bf_mail",
+    },
   },
   acls: {
     read: { label: "Peut voir la fiche", options: aclsOptions },
     write: { label: "Peut éditer la fiche", options: aclsOptions },
-    comment: { label: "Peut commenter la fiche", options: aclsOptions }
+    comment: { label: "Peut commenter la fiche", options: aclsOptions },
   },
   metadatas: {
     theme: {
       label: "Nom du thème",
-      placeholder: "margot, interface, colibris"
+      placeholder: "margot, interface, colibris",
     },
     squelette: { label: "Squelette", value: "1col.tpl.html" },
     style: { label: "Style", placeholder: "bootstrap.min.css..." },
-    image: { label: "Image de fond", placeholder: "foret.jpg..." }
+    image: { label: "Image de fond", placeholder: "foret.jpg..." },
   },
   bookmarklet: {},
   collaborative_doc: {},
@@ -295,66 +340,68 @@ var typeUserAttrs = {
     id: { label: "id du formulaire lié" },
     query: {
       label: "Query",
-      placeholder: "Voir doc sur https://yeswiki.net/?DocQuery/iframe"
+      placeholder: "Voir doc sur https://yeswiki.net/?DocQuery/iframe",
     },
     param: {
       label: "Params de l'action",
-      placeholder: 'Exple: champs="bf_nom" ordre="desc"'
+      placeholder: 'Ex: champs="bf_nom" ordre="desc"',
     },
     number: { label: "Nombre de fiches à ficher", placeholder: "" },
     template: {
       label: "Template de restitution",
       placeholder:
-        'Exple: template="liste_liens.tpl.html (par défault = accordéon)"'
+        'Exple: template="liste_liens.tpl.html (par défault = accordéon)"',
     },
     type_link: {
-      label: "Type de fiche liee",
+      label: "Type de fiche liée",
       placeholder:
-        "mettre checkbox ici si vos fiches liées le sont via un checkbox"
+        "mettre checkbox ici si vos fiches liées le sont via un checkbox",
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
+    semantic: semanticConf,
   },
   custom: {
-    param0: { label: "Param0"},
-    param1: { label: "Param1"},
-    param2: { label: "Param2"},
-    param3: { label: "Param3"},
-    param4: { label: "Param4"},
-    param5: { label: "Param5"},
-    param6: { label: "Param6"},
-    param7: { label: "Param7"},
-    param8: { label: "Param8"},
-    param9: { label: "Param9"},
-    param10: { label: "Param10"},
-    param11: { label: "Param11"},
-    param12: { label: "Param12"},
-    param13: { label: "Param13"},
-    param14: { label: "Param14"}
-  }
+    param0: { label: "Param0" },
+    param1: { label: "Param1" },
+    param2: { label: "Param2" },
+    param3: { label: "Param3" },
+    param4: { label: "Param4" },
+    param5: { label: "Param5" },
+    param6: { label: "Param6" },
+    param7: { label: "Param7" },
+    param8: { label: "Param8" },
+    param9: { label: "Param9" },
+    param10: { label: "Param10" },
+    param11: { label: "Param11" },
+    param12: { label: "Param12" },
+    param13: { label: "Param13" },
+    param14: { label: "Param14" },
+  },
 };
 
 // How a field is represented in the formBuilder view
 var templates = {
-  champs_mail: function(fieldData) {
-    return { field: `<div class="control-group form-group input text">
-    <label class="control-label col-sm-3">` + (fieldData.value || "") + `<span class="symbole_obligatoire"></span></label>
-    <div class="controls col-sm-9">
-      <input class="form-control input-xxlarge" id="` + fieldData.name + `" type="email" value="" />
-    </div>
-  </div>` };
-  },
-  carte_google: function(fieldDate) {
+  champs_mail: function (fieldData) {
     return {
       field:
-        "Geolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays"
+        '<div class="control-group form-group input text"><label class="control-label col-sm-3">' +
+        (fieldData.value || "") +
+        '<span class="symbole_obligatoire"></span></label><div class="controls col-sm-9"><input class="form-control input-xxlarge" id="' +
+        fieldData.name +
+        '" type="email" value="" /></div></div>',
     };
   },
-  image: function(fieldDate) {
+  carte_google: function (fieldDate) {
+    return {
+      field:
+        "Geolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays",
+    };
+  },
+  image: function (fieldDate) {
     return { field: '<input type="file"/>' };
   },
-  text: function(fieldData) {
+  text: function (fieldData) {
     var string = '<input type="' + fieldData.subtype + '"';
     if (fieldData.subtype == "url")
       string += 'placeholder="' + (fieldData.value || "") + '"/>';
@@ -366,53 +413,60 @@ var templates = {
         (fieldData.maxlength || "") +
         '"/>';
     else string += 'value="' + fieldData.value + '"/>';
-    return { field: `<div class="control-group form-group input text">
-    <label class="control-label col-sm-3">` + (fieldData.value || "") + `<span class="symbole_obligatoire"></span></label>
+    return {
+      field:
+        `<div class="control-group form-group input text">
+    <label class="control-label col-sm-3">` +
+        (fieldData.value || "") +
+        `<span class="symbole_obligatoire"></span></label>
     <div class="controls col-sm-9">
-      `+string+`
+      ` +
+        string +
+        `
     </div>
-  </div>` };
+  </div>`,
+    };
   },
-  tags: function(field) {
+  tags: function (field) {
     return { field: "<input/>" };
   },
-  inscriptionliste: function(field) {
+  inscriptionliste: function (field) {
     return { field: '<input type="checkbox"/>' };
   },
-  labelhtml: function(field) {
+  labelhtml: function (field) {
     return {
       field:
         "<xmp>" +
         (field.content_saisie || "") +
         "</xmp><xmp>" +
         (field.content_display || "") +
-        "</xmp>"
+        "</xmp>",
     };
   },
-  utilisateur_wikini: function(field) {
+  utilisateur_wikini: function (field) {
     return { field: "" };
   },
-  acls: function(field) {
+  acls: function (field) {
     return { field: "" };
   },
-  metadatas: function(field) {
+  metadatas: function (field) {
     return { field: "" };
   },
-  bookmarklet: function(field) {
+  bookmarklet: function (field) {
     return { field: "" };
   },
-  listefichesliees: function(field) {
+  listefichesliees: function (field) {
     return { field: "" };
   },
-  collaborative_doc: function(field) {
+  collaborative_doc: function (field) {
     return { field: "Document collaboratif" };
   },
-  titre: function(field) {
+  titre: function (field) {
     return { field: field.value };
   },
-  custom: function(field) {
+  custom: function (field) {
     return { field: "" };
-  }
+  },
 };
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax
@@ -430,23 +484,26 @@ var defaultMapping = {
   10: "hint",
   11: "read",
   12: "write",
-  14: "semantic"
+  14: "semantic",
 };
-var lists = { ...defaultMapping, ...{ 1: "listeOrFormId", 5: "defaultValue", 6: "name" } };
+var lists = {
+  ...defaultMapping,
+  ...{ 1: "listeOrFormId", 5: "defaultValue", 6: "name" },
+};
 var yesWikiMapping = {
   text: defaultMapping,
   number: defaultMapping,
   textarea: defaultMapping,
   champs_mail: {
     ...defaultMapping,
-    ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email" }
+    ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email" },
   },
   carte_google: {
     0: "type",
     1: "name_latitude",
     2: "name_longitude",
     3: "?",
-    4: "?"
+    4: "?",
   },
   date: { ...defaultMapping, ...{ 5: "today_button" } },
   image: {
@@ -457,8 +514,8 @@ var yesWikiMapping = {
       4: "thumb_width",
       5: "resize_height",
       6: "resize_width",
-      7: "align"
-    }
+      7: "align",
+    },
   },
   select: lists,
   "checkbox-group": { ...lists, ...{ 7: "fillingMode" } },
@@ -471,7 +528,7 @@ var yesWikiMapping = {
     1: "subscription_email",
     2: "label",
     3: "email_field_id",
-    4: "mailing_list_tool"
+    4: "mailing_list_tool",
   },
   labelhtml: { 0: "type", 1: "content_saisie", 2: "", 3: "content_display" },
   utilisateur_wikini: { 0: "type", 1: "name_field", 2: "email_field" },
@@ -487,7 +544,7 @@ var yesWikiMapping = {
     3: "param",
     4: "number",
     5: "template",
-    6: "type_link"
+    6: "type_link",
   },
   collaborative_doc: defaultMapping,
   custom: {
@@ -514,23 +571,21 @@ var yesWikiTypes = {
   mot_de_passe: { type: "text", subtype: "password" },
   // "nombre": { type: "text", subtype: "tel" },
   texte: { type: "text" }, // all other type text subtype (range, text, tel)
-  "textelong": { type: "textarea", subtype: "textarea"},
-  "listedatedeb": { type: "date"},
-  "listedatefin": { type: "date"},
-  "jour": { type: "date"},
-  "checkbox": { type: "checkbox-group", subtype2: "list"},
-  "liste": { type: "select", subtype2: "list"},
-  "radio": { type: "radio-group", subtype2: "list"},
-  "checkboxfiche": { type: "checkbox-group", subtype2: "form"},
-  "listefiche": { type: "select", subtype2: "form"},
-  "radiofiche": { type: "radio-group", subtype2: "form"},
-  "fichier": { type: "file", subtype: "file" },
-  "champs_cache": { type: "hidden" }
-
-}
+  textelong: { type: "textarea", subtype: "textarea" },
+  listedatedeb: { type: "date" },
+  listedatefin: { type: "date" },
+  jour: { type: "date" },
+  checkbox: { type: "checkbox-group", subtype2: "list" },
+  liste: { type: "select", subtype2: "list" },
+  radio: { type: "radio-group", subtype2: "list" },
+  checkboxfiche: { type: "checkbox-group", subtype2: "form" },
+  listefiche: { type: "select", subtype2: "form" },
+  radiofiche: { type: "radio-group", subtype2: "form" },
+  fichier: { type: "file", subtype: "file" },
+  champs_cache: { type: "hidden" },
+};
 
 function initializeFormbuilder(formAndListIds) {
-
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
     showActionButtons: false,
@@ -544,9 +599,9 @@ function initializeFormbuilder(formAndListIds) {
       "checkbox",
       "paragraph",
       "header",
-      "collaborative_doc"
+      "collaborative_doc",
     ],
-    controlOrder: ["text", "date", "image", "champs_mail", "tags"],
+    controlOrder: ["text", "textarea", "jour", "image", "file", "champs_mail", "tags"],
     disabledAttrs: [
       "access",
       "placeholder",
@@ -555,14 +610,14 @@ function initializeFormbuilder(formAndListIds) {
       "toggle",
       "description",
       "other",
-      "multiple"
+      "multiple",
     ],
-    typeUserAttrs: typeUserAttrs
+    typeUserAttrs: typeUserAttrs,
   });
 
   // Each 300ms update the text field converting form bulder content into wiki syntax
   var formBuilderInitialized = false;
-  setInterval(function() {
+  setInterval(function () {
     if (!formBuilder || !formBuilder.actions || !formBuilder.actions.setData)
       return;
     if (!formBuilderInitialized) {
@@ -572,7 +627,7 @@ function initializeFormbuilder(formAndListIds) {
     if ($formBuilderTextInput.is(":focus")) return;
     ensureFieldsNamesAreUnique();
 
-    if ($("#form-builder-container").is(':visible')) {
+    if ($("#form-builder-container").is(":visible")) {
       var formData = formBuilder.actions.getData();
       var wikiText = formatJsonDataIntoWikiText(formData);
       if (wikiText) $formBuilderTextInput.val(wikiText);
@@ -582,7 +637,7 @@ function initializeFormbuilder(formAndListIds) {
     // proper set of options
     $(".radio-group-field, .checkbox-group-field, .select-field")
       .find("select[name=subtype2]:not(.initialized)")
-      .change(function() {
+      .change(function () {
         $(this).addClass("initialized");
         var visibleSelect = $(this)
           .closest(".form-field")
@@ -593,7 +648,7 @@ function initializeFormbuilder(formAndListIds) {
           .closest(".form-field")
           .find("select[name=" + $(this).val() + "Id] option");
         visibleSelect.append(new Option("", "", false));
-        optionToAddToSelect.each(function() {
+        optionToAddToSelect.each(function () {
           var optionKey = $(this).attr("value");
           var optionLabel = $(this).text();
           var isSelected = optionKey == selectedValue;
@@ -605,18 +660,18 @@ function initializeFormbuilder(formAndListIds) {
 
     // For checkbox, select etc... the name should be blank by default
     // so we replace the generated value by blank
-    $('.radio-group-field .fld-name').each(function() {
-      if ($(this).val().includes('radio_group_')) $(this).val('');
-    })
-    $('.checkbox-group-field .fld-name').each(function() {
-      if ($(this).val().includes('checkbox_group_')) $(this).val('');
-    })
-    $('.select-field .fld-name').each(function() {
-      if ($(this).val().includes('select_')) $(this).val('');
-    })
+    $(".radio-group-field .fld-name").each(function () {
+      if ($(this).val().includes("radio_group_")) $(this).val("");
+    });
+    $(".checkbox-group-field .fld-name").each(function () {
+      if ($(this).val().includes("checkbox_group_")) $(this).val("");
+    });
+    $(".select-field .fld-name").each(function () {
+      if ($(this).val().includes("select_")) $(this).val("");
+    });
 
     $(".text-field select[name=subtype]:not(.initialized)")
-      .change(function() {
+      .change(function () {
         $(this).addClass("initialized");
         $parent = $(this).closest(".form-field");
         if ($(this).val() == "range" || $(this).val() == "number") {
@@ -635,7 +690,7 @@ function initializeFormbuilder(formAndListIds) {
       .trigger("change");
 
     // in semantic field, we want to separate value by coma
-    $(".fld-semantic").each(function() {
+    $(".fld-semantic").each(function () {
       var newVal = $(this)
         .val()
         .replace(/\s*,\s*/g, ",");
@@ -664,7 +719,7 @@ function initializeBuilderFromTextInput() {
 function ensureFieldsNamesAreUnique() {
   // get all input names (used after for uniqueness)
   var allNames = [];
-  $(".fld-name").each(function() {
+  $(".fld-name").each(function () {
     // Slugify
     var newValue = $(this)
       .val()
@@ -690,7 +745,8 @@ function formatJsonDataIntoWikiText(formData) {
     for (var type in yesWikiTypes)
       if (
         formElement.type == yesWikiTypes[type].type &&
-        (!formElement.subtype || !yesWikiTypes[type].subtype ||
+        (!formElement.subtype ||
+          !yesWikiTypes[type].subtype ||
           formElement.subtype == yesWikiTypes[type].subtype) &&
         (!formElement.subtype2 ||
           formElement.subtype2 == yesWikiTypes[type].subtype2)
@@ -733,9 +789,10 @@ function parseWikiTextIntoJsonData(text) {
     var fieldObject = {};
     if (fieldValues.length > 1) {
       var wikiType = fieldValues[0];
-      var fieldType = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : wikiType;
+      var fieldType =
+        wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : wikiType;
       // check that the fieldType really exists in our form builder
-      if (!(fieldType in yesWikiMapping)) fieldType = 'custom'
+      if (!(fieldType in yesWikiMapping)) fieldType = "custom";
 
       var mapping = yesWikiMapping[fieldType];
 
@@ -744,7 +801,7 @@ function parseWikiTextIntoJsonData(text) {
         wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype : "";
       fieldObject["subtype2"] =
         wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype2 : "";
-      var start = fieldType == 'custom' ? 0 : 1;
+      var start = fieldType == "custom" ? 0 : 1;
       for (var j = start; j < fieldValues.length; j++) {
         var value = fieldValues[j];
         var field = mapping && j in mapping ? mapping[j] : j;

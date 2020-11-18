@@ -152,6 +152,72 @@ function baz_afficher_liste_fiches_utilisateur()
     return $res;
 }
 
+/* function extractComaFromStringThenExplode
+ *
+ * search coma in blocks separated from " then explode by ","
+ * trim each elem
+ *
+ * @param $input_string string to use
+ * @return array containing strings
+ */
+ 
+function extractComaFromStringThenExplode($input_string)
+{
+    $temporary_string = trim($input_string) ;
+    $result = array() ;
+    // for loop to prevent infinite looping, instead of while
+    for ($i = 0 ; $i < strlen($input_string) ; $i++) {
+        if (empty($temporary_string)) {
+            break ;
+        }
+        $temporary_string = trim($temporary_string) ;
+        // remove coma if first
+        if (substr($temporary_string,0,1) == ',') {
+            if (strlen($temporary_string) == 1){
+                break ;
+            }
+            $temporary_string = substr($temporary_string,1) ;
+        }
+        if (substr($temporary_string,0,1) == '"'){
+            // empty string
+            if (strlen($temporary_string) == 1) {
+                break ;
+            }
+            // search next '",' as end caracter of name with coma
+            $search_result = strpos($temporary_string,'",',1) ;
+            if ($search_result !== false) {
+                // remove first '"' and last '",'
+                $result[] = substr($temporary_string,1,$search_result - 1) ;
+                $temporary_string = substr($temporary_string,$search_result + 2) ;
+            } else {
+                // search next ','
+                $search_result = strpos($temporary_string,',',1) ;
+                if ($search_result !== false) {
+                    // remove only last ','
+                    $result[] = substr($temporary_string,0,$search_result) ;
+                    $temporary_string = substr($temporary_string,$search_result + 1) ;
+                } else {
+                    $result[] = $temporary_string ;
+                    break ;
+                }
+            }
+        } else {
+            // search next ','
+            $search_result = strpos($temporary_string,',') ;
+            if ($search_result !== false) {
+                // remove only last ','
+                $result[] = substr($temporary_string,0,$search_result) ;
+                $temporary_string = substr($temporary_string,$search_result + 1) ;
+            } else {
+                $result[] = $temporary_string ;
+                break ;
+            }
+        }
+    }
+    $result = array_map('trim',$result);
+    return $result ;
+}
+
 /**
  * interface de choix des fiches a importer.
  */
@@ -290,23 +356,25 @@ function baz_afficher_formulaire_import()
                                             $geolocalisation = true;
                                         }
 
-                                        // recuperer les id pour les listes et checkbox plutot que leur labels
+                                        // recuperer les labels pour les listes et checkbox sinon, id ou index
                                         if (($type_champ[$c] == 'checkbox' ||
-                                            $type_champ[$c] == 'liste') &&
-                                            isset($data[$c]) &&
+                                            $type_champ[$c] == 'liste'||
+                                            $type_champ[$c] == 'radio') &&
                                             !empty($data[$c])) {
-                                            if ($type_champ[$c] == 'liste') {
+                                            if ($type_champ[$c] == 'liste' || $type_champ[$c] == 'radio') {
                                                 $idval = array_search(
                                                     $data[$c],
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
                                                 );
-                                                if ((! $idval) && (is_numeric($data[$c]))) {
+                                                // le label n'est pas trouvé, vérifier si c'est un nombre ou une clé
+                                                if ((! $idval) && (is_numeric($data[$c]) || 
+                                                        array_key_exists($data[$c],
+                                                        $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']))) {
                                                     $idval = $data[$c] ;
                                                 }
                                             } elseif ($type_champ[$c] ==
                                                 'checkbox') {
-                                                $tab_chkb = explode(',', $data[$c]);
-                                                $tab_chkb = array_map('trim', $tab_chkb);
+                                                $tab_chkb = extractComaFromStringThenExplode($data[$c]);
                                                 $k = strtolower($idliste_champ[$nom_champ[$c]]);
                                                 $refList = $alllists[$k]['label'];
                                                 $tab_id = array();
@@ -316,7 +384,12 @@ function baz_afficher_formulaire_import()
                                                     if (is_numeric($value)) {
                                                         $tab_id[] = $value ;
                                                     } else {
-                                                        $tab_id[] = array_search($value, $refList);
+                                                        $res = array_search($value, $refList);
+                                                        // le label n'est pas trouvé, vérifier si c'est une clé et l'utiliser
+                                                        if ($res === false && array_key_exists($value, $refList)) {
+                                                            $res = $value;
+                                                        }
+                                                        $tab_id[] = $res ;
                                                     }
                                                 }
                                                 $idval = implode(',', $tab_id);
@@ -327,8 +400,7 @@ function baz_afficher_formulaire_import()
                                         // recuperer les id pour les listefiche et checkboxfiche plutot que leur bf_titre
                                         if (($type_champ[$c] == 'checkboxfiche' || $type_champ[$c] == 'listefiche') &&
                                             isset($data[$c]) && !empty($data[$c])) {
-                                            $tab_chkb = explode(',', $data[$c]);
-                                            $tab_chkb = array_map('trim', $tab_chkb);
+                                            $tab_chkb = extractComaFromStringThenExplode($data[$c]);
                                             $tab_id = array();
                                             $idfiche = str_replace($type_champ[$c], '', $nom_champ[$c]);
                                             if (!isset($allentries[$idfiche])) {
@@ -344,6 +416,11 @@ function baz_afficher_formulaire_import()
                                                     $value,
                                                     $allentries[$id]
                                                 );
+                                                if ($idval === false && array_key_exists(
+                                                        $value,
+                                                        $allentries[$id])) {
+                                                    $idval = $value;
+                                                }
                                                 $tab_id[] = $idval;
                                             }
                                             $idval = implode(',', $tab_id);
@@ -605,11 +682,11 @@ function baz_afficher_formulaire_import()
                 $csv = '';
                 foreach ($tableau as $ligne) {
                     if ($ligne[0] != 'labelhtml') {
-                        if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' ||
+                        if ($ligne[0] == 'liste' || $ligne[0] == 'checkbox' || $ligne[0] == 'radio' ||
                             $ligne[0] == 'listefiche' || $ligne[0] ==
                             'checkboxfiche') {
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                         } elseif ($ligne[0] == 'carte_google') {
@@ -626,29 +703,29 @@ function baz_afficher_formulaire_import()
                         } elseif ($ligne[0] == 'titre') {
                             // Champ titre aggregeant plusieurs champs
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', 'Titre calculé').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', 'Titre calculé').((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                         } elseif ($ligne[0] == 'utilisateur_wikini') {
                             // utilisateur et mot de passe
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', 'NomWiki').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', 'NomWiki').((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', 'Mot de passe').((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', 'Mot de passe').((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                             ++$nb;
                         } elseif ($ligne[0] == 'inscriptionliste') {
                             // Nom de la liste et etat de l'abonnement
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', $ligne[1]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').'",',
+                                '"'.str_replace('"', '""', $ligne[1]).((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').'",',
                                 YW_CHARSET
                             );
                         } else {
                             $csv .= _convert(
-                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[9]) && $ligne[9] == 1) ? ' *': '').'",',
+                                '"'.str_replace('"', '""', $ligne[2]).((isset($ligne[8]) && $ligne[8] == 1) ? ' *': '').'",',
                                 YW_CHARSET
                             );
                         }
@@ -764,13 +841,13 @@ function baz_afficher_formulaire_export()
                     $tab_champs[] = $ligne[0].'|'.$ligne[1].'|'.
                     $ligne[6];
                     $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'image' || $ligne[0] == 'fichier') {
                     // image et fichiers
                     $tab_champs[] = $ligne[0].'|'.$ligne[1];
                     $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'carte_google') {
                     // cas de la carto
@@ -788,17 +865,17 @@ function baz_afficher_formulaire_export()
                     // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'bf_titre';
                     $csv .= '"'.str_replace('"', '""', 'Titre calculé')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'utilisateur_wikini') {
                     // Champ titre aggregeant plusieurs champs
                     $tab_champs[] = 'nomwiki';
                     $tab_champs[] = 'mot_de_passe_wikini';
                     $csv .= '"'.str_replace('"', '""', 'NomWiki')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                     $csv .= '"'.str_replace('"', '""', 'Mot de passe')
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } elseif ($ligne[0] == 'inscriptionliste') {
                     // Nom de la liste et etat de l'abonnement
@@ -806,12 +883,12 @@ function baz_afficher_formulaire_export()
                         '', ), $ligne[1]);
                     // nom de la liste
                     $csv .= '"'.str_replace('"', '""', $ligne[1])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 } else {
                     $tab_champs[] = $ligne[1];
                     $csv .= '"'.str_replace('"', '""', $ligne[2])
-                    .((isset($ligne[9]) && $ligne[9] == 1) ? ' *' : '').
+                    .((isset($ligne[8]) && $ligne[8] == 1) ? ' *' : '').
                     '",';
                 }
                 ++$nb;
@@ -849,23 +926,57 @@ function baz_afficher_formulaire_export()
                 if ($tabindex[0] == 'radio' || $tabindex[0] == 'liste' || $tabindex[0] == 'checkbox'
                     || $tabindex[0] == 'listefiche' || $tabindex[0] ==
                     'checkboxfiche') {
-                    // ???  FIXME ?
-                    $toto = 'dummy';
-                    $html = $tabindex[0](
-                        $toto,
-                        array(
-                            0 => $tabindex[0],
-                            1 => $tabindex[1],
-                            2 => '',
-                            6 => $tabindex[2],
-                        ),
-                        'html',
-                        array($index => isset($tficheab_valeurs[$index]) ?
-                            $fiche[$index] : '', )
-                    );
-                    $tabhtml = explode('</span>', $html);
-                    $fiche[$index] = isset($tabhtml[1]) ?
-                    html_entity_decode(trim(strip_tags($tabhtml[1]))) : '';
+                        
+                    // liste ou fiche
+                    if ($tabindex[0] == 'radio' || $tabindex[0] == 'liste' || $tabindex[0] == 'checkbox') {
+                        
+                        $values_liste = baz_valeurs_liste($tabindex[1]);
+
+                        $tabresult = isset($fiche[$index]) ? explode(',', $fiche[$index]) : null ;
+                        if (is_array($tabresult)) {
+                            $labels_result = '';
+                            foreach ($tabresult as $id) {
+                                $res_value = $values_liste["label"][$id] ;
+                                if (isset($res_value)) {
+                                    if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
+                                            && $tabindex[0] == 'checkbox') {
+                                        //  for checkbox if value contains ',' or begin with '"' add '"' before and after
+                                        $res_value = (strpos($res_value,'",') === false) ? '"' . $res_value . '"' : $id ;
+                                    }
+                                    if ($labels_result == '') {
+                                        $labels_result = $res_value;
+                                    } else {
+                                        $labels_result.= ', ' . $res_value;
+                                    }
+                                }
+                            }
+                            $fiche[$index] = $labels_result ;
+                        }
+                    } else {
+                        $tabresult = isset($fiche[$index]) ? explode(',', $fiche[$index]) : null ;
+                        if (is_array($tabresult)) {
+                            $labels_result = '';
+                            foreach ($tabresult as $id) {
+                                $val_fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($id);
+                                if (is_array($val_fiche)) {
+                                    $res_value = $val_fiche['bf_titre'] ;
+                                    if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
+                                            && $tabindex[0] == 'checkboxfiche') {
+                                        //  for checkboxfiches if title contains ',' or begin with "
+                                        //  add '"' before and after 
+                                        //  except if '",' for compatibility for import
+                                        $res_value = (strpos($res_value,'",') === false) ? '"' . $res_value . '"' : $id ;
+                                    }
+                                    if ($labels_result == '') {
+                                        $labels_result = $res_value;
+                                    } else {
+                                        $labels_result.= ', ' . $res_value;
+                                    }
+                                }
+                            }
+                            $fiche[$index] = $labels_result ;
+                        }
+                    }
                 }
 
                 // si la valeur existe, on l'affiche
@@ -901,7 +1012,7 @@ function baz_afficher_formulaire_export()
 
         //on cree le lien vers ce fichier
         $output .=
-        '<a href="#" onclick="downloadCSV($(\'.precsv\').text(), \'export-bazar-'.$id.'.csv\');return false;" class="btn btn-neutral link-csv-file">'.
+        '<a href="#" onclick="downloadCSV($(\'.precsv\').html(), \'export-bazar-'.$id.'.csv\');return false;" class="btn btn-neutral link-csv-file">'.
         '<i class="fa fa-download"></i>'.
         _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV').'</a>'."\n";
     } else {

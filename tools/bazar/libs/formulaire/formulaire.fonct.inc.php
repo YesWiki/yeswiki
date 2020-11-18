@@ -1723,16 +1723,17 @@ function acls(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         if ($comment == 'user' or $comment == '#') {
             $comment = $valeurs_fiche['nomwiki'];
         }
-        // hack pour que SavePage ne re-ecrit pas les droits avec les valeurs par défaut
-        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['body'] = $valeurs_fiche;
-        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['tag'] = $valeurs_fiche['id_fiche'];
-        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['owner'] = (isset($valeurs_fiche['nomwiki']) ? $valeurs_fiche['nomwiki'] : $valeurs_fiche['createur']);
-        $GLOBALS['wiki']->pageCache[$valeurs_fiche['id_fiche']]['comment_on'] = '';
-
+        
         // on sauve les acls
-        $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'read', $read);
-        $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'write', $write);
-        $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'comment', $comment);
+		if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'read', false)['list'])){
+            $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'read', $read);
+        }
+        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'write', false)['list'])){
+            $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'write', $write);
+        }
+        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'comment', false)['list'])){
+            $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'comment', $comment);
+        }
     }
 }
 

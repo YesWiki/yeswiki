@@ -94,69 +94,68 @@ class Init
         $args = explode('/', $uri[0]);
 
         if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
+            // If this is an API page, remember the full query string
             if ($args[0] == 'api') {
-                $tab = $this->initApi($args);
-                $this->page = $_GET['wiki'] = 'api';
-                $this->method = $tab['function'];
-                $GLOBALS['api_args'] = $tab['args'];
-            } else {
-                // if old school wiki url
-                if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
-                    // remove leading slash
-                    $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
-                } else {
-                    $a = explode('=', $args[0]);
-                    $wiki = urldecode($a[0]);
-                }
-                if (empty($wiki)) {
-                    // this will be redirected to install or to homepage later
-                } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
-                    // split into page/method, checking wiki name & method name (XSS proof)
-                    list(, $this->page, $this->method) = $matches;
-                } elseif (preg_match('`^' . WN_PAGE_TAG . '$`u', $wiki)) {
-                    // WikiPageName without method
-                    $this->page = $wiki;
-                    if (isset($args[1]) and !empty($args[1])) {
-                        // Security (quick hack) : Check method syntax
-                        if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
-                            $this->method = $args[1];
-                        }
-                    }
-                } else {
-                    // invalid WikiPageName
-                    echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                    exit();
-                }
-
-                if (!$this->method) {
-                    // We must manually parse the body data for the PUT or PATCH methods
-                    // See https://www.php.net/manual/fr/features.file-upload.put-method.php
-                    if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-                        $_POST = json_decode(file_get_contents('php://input'), true);
-                    }
-
-                    header('Access-Control-Allow-Origin: *');
-                    header('Access-Control-Allow-Credentials: true');
-                    header('Access-Control-Allow-Headers: X-Requested-With, Location, Link, Slug, Accept, Content-Type');
-                    header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
-                    header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
-                    header('Access-Control-Max-Age: 86400');
-
-                    switch ($_SERVER['REQUEST_METHOD']) {
-                        case 'DELETE':
-                            $this->method = 'api_delete';
-                            break;
-                        case 'PATCH':
-                            $this->method = 'api_patch';
-                            break;
-                        case 'PUT':
-                            $this->method = 'api_put';
-                            break;
-                    }
-                }
-
-                $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
+                $GLOBALS['api_args'] = $args;
+                array_shift($GLOBALS['api_args']);
             }
+
+            // if old school wiki url
+            if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
+                // remove leading slash
+                $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
+            } else {
+                $a = explode('=', $args[0]);
+                $wiki = urldecode($a[0]);
+            }
+            if (empty($wiki)) {
+                // this will be redirected to install or to homepage later
+            } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
+                // split into page/method, checking wiki name & method name (XSS proof)
+                list(, $this->page, $this->method) = $matches;
+            } elseif (preg_match('`^' . WN_PAGE_TAG . '$`u', $wiki)) {
+                // WikiPageName without method
+                $this->page = $wiki;
+                if (isset($args[1]) and !empty($args[1])) {
+                    // Security (quick hack) : Check method syntax
+                    if (preg_match('#^[A-Za-z0-9_]*$#', $args[1])) {
+                        $this->method = $args[1];
+                    }
+                }
+            } else {
+                // invalid WikiPageName
+                echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
+                exit();
+            }
+
+            if (!$this->method) {
+                // We must manually parse the body data for the PUT or PATCH methods
+                // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+                if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+                    $_POST = json_decode(file_get_contents('php://input'), true);
+                }
+
+                header('Access-Control-Allow-Origin: *');
+                header('Access-Control-Allow-Credentials: true');
+                header('Access-Control-Allow-Headers: X-Requested-With, Location, Link, Slug, Accept, Content-Type');
+                header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
+                header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
+                header('Access-Control-Max-Age: 86400');
+
+                switch ($_SERVER['REQUEST_METHOD']) {
+                    case 'DELETE':
+                        $this->method = 'api_delete';
+                        break;
+                    case 'PATCH':
+                        $this->method = 'api_patch';
+                        break;
+                    case 'PUT':
+                        $this->method = 'api_put';
+                        break;
+                }
+            }
+
+            $_GET['wiki'] = $this->page.($this->method ? '/'.$this->method : '');
         }
     }
 
@@ -335,43 +334,5 @@ class Init
             echo '<em>', _t("INVALID_ACTION"), '</em>';
         }
         include_once 'setup/footer.php';
-    }
-
-    /**
-     * Initialize the api's parameters
-     *
-     * @param array $args arguments passed by url
-     *
-     * @return void
-     */
-    public function initApi($args)
-    {
-        // call to YesWiki api
-        if (isset($args[1]) and !empty($args[1])) {
-            header('Access-Control-Allow-Origin: *');
-            header('Access-Control-Allow-Credentials: true');
-            header('Access-Control-Allow-Headers: X-Requested-With, Location, Slug, Accept, Content-Type');
-            header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
-            header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
-            header('Access-Control-Max-Age: 86400');
-
-            array_shift($args);
-            $apiFunctionName = strtolower($_SERVER['REQUEST_METHOD']).ucwords(strtolower($args[0]));
-            array_shift($args);
-
-            if (function_exists($apiFunctionName)) {
-
-                // We may need to parse the body manually
-                if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-                    $_POST = json_decode(file_get_contents('php://input'), true);
-                }
-
-                return array('function' => $apiFunctionName, 'args' => $args);
-            } else {
-                return array('function' => 'getApiDocumentation', 'args' => '');
-            }
-        } else {
-            return array('function' => 'getApiDocumentation', 'args' => '');
-        }
     }
 }
