@@ -88,7 +88,7 @@ abstract class BazarField
         return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
     }
 
-    abstract public function showInput($record);
+    abstract public function renderField($record);
 
-    abstract public function getHtml($record);
+    abstract public function renderInput($record);
 }
