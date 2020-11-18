@@ -139,7 +139,7 @@ class FormManager
 
         foreach ($form['template'] as $field) {
 
-            $classField = FieldFactory::create($field);
+            $classField = FieldFactory::create($field, $this->wiki->services);
 
             if( $classField ) {
                 $prepared[$i] = $classField;
