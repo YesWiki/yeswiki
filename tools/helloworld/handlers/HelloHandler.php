@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
+use YesWiki\Core\YesWikiHandler;
 
-class HelloHandler extends YesWikiAction 
+class HelloHandler extends YesWikiHandler
 {
     function run($arguments) 
     {
