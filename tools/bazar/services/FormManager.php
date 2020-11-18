@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Field\FieldFactory;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Wiki;
 
@@ -137,6 +138,14 @@ class FormManager
         $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
+
+            $classField = FieldFactory::create($field, $this->wiki->services);
+
+            if( $classField ) {
+                $prepared[$i] = $classField;
+                $i++;
+                continue;
+            }
 
             /*
              * DEFAULT VALUES

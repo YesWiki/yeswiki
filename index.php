@@ -38,12 +38,16 @@
 spl_autoload_register(function ($className) {
     $classNameArray = explode('\\', $className);
     // Autoload services
-    if (isset($classNameArray[2]) && $classNameArray[2] === 'Service') {
+    if (isset($classNameArray[2])) {
         if ($classNameArray[1] === 'Core') {
             require 'includes/services/' . $classNameArray[3] . '.php';
         } else {
             $extension = strtolower($classNameArray[1]);
-            require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
+            if( $classNameArray[2] === 'Service' ) {
+                require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
+            } elseif( $classNameArray[2] === 'Field' ) {
+                require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
+            }
         }
     }
 });
