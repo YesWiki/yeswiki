@@ -9,15 +9,18 @@ abstract class BazarField
 {
     protected $services;
 
-    protected $id;
-    protected $recordId; // How the field is identified in the Bazar record
-    protected $type;
-    protected $required;
-    protected $label;
-    protected $default;
+    protected $type;        // 0
+    protected $id;          // 1
+    protected $label;       // 2
+    protected $default;     // 5
+    protected $required;    // 8
+    protected $helper;      // 10
+    protected $readAccess;  // 11
+    protected $writeAccess; // 12
+
+    protected $recordId;    // How the field is identified in the Bazar record
     protected $attributes;
     protected $values;
-    protected $helper;
 
     protected const FIELD_TYPE = 0;
     protected const FIELD_ID = 1;
@@ -40,28 +43,29 @@ abstract class BazarField
     {
         $this->services = $services;
 
-        // champs obligatoire
-        if ($values[self::FIELD_REQUIRED]==1) {
-            $this->required = true;
-        } else {
-            $this->required = false;
-        }
-
         $this->id = $values[self::FIELD_ID];
-
-        // texte d'invitation à la saisie
+        $this->required = $values[self::FIELD_REQUIRED] == 1;
         $this->label = $values[self::FIELD_LABEL];
-
         $this->default = $values[self::FIELD_DEFAULT];
-
-        // attributs html du champs
-        $this->attributes = '';
-
-        // valeurs associées
-        $this->values = '';
-
-        // texte d'aide
+        $this->readAccess = $values[self::FIELD_READ_ACCESS];
+        $this->writeAccess = $values[self::FIELD_WRITE_ACCESS];
         $this->helper = $values[self::FIELD_HELP];
+
+        // TODO see if this need to be defined here
+        $this->attributes = '';
+        $this->values = '';
+    }
+
+    /*
+     * Return true if we are in edit mode and editing is not allowed
+     */
+    public function isInputHidden($entry)
+    {
+        $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
+
+        $isCreation = isset($entry['id_fiche']);
+
+        return !empty($writeAcl) && !$GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '')  ;
     }
 
     public function getService($class)

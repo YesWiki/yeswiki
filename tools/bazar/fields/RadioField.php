@@ -13,18 +13,20 @@ class RadioField extends ListField
         $this->type = 'radio';
     }
 
-    public function renderField($record)
+    public function renderField($entry)
     {
         return $this->render('@bazar/fields/radio.twig', [
-            'value' => $record !== '' ? $record[$this->recordId] : ''
+            'value' => $entry !== '' ? $entry[$this->recordId] : ''
         ]);
     }
 
-    public function renderInput($record)
+    public function renderInput($entry)
     {
+        if( $this->isInputHidden($entry) ) return '';
+
         return $this->render('@bazar/inputs/radio.twig', [
             'options' => $this->values['label'],
-            'value' => $record !== '' ? $record[$this->recordId] : $this->default
+            'value' => $entry !== '' ? $entry[$this->recordId] : $this->default
         ]);
     }
 }

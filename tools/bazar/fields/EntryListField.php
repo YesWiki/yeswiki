@@ -5,7 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FicheManager;
 
-abstract class RecordListField extends BazarField
+abstract class EntryListField extends BazarField
 {
     public function __construct(array $values, ContainerInterface $services)
     {
