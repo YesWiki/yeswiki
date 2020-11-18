@@ -42,6 +42,7 @@
 
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
 
 require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR
@@ -2269,18 +2270,23 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     }
                 }
             } else {
-                $functionName = $fichebazar['form']['template'][$i][0];
-                if (function_exists($functionName)) {
-                    $mode = 'html';
-                    if (!$danslappli && $functionName == "image") {
-                        $mode = 'html_outside_app';
+                if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
+                    // TODO handle html_outside_app mode for images
+                    $res .= $fichebazar['form']['prepared'][$i]->getHtml($fichebazar['values']);
+                } else {
+                    $functionName = $fichebazar['form']['template'][$i][0];
+                    if (function_exists($functionName)) {
+                        $mode = 'html';
+                        if (!$danslappli && $functionName == "image") {
+                            $mode = 'html_outside_app';
+                        }
+                        $res .= $functionName(
+                            $formtemplate,
+                            $fichebazar['form']['template'][$i],
+                            $mode,
+                            $fichebazar['values']
+                        );
                     }
-                    $res .= $functionName(
-                        $formtemplate,
-                        $fichebazar['form']['template'][$i],
-                        $mode,
-                        $fichebazar['values']
-                    );
                 }
             }
         }
@@ -3857,7 +3863,7 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
         }
     } 
     try {
-        $html['semantic'] = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
+        $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
     } catch (\Exception $e) {
         // Do nothing if semantic type is not available
     }   

@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\TemplateEngine;
 
 abstract class BazarField
 {
@@ -66,6 +67,25 @@ abstract class BazarField
     public function getService($class)
     {
         return $this->services->get($class);
+    }
+
+    public function render($templatePath, $data = [])
+    {
+        $data = array_merge($data, [
+            'field' => [
+                'id' => $this->id,
+                'recordId' => $this->recordId,
+                'type' => $this->type,
+                'required' => $this->required,
+                'label' => $this->label,
+                'default' => $this->default,
+                'attributes' => $this->attributes,
+                'values' => $this->values,
+                'helper' => $this->helper
+            ]
+        ]);
+
+        return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
     }
 
     abstract public function showInput($record);
