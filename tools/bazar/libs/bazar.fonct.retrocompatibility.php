@@ -99,6 +99,14 @@ function searchResultstoArray($pages, $params, $formtab = '')
 }
 
 /**
+ * @deprecated Use FicheManager::formatDataBeforeSave
+ */
+function baz_requete_bazar_fiche($data)
+{
+    return $GLOBALS['wiki']->services->get(FicheManager::class)->formatDataBeforeSave($data);
+}
+
+/**
  * @deprecated Use FormManager::getOne, FormManager::getMany or FormManager::getAll
  */
 function baz_valeurs_formulaire($idformulaire = [])
@@ -119,7 +127,7 @@ function baz_valeurs_formulaire($idformulaire = [])
  */
 function bazPrepareFormData($form)
 {
-    $GLOBALS['wiki']->services->get(FormManager::class)->prepareData($form);
+    return $GLOBALS['wiki']->services->get(FormManager::class)->prepareData($form);
 }
 
 /**

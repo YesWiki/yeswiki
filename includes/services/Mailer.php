@@ -49,4 +49,26 @@ class Mailer
             send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $admin['email'], $sujet, $text, $html);
         }
     }
+
+    public function notifyEmail($email, $data) {
+        include_once 'includes/email.inc.php';
+        $lien = str_replace('/wakka.php?wiki=', '', $this->params->get('base_url'));
+        $sujet = removeAccents('['.str_replace(array('http://', 'https://'), '', $lien).'] Votre fiche : '.$data['bf_titre']);
+        $lienfiche = $this->params->get('base_url').$data['id_fiche'];
+        $texthtml = 'Bienvenue sur '.removeAccents(str_replace('http://', '', $lien).' , ');
+        $text = 'Bienvenue sur '.removeAccents(str_replace('http://', '', $lien).' , ');
+        $text .= 'allez sur le site pour gérer votre inscription  : '.$lienfiche;
+        $texthtml .= '<br /><br /><a href="'.$lienfiche.'" title="Voir la fiche">Voir la fiche sur le site</a>';
+        if ($this->params->has('mail_custom_message')) {
+            $texthtml .= nl2br($this->params->get('mail_custom_message'));
+        }
+        $fichier = 'tools/bazar/presentation/styles/bazar.css';
+        $style = file_get_contents($fichier);
+        $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
+        $fiche = $texthtml.str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $data));
+        $html = '<html><head><style type="text/css">'.$style.'</style></head><body>'.$fiche.'</body></html>';
+
+        send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $email, $sujet, $text, $html);
+
+    }
 }

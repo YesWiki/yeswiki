@@ -12,7 +12,11 @@ abstract class BazarField
     protected $type;        // 0
     protected $id;          // 1
     protected $label;       // 2
+    protected $size;        // 3
+    protected $minChars;    // 3
+    protected $maxChars;    // 4
     protected $default;     // 5
+    protected $pattern;     // 6
     protected $required;    // 8
     protected $helper;      // 10
     protected $readAccess;  // 11
@@ -26,7 +30,8 @@ abstract class BazarField
     protected const FIELD_ID = 1;
     protected const FIELD_LABEL = 2;
     protected const FIELD_SIZE = 3;
-    protected const FIELD_MAX_LENGTH = 4;
+    protected const FIELD_MIN_CHARS = 3;
+    protected const FIELD_MAX_CHARS = 4;
     protected const FIELD_DEFAULT = 5;
     protected const FIELD_PATTERN = 6;
     protected const FIELD_SUB_TYPE = 7;
@@ -44,12 +49,19 @@ abstract class BazarField
         $this->services = $services;
 
         $this->id = $values[self::FIELD_ID];
-        $this->required = $values[self::FIELD_REQUIRED] == 1;
         $this->label = $values[self::FIELD_LABEL];
+        $this->size = $values[self::FIELD_SIZE];
+        $this->minChars = $values[self::FIELD_MIN_CHARS];
+        $this->maxChars = $values[self::FIELD_MAX_CHARS];
         $this->default = $values[self::FIELD_DEFAULT];
+        $this->pattern = $values[self::FIELD_PATTERN];
+        $this->required = $values[self::FIELD_REQUIRED] == 1;
+        $this->helper = $values[self::FIELD_HELP];
         $this->readAccess = $values[self::FIELD_READ_ACCESS];
         $this->writeAccess = $values[self::FIELD_WRITE_ACCESS];
-        $this->helper = $values[self::FIELD_HELP];
+
+        // By default, the ID is the record ID
+        $this->recordId = $values[self::FIELD_ID];
 
         // TODO see if this need to be defined here
         $this->attributes = '';
@@ -63,7 +75,7 @@ abstract class BazarField
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
 
-        $isCreation = isset($entry['id_fiche']);
+        $isCreation = $entry === '' || isset($entry['id_fiche']);
 
         return !empty($writeAcl) && !$GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '')  ;
     }
@@ -77,22 +89,35 @@ abstract class BazarField
     {
         $data = array_merge($data, [
             'field' => [
-                'id' => $this->id,
-                'recordId' => $this->recordId,
                 'type' => $this->type,
-                'required' => $this->required,
+                'id' => $this->id,
                 'label' => $this->label,
+                'size' => $this->size,
+                'minChars' => $this->minChars,
+                'maxChars' => $this->maxChars,
                 'default' => $this->default,
+                'pattern' => $this->pattern,
+                'required' => $this->required,
+                'helper' => $this->helper,
+                'readAccess' => $this->readAccess,
+                'writeAccess' => $this->writeAccess,
+                // Other data
                 'attributes' => $this->attributes,
                 'values' => $this->values,
-                'helper' => $this->helper
+                'recordId' => $this->recordId,
             ]
         ]);
 
         return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
     }
 
-    abstract public function renderField($record);
+    public function formatInput($entry)
+    {
+        return array_key_exists($this->recordId, $entry) ?
+            [$this->recordId => $entry[$this->recordId]] : [$this->recordId => null];
+    }
 
-    abstract public function renderInput($record);
+    abstract public function renderField($entry);
+
+    abstract public function renderInput($entry);
 }

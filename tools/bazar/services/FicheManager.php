@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\TripleStore;
@@ -332,7 +333,7 @@ class FicheManager
 
         $this->validate($data);
 
-        $data = baz_requete_bazar_fiche($data);
+        $data = $this->formatDataBeforeSave($data);
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
@@ -426,7 +427,7 @@ class FicheManager
 
         $this->validate($data);
 
-        $data = baz_requete_bazar_fiche($data);
+        $data = $this->formatDataBeforeSave($data);
 
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
@@ -473,6 +474,108 @@ class FicheManager
         foreach ($data as $key => $value) {
             $data[$key] = _convert($value, 'UTF-8');
         }
+        return $data;
+    }
+    
+    /*
+     * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
+     * de la valeur POST les valeurs inadequates et en formattant les champs.
+     */
+    public function formatDataBeforeSave($data)
+    {
+        $form = baz_valeurs_formulaire($data['id_typeannonce']);
+
+        // test pour les titres formatés à partir d'autres champs
+        preg_match_all('#{{(.*)}}#U', $data['bf_titre'], $matches);
+        if (count($matches[0]) > 0) {
+            $data = array_merge($data, titre($formtemplate, array('titre',
+                $data['bf_titre'], ), 'requete', $data));
+        }
+
+        // Entry ID
+        if (!isset($data['id_fiche'])) {
+            // Generate the ID from the title
+            $data['id_fiche'] = genere_nom_wiki($data['bf_titre']);
+            // TODO see if we can remove this
+            $_POST['id_fiche'] = $data['id_fiche'];
+        }
+
+        // Entry creator
+        if ($GLOBALS['wiki']->GetPageOwner($data['id_fiche'])) {
+            $data['createur'] = $GLOBALS['wiki']->GetPageOwner($data['id_fiche']);
+        } elseif ($user = $GLOBALS['wiki']->GetUser()) {
+            $data['createur'] = $user['name'];
+        } else {
+            $data['createur'] = _t('BAZ_ANONYME');
+        }
+
+        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+
+        // Get creation date if it exists, initialize it otherwise
+        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM '.$this->dbService->prefixTable('pages')."WHERE tag='".$data['id_fiche']."'");
+        $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
+
+        // Entry status
+        if ($GLOBALS['wiki']->UserIsAdmin()) {
+            $data['statut_fiche'] = '1';
+        } else {
+            $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
+        }
+
+        // pour les checkbox, on met les resultats sur une ligne
+        // TODO put this in CheckboxField::formatInput
+        foreach ($data as $cle => $val) {
+            if (is_array($val)) {
+                $data[$cle] = implode(',', array_keys($val));
+            }
+        }
+
+        for ($i = 0; $i < count($form['template']); ++$i) {
+            if( $form['prepared'][$i] instanceof BazarField) {
+                $tab = $form['prepared'][$i]->formatInput($data);
+            } else {
+                $tab = $form['template'][$i][0](
+                    $formtemplate,
+                    $form['template'][$i],
+                    'requete',
+                    $data
+                );
+            }
+
+            if (is_array($tab)) {
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                    foreach ($tab['fields-to-remove'] as $field) {
+                        if (isset($data[$field])) {
+                            unset($data[$field]);
+                        }
+                    }
+                    unset($tab['fields-to-remove']);
+                }
+                $data = array_merge($data, $tab);
+            }
+        }
+        $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+
+        // If sendmail field exist, send an email
+        if (isset($data['sendmail'])) {
+            if ($data[$data['sendmail']] != '') {
+                $this->mailer->notifyEmail($data[$data['sendmail']]);
+            }
+            unset($data['sendmail']);
+        }
+
+        // on enleve les champs hidden pas necessaires a la fiche
+        unset($data['valider']);
+        unset($data['MAX_FILE_SIZE']);
+        unset($data['antispam']);
+        unset($data['mot_de_passe_wikini']);
+        unset($data['mot_de_passe_repete_wikini']);
+
+        // on encode en utf-8 pour reussir a encoder en json
+        if (YW_CHARSET != 'UTF-8') {
+            $data = array_map('utf8_encode', $data);
+        }
+
         return $data;
     }
 

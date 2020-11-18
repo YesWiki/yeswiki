@@ -11,6 +11,8 @@ class FieldFactory
         switch ($values[0]) {
             case 'radio':
                 return new RadioField($values, $services);
+            case 'texte':
+                return new TextField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
