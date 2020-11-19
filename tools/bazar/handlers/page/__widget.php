@@ -79,13 +79,7 @@ if (isset($_GET['id'])) {
  
     $values = array('facettes' => $tabfacette, 'showtooltip' => $showtooltip, 'facettestext' => $tabfacettetext, 'params' => $params, 'urlparams' => $urlparams);
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp('widget.tpl.html', 'bazar');
-        echo $squel->render($values);
-    } catch (Exception $e) {
-        echo '<div class="alert alert-danger">Erreur handler widget : ',  $e->getMessage(), '</div>'."\n";
-    }
+    echo $this->render("@bazar/widget.tpl.html", $values);
 
     echo $this->Footer();
     exit;

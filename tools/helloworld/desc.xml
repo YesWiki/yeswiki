@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<plugin name="yes-wiki-hello-world" version="0.1" active="1">
+  <author>Some good guys</author>
+  <label>Hello World</label>
+  <desc>Demo plugin for developers</desc>
+</plugin>

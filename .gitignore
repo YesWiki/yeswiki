@@ -60,6 +60,7 @@ tools/*
 !tools/templates/*
 !tools/toc
 !tools/toc/*
+!tools/helloworld
 
 # Macintosh OS
 .DS_Store

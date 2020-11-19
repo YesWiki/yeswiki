@@ -184,8 +184,6 @@ class Init
             'rewrite_mode' => $_rewrite_mode,
             'meta_keywords' => '',
             'meta_description' => '',
-            'action_path' => 'actions',
-            'handler_path' => 'handlers',
             'header_action' => 'header',
             'footer_action' => 'footer',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
@@ -216,12 +214,6 @@ class Init
         } elseif (!ini_get('date.timezone')) {
             date_default_timezone_set($yeswikiDefaultConfig['timezone']);
         }
-
-        // Array of paths where to find templates (order is important)
-        $wakkaConfig['template_directories'] = isset($wakkaConfig['template_directories']) ?
-                                               $wakkaConfig['template_directories']
-                                               : ['custom/templates', 'templates', 'themes/tools'];
-
 
         // check for locking
         if (file_exists('locked')) {
@@ -258,8 +250,6 @@ class Init
         if ($wakkaConfig['wakka_version'] && (! $wakkaConfig['wikini_version'])) {
             $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
-
-        $wakkaConfig['formatter_path'] = 'formatters';
 
         return $wakkaConfig;
     }

@@ -123,13 +123,7 @@ if (empty($list)) {
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat)>0) {
-                    include_once 'includes/squelettephp.class.php';
-                    try {
-                        $squel = new SquelettePhp($template, 'bazar');
-                        $output .= $squel->render($fichescat);
-                    } catch (Exception $e) {
-                        $output .= '<div class="alert alert-danger">Erreur action {{bazarlistecategorie ..}} : '.$e->getMessage().'</div>'."\n";
-                    }
+                    $output .= $this->render("@bazar/$template", $fichescat);
                 }
                 // it's not the first time in the loop so we must close previously opened div
                 $output .=  '</div>'."\n";
@@ -152,13 +146,7 @@ if (empty($list)) {
     }
     // last results
     if (is_array($fichescat) && count($fichescat)>0) {
-        include_once 'includes/squelettephp.class.php';
-        try {
-            $squel = new SquelettePhp($template, 'bazar');
-            $output .= $squel->render($fichescat);
-        } catch (Exception $e) {
-            $output .= '<div class="alert alert-danger">Erreur action {{bazarlistecategorie ..}} : '.$e->getMessage().'</div>'."\n";
-        }
+        $output .= $this->render("@bazar/$template", $fichescat);
     }
     // it's not the first time in the loop so we must close previously opened div
     $output .=  '</div>'."\n";

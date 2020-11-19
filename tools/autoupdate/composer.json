@@ -13,9 +13,6 @@
       "AutoUpdate\\": "app"
     }
   },
-  "require": {
-    "twig/twig": "^1.42"
-  },
   "require-dev": {
     "phpunit/phpunit": "^5.7"
   }

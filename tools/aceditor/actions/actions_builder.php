@@ -37,10 +37,4 @@ array_walk_recursive($data['action_groups'], 'test_print');
 // ---------------
 // Render Template
 // ---------------
-include_once 'includes/squelettephp.class.php';
-try {
-    $squel = new SquelettePhp('actions-builder.tpl.html', 'aceditor');
-    echo $squel->render(['data' => $data]);
-} catch (Exception $e) {
-    echo '<div class="alert alert-danger">Erreur handler widget : ',  $e->getMessage(), '</div>'."\n";
-}
+echo $this->render('@aceditor/actions-builder.tpl.html', ['data' => $data]);

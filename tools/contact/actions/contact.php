@@ -67,13 +67,7 @@ if (empty($contactelements['mail'])) {
     // adresse url d'envoi du mail
     $contactelements['mailerurl'] = $this->href('mail');
 
-    include_once 'includes/squelettephp.class.php';
-    try {
-        $squel = new SquelettePhp($template, 'contact');
-        echo $squel->render($contactelements);
-    } catch (Exception $e) {
-        echo '<div class="alert alert-danger">Erreur action {{contact ..}} : ',  $e->getMessage(), '</div>'."\n";
-    }
+    echo $this->render("@contact/$template", $contactelements);
     
     $this->addJavascriptFile('tools/contact/libs/contact.js');
 }

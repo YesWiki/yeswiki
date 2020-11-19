@@ -14,11 +14,13 @@ class Controller
 {
     private $autoUpdate;
     private $messages;
+    private $wiki;
 
-    public function __construct($autoUpdate, $messages)
+    public function __construct($autoUpdate, $messages, $wiki)
     {
         $this->autoUpdate = $autoUpdate;
         $this->messages = $messages;
+        $this->wiki = $wiki;
     }
 
     /*	Parameter $requestedVersion contains the name of the YesWiki version
@@ -32,31 +34,39 @@ class Controller
         }
 
         if (!$this->autoUpdate->initRepository($requestedVersion)) {
-            $view = new ViewNoRepo($this->autoUpdate);
-            $view->show();
-            return;
+            return $this->wiki->render("@autoupdate/views/norepo.twig", []);
         }
 
         if (isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
             ) {
             $this->upgrade($get['upgrade']);
-            $view = new ViewUpdate($this->autoUpdate, $this->messages);
-            $view->show();
-            return;
+            return $this->wiki->render("@autoupdate/views/update.twig", [
+                'messages' => $this->messages,
+                'baseUrl' => $this->autoUpdate->baseUrl(),
+            ]);
         }
 
         if (isset($get['delete'])
             and $this->autoUpdate->isAdmin()
             ) {
             $this->delete($get['delete']);
-            $view = new ViewUpdate($this->autoUpdate, $this->messages);
-            $view->show();
-            return;
+            return $this->wiki->render("@autoupdate/views/update.twig", [
+                'messages' => $this->messages,
+                'baseUrl' => $this->autoUpdate->baseUrl(),
+            ]);
         }
 
-        $view = new ViewStatus($this->autoUpdate, $this->messages);
-        $view->show();
+        return $this->wiki->render("@autoupdate/views/status.twig", [
+            'baseUrl' => $this->autoUpdate->baseUrl(),
+            'isAdmin' => $this->autoUpdate->isAdmin(),
+            'core' => $this->autoUpdate->repository->getCorePackage(),
+            'themes' => $this->autoUpdate->repository->getThemesPackages(),
+            'tools' => $this->autoUpdate->repository->getToolsPackages(),
+            'showCore' => true,
+            'showThemes' => true,
+            'showTools' => true
+        ]);
     }
 
     private function delete($packageName)

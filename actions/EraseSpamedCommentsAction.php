@@ -26,16 +26,11 @@
  *
  *
 */
+use YesWiki\Core\YesWikiAction;
 
-
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    die('acc&egrave;s direct interdit');
-}
-
-class ActionErasespamedcomments extends WikiniAdminAction
+class EraseSpamedCommentsAction extends YesWikiAction
 {
-    public function PerformAction($args, $command)
+    public function run($args)
     {
         $wiki = &$this->wiki;
         ob_start();

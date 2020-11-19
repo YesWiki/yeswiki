@@ -17,7 +17,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
 
 $autoUpdate = new AutoUpdate($this);
 $messages = new Messages();
-$controller = new Controller($autoUpdate, $messages);
+$controller = new Controller($autoUpdate, $messages, $this);
 
 //$controller->run($_GET, $this->getParameter('filter'));
 // Can't see where filter is used => getting rid of it

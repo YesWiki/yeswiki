@@ -1,0 +1,11 @@
+parameters:
+  hello_world:
+    my_param: 'this is a test param defined in tools/helloworld/config.yml. It can be ovewritten in wakka.config.php'
+
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\HelloWorld\Service\:
+    resource: 'services/*'
