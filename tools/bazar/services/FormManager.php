@@ -113,7 +113,9 @@ class FormManager
             if (!empty($ligne) && !(strrpos($ligne, '#', -strlen($ligne)) !== false)) {
                 //on decoupe chaque ligne par le separateur *** (c'est historique)
                 $tablignechampsformulaire = array_map("trim", explode("***", $ligne));
-                if (function_exists($tablignechampsformulaire[0])) {
+
+                // TODO find another way to check that the field is valid
+                if ( true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
                     if (count($tablignechampsformulaire) > 3) {
                         $tableau_template[$nblignes] = $tablignechampsformulaire;
                         for ($i=0; $i < 14; $i++) {

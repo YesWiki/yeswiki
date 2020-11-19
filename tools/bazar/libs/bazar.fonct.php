@@ -2499,22 +2499,15 @@ function getCachedUrlContent($url, $cache_life = '60')
 /*
  * filtering an array
  */
-function filterByValue($array, $index, $value)
+function filterFieldsById(array $fields, $id)
 {
-    $newarray = array();
-    if (is_array($array) && count($array)>0) {
-        foreach (array_keys($array) as $key) {
-            $temp[$key] = isset($array[$key][$index]) ? $array[$key][$index] : null;
-            if (is_array($value)) {
-                if (in_array($temp[$key], $value)) {
-                    $newarray[$key] = $array[$key];
-                }
-            } elseif ($temp[$key] == $value) {
-                $newarray[$key] = $array[$key];
-            }
+    return array_filter($fields, function($field) use ($id) {
+        if( $field instanceof BazarField ) {
+            return is_array($id) ? in_array($field->getRecordId(), $id) : $field->getRecordId() === $id;
+        } elseif( is_array($field) ) {
+            return is_array($id) ? in_array($field['id'], $id) : $field['id'] === $id;
         }
-    }
-    return $newarray;
+    });
 }
 function startsWith($haystack, $needle)
 {
@@ -2548,16 +2541,15 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
         // on recupere les valeurs du formulaire si elles n'existaient pas
         $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-        $templatef[$fiche['id_typeannonce']] = isset($templatef[$fiche['id_typeannonce']]) ? $templatef[$fiche['id_typeannonce']] : filterByValue(
+        $templatef[$fiche['id_typeannonce']] = isset($templatef[$fiche['id_typeannonce']]) ? $templatef[$fiche['id_typeannonce']] : filterFieldsById(
             $valform['prepared'],
-            'id',
             $params['groups']
         );
         foreach ($fiche as $key => $value) {
             $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
               || in_array($key, $params['groups']);
             if (!empty($value) and is_array($templatef[$fiche['id_typeannonce']]) && $facetteasked) {
-                $val = filterByValue($templatef[$fiche['id_typeannonce']], 'id', $key);
+                $val = filterFieldsById($templatef[$fiche['id_typeannonce']], $key);
                 $val = array_shift($val);
                 if (is_array($val) && !empty($val)) {
                     $islistforeign = (strpos($val['id'], 'listefiche')===0) || (strpos($val['id'], 'checkboxfiche')===0);
@@ -2644,6 +2636,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     // On scanne tous les champs qui pourraient faire des filtres pour les facettes
     if (count($params['groups']) > 0) {
         $facettevalue = scanAllFacettable($fiches['fiches'], $params, $formtab);
+        dump($facettevalue);
     }
     if ($info_nb) {
         $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
