@@ -608,7 +608,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
 
         $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($tableau_template[9] == 1) ? '<span class="symbole_obligatoire"></span>' : '';
+        $input_html.= ($tableau_template[8] == 1) ? '<span class="symbole_obligatoire"></span>' : '';
         $input_html.= $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
         $input_html.= '<div class="controls col-sm-9">' . "\n";
         $input_html.= '<div class="input-group">' . "\n";
@@ -616,7 +616,7 @@ function tags(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         $input_html.= ($defauts != '') ?
             ' value="'.htmlspecialchars($defauts, ENT_COMPAT | ENT_HTML401, YW_CHARSET).'"' : '';
         $input_html.= ' name="' . $tableau_template[1] . (empty($tableau_template[3]) ? '' : '" size="' . $tableau_template[3]) . '" class="form-control yeswiki-input-pagetag" id="' . $tableau_template[1] . '"';
-        $input_html.= ($tableau_template[9] == 1) ? ' required' : '';
+        $input_html.= ($tableau_template[8] == 1) ? ' required="required"' : '';
         $input_html.= '>' . "\n";
         $input_html.= '</div>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
 
@@ -1102,6 +1102,8 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return "";
     } elseif (empty($formatage) || $formatage == 'wiki') {
         $formatage = 'wiki-textarea';
+    } elseif ($formatage == 'nohtml' && $mode == 'saisie') {
+        $formatage = 'texte';
     } elseif ($formatage == 'html' && $mode == 'saisie') {
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
         $langfile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langpref.'.js';
@@ -1204,7 +1206,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $GLOBALS['wiki']->tag = $oldpage;
                 $GLOBALS['wiki']->page = $oldpagearray;
-            } elseif ($formatage == 'nohtml') {
+            } elseif ($formatage == 'nohtml' || $formatage == 'texte'  ) {
                 $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, YW_CHARSET);
             } elseif ($formatage == 'html') {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
@@ -2133,7 +2135,7 @@ function listefiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 'keywords' => (!empty($tableau_template[13])) ? $tableau_template[13] : ''
             ]);
             foreach ($tab_result as $fiche) {
-                $select[$valeurs_fiche_liste['id_fiche']] = $valeurs_fiche_liste['bf_titre'];
+                $select[$fiche['id_fiche']] = $fiche['bf_titre'];
             }
         } else {
             $json = getCachedUrlContent($tableau_template[1]);
