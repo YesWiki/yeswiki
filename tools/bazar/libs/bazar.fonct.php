@@ -2636,7 +2636,6 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     // On scanne tous les champs qui pourraient faire des filtres pour les facettes
     if (count($params['groups']) > 0) {
         $facettevalue = scanAllFacettable($fiches['fiches'], $params, $formtab);
-        dump($facettevalue);
     }
     if ($info_nb) {
         $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
