@@ -1206,7 +1206,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $GLOBALS['wiki']->tag = $oldpage;
                 $GLOBALS['wiki']->page = $oldpagearray;
-            } elseif ($formatage == 'nohtml') {
+            } elseif ($formatage == 'nohtml' || $formatage == 'texte'  ) {
                 $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, YW_CHARSET);
             } elseif ($formatage == 'html') {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
