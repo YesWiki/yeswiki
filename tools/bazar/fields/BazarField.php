@@ -122,6 +122,16 @@ abstract class BazarField
         return $this->recordId;
     }
 
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    public function getValues()
+    {
+        return $this->values;
+    }
+
     abstract public function renderField($entry);
 
     abstract public function renderInput($entry);
