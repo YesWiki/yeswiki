@@ -234,6 +234,7 @@ var typeUserAttrs = {
       label: "Initialiser à Aujourd'hui",
       options: { " ": "Non", today: "Oui" },
     },
+    hint: { label: "Texte d'aide" },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
