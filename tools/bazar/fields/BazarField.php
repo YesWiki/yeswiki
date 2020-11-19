@@ -117,6 +117,11 @@ abstract class BazarField
             [$this->recordId => $entry[$this->recordId]] : [$this->recordId => null];
     }
 
+    public function getId()
+    {
+        return $this->id;
+    }
+
     public function getRecordId()
     {
         return $this->recordId;

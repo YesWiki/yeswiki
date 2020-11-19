@@ -2499,7 +2499,7 @@ function getCachedUrlContent($url, $cache_life = '60')
 /*
  * Filter an array of fields by their potential record ID
  */
-function filterFieldsById(array $fields, array $id)
+function filterFieldsByRecordId(array $fields, array $id)
 {
     return array_filter($fields, function($field) use ($id) {
         if( $field instanceof BazarField ) {
@@ -2509,6 +2509,27 @@ function filterFieldsById(array $fields, array $id)
         }
     });
 }
+
+/*
+ * Scan all forms and return the first field matching the given ID
+ */
+function findFieldById($allForms, $id)
+{
+    foreach( $allForms as $form ) {
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                if ($field->getId() === $id) {
+                    return $field;
+                }
+            } elseif (is_array($field)) {
+                if ($field['id'] === $id) {
+                    return $id;
+                }
+            }
+        }
+    }
+}
+
 function startsWith($haystack, $needle)
 {
     $length = strlen($needle);
@@ -2541,7 +2562,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
         // on recupere les valeurs du formulaire si elles n'existaient pas
         $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-        $fields[$fiche['id_typeannonce']] = isset($fields[$fiche['id_typeannonce']]) ? $fields[$fiche['id_typeannonce']] : filterFieldsById(
+        $fields[$fiche['id_typeannonce']] = isset($fields[$fiche['id_typeannonce']]) ? $fields[$fiche['id_typeannonce']] : filterFieldsByRecordId(
             $valform['prepared'],
             $params['groups']
         );
@@ -2549,7 +2570,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
               || in_array($key, $params['groups']);
             if (!empty($value) and is_array($fields[$fiche['id_typeannonce']]) && $facetteasked) {
-                $fields = filterFieldsById($fields[$fiche['id_typeannonce']], [$key]);
+                $fields = filterFieldsByRecordId($fields[$fiche['id_typeannonce']], [$key]);
                 $field = array_pop($fields);
 
                 $fieldId = null;
@@ -2733,8 +2754,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             // on formatte la liste des resultats en fonction de la source
             if (isset($facettevalue[$id])) {
                 if ($facettevalue[$id]['type'] == 'liste') {
-                    $list = multiArraySearch($allform, 'id', $facettevalue[$id]['source']);
-                    $list = $list[0];
+                    $field = findFieldById($allform, $facettevalue[$id]['source']);
+                    $list = $field->getValues();
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
                     $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
                     $form = $allform[$src];
