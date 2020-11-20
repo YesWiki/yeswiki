@@ -18,17 +18,13 @@ class TextField extends BazarField
             $this->type = 'text';
         }
 
-        $this->maxChars = $this->maxChars || 255;
-
-        // TODO put this directly in the template
-//        $this->attributes = ' maxlength="'.$values[self::FIELD_MAX_CHARS].'" size="'.$values[self::FIELD_MAX_LENGTH].'"';
-//        $this->attributes .= ($values[self::FIELD_PATTERN] != '') ? ' pattern="' . $values[self::FIELD_PATTERN] . '"' : '';
+        $this->maxChars = $this->maxChars ?? 255;
     }
 
     public function renderField($entry)
     {
         return $this->render('@bazar/fields/text.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : ''
+            'value' => $entry !== '' ? $entry[$this->recordId] : null
         ]);
     }
 
@@ -37,7 +33,7 @@ class TextField extends BazarField
         if( $this->isInputHidden($entry) ) return '';
 
         return $this->render('@bazar/inputs/text.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : $this->default
+            'value' => $entry !== '' ? $entry[$this->recordId] : null
         ]);
     }
 }

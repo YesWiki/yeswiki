@@ -869,53 +869,6 @@ function champs_mail(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** mot_de_passe() - Ajoute un element de type mot de passe au formulaire
- *
- * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des différentes option pour l'élément mot de passe
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
- * @return   void
- */
-function mot_de_passe(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    list($type, $identifiant, $label, , , $valeur_par_defaut, , , $obligatoire, , $bulle_d_aide) = $tableau_template;
-    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
-        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
-        return "";
-    } elseif ($mode == 'saisie') {
-        // on prepare le html de la bulle d'aide, si elle existe
-        if ($bulle_d_aide != '') {
-            $bulledaide = '<img class="tooltip_aide" title="' . htmlentities($bulle_d_aide, ENT_QUOTES, YW_CHARSET) . '" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
-        } else {
-            $bulledaide = '';
-        }
-
-        $nb_max_car = 255;
-        $type_input = 'password';
-
-        $input_html = '<div class="control-group form-group">' . "\n" . '<label class="control-label col-sm-3">';
-        $input_html.= ($obligatoire == 1) ? '<span class="symbole_obligatoire"></span>' : '';
-        $input_html.= $label . (empty($bulledaide) ? '' : $bulledaide) . '</label>' . "\n";
-        $input_html.= '<div class="controls col-sm-9">' . "\n";
-        $input_html.= '<input type="' . $type_input . '"';
-        $input_html.= ' name="' . $identifiant . '" class="form-control" id="' . $identifiant . '"';
-        $input_html.= ' maxlength="' . $nb_max_car . '" size="' . $nb_max_car . '"';
-        $input_html.= ($obligatoire == 1) ? ' required' : '';
-        $input_html.= '>' . "\n" . '</div>' . "\n" . '</div>' . "\n";
-        if (isset($valeurs_fiche[$identifiant])) {
-            $input_html.= '<input type="hidden" value="'.$valeurs_fiche[$identifiant].'" name="'.$identifiant.'-previous">' . "\n";
-        }
-        return $input_html;
-    } elseif ($mode == 'requete') {
-        if (!empty($valeurs_fiche[$identifiant])) {
-            return array($tableau_template[1] => md5($valeurs_fiche[$identifiant]));
-        } elseif (isset($valeurs_fiche[$identifiant.'-previous']) && !empty($valeurs_fiche[$identifiant.'-previous'])) {
-            return array($tableau_template[1] => $valeurs_fiche[$identifiant.'-previous']);
-        }
-    } elseif ($mode == 'html') {
-    }
-}
-
 /** textelong() - Ajoute un élément de type texte long (textarea) au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire

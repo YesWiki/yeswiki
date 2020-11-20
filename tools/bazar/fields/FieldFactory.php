@@ -13,6 +13,8 @@ class FieldFactory
                 return new RadioField($values, $services);
             case 'texte':
                 return new TextField($values, $services);
+            case 'mot_de_passe':
+                return new PasswordField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
