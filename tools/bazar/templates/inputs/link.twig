@@ -9,14 +9,14 @@
     <div class="controls col-sm-9">
         <div class="input-group">
             <input
-                type="email"
+                type="url"
                 value="{{ value ?? field.default }}"
                 id="{{ field.id }}"
                 name="{{ field.id }}"
-                class="form-control"
+                class="form-control input-xxlarge"
                 maxlength="{{ field.maxChars }}"
                 size="{{ field.maxChars }}"
-                placeholder="{{ field.label|raw('html') }}"
+                placeholder="https://"
                 {% if field.required %}required{% endif %}
             />
         </div>

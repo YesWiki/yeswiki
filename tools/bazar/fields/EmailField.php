@@ -9,6 +9,7 @@ class EmailField extends BazarField
     protected $sendMail;
     protected $showContactForm;
 
+    // Field-specific
     protected const FIELD_SHOW_CONTACT_FORM = 6;
     protected const FIELD_SEND_EMAIL = 9;
 
@@ -24,6 +25,7 @@ class EmailField extends BazarField
 
     public function formatInput($entry)
     {
+        // TODO make sure the sendmail parameter is correctly passed
         return array_key_exists($this->recordId, $entry) ?
             [
                 $this->recordId => $entry[$this->recordId],

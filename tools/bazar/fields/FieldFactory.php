@@ -17,6 +17,8 @@ class FieldFactory
                 return new PasswordField($values, $services);
             case 'champs_mail':
                 return new EmailField($values, $services);
+            case 'lien_internet':
+                return new LinkField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
