@@ -195,9 +195,11 @@ class FormManager
 
                     // valeurs associées
                     if (in_array($field[self::FIELD_TYPE], array('radio', 'liste', 'checkbox'))) {
+                        // TRANSFERED INTO ListListField
                         $prepared[$i]['values'] = baz_valeurs_liste($field[self::FIELD_ID]);
                         $prepared[$i]['values']['id'] = $field[self::FIELD_ID];
                     } else {
+                        // TRANSFERED INTO EntryListField
                         $tabquery = array();
                         if (!empty($field[self::FIELD_QUERIES])) {
                             $tableau = array();
@@ -253,7 +255,7 @@ class FormManager
                         $prepared[$i]['type'] = 'password';
                     }
 
-                    // attributs html du champs
+                    // THE FIELD `attributes` IS APPARENTLY UNUSED
                     if ($field[self::FIELD_TYPE] === 'texte') {
                         if (in_array($field[self::FIELD_SUB_TYPE], array('range', 'number'))) {
                             $prepared[$i]['attributes'] .= ($field[self::FIELD_SIZE] != '') ? ' min="'.$field[self::FIELD_SIZE].'"' : '';
@@ -325,6 +327,7 @@ class FormManager
             }
 
             // traitement sémantique
+            // TODO move to BazarField
             if (!empty($field[self::FIELD_SEMANTIC])) {
                 $prepared[$i]['sem_type'] = strpos($field[self::FIELD_SEMANTIC], ',')
                     ? array_map(function ($str) {
