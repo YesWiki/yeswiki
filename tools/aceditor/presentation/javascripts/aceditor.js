@@ -364,4 +364,3 @@ $('#body').aceditor({savebtn : true, class: "big"});
 
 // For comments and Bazar's textarea
 $('.wiki-textarea, .commentform textarea').aceditor();
-// $('textarea.nohtml').aceditor({syntax:'html'});
