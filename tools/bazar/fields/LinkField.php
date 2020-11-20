@@ -17,14 +17,14 @@ class LinkField extends BazarField
 
     public function formatInput($entry)
     {
-        return array_key_exists($this->recordId, $entry) && $entry[$this->recordId] !== 'https://' ?
-            [$this->recordId => $entry[$this->recordId]] : [$this->recordId => null];
+        return array_key_exists($this->entryId, $entry) && $entry[$this->entryId] !== 'https://' ?
+            [$this->entryId => $entry[$this->entryId]] : [$this->entryId => null];
     }
 
     public function renderField($entry)
     {
         return $this->render('@bazar/fields/link.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : null
+            'value' => $entry !== '' ? $entry[$this->entryId] : null
         ]);
     }
 
@@ -33,7 +33,7 @@ class LinkField extends BazarField
         if( $this->isInputHidden($entry) ) return '';
 
         return $this->render('@bazar/inputs/link.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : null
+            'value' => $entry !== '' ? $entry[$this->entryId] : null
         ]);
     }
 }

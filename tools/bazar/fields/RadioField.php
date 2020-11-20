@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-class RadioField extends ListField
+class RadioField extends ListListField
 {
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -16,7 +16,7 @@ class RadioField extends ListField
     public function renderField($entry)
     {
         return $this->render('@bazar/fields/radio.twig', [
-            'value' => $entry !== '' ? $this->values['label'][$entry[$this->recordId]] : ''
+            'value' => $entry !== '' ? $this->options['label'][$entry[$this->entryId]] : ''
         ]);
     }
 
@@ -25,8 +25,8 @@ class RadioField extends ListField
         if( $this->isInputHidden($entry) ) return '';
 
         return $this->render('@bazar/inputs/radio.twig', [
-            'options' => $this->values['label'],
-            'value' => $entry !== '' ? $entry[$this->recordId] : $this->default
+            'options' => $this->options['label'],
+            'value' => $entry !== '' ? $entry[$this->entryId] : $this->default
         ]);
     }
 }

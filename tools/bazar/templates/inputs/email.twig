@@ -1,8 +1,8 @@
 <div class="control-group form-group">
     <label class="control-label col-sm-3">
         {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
-        {% if field.helper %}
-            <img class="tooltip_aide" title="{{ field.helper|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+        {% if field.hint %}
+            <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
         {% endif %}
         {{ field.label }}
     </label>
@@ -11,8 +11,8 @@
             <input
                 type="email"
                 value="{{ value ?? field.default }}"
-                id="{{ field.id }}"
-                name="{{ field.id }}"
+                id="{{ field.name }}"
+                name="{{ field.name }}"
                 class="form-control"
                 maxlength="{{ field.maxChars }}"
                 size="{{ field.maxChars }}"

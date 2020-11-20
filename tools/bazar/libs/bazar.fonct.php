@@ -41,6 +41,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ListField;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
@@ -2504,13 +2505,13 @@ function getCachedUrlContent($url, $cache_life = '60')
 }
 
 /*
- * Filter an array of fields by their potential record ID
+ * Filter an array of fields by their potential entry ID
  */
-function filterFieldsByRecordId(array $fields, array $id)
+function filterFieldsByEntryId(array $fields, array $id)
 {
     return array_filter($fields, function($field) use ($id) {
         if( $field instanceof BazarField ) {
-            return in_array($field->getRecordId(), $id);
+            return in_array($field->getEntryId(), $id);
         } elseif( is_array($field) ) {
             return in_array($field['id'], $id);
         }
@@ -2520,17 +2521,17 @@ function filterFieldsByRecordId(array $fields, array $id)
 /*
  * Scan all forms and return the first field matching the given ID
  */
-function findFieldById($allForms, $id)
+function findFieldByName($allForms, $name)
 {
     foreach( $allForms as $form ) {
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
-                if ($field->getId() === $id) {
+                if ($field->getName() === $name) {
                     return $field;
                 }
             } elseif (is_array($field)) {
-                if ($field['id'] === $id) {
-                    return $id;
+                if ($field['id'] === $name) {
+                    return $field;
                 }
             }
         }
@@ -2569,7 +2570,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
         // on recupere les valeurs du formulaire si elles n'existaient pas
         $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-        $fields[$fiche['id_typeannonce']] = isset($fields[$fiche['id_typeannonce']]) ? $fields[$fiche['id_typeannonce']] : filterFieldsByRecordId(
+        $fields[$fiche['id_typeannonce']] = isset($fields[$fiche['id_typeannonce']]) ? $fields[$fiche['id_typeannonce']] : filterFieldsByEntryId(
             $valform['prepared'],
             $params['groups']
         );
@@ -2577,46 +2578,49 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
               || in_array($key, $params['groups']);
             if (!empty($value) and is_array($fields[$fiche['id_typeannonce']]) && $facetteasked) {
-                $fields = filterFieldsByRecordId($fields[$fiche['id_typeannonce']], [$key]);
+                $fields = filterFieldsByEntryId($fields[$fiche['id_typeannonce']], [$key]);
                 $field = array_pop($fields);
 
-                $fieldId = null;
+                $fieldEntryId = null;
+                $fieldOptions = [];
                 if( $field instanceof BazarField ) {
-                    $fieldId = $field->getRecordId();
+                    $fieldEntryId = $field->getEntryId();
                     $fieldType = $field->getType();
-                    $fieldValues = $field->getValues();
+                    if( $field instanceof ListField ) {
+                        $fieldOptions = $field->getOptions();
+                    }
                 } else if ( is_array($field)) {
-                    $fieldId = $field['id'];
+                    $fieldEntryId = $field['id'];
                     $fieldType = $field['type'];
-                    $fieldValues = $field['values'];
+                    $fieldOptions = $field['values'];
                 }
 
-                if ($fieldId) {
-                    $islistforeign = (strpos($fieldId, 'listefiche')===0) || (strpos($fieldId, 'checkboxfiche')===0);
+                if ($fieldEntryId) {
+                    $islistforeign = (strpos($fieldEntryId, 'listefiche')===0) || (strpos($fieldEntryId, 'checkboxfiche')===0);
                     $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio')) && !$islistforeign;
                     $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
                     if ($islistforeign) {
                         // listefiche ou checkboxfiche
-                        $facettevalue[$fieldId]['type'] = 'fiche';
-                        $facettevalue[$fieldId]['source'] = $key;
+                        $facettevalue[$fieldEntryId]['type'] = 'fiche';
+                        $facettevalue[$fieldEntryId]['source'] = $key;
                         $tabval = explode(',', $value);
                         foreach ($tabval as $tval) {
-                            if (isset($facettevalue[$fieldId][$tval])) {
-                                ++$facettevalue[$fieldId][$tval];
+                            if (isset($facettevalue[$fieldEntryId][$tval])) {
+                                ++$facettevalue[$fieldEntryId][$tval];
                             } else {
-                                $facettevalue[$fieldId][$tval] = 1;
+                                $facettevalue[$fieldEntryId][$tval] = 1;
                             }
                         }
                     } elseif ($islist) {
-                        $facettevalue[$fieldId]['type'] = 'liste';
-                        $facettevalue[$fieldId]['source'] = $fieldValues['id'];
+                        $facettevalue[$fieldEntryId]['type'] = 'liste';
+                        $facettevalue[$fieldEntryId]['source'] = $fieldOptions['id'];
                         // liste ou checkbox
                         $tabval = explode(',', $value);
                         foreach ($tabval as $tval) {
-                            if (isset($facettevalue[$fieldId][$tval])) {
-                                ++$facettevalue[$fieldId][$tval];
+                            if (isset($facettevalue[$fieldEntryId][$tval])) {
+                                ++$facettevalue[$fieldEntryId][$tval];
                             } else {
-                                $facettevalue[$fieldId][$tval] = 1;
+                                $facettevalue[$fieldEntryId][$tval] = 1;
                             }
                         }
                     } elseif ($istext and !$onlyLists) {
@@ -2677,6 +2681,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
     if (count($params['groups']) > 0) {
         $facettevalue = scanAllFacettable($fiches['fiches'], $params, $formtab);
     }
+    dump($facettevalue);
     if ($info_nb) {
         $fiches['info_res'] = '<div class="alert alert-info">'._t('BAZ_IL_Y_A');
 
@@ -2761,8 +2766,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             // on formatte la liste des resultats en fonction de la source
             if (isset($facettevalue[$id])) {
                 if ($facettevalue[$id]['type'] == 'liste') {
-                    $field = findFieldById($allform, $facettevalue[$id]['source']);
-                    $list = $field->getValues();
+                    $field = findFieldByName($allform, $facettevalue[$id]['source']);
+                    $list = $field instanceof ListField ? $field->getOptions() : $field['values'];
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
                     $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
                     $form = $allform[$src];
@@ -2810,6 +2815,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                 $params['titles'][$i] : $list['titre_liste'];
 
             $facettableValues[$idkey]['collapsed'] = !$first && !$params['groupsexpanded'];
+
+            dump($list);
 
             foreach ($list['label'] as $listkey => $label) {
                 if (isset($facettevalue[$id][$listkey]) && !empty($facettevalue[$id][$listkey])) {

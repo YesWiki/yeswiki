@@ -4,16 +4,28 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * Base class for ListListField and EntryListField
+ */
 abstract class ListField extends BazarField
 {
+    protected $listLabel;
+    protected $options;
+
+    protected const FIELD_LIST_LABEL = 6;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
-        $this->recordId = $values[self::FIELD_TYPE] . $values[self::FIELD_ID] . $values[self::FIELD_LIST_LABEL];
+        $this->listLabel = $values[self::FIELD_LIST_LABEL];
+        $this->options = [];
 
-        // TODO call this options, and remove strange fields
-        $this->values = baz_valeurs_liste($values[self::FIELD_ID]);
-        $this->values['id'] = $values[self::FIELD_ID];
+        $this->entryId = $values[self::FIELD_TYPE] . $values[self::FIELD_NAME] . $values[self::FIELD_LIST_LABEL];
+    }
+
+    public function getOptions()
+    {
+        return  $this->options;
     }
 }

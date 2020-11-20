@@ -5,18 +5,28 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FicheManager;
 
-abstract class EntryListField extends BazarField
+/**
+ * List with Bazar entries as a source
+ */
+abstract class EntryListField extends ListField
 {
+    protected $keywords;
+    protected $queries;
+
+    protected const FIELD_KEYWORDS = 13;
+    protected const FIELD_QUERIES = 15;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
-        $this->recordId = $values[self::FIELD_TYPE] . $values[self::FIELD_ID] . $values[self::FIELD_LIST_LABEL];
+        $this->keywords = $values[self::FIELD_KEYWORDS];
+        $this->queries = $values[self::FIELD_QUERIES];
 
-        $tabquery = array();
-        if (!empty($values[self::FIELD_QUERIES])) {
+        $tabquery = [];
+        if (!empty($this->queries)) {
             $tableau = array();
-            $tab = explode('|', $values[self::FIELD_QUERIES]);
+            $tab = explode('|', $this->queries);
             //découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);
@@ -26,17 +36,16 @@ abstract class EntryListField extends BazarField
         } else {
             $tabquery = '';
         }
-        $hash = md5($values[self::FIELD_ID] . serialize($tabquery));
-        if (!isset($result[$hash])) {
-            $result[$hash] = $services->get(FicheManager::class)->search([
-                'queries' => $tabquery,
-                'formsIds' => $values[self::FIELD_ID],
-                'keywords' => (!empty($values[self::FIELD_KEYWORDS])) ? $values[self::FIELD_KEYWORDS] : ''
-            ]);
-        }
-        $this->values['titre_liste'] = $values[self::FIELD_LABEL];
-        foreach ($result[$hash] as $values) {
-            $this->values['label'][$values['id_fiche']] = $values['bf_titre'];
+
+        $fiches = $services->get(FicheManager::class)->search([
+            'queries' => $tabquery,
+            'formsIds' => $this->name,
+            'keywords' => (!empty($this->keywords)) ? $this->keywords : ''
+        ]);
+
+        $this->options['titre_liste'] = $this->label;
+        foreach ($fiches as $fiche) {
+            $this->options['label'][$fiche['id_fiche']] = $fiche['bf_titre'];
         }
     }
 }

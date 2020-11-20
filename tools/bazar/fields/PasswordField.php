@@ -16,12 +16,12 @@ class PasswordField extends BazarField
 
     public function formatInput($entry)
     {
-        if (!empty($entry[$this->recordId])) {
+        if (!empty($entry[$this->entryId])) {
             // If a new password has been set, encode it
-            return [$this->recordId => md5($entry[$this->recordId])];
-        } elseif (isset($entry[$this->recordId.'-previous']) && !empty($entry[$this->recordId.'-previous'])) {
+            return [$this->entryId => md5($entry[$this->entryId])];
+        } elseif (isset($entry[$this->entryId.'-previous']) && !empty($entry[$this->entryId.'-previous'])) {
             // If no new password was set, keep the old encoded one
-            return [$this->recordId => $entry[$this->recordId.'-previous']];
+            return [$this->entryId => $entry[$this->entryId.'-previous']];
         }
     }
 
@@ -36,7 +36,7 @@ class PasswordField extends BazarField
         if( $this->isInputHidden($entry) ) return '';
 
         return $this->render('@bazar/inputs/password.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : null
+            'value' => $entry !== '' ? $entry[$this->entryId] : null
         ]);
     }
 }

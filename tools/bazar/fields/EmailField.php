@@ -26,13 +26,13 @@ class EmailField extends BazarField
     public function formatInput($entry)
     {
         // TODO make sure the sendmail parameter is correctly passed
-        return array_key_exists($this->recordId, $entry) ?
+        return array_key_exists($this->entryId, $entry) ?
             [
-                $this->recordId => $entry[$this->recordId],
+                $this->entryId => $entry[$this->entryId],
                 'sendmail' => $this->sendMail
             ] :
             [
-                $this->recordId => null,
+                $this->entryId => null,
                 'sendmail' => $this->sendMail
             ];
     }
@@ -45,9 +45,9 @@ class EmailField extends BazarField
         }
 
         return $this->render('@bazar/fields/email.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : null,
+            'value' => $entry !== '' ? $entry[$this->entryId] : null,
             'showContactForm' => $this->showContactForm,
-            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->recordId) : null
+            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->entryId) : null
         ]);
     }
 
@@ -56,7 +56,7 @@ class EmailField extends BazarField
         if( $this->isInputHidden($entry) ) return '';
 
         return $this->render('@bazar/inputs/email.twig', [
-            'value' => $entry !== '' ? $entry[$this->recordId] : null
+            'value' => $entry !== '' ? $entry[$this->entryId] : null
         ]);
     }
 }
