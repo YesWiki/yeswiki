@@ -11,7 +11,7 @@ abstract class EntryListField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->recordId = $values[self::FIELD_TYPE] . $values[self::FIELD_ID] . $values[6];
+        $this->recordId = $values[self::FIELD_TYPE] . $values[self::FIELD_ID] . $values[self::FIELD_LIST_LABEL];
 
         $tabquery = array();
         if (!empty($values[self::FIELD_QUERIES])) {

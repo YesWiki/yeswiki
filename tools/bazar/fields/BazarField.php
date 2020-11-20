@@ -34,6 +34,7 @@ abstract class BazarField
     protected const FIELD_MIN_CHARS = 3;
     protected const FIELD_MAX_CHARS = 4;
     protected const FIELD_DEFAULT = 5;
+    protected const FIELD_LIST_LABEL = 6; // TODO move to ListField ?
     protected const FIELD_SUB_TYPE = 7; // TODO move to TextField ?
     protected const FIELD_REQUIRED = 8;
     protected const FIELD_SEARCHABLE = 9;
