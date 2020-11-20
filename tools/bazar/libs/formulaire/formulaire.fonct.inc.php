@@ -2340,7 +2340,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                                         <input type="checkbox" id="' . $id . '_' . $key . '" value="1" name="' .
                                         $id.'['.$key.']"';
                     if ($def != '' && in_array($key, $def)) {
-                        $checkbox_html.= ' checked="checked"';
+                        $checkbox_html.= ' checked';
                     }
                     $checkbox_html.= ' class="element_checkbox">'.$label.'
                     </label></div>';
