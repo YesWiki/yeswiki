@@ -2126,13 +2126,18 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 // Champ  acls  present
                 if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
                     // si le champ est autorisé, génère son contenu
-                    if (function_exists($fichebazar['form']['template'][$i][0])) {
-                        $res .= $fichebazar['form']['template'][$i][0](
-                            $formtemplate,
-                            $fichebazar['form']['template'][$i],
-                            'html',
-                            $fichebazar['values']
-                        );
+                    if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
+                        // TODO handle html_outside_app mode for images
+                        $res .= $fichebazar['form']['prepared'][$i]->renderField($fichebazar['values']);
+                    } else {
+                        if (function_exists($fichebazar['form']['template'][$i][0])) {
+                            $res .= $fichebazar['form']['template'][$i][0](
+                                $formtemplate,
+                                $fichebazar['form']['template'][$i],
+                                'html',
+                                $fichebazar['values']
+                            );
+                        }
                     }
                 }
             } else {
