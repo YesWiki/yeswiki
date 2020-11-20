@@ -15,6 +15,8 @@ class FieldFactory
                 return new TextField($values, $services);
             case 'mot_de_passe':
                 return new PasswordField($values, $services);
+            case 'champs_mail':
+                return new EmailField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);

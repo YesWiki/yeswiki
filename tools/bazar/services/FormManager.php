@@ -226,14 +226,11 @@ class FormManager
                     }
                     break;
 
-                case 'texte':
                 case 'textelong':
                 case 'jour':
                 case 'listedatedeb':
                 case 'listedatefin':
-                case 'mot_de_passe':
                 case 'lien_internet':
-                case 'champs_mail':
                     $prepared[$i]['id'] = $field[self::FIELD_ID];
 
                     // type de champ

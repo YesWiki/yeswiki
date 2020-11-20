@@ -16,7 +16,6 @@ abstract class BazarField
     protected $minChars;     // 3
     protected $maxChars;     // 4
     protected $default;      // 5
-    protected $pattern;      // 6
     protected $required;     // 8
     protected $helper;       // 10
     protected $readAccess;   // 11
@@ -27,6 +26,7 @@ abstract class BazarField
     protected $attributes;
     protected $values;
 
+    // GLOBAL FIELDS
     protected const FIELD_TYPE = 0;
     protected const FIELD_ID = 1;
     protected const FIELD_LABEL = 2;
@@ -34,8 +34,7 @@ abstract class BazarField
     protected const FIELD_MIN_CHARS = 3;
     protected const FIELD_MAX_CHARS = 4;
     protected const FIELD_DEFAULT = 5;
-    protected const FIELD_PATTERN = 6;
-    protected const FIELD_SUB_TYPE = 7;
+    protected const FIELD_SUB_TYPE = 7; // TODO move to TextField ?
     protected const FIELD_REQUIRED = 8;
     protected const FIELD_SEARCHABLE = 9;
     protected const FIELD_HELP = 10;
@@ -43,7 +42,7 @@ abstract class BazarField
     protected const FIELD_WRITE_ACCESS = 12;
     protected const FIELD_KEYWORDS = 13;
     protected const FIELD_SEMANTIC_PREDICATE = 14;
-    protected const FIELD_QUERIES = 15;
+    protected const FIELD_QUERIES = 15; // TODO move to EntryListField ?
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -55,7 +54,6 @@ abstract class BazarField
         $this->minChars = $values[self::FIELD_MIN_CHARS];
         $this->maxChars = $values[self::FIELD_MAX_CHARS];
         $this->default = $values[self::FIELD_DEFAULT];
-        $this->pattern = $values[self::FIELD_PATTERN];
         $this->required = $values[self::FIELD_REQUIRED] == 1;
         $this->helper = $values[self::FIELD_HELP];
         $this->readAccess = $values[self::FIELD_READ_ACCESS];
@@ -103,7 +101,7 @@ abstract class BazarField
                 'helper' => $this->helper,
                 'readAccess' => $this->readAccess,
                 'writeAccess' => $this->writeAccess,
-                'semanticName' => $this->semanticName,
+                'semanticPredicate' => $this->semanticPredicate,
                 // Other data
                 'attributes' => $this->attributes,
                 'values' => $this->values,

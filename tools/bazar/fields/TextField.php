@@ -6,7 +6,10 @@ use Psr\Container\ContainerInterface;
 
 class TextField extends BazarField
 {
-    public const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number'];
+    protected $pattern;
+
+    protected const FIELD_PATTERN = 6;
+    protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number'];
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -18,6 +21,7 @@ class TextField extends BazarField
             $this->type = 'text';
         }
 
+        $this->pattern = $values[self::FIELD_PATTERN];
         $this->maxChars = $this->maxChars ?? 255;
     }
 
