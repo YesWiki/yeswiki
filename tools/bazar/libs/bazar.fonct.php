@@ -2099,11 +2099,12 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
 
     $templateEngine = $GLOBALS['wiki']->services->get(TemplateEngine::class);
     $customTemplateValues = getValuesForCustomTemplate($fichebazar, $idfiche);
-    $customTemplateFound = true;        
+
     // Try rendering a custom template
     try {
         $custom_template = baz_get_custom_template($fichebazar['values']);
         $res .= $templateEngine->render("custom/templates/bazar/$custom_template", $customTemplateValues);
+        $customTemplateFound = true;
     } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
         $customTemplateFound = false;
     }
@@ -2113,6 +2114,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         try {           
             $custom_template = baz_get_custom_semantic_template($fichebazar['values']);
             $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
+            $customTemplateFound = true;
         } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
             $customTemplateFound = false;
         }
