@@ -25,11 +25,11 @@ class LabelField extends BazarField
 
     public function renderField($entry)
     {
-        return $this->viewText . '\n';
+        return $this->viewText . "\n";
     }
 
     public function renderInput($entry)
     {
-        return $this->formText . '\n';
+        return $this->formText . "\n";
     }
 }

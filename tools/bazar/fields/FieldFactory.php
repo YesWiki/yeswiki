@@ -23,6 +23,10 @@ class FieldFactory
                 return new HiddenField($values, $services);
             case 'labelhtml':
                 return new LabelField($values, $services);
+            case 'listedatedeb':
+            case 'listedatefin':
+            case 'jour':
+                return new DateField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
