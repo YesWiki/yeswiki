@@ -21,6 +21,8 @@ class FieldFactory
                 return new LinkField($values, $services);
             case 'champs_cache':
                 return new HiddenField($values, $services);
+            case 'labelhtml':
+                return new LabelField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);

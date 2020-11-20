@@ -1268,27 +1268,6 @@ function image(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** labelhtml() - Ajoute du texte HTML au formulaire
- *
- * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des différentes option pour le texte HTML
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
- * @return   void
- */
-function labelhtml(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    list($type, $texte_saisie, $texte_recherche, $texte_fiche) = $tableau_template;
-
-    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
-        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
-        return "";
-    } elseif ($mode == 'saisie') {
-        return $texte_saisie . "\n";
-    } elseif ($mode == 'html') {
-        return $texte_fiche . "\n";
-    }
-}
-
 /** metadatas() - Ajoute un look par defaut aux fiches
  *
  * @param    mixed   L'objet QuickForm du formulaire
