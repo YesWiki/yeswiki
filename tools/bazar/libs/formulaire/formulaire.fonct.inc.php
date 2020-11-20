@@ -763,28 +763,6 @@ function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fic
     }
 }
 
-/** champs_cache() - Ajoute un élément caché au formulaire
- *
- * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des différentes option pour l'élément caché
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
- * @param    mixed   Le tableau des valeurs de la fiche
- *
- * @return   void
- */
-function champs_cache(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
-        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
-        return "";
-    } elseif ($mode == 'saisie') {
-        return '<input type="hidden" id="'.$tableau_template[1].'" name="'.$tableau_template[1].'" value="'.$tableau_template[2].'">';
-    } elseif ($mode == 'requete') {
-        return array_key_exists($tableau_template[1], $valeurs_fiche) ?
-            array($tableau_template[1] => $valeurs_fiche[$tableau_template[1]]) : array($tableau_template[1] => null);
-    }
-}
-
 /** textelong() - Ajoute un élément de type texte long (textarea) au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire

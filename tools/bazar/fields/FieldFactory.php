@@ -19,6 +19,8 @@ class FieldFactory
                 return new EmailField($values, $services);
             case 'lien_internet':
                 return new LinkField($values, $services);
+            case 'champs_cache':
+                return new HiddenField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
