@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Field\BazarField;
+
 class SemanticTransformer
 {
     public function convertToSemanticData($formId, $data, $isHtmlFormatted = false)
@@ -24,32 +26,42 @@ class SemanticTransformer
         // Add the ID of the Bazar object
         $semanticData['@id'] = $GLOBALS['wiki']->href('', $data['id_fiche']);
 
-        $fields_infos = bazPrepareFormData($form);
-        foreach ($fields_infos as $field_info) {
+        foreach ($form['prepared'] as $field) {
+
+            if( $field instanceof BazarField ) {
+                $fieldRecordId = $field->getRecordId();
+                $fieldSemanticPredicate = $field->getSemanticPredicate();
+                $fieldType = $field->getType();
+            } else {
+                $fieldRecordId = $field['id'];
+                $fieldSemanticPredicate = $field['sem_type'];
+                $fieldType = $field['type'];
+            }
+
             // If the file is not semantically defined, ignore it
-            if ($field_info['sem_type']) {
-                $value = $data[$field_info['id']];
+            if ($fieldSemanticPredicate) {
+                $value = $data[$fieldRecordId];
                 if ($value) {
                     // We don't want this additional formatting if we are already dealing with HTML-formatted data
                     if (!$isHtmlFormatted) {
                         // If this is a file or image, add the base URL
-                        if ($field_info['type'] === 'file') {
+                        if ($fieldType === 'file') {
                             $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
                         }
 
                         // If this is a linked entity (listefiche), use the URL
-                        if (startsWith($field_info['id'], 'listefiche')) {
+                        if (startsWith($fieldRecordId, 'listefiche')) {
                             $value = $GLOBALS['wiki']->href('', $value);
                         }
                     }
 
-                    if (is_array($field_info['sem_type'])) {
+                    if (is_array($fieldSemanticPredicate)) {
                         // If we have multiple fields, duplicate the data
-                        foreach ($field_info['sem_type'] as $sem_type) {
+                        foreach ($fieldSemanticPredicate as $sem_type) {
                             $semanticData[$sem_type] = $value;
                         }
                     } else {
-                        $semanticData[$field_info['sem_type']] = $value;
+                        $semanticData[$fieldSemanticPredicate] = $value;
                     }
                 }
             }
@@ -60,29 +72,39 @@ class SemanticTransformer
 
     public function convertFromSemanticData($formId, $data)
     {
+        $form = baz_valeurs_formulaire($formId);
+
         // Initialize by copying basic information
         $nonSemanticData = ['id_fiche' => $data['id_fiche'], 'antispam' => $data['antispam'], 'id_typeannonce' => $data['id_typeannonce']];
-
-        $form = baz_valeurs_formulaire($formId);
 
         if (($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type']) {
             exit('The @type of the sent data must be ' . $form['bn_sem_type']);
         }
 
-        $fields_infos = bazPrepareFormData($form);
-        foreach ($fields_infos as $field_info) {
+        foreach ($form['prepared'] as $field) {
+
+            if( $field instanceof BazarField ) {
+                $fieldRecordId = $field->getRecordId();
+                $fieldSemanticPredicate = $field->getSemanticPredicate();
+                $fieldType = $field->getType();
+            } else {
+                $fieldRecordId = $field['id'];
+                $fieldSemanticPredicate = $field['sem_type'];
+                $fieldType = $field['type'];
+            }
+
             // If the file is not semantically defined, ignore it
-            if ($field_info['sem_type'] && $data[$field_info['sem_type']]) {
-                if ($field_info['type'] === 'date') {
-                    $date = new \DateTime($data[$field_info['sem_type']]);
-                    $nonSemanticData[$field_info['id']] = $date->format('Y-m-d');
-                    $nonSemanticData[$field_info['id'] . '_allday'] = 0;
-                    $nonSemanticData[$field_info['id'] . '_hour'] = $date->format('H');
-                    $nonSemanticData[$field_info['id'] . '_minutes'] = $date->format('i');
-                } elseif ($field_info['type'] === 'image') {
-                    $nonSemanticData['image'.$field_info['id']] = $data[$field_info['sem_type']];
+            if ($fieldSemanticPredicate && $data[$fieldSemanticPredicate]) {
+                if ($fieldType === 'date') {
+                    $date = new \DateTime($data[$fieldSemanticPredicate]);
+                    $nonSemanticData[$fieldRecordId] = $date->format('Y-m-d');
+                    $nonSemanticData[$fieldRecordId . '_allday'] = 0;
+                    $nonSemanticData[$fieldRecordId . '_hour'] = $date->format('H');
+                    $nonSemanticData[$fieldRecordId . '_minutes'] = $date->format('i');
+                } elseif ($fieldType === 'image') {
+                    $nonSemanticData['image'.$fieldRecordId] = $data[$fieldSemanticPredicate];
                 } else {
-                    $nonSemanticData[$field_info['id']] = $data[$field_info['sem_type']];
+                    $nonSemanticData[$fieldRecordId] = $data[$fieldSemanticPredicate];
                 }
             }
         }

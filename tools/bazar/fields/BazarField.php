@@ -9,20 +9,21 @@ abstract class BazarField
 {
     protected $services;
 
-    protected $type;        // 0
-    protected $id;          // 1
-    protected $label;       // 2
-    protected $size;        // 3
-    protected $minChars;    // 3
-    protected $maxChars;    // 4
-    protected $default;     // 5
-    protected $pattern;     // 6
-    protected $required;    // 8
-    protected $helper;      // 10
-    protected $readAccess;  // 11
-    protected $writeAccess; // 12
+    protected $type;         // 0
+    protected $id;           // 1
+    protected $label;        // 2
+    protected $size;         // 3
+    protected $minChars;     // 3
+    protected $maxChars;     // 4
+    protected $default;      // 5
+    protected $pattern;      // 6
+    protected $required;     // 8
+    protected $helper;       // 10
+    protected $readAccess;   // 11
+    protected $writeAccess;  // 12
+    protected $semanticPredicate; // 14
 
-    protected $recordId;    // How the field is identified in the Bazar record
+    protected $recordId;     // How the field is identified in the Bazar record
     protected $attributes;
     protected $values;
 
@@ -41,7 +42,7 @@ abstract class BazarField
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
     protected const FIELD_KEYWORDS = 13;
-    protected const FIELD_SEMANTIC = 14;
+    protected const FIELD_SEMANTIC_PREDICATE = 14;
     protected const FIELD_QUERIES = 15;
 
     public function __construct(array $values, ContainerInterface $services)
@@ -59,6 +60,7 @@ abstract class BazarField
         $this->helper = $values[self::FIELD_HELP];
         $this->readAccess = $values[self::FIELD_READ_ACCESS];
         $this->writeAccess = $values[self::FIELD_WRITE_ACCESS];
+        $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
 
         // By default, the ID is the record ID
         $this->recordId = $values[self::FIELD_ID];
@@ -101,6 +103,7 @@ abstract class BazarField
                 'helper' => $this->helper,
                 'readAccess' => $this->readAccess,
                 'writeAccess' => $this->writeAccess,
+                'semanticName' => $this->semanticName,
                 // Other data
                 'attributes' => $this->attributes,
                 'values' => $this->values,
@@ -135,6 +138,11 @@ abstract class BazarField
     public function getValues()
     {
         return $this->values;
+    }
+
+    public function getSemanticPredicate()
+    {
+        return $this->semanticPredicate;
     }
 
     abstract public function renderField($entry);
