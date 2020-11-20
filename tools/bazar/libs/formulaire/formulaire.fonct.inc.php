@@ -1102,7 +1102,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return "";
     } elseif (empty($formatage) || $formatage == 'wiki') {
         $formatage = 'wiki-textarea';
-    } elseif ($formatage == 'texte' && $mode == 'saisie') {
+    } elseif ($formatage == 'texte') {
         $formatage = 'nohtml';
     } elseif ($formatage == 'html' && $mode == 'saisie') {
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
@@ -1206,7 +1206,7 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
                 $GLOBALS['wiki']->tag = $oldpage;
                 $GLOBALS['wiki']->page = $oldpagearray;
-            } elseif ($formatage == 'nohtml' || $formatage == 'texte'  ) {
+            } elseif ($formatage == 'nohtml') {
                 $html .= htmlentities($valeurs_fiche[$identifiant], ENT_QUOTES, YW_CHARSET);
             } elseif ($formatage == 'html') {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
