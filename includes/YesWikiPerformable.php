@@ -42,7 +42,7 @@ abstract class YesWikiPerformable
         foreach($afterCallbacks as $callbackPath) {
             $this->output .= $this->performCallback($callbackPath);
         }
-        echo $this->output;
+        return $this->output;
     }
 
     /**
