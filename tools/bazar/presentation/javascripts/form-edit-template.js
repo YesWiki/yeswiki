@@ -601,7 +601,23 @@ function initializeFormbuilder(formAndListIds) {
       formBuilderInitialized = true;
     }
     if ($formBuilderTextInput.is(":focus")) return;
-    ensureFieldsNamesAreUnique();
+    
+    // Slugiy field names
+    $(".fld-name").each(function () {
+      var newValue = $(this)
+        .val()
+        .replace(/[^a-z^A-Z^_^0-9^{^}]/g, "_")
+        .toLowerCase();
+      $(this).val(newValue);
+    });
+
+    // Remove accidental br at the end of the labels
+    $('.fld-label:not(.focus-initialized)')
+      .addClass('focus-initialized')
+      .on('focusout', function() {
+        var newValue = $(this).html().replace(/(<div><br><\/div>)+$/g, '')
+        $(this).html(newValue);
+      });
 
     if ($("#form-builder-container").is(":visible")) {
       var formData = formBuilder.actions.getData();
@@ -689,22 +705,6 @@ function initializeFormbuilder(formAndListIds) {
 function initializeBuilderFromTextInput() {
   var jsonData = parseWikiTextIntoJsonData($formBuilderTextInput.val());
   formBuilder.actions.setData(JSON.stringify(jsonData));
-}
-
-// prevent user to create two fields with the same name
-function ensureFieldsNamesAreUnique() {
-  // get all input names (used after for uniqueness)
-  var allNames = [];
-  $(".fld-name").each(function () {
-    // Slugify
-    var newValue = $(this)
-      .val()
-      .replace(/[^a-z^A-Z^_^0-9^{^}]/g, "_")
-      .toLowerCase();
-    $(this).val(newValue);
-    // collect names
-    allNames.push($(this).val());
-  });
 }
 
 // transform a json object like "{ type: 'texte', name: 'bf_titre', label: 'Nom' .... }"
