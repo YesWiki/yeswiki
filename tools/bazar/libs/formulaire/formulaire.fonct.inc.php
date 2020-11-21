@@ -1102,8 +1102,6 @@ function textelong(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         return "";
     } elseif (empty($formatage) || $formatage == 'wiki') {
         $formatage = 'wiki-textarea';
-    } elseif ($formatage == 'texte') {
-        $formatage = 'nohtml';
     } elseif ($formatage == 'html' && $mode == 'saisie') {
         $langpref = strtolower($GLOBALS['prefered_language']).'-'.strtoupper($GLOBALS['prefered_language']);
         $langfile = 'tools/bazar/libs/vendor/summernote/lang/summernote-'.$langpref.'.js';
