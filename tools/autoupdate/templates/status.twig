@@ -1,5 +1,5 @@
 {% if showCore %}
-    {% include 'core.twig' %}
+    {% include '@autoupdate/core.twig' %}
 {% endif %}
 <p>&nbsp;</p>
 <!-- start of accordion -->
@@ -33,7 +33,7 @@
 		</div>
 		<div id="collapseThemes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThemes">
 			{% set exts = themes %}
-			{% include 'exts.twig' %}
+			{% include '@autoupdate/exts.twig' %}
 		</div>
 	 </div> <!-- end of panel -->
 {% endif %}
@@ -67,7 +67,7 @@
 		</div>
 		<div id="collapseTools" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTools">
 			{% set exts = tools %}
-			{% include 'exts.twig' %}
+			{% include '@autoupdate/exts.twig' %}
 		</div>
 	</div> <!-- end of panel -->
 {% endif %}
