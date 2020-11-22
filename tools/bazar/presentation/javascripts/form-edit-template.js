@@ -275,7 +275,7 @@ var typeUserAttrs = {
       options: {
         wiki: "Wiki",
         html: "Editeur Wysiwyg",
-        nohtml: "Html non interprété",
+        nohtml: "Texte non interprété",
       },
     },
     hint: { label: "Texte d'aide" },
