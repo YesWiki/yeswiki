@@ -2598,7 +2598,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     // Try rendering a custom template
     try {
         $custom_template = baz_get_custom_template($fichebazar['values']);
-        $res .= $templateEngine->render("custom/templates/bazar/$custom_template", $customTemplateValues);
+        $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
     } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
         $customTemplateFound = false;
     }
@@ -2613,7 +2613,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         }
     }        
     
-    // If not foud, use default templating
+    // If not found, use default templating
     if (!$customTemplateFound) {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
