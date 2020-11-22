@@ -386,19 +386,6 @@ class Wiki
         return $url;
     }
 
-    /**
-     * Return the absolute url of the current page. Specify the http or https protocol according to which is activated,
-     * and a specific port if used.
-     * @return string the absolute url
-     */
-    public function getAbsoluteUrl()
-    {
-        return 'http'
-            . ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? 's' : '')
-            . '://'
-            . "{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
-    }
-
     public function Redirect($url)
     {
         header("Location: $url");

@@ -2668,7 +2668,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             $fichebazar['infos'] .=
             ' <a class="btn btn-xs btn-mini btn-danger modalbox" href="'
             . $GLOBALS['wiki']->href('deletepage', $idfiche, 'incomingurl='
-                . urlencode($GLOBALS['wiki']->getAbsoluteUrl()))
+                . urlencode(getAbsoluteUrl()))
             . '" data-confirm-text="'
             . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
             . '<i class="fa fa-trash icon-trash icon-white"></i> '

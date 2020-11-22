@@ -19,6 +19,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /**
+ * Return the absolute url of the current page. Specify the http or https protocol according to which is activated,
+ * and a specific port if used.
+ * @return string the absolute url
+ */
+function getAbsoluteUrl()
+{
+    return $GLOBALS['wiki']->getBaseUrl() . $_SERVER['REQUEST_URI'];
+}
+
+/**
  * Computes the absolute path contained in an URL. For example in
  * http://hostname/path/to/site/file.php?param=value
  * the absolute path is '/path/to/site/'.
