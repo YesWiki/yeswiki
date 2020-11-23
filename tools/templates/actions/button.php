@@ -53,6 +53,6 @@ if ($hideIfNoAccess == "true" && isset($linkTag) && !$GLOBALS['wiki']->HasAccess
     if (!empty($title)) {
         $btn .= ' title="'.htmlentities($title, ENT_COMPAT, YW_CHARSET).'"';
     }
-    $btn .= '>'.$icon.(!empty($text)? htmlentities($text, ENT_COMPAT, YW_CHARSET) : '').'</a>'."\n";
+    $btn .= '>'.$icon.(!empty($text)? htmlentities($text, ENT_COMPAT, YW_CHARSET) : '').'</a>';
     echo $btn;
 }
