@@ -17,7 +17,8 @@
             <a href="<?php echo $GLOBALS['wiki']->href('edit', $tag); ?>" class="btn btn-default"><i class="icon-pencil"></i></a>
             <?php endif; ?>
             <?php if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) : ?>
-            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $tag); ?>" class="btn btn-danger"><i class="icon-trash icon-white"></i></a>
+            <a href="<?php echo $GLOBALS['wiki']->href('deletepage', $tag, 'incomingurl='
+                . urlencode(getAbsoluteUrl())); ?>" class="btn btn-danger modalbox"><i class="icon-trash icon-white"></i></a>
             <?php endif; ?>
           </div>
           <div class="clearfix"></div>

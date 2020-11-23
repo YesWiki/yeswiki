@@ -2666,8 +2666,10 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         // lien supprimer la fiche
         if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
             $fichebazar['infos'] .=
-            ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
-            . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
+            ' <a class="btn btn-xs btn-mini btn-danger modalbox" href="'
+            . $GLOBALS['wiki']->href('deletepage', $idfiche, 'incomingurl='
+                . urlencode(getAbsoluteUrl()))
+            . '" data-confirm-text="'
             . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
             . '<i class="fa fa-trash icon-trash icon-white"></i> '
             . '<span>' . _t('BAZ_SUPPRIMER').'</span></a>'."\n";
