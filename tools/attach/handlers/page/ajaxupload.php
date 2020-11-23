@@ -196,12 +196,13 @@ if ($this->HasAccess('write')) {
     }
 
     if (!class_exists('attach')) {
-        include_once 'tools/attach/actions/attach.class.php';
+        include_once 'tools/attach/libs/attach.lib.php';
     }
     $att = new attach($this);
 
     // list of valid extensions, ex. array("jpeg", "xml", "bmp")
-    $allowedExtensions = array_keys($this->config['authorized_extensions']);
+    $allowedExtensions = array_keys($this->config['authorized-extensions']);
+
     // max file size in bytes
     $sizeLimit = $att->attachConfig['max_file_size'];
 

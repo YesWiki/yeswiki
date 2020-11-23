@@ -715,7 +715,7 @@ function getImageFromBody($page, $width, $height)
         $GLOBALS['wiki']->setParameter('width', $width);
         $GLOBALS['wiki']->setParameter('height', $height);
         if (!class_exists('attach')) {
-            include 'tools/attach/actions/attach.class.php';
+            include 'tools/attach/libs/attach.lib.php';
         }
         $attach = new Attach($GLOBALS['wiki']);
         $attach->CheckParams();

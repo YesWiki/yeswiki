@@ -2,7 +2,7 @@
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
-// actions/attach.class.php
+// libs/attach.lib.php
 'ATTACH_ACTION_ATTACH' => 'Acció {{attach ...}}',
 'ATTACH_PARAM_DESC_REQUIRED' => 'El paràmetre "desc" és obligatori per una imatge',
 'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => '"height" parameter, in pixels, should be a number integer',

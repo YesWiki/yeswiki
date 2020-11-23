@@ -178,7 +178,7 @@ if (!class_exists('imageTransform')) {
          *
          *  @access private
          */
-        public function imageTransform()
+        public function __construct()
         {
         
             // Sets default values of the class' properties

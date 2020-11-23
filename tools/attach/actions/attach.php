@@ -71,7 +71,7 @@ L'action {{attach}} prend les paramétres suivants :
 
     INSTALLATION
 1) Copiez le fichier attach.php dans le répertoire des actions (/actions)
-2) Copiez le fichier attach.class.php dans le répertoire des actions (/actions)
+2) Copiez le fichier attach.lib.php dans le répertoire des actions (/actions)
 3) Copiez le fichier attachfm.php dans le repertoire des actions (/actions)
 4) Copiez le fichier filamanager.php dans le répertoire des handlers (/handlers/page)
 5) Copiez le fichier upload.php dans le répertoire des handlers (/handlers/page)
@@ -117,7 +117,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if (!class_exists('attach')) {
-    include('tools/attach/actions/attach.class.php');
+    include('tools/attach/libs/attach.lib.php');
 }
 
 $att = new attach($this);
