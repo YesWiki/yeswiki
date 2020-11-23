@@ -275,5 +275,20 @@ $GLOBALS['translations'] = array_merge(
 
         'BAZ_ALL_DAY' => 'Toute la journ&eacute;e',
         'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
+        
+        //================ Drag & Drop for Checkbox fiche =======================================
+        'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => '&Eacute;l&eacute;ments disponibles',
+        'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'S&eacute;lectionnez les &eacute;l&eacute;ments de votre liste en cliquant sur ',
+        'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM' => 'Filtrer les &eacute;l&eacute;ments',
+        'BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL' => 'Ajouter tout',
+        'BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL' => 'Retirer tout',
+        'BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM' => 'S&eacute;lectionner l\'&eacute;l&eacute;ment',
+        'BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM' => 'Enlever l\'&eacute;l&eacute;ment',
+        'BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST' => 'pour la liste',
+        'BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST' => 'de la liste',
+        'BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM' => 'Voir l\'&eacute;l&eacute;ment',
+        'BAZ_DRAG_n_DROP_CHECKBOX_YOUR' => 'Votre',
+        'BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO' => 'D&eacute;placez les &eacute;l&eacute;ments pour les mettre dans l\'ordre qui vous convient.',
+        'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'liste',
     )
 );

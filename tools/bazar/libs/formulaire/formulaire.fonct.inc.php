@@ -2325,6 +2325,39 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
                 $GLOBALS['wiki']->AddJavascript($script);
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
+            } else if ($tableau_template[7] == 'dragndrop') {
+                
+                $entries = array() ;
+                $selected_entries = array() ;
+                if (is_array($def) && count($def)>0 && !empty($def[0])) {
+                    foreach($def as $selected_name) {
+                        foreach ($tab_result as $fiche){
+                            if ($fiche['id_fiche'] == $selected_name) {
+                                $selected_entries[] = $fiche ;
+                            }
+                        }
+                    }
+                    foreach ($tab_result as $fiche){
+                        if (!in_array($fiche['id_fiche'],$def)) {
+                            $entries[] = $fiche ;
+                        }
+                    }
+                } else {
+                   $entries = $tab_result ;
+                }                
+                
+                include_once 'includes/squelettephp.class.php';
+                $exportTemplate = new SquelettePhp('checkbox_drag_and_drop.tpl.html', 'bazar');
+                $checkbox_html.= $exportTemplate->render(
+                    array(
+                        'entries' => $entries ,
+                        'selected_entries' => $selected_entries,
+                        'selected_entries_names' => $def,
+                        'id' => $id ,
+                        'form_name' => 'Fiches ' . $val_type['bn_label_nature'] ,
+                        'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
+                    )
+                );
             } else {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
                 // wakka as a beginning of html code
@@ -2359,16 +2392,16 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         return $checkbox_html;
     } elseif ($mode == 'requete') {
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != 0)) {
-            return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-        }
+        if (isset($valeurs_fiche[$id]) && ($valeurs_fiche[$id] != 0)) {
+            return array($id => $valeurs_fiche[$id]);
+        } 
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
+        if (isset($valeurs_fiche[$id]) && $valeurs_fiche[$id] != '') {
+            $html.= '<div class="BAZ_rubrique" data-id="' . $id.'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
-            $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-
+            $tab_fiche = explode(',', $valeurs_fiche[$id]);
+            
             foreach ($tab_fiche as $idfiche) {
                 $html .= '<ul>';
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
