@@ -2,7 +2,7 @@
 	<div class="col-lg-4 export-table-container">
 		<h3><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM'); ?></h3>
 		<div class="alert alert-info">
-			<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO'); ?><a class="btn btn-default btn-success btn-mini btn-xs" href="#"><i class="fas fa-plus"></i></a>.
+			<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO'); ?><div class="btn btn-default btn-success btn-mini btn-xs"><i class="fas fa-plus"></i></div>.
 		</div>
 		<div class="input-group input-prepend input-append">
 			<span class="input-group-addon add-on"><i class="fas fa-filter"></i></span>
@@ -18,7 +18,7 @@
 		</a>
 	</h4>
 	<div class="clearfix"></div>
-		<ul class="list-entries-to-export list-group">
+		<ul class="list-entries-to-export list-group connectedSortableCheckbox">
 			<?php foreach($entries as $item) : ?>
 				<?php if(!in_array($item['id_fiche'],$selected_entries_names)) : ?>
 					<li class="list-group-item">
@@ -40,7 +40,7 @@
 		</ul>
 	</div><!-- /.col-lg-4.export-table-container -->
 
-	<div class="col-lg-8">
+	<div class="col-lg-8 import-table-container">
 		<h3><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR').' '.strtolower($name); ?><a class="pull-right btn btn-xs btn-danger checkbox-remove-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL'); ?>" href="#">
 		  <i class="fas fa-minus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL'); ?>
 		</a></h3>
@@ -49,7 +49,7 @@
 		</div>
 		<div class="clearfix"></div>
 		<div class="well">
-			<ul id="checkbox-selection-container" class="list-group">
+			<ul id="checkbox-selection-container" class="list-group connectedSortableCheckbox" style="min-height:30px;">
 			<?php foreach($selected_entries as $item) : ?>
 				<li class="list-group-item">
 					<a class="hide pull-right btn btn-xs btn-success select-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM'); ?> <?php echo htmlentities($item['id_fiche']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">

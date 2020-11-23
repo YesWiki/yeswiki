@@ -28,7 +28,18 @@
 
 $(document).ready(function () {
 
-    $("#checkbox-selection-container").sortable();
+    $("#checkbox-selection-container").sortable({
+          connectWith: ".connectedSortableCheckbox",
+          receive: function( event, ui ) {
+              $(this).find('.select-page-item').click();
+          }
+        });
+    $("ul.list-entries-to-export").sortable({
+          connectWith: ".connectedSortableCheckbox",
+          receive: function( event, ui ) {
+              $(this).find('.remove-page-item').click();
+          }
+        });
 
 	$('.btn-erase-filter').on('click', function() {
         $("#filter").val('').keyup();
@@ -46,7 +57,7 @@ $(document).ready(function () {
     });
     $('.checkbox-remove-all').on('click', function(event) {
         event.stopPropagation();
-        $(this).parents('.col-lg-8').find('#checkbox-selection-container').find('.remove-page-item').click();
+        $(this).parents('.import-table-container').find('#checkbox-selection-container').find('.remove-page-item').click();
         return false;
     });
 
