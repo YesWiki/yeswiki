@@ -59,9 +59,14 @@ actions:
             options:
               pull-right: Droite
               btn-block: Toute la largeur
+      hideifnoaccess:
+        advanced: true
+        label: Masquer si l'utilisateur n'a pas accès à la page liée
+        type: checkbox
+        default: false
       nobtn:
         advanced: true
-        label: Bouton invisible
+        label: Afficher sous forme de lien
         type: checkbox
         default: 0
         checkedvalue: 1
