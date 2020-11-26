@@ -1,6 +1,6 @@
 <?php
 /*
-attach.class.php
+attach.lib.php
 Code original de ce fichier : Eric FELDSTEIN
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
 Copyright 2002, 2003 David DELON
@@ -758,7 +758,7 @@ if (!class_exists('attach')) {
             $this->file = $_POST['file'];
             $pathinfo = pathinfo($this->file);
             $ext = strtolower($pathinfo['extension']);
-            if ($this->wiki->config['authorized_extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized_extensions']))) {
+            if ($this->wiki->config['authorized-extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized-extensions']))) {
                 $_FILES['upFile']['error'] = 5;
             }
             $destFile = $this->GetFullFilename(true); //nom du fichier destination
@@ -793,7 +793,7 @@ if (!class_exists('attach')) {
                 break;
             case 5:
                 $t = array();
-                foreach ($this->wiki->config['authorized_extensions'] as $ext => $des) {
+                foreach ($this->wiki->config['authorized-extensions'] as $ext => $des) {
                     $t[] = $ext.' ('.$des.')';
                 }
                 $these = implode(', ', $t);

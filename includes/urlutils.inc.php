@@ -19,40 +19,13 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /**
- * Computes the absolute path contained in an URL. For example in
- * http://hostname/path/to/site/file.php?param=value
- * the absolute path is '/path/to/site/'.
- * @param string $url The url from which extract the absolute path.
- * You might give partial URLs, for example just "/path/to/site/file.php".
- * If no argument is given, $_SERVER['REQUEST_URI'] will be used.
- * @return string The absolute path extracted from $url
+ * Return the absolute url of the current page. Specify the http or https protocol according to which is activated,
+ * and a specific port if used.
+ * @return string the absolute url
  */
-function getURLAbsolutePath($url = null)
+function getAbsoluteUrl()
 {
-    if (!$url) {
-        $url = $_SERVER['REQUEST_URI'];
-    }
-
-    $pieces = @parse_url($url);
-    if ($pieces === false) {
-        return false;
-    }
-
-    if (empty($pieces['path'])) {
-        return '/';
-    }
-
-    $path = $pieces['path'];
-    $path_len = strlen($path);
-
-    if ($path[$path_len - 1] == '/') {
-        return $path;
-    }
-
-    $expl = explode('/', $path); // here $expl[0] should be the empty string
-    $expl[count($expl) - 1] = ''; // this makes the path /look/like/this/
-
-    return implode('/', $expl);
+    return $GLOBALS['wiki']->getBaseUrl() . $_SERVER['REQUEST_URI'];
 }
 
 /**

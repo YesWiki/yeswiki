@@ -8,7 +8,7 @@ lists all the pages of the wiki BUT bazar records.
 if ($pages = $this->LoadAll('SELECT tag FROM ' . $this->config["table_prefix"] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' AND body not LIKE \'{"%\' ORDER BY tag')) {
     foreach ($pages as $page) {
         // XXX: strtoupper is locale dependent
-        $firstChar = strtoupper($page['tag']{0});
+        $firstChar = strtoupper($page['tag'][0]);
         if (!preg_match('/'.WN_UPPER.'/', $firstChar)) {
             $firstChar = '#';
         }

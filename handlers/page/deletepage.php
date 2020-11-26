@@ -26,50 +26,82 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
+// get the GET parameter 'incomingurl' or the incoming url
+if (!empty($_REQUEST['incomingurl'])) {
+    $incomingurl = urldecode($_GET['incomingurl']);
+}
+$redirectToIncoming = false;
+$hasBeenDeleted = false;
+
 if ($this->UserIsOwner() || $this->UserIsAdmin()) {
     if ($this->IsOrphanedPage($this->GetPageTag())) {
         $tag = $this->GetPageTag();
         if (!isset($_GET['confirme']) || !$_GET['confirme'] == 'oui') {
-            $msg = '<form action="' . $this->Href('deletepage', "", "confirme=oui");
-            $msg.= '" method="post" style="display: inline">' . "\n";
-            $msg.= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page ' . $this->Link($tag) . "&nbsp;?\n";
-            $msg.= '<input type="submit" value="Oui" ';
-            $msg.= 'style="vertical-align: middle; display: inline" />' . "\n";
-            $msg.= "</form>\n";
-            $msg.= '<form action="' . $this->Href() . '" method="post" style="display: inline">' . "\n";
-            $msg.= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
-            $msg.= "</form></span>\n";
+            $params = '';
+            if (!empty($incomingurl)) {
+                $withoutExtraParams = strtok($incomingurl, '&');
+                if ($withoutExtraParams != $this->Href()) {
+                    // put the incoming url parameter only if the incoming page is not the one deleted
+                    $params = '&incomingurl=' . urlencode($incomingurl);
+                }
+            }
+
+            $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $params);
+            $msg .= '" method="post" style="display: inline">' . "\n";
+            $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page ' . $this->Link($tag) . "&nbsp;?\n";
+            $msg .= '<input type="submit" value="Oui" ';
+            $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
+            $msg .= "</form>\n";
+            $msg .= '<form action="' . $this->Href() . '" method="post" style="display: inline">' . "\n";
+            $msg .= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
+            $msg .= "</form></span>\n";
         } else {
             $this->DeleteOrphanedPage($tag);
             $this->Query("DELETE FROM " . $this->config["table_prefix"] . "triples "
-                ."WHERE resource = '" . $this->GetPageTag() . "'");
+                . "WHERE resource = '" . $this->GetPageTag() . "'");
             $this->LogAdministrativeAction($this->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
             $msg = "La page ${tag} a d&eacute;finitivement &eacute;t&eacute; supprim&eacute;e";
+
+            $hasBeenDeleted = true;
+            // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
+            $redirectToIncoming = !empty($incomingurl);
         }
     } else {
         $msg = "<p><em>Cette page n'est pas orpheline.</em></p>\n";
         $linkedFrom = $this->LoadAll("SELECT DISTINCT from_tag " . "FROM " . $this->config["table_prefix"] . "links "
             . "WHERE to_tag = '" . $this->GetPageTag() . "'");
-        $msg.= "<p>Pages ayant un lien vers " . $this->ComposeLinkToPage($this->tag, "", "", 0) . " :</p>\n";
-        $msg.= "<ul>\n";
+        $msg .= "<p>Pages ayant un lien vers " . $this->ComposeLinkToPage($this->tag, "", "", 0) . " :</p>\n";
+        $msg .= "<ul>\n";
         foreach ($linkedFrom as $page) {
-            $msg.= "<li>" . $this->ComposeLinkToPage($page["from_tag"], "", "", 0) . "</li>\n";
+            $msg .= "<li>" . $this->ComposeLinkToPage($page["from_tag"], "", "", 0) . "</li>\n";
         }
 
-        $msg.= "</ul>\n";
-        $msg.= '<form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui");
-        $msg.= '" method="post" style="display: inline">' . "\n";
-        $msg.= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page '
-            .'malgr&eacute; la pr&eacute;sence de liens ? ' . "\n";
-        $msg.= '<input type="submit" value="Oui" ';
-        $msg.= 'style="vertical-align: middle; display: inline" />' . "\n";
-        $msg.= "</form>\n";
-        $msg.= '<form action="' . $this->Href() . '" method="post" style="display: inline">' . "\n";
-        $msg.= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
-        $msg.= "</form></span>\n";
+        $msg .= "</ul>\n";
+        // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
+        $msg .= '<form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui");
+        $msg .= '" method="post" style="display: inline">' . "\n";
+        $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page '
+            . 'malgr&eacute; la pr&eacute;sence de liens ? ' . "\n";
+        $msg .= '<input type="submit" value="Oui" ';
+        $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
+        $msg .= "</form>\n";
+        $msg .= '<form action="' . $this->Href() . '" method="post" style="display: inline">' . "\n";
+        $msg .= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
+        $msg .= "</form></span>\n";
     }
 } else {
     $msg = "<p><em>Vous n'&ecirc;tes pas le propri&eacute;taire de cette page.</em></p>\n";
+}
+
+if ($hasBeenDeleted) {
+    if ($redirectToIncoming) {
+        $this->SetMessage($msg);
+        $this->Redirect($incomingurl);
+    } else {
+        // if the current page has been deleted, redirect to the homepage
+        $this->SetMessage($msg);
+        $this->Redirect($this->href("", $this->config['root_page']));
+    }
 }
 
 echo $this->Header();

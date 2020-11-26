@@ -23,7 +23,7 @@ $controller = new Controller($autoUpdate, $messages, $this);
 // Can't see where filter is used => getting rid of it
 $requestedVersion = $this->getParameter('version');
 if (isset($requestedVersion) && $requestedVersion != '') {
-    $controller->run($_GET, $requestedVersion);
+    echo $controller->run($_GET, $requestedVersion);
 } else {
-    $controller->run($_GET);
+    echo $controller->run($_GET);
 }

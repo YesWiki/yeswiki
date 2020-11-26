@@ -174,6 +174,7 @@ class Init
             'wikini_version' => '',
             'yeswiki_version' => '',
             'yeswiki_release' => '',
+            'charset' => 'UTF-8',
             'debug' => 'no',
             'mysql_host' => 'localhost',
             'mysql_database' => '',

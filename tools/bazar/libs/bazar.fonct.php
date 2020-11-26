@@ -2104,7 +2104,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     // Try rendering a custom template
     try {
         $custom_template = baz_get_custom_template($fichebazar['values']);
-        $res .= $templateEngine->render("custom/templates/bazar/$custom_template", $customTemplateValues);
+        $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
         $customTemplateFound = true;
     } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
         $customTemplateFound = false;
@@ -2121,7 +2121,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         }
     }        
     
-    // If not foud, use default templating
+    // If not found, use default templating
     if (!$customTemplateFound) {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
             if (isset($fichebazar['form']['template'][$i][11]) &&
@@ -2184,8 +2184,10 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         // lien supprimer la fiche
         if ($GLOBALS['wiki']->UserIsAdmin() or $GLOBALS['wiki']->UserIsOwner()) {
             $fichebazar['infos'] .=
-            ' <a class="btn btn-xs btn-mini btn-danger btn-delete-page-confirm" href="'
-            . $GLOBALS['wiki']->href('deletepage', $idfiche).'" data-confirm-text="'
+            ' <a class="btn btn-xs btn-mini btn-danger modalbox" href="'
+            . $GLOBALS['wiki']->href('deletepage', $idfiche, 'incomingurl='
+                . urlencode(getAbsoluteUrl()))
+            . '" data-confirm-text="'
             . _t('BAZ_CONFIRM_SUPPRIMER_FICHE').'">'
             . '<i class="fa fa-trash icon-trash icon-white"></i> '
             . '<span>' . _t('BAZ_SUPPRIMER').'</span></a>'."\n";

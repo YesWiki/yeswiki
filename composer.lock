@@ -1101,12 +1101,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/YesWiki/yeswiki-theme-margot.git",
-                "reference": "4c2be6491499371389e38b7590c6b72c3cadec22"
+                "reference": "17adff1263f91d11bcc82e17630f26acd0eaeb45"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/4c2be6491499371389e38b7590c6b72c3cadec22",
-                "reference": "4c2be6491499371389e38b7590c6b72c3cadec22",
+                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/17adff1263f91d11bcc82e17630f26acd0eaeb45",
+                "reference": "17adff1263f91d11bcc82e17630f26acd0eaeb45",
                 "shasum": ""
             },
             "require": {
@@ -1125,7 +1125,7 @@
                 "issues": "https://github.com/YesWiki/yeswiki-theme-margot/issues",
                 "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/master"
             },
-            "time": "2020-11-06T19:09:58+00:00"
+            "time": "2020-11-21T18:31:51+00:00"
         }
     ],
     "packages-dev": [

@@ -126,4 +126,31 @@ xmp { overflow: auto; }
   width: inherit;
   text-transform: inherit;
 }
+
+/* Make the list of fields smaller */
+.form-wrap.form-builder .frmb-control li {
+  padding: 5px 10px;
+  font-size: 15px;
+}
+
+.form-wrap.form-builder .frmb li {
+  padding: 5px 10px;
+}
+.form-wrap.form-builder .frmb li:first-child {
+  padding-top: 10px;
+}
+
+.form-wrap.form-builder .frmb .field-label {
+  font-weight: bold;
+}
+.form-wrap.form-builder .frmb .prev-holder {
+  font-size: 15px;
+}
+
+.form-wrap.form-builder .frmb .prev-holder input:not([type=file]),
+.form-wrap.form-builder .frmb .prev-holder textarea {
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  box-shadow: none;
+}
 	

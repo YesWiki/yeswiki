@@ -34,14 +34,14 @@ class Controller
         }
 
         if (!$this->autoUpdate->initRepository($requestedVersion)) {
-            return $this->wiki->render("@autoupdate/views/norepo.twig", []);
+            return $this->wiki->render("@autoupdate/norepo.twig", []);
         }
 
         if (isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
             ) {
             $this->upgrade($get['upgrade']);
-            return $this->wiki->render("@autoupdate/views/update.twig", [
+            return $this->wiki->render("@autoupdate/update.twig", [
                 'messages' => $this->messages,
                 'baseUrl' => $this->autoUpdate->baseUrl(),
             ]);
@@ -51,13 +51,13 @@ class Controller
             and $this->autoUpdate->isAdmin()
             ) {
             $this->delete($get['delete']);
-            return $this->wiki->render("@autoupdate/views/update.twig", [
+            return $this->wiki->render("@autoupdate/update.twig", [
                 'messages' => $this->messages,
                 'baseUrl' => $this->autoUpdate->baseUrl(),
             ]);
         }
 
-        return $this->wiki->render("@autoupdate/views/status.twig", [
+        return $this->wiki->render("@autoupdate/status.twig", [
             'baseUrl' => $this->autoUpdate->baseUrl(),
             'isAdmin' => $this->autoUpdate->isAdmin(),
             'core' => $this->autoUpdate->repository->getCorePackage(),
