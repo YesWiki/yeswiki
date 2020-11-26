@@ -58,7 +58,7 @@ class Performer
                     $objectName = preg_replace("/^__/", '', $objectName); // greetingaction
                     $objectName = preg_replace("/__$/", '', $objectName);
                     $isDefinedAsClass = false;
-                    if (endsWith($baseName, ucfirst($objectType))) {
+                    if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType)."__")) {
                         $objectName = preg_replace("/{$objectType}$/", '', $objectName); // greeting
                         $isDefinedAsClass = true;
                     }
