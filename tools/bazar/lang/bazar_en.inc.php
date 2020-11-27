@@ -213,4 +213,23 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_WEEK' => 'Week',
 'BAZ_DAY' => 'Day'
 
+'BAZ_ALL_DAY' => 'All day',
+'BAZ_ENTER_HOUR' => 'Enter hour',
+
+//================ Drag & Drop for Checkbox fiche =======================================
+'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => 'Available elements',
+'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'Select your list\'elements by clicking on ',
+'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM' => 'Filter elements',
+'BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL' => 'Add all',
+'BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL' => 'Drop All',
+'BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM' => 'Select the element',
+'BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM' => 'Drop the element',
+'BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST' => 'for the list',
+'BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST' => 'from the list',
+'BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM' => 'See element',
+'BAZ_DRAG_n_DROP_CHECKBOX_YOUR' => 'Your',
+'BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO' => 'Move elements to sort them as you wish. You can also move them from leftside to right side',
+'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'list',
+'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Empty list',
+
 ));
