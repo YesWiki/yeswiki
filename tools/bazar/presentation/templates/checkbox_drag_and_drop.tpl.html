@@ -1,24 +1,25 @@
-<div class="row row-fluid">
+<div class="row row-fluid yeswiki-checkbox checkbox">
 	<div class="col-lg-4 export-table-container">
-		<h3><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM'); ?></h3>
+		<h4><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM'); ?></h4>
 		<div class="alert alert-info">
 			<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO'); ?><div class="btn btn-default btn-success btn-mini btn-xs"><i class="fas fa-plus"></i></div>.
 		</div>
 		<div class="input-group input-prepend input-append">
 			<span class="input-group-addon add-on"><i class="fas fa-filter"></i></span>
-			<input class="form-control input-sm" type="text" id="filter" value="" placeholder="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM'); ?>" />
+			<input class="form-control input-sm" type="text" id="filter" value="" placeholder="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM'); ?>" style="background: var(--neutral-light-color);;"/>
 			<span class="input-group-btn add-on">
 				<button class="btn btn-default btn-sm btn-erase-filter" type="button">&times;</button>
 			</span>
 		</div><!-- /input-group -->
 		<span id="filter-count" class="help-block align-right"></span>
-	<h4><?php echo $form_name; ?>
+	<h5><?php echo $form_name; ?>
 		<a class="pull-right btn btn-xs btn-success checkbox-select-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>" href="#">
 		  <i class="fas fa-plus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>
 		</a>
-	</h4>
+	</h5>
 	<div class="clearfix"></div>
-		<ul class="list-entries-to-export list-group connectedSortableCheckbox">
+	  <div style="max-height:<?php echo (!empty($height)) ? $height : 300 ; ?>px;overflow:auto;">
+		<ul class="list-entries-to-export list-group connectedSortableCheckbox" >
 			<?php foreach($entries as $item) : ?>
 				<?php if(!in_array($item['id_fiche'],$selected_entries_names)) : ?>
 					<li class="list-group-item">
@@ -37,19 +38,21 @@
 					</li>
 				<?php endif; // if(!in_array($item['id_fiche'],$selected_entries_names)) ?>
 			<?php endforeach; //foreach($entries as $item) ?>
+			<li class="list-group-item empty-list" style="display:none;"><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 		</ul>
+	  </div>
 	</div><!-- /.col-lg-4.export-table-container -->
 
 	<div class="col-lg-8 import-table-container">
-		<h3><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR').' '.strtolower($name); ?><a class="pull-right btn btn-xs btn-danger checkbox-remove-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL'); ?>" href="#">
+		<h4><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR').' '.strtolower($name); ?><a class="pull-right btn btn-xs btn-danger checkbox-remove-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL'); ?>" href="#">
 		  <i class="fas fa-minus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL'); ?>
-		</a></h3>
+		</a></h4>
 		<div class="alert alert-info">
 			<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO'); ?>
 		</div>
 		<div class="clearfix"></div>
 		<div class="well">
-			<ul id="checkbox-selection-container" class="list-group connectedSortableCheckbox" style="min-height:30px;">
+			<ul id="checkbox-selection-container" class="list-group connectedSortableCheckbox" style="max-height:<?php echo (!empty($height)) ? $height + 50 : 350 ; ?>px;overflow:auto;">
 			<?php foreach($selected_entries as $item) : ?>
 				<li class="list-group-item">
 					<a class="hide pull-right btn btn-xs btn-success select-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM'); ?> <?php echo htmlentities($item['id_fiche']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">
@@ -66,11 +69,14 @@
 					&nbsp;<?php echo ' '.$item['bf_titre']; ?>
 				</li>
 			<?php endforeach; ?>
+			<li class="list-group-item empty-list"><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 			</ul>
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->
 </div> <!-- /.row -->
 <?php
   	$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
+	$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
   	$GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
+	
 ?>

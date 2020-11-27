@@ -52,12 +52,19 @@ $(document).ready(function () {
 
     $('.checkbox-select-all').on('click', function(event) {
         event.stopPropagation();
-        $(this).parents('.export-table-container').find('.list-entries-to-export').find('.select-page-item').click();
+        let text_nb_page = "Nombre de pages : " ;
+        let extract_text = filtercount.text().substring(text_nb_page.length);
+        if (extract_text == "" || 
+                extract_text == $(this).parents('.export-table-container').find('.list-entries-to-export').find('.list-group-item').find('.select-page-item').length){
+            $(this).parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
+        }
+        $(this).parents('.export-table-container').find('.list-entries-to-export').find('.list-group-item').not(':hidden').find('.select-page-item').click();
         return false;
     });
     $('.checkbox-remove-all').on('click', function(event) {
         event.stopPropagation();
-        $(this).parents('.import-table-container').find('#checkbox-selection-container').find('.remove-page-item').click();
+        $(this).parents('.import-table-container').find('#checkbox-selection-container').find('.list-group-item').not(':hidden').find('.remove-page-item').click();
+        $(this).parents(".yeswiki-checkbox").find("#checkbox-selection-container .empty-list").show() ;
         return false;
     });
 
@@ -66,11 +73,16 @@ $(document).ready(function () {
 		$this.siblings().filter('.remove-page-item').removeClass('hide');
         $this.siblings().filter(".movable").removeClass('hide');
 		$this.addClass('hide');
+        $this.parents(".yeswiki-checkbox").find("#checkbox-selection-container .empty-list").hide() ;
+        var nb_elem_this_col = $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .select-page-item").length ;
 		var listitem = $this.parent();
         listitem.find("input").prop('checked', true) ;
 		listitem.fadeOut("fast", function() {
 			listitem.appendTo("#checkbox-selection-container").fadeIn("fast");
 		});
+        if (nb_elem_this_col < 1){
+            $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
+        }
         return false;
 	});
 
@@ -79,21 +91,26 @@ $(document).ready(function () {
         $this.siblings().filter('.select-page-item').removeClass('hide');
         $this.siblings().filter(".movable").addClass('hide');
         $this.addClass('hide');
+        $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").hide() ;
+        var nb_elem_this_col = $this.parents(".yeswiki-checkbox").find("#checkbox-selection-container .select-page-item").length ;
         var listitem = $this.parent();
         listitem.find("input").prop('checked', false) ;
         listitem.fadeOut("fast", function() {
             listitem.prependTo(".list-entries-to-export").fadeIn("fast");
         });
+        if (nb_elem_this_col < 1){
+            $this.parents(".yeswiki-checkbox").find("#checkbox-selection-container .empty-list").show() ;
+        }
         return false;
     });
 
-    var listpages = $(".export-table-container .list-group-item"), filter = $("#filter"), filtercount = $("#filter-count");
+    var filter = $("#filter"), filtercount = $("#filter-count");
 	filter.keyup(function(){
         // Retrieve the input field text and reset the count to zero
         var count = 0;
 
         // Loop through the comment list
-        listpages.each(function(){
+        $(".export-table-container .list-group-item").not('.empty-list').each(function(){
             // If the list item does not contain the text phrase fade it out
             if ($(this).text().search(new RegExp(filter.val(), "i")) < 0) {
                 $(this).hide();
