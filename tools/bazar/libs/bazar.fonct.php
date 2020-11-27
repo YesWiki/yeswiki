@@ -43,6 +43,7 @@
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ListField;
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
 
@@ -1468,142 +1469,74 @@ function multiArraySearch($array, $key, $value)
  */
 function baz_gestion_formulaire()
 {
+    $formManager = $GLOBALS['wiki']->services->get(FormManager::class);
+
     $res = '';
     if (!$GLOBALS['wiki']->GetUser()) {
         $res .= '<div class="alert alert-warning">'._t('BAZ_AUTH_NEEDED').'.</div>';
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'modif') {
-        // il y a un formulaire a modifier
-
         // recuperation des informations du type de formulaire
-        $form = baz_valeurs_formulaire($_GET['idformulaire']);
+        $form = $formManager->getOne($_GET['idformulaire']);
         $res .= baz_formulaire_des_formulaires('modif_v', $form);
     } elseif (isset($_GET['action_formulaire']) &&
         $_GET['action_formulaire'] == 'new') {
         // il y a un nouveau formulaire a saisir
         $res .= baz_formulaire_des_formulaires('new_v');
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'new_v') {
-        // il y a des donnees pour ajouter un nouveau formulaire
-        $requete = 'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix']
-            .'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'.' VALUES ('.baz_nextId($GLOBALS['wiki']->config['table_prefix'].'nature', 'bn_id_nature', $GLOBALS['wiki']).', "fr-FR", "'
-            .addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'","'
-            .addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_sem_context'], YW_CHARSET, true)).'", "'
-            .addslashes(_convert($_POST['bn_sem_type'], YW_CHARSET, true)).'", '
-            .(isset($_POST['bn_sem_use_template']) ? '1' : '0').', "'
-            .addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'")';
-        $GLOBALS['wiki']->query($requete);
+        $formManager->create($_POST);
         $GLOBALS['wiki']->redirect($GLOBALS['wiki']->href('', '', 'vue=formulaire&msg=form_created', false));
-    } elseif (isset($_GET['action_formulaire']) &&
-        $_GET['action_formulaire'] == 'modif_v' &&
-        baz_a_le_droit('saisie_formulaire')) {
+    } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'modif_v' && baz_a_le_droit('saisie_formulaire')) {
         //il y a des donnees pour modifier un formulaire
-        $requete =
-        'UPDATE '.$GLOBALS['wiki']->config['table_prefix'].'nature SET '
-        .'`bn_label_nature`="'.addslashes(_convert($_POST['bn_label_nature'], YW_CHARSET, true)).'" ,'
-        .'`bn_template`="'.addslashes(_convert($_POST['bn_template'], YW_CHARSET, true)).'" ,'
-        .'`bn_description`="'.addslashes(_convert($_POST['bn_description'], YW_CHARSET, true)).'" ,'
-        .'`bn_sem_context`="'.addslashes(_convert($_POST['bn_sem_context'], YW_CHARSET, true)).'" ,'
-        .'`bn_sem_type`="'.addslashes(_convert($_POST['bn_sem_type'], YW_CHARSET, true)).'" ,'
-        .'`bn_sem_use_template`='. (isset($_POST['bn_sem_use_template']) ? '1' : '0') .' ,'
-        .'`bn_condition`="'.addslashes(_convert($_POST['bn_condition'], YW_CHARSET, true)).'"'
-        .' WHERE `bn_id_nature`='.$_POST['bn_id_nature'];
-        $resultat = $GLOBALS['wiki']->query($requete);
-
-        $res .=
-        '<div class="alert alert-success">'."\n".
-        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
-        _t('BAZ_FORMULAIRE_MODIFIE').'</div>'."\n";
+        $formManager->update($_POST);
+        $res .= '<div class="alert alert-success">'."\n".
+                '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
+                _t('BAZ_FORMULAIRE_MODIFIE').'</div>'."\n";
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'delete' && baz_a_le_droit('saisie_formulaire')) {
         // il y a un id de formulaire a supprimer, suppression de l'entree dans la table nature
-        $requete =
-        'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'nature WHERE bn_id_nature='.
-        $_GET['idformulaire'];
-        $resultat = $GLOBALS['wiki']->query($requete);
-
-        //TODO : suppression des fiches associees au formulaire
-
-        $res .=
-        '<div class="alert alert-success">'."\n".
-        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
-        _t('BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES').'</div>'."\n";
+        $formManager->delete($_GET['idformulaire']);
+        $res .= '<div class="alert alert-success">'."\n".
+                '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
+                _t('BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES').'</div>'."\n";
     } elseif (isset($_GET['action_formulaire']) && $_GET['action_formulaire'] == 'empty' && baz_a_le_droit('saisie_formulaire')) {
-        // il y a un id de formulaire a supprimer, suppression de l'entree dans la table nature
-        $query = 'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'acls WHERE page_tag IN (SELECT tag FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE tag IN (SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$_GET['idformulaire'].'"%\' );';
-        $resultat = $GLOBALS['wiki']->query($query);
-
-        $query = 'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE tag IN (SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$_GET['idformulaire'].'"%\';';
-        $resultat = $GLOBALS['wiki']->query($query);
-
-        $query = 'DELETE FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples WHERE resource NOT IN (SELECT tag FROM '.$GLOBALS['wiki']->config['table_prefix'].'pages WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";';
-        $resultat = $GLOBALS['wiki']->query($query);
-
-        $res .=
-        '<div class="alert alert-success">'."\n".
-        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
-        _t('BAZ_FORMULAIRE_VIDE').'</div>'."\n";
+        // il y a un id de formulaire a supprimer, suppression des fiches correspondantes
+        $formManager->clear($_GET['idformulaire']);
+        $res .= '<div class="alert alert-success">'."\n".
+                '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
+                _t('BAZ_FORMULAIRE_VIDE').'</div>'."\n";
     }
 
     // affichage de la liste des templates a modifier ou supprimer
-    if (!isset($_GET['action_formulaire']) ||
-        ($_GET['action_formulaire'] != 'modif' &&
-            $_GET['action_formulaire'] != 'new')) {
+    if (!isset($_GET['action_formulaire']) || ($_GET['action_formulaire'] != 'modif' && $_GET['action_formulaire'] != 'new')) {
         $res = '';
         if (isset($_GET['msg']) && $_GET['msg']=='form_created') {
-            $res .=
-        '<div class="alert alert-success">'."\n".
-        '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
-        _t('BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE').'</div>'."\n";
+            $res .= '<div class="alert alert-success">'."\n".
+                    '<a data-dismiss="alert" class="close" type="button">&times;</a>'.
+                    _t('BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE').'</div>'."\n";
         }
-        $tab_forms['forms'] = array();
-        $forms = baz_valeurs_formulaire('');
+        $tab_forms['forms'] = [];
+        $forms = $formManager->getAll();
 
-        // il y a des formulaires à importer
+        // If there are forms to import
         if (isset($_POST['imported-form'])) {
             foreach ($_POST['imported-form'] as $id => $value) {
                 $value = json_decode($value, true);
-                $searchformname = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
-                // si un formulaire du même nom existe, on le remplace
-                if (count($searchformname) > 0) {
-                    $localform = array_pop($searchformname);
-                    $value['bn_id_nature'] = $localform['bn_id_nature'];
-                    $requete =
-                    'UPDATE '.$GLOBALS['wiki']->config['table_prefix'].
-                    'nature SET '
-                    .'`bn_label_nature`="'.addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'" ,'
-                    .'`bn_template`="'.addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'" ,'
-                    .'`bn_description`="'.addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'" ,'
-                    .'`bn_sem_context`="'.addslashes(_convert($value['bn_sem_context'], YW_CHARSET, true)).'" ,'
-                    .'`bn_sem_type`="'.addslashes(_convert($value['bn_sem_type'], YW_CHARSET, true)).'" ,'
-                    .'`bn_sem_use_template`='.(isset($value['bn_sem_use_template']) ? $value['bn_sem_use_template'] : '1').' ,'
-                    .'`bn_condition`="'.addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'"'
-                    .' WHERE `bn_id_nature`='.$value['bn_id_nature'];
-
-                    $forms[$value['bn_id_nature']] = $value;
+                $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
+                // If a form with the same name exist, replace it
+                if (count($existingForms) > 0) {
+                    // Replace with ID of existing formulaire
+                    $value['bn_id_nature'] = $existingForms[0]['bn_id_nature'];
+                    $formManager->update($value);
                 } else {
-                    // si un formulaire existant porte le meme id on enregistre un nouvel id
-                    $searchformid = multiArraySearch($forms, 'bn_id_nature', $id);
-                    if (count($searchformid) > 0) {
-                        $id = baz_nextId();
-                    }
-                    $requete =
-                    'INSERT INTO '.$GLOBALS['wiki']->config['table_prefix'].
-                    'nature (`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description`, `bn_sem_context`, `bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'.' VALUES ('.$id.', "fr-FR", "'
-                    .addslashes(_convert($value['bn_label_nature'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_template'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_description'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_sem_context'], YW_CHARSET, true)).'", "'
-                    .addslashes(_convert($value['bn_sem_type'], YW_CHARSET, true)).'", '
-                    .(isset($value['bn_sem_use_template']) ? $value['bn_sem_use_template'] : '1').', "'
-                    .addslashes(_convert($value['bn_condition'], YW_CHARSET, true)).'")';
-                    // on ajoute le formulaire à la liste des formulaires existants
-                    $forms[$id] = $value;
+                    $value['bn_id_nature'] = $id;
+                    $formManager->create($value);
                 }
-                $GLOBALS['wiki']->query($requete);
+                $forms[$value['bn_id_nature']] = $value;
             }
+            dump($forms);
             ksort($forms);
             $res .= '<div class="alert alert-success">'. _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
         }
+
         if (is_array($forms)) {
             foreach ($forms as $key => $ligne) {
                 $tab_forms['forms'][$ligne['bn_id_nature']]['title'] = $ligne['bn_label_nature'];
@@ -1903,38 +1836,6 @@ function baz_forms_and_lists_ids()
         $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
     }
     return ['lists' => $lists, 'forms' => $forms];
-}
-
-
-/**
- *  Renvoie le prochain ID libre de la table nature.
- *  Si aucun formulaire, l'ID 1 est assigné.
- *  Les ID de 1000 à 10000 sont réservés pour les fonctionnalités des extensions. Ainsi si l'id 999 est déjà pris,
- *  on rend ensuite comme premier id disponible 10001.
- *  @return integer   Le prochain ID libre
- */
-function baz_nextId()
-{
-    $requete = 'SELECT MAX(bn_id_nature) AS maxi FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature'
-        . ' where bn_id_nature < 1000';
-    $ligne = $GLOBALS['wiki']->LoadSingle($requete);
-
-    if (!$ligne['maxi']) {
-        return 1;
-    }
-    if ($ligne['maxi'] < 999) {
-        return $ligne['maxi'] + 1;
-    }
-
-    $requete = 'SELECT MAX(bn_id_nature) AS maxi FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature'
-        . ' where bn_id_nature > 10000';
-    $ligne = $GLOBALS['wiki']->LoadSingle($requete);
-
-    if (!$ligne['maxi']) {
-        return 10001;
-    } else {
-        return $ligne['maxi'] + 1;
-    }
 }
 
 function getHtmlDataAttributes($fiche, $formtab = '')

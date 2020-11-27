@@ -137,3 +137,11 @@ function formulaire_valeurs_template_champs($template)
 {
     return $GLOBALS['wiki']->services->get(FormManager::class)->parseTemplate($template);
 }
+
+/**
+ * @deprecated Use FormManager::findNewId
+ */
+function baz_nextId()
+{
+    return $GLOBALS['wiki']->services->get(FormManager::class)->findNewId();
+}

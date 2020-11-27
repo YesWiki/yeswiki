@@ -93,6 +93,91 @@ class FormManager
         return $results;
     }
 
+    // TODO Pass a Form object instead of a raw array
+    public function create($data)
+    {
+        // If ID is not set or if it is already used, find a new ID
+        if( !$data['bn_id_nature'] || $this->getOne($data['bn_id_nature']) ) {
+            $data['bn_id_nature'] = $this->findNewId();
+        }
+
+        return $this->dbService->query('INSERT INTO '. $this->dbService->prefixTable('nature')
+            .'(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'
+            .' VALUES ('.$data['bn_id_nature'].', "fr-FR", "'
+            .addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)).'","'
+            .addslashes(_convert($data['bn_template'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($data['bn_description'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)).'", "'
+            .addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)).'", '
+            .(isset($data['bn_sem_use_template']) ? '1' : '0').', "'
+            .addslashes(_convert($data['bn_condition'], YW_CHARSET, true)).'")');
+    }
+
+    public function update($data)
+    {
+        $test = $this->dbService->query('UPDATE'.$this->dbService->prefixTable('nature').'SET '
+            .'`bn_label_nature`="'.addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)).'" ,'
+            .'`bn_template`="'.addslashes(_convert($data['bn_template'], YW_CHARSET, true)).'" ,'
+            .'`bn_description`="'.addslashes(_convert($data['bn_description'], YW_CHARSET, true)).'" ,'
+            .'`bn_sem_context`="'.addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)).'" ,'
+            .'`bn_sem_type`="'.addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)).'" ,'
+            .'`bn_sem_use_template`='. (isset($data['bn_sem_use_template']) ? '1' : '0') .' ,'
+            .'`bn_condition`="'.addslashes(_convert($data['bn_condition'], YW_CHARSET, true)).'"'
+            .' WHERE `bn_id_nature`='.$data['bn_id_nature']);
+
+        dump($test);
+
+        return $test;
+    }
+
+    public function delete($id)
+    {
+        //TODO : suppression des fiches associees au formulaire
+
+        return $this->dbService->query('DELETE FROM '.$this->dbService->prefixTable('nature').'WHERE bn_id_nature='. $id );
+    }
+
+    public function clear($id)
+    {
+        $this->dbService->query(
+            'DELETE FROM'. $this->dbService->prefixTable('acls').
+            'WHERE page_tag IN (SELECT tag FROM '.$this->dbService->prefixTable('pages').
+            'WHERE tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\' );');
+
+        // TODO use PageManager
+        $this->dbService->query(
+            'DELETE FROM'.$this->dbService->prefixTable('pages').
+            'WHERE tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\';');
+
+        // TODO use TripleStore
+        $this->dbService->query(
+            'DELETE FROM'.$this->dbService->prefixTable('triples').
+            'WHERE resource NOT IN (SELECT tag FROM '.$this->dbService->prefixTable('pages').
+            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";');
+    }
+
+    public function findNewId()
+    {
+        $result = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
+
+        if (!$result['maxi']) {
+            return 1;
+        }
+        if ($result['maxi'] < 999) {
+            return $result['maxi'] + 1;
+        }
+
+        $result = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
+
+        if (!$result['maxi']) {
+            return 10001;
+        } else {
+            return $result['maxi'] + 1;
+        }
+    }
+
     /**
      * Découpe le template et renvoie un tableau structuré
      *
