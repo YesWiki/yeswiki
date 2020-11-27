@@ -9,7 +9,7 @@ use YesWiki\Wiki;
  * Any of these object can be easily customize with before and after callback
  * To create a before callback, use same file name prefixed by "__"
  * To create an after callback, use same file name suffixed by "__"
- * For example: 
+ * For example:
  *  1) tools/bazar/actions/BazarShowAction.php
  *  2) tools/attach/actions/__BazarShowAction.php
  *  3) tools/security/actions/BazarShowAction__.php
@@ -36,20 +36,21 @@ class Performer
 
         // get the list of all existing objects (actions, handlers, formatters...)
         $folders = array_merge([''], $wiki->extensions); // root folder + extensions folders
-        foreach(Performer::TYPES as $type) {
+        foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
-            foreach ($folders as $folder) {            
-                foreach(Performer::PATHS[$type] as $path) {
+            foreach ($folders as $folder) {
+                foreach (Performer::PATHS[$type] as $path) {
                     $this->findObjectInPath($folder . $path, $type);
                 }
             }
-        }          
+        }
     }
 
     /**
      * Read existing PHP files in the current $dir, and store them inside $this->objectList
      */
-    private function findObjectInPath($dir, $objectType) {
+    private function findObjectInPath($dir, $objectType)
+    {
         if (file_exists($dir) && $dh = opendir($dir)) {
             while (($file = readdir($dh)) !== false) {
                 if (preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
@@ -66,8 +67,7 @@ class Performer
                     $object = &$this->objectList[$objectType][$objectName];
                     if (startsWith($file, '__')) {
                         $object['before_callbacks'][] = $filePath;
-                        
-                    } else if (endsWith($file, '__.php')) {
+                    } elseif (endsWith($file, '__.php')) {
                         $object['after_callbacks'][] = $filePath;
                     } else {
                         $object = [
@@ -77,14 +77,14 @@ class Performer
                             'before_callbacks' => $object['before_callbacks'] ?? [],
                             'after_callbacks' => $object['after_callbacks'] ?? [],
                         ];
-                    }  
+                    }
                 }
             }
-        }         
+        }
     }
 
     public function run($objectName, $objectType, $vars = [])
-    {                
+    {
         if (!Performer::TYPES[$objectType]) {
             return "Invalid type $objectType";
         }
@@ -95,7 +95,7 @@ class Performer
         }
         
         // Find object
-        $object = $this->objectList[$objectType][$objectName];
+        $object = isset($this->objectList[$objectType][$objectName]) ? $this->objectList[$objectType][$objectName] : false;
         if (!$object) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND') . '</div>' . "\n";
         }
