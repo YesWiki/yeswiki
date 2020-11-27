@@ -6,12 +6,12 @@
 		</div>
 		<div class="input-group input-prepend input-append">
 			<span class="input-group-addon add-on"><i class="fas fa-filter"></i></span>
-			<input class="form-control input-sm" type="text" id="filter" value="" placeholder="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM'); ?>" style="background: var(--neutral-light-color);;"/>
+			<input class="checkbox-filter-input form-control input-sm" type="text" id="filter-<?php echo $id; ?>" value="" placeholder="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM'); ?>" style="background: var(--neutral-light-color);;"/>
 			<span class="input-group-btn add-on">
 				<button class="btn btn-default btn-sm btn-erase-filter" type="button">&times;</button>
 			</span>
 		</div><!-- /input-group -->
-		<span id="filter-count" class="help-block align-right"></span>
+		<span class="checkbox-filter-count help-block align-right"></span>
 	<h5><?php echo $form_name; ?>
 		<a class="pull-right btn btn-xs btn-success checkbox-select-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>" href="#">
 		  <i class="fas fa-plus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>
@@ -19,7 +19,7 @@
 	</h5>
 	<div class="clearfix"></div>
 	  <div style="max-height:<?php echo (!empty($height)) ? $height : 300 ; ?>px;overflow:auto;">
-		<ul class="list-entries-to-export list-group connectedSortableCheckbox" >
+		<ul class="list-entries-to-export list-group group-<?php echo $label; ?>" data-group="<?php echo $label; ?>">
 			<?php foreach($entries as $item) : ?>
 				<?php if(!in_array($item['id_fiche'],$selected_entries_names)) : ?>
 					<li class="list-group-item">
@@ -52,7 +52,7 @@
 		</div>
 		<div class="clearfix"></div>
 		<div class="well">
-			<ul id="checkbox-selection-container" class="list-group connectedSortableCheckbox" style="max-height:<?php echo (!empty($height)) ? $height + 50 : 350 ; ?>px;overflow:auto;">
+			<ul class="checkbox-selection-container list-group group-<?php echo $label; ?>" style="max-height:<?php echo (!empty($height)) ? $height + 50 : 350 ; ?>px;overflow:auto;" data-group="<?php echo $label; ?>">
 			<?php foreach($selected_entries as $item) : ?>
 				<li class="list-group-item">
 					<a class="hide pull-right btn btn-xs btn-success select-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM'); ?> <?php echo htmlentities($item['id_fiche']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">
@@ -69,7 +69,7 @@
 					&nbsp;<?php echo ' '.$item['bf_titre']; ?>
 				</li>
 			<?php endforeach; ?>
-			<li class="list-group-item empty-list"><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
+			<li class="list-group-item empty-list" <?php echo (count($selected_entries)>0) ? 'style="display:none;"' :'' ; ?>><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 			</ul>
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->

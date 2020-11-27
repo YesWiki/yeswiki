@@ -2350,6 +2350,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $exportTemplate = new SquelettePhp('checkbox_drag_and_drop.tpl.html', 'bazar');
                 $checkbox_html.= $exportTemplate->render(
                     array(
+                        'label' => $tableau_template[6],
                         'entries' => $entries ,
                         'selected_entries' => $selected_entries,
                         'selected_entries_names' => $def,

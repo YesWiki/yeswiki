@@ -17,54 +17,56 @@
  * | Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA                            |
  * +------------------------------------------------------------------------------------------------------+
  *
- * javascript for pages export
+ * javascript for checkboxfiche dragndrop
  *
  *
- * @package 	publication
+ * @package 	publication > bazar
  * @author		Florian Schmitt <florian@outils-reseaux.org>
+ * @author		Jérémy Dufraisse 
  *
  *
  **/
 
 $(document).ready(function () {
+    
+    $(".yeswiki-checkbox").each(function(){
+        if ($(this).find(".list-entries-to-export .select-page-item").length < 1){
+            $(this).find(".list-entries-to-export .empty-list").show() ;
+        }
+    });
 
-    $("#checkbox-selection-container").sortable({
-          connectWith: ".connectedSortableCheckbox",
+    $("ul.checkbox-selection-container").each(function(){
+        var text_id = "ul.list-entries-to-export.group-"+$(this).data('group') ;
+        $(this).sortable({
+          connectWith: text_id ,
           receive: function( event, ui ) {
               $(this).find('.select-page-item').click();
           }
-        });
-    $("ul.list-entries-to-export").sortable({
-          connectWith: ".connectedSortableCheckbox",
+        })
+    });
+        
+    $("ul.list-entries-to-export").each(function(){
+        var text_id = "ul.checkbox-selection-container.group-"+$(this).data('group') ;
+        $(this).sortable({
+          connectWith: text_id ,
           receive: function( event, ui ) {
               $(this).find('.remove-page-item').click();
           }
-        });
-
-	$('.btn-erase-filter').on('click', function() {
-        $("#filter").val('').keyup();
+        })
     });
 
-	$('#checkbox-selection-container').on('click', '.remove-page-break', function() {
-        $(this).parent().remove();
-        return false;
+	$('.btn-erase-filter').on('click', function() {
+        $(this).parents('.input-group').find('.checkbox-filter-input').val('').keyup();
     });
 
     $('.checkbox-select-all').on('click', function(event) {
         event.stopPropagation();
-        let text_nb_page = "Nombre de pages : " ;
-        let extract_text = filtercount.text().substring(text_nb_page.length);
-        if (extract_text == "" || 
-                extract_text == $(this).parents('.export-table-container').find('.list-entries-to-export').find('.list-group-item').find('.select-page-item').length){
-            $(this).parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
-        }
-        $(this).parents('.export-table-container').find('.list-entries-to-export').find('.list-group-item').not(':hidden').find('.select-page-item').click();
+        $(this).parents('.export-table-container').find('.list-entries-to-export .list-group-item').not(':hidden').find('.select-page-item').click();
         return false;
     });
     $('.checkbox-remove-all').on('click', function(event) {
         event.stopPropagation();
-        $(this).parents('.import-table-container').find('#checkbox-selection-container').find('.list-group-item').not(':hidden').find('.remove-page-item').click();
-        $(this).parents(".yeswiki-checkbox").find("#checkbox-selection-container .empty-list").show() ;
+        $(this).parents('.import-table-container').find('ul.checkbox-selection-container .list-group-item').not(':hidden').find('.remove-page-item').click();
         return false;
     });
 
@@ -73,16 +75,16 @@ $(document).ready(function () {
 		$this.siblings().filter('.remove-page-item').removeClass('hide');
         $this.siblings().filter(".movable").removeClass('hide');
 		$this.addClass('hide');
-        $this.parents(".yeswiki-checkbox").find("#checkbox-selection-container .empty-list").hide() ;
-        var nb_elem_this_col = $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .select-page-item").length ;
+        $this.parents(".yeswiki-checkbox").find("ul.checkbox-selection-container .empty-list").hide() ;
 		var listitem = $this.parent();
         listitem.find("input").prop('checked', true) ;
 		listitem.fadeOut("fast", function() {
-			listitem.appendTo("#checkbox-selection-container").fadeIn("fast");
-		});
-        if (nb_elem_this_col < 1){
-            $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
-        }
+			listitem.appendTo($(this).parents(".yeswiki-checkbox").find("ul.checkbox-selection-container")).fadeIn("fast");
+            if ($(this).parents(".yeswiki-checkbox").find(".list-entries-to-export .select-page-item").length < 1){
+                $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
+            }
+            $(this).parents(".yeswiki-checkbox").find('.checkbox-filter-input').keyup();
+        });
         return false;
 	});
 
@@ -92,25 +94,25 @@ $(document).ready(function () {
         $this.siblings().filter(".movable").addClass('hide');
         $this.addClass('hide');
         $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").hide() ;
-        var nb_elem_this_col = $this.parents(".yeswiki-checkbox").find("#checkbox-selection-container .select-page-item").length ;
         var listitem = $this.parent();
         listitem.find("input").prop('checked', false) ;
         listitem.fadeOut("fast", function() {
-            listitem.prependTo(".list-entries-to-export").fadeIn("fast");
+            listitem.prependTo($(this).parents(".yeswiki-checkbox").find("ul.list-entries-to-export")).fadeIn("fast");
+            if ($(this).parents(".yeswiki-checkbox").find(".checkbox-selection-container .select-page-item").length < 1){
+                $this.parents(".yeswiki-checkbox").find(".checkbox-selection-container .empty-list").show() ;
+            }
+            $(this).parents(".yeswiki-checkbox").find('.checkbox-filter-input').keyup();
         });
-        if (nb_elem_this_col < 1){
-            $this.parents(".yeswiki-checkbox").find("#checkbox-selection-container .empty-list").show() ;
-        }
         return false;
     });
 
-    var filter = $("#filter"), filtercount = $("#filter-count");
+    var filter = $(".checkbox-filter-input");
 	filter.keyup(function(){
         // Retrieve the input field text and reset the count to zero
         var count = 0;
 
         // Loop through the comment list
-        $(".export-table-container .list-group-item").not('.empty-list').each(function(){
+        $(this).parents(".export-table-container").find(".list-group-item").not('.empty-list').each(function(){
             // If the list item does not contain the text phrase fade it out
             if ($(this).text().search(new RegExp(filter.val(), "i")) < 0) {
                 $(this).hide();
@@ -124,6 +126,6 @@ $(document).ready(function () {
 
         // Update the count
         var numberItems = count;
-        filtercount.text("Nombre de pages : "+count);
+        $(this).parents(".export-table-container").find(".checkbox-filter-count").text("Nombre de pages : "+count);
     });
 });
