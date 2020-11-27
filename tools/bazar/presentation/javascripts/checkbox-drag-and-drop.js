@@ -41,7 +41,8 @@ $(document).ready(function () {
           connectWith: text_id ,
           receive: function( event, ui ) {
               $(this).find('.select-page-item').click();
-          }
+          },
+          cancel: ".empty-list"
         })
     });
         
@@ -51,7 +52,8 @@ $(document).ready(function () {
           connectWith: text_id ,
           receive: function( event, ui ) {
               $(this).find('.remove-page-item').click();
-          }
+          },
+          cancel: ".empty-list"
         })
     });
 
