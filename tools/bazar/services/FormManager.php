@@ -268,7 +268,7 @@ class FormManager
                 case 'listefiche':
                 case 'checkboxfiche':
                     $prepared[$i]['id'] = $field[self::FIELD_TYPE] . $field[self::FIELD_ID] . $field[6];
-
+                    $prepared[$i]['values'] = [];
                     // type de champ
                     if (in_array($field[self::FIELD_TYPE], array('listefiche', 'liste'))) {
                         $prepared[$i]['type'] = 'select';
