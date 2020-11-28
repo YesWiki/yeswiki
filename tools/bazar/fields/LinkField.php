@@ -17,6 +17,6 @@ class LinkField extends BazarField
 
     public function formatInput()
     {
-        return [$this->entryId => $this->value !== 'https://' ? $this->value : null ];
+        return [$this->propertyName => $this->value !== 'https://' ? $this->value : null ];
     }
 }

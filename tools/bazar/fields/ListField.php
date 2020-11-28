@@ -21,7 +21,7 @@ abstract class ListField extends BazarField
         $this->listLabel = $values[self::FIELD_LIST_LABEL];
         $this->options = [];
 
-        $this->entryId = $values[self::FIELD_TYPE] . $values[self::FIELD_NAME] . $values[self::FIELD_LIST_LABEL];
+        $this->propertyName = $values[self::FIELD_TYPE] . $values[self::FIELD_NAME] . $values[self::FIELD_LIST_LABEL];
     }
 
     public function getOptions()

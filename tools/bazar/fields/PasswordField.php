@@ -18,10 +18,10 @@ class PasswordField extends BazarField
     {
         if (!empty($this->value)) {
             // If a new password has been set, encode it
-            return [$this->entryId => md5($this->value)];
+            return [$this->propertyName => md5($this->value)];
         } else {
             // If no new password was set, keep the old encoded one
-            return [$this->entryId => $this->getEntryProp($this->entryId.'-previous')];
+            return [$this->propertyName => $this->getEntryProp($this->propertyName.'-previous')];
         }
     }
 

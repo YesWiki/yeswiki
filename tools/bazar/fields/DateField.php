@@ -13,11 +13,11 @@ class DateField extends BazarField
     
     public function formatInput()
     {
-        if (!empty($this->value) && isset($this->entry[$this->entryId . '_allday']) && $this->entry[$this->entryId . '_allday'] == 0
-             && isset($this->entry[$this->entryId . '_hour']) && isset($this->entry[$this->entryId . '_minutes'])) {
-            $this->value = date("c", strtotime($this->value . ' ' . $this->entry[$this->entryId . '_hour'] . ':' . $this->entry[$this->entryId . '_minutes']));
+        if (!empty($this->value) && isset($this->entry[$this->propertyName . '_allday']) && $this->entry[$this->propertyName . '_allday'] == 0
+             && isset($this->entry[$this->propertyName . '_hour']) && isset($this->entry[$this->propertyName . '_minutes'])) {
+            $this->value = date("c", strtotime($this->value . ' ' . $this->entry[$this->propertyName . '_hour'] . ':' . $this->entry[$this->propertyName . '_minutes']));
         }
-        return [$this->entryId => $this->value];
+        return [$this->propertyName => $this->value];
     }
     
     public function renderField()

@@ -29,18 +29,18 @@ class SemanticTransformer
         foreach ($form['prepared'] as $field) {
 
             if( $field instanceof BazarField ) {
-                $fieldEntryId = $field->getEntryId();
+                $fieldPropName = $field->getPropertyName();
                 $fieldSemanticPredicate = $field->getSemanticPredicate();
                 $fieldType = $field->getType();
             } else {
-                $fieldEntryId = $field['id'];
+                $fieldPropName = $field['id'];
                 $fieldSemanticPredicate = $field['sem_type'];
                 $fieldType = $field['type'];
             }
 
             // If the file is not semantically defined, ignore it
             if ($fieldSemanticPredicate) {
-                $value = $data[$fieldEntryId];
+                $value = $data[$fieldPropName];
                 if ($value) {
                     // We don't want this additional formatting if we are already dealing with HTML-formatted data
                     if (!$isHtmlFormatted) {
@@ -50,7 +50,7 @@ class SemanticTransformer
                         }
 
                         // If this is a linked entity (listefiche), use the URL
-                        if (startsWith($fieldEntryId, 'listefiche')) {
+                        if (startsWith($fieldPropName, 'listefiche')) {
                             $value = $GLOBALS['wiki']->href('', $value);
                         }
                     }
@@ -84,11 +84,11 @@ class SemanticTransformer
         foreach ($form['prepared'] as $field) {
 
             if( $field instanceof BazarField ) {
-                $fieldEntryId = $field->getEntryId();
+                $fieldPropName = $field->getPropertyName();
                 $fieldSemanticPredicate = $field->getSemanticPredicate();
                 $fieldType = $field->getType();
             } else {
-                $fieldEntryId = $field['id'];
+                $fieldPropName = $field['id'];
                 $fieldSemanticPredicate = $field['sem_type'];
                 $fieldType = $field['type'];
             }
@@ -98,14 +98,14 @@ class SemanticTransformer
                 // TODO Handle this inside the Field classes ?
                 if ($fieldType === 'date') {
                     $date = new \DateTime($data[$fieldSemanticPredicate]);
-                    $nonSemanticData[$fieldEntryId] = $date->format('Y-m-d');
-                    $nonSemanticData[$fieldEntryId . '_allday'] = 0;
-                    $nonSemanticData[$fieldEntryId . '_hour'] = $date->format('H');
-                    $nonSemanticData[$fieldEntryId . '_minutes'] = $date->format('i');
+                    $nonSemanticData[$fieldPropName] = $date->format('Y-m-d');
+                    $nonSemanticData[$fieldPropName . '_allday'] = 0;
+                    $nonSemanticData[$fieldPropName . '_hour'] = $date->format('H');
+                    $nonSemanticData[$fieldPropName . '_minutes'] = $date->format('i');
                 } elseif ($fieldType === 'image') {
-                    $nonSemanticData['image'.$fieldEntryId] = $data[$fieldSemanticPredicate];
+                    $nonSemanticData['image'.$fieldPropName] = $data[$fieldSemanticPredicate];
                 } else {
-                    $nonSemanticData[$fieldEntryId] = $data[$fieldSemanticPredicate];
+                    $nonSemanticData[$fieldPropName] = $data[$fieldSemanticPredicate];
                 }
             }
         }

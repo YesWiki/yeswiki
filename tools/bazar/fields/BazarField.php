@@ -25,8 +25,8 @@ abstract class BazarField
     // The Bazar entry
     protected $entry;
     // How the field is identified in the Bazar entry
-    protected $entryId;
-    // value of the current field = entry[entryId]
+    protected $propertyName;
+    // value of the current field = entry[propertyName]
     protected $value;
 
     // Default values
@@ -61,14 +61,14 @@ abstract class BazarField
         $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
 
         // By default, the entry ID is the field name
-        $this->entryId = $values[self::FIELD_NAME];
+        $this->propertyName = $values[self::FIELD_NAME];
     }
 
     // TODO would be better to give the $entry in constructor if possible
     public function setEntry($entry)
     {
         $this->entry = $entry;
-        $this->value = $this->getEntryProp($this->entryId) ?? $this->default;
+        $this->value = $this->getEntryProp($this->propertyName) ?? $this->default;
     }
 
     // Render the show view of the field
@@ -89,7 +89,7 @@ abstract class BazarField
     // Format input values before save
     public function formatInput()
     {
-        return [$this->entryId => $this->value];
+        return [$this->propertyName => $this->value];
     }
 
     // each field should implement this method instead of the renderInputIfPermitted
@@ -132,9 +132,9 @@ abstract class BazarField
 
     // GETTERS
 
-    public function getEntryId()
+    public function getPropertyName()
     {
-        return $this->entryId;
+        return $this->propertyName;
     }
 
     public function getValue()

@@ -2413,11 +2413,11 @@ function getCachedUrlContent($url, $cache_life = '60')
 /*
  * Filter an array of fields by their potential entry ID
  */
-function filterFieldsByEntryId(array $fields, array $id)
+function filterFieldsByPropertyName(array $fields, array $id)
 {
     return array_filter($fields, function($field) use ($id) {
         if( $field instanceof BazarField ) {
-            return in_array($field->getEntryId(), $id);
+            return in_array($field->getPropertyName(), $id);
         } elseif( is_array($field) ) {
             return in_array($field['id'], $id);
         }
@@ -2476,7 +2476,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
         // on recupere les valeurs du formulaire si elles n'existaient pas
         $valform = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-        $fields[$fiche['id_typeannonce']] = isset($fields[$fiche['id_typeannonce']]) ? $fields[$fiche['id_typeannonce']] : filterFieldsByEntryId(
+        $fields[$fiche['id_typeannonce']] = isset($fields[$fiche['id_typeannonce']]) ? $fields[$fiche['id_typeannonce']] : filterFieldsByPropertyName(
             $valform['prepared'],
             $params['groups']
         );
@@ -2484,49 +2484,49 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
               || in_array($key, $params['groups']);
             if (!empty($value) and is_array($fields[$fiche['id_typeannonce']]) && $facetteasked) {
-                $fields = filterFieldsByEntryId($fields[$fiche['id_typeannonce']], [$key]);
+                $fields = filterFieldsByPropertyName($fields[$fiche['id_typeannonce']], [$key]);
                 $field = array_pop($fields);
 
-                $fieldEntryId = null;
+                $fieldPropName = null;
                 $fieldOptions = [];
                 if( $field instanceof BazarField ) {
-                    $fieldEntryId = $field->getEntryId();
+                    $fieldPropName = $field->getPropertyName();
                     $fieldType = $field->getType();
                     if( $field instanceof ListField ) {
                         $fieldOptions = $field->getOptions();
                     }
                 } else if ( is_array($field)) {
-                    $fieldEntryId = $field['id'];
+                    $fieldPropName = $field['id'];
                     $fieldType = $field['type'];
                     $fieldOptions = $field['values'];
                 }
 
-                if ($fieldEntryId) {
-                    $islistforeign = (strpos($fieldEntryId, 'listefiche')===0) || (strpos($fieldEntryId, 'checkboxfiche')===0);
+                if ($fieldPropName) {
+                    $islistforeign = (strpos($fieldPropName, 'listefiche')===0) || (strpos($fieldPropName, 'checkboxfiche')===0);
                     $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio')) && !$islistforeign;
                     $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
                     if ($islistforeign) {
                         // listefiche ou checkboxfiche
-                        $facettevalue[$fieldEntryId]['type'] = 'fiche';
-                        $facettevalue[$fieldEntryId]['source'] = $key;
+                        $facettevalue[$fieldPropName]['type'] = 'fiche';
+                        $facettevalue[$fieldPropName]['source'] = $key;
                         $tabval = explode(',', $value);
                         foreach ($tabval as $tval) {
-                            if (isset($facettevalue[$fieldEntryId][$tval])) {
-                                ++$facettevalue[$fieldEntryId][$tval];
+                            if (isset($facettevalue[$fieldPropName][$tval])) {
+                                ++$facettevalue[$fieldPropName][$tval];
                             } else {
-                                $facettevalue[$fieldEntryId][$tval] = 1;
+                                $facettevalue[$fieldPropName][$tval] = 1;
                             }
                         }
                     } elseif ($islist) {
-                        $facettevalue[$fieldEntryId]['type'] = 'liste';
-                        $facettevalue[$fieldEntryId]['source'] = $fieldOptions['id'];
+                        $facettevalue[$fieldPropName]['type'] = 'liste';
+                        $facettevalue[$fieldPropName]['source'] = $fieldOptions['id'];
                         // liste ou checkbox
                         $tabval = explode(',', $value);
                         foreach ($tabval as $tval) {
-                            if (isset($facettevalue[$fieldEntryId][$tval])) {
-                                ++$facettevalue[$fieldEntryId][$tval];
+                            if (isset($facettevalue[$fieldPropName][$tval])) {
+                                ++$facettevalue[$fieldPropName][$tval];
                             } else {
-                                $facettevalue[$fieldEntryId][$tval] = 1;
+                                $facettevalue[$fieldPropName][$tval] = 1;
                             }
                         }
                     } elseif ($istext and !$onlyLists) {

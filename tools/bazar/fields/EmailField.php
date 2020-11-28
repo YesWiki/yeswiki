@@ -27,7 +27,7 @@ class EmailField extends BazarField
     {
         // TODO make sure the sendmail parameter is correctly passed
         return [
-            $this->entryId => $this->value,
+            $this->propertyName => $this->value,
             'sendmail' => $this->sendMail
         ];
     }
@@ -41,7 +41,7 @@ class EmailField extends BazarField
 
         return $this->render('@bazar/fields/email.twig', [
             'showContactForm' => $this->showContactForm,
-            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->entryId) : null
+            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->propertyName) : null
         ]);
     }
 }
