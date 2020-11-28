@@ -1,43 +1,36 @@
-<div class="control-group form-group">
-    <label class="control-label col-sm-3">
-        {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
-        {% if field.hint %}
-            <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
-        {% endif %}
-        {{ field.label }}
-    </label>
-    <div class="controls col-sm-9">
-        <div class="input-prepend input-group">
-            <span class="add-on input-group-addon">
-                <i class="icon-calendar fa fa-calendar"></i>
-            </span>
-            <input
-                type="text"
-                value="{{ day }}"
-                id="{{ field.name }}"
-                name="{{ field.name }}"
-                class="form-control bazar-date"
-                {% if field.required %}required{% endif %}
-            />
-            <select class="form-control select-allday" name="{{ field.name }}_allday">
-                <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
-                <option value="0" {% if hasTime %}  selected {% endif %})>{{ _t('BAZ_ENTER_HOUR') }}</option>
-            </select>
-        </div>
-        <div class="select-time {% if not hasTime %}hide{% endif %} input-prepend input-group">
-            <span class="add-on input-group-addon">
-                <i class="icon-time fa fa-clock"></i>
-            </span>
-            <select class="form-control select-hour" name="{{ field.name }}_hour">
-                {% for i in range(low=0, high=23, step=1) %}
-                    <option value="{{ '%02d'|format(i) }}" {% if( i == hour ) %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
-                {% endfor %}
-            </select>
-            <select class="form-control select-minutes" name="{{ field.name }}_minutes">
-                {% for i in range(low=0, high=55, step=5) %}
-                    <option value="{{ '%02d'|format(i) }}" {% if( i == minute ) %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
-                {% endfor %}
-            </select>
-        </div>
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+    <div class="input-prepend input-group">
+        <span class="add-on input-group-addon">
+            <i class="icon-calendar fa fa-calendar"></i>
+        </span>
+        <input
+            type="text"
+            value="{{ day }}"
+            id="{{ field.name }}"
+            name="{{ field.name }}"
+            class="form-control bazar-date"
+            {% if field.required %}required{% endif %}
+        />
+        <select class="form-control select-allday" name="{{ field.name }}_allday">
+            <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
+            <option value="0" {% if hasTime %}  selected {% endif %})>{{ _t('BAZ_ENTER_HOUR') }}</option>
+        </select>
     </div>
-</div>
+    <div class="select-time {% if not hasTime %}hide{% endif %} input-prepend input-group">
+        <span class="add-on input-group-addon">
+            <i class="icon-time fa fa-clock"></i>
+        </span>
+        <select class="form-control select-hour" name="{{ field.name }}_hour">
+            {% for i in range(low=0, high=23, step=1) %}
+                <option value="{{ '%02d'|format(i) }}" {% if( i == hour ) %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
+            {% endfor %}
+        </select>
+        <select class="form-control select-minutes" name="{{ field.name }}_minutes">
+            {% for i in range(low=0, high=55, step=5) %}
+                <option value="{{ '%02d'|format(i) }}" {% if( i == minute ) %}selected{% endif %}>{{ '%02d'|format(i) }}</option>
+            {% endfor %}
+        </select>
+    </div>
+{% endblock %}

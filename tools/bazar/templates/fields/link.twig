@@ -1,4 +1,5 @@
-<div class="BAZ_rubrique" data-id="{{ entryId }}">
-    <span class="BAZ_label">{{ field.label }}</span>
-    <span class="BAZ_texte"><a href="{{ value }}" class="BAZ_lien" target="_blank">{{ value }}</a></span>
-</div>
+{% extends "@bazar/layouts/field.twig" %}
+
+{% block value %}
+    <a href="{{ value }}" class="BAZ_lien" target="_blank">{{ value }}</a>
+{% endblock %}
