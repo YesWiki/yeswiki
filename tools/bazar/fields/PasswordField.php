@@ -14,29 +14,20 @@ class PasswordField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function formatInput($entry)
+    public function formatInput()
     {
-        if (!empty($entry[$this->entryId])) {
+        if (!empty($this->value)) {
             // If a new password has been set, encode it
-            return [$this->entryId => md5($entry[$this->entryId])];
-        } elseif (isset($entry[$this->entryId.'-previous']) && !empty($entry[$this->entryId.'-previous'])) {
+            return [$this->entryId => md5($this->value)];
+        } else {
             // If no new password was set, keep the old encoded one
-            return [$this->entryId => $entry[$this->entryId.'-previous']];
+            return [$this->entryId => $this->getEntryProp($this->entryId.'-previous')];
         }
     }
 
-    public function renderField($entry)
+    public function renderField()
     {
         // We never want to display passwords
         return null;
-    }
-
-    public function renderInput($entry)
-    {
-        if( $this->isInputHidden($entry) ) return '';
-
-        return $this->render('@bazar/inputs/password.twig', [
-            'value' => $entry !== '' ? $entry[$this->entryId] : null
-        ]);
     }
 }

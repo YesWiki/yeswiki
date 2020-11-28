@@ -30,19 +30,8 @@ class TextField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function renderField($entry)
+    protected function renderInput()
     {
-        return $this->render('@bazar/fields/text.twig', [
-            'value' => $entry !== '' ? $entry[$this->entryId] : null
-        ]);
-    }
-
-    public function renderInput($entry)
-    {
-        if( $this->isInputHidden($entry) ) return '';
-
-        return $this->render('@bazar/inputs/text.twig', [
-            'value' => $entry !== '' ? $entry[$this->entryId] : null
-        ]);
-    }
+        return $this->render("@bazar/inputs/text.twig");
+    }  
 }

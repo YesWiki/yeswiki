@@ -23,21 +23,16 @@ class EmailField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function formatInput($entry)
+    public function formatInput()
     {
         // TODO make sure the sendmail parameter is correctly passed
-        return array_key_exists($this->entryId, $entry) ?
-            [
-                $this->entryId => $entry[$this->entryId],
-                'sendmail' => $this->sendMail
-            ] :
-            [
-                $this->entryId => null,
-                'sendmail' => $this->sendMail
-            ];
+        return [
+            $this->entryId => $this->value,
+            'sendmail' => $this->sendMail
+        ];
     }
 
-    public function renderField($entry)
+    public function renderField()
     {
         // TODO add JS libraries with Twig
         if( $this->showContactForm ) {
@@ -45,18 +40,8 @@ class EmailField extends BazarField
         }
 
         return $this->render('@bazar/fields/email.twig', [
-            'value' => $entry !== '' ? $entry[$this->entryId] : null,
             'showContactForm' => $this->showContactForm,
             'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->entryId) : null
-        ]);
-    }
-
-    public function renderInput($entry)
-    {
-        if( $this->isInputHidden($entry) ) return '';
-
-        return $this->render('@bazar/inputs/email.twig', [
-            'value' => $entry !== '' ? $entry[$this->entryId] : null
         ]);
     }
 }

@@ -532,7 +532,8 @@ class FicheManager
 
         for ($i = 0; $i < count($form['template']); ++$i) {
             if( $form['prepared'][$i] instanceof BazarField) {
-                $tab = $form['prepared'][$i]->formatInput($data);
+                $form['prepared'][$i]->setEntry($data);
+                $tab = $form['prepared'][$i]->formatInput();
             } else {
                 $tab = $form['template'][$i][0](
                     $formtemplate,

@@ -1282,7 +1282,8 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         for ($i = 0; $i < count($form['prepared']); ++$i) {
             // Render each field
             if( $form['prepared'][$i] instanceof BazarField ) {
-                $data['content'] .= $form['prepared'][$i]->renderInput($valeurs);
+                $form['prepared'][$i]->setEntry($valeurs);
+                $data['content'] .= $form['prepared'][$i]->renderInputIfPermitted();
             } else {
                 $data['content'] .= $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
             }
@@ -2032,7 +2033,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     // si le champ est autorisé, génère son contenu
                     if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
                         // TODO handle html_outside_app mode for images
-                        $res .= $fichebazar['form']['prepared'][$i]->renderField($fichebazar['values']);
+                        $fichebazar['form']['prepared'][$i]->setEntry($fichebazar['values']);
+                        $res .= $fichebazar['form']['prepared'][$i]->renderField();
                     } else {
                         if (function_exists($fichebazar['form']['template'][$i][0])) {
                             $res .= $fichebazar['form']['template'][$i][0](
@@ -2047,7 +2049,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
             } else {
                 if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
                     // TODO handle html_outside_app mode for images
-                    $res .= $fichebazar['form']['prepared'][$i]->renderField($fichebazar['values']);
+                    $fichebazar['form']['prepared'][$i]->setEntry($fichebazar['values']);
+                    $res .= $fichebazar['form']['prepared'][$i]->renderField();
                 } else {
                     $functionName = $fichebazar['form']['template'][$i][0];
                     if (function_exists($functionName)) {

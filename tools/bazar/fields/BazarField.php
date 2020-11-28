@@ -22,8 +22,12 @@ abstract class BazarField
     protected $writeAccess;  // 12
     protected $semanticPredicate; // 14
 
+    // The Bazar entry
+    protected $entry;
     // How the field is identified in the Bazar entry
     protected $entryId;
+    // value of the current field = entry[entryId]
+    protected $value;
 
     // Default values
     protected const FIELD_TYPE = 0;
@@ -60,21 +64,66 @@ abstract class BazarField
         $this->entryId = $values[self::FIELD_NAME];
     }
 
-    /*
-     * Return true if we are in edit mode and editing is not allowed
-     */
-    public function isInputHidden($entry)
+    // TODO would be better to give the $entry in constructor if possible
+    public function setEntry($entry)
     {
-        $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
-
-        $isCreation = $entry === '' || isset($entry['id_fiche']);
-
-        return !empty($writeAcl) && !$GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '')  ;
+        $this->entry = $entry;
+        $this->value = $this->getEntryProp($this->entryId) ?? $this->default;
     }
 
-    public function render($templatePath, $data = [])
+    // Render the show view of the field
+    public function renderField()
     {
-        $data = array_merge($data, [
+        return $this->render("@bazar/fields/{$this->type}.twig");
+    }
+
+    // Render the edit view of the field. Check ACLS first
+    public function renderInputIfPermitted()
+    {
+        // Safety checks, must be run before every renderInput
+        if( !$this->canEdit() ) return '';
+
+        return $this->renderInput();        
+    }
+
+    // Format input values before save
+    public function formatInput()
+    {
+        return [$this->entryId => $this->value];
+    }
+
+    // each field should implement this method instead of the renderInputIfPermitted
+    // so we are sure same safety checks are done for all fields
+    protected function renderInput()
+    {
+        return $this->render("@bazar/inputs/{$this->type}.twig");
+    }    
+
+    // SHORTCUTS
+
+    protected function getEntryProp($prop)
+    {
+        return $this->entry[$prop] ?? null;
+    }
+
+    protected function getService($class)
+    {
+        return $this->services->get($class);
+    }
+
+    // HELPERS
+
+    /* Return true if we are in edit mode and editing is not allowed */
+    protected function canEdit()
+    {
+        $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
+        $isCreation = $this->entry === '';
+        return empty($writeAcl) || $GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $this->entry['id_fiche'], $isCreation ? 'creation' : '');
+    }
+
+    protected function render($templatePath, $data = [])
+    {
+        $data = array_merge([
             'field' => [
                 'type' => $this->type,
                 'name' => $this->name,
@@ -89,22 +138,14 @@ abstract class BazarField
                 'writeAccess' => $this->writeAccess,
                 'semanticPredicate' => $this->semanticPredicate,
             ],
-            'entryId' => $this->entryId
-        ]);
+            'entryId' => $this->entryId,
+            'value' => $this->value,
+        ], $data); // Data given as param takes predominance
 
         return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
     }
 
-    public function formatInput($entry)
-    {
-        return array_key_exists($this->entryId, $entry) ?
-            [$this->entryId => $entry[$this->entryId]] : [$this->entryId => null];
-    }
-
-    public function getService($class)
-    {
-        return $this->services->get($class);
-    }
+    // GETTERS
 
     public function getType()
     {
@@ -170,8 +211,4 @@ abstract class BazarField
     {
         return $this->entryId;
     }
-
-    abstract public function renderField($entry);
-
-    abstract public function renderInput($entry);
 }

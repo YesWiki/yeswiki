@@ -10,41 +10,31 @@ class DateField extends BazarField
     {
         parent::__construct($values, $services);
     }
-
-    public function formatInput($entry)
+    
+    public function formatInput()
     {
-        if (!empty($entry[$this->entryId]) && isset($entry[$this->entryId . '_allday']) && $entry[$this->entryId . '_allday'] == 0) {
-            if (isset($entry[$this->entryId . '_hour']) && isset($entry[$this->entryId . '_minutes'])) {
-                return [
-                    $this->entryId => date("c", strtotime($entry[$this->entryId] . ' ' . $entry[$this->entryId . '_hour'] . ':' . $entry[$this->entryId . '_minutes']))
-                ];
-            } else {
-                return [$this->entryId => $entry[$this->entryId]];
-            }
-        } else {
-            return [$this->entryId => isset($entry[$this->entryId]) ? $entry[$this->entryId] : ''];
+        if (!empty($this->value) && isset($this->entry[$this->entryId . '_allday']) && $this->entry[$this->entryId . '_allday'] == 0
+             && isset($this->entry[$this->entryId . '_hour']) && isset($this->entry[$this->entryId . '_minutes'])) {
+            $this->value = date("c", strtotime($this->value . ' ' . $this->entry[$this->entryId . '_hour'] . ':' . $this->entry[$this->entryId . '_minutes']));
         }
+        return [$this->entryId => $this->value];
     }
     
-    public function renderField($entry)
+    public function renderField()
     {
-        if( !$entry[$this->entryId] ) return null;
+        if( !$this->value ) return null;
 
-        if (strlen($entry[$this->entryId]) > 10) {
-            $value = strftime('%d.%m.%Y - %H:%M', strtotime($entry[$this->entryId]));
+        if (strlen($this->value) > 10) {
+            $this->value = strftime('%d.%m.%Y - %H:%M', strtotime($this->value));
         } else {
-            $value =  strftime('%d.%m.%Y', strtotime($entry[$this->entryId]));
+            $this->value =  strftime('%d.%m.%Y', strtotime($this->value));
         }
 
-        return $this->render('@bazar/fields/date.twig', [
-            'value' => $value
-        ]);
+        return $this->render('@bazar/fields/date.twig');
     }
 
-    public function renderInput($entry)
+    public function renderInput()
     {
-        if( $this->isInputHidden($entry) ) return '';
-
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
 
         $day = "";
@@ -52,15 +42,15 @@ class DateField extends BazarField
         $minute = 0;
         $hasTime = false;
 
-        if (isset($entry[$this->entryId]) && !empty($entry[$this->entryId])) {
+        if (!empty($this->value)) {
             // Default value when entry exist
-            $day = date("Y-m-d", strtotime($entry[$this->entryId]));
-            $hasTime = (strlen($entry[$this->entryId]) > 10);
+            $day = date("Y-m-d", strtotime($this->value));
+            $hasTime = (strlen($this->value) > 10);
             if ($hasTime) {
-                $result = explode('T', $entry[$this->entryId]);
+                $result = explode('T', $this->value);
                 list( $hour, $minute ) = array_map('intval', explode(':', $result[1]));
             }
-        } elseif (isset($this->default) && $this->default != '') {
+        } elseif ($this->default && $this->default != '') {
             // Default value when new entry
             if ($this->default == 'today') {
                 $day = date("Y-m-d");
