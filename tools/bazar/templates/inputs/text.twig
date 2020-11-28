@@ -3,8 +3,8 @@
 {% block input %}
     <div class="input-group">
         <input
-            type="{{ field.type }}"
-            value="{{ value ?? field.default }}"
+            type="{{ field.subtype }}"
+            value="{{ field.value }}"
             id="{{ field.name }}"
             name="{{ field.name }}"
             class="form-control input-xxlarge"

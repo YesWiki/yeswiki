@@ -1,4 +1,4 @@
-<div class="BAZ_rubrique field-{{ field.type}}" data-id="{{ entryId }}">
+<div class="BAZ_rubrique field-{{ field.type}}" data-id="{{ field.entryId }}">
     {% block label_container %}
         {#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
         <span class="BAZ_label">
@@ -7,7 +7,7 @@
     {% endblock %}
     {% block value_container %}
         <span class="BAZ_texte">
-            {% block value %}{{ value }}{% endblock %}
+            {% block value %}{{ field.value }}{% endblock %}
         </span>
     {% endblock %}
 </div>

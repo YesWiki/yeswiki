@@ -11,8 +11,8 @@ class TextField extends BazarField
 
     protected const FIELD_PATTERN = 6;
     protected const FIELD_SUB_TYPE = 7;
-
-    protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number'];
+    
+    protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -30,8 +30,14 @@ class TextField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
+    public function renderField()
+    {
+        return $this->render("@bazar/fields/text.twig");
+    }
+
     protected function renderInput()
     {
+        // Handling all subtypes (url, number) in the text.twig
         return $this->render("@bazar/inputs/text.twig");
     }  
 }

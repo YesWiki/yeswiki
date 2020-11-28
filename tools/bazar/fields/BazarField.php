@@ -124,28 +124,23 @@ abstract class BazarField
     protected function render($templatePath, $data = [])
     {
         $data = array_merge([
-            'field' => [
-                'type' => $this->type,
-                'name' => $this->name,
-                'label' => $this->label,
-                'size' => $this->size,
-                'maxChars' => $this->maxChars,
-                'default' => $this->default,
-                'pattern' => $this->pattern,
-                'required' => $this->required,
-                'hint' => $this->hint,
-                'readAccess' => $this->readAccess,
-                'writeAccess' => $this->writeAccess,
-                'semanticPredicate' => $this->semanticPredicate,
-            ],
-            'entryId' => $this->entryId,
-            'value' => $this->value,
+            'field' => $this
         ], $data); // Data given as param takes predominance
 
         return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
     }
 
     // GETTERS
+
+    public function getEntryId()
+    {
+        return $this->entryId;
+    }
+
+    public function getValue()
+    {
+        return $this->value;
+    }
 
     public function getType()
     {
@@ -205,10 +200,5 @@ abstract class BazarField
     public function getSemanticPredicate()
     {
         return $this->semanticPredicate;
-    }
-
-    public function getEntryId()
-    {
-        return $this->entryId;
     }
 }

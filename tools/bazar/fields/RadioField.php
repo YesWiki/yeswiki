@@ -15,9 +15,8 @@ class RadioField extends ListListField
 
     public function renderField()
     {
-        return $this->render('@bazar/fields/radio.twig', [
-            'value' => $this->entry !== '' ? $this->options['label'][$this->value] : ''
-        ]);
+        $this->value = $this->entry !== '' ? $this->options['label'][$this->value] : '';
+        return $this->render('@bazar/fields/radio.twig');
     }
 
     public function renderInput()

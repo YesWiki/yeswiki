@@ -6,6 +6,6 @@
             <i class="fa fa-envelope"></i> {{ _t('BAZ_CONTACT_BY_MAIL') }}
         </a>
     {% else %}
-        <a href="mailto:{{ value }}" class="BAZ_lien_mail">{{ value }}</a></span>
+        <a href="mailto:{{ field.value }}" class="BAZ_lien_mail">{{ field.value }}</a></span>
     {% endif %}
 {% endblock %}
