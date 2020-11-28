@@ -6,12 +6,7 @@ use Psr\Container\ContainerInterface;
 
 class DateField extends BazarField
 {
-    public function __construct(array $values, ContainerInterface $services)
-    {
-        parent::__construct($values, $services);
-    }
-
-    public function renderInput()
+    public function renderInput($entry)
     {
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
 
@@ -19,13 +14,14 @@ class DateField extends BazarField
         $hour = 0;
         $minute = 0;
         $hasTime = false;
+        $value = $this->getValue($entry);
 
-        if (!empty($this->value)) {
+        if (!empty($value)) {
             // Default value when entry exist
-            $day = date("Y-m-d", strtotime($this->value));
-            $hasTime = (strlen($this->value) > 10);
+            $day = date("Y-m-d", strtotime($value));
+            $hasTime = (strlen($value) > 10);
             if ($hasTime) {
-                $result = explode('T', $this->value);
+                $result = explode('T', $value);
                 list( $hour, $minute ) = array_map('intval', explode(':', $result[1]));
             }
         } elseif ($this->default && $this->default != '') {
@@ -41,29 +37,34 @@ class DateField extends BazarField
             'day' => $day,
             'hour' => $hour,
             'minute' => $minute,
-            'hasTime' => $hasTime
+            'hasTime' => $hasTime,
+            'value' => $value
         ]);
     }
 
-    public function formatValuesBeforeSave()
+    public function formatValuesBeforeSave($entry)
     {
-        if (!empty($this->value) && isset($this->entry[$this->propertyName . '_allday']) && $this->entry[$this->propertyName . '_allday'] == 0
-             && isset($this->entry[$this->propertyName . '_hour']) && isset($this->entry[$this->propertyName . '_minutes'])) {
-            $this->value = date("c", strtotime($this->value . ' ' . $this->entry[$this->propertyName . '_hour'] . ':' . $this->entry[$this->propertyName . '_minutes']));
+        $value = $this->getValue($entry);
+        if (!empty($value) && isset($entry[$this->propertyName . '_allday']) && $entry[$this->propertyName . '_allday'] == 0
+             && isset($entry[$this->propertyName . '_hour']) && isset($entry[$this->propertyName . '_minutes'])) {
+            $value = date("c", strtotime($value . ' ' . $entry[$this->propertyName . '_hour'] . ':' . $entry[$this->propertyName . '_minutes']));
         }
-        return [$this->propertyName => $this->value];
+        return [$this->propertyName => $value];
     }
 
-    public function renderStatic()
+    public function renderStatic($entry)
     {
-        if( !$this->value ) return null;
+        $value = $this->getValue($entry);
+        if( !$value ) return null;
 
-        if (strlen($this->value) > 10) {
-            $this->value = strftime('%d.%m.%Y - %H:%M', strtotime($this->value));
+        if (strlen($value) > 10) {
+            $value = strftime('%d.%m.%Y - %H:%M', strtotime($value));
         } else {
-            $this->value =  strftime('%d.%m.%Y', strtotime($this->value));
+            $value =  strftime('%d.%m.%Y', strtotime($value));
         }
 
-        return $this->render('@bazar/fields/date.twig');
+        return $this->render('@bazar/fields/date.twig', [
+            'value' => $value
+        ]);
     }
 }

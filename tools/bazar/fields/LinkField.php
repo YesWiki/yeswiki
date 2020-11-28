@@ -15,8 +15,9 @@ class LinkField extends BazarField
         $this->default = $this->default ?? 'https://';
     }
 
-    public function formatValuesBeforeSave()
+    public function formatValuesBeforeSave($entry)
     {
-        return [$this->propertyName => $this->value !== 'https://' ? $this->value : null ];
+        $value = $this->getValue($entry);
+        return [$this->propertyName => $value !== 'https://' ? $value : null ];
     }
 }

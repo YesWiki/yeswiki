@@ -23,12 +23,12 @@ class LabelField extends BazarField
         $this->viewText = $values[self::FIELD_VIEW_TEXT];
     }
 
-    public function renderInput()
+    public function renderInput($entry)
     {
         return $this->formText . "\n";
     }
 
-    public function renderStatic()
+    public function renderStatic($entry)
     {
         return $this->viewText . "\n";
     }

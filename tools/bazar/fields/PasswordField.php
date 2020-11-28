@@ -14,18 +14,19 @@ class PasswordField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function formatValuesBeforeSave()
+    public function formatValuesBeforeSave($entry)
     {
-        if (!empty($this->value)) {
+        $value = $this->getValue($entry);
+        if (!empty($value)) {
             // If a new password has been set, encode it
-            return [$this->propertyName => md5($this->value)];
+            return [$this->propertyName => md5($value)];
         } else {
             // If no new password was set, keep the old encoded one
-            return [$this->propertyName => $this->getEntryProp($this->propertyName.'-previous')];
+            return [$this->propertyName => $entry[$this->propertyName.'-previous'] ?? null];
         }
     }
 
-    public function renderStatic()
+    public function renderStatic($entry)
     {
         // We never want to display passwords
         return null;

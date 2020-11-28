@@ -23,16 +23,16 @@ class EmailField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function formatValuesBeforeSave()
+    public function formatValuesBeforeSave($entry)
     {
         // TODO make sure the sendmail parameter is correctly passed
         return [
-            $this->propertyName => $this->value,
+            $this->propertyName => $this->getValue($entry),
             'sendmail' => $this->sendMail
         ];
     }
 
-    public function renderStatic()
+    public function renderStatic($entry)
     {
         // TODO add JS libraries with Twig
         if( $this->showContactForm ) {
@@ -40,6 +40,7 @@ class EmailField extends BazarField
         }
 
         return $this->render('@bazar/fields/email.twig', [
+            'value' => $this->getValue($entry),
             'showContactForm' => $this->showContactForm,
             'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->propertyName) : null
         ]);
