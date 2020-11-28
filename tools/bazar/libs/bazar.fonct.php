@@ -1356,10 +1356,20 @@ function baz_requete_bazar_fiche($valpost)
         unset($valpost['sendmail']);
     }
 
-    //pour les checkbox, on met les resultats sur une ligne
+    //pour les checkbox et checkboxfiches, on met les resultats sur une ligne
     foreach ($valpost as $cle => $val) {
         if (is_array($val)) {
-            $valpost[$cle] = implode(',', array_keys($val));
+            foreach ($val as $key => $value) {
+                if ($value == 0 && $key == "END_INDEX NO_CHANGE_IT"){
+                    unset($val[$key]) ;
+                }
+            }
+            
+            if (empty(array_keys($val))) {
+                unset($valpost[$cle]) ;
+            } else {
+                $valpost[$cle] = implode(',', array_keys($val)) ;
+            }
         }
     }
 

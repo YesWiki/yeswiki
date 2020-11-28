@@ -330,6 +330,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                       .'</div>'."\n";
                 }
 
+                $checkbox_html .= '<input class="" name="'.$id.'[END_INDEX NO_CHANGE_IT]'.'" value="0" checked id="'.$id.'_hidden'.'" type="hidden">' ;
                 $checkbox_html .= '</div>
 </div>
 </div>';
@@ -339,7 +340,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         $key = $tableau_template[0].$tableau_template[1].$tableau_template[6];
         return array_key_exists($key, $valeurs_fiche) ?
-            array($key => $valeurs_fiche[$key]) : array($key => null);
+            array($key => $valeurs_fiche[$key]) : null;
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
@@ -2343,6 +2344,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $checkbox_html.= ' class="element_checkbox">'.$label.'
                     </label></div>';
                 }
+                $checkbox_html.= '<input name="'.$id.'[END_INDEX NO_CHANGE_IT]'.'" value="0" checked id="'.$id.'_hidden'.'" type="hidden">' ;
                 $checkbox_html.= "\n".'</ul>'."\n";
                 // javascript additions
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
@@ -2357,16 +2359,16 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         return $checkbox_html;
     } elseif ($mode == 'requete') {
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != 0)) {
-            return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-        }
+        if (isset($valeurs_fiche[$id]) && ($valeurs_fiche[$id] != 0)) {
+            return array($id => $valeurs_fiche[$id]);
+        } 
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
-            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
+        if (isset($valeurs_fiche[$id]) && $valeurs_fiche[$id] != '') {
+            $html.= '<div class="BAZ_rubrique" data-id="' . $id.'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
-            $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
-
+            $tab_fiche = explode(',', $valeurs_fiche[$id]);
+            
             foreach ($tab_fiche as $idfiche) {
                 $html .= '<ul>';
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
