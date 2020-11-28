@@ -23,7 +23,7 @@ class EmailField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function formatInput()
+    public function formatValuesBeforeSave()
     {
         // TODO make sure the sendmail parameter is correctly passed
         return [
@@ -32,7 +32,7 @@ class EmailField extends BazarField
         ];
     }
 
-    public function renderField()
+    public function renderStatic()
     {
         // TODO add JS libraries with Twig
         if( $this->showContactForm ) {

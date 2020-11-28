@@ -2034,7 +2034,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
                         // TODO handle html_outside_app mode for images
                         $fichebazar['form']['prepared'][$i]->setEntry($fichebazar['values']);
-                        $res .= $fichebazar['form']['prepared'][$i]->renderField();
+                        $res .= $fichebazar['form']['prepared'][$i]->renderStatic();
                     } else {
                         if (function_exists($fichebazar['form']['template'][$i][0])) {
                             $res .= $fichebazar['form']['template'][$i][0](
@@ -2050,7 +2050,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                 if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
                     // TODO handle html_outside_app mode for images
                     $fichebazar['form']['prepared'][$i]->setEntry($fichebazar['values']);
-                    $res .= $fichebazar['form']['prepared'][$i]->renderField();
+                    $res .= $fichebazar['form']['prepared'][$i]->renderStatic();
                 } else {
                     $functionName = $fichebazar['form']['template'][$i][0];
                     if (function_exists($functionName)) {

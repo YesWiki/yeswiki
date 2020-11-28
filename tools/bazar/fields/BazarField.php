@@ -72,7 +72,7 @@ abstract class BazarField
     }
 
     // Render the show view of the field
-    public function renderField()
+    public function renderStatic()
     {
         return $this->render("@bazar/fields/{$this->type}.twig");
     }
@@ -87,7 +87,7 @@ abstract class BazarField
     }
 
     // Format input values before save
-    public function formatInput()
+    public function formatValuesBeforeSave()
     {
         return [$this->propertyName => $this->value];
     }

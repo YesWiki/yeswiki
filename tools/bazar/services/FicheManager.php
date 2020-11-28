@@ -523,7 +523,7 @@ class FicheManager
         }
 
         // pour les checkbox, on met les resultats sur une ligne
-        // TODO put this in CheckboxField::formatInput
+        // TODO put this in CheckboxField::formatValuesBeforeSave
         foreach ($data as $cle => $val) {
             if (is_array($val)) {
                 $data[$cle] = implode(',', array_keys($val));
@@ -533,7 +533,7 @@ class FicheManager
         for ($i = 0; $i < count($form['template']); ++$i) {
             if( $form['prepared'][$i] instanceof BazarField) {
                 $form['prepared'][$i]->setEntry($data);
-                $tab = $form['prepared'][$i]->formatInput();
+                $tab = $form['prepared'][$i]->formatValuesBeforeSave();
             } else {
                 $tab = $form['template'][$i][0](
                     $formtemplate,

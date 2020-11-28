@@ -14,7 +14,7 @@ class PasswordField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function formatInput()
+    public function formatValuesBeforeSave()
     {
         if (!empty($this->value)) {
             // If a new password has been set, encode it
@@ -25,7 +25,7 @@ class PasswordField extends BazarField
         }
     }
 
-    public function renderField()
+    public function renderStatic()
     {
         // We never want to display passwords
         return null;

@@ -11,7 +11,7 @@ class DateField extends BazarField
         parent::__construct($values, $services);
     }
     
-    public function formatInput()
+    public function formatValuesBeforeSave()
     {
         if (!empty($this->value) && isset($this->entry[$this->propertyName . '_allday']) && $this->entry[$this->propertyName . '_allday'] == 0
              && isset($this->entry[$this->propertyName . '_hour']) && isset($this->entry[$this->propertyName . '_minutes'])) {
@@ -20,7 +20,7 @@ class DateField extends BazarField
         return [$this->propertyName => $this->value];
     }
     
-    public function renderField()
+    public function renderStatic()
     {
         if( !$this->value ) return null;
 

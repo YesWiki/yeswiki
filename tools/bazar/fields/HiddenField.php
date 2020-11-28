@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 class HiddenField extends BazarField
 {
-    public function renderField()
+    public function renderStatic()
     {
         return null;
     }
