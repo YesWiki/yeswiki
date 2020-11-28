@@ -10,28 +10,6 @@ class DateField extends BazarField
     {
         parent::__construct($values, $services);
     }
-    
-    public function formatValuesBeforeSave()
-    {
-        if (!empty($this->value) && isset($this->entry[$this->propertyName . '_allday']) && $this->entry[$this->propertyName . '_allday'] == 0
-             && isset($this->entry[$this->propertyName . '_hour']) && isset($this->entry[$this->propertyName . '_minutes'])) {
-            $this->value = date("c", strtotime($this->value . ' ' . $this->entry[$this->propertyName . '_hour'] . ':' . $this->entry[$this->propertyName . '_minutes']));
-        }
-        return [$this->propertyName => $this->value];
-    }
-    
-    public function renderStatic()
-    {
-        if( !$this->value ) return null;
-
-        if (strlen($this->value) > 10) {
-            $this->value = strftime('%d.%m.%Y - %H:%M', strtotime($this->value));
-        } else {
-            $this->value =  strftime('%d.%m.%Y', strtotime($this->value));
-        }
-
-        return $this->render('@bazar/fields/date.twig');
-    }
 
     public function renderInput()
     {
@@ -65,5 +43,27 @@ class DateField extends BazarField
             'minute' => $minute,
             'hasTime' => $hasTime
         ]);
+    }
+
+    public function formatValuesBeforeSave()
+    {
+        if (!empty($this->value) && isset($this->entry[$this->propertyName . '_allday']) && $this->entry[$this->propertyName . '_allday'] == 0
+             && isset($this->entry[$this->propertyName . '_hour']) && isset($this->entry[$this->propertyName . '_minutes'])) {
+            $this->value = date("c", strtotime($this->value . ' ' . $this->entry[$this->propertyName . '_hour'] . ':' . $this->entry[$this->propertyName . '_minutes']));
+        }
+        return [$this->propertyName => $this->value];
+    }
+
+    public function renderStatic()
+    {
+        if( !$this->value ) return null;
+
+        if (strlen($this->value) > 10) {
+            $this->value = strftime('%d.%m.%Y - %H:%M', strtotime($this->value));
+        } else {
+            $this->value =  strftime('%d.%m.%Y', strtotime($this->value));
+        }
+
+        return $this->render('@bazar/fields/date.twig');
     }
 }

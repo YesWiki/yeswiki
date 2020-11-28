@@ -71,12 +71,6 @@ abstract class BazarField
         $this->value = $this->getEntryProp($this->propertyName) ?? $this->default;
     }
 
-    // Render the show view of the field
-    public function renderStatic()
-    {
-        return $this->render("@bazar/fields/{$this->type}.twig");
-    }
-
     // Render the edit view of the field. Check ACLS first
     public function renderInputIfPermitted()
     {
@@ -90,6 +84,12 @@ abstract class BazarField
     public function formatValuesBeforeSave()
     {
         return [$this->propertyName => $this->value];
+    }
+
+    // Render the show view of the field
+    public function renderStatic()
+    {
+        return $this->render("@bazar/fields/{$this->type}.twig");
     }
 
     // each field should implement this method instead of the renderInputIfPermitted

@@ -30,14 +30,14 @@ class TextField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function renderStatic()
-    {
-        return $this->render("@bazar/fields/text.twig");
-    }
-
     protected function renderInput()
     {
         // Handling all subtypes (url, number) in the text.twig
         return $this->render("@bazar/inputs/text.twig");
     }  
+
+    public function renderStatic()
+    {
+        return $this->render("@bazar/fields/text.twig");
+    }
 }
