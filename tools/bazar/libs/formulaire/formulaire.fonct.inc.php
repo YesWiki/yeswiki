@@ -330,6 +330,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                       .'</div>'."\n";
                 }
 
+                $checkbox_html .= '<input class="" name="'.$id.'[END_INDEX NO_CHANGE_IT]'.'" value="0" checked id="'.$id.'_hidden'.'" type="hidden">' ;
                 $checkbox_html .= '</div>
 </div>
 </div>';
@@ -339,7 +340,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     } elseif ($mode == 'requete') {
         $key = $tableau_template[0].$tableau_template[1].$tableau_template[6];
         return array_key_exists($key, $valeurs_fiche) ?
-            array($key => $valeurs_fiche[$key]) : array($key => null);
+            array($key => $valeurs_fiche[$key]) : null;
     } elseif ($mode == 'html') {
         $html = '';
         if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
@@ -2343,6 +2344,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     $checkbox_html.= ' class="element_checkbox">'.$label.'
                     </label></div>';
                 }
+                $checkbox_html.= '<input name="'.$id.'[END_INDEX NO_CHANGE_IT]'.'" value="0" checked id="'.$id.'_hidden'.'" type="hidden">' ;
                 $checkbox_html.= "\n".'</ul>'."\n";
                 // javascript additions
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
