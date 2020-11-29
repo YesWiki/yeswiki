@@ -1,29 +1,29 @@
 <div class="row row-fluid yeswiki-checkbox checkbox">
 	<div class="col-lg-4 export-table-container">
-		<h4><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM'); ?></h4>
+		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM') }}</h4>
 		<div class="alert alert-info">
-			<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO'); ?><div class="btn btn-default btn-success btn-mini btn-xs"><i class="fas fa-plus"></i></div>.
+			{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO') }}<div class="btn btn-default btn-success btn-mini btn-xs"><i class="fas fa-plus"></i></div>.
 		</div>
 		<div class="input-group input-prepend input-append">
 			<span class="input-group-addon add-on"><i class="fas fa-filter"></i></span>
-			<input class="checkbox-filter-input form-control input-sm" type="text" id="filter-<?php echo $id; ?>" value="" placeholder="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM'); ?>" style="background: var(--neutral-light-color);;"/>
+			<input class="checkbox-filter-input form-control input-sm" type="text" id="filter-{{ $id }}" value="" placeholder="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM') }}" style="background: var(--neutral-light-color);;"/>
 			<span class="input-group-btn add-on">
 				<button class="btn btn-default btn-sm btn-erase-filter" type="button">&times;</button>
 			</span>
 		</div><!-- /input-group -->
 		<span class="checkbox-filter-count help-block align-right"></span>
-	<h5><?php echo $form_name; ?>
-		<a class="pull-right btn btn-xs btn-success checkbox-select-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>" href="#">
-		  <i class="fas fa-plus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>
+	<h5>{{ form_name }}
+		<a class="pull-right btn btn-xs btn-success checkbox-select-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}" href="#">
+		  <i class="fas fa-plus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}
 		</a>
 	</h5>
 	<div class="clearfix"></div>
 	  <div style="max-height:<?php echo (!empty($height)) ? $height : 300 ; ?>px;overflow:auto;">
 		<ul class="list-entries-to-export list-group group-<?php echo $id; ?>" data-group="<?php echo $id; ?>">
-			<?php foreach($entries as $item_id => $item) : ?>
+			{% for item_id , item in entries %}
 				<?php if(!in_array($item_id,array_keys($selected_entries))) : ?>
 					<li class="list-group-item">
-						<a class="pull-right btn btn-xs btn-success select-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM'); ?> <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">
+						<a class="pull-right btn btn-xs btn-success select-page-item" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') }} <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">
 							<i class="fas fa-plus"></i>
 						</a>
 						<a class="hide pull-right btn btn-xs btn-danger remove-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM'); ?> <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST'); ?>" href="#">
@@ -36,10 +36,10 @@
 							</a>
 						<?php endif ; // if ($item['type'] != 'list') : ?> 
 						<input type="checkbox" id="<?php echo $id . '_' . $item_id; ?>" value="1" name="<?php echo $id; ?>[<?php echo $item_id; ?>]" class="element_checkbox hide"><span style="display:none;"></span>
-						&nbsp;<?php echo ' '.$item['name']; ?>
+						&nbsp;  {{ item.name }}
 					</li>
 				<?php endif; // if(!in_array($item['id_fiche'],$selected_entries_names)) ?>
-			<?php endforeach; //foreach($entries as $item) ?>
+			{% endfor %}
 			<li class="list-group-item empty-list" style="display:none;"><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 		</ul>
 	  </div>
@@ -75,6 +75,7 @@
 			<?php endforeach; ?>
 			<li class="list-group-item empty-list" <?php echo (count($selected_entries)>0) ? 'style="display:none;"' :'' ; ?>><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 			</ul>
+			<input name="<?php echo $id; ?>[]" value="0" checked id="<?php echo $id . '_hidden' ; ?>" type="hidden">
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->
 </div> <!-- /.row -->

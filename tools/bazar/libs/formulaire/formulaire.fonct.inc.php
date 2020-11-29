@@ -45,6 +45,7 @@
 
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Tags\Service\TagsManager;
+use YesWiki\Core\Service\TemplateEngine;
 
 /** testACLsiSaisir() - test si le mode est saisir et si l'utilisateur a accés à l'écriture de ce champ
  *
@@ -302,6 +303,54 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
                 $checkbox_html.= "</div>\n</div>\n";
                 return $checkbox_html;
+            } else if ($tableau_template[7] == 'dragndrop') {
+                if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
+                    $classrequired = ' chk_required';
+                    $req = '<span class="symbole_obligatoire"></span> ';
+                } else {
+                    $classrequired = '';
+                    $req = '';
+                }
+                $checkbox_html = '<div class="control-group form-group '.$classrequired.'">'."\n" ;
+                $checkbox_html .= '<label class="control-label col-sm-3">' ;
+                $checkbox_html .= $req . $tableau_template[2] . (empty($bulledaide) ? '' : $bulledaide) . '</label>'."\n" ;
+                $checkbox_html .= '<div class="controls col-sm-9">'."\n" ;
+                
+                // data format :
+                // entries['entry_id']['name']
+                // entries['entry_id']['type'] = 'list' or other
+                // selected_entries contains entries in the same format
+                $entries = array() ;
+                foreach ($choixcheckbox as $key => $label){
+                    $entries[$key] = array(
+                        'name' => $label,
+                        'type' => 'list'
+                    );
+                }
+                
+                $selected_entries = array() ;
+                if (is_array($tab) && count($tab)>0 && !empty($tab[0])) {
+                    foreach($tab as $selected_id) {
+                        foreach ($entries as $entry_id => $val){
+                            if ($entry_id == $selected_id) {
+                                $selected_entries[$entry_id] = $val ;
+                            }
+                        }
+                    }
+                }
+                $checkbox_html.= $GLOBALS['wiki']->services->get(TemplateEngine::class)->render(
+                    '@bazar/checkbox_drag_and_drop.tpl.html', 
+                    array(
+                        'entries' => $entries ,
+                        'selected_entries' => $selected_entries,
+                        'id' => $id ,
+                        'form_name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST') . ' ' . $valliste['titre_liste'] ,
+                        'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
+                        'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
+                    )
+                ) ;   
+                $checkbox_html .= "</div>\n</div>"; 
+                return $checkbox_html;                
             } else {
                 if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $classrequired = ' chk_required';
@@ -2327,38 +2376,41 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
             } else if ($tableau_template[7] == 'dragndrop') {
                 
+                // data format :
+                // entries['entry_id']['name']
+                // entries['entry_id']['type'] = 'list' or other
+                // selected_entries contains entries in the same format
                 $entries = array() ;
+                foreach ($tab_result as $entry){
+                    $entries[$entry['id_fiche']] = array(
+                        'name' => $entry['bf_titre'],
+                        'type' => 'bazar'
+                    );
+                }
+                
                 $selected_entries = array() ;
                 if (is_array($def) && count($def)>0 && !empty($def[0])) {
-                    foreach($def as $selected_name) {
-                        foreach ($tab_result as $fiche){
-                            if ($fiche['id_fiche'] == $selected_name) {
-                                $selected_entries[] = $fiche ;
+                    foreach($def as $selected_id) {
+                        foreach ($entries as $entry_id => $val){
+                            if ($entry_id == $selected_id) {
+                                $selected_entries[$entry_id] = $val ;
                             }
                         }
                     }
-                    foreach ($tab_result as $fiche){
-                        if (!in_array($fiche['id_fiche'],$def)) {
-                            $entries[] = $fiche ;
-                        }
-                    }
-                } else {
-                   $entries = $tab_result ;
-                }                
-                
-                include_once 'includes/squelettephp.class.php';
-                $exportTemplate = new SquelettePhp('checkbox_drag_and_drop.tpl.html', 'bazar');
-                $checkbox_html.= $exportTemplate->render(
+                } 
+
+                $checkbox_html.= $GLOBALS['wiki']->services->get(TemplateEngine::class)->render(
+                    '@bazar/checkbox_drag_and_drop.tpl.html', 
                     array(
-                        'label' => $tableau_template[6],
                         'entries' => $entries ,
                         'selected_entries' => $selected_entries,
-                        'selected_entries_names' => $def,
                         'id' => $id ,
                         'form_name' => 'Fiches ' . $val_type['bn_label_nature'] ,
                         'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
+                        'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
                     )
-                );
+                ) ;
+                
             } else {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
                 // wakka as a beginning of html code
