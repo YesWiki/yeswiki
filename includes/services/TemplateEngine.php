@@ -68,6 +68,12 @@ class TemplateEngine
             };
             return $this->wiki->Href($options['handler'], $options['tag'], implode("&", $params), false);
         });
+        $this->addTwigHelper('include_javascript', function ($file, $first = false) {
+            $this->wiki->AddJavascriptFile($file, $first);
+        });
+        $this->addTwigHelper('include_css', function ($file) {
+            $this->wiki->AddCSSFile($file);
+        });
     }
 
     private function addTwigHelper($name, $callback)
