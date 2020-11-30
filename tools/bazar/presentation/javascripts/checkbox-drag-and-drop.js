@@ -128,6 +128,6 @@ $(document).ready(function () {
 
         // Update the count
         var numberItems = count;
-        $(this).parents(".export-table-container").find(".checkbox-filter-count").text("Nombre de pages : "+count);
+        $(this).parents(".export-table-container").find(".checkbox-filter-count").text(count);
     });
 });

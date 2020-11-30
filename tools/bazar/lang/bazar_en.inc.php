@@ -231,5 +231,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO' => 'Move elements to sort them as you wish. You can also move them from leftside to right side',
 'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'list',
 'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Empty list',
+'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'Number of elements : ',
 
 ));
