@@ -211,7 +211,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'BAZ_TODAY' => 'Today',
 'BAZ_MONTH' => 'Month',
 'BAZ_WEEK' => 'Week',
-'BAZ_DAY' => 'Day'
+'BAZ_DAY' => 'Day',
 
 'BAZ_ALL_DAY' => 'All day',
 'BAZ_ENTER_HOUR' => 'Enter hour',
