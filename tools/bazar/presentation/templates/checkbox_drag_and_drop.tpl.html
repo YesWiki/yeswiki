@@ -11,17 +11,19 @@
 				<button class="btn btn-default btn-sm btn-erase-filter" type="button">&times;</button>
 			</span>
 		</div><!-- /input-group -->
-		<span class="checkbox-filter-count help-block align-right"></span>
+		<span class="help-block align-right"><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT'); ?><span class="checkbox-filter-count"><?php 
+			$nb_selected = (!empty($selected_entries_id[0])) ? count($selected_entries_id) : 0 ;
+			echo count($entries) - $nb_selected ;
+			?></span></span>
 	<h5><?php echo $form_name; ?>
 		<a class="pull-right btn btn-xs btn-success checkbox-select-all" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>" href="#">
-		  <i class="fas fa-plus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?>
-		</a>
+		  <i class="fas fa-plus"></i> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL'); ?></a>
 	</h5>
 	<div class="clearfix"></div>
 	  <div style="max-height:<?php echo (!empty($height)) ? $height : 300 ; ?>px;overflow:auto;">
 		<ul class="list-entries-to-export list-group group-<?php echo $id; ?>" data-group="<?php echo $id; ?>">
 			<?php foreach($entries as $item_id => $item) : ?>
-				<?php if(!in_array($item_id,array_keys($selected_entries))) : ?>
+				<?php if(!in_array($item_id,$selected_entries_id)) : ?>
 					<li class="list-group-item">
 						<a class="pull-right btn btn-xs btn-success select-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM'); ?> <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">
 							<i class="fas fa-plus"></i>
@@ -36,8 +38,7 @@
 							</a>
 						<?php endif ; // if ($item['type'] != 'list') : ?> 
 						<input type="checkbox" id="<?php echo $id . '_' . $item_id; ?>" value="1" name="<?php echo $id; ?>[<?php echo $item_id; ?>]" class="element_checkbox hide"><span style="display:none;"></span>
-						&nbsp;<?php echo ' '.$item['name']; ?>
-					</li>
+						&nbsp;<?php echo ' '.$item['name']; ?></li>
 				<?php endif; // if(!in_array($item['id_fiche'],$selected_entries_names)) ?>
 			<?php endforeach; //foreach($entries as $item) ?>
 			<li class="list-group-item empty-list" style="display:none;"><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
@@ -53,14 +54,15 @@
 			<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO'); ?>
 		</div>
 		<div class="clearfix"></div>
-		<div class="well" style="max-height:<?php echo (!empty($height)) ? $height + 80 : 380 ; ?>px;overflow:auto;">
+		<div class="well" style="max-height:<?php echo (!empty($height)) ? $height + 110 : 410 ; ?>px;overflow:auto;">
 			<ul class="checkbox-selection-container list-group group-<?php echo $id; ?>" data-group="<?php echo $id; ?>">
-			<?php foreach($selected_entries as $item_id => $item) : ?>
+			<?php if (!empty($selected_entries_id[0])) : ?>
+			  <?php foreach($selected_entries_id as $item_id) : $item = $entries[$item_id] ; ?>
 				<li class="list-group-item">
 					<a class="hide pull-right btn btn-xs btn-success select-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM'); ?> <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST'); ?>" href="#">
 						<i class="fas fa-plus"></i>
 					</a>
-					<a class="pull-right btn btn-xs btn-danger remove-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM'); ?> <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST'); ?>" href="#" data-group="<?php echo $nb; ?>">
+					<a class="pull-right btn btn-xs btn-danger remove-page-item" title="<?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM'); ?> <?php echo htmlentities($item['name']); ?> <?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST'); ?>" href="#">
 						<i class="fas fa-minus"></i>
 					</a>
 					<span class="pull-left movable"><i class="fas fa-arrows-alt-v"></i></span>
@@ -72,10 +74,11 @@
 					<input type="checkbox" id="<?php echo $id . '_' . $item_id; ?>" value="1" name="<?php echo $id; ?>[<?php echo $item_id; ?>]" class="element_checkbox hide" checked><span style="display:none;"></span>
 					&nbsp;<?php echo ' '.$item['name']; ?>
 				</li>
-			<?php endforeach; ?>
-			<li class="list-group-item empty-list" <?php echo (count($selected_entries)>0) ? 'style="display:none;"' :'' ; ?>><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
+			  <?php endforeach; ?>
+			<?php endif; // if (is_array($selected_entries_id) ... ?>
+			<li class="list-group-item empty-list" <?php echo (!empty($selected_entries_id[0])) ? 'style="display:none;"' :'' ; ?>><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 			</ul>
-			<input name="<?php echo $id; ?>[]" value="0" checked id="<?php echo $id . '_hidden' ; ?>" type="hidden">
+			<input name="<?php echo $id; ?>[END_INDEX NO_CHANGE_IT]" value="0" checked id="<?php echo $id . '_hidden' ; ?>" type="hidden">
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->
 </div> <!-- /.row -->

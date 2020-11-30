@@ -319,7 +319,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 // data format :
                 // entries['entry_id']['name']
                 // entries['entry_id']['type'] = 'list' or other
-                // selected_entries contains entries in the same format
+                // selected_entries_id contains entries_id only
                 $entries = array() ;
                 foreach ($choixcheckbox as $key => $label){
                     $entries[$key] = array(
@@ -328,27 +328,23 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     );
                 }
                 
-                $selected_entries = array() ;
-                if (is_array($tab) && count($tab)>0 && !empty($tab[0])) {
-                    foreach($tab as $selected_id) {
-                        foreach ($entries as $entry_id => $val){
-                            if ($entry_id == $selected_id) {
-                                $selected_entries[$entry_id] = $val ;
-                            }
-                        }
-                    }
-                }
                 $checkbox_html.= $GLOBALS['wiki']->services->get(TemplateEngine::class)->render(
-                    '@bazar/checkbox_drag_and_drop.tpl.html', 
+                    '@bazar/checkbox_drag_and_drop.twig', 
                     array(
                         'entries' => $entries ,
-                        'selected_entries' => $selected_entries,
+                        'selected_entries_id' => $tab,
                         'id' => $id ,
                         'form_name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST') . ' ' . $valliste['titre_liste'] ,
                         'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                         'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
                     )
                 ) ;   
+                
+                // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
+                
                 $checkbox_html .= "</div>\n</div>"; 
                 return $checkbox_html;                
             } else {
@@ -2379,37 +2375,33 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 // data format :
                 // entries['entry_id']['name']
                 // entries['entry_id']['type'] = 'list' or other
-                // selected_entries contains entries in the same format
+                // entries['entry_id']['href'] = $GLOBALS['wiki']->href('html', $item_id) for twig only
+                // selected_entries_id contains entries_id only
                 $entries = array() ;
                 foreach ($tab_result as $entry){
                     $entries[$entry['id_fiche']] = array(
                         'name' => $entry['bf_titre'],
-                        'type' => 'bazar'
+                        'type' => 'bazar',
+                        'href' => $GLOBALS['wiki']->href('html', $entry['id_fiche']) 
                     );
                 }
-                
-                $selected_entries = array() ;
-                if (is_array($def) && count($def)>0 && !empty($def[0])) {
-                    foreach($def as $selected_id) {
-                        foreach ($entries as $entry_id => $val){
-                            if ($entry_id == $selected_id) {
-                                $selected_entries[$entry_id] = $val ;
-                            }
-                        }
-                    }
-                } 
 
                 $checkbox_html.= $GLOBALS['wiki']->services->get(TemplateEngine::class)->render(
-                    '@bazar/checkbox_drag_and_drop.tpl.html', 
+                    '@bazar/checkbox_drag_and_drop.twig', 
                     array(
                         'entries' => $entries ,
-                        'selected_entries' => $selected_entries,
+                        'selected_entries_id' => $def,
                         'id' => $id ,
                         'form_name' => 'Fiches ' . $val_type['bn_label_nature'] ,
                         'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                         'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
                     )
                 ) ;
+                
+                // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
                 
             } else {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
