@@ -1432,6 +1432,8 @@ function baz_requete_bazar_fiche($valpost)
     unset($valpost['antispam']);
     unset($valpost['mot_de_passe_wikini']);
     unset($valpost['mot_de_passe_repete_wikini']);
+    unset($valpost['html_data']);
+    unset($valpost['datastr']);
 
     // on encode en utf-8 pour reussir a encoder en json
     if (YW_CHARSET != 'UTF-8') {
