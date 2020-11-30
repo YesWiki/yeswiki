@@ -2,4 +2,10 @@
     <h2>Hello {{ userName }} !</h2> 
     <b>Here is my message : {{ arguments.message }}</b>
     <p>{{ _t('HELLOWORLD_CONFIG') }}: {{ config.hello_world.my_param }}</p>
+
+    <h3>Url Helper</h3>
+    <li><a href={{ url({handler: 'xml'}) }}>See XML Info Of Current Page</a></li>
+    <li><a href={{ url({tag: 'PagePrincipale'}) }}>Show PagePrincipale</a></li>
+    <li><a href={{ url({tag: 'PagePrincipale', handler: 'edit'}) }}>Edit PagePrincipale</a></li>
+    <li><a href={{ url({handler: 'edit', params: {foo: 'bar', number: 5}}) }}>Edit current page with params</a></li>
 {% endblock %}
