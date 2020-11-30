@@ -57,8 +57,8 @@ class TemplateEngine
         ]);
 
         // Adds Helpers
-        $this->addTwigHelper('_t', function ($key) {
-            return html_entity_decode(_t($key));
+        $this->addTwigHelper('_t', function ($key, $params = []) {
+            return html_entity_decode(_t($key, $params));
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
