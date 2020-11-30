@@ -75,6 +75,7 @@
 			<?php endforeach; ?>
 			<li class="list-group-item empty-list" <?php echo (count($selected_entries)>0) ? 'style="display:none;"' :'' ; ?>><?php echo _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST'); ?></li>
 			</ul>
+			<input name="<?php echo $id; ?>[]" value="0" checked id="<?php echo $id . '_hidden' ; ?>" type="hidden">
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->
 </div> <!-- /.row -->
