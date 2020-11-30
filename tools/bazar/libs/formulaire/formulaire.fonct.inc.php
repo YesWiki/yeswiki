@@ -2445,16 +2445,16 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
 
         return $checkbox_html;
     } elseif ($mode == 'requete') {
-        if (isset($valeurs_fiche[$id]) && ($valeurs_fiche[$id] != 0)) {
-            return array($id => $valeurs_fiche[$id]);
-        } 
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && ($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != 0)) {
+            return array($tableau_template[0].$tableau_template[1].$tableau_template[6] => $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+        }
     } elseif ($mode == 'html') {
         $html = '';
-        if (isset($valeurs_fiche[$id]) && $valeurs_fiche[$id] != '') {
-            $html.= '<div class="BAZ_rubrique" data-id="' . $id.'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
+        if (isset($valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]) && $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]] != '') {
+            $html.= '<div class="BAZ_rubrique" data-id="' . $tableau_template[0].$tableau_template[1].$tableau_template[6].'">' . "\n" . '<span class="BAZ_label">' . $tableau_template[2] . '</span>' . "\n";
             $html.= '<span class="BAZ_texte">' . "\n";
-            $tab_fiche = explode(',', $valeurs_fiche[$id]);
-            
+            $tab_fiche = explode(',', $valeurs_fiche[$tableau_template[0].$tableau_template[1].$tableau_template[6]]);
+
             foreach ($tab_fiche as $idfiche) {
                 $html .= '<ul>';
                 if (isset($tableau_template[3]) and $tableau_template[3] == 'fiche') {
