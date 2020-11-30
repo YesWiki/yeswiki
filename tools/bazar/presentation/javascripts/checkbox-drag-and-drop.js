@@ -40,7 +40,10 @@ $(document).ready(function () {
         $(this).sortable({
           connectWith: text_id ,
           receive: function( event, ui ) {
-              $(this).find('.select-page-item').click();
+              $(this).find('.select-page-item').each( function() {
+                  checkbox_dragndrop_select(this) ;
+                  checkbox_dragndrop_update_at_select(this) ;
+              });
           },
           cancel: ".empty-list"
         })
@@ -51,7 +54,10 @@ $(document).ready(function () {
         $(this).sortable({
           connectWith: text_id ,
           receive: function( event, ui ) {
-              $(this).find('.remove-page-item').click();
+              $(this).find('.remove-page-item').each( function() {
+                  checkbox_dragndrop_remove(this) ;
+                  checkbox_dragndrop_update_at_remove(this) ;
+              });
           },
           cancel: ".empty-list"
         })
@@ -71,39 +77,53 @@ $(document).ready(function () {
         $(this).parents('.import-table-container').find('ul.checkbox-selection-container .list-group-item').not(':hidden').find('.remove-page-item').click();
         return false;
     });
+    
+   function checkbox_dragndrop_select(element) {
+        $(element).siblings().filter('.remove-page-item').removeClass('hide');
+        $(element).siblings().filter(".movable").removeClass('hide');
+		$(element).addClass('hide');
+        $(element).parents(".yeswiki-checkbox").find("ul.checkbox-selection-container .empty-list").hide() ;
+        $(element).parent().find("input").prop('checked', true) ;
+    }
+    
+    function checkbox_dragndrop_update_at_select(element){
+        if ($(element).parents(".yeswiki-checkbox").find(".list-entries-to-export .select-page-item").length < 1){
+            $(element).parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
+        }
+        $(element).parents(".yeswiki-checkbox").find('.checkbox-filter-input').keyup();
+    }
 
 	$('.select-page-item').on('click', function() {
-        var $this = $(this);
-		$this.siblings().filter('.remove-page-item').removeClass('hide');
-        $this.siblings().filter(".movable").removeClass('hide');
-		$this.addClass('hide');
-        $this.parents(".yeswiki-checkbox").find("ul.checkbox-selection-container .empty-list").hide() ;
-		var listitem = $this.parent();
-        listitem.find("input").prop('checked', true) ;
-		listitem.fadeOut("fast", function() {
+        checkbox_dragndrop_select(this) ;
+		var listitem = $(this).parent();
+        listitem.fadeOut("fast", function() {
 			listitem.appendTo($(this).parents(".yeswiki-checkbox").find("ul.checkbox-selection-container")).fadeIn("fast");
-            if ($(this).parents(".yeswiki-checkbox").find(".list-entries-to-export .select-page-item").length < 1){
-                $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").show() ;
-            }
-            $(this).parents(".yeswiki-checkbox").find('.checkbox-filter-input').keyup();
+            checkbox_dragndrop_update_at_select(this) ;
         });
         return false;
 	});
+    
+   function checkbox_dragndrop_remove(element) {
+        $(element).siblings().filter('.select-page-item').removeClass('hide');
+        $(element).siblings().filter(".movable").addClass('hide');
+        $(element).addClass('hide');
+        $(element).parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").hide() ;
+        $(element).parent().find("input").prop('checked', false) ;
+    }
+    
+    function checkbox_dragndrop_update_at_remove(element){
+        if ($(element).parents(".yeswiki-checkbox").find(".checkbox-selection-container .select-page-item").length < 1){
+            $(element).parents(".yeswiki-checkbox").find(".checkbox-selection-container .empty-list").show() ;
+        }
+        $(element).parents(".yeswiki-checkbox").find('.checkbox-filter-input').keyup();
+    }
 
     $('.remove-page-item').on('click', function() {
-        var $this = $(this);
-        $this.siblings().filter('.select-page-item').removeClass('hide');
-        $this.siblings().filter(".movable").addClass('hide');
-        $this.addClass('hide');
-        $this.parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").hide() ;
-        var listitem = $this.parent();
-        listitem.find("input").prop('checked', false) ;
+        checkbox_dragndrop_remove(this) ;
+        var listitem = $(this).parent();
         listitem.fadeOut("fast", function() {
             listitem.prependTo($(this).parents(".yeswiki-checkbox").find("ul.list-entries-to-export")).fadeIn("fast");
-            if ($(this).parents(".yeswiki-checkbox").find(".checkbox-selection-container .select-page-item").length < 1){
-                $this.parents(".yeswiki-checkbox").find(".checkbox-selection-container .empty-list").show() ;
-            }
-            $(this).parents(".yeswiki-checkbox").find('.checkbox-filter-input').keyup();
+            checkbox_dragndrop_update_at_remove(this) ;
         });
         return false;
     });
