@@ -1,0 +1,9 @@
+.yeswiki-checkbox .btn-success.checkbox-select-all{
+    color: var(--success-color) ;
+    background-color: transparent ;
+}
+
+.yeswiki-checkbox .btn-danger.checkbox-remove-all{
+    color: var(--danger-color) ;
+    background-color: transparent ;
+}
