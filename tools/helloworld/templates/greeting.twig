@@ -1,5 +1,8 @@
+{{ include_javascript('tools/helloworld/javascripts/greeting.js') }}
+{{ include_css('tools/helloworld/styles/greeting.css') }}
+
 {% block title %}
-    <h2>Hello {{ userName }} !</h2> 
+    <h2 class="hello-title">Hello {{ userName }} !</h2> 
     <b>Here is my message : {{ arguments.message }}</b>
     <p>{{ _t('HELLOWORLD_CONFIG') }}: {{ config.hello_world.my_param }}</p>
 
