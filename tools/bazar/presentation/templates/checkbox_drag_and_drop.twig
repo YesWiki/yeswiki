@@ -15,7 +15,7 @@
 			{%- set nb_selected = not (attribute(selected_entries_id,0) is empty) ? selected_entries_id|length : 0 -%}
 			{{ entries|length - nb_selected }}</span></span>
 	<h5>{{ form_name }}
-		<a class="pull-right btn btn-xs btn-success checkbox-select-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}" href="#">
+		<a class="pull-right btn btn-sm btn-success checkbox-select-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}" href="#">
 		  <i class="fas fa-plus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}</a>
 	</h5>
 	<div class="clearfix"></div>
@@ -46,7 +46,8 @@
 	</div><!-- /.col-lg-4.export-table-container -->
 
 	<div class="col-lg-8 import-table-container">
-		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR') }} {{ name }}<a class="pull-right btn btn-xs btn-danger checkbox-remove-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}" href="#">
+		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR') }} {{ name }}
+		<a class="pull-right btn btn-sm btn-danger checkbox-remove-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}" href="#">
 		  <i class="fas fa-minus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}
 		</a></h4>
 		<div class="alert alert-info">

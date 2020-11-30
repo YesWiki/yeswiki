@@ -340,6 +340,8 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                     )
                 ) ;   
                 
+                $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/checkbox-drag-and-drop.css');
+                
                 // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
@@ -2397,6 +2399,8 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
                     )
                 ) ;
+                
+                $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/checkbox_drag_and_drop.css');
                 
                 // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
