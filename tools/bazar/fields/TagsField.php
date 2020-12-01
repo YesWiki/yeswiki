@@ -61,7 +61,7 @@ class TagsField extends BazarField
         ]);
     }
 
-    public function formatInput($entry)
+    public function formatValuesBeforeSave($entry)
     {
         // TODO use TagsManager instead of TripleStore
         $tripleStore = $this->getService(TripleStore::class);
@@ -70,7 +70,7 @@ class TagsField extends BazarField
 
         // Delete existing tags linked to this entry
         if (!isset($GLOBALS['delete_tags'])) {
-            $tripleStore->delete($value, 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
+            $tripleStore->delete($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }
 
@@ -79,7 +79,7 @@ class TagsField extends BazarField
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                $tripleStore->create($value, 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, YW_CHARSET, true), '', '');
+                $tripleStore->create($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, YW_CHARSET, true), '', '');
             }
         }
 

@@ -1,0 +1,25 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+    <div class="input-group">
+        {% if value %}
+            <a href="{{ fileUrl }}" target="_blank">{{ value }}</a>
+            &nbsp;-&nbsp;
+            <a href="{{ deleteUrl }}" onClick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER') }}');">{{ _t('BAZ_SUPPRIMER') }}</a>
+            <br />
+            <input
+                type="hidden"
+                name="{{ field.propertyName }}"
+                value="{{ value }}"
+            />
+        {% else %}
+            <input
+                type="file"
+                id="{{ field.propertyName }}"
+                name="{{ field.propertyName }}"
+                class="form-control"
+                {% if field.required %}required{% endif %}
+            />
+        {% endif %}
+    </div>
+{% endblock %}

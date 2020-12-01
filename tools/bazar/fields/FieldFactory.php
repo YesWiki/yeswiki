@@ -29,6 +29,8 @@ class FieldFactory
                 return new DateField($values, $services);
             case 'tags':
                 return new TagsField($values, $services);
+            case 'fichier':
+                return new FileField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
