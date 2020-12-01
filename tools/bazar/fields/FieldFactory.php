@@ -27,6 +27,8 @@ class FieldFactory
             case 'listedatefin':
             case 'jour':
                 return new DateField($values, $services);
+            case 'tags':
+                return new TagsField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
