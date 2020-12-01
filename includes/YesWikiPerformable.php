@@ -34,6 +34,9 @@ abstract class YesWikiPerformable
      */
     public function runWithCallbacks($arguments, $beforeCallbacks, $afterCallbacks)
     {
+        // We must save the arguments in the YesWiki object, as YesWiki::getParameter is used in many places
+        $this->wiki->parameter = &$arguments;
+
         $this->arguments = $arguments;
         foreach($beforeCallbacks as $callbackPath) {
             $this->output .= $this->performCallback($callbackPath);    
@@ -42,6 +45,9 @@ abstract class YesWikiPerformable
         foreach($afterCallbacks as $callbackPath) {
             $this->output .= $this->performCallback($callbackPath);
         }
+
+        unset($this->wiki->parameter);
+
         return $this->output;
     }
 
