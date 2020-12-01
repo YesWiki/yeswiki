@@ -8,7 +8,7 @@ use YesWiki\Bazar\Service\FicheManager;
 /**
  * List with Bazar entries as a source
  */
-abstract class EntryListField extends ListField
+abstract class EnumEntryField extends EnumField
 {
     protected $keywords;
     protected $queries;

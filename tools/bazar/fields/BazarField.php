@@ -94,11 +94,6 @@ abstract class BazarField
 
     // SHORTCUTS
 
-    protected function getEntryProp($prop)
-    {
-        return $entry[$prop] ?? null;
-    }
-
     protected function getService($class)
     {
         return $this->services->get($class);

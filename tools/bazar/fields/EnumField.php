@@ -7,7 +7,7 @@ use Psr\Container\ContainerInterface;
 /**
  * Base class for ListListField and EntryListField
  */
-abstract class ListField extends BazarField
+abstract class EnumField extends BazarField
 {
     protected $listLabel;
     protected $options;

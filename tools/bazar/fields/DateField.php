@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-use Psr\Container\ContainerInterface;
-
 class DateField extends BazarField
 {
     public function renderInput($entry)

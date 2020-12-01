@@ -41,7 +41,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\ListField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -2489,7 +2489,7 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
                 if( $field instanceof BazarField ) {
                     $fieldPropName = $field->getPropertyName();
                     $fieldType = $field->getType();
-                    if( $field instanceof ListField ) {
+                    if( $field instanceof EnumField ) {
                         $fieldOptions = $field->getOptions();
                     }
                 } else if ( is_array($field)) {
@@ -2669,7 +2669,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             if (isset($facettevalue[$id])) {
                 if ($facettevalue[$id]['type'] == 'liste') {
                     $field = findFieldByName($allform, $facettevalue[$id]['source']);
-                    $list = $field instanceof ListField ? $field->getOptions() : $field['values'];
+                    $list = $field instanceof EnumField ? $field->getOptions() : $field['values'];
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
                     $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
                     $form = $allform[$src];

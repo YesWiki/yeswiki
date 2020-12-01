@@ -7,7 +7,7 @@ use Psr\Container\ContainerInterface;
 /**
  * List with a list as a source
  */
-abstract class ListListField extends ListField
+abstract class EnumListField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)
     {

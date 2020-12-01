@@ -10,7 +10,7 @@ class FieldFactory
     {
         switch ($values[0]) {
             case 'radio':
-                return new RadioField($values, $services);
+                return new RadioListField($values, $services);
             case 'texte':
                 return new TextField($values, $services);
             case 'mot_de_passe':
