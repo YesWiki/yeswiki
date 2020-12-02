@@ -19,7 +19,7 @@ class FileField extends BazarField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['delete_file']) && $_GET['delete_file'] == $value) {
-                if (baz_a_le_droit('supp_fiche', (isset($valeurs_fiche['createur']) ? $valeurs_fiche['createur'] : ''))) {
+                if (baz_a_le_droit('supp_fiche', (isset($entry['createur']) ? $entry['createur'] : ''))) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }

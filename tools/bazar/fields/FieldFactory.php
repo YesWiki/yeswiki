@@ -31,6 +31,8 @@ class FieldFactory
                 return new TagsField($values, $services);
             case 'fichier':
                 return new FileField($values, $services);
+            case 'image':
+                return new ImageField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
