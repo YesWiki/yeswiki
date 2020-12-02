@@ -1532,7 +1532,6 @@ function baz_gestion_formulaire()
                 }
                 $forms[$value['bn_id_nature']] = $value;
             }
-            dump($forms);
             ksort($forms);
             $res .= '<div class="alert alert-success">'. _t('BAZ_FORM_IMPORT_SUCCESSFULL').'.</div>'."\n";
         }

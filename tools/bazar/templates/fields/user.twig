@@ -1,0 +1,15 @@
+{% extends "@bazar/layouts/field.twig" %}
+
+{% block label %}{{ _t('BAZ_GIVEN_ID') }}{% endblock %}
+
+{% block value %}
+    {{ value }}
+    {% if isLoggedUser %}
+        <a class="btn btn-xs btn-default" href="{{ editUrl }}">
+            <i class="fa fa-pencil-alt"></i>{{ _t('BAZ_EDIT_MY_ENTRY') }}
+        </a>
+        <a  class="btn btn-xs btn-default" href="{{ settingsUrl }}">
+            <i class="fa fa-lock"></i>{{ _t('BAZ_CHANGE_PWD') }}
+        </a>
+    {% endif %}
+{% endblock %}

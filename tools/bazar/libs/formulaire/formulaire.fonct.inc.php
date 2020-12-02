@@ -44,7 +44,6 @@
 // pour chaque element du formulaire, le mode saisie, la requete au moment de la saisie dans la base de donnees, le rendu en html pour la consultation
 
 use YesWiki\Bazar\Service\FicheManager;
-use YesWiki\Tags\Service\TagsManager;
 
 /** testACLsiSaisir() - test si le mode est saisir et si l'utilisateur a accés à l'écriture de ce champ
  *
@@ -287,110 +286,6 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
             }
         }
 
-        return $html;
-    }
-}
-
-/** yeswiki_user() - Ajoute un élément de type texte pour créer un utilisateur wikini au formulaire
- *
- * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des différentes option pour l'élément texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
- * @return   void
- */
-function yeswiki_user(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    utilisateur_wikini($formtemplate, $tableau_template, $mode, $valeurs_fiche);
-}
-
-function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
-        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
-        return "";
-    } elseif ($mode == 'saisie') {
-        $option = array('maxlength' => 60, 'id' => 'nomwiki');
-        if (!isset($valeurs_fiche['nomwiki'])) {
-            //mot de passe
-            $bulledaide = '';
-            if (isset($tableau_template[10]) && $tableau_template[10] != '') {
-                $bulledaide = ' <img class="tooltip_aide" title="'
-                    .htmlentities($tableau_template[10], ENT_QUOTES, YW_CHARSET)
-                    .'" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />';
-            }
-            $output = '<div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . (empty($bulledaide) ? '' : $bulledaide) . '</label>
-            <div class="controls col-sm-9">
-            <div class="input-group">
-            <input class="form-control" type="password" required name="mot_de_passe_wikini" size="'.$tableau_template[3].'" />
-            </div>
-            </div>
-            </div>
-            <div class="control-group form-group">
-            <label class="control-label col-sm-3"><span class="symbole_obligatoire">*</span> '._t('BAZ_MOT_DE_PASSE') . ' (' . _t('BAZ_VERIFICATION') . ')'. (empty($bulledaide) ? '' : $bulledaide) . '</label>
-            <div class="controls col-sm-9">
-            <div class="input-group">
-            <input class="form-control" type="password" required name="mot_de_passe_repete_wikini" size="'.$tableau_template[3].'" />
-            </div>
-            </div>
-            </div>
-            ';
-            return $output;
-        } else {
-            return '<input type="hidden" name="nomwiki" value="'.$valeurs_fiche['nomwiki'].'" />'."\n";
-        }
-    } elseif ($mode == 'requete') {
-        $sendmail = true;
-        if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
-            $sendmail = false;
-        }
-
-        $nomwiki = (isset($valeurs_fiche['nomwiki']) && !empty($valeurs_fiche['nomwiki'])) ?
-            $valeurs_fiche['nomwiki'] : $valeurs_fiche[$tableau_template[1]];
-
-        if (!$GLOBALS['wiki']->IsWikiName($nomwiki)) {
-            $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]], 0);
-            // si le user existe, on ajoute un nombre
-            while ($GLOBALS['wiki']->LoadUser($nomwiki)) {
-                $nomwiki = genere_nom_wiki($valeurs_fiche[$tableau_template[1]]);
-            }
-        }
-
-        // indicateur pour la gestion des droits associee a la fiche.
-        $GLOBALS['utilisateur_wikini'] = $nomwiki;
-
-        if (!$GLOBALS['wiki']->LoadUser($nomwiki)) {
-            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
-            $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini);
-            if ($sendmail) {
-                //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
-                $lien = str_replace("/wakka.php?wiki=", "", $GLOBALS['wiki']->config["base_url"]);
-                $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$GLOBALS['wiki']->config["wakka_name"];
-                $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$nomwiki."\n\nVotre email : ".$valeurs_fiche[$tableau_template[2]]."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
-                $headers =   'From: '.$GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'] . "\r\n" .
-                'Reply-To: '.$GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'] . "\r\n" .
-                'X-Mailer: PHP/' . phpversion();
-                mail($valeurs_fiche[$tableau_template[2]], removeAccents($objetmail), $messagemail, $headers);
-                // ajout dans la liste de mail
-                if (isset($valeurs_fiche[$tableau_template[5]]) && $valeurs_fiche[$tableau_template[5]] != '') {
-                    $headers = 'From: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'Reply-To: ' . $valeurs_fiche[$tableau_template[2]] . "\r\n" . 'X-Mailer: PHP/' . phpversion();
-                    mail($valeurs_fiche[$tableau_template[5]], 'inscription a la liste de discussion', 'inscription', $headers);
-                }
-            }
-        }
-
-        return array('nomwiki' => $nomwiki);
-    } elseif ($mode == 'html') {
-        $html= '';
-        if (isset($valeurs_fiche['nomwiki']) and !empty($valeurs_fiche['nomwiki'])) {
-            $html .= '<div class="BAZ_rubrique" data-id="nomwiki">' . "\n" . '<span class="BAZ_label">'._t('BAZ_GIVEN_ID').' :</span>' . "\n";
-            $html .= '<span class="BAZ_texte"> ';
-            $html .= $valeurs_fiche['nomwiki'];
-            if ($GLOBALS['wiki']->GetUser() and ($GLOBALS['wiki']->GetUserName() == $valeurs_fiche['nomwiki'])) {
-                $html .= ' <a class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('edit', $valeurs_fiche['nomwiki']).'"><i class="fa fa-pencil-alt"></i> '._t('BAZ_EDIT_MY_ENTRY').'</a> <a  class="btn btn-xs btn-default" href="'.$GLOBALS['wiki']->href('', 'ParametresUtilisateur').'"><i class="fa fa-lock"></i> '._t('BAZ_CHANGE_PWD').'</a>';
-            }
-            $html .= '</span>' . "\n" . '</div> <!-- /.BAZ_rubrique -->' . "\n";
-        }
         return $html;
     }
 }

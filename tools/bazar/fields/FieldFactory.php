@@ -33,6 +33,9 @@ class FieldFactory
                 return new FileField($values, $services);
             case 'image':
                 return new ImageField($values, $services);
+            case 'yeswiki_user':
+            case 'utilisateur_wikini':
+                return new UserField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);

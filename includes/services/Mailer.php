@@ -9,7 +9,6 @@ class Mailer
 {
     protected $wiki;
     protected $dbService;
-
     protected $params;
 
     public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params)
@@ -68,7 +67,26 @@ class Mailer
         $fiche = $texthtml.str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $data));
         $html = '<html><head><style type="text/css">'.$style.'</style></head><body>'.$fiche.'</body></html>';
 
-        send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $email, $sujet, $text, $html);
+        send_mail($this->params-get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params-get('BAZ_ADRESSE_MAIL_ADMIN'), $email, $sujet, $text, $html);
+    }
 
+    public function notifyNewUser($wikiName, $email)
+    {
+        $lien = str_replace("/wakka.php?wiki=", "", $this->params->get('base_url'));
+        $objetmail = '['.str_replace("http://", "", $lien).'] Vos nouveaux identifiants sur le site '.$this->params->get('wakka_name');
+        $messagemail = "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nVotre identifiant NomWiki : ".$wikiName."\n\nVotre email : ".$email."\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\n\n\nA tres bientot ! \n\n";
+
+        // TODO use send_mail() instead of mail()
+        $headers =   'From: '.$this->params->get('BAZ_ADRESSE_MAIL_ADMIN') . "\r\n" .
+            'Reply-To: '.$this->params->get('BAZ_ADRESSE_MAIL_ADMIN') . "\r\n" .
+            'X-Mailer: PHP/' . phpversion();
+        mail($email, removeAccents($objetmail), $messagemail, $headers);
+    }
+
+    public function subscribeToMailingList($email, $mailingList)
+    {
+        // TODO use send_mail() instead of mail()
+        $headers = 'From: ' . $email . "\r\n" . 'Reply-To: ' . $email . "\r\n" . 'X-Mailer: PHP/' . phpversion();
+        mail($mailingList, 'inscription a la liste de discussion', 'inscription', $headers);
     }
 }

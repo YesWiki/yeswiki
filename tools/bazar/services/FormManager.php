@@ -115,7 +115,7 @@ class FormManager
 
     public function update($data)
     {
-        $test = $this->dbService->query('UPDATE'.$this->dbService->prefixTable('nature').'SET '
+        return $this->dbService->query('UPDATE'.$this->dbService->prefixTable('nature').'SET '
             .'`bn_label_nature`="'.addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)).'" ,'
             .'`bn_template`="'.addslashes(_convert($data['bn_template'], YW_CHARSET, true)).'" ,'
             .'`bn_description`="'.addslashes(_convert($data['bn_description'], YW_CHARSET, true)).'" ,'
@@ -124,10 +124,6 @@ class FormManager
             .'`bn_sem_use_template`='. (isset($data['bn_sem_use_template']) ? '1' : '0') .' ,'
             .'`bn_condition`="'.addslashes(_convert($data['bn_condition'], YW_CHARSET, true)).'"'
             .' WHERE `bn_id_nature`='.$data['bn_id_nature']);
-
-        dump($test);
-
-        return $test;
     }
 
     public function delete($id)
@@ -355,15 +351,6 @@ class FormManager
 
                     break;
 
-                case 'fichier':
-                case 'image':
-                    $prepared[$i]['id'] = $field[self::FIELD_TYPE].$field[self::FIELD_ID];
-                    $prepared[$i]['type'] = 'file';
-                    if ($field[self::FIELD_TYPE] === 'image') {
-                        $prepared[$i]['attributes'] .= ' accept="image/*"';
-                    }
-                    break;
-
                 case 'champs_cache':
                 case 'titre':
                     if ($field[self::FIELD_TYPE] == 'titre') {
@@ -376,14 +363,6 @@ class FormManager
                     $prepared[$i]['type'] = 'hidden';
                     $prepared[$i]['label'] = '';
                     $prepared[$i]['required'] = '';
-                    $prepared[$i]['helper'] = '';
-                    break;
-
-                case 'labelhtml':
-                    $prepared[$i]['id'] = '';
-                    $prepared[$i]['type'] = 'html';
-                    $prepared[$i]['required'] = '';
-                    $prepared[$i]['values'] = $field[self::FIELD_SIZE];
                     $prepared[$i]['helper'] = '';
                     break;
 
@@ -400,14 +379,6 @@ class FormManager
                     $prepared[$i]['required'] = '';
                     $prepared[$i]['values'] = $field[self::FIELD_ID];
                     $prepared[$i]['helper'] = '';
-                    break;
-
-                case 'utilisateur_wikini':
-                    $prepared[$i]['id'] = $field[self::FIELD_ID];
-                    $prepared[$i]['type'] = 'wikiuser';
-                    $prepared[$i]['label'] = '';
-                    $prepared[$i]['required'] = '';
-
                     break;
             }
 
