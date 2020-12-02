@@ -1,0 +1,11 @@
+<div class="control-group form-group">
+    <label class="col-sm-3"></label>
+    <div class="controls col-sm-9">
+        <a class="btn btn-primary btn-geolocate-address">
+            {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
+        </a>
+        <input type="hidden" value="{{ latitude }}" id="bf_latitude" name="bf_latitude">
+        <input type="hidden" value="{{ longitude }}" id="bf_longitude" name="bf_longitude">
+        <div id="osmmapform" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
+    </div>
+</div>

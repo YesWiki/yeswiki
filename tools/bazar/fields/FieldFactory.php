@@ -31,6 +31,9 @@ class FieldFactory
                 return new DateField($values, $services);
             case 'tags':
                 return new TagsField($values, $services);
+            case 'carte_google':
+            case 'map':
+                return new MapField($values, $services);
             case 'fichier':
                 return new FileField($values, $services);
             case 'image':
