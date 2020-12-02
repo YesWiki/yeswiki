@@ -7,3 +7,19 @@
     color: var(--danger-color) ;
     background-color: transparent ;
 }
+
+@media(max-width: 1200px){
+   .movable-h {
+      display:none;
+   }
+}
+
+.checkbox-icon-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center ;
+}
+
+.list-group-item {
+    display :flex;
+}
