@@ -290,75 +290,6 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** inscriptionliste() - Permet de s'inscrire à une liste
- *
- * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des différentes option pour l'élément texte
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
- * @return   void
- */
-function inscriptionliste(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    //Remplacer champ par subscribe / unsubscribe et ne pas faire le test
-    $id = str_replace(array('@', '.'), array('', ''), $tableau_template[1]);
-    $valsub = str_replace('@', '-subscribe@', $tableau_template[1]);
-    $valunsub = str_replace('@', '-unsubscribe@', $tableau_template[1]);
-
-    // test de presence d'ezmlm, qui necessite de reformater le mail envoyé
-    if (isset($valeurs_fiche[$tableau_template[3]]) and isset($tableau_template[4]) and $tableau_template[4] == 'ezmlm') {
-        $valsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valsub);
-        $valunsub = str_replace('@', '-'.str_replace('@', '=', $valeurs_fiche[$tableau_template[3]]).'@', $valunsub);
-    }
-
-    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
-        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
-        return "";
-    } elseif ($mode == 'saisie') {
-        $input_html = '<div class="control-group form-group">
-      <label class="control-label col-sm-3"></label>
-                    <div class="controls col-sm-9">
-                        <div class="checkbox">
-                          <label for="' . $id . '">'."\n"
-                          .'<input id="' . $id . '" type="checkbox"' . ((!isset($valeurs_fiche[$id]) or isset($valeurs_fiche[$id]) && $valeurs_fiche[$id] == $valsub) ? ' checked="checked"' : '') . ' value="' . $tableau_template[1] . '" name="' . $id . '" class="element_checkbox">'
-                          . $tableau_template[2] . '</label>
-                        </div>
-                    </div>
-                </div>';
-        return $input_html;
-    } elseif ($mode == 'requete') {
-        if (!class_exists("Mail")) {
-            include_once 'tools/contact/libs/contact.functions.php';
-        }
-
-        if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
-            if ($valeurs_fiche[$id] == $valsub) {
-                send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valsub, 'subscribe', 'subscribe', 'subscribe');
-                return array($id => $valeurs_fiche[$id]);
-            } else {
-                if ($valeurs_fiche[$id] == $valunsub) {
-                    // On n'envoit pas de message dans ce cas la, car ca n'a pas de sens ...
-                    //              send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valunsub, 'unsubscribe', 'unsubscribe', 'unsubscribe');
-                    return array($id => $valeurs_fiche[$id]);
-                }
-            }
-        } else {
-            if (isset($valeurs_fiche[$id])) {
-                send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valsub, 'subscribe', 'subscribe', 'subscribe');
-                $valeurs_fiche[$tableau_template[1]] = $valsub;
-                return array($id => $valeurs_fiche[$tableau_template[1]]);
-            } else {
-                // on ne desabonne que si abonne precedement
-                if (isset($valeurs_fiche[$id])) {
-                    send_mail($valeurs_fiche[$tableau_template[3]], $valeurs_fiche['bf_titre'], $valunsub, 'unsubscribe', 'unsubscribe', 'unsubscribe');
-                    $valeurs_fiche[$tableau_template[1]] = $valunsub;
-                    return array($id => $valeurs_fiche[$tableau_template[1]]);
-                }
-            }
-        }
-    } elseif ($mode == 'html') {
-    }
-}
-
 /** metadatas() - Ajoute un look par defaut aux fiches
  *
  * @param    mixed   L'objet QuickForm du formulaire
@@ -886,4 +817,3 @@ function listefichesliees(&$formtemplate, $tableau_template, $mode, $valeurs_fic
 {
     return listefiches($formtemplate, $tableau_template, $mode, $valeurs_fiche);
 }
-

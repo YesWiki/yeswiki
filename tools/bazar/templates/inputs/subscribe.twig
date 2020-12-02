@@ -1,0 +1,19 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block label %}{% endblock %}
+
+{% block input %}
+    <div class="checkbox">
+        <label for="{{ field.propertyName }}">
+            <input
+                    id="{{ field.propertyName }}"
+                    type="checkbox"
+                    value="{{ subscribeEmail }}"
+                    name="{{ field.propertyName }}"
+                    class="element_checkbox"
+                    {% if not value or value == subscribeEmail %}checked="checked"{% endif %}}
+            >
+            {{ field.label}}
+        </label>
+    </div>
+{% endblock %}
