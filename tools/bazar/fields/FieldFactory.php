@@ -38,6 +38,8 @@ class FieldFactory
             case 'yeswiki_user':
             case 'utilisateur_wikini':
                 return new UserField($values, $services);
+            case 'bookmarklet':
+                return new BookmarkletField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
