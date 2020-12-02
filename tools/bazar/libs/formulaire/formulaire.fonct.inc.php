@@ -1133,26 +1133,3 @@ function listefichesliees(&$formtemplate, $tableau_template, $mode, $valeurs_fic
     return listefiches($formtemplate, $tableau_template, $mode, $valeurs_fiche);
 }
 
-function bookmarklet(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    if (testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)) {
-        // cas où on est en mode saisie et que le champ n'est pas autorisé à la modification, le champ est omis
-        return "";
-    } elseif ($mode == 'html') {
-        if ($GLOBALS['wiki']->GetMethod() == 'iframe') {
-            return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
-        }
-    } elseif ($mode == 'saisie') {
-        if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/iframe') {
-            $id = isset($GLOBALS['params']['idtypeannonce']) ? $GLOBALS['params']['idtypeannonce'] : $valeurs_fiche['id_typeannonce'];
-            $urlParams = 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$id;
-            $urlfield = trim($tableau_template[3]) ? $tableau_template[3] : 'bf_url' ;
-            $descfield = trim($tableau_template[4]) ? $tableau_template[4] : 'bf_description' ;
-            $htmlbookmarklet = "<div class=\"control-group form-group\">
-    <label class=\"control-label col-sm-3\"></label>
-    <div class=\"controls col-sm-9\"><div class=\"alert alert-info\">
-                <a href=\"javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2 ;window.open('" . $GLOBALS['wiki']->href('iframe', $GLOBALS['wiki']->getPageTag(), $urlParams). "&amp;bf_titre='+escape(document.title)+'&amp;$urlfield='+encodeURIComponent(location.href)+'&amp;$descfield='+escape(document.getSelection()), '" . $tableau_template[1] . "', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;\" class=\"btn btn-default\">" . $tableau_template[1] . "</a> << " . $tableau_template[2] . "</div></div></div>";
-            return $htmlbookmarklet;
-        }
-    }
-}
