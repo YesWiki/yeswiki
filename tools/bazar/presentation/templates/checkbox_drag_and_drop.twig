@@ -1,9 +1,6 @@
 <div class="row row-fluid yeswiki-checkbox checkbox">
 	<div class="col-lg-4 export-table-container">
-		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM') }}</h4>
-		<div class="alert alert-info">
-			{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO') }}<div class="btn btn-default btn-success btn-mini btn-xs"><i class="fas fa-plus"></i></div>.
-		</div>
+		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM') }}<img class="tooltip_aide" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO')  ~ "'+'." }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></h4>		
 		<div class="input-group input-prepend input-append">
 			<span class="input-group-addon add-on"><i class="fas fa-filter"></i></span>
 			<input class="checkbox-filter-input form-control input-sm" type="text" id="filter-{{ id }}" value="" placeholder="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM') }}" style="background: var(--neutral-light-color);;"/>
@@ -31,13 +28,17 @@
 							<i class="fas fa-minus"></i>
 						</a>
 						<span class="pull-left hide movable"><i class="fas fa-arrows-alt-v"></i></span>
+						<div class="pull-left checkbox-icon-column">
 						{% if item.type != 'list' %}
-							<a class="pull-left btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item.name|e }}" href="{{ item.href }}">
+							<a class="btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item.name|e }}" href="{{ item.href }}">
 								<i class="fas fa-eye"></i>
 							</a>
 						{% endif %}{# if item.type != 'list' #}
+						<span class="movable-h"><i class="fas fa-arrows-alt-h"></i></span>
+						<span>&nbsp; {{ item.name }}</span>
+						</div>
 						<input type="checkbox" id="{{ id }}_{{ item_id }}" value="1" name="{{ id }}[{{ item_id }}]" class="element_checkbox hide"><span style="display:none;"></span>
-						&nbsp; {{ item.name }}</li>
+						</li>
 				{% endif %}{# if not item_id in selected_entries_id #}
 			{% endfor %}{# for item_id, item in entries #}
 			<li class="list-group-item empty-list" style="display:none;">{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
@@ -46,13 +47,10 @@
 	</div><!-- /.col-lg-4.export-table-container -->
 
 	<div class="col-lg-8 import-table-container">
-		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR') }} {{ name }}
+		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR') }} {{ name }}<img class="tooltip_aide" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
 		<a class="pull-right btn btn-sm btn-danger checkbox-remove-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}" href="#">
 		  <i class="fas fa-minus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}
 		</a></h4>
-		<div class="alert alert-info">
-			{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO') }}
-		</div>
 		<div class="clearfix"></div>
 		<div class="well" style="max-height:{{ height ? height + 110 : 410}}px;overflow:auto;">
 			<ul class="checkbox-selection-container list-group group-{{ id }}" data-group="{{ id }}">
@@ -66,6 +64,7 @@
 					<a class="pull-right btn btn-xs btn-danger remove-page-item" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
 						<i class="fas fa-minus"></i>
 					</a>
+					<span class="pull-left hide movable-h"><i class="fas fa-arrows-alt-h"></i></span>
 					<span class="pull-left movable"><i class="fas fa-arrows-alt-v"></i></span>
 					{% if item.type != 'list' %}
 						<a class="pull-left btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item.name|e }}" href="{{ item.href }}">

@@ -81,6 +81,7 @@ $(document).ready(function () {
    function checkbox_dragndrop_select(element) {
         $(element).siblings().filter('.remove-page-item').removeClass('hide');
         $(element).siblings().filter(".movable").removeClass('hide');
+        $(element).siblings().filter(".checkbox-icon-column").find(".movable-h").addClass('hide');
 		$(element).addClass('hide');
         $(element).parents(".yeswiki-checkbox").find("ul.checkbox-selection-container .empty-list").hide() ;
         $(element).parent().find("input").prop('checked', true) ;
@@ -106,6 +107,7 @@ $(document).ready(function () {
    function checkbox_dragndrop_remove(element) {
         $(element).siblings().filter('.select-page-item').removeClass('hide');
         $(element).siblings().filter(".movable").addClass('hide');
+        $(element).siblings().filter(".checkbox-icon-column").find(".movable-h").removeClass('hide');
         $(element).addClass('hide');
         $(element).parents(".yeswiki-checkbox").find(".list-entries-to-export .empty-list").hide() ;
         $(element).parent().find("input").prop('checked', false) ;

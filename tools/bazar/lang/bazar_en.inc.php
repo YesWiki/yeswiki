@@ -218,7 +218,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 //================ Drag & Drop for Checkbox fiche =======================================
 'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => 'Available elements',
-'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'Select your list\'elements by clicking on ',
+'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'Select your list\'s elements by clicking on ',
 'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM' => 'Filter elements',
 'BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL' => 'Add all',
 'BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL' => 'Drop All',
