@@ -13,6 +13,8 @@ class FieldFactory
                 return new RadioListField($values, $services);
             case 'texte':
                 return new TextField($values, $services);
+            case 'textelong':
+                return new TextareaField($values, $services);
             case 'mot_de_passe':
                 return new PasswordField($values, $services);
             case 'champs_mail':

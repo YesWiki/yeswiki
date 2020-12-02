@@ -1,0 +1,25 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block label %}
+    {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
+    {% if field.hint %}
+        <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+    {% endif %}
+    {{ field.label }}
+    {% if field.maxChars and field.syntax == 'nohtml' %}(<span class="charsRemaining">{{ field.maxChars }}</span> caract&egrave;res restants){% endif %}
+{% endblock %}
+
+{% block input %}
+    <textarea
+        id="{{ field.name }}"
+        name="{{ field.name }}"
+        class="form-control {% if field.syntax == 'html' %}summernote{% else %}{{ field.syntax }}{% endif %}"
+        rows="{{ field.numRows }}"
+        {% if field.size %}cols="{{ field.size }}"{% endif %}
+        {% if field.maxChars %}maxlength="{{ field.maxChars }}"{% endif %}
+        placeholder="{{ field.label|raw('html') }}"
+        {% if field.required %}required{% endif %}
+    >
+        {{- value -}}
+    </textarea>
+{% endblock %}

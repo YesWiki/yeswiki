@@ -309,48 +309,6 @@ class FormManager
                     }
                     break;
 
-                case 'textelong':
-                case 'jour':
-                case 'listedatedeb':
-                case 'listedatefin':
-                case 'lien_internet':
-                    $prepared[$i]['id'] = $field[self::FIELD_ID];
-
-                    // type de champ
-                    if (!empty($field[self::FIELD_SUB_TYPE]) && in_array(
-                            $field[self::FIELD_SUB_TYPE],
-                            ['text', 'date', 'email', 'url', 'range', 'password', 'number']
-                        )) {
-                        $prepared[$i]['type'] = $field[self::FIELD_SUB_TYPE];
-                    } elseif ($field[self::FIELD_TYPE] === 'texte') {
-                        $prepared[$i]['type'] = 'text';
-                    } elseif ($field[self::FIELD_TYPE] === 'textelong') {
-                        $prepared[$i]['type'] = 'textarea';
-                    } elseif (in_array($field[self::FIELD_TYPE], ['jour', 'listedatedeb', 'listedatefin'])) {
-                        $prepared[$i]['type'] = 'date';
-                    } elseif ($field[self::FIELD_TYPE] === 'champs_mail') {
-                        $prepared[$i]['type'] = 'email';
-                    } elseif ($field[self::FIELD_TYPE] === 'lien_internet') {
-                        $prepared[$i]['type'] = 'url';
-                    } elseif ($field[self::FIELD_TYPE] === 'mot_de_passe') {
-                        $prepared[$i]['type'] = 'password';
-                    }
-
-                    // THE FIELD `attributes` IS APPARENTLY UNUSED
-                    if ($field[self::FIELD_TYPE] === 'texte') {
-                        if (in_array($field[self::FIELD_SUB_TYPE], array('range', 'number'))) {
-                            $prepared[$i]['attributes'] .= ($field[self::FIELD_SIZE] != '') ? ' min="'.$field[self::FIELD_SIZE].'"' : '';
-                            $prepared[$i]['attributes'] .= ' max="'.$field[self::FIELD_MAX_LENGTH].'"';
-                        } else {
-                            $prepared[$i]['attributes'] .= ' maxlength="'.$field[self::FIELD_MAX_LENGTH].'" size="'.$field[self::FIELD_MAX_LENGTH].'"';
-                        };
-                    } elseif ($field[self::FIELD_TYPE] === 'textelong') {
-                        $prepared[$i]['attributes'] .= ' rows="' . $field[self::FIELD_MAX_LENGTH] . '"';
-                    }
-                    $prepared[$i]['attributes'] .= ($field[self::FIELD_PATTERN] != '') ? ' pattern="' . $field[self::FIELD_PATTERN] . '"' : '';
-
-                    break;
-
                 case 'champs_cache':
                 case 'titre':
                     if ($field[self::FIELD_TYPE] == 'titre') {

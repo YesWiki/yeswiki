@@ -93,4 +93,21 @@ class UserField extends BazarField
 
         return null;
     }
+
+    // GETTERS. Needed to use them in the Twig syntax
+
+    public function getNameField()
+    {
+        return $this->nameField;
+    }
+
+    public function getEmailField()
+    {
+        return $this->emailField;
+    }
+
+    public function getMailingList()
+    {
+        return $this->mailingList;
+    }
 }
