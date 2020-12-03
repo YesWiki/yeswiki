@@ -20,25 +20,32 @@
 		<ul class="list-entries-to-export list-group group-{{ id }}" data-group="{{ id }}">
 			{% for item_id, item in entries %}
 				{% if item_id not in selected_entries_id %}
-					<li class="list-group-item">
-						<a class="pull-right btn btn-xs btn-success select-page-item" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
-							<i class="fas fa-plus"></i>
-						</a>
-						<a class="hide pull-right btn btn-xs btn-danger remove-page-item" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
-							<i class="fas fa-minus"></i>
-						</a>
-						<span class="pull-left hide movable"><i class="fas fa-arrows-alt-v"></i></span>
-						<div class="pull-left checkbox-icon-column">
-						{% if item.type != 'list' %}
-							<a class="btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item.name|e }}" href="{{ item.href }}">
-								<i class="fas fa-eye"></i>
-							</a>
-						{% endif %}{# if item.type != 'list' #}
-						<span class="movable-h"><i class="fas fa-arrows-alt-h"></i></span>
-						<span>&nbsp; {{ item.name }}</span>
+					{% set selected = false %}
+					{% block li_item %}
+					<li class="list-group-item">						
+						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><i class="fas fa-arrows-alt-v"></i></span>
+						<div class="checkbox-icons-up-down{{ not selected ? ' hide ' }}">
+							<div class="checkbox-icons-up btn btn-default btn-xs"><i class="fas fa-chevron-up"></i></div>
+							<div class="checkbox-icons-down btn btn-default btn-xs"><i class="fas fa-chevron-down"></i></div>
+						</div>
+						<div class="checkbox-icon-column-left">
+							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><i class="fas fa-arrows-alt-h"></i></span>
+							{% if item.type != 'list' %}
+								<a class="btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item.name|e }}" href="{{ item.href }}">
+									<i class="fas fa-eye"></i>
+								</a>
+							{% endif %}{# if item.type != 'list' #}
 						</div>
 						<input type="checkbox" id="{{ id }}_{{ item_id }}" value="1" name="{{ id }}[{{ item_id }}]" class="element_checkbox hide"><span style="display:none;"></span>
-						</li>
+						<span class="list-item-text">{{ item.name }}</span>
+						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
+							<i class="fas fa-plus"></i>
+						</a>
+						<a class="btn btn-xs btn-danger remove-page-item{{ not selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
+							<i class="fas fa-minus"></i>
+						</a>
+					</li>
+					{% endblock %}
 				{% endif %}{# if not item_id in selected_entries_id #}
 			{% endfor %}{# for item_id, item in entries #}
 			<li class="list-group-item empty-list" style="display:none;">{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
@@ -57,23 +64,8 @@
 			{% if not (attribute(selected_entries_id,0) is empty) %}
 			  {% for item_id in selected_entries_id %}
 				{% set item = attribute(entries,item_id) %}
-				<li class="list-group-item">
-					<a class="hide pull-right btn btn-xs btn-success select-page-item" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
-						<i class="fas fa-plus"></i>
-					</a>
-					<a class="pull-right btn btn-xs btn-danger remove-page-item" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
-						<i class="fas fa-minus"></i>
-					</a>
-					<span class="pull-left hide movable-h"><i class="fas fa-arrows-alt-h"></i></span>
-					<span class="pull-left movable"><i class="fas fa-arrows-alt-v"></i></span>
-					{% if item.type != 'list' %}
-						<a class="pull-left btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item.name|e }}" href="{{ item.href }}">
-							<i class="fas fa-eye"></i>
-						</a>
-					{% endif %}{# if item.type != 'list' #}
-					<input type="checkbox" id="{{ id }}_{{ item_id }}" value="1" name="{{ id }}[{{ item_id }}]" class="element_checkbox hide" checked><span style="display:none;"></span>
-					&nbsp; {{ item.name }}
-				</li>
+				{% set selected = true %}
+				{{ block('li_item') }}
 			  {% endfor %}{# for item_id in selected_entries_id #}
 			{% endif %}{# if not (attribute(selected_entries_id,0) is empty) #}
 			<li class="list-group-item empty-list" {% if not (attribute(selected_entries_id,0) is empty) %}style="display:none;"{% endif %}>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
