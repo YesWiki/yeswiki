@@ -14,12 +14,44 @@
    }
 }
 
-.checkbox-icon-column {
+.checkbox-icon-column-left {
     display: flex;
-    flex-direction: column;
-    align-items: center ;
+    flex-wrap:wrap-reverse;
+    align-items: center;
+    justify-content:center;
+    flex-grow: 0 ;
+    flex-shrink: 10 ;
+}
+
+
+.checkbox-icons-up-down {
+    flex-grow: 0 ;
+    flex-shrink: 10 ;
+    display:none;
+}
+
+
+@media(max-width: 800px){
+    .checkbox-icons-up-down {
+        display:initial;
+    }
+    .movable {
+        display:none ;
+    }
 }
 
 .list-group-item {
-    display :flex;
+    display :flex;    
+    align-items: flex-start;
+}
+
+.list-group-item .select-page-item , .list-group-item .remove-page-item {
+    flex-grow: 0 ;
+    flex-shrink: 0 ;
+    justify-content:flex-end;
+    display:block;
+}
+
+.list-item-text {
+    flex-grow: 3 ;
 }
