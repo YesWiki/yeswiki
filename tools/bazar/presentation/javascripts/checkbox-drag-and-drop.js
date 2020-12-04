@@ -135,15 +135,21 @@ $(document).ready(function () {
     });
     
     $('.checkbox-icons-up').on('click', function() {
-        if ($(this).parents('.list-group-item').prev(".empty-list")) {
-            $(this).parents('.list-group-item').prev().prev().before($(this).parents('.list-group-item'))
+        var elem_to_move = $(this).parents('.list-group-item') ;  
+        if (elem_to_move.prev(".empty-list").length > 0) {
+            elem_to_move.prev().prev().before(elem_to_move)
         } else {
-            $(this).parents('.list-group-item').prev().before($(this).parents('.list-group-item'));
-        }        
+            elem_to_move.prev().before(elem_to_move);
+        }
     });
     
     $('.checkbox-icons-down').on('click', function() {
-        $(this).parents('.list-group-item').next(":not(.empty-list)").after($(this).parents('.list-group-item'));
+        var elem_to_move = $(this).parents('.list-group-item') ;  
+        if (elem_to_move.next(".empty-list").length > 0) {
+            elem_to_move.next().next().after(elem_to_move)
+        } else {
+            elem_to_move.next().after(elem_to_move);
+        }
     });
 
     var filter = $(".checkbox-filter-input");
