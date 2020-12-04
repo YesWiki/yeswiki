@@ -562,6 +562,8 @@ class FicheManager
         unset($data['antispam']);
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
+        unset($data['html_data']);
+        unset($data['datastr']);
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
