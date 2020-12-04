@@ -522,14 +522,6 @@ class FicheManager
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-        // pour les checkbox, on met les resultats sur une ligne
-        // TODO put this in CheckboxField::formatValuesBeforeSave
-        foreach ($data as $cle => $val) {
-            if (is_array($val)) {
-                $data[$cle] = implode(',', array_keys($val));
-            }
-        }
-
         for ($i = 0; $i < count($form['template']); ++$i) {
             if( $form['prepared'][$i] instanceof BazarField) {
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);

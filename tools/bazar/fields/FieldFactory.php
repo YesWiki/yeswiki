@@ -11,6 +11,8 @@ class FieldFactory
         switch ($values[0]) {
             case 'radio':
                 return new RadioListField($values, $services);
+            case 'checkbox':
+                return new CheckboxListField($values, $services);
             case 'texte':
                 return new TextField($values, $services);
             case 'textelong':

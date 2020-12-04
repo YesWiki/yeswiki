@@ -1,0 +1,15 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+    <div class="bazar-checkbox-cols{{ field.required ? ' chk_required' : ''}}">
+        {% for key, option in options %}
+        <div class="checkbox">
+            <label for="{{ field.propertyName ~ '[' ~ key ~ ']' }}">
+                <input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ '[' ~ key ~ ']' }}" {% if key in values %}checked{% endif %} />
+                <span>{{ option }}</span>
+            </label>
+        </div>
+        {% endfor %}
+		<input name="{{ field.propertyName }}[END_INDEX NO_CHANGE_IT]" value="0" checked id="{{ field.propertyName }}_hidden" type="hidden">
+    </div>
+{% endblock %}
