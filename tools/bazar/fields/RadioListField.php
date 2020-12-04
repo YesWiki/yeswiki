@@ -15,17 +15,18 @@ class RadioListField extends EnumListField
 
     public function renderInput($entry)
     {
+        $value = $this->getValue($entry);
         return $this->render('@bazar/inputs/radio.twig', [
-            'options' => $this->options['label']
+            'options' => $this->options['label'],
+            'value' => ($value !== '') ? $value : ''
         ]);
     }
 
     public function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        $value = $entry !== '' ? $this->options['label'][$value] : '';
-        return $this->render('@bazar/fields/radio.twig', [
-            'value' => $value
-        ]);
+        return ($value !== '') ? $this->render('@bazar/fields/radio.twig', [
+            'value' => $this->options['label'][$value]
+        ]) : '' ;
     }
 }
