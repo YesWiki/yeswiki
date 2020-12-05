@@ -4,8 +4,10 @@
 	<span class="BAZ_texte">
 		<ul>
 			{% for value in values %}
-				<li>{{ value }}</li>
+				<li>{% block value_item %}{{ value }}{% endblock %}</li>
 			{% endfor %}
 		</ul>
 	</span>
 {% endblock %}
+
+

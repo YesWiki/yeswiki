@@ -1,15 +1,24 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
-	{% if display_select_all_limit and options|length > display_select_all_limit %}
-	<label class="pull-right"><input type="checkbox" class="selectall" data-target=".checkbox"/>{{ _t('BAZAR_CHECKALL') }}</label>
+	{% set display_filter = (display_filter_limit and options|length > display_filter_limit) %}
+	{% if display_filter %}
+	<input type="text" class="pull-left filter-entries" value='' placeholder="{{ _t('BAZAR_FILTER') }}">
 	{% endif %}
-    <div class="bazar-checkbox-cols{{ field.required ? ' chk_required' : ''}}">
+	{% if display_select_all_limit and options|length > display_select_all_limit %}
+	<label class="pull-right"><input type="checkbox" class="selectall" data-target=".group-checkbox-{{ field.propertyName }} .checkbox"/>{{ _t('BAZAR_CHECKALL') }}</label>
+	{% endif %}
+	{% if display_filter %}
+	<div class="clearfix"></div>
+	{% endif %}
+    <div class="bazar-checkbox-cols group-checkbox-{{ field.propertyName }}{{ field.required ? ' chk_required' : ''}}">
         {% for key, option in options %}
         <div class="checkbox">
             <label for="{{ field.propertyName ~ '[' ~ key ~ ']' }}">
+			  {% apply spaceless %}
                 <input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ '[' ~ key ~ ']' }}" {% if key in values %}checked{% endif %} />
                 <span>{{ option }}</span>
+			  {% endapply %}
             </label>
         </div>
         {% endfor %}

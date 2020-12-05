@@ -13,6 +13,8 @@ class FieldFactory
                 return new RadioListField($values, $services);
             case 'checkbox':
                 return new CheckboxListField($values, $services);
+            case 'checkboxfiche':
+                return new CheckboxEntryField($values, $services);
             case 'texte':
                 return new TextField($values, $services);
             case 'textelong':
