@@ -36,7 +36,7 @@
 								</a>
 							{% endif %}{# if item.type != 'list' #}
 						</div>
-						<input type="checkbox" id="{{ id }}_{{ item_id }}" value="1" name="{{ id }}[{{ item_id }}]" class="element_checkbox hide"><span style="display:none;"></span>
+						<input type="checkbox" id="{{ id }}_{{ item_id }}" value="1" name="{{ id }}[{{ item_id }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
 						<span class="list-item-text">{{ item.name }}</span>
 						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item.name|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
 							<i class="fas fa-plus"></i>
