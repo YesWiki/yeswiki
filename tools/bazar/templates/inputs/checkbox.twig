@@ -1,6 +1,9 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
+	{% if display_select_all_limit and options|length > display_select_all_limit %}
+	<label class="pull-right"><input type="checkbox" class="selectall" data-target=".checkbox"/>{{ _t('BAZAR_CHECKALL') }}</label>
+	{% endif %}
     <div class="bazar-checkbox-cols{{ field.required ? ' chk_required' : ''}}">
         {% for key, option in options %}
         <div class="checkbox">
