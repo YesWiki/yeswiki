@@ -7,9 +7,17 @@ use Psr\Container\ContainerInterface;
 class CheckboxField extends EnumField
 {   
     protected const FIELD_DISPLAY_METHOD = 7;
+    protected const CHECKBOX_DISPLAY_MODE_LIST = 'list' ;
+    protected const CHECKBOX_DISPLAY_MODE_DIV = 'div' ;
+    protected const CHECKBOX_TWIG_LIST = [
+        self::CHECKBOX_DISPLAY_MODE_DIV => '@bazar/inputs/checkbox.twig',
+        self::CHECKBOX_DISPLAY_MODE_LIST => '@bazar/inputs/checkbox_list.twig',
+        ];
     protected $display_select_all_limit ; // number of items without selectall box ; false if no limit
     protected $display_filter_limit ; // number of items without filter ; false if no limit
     protected $display_method ; // empty, tags or dragndrop
+    protected $form_name ; //form name for drag and drop
+    protected $checkbox_display_mode ;
     
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -17,6 +25,8 @@ class CheckboxField extends EnumField
         $this->display_method = $values[self::FIELD_DISPLAY_METHOD];
         $this->display_select_all_limit = false ;
         $this->display_filter_limit = false ;
+        $this->form_name = $this->name ;
+        $this->checkbox_display_mode = self::CHECKBOX_DISPLAY_MODE_DIV ;
     }
 
     public function renderInput($entry)
@@ -29,7 +39,13 @@ class CheckboxField extends EnumField
                 return $this->render('@bazar/inputs/checkbox_tags.twig'); 
                 break ;
             case "dragndrop":
-                return $this->displayDragAndDrop($entry);
+                $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/checkbox-drag-and-drop.css');
+                
+                // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
+                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
+                return $this->renderDragAndDrop($entry);
                 break ;
             default:
                 if ($this->display_filter_limit) {
@@ -40,7 +56,7 @@ class CheckboxField extends EnumField
                             });";
                     $GLOBALS['wiki']->AddJavascript($script);
                 }
-                return $this->render('@bazar/inputs/checkbox.twig', [
+                return $this->render(self::CHECKBOX_TWIG_LIST[$this->checkbox_display_mode], [
                     'options' => $this->options,
                     'values' => $this->getValues($entry),
                     'display_select_all_limit' => $this->display_select_all_limit,
@@ -126,30 +142,14 @@ class CheckboxField extends EnumField
         return $script ;        
     }
     
-    protected function displayDragAndDrop($entry)
-    {
-        $entries = array() ;
-        foreach ($this->options as $key => $label){
-            $entries[$key] = array(
-                'name' => $label,
-                'type' => ($this->type == 'checkboxfiche') ? 'bazar' : 'list' 
-            );
-        }        
-                
-        $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/checkbox-drag-and-drop.css');
-        
-        // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
-        $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
-                
+    protected function renderDragAndDrop($entry)
+    {     
         return $this->render('@bazar/inputs/checkbox_drag_and_drop.twig', [
-                'entries' => $entries,
-                'selected_entries_id' => $this->getValues($entry),
-                'form_name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST') . ' ' . $this->name ,
+                'options' => $this->options,
+                'selected_options_id' => $this->getValues($entry),
+                'form_name' => $this->form_name,
                 'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                 'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
             ]);
     }
-    
 }

@@ -262,8 +262,9 @@ var typeUserAttrs = {
       fillingMode: {
         label: "Mode de saisie",
         options: {
-          "": "Normal",
+          " ": "Normal",
           tags: "En Tags",
+          dragndrop: "Drag & drop",
         },
       },
     },
