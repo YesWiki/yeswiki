@@ -45,6 +45,8 @@ class FieldFactory
                 return new UserField($values, $services);
             case 'bookmarklet':
                 return new BookmarkletField($values, $services);
+            case 'acls':
+                return new AclField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
