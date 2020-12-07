@@ -69,6 +69,8 @@ class TitleField extends BazarField
 
     public function renderStatic($entry)
     {
-        return null;
+        return $this->render("@bazar/fields/title.twig", [
+            'value' => $this->getValue($entry)
+        ]);
     }
 }
