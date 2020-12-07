@@ -290,22 +290,6 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
     }
 }
 
-/** metadatas() - Ajoute un look par defaut aux fiches
- *
- * @param    mixed   L'objet QuickForm du formulaire
- * @param    mixed   Le tableau des valeurs des différentes options des metadatas
- * @param    string  Type d'action pour le formulaire : saisie, modification, vue,... saisie par défaut
- * @return   void
- */
-function metadatas(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
-{
-    list($type, $theme, $squelette, $style, $bgimg, $lang, $pages) = $tableau_template;
-    // TODO : gerer la langue par defaut et les pages associées
-    if ($mode == 'requete') {
-        $GLOBALS['wiki']->SaveMetaDatas($valeurs_fiche['id_fiche'], array('theme' => $theme, 'style' => $style, 'squelette' => $squelette, 'bgimg' => $bgimg));
-    }
-}
-
 /** titre() - Action qui camouffle le titre et le génére a  partir d'autres champs au formulaire
  *
  * @param    mixed   L'objet QuickForm du formulaire

@@ -47,6 +47,8 @@ class FieldFactory
                 return new BookmarkletField($values, $services);
             case 'acls':
                 return new AclField($values, $services);
+            case 'metadatas':
+                return new MetadataField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);
