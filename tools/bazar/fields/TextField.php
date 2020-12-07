@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"texte"})
+ */
 class TextField extends BazarField
 {
     protected $pattern;

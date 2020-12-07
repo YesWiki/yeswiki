@@ -8,6 +8,8 @@ use YesWiki\Bazar\Service\FicheManager;
 /**
  * Generate a title based on other values from the entry
  * titre***{{bf_nom}} - {{bf_prenom}} - {{listeListeOuiNon}} - {{checkboxListePartenaires}}***
+ *
+ * @Field({"titre"})
  */
 class TitleField extends BazarField
 {

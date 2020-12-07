@@ -6,6 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 
+/**
+ * @Field({"yeswiki_user", "utilisateur_wikini"})
+ */
 class UserField extends BazarField
 {
     protected $nameField;

@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"acls"})
+ */
 class AclField extends BazarField
 {
     protected $entryReadRight;

@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"radio"})
+ */
 class RadioListField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)

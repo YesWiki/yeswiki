@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"textelong"})
+ */
 class TextareaField extends BazarField
 {
     protected $numRows;

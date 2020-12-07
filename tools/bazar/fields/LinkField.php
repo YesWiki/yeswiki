@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"lien_internet"})
+ */
 class LinkField extends BazarField
 {
     public function __construct(array $values, ContainerInterface $services)

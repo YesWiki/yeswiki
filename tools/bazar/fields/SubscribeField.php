@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"inscriptionliste"})
+ */
 class SubscribeField extends BazarField
 {
     protected $mailerEmail;

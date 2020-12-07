@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"metadatas"})
+ */
 class MetadataField extends BazarField
 {
     protected $theme;

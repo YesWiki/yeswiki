@@ -2,6 +2,9 @@
 
 namespace YesWiki\Bazar\Field;
 
+/**
+ * @Field({"jour", "listedatedeb", "listedatefin"})
+ */
 class DateField extends BazarField
 {
     public function renderInput($entry)

@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Field\FieldFactory;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Wiki;
 
@@ -12,6 +11,7 @@ class FormManager
     protected $wiki;
     protected $dbService;
     protected $ficheManager;
+    protected $fieldFactory;
     protected $params;
 
     protected $cachedForms;
@@ -33,11 +33,12 @@ class FormManager
     private const FIELD_SEMANTIC = 14;
     private const FIELD_QUERIES = 15;
 
-    public function __construct(Wiki $wiki, DbService $dbService, FicheManager $ficheManager, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, FicheManager $ficheManager, FieldFactory $fieldFactory, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->ficheManager = $ficheManager;
+        $this->fieldFactory = $fieldFactory;
         $this->params = $params;
 
         $this->cachedForms = [];
@@ -222,7 +223,7 @@ class FormManager
 
         foreach ($form['template'] as $field) {
 
-            $classField = FieldFactory::create($field, $this->wiki->services);
+            $classField = $this->fieldFactory->create($field);
 
             if( $classField ) {
                 $prepared[$i] = $classField;

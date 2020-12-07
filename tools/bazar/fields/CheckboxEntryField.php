@@ -5,6 +5,9 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FormManager;
 
+/**
+ * @Field({"checkboxfiche"})
+ */
 class CheckboxEntryField extends CheckboxField
 {
     public function __construct(array $values, ContainerInterface $services)

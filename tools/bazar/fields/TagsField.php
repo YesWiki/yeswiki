@@ -6,6 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Tags\Service\TagsManager;
 
+/**
+ * @Field({"tags"})
+ */
 class TagsField extends BazarField
 {
     public function __construct(array $values, ContainerInterface $services)

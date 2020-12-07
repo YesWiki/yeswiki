@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"image"})
+ */
 class ImageField extends FileField
 {
     protected $thumbnailHeight;

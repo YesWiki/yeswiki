@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"bookmarklet"})
+ */
 class BookmarkletField extends BazarField
 {
     protected $urlField;

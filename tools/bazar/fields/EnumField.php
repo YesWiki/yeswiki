@@ -22,6 +22,9 @@ abstract class EnumField extends BazarField
         parent::__construct($values, $services);
 
         $this->listLabel = $values[self::FIELD_LIST_LABEL];
+        $this->keywords = $values[self::FIELD_KEYWORDS];
+        $this->queries = $values[self::FIELD_QUERIES];
+
         $this->options = [];
 
         $this->propertyName = $values[self::FIELD_TYPE] . $values[self::FIELD_NAME] . $values[self::FIELD_LIST_LABEL];

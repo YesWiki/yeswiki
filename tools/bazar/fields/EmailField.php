@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"champs_mail"})
+ */
 class EmailField extends BazarField
 {
     protected $sendMail;

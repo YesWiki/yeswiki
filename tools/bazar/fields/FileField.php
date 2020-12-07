@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"fichier"})
+ */
 class FileField extends BazarField
 {
     public function __construct(array $values, ContainerInterface $services)

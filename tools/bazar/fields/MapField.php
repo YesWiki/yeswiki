@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+/**
+ * @Field({"map", "carte_google"})
+ */
 class MapField extends BazarField
 {
     protected $latitudeField;
