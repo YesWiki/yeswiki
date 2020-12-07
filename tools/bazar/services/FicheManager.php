@@ -522,14 +522,6 @@ class FicheManager
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-        // pour les checkbox, on met les resultats sur une ligne
-        // TODO put this in CheckboxField::formatValuesBeforeSave
-        foreach ($data as $cle => $val) {
-            if (is_array($val)) {
-                $data[$cle] = implode(',', array_keys($val));
-            }
-        }
-
         for ($i = 0; $i < count($form['template']); ++$i) {
             if( $form['prepared'][$i] instanceof BazarField) {
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
@@ -570,6 +562,8 @@ class FicheManager
         unset($data['antispam']);
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
+        unset($data['html_data']);
+        unset($data['datastr']);
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {

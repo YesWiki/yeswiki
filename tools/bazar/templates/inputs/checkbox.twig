@@ -1,0 +1,31 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+	{% set display_filter = (displayFilterLimit and options|length > displayFilterLimit) %}
+	{% if display_filter %}
+	<input type="text" class="pull-left filter-entries" value='' placeholder="{{ _t('BAZAR_FILTER') }}">
+	{% endif %}
+	{% if displaySelectAllLimit and options|length > displaySelectAllLimit %}
+	<label class="pull-right"><input type="checkbox" class="selectall" data-target=".group-checkbox-{{ field.propertyName }} .checkbox"/>{{ _t('BAZAR_CHECKALL') }}</label>
+	{% endif %}
+	{% if display_filter %}
+	<div class="clearfix"></div>
+	{% endif %}
+	{% block list_options %}
+    <div class="bazar-checkbox-cols group-checkbox-{{ field.propertyName }}{{ field.required ? ' chk_required' : ''}}">
+        {% for key, option in options %}
+        <div class="checkbox">
+		  {% block item_option %}
+            <label for="{{ field.propertyName ~ '[' ~ key ~ ']' }}">
+			  {% apply spaceless %}
+                <input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ '[' ~ key ~ ']' }}" {% if key in values %}checked{% endif %} />
+                <span>{{ option }}</span>
+			  {% endapply %}
+            </label>
+		  {% endblock %}
+        </div>
+        {% endfor %}
+		<input name="{{ field.propertyName }}[END_INDEX NO_CHANGE_IT]" value="0" checked id="{{ field.propertyName }}_hidden" type="hidden">
+    </div>
+	{% endblock %}
+{% endblock %}
