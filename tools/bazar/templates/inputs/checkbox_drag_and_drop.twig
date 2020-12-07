@@ -14,7 +14,7 @@
 		<span class="help-block align-right">{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT') }}<span class="checkbox-filter-count">
 			{%- set nb_selected = not (attribute(selected_options_id,0) is empty) ? selected_options_id|length : 0 -%}
 			{{ options|length - nb_selected }}</span></span>
-	<h5>{{ form_name }}
+	<h5>{{ formName }}
 		<a class="pull-right btn btn-sm btn-success checkbox-select-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}" href="#">
 		  <i class="fas fa-plus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}</a>
 	</h5>
@@ -33,8 +33,8 @@
 						</div>
 						<div class="checkbox-icon-column-left">
 							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><i class="fas fa-arrows-alt-h"></i></span>
-							{%~ block link_for_entry -%}
-							{%- endblock -%}
+							{%~ block link_for_entry ~%}
+							{%~ endblock ~%}
 						</div>
 						<input type="checkbox" id="{{ field.propertyName }}_{{ item_id }}" value="1" name="{{ field.propertyName }}[{{ item_id }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
 						<span class="list-item-text">{{ item }}</span>

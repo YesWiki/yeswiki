@@ -4,6 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
+
+// TODO extends EnumField for parameter options but after refacto EnumPerformer should extends BazarField
+// and have options parameter or equivalent
 class CheckboxField extends EnumField
 {   
     protected const FIELD_DISPLAY_METHOD = 7;
@@ -13,25 +16,25 @@ class CheckboxField extends EnumField
         self::CHECKBOX_DISPLAY_MODE_DIV => '@bazar/inputs/checkbox.twig',
         self::CHECKBOX_DISPLAY_MODE_LIST => '@bazar/inputs/checkbox_list.twig',
         ];
-    protected $display_select_all_limit ; // number of items without selectall box ; false if no limit
-    protected $display_filter_limit ; // number of items without filter ; false if no limit
-    protected $display_method ; // empty, tags or dragndrop
-    protected $form_name ; //form name for drag and drop
-    protected $checkbox_display_mode ;
+    protected $displaySelectAllLimit ; // number of items without selectall box ; false if no limit
+    protected $displayFilterLimit ; // number of items without filter ; false if no limit
+    protected $displayMethod ; // empty, tags or dragndrop
+    protected $formName ; //form name for drag and drop
+    protected $displayMode ;
     
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->display_method = $values[self::FIELD_DISPLAY_METHOD];
-        $this->display_select_all_limit = false ;
-        $this->display_filter_limit = false ;
-        $this->form_name = $this->name ;
-        $this->checkbox_display_mode = self::CHECKBOX_DISPLAY_MODE_DIV ;
+        $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
+        $this->displaySelectAllLimit = false ;
+        $this->displayFilterLimit = false ;
+        $this->formName = $this->name ;
+        $this->displayMode = self::CHECKBOX_DISPLAY_MODE_DIV ;
     }
 
     public function renderInput($entry)
     {
-        switch ($this->display_method) {
+        switch ($this->displayMethod) {
             case "tags":
                 $script = $this->generateTagsScript($entry) ;
                 $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
@@ -48,7 +51,7 @@ class CheckboxField extends EnumField
                 return $this->renderDragAndDrop($entry);
                 break ;
             default:
-                if ($this->display_filter_limit) {
+                if ($this->displayFilterLimit) {
                     // javascript additions
                     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
                     $script = "$(function() { $('.filter-entries').each(function() {
@@ -56,11 +59,11 @@ class CheckboxField extends EnumField
                             });";
                     $GLOBALS['wiki']->AddJavascript($script);
                 }
-                return $this->render(self::CHECKBOX_TWIG_LIST[$this->checkbox_display_mode], [
+                return $this->render(self::CHECKBOX_TWIG_LIST[$this->displayMode], [
                     'options' => $this->options,
                     'values' => $this->getValues($entry),
-                    'display_select_all_limit' => $this->display_select_all_limit,
-                    'display_filter_limit' => $this->display_filter_limit
+                    'displaySelectAllLimit' => $this->displaySelectAllLimit,
+                    'displayFilterLimit' => $this->displayFilterLimit
                 ]); 
         }
     }
@@ -68,7 +71,7 @@ class CheckboxField extends EnumField
     public function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
-        $values = array() ;
+        $values = [] ;
         foreach ($this->options as $key_option => $option ) {
             if (in_array($key_option,$keys)) {
                 $values[$key_option] = $option ;
@@ -108,7 +111,7 @@ class CheckboxField extends EnumField
     private function generateTagsScript($entry)
     {
         // list of choices available from options
-        $array_choices = array() ; 
+        $array_choices = [] ; 
         foreach ($this->options as $key_option => $option ) {
             $array_choices[$key_option] = '{"id":"' . $key_option . '", "title":"'
                 . str_replace('\'', '&#39;', str_replace('"', '\"', $option)) . '"}';
@@ -147,9 +150,9 @@ class CheckboxField extends EnumField
         return $this->render('@bazar/inputs/checkbox_drag_and_drop.twig', [
                 'options' => $this->options,
                 'selected_options_id' => $this->getValues($entry),
-                'form_name' => $this->form_name,
+                'formName' => $this->formName,
                 'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
-                'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
+                'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']
             ]);
     }
 }

@@ -14,20 +14,20 @@ class CheckboxEntryField extends CheckboxField
     {
         parent::__construct($values, $services);
         $this->type = 'checkboxfiche';
+        // TODO remove this call creation of class extended from EnumEntryField and use EnumEntryPerformer
         $this->EnumEntryFieldObject =  new class($values, $services) extends EnumEntryField{} ;    
         $this->options = $this->EnumEntryFieldObject->getOptions()['label'];
-        $this->display_filter_limit =  empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE']) ? false : $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;      
-        $this->display_select_all_limit =  empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ? $this->display_filter_limit : $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'] ;
-        $this->form_name = 'Fiches ' . $services->get(FormManager::class)->getOne($this->name)['bn_label_nature'] ;
-        $this->checkbox_display_mode = (!empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE']) &&
-            in_array($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],array_keys(self::CHECKBOX_TWIG_LIST))) ? 
+        $this->displayFilterLimit =  $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;      
+        $this->displaySelectAllLimit =  empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ? $this->displayFilterLimit : $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'] ;
+        $this->formName = 'Fiches ' . $services->get(FormManager::class)->getOne($this->name)['bn_label_nature'] ;
+        $this->displayMode = (in_array($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],array_keys(self::CHECKBOX_TWIG_LIST))) ? 
             $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] : self::CHECKBOX_DISPLAY_MODE_LIST ;
     }
     
     public function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
-        $values = array() ;
+        $values = [] ;
         foreach ($keys as $key_option) {
             if (in_array($key_option,array_keys($this->options))) {
                 $values[$key_option]['value'] = $this->options[$key_option] ;
@@ -41,7 +41,7 @@ class CheckboxEntryField extends CheckboxField
     
     protected function renderDragAndDrop($entry)
     {   
-        $options_href = array() ;
+        $options_href = [] ;
         foreach ($this->options as $key => $option){
            $options_href[$key] = $GLOBALS['wiki']->href('', $key) ;
         }
@@ -50,9 +50,9 @@ class CheckboxEntryField extends CheckboxField
                 'options' => $this->options,
                 'selected_options_id' => $this->getValues($entry),
                 'options_href' => $options_href,
-                'form_name' => $this->form_name,
+                'formName' => $this->formName,
                 'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
-                'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
+                'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']
             ]);
     }
 }
