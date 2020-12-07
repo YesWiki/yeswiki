@@ -49,6 +49,8 @@ class FieldFactory
                 return new AclField($values, $services);
             case 'metadatas':
                 return new MetadataField($values, $services);
+            case 'titre':
+                return new TitleField($values, $services);
             default:
                 return false;
 //              throw new \Exception('Unknown field type: ' . $values[0]);

@@ -61,6 +61,7 @@ class UserField extends BazarField
             $userManager->create($wikiName, $entry[$this->emailField], $entry['mot_de_passe_wikini']);
 
             // Do not send mails if we are importing
+            // TODO improve import detection
             if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
                 $mailer->notifyNewUser($wikiName, $entry[$this->emailField]);
 
