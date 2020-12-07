@@ -7,16 +7,13 @@ use YesWiki\Bazar\Service\FormManager;
 
 class CheckboxEntryField extends CheckboxField
 {
-    
-    private $EnumEntryFieldObject ; // EnumListField object 
-    
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
         $this->type = 'checkboxfiche';
-        // TODO remove this call creation of class extended from EnumEntryField and use EnumEntryPerformer
-        $this->EnumEntryFieldObject =  new class($values, $services) extends EnumEntryField{} ;    
-        $this->options = $this->EnumEntryFieldObject->getOptions()['label'];
+
+        $this->loadOptionsFromEntries();
+
         $this->displayFilterLimit =  $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;      
         $this->displaySelectAllLimit =  empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ? $this->displayFilterLimit : $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'] ;
         $this->formName = 'Fiches ' . $services->get(FormManager::class)->getOne($this->name)['bn_label_nature'] ;
@@ -29,27 +26,28 @@ class CheckboxEntryField extends CheckboxField
         $keys = $this->getValues($entry);
         $values = [] ;
         foreach ($keys as $key_option) {
-            if (in_array($key_option,array_keys($this->options))) {
-                $values[$key_option]['value'] = $this->options[$key_option] ;
+            if (in_array($key_option,array_keys($this->options['label']))) {
+                $values[$key_option]['value'] = $this->options['label'][$key_option] ;
                 $values[$key_option]['href'] = $GLOBALS['wiki']->href('', $key_option) ;
             }
         }
+
         return (count($values) > 0) ? $this->render('@bazar/fields/checkboxentry.twig', [
             'values' => $values
         ]) : '' ;
     }
     
     protected function renderDragAndDrop($entry)
-    {   
-        $options_href = [] ;
-        foreach ($this->options as $key => $option){
-           $options_href[$key] = $GLOBALS['wiki']->href('', $key) ;
+    {
+        $optionsUrl = [] ;
+        foreach ($this->options['label'] as $key => $option){
+            $optionsUrl[$key] = $GLOBALS['wiki']->href('', $key) ;
         }
         
         return $this->render('@bazar/inputs/checkbox_drag_and_drop_entry.twig', [
-                'options' => $this->options,
-                'selected_options_id' => $this->getValues($entry),
-                'options_href' => $options_href,
+                'options' => $this->options['label'],
+                'selectedOptionsId' => $this->getValues($entry),
+                'optionsUrl' => $optionsUrl,
                 'formName' => $this->formName,
                 'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                 'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']

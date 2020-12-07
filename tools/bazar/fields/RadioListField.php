@@ -4,13 +4,15 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-class RadioListField extends EnumListField
+class RadioListField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->type = 'radio';
+
+        $this->loadOptionsFromList();
     }
 
     public function renderInput($entry)
