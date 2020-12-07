@@ -1283,7 +1283,7 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
             // Render each field
             if( $form['prepared'][$i] instanceof BazarField ) {
                 $data['content'] .= $form['prepared'][$i]->renderInputIfPermitted($valeurs);
-            } else {
+            } else if (function_exists($tableau[$i][0])){
                 $data['content'] .= $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
             }
         }
