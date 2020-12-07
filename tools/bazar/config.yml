@@ -52,8 +52,21 @@ parameters:
   BAZ_MODE_DIVISION: 'Jumping'
   # Le nombre de page a afficher avant le 'next';
   BAZ_DELTA: 12
-  # Le nombre maximum de fiches affichées par checkboxliste sans que les champs 'Filter' et 'Cocher tout' ne soient affichés
+  
+  # Parametres pour checkbox
+  
+  # Le nombre maximum de fiches affichées par checkboxfiche sans que les champs 'Filter' et 'Cocher tout' ne soient affichés 'false' pas de filtre
   BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE: 6
+  # Le nombre maximum de fiches affichées par checkboxfuche sans que le champ 'selectall' ne soit affiché ; 'false' : récupère le paramètre BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE
+  BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL: 'false'
+  # type d'affichage par défaut pour checkboxfiche en mode normal
+  BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE: 'list'
+  # Le nombre maximum de fiches affichées par checkbox sans que le champ 'Filter' ne soit affiché ; 'false' pas de filtre
+  BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER: 'false'
+  # Le nombre maximum de fiches affichées par checkbox sans que le champ 'selectall' ne soit affiché ; 'false' : récupère le paramètre BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER
+  BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL: 'false'
+  # type d'affichage par défaut pour checkbox en mode normal
+  BAZ_MAX_CHECKBOXLIST_DISPLAY_MODE: 'div'
 
   # Parametres pour la carto google
 
