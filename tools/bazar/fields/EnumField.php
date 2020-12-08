@@ -32,7 +32,8 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromList()
     {
-        $this->options = baz_valeurs_liste($this->name)['label'];
+        $listValues = baz_valeurs_liste($this->name);
+        if( is_array($listValues) ) $this->options = $listValues['label'];
     }
 
     public function loadOptionsFromJson()
