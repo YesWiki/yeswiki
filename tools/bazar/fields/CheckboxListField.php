@@ -25,11 +25,13 @@ class CheckboxListField extends CheckboxField
 
     public function renderStatic($entry)
     {
+        dump($this->options);
+
         $keys = $this->getValues($entry);
         $values = [] ;
-        foreach ($this->options['label'] as $key_option => $option ) {
-            if (in_array($key_option,$keys)) {
-                $values[$key_option] = $option ;
+        foreach ($this->options as $key => $label ) {
+            if (in_array($key,$keys)) {
+                $values[$key] = $label ;
             }
         }
         return (count($values) > 0) ? $this->render('@bazar/fields/checkbox.twig', [
@@ -40,7 +42,7 @@ class CheckboxListField extends CheckboxField
     protected function renderDragAndDrop($entry)
     {
         return $this->render('@bazar/inputs/checkbox_drag_and_drop.twig', [
-            'options' => $this->options['label'],
+            'options' => $this->options,
             'selectedOptionsId' => $this->getValues($entry),
             'formName' => $this->formName,
             'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),

@@ -60,7 +60,7 @@ abstract class CheckboxField extends EnumField
                     $GLOBALS['wiki']->AddJavascript($script);
                 }
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->displayMode], [
-                    'options' => $this->options['label'],
+                    'options' => $this->options,
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
                     'displayFilterLimit' => $this->displayFilterLimit
@@ -97,14 +97,13 @@ abstract class CheckboxField extends EnumField
     private function generateTagsScript($entry)
     {
         // list of choices available from options
-        $array_choices = [] ; 
-        foreach ($this->options['label'] as $key_option => $option ) {
-            $array_choices[$key_option] = '{"id":"' . $key_option . '", "title":"'
-                . str_replace('\'', '&#39;', str_replace('"', '\"', $option)) . '"}';
+        $choices = [] ;
+        foreach ($this->options as $key => $label ) {
+            $choices[$key] = '{"id":"' . $key . '", "title":"' . str_replace('\'', '&#39;', str_replace('"', '\"', $label)) . '"}';
         }
 
         $script = '$(function(){
-            var tagsexistants = [' . implode(',', $array_choices) . '];
+            var tagsexistants = [' . implode(',', $choices) . '];
             var bazartag = [];
             bazartag["'.$this->propertyName.'"] = $(\'#formulaire .yeswiki-input-entries'.$this->propertyName.'\');
             bazartag["'.$this->propertyName.'"].tagsinput({
@@ -121,8 +120,8 @@ abstract class CheckboxField extends EnumField
         $selectedOptions = $this->getValues($entry) ;
         if (is_array($selectedOptions) && count($selectedOptions)>0 && !empty($selectedOptions[0])) {
             foreach ($selectedOptions as $selectedOption) {
-                if (isset($array_choices[$selectedOption])) {
-                    $script .= 'bazartag["'.$this->propertyName.'"].tagsinput(\'add\', '.$array_choices[$selectedOption].');'."\n";
+                if (isset($choices[$selectedOption])) {
+                    $script .= 'bazartag["'.$this->propertyName.'"].tagsinput(\'add\', '.$choices[$selectedOption].');'."\n";
                 }
             }
         }

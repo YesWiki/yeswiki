@@ -9,7 +9,7 @@ abstract class EnumField extends BazarField
 {
     protected $options;
 
-    protected $listLabel;
+    protected $listLabel; // Allows to differentiate two enums using the same list
     protected $keywords;
     protected $queries;
 
@@ -32,14 +32,13 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromList()
     {
-        $this->options = baz_valeurs_liste($this->name);
-        $this->options['id'] = $this->name;
+        $this->options = baz_valeurs_liste($this->name)['label'];
     }
 
     public function loadOptionsFromJson()
     {
         $json = getCachedUrlContent($this->name);
-        $this->options['label'] = array_map(function($entry) { return $entry['bf_titre']; }, json_decode($json, true));
+        $this->options = array_map(function($entry) { return $entry['bf_titre']; }, json_decode($json, true));
     }
 
     public function loadOptionsFromEntries()
@@ -66,9 +65,8 @@ abstract class EnumField extends BazarField
             'keywords' => (!empty($this->keywords)) ? $this->keywords : ''
         ]);
 
-        $this->options['titre_liste'] = $this->label;
         foreach ($fiches as $fiche) {
-            $this->options['label'][$fiche['id_fiche']] = $fiche['bf_titre'];
+            $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
         }
     }
 

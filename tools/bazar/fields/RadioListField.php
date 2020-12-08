@@ -21,14 +21,14 @@ class RadioListField extends EnumField
     public function renderInput($entry)
     {
         return $this->render('@bazar/inputs/radio.twig', [
-            'options' => $this->options['label']
+            'options' => $this->options
         ]);
     }
 
     public function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        $value = $entry !== '' ? $this->options['label'][$value] : '';
+        $value = $entry !== '' ? $this->options[$value] : '';
         return $this->render('@bazar/fields/radio.twig', [
             'value' => $value
         ]);

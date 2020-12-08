@@ -28,10 +28,10 @@ class CheckboxEntryField extends CheckboxField
     {
         $keys = $this->getValues($entry);
         $values = [] ;
-        foreach ($keys as $key_option) {
-            if (in_array($key_option,array_keys($this->options['label']))) {
-                $values[$key_option]['value'] = $this->options['label'][$key_option] ;
-                $values[$key_option]['href'] = $GLOBALS['wiki']->href('', $key_option) ;
+        foreach ($keys as $key) {
+            if (in_array($key,array_keys($this->options))) {
+                $values[$key]['value'] = $this->options[$key] ;
+                $values[$key]['href'] = $GLOBALS['wiki']->href('', $key) ;
             }
         }
 
@@ -43,12 +43,12 @@ class CheckboxEntryField extends CheckboxField
     protected function renderDragAndDrop($entry)
     {
         $optionsUrl = [] ;
-        foreach ($this->options['label'] as $key => $option){
+        foreach ($this->options as $key => $option){
             $optionsUrl[$key] = $GLOBALS['wiki']->href('', $key) ;
         }
         
         return $this->render('@bazar/inputs/checkbox_drag_and_drop_entry.twig', [
-                'options' => $this->options['label'],
+                'options' => $this->options,
                 'selectedOptionsId' => $this->getValues($entry),
                 'optionsUrl' => $optionsUrl,
                 'formName' => $this->formName,

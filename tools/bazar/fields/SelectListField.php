@@ -20,15 +20,14 @@ class SelectListField extends EnumField
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
-            'options' => $this->options['label']
+            'options' => $this->options
         ]);
     }
 
     public function renderStatic($entry)
     {
-        $value = $this->options['label'][$this->getValue($entry)];
-        return $this->render('@bazar/fields/select_entry.twig', [
-            'value' => $value
+        return $this->render('@bazar/fields/select.twig', [
+            'value' => $this->options[$this->getValue($entry)]
         ]);
     }
 }

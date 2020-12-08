@@ -33,7 +33,7 @@ class SelectEntryField extends EnumField
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
-            'options' => $this->options['label']
+            'options' => $this->options
         ]);
     }
 
@@ -60,7 +60,7 @@ class SelectEntryField extends EnumField
 
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
-            'label' => $this->options['label'][$value],
+            'label' => $this->options[$value],
             'entryUrl' => $entryUrl
         ]);
     }
