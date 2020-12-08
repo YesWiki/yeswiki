@@ -46,6 +46,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
 // TODO put elsewhere
+// https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
 class AnnotatedRouteControllerLoader extends AnnotationClassLoader {
     protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot) {
         $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
