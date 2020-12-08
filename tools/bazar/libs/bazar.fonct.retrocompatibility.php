@@ -145,3 +145,23 @@ function baz_nextId()
 {
     return $GLOBALS['wiki']->services->get(FormManager::class)->findNewId();
 }
+
+/**
+ * @deprecated Use BazarField::canEdit
+ */
+function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
+{
+    $acl = empty($tableau_template[12]) ? '' : $tableau_template[12] ; // acl pour l'écriture
+
+    if (isset($valeurs_fiche['id_fiche'])) {
+        $tag = $valeurs_fiche['id_fiche'] ;
+    } else {
+        $tag = '' ;
+    }
+    $mode_creation = '' ;
+    if ($tag == '') {
+        $mode_creation = 'creation' ;
+    }
+
+    return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag, $mode_creation)  ;
+}
