@@ -109,3 +109,6 @@ services:
 
   YesWiki\Bazar\Service\:
     resource: 'services/*'
+
+  YesWiki\Bazar\Controller\:
+    resource: 'controllers/*'

@@ -33,6 +33,11 @@ require_once 'includes/objects/YesWikiFormatter.php';
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
+use Symfony\Component\HttpKernel\Controller\ControllerResolver;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
@@ -54,6 +59,7 @@ class Wiki
     public $CookiePath = '/';
     public $inclusions = array();
     public $extensions = array();
+    public $routes = array();
     public $session;
     public $user;
     public $services;
@@ -85,6 +91,7 @@ class Wiki
 
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
+        $this->routes = $init->initRoutes($this);
 
         $this->session = new \YesWiki\Session($this);
         $this->user = new \YesWiki\User($this);
@@ -1413,7 +1420,26 @@ class Wiki
         }
 
         if ($tag === 'api') {
-            $this->services->get(ApiService::class)->process($GLOBALS['api_args']);
+            $context = new RequestContext();
+            $request = Request::createFromGlobals();
+            $context->fromRequest($request);
+
+            $matcher = new UrlMatcher($this->routes, $context);
+
+            $controllerResolver = new ControllerResolver();
+            $argumentResolver = new ArgumentResolver();
+
+            $request->attributes->add($matcher->match('/' . $_SERVER['QUERY_STRING']));
+
+            $controller = $controllerResolver->getController($request);
+            $arguments = $argumentResolver->getArguments($request, $controller);
+
+            $response = call_user_func_array($controller, $arguments);
+            if( is_array($response) ) {
+                header('Content-Type: application/json');
+                $response = json_encode($response);
+            }
+            exit($response);
         }
 
         $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));

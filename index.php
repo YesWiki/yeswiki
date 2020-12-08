@@ -35,6 +35,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
+
 spl_autoload_register(function ($className) {
     $classNameArray = explode('\\', $className);
     // Autoload services
@@ -47,12 +49,16 @@ spl_autoload_register(function ($className) {
                 require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
             } elseif( $classNameArray[2] === 'Field' ) {
                 require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
+            } elseif( $classNameArray[2] === 'Controller' ) {
+                require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
             }
         }
     }
 });
 
-require_once 'vendor/autoload.php';
+$loader = require_once 'vendor/autoload.php';
+AnnotationRegistry::registerLoader([$loader, 'loadClass']);
+
 require_once 'includes/YesWiki.php';
 $wiki = new \YesWiki\Wiki();
 $wiki->Run($wiki->tag, $wiki->method);

@@ -35,10 +35,22 @@
 
 namespace YesWiki;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\Loader\AnnotationClassLoader;
+use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
+
+// TODO put elsewhere
+class AnnotatedRouteControllerLoader extends AnnotationClassLoader {
+    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot) {
+        $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
+    }
+}
 
 /**
  * Yeswiki initialization class
@@ -279,6 +291,27 @@ class Init
         $loader->load('services.yml');
 
         return $containerBuilder;
+    }
+
+    public function initRoutes($wiki)
+    {
+        $routes = new RouteCollection();
+
+        $loader = new AnnotationDirectoryLoader(
+            new FileLocator(__DIR__.'/../'),
+            new AnnotatedRouteControllerLoader(
+                new AnnotationReader()
+            )
+        );
+
+        foreach($wiki->extensions as $extensionKey => $extensionPath) {
+            $controllersDir = __DIR__ . '/../' . $extensionPath . 'controllers';
+            if( is_dir($controllersDir)) {
+                $routes->addCollection($loader->load($controllersDir));
+            }
+        }
+
+        return $routes;
     }
 
     /**
