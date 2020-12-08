@@ -303,7 +303,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
                 $checkbox_html.= "</div>\n</div>\n";
                 return $checkbox_html;
-            } else if ($tableau_template[7] == 'dragndrop') {
+            } elseif ($tableau_template[7] == 'dragndrop') {
                 if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $classrequired = ' chk_required';
                     $req = '<span class="symbole_obligatoire"></span> ';
@@ -321,7 +321,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 // entries['entry_id']['type'] = 'list' or other
                 // selected_entries_id contains entries_id only
                 $entries = array() ;
-                foreach ($choixcheckbox as $key => $label){
+                foreach ($choixcheckbox as $key => $label) {
                     $entries[$key] = array(
                         'name' => $label,
                         'type' => 'list'
@@ -329,7 +329,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 }
                 
                 $checkbox_html.= $GLOBALS['wiki']->services->get(TemplateEngine::class)->render(
-                    '@bazar/checkbox_drag_and_drop.twig', 
+                    '@bazar/checkbox_drag_and_drop.twig',
                     array(
                         'entries' => $entries ,
                         'selected_entries_id' => $tab,
@@ -338,7 +338,7 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                         'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                         'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'])
                     )
-                ) ;   
+                ) ;
                 
                 $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/checkbox-drag-and-drop.css');
                 
@@ -347,8 +347,8 @@ function checkbox(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
                 
-                $checkbox_html .= "</div>\n</div>"; 
-                return $checkbox_html;                
+                $checkbox_html .= "</div>\n</div>";
+                return $checkbox_html;
             } else {
                 if (isset($tableau_template[8]) && $tableau_template[8] == 1) {
                     $classrequired = ' chk_required';
@@ -874,7 +874,7 @@ function utilisateur_wikini(&$formtemplate, $tableau_template, $mode, $valeurs_f
         $GLOBALS['utilisateur_wikini'] = $nomwiki;
 
         if (!$GLOBALS['wiki']->LoadUser($nomwiki)) {
-            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
+            $requeteinsertionuserwikini = 'INSERT INTO ' . $GLOBALS['wiki']->config["table_prefix"] . "users SET " . "signuptime = now(), " . "name = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $nomwiki) . "', motto = '', " . "email = '" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche[$tableau_template[2]]) . "', " . "password = md5('" . mysqli_real_escape_string($GLOBALS['wiki']->dblink, $valeurs_fiche['mot_de_passe_wikini']) . "')";
             $resultat = $GLOBALS['wiki']->query($requeteinsertionuserwikini);
             if ($sendmail) {
                 //envoi mail nouveau mot de passe : il vaut mieux ne pas envoyer de mots de passe en clair.
@@ -1773,13 +1773,13 @@ function acls(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
         }
         
         // on sauve les acls
-		if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'read', false)['list'])){
+        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'read', false)['list'])) {
             $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'read', $read);
         }
-        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'write', false)['list'])){
+        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'write', false)['list'])) {
             $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'write', $write);
         }
-        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'comment', false)['list'])){
+        if (empty($GLOBALS['wiki']->LoadAcl($valeurs_fiche['id_fiche'], 'comment', false)['list'])) {
             $GLOBALS['wiki']->SaveAcl($valeurs_fiche['id_fiche'], 'comment', $comment);
         }
     }
@@ -2372,7 +2372,7 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
                 $GLOBALS['wiki']->AddJavascript($script);
                 $checkbox_html .= '<input type="text" name="'.$id.'" class="yeswiki-input-entries yeswiki-input-entries'.$id.'">';
-            } else if ($tableau_template[7] == 'dragndrop') {
+            } elseif ($tableau_template[7] == 'dragndrop') {
                 
                 // data format :
                 // entries['entry_id']['name']
@@ -2380,16 +2380,16 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 // entries['entry_id']['href'] = $GLOBALS['wiki']->href('html', $item_id) for twig only
                 // selected_entries_id contains entries_id only
                 $entries = array() ;
-                foreach ($tab_result as $entry){
+                foreach ($tab_result as $entry) {
                     $entries[$entry['id_fiche']] = array(
                         'name' => $entry['bf_titre'],
                         'type' => 'bazar',
-                        'href' => $GLOBALS['wiki']->href('html', $entry['id_fiche']) 
+                        'href' => $GLOBALS['wiki']->href('html', $entry['id_fiche'])
                     );
                 }
 
                 $checkbox_html.= $GLOBALS['wiki']->services->get(TemplateEngine::class)->render(
-                    '@bazar/checkbox_drag_and_drop.twig', 
+                    '@bazar/checkbox_drag_and_drop.twig',
                     array(
                         'entries' => $entries ,
                         'selected_entries_id' => $def,
@@ -2406,7 +2406,6 @@ function checkboxfiche(&$formtemplate, $tableau_template, $mode, $valeurs_fiche)
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
                 $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
-                
             } else {
                 // caution "" was replaced by '' otherwise in the case of a form inside a bazar entry, it's interpreted by
                 // wakka as a beginning of html code
