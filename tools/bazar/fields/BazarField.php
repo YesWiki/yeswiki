@@ -101,7 +101,8 @@ abstract class BazarField
 
     protected function getValue($entry)
     {
-        return $entry[$this->propertyName] ?? $this->default;
+        // TODO see if it is necessary to look for $_REQUEST
+        return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
     }
 
     // HELPERS

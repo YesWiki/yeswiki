@@ -13,8 +13,6 @@ class SelectListField extends EnumField
     {
         parent::__construct($values, $services);
 
-        $this->type = 'select';
-
         $this->loadOptionsFromList();
     }
 
@@ -28,9 +26,8 @@ class SelectListField extends EnumField
 
     public function renderStatic($entry)
     {
-        $value = $this->getValue($entry);
-        $value = $entry !== '' ? $this->options['label'][$value] : '';
-        return $this->render('@bazar/fields/select.twig', [
+        $value = $this->options['label'][$this->getValue($entry)];
+        return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value
         ]);
     }

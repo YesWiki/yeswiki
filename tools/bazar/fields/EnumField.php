@@ -27,13 +27,19 @@ abstract class EnumField extends BazarField
 
         $this->options = [];
 
-        $this->propertyName = $values[self::FIELD_TYPE] . $values[self::FIELD_NAME] . $values[self::FIELD_LIST_LABEL];
+        $this->propertyName = $this->type . $this->name . $this->listLabel;
     }
 
     public function loadOptionsFromList()
     {
         $this->options = baz_valeurs_liste($this->name);
         $this->options['id'] = $this->name;
+    }
+
+    public function loadOptionsFromJson()
+    {
+        $json = getCachedUrlContent($this->name);
+        $this->options['label'] = array_map(function($entry) { return $entry['bf_titre']; }, json_decode($json, true));
     }
 
     public function loadOptionsFromEntries()

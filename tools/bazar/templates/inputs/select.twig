@@ -2,8 +2,8 @@
 
 {% block input %}
     <select
-        id={{ field.propertyName }}
-        name={{ field.propertyName }}
+        id="{{ field.propertyName }}"
+        name="{{ field.propertyName }}{% if field.maxChars and field.maxChars > 1 %}[]{% endif %}"
         class="form-control"
         {% if field.maxChars and field.maxChars > 1 %}multiple="multiple" size="{{ field.maxChars }}"{% endif %}
         {% if field.required %}required{% endif %}
