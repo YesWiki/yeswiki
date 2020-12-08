@@ -47,10 +47,6 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
 
-require_once BAZ_CHEMIN.'libs'.DIRECTORY_SEPARATOR.'formulaire'.DIRECTORY_SEPARATOR
-.'formulaire.fonct.inc.php';
-
-
 /** baz_afficher_menu() - Prepare les boutons du menu de bazar et renvoie le html
  * @return string HTML
  */
