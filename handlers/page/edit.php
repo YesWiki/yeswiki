@@ -49,12 +49,12 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 
     // fetch fields
     if (empty($_POST['previous'])) {
-        $previous = $this->page['id'];
+        $previous = isset($this->page['id']) ? $this->page['id'] : null;
     } else {
         $previous = $_POST['previous'];
     }
     if (empty($_POST['body'])) {
-        $body = $this->page['body'];
+        $body = isset($this->page['body']) ? $this->page['body'] : null;
     } else {
         $body = $_POST['body'];
     }

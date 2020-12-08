@@ -270,7 +270,7 @@ var SYNTAX = {
       var isShift = false;
 
       aceeditor.keyup(function(e) {
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
           isCtrl = false;
         }
         if (e.altKey) {
@@ -283,7 +283,7 @@ var SYNTAX = {
 
       aceeditor.keydown(function(e) {
         var keyCode = e.which;
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
           isCtrl = true;
         } else {
           isCtrl = false;

@@ -5,6 +5,13 @@ if (!defined("WIKINI_VERSION")) {
 
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');
+
+// extration du nom de 'root_page' si nécessaire
+if ($link == "config/root_page") {
+    $link = $this->config['root_page'] ;
+    $this->setParameter('link',$link);
+}
+
 if ($this->IsWikiName($link, WN_CAMEL_CASE_EVOLVED)) {
     $linkTag = $link;
     $link = $this->href('', $link);

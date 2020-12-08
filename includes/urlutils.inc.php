@@ -19,13 +19,35 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /**
+ * Return the root url of the current page. Specify the http or https protocol according to which is activated,
+ * and a specific port if used.
+ * Per example, http://myhost.net:81/mywiki/?PagePrincipale returns http://myhost.net:81/
+ * @return string the root url
+ */
+function getRootUrl()
+{
+    $protocol = 'http://';
+    if (!empty($_SERVER['HTTPS'])) {
+        $protocol = 'https://';
+    }
+    $port = '';
+    if ($_SERVER["SERVER_PORT"] != 80
+        and $_SERVER["SERVER_PORT"] != 443) {
+        $port = ':' . $_SERVER["SERVER_PORT"];
+    }
+    return $protocol
+        . $_SERVER["HTTP_HOST"]
+        . $port;
+}
+
+/**
  * Return the absolute url of the current page. Specify the http or https protocol according to which is activated,
  * and a specific port if used.
  * @return string the absolute url
  */
 function getAbsoluteUrl()
 {
-    return $GLOBALS['wiki']->getBaseUrl() . $_SERVER['REQUEST_URI'];
+    return getRootUrl() . $_SERVER['REQUEST_URI'];
 }
 
 /**
@@ -37,20 +59,9 @@ function getAbsoluteUrl()
  */
 function computeBaseURL($rewrite_mode = false)
 {
-    $protocol = 'http://';
-    if (!empty($_SERVER['HTTPS'])) {
-        $protocol = 'https://';
-    }
-    $port = '';
-    if ($_SERVER["SERVER_PORT"] != 80
-        and $_SERVER["SERVER_PORT"] != 443) {
-        $port = ':' . $_SERVER["SERVER_PORT"];
-    }
     $scriptlocation = str_replace(array('/index.php', '/wakka.php'), '', $_SERVER["SCRIPT_NAME"]);
 
-    return $protocol
-        . $_SERVER["HTTP_HOST"]
-        . $port
+    return getRootUrl()
         . $scriptlocation
         . ($rewrite_mode ? '/' : '/?');
 }

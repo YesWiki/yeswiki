@@ -56,10 +56,29 @@ class TemplateEngine
             'auto_reload' => true
         ]);
 
-        // Adds YesWiki translations to Twig
-        $function = new \Twig\TwigFunction('_t', function ($key) {
-            return html_entity_decode(_t($key));
+        // Adds Helpers
+        $this->addTwigHelper('_t', function ($key, $params = []) {
+            return html_entity_decode(_t($key, $params));
         });
+        $this->addTwigHelper('url', function ($options) {
+            $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
+            $params = [];
+            foreach($options['params'] as $key => $value) {
+                $params[] = "$key=$value";
+            };
+            return $this->wiki->Href($options['handler'], $options['tag'], implode("&", $params), false);
+        });
+        $this->addTwigHelper('include_javascript', function ($file, $first = false) {
+            $this->wiki->AddJavascriptFile($file, $first);
+        });
+        $this->addTwigHelper('include_css', function ($file) {
+            $this->wiki->AddCSSFile($file);
+        });
+    }
+
+    private function addTwigHelper($name, $callback)
+    {
+        $function = new \Twig\TwigFunction($name, $callback);
         $this->twig->addFunction($function);
     }
 

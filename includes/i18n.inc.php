@@ -30,10 +30,14 @@ if (!defined("WIKINI_VERSION")) {
  * @param string array key for the text or false if doesn't exists
  * @return string the translated text or the key if not found
  */
-function _t($textkey)
+function _t($textkey, $params = [])
 {
     if (isset($GLOBALS['translations'][$textkey])) {
-        return $GLOBALS['translations'][$textkey];
+        $result = $GLOBALS['translations'][$textkey];
+        foreach($params as $transKey => $value) {
+            $result = str_replace('%{' . $transKey . '}', $value, $result);
+        }
+        return $result;
     } else {
         return $textkey;
     }
