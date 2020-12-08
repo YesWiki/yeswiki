@@ -10,6 +10,7 @@
  */
 
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\SemanticTransformer;
 
 /**
  * Get all form or one form's informations
@@ -76,7 +77,7 @@ function getFiche($args)
                     '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
                     'dcterms:title' => $form['bn_label_nature'],
                     'ldp:contains' => array_map(function ($fiche) {
-                        $resource = $GLOBALS['wiki']->services->get(FicheManager::class)->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
+                        $resource = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($fiche['id_typeannonce'], $fiche, true);
                         unset($resource['@context']);
                         return $resource;
                     }, array_values($data))

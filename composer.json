@@ -14,7 +14,9 @@
         "symfony/yaml": "^5.1",
         "yeswiki/theme-margot": "*",
         "oomphinc/composer-installers-extender": "^2.0",
-        "twig/twig": "^3.0"
+        "twig/twig": "^3.0",
+        "doctrine/annotations": "^1.11",
+        "doctrine/cache": "^1.10"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],

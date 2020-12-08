@@ -7,10 +7,12 @@ use YesWiki\Wiki;
 class Guard
 {
     protected $wiki;
+    protected $formManager;
 
-    public function __construct(Wiki $wiki)
+    public function __construct(Wiki $wiki, FormManager $formManager)
     {
         $this->wiki = $wiki;
+        $this->formManager = $formManager;
     }
 
     // Teste les droits d'acces champ par champ du contenu d'un fiche bazar
@@ -35,7 +37,7 @@ class Guard
             $valeur = json_decode($valjson, true);
 
             if ($valeur) {
-                $val_formulaire = baz_valeurs_formulaire($valeur['id_typeannonce']);
+                $val_formulaire = $this->formManager->getOne($valeur['id_typeannonce']);
                 $fieldname = array();
                 foreach ($val_formulaire['template'] as $line) {
                     // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw

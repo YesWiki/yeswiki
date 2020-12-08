@@ -1,0 +1,32 @@
+{% if value %}
+    <input type="hidden" name="nomwiki" value="{{ value }}" />
+{% else %}
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3">
+            <span class="symbole_obligatoire"></span>
+            {% if field.hint %}
+                <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+            {% endif %}
+            {{ _t('BAZ_MOT_DE_PASSE') }}
+        </label>
+        <div class="controls col-sm-9">
+            <div class="input-group">
+                <input class="form-control" type="password" name="mot_de_passe_wikini" size="{{ field.size }}" required />
+            </div>
+        </div>
+    </div>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3">
+            <span class="symbole_obligatoire"></span>
+            {% if field.hint %}
+                <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+            {% endif %}
+            {{ _t('BAZ_MOT_DE_PASSE') }} ({{ _t('BAZ_VERIFICATION') }})
+        </label>
+        <div class="controls col-sm-9">
+            <div class="input-group">
+                <input class="form-control" type="password" name="mot_de_passe_repete_wikini" size="{{ field.size }}" required />
+            </div>
+        </div>
+    </div>
+{% endif %}

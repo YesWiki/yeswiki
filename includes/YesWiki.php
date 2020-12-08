@@ -39,6 +39,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Tags\Service\TagsManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -777,65 +778,6 @@ class Wiki
         return $plugin_output_new;
     }
 
-    // USERS
-    public function LoadUser($name, $password = 0)
-    {
-        return $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "users where name = '" . mysqli_real_escape_string($this->dblink, $name) . "' " . ($password === 0 ? "" : "and password = '" . mysqli_real_escape_string($this->dblink, $password) . "'") . ' limit 1');
-    }
-
-    public function loadUserByEmail($mail, $password = 0)
-    {
-        return $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "users where email = '" . mysqli_real_escape_string($this->dblink, $mail) . "' " . ($password === 0 ? "" : "and password = '" . mysqli_real_escape_string($this->dblink, $password) . "'") . ' limit 1');
-    }
-
-    public function LoadUsers()
-    {
-        if (isset($this->config['user_table_prefix']) && !empty($this->config['user_table_prefix'])) {
-            $prefix = $this->config['user_table_prefix'];
-        } else {
-            $prefix = $this->config["table_prefix"];
-        }
-        return $this->LoadAll('select * from ' . $prefix . 'users order by name');
-    }
-
-    public function GetUserName()
-    {
-        if ($user = $this->GetUser()) {
-            $name = $user["name"];
-        } else {
-            $name = $_SERVER["REMOTE_ADDR"];
-        }
-        return $name;
-    }
-
-    public function GetUser()
-    {
-        return (isset($_SESSION['user']) ? $_SESSION['user'] : '');
-    }
-
-    public function SetUser($user, $remember = 0)
-    {
-        $_SESSION['user'] = $user;
-        $this->SetPersistentCookie('name', $user['name'], $remember);
-        $this->SetPersistentCookie('password', $user['password'], $remember);
-        $this->SetPersistentCookie('remember', $remember, $remember);
-    }
-
-    public function LogoutUser()
-    {
-        $_SESSION['user'] = '';
-        $this->DeleteCookie('name');
-        $this->DeleteCookie('password');
-    }
-
-    public function UserWantsComments()
-    {
-        if (! $user = $this->GetUser()) {
-            return false;
-        }
-        return ($user['show_comments'] == 'Y');
-    }
-
     /**
      * Ajout d'un parametre
      *
@@ -926,6 +868,14 @@ class Wiki
         // load tags of pages
         // return $this->LoadAll("select comment_on as tag, max(time) as time, tag as comment_tag, user from ".$this->config['table_prefix']."pages where comment_on != '' group by comment_on order by time desc");
         return $pages;
+    }
+
+    public function UserWantsComments()
+    {
+        if (! $user = $this->GetUser()) {
+            return false;
+        }
+        return ($user['show_comments'] == 'Y');
     }
 
     // ACCESS CONTROL
@@ -1939,5 +1889,61 @@ class Wiki
     public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
         return $this->services->get(TripleStore::class)->delete($resource, $property, $value, $re_prefix, $prop_prefix);
+    }
+
+    /**
+     * @deprecated Use UserManager::getOneByName instead
+     */
+    public function LoadUser($name, $password = 0)
+    {
+        return $this->services->get(UserManager::class)->getOneByName($name, $password);
+    }
+
+    /**
+     * @deprecated Use UserManager::getOneByEmail instead
+     */
+    public function loadUserByEmail($mail, $password = 0)
+    {
+        return $this->services->get(UserManager::class)->getOneByEmail($mail, $password);
+    }
+
+    /**
+     * @deprecated Use UserManager::getAll instead
+     */
+    public function LoadUsers()
+    {
+        return $this->services->get(UserManager::class)->getAll();
+    }
+
+    /**
+     * @deprecated Use UserManager::getLoggedUser instead
+     */
+    public function GetUser()
+    {
+        return $this->services->get(UserManager::class)->getLoggedUser();
+    }
+
+    /**
+     * @deprecated Use UserManager::getLoggedUserName instead
+     */
+    public function GetUserName()
+    {
+        return $this->services->get(UserManager::class)->getLoggedUserName();
+    }
+
+    /**
+     * @deprecated Use UserManager::login instead
+     */
+    public function SetUser($user, $remember = 0)
+    {
+        return $this->services->get(UserManager::class)->login($user, $remember);
+    }
+
+    /**
+     * @deprecated Use UserManager::logout instead
+     */
+    public function LogoutUser()
+    {
+        return $this->services->get(UserManager::class)->logout();
     }
 }

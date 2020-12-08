@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\TripleStore;
@@ -14,14 +15,16 @@ class FicheManager
     protected $mailer;
     protected $tripleStore;
     protected $dbService;
+    protected $semanticTransformer;
     protected $params;
 
-    public function __construct(Wiki $wiki, Mailer $mailer, TripleStore $tripleStore, DbService $dbService, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, Mailer $mailer, TripleStore $tripleStore, DbService $dbService, SemanticTransformer $semanticTransformer, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
         $this->tripleStore = $tripleStore;
         $this->dbService = $dbService;
+        $this->semanticTransformer = $semanticTransformer;
         $this->params = $params;
     }
 
@@ -325,12 +328,12 @@ class FicheManager
         $data['id_typeannonce'] = "$formId"; // Must be a string
 
         if ($semantic) {
-            $data = $this->convertFromSemanticData($formId, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
         }
 
         $this->validate($data);
 
-        $data = baz_requete_bazar_fiche($data);
+        $data = $this->formatDataBeforeSave($data);
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
@@ -412,7 +415,7 @@ class FicheManager
         $previousData = $this->assignRestrictedFields($previousData);
 
         if ($semantic) {
-            $data = $this->convertFromSemanticData($previousData['id_typeannonce'], $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($previousData['id_typeannonce'], $data);
         }
 
         if ($replace) {
@@ -424,7 +427,7 @@ class FicheManager
 
         $this->validate($data);
 
-        $data = baz_requete_bazar_fiche($data);
+        $data = $this->formatDataBeforeSave($data);
 
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
@@ -462,92 +465,6 @@ class FicheManager
         $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
-    public function convertToSemanticData($formId, $data, $isHtmlFormatted = false)
-    {
-        $form = baz_valeurs_formulaire($formId);
-        if (!$form['bn_sem_type']) {
-            throw new \Exception(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
-        }
-
-        // If context is a JSON decode it, otherwise use the string
-        $semanticData['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
-
-        // If we have multiple types split by comma, generate an array, otherwise use a string
-        $semanticData['@type'] = strpos($form['bn_sem_type'], ',')
-            ? array_map(function ($str) {
-                return trim($str);
-            }, explode(',', $form['bn_sem_type']))
-            : $form['bn_sem_type'];
-
-        // Add the ID of the Bazar object
-        $semanticData['@id'] = $GLOBALS['wiki']->href('', $data['id_fiche']);
-
-        $fields_infos = bazPrepareFormData($form);
-        foreach ($fields_infos as $field_info) {
-            // If the file is not semantically defined, ignore it
-            if ($field_info['sem_type']) {
-                $value = $data[$field_info['id']];
-                if ($value) {
-                    // We don't want this additional formatting if we are already dealing with HTML-formatted data
-                    if (!$isHtmlFormatted) {
-                        // If this is a file or image, add the base URL
-                        if ($field_info['type'] === 'file') {
-                            $value = $GLOBALS['wiki']->getBaseUrl() . "/" . BAZ_CHEMIN_UPLOAD . $value;
-                        }
-
-                        // If this is a linked entity (listefiche), use the URL
-                        if (startsWith($field_info['id'], 'listefiche')) {
-                            $value = $GLOBALS['wiki']->href('', $value);
-                        }
-                    }
-
-                    if (is_array($field_info['sem_type'])) {
-                        // If we have multiple fields, duplicate the data
-                        foreach ($field_info['sem_type'] as $sem_type) {
-                            $semanticData[$sem_type] = $value;
-                        }
-                    } else {
-                        $semanticData[$field_info['sem_type']] = $value;
-                    }
-                }
-            }
-        }
-
-        return $semanticData;
-    }
-
-    protected function convertFromSemanticData($formId, $data)
-    {
-        // Initialize by copying basic information
-        $nonSemanticData = ['id_fiche' => $data['id_fiche'], 'antispam' => $data['antispam'], 'id_typeannonce' => $data['id_typeannonce']];
-
-        $form = baz_valeurs_formulaire($formId);
-
-        if (($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type']) {
-            exit('The @type of the sent data must be ' . $form['bn_sem_type']);
-        }
-
-        $fields_infos = bazPrepareFormData($form);
-        foreach ($fields_infos as $field_info) {
-            // If the file is not semantically defined, ignore it
-            if ($field_info['sem_type'] && $data[$field_info['sem_type']]) {
-                if ($field_info['type'] === 'date') {
-                    $date = new \DateTime($data[$field_info['sem_type']]);
-                    $nonSemanticData[$field_info['id']] = $date->format('Y-m-d');
-                    $nonSemanticData[$field_info['id'] . '_allday'] = 0;
-                    $nonSemanticData[$field_info['id'] . '_hour'] = $date->format('H');
-                    $nonSemanticData[$field_info['id'] . '_minutes'] = $date->format('i');
-                } elseif ($field_info['type'] === 'image') {
-                    $nonSemanticData['image'.$field_info['id']] = $data[$field_info['sem_type']];
-                } else {
-                    $nonSemanticData[$field_info['id']] = $data[$field_info['sem_type']];
-                }
-            }
-        }
-
-        return $nonSemanticData;
-    }
-
     /*
      * Convert body to JSON object
      */
@@ -557,6 +474,102 @@ class FicheManager
         foreach ($data as $key => $value) {
             $data[$key] = _convert($value, 'UTF-8');
         }
+        return $data;
+    }
+    
+    /*
+     * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
+     * de la valeur POST les valeurs inadequates et en formattant les champs.
+     */
+    public function formatDataBeforeSave($data)
+    {
+        $form = baz_valeurs_formulaire($data['id_typeannonce']);
+
+        // test pour les titres formatés à partir d'autres champs
+        preg_match_all('#{{(.*)}}#U', $data['bf_titre'], $matches);
+        if (count($matches[0]) > 0) {
+            $data = array_merge($data, titre($formtemplate, array('titre',
+                $data['bf_titre'], ), 'requete', $data));
+        }
+
+        // Entry ID
+        if (!isset($data['id_fiche'])) {
+            // Generate the ID from the title
+            $data['id_fiche'] = genere_nom_wiki($data['bf_titre']);
+            // TODO see if we can remove this
+            $_POST['id_fiche'] = $data['id_fiche'];
+        }
+
+        // Entry creator
+        if ($GLOBALS['wiki']->GetPageOwner($data['id_fiche'])) {
+            $data['createur'] = $GLOBALS['wiki']->GetPageOwner($data['id_fiche']);
+        } elseif ($user = $GLOBALS['wiki']->GetUser()) {
+            $data['createur'] = $user['name'];
+        } else {
+            $data['createur'] = _t('BAZ_ANONYME');
+        }
+
+        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+
+        // Get creation date if it exists, initialize it otherwise
+        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM '.$this->dbService->prefixTable('pages')."WHERE tag='".$data['id_fiche']."'");
+        $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
+
+        // Entry status
+        if ($GLOBALS['wiki']->UserIsAdmin()) {
+            $data['statut_fiche'] = '1';
+        } else {
+            $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
+        }
+
+        for ($i = 0; $i < count($form['template']); ++$i) {
+            if( $form['prepared'][$i] instanceof BazarField) {
+                $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
+            } else if (function_exists($form['template'][$i][0])){
+                $tab = $form['template'][$i][0](
+                    $formtemplate,
+                    $form['template'][$i],
+                    'requete',
+                    $data
+                );
+            }
+
+            if (is_array($tab)) {
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                    foreach ($tab['fields-to-remove'] as $field) {
+                        if (isset($data[$field])) {
+                            unset($data[$field]);
+                        }
+                    }
+                    unset($tab['fields-to-remove']);
+                }
+                $data = array_merge($data, $tab);
+            }
+        }
+        $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+
+        // If sendmail field exist, send an email
+        if (isset($data['sendmail'])) {
+            if ($data[$data['sendmail']] != '') {
+                $this->mailer->notifyEmail($data[$data['sendmail']]);
+            }
+            unset($data['sendmail']);
+        }
+
+        // on enleve les champs hidden pas necessaires a la fiche
+        unset($data['valider']);
+        unset($data['MAX_FILE_SIZE']);
+        unset($data['antispam']);
+        unset($data['mot_de_passe_wikini']);
+        unset($data['mot_de_passe_repete_wikini']);
+        unset($data['html_data']);
+        unset($data['datastr']);
+
+        // on encode en utf-8 pour reussir a encoder en json
+        if (YW_CHARSET != 'UTF-8') {
+            $data = array_map('utf8_encode', $data);
+        }
+
         return $data;
     }
 
@@ -603,7 +616,7 @@ class FicheManager
 
         // Données sémantiques
         if ($semantic) {
-            $fiche['semantic'] = $this->convertToSemanticData($fiche['id_typeannonce'], $fiche);
+            $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($fiche['id_typeannonce'], $fiche);
         }
     }
 

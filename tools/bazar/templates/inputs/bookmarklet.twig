@@ -1,0 +1,14 @@
+<div class="control-group form-group">
+    <label class="control-label col-sm-3"></label>
+    <div class="controls col-sm-9">
+        <div class="alert alert-info">
+            <a
+                href="javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2; window.open('{{ url }}&amp;bf_titre='+escape(document.title)+'&amp;{{ field.urlField }}='+encodeURIComponent(location.href)+'&amp;{{ field.descriptionField }}='+escape(document.getSelection()), '{{ field.name }}', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;"
+                class="btn btn-default"
+            >
+                {{ field.name }}
+            </a>
+            << {{ field.label }}
+        </div>
+    </div>
+</div>

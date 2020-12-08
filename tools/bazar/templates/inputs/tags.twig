@@ -1,0 +1,15 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+    <div class="input-group">
+        <input
+            type="text"
+            value="{{ value }}"
+            id="{{ field.name }}"
+            name="{{ field.name }}"
+            class="form-control yeswiki-input-pagetag"
+            size="{{ field.maxChars }}"
+            {% if field.required %}required{% endif %}
+        />
+    </div>
+{% endblock %}

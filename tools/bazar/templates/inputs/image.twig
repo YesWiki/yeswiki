@@ -1,0 +1,37 @@
+{% extends "@bazar/layouts/input.twig" %}
+
+{% block input %}
+    {% if value %}
+        <div class="col-xs-3">
+            <label class="btn btn-block btn-default">
+                <i class="fa fa-pencil-alt"></i>
+                {{ _t('BAZ_MODIFIER_IMAGE') }}
+                <input
+                    type="file"
+                    style="display: none;"
+                    class="yw-image-upload"
+                    id="{{ field.propertyName }}"
+                    name="{{ field.propertyName }}"
+                    accept=".jpeg, .jpg, .gif, .png"
+                >
+            </label>
+            <a class="btn btn-sm btn-block btn-danger" href="{{ deleteUrl }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') }}');">
+                <i class="fa fa-trash"></i>
+                {{ _t('BAZ_SUPPRIMER_IMAGE') }}
+            </a>
+        </div>
+        <output id="img-{{ field.propertyName }}" class="col-xs-9">{{ image|raw }}</output>
+    {% else %}
+        <input
+            type="file"
+            class="yw-image-upload form-control"
+            id="{{ field.propertyName }}"
+            name="{{ field.propertyName }}"
+            accept=".jpeg, .jpg, .gif, .png"
+            {% if field.required %}required{% endif %}
+        >
+        <output id="img-{{ field.propertyName }}" class="col-xs-9"></output>
+    {% endif %}
+    <input type="hidden" id="data-{{ field.propertyName }}" name="data-{{ field.propertyName }}" />
+    <input type="hidden" id="filename-{{ field.propertyName }}" name="filename-{{ field.propertyName }}" />
+{% endblock %}

@@ -1,0 +1,16 @@
+<div class="control-group form-group input-{{ field.type}}">
+    <label class="control-label col-sm-3">
+        {#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
+        {%- block label -%}            
+            {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
+            {% if field.hint %}
+                <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+            {% endif %}
+            {{ field.label }}         
+        {%- endblock -%}
+    </label>
+    <div class="controls col-sm-9">
+        {% block input %}
+        {% endblock %}
+    </div>
+</div>
