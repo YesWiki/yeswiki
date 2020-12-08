@@ -77,6 +77,7 @@ class UserManager
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
             "signuptime = now(), " .
             "name = '" . $this->dbService->escape($wikiName) . "', " .
+            "motto = '', " .
             "email = '" . $this->dbService->escape($email) . "', " .
             "password = md5('" . $this->dbService->escape($password) . "')"
         );
