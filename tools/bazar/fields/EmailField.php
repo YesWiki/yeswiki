@@ -37,13 +37,16 @@ class EmailField extends BazarField
 
     public function renderStatic($entry)
     {
+        $value = $this->getValue($entry);
+        if( !$value ) return null;
+        
         // TODO add JS libraries with Twig
         if( $this->showContactForm ) {
             $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
         }
 
         return $this->render('@bazar/fields/email.twig', [
-            'value' => $this->getValue($entry),
+            'value' => $value,
             'showContactForm' => $this->showContactForm,
             'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->propertyName) : null
         ]);
