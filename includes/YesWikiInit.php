@@ -107,12 +107,6 @@ class Init
         $args = explode('/', $uri[0]);
 
         if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
-            // If this is an API page, remember the full query string
-            if ($args[0] == 'api') {
-                $GLOBALS['api_args'] = $args;
-                array_shift($GLOBALS['api_args']);
-            }
-
             // if old school wiki url
             if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
                 // remove leading slash
@@ -304,6 +298,9 @@ class Init
                 new AnnotationReader()
             )
         );
+
+        // Core controllers
+        $routes->addCollection($loader->load('includes/controllers'));
 
         foreach($wiki->extensions as $extensionKey => $extensionPath) {
             $controllersDir = __DIR__ . '/../' . $extensionPath . 'controllers';

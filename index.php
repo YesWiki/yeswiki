@@ -44,7 +44,9 @@ spl_autoload_register(function ($className) {
         if ($classNameArray[1] === 'Core') {
             if( $classNameArray[2] === 'Service' ) {
                 require 'includes/services/' . $classNameArray[3] . '.php';
-            } else if( file_exists('includes/' . $classNameArray[2] . '.php') ) {
+            } elseif( $classNameArray[2] === 'Controller' ) {
+                require 'includes/controllers/' . $classNameArray[3] . '.php';
+            } elseif( file_exists('includes/' . $classNameArray[2] . '.php') ) {
                 require 'includes/' . $classNameArray[2] . '.php';
             }
         } else {

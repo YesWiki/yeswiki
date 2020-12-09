@@ -28,7 +28,7 @@ class ApiController extends YesWikiController
     /**
      * @Route("/api/form/{formId}")
      */
-    public function getOneForm($formId)
+    public function getForm($formId)
     {
         $this->denyAccessUnlessAdmin();
 

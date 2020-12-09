@@ -40,6 +40,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
@@ -1436,12 +1437,18 @@ class Wiki
             $argumentResolver = new ArgumentResolver();
 
             try {
-                $request->attributes->add($matcher->match($context->getPathInfo()));
+                // TODO put this elsewhere ?
+                if( $this->services->get(ApiService::class)->isAuthorized() )
+                {
+                    $request->attributes->add($matcher->match($context->getPathInfo()));
 
-                $controller = $controllerResolver->getController($request);
-                $arguments = $argumentResolver->getArguments($request, $controller);
+                    $controller = $controllerResolver->getController($request);
+                    $arguments = $argumentResolver->getArguments($request, $controller);
 
-                $response = call_user_func_array($controller, $arguments);
+                    $response = call_user_func_array($controller, $arguments);
+                } else {
+                    $response = new Response('', Response::HTTP_UNAUTHORIZED);
+                }
             } catch(ResourceNotFoundException $exception) {
                 $response = new Response('', Response::HTTP_NOT_FOUND);
             } catch(HttpException $exception) {
