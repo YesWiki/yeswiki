@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Service\FicheManager;
@@ -90,5 +91,41 @@ class ApiController extends YesWikiController
         }, $triples);
 
         return new ApiResponse($resources);
+    }
+
+    /**
+     * @Route("/api/fiche/{formId}", methods={"POST"})
+     */
+    public function createEntry($formId)
+    {
+        if( strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false ) {
+            $this->createSemanticEntry($formId);
+        };
+
+        $_POST['antispam'] = 1;
+        $entry = $this->getService(FicheManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL']);
+
+        if (!$entry) throw new BadRequestHttpException();
+
+        return new ApiResponse(
+            ['success' => $this->wiki->Href('', $entry['id_fiche'])],
+            Response::HTTP_CREATED
+        );
+    }
+
+    /**
+     * @Route("/api/fiche/{formId}/json-ld", methods={"POST"})
+     */
+    public function createSemanticEntry($formId)
+    {
+        $_POST['antispam'] = 1;
+        $entry = $this->getService(FicheManager::class)->create($formId, $_POST, true, $_SERVER['HTTP_SOURCE_URL']);
+
+        if (!$entry) throw new BadRequestHttpException();
+
+        return new Response('', Response::HTTP_CREATED, [
+            'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
+            'Location: ' . $this->wiki->Href('', $entry['id_fiche'])
+        ]);
     }
 }
