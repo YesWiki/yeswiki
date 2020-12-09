@@ -40,6 +40,7 @@ class SelectEntryField extends EnumField
     public function renderStatic($entry)
     {
         $value = $this->getValue($entry);
+        if( !$value ) return null;
 
         if( $this->displayMethod === 'fiche' ) {
             if( $this->isDistantJson ) {

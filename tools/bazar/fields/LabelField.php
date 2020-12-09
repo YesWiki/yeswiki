@@ -33,6 +33,6 @@ class LabelField extends BazarField
 
     public function renderStatic($entry)
     {
-        return $this->viewText . "\n";
+        return empty($this->viewText) ? $this->viewText . "\n" : null ;
     }
 }

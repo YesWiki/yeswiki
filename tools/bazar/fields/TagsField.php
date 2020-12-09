@@ -95,15 +95,17 @@ class TagsField extends BazarField
 
         $tags = explode(',', $value);
 
-        if (count($tags) > 0) {
+        if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
             $tags = array_map(function($tag) {
                 return '<a class="tag-label label label-info" href="' . $GLOBALS['wiki']->href('listpages', $GLOBALS['wiki']->GetPageTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
-        }
 
-        return $this->render('@bazar/fields/tags.twig', [
-            'value' => join(' ', $tags) ?? ''
-        ]);
+            return $this->render('@bazar/fields/tags.twig', [
+                'value' => join(' ', $tags) ?? ''
+            ]);
+        } else {
+            return null ;
+        }
     }
 }
