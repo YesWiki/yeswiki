@@ -57,13 +57,13 @@ if (isset($_POST['subStep']) && !isset($_GET['a'])) { // Sub step
         } // End switch
 } elseif (isset($_GET['a']) && $_GET['a'] == 'recover' && $_GET['email'] != '') {
     $step = 'invalidKey';
-    $result = $this->user->checkEmailKey($_GET['email'], base64_decode($_GET['u']));
+    $result = $this->user->checkEmailKey($_GET['email'], urldecode(base64_decode($_GET['u'])));
     if ($result == false) {
         $error = true;
         $step = 'invalidKey';
     } else {
         $error = false;
-        $this->user->loadByNameFromDB(base64_decode($_GET['u']));
+        $this->user->loadByNameFromDB(urldecode(base64_decode($_GET['u'])));
         $step = 'recoverForm';
     }
 }

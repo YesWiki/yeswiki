@@ -1,5 +1,6 @@
 <?php
 namespace YesWiki;
+use YesWiki\Core\Service\TripleStore;
 
 class User
 {
@@ -503,11 +504,14 @@ class User
     public function checkEmailKey($hash, $user)
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        $res = $this->wiki->GetTripleValue($user, 'http://outils-reseaux.org/_vocabulary/key', '', '');
-        if ($res == $hash) {
-            $result = true;
-        } else {
-            $result = false;
+        $results = $this->wiki->services->get(TripleStore::class)->getAll($user, 'http://outils-reseaux.org/_vocabulary/key','','');
+        $result = false ;
+        foreach ($results as $res) {
+            if ($res['value'] == $hash || $result) {
+                $result = true;
+            } else {
+                $result = false;
+            }
         }
         return $result;
     }
