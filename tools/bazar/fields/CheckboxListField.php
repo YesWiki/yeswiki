@@ -25,8 +25,6 @@ class CheckboxListField extends CheckboxField
 
     public function renderStatic($entry)
     {
-        dump($this->options);
-
         $keys = $this->getValues($entry);
         $values = [] ;
         foreach ($this->options as $key => $label ) {
