@@ -2,31 +2,38 @@
 
 namespace YesWiki\Core;
 
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Wiki;
 
-abstract class YesWikiController implements ContainerAwareInterface
+abstract class YesWikiController
 {
-    protected $services;
+    protected $wiki;
 
-    public function setContainer(ContainerInterface $services = null)
+    public function setWikiObject(Wiki $wiki)
     {
-        $this->services = $services;
+        $this->wiki = $wiki;
     }
 
-    public function render($templatePath, $data = [], $method = 'render')
+    protected function render($templatePath, $data = [], $method = 'render')
     {
-        return $this->services->get(TemplateEngine::class)->$method($templatePath, $data);
+        return $this->wiki->services->get(TemplateEngine::class)->$method($templatePath, $data);
     }
 
-    public function renderInSquelette($templatePath, $data = [])
+    protected function renderInSquelette($templatePath, $data = [])
     {
         return $this->render($templatePath, $data, 'renderInSquelette');
     }
 
+    protected function denyAccessUnlessAdmin()
+    {
+        if( !$this->wiki->UserIsAdmin() ) {
+            throw new AccessDeniedHttpException();
+        }
+    }
+
     protected function getService($className)
     {
-        return $this->services->get($className);
+        return $this->wiki->services->get($className);
     }
 }

@@ -3,7 +3,6 @@
 namespace YesWiki\Core;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use YesWiki\Wiki;
 
@@ -28,8 +27,8 @@ class YesWikiControllerResolver extends ControllerResolver
 
     private function configureController($controller, string $class)
     {
-        if ($controller instanceof ContainerAwareInterface) {
-            $controller->setContainer($this->wiki->services);
+        if ($controller instanceof YesWikiController) {
+            $controller->setWikiObject($this->wiki);
         }
 
         return $controller;
