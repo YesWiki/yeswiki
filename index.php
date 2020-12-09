@@ -42,7 +42,12 @@ spl_autoload_register(function ($className) {
     // Autoload services
     if (isset($classNameArray[2])) {
         if ($classNameArray[1] === 'Core') {
-            require 'includes/services/' . $classNameArray[3] . '.php';
+            if( $classNameArray[2] === 'Service' ) {
+                require 'includes/services/' . $classNameArray[3] . '.php';
+            } else if( file_exists('includes/' . $classNameArray[2] . '.php') ) {
+                require 'includes/' . $classNameArray[2] . '.php';
+            }
+
         } else {
             $extension = strtolower($classNameArray[1]);
             if( $classNameArray[2] === 'Service' ) {

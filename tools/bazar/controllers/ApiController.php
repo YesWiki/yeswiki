@@ -3,15 +3,17 @@
 namespace YesWiki\Bazar\Controller;
 
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\YesWikiController;
 
-class ApiController
+class ApiController extends YesWikiController
 {
     /**
      * @Route("/api/form")
      */
     public function getAllForms()
     {
-        return baz_valeurs_formulaire('');
+        return $this->getService(FormManager::class)->getAll();
     }
 
     /**
@@ -19,6 +21,6 @@ class ApiController
      */
     public function getOneForm($id)
     {
-        return baz_valeurs_formulaire($id);
+        return $this->getService(FormManager::class)->getOne($id);
     }
 }

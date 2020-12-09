@@ -35,18 +35,16 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
-use Symfony\Component\HttpKernel\Controller\ControllerResolver;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
-use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Tags\Service\TagsManager;
-use YesWiki\Core\YesWikiAction;
 
 class Wiki
 {
@@ -1426,7 +1424,7 @@ class Wiki
 
             $matcher = new UrlMatcher($this->routes, $context);
 
-            $controllerResolver = new ControllerResolver();
+            $controllerResolver = new YesWikiControllerResolver($this);
             $argumentResolver = new ArgumentResolver();
 
             $request->attributes->add($matcher->match('/' . $_SERVER['QUERY_STRING']));
