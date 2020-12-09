@@ -34,7 +34,10 @@ require_once 'includes/objects/YesWikiFormatter.php';
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\Service\DbService;
@@ -1417,37 +1420,43 @@ class Wiki
             $this->SetUser($user, $_COOKIE['remember']);
         }
 
+        // Is this a special page ?
         if ($tag === 'api') {
             $context = new RequestContext();
             $request = Request::createFromGlobals();
             $context->fromRequest($request);
+
+            // Use query string as the path
+            $context->setPathInfo('/' . $context->getQueryString());
+            $context->setQueryString('');
 
             $matcher = new UrlMatcher($this->routes, $context);
 
             $controllerResolver = new YesWikiControllerResolver($this);
             $argumentResolver = new ArgumentResolver();
 
-            $request->attributes->add($matcher->match('/' . $_SERVER['QUERY_STRING']));
+            try {
+                $request->attributes->add($matcher->match($context->getPathInfo()));
 
-            $controller = $controllerResolver->getController($request);
-            $arguments = $argumentResolver->getArguments($request, $controller);
+                $controller = $controllerResolver->getController($request);
+                $arguments = $argumentResolver->getArguments($request, $controller);
 
-            $response = call_user_func_array($controller, $arguments);
-            if( is_array($response) ) {
-                header('Content-Type: application/json');
-                $response = json_encode($response);
+                $response = call_user_func_array($controller, $arguments);
+            } catch(ResourceNotFoundException | NotFoundHttpException $exception) {
+                $response = new Response('', Response::HTTP_NOT_FOUND);
             }
-            exit($response);
-        }
 
-        $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
-        $this->LogReferrer();
+            $response->send();
+        } else {
+            $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
+            $this->LogReferrer();
 
-        echo $this->Method($this->method);
+            echo $this->Method($this->method);
 
-        // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
-        if (! empty($_SESSION['redirects'])) {
-            session_unregister('redirects');
+            // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
+            if (! empty($_SESSION['redirects'])) {
+                session_unregister('redirects');
+            }
         }
     }
 

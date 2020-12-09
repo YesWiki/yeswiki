@@ -47,7 +47,6 @@ spl_autoload_register(function ($className) {
             } else if( file_exists('includes/' . $classNameArray[2] . '.php') ) {
                 require 'includes/' . $classNameArray[2] . '.php';
             }
-
         } else {
             $extension = strtolower($classNameArray[1]);
             if( $classNameArray[2] === 'Service' ) {

@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiController;
@@ -13,7 +15,7 @@ class ApiController extends YesWikiController
      */
     public function getAllForms()
     {
-        return $this->getService(FormManager::class)->getAll();
+        return new JsonResponse($this->getService(FormManager::class)->getAll());
     }
 
     /**
@@ -21,6 +23,8 @@ class ApiController extends YesWikiController
      */
     public function getOneForm($id)
     {
-        return $this->getService(FormManager::class)->getOne($id);
+        $form = $this->getService(FormManager::class)->getOne($id);
+        if( !$form ) throw new NotFoundHttpException();
+        return new JsonResponse($form);
     }
 }
