@@ -42,12 +42,6 @@ abstract class CheckboxField extends EnumField
                 return $this->render('@bazar/inputs/checkbox_tags.twig'); 
                 break ;
             case "dragndrop":
-                $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/checkbox-drag-and-drop.css');
-                
-                // ONLY FOR TWIG waiting for function twig allowing AddJavascriptFile
-                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
-                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
-                $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js');
                 return $this->renderDragAndDrop($entry);
                 break ;
             default:

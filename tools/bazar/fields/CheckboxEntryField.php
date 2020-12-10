@@ -42,15 +42,9 @@ class CheckboxEntryField extends CheckboxField
     
     protected function renderDragAndDrop($entry)
     {
-        $optionsUrl = [] ;
-        foreach ($this->options as $key => $option){
-            $optionsUrl[$key] = $GLOBALS['wiki']->href('', $key) ;
-        }
-        
         return $this->render('@bazar/inputs/checkbox_drag_and_drop_entry.twig', [
                 'options' => $this->options,
                 'selectedOptionsId' => $this->getValues($entry),
-                'optionsUrl' => $optionsUrl,
                 'formName' => $this->formName,
                 'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                 'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']
