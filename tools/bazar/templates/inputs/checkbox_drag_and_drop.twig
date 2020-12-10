@@ -1,6 +1,7 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
+{{ include_css('tools/bazar/presentation/styles/checkbox-drag-and-drop.css') }}
 <div class="row row-fluid yeswiki-checkbox checkbox">
 	<div class="col-lg-4 export-table-container">
 		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM') }}<img class="tooltip_aide" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO')  ~ "'+'." }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" /></h4>		
@@ -74,4 +75,7 @@
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->
 </div> <!-- /.row -->
+{{ include_javascript('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js') }}
+{{ include_javascript('tools/bazar/libs/vendor/jquery.fastLiveFilter.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/checkbox-drag-and-drop.js') }}
 {% endblock %}
