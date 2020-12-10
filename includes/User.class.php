@@ -432,8 +432,10 @@ class User
     {
         // Generate the password recovery key
         $key = md5($this->properties['name'] . '_' . $this->properties['email'] . rand(0, 10000) . date('Y-m-d H:i:s') . PW_SALT);
+        // Erase the previous triples in the trible table
+        $this->wiki->services->get(TripleStore::class)->delete($this->properties['name'],$this->keyVocabulary,null,'','') ;
         // Store the (name, vocabulary, key) triple in triples table
-        $res = $this->wiki->InsertTriple($this->properties['name'], $this->keyVocabulary, $key, '', '');
+        $res = $this->wiki->services->get(TripleStore::class)->create($this->properties['name'], $this->keyVocabulary, $key, '', '');
 
         // Generate the recovery email
         $passwordLink = $this->wiki->Href() . '&a=recover&email=' . $key . '&u=' . urlencode(base64_encode($this->properties['name']));
@@ -504,16 +506,8 @@ class User
     public function checkEmailKey($hash, $user)
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        $results = $this->wiki->services->get(TripleStore::class)->getAll($user, 'http://outils-reseaux.org/_vocabulary/key','','');
-        $result = false ;
-        foreach ($results as $res) {
-            if ($res['value'] == $hash || $result) {
-                $result = true;
-            } else {
-                $result = false;
-            }
-        }
-        return $result;
+        $result = $this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key',$hash,'','');
+        return ($result !== 0) ;
     }
     /* End of Password recovery process (AKA reset password)   */
 
