@@ -13,16 +13,17 @@ if ($this->UserIsAdmin()) {
         $output .= 'ℹ️ Removing old fields from ' . $this->config['table_prefix'].'nature table.<br />';
         echo('Adding fields bn_sem_context, bn_sem_type and bn_sem_use_template to ' . $this->config['table_prefix'].'nature table...</br>');
     
-        $this->Query("ALTER TABLE ".$this->config['table_prefix']."nature  DROP IF EXISTS `bn_ce_id_menu`,
-        DROP IF EXISTS `bn_commentaire`,
-        DROP IF EXISTS `bn_appropriation`,
-        DROP IF EXISTS `bn_image_titre`,
-        DROP IF EXISTS `bn_image_logo`,
-        DROP IF EXISTS `bn_couleur_calendrier`,
-        DROP IF EXISTS `bn_picto_calendrier`,
-        DROP IF EXISTS `bn_type_fiche`,
-        DROP IF EXISTS `bn_label_class`,
-        MODIFY COLUMN bn_ce_i18n VARCHAR(5) NOT NULL DEFAULT ''");
+        // don't show output because it can be an error if column doesn't exists
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_ce_id_menu`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_commentaire`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_appropriation`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_image_titre`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_image_logo`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_couleur_calendrier`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_picto_calendrier`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_type_fiche`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_label_class`;");
+        @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature MODIFY COLUMN bn_ce_i18n VARCHAR(5) NOT NULL DEFAULT ''");
         $output .= '✅Done !<br /><hr />';
     } else {
         $output .= '✅The table '.$this->config['table_prefix'].'nature is already cleaned up from old tables !<hr />';
