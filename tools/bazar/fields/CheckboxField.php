@@ -10,7 +10,8 @@ abstract class CheckboxField extends EnumField
     protected $displayFilterLimit ; // number of items without filter ; false if no limit
     protected $displayMethod ; // empty, tags or dragndrop
     protected $formName ; //form name for drag and drop
-    protected $displayMode ;
+    protected $normalDisplayMode ;
+    protected $dragAndDropDisplayMode ;
 
     protected const FIELD_DISPLAY_METHOD = 7;
     protected const CHECKBOX_DISPLAY_MODE_LIST = 'list' ;
@@ -27,10 +28,9 @@ abstract class CheckboxField extends EnumField
         $this->displaySelectAllLimit = false;
         $this->displayFilterLimit = false;
         $this->formName = $this->name;
-        $this->displayMode = self::CHECKBOX_DISPLAY_MODE_DIV;
+        $this->normalDisplayMode = self::CHECKBOX_DISPLAY_MODE_DIV;
+        $this->dragAndDropDisplayMode = '';
     }
-
-    abstract protected function renderDragAndDrop($entry);
 
     public function renderInput($entry)
     {
@@ -42,7 +42,13 @@ abstract class CheckboxField extends EnumField
                 return $this->render('@bazar/inputs/checkbox_tags.twig'); 
                 break ;
             case "dragndrop":
-                return $this->renderDragAndDrop($entry);
+                return $this->render($this->dragAndDropDisplayMode, [
+                    'options' => $this->options,
+                    'selectedOptionsId' => $this->getValues($entry),
+                    'formName' => $this->formName,
+                    'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
+                    'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']
+                ]);
                 break ;
             default:
                 if ($this->displayFilterLimit) {
@@ -53,7 +59,7 @@ abstract class CheckboxField extends EnumField
                             });";
                     $GLOBALS['wiki']->AddJavascript($script);
                 }
-                return $this->render(self::CHECKBOX_TWIG_LIST[$this->displayMode], [
+                return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [
                     'options' => $this->options,
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
