@@ -36,10 +36,10 @@ abstract class CheckboxField extends EnumField
     {
         switch ($this->displayMethod) {
             case "tags":
+                $htmlReturn = $this->render('@bazar/inputs/checkbox_tags.twig') ;
                 $script = $this->generateTagsScript($entry) ;
-                $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
                 $GLOBALS['wiki']->AddJavascript($script);
-                return $this->render('@bazar/inputs/checkbox_tags.twig'); 
+                return $htmlReturn ; 
                 break ;
             case "dragndrop":
                 return $this->render($this->dragAndDropDisplayMode, [
