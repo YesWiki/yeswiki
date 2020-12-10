@@ -1423,6 +1423,13 @@ class Wiki
 
         // Is this a special page ?
         if ($tag === 'api') {
+            // We must manually parse the body data for the PUT or PATCH methods
+            // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+            // TODO properly use the Symfony HttpFoundation component to avoid this
+            if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+                $_POST = json_decode(file_get_contents('php://input'), true);
+            }
+
             $context = new RequestContext();
             $request = Request::createFromGlobals();
             $context->fromRequest($request);

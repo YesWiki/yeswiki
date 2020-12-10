@@ -39,7 +39,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/{formId}")
+     * @Route("/api/fiche/{formId}", methods={"GET"})
      */
     public function getAllEntries($formId)
     {
@@ -53,7 +53,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/{formId}/json-ld")
+     * @Route("/api/fiche/{formId}/json-ld", methods={"GET"})
      */
     public function getAllSemanticEntries($formId)
     {

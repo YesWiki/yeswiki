@@ -135,6 +135,7 @@ class Init
                 exit();
             }
 
+            // TODO refactor this
             if (!$this->method) {
                 // We must manually parse the body data for the PUT or PATCH methods
                 // See https://www.php.net/manual/fr/features.file-upload.put-method.php
