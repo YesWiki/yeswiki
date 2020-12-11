@@ -1,4 +1,4 @@
-# Actions Builder - Comment document une action
+# Actions Builder - Comment documenter une action
 
 ## Créer un nouveau groupe d'action
 
@@ -9,7 +9,7 @@ _Chaque groupe est visible dans le menu de l'éditeur. Un groupe peut contenir b
 Voilà le contenu du fichier
 ```yaml
 label: Ajouter un bouton # Nom affiché dans la barre d'action de l'éditeur
-position: 3 # en 3ème position dans l liste des groupe d'actions disponibles
+position: 3 # en 3ème position dans la liste des groupe d'actions disponibles
 previewHeight: 350px # La hauteur de la zone d'aperçu
 needFormField: false # Est ce qu'un formulaire doit être choisi en même temps que l'action ? (c'est le cas pour bazar)
 actions:
@@ -18,7 +18,7 @@ actions:
 
 ## Internationalisation
 
-Afin de rendre le fichier traductible, il est préférable de fournir une clé de translation
+Afin de rendre le fichier traductible, il est préférable de fournir une clé de traduction
 ```yaml
 label: _t(AB_mongroupe_label) # AB = ActionsBuilder
 actions:
@@ -71,7 +71,7 @@ required: true # true/false, est ce que ce champ doit absolument être configur�
 advanced: true # sera masqué tant que l'utilisateur ne coche pas la case "paramètres avancés"
 hint: Mon Texte # Indications
 doclink: https://... # Lien vers une documentation en ligne
-showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre colorfield n'est pas vie
+showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre colorfield n'est pas vide
 showif:
   format: portrait # Uniquement visible quand le paramètre "format" est égal à "portait"
   type: notNull # et quand le paramètre "type" n'est pas vide
@@ -135,7 +135,7 @@ options:
 Permet de choisir un champ du formulaire préalablement sélectioné (voir `needFormField` dans la configuration du groupe d'action)
 
 ### type class
-Le type class va concaténer la valeur de plusieurs champs et la mettre dans le paramètre class. On utilise `subproperties` pour déclarer les différents champs qui vont être concaténé
+Le type class va concaténer la valeur de plusieurs champs et la mettre dans le paramètre class. On utilise `subproperties` pour déclarer les différents champs qui vont être concaténés
 ```yaml
 class:
   type: class
