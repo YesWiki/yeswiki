@@ -1,6 +1,8 @@
 <?php
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
-    'HELLOWORLD_MY_MESSAGE' => 'My Message',
+    'HELLOWORLD_MY_MESSAGE' => 'My message',
+    'HELLOWORD_NO_MSG_PARAM' => 'No \'message\' parameter defined in the {{greeting ...}} action',
+    'HELLOWORD_CALLBACK_MSG' => '(changed in before callback)',
     'HELLOWORLD_CONFIG' => 'Test config',
     'HELLOWORLD_URL_SHOW_XML' => 'See XML Info Of Current Page',
     'HELLOWORLD_URL_SHOW_TAG' => 'Show %{tag}',
