@@ -35,24 +35,36 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
+
 spl_autoload_register(function ($className) {
     $classNameArray = explode('\\', $className);
     // Autoload services
     if (isset($classNameArray[2])) {
         if ($classNameArray[1] === 'Core') {
-            require 'includes/services/' . $classNameArray[3] . '.php';
+            if( $classNameArray[2] === 'Service' ) {
+                require 'includes/services/' . $classNameArray[3] . '.php';
+            } elseif( $classNameArray[2] === 'Controller' ) {
+                require 'includes/controllers/' . $classNameArray[3] . '.php';
+            } elseif( file_exists('includes/' . $classNameArray[2] . '.php') ) {
+                require 'includes/' . $classNameArray[2] . '.php';
+            }
         } else {
             $extension = strtolower($classNameArray[1]);
             if( $classNameArray[2] === 'Service' ) {
                 require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
             } elseif( $classNameArray[2] === 'Field' ) {
                 require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
+            } elseif( $classNameArray[2] === 'Controller' ) {
+                require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
             }
         }
     }
 });
 
-require_once 'vendor/autoload.php';
+$loader = require_once 'vendor/autoload.php';
+AnnotationRegistry::registerLoader([$loader, 'loadClass']);
+
 require_once 'includes/YesWiki.php';
 $wiki = new \YesWiki\Wiki();
 $wiki->Run($wiki->tag, $wiki->method);

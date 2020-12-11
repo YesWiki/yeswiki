@@ -35,10 +35,23 @@
 
 namespace YesWiki;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\Loader\AnnotationClassLoader;
+use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
+
+// TODO put elsewhere
+// https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
+class AnnotatedRouteControllerLoader extends AnnotationClassLoader {
+    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot) {
+        $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
+    }
+}
 
 /**
  * Yeswiki initialization class
@@ -94,12 +107,6 @@ class Init
         $args = explode('/', $uri[0]);
 
         if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
-            // If this is an API page, remember the full query string
-            if ($args[0] == 'api') {
-                $GLOBALS['api_args'] = $args;
-                array_shift($GLOBALS['api_args']);
-            }
-
             // if old school wiki url
             if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
                 // remove leading slash
@@ -128,6 +135,7 @@ class Init
                 exit();
             }
 
+            // TODO refactor this
             if (!$this->method) {
                 // We must manually parse the body data for the PUT or PATCH methods
                 // See https://www.php.net/manual/fr/features.file-upload.put-method.php
@@ -279,6 +287,30 @@ class Init
         $loader->load('services.yml');
 
         return $containerBuilder;
+    }
+
+    public function initRoutes($wiki)
+    {
+        $routes = new RouteCollection();
+
+        $loader = new AnnotationDirectoryLoader(
+            new FileLocator(__DIR__.'/../'),
+            new AnnotatedRouteControllerLoader(
+                new AnnotationReader()
+            )
+        );
+
+        // Core controllers
+        $routes->addCollection($loader->load('includes/controllers'));
+
+        foreach($wiki->extensions as $extensionKey => $extensionPath) {
+            $controllersDir = __DIR__ . '/../' . $extensionPath . 'controllers';
+            if( is_dir($controllersDir)) {
+                $routes->addCollection($loader->load($controllersDir));
+            }
+        }
+
+        return $routes;
     }
 
     /**

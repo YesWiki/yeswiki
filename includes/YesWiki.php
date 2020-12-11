@@ -33,6 +33,13 @@ require_once 'includes/objects/YesWikiFormatter.php';
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
@@ -40,8 +47,8 @@ use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Tags\Service\TagsManager;
-use YesWiki\Core\YesWikiAction;
 
 class Wiki
 {
@@ -54,6 +61,7 @@ class Wiki
     public $CookiePath = '/';
     public $inclusions = array();
     public $extensions = array();
+    public $routes = array();
     public $session;
     public $user;
     public $services;
@@ -85,6 +93,7 @@ class Wiki
 
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
+        $this->routes = $init->initRoutes($this);
 
         $this->session = new \YesWiki\Session($this);
         $this->user = new \YesWiki\User($this);
@@ -1412,18 +1421,57 @@ class Wiki
             $this->SetUser($user, $_COOKIE['remember']);
         }
 
+        // Is this a special page ?
         if ($tag === 'api') {
-            $this->services->get(ApiService::class)->process($GLOBALS['api_args']);
-        }
+            // We must manually parse the body data for the PUT or PATCH methods
+            // See https://www.php.net/manual/fr/features.file-upload.put-method.php
+            // TODO properly use the Symfony HttpFoundation component to avoid this
+            if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+                $_POST = json_decode(file_get_contents('php://input'), true);
+            }
 
-        $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
-        $this->LogReferrer();
+            $context = new RequestContext();
+            $request = Request::createFromGlobals();
+            $context->fromRequest($request);
 
-        echo $this->Method($this->method);
+            // Use query string as the path
+            $context->setPathInfo('/' . $context->getQueryString());
+            $context->setQueryString('');
 
-        // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
-        if (! empty($_SESSION['redirects'])) {
-            session_unregister('redirects');
+            $matcher = new UrlMatcher($this->routes, $context);
+
+            $controllerResolver = new YesWikiControllerResolver($this);
+            $argumentResolver = new ArgumentResolver();
+
+            try {
+                // TODO put this elsewhere ?
+                if( $this->services->get(ApiService::class)->isAuthorized() )
+                {
+                    $request->attributes->add($matcher->match($context->getPathInfo()));
+
+                    $controller = $controllerResolver->getController($request);
+                    $arguments = $argumentResolver->getArguments($request, $controller);
+
+                    $response = call_user_func_array($controller, $arguments);
+                } else {
+                    $response = new Response('', Response::HTTP_UNAUTHORIZED);
+                }
+            } catch(ResourceNotFoundException $exception) {
+                $response = new Response('', Response::HTTP_NOT_FOUND);
+            } catch(HttpException $exception) {
+                $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
+            }
+            $response->send();
+        } else {
+            $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
+            $this->LogReferrer();
+
+            echo $this->Method($this->method);
+
+            // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
+            if (! empty($_SESSION['redirects'])) {
+                session_unregister('redirects');
+            }
         }
     }
 
