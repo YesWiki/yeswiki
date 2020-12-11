@@ -1,11 +1,11 @@
-label: "Panel"
+label: "Encadré"
 position: 3
 previewHeight: 200px
 actions:
   panel:
     label: Encadré
     isWrapper: true
-    wrappedContentExample: Si tu vois tout en gris, déplace l'éléphant !
+    wrappedContentExample: Texte de votre encadré
     properties:
       title:
         label: Titre

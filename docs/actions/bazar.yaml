@@ -162,25 +162,12 @@ actions:
           - OpenStreetMap.France
           - OpenStreetMap.HOT
           - OpenTopoMap
-          - Thunderforest.OpenCycleMap
-          - Thunderforest.Transport
-          - Thunderforest.TransportDark
-          - Thunderforest.SpinalMap
-          - Thunderforest.Landscape
-          - Thunderforest.Outdoors
-          - Thunderforest.Pioneer
-          - OpenMapSurfer.Roads
-          - OpenMapSurfer.Grayscale
-          - Hydda.Full
-          - Hydda.Base
-          - MapBox
           - Stamen.Toner
           - Stamen.TonerBackground
           - Stamen.TonerLite
           - Stamen.Watercolor
           - Stamen.Terrain
           - Stamen.TerrainBackground
-          - Stamen.TopOSMRelief
           - Esri.WorldStreetMap
           - Esri.DeLorme
           - Esri.WorldTopoMap
@@ -192,9 +179,6 @@ actions:
           - Esri.NatGeoWorldMap
           - Esri.WorldGrayCanvas
           - HERE.normalDay
-          - HERE.basicMap
-          - HERE.hybridDay
-          - FreeMapSK
           - MtbMap
           - CartoDB.Positron
           - CartoDB.PositronNoLabels
@@ -204,13 +188,7 @@ actions:
           - CartoDB.DarkMatterOnlyLabels
           - HikeBike.HikeBike
           - HikeBike.HillShading
-          - BasemapAT.basemap
-          - BasemapAT.grau
-          - BasemapAT.overlay
-          - BasemapAT.highdpi
           - BasemapAT.orthofoto
-          - NASAGIBS.ModisTerraTrueColorCR
-          - NASAGIBS.ModisTerraBands367CR
           - NASAGIBS.ViirsEarthAtNight2012
       coordinates:
         label: Vue initiale

@@ -1,11 +1,11 @@
-label: "Label"
+label: "Etiquette"
 position: 3
 previewHeight: 200px
 actions:
   label:
-    label: Label
+    label: Etiquette
     isWrapper: true
-    wrappedContentExample: Si tu vois tout en gris, déplace l'éléphant !
+    wrappedContentExample: Texte de votre étiquette
     properties:
       class:
         label: Classe

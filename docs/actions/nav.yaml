@@ -1,9 +1,9 @@
-label: "Navigation"
+label: "Onglets"
 previewHeight: 400px
 actions:
   nav:
-    label: Navigation
-    description: Générer un sous menu
+    label: Onglets
+    description: Générer un menu
     properties:
       links:
         label: Liens vers vos pages wiki

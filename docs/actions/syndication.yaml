@@ -8,7 +8,7 @@ actions:
     properties:
       url:
         label: Adresse du flux RSS
-        default: https://yeswiki.net
+        default: https://yeswiki.net/?AccueiL/rss&id=32
         type: url
         required: true
         doclink: https://yeswiki.net/?DemoSyndication
