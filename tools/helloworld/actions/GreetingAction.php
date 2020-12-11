@@ -5,7 +5,7 @@ use YesWiki\HelloWorld\Service\GreetingService;
 
 class GreetingAction extends YesWikiAction 
 {
-    function run($arguments) 
+    function run()
     {
         $greeting = $this->getService(GreetingService::class);
         $userName = $greeting->getUserName();
