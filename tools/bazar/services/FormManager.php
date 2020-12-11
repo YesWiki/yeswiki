@@ -200,7 +200,7 @@ class FormManager
                 if ( true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
                     if (count($tablignechampsformulaire) > 3) {
                         $tableau_template[$nblignes] = $tablignechampsformulaire;
-                        for ($i=0; $i < 14; $i++) {
+                        for ($i=0; $i < 16; $i++) {
                             if (!isset($tableau_template[$nblignes][$i])) {
                                 $tableau_template[$nblignes][$i] = '';
                             }

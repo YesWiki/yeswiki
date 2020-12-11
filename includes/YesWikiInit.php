@@ -323,14 +323,14 @@ class Init
         // configuration du cookie de session
         // determine le chemin pour les cookies
         $a = parse_url($this->config['base_url']);
-        $CookiePath = dirname($a['path']);
+        $CookiePath = $a['path'];
 
         // Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
-        // ajoute un '/' terminal sauf si on est a la racine web
-        if ($CookiePath != '/') {
-            $CookiePath .= '/';
+        // ajoute un '/' si on est a la racine web
+        if (empty($CookiePath) || !empty($this->config['global_cookie_path'])) {
+            $CookiePath = '/';
         }
 
         // test if session exists, because the wiki object is instanciated for every plugin

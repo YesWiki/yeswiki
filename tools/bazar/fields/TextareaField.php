@@ -105,7 +105,8 @@ class TextareaField extends BazarField
     public function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-
+        if( !$value ) return null;
+        
         switch($this->syntax){
             case self::SYNTAX_WIKI:
                 // Do the page change in any case (useful for attach or grid)
