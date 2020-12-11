@@ -778,26 +778,37 @@ class Wiki
     }
 
     /**
-     * Executes different files in a buffer, so we can work on the output variable before display
+     * Executes a file in a buffer, so we can work on the output variable $plugin_out_new before display
+     *
      * This method is used by Performer Service
      * We need to run this method in YesWiki class, so the variable $this will be referencing YesWiki
-     * in the included files
+     * in the included file
+     *
+     * @param file the file to execute
+     * @param vars the variables used as an execution context. 'plugin_output_new' represents the current output (strange
+     * variable name, but it's used in everywhere, so let's keep it... !)
      */
-    public function runFilesInBuffer($files, $vars) 
+    public function runFileInBuffer($file, &$vars)
     {
         if (is_array($vars)) {
             extract($vars);
-        }    
-        $this->parameter = &$vars;    
-        $plugin_output_new = ''; // strange variable name, but it's used in everywhere, so let's keep it... !
-        foreach ($files as $filePath) {
-            ob_start();
-            include($filePath);
-            $plugin_output_new .= ob_get_contents();
-            ob_end_clean();            
         }
+        // if no current output defined in the $vars context, init it
+        if (!isset($plugin_output_new)) {
+            $plugin_output_new = '';
+        }
+        $this->parameter = &$vars;    
+
+        ob_start();
+        include($file);
+
+        $plugin_output_new .= ob_get_contents();
+        ob_end_clean();
+
         unset($this->parameter);
-        return $plugin_output_new;
+        // save the context variables into $vars
+        $vars = get_defined_vars();
+        unset($vars['file'], $vars['vars']);
     }
 
     /**

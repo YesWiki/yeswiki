@@ -56,8 +56,7 @@ class Performer
                 if (preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
                     $baseName = $matches[1]; // __GreetingAction
                     $objectName = strtolower($matches[1]); // __greetingaction
-                    $objectName = preg_replace("/^__/", '', $objectName); // greetingaction
-                    $objectName = preg_replace("/__$/", '', $objectName);
+                    $objectName = preg_replace("/^__|__$/", '', $objectName); // greetingaction
                     $isDefinedAsClass = false;
                     if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType)."__")) {
                         $objectName = preg_replace("/{$objectType}$/", '', $objectName); // greeting
@@ -66,9 +65,17 @@ class Performer
                     $filePath = $dir . $file;
                     $object = &$this->objectList[$objectType][$objectName];
                     if (startsWith($file, '__')) {
-                        $object['before_callbacks'][] = $filePath;
+                        $object['before_callbacks'][] = [
+                            'filePath' => $filePath,
+                            'baseName' => $baseName,
+                            'isDefinedAsClass' => $isDefinedAsClass
+                        ];
                     } elseif (endsWith($file, '__.php')) {
-                        $object['after_callbacks'][] = $filePath;
+                        $object['after_callbacks'][] = [
+                            'filePath' => $filePath,
+                            'baseName' => $baseName,
+                            'isDefinedAsClass' => $isDefinedAsClass
+                        ];
                     } else {
                         $object = [
                             'filePath' => $filePath,
@@ -83,7 +90,35 @@ class Performer
         }
     }
 
-    public function run($objectName, $objectType, $vars = [])
+    /**
+     * Create the performable instance described by $object and with the variables used as an execution context
+     * @param array $object the object description
+     * @param array $vars the variables defined in the execution context of the object
+     * @return mixed the performable instance
+     */
+    public function createPerformable(array $object, array &$vars)
+    {
+        require_once($object['filePath']);
+        if (class_exists($object['baseName'])) {
+            $instance = new $object['baseName']($this->wiki);
+            $instance->arguments = &$vars;
+            return $instance;
+        } else {
+            die("There were a problem while loading {$object['baseName']} at {$object['filePath']}. Ensures the class exists");
+        }
+    }
+
+    /**
+     * Run an handler, formatter or actions and all its callback
+     * @param $objectName the object name
+     * @param $objectType the type, corresponds to a Performer::TYPES key
+     * @param array $vars the variables defined in the execution context of the object. It's an array containing the
+     * value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
+     * the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
+     * with the page "parameter". Then, each execution change the execution context variables for the next one.
+     * @return string the generated output. At any time, it can be accessed with $vars['plugin_output_new'].
+     */
+    public function run($objectName, $objectType, array $vars = [])
     {
         if (!Performer::TYPES[$objectType]) {
             return "Invalid type $objectType";
@@ -94,26 +129,28 @@ class Performer
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
         
-        // Find object
+        // find object
         $object = isset($this->objectList[$objectType][$objectName]) ? $this->objectList[$objectType][$objectName] : false;
         if (!$object) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND') . '</div>' . "\n";
         }
         
-        // Execute main file with callbacks
-        if ($object['isDefinedAsClass']) {
-            require_once($object['filePath']);
-            if (class_exists($object['baseName'])) {
-                $objectInstance = new $object['baseName']($this->wiki);
-                return $objectInstance->runWithCallbacks($vars, $object['before_callbacks'], $object['after_callbacks']);
+        // the current output
+        $vars['plugin_output_new'] = '';
+
+        // execute main file with callbacks
+        $files = array_merge($object['before_callbacks'], [$object], $object['after_callbacks']);
+        foreach ($files as $file) {
+            if ($file['isDefinedAsClass']){
+
+                $performable = $this->createPerformable($file, $vars);
+                $vars['plugin_output_new'] .= $performable->run();
             } else {
-                die("There were a problem while loading {$object['baseName']} at {$object['filePath']}. Ensures the class exists");
+                // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
+                $this->wiki->runFileInBuffer($file['filePath'], $vars);
             }
-        } else {
-            $files = array_merge($object['before_callbacks'], [$object['filePath']], $object['after_callbacks']);
-            // Need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
-            return $this->wiki->runFilesInBuffer($files, $vars);
         }
+        return $vars['plugin_output_new'];
     }
 
     /**
