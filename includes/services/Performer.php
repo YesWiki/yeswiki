@@ -98,6 +98,7 @@ class Performer
      * Create the performable instance described by $object and with the variables used as an execution context
      * @param array $object the object description
      * @param array $vars the variables defined in the execution context of the object
+     * @param $output the current generated output
      * @return mixed the performable instance
      */
     public function createPerformable(array $object, array &$vars, &$output)
