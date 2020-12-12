@@ -56,6 +56,8 @@ class Wiki
     public $page;
     public $tag;
     public $parameter = array();
+    // current output used for actions/handlers/formatters
+    public $output;
     public $interWiki = array();
     public $VERSION;
     public $CookiePath = '/';
@@ -788,27 +790,29 @@ class Wiki
      * @param vars the variables used as an execution context. 'plugin_output_new' represents the current output (strange
      * variable name, but it's used in everywhere, so let's keep it... !)
      */
-    public function runFileInBuffer($file, &$vars)
+    public function runFileInBuffer($file, $vars)
     {
         if (is_array($vars)) {
             extract($vars);
         }
-        // if no current output defined in the $vars context, init it
-        if (!isset($plugin_output_new)) {
-            $plugin_output_new = '';
-        }
-        $this->parameter = &$vars;    
+        $this->parameter = &$vars;
+        unset($vars);
+
+        // the 'plugin_output_new' variable must be passed to $vars
+        assert(isset($plugin_output_new));
+        // add the alias with the property output, more convenient to use
+        $this->output = &$plugin_output_new;
 
         ob_start();
         include($file);
-
         $plugin_output_new .= ob_get_contents();
         ob_end_clean();
 
         unset($this->parameter);
-        // save the context variables into $vars
-        $vars = get_defined_vars();
-        unset($vars['file'], $vars['vars']);
+        // save the context variables into $updatedVars
+        $updatedVars = get_defined_vars();
+        unset($updatedVars['file']);
+        return $updatedVars;
     }
 
     /**

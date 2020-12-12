@@ -4,6 +4,10 @@ namespace YesWiki\Core\Service;
 
 use YesWiki\Wiki;
 
+class PerformerException extends \Exception
+{
+}
+
 /**
  * Loads and run Handlers, Formatters and Actions
  * Any of these object can be easily customize with before and after callback
@@ -58,7 +62,7 @@ class Performer
                     $objectName = strtolower($matches[1]); // __greetingaction
                     $objectName = preg_replace("/^__|__$/", '', $objectName); // greetingaction
                     $isDefinedAsClass = false;
-                    if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType)."__")) {
+                    if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType) . "__")) {
                         $objectName = preg_replace("/{$objectType}$/", '', $objectName); // greeting
                         $isDefinedAsClass = true;
                     }
@@ -96,15 +100,17 @@ class Performer
      * @param array $vars the variables defined in the execution context of the object
      * @return mixed the performable instance
      */
-    public function createPerformable(array $object, array &$vars)
+    public function createPerformable(array $object, array &$vars, &$output)
     {
         require_once($object['filePath']);
         if (class_exists($object['baseName'])) {
             $instance = new $object['baseName']($this->wiki);
             $instance->arguments = &$vars;
+            $instance->output = &$output;
             return $instance;
         } else {
-            die("There were a problem while loading {$object['baseName']} at {$object['filePath']}. Ensures the class exists");
+            throw new PerformerException("There were a problem while loading {$object['baseName']} at " .
+                "{$object['filePath']}. Ensures the class exists");
         }
     }
 
@@ -124,33 +130,35 @@ class Performer
             return "Invalid type $objectType";
         }
         $objectName = strtolower($objectName);
-        
+
         if (!$this->wiki->CheckModuleACL($objectName, $objectType)) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
-        
+
         // find object
         $object = isset($this->objectList[$objectType][$objectName]) ? $this->objectList[$objectType][$objectName] : false;
         if (!$object) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND') . '</div>' . "\n";
         }
-        
+
         // the current output
-        $vars['plugin_output_new'] = '';
+        $output = '';
 
         // execute main file with callbacks
         $files = array_merge($object['before_callbacks'], [$object], $object['after_callbacks']);
         foreach ($files as $file) {
-            if ($file['isDefinedAsClass']){
-
-                $performable = $this->createPerformable($file, $vars);
-                $vars['plugin_output_new'] .= $performable->run();
+            if ($file['isDefinedAsClass']) {
+                $performable = $this->createPerformable($file, $vars, $output);
+                $output .= $performable->run();
             } else {
+                $vars['plugin_output_new'] = &$output;
                 // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
-                $this->wiki->runFileInBuffer($file['filePath'], $vars);
+                $vars = $this->wiki->runFileInBuffer($file['filePath'], $vars);
+                $output = &$vars['plugin_output_new'];
+                unset($vars['plugin_output_new']);
             }
         }
-        return $vars['plugin_output_new'];
+        return $output;
     }
 
     /**
@@ -161,7 +169,7 @@ class Performer
     public function list($objectType)
     {
         if (!Performer::TYPES[$objectType]) {
-            die("Invalid type $objectType");
+            throw new PerformerException("Invalid type $objectType");
         }
         return array_unique(array_keys($this->objectList[$objectType]));
     }
