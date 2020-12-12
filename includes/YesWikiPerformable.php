@@ -13,6 +13,7 @@ abstract class YesWikiPerformable
     // Declared public so they are accessible in the concrete classes
     public $wiki;
     public $arguments = [];
+    public $output;
 
     /**
      * Creates a YesWikiAction object associated with the given wiki object.
