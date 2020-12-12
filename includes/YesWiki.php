@@ -787,15 +787,14 @@ class Wiki
      * in the included file
      *
      * @param file the file to execute
-     * @param vars the variables used as an execution context. 'plugin_output_new' represents the current output (strange
-     * variable name, but it's used in everywhere, so let's keep it... !)
+     * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
+     * (strange variable name, but it's used in everywhere, so let's keep it... !)
+     * @return the execution context variables updated by the execution (with 'plugin_output_new for the current output)
      */
-    public function runFileInBuffer($file, $vars)
+    public function runFileInBuffer($file, array $vars)
     {
-        if (is_array($vars)) {
-            extract($vars);
-        }
         $this->parameter = &$vars;
+        extract($this->parameter, EXTR_REFS);
         unset($vars);
 
         // the 'plugin_output_new' variable must be passed to $vars
@@ -808,10 +807,14 @@ class Wiki
         $plugin_output_new .= ob_get_contents();
         ob_end_clean();
 
-        unset($this->parameter);
         // save the context variables into $updatedVars
         $updatedVars = get_defined_vars();
         unset($updatedVars['file']);
+        // add new variables added to $this->parameter in $updatedVars (already existing vars share the same ref)
+        if (isset($this->parameter)) {
+            $updatedVars = array_merge($updatedVars, $this->parameter);
+        }
+        unset($this->parameter);
         return $updatedVars;
     }
 
