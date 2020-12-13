@@ -22,7 +22,7 @@ use YesWiki\Core\YesWikiAction;
 
 class EditGroupsAction extends YesWikiAction
 {
-    public function run($args)
+    public function run()
     {
         // Form definition
         $wiki = &$this->wiki;

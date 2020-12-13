@@ -30,7 +30,7 @@ use YesWiki\Core\YesWikiAction;
 
 class EraseSpamedCommentsAction extends YesWikiAction
 {
-    public function run($args)
+    public function run()
     {
         $wiki = &$this->wiki;
         ob_start();
@@ -38,7 +38,7 @@ class EraseSpamedCommentsAction extends YesWikiAction
 
         // -- 2. Affichage du formulaire ---
         if (!isset($_POST['clean'])) {
-            $limit = isset($args['max']) && $args["max"] > 0 ? (int) $args["max"] : 0;
+            $limit = isset($this->arguments['max']) && $this->arguments["max"] > 0 ? (int) $this->arguments["max"] : 0;
             if ($comments = $wiki->LoadRecentComments($limit)) {
                 // Formulaire listant les commentaires
                 echo "<form method=\"post\" action=\"". $wiki->Href() . "\" name=\"selection\">\n";
@@ -109,7 +109,7 @@ class EraseSpamedCommentsAction extends YesWikiAction
                 // -- Détermine quelle est la page de log :
                 //    -- passée en paramétre
                 //    -- ou la page de log par défaut
-                $reportingPage = isset($args["logpage"]) ? $args["logpage"] : "";
+                $reportingPage = isset($this->arguments["logpage"]) ? $this->arguments["logpage"] : "";
 
                 // -- Ajout de la ligne de log
                 $wiki->LogAdministrativeAction(

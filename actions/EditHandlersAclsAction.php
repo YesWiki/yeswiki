@@ -22,7 +22,7 @@ use YesWiki\Core\Service\Performer;
 
 class EditHandlersAclsAction extends YesWikiAction
 {
-    public function run($args)
+    public function run()
     {
         $wiki = &$this->wiki;
         $list = $wiki->services->get(Performer::class)->list('handler');
