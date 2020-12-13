@@ -3,6 +3,7 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$this->parameter['msg'] = "this variable is from <em>__hello.php</em>";
+$this->parameter['msg'] = 'You still can pass parameters with <em>$this->parameter</em>, ';
 
-$msg2 = "the ugly way of passing then getting variables still works for backwards compatibility but please don't do it :)";
+$msg2 = 'To be backwards compatible, the ugly way of passing variables still also works but <strong>please don\'t do '
+    . 'it</strong> :)';
