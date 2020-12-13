@@ -109,7 +109,7 @@ foreach ($last_users as $user) {
         echo '<td>';
         echo '<form action="'.$this->href('', $this->tag).'" method="post">';
         echo '<input type="hidden" name="userstable_action" value="delete_'.$user['name'].'" />';
-        echo '<input class="btn btn-sm btn-danger" type="submit" value="'._t('USER_DELETE').'" />';
+        echo '<input class="btn btn-sm btn-danger" type="submit" onclick="return confirm(\''._t('USER_CONFIRM_DELETE').'\');" value="'._t('USER_DELETE').'" />';
         echo $this->FormClose();
         echo '</td>';
     } else {
