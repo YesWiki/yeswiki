@@ -29,7 +29,7 @@
 */
 
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
-
+'TAGS_TAGS' => 'Mots clés',
 'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',
 'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'l\'action est r&eacute;serv&eacute;e au groupe des administrateurs',
 'TAGS_NO_WRITE_ACCESS' => 'Vous n\'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !',
