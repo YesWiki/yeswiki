@@ -3,7 +3,7 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$this->parameter['msg'] .= ', then display in the <em>hello__.php</em>';
+$this->parameter['msg'] .= ' Instead, you have to load again the objects you need.';
 
 $this->output = str_replace('MY_MESSAGE', $this->parameter['msg'], $this->output);
 $this->output = str_replace('MY_SECOND_MESSAGE', $msg2, $this->output);
