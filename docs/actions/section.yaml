@@ -1,31 +1,23 @@
 label: "Section"
 position: 3
-previewHeight: 200px
+previewHeight: 300px
 actions:
   section:
     label: Section
     isWrapper: true
-    wrappedContentExample: Texte de votre section
+    wrappedContentExample: Texte de votre section à remplacer par la suite
     properties:
       bgcolor:
         label: Couleur de fond de la section
         type: color
       file:
         label: Image de fond de la section
+        advanced: true
         type: text
-        hint: Entrez le nom d'une image déjà uploadé, ou le nom d'une nouvelle image pour faire apparaitre le boutton d'upload
+        hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
       height:
         label: Hauteur de la section (en pixels)
         type: text
-      visibility:
-        advanced: true
-        type: list
-        label: Visible par 
-        options:
-          '': Tout le monde
-          '+': Utilisateur connecté
-          '%': Propriétaire de la page
-          '@admins': Admins seulement
       class:
         label: Classe
         type: class
@@ -71,6 +63,7 @@ actions:
             type: list
             advanced: true
             hint: Beaucoup plus d'effets disponibles sur https://animate.style/
+            doclink: https://yeswiki.net/?AniMation
             options:
               wow bounce: Bonds
               wow flash: Flash
@@ -84,6 +77,15 @@ actions:
               wow wobble: Essuie glace
               wow jello: Danse
               wow heartBeat: Bat
+      visibility:
+        advanced: true
+        type: list
+        label: Visible par 
+        options:
+          '': Tout le monde
+          '+': Utilisateur connecté
+          '%': Propriétaire de la page
+          '@admins': Admins seulement
 #      data:
 #        label: Data wow
 #        type: text

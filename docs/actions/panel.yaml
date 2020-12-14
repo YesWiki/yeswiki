@@ -5,11 +5,12 @@ actions:
   panel:
     label: Encadré
     isWrapper: true
-    wrappedContentExample: Texte de votre encadré
+    wrappedContentExample: Texte de votre encadré à modifier par la suite
     properties:
       title:
         label: Titre
         type: text
+        default: Titre de mon encadré
         required: true
       type:
         label: Type

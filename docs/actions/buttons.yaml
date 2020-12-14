@@ -8,14 +8,16 @@ actions:
     properties:
       text:
         label: Texte du bouton
+        default: Mon bouton
         type: text
       link:
-        label: Address du lien
-        default: https://
+        label: Addresse du lien
+        default: https://yeswiki.net
         type: url
         required: true
       title:
         label: Texte affiché au survol
+        advanced: true
         type: text
       icon:
         label: Icone
@@ -40,6 +42,7 @@ actions:
               btn-link: Lien
           size:
             label: Taille
+            advanced: true
             type: list
             options:
               '': Normal
@@ -48,6 +51,7 @@ actions:
               btn-lg: Grand
           modal:
             label: Ouvrir le contenu du lien dans une popup
+            hint: Fonctionne vers une page de ce wiki
             type: list
             advanced: true
             options:
@@ -55,10 +59,17 @@ actions:
               modalbox-hover: Au survol
           pull:
             label: Position
+            advanced: true
             type: list
             options:
               pull-right: Droite
               btn-block: Toute la largeur
+          new-window:
+            label: Ouvrir dans une nouvelle fenètre
+            advanced: true
+            type: list
+            options:
+              new-window: oui
       hideifnoaccess:
         advanced: true
         label: Masquer si l'utilisateur n'a pas accès à la page liée

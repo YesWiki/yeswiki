@@ -5,7 +5,7 @@ actions:
   label:
     label: Etiquette
     isWrapper: true
-    wrappedContentExample: Texte de votre étiquette
+    wrappedContentExample: Texte de votre étiquette à changer par la suite
     properties:
       class:
         label: Classe
@@ -15,7 +15,6 @@ actions:
             label: Couleur
             type: list
             options:
-              Label-default: Défaut
               label-primary: Primaire
               label-secondary-1: Secondaire-1
               label-secondary-2: Secondaire-2

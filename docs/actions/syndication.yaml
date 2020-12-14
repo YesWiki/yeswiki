@@ -8,12 +8,12 @@ actions:
     properties:
       url:
         label: Adresse du flux RSS
-        default: https://yeswiki.net/?AccueiL/rss&id=32
+        hint: Vous pouvez ajouter plusieurs flux séparés d'une virgule
+        default: https://yeswiki.net
         type: url
         required: true
-        doclink: https://yeswiki.net/?DemoSyndication
       title:
-        label: Titre du flux      
+        label: Titre  
         type: text
       source:
         label: Sources des flux
@@ -25,7 +25,6 @@ actions:
       template:
         type: list
         label: Template de visualisation
-        default: accordeon.tpl.html
         options:
           accordeon.tpl.html: Flux sous forme d'accordéons
           liste.tpl.html: Flux sous forme de liste

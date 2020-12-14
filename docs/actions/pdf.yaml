@@ -1,9 +1,10 @@
 label: _t(AB_attach_pdf_label)
-previewHeight: 100px
+previewHeight: 300px
 actions:
   pdf:
     label: _t(AB_attach_pdf_label)
     description: _t(AB_attach_pdf_description)
+    hint: Pour afficher votre PDF, d'abord le charger dans une page de ce wiki et en copier le lien ici.
     doclink: https://yeswiki.net/?DocumentationActionPDF
     properties:
       url:
