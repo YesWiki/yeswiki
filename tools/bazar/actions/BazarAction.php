@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarAction extends YesWikiAction
@@ -58,6 +59,7 @@ class BazarAction extends YesWikiAction
     function run($arguments)
     {
         $ficheManager = $this->getService(FicheManager::class);
+        $listManager = $this->getService(ListManager::class);
 
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 

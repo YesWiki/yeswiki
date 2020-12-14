@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\ListManager;
 
 abstract class EnumField extends BazarField
 {
@@ -33,7 +34,7 @@ abstract class EnumField extends BazarField
     public function loadOptionsFromList()
     {
         if (!empty($this->name)) {
-            $listValues = baz_valeurs_liste($this->name);
+            $listValues = $this->getService(ListManager::class)->getOne($this->name);
             if (is_array($listValues)) {
                 $this->options = $listValues['label'];
             }

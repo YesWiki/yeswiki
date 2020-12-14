@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\ListManager;
 
 /**
  * Generate a title based on other values from the entry
@@ -48,8 +49,8 @@ class TitleField extends BazarField
                         $value = str_replace('{{' . $fieldName . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $value);
                     } elseif (preg_match('#^liste#', $fieldName) !== false || preg_match('#^checkbox#', $fieldName) !== false) {
                         // For a "liste" or a "checkbox", find the list labels
-                        $liste = preg_replace('#^(liste|checkbox)(.*)#', '$2', $fieldName);
-                        $listValues = baz_valeurs_liste($liste);
+                        $listId = preg_replace('#^(liste|checkbox)(.*)#', '$2', $fieldName);
+                        $listValues = $this->getService(ListManager::class)->getOne($listId);
                         $list = explode(',', $entry[$fieldName]);
                         $listLabels = [];
                         foreach ($list as $l) {

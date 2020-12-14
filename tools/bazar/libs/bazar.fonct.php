@@ -1756,69 +1756,6 @@ function baz_gestion_listes()
     return $res;
 }
 
-/** baz_valeurs_liste() - Renvoie un tableau avec les valeurs d'une liste
- * @param    string NomWiki de la liste
- *
- * @return array Valeurs enregistrees pour cette liste
- */
-function baz_valeurs_liste($idliste = '')
-{
-    $idliste = trim($idliste);
-    if ($idliste != '') {
-        if (!isset($GLOBALS['_BAZAR_']['lists'][$idliste])) {
-            // on verifie que la page en question est bien une page wiki
-            if ($GLOBALS['wiki']->GetTripleValue($idliste, 'http://outils-reseaux.org/_vocabulary/type', '', '') == 'liste') {
-                $valjson = $GLOBALS['wiki']->LoadPage($idliste);
-                $valeurs_fiche = json_decode($valjson['body'], true);
-                if (YW_CHARSET != 'UTF-8') {
-                    $GLOBALS['_BAZAR_']['lists'][$idliste]['titre_liste'] = utf8_decode($valeurs_fiche['titre_liste']);
-                    if (!isset($_GET['action']) or $_GET['action'] != 'modif_liste') {
-                        foreach ($valeurs_fiche['label'] as $key => $val) {
-                            $val = utf8_decode($val);
-                            preg_match_all('/<span data-lang="'.$GLOBALS['prefered_language'].'">(.*)<\/span>/Ui', $val, $matches);
-                            if (!empty($matches[1])) {
-                                $GLOBALS['_BAZAR_']['lists'][$idliste]['label'][$key] = $matches[1][0];
-                            } else {
-                                $GLOBALS['_BAZAR_']['lists'][$idliste]['label'][$key] = $val;
-                            }
-                        }
-                    } else {
-                        $GLOBALS['_BAZAR_']['lists'][$idliste]['label'] = array_map('utf8_decode', $valeurs_fiche['label']);
-                    }
-                } else {
-                    if (!isset($_GET['action']) or $_GET['action'] != 'modif_liste') {
-                        foreach ($valeurs_fiche['label'] as $key => $val) {
-                            preg_match_all('/<span data-lang="'.$GLOBALS['prefered_language'].'">(.*)<\/span>/Ui', $val, $matches);
-                            if (!empty($matches[1])) {
-                                $valeurs_fiche['label'][$key] = $matches[1][0];
-                            } else {
-                                $valeurs_fiche['label'][$key] = $val;
-                            }
-                        }
-                    }
-                    $GLOBALS['_BAZAR_']['lists'][$idliste] = $valeurs_fiche;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        return $GLOBALS['_BAZAR_']['lists'][$idliste];
-    } else {
-        $GLOBALS['_BAZAR_']['lists'] = [];
-        //requete pour obtenir l'id et le label des listes
-        $requete = 'SELECT resource FROM '.$GLOBALS['wiki']->config['table_prefix'].'triples '
-          .'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="liste" ORDER BY resource';
-        $resultat = $GLOBALS['wiki']->LoadAll($requete);
-
-        foreach ($resultat as $ligne) {
-            $GLOBALS['_BAZAR_']['lists'][$ligne['resource']] = baz_valeurs_liste($ligne['resource']);
-        }
-
-        return $GLOBALS['_BAZAR_']['lists'];
-    }
-}
-
 function baz_forms_and_lists_ids()
 {
     foreach (baz_valeurs_liste() as $listId => $list) {

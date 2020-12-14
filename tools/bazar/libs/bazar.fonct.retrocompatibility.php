@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\ListManager;
 
 /**
  * @deprecated Use FicheManager::create
@@ -164,4 +165,17 @@ function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
     }
 
     return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag, $mode_creation)  ;
+}
+
+/**
+ * @deprecated Use ListManager::getOne or ListManager::getAll
+ */
+function baz_valeurs_liste($idliste = '')
+{
+    $idliste = trim($idliste);
+    if ($idliste != '') {
+        return $GLOBALS['wiki']->services->get(ListManager::class)->getOne($idliste);
+    } else {
+        return $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
+    }
 }
