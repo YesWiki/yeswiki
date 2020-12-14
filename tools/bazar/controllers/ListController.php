@@ -8,19 +8,24 @@ use YesWiki\Core\YesWikiController;
 
 class ListController extends YesWikiController
 {
+    protected $listManager;
+
+    public function __construct(ListManager $listManager)
+    {
+        $this->listManager = $listManager;
+    }
+
     public function displayAll()
     {
-        $listManager = $this->getService(ListManager::class);
-
         if (isset($_POST['imported-list'])) {
             foreach ($_POST['imported-list'] as $listRaw) {
                 $list = json_decode($listRaw, true);
-                $listManager->create($list['titre_liste'], $list['label']);
+                $this->listManager->create($list['titre_liste'], $list['label']);
             }
             echo '<div class="alert alert-success">'._t('BAZ_LIST_IMPORT_SUCCESSFULL').'.</div>';
         }
 
-        $lists = $listManager->getAll();
+        $lists = $this->listManager->getAll();
 
         $values = [];
         foreach ($lists as $key => $list) {
@@ -35,8 +40,6 @@ class ListController extends YesWikiController
 
     public function create()
     {
-        $listManager = $this->getService(ListManager::class);
-
         if( isset($_POST['valider']) ) {
             $i = 1;
             $values = [];
@@ -47,7 +50,7 @@ class ListController extends YesWikiController
                 }
             }
             
-            $listManager->create($_POST['titre_liste'], $values);
+            $this->listManager->create($_POST['titre_liste'], $values);
 
             $this->wiki->Redirect(
                 $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
@@ -59,8 +62,7 @@ class ListController extends YesWikiController
 
     public function update($id)
     {
-        $listManager = $this->getService(ListManager::class);
-        $list = $listManager->getOne($id);
+        $list = $this->listManager->getOne($id);
 
         if( isset($_POST['valider']) ) {
             if( $this->wiki->HasAccess('write', $id) ) {
@@ -74,7 +76,7 @@ class ListController extends YesWikiController
                     ++$i;
                 }
 
-                $listManager->update($id, $_POST['titre_liste'], $values);
+                $this->listManager->update($id, $_POST['titre_liste'], $values);
 
                 $this->wiki->Redirect(
                     $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
@@ -93,9 +95,7 @@ class ListController extends YesWikiController
     
     public function delete($id)
     {
-        $listManager = $this->getService(ListManager::class);
-
-        $listManager->delete($id);
+        $this->listManager->delete($id);
 
         if ($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
             $this->getService(Mailer::class)->notifyAdminsListDeleted($id);
