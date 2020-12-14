@@ -60,8 +60,6 @@ define('BAZ_VOIR_S_ABONNER', 'rss');
 define('BAZ_VOIR_SAISIR', 'saisir');
 define('BAZ_VOIR_FORMULAIRE', 'formulaire');
 define('BAZ_VOIR_LISTES', 'listes');
-define('BAZ_VOIR_ADMIN', 'administrer');
-define('BAZ_VOIR_GESTION_DROITS', 'droits');
 define('BAZ_VOIR_IMPORTER', 'importer');
 define('BAZ_VOIR_EXPORTER', 'exporter');
 
@@ -70,8 +68,6 @@ define('BAZ_VOIR_EXPORTER', 'exporter');
 define('BAZ_MOTEUR_RECHERCHE', 'recherche');
 define('BAZ_CHOISIR_TYPE_FICHE', 'choisir_type_fiche');
  //
-define('BAZ_GERER_DROITS', 'droits');
-define('BAZ_MODIFIER_FICHE', 'modif_fiches');
  // Modifier le formulaire de creation des fiches
 define('BAZ_VOIR_FICHE', 'voir_fiche');
 define('BAZ_ACTION_NOUVEAU', 'saisir_fiche');
@@ -81,10 +77,8 @@ define('BAZ_ACTION_MODIFIER', 'modif_fiche');
 define('BAZ_ACTION_MODIFIER_V', 'modif_sauver_fiche');
  // Modification apres validation
 define('BAZ_ACTION_NOUVELLE_LISTE', 'saisir_liste');
-define('BAZ_ACTION_NOUVELLE_LISTE_V', 'sauver_liste');
  // Creation apres validation
 define('BAZ_ACTION_MODIFIER_LISTE', 'modif_liste');
-define('BAZ_ACTION_MODIFIER_LISTE_V', 'modif_sauver_liste');
  // Modification apres validation
 define('BAZ_ACTION_SUPPRIMER_LISTE', 'supprimer_liste');
 define('BAZ_ACTION_SUPPRESSION', 'supprimer');
@@ -96,4 +90,3 @@ define('BAZ_LISTE_RSS', 'rss');
  // Tous les flux  depend de s'abonner
 define('BAZ_VOIR_FLUX_RSS', 'affiche_rss');
  // Un flux
-define('BAZ_OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES', 'listes_et_fiches');

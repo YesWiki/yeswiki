@@ -49,6 +49,36 @@ class Mailer
         }
     }
 
+    public function notifyAdminsListDeleted($id)
+    {
+        include_once 'tools/contact/libs/contact.functions.php';
+
+        $lien = str_replace('/wakka.php?wiki=', '', $GLOBALS['wiki']->config['base_url']);
+        $sujet = removeAccents('['.str_replace('http://', '', $lien).'] liste supprimee : '.$id);
+        $text =
+            'IP utilisee : '.$_SERVER['REMOTE_ADDR'].' ('.
+            $GLOBALS['wiki']->GetUserName().')';
+        $texthtml = $text;
+        $fichier = 'tools/bazar/presentation/styles/bazar.css';
+        $style = file_get_contents($fichier);
+        $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
+        $html =
+            '<html><head><style type="text/css">'.$style.
+            '</style></head><body>'.$texthtml.'</body></html>';
+
+        //on va chercher les admins
+        $requeteadmins = 'SELECT value FROM '.$GLOBALS['wiki']
+                ->config['table_prefix'].
+
+            'triples WHERE resource="ThisWikiGroup:admins" AND property="http://www.wikini.net/_vocabulary/acls" LIMIT 1';
+        $ligne = $GLOBALS['wiki']->LoadSingle($requeteadmins);
+        $tabadmin = explode("\n", $ligne['value']);
+        foreach ($tabadmin as $line) {
+            $admin = $GLOBALS['wiki']->LoadUser(trim($line));
+            send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $admin['email'], $sujet, $text, $html);
+        }
+    }
+
     public function notifyEmail($email, $data) {
         include_once 'includes/email.inc.php';
         $lien = str_replace('/wakka.php?wiki=', '', $this->params->get('base_url'));

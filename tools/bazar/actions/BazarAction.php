@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -9,55 +10,40 @@ class BazarAction extends YesWikiAction
     public const VARIABLE_ACTION = 'action';
     
     // Premier niveau d'action : pour toutes les fiches
-    public const VOIR_DEFAUT = 'formulaire';
-        // Recherche
-    public const VOIR_CONSULTER = 'consulter';
-        // Recherche
+    public const VOIR_DEFAUT = 'formulaire'; // Recherche
+    public const VOIR_CONSULTER = 'consulter'; // Recherche
     public const VOIR_MES_FICHES = 'mes_fiches';
     public const VOIR_S_ABONNER = 'rss';
     public const VOIR_SAISIR = 'saisir';
     public const VOIR_FORMULAIRE = 'formulaire';
     public const VOIR_LISTES = 'listes';
-    public const VOIR_ADMIN = 'administrer';
-    public const VOIR_GESTION_DROITS = 'droits';
     public const VOIR_IMPORTER = 'importer';
     public const VOIR_EXPORTER = 'exporter';
     
     // Second : actions du choix de premier niveau.
-    
     public const MOTEUR_RECHERCHE = 'recherche';
-    public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
-    public const GERER_DROITS = 'droits';
-    public const MODIFIER_FICHE = 'modif_fiches';
-    // Modifier le formulaire de creation des fiches
+    public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche'; // Modifier le formulaire de creation des fiches
     public const VOIR_FICHE = 'voir_fiche';
     public const ACTION_NOUVEAU = 'saisir_fiche';
-    public const ACTION_NOUVEAU_V = 'sauver_fiche';
-    // Creation apres validation
+    public const ACTION_NOUVEAU_V = 'sauver_fiche'; // Creation apres validation
     public const ACTION_MODIFIER = 'modif_fiche';
     public const ACTION_MODIFIER_V = 'modif_sauver_fiche';
-    // Modification apres validation
+
+    // Listes
     public const ACTION_NOUVELLE_LISTE = 'saisir_liste';
-    public const ACTION_NOUVELLE_LISTE_V = 'sauver_liste';
-    // Creation apres validation
     public const ACTION_MODIFIER_LISTE = 'modif_liste';
-    public const ACTION_MODIFIER_LISTE_V = 'modif_sauver_liste';
-    // Modification apres validation
     public const ACTION_SUPPRIMER_LISTE = 'supprimer_liste';
+
     public const ACTION_SUPPRESSION = 'supprimer';
-    public const ACTION_PUBLIER = 'publier';
-    // Valider la fiche
-    public const ACTION_PAS_PUBLIER = 'pas_publier';
-    // Invalider la fiche
-    public const LISTE_RSS = 'rss';
-    // Tous les flux  depend de s'abonner
-    public const VOIR_FLUX_RSS = 'affiche_rss';
-    // Un flux
-    public const OBTENIR_TOUTES_LES_LISTES_ET_TYPES_DE_FICHES = 'listes_et_fiches';
+    public const ACTION_PUBLIER = 'publier'; // Valider la fiche
+    public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
+    public const LISTE_RSS = 'rss'; // Tous les flux  depend de s'abonner
+    public const VOIR_FLUX_RSS = 'affiche_rss'; // Un flux
 
     function run($arguments)
     {
         $ficheManager = $this->getService(FicheManager::class);
+        $listController = $this->getService(ListController::class);
 
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -142,7 +128,17 @@ class BazarAction extends YesWikiAction
             case self::VOIR_FORMULAIRE:
                 return baz_gestion_formulaire();
             case self::VOIR_LISTES:
-                return baz_gestion_listes();
+                switch($action) {
+                    case self::ACTION_MODIFIER_LISTE:
+                        return $listController->update($_GET['idliste']);
+                    case self::ACTION_NOUVELLE_LISTE:
+                        return $listController->create();
+                    case self::ACTION_SUPPRIMER_LISTE:
+                        return $listController->delete($_GET['idliste']);
+                    default:
+                        return $listController->displayAll();
+                }
+                break;
             case self::VOIR_IMPORTER:
                 return baz_afficher_formulaire_import();
             case self::VOIR_EXPORTER:

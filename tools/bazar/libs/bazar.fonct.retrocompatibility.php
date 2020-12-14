@@ -1,7 +1,9 @@
 <?php
 
+use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\ListManager;
 
 /**
  * @deprecated Use FicheManager::create
@@ -164,4 +166,33 @@ function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
     }
 
     return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag, $mode_creation)  ;
+}
+
+/**
+ * @deprecated Use ListManager::getOne or ListManager::getAll
+ */
+function baz_valeurs_liste($idliste = '')
+{
+    $idliste = trim($idliste);
+    if ($idliste != '') {
+        return $GLOBALS['wiki']->services->get(ListManager::class)->getOne($idliste);
+    } else {
+        return $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
+    }
+}
+
+/**
+ * @deprecated Use ListController
+ */
+function baz_gestion_listes()
+{
+    if ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE) {
+        return $GLOBALS['wiki']->services->get(ListController::class)->update($_GET['idliste']);
+    } elseif ($_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE) {
+        return $GLOBALS['wiki']->services->get(ListController::class)->create();
+    } elseif ($_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE) {
+        return $GLOBALS['wiki']->services->get(ListController::class)->delete($_GET['idliste']);
+    } else {
+        return $GLOBALS['wiki']->services->get(ListController::class)->displayAll();
+    }
 }

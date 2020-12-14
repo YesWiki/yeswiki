@@ -418,6 +418,19 @@ class Wiki
         }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
         if ($params) {
+            if( is_array($params) ) {
+                $paramsArray = [];
+                foreach($params as $key => $value) {
+                    if( $value ) {
+                        $paramsArray[] = "$key=$value";
+                    }
+                };
+                if( count($paramsArray)>0 ) {
+                    $params = implode("&", $paramsArray);
+                } else {
+                    $params = '';
+                }
+            }
             $href .= ($this->config['rewrite_mode'] ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
         }
         if (isset($_GET['lang']) && $_GET['lang']!='') {

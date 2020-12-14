@@ -68,7 +68,7 @@ class ApiController extends YesWikiController
                 '@type' => [ 'ldp:Container', 'ldp:BasicContainer' ],
                 'dcterms:title' => $form['bn_label_nature'],
                 'ldp:contains' => array_map(function ($entry) {
-                    $resource = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($entry['id_typeannonce'], $entry, true);
+                    $resource = $this->getService(SemanticTransformer::class)->convertToSemanticData($entry['id_typeannonce'], $entry, true);
                     unset($resource['@context']);
                     return $resource;
                 }, array_values($entries)),
