@@ -26,14 +26,14 @@ class ListController extends YesWikiController
         foreach ($lists as $key => $list) {
             $values[$key]['title'] = $list['titre_liste'];
             $values[$key]['options'] = $list['label'];
-            $values[$key]['canEdit'] = $GLOBALS['wiki']->HasAccess('write', $key);
-            $values[$key]['canDelete'] = $GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner($key);
+            $values[$key]['canEdit'] = $this->wiki->HasAccess('write', $key);
+            $values[$key]['canDelete'] = $this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key);
         }
 
         return $this->render('@bazar/lists/list_table.twig', [ 'lists' => $values ]);
     }
 
-    public function create() 
+    public function create()
     {
         $listManager = $this->getService(ListManager::class);
 
@@ -49,21 +49,21 @@ class ListController extends YesWikiController
             
             $listManager->create($_POST['titre_liste'], $values);
 
-            $GLOBALS['wiki']->Redirect(
-                $GLOBALS['wiki']->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+            $this->wiki->Redirect(
+                $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
             );
         }
 
         return $this->render('@bazar/lists/list_form.twig');
     }
 
-    public function update($id) 
+    public function update($id)
     {
         $listManager = $this->getService(ListManager::class);
         $list = $listManager->getOne($id);
 
         if( isset($_POST['valider']) ) {
-            if( $GLOBALS['wiki']->HasAccess('write', $id) ) {
+            if( $this->wiki->HasAccess('write', $id) ) {
                 $i = 1;
                 $values = [];
 
@@ -76,8 +76,8 @@ class ListController extends YesWikiController
 
                 $listManager->update($id, $_POST['titre_liste'], $values);
 
-                $GLOBALS['wiki']->Redirect(
-                    $GLOBALS['wiki']->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+                $this->wiki->Redirect(
+                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
                 );
             } else {
                 throw new \Exception('Not allowed');
@@ -97,12 +97,12 @@ class ListController extends YesWikiController
 
         $listManager->delete($id);
 
-        if ($GLOBALS['wiki']->config['BAZ_ENVOI_MAIL_ADMIN']) {
+        if ($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
             $this->getService(Mailer::class)->notifyAdminsListDeleted($id);
         }
 
-        $GLOBALS['wiki']->Redirect(
-            $GLOBALS['wiki']->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+        $this->wiki->Redirect(
+            $this->wiki->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
         );
     }
 }
