@@ -4,6 +4,7 @@ actions:
   video:
     label: _t(AB_attach_video_label)
     description: _t(AB_attach_video_description)
+    hint: L'identifiant de la vidéo correspond aux chiffres ou lettres en fin de son URL
     properties:
       serveur:
         label: _t(AB_attach_video_serveur_label)
