@@ -1,0 +1,23 @@
+label: "Sommaire"
+position: 2
+previewHeight: 200px
+actions:
+  tocjs:
+    label: Sommaire
+    description: Créer un sommaire automatique
+    properties:
+      align:
+        label: Position
+        advanced: true
+        type: list
+        options:
+          right: Droite
+          left: Gauche
+      size:
+        label: Largeur
+        advanced: true
+        type: list
+        options:
+            - 2
+            - 3
+            - 4
