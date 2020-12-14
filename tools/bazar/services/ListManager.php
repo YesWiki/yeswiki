@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
@@ -15,6 +16,8 @@ class ListManager
     protected $tripleStore;
     protected $pageManager;
     protected $params;
+
+    public const TRIPLES_LIST_ID = 'liste';
 
     protected $cachedLists;
 
@@ -36,7 +39,7 @@ class ListManager
         }
 
         // Ensure a list exist with this ID
-        if (!$this->tripleStore->exist($id, 'http://outils-reseaux.org/_vocabulary/type', 'liste', '', '')) {
+        if (!$this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '')) {
             return false;
         }
 
@@ -55,10 +58,58 @@ class ListManager
 
     public function getAll()
     {
-        $lists = $this->tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/type', 'liste', '', '');
+        $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
-        return array_map(function($list) {
-            return $this->getOne($list['resource']);
-        }, $lists);
+        $result = [];
+        foreach($lists as $list) {
+            $result[$list['resource']] = $this->getOne($list['resource']);
+        }
+
+        return $result;
+    }
+
+    public function create($title, $values)
+    {
+        $id = genere_nom_wiki('Liste '.$title);
+
+        if (YW_CHARSET !== 'UTF-8') {
+            $values = array_map('utf8_encode', $values);
+            $title = utf8_encode($title);
+        }
+
+        $this->pageManager->save($id, json_encode([
+            'titre_liste' => $title,
+            'label' => $values
+        ]));
+
+        $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
+    }
+
+    public function update($id, $title, $values)
+    {
+        if (YW_CHARSET !== 'UTF-8') {
+            $values = array_map('utf8_encode', $values);
+            $title = utf8_encode($title);
+        }
+
+        $this->pageManager->save($id, json_encode([
+            'titre_liste' => $title,
+            'label' => $values
+        ]));
+    }
+
+    public function delete($id)
+    {
+        if( !isset($id) || $id === '') {
+            throw new \Exception('List ID not specified');
+        }
+
+        if( !$GLOBALS['wiki']->UserIsAdmin() && !$GLOBALS['wiki']->UserIsOwner($id)) {
+            throw new \Exception('Unauthorized');
+        }
+
+        $this->pageManager->deleteOrphaned($id);
+
+        $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 }

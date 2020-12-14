@@ -18,6 +18,8 @@ class FicheManager
     protected $semanticTransformer;
     protected $params;
 
+    public const TRIPLES_ENTRY_ID = 'fiche_bazar';
+
     public function __construct(Wiki $wiki, Mailer $mailer, TripleStore $tripleStore, DbService $dbService, SemanticTransformer $semanticTransformer, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
@@ -35,8 +37,7 @@ class FicheManager
      */
     public function isFiche($tag)
     {
-        $pageType = $this->tripleStore->getOne($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '');
-        return ($pageType === 'fiche_bazar');
+        return $this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', '');
     }
 
     /**
@@ -86,6 +87,7 @@ class FicheManager
         );
 
         // requete pour recuperer toutes les PageWiki etant des fiches bazar
+        // TODO refactor to use the TripleStore service
         $requete_pages_wiki_bazar_fiches =
             'SELECT DISTINCT resource FROM '.$this->dbService->prefixTable('triples').
             'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
@@ -364,8 +366,8 @@ class FicheManager
         if ($saved == 0) {
             $this->tripleStore->create(
                 $data['id_fiche'],
-                'http://outils-reseaux.org/_vocabulary/type',
-                'fiche_bazar',
+                TripleStore::TYPE_URI,
+                self::TRIPLES_ENTRY_ID,
                 '',
                 ''
             );
@@ -374,7 +376,7 @@ class FicheManager
         if ($sourceUrl) {
             $this->tripleStore->create(
                 $data['id_fiche'],
-                'http://outils-reseaux.org/_vocabulary/sourceUrl',
+                TripleStore::SOURCE_URL_URI,
                 $sourceUrl,
                 '',
                 ''
@@ -460,8 +462,8 @@ class FicheManager
         }
 
         $this->wiki->DeleteOrphanedPage($tag);
-        $this->tripleStore->delete($tag, 'http://outils-reseaux.org/_vocabulary/type', null, '', '');
-        $this->tripleStore->delete($tag, 'http://outils-reseaux.org/_vocabulary/sourceUrl', null, '', '');
+        $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
+        $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
