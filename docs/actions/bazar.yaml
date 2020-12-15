@@ -19,6 +19,8 @@ actions:
         type: number
         showExceptFor:
           - bazarcarto
+          - bazartimeline
+          - bazarcarousel
       colorfield:
         label: Champ pour la couleur
         type: form-field
@@ -74,12 +76,10 @@ actions:
     title: Filtres / Facettes
     width: 40%
     properties:
-      nb:
-        label: Limitation
-        type: number
-        advanced: true
       champ:
         label: Champ pour le tri
+        hint: Il est possible d'effectuer des requètes avancées, pour en savoir plus
+        doclink: https://yeswiki.net/?DocQuery
         type: form-field
         default: bf_titre
         advanced: true
@@ -99,10 +99,15 @@ actions:
           - bazarcarto
           - bazartimeline
           - bazarannuaire
-      query:
+      nb:
+        label: Limitation
+        hint: Limite l'affichage du nombre de fiche
+        type: number
         advanced: true
-        label: "Requête SQL (avancé)"
-        type: text
+#      query:
+#        advanced: true
+#        label: "Requête SQL (avancé)"
+#        type: text
       facettes:
         type: facette
         btn-label-add: Ajouter Une Facette
@@ -221,11 +226,11 @@ actions:
         label: Regroupe les points par zone (clusters)
         type: checkbox
         default: false
-      barregestion:
-        advanced: true
-        label: Barre de gestion des fiches
-        type: checkbox
-        default: false
+#      barregestion:
+#        advanced: true
+#        label: Barre de gestion des fiches
+#        type: checkbox
+#        default: false
       navigation:
         advanced: true
         label: Boutons de contrôle du zoom
@@ -315,7 +320,6 @@ actions:
     label: Damier
     description: Affiche les fiches sous forme de damier paramétrable
     hint: Un champ de type bf_debut, bf_fin, bf_lieu, bf_image, bf_lien, bf_fichier, bf_bouton sont utilisés
-    doclink: https://yeswiki.net/?DamierTplHtml2
     properties:
       template:
         value: damier
@@ -334,6 +338,8 @@ actions:
         type: color
       correspondence:
         type: correspondance
+        hint: Ce template est fortement customisable
+        doclink: https://yeswiki.net/?DamierTplHtml2
         subproperties:
           bf_description:
             type: form-field
