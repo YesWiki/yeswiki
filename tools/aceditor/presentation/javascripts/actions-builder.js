@@ -187,7 +187,7 @@ window.myapp = new Vue({
       for(let key in this.values) {
         let config = this.selectedActionAllConfigs[key]
         let value = this.values[key]
-        if (result.hasOwnProperty(key) || value === undefined || config && value === config.default 
+        if (result.hasOwnProperty(key) || value === undefined 
             || typeof value == "object" || config && !this.display(config) ) 
           continue
         result[key] = value

@@ -24,7 +24,8 @@ actions:
       id:
         label: _t(AB_attach_video_id_label)
         type: text
-        required: true      
+        required: true  
+        default: 1f5bfc59-998b-41b3-9be3-e8084ad1a2a1
       ratio:
         label: _t(AB_attach_video_ratio_label)
         type: list

@@ -1,5 +1,6 @@
 label: _t(AB_attach_pdf_label)
 previewHeight: 300px
+onlyEdit: true
 actions:
   pdf:
     label: _t(AB_attach_pdf_label)
