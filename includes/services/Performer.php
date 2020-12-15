@@ -123,7 +123,7 @@ class Performer
      * value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
      * the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
      * with the page "parameter". Then, each execution change the execution context variables for the next one.
-     * @return string the generated output. At any time, it can be accessed with $vars['plugin_output_new'].
+     * @return string the generated output
      */
     public function run($objectName, $objectType, array $vars = [])
     {
