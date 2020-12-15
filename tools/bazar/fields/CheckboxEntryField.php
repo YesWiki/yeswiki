@@ -17,11 +17,17 @@ class CheckboxEntryField extends CheckboxField
 
         $this->loadOptionsFromEntries();
 
-        $this->displayFilterLimit =  $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;      
-        $this->displaySelectAllLimit =  empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ? $this->displayFilterLimit : $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'] ;
-        $this->formName = 'Fiches ' . $services->get(FormManager::class)->getOne($this->name)['bn_label_nature'] ;
-        $this->normalDisplayMode = (in_array($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],array_keys(self::CHECKBOX_TWIG_LIST))) ? 
-            $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] : self::CHECKBOX_DISPLAY_MODE_LIST ;
+        $this->displayFilterLimit =  $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;
+        $this->displaySelectAllLimit = empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
+            $this->displayFilterLimit :
+            $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
+        $form = $services->get(FormManager::class)->getOne($this->name);
+        $this->formName = $form ?
+            ('Fiches ' . $services->get(FormManager::class)->getOne($this->name)['bn_label_nature']) :
+            _t('BAZ_NO_FORMS_FOUND');
+        $this->normalDisplayMode = (in_array($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
+            array_keys(self::CHECKBOX_TWIG_LIST))) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
+            self::CHECKBOX_DISPLAY_MODE_LIST ;
         $this->dragAndDropDisplayMode='@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
     }
     
