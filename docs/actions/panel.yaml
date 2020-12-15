@@ -15,6 +15,7 @@ actions:
       type:
         label: Type
         type: list
+        doclink: https://yeswiki.net/?DemoAccordion
         options:
           default: Simple encadré
           collapsible: Accordéon ouvert
