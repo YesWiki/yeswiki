@@ -29,7 +29,7 @@ class IframeHandler extends YesWikiHandler
 
             // on recupere les entetes html mais pas ce qu'il y a dans le body
             $header = explode('<body', $this->wiki->Header());
-            $output .= $header[0] . '<body class="login-body">' . "\n"
+            $output .= $header[0] . '<body class="yeswiki-iframe-body login-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}')
                 . '>' . "\n";
