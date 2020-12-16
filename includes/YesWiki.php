@@ -753,7 +753,6 @@ class Wiki
             return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
         }
         list(, $action, $vars_temp) = $matches;
-        $vars[$vars_temp] = $vars_temp; // usefull for {{action/vars_temp}}
 
         // match all attributes (key and value)
         // prepare an array for extract() to work with (in $this->IncludeBuffered())
