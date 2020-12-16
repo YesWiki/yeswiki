@@ -1751,32 +1751,16 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     // If not found, use default templating
     if (!$customTemplateFound) {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
+            // Champ  acls  present
             if (isset($fichebazar['form']['template'][$i][11]) &&
-                $fichebazar['form']['template'][$i][11] != '') {
-                // Champ  acls  present
-                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
-                    // si le champ est autorisé, génère son contenu
-                    if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
-                        // TODO handle html_outside_app mode for images
-                        $res .= $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
-                    } else {
-                        if (function_exists($fichebazar['form']['template'][$i][0])) {
-                            $res .= $fichebazar['form']['template'][$i][0](
-                                $formtemplate,
-                                $fichebazar['form']['template'][$i],
-                                'html',
-                                $fichebazar['values']
-                            );
-                        }
-                    }
-                }
-            } else {
-                if( $fichebazar['form']['prepared'][$i] instanceof BazarField ) {
+                !empty($fichebazar['form']['template'][$i][11]) &&
+                $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
+                // si le champ est autorisé, génère son contenu
+                if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
                     // TODO handle html_outside_app mode for images
                     $res .= $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
                 } else {
-                    $functionName = $fichebazar['form']['template'][$i][0];
-                    if (function_exists($functionName)) {
+                    if (function_exists($fichebazar['form']['template'][$i][0])) {
                         $mode = 'html';
                         if (!$danslappli && $functionName == "image") {
                             $mode = 'html_outside_app';
@@ -3359,8 +3343,7 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
         // Champ  acls  present
         if (!isset($fichebazar['form']['template'][$i][11]) || $fichebazar['form']['template'][$i][11] == '' ||
                 $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
-            if ($fichebazar['form']['template'][$i][0] != 'labelhtml' &&
-                  function_exists($fichebazar['form']['template'][$i][0])) {
+            if ($fichebazar['form']['template'][$i][0] != 'labelhtml') {
                 if ($fichebazar['form']['template'][$i][0] == 'checkbox' ||
                       $fichebazar['form']['template'][$i][0] == 'liste' ||
                       $fichebazar['form']['template'][$i][0] ==
@@ -3376,12 +3359,16 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
                 } else {
                     $id = $fichebazar['form']['template'][$i][1];
                 }
-                $html[$id] = $fichebazar['form']['template'][$i][0](
-                    $formtemplate,
-                    $fichebazar['form']['template'][$i],
-                    'html',
-                    $fichebazar['values']
-                );
+                if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
+                    $html[$id] = $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
+                } else {
+                    $html[$id] = $fichebazar['form']['template'][$i][0](
+                        $formtemplate,
+                        $fichebazar['form']['template'][$i],
+                        'html',
+                        $fichebazar['values']
+                    );
+                }
                 preg_match_all(
                     '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
                     $html[$id],
@@ -3392,7 +3379,7 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
                 }
             }
         }
-    } 
+    }
     try {
         $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
     } catch (\Exception $e) {
