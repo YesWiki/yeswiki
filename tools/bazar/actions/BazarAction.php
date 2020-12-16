@@ -40,7 +40,7 @@ class BazarAction extends YesWikiAction
     public const LISTE_RSS = 'rss'; // Tous les flux  depend de s'abonner
     public const VOIR_FLUX_RSS = 'affiche_rss'; // Un flux
 
-    function run($arguments)
+    function run()
     {
         $ficheManager = $this->getService(FicheManager::class);
         $listController = $this->getService(ListController::class);
@@ -63,8 +63,8 @@ class BazarAction extends YesWikiAction
                 switch ($action) {
                     case self::MOTEUR_RECHERCHE:
                         return baz_rechercher(
-                            $arguments['idtypeannonce'],
-                            $arguments['categorienature']
+                            $this->arguments['idtypeannonce'],
+                            $this->arguments['categorienature']
                         );
                     case self::VOIR_FICHE:
                         if (isset($_REQUEST['id_fiche'])) {
@@ -83,8 +83,8 @@ class BazarAction extends YesWikiAction
                     default:
                         return baz_rechercher(
                             isset($_REQUEST['id_typeannonce']) ?
-                                $_REQUEST['id_typeannonce'] : $arguments['idtypeannonce'],
-                            $arguments['categorienature']
+                                $_REQUEST['id_typeannonce'] : $this->arguments['idtypeannonce'],
+                            $this->arguments['categorienature']
                         );
                 }
             case self::VOIR_MES_FICHES:
@@ -145,7 +145,7 @@ class BazarAction extends YesWikiAction
                 return baz_afficher_formulaire_export();
             default:
                 return baz_rechercher(
-                    isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : $arguments['idtypeannonce']
+                    isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : $this->arguments['idtypeannonce']
                 );
         }
 

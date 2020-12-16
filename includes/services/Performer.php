@@ -108,6 +108,9 @@ class Performer
             $instance = new $object['baseName']($this->wiki);
             $instance->arguments = &$vars;
             $instance->output = &$output;
+            // we must save the arguments in the YesWiki object, as YesWiki::getParameter is used in many places
+            // TODO once bazar will be completly rewritten, we should remove this by passing the arguments to the renderers
+            $this->wiki->parameter = &$vars;
             return $instance;
         } else {
             throw new PerformerException("There were a problem while loading {$object['baseName']} at " .
