@@ -1760,7 +1760,8 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
                     // TODO handle html_outside_app mode for images
                     $res .= $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
                 } else {
-                    if (function_exists($fichebazar['form']['template'][$i][0])) {
+                    $functionName = $fichebazar['form']['template'][$i][0];
+                    if (function_exists($functionName)) {
                         $mode = 'html';
                         if (!$danslappli && $functionName == "image") {
                             $mode = 'html_outside_app';
