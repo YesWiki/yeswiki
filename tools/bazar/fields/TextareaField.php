@@ -117,6 +117,11 @@ class TextareaField extends BazarField
                 $GLOBALS['wiki']->page['body'] = $value;
 
                 $value = $GLOBALS['wiki']->Format($value);
+                // if the textarea have some actions which return "", they are replaced by '' otherwise it crashed
+                // because they're by wakka as a beginning of HTML code
+                // the user still insert HTML code in the textarea with "" because the "" block is interpretated before
+                // the replacement
+                $value = str_replace('""', '\'\'', $value);
 
                 $GLOBALS['wiki']->tag = $oldPage;
                 $GLOBALS['wiki']->page = $oldPageArray;
@@ -127,8 +132,8 @@ class TextareaField extends BazarField
                 break;
 
             case self::SYNTAX_HTML:
-                // CAUTION "" was replaced by '' otherwise in the case of a form inside a bazar entry,
-                // it's interpreted by wakka as a beginning of HTML code
+                // if the user type "", it's replaced by '' otherwise it crashes the output because it's interpretated
+                // by wakka as a beginning of HTML code
                 $value = str_replace('""', '\'\'', $value);
                 break;
         }
