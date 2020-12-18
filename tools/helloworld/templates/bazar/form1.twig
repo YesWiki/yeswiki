@@ -1,0 +1,13 @@
+<h4 class="hello-title">These entry fields are shuffled</h4>
+<p><em>You can refresh the view to shuffle it again...</em></p>
+
+{% for field in shuffled %}
+    <div class="BAZ_rubrique" {% if field['key'] is not empty %}data-id="{{ field['key'] }}"{% endif %}>
+        <span class="BAZ_label">
+            {{ form['prepared'][field['index']].label }}
+        </span>
+        <span class="BAZ_texte">
+            {{ field['value']|raw }}
+        </span>
+    </div>
+{% endfor %}

@@ -1,0 +1,7 @@
+<h2 class="hello-title">My list is now shuffled</h2>
+<p><em>You can refresh the view to shuffle it again...</em></p>
+<ul>
+        {% for fiche in fiches %}
+                <li>{{ fiche['bf_titre'] }}</li>
+        {% endfor %}
+</ul>
