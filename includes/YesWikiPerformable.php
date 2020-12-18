@@ -15,6 +15,8 @@ abstract class YesWikiPerformable
     public $arguments = [];
     public $output;
 
+    private $twig;
+
     /**
      * Creates a YesWikiAction object associated with the given wiki object.
      */

@@ -3,6 +3,8 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\ShuffledListTemplate;
+use YesWiki\Core\YesWikiBazarTemplate;
 use YesWiki\Wiki;
 
 class TemplateNotFound extends \Exception
@@ -99,7 +101,20 @@ class TemplateEngine
 
     public function render($templatePath, $data = [])
     {
-        $method = endsWith($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
+        // default method (per example, for *.tpl.html)
+        $method = 'renderPhp';
+
+        if (endsWith($templatePath, '.twig')){
+            $method = 'renderTwig';
+        } else if (endsWith($templatePath, '.php')) {
+            if (preg_match("/^(.*\/)?([a-zA-Z0-9_-]+)?\.php$/", $templatePath, $matches)) {
+                $baseName = $matches[2];
+                if (endsWith($baseName, 'Template')) {
+                    // if the template file is a subclass of BazarTemplate class, set the corresponding method
+                    $method = 'renderBazarTemplate';
+                }
+            }
+        }
         return $this->$method($templatePath, $data);
     }
 
@@ -112,12 +127,46 @@ class TemplateEngine
         return $this->twig->render($templatePath, $data);
     }
 
+    public function renderBazarTemplate($templatePath, $data = []){
+        $realTemplatePath = $this->getRealTemplatePath($templatePath);
+
+        if (preg_match("/^(.*\/)?([a-zA-Z0-9_-]+)?\.php$/", $realTemplatePath, $matches)) {
+            $directory = $matches[1];
+            $className = $matches[2];
+            require_once($directory . $className . '.php');
+            if (class_exists($className) && is_subclass_of($className, YesWikiBazarTemplate::class)) {
+                // instanciate the template class
+                $linkedTwigName = preg_replace('/Template$/', '', $className);
+                // corresponding twig file of 'SuffledListTemplate' is 'suffledlist.twig'
+                // the file must be in the same directory as the class
+                $linkedTwigPath = $directory . strtolower($linkedTwigName) . '.twig';
+                $instance = new $className($this->wiki, $data, $linkedTwigPath);
+                return $instance->run();
+            }
+        }
+        throw new TemplateNotFound("The given path doesn't match a subclass of YesWikiBazarTemplate class. Path provided : $templatePath");
+    }
+
     public function renderPhp($templatePath, $data = [])
+    {
+        $realTemplatePath = $this->getRealTemplatePath($templatePath);
+
+        if (!empty($data)) extract($data); // extract variables for the template
+
+        ob_start(); // buffer
+        include $realTemplatePath;
+        $content = ob_get_contents(); // get buffer's content
+        ob_end_clean(); // destroy buffer
+        return $content;
+    }
+
+    private function getRealTemplatePath($templatePath): string
     {
         preg_match("/^@([a-zA-Z0-9\-_]+)\/(.*)$/", $templatePath, $matches);
         $realTemplatePath = null;
-        // if templatePath is something like @extensionName/$fileName
+
         if (isset($matches[1])) {
+            // if templatePath is something like @extensionName/$fileName
             $extensionName = $matches[1];
             $templateName = $matches[2];
             if (!$templateName) {
@@ -132,20 +181,15 @@ class TemplateEngine
                 }
             }
         } else {
-            if (file_exists($templatePath)) $realTemplatePath = $templatePath;
+            if (file_exists($templatePath)) {
+                $realTemplatePath = $templatePath;
+            }
         }
 
         if ($realTemplatePath === null) {
             $errorDetails = isset($matches[1]) ? "$templateName in $extensionName" : $templatePath;
             throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $errorDetails");
         }
-
-        if (!empty($data)) extract($data); // extract variables for the template
-
-        ob_start(); // buffer
-        include $realTemplatePath;
-        $content = ob_get_contents(); // get buffer's content
-        ob_end_clean(); // destroy buffer
-        return $content;
+        return $realTemplatePath;
     }
 }

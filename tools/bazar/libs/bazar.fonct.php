@@ -47,6 +47,7 @@ use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\TemplateNotFound;
 
 /** baz_afficher_menu() - Prepare les boutons du menu de bazar et renvoie le html
  * @return string HTML
@@ -1697,25 +1698,25 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
 
     // on traite l'affichage d'éventuels messages
     if (isset($_GET['message'])) {
-        $res .= '<div class="alert alert-success">'."\n";
+        $res .= '<div class="alert alert-success">' . "\n";
         if ($_GET['message'] == 'ajout_ok') {
             $res .=
-            _t('BAZ_FICHE_ENREGISTREE').'  <a href="'.$GLOBALS['wiki']
-                ->href(
-                    '',
-                    $GLOBALS['wiki']->getPageTag(),
-                    BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR.
-                    '&id='
-                    .$fichebazar['values']['id_typeannonce']
-                ).'" class="pull-right btn-sm btn btn-primary">'.
-            _t('BAZ_ADD_NEW_ENTRY').'</a>';
+                _t('BAZ_FICHE_ENREGISTREE') . '  <a href="' . $GLOBALS['wiki']
+                    ->href(
+                        '',
+                        $GLOBALS['wiki']->getPageTag(),
+                        BAZ_VARIABLE_VOIR . '=' . BAZ_VOIR_SAISIR .
+                        '&id='
+                        . $fichebazar['values']['id_typeannonce']
+                    ) . '" class="pull-right btn-sm btn btn-primary">' .
+                _t('BAZ_ADD_NEW_ENTRY') . '</a>';
         }
         if ($_GET['message'] == 'modif_ok') {
-            $res .= _t('BAZ_FICHE_MODIFIEE').'  <a href="'.$GLOBALS['wiki']
-                ->href('edit', $GLOBALS['wiki']->getPageTag()).'" class="pull-right btn-sm btn btn-primary">'.
-            _t('BAZ_MODIFY_ENTRY_AGAIN').'</a>';
+            $res .= _t('BAZ_FICHE_MODIFIEE') . '  <a href="' . $GLOBALS['wiki']
+                    ->href('edit', $GLOBALS['wiki']->getPageTag()) . '" class="pull-right btn-sm btn btn-primary">' .
+                _t('BAZ_MODIFY_ENTRY_AGAIN') . '</a>';
         }
-        $res .= '<div class="clearfix"></div></div>'."\n";
+        $res .= '<div class="clearfix"></div></div>' . "\n";
     }
 
     // fake ->tag pour les images attachees
@@ -1723,27 +1724,41 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     $GLOBALS['wiki']->tag = $idfiche;
 
     // debut de la fiche
-    $res .= '<div class="BAZ_cadre_fiche id' . $fichebazar['form']['bn_id_nature'].'">'."\n";
+    $res .= '<div class="BAZ_cadre_fiche id' . $fichebazar['form']['bn_id_nature'] . '">' . "\n";
 
     $templateEngine = $GLOBALS['wiki']->services->get(TemplateEngine::class);
     $customTemplateValues = getValuesForCustomTemplate($fichebazar, $idfiche);
 
     // Try rendering a custom template
-    try {
-        $custom_template = baz_get_custom_template($fichebazar['values']);
-        $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
-        $customTemplateFound = true;
-    } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
-        $customTemplateFound = false;
+
+    // try first with the old bazar template : fiche-X.tpl.html
+    // then with new bazar template (controller and view) : FormXTemplate.php (subclass of YesWikiBazarTemplate)
+    // then with twig template (only the view) : formX.twig
+    $customTemplates = [
+        "fiche-{$fichebazar['values']['id_typeannonce']}.tpl.html",
+        "Form{$fichebazar['values']['id_typeannonce']}Template.php",
+        "form{$fichebazar['values']['id_typeannonce']}.twig"
+    ];
+
+    $customTemplateFound = false;
+    foreach ($customTemplates as $customTemplate){
+        try {
+            $res .= $templateEngine->render("@bazar/$customTemplate", $customTemplateValues);
+            $customTemplateFound = true;
+            break;
+        } catch (TemplateNotFound | \Twig\Error\LoaderError $e) {
+            $customTemplateFound = false;
+        }
+
     }
 
-    // if not found, try with semantic tmeplate
+    // if not found, try with semantic template
     if (!$customTemplateFound) {
         try {           
             $custom_template = baz_get_custom_semantic_template($fichebazar['values']);
             $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
             $customTemplateFound = true;
-        } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
+        } catch (TemplateNotFound $e) {
             $customTemplateFound = false;
         }
     }        
@@ -2871,7 +2886,7 @@ function getAllParameters($wiki)
     if (empty($param['template'])) {
         $param['template'] = $GLOBALS['wiki']->config['default_bazar_template'];
     }
-    if (strpos($param['template'], '.html') === false) {
+    if (empty(pathinfo($param['template'])['extension'])) {
         $param['template'] = $param['template'] . '.tpl.html';
     }
 
@@ -3287,15 +3302,6 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
         $tabparam['fail'] = 1;
     }
     return $tabparam;
-}
-
-/**
- * Retourne un fichier de template custom, s'il existe
- * Regarde d'abord dans themes/tools/bazar/templates, puis cherche dans les templates sémantiques
- */
-function baz_get_custom_template($fiche)
-{
-    return "fiche-{$fiche['id_typeannonce']}.tpl.html";
 }
 
 function baz_get_custom_semantic_template($fiche)

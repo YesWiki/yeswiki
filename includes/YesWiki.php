@@ -30,6 +30,7 @@ require_once 'includes/YesWikiPerformable.php';
 require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
+require_once 'includes/objects/YesWikiBazarTemplate.php';
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
