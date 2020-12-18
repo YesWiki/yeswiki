@@ -31,8 +31,7 @@ class FieldFactory
         );
 
         foreach ($this->wiki->extensions as $extensionKey => $extensionDir) {
-            $fullExtensionDir = __DIR__ . '/../../../' . $extensionDir . 'fields';
-
+            $fullExtensionDir = realpath($extensionDir) . '/fields';
             if (is_dir($fullExtensionDir)) {
                 $fieldsFiles = array_diff(scandir($fullExtensionDir), ['..', '.']);
 
