@@ -1378,32 +1378,6 @@ function baz_liste_rss()
     return $res;
 }
 
-/** baz_formulaire_des_formulaires() retourne le formulaire de saisie des formulaires
- *   @return  object    le code HTML
- */
-function baz_formulaire_des_formulaires($mode, $form = '')
-{
-    // contruction du squelette du formulaire
-    $urlParams = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE;
-    $data['url'] = $GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams);
-
-    // valeurs du formulaire
-    $valform = array();
-    if (is_array($form)) {
-        foreach ($form as $key => $value) {
-            if ($key != 'template' and $key != 'prepared') {
-                $valform[$key] = htmlentities($value, ENT_QUOTES, YW_CHARSET);
-            }
-        }
-    }
-    $data['form'] = count($valform) > 0 ? $valform : '';
-
-    // champs du formulaire
-    $data['idformulaire'] = isset($_GET['idformulaire']) ? $_GET['idformulaire'] : '';
-
-    return $GLOBALS['wiki']->render("@bazar/form_edit_form.tpl.html", $data);
-}
-
 function multiArraySearch($array, $key, $value)
 {
     $results = array();

@@ -215,3 +215,15 @@ function baz_gestion_formulaire()
         return $GLOBALS['wiki']->services->get(FormController::class)->displayAll();
     }
 }
+
+/**
+ * @deprecated Use FormController::create or FormController::update
+ */
+function baz_formulaire_des_formulaires($mode, $form = '')
+{
+    if( $form !== '') {
+        return $GLOBALS['wiki']->services->get(FormController::class)->update($form['bn_id_nature']);
+    } else {
+        return $GLOBALS['wiki']->services->get(FormController::class)->create();
+    }
+}

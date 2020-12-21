@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Controller;
 
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\YesWikiController;
 
 class FormController extends YesWikiController
@@ -64,7 +63,9 @@ class FormController extends YesWikiController
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
         }
 
-        return baz_formulaire_des_formulaires('new');
+        return $this->render("@bazar/forms/forms_form.twig", [
+            'formAndListIds' => baz_forms_and_lists_ids()
+        ]);
     }
 
     public function update($id)
@@ -75,8 +76,10 @@ class FormController extends YesWikiController
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
         }
 
-        $form = $this->formManager->getOne($id);
-        return baz_formulaire_des_formulaires('modif', $form);
+        return $this->render("@bazar/forms/forms_form.twig", [
+            'form' => $this->formManager->getOne($id),
+            'formAndListIds' => baz_forms_and_lists_ids()
+        ]);
     }
 
     public function delete($id)
