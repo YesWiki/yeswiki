@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -194,5 +195,35 @@ function baz_gestion_listes()
         return $GLOBALS['wiki']->services->get(ListController::class)->delete($_GET['idliste']);
     } else {
         return $GLOBALS['wiki']->services->get(ListController::class)->displayAll();
+    }
+}
+
+/**
+ * @deprecated Use FormController
+ */
+function baz_gestion_formulaire()
+{
+    if ($_GET['action'] === 'modif') {
+        return $GLOBALS['wiki']->services->get(FormController::class)->update($_GET['idformulaire']);
+    } elseif ($_GET['action'] === 'new') {
+        return $GLOBALS['wiki']->services->get(FormController::class)->create();
+    } elseif ($_GET['action'] === 'empty') {
+        return $GLOBALS['wiki']->services->get(FormController::class)->clear($_GET['idformulaire']);
+    } elseif ($_GET['action'] === 'delete') {
+        return $GLOBALS['wiki']->services->get(FormController::class)->delete($_GET['idformulaire']);
+    } else {
+        return $GLOBALS['wiki']->services->get(FormController::class)->displayAll();
+    }
+}
+
+/**
+ * @deprecated Use FormController::create or FormController::update
+ */
+function baz_formulaire_des_formulaires($mode, $form = '')
+{
+    if( $form !== '') {
+        return $GLOBALS['wiki']->services->get(FormController::class)->update($form['bn_id_nature']);
+    } else {
+        return $GLOBALS['wiki']->services->get(FormController::class)->create();
     }
 }
