@@ -14,7 +14,6 @@ class BazarAction extends YesWikiAction
     public const VOIR_DEFAUT = 'formulaire'; // Recherche
     public const VOIR_CONSULTER = 'consulter'; // Recherche
     public const VOIR_MES_FICHES = 'mes_fiches';
-    public const VOIR_S_ABONNER = 'rss';
     public const VOIR_SAISIR = 'saisir';
     public const VOIR_FORMULAIRE = 'formulaire';
     public const VOIR_LISTES = 'listes';
@@ -44,8 +43,6 @@ class BazarAction extends YesWikiAction
     public const ACTION_SUPPRESSION = 'supprimer';
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
-    public const LISTE_RSS = 'rss'; // Tous les flux  depend de s'abonner
-    public const VOIR_FLUX_RSS = 'affiche_rss'; // Un flux
 
     function run()
     {
@@ -99,15 +96,6 @@ class BazarAction extends YesWikiAction
                 }
             case self::VOIR_MES_FICHES:
                 return baz_afficher_liste_fiches_utilisateur();
-            case self::VOIR_S_ABONNER:
-                switch ($action) {
-                    case self::LISTE_RSS:
-                        return baz_liste_rss();
-                    case self::VOIR_FLUX_RSS:
-                        return baz_afficher_flux_rss();
-                    default:
-                        return baz_liste_rss();
-                }
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_SUPPRESSION:

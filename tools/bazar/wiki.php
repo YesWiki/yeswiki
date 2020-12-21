@@ -86,7 +86,3 @@ define('BAZ_ACTION_PUBLIER', 'publier');
  // Valider la fiche
 define('BAZ_ACTION_PAS_PUBLIER', 'pas_publier');
  // Invalider la fiche
-define('BAZ_LISTE_RSS', 'rss');
- // Tous les flux  depend de s'abonner
-define('BAZ_VOIR_FLUX_RSS', 'affiche_rss');
- // Un flux
