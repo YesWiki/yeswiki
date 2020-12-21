@@ -1,0 +1,159 @@
+{{ include_javascript('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js') }}
+{{ include_javascript('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js') }}
+{{ include_javascript('tools/bazar/libs/bazar.edit_forms.js') }}
+{{ include_css('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css') }}
+
+{% if message %}
+<div class="alert alert-success">
+  <a data-dismiss="alert" class="close" type="button">&times;</a>
+  {{ _t(message) }}
+</div>
+{% endif %}
+
+{% if forms|length > 0 %}
+<div class="table-responsive">
+  <table id="existing-forms-table" class="bazar-table table table-condensed table-striped">
+    <thead>
+      <tr>
+        <th>{{ _t('BAZ_FORMULAIRE') }}</th>
+        <th style="width:100px;">{{ _t('BAZ_ACTIONS_FICHES') }}</th>
+        <th style="width:240px;">{{ _t('BAZ_DATA_FORMAT') }}</th>
+        <th style="width:40px;">{{ _t('BAZ_ID') }}</th>
+        <th style="width:100px;">{{ _t('BAZ_ACTIONS') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for key, form in forms %}
+        <tr>
+          <td>
+            <strong>{{ form.title }}</strong>
+            {% if form.description %}<br />{{ form.description }}{% endif %}
+          </td>
+          <td>
+            <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_RECHERCHER') }}" href="{{ url({ params: { vue: 'consulter', action: 'recherche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              <i class="fa fa-search icon-search"></i>
+            </a>
+            <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              <i class="fa fa-plus icon-plus"></i>
+            </a>
+          </td>
+          <td>
+            <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_RSS') }}" href="{{ url({ handler: 'rss', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+              <i class="fa fa-signal"></i>
+            </a>
+            <a class="btn btn-default btn-xs" title="{{ _t('BAZ_CSV') }}" href="{{ url({ params: { 'vue': 'exporter', 'id': key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              CSV
+            </a>
+            <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api/fiche/' ~ key }) }}" data-toggle="tooltip" data-placement="bottom">
+              JSON
+            </a>
+            {% if form.isSemantic %}
+              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api/fiche/' ~ key ~ '/json-ld' }) }}" data-toggle="tooltip" data-placement="bottom">
+                JSON-LD
+              </a>
+            {% endif %}
+            <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_WIDGET') }}" href="{{ url({ handler: 'widget', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
+              {{ _t('BAZ_WIDGET') }}
+            </a>
+          </td>
+          <td>
+            {{ key }}
+          </td>
+          <td>
+            {% if form.canEdit %}
+              <a class="btn btn-default btn-mini btn-xs"title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}"href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+                <i class="fa fa-pencil-alt"></i>
+              </a>
+            {% else %}
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+                <i class="fa fa-pencil-alt"></i>
+              </button>
+            {% endif %}
+            {% if form.canDelete %}
+              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'empty', idformulaire: key }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_VIDER_FORMULAIRE') }} ?');" -toggle="tooltip" data-placement="bottom">
+                <i class="fas fa-eraser"></i>
+              </a>
+              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'delete', idformulaire: key }}) }}"  onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
+                <i class="fa fa-trash"></i>
+              </a>
+            {% else %}
+              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+                <i class="fas fa-eraser"></i>
+              </button>
+              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+                <i class="fa fa-trash"></i>
+              </button>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div> <!-- /.table-responsive -->
+{% else %}
+<div class="alert alert-info">
+	<a data-dismiss="alert" class="close">&times;</a>{{ _t('BAZ_INTRO_AJOUT_FORMULAIRE')|raw }}
+</div>
+{% endif %}
+
+<a class="btn btn-primary {% if not loggedUser %}disabled{% endif %}" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
+  <i class="fa fa-plus icon-plus icon-white"></i>
+  {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
+</a>
+
+<hr>
+
+<strong>{{ _t('BAZ_IMPORT_FORMS_FROM_URL') }}</strong>
+<form action="javascript:undefined" class="form-horizontal">
+	<div class="input-prepend input-append input-group">
+		<span class="add-on input-group-addon">
+      <i class="fa fa-link icon-globe"></i>
+    </span>
+		<input id="url-import-forms" class="form-control input-xxlarge" {% if not loggedUser %}disabled{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
+		<span class="input-group-btn">
+      <button id="btn-import-forms" {% if not loggedUser %}disabled{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
+    </span>
+	</div>
+  <p class="text-info">Exemple d'url pour obtenir des formulaires types: <code>https://yeswiki.net</code></p>
+</form>
+<br>
+<div id="import-forms-result"></div>
+<form id="import-forms-form" action="" class="hide" method="post">
+  <div class="table-responsive">
+    <table id="import-forms-table" class="table table-condensed table-striped prevent-auto-init">
+      <thead>
+        <tr>
+          <th class="prevent-sorting">
+            <label class="check-all-container">
+              <input data-target="#import-forms-table tbody" type="checkbox" class="selectall">
+              <span></span>
+            </label>
+          </th>
+          <th>{{ _t('BAZ_FORMULAIRE') }}</th>
+          <th>{{ _t('BAZ_ID') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div> <!-- /.table-responsive -->
+  <div class="checkbox">
+    <label class="checkbox">
+      <input data-target="#import-forms-table tbody" type="checkbox" class="selectall">
+      <span>{{ _t('BAZ_SELECT_ALL') }}</span>
+    </label>
+  </div>
+  <button id="btn-import-selection" type="submit" class="btn btn-primary">
+    {{ _t('BAZ_IMPORT_SELECTION') }}
+  </button>
+</form>
+<div
+    id="form-translations"
+    data-nbformsfound="{{ _t('BAZ_NBFORMSFOUND') }}"
+    data-noanswers="{{ _t('BAZ_NOANSWERS') }}"
+    data-notvalidurl="{{ _t('BAZ_NOTVALIDURL') }}"
+    data-recuperation="{{ _t('BAZ_RECUPERATION') }}"
+    data-loading="{{ _t('BAZ_LOADING') }}"
+    data-existingmessage="{{ _t('BAZ_EXISTINGMESSAGEFORM') }}"
+    data-existingmessagereplace="{{ _t('BAZ_EXISTINGMESSAGEREPLACEFORM') }}">
+</div>

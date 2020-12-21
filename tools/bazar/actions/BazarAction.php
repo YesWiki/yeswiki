@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\FicheManager;
 use YesWiki\Core\YesWikiAction;
@@ -29,10 +30,16 @@ class BazarAction extends YesWikiAction
     public const ACTION_MODIFIER = 'modif_fiche';
     public const ACTION_MODIFIER_V = 'modif_sauver_fiche';
 
+    // Formulaires
+    public const ACTION_FORM_CREATE = 'new';
+    public const ACTION_FORM_EDIT = 'modif';
+    public const ACTION_FORM_DELETE = 'delete';
+    public const ACTION_FORM_EMPTY = 'empty';
+
     // Listes
-    public const ACTION_NOUVELLE_LISTE = 'saisir_liste';
-    public const ACTION_MODIFIER_LISTE = 'modif_liste';
-    public const ACTION_SUPPRIMER_LISTE = 'supprimer_liste';
+    public const ACTION_LIST_CREATE = 'saisir_liste';
+    public const ACTION_LIST_EDIT = 'modif_liste';
+    public const ACTION_LIST_DELETE = 'supprimer_liste';
 
     public const ACTION_SUPPRESSION = 'supprimer';
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
@@ -44,11 +51,14 @@ class BazarAction extends YesWikiAction
     {
         $ficheManager = $this->getService(FicheManager::class);
         $listController = $this->getService(ListController::class);
+        $formController = $this->getService(FormController::class);
 
+        // TODO put in templates
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        $GLOBALS['params'] = getAllParameters($this->wiki);
-        
+        $this->arguments = getAllParameters($this->wiki);
+        $GLOBALS['params'] = $this->arguments;
+
         $view = $GLOBALS['params'][self::VARIABLE_VOIR];
         $action = $GLOBALS['params'][self::VARIABLE_ACTION];
 
@@ -126,19 +136,29 @@ class BazarAction extends YesWikiAction
                 }
                 break;
             case self::VOIR_FORMULAIRE:
-                return baz_gestion_formulaire();
+                switch($action) {
+                    case self::ACTION_FORM_CREATE:
+                        return $formController->create();
+                    case self::ACTION_FORM_EDIT:
+                        return $formController->update($_GET['idformulaire']);
+                    case self::ACTION_FORM_DELETE:
+                        return $formController->delete($_GET['idformulaire']);
+                    case self::ACTION_FORM_EMPTY:
+                        return $formController->empty($_GET['idformulaire']);
+                    default:
+                        return $formController->displayAll($_GET['msg']);
+                }
             case self::VOIR_LISTES:
                 switch($action) {
-                    case self::ACTION_MODIFIER_LISTE:
-                        return $listController->update($_GET['idliste']);
-                    case self::ACTION_NOUVELLE_LISTE:
+                    case self::ACTION_LIST_CREATE:
                         return $listController->create();
-                    case self::ACTION_SUPPRIMER_LISTE:
+                    case self::ACTION_LIST_EDIT:
+                        return $listController->update($_GET['idliste']);
+                    case self::ACTION_LIST_DELETE:
                         return $listController->delete($_GET['idliste']);
                     default:
                         return $listController->displayAll();
                 }
-                break;
             case self::VOIR_IMPORTER:
                 return baz_afficher_formulaire_import();
             case self::VOIR_EXPORTER:
