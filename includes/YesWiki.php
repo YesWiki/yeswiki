@@ -785,13 +785,13 @@ class Wiki
      * We need to run this method in YesWiki class, so the variable $this will be referencing YesWiki
      * in the included file
      *
-     * @param fileForRunFileInBuffer the file to execute (DO NOT replace the name of this variable by file because
-     *                               some actions like 'section' use the variable name file also
+     * @param ___file the file to execute (___ because as we use the extract function, we have to choose a name which
+     * will be not used by users for an performable argument)
      * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
      * (strange variable name, but it's used in everywhere, so let's keep it... !)
      * @return the execution context variables updated by the execution (with 'plugin_output_new for the current output)
      */
-    public function runFileInBuffer($fileForRunFileInBuffer, array $vars)
+    public function runFileInBuffer($___file, array $vars)
     {
         $this->parameter = &$vars;
         extract($this->parameter, EXTR_REFS);
@@ -803,13 +803,13 @@ class Wiki
         $this->output = &$plugin_output_new;
 
         ob_start();
-        include($fileForRunFileInBuffer);
+        include($___file);
         $plugin_output_new .= ob_get_contents();
         ob_end_clean();
 
         // save the context variables into $updatedVars
         $updatedVars = get_defined_vars();
-        unset($updatedVars['fileForRunFileInBuffer']);
+        unset($updatedVars['___file']);
         // add new variables added to $this->parameter in $updatedVars (already existing vars share the same ref)
         if (isset($this->parameter)) {
             $updatedVars = array_merge($updatedVars, $this->parameter);
