@@ -16,7 +16,9 @@ color:#000;
 margin:0;
 padding:0;
 }
-
+.tag-label {
+  margin-left:3px;
+}
 a.size6 {
 font-size:38px;
 color:#e13728;

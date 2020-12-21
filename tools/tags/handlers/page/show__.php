@@ -75,17 +75,14 @@ if ($GLOBALS["open_comments"][$tag]) {
 
 // on affiche la liste des mots cles disponibles pour cette page
 if (!CACHER_MOTS_CLES && (!isset($type) || !(isset($type) && $type == 'fiche_bazar'))) {
-    $tabtagsexistants = $tagsManager->getAll($this->GetPageTag());
-    $tagspage = array();
-    foreach ($tabtagsexistants as $tab) {
-        $tagspage[] = _convert($tab["value"], 'ISO-8859-1');
-    }
+    $allPageTags = $tagsManager->getAll($this->GetPageTag());
+    $tagspage = array_column($allPageTags, 'value');;
     if (count($tagspage)>0) {
         sort($tagspage);
         $tagsexistants = '';
         foreach ($tagspage as $tag) {
             $tag = stripslashes($tag);
-            $tagsexistants .= '&nbsp;<a class="tag-label label label-info" href="'.$this->href('listpages', $this->GetPageTag(), 'tags='.urlencode($tag)).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'">'.$tag.'</a>';
+            $tagsexistants .= '<a class="tag-label label label-info" href="'.$this->href('listpages', $this->GetPageTag(), 'tags='.urlencode($tag)).'" title="'._t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS').'">'.$tag.'</a>'."\n";
         }
         $output .= '<i class="icon icon-tags"></i>'."\n".$tagsexistants."\n";
     }
