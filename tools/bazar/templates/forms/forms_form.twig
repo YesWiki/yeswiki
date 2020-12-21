@@ -49,12 +49,12 @@
       <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active">
           <a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
-            Constructeur graphique
+            {{ _t('BAZ_FORM_GRAPHICAL_BUILDER') }}
           </a>
         </li>
         <li role="presentation">
           <a href="#code" aria-controls="code" role="tab" data-toggle="tab">
-            Code Wiki (pour faire des copier-coller)
+            {{ _t('BAZ_FORM_WIKI_CODE') }}
           </a>
         </li>
       </ul>
@@ -73,7 +73,7 @@
             name="bn_template"
             required
           >
-            {{- form.bn_template ?? 'texte***bf_titre***Titre de la fiche*** *** *** *** ***text***1***' -}}
+            {{- form.bn_template ?? 'texte***bf_titre***' ~ _t('BAZ_TITREANNONCE') ~ '*** *** *** *** ***text***1***' -}}
           </textarea>
         </div>
       </div>
