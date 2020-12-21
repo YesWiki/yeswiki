@@ -1404,45 +1404,6 @@ function baz_formulaire_des_formulaires($mode, $form = '')
     return $GLOBALS['wiki']->render("@bazar/form_edit_form.tpl.html", $data);
 }
 
-/** baz_formulaire_des_listes() retourne le formulaire de saisie des listes
- *   @return  object    le code HTML
- */
-function baz_formulaire_des_listes($mode, $valeursliste = '')
-{
-    // champs du formulaire
-    if (isset($_GET['idliste'])) {
-        $tab_formulaire['NomWiki'] = $_GET['idliste'];
-    } else {
-        $tab_formulaire['NomWiki'] = '';
-    }
-    $tab_formulaire['valeursliste'] = $valeursliste;
-    if (isset($valeursliste['titre_liste'])) {
-        $tab_formulaire['titre_liste'] = $valeursliste['titre_liste'];
-    }
-
-    // test si on est dans une iframe
-    $iframe = testUrlInIframe();
-
-    $tab_formulaire['form_link'] = $GLOBALS['wiki']->href(
-        $iframe,
-        $GLOBALS['wiki']->GetPageTag(),
-        BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES.'&action='.$mode
-        .(isset($_GET['idliste']) ? '&idliste='.$_GET['idliste'] : '')
-    );
-    $tab_formulaire['cancel_link'] = $GLOBALS['wiki']->href(
-        $iframe,
-        $GLOBALS['wiki']->GetPageTag(),
-        BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES
-    );
-
-    // on rajoute les bibliothèques js nécéssaires
-    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js');
-    $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/bazar.edit_lists.js');
-
-    // affichage du template du formulaire
-    return $GLOBALS['wiki']->render("@bazar/lists_edit.tpl.html", $tab_formulaire);
-}
-
 function multiArraySearch($array, $key, $value)
 {
     $results = array();
