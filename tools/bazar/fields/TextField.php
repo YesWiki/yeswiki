@@ -45,9 +45,15 @@ class TextField extends BazarField
     {
         $value = $this->getValue($entry);
         if( !$value ) return null;
-        
-        return $this->render("@bazar/fields/text.twig", [
-            'value' => $value
-        ]);
+
+        if( $this->name === 'bf_titre') {
+            return $this->render("@bazar/fields/title.twig", [
+                'value' => $value
+            ]);
+        } else {
+            return $this->render("@bazar/fields/text.twig", [
+                'value' => $value
+            ]);
+        }
     }
 }
