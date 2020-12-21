@@ -23,9 +23,29 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 // Get the action's parameters :
 
+// section class
+$class = $this->GetParameter('class');
+
+// section id
+$id = $this->GetParameter('id');
+
+// section data attributes
+$data = getDataParameter();
+
+/*  Add container class to the section
+    Backward compatibility:
+        Previously, this class was carried by a div inside the section. 
+        This div was removed to allow for proper css grid.
+        default value => nocontainer=true (backward compatibility)
+
+    Wondering if adding this class to section will be enough for backward compatibility.
+    */
+$nocontainer = $this->GetParameter('nocontainer');
+
 // image's background color
 $bgcolor = $this->GetParameter('bgcolor');
 
+// background image ~~~~~~~~~~~~~~~~~~~~~~~~
 // image's filename
 $file = $this->GetParameter('file');
 $backgroundimg =true;
@@ -62,16 +82,36 @@ if (!empty($file)) {
     $att->height = $height;
     $att->width = $width;
     $fullFilename = $att->GetFullFilename();
+} // end of background image ~~~~~~~~~~~~~~~~~~~~~~~~
+
+// building of style attribute ~~~~~~~~~~~~~~~~~~~~~~~~
+/*  section additional style
+    Backward compatibility:
+        If empty, the previous behaviour prevails, i.e. uses parameters
+        - 'bgcolor' for background color,
+        - 'height' for height,
+        - 'file' to build background-image url
+        If not empty, parameter value is concatenated at the end of the above
+*/
+$style = $this->GetParameter('style');
+$addStyle = false;
+if (!empty($style)) {
+    $addStyle = true;
+    $style = ' ' . $style;
 }
-
-// container class
-$class = $this->GetParameter('class');
-
-// container id
-$id = $this->GetParameter('id');
-
-// container data attributes
-$data = getDataParameter();
+if (isset($fullFilename)) {
+    $addStyle = true;
+    $style = ' background-image:url(' . $fullFilename . ');' . $style;
+}
+if (!empty($height)) {
+    $addStyle = true;
+    $style = ' height:' . $height . 'px;' . $style;
+}
+if (!empty($bgcolor)) {
+    $addStyle = true;
+    $style = 'background:' . $bgcolor .';' . $style;
+}
+// end of building of style attribute ~~~~~~~~~~~~~~~~~~~~~~~~
 
 $pagetag = $this->GetPageTag();
 if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
@@ -84,10 +124,14 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     $visible = !$role || ($GLOBALS['wiki']->CheckACL($role));
     
     echo '<!-- start of section -->
-    <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . ($visible ? '' : ' remove-this-div-on-page-load ') . (!empty($class) ? ' ' . $class : '') . '" style="'
-        .(!empty($bgcolor) ? 'background:' . $bgcolor .'; ' : '')
-        .(!empty($height) ? 'height:' . $height . 'px; ' : '')
-        .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
+    <section' 
+    .(!empty($id) ? ' id="'.$id .'"' : '') 
+    .' class="'
+        .($backgroundimg ? 'background-image' : '') 
+        .($visible ? '' : ' remove-this-div-on-page-load ') 
+        .(empty($nocontainer) ? ' container' : '') 
+        .(!empty($class) ? ' ' . $class : '') . '"'
+    .($addStyle ? ' style="' . $style . '"' : '');
     if (is_array($data)) {
         foreach ($data as $key => $value) {
             echo ' data-'.$key.'="'.$value.'"';
@@ -95,13 +139,7 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     }
     echo '>' . "\n";
     
-    $nocontainer = $this->GetParameter('nocontainer');
-    if (empty($nocontainer)) {
-        echo '<div class="container">' . "\n";
-    } else {
-        echo '<div>';
-    }
-    //test d'existance du fichier
+    //test d'existence du fichier
     if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
         $att->showFileNotExits();
         //return;

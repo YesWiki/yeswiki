@@ -23,7 +23,7 @@ actions:
         label: Visible par 
         options:
           '': Tout le monde
-          '+': Utilisateur connecté
+          '+': Utilisateurs connectés
           '%': Propriétaire de la page
           '@admins': Admins seulement
       class:
@@ -84,6 +84,10 @@ actions:
               wow wobble: Essuie glace
               wow jello: Danse
               wow heartBeat: Bat
+      style:
+        label: Style (CSS)
+        type: text
+        hint: Si vous connaissez la syntaxe CSS et souhaitez modifier l'affichage ou le comportement de cette section
 #      data:
 #        label: Data wow
 #        type: text
