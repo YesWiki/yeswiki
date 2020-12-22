@@ -3003,13 +3003,15 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
                 }
                 if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
                     $html[$id] = $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
-                } else {
+                } else if (function_exists($fichebazar['form']['template'][$i][0])){
                     $html[$id] = $fichebazar['form']['template'][$i][0](
                         $formtemplate,
                         $fichebazar['form']['template'][$i],
                         'html',
                         $fichebazar['values']
                     );
+                } else {
+                    $html[$id] = '' ;
                 }
                 preg_match_all(
                     '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
