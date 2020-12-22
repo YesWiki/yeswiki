@@ -143,7 +143,7 @@ class ImageField extends FileField
                     }
 
                     // Update entry
-                    // TODO use FicheManager
+                    // TODO use EntryManager
                     unset($entry[$this->propertyName]);
                     $updatedEntry = $entry;
                     $updatedEntry['date_maj_fiche'] = date('Y-m-d H:i:s', time());

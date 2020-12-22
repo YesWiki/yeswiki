@@ -26,22 +26,22 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
-if ($this->HasAccess('write') && $ficheManager->isFiche($this->GetPageTag())) {
+if ($this->HasAccess('write') && $entryManager->isEntry($this->GetPageTag())) {
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
     // Si on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
     if (isset($_POST['bf_titre'])) {
         baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href(), $_POST);
     } else {
-        $fiche = $ficheManager->getOne($this->GetPageTag());
+        $fiche = $entryManager->getOne($this->GetPageTag());
 
         $pageeditionfiche = baz_formulaire(
             BAZ_ACTION_MODIFIER,

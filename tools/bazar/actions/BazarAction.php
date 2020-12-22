@@ -2,7 +2,7 @@
 
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarAction extends YesWikiAction
@@ -46,7 +46,7 @@ class BazarAction extends YesWikiAction
 
     function run()
     {
-        $ficheManager = $this->getService(FicheManager::class);
+        $entryManager = $this->getService(EntryManager::class);
         $listController = $this->getService(ListController::class);
         $formController = $this->getService(FormController::class);
 
@@ -75,7 +75,7 @@ class BazarAction extends YesWikiAction
                         );
                     case self::VOIR_FICHE:
                         if (isset($_REQUEST['id_fiche'])) {
-                            $fiche = $ficheManager->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
+                            $fiche = $entryManager->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
                             if (!$fiche) {
                                 return '<div class="alert alert-danger">'
                                     ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '
@@ -99,7 +99,7 @@ class BazarAction extends YesWikiAction
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_SUPPRESSION:
-                        $ficheManager->delete($_REQUEST['id_fiche']);
+                        $entryManager->delete($_REQUEST['id_fiche']);
                         header('Location: '.$this->wiki->Href('', $_REQUEST['id_fiche'], 'message=delete_ok&'.self::VARIABLE_VOIR.'='.self::VOIR_CONSULTER));
                         break;
                     case self::ACTION_PUBLIER:

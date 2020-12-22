@@ -26,15 +26,15 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
-if ($ficheManager->isFiche($this->GetPageTag()) && $this->HasAccess("read")) {
+if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess("read")) {
     if (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
         $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
         $contentType = $semantic ? 'application/ld+json' : 'application/json';
@@ -42,12 +42,12 @@ if ($ficheManager->isFiche($this->GetPageTag()) && $this->HasAccess("read")) {
         header("Content-type: $contentType; charset=UTF-8");
         header("Access-Control-Allow-Origin: *");
 
-        $fiche = $ficheManager->getOne($this->GetPageTag(), $semantic);
+        $fiche = $entryManager->getOne($this->GetPageTag(), $semantic);
         exit(json_encode($fiche));
     } else {
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        $fiche = $ficheManager->getOne($this->GetPageTag());
+        $fiche = $entryManager->getOne($this->GetPageTag());
         $this->page["body"] = '""'.baz_voir_fiche(0, $fiche).'""';
     }
 }

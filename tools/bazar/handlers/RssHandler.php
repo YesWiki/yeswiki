@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 
 require_once BAZ_CHEMIN.'libs/vendor/XML/Util.php';
@@ -60,7 +60,7 @@ class RssHandler extends YesWikiHandler
             $query = '';
         }
 
-        $tableau_flux_rss = $this->getService(FicheManager::class)->search([
+        $tableau_flux_rss = $this->getService(EntryManager::class)->search([
             'queries'=>$query,
             'formsIds'=>$id,
             'user'=>$utilisateur,

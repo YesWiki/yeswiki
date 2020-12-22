@@ -26,18 +26,18 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
-if ($ficheManager->isFiche($this->GetPageTag())) {
+if ($entryManager->isEntry($this->GetPageTag())) {
     $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-    $fiche = $ficheManager->getOne($this->GetPageTag());
+    $fiche = $entryManager->getOne($this->GetPageTag());
 
     $replace = '<input type="hidden" name="body" value="'.htmlspecialchars(json_encode($fiche), ENT_COMPAT, YW_CHARSET).'" />';
     if (isset($_GET['time'])) {

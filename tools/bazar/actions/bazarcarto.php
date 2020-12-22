@@ -4,13 +4,13 @@
  *  Programme gerant les fiches bazar depuis une interface de type geographique.
  **/
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 // pour retro-compatibilité
 $this->setParameter('template', 'map');
 include(__DIR__.'/bazarliste.php');
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -27,11 +27,11 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $fiches = array_merge(
             $fiches,
-            $ficheManager->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
+            $entryManager->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $fiches = $ficheManager->search(['queries' => $GLOBALS['params']['query']]);
+    $fiches = $entryManager->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // a la place du choix par défaut, on affiche en carte

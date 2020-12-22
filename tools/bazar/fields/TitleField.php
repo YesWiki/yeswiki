@@ -3,7 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ListManager;
 
 /**
@@ -36,7 +36,7 @@ class TitleField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
-        $ficheManager = $this->getService(FicheManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         // TODO improve import detection
         if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
@@ -45,7 +45,7 @@ class TitleField extends BazarField
                 if (isset($entry[$fieldName])) {
                     if (preg_match('#^listefiche#', $fieldName) !== 0 || preg_match('#^checkboxfiche#', $fieldName) !== 0) {
                         // For a "listefiche" or a "checkboxfiche", find the entry's title
-                        $fiche = $ficheManager->getOne($entry[$fieldName]);
+                        $fiche = $entryManager->getOne($entry[$fieldName]);
                         $value = str_replace('{{' . $fieldName . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $value);
                     } elseif (preg_match('#^liste#', $fieldName) !== 0 || preg_match('#^checkbox#', $fieldName) !== 0) {
                         // For a "liste" or a "checkbox", find the list labels

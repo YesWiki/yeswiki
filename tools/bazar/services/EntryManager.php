@@ -10,7 +10,7 @@ use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
-class FicheManager
+class EntryManager
 {
     protected $wiki;
     protected $mailer;
@@ -36,7 +36,7 @@ class FicheManager
      * @param $tag
      * @return bool
      */
-    public function isFiche($tag)
+    public function isEntry($tag)
     {
         return $this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', '');
     }
@@ -50,7 +50,7 @@ class FicheManager
      */
     public function getOne($tag, $semantic = false, $time = null)
     {
-        if (!$this->isFiche($tag)) {
+        if (!$this->isEntry($tag)) {
             return false;
         }
 

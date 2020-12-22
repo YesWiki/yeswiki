@@ -43,7 +43,7 @@
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
@@ -137,7 +137,7 @@ function baz_afficher_liste_fiches_utilisateur()
 
     //test si l'on est identifie pour voir les fiches
     if (baz_a_le_droit('voir_mes_fiches') && isset($nomwiki['name'])) {
-        $tableau_dernieres_fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([ 'formsIds'=>$GLOBALS['params']['idtypeannonce'], 'user'=>$nomwiki['name'] ]);
+        $tableau_dernieres_fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([ 'formsIds'=>$GLOBALS['params']['idtypeannonce'], 'user'=>$nomwiki['name'] ]);
         $res .= exturl($tableau_dernieres_fiches, $GLOBALS['params'], false);
     } else {
         $res .= '<div class="alert alert-info">'."\n"
@@ -405,7 +405,7 @@ function baz_afficher_formulaire_import()
                                             $tab_id = array();
                                             $idfiche = str_replace($type_champ[$c], '', $nom_champ[$c]);
                                             if (!isset($allentries[$idfiche])) {
-                                                $fa = $GLOBALS['wiki']->services->get(FicheManager::class)->search();
+                                                $fa = $GLOBALS['wiki']->services->get(EntryManager::class)->search();
                                                 $tabfa = array();
                                                 foreach ($fa as $valfa) {
                                                     $tabfa[$valfa['id_fiche']] = $valfa['bf_titre'];
@@ -609,7 +609,7 @@ function baz_afficher_formulaire_import()
                     $fiche = array_map('strval', $fiche);
 
                     $fiche['antispam'] = 1;
-                    $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->create($id, $fiche);
+                    $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->create($id, $fiche);
 
                     ++$nb;
                     $importList .= ' '.$nb.') [['.$fiche['id_fiche'].' '. $fiche['bf_titre'].']]'."\n";
@@ -910,7 +910,7 @@ function baz_afficher_formulaire_export()
         $query = '';
 
         //on recupere toutes les fiches du type choisi et on les met au format csv
-        $tableau_fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([ 'queries'=>$query, 'formsIds'=>[$id], 'keywords' => $q ]);
+        $tableau_fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([ 'queries'=>$query, 'formsIds'=>[$id], 'keywords' => $q ]);
         $total = count($tableau_fiches);
         foreach ($tableau_fiches as $fiche) {
             // create date and latest date
@@ -958,7 +958,7 @@ function baz_afficher_formulaire_export()
                         if (is_array($tabresult)) {
                             $labels_result = '';
                             foreach ($tabresult as $id) {
-                                $val_fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($id);
+                                $val_fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($id);
                                 if (is_array($val_fiche)) {
                                     $res_value = $val_fiche['bf_titre'] ;
                                     if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
@@ -1178,7 +1178,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_NOUVEAU_V) {
         try {
-            $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->create($_POST['id_typeannonce'], $_POST);
+            $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->create($_POST['id_typeannonce'], $_POST);
 
             if (!empty($GLOBALS['params']['redirecturl'])) {
                 header('Location: '.$GLOBALS['params']['redirecturl']);
@@ -1199,7 +1199,7 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
     //------------------------------------------------------------------------------------------------
     if ($mode == BAZ_ACTION_MODIFIER_V) {
         try {
-            $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->update($_POST['id_fiche'], $_POST);
+            $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->update($_POST['id_fiche'], $_POST);
             if ($GLOBALS['wiki']->GetPageTag() != $fiche['id_fiche']) {
                 // Redirection pour éviter la revalidation du formulaire
                 $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
@@ -1272,7 +1272,7 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         $tableau = formulaire_valeurs_template_champs($form['bn_template']);
         if (!is_array($valeurs) && !empty($valeurs) && $GLOBALS['wiki']->isWikiName($valeurs)) {
             // ajout des valeurs par defaut pour une modification
-            $valeurs = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($valeurs);
+            $valeurs = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($valeurs);
         }
         $data['content'] = '';
         $formtemplate = '';
@@ -1494,7 +1494,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $fichebazar['form'] = (is_array($form) and is_array($form[$fichebazar['values']['id_typeannonce']])) ? $form[$fichebazar['values']['id_typeannonce']] : baz_valeurs_formulaire($fichebazar['values']['id_typeannonce']);
     } else {
         // on recupere les valeurs de la fiche
-        $fichebazar['values'] = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($idfiche);
+        $fichebazar['values'] = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idfiche);
 
         // on recupere les infos du type de fiche
         $f = $fichebazar['values']['id_typeannonce'];
@@ -1895,7 +1895,7 @@ function baz_rechercher($typeannonce = '', $categorienature = '')
     $res .= '<div id="bazar-search-'.$GLOBALS['_BAZAR_']['nbbazarsearch'].'">';
     $res .= $GLOBALS['wiki']->render("@bazar/search_form.tpl.html", $data);
 
-    $fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
+    $fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([
         'queries'=>$GLOBALS['params']['query'],
         'formsIds'=>$data['idform'],
         'keywords'=>$data['search']
@@ -2089,7 +2089,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
 
     // Add display data to all fiches
     $fiches['fiches'] = array_map(function ($fiche) use ($params) {
-        $GLOBALS['wiki']->services->get(FicheManager::class)->appendDisplayData($fiche, false, $params['correspondance']);
+        $GLOBALS['wiki']->services->get(EntryManager::class)->appendDisplayData($fiche, false, $params['correspondance']);
         return $fiche;
     }, $tableau_fiches);
 
@@ -2205,7 +2205,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                     $list['titre_liste'] = $form['bn_label_nature'];
                     foreach ($facettevalue[$id] as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
-                            $f = $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($idfiche);
+                            $f = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idfiche);
                             $list['label'][$idfiche] = $f['bf_titre'];
                         }
                     }

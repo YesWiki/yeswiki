@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\ApiResponse;
@@ -47,7 +47,7 @@ class ApiController extends YesWikiController
             return $this->getAllSemanticEntries($formId);
         }
 
-        $entries = $this->getService(FicheManager::class)->search([ 'formsIds'=>$formId ]);
+        $entries = $this->getService(EntryManager::class)->search([ 'formsIds'=>$formId ]);
 
         return new ApiResponse($entries);
     }
@@ -57,7 +57,7 @@ class ApiController extends YesWikiController
      */
     public function getAllSemanticEntries($formId)
     {
-        $entries = $this->getService(FicheManager::class)->search([ 'formsIds'=>$formId ]);
+        $entries = $this->getService(EntryManager::class)->search([ 'formsIds'=>$formId ]);
 
         // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
@@ -103,7 +103,7 @@ class ApiController extends YesWikiController
         };
 
         $_POST['antispam'] = 1;
-        $entry = $this->getService(FicheManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL']);
+        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL']);
 
         if (!$entry) throw new BadRequestHttpException();
 
@@ -119,7 +119,7 @@ class ApiController extends YesWikiController
     public function createSemanticEntry($formId)
     {
         $_POST['antispam'] = 1;
-        $entry = $this->getService(FicheManager::class)->create($formId, $_POST, true, $_SERVER['HTTP_SOURCE_URL']);
+        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, true, $_SERVER['HTTP_SOURCE_URL']);
 
         if (!$entry) throw new BadRequestHttpException();
 

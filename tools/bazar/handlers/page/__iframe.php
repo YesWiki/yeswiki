@@ -1,16 +1,16 @@
 <?php
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
 $bazaroutput = '';
 if ($this->HasAccess("read")) {
-    if ($ficheManager->isFiche($this->GetPageTag())) {
+    if ($entryManager->isEntry($this->GetPageTag())) {
         // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
         $valjson = $this->page["body"];
@@ -43,11 +43,11 @@ if ($this->HasAccess("read")) {
             foreach ($params['idtypeannonce'] as $formId) {
                 $results = array_merge(
                     $results,
-                    $ficheManager->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
+                    $entryManager->search(['queries' => $params['query'], 'formsIds' => [$formId], 'keywords' => $q])
                 );
             }
         } else {
-            $results = $ficheManager->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
+            $results = $entryManager->search(['queries' => $params['query'], 'formsIds' => [$params['idtypeannonce']], 'keywords' => $q]);
         }
 
         // affichage à l'écran

@@ -1,16 +1,16 @@
 <?php
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
 if ($this->HasAccess('write')) {
-    if ($ficheManager->isFiche($this->GetPageTag())) {
+    if ($entryManager->isEntry($this->GetPageTag())) {
         // dans le cas ou on vient de modifier dans le formulaire une fiche bazar, on enregistre les modifications
         if (isset($_POST['bf_titre'])) {
             baz_formulaire(BAZ_ACTION_MODIFIER_V, $this->href('iframe'), $_POST);
         } else {
-            $fiche = $ficheManager->getOne($this->GetPageTag());
+            $fiche = $entryManager->getOne($this->GetPageTag());
             $pageeditionfiche = baz_formulaire(
                 BAZ_ACTION_MODIFIER,
                 $this->href('editiframe'),

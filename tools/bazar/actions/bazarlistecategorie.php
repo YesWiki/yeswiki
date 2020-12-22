@@ -14,13 +14,13 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -83,7 +83,7 @@ if (empty($list)) {
     } else {
         $tabquery = '';
     }
-    $tabfiches = $ficheManager->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
+    $tabfiches = $entryManager->search([ 'queries' => $tabquery, 'formsIds' => [$id_typeannonce] ]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';
