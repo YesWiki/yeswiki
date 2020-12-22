@@ -1155,63 +1155,6 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             }
         }
     }
-    // test si on est dans une iframe
-    $iframe = testUrlInIframe();
-
-    //------------------------------------------------------------------------------------------------
-    // AFFICHAGE DU FORMULAIRE CORRESPONDANT AU TYPE DE FICHE CHOISI PAR L'UTILISATEUR
-    //------------------------------------------------------------------------------------------------
-    if ($mode == BAZ_ACTION_NOUVEAU) {
-        // Affichage du modele de formulaire
-        $res .= baz_afficher_formulaire_fiche('saisie', $url);
-    }
-
-    //------------------------------------------------------------------------------------------------
-    // CAS DE LA MODIFICATION D'UNE FICHE (FORMULAIRE DE MODIFICATION)
-    //------------------------------------------------------------------------------------------------
-    if ($mode == BAZ_ACTION_MODIFIER) {
-        $res .= baz_afficher_formulaire_fiche('modification', $url, $valeurs);
-    }
-
-    //------------------------------------------------------------------------------------------------
-    // CAS DE L'AJOUT D'UNE FICHE
-    //------------------------------------------------------------------------------------------------
-    if ($mode == BAZ_ACTION_NOUVEAU_V) {
-        try {
-            $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->create($_POST['id_typeannonce'], $_POST);
-
-            if (!empty($GLOBALS['params']['redirecturl'])) {
-                header('Location: '.$GLOBALS['params']['redirecturl']);
-            } else {
-                // Redirection pour eviter la revalidation du formulaire
-                $urlParams = 'message=ajout_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER
-                    .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
-                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
-            }
-            exit;
-        } catch (\Exception $e) {
-            echo '<div class="alert alert-danger">'.$e->getMessage().'</div>';
-        }
-    }
-
-    //------------------------------------------------------------------------------------------------
-    // CAS DE LA MODIFICATION D'UNE FICHE (VALIDATION ET MAJ)
-    //------------------------------------------------------------------------------------------------
-    if ($mode == BAZ_ACTION_MODIFIER_V) {
-        try {
-            $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->update($_POST['id_fiche'], $_POST);
-            if ($GLOBALS['wiki']->GetPageTag() != $fiche['id_fiche']) {
-                // Redirection pour éviter la revalidation du formulaire
-                $urlParams = 'message=modif_ok&'.BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER .'&'.BAZ_VARIABLE_ACTION.'='.BAZ_VOIR_FICHE.'&id_fiche='.$fiche['id_fiche'];
-                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->getPageTag(), $urlParams, false));
-            } else {
-                header('Location: '.$GLOBALS['wiki']->href($iframe, $GLOBALS['wiki']->GetPageTag()));
-            }
-            exit;
-        } catch (\Exception $e) {
-            exit($e->getMessage());
-        }
-    }
 
     return $res;
 }
