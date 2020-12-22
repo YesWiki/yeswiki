@@ -43,11 +43,11 @@ class TitleField extends BazarField
             preg_match_all('#{{(.*)}}#U', $value, $matches);
             foreach ($matches[1] as $fieldName) {
                 if (isset($entry[$fieldName])) {
-                    if (preg_match('#^listefiche#', $fieldName) !== false || preg_match('#^checkboxfiche#', $fieldName) !== false) {
+                    if (preg_match('#^listefiche#', $fieldName) !== 0 || preg_match('#^checkboxfiche#', $fieldName) !== 0) {
                         // For a "listefiche" or a "checkboxfiche", find the entry's title
                         $fiche = $ficheManager->getOne($entry[$fieldName]);
                         $value = str_replace('{{' . $fieldName . '}}', ($fiche['bf_titre'] != null) ? $fiche['bf_titre'] : '', $value);
-                    } elseif (preg_match('#^liste#', $fieldName) !== false || preg_match('#^checkbox#', $fieldName) !== false) {
+                    } elseif (preg_match('#^liste#', $fieldName) !== 0 || preg_match('#^checkbox#', $fieldName) !== 0) {
                         // For a "liste" or a "checkbox", find the list labels
                         $listId = preg_replace('#^(liste|checkbox)(.*)#', '$2', $fieldName);
                         $listValues = $this->getService(ListManager::class)->getOne($listId);

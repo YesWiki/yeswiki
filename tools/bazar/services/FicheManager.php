@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\TripleStore;
@@ -487,11 +488,11 @@ class FicheManager
     {
         $form = baz_valeurs_formulaire($data['id_typeannonce']);
 
-        // test pour les titres formatés à partir d'autres champs
-        preg_match_all('#{{(.*)}}#U', $data['bf_titre'], $matches);
-        if (count($matches[0]) > 0) {
-            $data = array_merge($data, titre($formtemplate, array('titre',
-                $data['bf_titre'], ), 'requete', $data));
+        // If there is a title field, compute the entry's title
+        for ($i = 0; $i < count($form['template']); ++$i) {
+            if ($form['prepared'][$i] instanceof TitleField) {
+                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($data));
+            }
         }
 
         // Entry ID

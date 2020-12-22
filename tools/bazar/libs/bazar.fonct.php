@@ -1559,27 +1559,37 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     // If not found, use default templating
     if (!$customTemplateFound) {
         for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
-            // Champ  acls  present
-            if (isset($fichebazar['form']['template'][$i][11]) &&
-                !empty($fichebazar['form']['template'][$i][11]) &&
-                $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
-                // si le champ est autorisé, génère son contenu
-                if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
+            // si le champ est autorisé, génère son contenu
+            if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
+                if ($GLOBALS['wiki']->CheckACL($fichebazar['form']['prepared'][$i]->getReadAccess(), null, true, $idfiche)) {
                     // TODO handle html_outside_app mode for images
                     $res .= $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
-                } else {
-                    $functionName = $fichebazar['form']['template'][$i][0];
-                    if (function_exists($functionName)) {
-                        $mode = 'html';
-                        if (!$danslappli && $functionName == "image") {
-                            $mode = 'html_outside_app';
+                }
+            } else {
+                // Check if we should display the field
+                if (isset($fichebazar['form']['template'][$i][11]) &&
+                    !empty($fichebazar['form']['template'][$i][11]) &&
+                    $GLOBALS['wiki']->CheckACL($fichebazar['form']['template'][$i][11], null, true, $idfiche)) {
+
+                    // si le champ est autorisé, génère son contenu
+                    if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
+                        // TODO handle html_outside_app mode for images
+                        $res .= $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
+                        dump($fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']));
+                    } else {
+                        $functionName = $fichebazar['form']['template'][$i][0];
+                        if (function_exists($functionName)) {
+                            $mode = 'html';
+                            if (!$danslappli && $functionName == "image") {
+                                $mode = 'html_outside_app';
+                            }
+                            $res .= $functionName(
+                                $formtemplate,
+                                $fichebazar['form']['template'][$i],
+                                $mode,
+                                $fichebazar['values']
+                            );
                         }
-                        $res .= $functionName(
-                            $formtemplate,
-                            $fichebazar['form']['template'][$i],
-                            $mode,
-                            $fichebazar['values']
-                        );
                     }
                 }
             }
