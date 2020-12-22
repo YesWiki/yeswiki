@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\EntryManager;
@@ -23,24 +24,24 @@ class BazarAction extends YesWikiAction
     // Second : actions du choix de premier niveau.
     public const MOTEUR_RECHERCHE = 'recherche';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche'; // Modifier le formulaire de creation des fiches
-    public const VOIR_FICHE = 'voir_fiche';
-    public const ACTION_NOUVEAU = 'saisir_fiche';
-    public const ACTION_NOUVEAU_V = 'sauver_fiche'; // Creation apres validation
-    public const ACTION_MODIFIER = 'modif_fiche';
-    public const ACTION_MODIFIER_V = 'modif_sauver_fiche';
 
-    // Formulaires
+    // Entries
+    public const ACTION_ENTRY_VIEW = 'voir_fiche';
+    public const ACTION_ENTRY_CREATE = 'saisir_fiche';
+    public const ACTION_ENTRY_EDIT = 'modif_fiche';
+    public const ACTION_ENTRY_DELETE = 'supprimer';
+
+    // Forms
     public const ACTION_FORM_CREATE = 'new';
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
     public const ACTION_FORM_EMPTY = 'empty';
 
-    // Listes
+    // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
     public const ACTION_LIST_EDIT = 'modif_liste';
     public const ACTION_LIST_DELETE = 'supprimer_liste';
 
-    public const ACTION_SUPPRESSION = 'supprimer';
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
 
@@ -49,19 +50,20 @@ class BazarAction extends YesWikiAction
         $entryManager = $this->getService(EntryManager::class);
         $listController = $this->getService(ListController::class);
         $formController = $this->getService(FormController::class);
+        $entryController = $this->getService(EntryController::class);
 
-        // TODO put in templates
+        // TODO put in all bazar templates
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
         $this->arguments = getAllParameters($this->wiki);
         $GLOBALS['params'] = $this->arguments;
 
-        $view = $GLOBALS['params'][self::VARIABLE_VOIR];
-        $action = $GLOBALS['params'][self::VARIABLE_ACTION];
+        $view = $this->arguments[self::VARIABLE_VOIR];
+        $action = $this->arguments[self::VARIABLE_ACTION];
 
         // si c'est demandé, on affiche le menu
-        if ($GLOBALS['params']['voirmenu'] != '0') {
-            $menuitems = array_map('trim', explode(',', $GLOBALS['params']['voirmenu']));
+        if ($this->arguments['voirmenu'] != '0') {
+            $menuitems = array_map('trim', explode(',', $this->arguments['voirmenu']));
             echo baz_afficher_menu($menuitems);
         }
 
@@ -73,7 +75,7 @@ class BazarAction extends YesWikiAction
                             $this->arguments['idtypeannonce'],
                             $this->arguments['categorienature']
                         );
-                    case self::VOIR_FICHE:
+                    case self::ACTION_ENTRY_VIEW:
                         if (isset($_REQUEST['id_fiche'])) {
                             $fiche = $entryManager->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
                             if (!$fiche) {
@@ -98,29 +100,22 @@ class BazarAction extends YesWikiAction
                 return baz_afficher_liste_fiches_utilisateur();
             case self::VOIR_SAISIR:
                 switch ($action) {
-                    case self::ACTION_SUPPRESSION:
-                        $entryManager->delete($_REQUEST['id_fiche']);
-                        header('Location: '.$this->wiki->Href('', $_REQUEST['id_fiche'], 'message=delete_ok&'.self::VARIABLE_VOIR.'='.self::VOIR_CONSULTER));
-                        break;
+                    case self::ACTION_ENTRY_CREATE:
+                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0]);
+                    case self::ACTION_ENTRY_EDIT:
+                        return $entryController->update($_REQUEST['id_fiche']);
+                    case self::ACTION_ENTRY_DELETE:
+                        return $entryController->delete($_REQUEST['id_fiche']);
                     case self::ACTION_PUBLIER:
                         return publier_fiche(1).baz_voir_fiche(1, $_REQUEST['id_fiche']);
                     case self::ACTION_PAS_PUBLIER:
                         return publier_fiche(0).baz_voir_fiche(1, $_REQUEST['id_fiche']);
-                    case self::ACTION_NOUVEAU:
-                        // Affichage du formulaire du saisie d'une' fiche
-                        return baz_formulaire(self::ACTION_NOUVEAU);
-                    case self::ACTION_MODIFIER:
-                        // Affichage du formulaire de modification d'une fiche
-                        return baz_formulaire(self::ACTION_MODIFIER);
-                    case self::ACTION_NOUVEAU_V:
-                        // Affichage du formulaire du saisie d'une' fiche
-                        return baz_formulaire(self::ACTION_NOUVEAU_V);
-                    case self::ACTION_MODIFIER_V:
-                        // Affichage du formulaire de modification d'une fiche
-                        return baz_formulaire(self::ACTION_MODIFIER_V);
                     default:
-                        // Choix du type de fiche à saisir
-                        return baz_formulaire(self::CHOISIR_TYPE_FICHE);
+                        if( isset($this->arguments['idtypeannonce']) ) {
+                            return $entryController->create($this->arguments['idtypeannonce'][0]);
+                        } else {
+                            return $entryController->selectForm();
+                        }
                 }
                 break;
             case self::VOIR_FORMULAIRE:
