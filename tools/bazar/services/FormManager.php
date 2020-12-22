@@ -10,7 +10,7 @@ class FormManager
 {
     protected $wiki;
     protected $dbService;
-    protected $ficheManager;
+    protected $entryManager;
     protected $fieldFactory;
     protected $params;
 
@@ -33,11 +33,11 @@ class FormManager
     private const FIELD_SEMANTIC = 14;
     private const FIELD_QUERIES = 15;
 
-    public function __construct(Wiki $wiki, DbService $dbService, FicheManager $ficheManager, FieldFactory $fieldFactory, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, EntryManager $entryManager, FieldFactory $fieldFactory, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
-        $this->ficheManager = $ficheManager;
+        $this->entryManager = $entryManager;
         $this->fieldFactory = $fieldFactory;
         $this->params = $params;
 

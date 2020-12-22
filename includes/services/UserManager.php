@@ -3,7 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Wiki;
 

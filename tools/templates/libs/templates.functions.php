@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -776,15 +776,15 @@ function getImageFromBody($page, $width, $height)
  */
 function getTitleFromBody($page)
 {
-    $ficheManager = $GLOBALS['wiki']->services->get(FicheManager::class);
+    $entryManager = $GLOBALS['wiki']->services->get(EntryManager::class);
 
     if (!isset($page['body']) || !isset($page['tag'])) {
         return '';
     }
     $title = '';
 
-    if ($ficheManager->isFiche($page['tag'])) {
-        $entry = $ficheManager->getOne($page['tag']);
+    if ($entryManager->isEntry($page['tag'])) {
+        $entry = $entryManager->getOne($page['tag']);
         if (isset($entry['bf_titre'])) {
             $title = _convert($entry['bf_titre'], 'UTF-8');
         }
@@ -819,15 +819,15 @@ function getTitleFromBody($page)
  */
 function getDescriptionFromBody($page, $title, $length = 300)
 {
-    $ficheManager = $GLOBALS['wiki']->services->get(FicheManager::class);
+    $entryManager = $GLOBALS['wiki']->services->get(EntryManager::class);
 
     if (!isset($page['body'])) {
         return '';
     }
     $desc = '';
 
-    if ($ficheManager->isFiche($page['tag'])) {
-        $entry = $ficheManager->getOne($page['tag']);
+    if ($entryManager->isEntry($page['tag'])) {
+        $entry = $entryManager->getOne($page['tag']);
         foreach (['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
             if (isset($entry[$prop])) {
                 $desc = _convert($entry[$prop], 'UTF-8');

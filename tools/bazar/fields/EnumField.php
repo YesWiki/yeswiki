@@ -3,7 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ListManager;
 
 abstract class EnumField extends BazarField
@@ -51,7 +51,7 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromEntries()
     {
-        $ficheManager = $this->getService(FicheManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         $tabquery = [];
         if (!empty($this->queries)) {
@@ -67,7 +67,7 @@ abstract class EnumField extends BazarField
             $tabquery = '';
         }
 
-        $fiches = $ficheManager->search([
+        $fiches = $entryManager->search([
             'queries' => $tabquery,
             'formsIds' => $this->name,
             'keywords' => (!empty($this->keywords)) ? $this->keywords : ''

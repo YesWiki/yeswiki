@@ -1,18 +1,18 @@
 <?php
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ApiService;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 $apiService = $this->services->get(ApiService::class);
 
-if ($ficheManager->isFiche($this->GetPageTag())) {
+if ($entryManager->isEntry($this->GetPageTag())) {
     if ($apiService->isAuthorized()) {
-        $ficheManager->delete($this->GetPageTag());
+        $entryManager->delete($this->GetPageTag());
         http_response_code(204);
     } else {
         http_response_code(304);

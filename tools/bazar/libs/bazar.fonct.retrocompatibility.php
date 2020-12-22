@@ -2,45 +2,45 @@
 
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 
 /**
- * @deprecated Use FicheManager::create
+ * @deprecated Use EntryManager::create
  */
 function baz_insertion_fiche($data)
 {
     $data['antispam'] = 1;
-    return $GLOBALS['wiki']->services->get(FicheManager::class)->create($data['id_fiche'], $data);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->create($data['id_fiche'], $data);
 }
 
 /**
- * @deprecated Use FicheManager::update
+ * @deprecated Use EntryManager::update
  */
 function baz_mise_a_jour_fiche($data)
 {
-    return $GLOBALS['wiki']->services->get(FicheManager::class)->update($data['id_fiche'], $data);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->update($data['id_fiche'], $data);
 }
 
 /**
- * @deprecated Use FicheManager::delete
+ * @deprecated Use EntryManager::delete
  */
 function baz_suppression($idFiche)
 {
-    return $GLOBALS['wiki']->services->get(FicheManager::class)->delete($idFiche);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->delete($idFiche);
 }
 
 /**
- * @deprecated Use FicheManager::getOne
+ * @deprecated Use EntryManager::getOne
  */
 function baz_valeurs_fiche($idFiche)
 {
-    return $GLOBALS['wiki']->services->get(FicheManager::class)->getOne($idFiche);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idFiche);
 }
 
 /**
- * @deprecated Use FicheManager::search
+ * @deprecated Use EntryManager::search
  */
 function baz_requete_recherche_fiches(
     $tableau_criteres = '',
@@ -58,7 +58,7 @@ function baz_requete_recherche_fiches(
         $id = [];
     }
 
-    $fiches = $GLOBALS['wiki']->services->get(FicheManager::class)->search([
+    $fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([
         'queries' => $tableau_criteres,
         'formsIds' => $id, // Types de fiches (par ID de formulaire)
         'user' => $personne, // N'affiche que les fiches d'un utilisateur
@@ -73,12 +73,12 @@ function baz_requete_recherche_fiches(
 }
 
 /**
- * @deprecated Use FicheManager::validate
+ * @deprecated Use EntryManager::validate
  */
 function validateForm($data)
 {
     try {
-        $GLOBALS['wiki']->services->get(FicheManager::class)->validate($data);
+        $GLOBALS['wiki']->services->get(EntryManager::class)->validate($data);
         return array('result' => true);
     } catch (\Exception $e) {
         return array('result' => false, 'error' => $e->getMessage());
@@ -93,8 +93,8 @@ function searchResultstoArray($pages, $params, $formtab = '')
     $fiches = array();
 
     foreach ($pages as $page) {
-        $fiche = $GLOBALS['wiki']->services->get(FicheManager::class)->decode($page['body']);
-        $GLOBALS['wiki']->services->get(FicheManager::class)->appendDisplayData($fiche, false, $params['correspondance']);
+        $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->decode($page['body']);
+        $GLOBALS['wiki']->services->get(EntryManager::class)->appendDisplayData($fiche, false, $params['correspondance']);
         $fiches[$fiche['id_fiche']] = $fiche;
     }
 
@@ -102,11 +102,11 @@ function searchResultstoArray($pages, $params, $formtab = '')
 }
 
 /**
- * @deprecated Use FicheManager::formatDataBeforeSave
+ * @deprecated Use EntryManager::formatDataBeforeSave
  */
 function baz_requete_bazar_fiche($data)
 {
-    return $GLOBALS['wiki']->services->get(FicheManager::class)->formatDataBeforeSave($data);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->formatDataBeforeSave($data);
 }
 
 /**

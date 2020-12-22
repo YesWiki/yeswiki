@@ -3,7 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Wiki;
 
@@ -11,17 +11,17 @@ class PageManager
 {
     protected $wiki;
     protected $dbService;
-    protected $ficheManager;
+    protected $entryManager;
     protected $bazarGuard;
     protected $params;
 
     protected $pageCache;
 
-    public function __construct(Wiki $wiki, DbService $dbService, FicheManager $ficheManager, Guard $bazarGuard, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, EntryManager $entryManager, Guard $bazarGuard, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
-        $this->ficheManager = $ficheManager;
+        $this->entryManager = $entryManager;
         $this->bazarGuard = $bazarGuard;
         $this->params = $params;
 
@@ -46,7 +46,7 @@ class PageManager
                 $page["metadatas"] = $this->wiki->GetMetaDatas($tag);
             }
 
-            if ($this->ficheManager->isFiche($tag)) {
+            if ($this->entryManager->isEntry($tag)) {
                 $page = $this->bazarGuard->checkAcls($page, $tag);
             }
 

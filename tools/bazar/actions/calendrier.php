@@ -4,12 +4,12 @@
 *
 */
 
-use YesWiki\Bazar\Service\FicheManager;
+use YesWiki\Bazar\Service\EntryManager;
 
 // pour retro-compatibilité
 $this->setParameter('template', 'calendar');
 
-$ficheManager = $this->services->get(FicheManager::class);
+$entryManager = $this->services->get(EntryManager::class);
 
 $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
@@ -21,11 +21,11 @@ if (is_array($GLOBALS['params']['idtypeannonce'])) {
     foreach ($GLOBALS['params']['idtypeannonce'] as $formId) {
         $results = array_merge(
             $results,
-            $ficheManager->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
+            $entryManager->search(['queries' => $GLOBALS['params']['query'], 'formsIds' => [$formId]])
         );
     }
 } else {
-    $results = $ficheManager->search(['queries' => $GLOBALS['params']['query']]);
+    $results = $entryManager->search(['queries' => $GLOBALS['params']['query']]);
 }
 
 // a la place du choix par défaut, on affiche en calendrier
