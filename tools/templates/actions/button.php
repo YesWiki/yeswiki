@@ -39,15 +39,15 @@ if (!empty($icon)) {
 
 // classe css supplémentaire pour changer le look
 $class = $this->GetParameter('class');
-$class = 'btn ' . $class;
-if (!strstr($class, 'btn-')) {
+$class .= (!empty($class) ? ' ' : '') . 'btn';
+if (!preg_match('/\bbtn-\w+\b/i', $class)) {
     $class .= ' btn-default';
 }
 
 $datasize = '';
 if (preg_match('/\bmodalbox\b/i', $class)) {
     // if modalbox, set the big size
-    $datasize .= ' data-size="modal-lg"';
+    $datasize .= 'modal-lg';
 }
 
 $nobtn = $this->GetParameter('nobtn');
@@ -64,10 +64,11 @@ if ($hideIfNoAccess == "true" && isset($linkTag) && !$GLOBALS['wiki']->HasAccess
 } elseif (empty($link)) {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_BUTTON') . '</strong> : ' . _t('TEMPLATE_LINK_PARAMETER_REQUIRED') . '.</div>' . "\n";
 } else {
-    $btn = '<a href="' . $link . '" class="' . $class . '"' . $datasize;
-    if (!empty($title)) {
-        $btn .= ' title="' . htmlentities($title, ENT_COMPAT, YW_CHARSET) . '"';
-    }
+    $btn = '<a'
+        . (!empty($link) ? ' href="' . $link . '"' : '')
+        . (!empty($class) ? ' class="' . $class . '"' : '')
+        . (!empty($datasize) ? ' data-size="' . $datasize . '"' : '')
+        . (!empty($title) ? ' title="' . htmlentities($title, ENT_COMPAT, YW_CHARSET) . '"' : '');
     $btn .= '>' . $icon . (!empty($text) ? htmlentities($text, ENT_COMPAT, YW_CHARSET) : '') . '</a>';
     echo $btn;
 }
