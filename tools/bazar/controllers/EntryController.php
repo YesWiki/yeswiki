@@ -18,6 +18,13 @@ class EntryController extends YesWikiController
         $this->formManager = $formManager;
     }
 
+    public function selectForm()
+    {
+        $forms = $this->formManager->getAll();
+
+        return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
+    }
+
     public function create($formId, $redirectUrl = null)
     {
         $form = $this->formManager->getOne($formId);
@@ -47,7 +54,7 @@ class EntryController extends YesWikiController
         if( isset($_POST['bf_titre']) ) {
             $entry = $this->entryManager->update($entryId, $_POST);
             if (empty($redirectUrl)) {
-                $redirectUrl = $this->wiki->Href('', '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche'], 'message' => 'modif_ok'], false);
+                $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche'], 'message' => 'modif_ok'], false);
             }
             header('Location: ' . $redirectUrl);
             exit;
@@ -65,7 +72,7 @@ class EntryController extends YesWikiController
     public function delete($entryId)
     {
         $this->entryManager->delete($entryId);
-        header('Location: '.$this->wiki->Href('', $entryId, 'message=delete_ok&'.self::VARIABLE_VOIR.'='.self::VOIR_CONSULTER));
+        header('Location: '.$this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
     }
 
     private function getRenderedFields($form, $entry = null)

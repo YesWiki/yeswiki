@@ -101,9 +101,9 @@ class BazarAction extends YesWikiAction
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($_GET['id_typeannonce'] ?? $_GET['id'] ?? $_POST['id_typeannonce'] ?? $this->arguments['idtypeannonce']);
+                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0]);
                     case self::ACTION_ENTRY_EDIT:
-                        return $entryController->update($_GET['id_fiche']);
+                        return $entryController->update($_REQUEST['id_fiche']);
                     case self::ACTION_ENTRY_DELETE:
                         return $entryController->delete($_REQUEST['id_fiche']);
                     case self::ACTION_PUBLIER:
@@ -111,8 +111,11 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_PAS_PUBLIER:
                         return publier_fiche(0).baz_voir_fiche(1, $_REQUEST['id_fiche']);
                     default:
-                        // Choix du type de fiche à saisir
-                        return baz_formulaire(self::CHOISIR_TYPE_FICHE);
+                        if( isset($this->arguments['idtypeannonce']) ) {
+                            return $entryController->create($this->arguments['idtypeannonce'][0]);
+                        } else {
+                            return $entryController->selectForm();
+                        }
                 }
                 break;
             case self::VOIR_FORMULAIRE:

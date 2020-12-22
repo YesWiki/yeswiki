@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\EntryManager;
@@ -225,5 +226,20 @@ function baz_formulaire_des_formulaires($mode, $form = '')
         return $GLOBALS['wiki']->services->get(FormController::class)->update($form['bn_id_nature']);
     } else {
         return $GLOBALS['wiki']->services->get(FormController::class)->create();
+    }
+}
+
+/**
+ * @deprecated Use FormController::selectForm, FormController::create or FormController::update
+ */
+function baz_formulaire($mode, $url = '', $valeurs = '')
+{
+    switch($mode) {
+        case BAZ_CHOISIR_TYPE_FICHE:
+            return $GLOBALS['wiki']->services->get(EntryController::class)->selectForm();
+        case BAZ_ACTION_NOUVEAU:
+            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['id_typeannonce'] ?? $_GET['id'] ?? $_POST['id_typeannonce']);
+        case BAZ_ACTION_MODIFIER:
+            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['id_fiche'] ?? $_POST['id_typeannonce']);
     }
 }

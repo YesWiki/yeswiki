@@ -1,0 +1,28 @@
+{% if forms|length > 0 %}
+  <table id="add-entry-table" class="bazar-table table table-condensed table-striped">
+    <thead>
+      <tr>
+        <th>{{ _t('BAZ_FORMULAIRE') }}</th>
+        <th style="width:220px;">{{ _t('BAZ_ACTIONS') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for form in forms %}
+        <tr>
+          <td>
+            <strong>{{ form.bn_label_nature }}</strong>
+            {% if form.bn_description %}<br />{{ form.bn_description }}{% endif %}
+          </td>
+          <td>
+            <a class="btn btn-mini btn-xs btn-primary" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: form.bn_id_nature }}) }}">
+              <i class="fa fa-plus icon-plus"></i>
+              {{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="alert alert-info">{{ _t('BAZ_NO_FORMS_FOUND')  }}</div>
+{% endif %}
