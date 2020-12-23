@@ -11,6 +11,8 @@ class EditIframeHandler extends YesWikiHandler
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
 
+        $GLOBALS['inIframe'] = true;
+
         if ($this->wiki->HasAccess('write')) {
             if ($entryManager->isEntry($this->wiki->GetPageTag())) {
                 $buffer = $entryController->update($this->wiki->GetPageTag());
@@ -48,13 +50,13 @@ class EditIframeHandler extends YesWikiHandler
             $output = '';
             // on recupere les entetes html mais pas ce qu'il y a dans le body
             $header = explode('<body', $this->wiki->Header());
-            $output .= $header[0] . '<body class="login-body">'."\n"
-            .'<div class="yeswiki-page-widget page-widget page">'."\n"
-            .'<div class="alert alert-danger alert-error">'
-            ._t('LOGIN_NOT_AUTORIZED_EDIT').'. '._t('LOGIN_PLEASE_REGISTER').'.'
-            .'</div><!-- end .alert -->'."\n"
-            .$this->wiki->Format('{{login signupurl="0"}}'."\n\n")
-            .'</div><!-- end .page -->'."\n";
+            $output .= $header[0] . '<body class="login-body">' . "\n"
+                . '<div class="yeswiki-page-widget page-widget page">' . "\n"
+                . '<div class="alert alert-danger alert-error">'
+                . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
+                . '</div><!-- end .alert -->' . "\n"
+                . $this->wiki->Format('{{login signupurl="0"}}' . "\n\n")
+                . '</div><!-- end .page -->' . "\n";
         }
 
         $this->wiki->addJavascriptFile('tools/bazar/libs/bazar.js');
@@ -62,5 +64,7 @@ class EditIframeHandler extends YesWikiHandler
         // on recupere juste les javascripts et la fin des balises body et html
         $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
         echo $output;
+
+        unset($GLOBALS['inIframe']);
     }
 }
