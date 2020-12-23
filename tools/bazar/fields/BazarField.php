@@ -111,7 +111,7 @@ abstract class BazarField
     protected function canEdit($entry)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
-        $isCreation = $entry === '';
+        $isCreation = !$entry;
         return empty($writeAcl) || $GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
     }
 
