@@ -1182,7 +1182,7 @@ function baz_forms_and_lists_ids()
 
 function getHtmlDataAttributes($fiche, $formtab = '')
 {
-    $datastr = '';
+    $htmldata = '';
     if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
         $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
         foreach ($fiche as $key => $value) {
@@ -1202,7 +1202,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                         'date_maj_fiche',
                     )
                 )) {
-                    $datastr .=
+                    $htmldata .=
                     'data-'.htmlspecialchars($key).'="'.
                     htmlspecialchars($value).'" ';
                 } else {
@@ -1225,7 +1225,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                                     )
                                 )
                                 ) {
-                                    $datastr .=
+                                    $htmldata .=
                                     'data-'.htmlspecialchars($key).'="'.
                                     htmlspecialchars($value).'" ';
                                 }
@@ -1237,7 +1237,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
         }
     }
 
-    return $datastr;
+    return $htmldata;
 }
 
 /**  show() - Formatte un paragraphe champs d'une fiche seulement si la valeur est renseignée

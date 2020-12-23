@@ -566,7 +566,6 @@ class EntryManager
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
         unset($data['html_data']);
-        unset($data['datastr']);
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
@@ -604,7 +603,6 @@ class EntryManager
 
         // HTML data
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
-        $fiche['datastr'] = $fiche['html_data'];
 
         // Fiche URL
         $exturl = $GLOBALS['wiki']->GetParameter('url');
