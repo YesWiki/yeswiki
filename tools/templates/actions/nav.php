@@ -48,9 +48,18 @@ if (!empty($icons)) {
 
 $listlinks = '';
 foreach ($titles as $key => $title) {
-    $url = $this->IsWikiName($links[$key], WN_CAMEL_CASE_EVOLVED) ? $this->href('', $links[$key]) : $links[$key];
-    $listclass = ($url == $this->href('', $this->GetPageTag())) ? ' class="active"' : '';
-    $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.(isset($icons[$key]) ? $icons[$key] : '').$title.'</a></li>'."\n";
+    $linkParts = explode('?', $links[$key]);
+    [$url, $params] = ['', ''];
+    if ($this->IsWikiName($linkParts[0], WN_CAMEL_CASE_EVOLVED)){
+        $params = !empty($linkParts[1]) ? $linkParts[1] : '';
+        $url = $this->href('', $linkParts[0], $params);
+    } else {
+        $url = $links[$key];
+    }
+    $listclass = ($url == $this->href('', $this->GetPageTag(), $params)) ? ' class="active"' : '';
+    $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
+        . (isset($icons[$key]) ? $icons[$key] : '')
+        . $title.'</a></li>'."\n";
 }
 
 $navID = uniqid('nav_');

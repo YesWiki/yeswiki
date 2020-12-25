@@ -151,26 +151,30 @@ function nomwikidouble($nomwiki, $nomswiki)
 //fonction pour remplacer les liens vers les NomWikis n'existant pas
 function replace_missingpage_links($output)
 {
-    $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="'.str_replace(
+    $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="' . str_replace(
         array('/', '?'),
         array('\/', '\?'),
         $GLOBALS['wiki']->config['base_url']
-    ).'(.*)\/edit">\?<\/a>/U';
+    ) . '(.*)\/edit">\?<\/a>/U';
     preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
 
     foreach ($matches as $values) {
         // on passe en parametres GET les valeurs du template de la page de provenance,
         // pour avoir le meme graphisme dans la page creee
-        $query_string = 'theme='.urlencode($GLOBALS['wiki']->config['favorite_theme']).
-                        '&amp;squelette='.urlencode($GLOBALS['wiki']->config['favorite_squelette']).
-                        '&amp;style='.urlencode($GLOBALS['wiki']->config['favorite_style']).
-                        '&amp;bgimg='.urlencode($GLOBALS['wiki']->config['favorite_background_image']).
-                        (($values[2] != $values[3]) ? '&amp;body='.urlencode($values[2]) : '').
-                        '&amp;newpage=1';
-        $replacement = '<a class="yeswiki-editable" title="'._t('TEMPLATE_EDIT_THIS_PAGE').'" href="'
-            .$GLOBALS['wiki']->href("edit", $values[3], $query_string)
-            .'">'
-            .$values[2].' <i class="fa fa-pencil-alt icon-edit"></i></a>';
+        $query_string = (!empty($GLOBALS['wiki']->config['favorite_theme']) ?
+                'theme=' . urlencode($GLOBALS['wiki']->config['favorite_theme']) : '')
+            . (!empty($GLOBALS['wiki']->config['favorite_squelette']) ?
+                '&amp;squelette=' . urlencode($GLOBALS['wiki']->config['favorite_squelette']) : '')
+            . (!empty($GLOBALS['wiki']->config['favorite_style']) ?
+                '&amp;style=' . urlencode($GLOBALS['wiki']->config['favorite_style']) : '')
+            . (!empty($GLOBALS['wiki']->config['favorite_background_image']) ?
+                '&amp;bgimg=' . urlencode($GLOBALS['wiki']->config['favorite_background_image']) : '')
+            . (($values[2] != $values[3]) ?
+                '&amp;body=' . urlencode($values[2]) : '') . '&amp;newpage=1';
+        $replacement = '<a class="yeswiki-editable" title="' . _t('TEMPLATE_EDIT_THIS_PAGE') . '" href="'
+            . $GLOBALS['wiki']->href("edit", $values[3], $query_string)
+            . '">'
+            . $values[2] . ' <i class="fa fa-pencil-alt icon-edit"></i></a>';
         $output = str_replace_once($values[0], $replacement, $output);
     }
 
