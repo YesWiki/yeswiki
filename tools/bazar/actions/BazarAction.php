@@ -111,7 +111,7 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_PAS_PUBLIER:
                         return publier_fiche(0).baz_voir_fiche(1, $_REQUEST['id_fiche']);
                     default:
-                        if( isset($this->arguments['idtypeannonce']) ) {
+                        if( !empty($this->arguments['idtypeannonce']) ) {
                             return $entryController->create($this->arguments['idtypeannonce'][0]);
                         } else {
                             return $entryController->selectForm();
