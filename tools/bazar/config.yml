@@ -113,5 +113,3 @@ services:
   # Allows to use controllers as services
   YesWiki\Bazar\Controller\:
     resource: 'controllers/*'
-    calls:
-      - setWikiObject: ['@YesWiki\Wiki']

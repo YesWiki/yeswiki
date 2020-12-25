@@ -13,5 +13,3 @@ services:
   # Allows to use controllers as services
   YesWiki\HelloWorld\Controller\:
     resource: 'controllers/*'
-    calls:
-      - setWikiObject: ['@YesWiki\Wiki']
