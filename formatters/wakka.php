@@ -309,7 +309,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // forced links
                     // \S : any character that is not a whitespace character
                     // \s : any whitespace character
-                    elseif (preg_match("/^\[\[(".WN_CAMEL_CASE_EVOLVED."|mailto:.*|https?:\/\/.*)(\s+(.+))?\]\]$/Uum", $thing, $matches)) {
+                    elseif (preg_match("/^\[\[(" . WN_CAMEL_CASE_EVOLVED_WITH_PARAMS . "|mailto:.*|https?:\/\/.*)(\s+(.+))?\]\]$/Uum", $thing, $matches)) {
                         if (isset($matches[3])) {
                             list(, $url, , $text) = $matches;
                         } else {

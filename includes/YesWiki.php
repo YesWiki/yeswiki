@@ -468,10 +468,10 @@ class Wiki
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
                 return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
-            } elseif (preg_match('/^'.WN_CAMEL_CASE_EVOLVED.'$/u', $tag)) {
+            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_WITH_PARAMS . '$/u', $tag)) {
                 if (! empty($track)) {
                     // it's a Wiki link!
-                    $this->TrackLinkTo($tag);
+                    $this->TrackLinkTo(explode('?', $tag)[0]);
                 }
             } elseif ($safeUrl = str_replace(
                 array('%3F', '%3A', '%26', '%3D', '%23'),
@@ -505,17 +505,17 @@ class Wiki
             }
         }
 
+        $linkParts = explode('?', $tag);
+        $tag = $linkParts[0];
+        $params = !empty($linkParts[1]) ? $linkParts[1] : '';
+
         if ($this->LoadPage($tag)) {
-            return '<a href="'.htmlspecialchars(
-                $this->href($method, $tag),
-                ENT_COMPAT,
-                YW_CHARSET
-            ).'">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
+            return '<a href="'. $this->href($method, $tag, $params) . '">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
         } else {
             return '<span class="'.($forcedLink ? 'forced-link ' : '').'missingpage">'
             . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'</span><a href="'
-            . htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, YW_CHARSET)
-            . '">?</a>';
+            . $this->href("edit", $tag) . '">?</a>';
         }
     }
 
