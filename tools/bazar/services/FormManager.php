@@ -44,7 +44,7 @@ class FormManager
         $this->cachedForms = [];
     }
 
-    public function getOne($formId)
+    public function getOne($formId) : ?array
     {
         if (isset($this->cachedForms[$formId])) {
             return $this->cachedForms[$formId];
@@ -53,7 +53,7 @@ class FormManager
         $form = $this->dbService->loadSingle('SELECT * FROM '.$this->dbService->prefixTable('nature').'WHERE bn_id_nature='.$formId);
 
         if (!$form) {
-            return false;
+            return null;
         }
 
         foreach ($form as $key => $value) {
@@ -68,7 +68,7 @@ class FormManager
         return $form;
     }
 
-    public function getAll()
+    public function getAll() : array
     {
         $forms = $this->dbService->loadAll('SELECT * FROM '.$this->dbService->prefixTable('nature') . 'ORDER BY bn_label_nature ASC');
 
@@ -80,7 +80,7 @@ class FormManager
         return count($this->cachedForms) > 0 ? $this->cachedForms : null;
     }
 
-    public function getMany($formsIds)
+    public function getMany($formsIds) : array
     {
         $results = [];
 

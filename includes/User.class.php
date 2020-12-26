@@ -503,11 +503,10 @@ class User
      *
      * @return boolean True if success and false otherwise.
     */
-    public function checkEmailKey($hash, $user)
+    public function checkEmailKey($hash, $user) : bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        $result = $this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key',$hash,'','');
-        return ($result !== 0) ;
+        return !is_null($this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key',$hash,'',''));
     }
     /* End of Password recovery process (AKA reset password)   */
 
@@ -701,6 +700,7 @@ class User
             $this->properties['show_comments']	= $row['show_comments'];
             $result = true;
         } elseif ($row === false) {
+            // TODO never called ?
             $this->error = _t('USER_LOAD_BY_NAME_QUERY_FAILED').'.';
             $result = false;
         } else {
@@ -742,6 +742,7 @@ class User
             $this->properties['show_comments']		= $row['show_comments'];
             $result = true;
         } elseif ($row === false) {
+            // TODO never called ?
             $this->error = _t('USER_LOAD_BY_EMAIL_QUERY_FAILED').'.';
             $result = false;
         } else {

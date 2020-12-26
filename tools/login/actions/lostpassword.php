@@ -58,7 +58,7 @@ if (isset($_POST['subStep']) && !isset($_GET['a'])) { // Sub step
 } elseif (isset($_GET['a']) && $_GET['a'] == 'recover' && $_GET['email'] != '') {
     $step = 'invalidKey';
     $result = $this->user->checkEmailKey($_GET['email'], urldecode(base64_decode($_GET['u'])));
-    if ($result == false) {
+    if (!$result) {
         $error = true;
         $step = 'invalidKey';
     } else {

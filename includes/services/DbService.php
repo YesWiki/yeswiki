@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Traversable;
 
 class DbService
 {
@@ -102,7 +103,7 @@ class DbService
      * Returns the first result of the query
      * If query fails returns null
      */
-    public function loadSingle($query)
+    public function loadSingle($query) : ?array
     {
         if ($data = $this->LoadAll($query)) {
             return $data[0];
@@ -114,7 +115,7 @@ class DbService
      * Fills and returns a table with the results of the query
      * Frees the SQL results set afterwards
      */
-    public function loadAll($query)
+    public function loadAll($query) : array
     {
         $data = array();
         if ($r = $this->query($query)) {

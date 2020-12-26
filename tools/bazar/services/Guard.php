@@ -74,15 +74,16 @@ class Guard
         return $page;
     }
 
-    protected function isPageOwner($page)
+    protected function isPageOwner($page) : bool
     {
         // check if user is logged in
         if (!$this->wiki->GetUser()) {
             return false;
         }
         // check if user is owner
-        if ($page["owner"] == $this->wiki->GetUserName()) {
+        if ($page['owner'] == $this->wiki->GetUserName()) {
             return true;
         }
+        return false;
     }
 }

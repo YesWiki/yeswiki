@@ -31,7 +31,7 @@ class TripleStore
      * @return string The value corresponding to ($resource, $property) or null if
      *         there is no such couple in the triples table.
      */
-    public function getOne($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    public function getOne($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) : ?string
     {
         $res = $this->getAll($resource, $property, $re_prefix, $prop_prefix);
         if ($res) {
@@ -60,7 +60,7 @@ class TripleStore
      *            The operator of comparison between the effective property and $property (default: '=')
      * @return array The list of all the triples that match the asked criteria
      */
-    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=')
+    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') : array
     {
         static $operators = array(
             '=',
@@ -111,7 +111,7 @@ class TripleStore
      *         ...
      *         )
      */
-    public function getAll($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    public function getAll($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) : array
     {
         $res = $re_prefix . $resource ;
         $prop = $prop_prefix . $property ;
@@ -134,7 +134,7 @@ class TripleStore
         if (isset($this->cacheByResource[$res][$prop])) {
             return $this->cacheByResource[$res][$prop] ;
         }
-        return array() ;
+        return array();
     }
 
     /**
@@ -150,17 +150,15 @@ class TripleStore
      *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
      * @param string $prop_prefix
      *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
-     * @param
-     *            int The id of the found triple or 0 if there is no such triple.
+     * @return int|null The id of the found triple or null if there is no such triple
      */
-    public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) : ?int
     {
         $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($re_prefix . $resource) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ' . 'AND value = "' . $this->dbService->escape($value) . '"';
-        $res = $this->dbService->loadSingle($sql);
-        if (!$res) {
-            return 0;
-        }
-        return $res['id'];
+        $triple = $this->dbService->loadSingle($sql);
+        return !is_null($triple) ?
+            intval($triple)
+            : null;
     }
 
     /**
