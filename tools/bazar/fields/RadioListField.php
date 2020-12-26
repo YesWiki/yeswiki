@@ -28,10 +28,10 @@ class RadioListField extends EnumField
 
     public function renderStatic($entry)
     {
-        $value = $entry !== '' ? $this->options[$this->getValue($entry)] : '';
-        if( empty($value) ) return null;
+        $value = $this->getValue($entry) ;
+        if( !$value ) return null;
         return $this->render('@bazar/fields/radio.twig', [
-            'value' => $value
+            'value' => $this->options[$value]
         ]);
     }
 }
