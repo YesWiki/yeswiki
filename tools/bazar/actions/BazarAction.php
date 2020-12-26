@@ -129,7 +129,7 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_FORM_EMPTY:
                         return $formController->empty($_GET['idformulaire']);
                     default:
-                        return $formController->displayAll($_GET['msg']);
+                        return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
                 }
             case self::VOIR_LISTES:
                 switch($action) {
