@@ -36,7 +36,7 @@ class EntryManager
      * @param $tag
      * @return bool
      */
-    public function isEntry($tag) : bool
+    public function isEntry($tag): bool
     {
         return !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
     }
@@ -48,7 +48,7 @@ class EntryManager
      * @param string $time pour consulter une fiche dans l'historique
      * @return mixed|null
      */
-    public function getOne($tag, $semantic = false, $time = null) : ?array
+    public function getOne($tag, $semantic = false, $time = null): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
@@ -73,7 +73,7 @@ class EntryManager
      * @param array $params
      * @return mixed
      */
-    public function search($params = []) : array
+    public function search($params = []): array
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(

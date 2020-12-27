@@ -28,7 +28,7 @@ class PageManager
         $this->pageCache = [];
     }
 
-    public function getOne($tag, $time = "", $cache = 1) : ?array
+    public function getOne($tag, $time = "", $cache = 1): ?array
     {
         // retrieve from cache
         if (!$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
@@ -91,7 +91,7 @@ class PageManager
         $this->pageCache[$pageTag] = $page;
     }
 
-    public function getById($id) : ?array
+    public function getById($id): ?array
     {
         return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
     }
@@ -106,7 +106,7 @@ class PageManager
         return $this->dbService->loadAll('select from_tag as tag from' . $this->dbService->prefixTable('links') . "where to_tag = '" . $this->dbService->escape($tag) . "' order by tag");
     }
 
-    public function getRecentlyChanged($limit = 50, $minDate = '') : array
+    public function getRecentlyChanged($limit = 50, $minDate = ''): array
     {
         if (!empty($minDate)) {
             if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
@@ -126,7 +126,7 @@ class PageManager
         }
     }
 
-    public function getAll() : array
+    public function getAll(): array
     {
         return $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' order by tag");
     }
@@ -144,23 +144,23 @@ class PageManager
         return null ;
     }
 
-    public function searchFullText($phrase) : array
+    public function searchFullText($phrase): array
     {
         return $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and (body LIKE '%" . $this->dbService->escape($phrase) . "%' OR tag LIKE '%" . $this->dbService->escape($phrase) . "%')");
     }
 
-    public function getWanted() : array
+    public function getWanted(): array
     {
         $r = "SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM ".$this->dbService->prefixTable('links')." as l LEFT JOIN ".$this->dbService->prefixTable('pages')." as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC";
         return $this->dbService->loadAll($r);
     }
 
-    public function getOrphaned() : array
+    public function getOrphaned(): array
     {
         return $this->dbService->loadAll('select distinct tag from ' . $this->dbService->prefixTable('pages') . 'as p left join ' . $this->dbService->prefixTable('links') . "as l on p.tag = l.to_tag where l.to_tag is NULL and p.comment_on = '' and p.latest = 'Y' order by tag");
     }
 
-    public function isOrphaned($tag) : bool
+    public function isOrphaned($tag): bool
     {
         return !is_null($this->dbService->loadSingle('select distinct tag from ' . $this->dbService->prefixTable('pages') . 'as p left join ' . $this->dbService->prefixTable('links') . "as l on p.tag = l.to_tag where l.to_tag is NULL and p.latest = 'Y' and tag = '" . $this->dbService->escape($tag) . "'"));
     }

@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Traversable;
 
 class DbService
 {
@@ -96,14 +95,14 @@ class DbService
     protected function getMicroTime()
     {
         list($usec, $sec) = explode(" ", microtime());
-        return ((float) $usec + (float) $sec);
+        return ((float)$usec + (float)$sec);
     }
 
     /*
      * Returns the first result of the query
      * If query fails returns null
      */
-    public function loadSingle($query) : ?array
+    public function loadSingle($query): ?array
     {
         if ($data = $this->LoadAll($query)) {
             return $data[0];
@@ -115,7 +114,7 @@ class DbService
      * Fills and returns a table with the results of the query
      * Frees the SQL results set afterwards
      */
-    public function loadAll($query) : array
+    public function loadAll($query): array
     {
         $data = array();
         if ($r = $this->query($query)) {

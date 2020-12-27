@@ -32,7 +32,7 @@ class ListManager
         $this->cachedLists = [];
     }
 
-    public function getOne($id) : ?array
+    public function getOne($id): ?array
     {
         if (isset($this->cachedLists[$id])) {
             return $this->cachedLists[$id];
@@ -56,7 +56,7 @@ class ListManager
         return $this->cachedLists[$id];
     }
 
-    public function getAll() : array
+    public function getAll(): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 

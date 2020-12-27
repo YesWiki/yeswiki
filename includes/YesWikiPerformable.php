@@ -17,7 +17,7 @@ abstract class YesWikiPerformable
     protected $output;
 
     /**
-     * Setter for wiki property
+     * Setter for the wiki property
      * @param Wiki $wiki
      */
     public function setWiki(Wiki $wiki): void
@@ -26,7 +26,7 @@ abstract class YesWikiPerformable
     }
 
     /**
-     * Setter for twig property
+     * Setter for the twig property
      * @param TemplateEngine $twig
      */
     public function setTwig(TemplateEngine $twig): void
@@ -35,7 +35,7 @@ abstract class YesWikiPerformable
     }
 
     /**
-     * Setter for arguments property
+     * Setter for the arguments property
      * @param array $arguments
      */
     public function setArguments(array &$arguments): void
@@ -44,7 +44,7 @@ abstract class YesWikiPerformable
     }
 
     /**
-     * Setter for output property
+     * Setter for the output property
      * @param string $output
      */
     public function setOutput(string &$output): void

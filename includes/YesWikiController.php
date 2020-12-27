@@ -5,14 +5,15 @@ namespace YesWiki\Core;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Wiki;
-use Doctrine\Common\Annotations\Annotation\Required;
 
 abstract class YesWikiController
 {
     protected $wiki;
 
-    // auto injection of the Wiki instance
-    /** @required */
+    /**
+     * Setter for the wiki property
+     * @Required set the auto-injection
+     */
     public function setWikiObject(Wiki $wiki)
     {
         $this->wiki = $wiki;

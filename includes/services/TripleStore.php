@@ -31,7 +31,7 @@ class TripleStore
      * @return string The value corresponding to ($resource, $property) or null if
      *         there is no such couple in the triples table.
      */
-    public function getOne($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) : ?string
+    public function getOne($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): ?string
     {
         $res = $this->getAll($resource, $property, $re_prefix, $prop_prefix);
         if ($res) {
@@ -40,7 +40,7 @@ class TripleStore
 
         return null;
     }
-    
+
     /**
      * Retrieves all the triples that match some criteria.
      * This allows to search triples by their approximate resource or property names.
@@ -60,7 +60,7 @@ class TripleStore
      *            The operator of comparison between the effective property and $property (default: '=')
      * @return array The list of all the triples that match the asked criteria
      */
-    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=') : array
+    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '='): array
     {
         static $operators = array(
             '=',
@@ -111,7 +111,7 @@ class TripleStore
      *         ...
      *         )
      */
-    public function getAll($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) : array
+    public function getAll($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): array
     {
         $res = $re_prefix . $resource ;
         $prop = $prop_prefix . $property ;
@@ -152,7 +152,7 @@ class TripleStore
      *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
      * @return int|null The id of the found triple or null if there is no such triple
      */
-    public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX) : ?int
+    public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): ?int
     {
         $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($re_prefix . $resource) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ' . 'AND value = "' . $this->dbService->escape($value) . '"';
         $triple = $this->dbService->loadSingle($sql);

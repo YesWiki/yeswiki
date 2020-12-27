@@ -503,7 +503,7 @@ class User
      *
      * @return boolean True if success and false otherwise.
     */
-    public function checkEmailKey($hash, $user) : bool
+    public function checkEmailKey($hash, $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
         return !is_null($this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key',$hash,'',''));

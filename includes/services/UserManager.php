@@ -21,17 +21,17 @@ class UserManager
         $this->params = $params;
     }
 
-    public function getOneByName($name, $password = 0) : ?array
+    public function getOneByName($name, $password = 0): ?array
     {
         return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
     }
 
-    public function getOneByEmail($mail, $password = 0) : ?array
+    public function getOneByEmail($mail, $password = 0): ?array
     {
         return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . ($password === 0 ? "" : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
     }
 
-    public function getAll() : array
+    public function getAll(): array
     {
         if ($this->params->has('user_table_prefix') && !empty($this->params->get('user_table_prefix'))) {
             $prefix = $this->params->get('user_table_prefix');
