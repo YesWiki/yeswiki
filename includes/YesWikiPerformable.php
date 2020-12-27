@@ -2,6 +2,7 @@
 namespace YesWiki\Core;
 
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 /**
  * A YesWiki object, with basic functionality like accessing main YesWiki instance, or
@@ -10,18 +11,45 @@ use YesWiki\Core\Service\TemplateEngine;
  */
 abstract class YesWikiPerformable
 {
-    // Declared public so they are accessible in the concrete classes
-    public $wiki;
-    public $arguments = [];
-    public $output;
+    protected $wiki;
+    protected $twig;
+    protected $arguments = [];
+    protected $output;
 
     /**
-     * Creates a YesWikiAction object associated with the given wiki object.
+     * Setter for wiki property
+     * @param Wiki $wiki
      */
-    public function __construct(&$wiki)
+    public function setWiki(Wiki $wiki): void
     {
-        $this->wiki = &$wiki;
-        $this->twig = $this->wiki->services->get(TemplateEngine::class);
+        $this->wiki = $wiki;
+    }
+
+    /**
+     * Setter for twig property
+     * @param TemplateEngine $twig
+     */
+    public function setTwig(TemplateEngine $twig): void
+    {
+        $this->twig = $twig;
+    }
+
+    /**
+     * Setter for arguments property
+     * @param array $arguments
+     */
+    public function setArguments(array &$arguments): void
+    {
+        $this->arguments = $arguments;
+    }
+
+    /**
+     * Setter for output property
+     * @param string $output
+     */
+    public function setOutput(string &$output): void
+    {
+        $this->output = $output;
     }
 
     abstract public function run();

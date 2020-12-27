@@ -16,7 +16,7 @@ class TemplateEngine
     protected $twig;
     protected $paths = []; // paths where the templates can be put
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, ParameterBagInterface $config)
     {
         $this->wiki = $wiki;
         // Default path (main namespace) is the root of the project. There are no templates
@@ -40,7 +40,7 @@ class TemplateEngine
             $paths[] = "tools/$extensionName/presentation/templates/";
             $paths[] = "custom/themes/tools/$extensionName/templates/";
             foreach (['custom/templates', 'templates', 'themes/tools',
-                         "themes/{$params->get('favorite_theme')}/tools"] as $dir) {
+                         "themes/{$config->get('favorite_theme')}/tools"] as $dir) {
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
             }

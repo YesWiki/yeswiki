@@ -32,7 +32,8 @@ class Performer
         Performer::TYPES['formatter'] => ['formatters/']
     ];
     protected $wiki;
-    protected $objectList; // list of all existing object
+    // list of all existing object
+    protected $objectList;
 
     public function __construct(Wiki $wiki)
     {
@@ -105,9 +106,12 @@ class Performer
     {
         require_once($object['filePath']);
         if (class_exists($object['baseName'])) {
-            $instance = new $object['baseName']($this->wiki);
-            $instance->arguments = &$vars;
-            $instance->output = &$output;
+            $instance = new $object['baseName']();
+            $instance->setWiki($this->wiki);
+            $instance->setArguments($vars);
+            $instance->setOutput($output);
+            $instance->setTwig($this->wiki->services->get(TemplateEngine::class));
+
             // we must save the arguments in the YesWiki object, as YesWiki::getParameter is used in many places
             // TODO once bazar will be completly rewritten, we should remove this by passing the arguments to the renderers
             $this->wiki->parameter = &$vars;
@@ -128,7 +132,7 @@ class Performer
      * with the page "parameter". Then, each execution change the execution context variables for the next one.
      * @return string the generated output
      */
-    public function run($objectName, $objectType, array $vars = [])
+    public function run($objectName, $objectType, array $vars = []): string
     {
         if (!Performer::TYPES[$objectType]) {
             return "Invalid type $objectType";
@@ -168,9 +172,9 @@ class Performer
     /**
      * Retrieves the list of existing objects
      *
-     * @return array An unordered array of all the available objects.
+     * @return array an unordered array of all the available objects
      */
-    public function list($objectType)
+    public function list($objectType): array
     {
         if (!Performer::TYPES[$objectType]) {
             throw new PerformerException("Invalid type $objectType");
