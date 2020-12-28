@@ -468,7 +468,7 @@ class Wiki
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
                 return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
-            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_WITH_PARAMS . '$/u', $tag)) {
+            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS . '$/u', $tag)) {
                 if (! empty($track)) {
                     // it's a Wiki link!
                     $this->TrackLinkTo(explode('?', $tag)[0]);
@@ -505,17 +505,50 @@ class Wiki
             }
         }
 
-        $linkParts = explode('?', $tag);
-        $tag = $linkParts[0];
-        $params = !empty($linkParts[1]) ? $linkParts[1] : '';
+        $linkParts = $this->extractLinkParts($tag);
+        if ($linkParts) {
+            // if the method is defined in $tag, it has the priority over the method given in $method
+            if ($linkParts['method']){
+                $method = $linkParts['method'];
+            }
+            if ((!empty($linkParts['method']) && $linkParts['method'] != 'show') || $this->LoadPage($linkParts['tag'])) {
+                // if the page refers to an handler url (contains /) or an existing page, display a 'show' link
+                return '<a href="' . $this->href($method, $linkParts['tag'], $linkParts['params']) . '">'
+                    . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
+            } else {
+                // otherwise display an 'edit' link
+                return '<span class="' . ($forcedLink ? 'forced-link ' : '') . 'missingpage">'
+                    . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</span><a href="'
+                    . $this->href("edit", $tag) . '">?</a>';
+            }
+        }
+    }
 
-        if ($this->LoadPage($tag)) {
-            return '<a href="'. $this->href($method, $tag, $params) . '">'
-                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
+    /**
+     * Extract the different part of a link of the style MyTag/method?param1=value1&param2=value2...
+     *
+     * The resulting array has the tree keys : 'tag' (string), 'method' (string) and 'params' (arrays of key/value for
+     * each param). 'tag' can't have a empty value, but 'method' and 'params' can.
+     * If the link has a '/' and a '?' but no letter between (no method), the url is not recognized.
+     * @param $link the link to parse
+     * @return array|null if the link is recognize return the result array, otherwise null
+     *
+     */
+    public function extractLinkParts($link): ?array
+    {
+        if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:\?('
+            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)){
+            $tag = !empty($linkParts[1]) ? $linkParts[1] : '';
+            $method = !empty($linkParts[2]) ? $linkParts[2] : '';
+            $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : '';
+            parse_str($paramsStr, $params);
+            return [
+                'tag' => $tag,
+                'method' => $method,
+                'params' => $params
+            ];
         } else {
-            return '<span class="'.($forcedLink ? 'forced-link ' : '').'missingpage">'
-            . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'</span><a href="'
-            . $this->href("edit", $tag) . '">?</a>';
+            return null;
         }
     }
 
