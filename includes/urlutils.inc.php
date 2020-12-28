@@ -30,14 +30,7 @@ function getRootUrl()
     if (!empty($_SERVER['HTTPS'])) {
         $protocol = 'https://';
     }
-    $port = '';
-    if ($_SERVER["SERVER_PORT"] != 80
-        and $_SERVER["SERVER_PORT"] != 443) {
-        $port = ':' . $_SERVER["SERVER_PORT"];
-    }
-    return $protocol
-        . $_SERVER["HTTP_HOST"]
-        . $port;
+    return $protocol . $_SERVER["HTTP_HOST"];
 }
 
 /**
