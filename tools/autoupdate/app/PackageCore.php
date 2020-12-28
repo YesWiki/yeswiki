@@ -10,7 +10,7 @@ class PackageCore extends Package
     {
         parent::__construct($release, $address, $desc, $doc);
         $this->installed = true;
-        $this->localPath = realpath(dirname($_SERVER["SCRIPT_FILENAME"]));
+        $this->localPath = str_replace(DIRECTORY_SEPARATOR,"/",realpath(dirname($_SERVER["SCRIPT_FILENAME"])));
         $this->name = $this::CORE_NAME;
         $this->updateAvailable = $this->updateAvailable();
     }
