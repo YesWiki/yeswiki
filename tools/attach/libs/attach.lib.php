@@ -808,7 +808,7 @@ if (!class_exists('attach')) {
         public function doDownload()
         {
             $this->file = $_GET['file'];
-            $fullFilename = $this->GetUploadPath() . '/' . basename(realpath($this->file) . $this->file);
+            $fullFilename = $this->GetUploadPath() . DIRECTORY_SEPARATOR . basename(realpath($this->file) . $this->file);
             //        $fullFilename = $this->GetUploadPath().'/'.$this->file;
             if (!file_exists($fullFilename)) {
                 $fullFilename = $this->GetFullFilename();

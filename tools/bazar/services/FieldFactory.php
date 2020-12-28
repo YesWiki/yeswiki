@@ -22,16 +22,16 @@ class FieldFactory
 
     private function loadAvailableField()
     {
-        AnnotationRegistry::registerFile(__DIR__ . '/../annotations/Field.php');
+        AnnotationRegistry::registerFile(dirname(__DIR__) . DIRECTORY_SEPARATOR . 'annotations' . DIRECTORY_SEPARATOR . 'Field.php');
 
         $reader = new CachedReader(
             new AnnotationReader(),
-            new PhpFileCache(__DIR__ . '/../../../cache/fields'),
+            new PhpFileCache(dirname(__DIR__,3) . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'fields'),
             $debug = true
         );
 
         foreach ($this->wiki->extensions as $extensionKey => $extensionDir) {
-            $fullExtensionDir = realpath($extensionDir) . '/fields';
+            $fullExtensionDir = realpath($extensionDir) . DIRECTORY_SEPARATOR . 'fields';
             if (is_dir($fullExtensionDir)) {
                 $fieldsFiles = array_diff(scandir($fullExtensionDir), ['..', '.']);
 

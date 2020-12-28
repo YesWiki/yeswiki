@@ -106,8 +106,8 @@ if (isset($this)) {
 }
 
 if (php_sapi_name() === 'cli') {
-    $cwd = realpath(exec('pwd').'/../../');
-    $cwd = str_replace('/git', '', $cwd);
+    $cwd = dirname(exec('pwd'),2);
+    $cwd = str_replace(DIRECTORY_SEPARATOR . 'git', '', $cwd);
     set_include_path($cwd);
     include_once 'wakka.config.php';
     include_once 'includes/Encoding.php';
