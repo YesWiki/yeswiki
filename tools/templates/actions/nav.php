@@ -48,15 +48,17 @@ if (!empty($icons)) {
 
 $listlinks = '';
 foreach ($titles as $key => $title) {
-    $linkParts = explode('?', $links[$key]);
-    [$url, $params] = ['', ''];
-    if ($this->IsWikiName($linkParts[0], WN_CAMEL_CASE_EVOLVED)){
-        $params = !empty($linkParts[1]) ? $linkParts[1] : '';
-        $url = $this->href('', $linkParts[0], $params);
+    $linkParts = $this->extractLinkParts($links[$key]);
+    [$url, $method, $params] = ['', '', ''];
+    if ($linkParts){
+        $method = $linkParts['method'];
+        $params = $linkParts['params'];
+        $url = $this->href($method, $linkParts['tag'], $params);
     } else {
         $url = $links[$key];
     }
-    $listclass = ($url == $this->href('', $this->GetPageTag(), $params)) ? ' class="active"' : '';
+    // class="active" if the url have the same url than the current one (independently of the method and the params)
+    $listclass = ($url == $this->href($method, $this->GetPageTag(), $params)) ? ' class="active"' : '';
     $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
         . (isset($icons[$key]) ? $icons[$key] : '')
         . $title.'</a></li>'."\n";

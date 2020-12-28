@@ -12,9 +12,10 @@ abstract class YesWikiController
 
     /**
      * Setter for the wiki property
+     * @param Wiki $wiki
      * @Required set the auto-injection
      */
-    public function setWikiObject(Wiki $wiki)
+    public function setWiki(Wiki $wiki): void
     {
         $this->wiki = $wiki;
     }

@@ -78,7 +78,7 @@ class FormManager
         }
         // TODO verify this method : each form is written with the same key in the array
 
-        return count($this->cachedForms) > 0 ? $this->cachedForms : null;
+        return $this->cachedForms;
     }
 
     public function getMany($formsIds): array
