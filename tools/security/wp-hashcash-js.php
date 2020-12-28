@@ -15,7 +15,7 @@
             header("Content-Encoding: gzip");
         }
     }
-    require_once(realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR) . str_replace('/',DIRECTORY_SEPARATOR,'/secret/wp-hashcash.lib'));
+    require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
 
     $field_id = hashcash_random_string(rand(6, 18));
     $fn_enable_name = hashcash_random_string(rand(6, 18));

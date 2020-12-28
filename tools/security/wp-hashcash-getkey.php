@@ -1,6 +1,6 @@
 <?php
 
-require_once(realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR) . str_replace('/',DIRECTORY_SEPARATOR,'/secret/wp-hashcash.lib'));
+require_once(realpath(dirname(__FILE__) . '/') . '/secret/wp-hashcash.lib');
 
 header("Pragma: no-cache");
 header("Expires: 0");
