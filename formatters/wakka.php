@@ -326,7 +326,12 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             // filter ]] because there are none here
                             // by construct)
                             $text = isset($text) ? preg_replace("/@@|££|\[\[/", "", $text) : '';
-                            return $result.$wiki->Link($url, "", $text, 1, true);
+
+                            $linkParts = $wiki->extractLinkParts($url);
+                            if ($linkParts) {
+                                return $result . $wiki->Link($linkParts['tag'], $linkParts['method'],
+                                        $linkParts['params'], $text, 1, true);
+                            }
                         } else { // if there is no URL, return at least the text
                             return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                         }
