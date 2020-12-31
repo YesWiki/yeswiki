@@ -517,9 +517,9 @@ class EntryManager
         }
 
         for ($i = 0; $i < count($form['template']); ++$i) {
-            if ($form['prepared'][$i] instanceof BazarField) {
+            if( $form['prepared'][$i] instanceof BazarField) {
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
-            } elseif (function_exists($form['template'][$i][0])) {
+            } else if (function_exists($form['template'][$i][0])){
                 $tab = $form['template'][$i][0](
                     $formtemplate,
                     $form['template'][$i],

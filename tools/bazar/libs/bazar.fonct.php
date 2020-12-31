@@ -173,30 +173,30 @@ function extractComaFromStringThenExplode($input_string)
         }
         $temporary_string = trim($temporary_string) ;
         // remove coma if first
-        if (substr($temporary_string, 0, 1) == ',') {
-            if (strlen($temporary_string) == 1) {
+        if (substr($temporary_string,0,1) == ',') {
+            if (strlen($temporary_string) == 1){
                 break ;
             }
-            $temporary_string = substr($temporary_string, 1) ;
+            $temporary_string = substr($temporary_string,1) ;
         }
-        if (substr($temporary_string, 0, 1) == '"') {
+        if (substr($temporary_string,0,1) == '"'){
             // empty string
             if (strlen($temporary_string) == 1) {
                 break ;
             }
             // search next '",' as end caracter of name with coma
-            $search_result = strpos($temporary_string, '",', 1) ;
+            $search_result = strpos($temporary_string,'",',1) ;
             if ($search_result !== false) {
                 // remove first '"' and last '",'
-                $result[] = substr($temporary_string, 1, $search_result - 1) ;
-                $temporary_string = substr($temporary_string, $search_result + 2) ;
+                $result[] = substr($temporary_string,1,$search_result - 1) ;
+                $temporary_string = substr($temporary_string,$search_result + 2) ;
             } else {
                 // search next ','
-                $search_result = strpos($temporary_string, ',', 1) ;
+                $search_result = strpos($temporary_string,',',1) ;
                 if ($search_result !== false) {
                     // remove only last ','
-                    $result[] = substr($temporary_string, 0, $search_result) ;
-                    $temporary_string = substr($temporary_string, $search_result + 1) ;
+                    $result[] = substr($temporary_string,0,$search_result) ;
+                    $temporary_string = substr($temporary_string,$search_result + 1) ;
                 } else {
                     $result[] = $temporary_string ;
                     break ;
@@ -204,18 +204,18 @@ function extractComaFromStringThenExplode($input_string)
             }
         } else {
             // search next ','
-            $search_result = strpos($temporary_string, ',') ;
+            $search_result = strpos($temporary_string,',') ;
             if ($search_result !== false) {
                 // remove only last ','
-                $result[] = substr($temporary_string, 0, $search_result) ;
-                $temporary_string = substr($temporary_string, $search_result + 1) ;
+                $result[] = substr($temporary_string,0,$search_result) ;
+                $temporary_string = substr($temporary_string,$search_result + 1) ;
             } else {
                 $result[] = $temporary_string ;
                 break ;
             }
         }
     }
-    $result = array_map('trim', $result);
+    $result = array_map('trim',$result);
     return $result ;
 }
 
@@ -368,11 +368,9 @@ function baz_afficher_formulaire_import()
                                                     $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
                                                 );
                                                 // le label n'est pas trouvé, vérifier si c'est un nombre ou une clé
-                                                if ((! $idval) && (is_numeric($data[$c]) ||
-                                                        array_key_exists(
-                                                            $data[$c],
-                                                            $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']
-                                                        ))) {
+                                                if ((! $idval) && (is_numeric($data[$c]) || 
+                                                        array_key_exists($data[$c],
+                                                        $alllists[strtolower($idliste_champ[$nom_champ[$c]])]['label']))) {
                                                     $idval = $data[$c] ;
                                                 }
                                             } elseif ($type_champ[$c] ==
@@ -420,9 +418,8 @@ function baz_afficher_formulaire_import()
                                                     $allentries[$id]
                                                 );
                                                 if ($idval === false && array_key_exists(
-                                                    $value,
-                                                    $allentries[$id]
-                                                )) {
+                                                        $value,
+                                                        $allentries[$id])) {
                                                     $idval = $value;
                                                 }
                                                 $tab_id[] = $idval;
@@ -927,6 +924,7 @@ function baz_afficher_formulaire_export()
                         
                     // liste ou fiche
                     if ($tabindex[0] == 'radio' || $tabindex[0] == 'liste' || $tabindex[0] == 'checkbox') {
+                        
                         $values_liste = baz_valeurs_liste($tabindex[1]);
 
                         $tabresult = isset($fiche[$index]) ? explode(',', $fiche[$index]) : null ;
@@ -935,10 +933,10 @@ function baz_afficher_formulaire_export()
                             foreach ($tabresult as $id) {
                                 $res_value = $values_liste["label"][$id] ;
                                 if (isset($res_value)) {
-                                    if ((strpos($res_value, ',') !== false || substr($res_value, 0, 1) == '"')
+                                    if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
                                             && $tabindex[0] == 'checkbox') {
                                         //  for checkbox if value contains ',' or begin with '"' add '"' before and after
-                                        $res_value = (strpos($res_value, '",') === false) ? '"' . $res_value . '"' : $id ;
+                                        $res_value = (strpos($res_value,'",') === false) ? '"' . $res_value . '"' : $id ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
@@ -957,12 +955,12 @@ function baz_afficher_formulaire_export()
                                 $val_fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($id);
                                 if (is_array($val_fiche)) {
                                     $res_value = $val_fiche['bf_titre'] ;
-                                    if ((strpos($res_value, ',') !== false || substr($res_value, 0, 1) == '"')
+                                    if ((strpos($res_value,',') !== false || substr($res_value,0,1) == '"' )
                                             && $tabindex[0] == 'checkboxfiche') {
                                         //  for checkboxfiches if title contains ',' or begin with "
-                                        //  add '"' before and after
+                                        //  add '"' before and after 
                                         //  except if '",' for compatibility for import
-                                        $res_value = (strpos($res_value, '",') === false) ? '"' . $res_value . '"' : $id ;
+                                        $res_value = (strpos($res_value,'",') === false) ? '"' . $res_value . '"' : $id ;
                                     }
                                     if ($labels_result == '') {
                                         $labels_result = $res_value;
@@ -1082,9 +1080,9 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         $formtemplate = '';
         for ($i = 0; $i < count($form['prepared']); ++$i) {
             // Render each field
-            if ($form['prepared'][$i] instanceof BazarField) {
+            if( $form['prepared'][$i] instanceof BazarField ) {
                 $data['content'] .= $form['prepared'][$i]->renderInputIfPermitted($valeurs);
-            } elseif (function_exists($tableau[$i][0])) {
+            } else if (function_exists($tableau[$i][0])){
                 $data['content'] .= $tableau[$i][0]($formtemplate, $tableau[$i], 'saisie', $valeurs);
             }
         }
@@ -1189,7 +1187,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                         'bf_latitude',
                         'bf_longitude',
                         'id_typeannonce',
-                        'createur', // to remove when passing to ectoplasme
+                        'createur',
                         'date_creation_fiche',
                         'date_debut_validite_fiche',
                         'date_fin_validite_fiche',
@@ -1351,14 +1349,14 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
 
     // if not found, try with semantic tmeplate
     if (!$customTemplateFound) {
-        try {
+        try {           
             $custom_template = baz_get_custom_semantic_template($fichebazar['values']);
             $res .= $templateEngine->render("@bazar/$custom_template", $customTemplateValues);
             $customTemplateFound = true;
         } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
             $customTemplateFound = false;
         }
-    }
+    }        
     
     // If not found, use default templating
     if (!$customTemplateFound) {
@@ -1745,10 +1743,10 @@ function getCachedUrlContent($url, $cache_life = '60')
  */
 function filterFieldsByPropertyName(array $fields, array $id)
 {
-    return array_filter($fields, function ($field) use ($id) {
-        if ($field instanceof BazarField) {
+    return array_filter($fields, function($field) use ($id) {
+        if( $field instanceof BazarField ) {
             return in_array($field->getPropertyName(), $id);
-        } elseif (is_array($field)) {
+        } elseif( is_array($field) ) {
             return in_array($field['id'], $id);
         }
     });
@@ -1759,7 +1757,7 @@ function filterFieldsByPropertyName(array $fields, array $id)
  */
 function findFieldByName($allForms, $name)
 {
-    foreach ($allForms as $form) {
+    foreach( $allForms as $form ) {
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 if ($field->getName() === $name) {
@@ -1819,13 +1817,13 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
 
                 $fieldPropName = null;
                 $fieldOptions = [];
-                if ($field instanceof BazarField) {
+                if( $field instanceof BazarField ) {
                     $fieldPropName = $field->getPropertyName();
                     $fieldType = $field->getType();
-                    if ($field instanceof EnumField) {
+                    if( $field instanceof EnumField ) {
                         $fieldOptions = $field->getOptions();
                     }
-                } elseif (is_array($field)) {
+                } else if ( is_array($field)) {
                     $fieldPropName = $field['id'];
                     $fieldType = $field['type'];
                     $fieldOptions = $field['values'];
@@ -2782,7 +2780,7 @@ function baz_get_custom_semantic_template($fiche)
     return null;
 }
 
-function getValuesForCustomTemplate($fichebazar, $idfiche)
+function getValuesForCustomTemplate($fichebazar, $idfiche) 
 {
     $html = $formtemplate = [];
     for ($i = 0; $i < count($fichebazar['form']['template']); ++$i) {
@@ -2807,7 +2805,7 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
                 }
                 if ($fichebazar['form']['prepared'][$i] instanceof BazarField) {
                     $html[$id] = $fichebazar['form']['prepared'][$i]->renderStatic($fichebazar['values']);
-                } elseif (function_exists($fichebazar['form']['template'][$i][0])) {
+                } else if (function_exists($fichebazar['form']['template'][$i][0])){
                     $html[$id] = $fichebazar['form']['template'][$i][0](
                         $formtemplate,
                         $fichebazar['form']['template'][$i],
@@ -2832,7 +2830,7 @@ function getValuesForCustomTemplate($fichebazar, $idfiche)
         $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($fichebazar['form']['bn_id_nature'], $html, true);
     } catch (\Exception $e) {
         // Do nothing if semantic type is not available
-    }
+    }   
 
     $values['html'] = $html;
     $values['fiche'] = $fichebazar['values'];
