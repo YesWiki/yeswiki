@@ -62,14 +62,6 @@ class EntryManager
             $data['id_fiche'] = $tag;
         }
 
-        // clean old fields
-        if (isset($data['datastr'])) {
-            unset($data['datastr']);
-        }
-        if (isset($data['createur'])) {
-            unset($data['createur']);
-        }
-
         // TODO call this function only when necessary
         $this->appendDisplayData($data, $semantic);
 
@@ -297,15 +289,6 @@ class EntryManager
             $results = $this->dbService->loadAll($requete);
             foreach ($results as $page) {
                 $json = $this->decode($page['body']);
-                // clean old fields
-                if (isset($json['datastr'])) {
-                    unset($json['datastr']);
-                }
-                if (isset($json['createur'])) {
-                    unset($json['createur']);
-                }
-                // TODO call this function only when necessary
-                $this->appendDisplayData($json);
                 $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
             }
         }
