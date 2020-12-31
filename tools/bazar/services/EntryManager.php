@@ -123,7 +123,7 @@ class EntryManager
             // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
             $params['user'] = str_replace('\\u00', '\\\\\u00', $params['user']);
 
-            $requete .= ' AND owner LIKE _utf8\'%'.$params['user'].'"%\'';
+            $requete .= ' AND owner = _utf8\''.$params['user'].'\'';
         }
 
         $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
@@ -558,9 +558,9 @@ class EntryManager
         unset($data['mot_de_passe_repete_wikini']);
         unset($data['html_data']);
 
-        // on nettoie le champ createur qui n'est plus utilisé
-        if (isset($data['createur'])) {
-            unset($data['createur']);
+        // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
+        if (isset($data['owner'])) {
+            unset($data['owner']);
         }
 
         // on encode en utf-8 pour reussir a encoder en json
@@ -600,8 +600,8 @@ class EntryManager
         // HTML data
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
 
-        // createur
-        $fiche['createur'] = $this->wiki->GetPageOwner($fiche['id_fiche']);
+        // owner
+        $fiche['owner'] = $this->wiki->GetPageOwner($fiche['id_fiche']);
 
         // Fiche URL
         $exturl = $GLOBALS['wiki']->GetParameter('url');

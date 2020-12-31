@@ -53,7 +53,7 @@ class AclField extends BazarField
 
     private function replaceWithCreator($right, $entry)
     {
-        // le signe # ou le mot user indiquent que le createur de la fiche sera utilisé pour les droits
+        // le signe # ou le mot user indiquent que le owner de la fiche sera utilisé pour les droits
         if ($right === 'user' or $right === '#') {
             return $entry['nomwiki'];
         }

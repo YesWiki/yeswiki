@@ -99,11 +99,11 @@ if (empty($list)) {
             // permet de voir la fiche
             $fiche['html'] = baz_voir_fiche(0, $fiche);
             // lien de suppression visible pour le super admin
-            if (baz_a_le_droit('supp_fiche', $fiche['createur'])) {
+            if (baz_a_le_droit('supp_fiche', $fiche['owner'])) {
                 $fiche['lien_suppression'] = '<a class="modalbox" href="'
                     . $this->href('deletepage', $fiche['id_fiche'], 'incoming=' . urlencode($this->getAbsolutePath())).'"></a>'."\n";
             }
-            if (baz_a_le_droit('modif_fiche', $fiche['createur'])) {
+            if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
                 $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="'.$this->href('edit', $fiche['id_fiche']).'"></a>'."\n";
             }
             $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="'.$this->href('', $fiche['id_fiche']) .'">'.$fiche['bf_titre'].'</a>'."\n";

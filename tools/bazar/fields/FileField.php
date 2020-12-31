@@ -22,7 +22,7 @@ class FileField extends BazarField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['delete_file']) && $_GET['delete_file'] == $value) {
-                if (baz_a_le_droit('supp_fiche', (isset($entry['createur']) ? $entry['createur'] : ''))) {
+                if (baz_a_le_droit('supp_fiche', (isset($entry['owner']) ? $entry['owner'] : ''))) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }

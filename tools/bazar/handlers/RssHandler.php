@@ -128,7 +128,7 @@ class RssHandler extends YesWikiHandler
                 $xml .= "\r\n        ";
                 $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $this->wiki->href('', $ligne['id_fiche']) . ']]>');
                 $xml .= "\r\n        ";
-                $xml .= XML_Util::createTag('dc:creator', null, $ligne['createur']);
+                $xml .= XML_Util::createTag('dc:creator', null, $ligne['owner']);
                 $xml .= "\r\n      ";
                 $xml .= XML_Util::createTag(
                     'description',

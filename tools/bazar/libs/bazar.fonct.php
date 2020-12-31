@@ -1187,7 +1187,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                         'bf_latitude',
                         'bf_longitude',
                         'id_typeannonce',
-                        'createur',
+                        'owner',
                         'date_creation_fiche',
                         'date_debut_validite_fiche',
                         'date_fin_validite_fiche',
@@ -1491,7 +1491,7 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
         return true;
     } else {
         if ($demande == 'supp_fiche') {
-            // seuls admins et createur peuvent effacer une fiche
+            // seuls admins et owner peuvent effacer une fiche
             if (is_array($nomwiki) && $id == $nomwiki['name'] || $id == '') {
                 return true;
             } else {
@@ -1499,7 +1499,7 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
             }
         }
         if ($demande == 'voir_champ') {
-            // seuls admins et createur peuvent voir un champ protege
+            // seuls admins et owner peuvent voir un champ protege
             if (is_array($nomwiki) && $id == $nomwiki['name'] || $id == '') {
                 return true;
             } else {
@@ -2019,7 +2019,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                                 $list['label'][$idf] = $allform[$idf]['bn_label_nature'];
                             }
                         }
-                    } elseif ($facettevalue[$id]['source'] == 'createur') {
+                    } elseif ($facettevalue[$id]['source'] == 'owner') {
                         $list['titre_liste'] = _t('BAZ_CREATOR');
                         foreach ($facettevalue[$id] as $idf => $nb) {
                             if ($idf != 'source' && $idf != 'type') {
