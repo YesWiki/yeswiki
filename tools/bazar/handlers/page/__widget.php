@@ -68,6 +68,7 @@ if (isset($_GET['id'])) {
     $allcheckboxes = multiArraySearch($formval["prepared"], 'type', 'checkbox');
     $tabfacette = array_merge($alllists, $allcheckboxes);
     $tabfacettetext = array();
+    $showtooltip = [];
     foreach ($tabfacette as $key => $fac) {
         $tabfacettetext[$fac['id']] = $fac['label'];
         $showtooltip[$fac['id']] = false;

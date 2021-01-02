@@ -2072,7 +2072,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
         ]);
     }
     // affiche les possibilités d'export
-    if (!preg_match('/\/iframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
+    if (!preg_match('/\/bazariframe/U', $_GET['wiki']) and $params['showexportbuttons']) {
         $key = '';
         if (isset($_GET['id']) and !empty($_GET['id'])) {
             $key = $_GET['id'];
