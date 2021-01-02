@@ -12,10 +12,8 @@ if ($link == "config/root_page") {
     $this->setParameter('link', $link);
 }
 
-$linkParts = $this->extractLinkParts($link);
-if ($linkParts){
-    $link = $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
-}
+// change short yeswiki urls in real links
+$link = $this->generateLink($link);
 
 // texte genere a l'interieur du bouton
 $text = $this->GetParameter('text');
