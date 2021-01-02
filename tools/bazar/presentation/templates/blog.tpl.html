@@ -54,7 +54,7 @@ if (!empty($nbcols)) {
 				</small>
 				<?php endif; ?>
 				<?php if ($showauthor) : ?>
-					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['createur']); ?></small>
+					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['owner']); ?></small>
 				<?php endif; ?>
 
         <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
@@ -98,7 +98,7 @@ if (!empty($nbcols)) {
 				</small>
 				<?php endif; ?>
 				<?php if ($showauthor) : ?>
-					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['createur']); ?></small>
+					<small>par <?php echo $GLOBALS['wiki']->Format($fiche['owner']); ?></small>
 				<?php endif; ?>
         <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
         $soustitre = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['soustitre']), '<br>')); ?>

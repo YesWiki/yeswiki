@@ -33,7 +33,7 @@ if (count($fiches)>0) {
         }
 
         // echo entry
-        echo '<div class="bazar-entry" '.$fiche['html_data'].'><small><a href="' . $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> <a href="'.$GLOBALS['wiki']->href('', $fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a> <small>par '.$GLOBALS['wiki']->Format($fiche['createur']).'</small></div>'."\n";
+        echo '<div class="bazar-entry" '.$fiche['html_data'].'><small><a href="' . $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> <a href="'.$GLOBALS['wiki']->href('', $fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a> <small>par '.$GLOBALS['wiki']->Format($fiche['owner']).'</small></div>'."\n";
     }
 } else {
    echo 'Il n\'y a pas de fiche pour cette période.';

@@ -123,7 +123,7 @@ class EntryManager
             // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
             $params['user'] = str_replace('\\u00', '\\\\\u00', $params['user']);
 
-            $requete .= ' AND body LIKE _utf8\'%"createur":"'.$params['user'].'"%\'';
+            $requete .= ' AND owner = _utf8\''.$params['user'].'\'';
         }
 
         $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
@@ -503,15 +503,6 @@ class EntryManager
             $_POST['id_fiche'] = $data['id_fiche'];
         }
 
-        // Entry creator
-        if ($GLOBALS['wiki']->GetPageOwner($data['id_fiche'])) {
-            $data['createur'] = $GLOBALS['wiki']->GetPageOwner($data['id_fiche']);
-        } elseif ($user = $GLOBALS['wiki']->GetUser()) {
-            $data['createur'] = $user['name'];
-        } else {
-            $data['createur'] = _t('BAZ_ANONYME');
-        }
-
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
 
         // Get creation date if it exists, initialize it otherwise
@@ -526,9 +517,9 @@ class EntryManager
         }
 
         for ($i = 0; $i < count($form['template']); ++$i) {
-            if( $form['prepared'][$i] instanceof BazarField) {
+            if ($form['prepared'][$i] instanceof BazarField) {
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
-            } else if (function_exists($form['template'][$i][0])){
+            } elseif (function_exists($form['template'][$i][0])) {
                 $tab = $form['template'][$i][0](
                     $formtemplate,
                     $form['template'][$i],
@@ -566,6 +557,12 @@ class EntryManager
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
         unset($data['html_data']);
+        unset($data['url']);
+
+        // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
+        if (isset($data['owner'])) {
+            unset($data['owner']);
+        }
 
         // on encode en utf-8 pour reussir a encoder en json
         if (YW_CHARSET != 'UTF-8') {
@@ -603,6 +600,9 @@ class EntryManager
 
         // HTML data
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
+
+        // owner
+        $fiche['owner'] = $this->wiki->GetPageOwner($fiche['id_fiche']);
 
         // Fiche URL
         $exturl = $GLOBALS['wiki']->GetParameter('url');

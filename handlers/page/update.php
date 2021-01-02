@@ -11,7 +11,6 @@ if ($this->UserIsAdmin()) {
     $result = $this->Query("SHOW COLUMNS FROM ".$this->config['table_prefix']."nature WHERE FIELD IN ('bn_ce_id_menu' ,'bn_commentaire' , 'bn_appropriation' , 'bn_image_titre' , 'bn_image_logo' , 'bn_couleur_calendrier' , 'bn_picto_calendrier' , 'bn_type_fiche' , 'bn_label_class')");
     if (@mysqli_num_rows($result) > 0) {
         $output .= 'ℹ️ Removing old fields from ' . $this->config['table_prefix'].'nature table.<br />';
-        echo('Adding fields bn_sem_context, bn_sem_type and bn_sem_use_template to ' . $this->config['table_prefix'].'nature table...</br>');
     
         // don't show output because it can be an error if column doesn't exists
         @$this->Query("ALTER TABLE ".$this->config['table_prefix']."nature DROP `bn_ce_id_menu`;");
@@ -27,6 +26,18 @@ if ($this->UserIsAdmin()) {
         $output .= '✅Done !<br /><hr />';
     } else {
         $output .= '✅The table '.$this->config['table_prefix'].'nature is already cleaned up from old tables !<hr />';
+    }
+
+    // remove createur field
+    $result = $this->Query("SELECT tag FROM ".$this->config['table_prefix']."pages WHERE body LIKE '%\"createur\":%'");
+    if (@mysqli_num_rows($result) > 0) {
+        $output .= 'ℹ️ Removing createur field from bazar entries in ' . $this->config['table_prefix'].'pages table.<br />';
+
+        // don't show output because it can be an error if column doesn't exists
+        @$this->Query("UPDATE " . $this->config['table_prefix']. "pages SET body = regexp_replace(body, '\"createur\":\".*?\",', '')");
+        $output .= '✅Done !<br /><hr />';
+    } else {
+        $output .= '✅The table '.$this->config['table_prefix'].'pages is already free of createur fields in bazar entries !<hr />';
     }
   
     // add semantic bazar fields
