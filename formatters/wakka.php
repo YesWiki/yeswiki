@@ -309,14 +309,13 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // forced links
                     // \S : any character that is not a whitespace character
                     // \s : any whitespace character
-                    elseif (preg_match("/^\[\[(" . WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS . "|mailto:.*|https?:\/\/.*)(\s+(.+))?\]\]$/Uum", $thing, $matches)) {
+                    elseif (preg_match("/^\[\[(\S*)(\s+(.+))?\]\]$/um", $thing, $matches)) {
                         if (isset($matches[3])) {
                             list(, $url, , $text) = $matches;
                         } else {
                             $url = $matches[1];
                             $text = '';
                         }
-
                         if ($url) {
                             // Early start/end of Inserted or Deleted ?
                             if ($url != ($url = (preg_replace("/@@|££|\[\[/", "", $url)))) {
@@ -326,11 +325,19 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             // filter ]] because there are none here
                             // by construct)
                             $text = isset($text) ? preg_replace("/@@|££|\[\[/", "", $text) : '';
-
+                            
                             $linkParts = $wiki->extractLinkParts($url);
                             if ($linkParts) {
-                                return $result . $wiki->Link($linkParts['tag'], $linkParts['method'],
-                                        $linkParts['params'], $text, 1, true);
+                                return $result . $wiki->Link(
+                                    $linkParts['tag'],
+                                    $linkParts['method'],
+                                    $linkParts['params'],
+                                    $text,
+                                    1,
+                                    true
+                                );
+                            } else {
+                                return '<a href="'.$wiki->generateLink($url).'">'.$text.'</a>';
                             }
                         } else { // if there is no URL, return at least the text
                             return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
