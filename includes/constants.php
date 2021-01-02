@@ -25,9 +25,9 @@ define('WN_CAMEL_CASE', WN_UPPER . WN_LOWER . '+' . WN_UPPER_NUM . WN_CHAR . '*'
 //define('WN_CAMEL_CASE_EVOLVED', '\b[\p{Lu}]+[\p{L}-_0-9]*[\p{Lu}]+[\p{L}-_0-9]*');
 define('WN_CAMEL_CASE_EVOLVED', '[\p{L}\-_.0-9]+');
 define('WN_CAMEL_CASE_EVOLVED_WITH_SLASH', '[\p{L}\-_.0-9\/]+');
-define('RFC3986_URI_CHARS','[\p{L}0-9-._~:\/?#[\]@!$&\'()*+,;=%]*');
+define('RFC3986_URI_CHARS', '[\p{L}0-9-._~:\/?#[\]@!$&\'()*+,;=%]*');
 // to check tag links with param which use camel case evolved characters
-define('WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS', WN_CAMEL_CASE_EVOLVED_WITH_SLASH . '(?:\?' . RFC3986_URI_CHARS . ')?');
+define('WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS', WN_CAMEL_CASE_EVOLVED_WITH_SLASH . '(?:[?&]' . RFC3986_URI_CHARS . ')?');
 /** the regexp that matches automatic wiki links in a text */
 define('WN_WIKI_LINK', WN_CAMEL_CASE); // this might evolve to handle the page groups and subpages syntax
 /** the regexp that checks if a word is a valid page tag */

@@ -549,7 +549,7 @@ if (!class_exists('attach')) {
                     //modifie $link pour ?tre un lien vers un autre wiki
                     $this->link = $this->wiki->GetInterWikiUrl($matches[1], $matches[2]);
                 }
-                $link = '<a href="'.$this->link.'">';
+                $link = '<a href="'.$this->wiki->generateLink($this->link).'">';
             } else {
                 if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
                     $link = '<a href="' . $this->GetScriptPath() . $fullFilename . '">';
