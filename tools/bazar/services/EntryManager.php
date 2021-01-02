@@ -517,9 +517,9 @@ class EntryManager
         }
 
         for ($i = 0; $i < count($form['template']); ++$i) {
-            if( $form['prepared'][$i] instanceof BazarField) {
+            if ($form['prepared'][$i] instanceof BazarField) {
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
-            } else if (function_exists($form['template'][$i][0])){
+            } elseif (function_exists($form['template'][$i][0])) {
                 $tab = $form['template'][$i][0](
                     $formtemplate,
                     $form['template'][$i],
@@ -557,6 +557,7 @@ class EntryManager
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
         unset($data['html_data']);
+        unset($data['url']);
 
         // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
         if (isset($data['owner'])) {
