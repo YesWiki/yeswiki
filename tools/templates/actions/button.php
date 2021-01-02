@@ -12,9 +12,9 @@ if ($link == "config/root_page") {
     $this->setParameter('link', $link);
 }
 
-if ($this->IsWikiName($link, WN_CAMEL_CASE_EVOLVED)) {
-    $linkTag = $link;
-    $link = $this->href('', $link);
+$linkParts = $this->extractLinkParts($link);
+if ($linkParts){
+    $link = $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
 }
 
 // texte genere a l'interieur du bouton

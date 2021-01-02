@@ -48,9 +48,20 @@ if (!empty($icons)) {
 
 $listlinks = '';
 foreach ($titles as $key => $title) {
-    $url = $this->IsWikiName($links[$key], WN_CAMEL_CASE_EVOLVED) ? $this->href('', $links[$key]) : $links[$key];
-    $listclass = ($url == $this->href('', $this->GetPageTag())) ? ' class="active"' : '';
-    $listlinks .= '<li'.$listclass.'><a href="'.$url.'">'.(isset($icons[$key]) ? $icons[$key] : '').$title.'</a></li>'."\n";
+    $linkParts = $this->extractLinkParts($links[$key]);
+    [$url, $method, $params] = ['', '', ''];
+    if ($linkParts){
+        $method = $linkParts['method'];
+        $params = $linkParts['params'];
+        $url = $this->href($method, $linkParts['tag'], $params);
+    } else {
+        $url = $links[$key];
+    }
+    // class="active" if the url have the same url than the current one (independently of the method and the params)
+    $listclass = ($url == $this->href($method, $this->GetPageTag(), $params)) ? ' class="active"' : '';
+    $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
+        . (isset($icons[$key]) ? $icons[$key] : '')
+        . $title.'</a></li>'."\n";
 }
 
 $navID = uniqid('nav_');

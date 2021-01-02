@@ -403,8 +403,9 @@ class Wiki
         header("Location: $url");
         exit();
     }
+
     // returns just PageName[/method].
-    public function MiniHref($method = '', $tag = '')
+    public function MiniHref($method = null, $tag = null)
     {
         if (! $tag = trim($tag)) {
             $tag = $this->tag;
@@ -412,10 +413,11 @@ class Wiki
 
         return $tag . ($method ? '/' . $method : '');
     }
+
     // returns the full url to a page/method.
-    public function Href($method = '', $tag = '', $params = '', $htmlspchars = true)
+    public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
     {
-        if (!$tag = trim($tag)) {
+        if (! $tag = trim($tag)) {
             $tag = $this->tag;
         }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
@@ -441,7 +443,7 @@ class Wiki
         return $href;
     }
 
-    public function Link($tag, $method = "", $text = "", $track = 1, $forcedLink = false)
+    public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
     {
         $displayText = $text ? $text : $tag;
 
@@ -468,10 +470,10 @@ class Wiki
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
                 return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
-            } elseif (preg_match('/^'.WN_CAMEL_CASE_EVOLVED.'$/u', $tag)) {
+            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS . '$/u', $tag)) {
                 if (! empty($track)) {
                     // it's a Wiki link!
-                    $this->TrackLinkTo($tag);
+                    $this->TrackLinkTo(explode('?', $tag)[0]);
                 }
             } elseif ($safeUrl = str_replace(
                 array('%3F', '%3A', '%26', '%3D', '%23'),
@@ -505,17 +507,43 @@ class Wiki
             }
         }
 
-        if ($this->LoadPage($tag)) {
-            return '<a href="'.htmlspecialchars(
-                $this->href($method, $tag),
-                ENT_COMPAT,
-                YW_CHARSET
-            ).'">' . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
+       if ($method != 'show' || $this->LoadPage($tag)) {
+            // if the page refers to an handler url (contains /) or an existing page, display a 'show' link
+            return '<a href="' . $this->href($method, $tag, $params) . '">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
         } else {
-            return '<span class="'.($forcedLink ? 'forced-link ' : '').'missingpage">'
-            . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'</span><a href="'
-            . htmlspecialchars($this->href("edit", $tag), ENT_COMPAT, YW_CHARSET)
-            . '">?</a>';
+            // otherwise display an 'edit' link
+            return '<span class="' . ($forcedLink ? 'forced-link ' : '') . 'missingpage">'
+                . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</span><a href="'
+                . $this->href("edit", $tag) . '">?</a>';
+        }
+    }
+
+    /**
+     * Extract the different part of a link of the style MyTag/method?param1=value1&param2=value2...
+     *
+     * The resulting array has the tree keys : 'tag' (string), 'method' (string) and 'params' (arrays of key/value for
+     * each param). 'tag' can't have a null value, but 'method' can, and 'params' can also return an empty array.
+     * If the link has a '/' and a '?' but no letter between (no method), the url is not recognized.
+     * @param $link the link to parse
+     * @return array|null if the link is recognize return the result array, otherwise nullhref
+     *
+     */
+    public function extractLinkParts($link): ?array
+    {
+        if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:\?('
+            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)){
+            $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
+            $method = !empty($linkParts[2]) ? $linkParts[2] : null;
+            $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
+            parse_str($paramsStr, $params);
+            return [
+                'tag' => $tag,
+                'method' => $method,
+                'params' => $params
+            ];
+        } else {
+            return null;
         }
     }
 

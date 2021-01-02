@@ -28,7 +28,7 @@ class YesWikiControllerResolver extends ControllerResolver
     private function configureController($controller, string $class)
     {
         if ($controller instanceof YesWikiController) {
-            $controller->setWikiObject($this->wiki);
+            $controller->setWiki($this->wiki);
         }
 
         return $controller;
