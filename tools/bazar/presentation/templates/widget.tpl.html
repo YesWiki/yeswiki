@@ -2,7 +2,7 @@
   data-formid="<?php echo $_GET['id']; ?>"
   data-templatemodel="<?php echo $params['template']; ?>"
   data-providermodel="<?php echo $params['provider']; ?>"
-  data-iframeUrl="<?php echo $GLOBALS['wiki']->href('iframe', '', $urlparams, false); ?>"
+  data-iframeUrl="<?php echo $GLOBALS['wiki']->href('bazariframe', '', $urlparams, false); ?>"
   data-checkedFacette="<?php echo '[]'; ?>"
   data-markerfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"
   data-colorfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"
@@ -231,7 +231,7 @@
           </div>
 
           <strong>Code embed a copier coller dans votre site</strong>
-          <pre><code>&lt;iframe width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" allowfullscreen="true" src="{{newiframeurl}}"&gt;&lt;/iframe&gt;</code></pre>
+          <pre><code>&lt;iframe width="<?php echo $params['width']; ?>" height="<?php echo $params['height']; ?>" frameborder="0" allowfullscreen="true" src="{{newiframeurl}}"&gt;&lt;/bazariframe&gt;</code></pre>
 
           <strong>Code action wiki a copier coller dans une page de ce site</strong>
           <pre><code>{{wikiquery}}</code></pre>

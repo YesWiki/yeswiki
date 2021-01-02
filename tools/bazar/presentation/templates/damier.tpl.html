@@ -189,27 +189,29 @@ if (!function_exists('montrer_bouton'))
 		} else {
 			$btnstyle='';
 		}
-		$libelle_bouton=$tabfiche[0]['bf_bouton']; // button label
-		/* If 		the record stores a link, then the button activates it
-		* else if	the record stores a file, then the button downloads it
-		* else		there is no button */
-		if (isset($tabfiche[0]['bf_lien']) && ($tabfiche[0]['bf_lien']!='')){
-			if (ctype_alnum($tabfiche[0]['bf_lien'])) { // text link is alphanum only, therefore a page of the current wiki
-				$lien= $base_url . $tabfiche[0]['bf_lien'];
-			} else {
-				$lien= $tabfiche[0]['bf_lien'];
-			}
-			$button = 1;
-		} elseif (isset($tabfiche[0]['fichierbf_fichier']) && ($tabfiche[0]['fichierbf_fichier']!='')) {
-				$lien= 'files/' . $tabfiche[0]['fichierbf_fichier'];
-			$button = 1;
-		} else {
-			$button = 0;
-		}
-		if ($button){
-			$output='<div class="conteneur-bouton"><br /><a href="'.$lien.'" class="btn '.$btn_class.'" title="'.$libelle_bouton.'"' . $btnstyle . ' target="_blank">'.$libelle_bouton.'</a></div>';
-	 		echo $output;
-		}
+		if (!empty($tabfiche[0])) {
+            $libelle_bouton = $tabfiche[0]['bf_bouton']; // button label
+            /* If 		the record stores a link, then the button activates it
+            * else if	the record stores a file, then the button downloads it
+            * else		there is no button */
+            if (isset($tabfiche[0]['bf_lien']) && ($tabfiche[0]['bf_lien'] != '')) {
+                if (ctype_alnum($tabfiche[0]['bf_lien'])) { // text link is alphanum only, therefore a page of the current wiki
+                    $lien = $base_url . $tabfiche[0]['bf_lien'];
+                } else {
+                    $lien = $tabfiche[0]['bf_lien'];
+                }
+                $button = 1;
+            } elseif (isset($tabfiche[0]['fichierbf_fichier']) && ($tabfiche[0]['fichierbf_fichier'] != '')) {
+                $lien = 'files/' . $tabfiche[0]['fichierbf_fichier'];
+                $button = 1;
+            } else {
+                $button = 0;
+            }
+            if ($button) {
+                $output = '<div class="conteneur-bouton"><br /><a href="' . $lien . '" class="btn ' . $btn_class . '" title="' . $libelle_bouton . '"' . $btnstyle . ' target="_blank">' . $libelle_bouton . '</a></div>';
+                echo $output;
+            }
+        }
 	}
 }
 

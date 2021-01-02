@@ -74,3 +74,54 @@ function detectRewriteMode()
     }
     return substr($pieces['path'], - strlen(WAKKA_ENGINE)) != WAKKA_ENGINE;
 }
+
+/**
+ * Replace links with the /iframe handler when not opened in a new window
+ * @param string $body the body page as source
+ * @return string the body page with the link replacements
+ */
+function replaceLinksWithIframe(string $body): string
+{
+    // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
+    $pattern = '~(<a.*?href.*?)' . preg_quote($GLOBALS['wiki']->config['base_url']) . '([\w\-_]+)([&#?].*?)?(["\'])([^>]*?>)~i';
+    $pagebody = preg_replace_callback(
+        $pattern,
+        function ($matches) {
+            // on vérifie si le lien ne s'ouvre pas dans une nouvelle fenêtre, c'est à dire s'il n'y a pas d'attribut
+            // target="_blank" ou class="new window" avant ou après le href
+            // et si le lien ne s'ouvre dans une autre fenêtre, on insère /iframe à l'url
+            $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
+            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match($NEW_WINDOW_PATTERN,
+                    $matches[5])) {
+                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . $matches[3] . $matches[4] .
+                    $matches[5];
+            } else {
+                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/iframe' . $matches[3] .
+                    $matches[4] . $matches[5];
+            }
+        },
+        $body
+    );
+
+    // pattern qui rajoute le /editiframe pour les liens au bon endroit
+    $pattern = '~(<a.*?href.*?)' . preg_quote($GLOBALS['wiki']->config['base_url']) . '([\w\-_]+)\/edit([&#?].*?)?(["\'])([^>]*?>)~i';
+    $pagebody = preg_replace_callback(
+        $pattern,
+        function ($matches) {
+            // on vérifie si le lien ne s'ouvre pas dans une nouvelle fenêtre, c'est à dire s'il n'y a pas d'attribut
+            // target="_blank" ou class="new window" avant ou après le href
+            // et si le lien ne s'ouvre dans une autre fenêtre, on insère /editiframe à l'url
+            $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
+            if (preg_match($NEW_WINDOW_PATTERN, $matches[1]) || preg_match($NEW_WINDOW_PATTERN,
+                    $matches[5])) {
+                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/edit' . $matches[3]
+                    . $matches[4] . $matches[5];
+            } else {
+                return $matches[1] . $GLOBALS['wiki']->config['base_url'] . $matches[2] . '/editiframe' . $matches[3]
+                    . $matches[4] . $matches[5];
+            }
+        },
+        $pagebody
+    );
+    return $pagebody;
+}

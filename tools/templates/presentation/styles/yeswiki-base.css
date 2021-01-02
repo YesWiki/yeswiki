@@ -390,17 +390,6 @@ body {
   padding-top: 0;
 }
 
-.login-body {
-  background-color: transparent;
-  background-image: none;
-  width: auto;
-  min-width: 0;
-  padding: 5em 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 .yeswiki-page-widget {
   min-height: auto !important;
 }

@@ -25,10 +25,10 @@ class BookmarkletField extends BazarField
 
     protected function renderInput($entry)
     {
-        if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/iframe') {
+        if ($_GET['wiki'] != $GLOBALS['wiki']->getPageTag().'/bazariframe') {
             $id = isset($GLOBALS['params']['idtypeannonce']) ? $GLOBALS['params']['idtypeannonce'] : $entry['id_typeannonce'];
             $urlParams = 'vue='.BAZ_VOIR_SAISIR.'&action='.BAZ_ACTION_NOUVEAU.'&id='.$id;
-            $url = $GLOBALS['wiki']->href('iframe', $GLOBALS['wiki']->getPageTag(), $urlParams);
+            $url = $GLOBALS['wiki']->href('bazariframe', $GLOBALS['wiki']->getPageTag(), $urlParams);
 
             return $this->render("@bazar/inputs/bookmarklet.twig", [
                 'url' => $url
@@ -38,7 +38,7 @@ class BookmarkletField extends BazarField
 
     public function renderStatic($entry)
     {
-        if ($GLOBALS['wiki']->GetMethod() == 'iframe') {
+        if ($GLOBALS['wiki']->GetMethod() == 'bazariframe') {
             return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';
         }
     }
