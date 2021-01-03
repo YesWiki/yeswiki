@@ -527,8 +527,11 @@ class Wiki
      * @param string $link the link to parse
      * @return string final form of the link
      */
-    public function generateLink($link)
+    public function generateLink($link) : ?string
     {
+        if (empty($link)) {
+            return null;
+        }
         $linkParts = $this->extractLinkParts($link);
         if ($linkParts){
             return $this->href(
@@ -560,7 +563,7 @@ class Wiki
         if (empty($link)) {
             return null;
         }
-        elseif (preg_match(WN_YESWIKI_EVOLVED_LINK, $link, $linkParts)) {
+        if (preg_match(WN_YESWIKI_EVOLVED_LINK, $link, $linkParts)) {
             $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
             $anchor = !empty($linkParts[2]) ? $linkParts[2] : null;
             $method = !empty($linkParts[3]) ? $linkParts[3] : null;
