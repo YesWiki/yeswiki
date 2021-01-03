@@ -289,6 +289,8 @@ class EntryManager
             $results = $this->dbService->loadAll($requete);
             foreach ($results as $page) {
                 $json = $this->decode($page['body']);
+                // TODO call this function only when necessary
+                $this->appendDisplayData($json);
                 $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
             }
         }
