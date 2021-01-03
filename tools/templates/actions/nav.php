@@ -49,16 +49,17 @@ if (!empty($icons)) {
 $listlinks = '';
 foreach ($titles as $key => $title) {
     $linkParts = $this->extractLinkParts($links[$key]);
-    [$url, $method, $params] = ['', '', ''];
+    [$url, $method, $params, $anchor] = ['', '', '', ''];
     if ($linkParts){
         $method = $linkParts['method'];
         $params = $linkParts['params'];
-        $url = $this->href($method, $linkParts['tag'], $params);
+        $anchor = $linkParts['anchor'];
+        $url = $this->href($method, $linkParts['tag'], $params, $anchor);
     } else {
         $url = $links[$key];
     }
     // class="active" if the url have the same url than the current one (independently of the method and the params)
-    $listclass = ($url == $this->href($method, $this->GetPageTag(), $params)) ? ' class="active"' : '';
+    $listclass = ($url == $this->href($method, $this->GetPageTag(), $params, $anchor)) ? ' class="active"' : '';
     $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
         . (isset($icons[$key]) ? $icons[$key] : '')
         . $title.'</a></li>'."\n";
