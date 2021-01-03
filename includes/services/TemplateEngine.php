@@ -62,7 +62,7 @@ class TemplateEngine
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
-            return $this->wiki->Href($options['handler'], $options['tag'], $options['params'], false);
+            return $this->wiki->Href($options['handler'], $options['tag'], $options['params'], null, false);
         });
         $this->addTwigHelper('include_javascript', function ($file, $first = false) {
             $this->wiki->AddJavascriptFile($file, $first);

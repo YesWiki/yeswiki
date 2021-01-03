@@ -405,28 +405,30 @@ class Wiki
     }
 
     // returns just PageName[/method].
-    public function MiniHref($method = null, $tag = null)
+    public function MiniHref($method = null, $tag = null, $anchor = null)
     {
         if (! $tag = trim($tag)) {
             $tag = $this->tag;
         }
 
-        return $tag . ($method ? '/' . $method : '');
+        return $tag . ($anchor ? '#' . $anchor : '') . ($method ? '/' . $method : '');
     }
 
     // returns the full url to a page/method.
-    public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
+    public function Href($method = null, $tag = null, $params = null, $anchor = null, $htmlspchars = true)
     {
         if (! $tag = trim($tag)) {
             $tag = $this->tag;
         }
-        $href = $this->config["base_url"] . $this->MiniHref($method, $tag);
+        $href = $this->config["base_url"] . $this->MiniHref($method, $tag, $anchor);
         if ($params) {
             if (is_array($params)) {
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
                     if ($value) {
                         $paramsArray[] = "$key=$value";
+                    } else {
+                        $paramsArray[] = "$key";
                     }
                 };
                 if (count($paramsArray)>0) {
@@ -443,7 +445,7 @@ class Wiki
         return $href;
     }
 
-    public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
+    public function Link($tag, $method = null, $params = null, $anchor = null, $text = null, $track = 1, $forcedLink = false)
     {
         $displayText = $text ? $text : $tag;
 
@@ -470,10 +472,10 @@ class Wiki
                 // An inline image? (text!=tag and url ends by png,gif,jpeg)
                 return '<img src="' . htmlspecialchars($tag, ENT_COMPAT, YW_CHARSET)
                 .'" alt="'.htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET).'"/>';
-            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS . '$/u', $tag)) {
-                if (! empty($track)) {
+            } elseif (preg_match('/^' . WN_CAMEL_CASE_EVOLVED_OR_EMPTY . '$/u', $tag)) {
+                if ($track && $tag) {
                     // it's a Wiki link!
-                    $this->TrackLinkTo(explode('?', $tag)[0]);
+                    $this->TrackLinkTo($tag);
                 }
             } elseif ($safeUrl = str_replace(
                 array('%3F', '%3A', '%26', '%3D', '%23'),
@@ -509,7 +511,7 @@ class Wiki
 
         if ($method != 'show' || $this->LoadPage($tag)) {
             // if the page refers to an handler url (contains /) or an existing page, display a 'show' link
-            return '<a href="' . $this->href($method, $tag, $params) . '">'
+            return '<a href="' . $this->href($method, $tag, $params, $anchor) . '">'
                 . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
         } else {
             // otherwise display an 'edit' link
@@ -520,29 +522,26 @@ class Wiki
     }
 
     /**
-     * Handle string that could be a valid link, a yeswiki short link, or anything else (anchor, relative url..)
-     *
-     * if a yeswiki short link if discovered, it will be completed in order to have a real link
+     * Handle string that could be a valid link, a yeswiki short link, or anything else (anchor, relative url...).
+     * If a yeswiki short link if discovered, it will be completed in order to have a real link
      * @param string $link the link to parse
      * @return string final form of the link
-     *
      */
-    public function generateLink($link): string
+    public function generateLink($link)
     {
-        if (empty($link)) {
-            return null;
-        } elseif (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
-            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)) {
-            $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
-            $method = !empty($linkParts[2]) ? $linkParts[2] : null;
-            $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
-            parse_str($paramsStr, $params);
-            return $this->href($method, $tag, $params);
-        } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
+        $linkParts = $this->extractLinkParts($link);
+        if ($linkParts){
+            return $this->href(
+                $linkParts['method'],
+                $linkParts['tag'],
+                $linkParts['params'],
+                $linkParts['anchor']
+            );
+        /*} elseif (filter_var($link, FILTER_VALIDATE_URL)) {
             // a valid url
-            return $link;
+            return $link;*/
         } else {
-            // for now let's be tolerant : it may be a relative url or an anchor
+            // for now let's be tolerant : it may be an anchor
             return $link;
         }
     }
@@ -558,14 +557,18 @@ class Wiki
      */
     public function extractLinkParts($link): ?array
     {
-        if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
-            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)) {
+        if (empty($link)) {
+            return null;
+        }
+        elseif (preg_match(WN_YESWIKI_EVOLVED_LINK, $link, $linkParts)) {
             $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
-            $method = !empty($linkParts[2]) ? $linkParts[2] : null;
-            $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
+            $anchor = !empty($linkParts[2]) ? $linkParts[2] : null;
+            $method = !empty($linkParts[3]) ? $linkParts[3] : null;
+            $paramsStr = !empty($linkParts[4]) ? $linkParts[4] : null;
             parse_str($paramsStr, $params);
             return [
                 'tag' => $tag,
+                'anchor' => $anchor,
                 'method' => $method,
                 'params' => $params
             ];

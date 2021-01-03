@@ -28,7 +28,7 @@ if (isset($metadatas["ebook-title"]) && isset($metadatas["ebook-description"]) &
 
     // Title and Identifier are mandatory!
     $book->setTitle($metadatas["ebook-title"]);
-    $book->setIdentifier($this->href('', $this->getPageTag()), EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.
+    $book->setIdentifier($this->href('', $this->getPageTag()), null, EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.
     $book->setLanguage($this->config["lang"]); // Not needed, but included for the example, Language is mandatory, but EPub defaults to "en". Use RFC3066 Language codes, such as "en", "da", "fr" etc.
     $book->setDescription($metadatas["ebook-description"]);
     $book->setAuthor($metadatas["ebook-author"], $metadatas["ebook-author-biblio"]);

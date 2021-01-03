@@ -101,7 +101,7 @@ foreach ($last_users as $user) {
         echo '<a href="'.$this->href('', 'ParametresUtilisateur').'" class="btn btn-sm btn-primary" role="button">'._t('USER_MODIFY').'</a>';
     } else { // not the current user, then can be modified
         if ($isAdmin) {
-            echo '<a href="'.$this->href('', 'ParametresUtilisateur', 'user='.$user['name'], false).'&from='.$this->tag.'" class="btn btn-sm btn-warning " role="button">'._t('USER_MODIFY').'</a>';
+            echo '<a href="'.$this->href('', 'ParametresUtilisateur', 'user='.$user['name'], null, false).'&from='.$this->tag.'" class="btn btn-sm btn-warning " role="button">'._t('USER_MODIFY').'</a>';
         }
     }
     echo '</td>';

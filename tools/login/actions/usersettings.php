@@ -63,7 +63,7 @@ if ($action == 'logout') { // User wants to log out
             if ($userLoggedIn) { // In case it's the usther trying to update oneself
                 $this->Redirect($this->href());
             } else { // That's the admin acting, we need to pass the user on
-                $this->Redirect($this->href('', '', 'user='.$_GET['user'].'&from='.$referrer, false));
+                $this->Redirect($this->href('', '', 'user='.$_GET['user'].'&from='.$referrer,null, false));
             }
         } else { // Unable to update
             $this->session->setMessage($this->user->error);
@@ -104,7 +104,7 @@ if ($action == 'logout') { // User wants to log out
     } ?></h2>
 <?php
 if ($adminIsActing) {
-        $href = $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, false);
+        $href = $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, null, false);
     } else {
         $href = $this->href();
     } ?>
@@ -144,7 +144,7 @@ if ($adminIsActing) {
 <?php
             if ($adminIsActing) { // Admin is acting
 ?>
-<form action="<?php echo $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, false); ?>" method="post" class="form-horizontal">
+<form action="<?php echo $this->href('', '', 'user='.$this->user->getProperty('name').'&from='.$referrer, null, false); ?>" method="post" class="form-horizontal">
 	<input type="hidden" name="usersettings_action" value="deleteByAdmin" />
 	<input class="btn btn-danger" type="submit" value="<?php echo _t('USER_DELETE');?>" />
 <?php echo $this->FormClose();

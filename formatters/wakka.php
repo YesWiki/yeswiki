@@ -328,16 +328,16 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                             
                             $linkParts = $wiki->extractLinkParts($url);
                             if ($linkParts) {
-                                return $result . $wiki->Link(
-                                    $linkParts['tag'],
-                                    $linkParts['method'],
-                                    $linkParts['params'],
-                                    $text,
-                                    1,
-                                    true
-                                );
+                                return $result . $wiki->Link($linkParts['tag'],
+                                        $linkParts['method'],
+                                        $linkParts['params'],
+                                        $linkParts['anchor'],
+                                        $text,
+                                        1,
+                                        true
+                                    );
                             } else {
-                                return '<a href="'.$wiki->generateLink($url).'">'.$text.'</a>';
+                                return '<a href="' . $url . '">' . $text . '</a>';
                             }
                         } else { // if there is no URL, return at least the text
                             return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
