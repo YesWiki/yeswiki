@@ -40,7 +40,7 @@ abstract class YesWikiPerformable
      */
     public function setArguments(array &$arguments): void
     {
-        $this->arguments = $arguments;
+        $this->arguments = &$arguments;
     }
 
     /**
@@ -49,7 +49,7 @@ abstract class YesWikiPerformable
      */
     public function setOutput(string &$output): void
     {
-        $this->output = $output;
+        $this->output = &$output;
     }
 
     abstract public function run();
