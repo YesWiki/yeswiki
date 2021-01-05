@@ -27,4 +27,16 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_attach_pdf_position_label' => "Position du pdf",
     'AB_attach_pdf_largeur_max_label' => "Largeur maximale",
     'AB_attach_pdf_hauteur_max_label' => "Hauteur maximale",
+    //block
+    'AB_BLOCK_LABEL' => 'Bloc',
+    'AB_BLOCK_DESC' => 'Crée un bloc pour lequel vous pouvez préciser une présentation ou un comportement. Vous pouvez également le nommer ce qui permet, par la suite de créer des liens qui y pointent directement.',
+    'AB_BLOCK_SAMPLE' => "Si tu vois tout en gris, déplace l'éléphant !",
+    'AB_BLOCK_CLASS_LABEL' => "Classe",
+    'AB_BLOCK_CLASS_HINT' => 'La ou les classes CSS (parmi celles de votre wiki) que vous souhaitez appliquer à ce bloc',
+    'AB_BLOCK_STYLE_LABEL' => "Style (CSS)",
+    'AB_BLOCK_STYLE_HINT' => "Si vous connaissez la syntaxe CSS et souhaitez modifier l'affichage ou le comportement de ce bloc",
+    'AB_BLOCK_ID_LABEL' => "Identifiant",
+    'AB_BLOCK_ID_HINT' => "Donne un nom au bloc, ce qui permet de créer des liens qui y pointent",
+    'AB_BLOCK_DATA_LABEL' => "Data",
+    'AB_BLOCK_DATA_HINT' => "Pour ajouter d'autres attributs au bloc, sous la forme \"attribut1=valeur1,attribut2=valeur2\"",
 ));
