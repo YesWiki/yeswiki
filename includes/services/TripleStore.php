@@ -58,9 +58,11 @@ class TripleStore
      *            The operator of comparison between the effective resource and $resource (default: 'LIKE')
      * @param string $prop_op
      *            The operator of comparison between the effective property and $property (default: '=')
+     * @param string $val_op
+     *            The operator of comparison between the effective value and $valueq (default: '=')
      * @return array The list of all the triples that match the asked criteria
      */
-    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '='): array
+    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=', $val_op = '='): array
     {
         static $operators = array(
             '=',
@@ -70,6 +72,14 @@ class TripleStore
         if (! in_array($res_op, $operators)) {
             $res_op = '=';
         }
+        $prop_op = strtoupper($prop_op);
+        if (! in_array($prop_op, $operators)) {
+            $prop_op = '=';
+        }
+        $val_op = strtoupper($val_op);
+        if (! in_array($val_op, $operators)) {
+            $val_op = '=';
+        }
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples');
         $where = [];
@@ -77,15 +87,10 @@ class TripleStore
             $where[] = ' resource ' . $res_op . ' "' . $this->dbService->escape($resource) . '"';
         }
         if ($property !== null) {
-            $prop_op = strtoupper($prop_op);
-            if (! in_array($prop_op, $operators)) {
-                $prop_op = '=';
-            }
-
             $where[] = ' property ' . $prop_op . ' "' . $this->dbService->escape($property) . '"';
         }
         if ($value !== null) {
-            $where[] = ' value = "' . $this->dbService->escape($value) . '"';
+            $where[] = ' value ' . $val_op . ' "' . $this->dbService->escape($value) . '"';
         }
         if (count($where)>0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
