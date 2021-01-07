@@ -422,6 +422,7 @@ class Wiki
         }
         $href = $this->config["base_url"] . $this->MiniHref($method, $tag, $anchor);
         if ($params) {
+            $ampChar = $htmlspchars ? '&amp;' : '&';
             if (is_array($params)) {
                 $paramsArray = [];
                 foreach ($params as $key => $value) {
@@ -432,12 +433,12 @@ class Wiki
                     }
                 };
                 if (count($paramsArray)>0) {
-                    $params = implode("&", $paramsArray);
+                    $params = implode($ampChar, $paramsArray);
                 } else {
                     $params = '';
                 }
             }
-            $href .= ($this->config['rewrite_mode'] ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
+            $href .= ($this->config['rewrite_mode'] ? '?' : $ampChar) . $params;
         }
         if (isset($_GET['lang']) && $_GET['lang']!='') {
             $href .= '&lang='.$GLOBALS['prefered_language'];
