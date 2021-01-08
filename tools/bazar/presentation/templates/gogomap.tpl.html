@@ -43,7 +43,7 @@
   // All param attached in bazarlist action
   var param = <?php echo json_encode($param) ?>;
   // Url to get the wiki categories
-  var categoriesUrl = "<?php echo $GLOBALS['wiki']->href('json', 'BazaR', 'demand=lists', false) ?>";
+  var categoriesUrl = "<?php echo $GLOBALS['wiki']->href('json', 'BazaR', 'demand=lists', null, false) ?>";
 
   var gogoConf = {};
   var confReady = false; // sometime we need to download distant configuration

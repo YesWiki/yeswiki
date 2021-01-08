@@ -32,7 +32,7 @@ class EntryController extends YesWikiController
         if( isset($_POST['bf_titre']) ) {
             $entry = $this->entryManager->create($formId, $_POST);
             if (empty($redirectUrl)) {
-                $redirectUrl = $this->wiki->Href('', '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche']], false);
+                $redirectUrl = $this->wiki->Href('', '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche']], null, false);
             }
             header('Location: ' . $redirectUrl);
             exit;
@@ -54,7 +54,7 @@ class EntryController extends YesWikiController
         if( isset($_POST['bf_titre']) ) {
             $entry = $this->entryManager->update($entryId, $_POST);
             if (empty($redirectUrl)) {
-                $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche'], 'message' => 'modif_ok'], false);
+                $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche'], 'message' => 'modif_ok'], null, false);
             }
             header('Location: ' . $redirectUrl);
             exit;

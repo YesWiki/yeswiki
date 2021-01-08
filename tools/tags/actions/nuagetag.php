@@ -71,7 +71,7 @@ if (is_array($tab_tous_les_tags)) {
             } else {
                 $texte_page= _t('TAGS_ONE_PAGE');
             }
-            $texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" id="j'.$i.'" data-title="'.htmlspecialchars('<button class="btn-close-popover pull-right close" type="button">&times;</button>'.$texte_page.' '._t('TAGS_CONTAINING_TAG').' : <a href="'.$this->href('listpages', $this->GetPageTag(), 'tags='.$tag_precedent, ENT_QUOTES, $this->config['charset']).'" class="tag-label label label-primary">'.$tag_precedent.'</a>').'" data-content="'.htmlspecialchars('<ul class="unstyled list-unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
+            $texte_liste  = '<li class="tag-list">'."\n".'<a class="tag-link size'.ceil($nb_pages/$mult).'" id="j'.$i.'" data-title="'.htmlspecialchars('<button class="btn-close-popover pull-right close" type="button">&times;</button>'.$texte_page.' '._t('TAGS_CONTAINING_TAG').' : <a href="'.$this->href('listpages', $this->GetPageTag(), 'tags='.$tag_precedent, ENT_QUOTES, null, $this->config['charset']).'" class="tag-label label label-primary">'.$tag_precedent.'</a>').'" data-content="'.htmlspecialchars('<ul class="unstyled list-unstyled">'.$liste_page.'</ul>', ENT_QUOTES, $this->config['charset']).'">'.$tag_precedent.'</a>'."\n";
             $texte_liste .= '</li>'."\n";
             $tab_tag[] = $texte_liste;
 

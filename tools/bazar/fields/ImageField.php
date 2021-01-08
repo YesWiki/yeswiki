@@ -164,7 +164,7 @@ class ImageField extends FileField
                 return $this->render('@bazar/inputs/image.twig', [
                     'value' => $value,
                     'downloadUrl' => BAZ_CHEMIN_UPLOAD . $value,
-                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'suppr_image=' . $value, false),
+                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'suppr_image=' . $value, null, false),
                     'image' => afficher_image(
                         $this->name,
                         $value,

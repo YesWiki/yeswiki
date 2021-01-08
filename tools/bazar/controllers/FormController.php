@@ -34,7 +34,7 @@ class FormController extends YesWikiController
                 }
             }
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_IMPORT_SUCCESSFULL'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_IMPORT_SUCCESSFULL'], null, false));
         }
 
         $values = [];
@@ -60,7 +60,7 @@ class FormController extends YesWikiController
         if( isset($_POST['valider']) ) {
             $this->formManager->create($_POST);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], null, false));
         }
 
         return $this->render("@bazar/forms/forms_form.twig", [
@@ -73,7 +73,7 @@ class FormController extends YesWikiController
         if( isset($_POST['valider']) ) {
             $this->formManager->update($_POST);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], null, false));
         }
 
         return $this->render("@bazar/forms/forms_form.twig", [
@@ -86,13 +86,13 @@ class FormController extends YesWikiController
     {
         $this->formManager->delete($id);
 
-        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], null, false));
     }
 
     public function empty($id)
     {
         $this->formManager->clear($id);
 
-        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], null, false));
     }
 }

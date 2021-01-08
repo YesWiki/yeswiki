@@ -70,7 +70,7 @@ if ($pages = $this->LoadRecentlyChanged($max, $dateMin)) {
     if ($this->GetParameter('max')) {
         foreach ($pages as $i => $page) {
             // echo entry
-            echo '<small><a href="' . $this->href('revisions', $page['tag']) . '">'.$svgIcon.'</a>&nbsp;'.$page['time'].'</small> ', $this->ComposeLinkToPage($page['tag'], '', '', 0),' <small>par ', $this->Format($page['user']), "</small><br>\n";
+            echo '<small><a href="' . $this->href('revisions', $page['tag']) . '">'.$svgIcon.'</a>&nbsp;'.$page['time'].'</small> ', $this->ComposeLinkToPage($page['tag'], '', '', null, 0),' <small>par ', $this->Format($page['user']), "</small><br>\n";
         }
     } else {
         $curday = '';
@@ -85,7 +85,7 @@ if ($pages = $this->LoadRecentlyChanged($max, $dateMin)) {
                 $curday = $day;
             }
             // echo entry
-            echo '<small><a href="' . $this->href('revisions', $page['tag']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> ', $this->ComposeLinkToPage($page['tag'], '', '', 0),' <small>par ', $this->Format($page['user']), "</small><br>\n";
+            echo '<small><a href="' . $this->href('revisions', $page['tag']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> ', $this->ComposeLinkToPage($page['tag'], '', '', null, 0),' <small>par ', $this->Format($page['user']), "</small><br>\n";
         }
     }
 }

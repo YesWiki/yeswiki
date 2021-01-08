@@ -35,7 +35,7 @@ class FileField extends BazarField
                 return $this->render('@bazar/inputs/file.twig', [
                     'value' => $value,
                     'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
-                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, false)
+                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, null, false)
                 ]);
             }
         }

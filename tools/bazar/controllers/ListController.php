@@ -53,7 +53,7 @@ class ListController extends YesWikiController
             $this->listManager->create($_POST['titre_liste'], $values);
 
             $this->wiki->Redirect(
-                $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+                $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], null, false)
             );
         }
 
@@ -79,7 +79,7 @@ class ListController extends YesWikiController
                 $this->listManager->update($id, $_POST['titre_liste'], $values);
 
                 $this->wiki->Redirect(
-                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], null, false)
                 );
             } else {
                 throw new \Exception('Not allowed');
@@ -102,7 +102,7 @@ class ListController extends YesWikiController
         }
 
         $this->wiki->Redirect(
-            $this->wiki->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+            $this->wiki->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], null, false)
         );
     }
 }

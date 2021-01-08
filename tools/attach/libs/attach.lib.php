@@ -1017,11 +1017,11 @@ if (!class_exists('attach')) {
                 //Avertissement
                 $fmTitlePage .= '<div class="prev_alert">Les fichiers effac&eacute;s sur cette page le sont d&eacute;finitivement</div>';
                 //Pied du tableau
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, 'Gestion des fichiers');
+                $url = $this->wiki->Link($this->wiki->tag, 'filemanager', null, null, 'Gestion des fichiers');
                 $fmFootTable = '	<tfoot>' . "\n" .
                     '		<tr>' . "\n" .
                     '			<td colspan="6">' . $url . '</td>' . "\n";
-                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], 'Vider la corbeille');
+                $url = $this->wiki->Link($this->wiki->tag, 'filemanage', ['do' => 'emptytrash'], null, 'Vider la corbeille');
                 $fmFootTable .= '			<td>' . $url . '</td>' . "\n" .
                     '		</tr>' . "\n" .
                     '	</tfoot>' . "\n";
