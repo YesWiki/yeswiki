@@ -657,7 +657,8 @@ if (!class_exists('attach')) {
             }
             
             // Call pdf actions
-            include('pdf.php');
+            $params = $this->wiki->parameter;
+            echo $this->wiki->Action('pdf',0,$params) ;
         }
 
 

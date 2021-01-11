@@ -24,7 +24,7 @@ if (!defined("WIKINI_VERSION")) {
 //$this->AddCSSFile(ATTACH_PATH . 'presentation/styles/attach.css');
 // already called by linkstyle__.php
 
-$baseObject = (get_class($this) == "attach") ? $this->wiki : $this ;
+$baseObject = $this ;
 $url = $baseObject->GetParameter("url");
 
 if (empty($url) || parse_url($url, PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
