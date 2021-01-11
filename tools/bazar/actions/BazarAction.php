@@ -14,7 +14,6 @@ class BazarAction extends YesWikiAction
     // Premier niveau d'action : pour toutes les fiches
     public const VOIR_DEFAUT = 'formulaire'; // Recherche
     public const VOIR_CONSULTER = 'consulter'; // Recherche
-    public const VOIR_MES_FICHES = 'mes_fiches';
     public const VOIR_SAISIR = 'saisir';
     public const VOIR_FORMULAIRE = 'formulaire';
     public const VOIR_LISTES = 'listes';
@@ -98,8 +97,6 @@ class BazarAction extends YesWikiAction
                             $this->arguments['categorienature']
                         );
                 }
-            case self::VOIR_MES_FICHES:
-                return baz_afficher_liste_fiches_utilisateur();
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:

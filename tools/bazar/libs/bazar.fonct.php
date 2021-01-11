@@ -46,33 +46,6 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
 
-/** baz_afficher_liste_fiches_utilisateur () - Affiche la liste des fiches bazar d'un utilisateur
- * @return string HTML
- */
-function baz_afficher_liste_fiches_utilisateur()
-{
-    $res = '';
-    //$res .= '<h2 class="titre_mes_fiches">' . _t('BAZ_VOS_FICHES') . '</h2>' . "\n";
-    $nomwiki = $GLOBALS['wiki']->getUser();
-
-    //test si l'on est identifie pour voir les fiches
-    if (baz_a_le_droit('voir_mes_fiches') && isset($nomwiki['name'])) {
-        $tableau_dernieres_fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([ 'formsIds'=>$GLOBALS['params']['idtypeannonce'], 'user'=>$nomwiki['name'] ]);
-        $res .= exturl($tableau_dernieres_fiches, $GLOBALS['params'], false);
-    } else {
-        $res .= '<div class="alert alert-info">'."\n"
-        .'<a data-dismiss="alert" class="close" type="button">&times;</a>'
-        ._t('BAZ_IDENTIFIEZ_VOUS_POUR_VOIR_VOS_FICHES').'</div>'."\n";
-    }
-    $urlParams = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR;
-    $res .= '<a class="btn btn-primary" href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams)
-    .'" title="'._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE')
-    .'"><i class="fa fa-plus icon-plus icon-white"></i>&nbsp;'
-    ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a></li></ul>';
-
-    return $res;
-}
-
 /* function extractComaFromStringThenExplode
  *
  * search coma in blocks separated from " then explode by ","
