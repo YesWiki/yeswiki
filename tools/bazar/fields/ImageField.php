@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Service\EntryManager;
 
 /**
  * @Field({"image"})
@@ -37,6 +38,8 @@ class ImageField extends FileField
 
     public function renderInput($entry)
     {
+        $entryManager = $this->services->get(EntryManager::class);
+
         $value = $this->getValue($entry);
         $maxSize = $GLOBALS['wiki']->config['BAZ_TAILLE_MAX_FICHIER'] ;
 
@@ -143,16 +146,10 @@ class ImageField extends FileField
                     }
 
                     // Update entry
-                    // TODO use EntryManager
                     unset($entry[$this->propertyName]);
-                    $updatedEntry = $entry;
-                    $updatedEntry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                    $updatedEntry['id_fiche'] = $entry['id_fiche'];
-                    if (YW_CHARSET != 'UTF-8') {
-                        $updatedEntry = array_map('utf8_encode', $updatedEntry);
-                    }
-                    $updatedEntry = json_encode($updatedEntry);
-                    $GLOBALS["wiki"]->SavePage($entry['id_fiche'], $updatedEntry);
+                    $entry['antispam'] = 1;
+                    $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+                    $entryManager->update($entry['id_fiche'], $entry, false, true);
 
                     return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>';
                 } else {
@@ -177,7 +174,11 @@ class ImageField extends FileField
                     )
                 ]);
             } else {
-                // TODO update entry (see above)
+                // Update entry
+                unset($entry[$this->propertyName]);
+                $entry['antispam'] = 1;
+                $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+                $entryManager->update($entry['id_fiche'], $entry, false, true);
 
                 return '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $value . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>';
             }

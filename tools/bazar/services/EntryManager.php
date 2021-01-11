@@ -403,7 +403,7 @@ class EntryManager
     }
 
     /**
-     * Update a fiche with the provided data
+     * Update an entry with the provided data
      * @param $tag
      * @param $data
      * @param false $semantic
