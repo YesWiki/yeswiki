@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 // Vérification de sécurité
+use YesWiki\Bazar\Controller\FormController;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -168,7 +170,7 @@ if (isset($_REQUEST['demand'])) {
                     $url = $this->href('json', $this->GetPageTag(), 'demand=save_entry');
 
                     // generation du formulaire
-                    $form = baz_afficher_formulaire_fiche('saisie', $url, '', true);
+                    $form = $GLOBALS['wiki']->services->get(FormController::class)->create($form);
                     $form = preg_replace(
                         '~<div class="form-actions">.*</div>~Ui',
                         "\n" . '<a href="#" class="btn btn-block btn-positive btn-save">' . _t('BAZ_SAVE') . '</a>',

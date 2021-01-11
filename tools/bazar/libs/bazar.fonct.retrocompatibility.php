@@ -243,3 +243,16 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
             return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['id_fiche'] ?? $_POST['id_typeannonce']);
     }
 }
+
+/**
+ * @deprecated Use FormController::create or FormController::update
+ */
+function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
+{
+    switch($mode) {
+        case BAZ_ACTION_NOUVEAU:
+            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['id_typeannonce'] ?? $_GET['id'] ?? $_POST['id_typeannonce']);
+        case BAZ_ACTION_MODIFIER:
+            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['id_fiche'] ?? $_POST['id_typeannonce']);
+    }
+}
