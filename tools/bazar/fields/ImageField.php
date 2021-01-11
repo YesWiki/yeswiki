@@ -38,8 +38,6 @@ class ImageField extends FileField
 
     public function renderInput($entry)
     {
-        $entryManager = $this->services->get(EntryManager::class);
-
         $value = $this->getValue($entry);
         $maxSize = $GLOBALS['wiki']->config['BAZ_TAILLE_MAX_FICHIER'] ;
 
@@ -145,11 +143,7 @@ class ImageField extends FileField
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }
 
-                    // Update entry
-                    unset($entry[$this->propertyName]);
-                    $entry['antispam'] = 1;
-                    $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                    $entryManager->update($entry['id_fiche'], $entry, false, true);
+                    $this->updateEntryAfterImageDelete($entry);
 
                     return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>';
                 } else {
@@ -174,11 +168,7 @@ class ImageField extends FileField
                     )
                 ]);
             } else {
-                // Update entry
-                unset($entry[$this->propertyName]);
-                $entry['antispam'] = 1;
-                $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                $entryManager->update($entry['id_fiche'], $entry, false, true);
+                $this->updateEntryAfterImageDelete($entry);
 
                 return '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $value . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>';
             }
@@ -244,5 +234,16 @@ class ImageField extends FileField
         }
 
         return null;
+    }
+
+    private function updateEntryAfterImageDelete($entry)
+    {
+        $entryManager = $this->services->get(EntryManager::class);
+
+        unset($entry[$this->propertyName]);
+        $entry['antispam'] = 1;
+        $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+
+        $entryManager->update($entry['id_fiche'], $entry, false, true);
     }
 }
