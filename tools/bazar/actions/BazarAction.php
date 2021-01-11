@@ -61,10 +61,12 @@ class BazarAction extends YesWikiAction
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
 
-        // si c'est demandé, on affiche le menu
+        // Display menu, unless we explicitly don't want to see it
         if ($this->arguments['voirmenu'] != '0') {
-            $menuitems = array_map('trim', explode(',', $this->arguments['voirmenu']));
-            echo baz_afficher_menu($menuitems);
+            echo $this->render('@bazar/menu.twig', [
+                'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
+                'view' => $view
+            ]);
         }
 
         switch ($view) {

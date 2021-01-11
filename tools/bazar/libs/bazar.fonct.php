@@ -40,91 +40,11 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
-
-/** baz_afficher_menu() - Prepare les boutons du menu de bazar et renvoie le html
- * @return string HTML
- */
-function baz_afficher_menu($menuitems)
-{
-    $res = '<div class="BAZ_menu">'."\n".'<ul class="nav nav-tabs">'.
-    "\n";
-
-    // Gestion de la vue par defaut
-    if (!isset($_GET[BAZ_VARIABLE_VOIR])) {
-        $_GET[BAZ_VARIABLE_VOIR] = $GLOBALS['params']['vue'];
-    }
-
-    foreach ($menuitems as $menu) {
-        if ($menu == strval(BAZ_VOIR_MES_FICHES)) {
-            // Mes fiches
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_MES_FICHES;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_MES_FICHES ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'
-            ._t('BAZ_VOIR_VOS_FICHES').'</a>'."\n".'</li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_CONSULTER)) {
-            //partie consultation d'annonces
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_CONSULTER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_CONSULTER').'</a>'."\n".'</li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_SAISIR)) {
-            //partie saisie d'annonces
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_SAISIR ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_SAISIR').'</a>'."\n".'</li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_S_ABONNER)) {
-            //partie abonnement aux annonces
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_S_ABONNER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_S_ABONNER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_S_ABONNER').'</a></li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_FORMULAIRE)) {
-            //partie affichage formulaire
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_FORMULAIRE ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_FORMULAIRE').'</a></li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_LISTES)) {
-            //partie affichage listes
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_LISTES ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_LISTES').'</a></li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_IMPORTER)) {
-            //partie import
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_IMPORTER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_IMPORTER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_IMPORTER').'</a></li>'."\n";
-        } elseif ($menu = strval(BAZ_VOIR_EXPORTER)) {
-            //partie export
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_EXPORTER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_EXPORTER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_EXPORTER').'</a></li>'."\n";
-        }
-    }
-
-    $res .= '</ul>'."\n".'</div>'."\n";
-
-    return $res;
-}
 
 /** baz_afficher_liste_fiches_utilisateur () - Affiche la liste des fiches bazar d'un utilisateur
  * @return string HTML

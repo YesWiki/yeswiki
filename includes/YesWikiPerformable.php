@@ -1,6 +1,7 @@
 <?php
 namespace YesWiki\Core;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Wiki;
 
@@ -12,6 +13,7 @@ use YesWiki\Wiki;
 abstract class YesWikiPerformable
 {
     protected $wiki;
+    protected $params;
     protected $twig;
     protected $arguments = [];
     protected $output;
@@ -23,6 +25,15 @@ abstract class YesWikiPerformable
     public function setWiki(Wiki $wiki): void
     {
         $this->wiki = $wiki;
+    }
+
+    /**
+     * Setter for the parameters
+     * @param ParameterBagInterface $params
+     */
+    public function setParams(ParameterBagInterface $params): void
+    {
+        $this->params = $params;
     }
 
     /**
@@ -60,7 +71,7 @@ abstract class YesWikiPerformable
      * @param string $templatePath path to twig template. you can use full path
      * like tools/bazar/template/myfile.twig, or namespace like @bazar/myfile.twig
      * @param array $data An array with data to pass to the template
-     * @return void
+     * @return string HTML
      */
     public function render($templatePath, $data = [], $method = 'render')
     {        
