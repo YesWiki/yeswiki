@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Service\EntryManager;
 
 /**
  * @Field({"image"})
@@ -142,17 +143,7 @@ class ImageField extends FileField
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }
 
-                    // Update entry
-                    // TODO use EntryManager
-                    unset($entry[$this->propertyName]);
-                    $updatedEntry = $entry;
-                    $updatedEntry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-                    $updatedEntry['id_fiche'] = $entry['id_fiche'];
-                    if (YW_CHARSET != 'UTF-8') {
-                        $updatedEntry = array_map('utf8_encode', $updatedEntry);
-                    }
-                    $updatedEntry = json_encode($updatedEntry);
-                    $GLOBALS["wiki"]->SavePage($entry['id_fiche'], $updatedEntry);
+                    $this->updateEntryAfterImageDelete($entry);
 
                     return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>';
                 } else {
@@ -177,7 +168,7 @@ class ImageField extends FileField
                     )
                 ]);
             } else {
-                // TODO update entry (see above)
+                $this->updateEntryAfterImageDelete($entry);
 
                 return '<div class="alert alert-danger">' . _t('BAZ_FICHIER') . $value . _t('BAZ_FICHIER_IMAGE_INEXISTANT') . '</div>';
             }
@@ -243,5 +234,16 @@ class ImageField extends FileField
         }
 
         return null;
+    }
+
+    private function updateEntryAfterImageDelete($entry)
+    {
+        $entryManager = $this->services->get(EntryManager::class);
+
+        unset($entry[$this->propertyName]);
+        $entry['antispam'] = 1;
+        $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+
+        $entryManager->update($entry['id_fiche'], $entry, false, true);
     }
 }
