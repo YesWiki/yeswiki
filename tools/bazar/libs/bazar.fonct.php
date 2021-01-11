@@ -1275,66 +1275,6 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     return $res;
 }
 
-/**
- * TODO: remove this method and use Wakka::HasAccess()
- * @deprecated: use Wakka::HasAccess()
- *
- * baz_a_le_droit() Renvoie true si la personne a le droit d'acceder a la fiche
- *   @param  string  type de demande (voir, saisir, modifier)
- *   @param  string  identifiant, soit d'un formulaire, soit d'une fiche, soit d'un type de fiche
- *
- *   return  boolean    vrai si l'utilisateur a le droit, faux sinon
- */
-function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
-{
-
-    //cas d'une personne identifiee
-    $nomwiki = $GLOBALS['wiki']->getUser();
-
-    //l'administrateur peut tout faire
-    if ($GLOBALS['wiki']->UserIsInGroup('admins')) {
-        return true;
-    } else {
-        if ($demande == 'supp_fiche') {
-            // seuls admins et owner peuvent effacer une fiche
-            if (is_array($nomwiki) && $id == $nomwiki['name'] || $id == '') {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if ($demande == 'voir_champ') {
-            // seuls admins et owner peuvent voir un champ protege
-            if (is_array($nomwiki) && $id == $nomwiki['name'] || $id == '') {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if ($demande == 'modif_fiche') {
-            // pour la modif d'une fiche : ouvert a tous
-            return true;
-        }
-        if ($demande == 'saisie_fiche') {
-            // pour la saisie d'une fiche, ouvert a tous
-            return true;
-        } elseif ($demande == 'valider_fiche') {
-            //pour la validation d'une fiche, pour l 'instant seul les admins peuvent valider une fiche
-            return false;
-        } elseif ($demande == 'saisie_formulaire' || $demande ==
-            'saisie_liste') {
-            //pour la saisie d'un formulaire ou d'une liste, pour l 'instant seul les admins ont le droit
-            return false;
-        } elseif ($demande == 'voir_mes_fiches') {
-            //pour la liste des fiches saisies, il suffit d'ÃƒÂªtre identifie
-            return true;
-        } else {
-            //les autres demandes sont reservees aux admins donc non!
-            return false;
-        }
-    }
-}
-
 /** removeAccents() Renvoie une chaine de caracteres avec les accents en moins
  *   @param  string  chaine de caracteres avec de potentiels accents a enlever
  *
