@@ -527,7 +527,7 @@ class Wiki
      * @return string final form of the link
      *
      */
-    public function generateLink($link): string
+    public function generateLink($link): ?string
     {
         if (empty($link)) {
             return null;
@@ -1556,8 +1556,8 @@ class Wiki
             echo $this->Method($this->method);
 
             // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
-            if (! empty($_SESSION['redirects'])) {
-                session_unregister('redirects');
+            if (!empty($_SESSION['redirects'])) {
+                unset($_SESSION['redirects']);
             }
         }
     }
