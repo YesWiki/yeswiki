@@ -1742,7 +1742,7 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
                 if ($facettevalue[$id]['type'] == 'liste') {
                     $field = findFieldByName($allform, $facettevalue[$id]['source']);
                     $list['titre_liste'] = $field->getName();
-                    $list['label'] = $field instanceof EnumField ? $field->getOptions() : $field['values'];
+                    $list['label'] = $field->getOptions();
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
                     $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
                     $form = $allform[$src];
