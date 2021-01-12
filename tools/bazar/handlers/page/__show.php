@@ -26,6 +26,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 
 if (!defined("WIKINI_VERSION")) {
@@ -33,6 +34,7 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 $entryManager = $this->services->get(EntryManager::class);
+$entryController = $this->services->get(EntryController::class);
 
 if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess("read")) {
     if (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
@@ -46,8 +48,6 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess("read")) {
         exit(json_encode($fiche));
     } else {
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
-
-        $fiche = $entryManager->getOne($this->GetPageTag());
-        $this->page["body"] = '""'.baz_voir_fiche(0, $fiche).'""';
+        $this->page["body"] = '""'.$entryController->view($this->GetPageTag(), 0).'""';
     }
 }

@@ -11,8 +11,8 @@
       </label>
     </div>
   {% else %}
-    {% for renderedField in renderedFields %}
-      {{ renderedField|raw }}
+    {% for renderedInput in renderedInputs %}
+      {{ renderedInput|raw }}
     {% endfor %}
   {% endif %}
   <div class="form-actions form-group">

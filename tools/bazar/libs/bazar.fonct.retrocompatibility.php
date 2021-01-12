@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
+use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
@@ -264,4 +265,12 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
 function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
 {
     return $GLOBALS['wiki']->services->get(Guard::class)->isAllowed($demande, $id);
+}
+
+/**
+ * @deprecated Use EntryController::view
+ */
+function baz_voir_fiche($danslappli, $idfiche, $form = '')
+{
+    return $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche);
 }
