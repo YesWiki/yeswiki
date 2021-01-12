@@ -10,7 +10,7 @@
       {% if message == 'modif_ok' %}
         {{ _t('BAZ_FICHE_MODIFIEE') }}
         <a href="{{ url({ tag: entryId, handler: 'edit'}) }}" class="pull-right btn-sm btn btn-primary">
-          _t('BAZ_MODIFY_ENTRY_AGAIN')
+          {{ _t('BAZ_MODIFY_ENTRY_AGAIN') }}
         </a>
       {% endif %}
       <div class="clearfix"></div>
