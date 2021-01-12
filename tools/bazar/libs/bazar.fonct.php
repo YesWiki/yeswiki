@@ -1505,7 +1505,7 @@ function findFieldByName($allForms, $name)
     foreach( $allForms as $form ) {
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
-                if ($field->getName() === $name) {
+                if ($field->getPropertyName() === $name) {
                     return $field;
                 }
             } elseif (is_array($field)) {
@@ -1557,27 +1557,23 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
             $facetteasked = (isset($params['groups'][0]) && $params['groups'][0] == 'all')
               || in_array($key, $params['groups']);
             if (!empty($value) and is_array($fields[$fiche['id_typeannonce']]) && $facetteasked) {
-                $fields = filterFieldsByPropertyName($fields[$fiche['id_typeannonce']], [$key]);
-                $field = array_pop($fields);
+                $filteredFields = filterFieldsByPropertyName($fields[$fiche['id_typeannonce']], [$key]);
+                $field = array_pop($filteredFields);
 
                 $fieldPropName = null;
-                $fieldOptions = [];
                 if( $field instanceof BazarField ) {
                     $fieldPropName = $field->getPropertyName();
                     $fieldType = $field->getType();
-                    if( $field instanceof EnumField ) {
-                        $fieldOptions = $field->getOptions();
-                    }
                 } else if ( is_array($field)) {
                     $fieldPropName = $field['id'];
                     $fieldType = $field['type'];
-                    $fieldOptions = $field['values'];
                 }
 
                 if ($fieldPropName) {
                     $islistforeign = (strpos($fieldPropName, 'listefiche')===0) || (strpos($fieldPropName, 'checkboxfiche')===0);
-                    $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio')) && !$islistforeign;
-                    $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'checkboxfiche', 'listefiche')));
+                    $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste')) && !$islistforeign;
+                    $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste', 'checkboxfiche', 'listefiche')));
+
                     if ($islistforeign) {
                         // listefiche ou checkboxfiche
                         $facettevalue[$fieldPropName]['type'] = 'fiche';
@@ -1591,9 +1587,9 @@ function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
                             }
                         }
                     } elseif ($islist) {
-                        $facettevalue[$fieldPropName]['type'] = 'liste';
-                        $facettevalue[$fieldPropName]['source'] = $fieldOptions['id'];
                         // liste ou checkbox
+                        $facettevalue[$fieldPropName]['type'] = 'liste';
+                        $facettevalue[$fieldPropName]['source'] = $key;
                         $tabval = explode(',', $value);
                         foreach ($tabval as $tval) {
                             if (isset($facettevalue[$fieldPropName][$tval])) {
@@ -1745,7 +1741,8 @@ function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab =
             if (isset($facettevalue[$id])) {
                 if ($facettevalue[$id]['type'] == 'liste') {
                     $field = findFieldByName($allform, $facettevalue[$id]['source']);
-                    $list = $field instanceof EnumField ? $field->getOptions() : $field['values'];
+                    $list['titre_liste'] = $field->getName();
+                    $list['label'] = $field instanceof EnumField ? $field->getOptions() : $field['values'];
                 } elseif ($facettevalue[$id]['type'] == 'fiche') {
                     $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettevalue[$id]['source']);
                     $form = $allform[$src];
