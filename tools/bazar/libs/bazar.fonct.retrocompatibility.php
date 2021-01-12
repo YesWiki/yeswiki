@@ -5,6 +5,7 @@ use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\ListManager;
 
 /**
@@ -255,4 +256,12 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
         case BAZ_ACTION_MODIFIER:
             return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['id_fiche'] ?? $_POST['id_typeannonce']);
     }
+}
+
+/**
+ * @deprecated Use Guard::isAllowed
+ */
+function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
+{
+    return $GLOBALS['wiki']->services->get(Guard::class)->isAllowed($demande, $id);
 }

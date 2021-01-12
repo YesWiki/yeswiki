@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
 
 class PerformerException extends \Exception
@@ -32,12 +33,14 @@ class Performer
         Performer::TYPES['formatter'] => ['formatters/']
     ];
     protected $wiki;
+    protected $params;
     // list of all existing object
     protected $objectList;
 
-    public function __construct(Wiki $wiki)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
+        $this->params = $params;
 
         // get the list of all existing objects (actions, handlers, formatters...)
         $folders = array_merge([''], $wiki->extensions); // root folder + extensions folders
@@ -108,6 +111,7 @@ class Performer
         if (class_exists($object['baseName'])) {
             $instance = new $object['baseName']();
             $instance->setWiki($this->wiki);
+            $instance->setParams($this->params);
             $instance->setArguments($vars);
             $instance->setOutput($output);
             $instance->setTwig($this->wiki->services->get(TemplateEngine::class));

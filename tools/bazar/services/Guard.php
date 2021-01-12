@@ -2,17 +2,50 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
 class Guard
 {
     protected $wiki;
     protected $formManager;
+    protected $userManager;
 
-    public function __construct(Wiki $wiki, FormManager $formManager)
+    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager)
     {
         $this->wiki = $wiki;
         $this->formManager = $formManager;
+        $this->userManager = $userManager;
+    }
+
+    // TODO remove this method and use YesWiki::HasAccess
+    public function isAllowed($action = 'saisie_fiche', $ownerId = '') : bool
+    {
+        $loggedUserName = $this->userManager->getLoggedUserName();
+        $isOwner = $ownerId === $loggedUserName || $ownerId === '';
+
+        // Admins are allowed all actions
+        if ($GLOBALS['wiki']->UserIsInGroup('admins')) {
+            return true;
+        }
+
+        switch($action)
+        {
+            case 'supp_fiche':
+            case 'voir_champ':
+                return $isOwner;
+
+            case 'modif_fiche':
+            case 'saisie_fiche':
+            case 'voir_mes_fiches':
+                return true;
+
+            case 'valider_fiche':
+            case 'saisie_formulaire':
+            case 'saisie_liste':
+            default:
+                return false;
+        }
     }
 
     // Teste les droits d'acces champ par champ du contenu d'un fiche bazar

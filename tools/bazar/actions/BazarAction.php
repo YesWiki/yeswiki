@@ -14,7 +14,6 @@ class BazarAction extends YesWikiAction
     // Premier niveau d'action : pour toutes les fiches
     public const VOIR_DEFAUT = 'formulaire'; // Recherche
     public const VOIR_CONSULTER = 'consulter'; // Recherche
-    public const VOIR_MES_FICHES = 'mes_fiches';
     public const VOIR_SAISIR = 'saisir';
     public const VOIR_FORMULAIRE = 'formulaire';
     public const VOIR_LISTES = 'listes';
@@ -61,10 +60,12 @@ class BazarAction extends YesWikiAction
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
 
-        // si c'est demandé, on affiche le menu
+        // Display menu, unless we explicitly don't want to see it
         if ($this->arguments['voirmenu'] != '0') {
-            $menuitems = array_map('trim', explode(',', $this->arguments['voirmenu']));
-            echo baz_afficher_menu($menuitems);
+            echo $this->render('@bazar/menu.twig', [
+                'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
+                'view' => $view
+            ]);
         }
 
         switch ($view) {
@@ -96,8 +97,6 @@ class BazarAction extends YesWikiAction
                             $this->arguments['categorienature']
                         );
                 }
-            case self::VOIR_MES_FICHES:
-                return baz_afficher_liste_fiches_utilisateur();
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:

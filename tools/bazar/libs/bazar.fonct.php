@@ -40,118 +40,11 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
-use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
-
-/** baz_afficher_menu() - Prepare les boutons du menu de bazar et renvoie le html
- * @return string HTML
- */
-function baz_afficher_menu($menuitems)
-{
-    $res = '<div class="BAZ_menu">'."\n".'<ul class="nav nav-tabs">'.
-    "\n";
-
-    // Gestion de la vue par defaut
-    if (!isset($_GET[BAZ_VARIABLE_VOIR])) {
-        $_GET[BAZ_VARIABLE_VOIR] = $GLOBALS['params']['vue'];
-    }
-
-    foreach ($menuitems as $menu) {
-        if ($menu == strval(BAZ_VOIR_MES_FICHES)) {
-            // Mes fiches
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_MES_FICHES;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_MES_FICHES ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'
-            ._t('BAZ_VOIR_VOS_FICHES').'</a>'."\n".'</li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_CONSULTER)) {
-            //partie consultation d'annonces
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_CONSULTER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_CONSULTER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_CONSULTER').'</a>'."\n".'</li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_SAISIR)) {
-            //partie saisie d'annonces
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_SAISIR ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_SAISIR').'</a>'."\n".'</li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_S_ABONNER)) {
-            //partie abonnement aux annonces
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_S_ABONNER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_S_ABONNER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_S_ABONNER').'</a></li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_FORMULAIRE)) {
-            //partie affichage formulaire
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_FORMULAIRE;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_FORMULAIRE ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_FORMULAIRE').'</a></li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_LISTES)) {
-            //partie affichage listes
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_LISTES;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_LISTES ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_LISTES').'</a></li>'."\n";
-        } elseif ($menu == strval(BAZ_VOIR_IMPORTER)) {
-            //partie import
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_IMPORTER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_IMPORTER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_IMPORTER').'</a></li>'."\n";
-        } elseif ($menu = strval(BAZ_VOIR_EXPORTER)) {
-            //partie export
-            $urlParams  = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_EXPORTER;
-            $res .= '<li'.($_GET[BAZ_VARIABLE_VOIR] == BAZ_VOIR_EXPORTER ?
-                ' class="active"' : '').'>';
-            $res .= '<a href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams).'">'.
-            _t('BAZ_EXPORTER').'</a></li>'."\n";
-        }
-    }
-
-    $res .= '</ul>'."\n".'</div>'."\n";
-
-    return $res;
-}
-
-/** baz_afficher_liste_fiches_utilisateur () - Affiche la liste des fiches bazar d'un utilisateur
- * @return string HTML
- */
-function baz_afficher_liste_fiches_utilisateur()
-{
-    $res = '';
-    //$res .= '<h2 class="titre_mes_fiches">' . _t('BAZ_VOS_FICHES') . '</h2>' . "\n";
-    $nomwiki = $GLOBALS['wiki']->getUser();
-
-    //test si l'on est identifie pour voir les fiches
-    if (baz_a_le_droit('voir_mes_fiches') && isset($nomwiki['name'])) {
-        $tableau_dernieres_fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([ 'formsIds'=>$GLOBALS['params']['idtypeannonce'], 'user'=>$nomwiki['name'] ]);
-        $res .= exturl($tableau_dernieres_fiches, $GLOBALS['params'], false);
-    } else {
-        $res .= '<div class="alert alert-info">'."\n"
-        .'<a data-dismiss="alert" class="close" type="button">&times;</a>'
-        ._t('BAZ_IDENTIFIEZ_VOUS_POUR_VOIR_VOS_FICHES').'</div>'."\n";
-    }
-    $urlParams = BAZ_VARIABLE_VOIR.'='.BAZ_VOIR_SAISIR;
-    $res .= '<a class="btn btn-primary" href="'.$GLOBALS['wiki']->href('', $GLOBALS['wiki']->getPageTag(), $urlParams)
-    .'" title="'._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE')
-    .'"><i class="fa fa-plus icon-plus icon-white"></i>&nbsp;'
-    ._t('BAZ_SAISIR_UNE_NOUVELLE_FICHE').'</a></li></ul>';
-
-    return $res;
-}
 
 /* function extractComaFromStringThenExplode
  *
@@ -1380,66 +1273,6 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     $GLOBALS['wiki']->tag = $oldpage;
 
     return $res;
-}
-
-/**
- * TODO: remove this method and use Wakka::HasAccess()
- * @deprecated: use Wakka::HasAccess()
- *
- * baz_a_le_droit() Renvoie true si la personne a le droit d'acceder a la fiche
- *   @param  string  type de demande (voir, saisir, modifier)
- *   @param  string  identifiant, soit d'un formulaire, soit d'une fiche, soit d'un type de fiche
- *
- *   return  boolean    vrai si l'utilisateur a le droit, faux sinon
- */
-function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
-{
-
-    //cas d'une personne identifiee
-    $nomwiki = $GLOBALS['wiki']->getUser();
-
-    //l'administrateur peut tout faire
-    if ($GLOBALS['wiki']->UserIsInGroup('admins')) {
-        return true;
-    } else {
-        if ($demande == 'supp_fiche') {
-            // seuls admins et owner peuvent effacer une fiche
-            if (is_array($nomwiki) && $id == $nomwiki['name'] || $id == '') {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if ($demande == 'voir_champ') {
-            // seuls admins et owner peuvent voir un champ protege
-            if (is_array($nomwiki) && $id == $nomwiki['name'] || $id == '') {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        if ($demande == 'modif_fiche') {
-            // pour la modif d'une fiche : ouvert a tous
-            return true;
-        }
-        if ($demande == 'saisie_fiche') {
-            // pour la saisie d'une fiche, ouvert a tous
-            return true;
-        } elseif ($demande == 'valider_fiche') {
-            //pour la validation d'une fiche, pour l 'instant seul les admins peuvent valider une fiche
-            return false;
-        } elseif ($demande == 'saisie_formulaire' || $demande ==
-            'saisie_liste') {
-            //pour la saisie d'un formulaire ou d'une liste, pour l 'instant seul les admins ont le droit
-            return false;
-        } elseif ($demande == 'voir_mes_fiches') {
-            //pour la liste des fiches saisies, il suffit d'ÃƒÂªtre identifie
-            return true;
-        } else {
-            //les autres demandes sont reservees aux admins donc non!
-            return false;
-        }
-    }
 }
 
 /** removeAccents() Renvoie une chaine de caracteres avec les accents en moins

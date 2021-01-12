@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\Guard;
 
 /**
  * @Field({"image"})
@@ -138,7 +139,7 @@ class ImageField extends FileField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['suppr_image']) && $_GET['suppr_image'] == $value) {
-                if (baz_a_le_droit('supp_fiche', (isset($entry['owner']) ? $entry['owner'] : ''))) {
+                if ($this->getService(Guard::class)->isAllowed('supp_fiche', (isset($entry['owner']) ? $entry['owner'] : ''))) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }

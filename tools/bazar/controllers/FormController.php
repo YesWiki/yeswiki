@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Controller;
 
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\YesWikiController;
 
 class FormController extends YesWikiController
@@ -42,7 +43,7 @@ class FormController extends YesWikiController
             foreach ($forms as $form) {
                 $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
                 $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = baz_a_le_droit('saisie_formulaire');
+                $values[$form['bn_id_nature']]['canEdit'] = $this->getService(Guard::class)->isAllowed('saisie_formulaire');
                 $values[$form['bn_id_nature']]['canDelete'] = $this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
             }

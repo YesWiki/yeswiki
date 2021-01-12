@@ -1,0 +1,11 @@
+<div class="BAZ_menu">
+  <ul class="nav nav-tabs">
+    {% for menuItem in menuItems %}
+      <li {% if menuItem == view %}class="active"{% endif %}>
+        <a href="{{ url({ params: { vue: menuItem } }) }}">
+          {{ _t('BAZ_' ~ menuItem|upper) }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+</div>
