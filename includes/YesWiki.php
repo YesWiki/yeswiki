@@ -40,6 +40,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
@@ -846,7 +847,7 @@ class Wiki
      * will be not used by users for an performable argument)
      * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
      * (strange variable name, but it's used in everywhere, so let's keep it... !)
-     * @return the execution context variables updated by the execution (with 'plugin_output_new for the current output)
+     * @return array the execution context variables updated by the execution (with 'plugin_output_new for the current output)
      */
     public function runFileInBuffer($___file, array $vars)
     {
@@ -1111,7 +1112,7 @@ class Wiki
     }
 
     /**
-     * Checks if a given user is andministrator
+     * Checks if a given user is administrator
      *
      * @param string $user
      *            The name of the user (defaults to the current user if not given)
@@ -1120,272 +1121,6 @@ class Wiki
     public function UserIsAdmin($user = null)
     {
         return $this->UserIsInGroup(ADMIN_GROUP, $user, false);
-    }
-
-    public function GetPageOwner($tag = "", $time = "")
-    {
-        if (! $tag = trim($tag)) {
-            $tag = $this->GetPageTag();
-        }
-        if ($page = $this->LoadPage($tag, $time)) {
-            return isset($page["owner"]) ? $page["owner"] : null;
-        }
-    }
-
-    public function SetPageOwner($tag, $user)
-    {
-        // check if user exists
-        if (! $this->LoadUser($user)) {
-            return;
-        }
-
-        // updated latest revision with new owner
-        $this->Query('update ' . $this->config['table_prefix'] . "pages set owner = '" . mysqli_real_escape_string($this->dblink, $user) . "' where tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "' and latest = 'Y' limit 1");
-    }
-
-    /**
-     * Caching page ACLs (sql query on yeswiki_acls table).
-     * Filled in LoadAcl().
-     * Updated in SaveAcl().
-     * @var array
-     */
-    protected $aclsCache = array() ;
-
-    /**
-     *
-     * @param string $tag
-     * @param string $privilege
-     * @param boolean $useDefaults
-     * @return array [page_tag, privilege, list]
-     */
-    public function LoadAcl($tag, $privilege, $useDefaults = true)
-    {
-        if (isset($this->aclsCache[$tag][$privilege])) {
-            return $this->aclsCache[$tag][$privilege] ;
-        }
-
-        if ($useDefaults) {
-            $this->aclsCache[$tag] = array(
-                'read' => array(
-                    'page_tag' => $tag,
-                    'privilege' => 'read',
-                    'list' => $this->GetConfigValue('default_read_acl')
-                ),
-                'write' => array(
-                    'page_tag' => $tag,
-                    'privilege' => 'write',
-                    'list' => $this->GetConfigValue('default_write_acl')
-                ),
-                'comment' => array(
-                    'page_tag' => $tag,
-                    'privilege' => 'comment',
-                    'list' => $this->GetConfigValue('default_comment_acl')
-                )
-            );
-        } else {
-            $this->aclsCache[$tag] = array();
-        }
-
-        $res = $this->LoadAll('SELECT * FROM '.$this->config['table_prefix'].'acls'.' WHERE page_tag = "'.mysqli_real_escape_string($this->dblink, $tag).'"');
-        foreach ($res as $acl) {
-            $this->aclsCache[$tag][$acl['privilege']] = $acl;
-        }
-
-        if (isset($this->aclsCache[$tag][$privilege])) {
-            return $this->aclsCache[$tag][$privilege];
-        }
-        return null ;
-    }
-
-    /**
-     *
-     * @param string $tag the page's tag
-     * @param string $privilege the privilege
-     * @param string $list the multiline string describing the acl
-     */
-    public function SaveAcl($tag, $privilege, $list, $appendAcl = false)
-    {
-        // if list is comma separated, convert into to line break separated
-        if (strpos($list, ',') !== false) {
-            $list = preg_replace('/\s*,\s*/', "\n", $list);
-        }
-        $acl = $this->LoadAcl($tag, $privilege, false);
-
-        if ($acl && $appendAcl) {
-            $list = $acl['list']."\n".$list ;
-        }
-
-        if ($acl) {
-            $this->Query('update ' . $this->config['table_prefix'] . 'acls set list = "' . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . '" where page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '" and privilege = "' . mysqli_real_escape_string($this->dblink, $privilege) . '"');
-        } else {
-            $this->Query('insert into ' . $this->config['table_prefix'] . "acls set list = '" . mysqli_real_escape_string($this->dblink, trim(str_replace("\r", '', $list))) . "', page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', privilege = '" . mysqli_real_escape_string($this->dblink, $privilege) . "'");
-        }
-
-        // update the acls cache
-        $this->aclsCache[$tag][$privilege] = array(
-            'page_tag' => $tag,
-            'privilege' => $privilege,
-            'list' => $list
-        );
-    }
-
-    /**
-     *
-     * @param string $tag The page's WikiName
-     * @param string|array $privileges A privilege or several privileges to delete from database.
-     */
-    public function DeleteAcl($tag, $privileges=array('read','write','comment'))
-    {
-        if (! is_array($privileges)) {
-            $privileges = array($privileges);
-        }
-
-        // add '"' at begin and end of each escaped privileges elements.
-        for ($i=0; $i<count($privileges); $i++) {
-            $privileges[$i] = '"'.mysqli_real_escape_string($this->dblink, $privileges[$i]) .'"';
-        }
-        // construct a CSV string with privileges elements
-        $privileges = implode(',', $privileges);
-
-        $this->Query('DELETE FROM ' . $this->config['table_prefix'] . 'acls'
-            .' WHERE page_tag = "' . mysqli_real_escape_string($this->dblink, $tag) . '"'
-            .' AND privilege IN (' . $privileges .')');
-
-        if (isset($this->aclsCache[$tag])) {
-            unset($this->aclsCache[$tag]);
-        }
-    }
-
-    /**
-     * Check if user has a privilege on page.
-     * The page's owner has always access (always return true).
-     *
-     * @param string $privilege The privilege to check (read, write, comment)
-     * @param string $tag The page WikiName. Default to current page
-     * @param string $user The username. Default to current user.
-     * @return boolean true if access granted, false if not.
-     */
-    public function HasAccess($privilege, $tag = '', $user = '')
-    {
-
-        // set default to current page
-        if (! $tag = trim($tag)) {
-            $tag = $this->GetPageTag();
-        }
-        // set default to current user
-        if (! $user) {
-            $user = $this->GetUserName();
-        }
-
-        // if current user is owner, return true. owner can do anything!
-        if ($this->UserIsOwner($tag)) {
-            return true;
-        }
-
-        // load acl
-        $acl = $this->LoadAcl($tag, $privilege);
-        // now check them
-        $access = $this->CheckACL($acl['list'], $user);
-
-        return $access ;
-    }
-
-    /**
-     * Checks if some $user satisfies the given $acl
-     *
-     * @param string $acl
-     *            The acl to check, in the same format than for pages ACL's
-     * @param string $user
-     *            The name of the user that must satisfy the ACL. By default
-     *            the current remote user.
-     * @param string $tag
-     *            The name of the page or form to be tested when $acl contains '%'.
-     *            By Default ''
-     * @param string $mode
-     *            Mode for case $acl contains '%'
-     *            Default '', standard case. $mode = 'creation', the test returns true
-     *            even if the user is connected
-     * @return bool True if the $user satisfies the $acl, false otherwise
-     */
-    public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
-    {
-        if (! $user) {
-            $user = $this->GetUserName();
-        }
-
-        if ($admincheck && $this->UserIsAdmin($user)) {
-            return true;
-        }
-        
-        $acl = trim($acl);
-        $result = false ; // result by default , this function is like a big "OR LOGICAL"
-        
-        foreach (explode(" ", $acl) as $blockLine) {
-            /* Explode by " " to manage several ACL on same line */
-            foreach (explode("\n", $blockLine) as $line) {
-                $line = trim($line);
-
-                // check for inversion character "!"
-                if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                    $std_response = false ;
-                    $line = $matches[1];
-                } else {
-                    $std_response = true;
-                }
-
-                // if there's still anything left... lines with just a "!" don't count!
-                if ($line) {
-                    switch ($line[0]) {
-                    case '#': // comments
-                        break;
-                    case '*': // everyone
-                        $result = $std_response;
-                        break;
-                    case '+': // registered users
-                        $result = ($this->LoadUser($user)) ? $std_response : !$std_response ;
-                        break;
-                    case '%': // owner
-                        if ($mode == 'creation') {
-                            // in creation mode, even if there is a tag
-                            // the current user can access to field
-                            $result = $std_response ;
-                        } elseif ($tag == '') {
-                            // to manage retrocompatibility without usage of CheckACL without $tag
-                            // and no management of '%'
-                            $result = false;
-                        } else {
-                            $result = ($this->UserIsOwner($tag)) ? $std_response : !$std_response ;
-                        }
-                        break;
-                    case '@': // groups
-                        $gname = substr($line, 1);
-                        // paranoiac: avoid line = '@'
-                        if ($gname) {
-                            if ($this->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
-                                $result = $std_response ;
-                            } else {
-                                $result = ! $std_response ;
-                            }
-                        } else {
-                            $result = false ; // line '@'
-                        }
-                        break;
-                    default: // simple user entry
-                        if ($line == $user) {
-                            $result = $std_response ;
-                        } else {
-                            $result = ! $std_response ;
-                        }
-                }
-                    if ($result) {
-                        return true ;
-                    } // else continue like a big logical OR
-                }
-            }
-        }
-
-        // tough luck.
-        return false;
     }
 
     /**
@@ -1626,37 +1361,6 @@ class Wiki
         return;
     }
 
-
-    public function GetMetaDatas($pagetag)
-    {
-        $metadatas = $this->GetTripleValue($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '', '');
-        if (!empty($metadatas)) {
-            if (YW_CHARSET != 'UTF-8') {
-                return array_map('utf8_decode', json_decode($metadatas, true));
-            } else {
-                return json_decode($metadatas, true);
-            }
-        } else {
-            return false;
-        }
-    }
-
-    public function SaveMetaDatas($pagetag, $metadatas)
-    {
-        $former_metadatas = $this->GetMetaDatas($pagetag);
-
-        if ($former_metadatas) {
-            $metadatas = array_merge($former_metadatas, $metadatas);
-            $this->DeleteTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', null, '', '');
-        }
-        if (YW_CHARSET != 'UTF-8') {
-            $metadatas = json_encode(array_map("utf8_encode", $metadatas));
-        } else {
-            $metadatas = json_encode($metadatas);
-        }
-        return $this->InsertTriple($pagetag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadatas, '', '');
-    }
-
     public function parse_size($size)
     {
         $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
@@ -1763,7 +1467,7 @@ class Wiki
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this, $this->tag);
 
-        $metadata = $this->GetMetaDatas($this->tag);
+        $metadata = $this->services->get(PageManager::class)->getMetadata($this->tag);
 
         if (isset($metadata['lang'])) {
             $wakkaConfig['lang'] = $metadata['lang'];
@@ -1939,6 +1643,38 @@ class Wiki
     }
 
     /**
+     * @deprecated Use PageManager::getOwner instead
+     */
+    public function GetPageOwner($tag = "", $time = "")
+    {
+        return $this->services->get(PageManager::class)->getOwner($tag, $time);
+    }
+
+    /**
+     * @deprecated Use PageManager::save instead
+     */
+    public function SetPageOwner($tag, $user)
+    {
+        return $this->services->get(PageManager::class)->setOwner($tag, $user);
+    }
+
+    /**
+     * @deprecated Use PageManager::getMetadata instead
+     */
+    public function GetMetaDatas($tag)
+    {
+        return $this->services->get(PageManager::class)->getMetadata($tag);
+    }
+
+    /**
+     * @deprecated Use PageManager::setMetadata instead
+     */
+    public function SaveMetaDatas($tag, $metadata)
+    {
+        return $this->services->get(PageManager::class)->setMetadata($tag, $metadata);
+    }
+
+    /**
      * @deprecated Use TagsManager::deleteAll instead
      */
     public function DeleteAllTags($page)
@@ -2080,5 +1816,45 @@ class Wiki
     public function LogoutUser()
     {
         return $this->services->get(UserManager::class)->logout();
+    }
+
+    /**
+     * @deprecated Use AclService::load
+     */
+    public function LoadAcl($tag, $privilege, $useDefaults = true)
+    {
+        return $this->services->get(AclService::class)->load($tag, $privilege, $useDefaults);
+    }
+
+    /**
+     * @deprecated Use AclService::save
+     */
+    public function SaveAcl($tag, $privilege, $list, $appendAcl = false)
+    {
+        return $this->services->get(AclService::class)->save($tag, $privilege, $list, $appendAcl);
+    }
+
+    /**
+     * @deprecated Use AclService::delete
+     */
+    public function DeleteAcl($tag, $privileges = ['read','write','comment'])
+    {
+        return $this->services->get(AclService::class)->delete($tag, $privileges);
+    }
+
+    /**
+     * @deprecated Use AclService::hasAccess
+     */
+    public function HasAccess($privilege, $tag = '', $user = '')
+    {
+        return $this->services->get(AclService::class)->hasAccess($privilege, $tag, $user);
+    }
+
+    /**
+     * @deprecated Use AclService::check
+     */
+    public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
+    {
+        return $this->services->get(AclService::class)->check($acl, $user, $admincheck, $tag, $mode);
     }
 }
