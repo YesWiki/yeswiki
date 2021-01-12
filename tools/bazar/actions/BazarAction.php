@@ -3,7 +3,6 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarAction extends YesWikiAction
@@ -46,7 +45,6 @@ class BazarAction extends YesWikiAction
 
     function run()
     {
-        $entryManager = $this->getService(EntryManager::class);
         $listController = $this->getService(ListController::class);
         $formController = $this->getService(FormController::class);
         $entryController = $this->getService(EntryController::class);
@@ -77,19 +75,7 @@ class BazarAction extends YesWikiAction
                             $this->arguments['categorienature']
                         );
                     case self::ACTION_ENTRY_VIEW:
-                        if (isset($_REQUEST['id_fiche'])) {
-                            $fiche = $entryManager->getOne($_REQUEST['id_fiche'], false, !empty($_REQUEST['time']) ? $_REQUEST['time'] : '');
-                            if (!$fiche) {
-                                return '<div class="alert alert-danger">'
-                                    ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : '
-                                    .htmlspecialchars($_REQUEST['id_fiche']).'</div>';
-                            } else {
-                                return baz_voir_fiche(1, $fiche);
-                            }
-                        } else {
-                            return '<div class="alert alert-danger">'
-                                ._t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE').'</div>';
-                        }
+                        return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time']);
                     default:
                         return baz_rechercher(
                             isset($_REQUEST['id_typeannonce']) ?
@@ -106,9 +92,11 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ENTRY_DELETE:
                         return $entryController->delete($_REQUEST['id_fiche']);
                     case self::ACTION_PUBLIER:
-                        return publier_fiche(1).baz_voir_fiche(1, $_REQUEST['id_fiche']);
+                        publier_fiche(1);
+                        return $entryController->view($_REQUEST['id_fiche']);
                     case self::ACTION_PAS_PUBLIER:
-                        return publier_fiche(0).baz_voir_fiche(1, $_REQUEST['id_fiche']);
+                        publier_fiche(0);
+                        return $entryController->view($_REQUEST['id_fiche']);
                     default:
                         if( !empty($this->arguments['idtypeannonce']) ) {
                             return $entryController->create($this->arguments['idtypeannonce'][0]);

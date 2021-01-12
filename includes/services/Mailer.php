@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Wiki;
 
 class Mailer
@@ -32,7 +33,7 @@ class Mailer
         $fiche = str_replace(
             'src="tools',
             'src="' . $lien . '/tools',
-            baz_voir_fiche(0, $data['id_fiche'])
+            $this->wiki->services->get(EntryController::class)->view($data['id_fiche'])
         ) . $texthtml;
         $html =
             '<html><head><style type="text/css">' . $style .
@@ -94,7 +95,7 @@ class Mailer
         $fichier = 'tools/bazar/presentation/styles/bazar.css';
         $style = file_get_contents($fichier);
         $style = str_replace('url(', 'url('.$lien.'/tools/bazar/presentation/', $style);
-        $fiche = $texthtml.str_replace('src="tools', 'src="'.$lien.'/tools', baz_voir_fiche(0, $data));
+        $fiche = $texthtml.str_replace('src="tools', 'src="'.$lien.'/tools', $this->wiki->services->get(EntryController::class)->view($data['id_fiche']));
         $html = '<html><head><style type="text/css">'.$style.'</style></head><body>'.$fiche.'</body></html>';
 
         send_mail($this->params-get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params-get('BAZ_ADRESSE_MAIL_ADMIN'), $email, $sujet, $text, $html);

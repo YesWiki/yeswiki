@@ -27,14 +27,19 @@ class EntryController extends YesWikiController
         return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
     }
 
-    public function view($entryId)
+    public function view($entryId, $time = '')
     {
         if (is_array($entryId)) {
             // If entry ID is the full entry with all the values
             $entry = $entryId;
             $entryId = $entry['id_fiche'];
+        } elseif($entryId) {
+            $entry = $this->wiki->services->get(EntryManager::class)->getOne($entryId, false, $time);
+            if( !$entry ) {
+                return '<div class="alert alert-danger">' ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : ' . $entryId . '</div>';
+            }
         } else {
-            $entry = $this->wiki->services->get(EntryManager::class)->getOne($entryId);
+            return '<div class="alert alert-danger">' ._t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
         }
 
         $form = $this->formManager->getOne($entry['id_typeannonce']);
