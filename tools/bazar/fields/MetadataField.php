@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\PageManager;
 
 /**
  * @Field({"metadatas"})
@@ -36,7 +37,7 @@ class MetadataField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $GLOBALS['wiki']->SaveMetaDatas($entry['id_fiche'], [
+        $this->getService(PageManager::class)->setMetadata($entry['id_fiche'], [
             'theme' => $this->theme,
             'style' => $this->style,
             'squelette' => $this->template,

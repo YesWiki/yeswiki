@@ -11,17 +11,23 @@ class PageManager
 {
     protected $wiki;
     protected $dbService;
+    protected $aclService;
+    protected $tripleStore;
     protected $entryManager;
+    protected $userManager;
     protected $bazarGuard;
     protected $params;
 
     protected $pageCache;
 
-    public function __construct(Wiki $wiki, DbService $dbService, EntryManager $entryManager, Guard $bazarGuard, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, AclService $aclService, TripleStore $tripleStore, EntryManager $entryManager, UserManager $userManager, Guard $bazarGuard, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->aclService = $aclService;
+        $this->tripleStore = $tripleStore;
         $this->entryManager = $entryManager;
+        $this->userManager = $userManager;
         $this->bazarGuard = $bazarGuard;
         $this->params = $params;
 
@@ -33,7 +39,7 @@ class PageManager
         // retrieve from cache
         if (!$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
             if ($cachedPage and !isset($cachedPage["metadatas"])) {
-                $cachedPage["metadatas"] = $this->wiki->GetMetaDatas($tag);
+                $cachedPage["metadatas"] = $this->getMetadata($tag);
             }
             $page = $cachedPage;
         } else { // load page
@@ -43,7 +49,7 @@ class PageManager
 
             // si la page existe, on charge les meta-donnees
             if ($page) {
-                $page["metadatas"] = $this->wiki->GetMetaDatas($tag);
+                $page["metadatas"] = $this->getMetadata($tag);
             }
 
             if ($this->entryManager->isEntry($tag)) {
@@ -189,32 +195,31 @@ class PageManager
      */
     public function save($tag, $body, $comment_on = "", $bypass_acls = false)
     {
-        // get current user
-        $user = $this->wiki->GetUserName();
+        $user = $this->userManager->getLoggedUserName();
 
         // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->wiki->HasAccess('comment', $comment_on) : $this->wiki->HasAccess('write', $tag));
+        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess('comment', $comment_on) : $this->aclService->hasAccess('write', $tag));
 
         if ($rights) {
             // is page new?
             if (!$oldPage = $this->getOne($tag)) {
 				
 				// LoadACL (if defined by acls)
-				$defaultWrite = $this->wiki->LoadAcl($tag, 'write', true)['list'] ;
-				$defaultRead = $this->wiki->LoadAcl($tag, 'read', true)['list'];
-				$defaultComment = $this->wiki->LoadAcl($tag, 'comment', true)['list'] ;
+				$defaultWrite = $this->aclService->load($tag, 'write', true)['list'] ;
+				$defaultRead = $this->aclService->load($tag, 'read', true)['list'];
+				$defaultComment = $this->aclService->load($tag, 'comment', true)['list'] ;
 				
                 // create default write acl. store empty write ACL for comments.
-                $this->wiki->SaveAcl($tag, 'write', ($comment_on ? $user : $defaultWrite));
+                $this->aclService->save($tag, 'write', ($comment_on ? $user : $defaultWrite));
 
                 // create default read acl
-                $this->wiki->SaveAcl($tag, 'read', $defaultRead);
+                $this->aclService->save($tag, 'read', $defaultRead);
 
                 // create default comment acl.
-                $this->wiki->SaveAcl($tag, 'comment', ($comment_on ? '' : $defaultComment));
+                $this->aclService->save($tag, 'comment', ($comment_on ? '' : $defaultComment));
 
                 // current user is owner; if user is logged in! otherwise, no owner.
-                if ($this->wiki->GetUser()) {
+                if ($this->userManager->getLoggedUser()) {
                     $owner = $user;
                 } else {
                     $owner = '';
@@ -230,10 +235,10 @@ class PageManager
             }
 
             // set all other revisions to old
-            $this->dbService->query('update' . $this->dbService->prefixTable('pages') . "set latest = 'N' where tag = '" . $this->dbService->escape($tag) . "'");
+            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
             // add new revision
-            $this->dbService->query('insert into' . $this->dbService->prefixTable('pages') . "set tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : "") . "time = now(), " . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
+            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : "") . "time = now(), " . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
 
             unset($this->pageCache[$tag]);
 
@@ -241,5 +246,58 @@ class PageManager
         } else {
             return 1;
         }
+    }
+
+    public function getOwner($tag = "", $time = "")
+    {
+        if (!$tag = trim($tag)) {
+            $tag = $this->wiki->GetPageTag();
+        }
+
+        if ($page = $this->getOne($tag, $time)) {
+            return isset($page["owner"]) ? $page["owner"] : null;
+        }
+    }
+
+    public function setOwner($tag, $user)
+    {
+        if (!$this->userManager->getOneByName($user)) {
+            return;
+        }
+
+        $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y' LIMIT 1");
+    }
+
+    public function getMetadata($tag) : ?array
+    {
+        $metadata = $this->tripleStore->getOne($tag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '');
+
+        if (!empty($metadata)) {
+            if (YW_CHARSET != 'UTF-8') {
+                return array_map('utf8_decode', json_decode($metadata, true));
+            } else {
+                return json_decode($metadata, true);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public function setMetadata($tag, $metadata)
+    {
+        $previousMetadata = $this->getMetadata($tag);
+
+        if ($previousMetadata) {
+            $metadata = array_merge($previousMetadata, $metadata);
+            $this->tripleStore->delete($tag, 'http://outils-reseaux.org/_vocabulary/metadata', null, '', '');
+        }
+
+        if (YW_CHARSET != 'UTF-8') {
+            $metadata = json_encode(array_map("utf8_encode", $metadata));
+        } else {
+            $metadata = json_encode($metadata);
+        }
+
+        return $this->tripleStore->create($tag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadata, '', '');
     }
 }
