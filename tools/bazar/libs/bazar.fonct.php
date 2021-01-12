@@ -1491,7 +1491,7 @@ function filterFieldsByPropertyName(array $fields, array $id)
     return array_filter($fields, function($field) use ($id) {
         if( $field instanceof BazarField ) {
             return in_array($field->getPropertyName(), $id);
-        } elseif( is_array($field) ) {
+        } elseif( is_array($field) && isset($field['id']) ) {
             return in_array($field['id'], $id);
         }
     });
@@ -1509,7 +1509,7 @@ function findFieldByName($allForms, $name)
                     return $field;
                 }
             } elseif (is_array($field)) {
-                if ($field['id'] === $name) {
+                if (isset($field['id']) && $field['id'] === $name) {
                     return $field;
                 }
             }
