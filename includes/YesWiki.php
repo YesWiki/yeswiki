@@ -43,6 +43,7 @@ use Symfony\Component\Routing\RequestContext;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
@@ -76,9 +77,6 @@ class Wiki
      */
     public $actionObjects;
 
-    // LinkTrackink
-    public $isTrackingLinks = false;
-    public $linktable = array();
     public $pageCacheFormatted = array();
     public $_groupsCache = array();
     public $_actionsAclsCache = array();
@@ -253,6 +251,8 @@ class Wiki
      */
     public function AppendContentToPage($content, $page, $bypass_acls = false)
     {
+        $linkTracker = $this->services->get(LinkTracker::class);
+
         // Si un contenu est specifie
         if (isset($content)) {
             // -- Determine quelle est la page :
@@ -271,21 +271,22 @@ class Wiki
             $this->SavePage($page, $body, '', $bypass_acls);
 
             // now we render it internally so we can write the updated link table.
-            $this->ClearLinkTable();
-            $this->StartLinkTracking();
+            $linkTracker->clear();
+            $linkTracker->start();
+            // on simule totalement un affichage normal
             $temp = $this->SetInclusions();
-            $this->RegisterInclusion($this->GetPageTag()); // on simule totalement un affichage normal
+            $this->RegisterInclusion($this->GetPageTag());
             $this->Format($body);
             $this->SetInclusions($temp);
             if ($user = $this->GetUser()) {
-                $this->TrackLinkTo($user['name']);
+                $linkTracker->add($user['name']);
             }
             if ($owner = $this->GetPageOwner()) {
-                $this->TrackLinkTo($owner);
+                $linkTracker->add($owner);
             }
-            $this->StopLinkTracking();
-            $this->WriteLinkTable();
-            $this->ClearLinkTable(); /* */
+            $linkTracker->stop();
+            $linkTracker->persist();
+            $linkTracker->clear();
 
             // Retourne 0 seulement si tout c'est bien passe
             return 0;
@@ -592,92 +593,6 @@ class Wiki
     public function IsWikiName($text, $type = WN_CAMEL_CASE_EVOLVED)
     {
         return preg_match('/^' . $type . '$/u', $text);
-    }
-
-    // LinkTracking management
-    /**
-     * Tracks the link to a given page (only if the LinkTracking is activated)
-     *
-     * @param string $tag
-     *            The tag (name) of the page to track a link to.
-     */
-    public function TrackLinkTo($tag)
-    {
-        if ($this->LinkTracking()) {
-            $this->linktable[] = $tag;
-        }
-    }
-
-    /**
-     *
-     * @return array The current link tracking table
-     */
-    public function GetLinkTable()
-    {
-        return $this->linktable;
-    }
-
-    /**
-     * Clears the link tracking table
-     */
-    public function ClearLinkTable()
-    {
-        $this->linktable = array();
-    }
-
-    /**
-     * Starts the LinkTracking
-     *
-     * @return bool The previous state of the link tracking
-     */
-    public function StartLinkTracking()
-    {
-        return $this->LinkTracking(true);
-    }
-
-    /**
-     * Stops the LinkTracking
-     *
-     * @return bool The previous state of the link tracking
-     */
-    public function StopLinkTracking()
-    {
-        return $this->LinkTracking(false);
-    }
-
-    /**
-     * Sets and/or retrieve the state of the LinkTracking
-     *
-     * @param bool $newStatus
-     *            The new status of the LinkTracking
-     *            (defaults to <tt>null</tt> which lets it unchanged)
-     * @return bool The previous state of the link tracking
-     */
-    public function LinkTracking($newStatus = null)
-    {
-        $old = $this->isTrackingLinks;
-        if ($newStatus !== null) {
-            $this->isTrackingLinks = $newStatus;
-        }
-
-        return $old;
-    }
-
-    public function WriteLinkTable()
-    {
-        // delete old link table
-        $this->Query('delete from ' . $this->config['table_prefix'] . "links where from_tag = '" . mysqli_real_escape_string($this->dblink, $this->GetPageTag()) . "'");
-        if ($linktable = $this->GetLinkTable()) {
-            $from_tag = mysqli_real_escape_string($this->dblink, $this->GetPageTag());
-            $written = [];
-            foreach ($linktable as $to_tag) {
-                $lower_to_tag = strtolower($to_tag);
-                if (!isset($written[$lower_to_tag])) {
-                    $this->Query('insert into ' . $this->config['table_prefix'] . "links set from_tag = '" . $from_tag . "', to_tag = '" . mysqli_real_escape_string($this->dblink, $to_tag) . "'");
-                    $written[$lower_to_tag] = 1;
-                }
-            }
-        }
     }
 
     public function Header()
@@ -1856,5 +1771,61 @@ class Wiki
     public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
     {
         return $this->services->get(AclService::class)->check($acl, $user, $admincheck, $tag, $mode);
+    }
+
+    /**
+     * @deprecated Use LinkTracker::start
+     */
+    public function StartLinkTracking()
+    {
+        return $this->services->get(LinkTracker::class)->start();
+    }
+
+    /**
+     * @deprecated Use LinkTracker::stop
+     */
+    public function StopLinkTracking()
+    {
+        return $this->services->get(LinkTracker::class)->stop();
+    }
+
+    /**
+     * @deprecated Use LinkTracker::track
+     */
+    public function LinkTracking($newState = null)
+    {
+        return $this->services->get(LinkTracker::class)->track($newState);
+    }
+
+    /**
+     * @deprecated Use LinkTracker::add
+     */
+    public function TrackLinkTo($tag)
+    {
+        return $this->services->get(LinkTracker::class)->add($tag);
+    }
+
+    /**
+     * @deprecated Use LinkTracker::getAll
+     */
+    public function GetLinkTable()
+    {
+        return $this->services->get(LinkTracker::class)->getAll();
+    }
+
+    /**
+     * @deprecated Use LinkTracker::persist
+     */
+    public function WriteLinkTable()
+    {
+        return $this->services->get(LinkTracker::class)->persist();
+    }
+
+    /**
+     * @deprecated Use LinkTracker::getAll
+     */
+    public function ClearLinkTable()
+    {
+        return $this->services->get(LinkTracker::class)->clear();
     }
 }
