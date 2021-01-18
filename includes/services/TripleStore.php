@@ -162,7 +162,7 @@ class TripleStore
         $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($re_prefix . $resource) . '" ' . 'AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ' . 'AND value = "' . $this->dbService->escape($value) . '"';
         $triple = $this->dbService->loadSingle($sql);
         return !is_null($triple) ?
-            intval($triple)
+            intval($triple['id'])
             : null;
     }
 
