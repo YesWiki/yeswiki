@@ -86,7 +86,7 @@ class BazarAction extends YesWikiAction
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0]);
+                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($_REQUEST['id_fiche']);
                     case self::ACTION_ENTRY_DELETE:
