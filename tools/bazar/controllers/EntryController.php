@@ -27,7 +27,7 @@ class EntryController extends YesWikiController
         return $this->render("@bazar/entries/select_form.twig", ['forms' => $forms]);
     }
 
-    public function view($entryId, $time = '')
+    public function view($entryId, $time = '', $showFooter = true)
     {
         if (is_array($entryId)) {
             // If entry ID is the full entry with all the values
@@ -121,7 +121,7 @@ class EntryController extends YesWikiController
             "owner" => $owner,
             "message" => $_GET['message'],
             "showOwner" => $showOwner,
-            "showFooter" => $this->wiki->HasAccess('write', $entryId),
+            "showFooter" => $showFooter && $this->wiki->HasAccess('write', $entryId),
             "canDelete" => $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
             "renderedEntry" => $renderedEntry,
             "absoluteUrl" => getAbsoluteUrl()

@@ -12,6 +12,10 @@ if ($link == "config/root_page") {
     $this->setParameter('link', $link);
 }
 
+$linkParts = $this->extractLinkParts($link);
+if ($linkParts){
+    $link = $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
+}
 // change short yeswiki urls in real links
 $link = $this->generateLink($link);
 
@@ -57,7 +61,7 @@ if (!empty($nobtn) && $nobtn == '1') {
 }
 
 $hideIfNoAccess = $this->GetParameter('hideifnoaccess');
-if ($hideIfNoAccess == "true" && isset($linkTag) && !$GLOBALS['wiki']->HasAccess('read', $linkTag)) {
+if ($hideIfNoAccess == "true" && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
     echo '';
 } elseif (empty($link)) {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_BUTTON') . '</strong> : ' . _t('TEMPLATE_LINK_PARAMETER_REQUIRED') . '.</div>' . "\n";

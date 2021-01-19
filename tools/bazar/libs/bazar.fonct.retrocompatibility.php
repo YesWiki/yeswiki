@@ -272,5 +272,5 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
  */
 function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
-    return $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche);
+    return $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', !$danslappli);
 }
