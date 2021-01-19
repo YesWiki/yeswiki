@@ -27,7 +27,7 @@ class BazarCartoAction extends YesWikiAction
         $iconField = $_GET['iconfield'] ?? $arg['iconfield'];
         $icon = $_GET['icon'] ?? $arg['icon'];
         if (!empty($icon)) {
-            $tabparam = getMultipleParameters($icon, ',', '=');
+            $tabparam = $this->getMultipleParameters($icon, ',', '=');
             if ($tabparam['fail'] != 1) {
                 if (count($tabparam) > 1 && !empty($iconField)) {
                     // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
@@ -49,7 +49,7 @@ class BazarCartoAction extends YesWikiAction
         $colorField = $_GET['colorfield'] ?? $arg['colorfield'];
         $color = $_GET['color'] ?? $arg['color'];
         if (!empty($color)) {
-            $tabparam = getMultipleParameters($color, ',', '=');
+            $tabparam = $this->getMultipleParameters($color, ',', '=');
             if ($tabparam['fail'] != 1) {
                 if (count($tabparam) > 1 && !empty($colorField)) {
                     // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
@@ -151,5 +151,40 @@ class BazarCartoAction extends YesWikiAction
         $this->arguments['barregestion'] = false;
 
         return $this->callAction('bazarliste', $this->arguments);
+    }
+
+    // This function's aim is to fetch (key , value) couples stored in a multiple parameter
+    // $param is the parameter where we have to fecth the couples
+    // $firstseparator is the separator between the couples (usually ',')
+    // $secondseparator is the separator between key and value in each couple (usually '=')
+    // Returns the table of (key , value) couples
+    // If fails to explode the data, then $tabparam['fail'] == 1
+    private function getMultipleParameters($param, $firstseparator = ',', $secondseparator = '=')
+    {
+        $tabparam = [];
+        $tabparam['fail'] = 0;
+        // check if first and second separators are at least somewhere
+        if (strpos($param, $secondseparator) !== false) {
+            $params = explode($firstseparator, $param);
+            $params = array_map('trim', $params);
+            if (count($params) > 0) {
+                foreach ($params as $value) {
+                    if (!empty($value)) {
+                        $tab = explode($secondseparator, $value);
+                        $tab = array_map('trim', $tab);
+                        if (count($tab) > 1) {
+                            $tabparam[$tab[0]] = $tab[1];
+                        } else {
+                            $tabparam['fail'] = 1;
+                        }
+                    }
+                }
+            } else {
+                $tabparam['fail'] = 1;
+            }
+        } else {
+            $tabparam['fail'] = 1;
+        }
+        return $tabparam;
     }
 }

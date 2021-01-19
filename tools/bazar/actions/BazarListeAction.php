@@ -25,7 +25,7 @@ class BazarListeAction extends YesWikiAction
             // Afficher les fiches dans un ordre aléatoire
             'random' => $this->formatBoolean($arg['random'], false),
             // filtrer les resultats sur une periode données si une date est indiquée
-            'dateMin' => getDateMin($_GET['period'] ?? $arg['period']),
+            'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period']),
             // transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'correspondance' => $arg['correspondance'],
 
@@ -196,7 +196,7 @@ class BazarListeAction extends YesWikiAction
                     // Formatte la liste des resultats en fonction de la source
                     if (isset($facetteValue[$id])) {
                         if ($facetteValue[$id]['type'] == 'liste') {
-                            $field = findFieldByName($forms, $facetteValue[$id]['source']);
+                            $field = $this->findFieldByName($forms, $facetteValue[$id]['source']);
                             $list['titre_liste'] = $field->getName();
                             $list['label'] = $field->getOptions();
                         } elseif ($facetteValue[$id]['type'] == 'fiche') {
@@ -280,11 +280,11 @@ class BazarListeAction extends YesWikiAction
             // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
             $fields[$entry['id_typeannonce']] = isset($fields[$entry['id_typeannonce']])
                 ? $fields[$entry['id_typeannonce']]
-                : filterFieldsByPropertyName($valform['prepared'], $groups);
+                : $this->filterFieldsByPropertyName($valform['prepared'], $groups);
             foreach ($entry as $key => $value) {
                 $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
                 if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
-                    $filteredFields = filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
+                    $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
                     $field = array_pop($filteredFields);
 
                     $fieldPropName = null;
@@ -371,6 +371,55 @@ class BazarListeAction extends YesWikiAction
         }
 
         return $queryArray;
+    }
+
+    private function formatDateMin($period)
+    {
+        switch ($period) {
+            case 'day':
+                $d = strtotime("-1 day");
+                return date("Y-m-d H:i:s", $d);
+            case 'week':
+                $d = strtotime("-1 week");
+                return date("Y-m-d H:i:s", $d);
+            case 'month':
+                $d = strtotime("-1 month");
+                return date("Y-m-d H:i:s", $d);
+        }
+    }
+
+    /*
+     * Scan all forms and return the first field matching the given ID
+     */
+    private function findFieldByName($forms, $name)
+    {
+        foreach( $forms as $form ) {
+            foreach ($form['prepared'] as $field) {
+                if ($field instanceof BazarField) {
+                    if ($field->getPropertyName() === $name) {
+                        return $field;
+                    }
+                } elseif (is_array($field)) {
+                    if (isset($field['id']) && $field['id'] === $name) {
+                        return $field;
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Filter an array of fields by their potential entry ID
+     */
+    private function filterFieldsByPropertyName(array $fields, array $id)
+    {
+        return array_filter($fields, function($field) use ($id) {
+            if( $field instanceof BazarField ) {
+                return in_array($field->getPropertyName(), $id);
+            } elseif( is_array($field) && isset($field['id']) ) {
+                return in_array($field['id'], $id);
+            }
+        });
     }
 
     private function buildFieldSorter($ordre, $champ) : callable
