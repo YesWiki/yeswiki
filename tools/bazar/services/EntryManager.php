@@ -82,7 +82,8 @@ class EntryManager
                 'formsIds' => [], // Types de fiches (par ID de formulaire)
                 'user' => '', // N'affiche que les fiches d'un utilisateur
                 'keywords' => '', // Mots-clés pour la recherche fulltext
-                'searchOperator' => 'OR' // Opérateur à appliquer aux mots-clés
+                'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
+                'minDate' => '' // Date minimale des fiches
             ],
             $params
         );
@@ -111,8 +112,8 @@ class EntryManager
         }
 
         // periode de modification
-        if (!empty($GLOBALS['params']['datemin'])) {
-            $requete .= ' AND time >= "'.$GLOBALS['params']['datemin'].'"';
+        if (!empty($params['minDate'])) {
+            $requete .= ' AND time >= "'.$params['minDate'].'"';
         }
 
         // si une personne a ete precisee, on limite la recherche sur elle
@@ -165,23 +166,6 @@ class EntryManager
                 }
             }
         }
-
-        // cas des criteres passés en parametres get
-        if (isset($_GET['query'])) {
-            $query = $_GET['query'];
-            $tableau = array();
-            $tab = explode('|', $query);
-            //découpe la requete autour des |
-            foreach ($tab as $req) {
-                $tabdecoup = explode('=', $req, 2);
-                if (count($tabdecoup)>1) {
-                    $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-                }
-            }
-            $params['queries'] = array_merge($params['queries'], $tableau);
-        }
-
-        reset($params['queries']);
 
         foreach ($params['queries'] as $nom => $val) {
             if (!empty($nom) && !empty($val)) {
@@ -547,7 +531,7 @@ class EntryManager
         // If sendmail field exist, send an email
         if (isset($data['sendmail'])) {
             if ($data[$data['sendmail']] != '') {
-                $this->mailer->notifyEmail($data[$data['sendmail']]);
+                $this->mailer->notifyEmail($data[$data['sendmail']], $data);
             }
             unset($data['sendmail']);
         }
