@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 
@@ -136,7 +137,7 @@ class RssHandler extends YesWikiHandler
                     '<![CDATA['.preg_replace(
                         '/data-id=".*"/Ui',
                         '',
-                        $this->sanitize(baz_voir_fiche(0, $ligne))
+                        $this->sanitize($this->getService(EntryController::class)->view($ligne))
                     ).']]>'
                 );
                 $xml .= "\r\n        ";

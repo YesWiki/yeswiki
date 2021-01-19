@@ -1,0 +1,60 @@
+<div class="BAZ_cadre_fiche id{{ form.bn_id_nature }}">
+  {% if message %}
+    <div class="alert alert-success">
+      {% if message == 'ajout_ok' %}
+        {{ _t('BAZ_FICHE_ENREGISTREE') }}
+        <a href="{{ url({ params: { vue: 'saisir', id: form.bn_id_nature }}) }}" class="pull-right btn-sm btn btn-primary">
+          {{ _t('BAZ_ADD_NEW_ENTRY') }}
+        </a>
+      {% endif %}
+      {% if message == 'modif_ok' %}
+        {{ _t('BAZ_FICHE_MODIFIEE') }}
+        <a href="{{ url({ tag: entryId, handler: 'edit'}) }}" class="pull-right btn-sm btn btn-primary">
+          {{ _t('BAZ_MODIFY_ENTRY_AGAIN') }}
+        </a>
+      {% endif %}
+      <div class="clearfix"></div>
+    </div>
+  {% endif %}
+  {{ renderedEntry|raw }}
+  {% if showFooter %}
+    <div class="clearfix"></div>
+    <div class="BAZ_fiche_info well well-sm">
+      <div class="pull-right BAZ_actions_fiche">
+         <a class="btn btn-xs btn-mini btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
+           <i class="fa fa-pencil-alt icon-pencil"></i>
+           <span>{{ _t('BAZ_MODIFIER') }}</span>
+         </a>
+        {% if canDelete %}
+          <a
+            class="btn btn-xs btn-mini btn-danger modalbox"
+            href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: absoluteUrl|url_encode }}) }}"
+            data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}"
+          >
+            <i class="fa fa-trash icon-trash icon-white"></i>
+            <span>{{ _t('BAZ_SUPPRIMER') }}</span>
+          </a>
+        {% endif %}
+      </div>
+      <span class="BAZ_main_fiche_info">
+        <a href="{{ url({ tag: entryId }) }}">
+          {{ entryId }}
+        </a>
+        <span class="category">({{ form.bn_label_nature }})</span>
+        {%- if showOwner -%}
+          , {{ _t('BAZ_ECRITE') }}
+          {{ owner }}
+        {%- endif -%}
+      </span>
+      <br />
+      <span class="date_creation">
+        {{ _t('BAZ_DATE_CREATION') }}
+        {{ entry.date_creation_fiche|date('d.m.Y à H:i') }},
+      </span>
+      <span class="date_mise_a_jour">
+        {{ _t('BAZ_DATE_MAJ') }}
+        {{ entry.date_maj_fiche|date('d.m.Y à H:i') }}
+      </span>
+    </div>
+  {% endif %}
+</div>

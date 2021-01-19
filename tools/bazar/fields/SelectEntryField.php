@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Controller\EntryController;
 
 /**
  * @Field({"listefiche"})
@@ -48,7 +49,7 @@ class SelectEntryField extends EnumField
                 return null;
             } else {
                 // TODO add documentation
-                return baz_voir_fiche(0, $value);
+                return $this->getService(EntryController::class)->view($value);
             }
         }
 

@@ -1786,7 +1786,7 @@ class Wiki
         try {
             return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
         } catch (\Exception $e) {
-            return '<div class="alert alert-danger">Erreur rendering $templatePath : '.  $e->getMessage(). '</div>'."\n";
+            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': '.  $e->getMessage(). '</div>'."\n";
         }
     }
 
