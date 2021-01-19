@@ -12,6 +12,12 @@ if ($link == "config/root_page") {
     $this->setParameter('link', $link);
 }
 
+// extract linkTag
+if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
+            . RFC3986_URI_CHARS . '))?$/', $link, $linkPartsButton)) {
+    $linkTag = !empty($linkPartsButton[1]) ? $linkPartsButton[1] : null;
+}
+
 // change short yeswiki urls in real links
 $link = $this->generateLink($link);
 
