@@ -119,7 +119,7 @@ class EntryController extends YesWikiController
             "entry" => $entry,
             "entryId" => $entryId,
             "owner" => $owner,
-            "message" => $_GET['message'],
+            "message" => $_GET['message'] ?? null,
             "showOwner" => $showOwner,
             "showFooter" => $showFooter && $this->wiki->HasAccess('write', $entryId),
             "canDelete" => $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
