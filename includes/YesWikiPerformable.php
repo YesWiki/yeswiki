@@ -91,8 +91,10 @@ abstract class YesWikiPerformable
     }
 
     // Shortcut to call an action within another action
-    protected function callAction(string $action, $arguments = array()) : string
+    protected function callAction(string $action, $arguments = []) : string
     {
+        // This additional argument helps to prevent infinite loops
+        $arguments['calledBy'] = get_class($this);
         return $this->wiki->Action($action, 0, $arguments);
     }
 

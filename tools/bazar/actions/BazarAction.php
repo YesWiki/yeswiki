@@ -64,15 +64,11 @@ class BazarAction extends YesWikiAction
         // TODO put in all bazar templates
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        // TODO virer
-//        $this->arguments = getAllParameters($this->wiki);
-//        $GLOBALS['params'] = $this->arguments;
-
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
 
         // Display menu, unless we explicitly don't want to see it
-        if ($this->arguments['voirmenu'] != '0') {
+        if ($this->arguments['voirmenu'] !== '0') {
             echo $this->render('@bazar/menu.twig', [
                 'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
                 'view' => $view
@@ -103,7 +99,6 @@ class BazarAction extends YesWikiAction
                             return $entryController->selectForm();
                         }
                 }
-                break;
             case self::VOIR_FORMULAIRE:
                 switch($action) {
                     case self::ACTION_FORM_CREATE:
@@ -140,7 +135,6 @@ class BazarAction extends YesWikiAction
                         return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time']);
                     case self::MOTEUR_RECHERCHE:
                     default:
-                        // TODO call bazarcarto or calendrier if the template is matching
                         return $this->callAction('bazarliste', $this->arguments);
                 }
         }

@@ -31,7 +31,6 @@ class BazarListeAction extends YesWikiAction
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
-            // TODO in code: add '.tpl.html' at the end of the filename if not exist
             'template' => $_GET['template'] ?? $arg['template'] ?? $this->params->get('default_bazar_template'),
             // classe css a ajouter en rendu des templates liste
             'class' => $arg['class'],
@@ -64,6 +63,14 @@ class BazarListeAction extends YesWikiAction
 
     function run()
     {
+        // If the template is a map or a calendar, call the dedicated action so that
+        // arguments can be properly formatted. The second first condition prevents infinite loops
+        if( $this->arguments['template'] === 'map.tpl.html' && $this->arguments['calledBy'] !== 'BazarCartoAction' ) {
+            return $this->callAction('bazarcarto', $this->arguments);
+        } elseif( $this->arguments['template'] === 'calendar.tpl.html' && $this->arguments['calledBy'] !== 'CalendrierAction' ) {
+            return $this->callAction('calendrier', $this->arguments);
+        }
+
         $entryManager = $this->getService(EntryManager::class);
         $formManager = $this->getService(FormManager::class);
 
