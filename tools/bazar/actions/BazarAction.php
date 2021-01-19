@@ -85,11 +85,9 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ENTRY_DELETE:
                         return $entryController->delete($_REQUEST['id_fiche']);
                     case self::ACTION_PUBLIER:
-                        publier_fiche(1);
-                        return $entryController->view($_REQUEST['id_fiche']);
+                        return $entryController->publish($_REQUEST['id_fiche'], true);
                     case self::ACTION_PAS_PUBLIER:
-                        publier_fiche(0);
-                        return $entryController->view($_REQUEST['id_fiche']);
+                        return $entryController->publish($_REQUEST['id_fiche'], false);
                     case self::CHOISIR_TYPE_FICHE:
                         return $entryController->selectForm();
                     default:
