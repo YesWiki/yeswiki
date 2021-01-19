@@ -429,6 +429,18 @@ class EntryManager
         return $data;
     }
 
+    public function publish($entryId, $accepted)
+    {
+        if (baz_a_le_droit('valider_fiche')) {
+            if ($accepted) {
+                $this->dbService->query('UPDATE'.$this->dbService->prefixTable('fiche').'SET bf_statut_fiche=1 WHERE bf_id_fiche="'.$this->dbService->escape($entryId).'"');
+            } else {
+                $this->dbService->query('UPDATE'.$this->dbService->prefixTable('fiche').'SET bf_statut_fiche=2 WHERE bf_id_fiche="'.$this->dbService->escape($entryId).'"');
+            }
+            //TODO envoie mail annonceur
+        }
+    }
+
     /**
      * Delete a fiche
      * @param $tag

@@ -911,43 +911,6 @@ function baz_afficher_formulaire_export()
     return $output;
 }
 
-/** publier_fiche () - Publie ou non dans les fichiers XML la fiche bazar d'un utilisateur
- * @global boolean Valide: oui ou non
- */
-function publier_fiche($valid)
-{
-
-    //l'utilisateur a t'il le droit de valider
-    if (baz_a_le_droit('valider_fiche')) {
-        if ($valid == 0) {
-            $requete =
-            'UPDATE '.$GLOBALS['wiki']->config['table_prefix'].
-            'fiche SET  bf_statut_fiche=2 WHERE bf_id_fiche="'.
-            $_GET['id_fiche'].'"';
-            echo '<div class="alert alert-success">'."\n"
-            .'<a data-dismiss="alert" class="close" type="button">&times;</a>'
-            ._t('BAZ_FICHE_PAS_VALIDEE').'</div>'."\n";
-        } else {
-            $requete =
-            'UPDATE '.$GLOBALS['wiki']->config['table_prefix'].
-            'fiche SET  bf_statut_fiche=1 WHERE bf_id_fiche="'.
-            $_GET['id_fiche'].'"';
-            echo '<div class="alert alert-success">'."\n"
-            .'<a data-dismiss="alert" class="close" type="button">&times;</a>'
-            ._t('BAZ_FICHE_VALIDEE').'</div>'."\n";
-        }
-
-        // ====================Mise a jour de la table '.$GLOBALS['wiki']->config['table_prefix'].'fiche====================
-        $resultat = $GLOBALS['wiki']->query($requete);
-
-        unset($resultat);
-
-        //TODO envoie mail annonceur
-    }
-
-    return;
-}
-
 function multiArraySearch($array, $key, $value)
 {
     $results = array();

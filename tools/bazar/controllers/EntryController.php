@@ -128,6 +128,19 @@ class EntryController extends YesWikiController
         ]);
     }
 
+    public function publish($entryId, $accepted)
+    {
+        $this->entryManager->publish($entryId, $accepted);
+
+        if( $accepted ) {
+            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>'._t('BAZ_FICHE_VALIDEE').'</div>';
+        } else {
+            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>'._t('BAZ_FICHE_PAS_VALIDEE').'</div>';
+        }
+
+        return $this->view($entryId);
+    }
+
     public function create($formId, $redirectUrl = null)
     {
         $form = $this->formManager->getOne($formId);
