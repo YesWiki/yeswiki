@@ -1754,6 +1754,11 @@ class Wiki
             }
         }
 
+        // Overwrite the extensions's config with wakka config
+        foreach ($wakkaConfig as $key => $value) {
+            $this->services->setParameter($key, $value);
+        }
+
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
