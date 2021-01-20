@@ -44,6 +44,8 @@ class BazarListeAction extends YesWikiAction
             'showexportbuttons' => $this->formatBoolean($arg['showexportbuttons'], false),
             // Affiche le formulaire de recherche en haut
             'search' => $this->formatBoolean($arg['search'], false),
+            // Affiche le nombre de fiche en haut
+            'shownumentries' => $this->formatBoolean($arg['shownumentries'], true),
 
             // FACETTES
             // Identifiants des champs utilisés pour les facettes
@@ -143,7 +145,7 @@ class BazarListeAction extends YesWikiAction
 
     private function renderEntries($entries) : string
     {
-        $showNumEntries = count($this->arguments['groups']) == 0 || count($entries) == 0;
+        $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
 
         $data['fiches'] = $entries;
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">'._t('BAZ_IL_Y_A').' '.count($data['fiches']).' '.(count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')).'</div>' : '';
