@@ -80,7 +80,7 @@ class Guard
                         }
                     }
                     if (isset($line[11]) && $line[11] != '') {
-                        if ($this->wiki->CheckAcl($line[11]) == "%") {
+                        if ($line[11] == "%") {
                             $line[11] = $this->wiki->GetUserName();
                         }
                         if (!$this->wiki->CheckACL($line[11])) {
