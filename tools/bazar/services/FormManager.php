@@ -3,6 +3,8 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Wiki;
 
@@ -268,5 +270,101 @@ class FormManager
             $i++;
         }
         return $prepared;
+    }
+
+    public function scanAllFacettable($entries, $groups = ['all'], $onlyLists = false)
+    {
+        $facetteValue = $fields = [];
+
+        foreach ($entries as $entry) {
+            $form = $this->getOne($entry['id_typeannonce']);
+
+            // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
+            $fields[$entry['id_typeannonce']] = isset($fields[$entry['id_typeannonce']])
+                ? $fields[$entry['id_typeannonce']]
+                : $this->filterFieldsByPropertyName($form['prepared'], $groups);
+
+            foreach ($entry as $key => $value) {
+                $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
+
+                if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
+                    $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
+                    $field = array_pop($filteredFields);
+
+                    $fieldPropName = null;
+                    if( $field instanceof BazarField ) {
+                        $fieldPropName = $field->getPropertyName();
+                        $fieldType = $field->getType();
+                    } else if ( is_array($field)) {
+                        $fieldPropName = $field['id'];
+                        $fieldType = $field['type'];
+                    }
+
+                    if ($fieldPropName) {
+                        $islistforeign = (strpos($fieldPropName, 'listefiche')===0) || (strpos($fieldPropName, 'checkboxfiche')===0);
+                        $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste')) && !$islistforeign;
+                        $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste', 'checkboxfiche', 'listefiche')));
+
+                        if ($islistforeign) {
+                            // listefiche ou checkboxfiche
+                            $facetteValue[$fieldPropName]['type'] = 'fiche';
+                            $facetteValue[$fieldPropName]['source'] = $key;
+                            $tabval = explode(',', $value);
+                            foreach ($tabval as $tval) {
+                                if (isset($facetteValue[$fieldPropName][$tval])) {
+                                    ++$facetteValue[$fieldPropName][$tval];
+                                } else {
+                                    $facetteValue[$fieldPropName][$tval] = 1;
+                                }
+                            }
+                        } elseif ($islist) {
+                            // liste ou checkbox
+                            $facetteValue[$fieldPropName]['type'] = 'liste';
+                            $facetteValue[$fieldPropName]['source'] = $key;
+                            $tabval = explode(',', $value);
+                            foreach ($tabval as $tval) {
+                                if (isset($facetteValue[$fieldPropName][$tval])) {
+                                    ++$facetteValue[$fieldPropName][$tval];
+                                } else {
+                                    $facetteValue[$fieldPropName][$tval] = 1;
+                                }
+                            }
+                        } elseif ($istext and !$onlyLists) {
+                            // texte
+                            $facetteValue[$key]['type'] = 'form';
+                            $facetteValue[$key]['source'] = $key;
+                            if (isset($facetteValue[$key][$value])) {
+                                ++$facetteValue[$key][$value];
+                            } else {
+                                $facetteValue[$key][$value] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $facetteValue;
+    }
+
+    /*
+     * Filter an array of fields by their potential entry ID
+     */
+    private function filterFieldsByPropertyName(array $fields, array $id)
+    {
+        if( count($id)===1 && $id[0]==='all') {
+            return array_filter($fields, function($field) use ($id) {
+                if( $field instanceof EnumField ) {
+                    return true;
+                }
+            });
+        } else {
+            return array_filter($fields, function($field) use ($id) {
+                if( $field instanceof BazarField ) {
+                    return $id[0] === 'all' || in_array($field->getPropertyName(), $id);
+                } elseif( is_array($field) && isset($field['id']) ) {
+                    return $id[0] === 'all' || in_array($field['id'], $id);
+                }
+            });
+        }
     }
 }

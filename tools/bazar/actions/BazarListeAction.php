@@ -187,11 +187,13 @@ class BazarListeAction extends YesWikiAction
 
     private function formatFilters($entries, $forms) : array
     {
+        $formManager = $this->getService(FormManager::class);
+
         if (count($this->arguments['groups']) > 0) {
             // Scanne tous les champs qui pourraient faire des filtres pour les facettes
-            $facetteValue = $this->scanAllFacettable($entries, $this->arguments['groups'], $forms);
+            $facettables = $formManager->scanAllFacettable($entries, $this->arguments['groups']);
 
-            if (count($facetteValue) > 0) {
+            if (count($facettables) > 0) {
                 $i = 0;
                 $first = true;
                 $filters = [];
@@ -209,44 +211,42 @@ class BazarListeAction extends YesWikiAction
                     }
                 }
 
-                foreach ($this->arguments['groups'] as $id) {
+                foreach ($facettables as $id => $facettable) {
                     // Formatte la liste des resultats en fonction de la source
-                    if (isset($facetteValue[$id])) {
-                        if ($facetteValue[$id]['type'] == 'liste') {
-                            $field = $this->findFieldByName($forms, $facetteValue[$id]['source']);
-                            $list['titre_liste'] = $field->getName();
-                            $list['label'] = $field->getOptions();
-                        } elseif ($facetteValue[$id]['type'] == 'fiche') {
-                            $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facetteValue[$id]['source']);
-                            $form = $forms[$src];
-                            $list['titre_liste'] = $form['bn_label_nature'];
-                            foreach ($facetteValue[$id] as $idfiche => $nb) {
-                                if ($idfiche != 'source' && $idfiche != 'type') {
-                                    $f = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idfiche);
-                                    $list['label'][$idfiche] = $f['bf_titre'];
+                    if ($facettable['type'] == 'liste') {
+                        $field = $this->findFieldByName($forms, $facettable['source']);
+                        $list['titre_liste'] = $field->getName();
+                        $list['label'] = $field->getOptions();
+                    } elseif ($facettable['type'] == 'fiche') {
+                        $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettable['source']);
+                        $form = $forms[$src];
+                        $list['titre_liste'] = $form['bn_label_nature'];
+                        foreach ($facettable as $idfiche => $nb) {
+                            if ($idfiche != 'source' && $idfiche != 'type') {
+                                $f = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idfiche);
+                                $list['label'][$idfiche] = $f['bf_titre'];
+                            }
+                        }
+                    } elseif ($facettable['type'] == 'form') {
+                        if ($facettable['source'] == 'id_typeannonce') {
+                            $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
+                            foreach ($facettable as $idf => $nb) {
+                                if ($idf != 'source' && $idf != 'type') {
+                                    $list['label'][$idf] = $forms[$idf]['bn_label_nature'];
                                 }
                             }
-                        } elseif ($facetteValue[$id]['type'] == 'form') {
-                            if ($facetteValue[$id]['source'] == 'id_typeannonce') {
-                                $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
-                                foreach ($facetteValue[$id] as $idf => $nb) {
-                                    if ($idf != 'source' && $idf != 'type') {
-                                        $list['label'][$idf] = $forms[$idf]['bn_label_nature'];
-                                    }
+                        } elseif ($facettable['source'] == 'owner') {
+                            $list['titre_liste'] = _t('BAZ_CREATOR');
+                            foreach ($facettable as $idf => $nb) {
+                                if ($idf != 'source' && $idf != 'type') {
+                                    $list['label'][$idf] = $idf;
                                 }
-                            } elseif ($facetteValue[$id]['source'] == 'owner') {
-                                $list['titre_liste'] = _t('BAZ_CREATOR');
-                                foreach ($facetteValue[$id] as $idf => $nb) {
-                                    if ($idf != 'source' && $idf != 'type') {
-                                        $list['label'][$idf] = $idf;
-                                    }
-                                }
-                            } else {
-                                $list['titre_liste'] = $id;
-                                foreach ($facetteValue[$id] as $idf => $nb) {
-                                    if ($idf != 'source' && $idf != 'type') {
-                                        $list['label'][$idf] = $idf;
-                                    }
+                            }
+                        } else {
+                            $list['titre_liste'] = $id;
+                            foreach ($facettable as $idf => $nb) {
+                                if ($idf != 'source' && $idf != 'type') {
+                                    $list['label'][$idf] = $idf;
                                 }
                             }
                         }
@@ -265,13 +265,13 @@ class BazarListeAction extends YesWikiAction
                     $filters[$idkey]['collapsed'] = !$first && !$this->arguments['groupsexpanded'];
 
                     foreach ($list['label'] as $listkey => $label) {
-                        if (isset($facetteValue[$id][$listkey]) && !empty($facetteValue[$id][$listkey])) {
+                        if (isset($facettables[$id][$listkey]) && !empty($facettables[$id][$listkey])) {
                             $filters[$idkey]['list'][] = [
                                 'id' => $idkey.$listkey,
                                 'name' => $idkey,
                                 'value' => htmlspecialchars($listkey),
                                 'label' => $label,
-                                'nb' => $facetteValue[$id][$listkey],
+                                'nb' => $facettables[$id][$listkey],
                                 'checked' => (isset($tabfacette[$idkey]) and in_array($listkey, $tabfacette[$idkey])) ? ' checked' : '',
                             ];
                         }
@@ -285,78 +285,6 @@ class BazarListeAction extends YesWikiAction
         }
 
         return [];
-    }
-
-    private function scanAllFacettable($entries, $groups, $formtab = '', $onlyLists = false)
-    {
-        $facetteValue = $fields = [];
-
-        foreach ($entries as $entry) {
-            // on recupere les valeurs du formulaire si elles n'existaient pas
-            $valform = isset($formtab[$entry['id_typeannonce']]) ? $formtab[$entry['id_typeannonce']] : baz_valeurs_formulaire($entry['id_typeannonce']);
-            // on filtre pour n'avoir que les liste, checkbox, listefiche ou checkboxfiche
-            $fields[$entry['id_typeannonce']] = isset($fields[$entry['id_typeannonce']])
-                ? $fields[$entry['id_typeannonce']]
-                : $this->filterFieldsByPropertyName($valform['prepared'], $groups);
-            foreach ($entry as $key => $value) {
-                $facetteasked = (isset($groups[0]) && $groups[0] == 'all') || in_array($key, $groups);
-                if (!empty($value) and is_array($fields[$entry['id_typeannonce']]) && $facetteasked) {
-                    $filteredFields = $this->filterFieldsByPropertyName($fields[$entry['id_typeannonce']], [$key]);
-                    $field = array_pop($filteredFields);
-
-                    $fieldPropName = null;
-                    if( $field instanceof BazarField ) {
-                        $fieldPropName = $field->getPropertyName();
-                        $fieldType = $field->getType();
-                    } else if ( is_array($field)) {
-                        $fieldPropName = $field['id'];
-                        $fieldType = $field['type'];
-                    }
-
-                    if ($fieldPropName) {
-                        $islistforeign = (strpos($fieldPropName, 'listefiche')===0) || (strpos($fieldPropName, 'checkboxfiche')===0);
-                        $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste')) && !$islistforeign;
-                        $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste', 'checkboxfiche', 'listefiche')));
-
-                        if ($islistforeign) {
-                            // listefiche ou checkboxfiche
-                            $facetteValue[$fieldPropName]['type'] = 'fiche';
-                            $facetteValue[$fieldPropName]['source'] = $key;
-                            $tabval = explode(',', $value);
-                            foreach ($tabval as $tval) {
-                                if (isset($facetteValue[$fieldPropName][$tval])) {
-                                    ++$facetteValue[$fieldPropName][$tval];
-                                } else {
-                                    $facetteValue[$fieldPropName][$tval] = 1;
-                                }
-                            }
-                        } elseif ($islist) {
-                            // liste ou checkbox
-                            $facetteValue[$fieldPropName]['type'] = 'liste';
-                            $facetteValue[$fieldPropName]['source'] = $key;
-                            $tabval = explode(',', $value);
-                            foreach ($tabval as $tval) {
-                                if (isset($facetteValue[$fieldPropName][$tval])) {
-                                    ++$facetteValue[$fieldPropName][$tval];
-                                } else {
-                                    $facetteValue[$fieldPropName][$tval] = 1;
-                                }
-                            }
-                        } elseif ($istext and !$onlyLists) {
-                            // texte
-                            $facetteValue[$key]['type'] = 'form';
-                            $facetteValue[$key]['source'] = $key;
-                            if (isset($facetteValue[$key][$value])) {
-                                ++$facetteValue[$key][$value];
-                            } else {
-                                $facetteValue[$key][$value] = 1;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $facetteValue;
     }
 
     private function formatQuery($arg) : array
@@ -423,20 +351,6 @@ class BazarListeAction extends YesWikiAction
                 }
             }
         }
-    }
-
-    /*
-     * Filter an array of fields by their potential entry ID
-     */
-    private function filterFieldsByPropertyName(array $fields, array $id)
-    {
-        return array_filter($fields, function($field) use ($id) {
-            if( $field instanceof BazarField ) {
-                return in_array($field->getPropertyName(), $id);
-            } elseif( is_array($field) && isset($field['id']) ) {
-                return in_array($field['id'], $id);
-            }
-        });
     }
 
     private function buildFieldSorter($ordre, $champ) : callable
