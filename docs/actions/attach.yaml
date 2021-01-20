@@ -91,7 +91,7 @@ actions:
       file:
         label: Fichier uploadé
         type: text    
-        hint: Pour afficher le fichier d'une autre page, taper "NomDePage/NomDeFicher.ext"
+        hint: Pour afficher le fichier d'une autre page, taper "NomDePage/NomDeFichier.ext"
       desc:
         label: Description
         type: text
