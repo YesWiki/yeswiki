@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -76,30 +77,40 @@ class BazarListeAction extends YesWikiAction
 
         $entryManager = $this->getService(EntryManager::class);
         $formManager = $this->getService(FormManager::class);
+        $externalWikiService = $this->getService(ExternalBazarService::class);
 
         if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
             $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
         }
         ++$GLOBALS['_BAZAR_']['nbbazarliste'];
 
-        $forms = $formManager->getAll();
-
         // TODO put in all bazar templates
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        $entries = $entryManager->search([
-            'queries' => $this->arguments['query'],
-            'formsIds' => $this->arguments['idtypeannonce'],
-            'keywords' => $_REQUEST['q'],
-            'user' => $this->arguments['user'],
-            'dateMin' => $this->arguments['dateMin']
-        ]);
+        // Are the entries on an external wiki ?
+        if( $this->arguments['url'] ) {
+            $forms = $externalWikiService->getForms($this->arguments['url']);
+            $entries = $externalWikiService->getEntries([
+                'url' => $this->arguments['url'],
+                'queries' => $this->arguments['query'],
+                'formsIds' => $this->arguments['idtypeannonce'],
+            ]);
+        } else {
+            $forms = $formManager->getAll();
+            $entries = $entryManager->search([
+                'queries' => $this->arguments['query'],
+                'formsIds' => $this->arguments['idtypeannonce'],
+                'keywords' => $_REQUEST['q'],
+                'user' => $this->arguments['user'],
+                'dateMin' => $this->arguments['dateMin']
+            ]);
 
-        // Add display data to all entries
-        $entries = array_map(function ($fiche) use ($entryManager) {
-            $entryManager->appendDisplayData($fiche, false, $this->arguments['correspondance']);
-            return $fiche;
-        }, $entries);
+            // Add display data to all entries
+            $entries = array_map(function ($fiche) use ($entryManager) {
+                $entryManager->appendDisplayData($fiche, false, $this->arguments['correspondance']);
+                return $fiche;
+            }, $entries);
+        }
 
         // Sort entries
         if ($this->arguments['random']) {
