@@ -10,10 +10,15 @@ class BazarListeAction extends YesWikiAction
     function formatArguments($arg)
     {
         return([
-            'idtypeannonce' => $this->formatArray($arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id']),
-
             // SELECTION DES FICHES
+            // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
+            'idtypeannonce' => $this->formatArray($arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id']),
+            // Paramètres pour une requete specifique
             'query' => $this->formatQuery($arg),
+            // filtrer les resultats sur une periode données si une date est indiquée
+            'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period']),
+            // sélectionner seulement les fiches d'un utilisateur
+            'user' => $arg['user'],
             // Ordre du tri (asc ou desc)
             'ordre' => $arg['ordre'] ?? 'asc',
             // Champ du formulaire utilisé pour le tri
@@ -24,9 +29,7 @@ class BazarListeAction extends YesWikiAction
             'pagination' => $arg['pagination'],
             // Afficher les fiches dans un ordre aléatoire
             'random' => $this->formatBoolean($arg['random'], false),
-            // filtrer les resultats sur une periode données si une date est indiquée
-            'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period']),
-            // transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
+            // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'correspondance' => $arg['correspondance'],
 
             // AFFICHAGE
@@ -88,6 +91,7 @@ class BazarListeAction extends YesWikiAction
             'queries' => $this->arguments['query'],
             'formsIds' => $this->arguments['idtypeannonce'],
             'keywords' => $_REQUEST['q'],
+            'user' => $this->arguments['user'],
             'dateMin' => $this->arguments['dateMin']
         ]);
 
