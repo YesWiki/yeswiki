@@ -3,7 +3,7 @@
   Documentation cna be found here https://pixelhumain.github.io/GoGoCartoJs/docs/configuration.html
   If you want to change something in the configuration, let's say the menu width, add a new parameter to bazarlist :
   {{ bazarliste id="2" template="gogomap.tpl.html" menuwidth="500"}}
-  Then you need to add this new menuwidth parameter to function getAllParameters_carto in bazar.fonct.php
+  Then you may to format or set defaults this new menuwidth parameter in BazarCarto::formatArguments
   So it will be available in this template with the code param['menuwidth']
 
   Then, find in gogocartoJs configuration how the property is defined. Here it's
