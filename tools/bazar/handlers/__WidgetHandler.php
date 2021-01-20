@@ -39,7 +39,7 @@ class __WidgetHandler extends YesWikiHandler
         ];
 
         $urlParams = 'id=' . $_GET['id'] . (isset($_GET['query']) ? '&query=' . $_GET['query'] : '') . (!empty($q) ? '&q=' . $q : '');
-        
+
         echo $this->render("@bazar/widget.tpl.html", [
             'facettes' => $facettables,
             'showtooltip' => $showTooltip,
