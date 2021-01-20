@@ -117,7 +117,7 @@ class EntryManager
         }
 
         // si une personne a ete precisee, on limite la recherche sur elle
-        if ($params['user'] !== '') {
+        if (!empty($params['user'])) {
             $params['user'] = $this->dbService->escape(
                 preg_replace('/^"(.*)"$/', '$1', json_encode($params['user']))
             );
