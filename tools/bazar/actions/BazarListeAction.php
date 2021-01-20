@@ -88,7 +88,7 @@ class BazarListeAction extends YesWikiAction
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
         // Are the entries on an external wiki ?
-        if( $this->arguments['url'] ) {
+        if( !empty($this->arguments['url']) ) {
             $forms = $externalWikiService->getForms($this->arguments['url']);
             $entries = $externalWikiService->getEntries([
                 'url' => $this->arguments['url'],
