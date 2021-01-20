@@ -61,7 +61,7 @@ class EntryController extends YesWikiController
         }
 
         // if not found, try rendering a semantic template
-        if (empty($renderedEntry)) {
+        if (empty($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
             try {
                 $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic']);
                 if( $customTemplateName ) {
