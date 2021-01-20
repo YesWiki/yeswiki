@@ -105,7 +105,9 @@ abstract class YesWikiPerformable
 
     protected function formatBoolean($param, $default = true)
     {
-        if (empty($param)) {
+        if( is_bool($param) ) {
+            return $param;
+        } elseif (empty($param)) {
             return $default ;
         } elseif ($param == '0' || $param == 'no' || $param == 'non' || $param == 'false') {
             return false ;
