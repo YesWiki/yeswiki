@@ -1715,6 +1715,7 @@ class Wiki
         // TODO remove this when the retrocompatibility is no longer necessary
         $wiki = $this;
         $page = $this->tag;
+        $wakkaConfig = &$this->config;
 
         // TODO put elsewhere
         $fullDomain = parse_url($this->Href());
