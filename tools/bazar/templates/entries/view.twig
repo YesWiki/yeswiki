@@ -43,7 +43,7 @@
         <span class="category">({{ form.bn_label_nature }})</span>
         {%- if showOwner -%}
           , {{ _t('BAZ_ECRITE') }}
-          {{ owner }}
+          {{ owner|raw }}
         {%- endif -%}
       </span>
       <br />

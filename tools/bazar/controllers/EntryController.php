@@ -105,7 +105,7 @@ class EntryController extends YesWikiController
         $owner = $this->wiki->GetPageOwner($entryId);
 
         // If owner is not an IP address
-        if ($owner != '' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
+        if ($owner != '' && $owner != 'WikiAdmin' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
             $showOwner = true;
             // Make the user name clickable when the parameter 'bazar_user_entry_id' is defined in the config file and a corresponding bazar entry exists
             // TODO Once the integration of login-sso is done, replace the $this->LoadPage with the function bazarUserEntryExists
