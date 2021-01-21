@@ -18,7 +18,7 @@ class ApiService
         $apiKey = $this->getBearerToken();
         return(
             $this->params->has('api_allowed_keys') &&
-            ($this->params->get('api_allowed_keys')['public'] === true || in_array($apiKey, $this->params->get('api_allowed_keys')))
+            ((isset($this->params->get('api_allowed_keys')['public']) && $this->params->get('api_allowed_keys')['public'] === true) || in_array($apiKey, $this->params->get('api_allowed_keys')))
         );
     }
 

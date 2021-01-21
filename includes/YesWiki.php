@@ -1514,7 +1514,7 @@ class Wiki
             // We must manually parse the body data for the PUT or PATCH methods
             // See https://www.php.net/manual/fr/features.file-upload.put-method.php
             // TODO properly use the Symfony HttpFoundation component to avoid this
-            if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+            if (!empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
                 $_POST = json_decode(file_get_contents('php://input'), true);
             }
 
