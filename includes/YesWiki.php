@@ -1713,9 +1713,9 @@ class Wiki
         // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
         // TODO refactor all extensions to use the correct variable name
         // TODO remove this when the retrocompatibility is no longer necessary
-        $wakkaConfig = $this->config;
         $wiki = $this;
         $page = $this->tag;
+        $wakkaConfig = &$this->config;
 
         // TODO put elsewhere
         $fullDomain = parse_url($this->Href());
@@ -1754,6 +1754,27 @@ class Wiki
             }
         }
 
+        // set all wakka configs as container's parameters
+        // overwrite the parameters if they were already defined in the extensions's config (for arrays, recursively
+        // merge them)
+        foreach ($this->config as $key => $value) {
+            if (is_array($value) && $this->services->hasParameter($key) && is_array($this->services->getParameter($key))){
+                // merge recursively the arrays to let overwrite only some values
+                $mergedArray = array_replace_recursive($this->services->getParameter($key), $value);
+                $this->services->setParameter($key, $mergedArray);
+                $this->config[$key] = $mergedArray;
+            } else {
+                $this->services->setParameter($key, $value);
+            }
+        }
+        // set the extension's config parameters which aren't defined in the wakka config
+        foreach ($this->services->getParameterBag()->all() as $key => $value){
+            // not the array because we have already merged them
+            if (!is_array($value) && empty($this->config[$key])){
+                $this->config[$key] = $value;
+            }
+        }
+
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
@@ -1766,16 +1787,14 @@ class Wiki
         $metadata = $this->GetMetaDatas($this->tag);
 
         if (isset($metadata['lang'])) {
-            $wakkaConfig['lang'] = $metadata['lang'];
-        } elseif (!isset($wakkaConfig['lang'])) {
-            $wakkaConfig['lang'] = 'fr';
+            $this->config['lang'] = $metadata['lang'];
+        } elseif (!isset($this->config['lang'])) {
+            $this->config['lang'] = 'fr';
         }
 
         // TODO Don't put templates in configs
         // TODO avoid modifying the $wakkaConfig array
-        $wakkaConfig['templates'] = loadTemplates($metadata, $wakkaConfig);
-
-        $this->config = array_merge($this->services->getParameterBag()->all(), $wakkaConfig);
+        $this->config['templates'] = loadTemplates($metadata, $this->config);
     }
 
     /**

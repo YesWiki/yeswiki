@@ -271,11 +271,6 @@ class Init
     {
         $containerBuilder = new ContainerBuilder();
 
-        // Set all wakka configs as container's parameters
-        foreach ($this->config as $key => $value) {
-            $containerBuilder->setParameter($key, $value);
-        }
-
         // Set main YesWiki object as a parameter
         // TODO remove this when the refactoring will be done
         $containerBuilder->setParameter('wiki', $wiki);
