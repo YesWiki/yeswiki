@@ -111,7 +111,7 @@ if (!empty($url)) {
                     </span>
                     <a href="#" class="jp-unmute btn btn-default btn-small"><i class="fa fa-volume-off icon-volume-off"></i></a>
                     <a href="#" class="jp-mute btn btn-default btn-small" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
-                    <a href="'.$url.'" rel="download" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="fas fa-download"></i></a>
+                    <a href="'.$url.'" download rel="download" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';
