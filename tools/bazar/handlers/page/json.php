@@ -87,11 +87,15 @@ if (isset($_REQUEST['demand'])) {
             } else {
                 $wikipage = $this->LoadPage($idfiche);
                 if ($wikipage) {
-                    if ($html==1) {
-                        echo json_encode(array('html' => baz_voir_fiche(0, $idfiche)));
+                    if ($this->HasAccess('read',$idfiche)) {
+                        if ($html==1) {
+                            echo json_encode(array('html' => baz_voir_fiche(0, $idfiche)));
+                        } else {
+                            $decoded_entry = json_decode($wikipage['body'], true);
+                            echo json_encode($decoded_entry);
+                        }
                     } else {
-                        $decoded_entry = json_decode($wikipage['body'], true);
-                        echo json_encode($decoded_entry);
+                        echo json_encode(array('error' => 'You have no right to access to entry \''.$idfiche.'\'.'));
                     }
                 } else {
                     echo json_encode(array('error' => 'id_fiche '.$idfiche.' not found.'));
@@ -212,7 +216,9 @@ if (isset($_REQUEST['demand'])) {
             $pages = _convert($this->LoadAll($sql), 'ISO-8859-15');
             $pagesindex = array();
             foreach ($pages as $page) {
-                $pagesindex[$page["tag"]] = $page;
+                if ($this->HasAccess('read',$page["tag"])) {
+                    $pagesindex[$page["tag"]] = $page;
+                }
             }
             echo json_encode($pagesindex);
             //echo array_map('json_encode', );
