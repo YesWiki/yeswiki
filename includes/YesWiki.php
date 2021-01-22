@@ -1769,8 +1769,8 @@ class Wiki
         }
         // set the extension's config parameters which aren't defined in the wakka config
         foreach ($this->services->getParameterBag()->all() as $key => $value){
-            // not the array because we have already merged them
-            if (!is_array($value) && empty($this->config[$key])){
+            // the merged array have already been copied in the wakka config
+            if (empty($this->config[$key])){
                 $this->config[$key] = $value;
             }
         }
