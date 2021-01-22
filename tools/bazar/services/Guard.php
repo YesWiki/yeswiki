@@ -75,7 +75,7 @@ class Guard
                 foreach ($val_formulaire['template'] as $line) {
                     // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
                     if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
-                        if ($this->wiki->getMethod() == 'raw') {
+                        if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json' ) {
                             $fieldname[] = $line[1];
                         }
                     }
