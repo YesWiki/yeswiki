@@ -23,9 +23,9 @@ class MetadataField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->theme = $values[self::FIELD_THEME];
-        $this->template = $values[self::FIELD_TEMPLATE];
-        $this->style = $values[self::FIELD_STYLE];
+        $this->theme = empty($values[self::FIELD_THEME]) ? THEME_PAR_DEFAUT : $values[self::FIELD_THEME];
+        $this->template = empty($values[self::FIELD_TEMPLATE]) ? SQUELETTE_PAR_DEFAUT : $values[self::FIELD_TEMPLATE];
+        $this->style = empty($values[self::FIELD_STYLE]) ? CSS_PAR_DEFAUT : $values[self::FIELD_STYLE];
         $this->bgImage = $values[self::FIELD_BG_IMAGE];
     }
 
