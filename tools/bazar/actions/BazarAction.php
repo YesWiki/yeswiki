@@ -75,7 +75,7 @@ class BazarAction extends YesWikiAction
                             $this->arguments['categorienature']
                         );
                     case self::ACTION_ENTRY_VIEW:
-                        return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time']);
+                        return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time'] ?? '');
                     default:
                         return baz_rechercher(
                             isset($_REQUEST['id_typeannonce']) ?
