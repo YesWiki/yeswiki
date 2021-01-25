@@ -1381,7 +1381,6 @@ class Wiki
                 // merge recursively the arrays to let overwrite only some values
                 $mergedArray = array_replace_recursive($this->services->getParameter($key), $value);
                 $this->services->setParameter($key, $mergedArray);
-                $this->config[$key] = $mergedArray;
             } else {
                 $this->services->setParameter($key, $value);
             }
@@ -1391,14 +1390,9 @@ class Wiki
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
 
-        // set the extension's config parameters which aren't defined in the wakka config
+        // set to wakka config the same parameters than the merged service's parameter bag
         // need to be executed after $this->services->compile() because the %paramName% are resolved there
-        foreach ($this->services->getParameterBag()->all() as $key => $value){
-            // the merged array have already been copied in the wakka config
-            if (empty($this->config[$key])){
-                $this->config[$key] = $value;
-            }
-        }
+        $this->config = $this->services->getParameterBag()->all();
 
         $this->dblink = $this->services->get(DbService::class)->getLink();
 
