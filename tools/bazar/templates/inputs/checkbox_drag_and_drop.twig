@@ -37,7 +37,7 @@
 							{%~ block link_for_entry ~%}
 							{%~ endblock ~%}
 						</div>
-						<input type="checkbox" id="{{ field.propertyName }}_{{ item_id }}" value="1" name="{{ field.propertyName }}[{{ item_id }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
+						<input type="checkbox" id="{{ field.propertyName }}_{{ item_id }}" value="1" name="{{ field.propertyName  ~ field.suffix }}[{{ item_id }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
 						<span class="list-item-text">{{ item }}</span>
 						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
 							<i class="fas fa-plus"></i>
@@ -71,7 +71,6 @@
 			{% endif %}{# if not (attribute(selectedOptionsId,0) is empty) #}
 			<li class="list-group-item empty-list" {% if not (attribute(selectedOptionsId,0) is empty) %}style="display:none;"{% endif %}>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
 			</ul>
-			<input name="{{ field.propertyName }}[END_INDEX NO_CHANGE_IT]" value="0" checked id="{{ field.propertyName }}_hidden" type="hidden">
 		</div>
 	</div> <!-- /.col-lg-8. publication-selection-container -->
 </div> <!-- /.row -->
