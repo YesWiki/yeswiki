@@ -103,8 +103,15 @@ abstract class YesWikiPerformable
         return $arguments;
     }
 
-    protected function formatBoolean($param, $default = true)
+    protected function formatBoolean($param, $default = true, string $index = '')
     {
+        if (is_array($param)) {
+            if ($index != '' && isset($param[$index])) {
+                $param = $param[$index] ;
+            } else {
+                return $default ;
+            }
+        }
         if( is_bool($param) ) {
             return $param;
         } elseif (empty($param)) {

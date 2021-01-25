@@ -44,14 +44,14 @@ class BazarAction extends YesWikiAction
     function formatArguments($arg)
     {
         return([
-            'action' => $arg['action'] ?? $_GET['action'],
+            'action' => $arg['action'] ?? $_GET['action'] ?? null,
             'vue' => $arg['vue'] ?? $_GET['vue'] ?? 'formulaire',
             // afficher le menu de vues bazar ?
             'voirmenu' => $arg['voirmenu'] ?? $this->params->get('baz_menu'),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id']),
+            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
             // Permet de rediriger vers une url après saisie de fiche
-            'redirecturl' => $arg['redirecturl']
+            'redirecturl' => $arg['redirecturl'] ?? ''
         ]);
     }
 

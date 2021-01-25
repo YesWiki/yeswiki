@@ -13,19 +13,21 @@ class BazarCartoAction extends YesWikiAction
     {
         // PROVIDERS
         $provider = $_GET['provider']  ?? $arg['provider'] ?? $this->params->get('baz_provider');
-        $providerId = $arg['providerid'];
-        $providerPass = $arg['providerpass'];
+        $providerId = $arg['providerid'] ?? null ;
+        $providerPass = $arg['providerpass'] ?? null;
         if (!empty($providerId) && !empty($providerPass)) {
             if ($provider === 'MapBox') {
                 $providerCredentials = ', {id: \''.$providerId .'\', accessToken: \''.$providerPass.'\'}';
             } else {
                 $providerCredentials = ', {app_id: \''.$providerId.'\',app_code: \''.$providerPass.'\'}';
             }
+        } else {
+            $providerCredentials = '' ;
         }
 
         // ICONS
-        $iconField = $_GET['iconfield'] ?? $arg['iconfield'];
-        $icon = $_GET['icon'] ?? $arg['icon'];
+        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null;
+        $icon = $_GET['icon'] ?? $arg['icon'] ?? null;
         if (!empty($icon)) {
             $tabparam = $this->getMultipleParameters($icon, ',', '=');
             if ($tabparam['fail'] != 1) {
@@ -46,7 +48,7 @@ class BazarCartoAction extends YesWikiAction
         }
 
         // COLORS
-        $colorField = $_GET['colorfield'] ?? $arg['colorfield'];
+        $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null;
         $color = $_GET['color'] ?? $arg['color'];
         if (!empty($color)) {
             $tabparam = $this->getMultipleParameters($color, ',', '=');
@@ -71,7 +73,7 @@ class BazarCartoAction extends YesWikiAction
         }
 
         // MARKERS
-        $markerSize = $_GET['markersize'] ?? $arg['markersize'];
+        $markerSize = $_GET['markersize'] ?? $arg['markersize'] ?? null;
         $smallMarker = $_GET['smallmarker'] ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
 
         return([
@@ -88,7 +90,7 @@ class BazarCartoAction extends YesWikiAction
              * Exemple: provider="OpenStreetMap.France" providers="OpenStreetMap.Mapnik,OpenStreetMap.France"
              * TODO: ajouter gestion "providers_credentials"
              */
-            'providers' => $arg['providers'] ? explode(',', $arg['providers']) : [],
+            'providers' => isset($arg['providers']) ? explode(',', $arg['providers']) : [],
             /*
              * Une liste de layers (couches).
              * Exemple avec 1 layer tiles, 1 layer geojson:
@@ -103,9 +105,9 @@ class BazarCartoAction extends YesWikiAction
              *  Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
              * TODO: ajouter gestion "layers_credentials"
              */
-            'layers' => $arg['layers'] ? explode(',', $arg['layers']) : [],
+            'layers' => isset($arg['layers']) ? explode(',', $arg['layers']) : [],
             // Prefixe des classes CSS utilisees pour la carto
-            'iconprefix' => trim($_GET['iconprefix']) ?? trim($arg['iconprefix']) ?? $this->params->get('baz_marker_icon_prefix') ?? '',
+            'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : isset($arg['iconprefix']) ? trim($arg['iconprefix']) : $this->params->get('baz_marker_icon_prefix') ?? '',
             // Champ utilise pour les icones des marqueurs
             'iconfield' => $iconField,
             // icone des marqueurs
@@ -141,7 +143,7 @@ class BazarCartoAction extends YesWikiAction
             // Ajout bouton plein écran (https://github.com/brunob/leaflet.fullscreen)
             'fullscreen' => $arg['fullscreen'] ?? 'true',
             // Fournit une configuration JSON via un URL
-            'jsonconfurl' => $arg['jsonconfurl'],
+            'jsonconfurl' => $arg['jsonconfurl'] ?? null,
         ]);
     }
 
