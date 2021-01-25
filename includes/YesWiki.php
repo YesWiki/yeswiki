@@ -1386,17 +1386,19 @@ class Wiki
                 $this->services->setParameter($key, $value);
             }
         }
+
+        // Now we have loaded all the services, compile them
+        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
+        $this->services->compile();
+
         // set the extension's config parameters which aren't defined in the wakka config
+        // need to be executed after $this->services->compile() because the %paramName% are resolved there
         foreach ($this->services->getParameterBag()->all() as $key => $value){
             // the merged array have already been copied in the wakka config
             if (empty($this->config[$key])){
                 $this->config[$key] = $value;
             }
         }
-
-        // Now we have loaded all the services, compile them
-        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
-        $this->services->compile();
 
         $this->dblink = $this->services->get(DbService::class)->getLink();
 
