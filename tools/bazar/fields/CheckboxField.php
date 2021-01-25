@@ -21,6 +21,8 @@ abstract class CheckboxField extends EnumField
         self::CHECKBOX_DISPLAY_MODE_LIST => '@bazar/inputs/checkbox_list.twig',
     ];
 
+    protected const SUFFIX = '_raw' ;
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -75,23 +77,26 @@ abstract class CheckboxField extends EnumField
     }
     
     public function formatValuesBeforeSave($entry)
-    {            
-        foreach ($entry as $key => $val) {
-            if (is_array($val)) {
-                foreach ($val as $key_val => $value) {
-                    if ($value == 0 && $key_val == "END_INDEX NO_CHANGE_IT"){
-                        unset($val[$key_val]) ;
-                    }
-                }
-                
-                if (empty(array_keys($val))) {
-                    unset($entry[$key]) ;
-                } else {
-                    $entry[$key] = implode(',', array_keys($val)) ;
-                }
+    {   
+        if (isset($entry[$this->propertyName . self::SUFFIX])) {
+            $checkboxField = $entry[$this->propertyName . self::SUFFIX] ;
+            if (is_array($checkboxField)) {
+                $checkboxField = array_filter($checkboxField, function ($value) {
+                    return ($value == 1 || $value == true || $value == 'true') ;
+                });
+                $entry[$this->propertyName] = implode(',',array_keys($checkboxField)) ;
+            } else {
+                $entry[$this->propertyName] = $checkboxField ;
             }
-        }
-        return [$this->propertyName => $this->getValue($entry)];
+            unset($entry[$this->propertyName . self::SUFFIX]) ;
+        } else {
+            $entry[$this->propertyName] = '' ;
+        }; 
+        return [$this->propertyName => $entry[$this->propertyName],
+            'fields-to-remove' => [
+                $this->propertyName . self::SUFFIX,
+                $this->propertyName
+                ]];
     }
     
     private function generateTagsScript($entry)
@@ -128,5 +133,10 @@ abstract class CheckboxField extends EnumField
         $script .= '});' . "\n";
         
         return $script ;        
+    }
+
+    public function getSuffix(): string
+    {
+        return self::SUFFIX ;
     }
 }
