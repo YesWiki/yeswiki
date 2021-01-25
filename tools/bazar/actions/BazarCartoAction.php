@@ -49,7 +49,7 @@ class BazarCartoAction extends YesWikiAction
 
         // COLORS
         $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null;
-        $color = $_GET['color'] ?? $arg['color'];
+        $color = $_GET['color'] ?? $arg['color'] ?? null;
         if (!empty($color)) {
             $tabparam = $this->getMultipleParameters($color, ',', '=');
             if ($tabparam['fail'] != 1) {
