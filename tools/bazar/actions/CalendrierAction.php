@@ -7,7 +7,7 @@ class CalendrierAction extends YesWikiAction
     function formatArguments($arg)
     {
         return([
-            'minical' => $arg['minical']
+            'minical' => $arg['minical'] ?? null
         ]);
     }
 

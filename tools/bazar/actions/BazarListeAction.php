@@ -17,53 +17,53 @@ class BazarListeAction extends YesWikiAction
             // Paramètres pour une requete specifique
             'query' => $this->formatQuery($arg),
             // filtrer les resultats sur une periode données si une date est indiquée
-            'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period']),
+            'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
-            'user' => $arg['user'],
+            'user' => $arg['user'] ?? null,
             // Ordre du tri (asc ou desc)
             'ordre' => $arg['ordre'] ?? 'asc',
             // Champ du formulaire utilisé pour le tri
             'champ' => $arg['champ'] ?? 'bf_titre',
             // Nombre maximal de résultats à afficher
-            'nb' => $arg['nb'],
+            'nb' => $arg['nb'] ?? null,
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
-            'pagination' => $arg['pagination'],
+            'pagination' => $arg['pagination'] ?? null,
             // Afficher les fiches dans un ordre aléatoire
-            'random' => $this->formatBoolean($arg['random'], false),
+            'random' => $this->formatBoolean($arg, false,'random'),
             // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
-            'correspondance' => $arg['correspondance'],
+            'correspondance' => $arg['correspondance'] ?? null,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
             'template' => $_GET['template'] ?? $arg['template'] ?? $this->params->get('default_bazar_template'),
             // classe css a ajouter en rendu des templates liste
-            'class' => $arg['class'],
+            'class' => $arg['class'] ?? '',
             // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
-            'barregestion' => $this->formatBoolean($arg['barregestion'], true),
+            'barregestion' => $this->formatBoolean($arg, true,'barregestion') ,
             // ajout des options pour exporter les fiches
-            'showexportbuttons' => $this->formatBoolean($arg['showexportbuttons'], false),
+            'showexportbuttons' => $this->formatBoolean($arg , false,'showexportbuttons'),
             // Affiche le formulaire de recherche en haut
-            'search' => $this->formatBoolean($arg['search'], false),
+            'search' => $this->formatBoolean($arg , false,'search'),
             // Affiche le nombre de fiche en haut
-            'shownumentries' => $this->formatBoolean($arg['shownumentries'], true),
+            'shownumentries' => $this->formatBoolean($arg, true , 'shownumentries'),
 
             // FACETTES
             // Identifiants des champs utilisés pour les facettes
             // Plusieures valeurs possibles, séparées par des virgules, "all" pour toutes les facettes possibles
             // Exemple : {{bazarliste groups="bf_ce_titre,bf_ce_pays,etc."..}}
-            'groups' => $this->formatArray($_GET['groups'] ?? $arg['groups']),
+            'groups' => $this->formatArray($_GET['groups'] ?? $arg['groups'] ?? null),
             // Titres des boite de facettes. Plusieures valeurs possibles, séparées par des virgules
             // Exemple : {{bazarliste titles="Titre,Pays,etc."..}}
-            'titles' => $this->formatArray($_GET['titles'] ?? $arg['titles']),
-            'groupicons' => $this->formatArray($arg['groupicons']),
+            'titles' => $this->formatArray($_GET['titles'] ?? $arg['titles'] ?? null),
+            'groupicons' => $this->formatArray($arg['groupicons'] ?? null),
             // ajout d'un filtre pour chercher du texte dans les resultats pour les facettes
-            'filtertext' => $this->formatBoolean($arg['filtertext'], false),
+            'filtertext' => $this->formatBoolean($arg, false,'filtertext'),
             // facette à gauche ou à droite
             'filterposition' => $GET['filterposition'] ?? $arg['filterposition'] ?? 'right',
             // largeur colonne facettes
             'filtercolsize' => $GET['filterposition'] ?? $arg['filterposition'] ?? '3',
             // déplier toutes les facettes
-            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg['groupsexpanded'], true)
+            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg , true, 'groupsexpanded')
         ]);
     }
 
@@ -71,7 +71,7 @@ class BazarListeAction extends YesWikiAction
     {
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
-        if( $this->arguments['template'] === 'map.tpl.html' && $this->arguments['calledBy'] !== 'BazarCartoAction' ) {
+        if( $this->arguments['template'] === 'map.tpl.html' && isset($this->arguments['calledBy']) && $this->arguments['calledBy'] !== 'BazarCartoAction' ) {
             return $this->callAction('bazarcarto', $this->arguments);
         } elseif( $this->arguments['template'] === 'calendar.tpl.html' && $this->arguments['calledBy'] !== 'CalendrierAction' ) {
             return $this->callAction('calendrier', $this->arguments);
@@ -102,7 +102,7 @@ class BazarListeAction extends YesWikiAction
             $entries = $entryManager->search([
                 'queries' => $this->arguments['query'],
                 'formsIds' => $this->arguments['idtypeannonce'],
-                'keywords' => $_REQUEST['q'],
+                'keywords' => $_REQUEST['q'] ?? '',
                 'user' => $this->arguments['user'],
                 'dateMin' => $this->arguments['dateMin']
             ]);
@@ -135,11 +135,11 @@ class BazarListeAction extends YesWikiAction
             'numEntries' => count($entries),
             'params' => $this->arguments,
             // Search form parameters
-            'keywords' => $_GET['q'],
+            'keywords' => $_GET['q'] ?? '',
             'pageTag' => $this->wiki->getPageTag(),
             'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
             'formId' => $this->arguments['idtypeannonce'][0],
-            'facette' => $_GET['facette'],
+            'facette' => $_GET['facette'] ?? null,
         ]);
     }
 
@@ -299,7 +299,7 @@ class BazarListeAction extends YesWikiAction
                 $query = $_GET['query'];
             }
         } else {
-            $query = $arg['query'];
+            $query = $arg['query'] ?? null;
         }
 
         // Create an array from the queries
