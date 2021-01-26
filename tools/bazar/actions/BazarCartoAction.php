@@ -25,53 +25,6 @@ class BazarCartoAction extends YesWikiAction
             $providerCredentials = '' ;
         }
 
-        // ICONS
-        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null;
-        $icon = $_GET['icon'] ?? $arg['icon'] ?? null;
-        if (!empty($icon)) {
-            $tabparam = $this->getMultipleParameters($icon, ',', '=');
-            if ($tabparam['fail'] != 1) {
-                if (count($tabparam) > 1 && !empty($iconField)) {
-                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-                    foreach ($tabparam as $key=>$data) {
-                        $tabparam[$data] = $key;
-                    }
-                    $icon = $tabparam;
-                } else {
-                    $icon = trim($tabparam[0]);
-                }
-            } else {
-                exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
-            }
-        } else {
-            $icon = $this->params->get('baz_marker_icon');
-        }
-
-        // COLORS
-        $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null;
-        $color = $_GET['color'] ?? $arg['color'] ?? null;
-        if (!empty($color)) {
-            $tabparam = $this->getMultipleParameters($color, ',', '=');
-            if ($tabparam['fail'] != 1) {
-                if (count($tabparam) > 1 && !empty($colorField)) {
-                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-                    foreach ($tabparam as $key=>$data) {
-                        $tabparam[$data] = $key;
-                    }
-                    $color = $tabparam;
-                } else {
-                    $color = trim($tabparam[0]);
-                    if (!in_array($color, BazarCartoAction::$availableColors)) {
-                        $color = $GLOBALS['wiki']->config['baz_marker_color'];
-                    }
-                }
-            } else {
-                exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
-            }
-        } else {
-            $color = $this->params->get('baz_marker_color');
-        }
-
         // MARKERS
         $markerSize = $_GET['markersize'] ?? $arg['markersize'] ?? null;
         $smallMarker = $_GET['smallmarker'] ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
@@ -106,16 +59,6 @@ class BazarCartoAction extends YesWikiAction
              * TODO: ajouter gestion "layers_credentials"
              */
             'layers' => isset($arg['layers']) ? explode(',', $arg['layers']) : [],
-            // Prefixe des classes CSS utilisees pour la carto
-            'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : isset($arg['iconprefix']) ? trim($arg['iconprefix']) : $this->params->get('baz_marker_icon_prefix') ?? '',
-            // Champ utilise pour les icones des marqueurs
-            'iconfield' => $iconField,
-            // icone des marqueurs
-            'icon' => $icon,
-            // Champ utilise pour la couleur des marqueurs
-            'colorfield' => $colorField,
-            // couleur des marqueurs
-            'color' => $color,
             // Mettre des puces petites ? non par defaut
             'markersize' => $markerSize,
             'smallmarker' => $smallMarker === '1' ? '' : ' xl',

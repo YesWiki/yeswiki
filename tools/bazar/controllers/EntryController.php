@@ -119,7 +119,7 @@ class EntryController extends YesWikiController
             "entry" => $entry,
             "entryId" => $entryId,
             "owner" => $owner,
-            "message" => $_GET['message'] ?? null,
+            "message" => $_GET['message'] ?? '',
             "showOwner" => $showOwner,
             "showFooter" => $showFooter && $this->wiki->HasAccess('write', $entryId),
             "canDelete" => $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
@@ -132,7 +132,7 @@ class EntryController extends YesWikiController
     {
         $this->entryManager->publish($entryId, $accepted);
 
-        if( $accepted ) {
+        if ($accepted) {
             echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>'._t('BAZ_FICHE_VALIDEE').'</div>';
         } else {
             echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>'._t('BAZ_FICHE_PAS_VALIDEE').'</div>';
