@@ -5,21 +5,70 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Core\Service\UserManager;
 
 class BazarListeAction extends YesWikiAction
 {
     function formatArguments($arg)
     {
+        // ICONS
+        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null;
+        $icon = $_GET['icon'] ?? $arg['icon'] ?? null;
+        if (!empty($icon)) {
+            $tabparam = $this->getMultipleParameters($icon, ',', '=');
+            if ($tabparam['fail'] != 1) {
+                if (count($tabparam) > 1 && !empty($iconField)) {
+                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                    foreach ($tabparam as $key=>$data) {
+                        $tabparam[$data] = $key;
+                    }
+                    $icon = $tabparam;
+                } else {
+                    $icon = trim($tabparam[0]);
+                }
+            } else {
+                exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+            }
+        } else {
+            $icon = $this->params->get('baz_marker_icon');
+        }
+
+        // COLORS
+        $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null;
+        $color = $_GET['color'] ?? $arg['color'] ?? null;
+        if (!empty($color)) {
+            $tabparam = $this->getMultipleParameters($color, ',', '=');
+            if ($tabparam['fail'] != 1) {
+                if (count($tabparam) > 1 && !empty($colorField)) {
+                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                    foreach ($tabparam as $key=>$data) {
+                        $tabparam[$data] = $key;
+                    }
+                    $color = $tabparam;
+                } else {
+                    $color = trim($tabparam[0]);
+                    if (!in_array($color, BazarCartoAction::$availableColors)) {
+                        $color = $GLOBALS['wiki']->config['baz_marker_color'];
+                    }
+                }
+            } else {
+                exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+            }
+        } else {
+            $color = $this->params->get('baz_marker_color');
+        }
+
         return([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $this->formatArray($arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id']),
+            'idtypeannonce' => $this->formatArray($arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
             // Paramètres pour une requete specifique
             'query' => $this->formatQuery($arg),
             // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
-            'user' => $arg['user'] ?? null,
+            'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ? 
+                $this->getService(UserManager::class)->getLoggedUserName() : null,
             // Ordre du tri (asc ou desc)
             'ordre' => $arg['ordre'] ?? 'asc',
             // Champ du formulaire utilisé pour le tri
@@ -63,7 +112,17 @@ class BazarListeAction extends YesWikiAction
             // largeur colonne facettes
             'filtercolsize' => $GET['filterposition'] ?? $arg['filterposition'] ?? '3',
             // déplier toutes les facettes
-            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg , true, 'groupsexpanded')
+            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg , true, 'groupsexpanded'),
+            // Prefixe des classes CSS utilisees pour la carto
+            'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : isset($arg['iconprefix']) ? trim($arg['iconprefix']) : $this->params->get('baz_marker_icon_prefix') ?? '',
+            // Champ utilise pour les icones des marqueurs
+            'iconfield' => $iconField,
+            // icone des marqueurs
+            'icon' => $icon,
+            // Champ utilise pour la couleur des marqueurs
+            'colorfield' => $colorField,
+            // couleur des marqueurs
+            'color' => $color,
         ]);
     }
 
@@ -128,6 +187,8 @@ class BazarListeAction extends YesWikiAction
 
         $filters = $this->formatFilters($entries, $forms);
 
+        $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'] ;
+
         return $this->render('@bazar/entries/list.twig', [
             'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
             'filters' => $filters,
@@ -178,7 +239,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         $templateName = $this->arguments['template'];
-        if (strpos($templateName, '.html') === false) {
+        if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
             $param['template'] = $templateName . '.tpl.html';
         }
 
