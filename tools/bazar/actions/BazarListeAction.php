@@ -12,8 +12,8 @@ class BazarListeAction extends YesWikiAction
     function formatArguments($arg)
     {
         // ICONS
-        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? $this->params->get('iconfield');
-        $icon = $_GET['icon'] ?? $arg['icon'] ?? $this->params->get('icon');
+        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? ($this->params->has('iconfield')) ? $this->params->get('iconfield') : null;
+        $icon = $_GET['icon'] ?? $arg['icon'] ?? ($this->params->has('icon')) ? $this->params->get('icon') : null;
         if (!empty($icon)) {
             $tabparam = $this->getMultipleParameters($icon, ',', '=');
             if ($tabparam['fail'] != 1) {
@@ -34,8 +34,8 @@ class BazarListeAction extends YesWikiAction
         }
 
         // COLORS
-        $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? $this->params->get('colorfield');
-        $color = $_GET['color'] ?? $arg['color'] ?? $this->params->get('color') ;
+        $colorField = $_GET['colorfield'] ?? ($this->params->has('colorfield')) ? $this->params->get('colorfield') : null;
+        $color = $_GET['color'] ?? $arg['color'] ?? ($this->params->has('color')) ? $this->params->get('color') : null;
         if (!empty($color)) {
             $tabparam = $this->getMultipleParameters($color, ',', '=');
             if ($tabparam['fail'] != 1) {
