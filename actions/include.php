@@ -33,6 +33,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
     -- valeur "show" :  ajoute un lien "[édition]" en haut é droite de la boite
 */
 
+use YesWiki\Core\Service\LinkTracker;
+
 // récuperation du nom de la page é inclure
 $incPageName = trim($this->GetParameter('page'));
 
@@ -69,6 +71,7 @@ if (empty($incPageName)) {
 }
 // Affichage de la page quand il n'y a pas d'erreur
 elseif ($this->HasAccess('read', $incPageName)) {
+    $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
     $this->RegisterInclusion($incPageName);
     $output = $this->Format($incPage['body']);
     if (isset($classes)) {

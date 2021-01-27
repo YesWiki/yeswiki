@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Core\Service\LinkTracker;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -15,6 +18,7 @@ if ($link == "config/root_page") {
 $linkParts = $this->extractLinkParts($link);
 if ($linkParts){
     $link = $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
+    $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
 }
 // change short yeswiki urls in real links
 $link = $this->generateLink($link);

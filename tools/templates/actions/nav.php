@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Core\Service\LinkTracker;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -51,6 +54,7 @@ foreach ($titles as $key => $title) {
     $linkParts = $this->extractLinkParts($links[$key]);
     [$url, $method, $params] = ['', '', ''];
     if ($linkParts){
+        $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
         $method = $linkParts['method'];
         $params = $linkParts['params'];
         $url = $this->href($method, $linkParts['tag'], $params);

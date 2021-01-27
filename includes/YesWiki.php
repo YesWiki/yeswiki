@@ -533,19 +533,17 @@ class Wiki
     {
         if (empty($link)) {
             return null;
-        } elseif (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
-            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)) {
-            $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
-            $method = !empty($linkParts[2]) ? $linkParts[2] : null;
-            $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
-            parse_str($paramsStr, $params);
-            return $this->href($method, $tag, $params);
-        } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
-            // a valid url
-            return $link;
         } else {
-            // for now let's be tolerant : it may be a relative url or an anchor
-            return $link;
+            $linkParts = $this->extractLinkParts($link) ;
+            if ($linkParts) {
+                return $this->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
+            } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
+                // a valid url
+                return $link;
+            } else {
+                // for now let's be tolerant : it may be a relative url or an anchor
+                return $link;
+            }
         }
     }
     /**

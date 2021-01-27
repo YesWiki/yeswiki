@@ -45,6 +45,17 @@ class LinkTracker
         return $oldState;
     }
 
+    public function forceAddIfNotIncluded(string $tag) : bool
+    {
+        $inclusions = $this->wiki->GetAllInclusions() ;
+        if ($inclusions && count($inclusions) <2 && !in_array($tag,$this->links)) {
+            $this->links[] = $tag ;
+            return true ;
+        } else {
+            return false ;
+        }
+    }
+
     public function add($tag)
     {
         if ($this->track()) {
