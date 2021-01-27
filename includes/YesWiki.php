@@ -509,7 +509,7 @@ class Wiki
             }
         }
 
-        if ($method != 'show' || $this->LoadPage($tag)) {
+        if (($method !== null && $method != 'show') || $this->LoadPage($tag)) {
             // if the page refers to an handler url (contains /) or an existing page, display a 'show' link
             return '<a href="' . $this->href($method, $tag, $params) . '">'
                 . htmlspecialchars($displayText, ENT_COMPAT, YW_CHARSET) . '</a>';
