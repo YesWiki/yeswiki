@@ -15,7 +15,8 @@ if ($this->UserIsAdmin()) {
     $tab_tous_les_tags = $this->LoadAll($sql);
 
     if (is_array($tab_tous_les_tags) && count($tab_tous_les_tags)>1) {
-        $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
+        // following line commented to prevent empty tagsname
+        // $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
         $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
         echo '<table class="table table-striped table-condensed">
         <thead>
