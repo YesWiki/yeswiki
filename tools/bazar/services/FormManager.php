@@ -99,7 +99,7 @@ class FormManager
     public function create($data)
     {
         // If ID is not set or if it is already used, find a new ID
-        if( !$data['bn_id_nature'] || $this->getOne($data['bn_id_nature']) ) {
+        if (!$data['bn_id_nature'] || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
 
@@ -132,7 +132,7 @@ class FormManager
     {
         //TODO : suppression des fiches associees au formulaire
 
-        return $this->dbService->query('DELETE FROM '.$this->dbService->prefixTable('nature').'WHERE bn_id_nature='. $id );
+        return $this->dbService->query('DELETE FROM '.$this->dbService->prefixTable('nature').'WHERE bn_id_nature='. $id);
     }
 
     public function clear($id)
@@ -141,19 +141,22 @@ class FormManager
             'DELETE FROM'. $this->dbService->prefixTable('acls').
             'WHERE page_tag IN (SELECT tag FROM '.$this->dbService->prefixTable('pages').
             'WHERE tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\' );');
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\' );'
+        );
 
         // TODO use PageManager
         $this->dbService->query(
             'DELETE FROM'.$this->dbService->prefixTable('pages').
             'WHERE tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\';');
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\';'
+        );
 
         // TODO use TripleStore
         $this->dbService->query(
             'DELETE FROM'.$this->dbService->prefixTable('triples').
             'WHERE resource NOT IN (SELECT tag FROM '.$this->dbService->prefixTable('pages').
-            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";');
+            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
+        );
     }
 
     public function findNewId()
@@ -198,13 +201,23 @@ class FormManager
                 $tablignechampsformulaire = array_map("trim", explode("***", $ligne));
 
                 // TODO find another way to check that the field is valid
-                if ( true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
+                if (true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
                     if (count($tablignechampsformulaire) > 3) {
                         $tableau_template[$nblignes] = $tablignechampsformulaire;
                         for ($i=0; $i < 16; $i++) {
                             if (!isset($tableau_template[$nblignes][$i])) {
                                 $tableau_template[$nblignes][$i] = '';
                             }
+                        }
+                        // default values for read acl
+                        if (empty(trim($tableau_template[$nblignes][self::FIELD_READ_ACCESS]))) {
+                            $defaultVal = $this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*' ;
+                            $tableau_template[$nblignes][self::FIELD_READ_ACCESS] = $defaultVal;
+                        }
+                        // default values for write  acl
+                        if (empty(trim($tableau_template[$nblignes][self::FIELD_WRITE_ACCESS]))) {
+                            $defaultVal = $this->params->has('default_write_acl') ? $this->params->get('default_write_acl') : '*' ;
+                            $tableau_template[$nblignes][self::FIELD_WRITE_ACCESS] = $defaultVal;
                         }
                         $nblignes++;
                     }
@@ -223,10 +236,9 @@ class FormManager
         $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
-
             $classField = $this->fieldFactory->create($field);
 
-            if( $classField ) {
+            if ($classField) {
                 $prepared[$i] = $classField;
                 $i++;
                 continue;
