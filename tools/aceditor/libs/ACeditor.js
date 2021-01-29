@@ -570,10 +570,10 @@
       <form id="form-link">
         <div class="control-group form-group">
           <label class="radio-inline">
-            <input type="radio" name="linkType" id="linkint" value="internal" checked> Ajouter une page interne au YesWiki
+            <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> Ajouter une page interne au YesWiki
           </label>
           <label class="radio-inline">
-            <input type="radio" name="linkType" id="linkext" value="external"> Ajouter une URL (lien externe)
+            <input type="radio" name="linkType" id="linkext" value="external"><span></span> Ajouter une URL (lien externe)
           </label>
         </div>
         <div class="control-group form-group internal-link">
@@ -594,32 +594,32 @@
         <div class="control-group form-group">
           <label class="control-label">Texte du lien</label>
           <div class="controls">
-            <input class="form-control" type="text" name="text-url" value="">
+            <input class="form-control" type="text" name="text-url" value="` + $('textarea#body').getSelection(true).text + `">
           </div>
         </div>
         <div class="radio">
           <label>
-            <span></span><input type="radio" name="linkOptions" id="linkOptions1" value="int" checked>
+            <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
             Le lien s'ouvre dans l'onglet courant 
           </label>
         </div>
         <div class="radio">
           <label>
-            <span></span><input type="radio" name="linkOptions" id="linkOptions2" value="ext">
+            <input type="radio" name="linkOptions" id="linkOptions2" value="ext"><span></span>
             Le lien s'ouvre dans un nouvel onglet
           </label>
         </div>
         <div class="radio">
           <label>
-            <span></span><input type="radio" name="linkOptions" id="linkOptions3" value="modal">
-            Le lien s'ouvre dans une fenêtre modale
+            <input type="radio" name="linkOptions" id="linkOptions3" value="modal"><span></span>
+            Le lien s'ouvre dans une fenêtre modale (uniquement pour les liens internes)
           </label>
         </div>
         </form>
       </div>
       <div class="modal-footer">
         <a href="#" class="btn btn-default" data-dismiss="modal">Annuler</a>
-        <a href="#" class="btn btn-primary btn-insert" data-dismiss="modal">Insérer</a>
+        <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">Insérer</a>
       </div>
     </div>
   </div>
@@ -638,10 +638,27 @@
               });
 
               $(".btn-insert").click(function() {
-                $(this)
-                  .parent()
-                  .parent()
-                  .find(".");
+                var internal = $('#YesWikiLinkModal .radio-inline input[value="internal"]').is(':checked') ;
+                var wikiurl = $('#YesWikiLinkModal [name="wikiurl"]').val() ;
+                var exturl = $('#YesWikiLinkModal [name="url"]').val() ;
+                var realLink = internal ? wikiurl : exturl;
+                var text = $('#YesWikiLinkModal [name="text-url"]').val() ;
+                text = text ? text : realLink;
+                if ($('#YesWikiLinkModal .radio input[value="ext"]').is(':checked') && realLink) {
+                  var replacement = '""<a href="' + (internal ? '?' : '') + realLink + '" target="blank" title="'+text+'">'+text+'</a>""';
+                } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink && internal) {
+                  var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'"}}';
+                } else if (realLink) {
+                  var replacement = '[[' + realLink + ' '+text+']]';
+                }
+                if (realLink){
+                  $('textarea#body').replaceSelectedText(
+                    replacement,
+                    true
+                  );
+                } else {
+                  // do nothing
+                }
               });
 
               $linkmodal
