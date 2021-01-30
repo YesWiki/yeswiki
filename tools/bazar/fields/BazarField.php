@@ -78,9 +78,10 @@ abstract class BazarField
     // Render the show view of the field
     public function renderStatic($entry)
     {
-        return $this->render("@bazar/fields/{$this->type}.twig", [
+        $value = $this->getValue($entry);
+        return ($value) ? $this->render("@bazar/fields/{$this->type}.twig", [
             'value' => $this->getValue($entry)
-        ]);
+        ]) : '';
     }
 
     // each field should implement this method instead of the renderInputIfPermitted
