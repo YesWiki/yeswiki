@@ -95,9 +95,12 @@ class EntryController extends YesWikiController
         if (empty($renderedEntry)) {
             for ($i = 0; $i < count($form['template']); ++$i) {
                 // Check if we should display the field
-                if (empty($form['prepared'][$i]->getReadAccess()) ||
-                    $this->aclService->check($form['prepared'][$i]->getReadAccess(), null, true,
-                        $entryId)) {
+                if (empty($form['template'][$i][11]) || $this->aclService->check(
+                        $form['template'][$i][11],
+                        null,
+                        true,
+                        $entryId)
+                ) {
                     if ($form['prepared'][$i] instanceof BazarField) {
                         // TODO handle html_outside_app mode for images
                         $renderedEntry .= $form['prepared'][$i]->renderStatic($entry);
