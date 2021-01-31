@@ -84,7 +84,7 @@ if ( count($fiches)>0 ) : ?>
                       <span><?php echo $fiche['bf_titre']; ?></span>
                       <strong>
                           <i class="fa fa-fw fa-star"></i>
-                          <?php echo $fiche['bf_baseline']; ?>
+                          <?php echo $fiche['bf_baseline'] ?? ''; ?>
                       </strong>
                   </h2>
           <div class="mc-content">

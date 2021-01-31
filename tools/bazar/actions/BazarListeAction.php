@@ -6,10 +6,14 @@ use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Service\TemplateNotFound;
 
 class BazarListeAction extends YesWikiAction
 {
-    function formatArguments($arg)
+    protected const BAZARCARTO_TEMPLATES = ["map","gogomap"] ; // liste des templates sans .twig ni .tpl.html
+    protected const BAZARCALENDRIER_TEMPLATES = ["calendrier"] ; // liste des templates sans .twig ni .tpl.html
+
+    public function formatArguments($arg)
     {
         return([
             // SELECTION DES FICHES
@@ -20,7 +24,7 @@ class BazarListeAction extends YesWikiAction
             // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
-            'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ? 
+            'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
                 $this->getService(UserManager::class)->getLoggedUserName() : null,
             // Ordre du tri (asc ou desc)
             'ordre' => $arg['ordre'] ?? 'asc',
@@ -31,7 +35,7 @@ class BazarListeAction extends YesWikiAction
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
             'pagination' => $arg['pagination'] ?? null,
             // Afficher les fiches dans un ordre aléatoire
-            'random' => $this->formatBoolean($arg, false,'random'),
+            'random' => $this->formatBoolean($arg, false, 'random'),
             // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'correspondance' => $arg['correspondance'] ?? null,
 
@@ -41,13 +45,13 @@ class BazarListeAction extends YesWikiAction
             // classe css a ajouter en rendu des templates liste
             'class' => $arg['class'] ?? '',
             // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
-            'barregestion' => $this->formatBoolean($arg, true,'barregestion') ,
+            'barregestion' => $this->formatBoolean($arg, true, 'barregestion') ,
             // ajout des options pour exporter les fiches
-            'showexportbuttons' => $this->formatBoolean($arg , false,'showexportbuttons'),
+            'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
             // Affiche le formulaire de recherche en haut
-            'search' => $this->formatBoolean($arg , false,'search'),
+            'search' => $this->formatBoolean($arg, false, 'search'),
             // Affiche le nombre de fiche en haut
-            'shownumentries' => $this->formatBoolean($arg, true , 'shownumentries'),
+            'shownumentries' => $this->formatBoolean($arg, true, 'shownumentries'),
 
             // FACETTES
             // Identifiants des champs utilisés pour les facettes
@@ -59,13 +63,13 @@ class BazarListeAction extends YesWikiAction
             'titles' => $this->formatArray($_GET['titles'] ?? $arg['titles'] ?? null),
             'groupicons' => $this->formatArray($arg['groupicons'] ?? null),
             // ajout d'un filtre pour chercher du texte dans les resultats pour les facettes
-            'filtertext' => $this->formatBoolean($arg, false,'filtertext'),
+            'filtertext' => $this->formatBoolean($arg, false, 'filtertext'),
             // facette à gauche ou à droite
             'filterposition' => $GET['filterposition'] ?? $arg['filterposition'] ?? 'right',
             // largeur colonne facettes
             'filtercolsize' => $GET['filterposition'] ?? $arg['filterposition'] ?? '3',
             // déplier toutes les facettes
-            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg , true, 'groupsexpanded'),
+            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg, true, 'groupsexpanded'),
             // Prefixe des classes CSS utilisees pour la carto et calendrier
             'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : isset($arg['iconprefix']) ? trim($arg['iconprefix']) : $this->params->get('baz_marker_icon_prefix') ?? '',
             // Champ utilise pour les icones des marqueurs
@@ -79,13 +83,27 @@ class BazarListeAction extends YesWikiAction
         ]);
     }
 
-    function run()
+    public function run()
     {
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
-        if( ($this->arguments['template'] === 'map' || $this->arguments['template'] === 'map.tpl.html') && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarCartoAction' )) {
+        $bazarcarto_templates = [];
+        foreach (self::BAZARCARTO_TEMPLATES as $templateName) {
+            $bazarcarto_templates[] = $templateName;
+            $bazarcarto_templates[] = $templateName . '.tpl.html';
+            $bazarcarto_templates[] = $templateName . '.twig';
+        }
+        $bazarcalendrier_templates = [];
+        foreach (self::BAZARCALENDRIER_TEMPLATES as $templateName) {
+            $bazarcalendrier_templates[] = $templateName;
+            $bazarcalendrier_templates[] = $templateName . '.tpl.html';
+            $bazarcalendrier_templates[] = $templateName . '.twig';
+        }
+        if (in_array($this->arguments['template'],$bazarcarto_templates) 
+                && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarCartoAction')) {
             return $this->callAction('bazarcarto', $this->arguments);
-        } elseif( ($this->arguments['template'] === 'calendar' || $this->arguments['template'] === 'calendar.tpl.html') && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction' )) {
+        } elseif (in_array($this->arguments['template'],$bazarcalendrier_templates) 
+                && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
             return $this->callAction('calendrier', $this->arguments);
         }
 
@@ -102,7 +120,7 @@ class BazarListeAction extends YesWikiAction
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
         // Are the entries on an external wiki ?
-        if( !empty($this->arguments['url']) ) {
+        if (!empty($this->arguments['url'])) {
             $forms = $externalWikiService->getForms($this->arguments['url']);
             $entries = $externalWikiService->getEntries([
                 'url' => $this->arguments['url'],
@@ -152,7 +170,7 @@ class BazarListeAction extends YesWikiAction
             'keywords' => $_GET['q'] ?? '',
             'pageTag' => $this->wiki->getPageTag(),
             'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
-            'formId' => $this->arguments['idtypeannonce'][0],
+            'formId' => $this->arguments['idtypeannonce'][0] ?? null,
             'facette' => $_GET['facette'] ?? null,
         ]);
     }
@@ -160,6 +178,12 @@ class BazarListeAction extends YesWikiAction
     private function renderEntries($entries) : string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
+
+        $templateName = $this->arguments['template'];
+        if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
+            $templateName = $templateName . '.tpl.html';
+            $this->arguments['template'] = $templateName;
+        }
 
         $data['fiches'] = $entries;
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">'._t('BAZ_IL_Y_A').' '.count($data['fiches']).' '.(count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')).'</div>' : '';
@@ -191,12 +215,11 @@ class BazarListeAction extends YesWikiAction
             $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">'.$pager->links.'</ul></div>';
         }
 
-        $templateName = $this->arguments['template'];
-        if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
-            $param['template'] = $templateName . '.tpl.html';
+        try {
+            return $this->render("@bazar/{$templateName}", $data);
+        } catch (TemplateNotFound $e) {
+            return '<div class="alert alert-danger">'.$e->getMessage().'</div>';
         }
-
-        return $this->render("@bazar/{$templateName}", $data);
     }
 
     private function formatFilters($entries, $forms) : array
@@ -352,7 +375,7 @@ class BazarListeAction extends YesWikiAction
      */
     private function findFieldByName($forms, $name)
     {
-        foreach( $forms as $form ) {
+        foreach ($forms as $form) {
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof BazarField) {
                     if ($field->getPropertyName() === $name) {

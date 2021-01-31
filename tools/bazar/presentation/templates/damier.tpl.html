@@ -190,7 +190,7 @@ if (!function_exists('montrer_bouton'))
 			$btnstyle='';
 		}
 		if (!empty($tabfiche[0])) {
-            $libelle_bouton = $tabfiche[0]['bf_bouton']; // button label
+            $libelle_bouton = $tabfiche[0]['bf_bouton'] ?? null ; // button label
             /* If 		the record stores a link, then the button activates it
             * else if	the record stores a file, then the button downloads it
             * else		there is no button */
