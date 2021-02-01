@@ -136,6 +136,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_ETATPUBLICATION' => 'Etat de publication',
         'BAZ_PUBLIEE' => 'Publi&eacute;e',
         'BAZ_PAS_D_ID_DE_FICHE_INDIQUEE' => 'Identifiant de la fiche non indiqu&eacute;.',
+        'BAZ_PAS_D_ID_DE_FORM_INDIQUE' => 'Identifiant de formulaire non indiqu&eacute;.',
         'BAZ_PAS_DE_FICHE' => 'Vous n\'avez pas encore saisi de fiches.',
         'BAZ_PAS_DE_FICHE_AVEC_CET_ID' => 'La fiche que vous recherchez n\'existe plus (peut être a-t-elle &eacute;t&eacute; supprim&eacute;e entre temps?).',
         'BAZ_VOS_FICHES' => 'Mes fiches saisies',

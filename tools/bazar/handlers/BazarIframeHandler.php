@@ -12,7 +12,7 @@ class BazarIframeHandler extends YesWikiHandler
 
         if ($this->wiki->HasAccess("read")) {
             if (empty($_GET['id'])) {
-                $output .= '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
+                $output .= '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
             } else {
                 // affichage à l'écran de la liste bazar
                 $this->arguments['shownumentries'] = false;

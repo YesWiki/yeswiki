@@ -65,13 +65,13 @@ class BazarListeAction extends YesWikiAction
             // ajout d'un filtre pour chercher du texte dans les resultats pour les facettes
             'filtertext' => $this->formatBoolean($arg, false, 'filtertext'),
             // facette à gauche ou à droite
-            'filterposition' => $GET['filterposition'] ?? $arg['filterposition'] ?? 'right',
+            'filterposition' => $_GET['filterposition'] ?? $arg['filterposition'] ?? 'right',
             // largeur colonne facettes
-            'filtercolsize' => $GET['filterposition'] ?? $arg['filterposition'] ?? '3',
+            'filtercolsize' => $_GET['filterposition'] ?? $arg['filterposition'] ?? '3',
             // déplier toutes les facettes
             'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg, true, 'groupsexpanded'),
             // Prefixe des classes CSS utilisees pour la carto et calendrier
-            'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : isset($arg['iconprefix']) ? trim($arg['iconprefix']) : $this->params->get('baz_marker_icon_prefix') ?? '',
+            'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
             // Champ utilise pour les icones des marqueurs
             'iconfield' => $_GET['iconfield'] ?? $arg['iconfield'] ?? null,
             // icone des marqueurs
@@ -99,10 +99,10 @@ class BazarListeAction extends YesWikiAction
             $bazarcalendrier_templates[] = $templateName . '.tpl.html';
             $bazarcalendrier_templates[] = $templateName . '.twig';
         }
-        if (in_array($this->arguments['template'],$bazarcarto_templates) 
+        if (in_array($this->arguments['template'], $bazarcarto_templates)
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarCartoAction')) {
             return $this->callAction('bazarcarto', $this->arguments);
-        } elseif (in_array($this->arguments['template'],$bazarcalendrier_templates) 
+        } elseif (in_array($this->arguments['template'], $bazarcalendrier_templates)
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
             return $this->callAction('calendrier', $this->arguments);
         }
