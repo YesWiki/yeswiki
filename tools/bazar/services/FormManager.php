@@ -211,16 +211,7 @@ class FormManager
                                 $tableau_template[$nblignes][$i] = '';
                             }
                         }
-                        // default values for read acl
-                        if (empty(trim($tableau_template[$nblignes][self::FIELD_READ_ACCESS]))) {
-                            $defaultVal = $this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*' ;
-                            $tableau_template[$nblignes][self::FIELD_READ_ACCESS] = $defaultVal;
-                        }
-                        // default values for write  acl
-                        if (empty(trim($tableau_template[$nblignes][self::FIELD_WRITE_ACCESS]))) {
-                            $defaultVal = $this->params->has('default_write_acl') ? $this->params->get('default_write_acl') : '*' ;
-                            $tableau_template[$nblignes][self::FIELD_WRITE_ACCESS] = $defaultVal;
-                        }
+
                         $nblignes++;
                     }
                 }
@@ -238,6 +229,16 @@ class FormManager
         $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
+        
+            // default values for read acl
+            if (empty(trim($field[self::FIELD_READ_ACCESS]))) {
+                $field[self::FIELD_READ_ACCESS] = '*' ;
+            }
+            // default values for write  acl
+            if (empty(trim($field[self::FIELD_WRITE_ACCESS]))) {
+                $field[self::FIELD_WRITE_ACCESS] = '*' ;
+            }
+
             $classField = $this->fieldFactory->create($field);
 
             if ($classField) {
@@ -268,6 +269,12 @@ class FormManager
 
             // texte d'aide
             $prepared[$i]['helper'] = $field[self::FIELD_HELP];
+
+            // values for read acl
+            $prepared[$i]['read_acl'] = $field[self::FIELD_READ_ACCESS];
+
+            // values for write acl
+            $prepared[$i]['write_acl'] = $field[self::FIELD_WRITE_ACCESS];
 
             // traitement sémantique
             // TODO move to BazarField

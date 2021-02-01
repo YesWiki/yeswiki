@@ -94,19 +94,18 @@ class EntryController extends YesWikiController
         // If not found, use default template
         if (empty($renderedEntry)) {
             for ($i = 0; $i < count($form['template']); ++$i) {
-                // Check if we should display the field
-                if (empty($form['template'][$i][11]) || $this->aclService->check(
-                        $form['template'][$i][11],
-                        null,
-                        true,
-                        $entryId)
-                ) {
-                    if ($form['prepared'][$i] instanceof BazarField) {
+                if ($form['prepared'][$i] instanceof BazarField) {
+                    $field = $form['prepared'][$i];
+                    if ($this->wiki->CheckACL($field->getReadAccess(), null, true, $entryId)) {
                         // TODO handle html_outside_app mode for images
-                        $renderedEntry .= $form['prepared'][$i]->renderStatic($entry);
-                    } else {
-                        $functionName = $form['template'][$i][0];
-                        if (function_exists($functionName)) {
+                        $renderedEntry .= $field->renderStatic($entry);
+                    }
+                } else {
+                    // Check if we should display the field
+                    $functionName = $form['template'][$i][0];
+                    if (function_exists($functionName)) {
+                        if (empty($form['prepared'][$i]['read_acl']) ||
+                                $this->wiki->CheckACL($form['prepared'][$i]['read_acl'], null, true, $entryId)) {
                             $renderedEntry .= $functionName(
                                 $formtemplate,
                                 $form['template'][$i],
@@ -169,8 +168,12 @@ class EntryController extends YesWikiController
         if (isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->create($formId, $_POST);
             if (empty($redirectUrl)) {
-                $redirectUrl = $this->wiki->Href('', '',
-                    ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche']], false);
+                $redirectUrl = $this->wiki->Href(
+                    '',
+                    '',
+                    ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche']],
+                    false
+                );
             }
             header('Location: ' . $redirectUrl);
             exit;
@@ -224,10 +227,9 @@ class EntryController extends YesWikiController
         for ($i = 0; $i < count($form['prepared']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
                 $renderedFields[] = $form['prepared'][$i]->renderInputIfPermitted($entry);
-            } else {
-                if (function_exists($form['template'][$i][0])) {
-                    $renderedFields[] = $form['template'][$i][0]($formtemplate, $form['template'][$i], 'saisie',
-                        $entry);
+            } elseif (function_exists($form['template'][$i][0])) {
+                if (empty($form['prepared'][$i]['write_acl']) || $this->wiki->CheckACL($form['prepared'][$i]['write_acl'], null, true, ($entry['id_fiche'] ?? null))) {
+                    $renderedFields[] = $form['template'][$i][0]($formtemplate, $form['template'][$i], 'saisie', $entry);
                 }
             }
         }
@@ -281,17 +283,21 @@ class EntryController extends YesWikiController
     {
         $html = $formtemplate = [];
         for ($i = 0; $i < count($form['template']); ++$i) {
-            if (empty($form['template'][$i][11]) ||
-                $this->aclService->check($form['template'][$i][11], null, true, $entry['id_fiche'])) {
-                if ($form['prepared'][$i] instanceof BazarField) {
+            $replace = false ;
+            if ($form['prepared'][$i] instanceof BazarField) {
+                if ($this->wiki->CheckACL($form['prepared'][$i]->getReadAccess(), null, true, $entry['id_fiche'])) {
                     $id = $form['prepared'][$i]->getPropertyName();
                     $html[$id] = $form['prepared'][$i]->renderStatic($entry);
-                } else {
-                    if (function_exists($form['template'][$i][0])) {
-                        $id = $form['template'][$i][1];
-                        $html[$id] = $form['template'][$i][0]($formtemplate, $form['template'][$i], 'html', $entry);
-                    }
+                    $replace = true ;
                 }
+            } elseif (function_exists($form['template'][$i][0])) {
+                if (empty($form['prepared'][$i]['read_acl']) || $this->wiki->CheckACL($form['prepared'][$i]['read_acl'], null, true, $entry['id_fiche'])) {
+                    $id = $form['template'][$i][1];
+                    $html[$id] = $form['template'][$i][0]($formtemplate, $form['template'][$i], 'html', $entry);
+                    $replace = true ;
+                }
+            }
+            if ($replace) {
                 preg_match_all('/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is', $html[$id], $matches);
                 if (isset($matches[1][0]) && $matches[1][0] != '') {
                     $html[$id] = $matches[1][0];
@@ -300,8 +306,11 @@ class EntryController extends YesWikiController
         }
 
         try {
-            $html['semantic'] = $this->semanticTransformer->convertToSemanticData($form['bn_id_nature'], $html,
-                true);
+            $html['semantic'] = $this->semanticTransformer->convertToSemanticData(
+                $form['bn_id_nature'],
+                $html,
+                true
+            );
         } catch (\Exception $e) {
             // Do nothing if semantic type is not available
         }
