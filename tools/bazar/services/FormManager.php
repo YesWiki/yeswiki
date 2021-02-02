@@ -229,16 +229,6 @@ class FormManager
         $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
-        
-            // default values for read acl
-            if (empty(trim($field[self::FIELD_READ_ACCESS]))) {
-                $field[self::FIELD_READ_ACCESS] = '*' ;
-            }
-            // default values for write  acl
-            if (empty(trim($field[self::FIELD_WRITE_ACCESS]))) {
-                $field[self::FIELD_WRITE_ACCESS] = '*' ;
-            }
-
             $classField = $this->fieldFactory->create($field);
 
             if ($classField) {
