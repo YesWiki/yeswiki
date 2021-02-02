@@ -175,7 +175,7 @@ class AclService
      *            The name of the page or form to be tested when $acl contains '%'.
      *            By Default ''
      * @param string $mode
-     *            Mode for case $acl contains '%'
+     *            Mode for cases when $acl contains '%'
      *            Default '', standard case. $mode = 'creation', the test returns true
      *            even if the user is connected
      * @return bool True if the $user satisfies the $acl, false otherwise

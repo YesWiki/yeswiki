@@ -61,6 +61,15 @@ abstract class BazarField
     }
 
     // Render the edit view of the field. Check ACLS first
+    public function renderStaticIfPermitted($entry)
+    {
+        // Safety checks, must be run before every renderStatic
+        if( !$this->canRead($entry) ) return '';
+
+        return $this->renderStatic($entry);
+    }
+
+    // Render the edit view of the field. Check ACLS first
     public function renderInputIfPermitted($entry)
     {
         // Safety checks, must be run before every renderInput
@@ -76,7 +85,7 @@ abstract class BazarField
     }
 
     // Render the show view of the field
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         return $this->render("@bazar/fields/{$this->type}.twig", [
             'value' => $this->getValue($entry)
@@ -107,7 +116,15 @@ abstract class BazarField
 
     // HELPERS
 
-    /* Return true if we are in edit mode and editing is not allowed */
+    /* Return true if we are if reading is allowed for the field */
+    protected function canRead($entry)
+    {
+        $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
+        $isCreation = !$entry;
+        return empty($readAcl) || $GLOBALS['wiki']->CheckACL($readAcl, null, true, $isCreation ? '' : $entry['id_fiche']);
+    }
+
+    /* Return true if we are if editing is allowed for the field */
     protected function canEdit($entry)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
