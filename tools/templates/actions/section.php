@@ -85,7 +85,7 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     
     echo '<!-- start of section -->
     <section' . (!empty($id) ? ' id="'.$id .'"' : '') . ' class="'. ($backgroundimg ? 'background-image' : '') . ($visible ? '' : ' remove-this-div-on-page-load ') . (!empty($class) ? ' ' . $class : '') . '" style="'
-        .(!empty($bgcolor) ? 'background:' . $bgcolor .'; ' : '')
+        .(!empty($bgcolor) ? 'background-color:' . $bgcolor .'; ' : '')
         .(!empty($height) ? 'height:' . $height . 'px; ' : '')
         .(isset($fullFilename) ? 'background-image:url(' . $fullFilename . ');' : '').'"';
     if (is_array($data)) {
