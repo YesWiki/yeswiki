@@ -32,7 +32,7 @@ class LinkedEntryField extends BazarField
         $this->linkType = $values[self::FIELD_LINK_TYPE] === 'checkbox' ? 'checkboxfiche' : 'listefiche';
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         // Display the linked entries only on update
         if( isset($entry['id_fiche']) ) {
@@ -40,7 +40,7 @@ class LinkedEntryField extends BazarField
         }
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         return $GLOBALS['wiki']->Format($this->getBazarListAction($entry));
     }

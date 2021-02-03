@@ -35,7 +35,7 @@ class EmailField extends BazarField
         ];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
         if( !$value ) return null;

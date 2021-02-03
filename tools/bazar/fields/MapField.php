@@ -241,7 +241,7 @@ class MapField extends BazarField
         return [$this->propertyName => $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField]];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         return null;
     }

@@ -39,9 +39,9 @@ class TextField extends BazarField
         return $this->render("@bazar/inputs/text.twig", [
             'value' => $this->getValue($entry)
         ]);
-    }  
+    }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
         if( !$value ) return null;

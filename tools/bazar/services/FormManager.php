@@ -35,8 +35,13 @@ class FormManager
     private const FIELD_SEMANTIC = 14;
     private const FIELD_QUERIES = 15;
 
-    public function __construct(Wiki $wiki, DbService $dbService, EntryManager $entryManager, FieldFactory $fieldFactory, ParameterBagInterface $params)
-    {
+    public function __construct(
+        Wiki $wiki,
+        DbService $dbService,
+        EntryManager $entryManager,
+        FieldFactory $fieldFactory,
+        ParameterBagInterface $params
+    ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->entryManager = $entryManager;
@@ -52,7 +57,7 @@ class FormManager
             return $this->cachedForms[$formId];
         }
 
-        $form = $this->dbService->loadSingle('SELECT * FROM '.$this->dbService->prefixTable('nature').'WHERE bn_id_nature='.$formId);
+        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $formId);
 
         if (!$form) {
             return null;
@@ -101,61 +106,64 @@ class FormManager
     public function create($data)
     {
         // If ID is not set or if it is already used, find a new ID
-        if( !$data['bn_id_nature'] || $this->getOne($data['bn_id_nature']) ) {
+        if (!$data['bn_id_nature'] || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
 
-        return $this->dbService->query('INSERT INTO '. $this->dbService->prefixTable('nature')
-            .'(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'
-            .' VALUES ('.$data['bn_id_nature'].', "fr-FR", "'
-            .addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)).'","'
-            .addslashes(_convert($data['bn_template'], YW_CHARSET, true)).'", "'
-            .addslashes(_convert($data['bn_description'], YW_CHARSET, true)).'", "'
-            .addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)).'", "'
-            .addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)).'", '
-            .(isset($data['bn_sem_use_template']) ? '1' : '0').', "'
-            .addslashes(_convert($data['bn_condition'], YW_CHARSET, true)).'")');
+        return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
+            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template` ,`bn_condition`)'
+            . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
+            . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
+            . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
+            . addslashes(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
+            . addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
+            . addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
+            . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
+            . addslashes(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
     }
 
     public function update($data)
     {
-        return $this->dbService->query('UPDATE'.$this->dbService->prefixTable('nature').'SET '
-            .'`bn_label_nature`="'.addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)).'" ,'
-            .'`bn_template`="'.addslashes(_convert($data['bn_template'], YW_CHARSET, true)).'" ,'
-            .'`bn_description`="'.addslashes(_convert($data['bn_description'], YW_CHARSET, true)).'" ,'
-            .'`bn_sem_context`="'.addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)).'" ,'
-            .'`bn_sem_type`="'.addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)).'" ,'
-            .'`bn_sem_use_template`='. (isset($data['bn_sem_use_template']) ? '1' : '0') .' ,'
-            .'`bn_condition`="'.addslashes(_convert($data['bn_condition'], YW_CHARSET, true)).'"'
-            .' WHERE `bn_id_nature`='.$data['bn_id_nature']);
+        return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
+            . '`bn_label_nature`="' . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
+            . '`bn_template`="' . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
+            . '`bn_description`="' . addslashes(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_context`="' . addslashes(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_type`="' . addslashes(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
+            . '`bn_condition`="' . addslashes(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
+            . ' WHERE `bn_id_nature`=' . $data['bn_id_nature']);
     }
 
     public function delete($id)
     {
         //TODO : suppression des fiches associees au formulaire
 
-        return $this->dbService->query('DELETE FROM '.$this->dbService->prefixTable('nature').'WHERE bn_id_nature='. $id );
+        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
     }
 
     public function clear($id)
     {
         $this->dbService->query(
-            'DELETE FROM'. $this->dbService->prefixTable('acls').
-            'WHERE page_tag IN (SELECT tag FROM '.$this->dbService->prefixTable('pages').
-            'WHERE tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\' );');
+            'DELETE FROM' . $this->dbService->prefixTable('acls') .
+            'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+            'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $id . '"%\' );'
+        );
 
         // TODO use PageManager
         $this->dbService->query(
-            'DELETE FROM'.$this->dbService->prefixTable('pages').
-            'WHERE tag IN (SELECT resource FROM '.$this->dbService->prefixTable('triples').
-            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"'.$id.'"%\';');
+            'DELETE FROM' . $this->dbService->prefixTable('pages') .
+            'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+            'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $id . '"%\';'
+        );
 
         // TODO use TripleStore
         $this->dbService->query(
-            'DELETE FROM'.$this->dbService->prefixTable('triples').
-            'WHERE resource NOT IN (SELECT tag FROM '.$this->dbService->prefixTable('pages').
-            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";');
+            'DELETE FROM' . $this->dbService->prefixTable('triples') .
+            'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+            'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
+        );
     }
 
     public function findNewId()
@@ -181,7 +189,7 @@ class FormManager
     /**
      * Découpe le template et renvoie un tableau structuré
      *
-     * @param  string  Template du formulaire
+     * @param string  Template du formulaire
      * @return  mixed   Le tableau des elements du formulaire et options pour l'element liste
      */
     public function parseTemplate($raw)
@@ -200,14 +208,15 @@ class FormManager
                 $tablignechampsformulaire = array_map("trim", explode("***", $ligne));
 
                 // TODO find another way to check that the field is valid
-                if ( true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
+                if (true /*function_exists($tablignechampsformulaire[self::FIELD_TYPE])*/) {
                     if (count($tablignechampsformulaire) > 3) {
                         $tableau_template[$nblignes] = $tablignechampsformulaire;
-                        for ($i=0; $i < 16; $i++) {
+                        for ($i = 0; $i < 16; $i++) {
                             if (!isset($tableau_template[$nblignes][$i])) {
                                 $tableau_template[$nblignes][$i] = '';
                             }
                         }
+
                         $nblignes++;
                     }
                 }
@@ -225,48 +234,50 @@ class FormManager
         $form['template'] = _convert($form['template'], 'ISO-8859-15');
 
         foreach ($form['template'] as $field) {
-
             $classField = $this->fieldFactory->create($field);
 
-            if( $classField ) {
+            if ($classField) {
                 $prepared[$i] = $classField;
-                $i++;
-                continue;
-            }
-
-            /*
-             * DEFAULT VALUES
-             */
-
-            // champs obligatoire
-            if ($field[self::FIELD_REQUIRED]==1) {
-                $prepared[$i]['required'] = true;
             } else {
-                $prepared[$i]['required'] = false;
+                /*
+                 * DEFAULT VALUES
+                 */
+
+                // champs obligatoire
+                if ($field[self::FIELD_REQUIRED] == 1) {
+                    $prepared[$i]['required'] = true;
+                } else {
+                    $prepared[$i]['required'] = false;
+                }
+
+                // texte d'invitation à la saisie
+                $prepared[$i]['label'] = $field[self::FIELD_LABEL];
+
+                // attributs html du champs
+                $prepared[$i]['attributes'] = '';
+
+                // valeurs associées
+                $prepared[$i]['values'] = '';
+
+                // texte d'aide
+                $prepared[$i]['helper'] = $field[self::FIELD_HELP];
+
+                // values for read acl
+                $prepared[$i]['read_acl'] = $field[self::FIELD_READ_ACCESS];
+
+                // values for write acl
+                $prepared[$i]['write_acl'] = $field[self::FIELD_WRITE_ACCESS];
+
+                // traitement sémantique
+                // TODO move to BazarField
+                if (!empty($field[self::FIELD_SEMANTIC])) {
+                    $prepared[$i]['sem_type'] = strpos($field[self::FIELD_SEMANTIC], ',')
+                        ? array_map(function ($str) {
+                            return trim($str);
+                        }, explode(',', $field[self::FIELD_SEMANTIC]))
+                        : $field[self::FIELD_SEMANTIC];
+                }
             }
-
-            // texte d'invitation à la saisie
-            $prepared[$i]['label'] = $field[self::FIELD_LABEL];
-
-            // attributs html du champs
-            $prepared[$i]['attributes'] = '';
-
-            // valeurs associées
-            $prepared[$i]['values'] = '';
-
-            // texte d'aide
-            $prepared[$i]['helper'] = $field[self::FIELD_HELP];
-
-            // traitement sémantique
-            // TODO move to BazarField
-            if (!empty($field[self::FIELD_SEMANTIC])) {
-                $prepared[$i]['sem_type'] = strpos($field[self::FIELD_SEMANTIC], ',')
-                    ? array_map(function ($str) {
-                        return trim($str);
-                    }, explode(',', $field[self::FIELD_SEMANTIC]))
-                    : $field[self::FIELD_SEMANTIC];
-            }
-
             $i++;
         }
         return $prepared;

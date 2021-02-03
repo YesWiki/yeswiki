@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TemplateEngine;
 
 abstract class BazarField
@@ -61,6 +62,15 @@ abstract class BazarField
     }
 
     // Render the edit view of the field. Check ACLS first
+    public function renderStaticIfPermitted($entry)
+    {
+        // Safety checks, must be run before every renderStatic
+        if( !$this->canRead($entry) ) return '';
+
+        return $this->renderStatic($entry);
+    }
+
+    // Render the edit view of the field. Check ACLS first
     public function renderInputIfPermitted($entry)
     {
         // Safety checks, must be run before every renderInput
@@ -76,7 +86,7 @@ abstract class BazarField
     }
 
     // Render the show view of the field
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
         return ($value) ? $this->render("@bazar/fields/{$this->type}.twig", [
@@ -108,12 +118,20 @@ abstract class BazarField
 
     // HELPERS
 
-    /* Return true if we are in edit mode and editing is not allowed */
+    /* Return true if we are if reading is allowed for the field */
+    protected function canRead($entry)
+    {
+        $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
+        $isCreation = !$entry;
+        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, null, true, $isCreation ? '' : $entry['id_fiche']);
+    }
+
+    /* Return true if we are if editing is allowed for the field */
     protected function canEdit($entry)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
         $isCreation = !$entry;
-        return empty($writeAcl) || $GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
+        return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
     }
 
     protected function render($templatePath, $data = [])

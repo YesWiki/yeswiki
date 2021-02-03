@@ -17,7 +17,7 @@ class FileField extends BazarField
         $this->propertyName = $this->type . $this->name;
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         $value = $this->getValue($entry);
 
@@ -75,7 +75,7 @@ class FileField extends BazarField
         }
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
 

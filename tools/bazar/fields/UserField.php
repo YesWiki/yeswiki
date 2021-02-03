@@ -81,7 +81,7 @@ class UserField extends BazarField
         return [$this->propertyName => $wikiName];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
         $userManager = $this->getService(UserManager::class);
