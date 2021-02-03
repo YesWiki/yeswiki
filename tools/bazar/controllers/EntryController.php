@@ -33,9 +33,9 @@ class EntryController extends YesWikiController
             // If entry ID is the full entry with all the values
             $entry = $entryId;
             $entryId = $entry['id_fiche'];
-        } elseif($entryId) {
+        } elseif ($entryId) {
             $entry = $this->wiki->services->get(EntryManager::class)->getOne($entryId, false, $time);
-            if( !$entry ) {
+            if (!$entry) {
                 return '<div class="alert alert-danger">' ._t('BAZ_PAS_DE_FICHE_AVEC_CET_ID').' : ' . $entryId . '</div>';
             }
         } else {
@@ -63,8 +63,8 @@ class EntryController extends YesWikiController
         // if not found, try rendering a semantic template
         if (empty($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
             try {
-                $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic']);
-                if( $customTemplateName ) {
+                $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic'] ?? false);
+                if ($customTemplateName) {
                     $renderedEntry = $templateEngine->render("@bazar/$customTemplateName", $customTemplateValues);
                 }
             } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
@@ -132,7 +132,7 @@ class EntryController extends YesWikiController
     {
         $form = $this->formManager->getOne($formId);
 
-        if( isset($_POST['bf_titre']) ) {
+        if (isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->create($formId, $_POST);
             if (empty($redirectUrl)) {
                 $redirectUrl = $this->wiki->Href('', '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche']], false);
@@ -154,7 +154,7 @@ class EntryController extends YesWikiController
         $entry = $this->entryManager->getOne($entryId);
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
-        if( isset($_POST['bf_titre']) ) {
+        if (isset($_POST['bf_titre'])) {
             $entry = $this->entryManager->update($entryId, $_POST);
             if (empty($redirectUrl)) {
                 $redirectUrl = $this->wiki->Href(testUrlInIframe(), '', ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche'], 'message' => 'modif_ok'], false);
@@ -182,9 +182,9 @@ class EntryController extends YesWikiController
     {
         $renderedFields = [];
         for ($i = 0; $i < count($form['prepared']); ++$i) {
-            if( $form['prepared'][$i] instanceof BazarField ) {
+            if ($form['prepared'][$i] instanceof BazarField) {
                 $renderedFields[] = $form['prepared'][$i]->renderInputIfPermitted($entry);
-            } else if (function_exists($form['template'][$i][0])){
+            } elseif (function_exists($form['template'][$i][0])) {
                 $renderedFields[] = $form['template'][$i][0]($formtemplate, $form['template'][$i], 'saisie', $entry);
             }
         }
@@ -214,8 +214,7 @@ class EntryController extends YesWikiController
         }
 
         // Si on a trouvé un contexte et qu'un mapping existe pour ce contexte
-        if (isset($context) && $dir_name = $GLOBALS['wiki']->config['baz_semantic_types_mapping'][$context])
-        {
+        if (isset($context) && $dir_name = $GLOBALS['wiki']->config['baz_semantic_types_mapping'][$context]) {
             // Trouve le type principal
             if (is_array($semanticData['@type'])) {
                 foreach ($semanticData['@type'] as $type) {
@@ -243,7 +242,7 @@ class EntryController extends YesWikiController
                 if ($form['prepared'][$i] instanceof BazarField) {
                     $id = $form['prepared'][$i]->getPropertyName();
                     $html[$id] = $form['prepared'][$i]->renderStatic($entry);
-                } else if (function_exists($form['template'][$i][0])){
+                } elseif (function_exists($form['template'][$i][0])) {
                     $id = $form['template'][$i][1];
                     $html[$id] = $form['template'][$i][0]($formtemplate, $form['template'][$i], 'html', $entry);
                 }
@@ -255,6 +254,7 @@ class EntryController extends YesWikiController
         }
         
         try {
+            $html['id_fiche'] = $entry['id_fiche'];
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form['bn_id_nature'], $html, true);
         } catch (\Exception $e) {
             // Do nothing if semantic type is not available
