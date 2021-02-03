@@ -49,4 +49,17 @@ class ApiController extends YesWikiController
         $this->denyAccessUnlessAdmin();
         return $this->getAuth();
     }
+
+    /**
+     * Display Auth api documentation
+     *
+     * @return string
+     */
+    public function getDocumentation()
+    {
+        $urlAuth = $this->wiki->href('', 'api/auth');
+        $output = '<h2>Extension login</h2>'."\n".
+        'GET <code><a href="'.$urlAuth.'">'.$urlAuth.'</a></code><br />';
+        return $output;
+    }
 }

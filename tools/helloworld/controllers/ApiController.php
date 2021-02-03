@@ -18,13 +18,25 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/hello", name="api_helloworld_doc")
+     * @Route("/api/hello")
+     */
+    public function onlineDoc()
+    {
+        $output = $this->wiki->Header();
+        $output .= $this->getDocumentation() ;
+        $output .= $this->wiki->Footer();
+
+        return new Response($output);
+    }
+
+    /**
+     * Display helloworld api documentation
+     *
+     * @return string
      */
     public function getDocumentation()
     {
-        $output = $this->wiki->Header();
-
-        $output .= '<h2>Extension Hello World</h2>';
+        $output = '<h2>Extension Hello World</h2>';
 
         $urlHello = $this->wiki->Href('', 'api/hello/test');
         $urlHelloTest = $this->wiki->Href('', 'api/hello/{test}');
@@ -34,8 +46,6 @@ class ApiController extends YesWikiController
         $output .= '<code>test</code><br />Example : <br />';
         $output .= 'GET <code><a href="'.$urlHello.'">'.$urlHello.'</a></code><br />';
 
-        $output .= $this->wiki->Footer();
-
-        return new Response($output);
+        return $output;
     }
 }
