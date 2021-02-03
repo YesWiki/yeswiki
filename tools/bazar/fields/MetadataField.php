@@ -47,7 +47,7 @@ class MetadataField extends BazarField
         return [];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         return null;
     }

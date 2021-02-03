@@ -18,7 +18,7 @@ class RadioListField extends EnumField
         $this->loadOptionsFromList();
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         return $this->render('@bazar/inputs/radio.twig', [
             'options' => $this->options,
@@ -26,7 +26,7 @@ class RadioListField extends EnumField
         ]);
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry) ;
         if( !$value ) return null;

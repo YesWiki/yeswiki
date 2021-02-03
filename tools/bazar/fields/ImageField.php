@@ -37,7 +37,7 @@ class ImageField extends FileField
         $this->default = null;
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         $value = $this->getValue($entry);
         $maxSize = $GLOBALS['wiki']->config['BAZ_TAILLE_MAX_FICHIER'] ;
@@ -217,7 +217,7 @@ class ImageField extends FileField
         }
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
 

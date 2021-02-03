@@ -36,7 +36,7 @@ class BookmarkletField extends BazarField
         }
     }  
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         if ($GLOBALS['wiki']->GetMethod() == 'bazariframe') {
             return '<a class="btn btn-danger pull-right" href="javascript:window.close();"><i class="fa fa-remove icon-remove icon-white"></i>&nbsp;Fermer cette fen&ecirc;tre</a>';

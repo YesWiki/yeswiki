@@ -18,7 +18,7 @@ class TagsField extends BazarField
         $this->maxChars = $this->maxChars ?? 255;
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         $tagsManager = $this->getService(TagsManager::class);
 
@@ -89,7 +89,7 @@ class TagsField extends BazarField
         return [$this->propertyName => $value];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
 

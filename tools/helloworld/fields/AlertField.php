@@ -24,7 +24,7 @@ class AlertField extends BazarField
         $this->alertText = $values[self::FIELD_ALERT_TEXT];
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         // No input need to be displayed for this example field
         return null;
@@ -38,7 +38,7 @@ class AlertField extends BazarField
         return ['alert' => 'This will be saved in the entry'];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         return $this->render("@helloworld/alert-field.twig", [
             'alertText' => $this->alertText

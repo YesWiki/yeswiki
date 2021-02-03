@@ -13,8 +13,8 @@ class HiddenField extends BazarField
         parent::__construct($values, $services);
         $this->type = 'hidden';
     }
-    
-    public function renderStatic($entry)
+
+    protected function renderStatic($entry)
     {
         return null;
     }

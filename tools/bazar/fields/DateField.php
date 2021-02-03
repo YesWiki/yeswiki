@@ -7,7 +7,7 @@ namespace YesWiki\Bazar\Field;
  */
 class DateField extends BazarField
 {
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/libs/vendor/bootstrap-datepicker.js');
 
@@ -53,7 +53,7 @@ class DateField extends BazarField
         return [$this->propertyName => $value];
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
         if( !$value ) return null;

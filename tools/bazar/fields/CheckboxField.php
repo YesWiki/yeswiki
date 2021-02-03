@@ -34,7 +34,7 @@ abstract class CheckboxField extends EnumField
         $this->dragAndDropDisplayMode = '';
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         switch ($this->displayMethod) {
             case "tags":

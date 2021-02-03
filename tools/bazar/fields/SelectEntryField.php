@@ -30,7 +30,7 @@ class SelectEntryField extends EnumField
         }
     }
 
-    public function renderInput($entry)
+    protected function renderInput($entry)
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
@@ -38,7 +38,7 @@ class SelectEntryField extends EnumField
         ]);
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
         if( !$value ) return null;

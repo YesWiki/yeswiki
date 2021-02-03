@@ -24,7 +24,7 @@ class CheckboxListField extends CheckboxField
         $this->dragAndDropDisplayMode='@bazar/inputs/checkbox_drag_and_drop.twig' ;
     }
 
-    public function renderStatic($entry)
+    protected function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
         $values = [] ;
