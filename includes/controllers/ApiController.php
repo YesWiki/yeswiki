@@ -28,11 +28,19 @@ class ApiController extends YesWikiController
             'GET <code><a href="'.$urlGroup.'">'.$urlGroup.'</a></code><br />';
 
         // TODO use annotations to document the API endpoints
-        $extensions = array_keys($this->wiki->extensions);
-        foreach ($extensions as $extension) {
-            $func = 'documentation'.ucfirst(strtolower($extension));
-            if (function_exists($func)) {
-                $output .= $func();
+        $extensions = $this->wiki->extensions;
+        foreach ($this->wiki->extensions as $extension => $pluginBase) {
+            if (file_exists($pluginBase . 'controllers/ApiController.php')
+                    && $route = $this->wiki->routes->get('api_'.$extension.'_doc')) {
+                // give the path to the documentation of the extension's api
+                $urlAPIExt = $this->wiki->Href('', substr($route->getPath(), 1))  ;
+                $output .= '<h2>Extension '.$extension.'</h2>'."\n";
+                $output .= 'GET <code><a href="'.$urlAPIExt.'">'.$urlAPIExt.'</a></code><br />';
+            } else {
+                $func = 'documentation'.ucfirst(strtolower($extension));
+                if (function_exists($func)) {
+                    $output .= $func();
+                }
             }
         }
 
@@ -59,5 +67,15 @@ class ApiController extends YesWikiController
         $this->denyAccessUnlessAdmin();
 
         return new ApiResponse($this->getService(UserManager::class)->getAll());
+    }
+
+    /**
+     * @Route("/api/group")
+     */
+    public function getAllGroups()
+    {
+        $this->denyAccessUnlessAdmin();
+
+        return new ApiResponse($this->wiki->GetGroupsList());
     }
 }
