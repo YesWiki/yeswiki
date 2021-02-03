@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TemplateEngine;
 
 abstract class BazarField
@@ -122,7 +123,7 @@ abstract class BazarField
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
         $isCreation = !$entry;
-        return empty($readAcl) || $GLOBALS['wiki']->CheckACL($readAcl, null, true, $isCreation ? '' : $entry['id_fiche']);
+        return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, null, true, $isCreation ? '' : $entry['id_fiche']);
     }
 
     /* Return true if we are if editing is allowed for the field */
@@ -130,7 +131,7 @@ abstract class BazarField
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
         $isCreation = !$entry;
-        return empty($writeAcl) || $GLOBALS['wiki']->CheckACL($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
+        return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
     }
 
     protected function render($templatePath, $data = [])
