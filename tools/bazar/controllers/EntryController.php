@@ -125,7 +125,7 @@ class EntryController extends YesWikiController
         if ($owner != '' && $owner != 'WikiAdmin' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
             $showOwner = true;
             // Make the user name clickable when the parameter 'bazar_user_entry_id' is defined in the config file and a corresponding bazar entry exists
-            // TODO Once the integration of login-sso is done, replace the $this->pageManager->getOne with the proper fonction
+            // TODO Once the integration of login-sso is done, replace $this->pageManager->getOne with the proper fonction
             if (!empty($this->config['sso_config']) && isset($this->config['sso_config']['bazar_user_entry_id']) && $this->pageManager->getOne($owner)) {
                 $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
             }
@@ -302,9 +302,13 @@ class EntryController extends YesWikiController
                 }
             }
             if ($replace) {
-                preg_match_all('/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is', $html[$id], $matches);
-                if (isset($matches[1][0]) && $matches[1][0] != '') {
-                    $html[$id] = $matches[1][0];
+                if ($id == 'bf_titre'){
+                    preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
+                } else {
+                    preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);
+                }
+                if (isset($matches[1]) && $matches[1] != '') {
+                    $html[$id] = $matches[1];
                 }
             }
         }
