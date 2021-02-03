@@ -58,16 +58,16 @@ public function getUser($userId)
 { ...}
 ```
 To show your routes in the main `https://mywiki.url/?api` page, you need to declare a getDocumentation() method in your custom ApiController class that will return the html to display on the page.
-The name of the method is not important, but the route's definition with a name like 'api_YOUREXTENSIONNAME_doc'.
+Be careful to the namespace used in your file `YesWiki\ExtensionName\controller`
 ```php
     /**
-     * @Route("/api/hello", name="api_helloworld_doc")
+     * Display helloworld api documentation
+     *
+     * @return string
      */
     public function getDocumentation()
     {
-        $output = $this->wiki->Header();
-
-        $output .= '<h2>Extension Hello World</h2>';
+        $output = '<h2>Extension Hello World</h2>';
 
         $urlHello = $this->wiki->Href('', 'api/hello/test');
         $urlHelloTest = $this->wiki->Href('', 'api/hello/{test}');
@@ -77,8 +77,6 @@ The name of the method is not important, but the route's definition with a name 
         $output .= '<code>test</code><br />Example : <br />';
         $output .= 'GET <code><a href="'.$urlHello.'">'.$urlHello.'</a></code><br />';
 
-        $output .= $this->wiki->Footer();
-
-        return new Response($output);
+        return $output;
     }
 ```

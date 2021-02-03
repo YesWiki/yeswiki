@@ -30,17 +30,27 @@ class ApiController extends YesWikiController
         // TODO use annotations to document the API endpoints
         $extensions = $this->wiki->extensions;
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
-            if (file_exists($pluginBase . 'controllers/ApiController.php')
-                    && $route = $this->wiki->routes->get('api_'.$extension.'_doc')) {
-                // give the path to the documentation of the extension's api
-                $urlAPIExt = $this->wiki->Href('', substr($route->getPath(), 1))  ;
-                $output .= '<h2>Extension '.$extension.'</h2>'."\n";
-                $output .= 'GET <code><a href="'.$urlAPIExt.'">'.$urlAPIExt.'</a></code><br />';
-            } else {
+            $response = null ;
+            if (file_exists($pluginBase . 'controllers/ApiController.php')) {
+                $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
+                if (!class_exists($apiClassName,false)){
+                    include($pluginBase . 'controllers/ApiController.php') ;
+                }
+                if (class_exists($apiClassName,false)) {
+                    $apiController = new $apiClassName() ;
+                    $apiController->setWiki($this->wiki);
+                    if (method_exists($apiController,'getDocumentation')) {
+                        $response = $apiController->getDocumentation() ;
+                    } 
+                }
+            }
+            if (empty($response)) {
                 $func = 'documentation'.ucfirst(strtolower($extension));
                 if (function_exists($func)) {
                     $output .= $func();
-                }
+                } 
+            } else {
+                $output .= $response ;
             }
         }
 
