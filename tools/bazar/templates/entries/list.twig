@@ -1,0 +1,120 @@
+{% if params.search %}
+  {# search input #}
+  <div id="bazar-search-{{ listId }}">
+    <form action="" method="get" name="search-form" id="search-form" class="form-horizontal">
+      <input type="hidden" name="wiki" value="{{ pageTag }}">
+      <input type="hidden" name="vue" value="consulter">
+      <input type="hidden" name="action" value="recherche">
+      <div class="bazar-search control-group">
+        <div class="input-group input-prepend input-append">
+          <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
+          <input type="text" value="{{ keywords }}" name="q" placeholder="{{ _t('BAZ_MOT_CLE') }}" class="search-input form-control input-lg">
+          {% if forms|length > 0 %}
+            <span class="input-group-btn search-filter" style="width:auto;max-width:240px;">
+              <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id">
+                <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
+                {% for form in forms %}
+                  <option value="{{ form.bn_id_nature }}" {% if form.bn_id_nature == formId %}selected{% endif %}>
+                    {{ form.bn_label_nature }}
+                  </option>
+                {% endfor %}
+              </select>
+            </span>
+          {% else %}
+            <input type="hidden" name="id" value="{{ formId }}">
+          {% endif %}
+          {% if params.query %}
+            <input type="hidden" name="query" value="{{ params.query }}">
+          {% endif %}
+          <input type="hidden" name="facette" value="{{ facette }}">
+          <span class="input-group-btn search-button-container">
+            <input value="{{ _t('BAZ_RECHERCHER') }}" class="btn btn-primary" type="submit" />
+          </span>
+        </div>
+      </div>
+    </form>
+  </div>
+{% endif %}
+
+{% if filters %}
+  <div class="facette-container row">
+    {% if params.filterposition == 'right' %}
+      {# entries #}
+      <div class="results-col col-sm-{{ params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format }}">
+        <div class="results">
+          <div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
+            <div class="list">{{ renderedEntries|raw }}</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    {# filters #}
+    <div class="filters-col col-sm-{{ params.filtercolsize }}">
+      <div class="filters no-dblclick {{ params.filterposition }}">
+        <div class="results-info text-info">
+          <span class="nb-results">{{ numEntries }}</span>
+          {% if numEntries > 1 %}
+            <span class="result-label" style="display: none;">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+            <span class="results-label">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
+          {% else %}
+            <span class="result-label">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+            <span class="results-label" style="display: none;">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
+          {% endif %}
+        </div>
+        {% if params.filtertext %}
+        <div class="input-group filtertext">
+          <span class="input-group-addon">
+            <i class="fa fa-filter"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control filter-bazar"
+            id="inputBazarFilter{{ listId }}"
+            placeholder="{{ _t('BAZAR_FILTER') }}"
+            data-target="bazar-list-{{ listId }}"
+          />
+        </div>
+        {% endif %}
+        <div class="results-container">
+          {% for key, filter in filters %}
+            <div class="filter-box panel panel-default {{ key }}" data-id="{{ key }}">
+              <div class="panel-heading {{ filter.collapsed ? 'collapsed ': '' }}" data-toggle="collapse" data-target="#collapse{{ listId }}_{{ key }}" aria-expanded="true">
+                {{ filter.icon|raw }}
+                {{ filter.title }}
+              </div>
+              <div class="panel-collapse collapse {{ filter.collapsed ? '': 'in' }}" id="collapse{{ listId }}_{{ key }}">
+                {% for filterValue in filter.list %}
+                  <div class="checkbox">
+                    <label>
+                      <input class="filter-checkbox" type="checkbox" id="{{ filterValue.id }}" name="{{ filterValue.name }}" value="{{ filterValue.value }}">
+                      <span>
+                        {{ filterValue.checked }}
+                        {{ filterValue.label|raw }} (<span class="nb">{{ filterValue.nb }}</span>)
+                      </span>
+                    </label>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% if params.filterposition == 'left' %}
+      {# entries #}
+      <div class="results-col col-sm-{{ params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format }}">
+        <div class="results">
+          <div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
+            <div class="list">{{ renderedEntries|raw }}</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% else %}
+<div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
+  <div class="list">{{ renderedEntries|raw }}</div>
+</div>
+{% endif %}

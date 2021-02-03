@@ -51,7 +51,8 @@ abstract class YesWikiPerformable
      */
     public function setArguments(array &$arguments): void
     {
-        $this->arguments = &$arguments;
+        $formattedArguments = $this->formatArguments($arguments);
+        $this->arguments = array_merge($arguments, $formattedArguments);
     }
 
     /**
@@ -87,5 +88,47 @@ abstract class YesWikiPerformable
     //  Shortcut to access services
     protected function getService($className) {
         return $this->wiki->services->get($className);
+    }
+
+    // Shortcut to call an action within another action
+    protected function callAction(string $action, $arguments = []) : string
+    {
+        // This additional argument helps to prevent infinite loops
+        $arguments['calledBy'] = get_class($this);
+        return $this->wiki->Action($action, 0, $arguments);
+    }
+
+    // Can be extended to format the arguments
+    protected function formatArguments($arguments) {
+        return $arguments;
+    }
+
+    protected function formatBoolean($param, $default = true, string $index = '')
+    {
+        if (is_array($param)) {
+            if ($index != '' && isset($param[$index])) {
+                $param = $param[$index] ;
+            } else {
+                return $default ;
+            }
+        }
+        if( is_bool($param) ) {
+            return $param;
+        } elseif (empty($param)) {
+            return $default ;
+        } elseif ($param == '0' || $param == 'no' || $param == 'non' || $param == 'false') {
+            return false ;
+        } else {
+            return true ;
+        }
+    }
+
+    protected function formatArray($param)
+    {
+        if (is_array($param)) {
+            return $param;
+        } else {
+            return !empty($param) ? array_map('trim', explode(',', $param)) : [];
+        }
     }
 }

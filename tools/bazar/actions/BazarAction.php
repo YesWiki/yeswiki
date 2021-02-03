@@ -18,12 +18,9 @@ class BazarAction extends YesWikiAction
     public const VOIR_LISTES = 'listes';
     public const VOIR_IMPORTER = 'importer';
     public const VOIR_EXPORTER = 'exporter';
-    
-    // Second : actions du choix de premier niveau.
-    public const MOTEUR_RECHERCHE = 'recherche';
-    public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche'; // Modifier le formulaire de creation des fiches
 
     // Entries
+    public const MOTEUR_RECHERCHE = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
     public const ACTION_ENTRY_CREATE = 'saisir_fiche';
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
@@ -34,6 +31,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
     public const ACTION_FORM_EMPTY = 'empty';
+    public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
 
     // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
@@ -42,6 +40,20 @@ class BazarAction extends YesWikiAction
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
+
+    function formatArguments($arg)
+    {
+        return([
+            'action' => $arg['action'] ?? $_GET['action'] ?? null,
+            'vue' => $arg['vue'] ?? $_GET['vue'] ?? 'formulaire',
+            // afficher le menu de vues bazar ?
+            'voirmenu' => $arg['voirmenu'] ?? $this->params->get('baz_menu'),
+            // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
+            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
+            // Permet de rediriger vers une url après saisie de fiche
+            'redirecturl' => $arg['redirecturl'] ?? ''
+        ]);
+    }
 
     function run()
     {
@@ -52,14 +64,11 @@ class BazarAction extends YesWikiAction
         // TODO put in all bazar templates
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        $this->arguments = getAllParameters($this->wiki);
-        $GLOBALS['params'] = $this->arguments;
-
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
 
         // Display menu, unless we explicitly don't want to see it
-        if ($this->arguments['voirmenu'] != '0') {
+        if ($this->arguments['voirmenu'] !== '0') {
             echo $this->render('@bazar/menu.twig', [
                 'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
                 'view' => $view
@@ -67,22 +76,6 @@ class BazarAction extends YesWikiAction
         }
 
         switch ($view) {
-            case self::VOIR_CONSULTER:
-                switch ($action) {
-                    case self::MOTEUR_RECHERCHE:
-                        return baz_rechercher(
-                            $this->arguments['idtypeannonce'],
-                            $this->arguments['categorienature']
-                        );
-                    case self::ACTION_ENTRY_VIEW:
-                        return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time'] ?? '');
-                    default:
-                        return baz_rechercher(
-                            isset($_REQUEST['id_typeannonce']) ?
-                                $_REQUEST['id_typeannonce'] : $this->arguments['idtypeannonce'],
-                            $this->arguments['categorienature']
-                        );
-                }
             case self::VOIR_SAISIR:
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
@@ -92,11 +85,11 @@ class BazarAction extends YesWikiAction
                     case self::ACTION_ENTRY_DELETE:
                         return $entryController->delete($_REQUEST['id_fiche']);
                     case self::ACTION_PUBLIER:
-                        publier_fiche(1);
-                        return $entryController->view($_REQUEST['id_fiche']);
+                        return $entryController->publish($_REQUEST['id_fiche'], true);
                     case self::ACTION_PAS_PUBLIER:
-                        publier_fiche(0);
-                        return $entryController->view($_REQUEST['id_fiche']);
+                        return $entryController->publish($_REQUEST['id_fiche'], false);
+                    case self::CHOISIR_TYPE_FICHE:
+                        return $entryController->selectForm();
                     default:
                         if( !empty($this->arguments['idtypeannonce']) ) {
                             return $entryController->create($this->arguments['idtypeannonce'][0]);
@@ -104,7 +97,6 @@ class BazarAction extends YesWikiAction
                             return $entryController->selectForm();
                         }
                 }
-                break;
             case self::VOIR_FORMULAIRE:
                 switch($action) {
                     case self::ACTION_FORM_CREATE:
@@ -133,10 +125,16 @@ class BazarAction extends YesWikiAction
                 return baz_afficher_formulaire_import();
             case self::VOIR_EXPORTER:
                 return baz_afficher_formulaire_export();
+            case self::VOIR_CONSULTER:
+            case self::VOIR_DEFAUT:
             default:
-                return baz_rechercher(
-                    isset($_REQUEST['id_typeannonce']) ? $_REQUEST['id_typeannonce'] : $this->arguments['idtypeannonce']
-                );
+                switch ($action) {
+                    case self::ACTION_ENTRY_VIEW:
+                        return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time'] ?? '');
+                    case self::MOTEUR_RECHERCHE:
+                    default:
+                        return $this->callAction('bazarliste', $this->arguments);
+                }
         }
 
     }

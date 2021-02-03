@@ -145,6 +145,14 @@ function formulaire_valeurs_template_champs($template)
 }
 
 /**
+ * @deprecated Use FormManager::scanAllFacettable
+ */
+function scanAllFacettable($fiches, $params, $formtab = '', $onlyLists = false)
+{
+    return $GLOBALS['wiki']->services->get(FormManager::class)->scanAllFacettable($fiches, $params['group'], $onlyLists);
+}
+
+/**
  * @deprecated Use FormManager::findNewId
  */
 function baz_nextId()
@@ -273,4 +281,37 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
 function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
     return $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli);
+}
+
+/**
+ * @deprecated Use WikiAction::formatArguments
+ */
+function getAllParameters($wiki)
+{
+    return [];
+}
+
+/**
+ * @deprecated Use WikiAction::formatArguments
+ */
+function getAllParameters_carto($wiki)
+{
+    return [];
+}
+
+/**
+ * @deprecated Call BazarListeAction
+ */
+function displayResultList($tableau_fiches, $params, $info_nb = true, $formtab = '')
+{
+    $params['shownumentries'] = $info_nb;
+    return $GLOBALS['wiki']->Action('bazarliste', 0, $params);
+}
+
+/**
+ * @deprecated Call BazarListeAction
+ */
+function baz_rechercher($typeannonce = '', $categorienature = '')
+{
+    return $GLOBALS['wiki']->Action('bazarliste', 0, ['idtypeannonce' => $typeannonce]);
 }

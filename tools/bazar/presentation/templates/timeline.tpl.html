@@ -38,7 +38,7 @@ if (!function_exists('date_compare')) {
       $output .= affiche_ligne_timeline('<h2 id="annee'.$anneeencours.'">Ann&eacute;e</h2>', '<h2>'.$anneeencours.'</h2>');
     }
 
-    switch ($fiche['listeListeTailleImage']) {
+    switch ($fiche['listeListeTailleImage'] ?? null) {
       case 'ss-small':
         $pixelsimage = 100;
         break;
