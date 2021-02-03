@@ -58,17 +58,27 @@ public function getUser($userId)
 { ...}
 ```
 To show your routes in the main `https://mywiki.url/?api` page, you need to declare a getDocumentation() method in your custom ApiController class that will return the html to display on the page.
+The name of the method is not important, but the route's definition with a name like 'api_YOUREXTENSIONNAME_doc'.
 ```php
     /**
-     * Display helloworld api documentation
-     *
-     * @return void
+     * @Route("/api/hello", name="api_helloworld_doc")
      */
     public function getDocumentation()
     {
-        # your code
-        $output = '<h2>Extension HelloWorld</h2>';
-        $output .= '<div>Your doc</div>';
-        return $output;
+        $output = $this->wiki->Header();
+
+        $output .= '<h2>Extension Hello World</h2>';
+
+        $urlHello = $this->wiki->Href('', 'api/hello/test');
+        $urlHelloTest = $this->wiki->Href('', 'api/hello/{test}');
+        $output .= 'The following code :<br />';
+        $output .= 'GET <code>'.$urlHelloTest.'</code><br />';
+        $output .= 'gives :<br />';
+        $output .= '<code>test</code><br />Example : <br />';
+        $output .= 'GET <code><a href="'.$urlHello.'">'.$urlHello.'</a></code><br />';
+
+        $output .= $this->wiki->Footer();
+
+        return new Response($output);
     }
 ```

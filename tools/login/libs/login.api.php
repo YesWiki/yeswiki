@@ -9,36 +9,6 @@
  * @link     https://yeswiki.net
  */
 
-/**
- * Get all users or one user's information
- *
- * @param string $username specify username
- *
- * @return string json
- */
-function getAuth($username = '')
-{
-    global $wiki;
-    if (!empty($username[0])) {
-        if ($wiki->UserIsAdmin() or $wiki->GetUserName() == $username[0]) {
-            $user = $wiki->LoadUser($username[0]);
-            if ($user) {
-                return json_encode($user);
-            } else {
-                return json_encode(
-                    array('error' => array('User '.$username[0].' not found.'))
-                );
-            }
-        } else {
-            return json_encode(
-                array('error' => array('Unauthorized'))
-            );
-        }
-    } else {
-        $users = $wiki->LoadUsers();
-        return json_encode($users);
-    }
-}
 
 /**
  * Display login api documentation
