@@ -51,7 +51,7 @@ class BazarListeAction extends YesWikiAction
             // Affiche le formulaire de recherche en haut
             'search' => $this->formatBoolean($arg, false, 'search'),
             // Affiche le nombre de fiche en haut
-            'shownumentries' => $this->formatBoolean($arg, true, 'shownumentries'),
+            'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
 
             // FACETTES
             // Identifiants des champs utilisés pour les facettes
@@ -67,7 +67,7 @@ class BazarListeAction extends YesWikiAction
             // facette à gauche ou à droite
             'filterposition' => $_GET['filterposition'] ?? $arg['filterposition'] ?? 'right',
             // largeur colonne facettes
-            'filtercolsize' => $_GET['filterposition'] ?? $arg['filterposition'] ?? '3',
+            'filtercolsize' => $_GET['filtercolsize'] ?? $arg['filtercolsize'] ?? '3',
             // déplier toutes les facettes
             'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg, true, 'groupsexpanded'),
             // Prefixe des classes CSS utilisees pour la carto et calendrier
@@ -255,13 +255,16 @@ class BazarListeAction extends YesWikiAction
                         $list['titre_liste'] = $field->getName();
                         $list['label'] = $field->getOptions();
                     } elseif ($facettable['type'] == 'fiche') {
-                        $src = str_replace(array('listefiche', 'checkboxfiche'), '', $facettable['source']);
-                        $form = $forms[$src];
-                        $list['titre_liste'] = $form['bn_label_nature'];
-                        foreach ($facettable as $idfiche => $nb) {
-                            if ($idfiche != 'source' && $idfiche != 'type') {
-                                $f = $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idfiche);
-                                $list['label'][$idfiche] = $f['bf_titre'];
+                        $field = $this->findFieldByName($forms, $facettable['source']);
+                        if ($field instanceof BazarField) {
+                            $formId = $field->getName() ;
+                            $form = $forms[$formId];
+                            $list['titre_liste'] = $form['bn_label_nature'];
+                            foreach ($facettable as $idfiche => $nb) {
+                                if ($idfiche != 'source' && $idfiche != 'type') {
+                                    $f = $this->getService(EntryManager::class)->getOne($idfiche);
+                                    $list['label'][$idfiche] = $f['bf_titre'];
+                                }
                             }
                         }
                     } elseif ($facettable['type'] == 'form') {
@@ -331,12 +334,22 @@ class BazarListeAction extends YesWikiAction
         // Aggregate argument and $_GET values
         if (isset($_GET['query'])) {
             if (!empty($arg['query'])) {
-                $query = $arg['query'].'|'.$_GET['query'];
+                if (is_array($arg['query'])) {
+                    $queryArray = $arg['query'] ;
+                    $query = $_GET['query'];
+                } else {
+                    $query = $arg['query'].'|'.$_GET['query'];
+                }
             } else {
                 $query = $_GET['query'];
             }
         } else {
-            $query = $arg['query'] ?? null;
+            if (isset($arg['query']) && is_array($arg['query'])) {
+                $queryArray = $arg['query'] ;
+                $query = null;
+            } else {
+                $query = $arg['query'] ?? null;
+            }
         }
 
         // Create an array from the queries
