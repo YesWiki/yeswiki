@@ -100,6 +100,11 @@ class TemplateEngine
         return $result;
     }
 
+    public function hasTemplate($templatePath): bool
+    {
+        return $this->twigLoader->exists($templatePath);
+    }
+
     public function render($templatePath, $data = [])
     {
         $method = endsWith($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';

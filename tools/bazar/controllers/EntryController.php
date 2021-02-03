@@ -68,31 +68,25 @@ class EntryController extends YesWikiController
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
 
-        $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
-        $renderedEntry = '';
+        $renderedEntry = null;
 
-        // Try rendering a custom template
-        try {
-            $customTemplateName = $this->getCustomTemplateName($entry);
-            $renderedEntry = $this->templateEngine->render("@bazar/$customTemplateName", $customTemplateValues);
-        } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
-            // No template found, ignore
+        // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
+        $customTemplateName = $this->getCustomTemplateName($entry);
+        if ($customTemplateName) {
+            $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
+            $renderedEntry = $this->templateEngine->render($customTemplateName, $customTemplateValues);
         }
 
-        // if not found, try rendering a semantic template
-        if (empty($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
-            try {
-                $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic']);
-                if ($customTemplateName) {
-                    $renderedEntry = $this->templateEngine->render("@bazar/$customTemplateName", $customTemplateValues);
-                }
-            } catch (\YesWiki\Core\Service\TemplateNotFound $e) {
-                // No template found, ignore
+        // use a custom semantic template if exists
+        if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
+            $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic']);
+            if ($customTemplateName) {
+                $renderedEntry = $this->templateEngine->render("@bazar/$customTemplateName", $customTemplateValues);
             }
         }
 
-        // If not found, use default template
-        if (empty($renderedEntry)) {
+        // if not found, use default template
+        if (is_null($renderedEntry)) {
             for ($i = 0; $i < count($form['template']); ++$i) {
                 if ($form['prepared'][$i] instanceof BazarField) {
                     // TODO handle html_outside_app mode for images
@@ -150,9 +144,9 @@ class EntryController extends YesWikiController
         $this->entryManager->publish($entryId, $accepted);
 
         if ($accepted) {
-            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>'._t('BAZ_FICHE_VALIDEE').'</div>';
+            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>' . _t('BAZ_FICHE_VALIDEE') . '</div>';
         } else {
-            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>'._t('BAZ_FICHE_PAS_VALIDEE').'</div>';
+            echo '<div class="alert alert-success"><a data-dismiss="alert" class="close" type="button">&times;</a>' . _t('BAZ_FICHE_PAS_VALIDEE') . '</div>';
         }
 
         return $this->view($entryId);
@@ -238,12 +232,22 @@ class EntryController extends YesWikiController
         return $renderedFields;
     }
 
-    private function getCustomTemplateName($entry)
+
+    private function getCustomTemplateName($entry): ?string
     {
-        return "fiche-{$entry['id_typeannonce']}.tpl.html";
+        $templateNames = [
+            "@bazar/fiche-{$entry['id_typeannonce']}.tpl.html",
+            "@bazar/fiche-{$entry['id_typeannonce']}.twig"
+        ];
+        foreach ($templateNames as $templateName) {
+            if ($this->templateEngine->hasTemplate($templateName)) {
+                return $templateName;
+            }
+        }
+        return null;
     }
 
-    private function getCustomSemanticTemplateName($semanticData)
+    private function getCustomSemanticTemplateName($semanticData): ?string
     {
         if (empty($semanticData)) {
             return null;
@@ -274,7 +278,8 @@ class EntryController extends YesWikiController
             }
 
             if (isset($type)) {
-                return $dir_name . "/" . strtolower($type) . ".tpl.html";
+                $templateName = $dir_name . "/" . strtolower($type) . ".tpl.html";
+                return $this->templateEngine->hasTemplate($templateName) ? $templateName : null;
             }
         }
 
@@ -302,7 +307,7 @@ class EntryController extends YesWikiController
                 }
             }
             if ($replace) {
-                if ($id == 'bf_titre'){
+                if ($id == 'bf_titre') {
                     preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
                 } else {
                     preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);

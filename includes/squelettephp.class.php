@@ -32,8 +32,6 @@ class SquelettePhp
     }
 
     /**
-     */
-    /**
      * Add several or one value to template
      *
      * @param mixed $name variable name, or array name=>value
