@@ -71,17 +71,17 @@ class EntryController extends YesWikiController
         $renderedEntry = null;
 
         // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
-        $customTemplateName = $this->getCustomTemplateName($entry);
-        if ($customTemplateName) {
+        $customTemplatePath = $this->getCustomTemplatePath($entry);
+        if ($customTemplatePath) {
             $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
-            $renderedEntry = $this->templateEngine->render($customTemplateName, $customTemplateValues);
+            $renderedEntry = $this->templateEngine->render($customTemplatePath, $customTemplateValues);
         }
 
         // use a custom semantic template if exists
         if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
-            $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic']);
-            if ($customTemplateName) {
-                $renderedEntry = $this->templateEngine->render("@bazar/$customTemplateName", $customTemplateValues);
+            $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
+            if ($customTemplatePath) {
+                $renderedEntry = $this->templateEngine->render("@bazar/$customTemplatePath", $customTemplateValues);
             }
         }
 
@@ -233,21 +233,21 @@ class EntryController extends YesWikiController
     }
 
 
-    private function getCustomTemplateName($entry): ?string
+    private function getCustomTemplatePath($entry): ?string
     {
-        $templateNames = [
+        $templatePaths = [
             "@bazar/fiche-{$entry['id_typeannonce']}.tpl.html",
             "@bazar/fiche-{$entry['id_typeannonce']}.twig"
         ];
-        foreach ($templateNames as $templateName) {
-            if ($this->templateEngine->hasTemplate($templateName)) {
-                return $templateName;
+        foreach ($templatePaths as $templatePath) {
+            if ($this->templateEngine->hasTemplate($templatePath)) {
+                return $templatePath;
             }
         }
         return null;
     }
 
-    private function getCustomSemanticTemplateName($semanticData): ?string
+    private function getCustomSemanticTemplatePath($semanticData): ?string
     {
         if (empty($semanticData)) {
             return null;
@@ -278,8 +278,8 @@ class EntryController extends YesWikiController
             }
 
             if (isset($type)) {
-                $templateName = $dir_name . "/" . strtolower($type) . ".tpl.html";
-                return $this->templateEngine->hasTemplate($templateName) ? $templateName : null;
+                $templatePath = $dir_name . "/" . strtolower($type) . ".tpl.html";
+                return $this->templateEngine->hasTemplate($templatePath) ? $templatePath : null;
             }
         }
 

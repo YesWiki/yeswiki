@@ -14,7 +14,6 @@ class TemplateEngine
     protected $wiki;
     protected $twigLoader;
     protected $twig;
-    protected $paths = []; // paths where the templates can be put
 
     public function __construct(Wiki $wiki, ParameterBagInterface $config)
     {
@@ -24,7 +23,9 @@ class TemplateEngine
         $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
 
         // Custom Extension, so we can create action and handlers inside custom folder
-        if (file_exists("custom/templates/")) $this->addPath("custom/templates/", 'custom');
+        if (file_exists('custom/templates/')) {
+            $this->twigLoader->addPath('custom/templates/', 'custom');
+        }
         // Extensions templates paths (added by priority order)
         foreach ($this->wiki->extensions as $extensionName => $pluginInfo) {
             // Ability to override an extension template from the custom folder
@@ -39,14 +40,20 @@ class TemplateEngine
             // of them are not used by anybody, but just in case we keep them for backward compatibility
             $paths[] = "tools/$extensionName/presentation/templates/";
             $paths[] = "custom/themes/tools/$extensionName/templates/";
-            foreach (['custom/templates', 'templates', 'themes/tools',
-                         "themes/{$config->get('favorite_theme')}/tools"] as $dir) {
+            foreach ([
+                         'custom/templates',
+                         'templates',
+                         'themes/tools',
+                         "themes/{$config->get('favorite_theme')}/tools"
+                     ] as $dir) {
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
             }
 
             foreach ($paths as $path) {
-                if (file_exists($path)) $this->addPath($path, $extensionName);
+                if (file_exists($path)) {
+                    $this->twigLoader->addPath($path, $extensionName);
+                }
             }
         }
 
@@ -64,7 +71,7 @@ class TemplateEngine
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
             return $this->wiki->Href($options['handler'], $options['tag'], $options['params'], false);
         });
-        $this->addTwigHelper('format', function ($text, $formatter = 'wakka'){
+        $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
             return $this->wiki->Format($text, $formatter);
         });
         $this->addTwigHelper('include_javascript', function ($file, $first = false) {
@@ -81,16 +88,6 @@ class TemplateEngine
         $this->twig->addFunction($function);
     }
 
-    // second argument provide namespace, so we when we render '@bazar/bazaraliste.twig'
-    // it will look first in custom/templates/bazar/, 
-    // then in tools/XXX/templates/bazar/ 
-    // and finally in tools/bazar/templates/
-    private function addPath($path, $extensionName)
-    {
-        $this->paths[$extensionName][] = $path; // save the $path, will be used by renderPhp method
-        $this->twigLoader->addPath($path, $extensionName);
-    }
-
     public function renderInSquelette($templatePath, $data = [])
     {
         $result = '';
@@ -105,6 +102,10 @@ class TemplateEngine
         return $this->twigLoader->exists($templatePath);
     }
 
+    // second argument provide namespace, so we when we render '@bazar/bazaraliste.twig'
+    // it will look first in custom/templates/bazar/,
+    // then in tools/XXX/templates/bazar/
+    // and finally in tools/bazar/templates/
     public function render($templatePath, $data = [])
     {
         $method = endsWith($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
@@ -120,35 +121,21 @@ class TemplateEngine
         return $this->twig->render($templatePath, $data);
     }
 
+    /**
+     * @throws TemplateNotFound
+     */
     public function renderPhp($templatePath, $data = [])
     {
-        preg_match("/^@([a-zA-Z0-9\-_]+)\/(.*)$/", $templatePath, $matches);
-        $realTemplatePath = null;
-        // if templatePath is something like @extensionName/$fileName
-        if (isset($matches[1])) {
-            $extensionName = $matches[1];
-            $templateName = $matches[2];
-            if (!$templateName) {
-                throw new TemplateNotFound("You need to provide a file name. Path provided : $templatePath");
-            }
-            // Look for the template in the different paths
-            $templatePath = null;
-            foreach ($this->paths[$extensionName] as $path) {
-                if (file_exists($path . $templateName)) {
-                    $realTemplatePath = $path . $templateName;
-                    break;
-                }
-            }
-        } else {
-            if (file_exists($templatePath)) $realTemplatePath = $templatePath;
+        if (!$this->hasTemplate($templatePath)) {
+            throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
         }
 
-        if ($realTemplatePath === null) {
-            $errorDetails = isset($matches[1]) ? "$templateName in $extensionName" : $templatePath;
-            throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $errorDetails");
-        }
+        $realTemplatePath = $this->twigLoader->getSourceContext($templatePath)->getPath();
 
-        if (!empty($data)) extract($data); // extract variables for the template
+        // extract variables for the template
+        if (!empty($data)) {
+            extract($data);
+        }
 
         ob_start(); // buffer
         include $realTemplatePath;
