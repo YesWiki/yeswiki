@@ -82,7 +82,7 @@ class EntryController extends YesWikiController
         // if not found, try rendering a semantic template
         if (empty($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
             try {
-                $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic']);
+                $customTemplateName = $this->getCustomSemanticTemplateName($customTemplateValues['html']['semantic'] ?? false);
                 if ($customTemplateName) {
                     $renderedEntry = $this->templateEngine->render("@bazar/$customTemplateName", $customTemplateValues);
                 }
@@ -228,8 +228,12 @@ class EntryController extends YesWikiController
                 $functionName = $form['template'][$i][0];
                 if (function_exists($functionName)
                     && (empty($form['prepared'][$i]['write_acl'])
-                        || $this->wiki->CheckACL($form['prepared'][$i]['write_acl'], null, true,
-                            $entry['id_fiche'] ?? null))
+                        || $this->wiki->CheckACL(
+                            $form['prepared'][$i]['write_acl'],
+                            null,
+                            true,
+                            $entry['id_fiche'] ?? null
+                        ))
                 ) {
                     $renderedFields[] = $functionName($formtemplate, $form['template'][$i], 'saisie', $entry);
                 }
@@ -293,8 +297,12 @@ class EntryController extends YesWikiController
             } else {
                 $functionName = $form['template'][$i][0];
                 if (function_exists($functionName)) {
-                    if (empty($form['prepared'][$i]['read_acl']) || $this->wiki->CheckACL($form['prepared'][$i]['read_acl'],
-                            null, true, $entry['id_fiche'])) {
+                    if (empty($form['prepared'][$i]['read_acl']) || $this->wiki->CheckACL(
+                        $form['prepared'][$i]['read_acl'],
+                        null,
+                        true,
+                        $entry['id_fiche']
+                    )) {
                         $id = $form['template'][$i][1];
                         $html[$id] = $functionName($formtemplate, $form['template'][$i], 'html', $entry);
                         $replace = true;
@@ -310,6 +318,7 @@ class EntryController extends YesWikiController
         }
 
         try {
+            $html['id_fiche'] = $entry['id_fiche'];
             $html['semantic'] = $this->semanticTransformer->convertToSemanticData(
                 $form['bn_id_nature'],
                 $html,
