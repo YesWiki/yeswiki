@@ -6,7 +6,7 @@
         <div class="radio">
             <label for="{{ field.propertyName ~ key }}">
                 <input type="radio" id="{{ field.propertyName ~ key }}" value="{{ key }}" name="{{ field.propertyName }}" {% if value == key %}checked{% endif %} />
-                <span>{{ option }}</span>
+                <span>{{ option|raw }}</span>
             </label>
         </div>
         {% endfor %}

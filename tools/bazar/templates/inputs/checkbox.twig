@@ -19,7 +19,7 @@
             <label for="{{ field.propertyName ~ '[' ~ key ~ ']' }}">
 			  {% apply spaceless %}
                 <input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ field.suffix ~ '[' ~ key ~ ']' }}" {% if key in values %}checked{% endif %} />
-                <span>{{ option }}</span>
+                <span>{{ option|raw }}</span>
 			  {% endapply %}
             </label>
 		  {% endblock %}

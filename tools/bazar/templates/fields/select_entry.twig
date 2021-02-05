@@ -2,8 +2,8 @@
 
 {% block value_container %}
 	<span class="BAZ_texte">
-		<a href="{{ entryUrl|e }}" class="modalbox" title="Voir la fiche {{ label }}">
-			{{- label -}}
+		<a href="{{ entryUrl|e }}" class="modalbox" title="Voir la fiche {{ label|striptags }}">
+			{{- label|raw -}}
 		</a>
 	</span>
 {% endblock %}

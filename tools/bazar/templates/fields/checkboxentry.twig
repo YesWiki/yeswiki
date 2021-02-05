@@ -1,7 +1,7 @@
 {% extends "@bazar/fields/checkbox.twig" %}
 
 {% block value_item -%}
-	<a href="{{ value.href|e }}" class="modalbox" title="Voir la fiche {{ value.value|e }}">
-	{{- value.value -}}
+	<a href="{{ value.href|e }}" class="modalbox" title="Voir la fiche {{ value.value|striptags }}">
+	{{- value.value|raw -}}
 	</a>
 {%- endblock %}
