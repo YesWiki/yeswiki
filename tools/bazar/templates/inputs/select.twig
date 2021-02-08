@@ -12,7 +12,7 @@
             <option value='' selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
         {% endif %}
         {% for key, option in options %}
-            <option value={{ key }} {% if value == key %}selected{% endif %}>{{ option }}</option>
+            <option value={{ key }} {% if value == key %}selected{% endif %}>{{ option|raw }}</option>
         {% endfor %}
     </select>
 {% endblock %}

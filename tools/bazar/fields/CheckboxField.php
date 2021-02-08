@@ -5,7 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 
 abstract class CheckboxField extends EnumField
-{   
+{
     protected $displaySelectAllLimit ; // number of items without selectall box ; false if no limit
     protected $displayFilterLimit ; // number of items without filter ; false if no limit
     protected $displayMethod ; // empty, tags or dragndrop
@@ -41,7 +41,7 @@ abstract class CheckboxField extends EnumField
                 $htmlReturn = $this->render('@bazar/inputs/checkbox_tags.twig') ;
                 $script = $this->generateTagsScript($entry) ;
                 $GLOBALS['wiki']->AddJavascript($script);
-                return $htmlReturn ; 
+                return $htmlReturn ;
                 break ;
             case "dragndrop":
                 return $this->render($this->dragAndDropDisplayMode, [
@@ -66,7 +66,7 @@ abstract class CheckboxField extends EnumField
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
                     'displayFilterLimit' => $this->displayFilterLimit
-                ]); 
+                ]);
         }
     }
 
@@ -77,21 +77,21 @@ abstract class CheckboxField extends EnumField
     }
     
     public function formatValuesBeforeSave($entry)
-    {   
+    {
         if (isset($entry[$this->propertyName . self::SUFFIX])) {
             $checkboxField = $entry[$this->propertyName . self::SUFFIX] ;
             if (is_array($checkboxField)) {
                 $checkboxField = array_filter($checkboxField, function ($value) {
                     return ($value == 1 || $value == true || $value == 'true') ;
                 });
-                $entry[$this->propertyName] = implode(',',array_keys($checkboxField)) ;
+                $entry[$this->propertyName] = implode(',', array_keys($checkboxField)) ;
             } else {
                 $entry[$this->propertyName] = $checkboxField ;
             }
             unset($entry[$this->propertyName . self::SUFFIX]) ;
         } else {
             $entry[$this->propertyName] = '' ;
-        }; 
+        };
         return [$this->propertyName => $entry[$this->propertyName],
             'fields-to-remove' => [
                 $this->propertyName . self::SUFFIX,
@@ -103,8 +103,8 @@ abstract class CheckboxField extends EnumField
     {
         // list of choices available from options
         $choices = [] ;
-        foreach ($this->options as $key => $label ) {
-            $choices[$key] = '{"id":"' . $key . '", "title":"' . str_replace('\'', '&#39;', str_replace('"', '\"', $label)) . '"}';
+        foreach ($this->options as $key => $label) {
+            $choices[$key] = '{"id":"' . $key . '", "title":"' . str_replace('\'', '&#39;', str_replace('"', '\"', strip_tags($label))) . '"}';
         }
 
         $script = '$(function(){
@@ -132,7 +132,7 @@ abstract class CheckboxField extends EnumField
         }
         $script .= '});' . "\n";
         
-        return $script ;        
+        return $script ;
     }
 
     public function getSuffix(): string

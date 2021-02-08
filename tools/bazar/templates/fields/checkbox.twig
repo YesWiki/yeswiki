@@ -4,7 +4,7 @@
 	<span class="BAZ_texte">
 		<ul>
 			{% for value in values %}
-				<li>{% block value_item %}{{ value }}{% endblock %}</li>
+				<li>{% block value_item %}{{ value|raw }}{% endblock %}</li>
 			{% endfor %}
 		</ul>
 	</span>

@@ -30,7 +30,7 @@
             <select class="form-control input-sm" id="liste_{{ key }}">
               <option>{{ _t('BAZ_CHOISIR') }}</option>
               {% for option in list.options %}
-                <option>{{ option }}</option>
+                <option>{{ option|raw }}</option>
               {% endfor %}
             </select>
           {% endif %}
