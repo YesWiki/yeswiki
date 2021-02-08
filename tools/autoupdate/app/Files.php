@@ -80,7 +80,7 @@ class Files
 
     private function isWritableFolder($path)
     {
-        $file2ignore = array('.', '..');
+        $file2ignore = array('.', '..', '.git');
         if ($res = opendir($path)) {
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
