@@ -41,7 +41,40 @@ abstract class Package extends Files
 
     public function checkACL()
     {
-        return $this->isWritable($this->localPath);
+        $file2check = [
+            'index.php',
+            'composer.json',
+            'composer.lock',
+            'Dockerfile',
+            'docker-compose.yml',
+            'INSTALL.md',
+            'interwiki.conf',
+            'LICENSE',
+            'README.md',
+            'robots.txt',
+            'wakka.basic.css',
+            'wakka.css',
+            'wakka.php',
+            'actions',
+            'docs',
+            'formatters',
+            'handlers',
+            'includes',
+            'lang',
+            'setup',
+            'templates',
+            'themes',
+            'tools',
+            'vendor',
+        ];
+        $allGood = true;
+        foreach ($file2check as $f) {
+            $path = $this->localPath.DIRECTORY_SEPARATOR.$f;
+            if (file_exists($path) and !$this->isWritable($path)) {
+                return false;
+            }
+        }
+        return $allGood;
     }
 
     public function checkIntegrity()
