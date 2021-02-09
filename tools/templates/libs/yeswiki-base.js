@@ -1,6 +1,7 @@
 /* Author: Florian Schmitt <florian@outils-reseaux.org> under GPL licence */
 
 var DATATABLE_OPTIONS = {
+  responsive: true,
   paging: false,
   language: {
     "sProcessing": "Traitement en cours...",
@@ -27,7 +28,29 @@ var DATATABLE_OPTIONS = {
   fixedHeader: {
     header: true,
     footer: false
-}
+  },
+  dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+  "<'row'<'col-sm-12'tr>>" +
+  "<'row'<'col-sm-6'i><'col-sm-6'<'pull-right'B>>>",
+  buttons: [
+    {
+      extend: 'copy',
+      text: '<i class="far fa-copy"></i> Copier'
+    },
+    {
+      extend: 'csv',
+      text: '<i class="fas fa-file-csv"></i> CSV'
+    },
+    {
+      extend: 'print',
+      text: '<i class="fas fa-print"></i> Imprimer'
+    },
+    // {
+    //   extend: 'colvis',
+    //   text: 'Colonnes à afficher'
+    // },
+
+  ]
 }
 
 
