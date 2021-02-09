@@ -231,8 +231,6 @@ class BazarListeAction extends YesWikiAction
             $facettables = $formManager->scanAllFacettable($entries, $this->arguments['groups']);
 
             if (count($facettables) > 0) {
-                $i = 0;
-                $first = true;
                 $filters = [];
 
                 // Récupere les facettes cochees
@@ -249,6 +247,7 @@ class BazarListeAction extends YesWikiAction
                 }
 
                 foreach ($facettables as $id => $facettable) {
+                    $list = [];
                     // Formatte la liste des resultats en fonction de la source
                     if ($facettable['type'] == 'liste') {
                         $field = $this->findFieldByName($forms, $facettable['source']);
@@ -294,6 +293,10 @@ class BazarListeAction extends YesWikiAction
 
                     $idkey = htmlspecialchars($id);
 
+                    $i = array_key_first(array_filter($this->arguments['groups'],function ($value) use($idkey){
+                        return ($value == $idkey) ;
+                    }));
+
                     $filters[$idkey]['icon'] =
                         (isset($this->arguments['groupicons'][$i]) && !empty($this->arguments['groupicons'][$i])) ?
                             '<i class="'.$this->arguments['groupicons'][$i].'"></i> ' : '';
@@ -302,7 +305,9 @@ class BazarListeAction extends YesWikiAction
                         (isset($this->arguments['titles'][$i]) && !empty($this->arguments['titles'][$i])) ?
                             $this->arguments['titles'][$i] : $list['titre_liste'];
 
-                    $filters[$idkey]['collapsed'] = !$first && !$this->arguments['groupsexpanded'];
+                    $filters[$idkey]['collapsed'] = ($i != 0) && !$this->arguments['groupsexpanded'];
+
+                    $filters[$idkey]['index'] = $i;
 
                     foreach ($list['label'] as $listkey => $label) {
                         if (isset($facettables[$id][$listkey]) && !empty($facettables[$id][$listkey])) {
@@ -316,8 +321,31 @@ class BazarListeAction extends YesWikiAction
                             ];
                         }
                     }
-                    ++$i;
-                    $first = false;
+                }
+
+                
+                // reorder $filters
+
+                uasort($filters,function ($a,$b){
+                        if (isset($a['index']) && isset($b['index'])) {
+                            if ($a['index'] == $b['index']) {
+                                return 0 ;
+                            } else {
+                                return ($a['index'] < $b['index']) ? -1 : 1 ;
+                            }
+                        } elseif (isset($a['index'])) {
+                            return 1 ;
+                        } elseif (isset($b['index'])) {
+                            return -1 ;
+                        } else {
+                            return 0 ;
+                        }
+                }) ;
+
+                foreach ($filters as $id => $filter) {
+                    if (isset($filter['index'])) {
+                        unset($filter['index']) ;
+                    }
                 }
                 
                 return $filters;
