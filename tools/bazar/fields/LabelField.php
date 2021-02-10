@@ -35,4 +35,10 @@ class LabelField extends BazarField
     {
         return $this->viewText;
     }
+
+    // Format input values before save
+    public function formatValuesBeforeSave($entry)
+    {
+        return [];
+    }
 }
