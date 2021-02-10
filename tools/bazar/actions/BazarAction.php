@@ -41,11 +41,11 @@ class BazarAction extends YesWikiAction
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
 
-    function formatArguments($arg)
+    public function formatArguments($arg)
     {
         return([
-            'action' => $arg['action'] ?? $_GET['action'] ?? null,
-            'vue' => $arg['vue'] ?? $_GET['vue'] ?? 'formulaire',
+            self::VARIABLE_ACTION => $_GET[self::VARIABLE_ACTION] ?? $arg[self::VARIABLE_ACTION] ?? null,
+            self::VARIABLE_VOIR => $_GET[self::VARIABLE_VOIR] ?? $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT,
             // afficher le menu de vues bazar ?
             'voirmenu' => $arg['voirmenu'] ?? $this->params->get('baz_menu'),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -55,7 +55,7 @@ class BazarAction extends YesWikiAction
         ]);
     }
 
-    function run()
+    public function run()
     {
         $listController = $this->getService(ListController::class);
         $formController = $this->getService(FormController::class);
@@ -91,14 +91,15 @@ class BazarAction extends YesWikiAction
                     case self::CHOISIR_TYPE_FICHE:
                         return $entryController->selectForm();
                     default:
-                        if( !empty($this->arguments['idtypeannonce']) ) {
-                            return $entryController->create($this->arguments['idtypeannonce'][0]);
+                        if (!empty($this->arguments['idtypeannonce'])) {
+                            return $entryController->create($this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
                         } else {
                             return $entryController->selectForm();
                         }
                 }
+                // no break
             case self::VOIR_FORMULAIRE:
-                switch($action) {
+                switch ($action) {
                     case self::ACTION_FORM_CREATE:
                         return $formController->create();
                     case self::ACTION_FORM_EDIT:
@@ -110,8 +111,9 @@ class BazarAction extends YesWikiAction
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
                 }
+                // no break
             case self::VOIR_LISTES:
-                switch($action) {
+                switch ($action) {
                     case self::ACTION_LIST_CREATE:
                         return $listController->create();
                     case self::ACTION_LIST_EDIT:
@@ -121,6 +123,7 @@ class BazarAction extends YesWikiAction
                     default:
                         return $listController->displayAll();
                 }
+                // no break
             case self::VOIR_IMPORTER:
                 return baz_afficher_formulaire_import();
             case self::VOIR_EXPORTER:
@@ -136,6 +139,5 @@ class BazarAction extends YesWikiAction
                         return $this->callAction('bazarliste', $this->arguments);
                 }
         }
-
     }
 }

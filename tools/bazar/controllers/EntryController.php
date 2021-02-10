@@ -162,7 +162,10 @@ class EntryController extends YesWikiController
                 $redirectUrl = $this->wiki->Href(
                     '',
                     '',
-                    ['vue' => 'consulter', 'action' => 'voir_fiche', 'id_fiche' => $entry['id_fiche']],
+                    [  'vue' => 'consulter',
+                       'action' => 'voir_fiche',
+                       'id_fiche' => $entry['id_fiche'],
+                       'message' => 'ajout_ok'],
                     false
                 );
             }
@@ -209,6 +212,7 @@ class EntryController extends YesWikiController
     public function delete($entryId)
     {
         $this->entryManager->delete($entryId);
+        // WARNING : 'delete_ok' is not used
         header('Location: ' . $this->wiki->Href('', 'BazaR', ['vue' => 'consulter', 'message' => 'delete_ok']));
     }
 
