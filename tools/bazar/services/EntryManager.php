@@ -542,7 +542,7 @@ class EntryManager
 
         // If sendmail field exist, send an email
         if (isset($data['sendmail'])) {
-            if ($data[$data['sendmail']] != '') {
+            if (isset($data[$data['sendmail']]) && $data[$data['sendmail']] != '') {
                 $this->mailer->notifyEmail($data[$data['sendmail']], $data);
             }
             unset($data['sendmail']);
