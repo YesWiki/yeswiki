@@ -1,7 +1,7 @@
 /* Author: Florian Schmitt <florian@outils-reseaux.org> under GPL licence */
 
 var DATATABLE_OPTIONS = {
-  responsive: true,
+  //responsive: true,
   paging: false,
   language: {
     "sProcessing": "Traitement en cours...",
