@@ -82,4 +82,12 @@ abstract class EnumField extends BazarField
     {
         return  $this->options;
     }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            ['options' => $this->getOptions()]
+        );
+    }
 }

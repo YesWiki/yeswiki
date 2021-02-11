@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TemplateEngine;
 
-abstract class BazarField
+abstract class BazarField implements \JsonSerializable
 {
     protected $services;
 
@@ -65,7 +65,9 @@ abstract class BazarField
     public function renderStaticIfPermitted($entry)
     {
         // Safety checks, must be run before every renderStatic
-        if( !$this->canRead($entry) ) return '';
+        if (!$this->canRead($entry)) {
+            return '';
+        }
 
         return $this->renderStatic($entry);
     }
@@ -74,9 +76,11 @@ abstract class BazarField
     public function renderInputIfPermitted($entry)
     {
         // Safety checks, must be run before every renderInput
-        if( !$this->canEdit($entry) ) return '';
+        if (!$this->canEdit($entry)) {
+            return '';
+        }
 
-        return $this->renderInput($entry);        
+        return $this->renderInput($entry);
     }
 
     // Format input values before save
@@ -101,7 +105,7 @@ abstract class BazarField
         return $this->render("@bazar/inputs/{$this->type}.twig", [
             'value' => $this->getValue($entry)
         ]);
-    }    
+    }
 
     // SHORTCUTS
 
@@ -208,5 +212,21 @@ abstract class BazarField
     public function getSemanticPredicate()
     {
         return $this->semanticPredicate;
+    }
+    
+    public function jsonSerialize()
+    {
+        return [
+            'id' => $this->getPropertyName(),
+            'propertyname' => $this->getPropertyName(),
+            'label' => $this->getLabel(),
+            'name' => $this->getName(),
+            'type' => $this->getType(),
+            'required' => $this->isRequired(),
+            'helper' => $this->getHint(),
+            'read_acl' => $this->getReadAccess(),
+            'write_acl' => $this->getWriteAccess(),
+            'sem_type' => $this->getSemanticPredicate(),
+            ];
     }
 }
