@@ -4,7 +4,7 @@ export default {
   computed: {
     fieldOptions() {
       if (this.config.only == 'lists')
-        return this.selectedForm.prepared.filter(a => typeof a.options == 'object')
+        return this.selectedForm.prepared.filter(a => (typeof a.options == 'object' && a.options !== null))
       else
         return this.selectedForm.prepared
     }
