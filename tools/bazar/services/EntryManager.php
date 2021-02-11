@@ -615,7 +615,8 @@ class EntryManager
 
         // Données sémantiques
         if ($semantic) {
-            $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($fiche['id_typeannonce'], $fiche);
+            $form = $this->getService(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
     }
 

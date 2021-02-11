@@ -329,16 +329,10 @@ class EntryController extends YesWikiController
                 }
             }
         }
-
-        try {
+        
+        if ($form['bn_sem_type']){
             $html['id_fiche'] = $entry['id_fiche'];
-            $html['semantic'] = $this->semanticTransformer->convertToSemanticData(
-                $form['bn_id_nature'],
-                $html,
-                true
-            );
-        } catch (\Exception $e) {
-            // Do nothing if semantic type is not available
+            $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
         $values['html'] = $html;

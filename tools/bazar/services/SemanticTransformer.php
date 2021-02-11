@@ -6,15 +6,14 @@ use YesWiki\Bazar\Field\BazarField;
 
 class SemanticTransformer
 {
-    public function convertToSemanticData($formId, $data, $isHtmlFormatted = false)
+    public function convertToSemanticData($form, $data, $isHtmlFormatted = false)
     {
-        $form = baz_valeurs_formulaire($formId);
         if (!$form['bn_sem_type']) {
             throw new \Exception(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
         }
 
         // If context is a JSON decode it, otherwise use the string
-        $semanticData['@context'] = (array) json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
+        $semanticData['@context'] = (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
 
         // If we have multiple types split by comma, generate an array, otherwise use a string
         $semanticData['@type'] = strpos($form['bn_sem_type'], ',')
@@ -27,6 +26,7 @@ class SemanticTransformer
         $semanticData['@id'] = $GLOBALS['wiki']->href('', $data['id_fiche']);
 
         foreach ($form['prepared'] as $field) {
+
             if ($field instanceof BazarField) {
                 $fieldPropName = $field->getPropertyName();
                 $fieldSemanticPredicate = $field->getSemanticPredicate();
@@ -74,13 +74,18 @@ class SemanticTransformer
         $form = baz_valeurs_formulaire($formId);
 
         // Initialize by copying basic information
-        $nonSemanticData = ['id_fiche' => $data['id_fiche'], 'antispam' => $data['antispam'], 'id_typeannonce' => $data['id_typeannonce']];
+        $nonSemanticData = [
+            'id_fiche' => $data['id_fiche'],
+            'antispam' => $data['antispam'],
+            'id_typeannonce' => $data['id_typeannonce']
+        ];
 
         if (($data['@type'] && $data['@type'] !== $form['bn_sem_type']) || $data['type'] && $data['type'] !== $form['bn_sem_type']) {
             exit('The @type of the sent data must be ' . $form['bn_sem_type']);
         }
 
         foreach ($form['prepared'] as $field) {
+
             if ($field instanceof BazarField) {
                 $fieldPropName = $field->getPropertyName();
                 $fieldSemanticPredicate = $field->getSemanticPredicate();
@@ -101,7 +106,7 @@ class SemanticTransformer
                     $nonSemanticData[$fieldPropName . '_hour'] = $date->format('H');
                     $nonSemanticData[$fieldPropName . '_minutes'] = $date->format('i');
                 } elseif ($fieldType === 'image') {
-                    $nonSemanticData['image'.$fieldPropName] = $data[$fieldSemanticPredicate];
+                    $nonSemanticData['image' . $fieldPropName] = $data[$fieldSemanticPredicate];
                 } else {
                     $nonSemanticData[$fieldPropName] = $data[$fieldSemanticPredicate];
                 }
