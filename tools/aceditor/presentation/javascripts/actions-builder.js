@@ -157,11 +157,11 @@ window.myapp = new Vue({
       if (!this.selectedFormId) return;
       if (this.loadedForms[this.selectedFormId]) this.selectedForm = this.loadedForms[this.selectedFormId]
       else {
-        $.getJSON(location.origin + location.pathname + `?root/bazar_api&object=form&id=${this.selectedFormId}`, data => {
-          this.loadedForms[this.selectedFormId] = data
+        $.getJSON(location.origin + location.pathname + `?root/json&demand=forms&id=${this.selectedFormId}`, data => {
+          this.loadedForms[this.selectedFormId] = data[0]
           // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
           if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
-          this.selectedForm = data
+          this.selectedForm = data[0]
         })
       }
     },

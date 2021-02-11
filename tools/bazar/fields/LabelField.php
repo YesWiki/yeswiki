@@ -22,8 +22,17 @@ class LabelField extends BazarField
     {
         parent::__construct($values, $services);
 
+        $this->name = null;
+        $this->label = null ;
+        $this->propertyName = null;
         $this->formText = $values[self::FIELD_FORM_TEXT];
         $this->viewText = $values[self::FIELD_VIEW_TEXT];
+    }
+
+    protected function getValue($entry)
+    {
+        // no value for labelhtml
+        return null ;
     }
 
     protected function renderInput($entry)
@@ -40,5 +49,14 @@ class LabelField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         return [];
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'type' => $this->getType(),
+            'viewtext' => $this->viewText,
+            'formtext' => $this->formText,
+            ];
     }
 }

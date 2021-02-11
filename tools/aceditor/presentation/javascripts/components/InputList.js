@@ -6,7 +6,7 @@ export default {
       if (this.config.dataFromFormField) {
         if (!this.selectedForm || !this.values[this.config.dataFromFormField]) return []
         var fieldConfig = this.selectedForm.prepared.find(e => e.id == this.values[this.config.dataFromFormField])
-        return fieldConfig ? fieldConfig.values.label : []
+        return fieldConfig ? fieldConfig.options : []
       }
       // Options are provided in configuration
       else {
