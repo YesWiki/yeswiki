@@ -115,6 +115,7 @@ actions:
           field:
             label: Champ
             type: form-field
+            only: lists # ce champ doit être de type checkboxListe, listeListe ...
           title:
             label: Titre
             type: text
