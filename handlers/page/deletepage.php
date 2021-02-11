@@ -26,7 +26,7 @@ if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
 
-// get the GET parameter 'incomingurl' or the incoming url
+// get the GET parameter 'incomingurl' for the incoming url
 if (!empty($_REQUEST['incomingurl'])) {
     $incomingurl = urldecode($_GET['incomingurl']);
 }
@@ -34,25 +34,28 @@ $redirectToIncoming = false;
 $hasBeenDeleted = false;
 
 if ($this->UserIsOwner() || $this->UserIsAdmin()) {
+    $incomingUrlParam = '';
+    $cancelUrl = $this->Href();
+    if (!empty($incomingurl)) {
+        $withoutExtraParams = strtok($incomingurl, '&');
+        if ($withoutExtraParams != $this->Href()) {
+            // put the incoming url parameter only if the incoming page is not the one deleted
+            // if the delete page is loaded in a modal box, the incoming page is the modal caller (cf yeswiki-base.js)
+            $incomingUrlParam = '&incomingurl=' . urlencode($incomingurl);
+            $cancelUrl = $incomingurl;
+        }
+    }
+
     if ($this->IsOrphanedPage($this->GetPageTag())) {
         $tag = $this->GetPageTag();
-        if (!isset($_GET['confirme']) || !$_GET['confirme'] == 'oui') {
-            $params = '';
-            if (!empty($incomingurl)) {
-                $withoutExtraParams = strtok($incomingurl, '&');
-                if ($withoutExtraParams != $this->Href()) {
-                    // put the incoming url parameter only if the incoming page is not the one deleted
-                    $params = '&incomingurl=' . urlencode($incomingurl);
-                }
-            }
-
-            $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $params);
+        if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
+            $msg = '<form action="' . $this->Href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
             $msg .= '" method="post" style="display: inline">' . "\n";
             $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page ' . $this->Link($tag) . "&nbsp;?\n";
             $msg .= '<input type="submit" value="Oui" ';
             $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form>\n";
-            $msg .= '<form action="' . $this->Href() . '" method="post" style="display: inline">' . "\n";
+            $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
             $msg .= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
             $msg .= "</form></span>\n";
         } else {
@@ -78,14 +81,14 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
 
         $msg .= "</ul>\n";
         // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
-        $msg .= '<form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui");
+        $msg .= '<form action="' . $this->Href('deletepage', "", "confirme=oui&eraselink=oui" . $incomingUrlParam);
         $msg .= '" method="post" style="display: inline">' . "\n";
         $msg .= 'Voulez-vous vraiment supprimer d&eacute;finitivement la page '
             . 'malgr&eacute; la pr&eacute;sence de liens ? ' . "\n";
         $msg .= '<input type="submit" value="Oui" ';
         $msg .= 'style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form>\n";
-        $msg .= '<form action="' . $this->Href() . '" method="post" style="display: inline">' . "\n";
+        $msg .= '<form action="' . $cancelUrl . '" method="post" style="display: inline">' . "\n";
         $msg .= '<input type="submit" value="Non" style="vertical-align: middle; display: inline" />' . "\n";
         $msg .= "</form></span>\n";
     }
@@ -98,9 +101,9 @@ if ($hasBeenDeleted) {
         $this->SetMessage($msg);
         $this->Redirect($incomingurl);
     } else {
-        // if the current page has been deleted, redirect to the homepage
+        // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
         $this->SetMessage($msg);
-        $this->Redirect($this->href("", $this->config['root_page']));
+        $this->Redirect($this->href('', $this->config['root_page']));
     }
 }
 

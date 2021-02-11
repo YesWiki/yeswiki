@@ -28,7 +28,7 @@
         {% if canDelete %}
           <a
             class="btn btn-xs btn-mini btn-danger modalbox"
-            href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: absoluteUrl|url_encode }}) }}"
+            href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"
             data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}"
           >
             <i class="fa fa-trash icon-trash icon-white"></i>

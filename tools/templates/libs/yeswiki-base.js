@@ -107,6 +107,8 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
     );
 
     var link = $this.attr("href");
+    // incomingurl can be usefull (per example for deletepage handler)
+    link += "&incomingurl=" + encodeURIComponent(window.location.toString());
     var $modal = $("#YesWikiModal");
     if (/\.(gif|jpg|jpeg|tiff|png)$/i.test(link)) {
       $modal
