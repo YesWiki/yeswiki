@@ -41,6 +41,7 @@
 // +------------------------------------------------------------------------------------------------------+
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 
 /* function extractComaFromStringThenExplode
  *
@@ -129,7 +130,7 @@ function baz_afficher_formulaire_import()
         // le fichier cvs vient d'être téléchargé, on le traite
         if (isset($_POST['submit_file'])) {
             $row = 1;
-            $val_formulaire = baz_valeurs_formulaire($id);
+            $val_formulaire = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($id);
 
             // Recuperation champs de la fiche
             $tableau = $val_formulaire['template'];
@@ -508,7 +509,7 @@ function baz_afficher_formulaire_import()
             // Affichage par defaut
             //On choisit un type de fiches pour parser le csv en consequence
             //requete pour obtenir l'id et le label des types d'annonces
-            $resultat = baz_valeurs_formulaire('', $GLOBALS['params']['categorienature']);
+            $resultat = $GLOBALS['wiki']->services->get(FormManager::class)->getAll();
 
             //s'il y a plus d'un choix possible, on propose
             if (count($resultat) >= 1) {
@@ -543,7 +544,7 @@ function baz_afficher_formulaire_import()
             }
 
             if ($id != '') {
-                $val_formulaire = baz_valeurs_formulaire($id);
+                $val_formulaire = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($id);
                 $output .=
                 '<div class="control-group form-group">'."\n".
                 '<label class="control-label col-sm-3">'."\n"
@@ -663,7 +664,7 @@ function baz_afficher_formulaire_export()
         $id = (int)preg_replace('/[^\d]+/', '', $id);
 
         //On choisit un type de fiches pour parser le csv en consequence
-        $resultat = baz_valeurs_formulaire('', $GLOBALS['params']['categorienature']);
+        $resultat = $GLOBALS['wiki']->services->get(FormManager::class)->getAll();
 
         $output .=
         '<form method="post" class="form-horizontal" action="'.$GLOBALS['wiki']
@@ -711,7 +712,7 @@ function baz_afficher_formulaire_export()
             return $output;
         }
 
-        $val_formulaire = baz_valeurs_formulaire($id);
+        $val_formulaire = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($id);
 
         //on parcourt le template du type de fiche pour fabriquer un csv pour l'exemple
         $tableau = $val_formulaire['template'];
@@ -944,7 +945,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
 {
     $htmldata = '';
     if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-        $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : baz_valeurs_formulaire($fiche['id_typeannonce']);
+        $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
                 if (in_array(
@@ -1015,7 +1016,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
         if (substr($val, 0, 10) ===  'listeListe' or substr($val, 0, 13) === 'checkboxListe') {
             $func = (substr($val, 0, 10) ===  'listeListe' ? 'liste' : 'checkbox');
             $dummy = '';
-            $form = baz_valeurs_formulaire($fiche['id_typeannonce']);
+            $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $form = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
             $form = array_shift($form);
             $html = $func($dummy, $form, 'html', $fiche);
