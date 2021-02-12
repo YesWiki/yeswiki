@@ -441,7 +441,7 @@ class EntryManager
 
         // If sendmail field exist, send an email
         if ($sendmail) {
-            $emailsLabels = explode(',', $sendmail);
+            $emailsLabels = array_unique(explode(',', $sendmail));
             foreach ($emailsLabels as $emailLabel) {
                 if (!empty($data[$emailLabel])) {
                     $this->mailer->notifyEmail($data[$emailLabel], $data);

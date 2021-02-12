@@ -28,12 +28,17 @@ class EmailField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        // TODO make sure the sendmail parameter is correctly passed
-        return [
-            $this->propertyName => $this->getValue($entry),
+        if ($this->sendMail) {
             // add propertyName to the list of emails if several sendmail in same form
-            'sendmail' => (($entry['sendmail']) ? $entry['sendmail'] . ',' : '') . $this->propertyName
-        ];
+            $secondPartReturn = ['sendmail' => ((isset($entry['sendmail'])) ? $entry['sendmail'] . ',' : '') . $this->propertyName] ;
+        } else {
+            $secondPartReturn = ['fields-to-remove' => ['sendmail']];
+        }
+        return array_merge(
+            [
+            $this->propertyName => $this->getValue($entry)],
+            $secondPartReturn
+        );
     }
 
     protected function renderStatic($entry)
@@ -53,5 +58,14 @@ class EmailField extends BazarField
             'showContactForm' => $this->showContactForm,
             'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->propertyName) : null
         ]);
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            ['sendMail' => $this->sendMail,
+            'showContactForm' => $this->showContactForm]
+        );
     }
 }
