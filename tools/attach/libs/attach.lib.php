@@ -34,8 +34,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # voir actions/attach.php ppour la documentation
 # copyrigth Eric Feldstein 2003-2004
 
-use YesWiki\Core\Service\PageManager ;
-
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -250,22 +248,6 @@ if (!class_exists('attach')) {
         public function GetFullFilename($newName = false)
         {
             $pagedate = $this->convertDate($this->wiki->page['time']);
-            // get page from last inclusion
-            if (!empty($this->wiki->GetCurrentInclusion())) {
-                $currentTag = $this->wiki->GetCurrentInclusion() ;
-                // search real Tag from string lowered
-                $found = false ;
-                $pageManager = $this->wiki->services->get(PageManager::class) ;
-                foreach ($pageManager->getAll() as $page) {
-                    $tag = $page['tag'];
-                    if (!$found && strtolower(trim($tag)) == $currentTag) {
-                        $currentTag = $tag ;
-                        $found = true ;
-                    }
-                }
-                $currentPage = $pageManager->getOne($currentTag) ;
-                $pagedate = $this->convertDate($currentPage['time']);
-            }
             //decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
@@ -277,8 +259,7 @@ if (!class_exists('attach')) {
             }
             //recuperation du chemin d'upload
             $path = $this->GetUploadPath($this->isSafeMode);
-            $page_tag = (!empty($file['page'])) ? $file['page'] : ($currentTag ?? $this->wiki->GetPageTag()) ;
-            
+            $page_tag = $file['page'] ? $file['page'] : $this->wiki->GetPageTag();
             //generation du nom ou recherche de fichier ?
             if ($newName) {
                 $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
@@ -299,7 +280,7 @@ if (!class_exists('attach')) {
                 } else {
                     $searchPattern = '`^' . $file['name'] . '_\d{14}_\d{14}\.' . $file['ext'] . '$`';
                 }
-                
+
                 $files = $this->searchFiles($searchPattern, $path);
 
                 $unedate = 0;
@@ -677,7 +658,7 @@ if (!class_exists('attach')) {
             
             // Call pdf actions
             $params = $this->wiki->parameter;
-            echo $this->wiki->Action('pdf', 0, $params) ;
+            echo $this->wiki->Action('pdf',0,$params) ;
         }
 
 
