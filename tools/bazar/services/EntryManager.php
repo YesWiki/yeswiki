@@ -118,13 +118,7 @@ class EntryManager
 
         // si une personne a ete precisee, on limite la recherche sur elle
         if (!empty($params['user'])) {
-            $params['user'] = $this->dbService->escape(
-                preg_replace('/^"(.*)"$/', '$1', json_encode($params['user']))
-            );
-            // WTF : https://stackoverflow.com/questions/13287145/mysql-querying-for-unicode-entities#13327605
-            $params['user'] = str_replace('\\u00', '\\\\\u00', $params['user']);
-
-            $requete .= ' AND owner = _utf8\''.$params['user'].'\'';
+            $requete .= ' AND owner = _utf8\''.mysqli_real_escape_string($this->wiki->dblink, $params['user']).'\'';
         }
 
         $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
