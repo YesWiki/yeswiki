@@ -80,7 +80,8 @@ class Mailer
         }
     }
 
-    public function notifyEmail($email, $data) {
+    public function notifyEmail($email, $data)
+    {
         include_once 'includes/email.inc.php';
         $lien = str_replace('/wakka.php?wiki=', '', $this->params->get('base_url'));
         $sujet = removeAccents('['.str_replace(array('http://', 'https://'), '', $lien).'] Votre fiche : '.$data['bf_titre']);
@@ -98,7 +99,7 @@ class Mailer
         $fiche = $texthtml.str_replace('src="tools', 'src="'.$lien.'/tools', $this->wiki->services->get(EntryController::class)->view($data['id_fiche']));
         $html = '<html><head><style type="text/css">'.$style.'</style></head><body>'.$fiche.'</body></html>';
 
-        send_mail($this->params-get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params-get('BAZ_ADRESSE_MAIL_ADMIN'), $email, $sujet, $text, $html);
+        send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $email, $sujet, $text, $html);
     }
 
     public function notifyNewUser($wikiName, $email)

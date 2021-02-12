@@ -31,17 +31,20 @@ class EmailField extends BazarField
         // TODO make sure the sendmail parameter is correctly passed
         return [
             $this->propertyName => $this->getValue($entry),
-            'sendmail' => $this->sendMail
+            // add propertyName to the list of emails if several sendmail in same form
+            'sendmail' => (($entry['sendmail']) ? $entry['sendmail'] . ',' : '') . $this->propertyName
         ];
     }
 
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
         
         // TODO add JS libraries with Twig
-        if( $this->showContactForm ) {
+        if ($this->showContactForm) {
             $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
         }
 
