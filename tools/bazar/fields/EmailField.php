@@ -32,7 +32,7 @@ class EmailField extends BazarField
             // add propertyName to the list of emails if several sendmail in same form
             $secondPartReturn = ['sendmail' => ((isset($entry['sendmail'])) ? $entry['sendmail'] . ',' : '') . $this->propertyName] ;
         } else {
-            $secondPartReturn = ['fields-to-remove' => ['sendmail']];
+            $secondPartReturn = [];
         }
         return array_merge(
             [
