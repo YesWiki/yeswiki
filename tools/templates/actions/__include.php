@@ -12,6 +12,9 @@ $pageincluded = $this->GetParameter('page');
 if (isset($this->metadatas[$pageincluded])) {
     $pageincluded = $this->metadatas[$pageincluded];
     $this->parameter["page"] = $pageincluded;
+    // redo tools\attach\actions\__include.php without changing oldpage
+    $this->tag = trim($pageincluded);
+    $this->page = $this->LoadPage($this->tag);
 }
 $clear = $this->GetParameter('clear');
 $class = $this->GetParameter('class');
