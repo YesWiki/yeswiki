@@ -54,7 +54,11 @@ spl_autoload_register(function ($className) {
             if ($classNameArray[2] === 'Service') {
                 require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
             } elseif ($classNameArray[2] === 'Field') {
-                require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
+                if ($extension == 'custom') {
+                    require 'custom/fields/' . $classNameArray[3] . '.php';
+                } else {
+                    require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
+                }
             } elseif ($classNameArray[2] === 'Controller') {
                 require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
             }
