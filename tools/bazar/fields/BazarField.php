@@ -222,6 +222,8 @@ abstract class BazarField implements \JsonSerializable
             'label' => $this->getLabel(),
             'name' => $this->getName(),
             'type' => $this->getType(),
+            'default' => $this->getDefault(),
+            'searchable' => $this->getSearchable(),
             'required' => $this->isRequired(),
             'helper' => $this->getHint(),
             'read_acl' => $this->getReadAccess(),
