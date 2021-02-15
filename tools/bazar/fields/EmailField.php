@@ -28,20 +28,28 @@ class EmailField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        // TODO make sure the sendmail parameter is correctly passed
-        return [
-            $this->propertyName => $this->getValue($entry),
-            'sendmail' => $this->sendMail
-        ];
+        if ($this->sendMail) {
+            // add propertyName to the list of emails if several sendmail in same form
+            $secondPartReturn = ['sendmail' => ((isset($entry['sendmail'])) ? $entry['sendmail'] . ',' : '') . $this->propertyName] ;
+        } else {
+            $secondPartReturn = [];
+        }
+        return array_merge(
+            [
+            $this->propertyName => $this->getValue($entry)],
+            $secondPartReturn
+        );
     }
 
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
         
         // TODO add JS libraries with Twig
-        if( $this->showContactForm ) {
+        if ($this->showContactForm) {
             $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
         }
 
@@ -50,5 +58,14 @@ class EmailField extends BazarField
             'showContactForm' => $this->showContactForm,
             'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->propertyName) : null
         ]);
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            ['sendMail' => $this->sendMail,
+            'showContactForm' => $this->showContactForm]
+        );
     }
 }
