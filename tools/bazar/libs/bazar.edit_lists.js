@@ -131,7 +131,10 @@ $(document).ready(function() {
               existingmessage = '<br><span class="text-danger">' + listtranslations.existingmessage + '</span>';
             }
 
-            resultimporttable.find('tbody').append('<tr' + trclass + '><td><input type="checkbox" name="imported-list[' + idlist + ']" value="' + JSON.stringify(data[idlist]).replace(/"/g, '&quot;') + '"></td><td>' + idlist + existingmessage + '</td><td>' + data[idlist]['titre_liste'] + '</td><td><select class="form-control">' + select + '</select></td></tr>');
+            var tablerow = '<tr' + trclass + '><td><label><input type="checkbox" name="imported-list[' + idlist  + ']" value="' + JSON.stringify(data[idlist]).replace(/"/g, '&quot;') + '"><span></span></label></td><td>';
+
+            tablerow += idlist + existingmessage + '</td><td>' + data[idlist]['titre_liste']  + '</td><td><select class="form-control">' + select + '</select></td></tr>';
+            resultimporttable.find('tbody').append(tablerow);
           }
         }
 

@@ -77,11 +77,15 @@
     <input
       id="url-import-lists"
       class="form-control input-xxlarge"
+      {% if not loggedUser %}disabled{% endif %}
       placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}"
       type="url"
     />
     <span class="input-group-btn">
-      <button id="btn-import-lists" class="btn btn-primary" type="submit">
+      <button id="btn-import-lists"
+          {% if not loggedUser %}disabled{% endif %}
+          class="btn btn-primary" 
+          type="submit">
         {{ _t('BAZ_GO') }}&nbsp;!
       </button>
     </span>
@@ -90,23 +94,28 @@
 <br />
 <div id="import-lists-result"></div>
 <form id="import-lists-form" action="" class="hide" method="post">
-  <table
-    id="import-lists-table"
-    class="table table-condensed table-striped"
-    style="table-layout:fixed;word-wrap: break-word;"
-  >
-    <thead>
-    <tr>
-      <th style="width:25px;">
-        <input data-target="#import-lists-table tbody" type="checkbox" class="selectall"/>
-      </th>
-      <th>{{ _t('BAZ_ID') }}</th>
-      <th>{{ _t('BAZ_TITLE') }}</th>
-      <th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="table-responsive">
+    <table
+      id="import-lists-table"
+      class="table table-condensed table-striped prevent-auto-init"
+      style="table-layout:fixed;word-wrap: break-word;"
+    >
+      <thead>
+      <tr>
+        <th style="width:25px;" class="prevent-sorting">
+          <label class="check-all-container">
+            <input data-target="#import-lists-table tbody" type="checkbox" class="selectall"/>
+            <span></span>
+          </label>
+        </th>
+        <th>{{ _t('BAZ_ID') }}</th>
+        <th>{{ _t('BAZ_TITLE') }}</th>
+        <th>{{ _t('BAZ_VALEURS_LISTE') }}</th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div> <!-- /.table-responsive -->
   <div class="checkbox">
     <label class="checkbox">
       <input

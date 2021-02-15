@@ -35,12 +35,15 @@ class ListController extends YesWikiController
             $values[$key]['canDelete'] = $this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key);
         }
 
-        return $this->render('@bazar/lists/list_table.twig', [ 'lists' => $values ]);
+        return $this->render('@bazar/lists/list_table.twig', [
+            'lists' => $values,
+            'loggedUser' => $this->wiki->GetUser()
+            ]);
     }
 
     public function create()
     {
-        if( isset($_POST['valider']) ) {
+        if (isset($_POST['valider'])) {
             $i = 1;
             $values = [];
             foreach ($_POST['label'] as $label) {
@@ -64,8 +67,8 @@ class ListController extends YesWikiController
     {
         $list = $this->listManager->getOne($id);
 
-        if( isset($_POST['valider']) ) {
-            if( $this->wiki->HasAccess('write', $id) ) {
+        if (isset($_POST['valider'])) {
+            if ($this->wiki->HasAccess('write', $id)) {
                 $i = 1;
                 $values = [];
 
