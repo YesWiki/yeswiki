@@ -23,7 +23,7 @@ class DateField extends BazarField
             $hasTime = (strlen($value) > 10);
             if ($hasTime) {
                 $result = explode('T', $value);
-                list( $hour, $minute ) = array_map('intval', explode(':', $result[1]));
+                list($hour, $minute) = array_map('intval', explode(':', $result[1]));
             }
         } elseif ($this->default && $this->default != '') {
             // Default value when new entry
@@ -50,13 +50,16 @@ class DateField extends BazarField
              && isset($entry[$this->propertyName . '_hour']) && isset($entry[$this->propertyName . '_minutes'])) {
             $value = date("c", strtotime($value . ' ' . $entry[$this->propertyName . '_hour'] . ':' . $entry[$this->propertyName . '_minutes']));
         }
-        return [$this->propertyName => $value];
+        return [$this->propertyName => $value,
+            'fields-to-remove' =>[$this->propertyName . '_allday',$this->propertyName . '_hour',$this->propertyName . '_minutes']];
     }
 
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
 
         if (strlen($value) > 10) {
             $value = strftime('%d.%m.%Y - %H:%M', strtotime($value));
