@@ -48,9 +48,16 @@ class UserField extends BazarField
 
         $value = $this->getValue($entry);
 
-        if( $value ) {
+        if ($value) {
             $wikiName = $value;
         } else {
+            if (!isset($entry[$this->nameField]) && isset($entry['previous-data'][$this->nameField])) {
+                $entry[$this->nameField] = $entry['previous-data'][$this->nameField];
+            }
+            
+            if (!isset($entry[$this->emailField]) && isset($entry['previous-data'][$this->emailField])) {
+                $entry[$this->emailField] = $entry['previous-data'][$this->emailField];
+            }
             $wikiName = $entry[$this->nameField];
 
             if (!$GLOBALS['wiki']->IsWikiName($wikiName)) {
@@ -86,7 +93,7 @@ class UserField extends BazarField
         $value = $this->getValue($entry);
         $userManager = $this->getService(UserManager::class);
 
-        if( $value ) {
+        if ($value) {
             return $this->render("@bazar/fields/user.twig", [
                 'value' => $value,
                 'isLoggedUser' => $userManager->getLoggedUser() && $userManager->getLoggedUserName() === $value,
