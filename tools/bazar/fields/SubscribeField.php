@@ -45,6 +45,12 @@ class SubscribeField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
+        if (!$this->canEdit($entry) && !isset($entry[$this->emailField]) && isset($entry['previous-data'][$this->emailField])) {
+            $entry[$this->emailField] = $entry['previous-data'][$this->emailField] ;
+        }
+        if (isset($entry['previous-data'])) {
+            unset($entry['previous-data']) ;
+        }
 
         $subscribeEmail = $this->getSubscribeEmail($entry);
         $unsubscribeEmail = $this->getUnsubscribeEmail($entry);
@@ -59,7 +65,7 @@ class SubscribeField extends BazarField
             if ($value === $subscribeEmail) {
                 send_mail($entry[$this->emailField], $entry['bf_titre'], $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
                 return [$this->propertyName => $value];
-            } else if ($value === $unsubscribeEmail) {
+            } elseif ($value === $unsubscribeEmail) {
                 // Don't send emails when mass unsubscribing
                 return [$this->propertyName => $value];
             }
@@ -80,7 +86,8 @@ class SubscribeField extends BazarField
         return null;
     }
 
-    protected function getSubscribeEmail($entry) {
+    protected function getSubscribeEmail($entry)
+    {
         // list@provider.com -> list-subscribe@provider.com
         $subscribeEmail = str_replace('@', '-subscribe@', $this->mailerEmail);
         // If the mailing list tool is ezmlm, reformat the email address
@@ -91,7 +98,8 @@ class SubscribeField extends BazarField
         return $subscribeEmail;
     }
 
-    protected function getUnsubscribeEmail($entry) {
+    protected function getUnsubscribeEmail($entry)
+    {
         // list@provider.com -> list-unsubscribe@provider.com
         $unsubscribeEmail = str_replace('@', '-unsubscribe@', $this->mailerEmail);
         // If the mailing list tool is ezmlm, reformat the email address
