@@ -22,10 +22,12 @@ class PasswordField extends BazarField
         $value = $this->getValue($entry);
         if (!empty($value)) {
             // If a new password has been set, encode it
-            return [$this->propertyName => md5($value)];
+            return [$this->propertyName => md5($value),
+                'fields-to-remove' => [$this->propertyName.'-previous']];
         } else {
             // If no new password was set, keep the old encoded one
-            return [$this->propertyName => $entry[$this->propertyName.'-previous'] ?? null];
+            return [$this->propertyName => $entry[$this->propertyName.'-previous'] ?? null,
+                'fields-to-remove' => [$this->propertyName.'-previous']];
         }
     }
 
