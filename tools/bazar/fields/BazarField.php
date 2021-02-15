@@ -117,7 +117,7 @@ abstract class BazarField implements \JsonSerializable
     protected function getValue($entry)
     {
         // TODO see if it is necessary to look for $_REQUEST
-        return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+        return $entry[$this->propertyName] ?? $entry['previous-data'][$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
     }
 
     // HELPERS

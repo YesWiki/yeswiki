@@ -407,11 +407,10 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($previousData['id_typeannonce'], $data);
         }
 
-        if ($replace) {
-            $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        } else {
-            // If PATCH, overwrite previous data with new data
-            $data = array_merge($previousData, $data);
+        $data['id_typeannonce'] = $previousData['id_typeannonce'];
+        if (!$replace) {
+            //save previous data
+            $data['previous-data'] = $previousData;
         }
 
         $this->validate($data);
@@ -420,6 +419,11 @@ class EntryManager
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
+        // remove previous data, not needed now
+        if (isset($data['previous-data'])) {
+            unset($data['previous-data']);
+        }
+
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
 
