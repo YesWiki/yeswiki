@@ -70,7 +70,7 @@ class Guard
 
             if ($valeur) {
                 $val_formulaire = $this->formManager->getOne($valeur['id_typeannonce']);
-                if (isset($val_formulaire['template']) && is_array($val_formulaire['template'])) {
+                if ($val_formulaire) {
                     $fieldname = array();
                     foreach ($val_formulaire['template'] as $line) {
                         // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
