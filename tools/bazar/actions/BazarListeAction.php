@@ -25,23 +25,26 @@ class BazarListeAction extends YesWikiAction
 
         // ICONS
         $icon = $_GET['icon'] ?? $arg['icon'] ??  null;
-        if (!empty($icon)) {
-            $tabparam = getMultipleParameters($icon, ',', '=');
-            if ($tabparam['fail'] != 1) {
-                if (count($tabparam) > 1 && !empty($iconField)) {
-                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-                    foreach ($tabparam as $key=>$data) {
-                        $tabparam[$data] = $key;
+        $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon)) ;
+        if (!$iconAlreadyDefined) {
+            if (!empty($icon)) {
+                $tabparam = getMultipleParameters($icon, ',', '=');
+                if ($tabparam['fail'] != 1) {
+                    if (count($tabparam) > 1 && !empty($iconField)) {
+                        // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                        foreach ($tabparam as $key=>$data) {
+                            $tabparam[$data] = $key;
+                        }
+                        $icon = $tabparam;
+                    } else {
+                        $icon = trim($tabparam[0]);
                     }
-                    $icon = $tabparam;
                 } else {
-                    $icon = trim($tabparam[0]);
+                    exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
                 }
             } else {
-                exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+                $icon = $this->params->get('baz_marker_icon');
             }
-        } else {
-            $icon = $this->params->get('baz_marker_icon');
         }
         
         // COLORS FIELD
@@ -49,27 +52,29 @@ class BazarListeAction extends YesWikiAction
         
         // COLORS
         $color = $_GET['color'] ?? $arg['color'] ?? null ;
-        $color = ($color == $this->params->get('baz_marker_color')) ? null : $color ;
-        if (!empty($color)) {
-            $tabparam = getMultipleParameters($color, ',', '=');
-            if ($tabparam['fail'] != 1) {
-                if (count($tabparam) > 1 && !empty($colorField)) {
-                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
-                    foreach ($tabparam as $key=>$data) {
-                        $tabparam[$data] = $key;
+        $colorAlreadyDefined = ($color == $this->params->get('baz_marker_color') || is_array($color)) ;
+        if (!$colorAlreadyDefined) {
+            if (!empty($color)) {
+                $tabparam = getMultipleParameters($color, ',', '=');
+                if ($tabparam['fail'] != 1) {
+                    if (count($tabparam) > 1 && !empty($colorField)) {
+                        // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                        foreach ($tabparam as $key=>$data) {
+                            $tabparam[$data] = $key;
+                        }
+                        $color = $tabparam;
+                    } else {
+                        $color = trim(array_values($tabparam)[0]);
+                        if (!in_array($color, BazarListeAction::$availableColors)) {
+                            $color = $this->params->get('baz_marker_color');
+                        }
                     }
-                    $color = $tabparam;
                 } else {
-                    $color = trim($tabparam[0]);
-                    if (!in_array($color, BazarListeAction::$availableColors)) {
-                        $color = $this->params->get('baz_marker_color');
-                    }
+                    exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
                 }
             } else {
-                exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+                $color = $this->params->get('baz_marker_color');
             }
-        } else {
-            $color = $this->params->get('baz_marker_color');
         }
 
         return([
@@ -134,7 +139,7 @@ class BazarListeAction extends YesWikiAction
             // icone des marqueurs
             'icon' => $icon,
             // Champ utilise pour la couleur des marqueurs
-            'colorfield' => $colorfield,
+            'colorfield' => $colorField,
             // couleur des marqueurs
             'color' => $color ,
         ]);
