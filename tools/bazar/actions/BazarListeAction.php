@@ -12,11 +12,6 @@ class BazarListeAction extends YesWikiAction
 {
     protected const BAZARCARTO_TEMPLATES = ["map","gogomap"] ; // liste des templates sans .twig ni .tpl.html
     protected const BAZARCALENDRIER_TEMPLATES = ["calendrier"] ; // liste des templates sans .twig ni .tpl.html
-    
-    public static $availableColors = array(
-        'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
-        'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
-    );
 
     public function formatArguments($arg)
     {
@@ -65,9 +60,6 @@ class BazarListeAction extends YesWikiAction
                         $color = $tabparam;
                     } else {
                         $color = trim(array_values($tabparam)[0]);
-                        if (!in_array($color, BazarListeAction::$availableColors)) {
-                            $color = $this->params->get('baz_marker_color');
-                        }
                     }
                 } else {
                     exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');

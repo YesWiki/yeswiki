@@ -4,6 +4,11 @@ use YesWiki\Core\YesWikiAction;
 
 class BazarCartoAction extends YesWikiAction
 {
+    public static $availableColors = array(
+        'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+        'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
+    );
+
     public function formatArguments($arg)
     {
         // PROVIDERS
