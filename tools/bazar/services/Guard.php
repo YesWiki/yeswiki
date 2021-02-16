@@ -29,8 +29,7 @@ class Guard
             return true;
         }
 
-        switch($action)
-        {
+        switch ($action) {
             case 'supp_fiche':
             case 'voir_champ':
                 return $isOwner;
@@ -71,36 +70,38 @@ class Guard
 
             if ($valeur) {
                 $val_formulaire = $this->formManager->getOne($valeur['id_typeannonce']);
-                $fieldname = array();
-                foreach ($val_formulaire['template'] as $line) {
-                    // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-                    if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
-                        if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json' ) {
-                            $fieldname[] = $line[1];
-                        }
-                    }
-                    if (isset($line[11]) && $line[11] != '') {
-                        if ($line[11] == "%") {
-                            $line[11] = $this->wiki->GetUserName();
-                        }
-                        if (!$this->wiki->CheckACL($line[11])) {
-                            // on memorise les champs non autorisés
-                            if (in_array($line[0], $INDEX_CHELOUS)) {
-                                $fieldname[] = $line[0] . $line[1] . $line[6];
-                            } else {
+                if (isset($val_formulaire['template']) && is_array($val_formulaire['template'])) {
+                    $fieldname = array();
+                    foreach ($val_formulaire['template'] as $line) {
+                        // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
+                        if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
+                            if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json') {
                                 $fieldname[] = $line[1];
                             }
                         }
+                        if (isset($line[11]) && $line[11] != '') {
+                            if ($line[11] == "%") {
+                                $line[11] = $this->wiki->GetUserName();
+                            }
+                            if (!$this->wiki->CheckACL($line[11])) {
+                                // on memorise les champs non autorisés
+                                if (in_array($line[0], $INDEX_CHELOUS)) {
+                                    $fieldname[] = $line[0] . $line[1] . $line[6];
+                                } else {
+                                    $fieldname[] = $line[1];
+                                }
+                            }
+                        }
                     }
-                }
-                if (count($fieldname) > 0) {
-                    //
-                    foreach ($fieldname as $field) {
-                        $valeur[$field] = "";
-                        // on vide le champ
+                    if (count($fieldname) > 0) {
+                        //
+                        foreach ($fieldname as $field) {
+                            $valeur[$field] = "";
+                            // on vide le champ
+                        }
+                        //$valeur = array_map("utf8_encode", $valeur);
+                        $page["body"] = json_encode($valeur);
                     }
-                    //$valeur = array_map("utf8_encode", $valeur);
-                    $page["body"] = json_encode($valeur);
                 }
             }
         }
