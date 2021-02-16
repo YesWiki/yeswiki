@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
@@ -10,11 +11,14 @@ class Guard
     protected $wiki;
     protected $formManager;
     protected $userManager;
+    protected $aclService;
 
-    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager)
+    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager, AclService $aclService)
     {
         $this->wiki = $wiki;
         $this->formManager = $formManager;
+        $this->userManager = $userManager;
+        $this->aclService = $aclService;
         $this->userManager = $userManager;
     }
 
@@ -81,9 +85,9 @@ class Guard
                         }
                         if (isset($line[11]) && $line[11] != '') {
                             if ($line[11] == "%") {
-                                $line[11] = $this->wiki->GetUserName();
+                                $line[11] = $this->userManager->getLoggedUserName();
                             }
-                            if (!$this->wiki->CheckACL($line[11])) {
+                            if (!$this->aclService->check($line[11])) {
                                 // on memorise les champs non autorisés
                                 if (in_array($line[0], $INDEX_CHELOUS)) {
                                     $fieldname[] = $line[0] . $line[1] . $line[6];
@@ -111,11 +115,11 @@ class Guard
     protected function isPageOwner($page) : bool
     {
         // check if user is logged in
-        if (!$this->wiki->GetUser()) {
+        if (!$this->userManager->getLoggedUser()) {
             return false;
         }
         // check if user is owner
-        if ($page['owner'] == $this->wiki->GetUserName()) {
+        if ($page['owner'] == $this->userManager->getLoggedUserName()) {
             return true;
         }
         return false;
