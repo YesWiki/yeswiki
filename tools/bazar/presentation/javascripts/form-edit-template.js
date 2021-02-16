@@ -617,6 +617,9 @@ function initializeFormbuilder(formAndListIds) {
       .addClass('focus-initialized')
       .on('focusout', function() {
         var newValue = $(this).html().replace(/(<div><br><\/div>)+$/g, '')
+        // replace multiple '<div><br></div>' when at the end of the value
+        newValue = newValue.replace(/(<br>)+$/g, '')
+        // replace multiple '<br>' when at the end of the value
         $(this).html(newValue);
       });
 
