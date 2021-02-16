@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
@@ -10,11 +11,14 @@ class Guard
     protected $wiki;
     protected $formManager;
     protected $userManager;
+    protected $aclService;
 
-    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager)
+    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager, AclService $aclService)
     {
         $this->wiki = $wiki;
         $this->formManager = $formManager;
+        $this->userManager = $userManager;
+        $this->aclService = $aclService;
         $this->userManager = $userManager;
     }
 
@@ -29,8 +33,7 @@ class Guard
             return true;
         }
 
-        switch($action)
-        {
+        switch ($action) {
             case 'supp_fiche':
             case 'voir_champ':
                 return $isOwner;
@@ -71,36 +74,38 @@ class Guard
 
             if ($valeur) {
                 $val_formulaire = $this->formManager->getOne($valeur['id_typeannonce']);
-                $fieldname = array();
-                foreach ($val_formulaire['template'] as $line) {
-                    // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-                    if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
-                        if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json' ) {
-                            $fieldname[] = $line[1];
-                        }
-                    }
-                    if (isset($line[11]) && $line[11] != '') {
-                        if ($line[11] == "%") {
-                            $line[11] = $this->wiki->GetUserName();
-                        }
-                        if (!$this->wiki->CheckACL($line[11])) {
-                            // on memorise les champs non autorisés
-                            if (in_array($line[0], $INDEX_CHELOUS)) {
-                                $fieldname[] = $line[0] . $line[1] . $line[6];
-                            } else {
+                if ($val_formulaire) {
+                    $fieldname = array();
+                    foreach ($val_formulaire['template'] as $line) {
+                        // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
+                        if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
+                            if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json') {
                                 $fieldname[] = $line[1];
                             }
                         }
+                        if (isset($line[11]) && $line[11] != '') {
+                            if ($line[11] == "%") {
+                                $line[11] = $this->userManager->getLoggedUserName();
+                            }
+                            if (!$this->aclService->check($line[11])) {
+                                // on memorise les champs non autorisés
+                                if (in_array($line[0], $INDEX_CHELOUS)) {
+                                    $fieldname[] = $line[0] . $line[1] . $line[6];
+                                } else {
+                                    $fieldname[] = $line[1];
+                                }
+                            }
+                        }
                     }
-                }
-                if (count($fieldname) > 0) {
-                    //
-                    foreach ($fieldname as $field) {
-                        $valeur[$field] = "";
-                        // on vide le champ
+                    if (count($fieldname) > 0) {
+                        //
+                        foreach ($fieldname as $field) {
+                            $valeur[$field] = "";
+                            // on vide le champ
+                        }
+                        //$valeur = array_map("utf8_encode", $valeur);
+                        $page["body"] = json_encode($valeur);
                     }
-                    //$valeur = array_map("utf8_encode", $valeur);
-                    $page["body"] = json_encode($valeur);
                 }
             }
         }
@@ -110,11 +115,11 @@ class Guard
     protected function isPageOwner($page) : bool
     {
         // check if user is logged in
-        if (!$this->wiki->GetUser()) {
+        if (!$this->userManager->getLoggedUser()) {
             return false;
         }
         // check if user is owner
-        if ($page['owner'] == $this->wiki->GetUserName()) {
+        if ($page['owner'] == $this->userManager->getLoggedUserName()) {
             return true;
         }
         return false;

@@ -44,7 +44,7 @@ class UserManager
 
     public function getLoggedUser()
     {
-        return (isset($_SESSION['user']) ? $_SESSION['user'] : '');
+        return isset($_SESSION['user']) ? $_SESSION['user'] : '';
     }
 
     public function getLoggedUserName()
