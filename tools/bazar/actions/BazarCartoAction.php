@@ -5,7 +5,7 @@ use YesWiki\Core\YesWikiAction;
 class BazarCartoAction extends YesWikiAction
 {
     public static $availableColors = array(
-        'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+        'darkred', 'red', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
         'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
     );
 
@@ -87,6 +87,7 @@ class BazarCartoAction extends YesWikiAction
             'fullscreen' => $arg['fullscreen'] ?? 'true',
             // Fournit une configuration JSON via un URL
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
+            'availableColors' => BazarCartoAction::$availableColors ,
         ]);
     }
 
