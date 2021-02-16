@@ -32,7 +32,7 @@ class BazarListeAction extends YesWikiAction
                         }
                         $icon = $tabparam;
                     } else {
-                        $icon = trim($tabparam[0]);
+                        $icon = trim(array_values($tabparam)[0]);
                     }
                 } else {
                     exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
