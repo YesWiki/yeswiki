@@ -12,9 +12,66 @@ class BazarListeAction extends YesWikiAction
 {
     protected const BAZARCARTO_TEMPLATES = ["map","gogomap"] ; // liste des templates sans .twig ni .tpl.html
     protected const BAZARCALENDRIER_TEMPLATES = ["calendrier"] ; // liste des templates sans .twig ni .tpl.html
+    
+    public static $availableColors = array(
+        'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
+        'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
+    );
 
     public function formatArguments($arg)
     {
+        // ICONS FIELD
+        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null ;
+
+        // ICONS
+        $icon = $_GET['icon'] ?? $arg['icon'] ??  null;
+        if (!empty($icon)) {
+            $tabparam = getMultipleParameters($icon, ',', '=');
+            if ($tabparam['fail'] != 1) {
+                if (count($tabparam) > 1 && !empty($iconField)) {
+                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                    foreach ($tabparam as $key=>$data) {
+                        $tabparam[$data] = $key;
+                    }
+                    $icon = $tabparam;
+                } else {
+                    $icon = trim($tabparam[0]);
+                }
+            } else {
+                exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+            }
+        } else {
+            $icon = $this->params->get('baz_marker_icon');
+        }
+        
+        // COLORS FIELD
+        $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null ;
+        
+        // COLORS
+        $color = $_GET['color'] ?? $arg['color'] ?? null ;
+        $color = ($color == $this->params->get('baz_marker_color')) ? null : $color ;
+        if (!empty($color)) {
+            $tabparam = getMultipleParameters($color, ',', '=');
+            if ($tabparam['fail'] != 1) {
+                if (count($tabparam) > 1 && !empty($colorField)) {
+                    // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                    foreach ($tabparam as $key=>$data) {
+                        $tabparam[$data] = $key;
+                    }
+                    $color = $tabparam;
+                } else {
+                    $color = trim($tabparam[0]);
+                    if (!in_array($color, BazarListeAction::$availableColors)) {
+                        $color = $this->params->get('baz_marker_color');
+                    }
+                }
+            } else {
+                exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+            }
+        } else {
+            $color = $this->params->get('baz_marker_color');
+        }
+
         return([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -73,13 +130,13 @@ class BazarListeAction extends YesWikiAction
             // Prefixe des classes CSS utilisees pour la carto et calendrier
             'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
             // Champ utilise pour les icones des marqueurs
-            'iconfield' => $_GET['iconfield'] ?? $arg['iconfield'] ?? null,
+            'iconfield' => $iconField,
             // icone des marqueurs
-            'icon' => $_GET['icon'] ?? $arg['icon'] ?? $this->params->get('baz_marker_icon'),
+            'icon' => $icon,
             // Champ utilise pour la couleur des marqueurs
-            'colorfield' => $_GET['colorfield'] ?? $arg['colorfield'] ?? null,
+            'colorfield' => $colorfield,
             // couleur des marqueurs
-            'color' => $_GET['color'] ?? $arg['color'] ?? $this->params->get('baz_marker_color') ,
+            'color' => $color ,
         ]);
     }
 
