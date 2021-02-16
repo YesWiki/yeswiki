@@ -4,12 +4,12 @@ use YesWiki\Core\YesWikiAction;
 
 class BazarCartoAction extends YesWikiAction
 {
-    static $availableColors = array(
+    public static $availableColors = array(
         'red', 'darkred', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
         'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
     );
     
-    function formatArguments($arg)
+    public function formatArguments($arg)
     {
         // PROVIDERS
         $provider = $_GET['provider']  ?? $arg['provider'] ?? $this->params->get('baz_provider');
@@ -138,7 +138,7 @@ class BazarCartoAction extends YesWikiAction
         ]);
     }
 
-    function run()
+    public function run()
     {
         $this->arguments['template'] = 'map.tpl.html';
 
