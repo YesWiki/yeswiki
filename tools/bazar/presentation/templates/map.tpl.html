@@ -53,6 +53,9 @@ if (count($fiches)>0) :
 
 			// couleur de marqueur
 			$color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
+			if (!in_array($color,$param['availableColors'])) {
+				$color = $param['availableColors'][0];
+			}
 
 			//icone de marqueur
 			$icon = $param['iconprefix']

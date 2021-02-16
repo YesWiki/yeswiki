@@ -15,6 +15,60 @@ class BazarListeAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
+        // ICONS FIELD
+        $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null ;
+
+        // ICONS
+        $icon = $_GET['icon'] ?? $arg['icon'] ??  null;
+        $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon)) ;
+        if (!$iconAlreadyDefined) {
+            if (!empty($icon)) {
+                $tabparam = getMultipleParameters($icon, ',', '=');
+                if ($tabparam['fail'] != 1) {
+                    if (count($tabparam) > 1 && !empty($iconField)) {
+                        // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                        foreach ($tabparam as $key=>$data) {
+                            $tabparam[$data] = $key;
+                        }
+                        $icon = $tabparam;
+                    } else {
+                        $icon = trim(array_values($tabparam)[0]);
+                    }
+                } else {
+                    exit('<div class="alert alert-danger">action bazarliste : le paramètre icon est mal rempli.<br />Il doit être de la forme icon="nomIcone1=valeur1, nomIcone2=valeur2"</div>');
+                }
+            } else {
+                $icon = $this->params->get('baz_marker_icon');
+            }
+        }
+        
+        // COLORS FIELD
+        $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null ;
+        
+        // COLORS
+        $color = $_GET['color'] ?? $arg['color'] ?? null ;
+        $colorAlreadyDefined = ($color == $this->params->get('baz_marker_color') || is_array($color)) ;
+        if (!$colorAlreadyDefined) {
+            if (!empty($color)) {
+                $tabparam = getMultipleParameters($color, ',', '=');
+                if ($tabparam['fail'] != 1) {
+                    if (count($tabparam) > 1 && !empty($colorField)) {
+                        // on inverse cle et valeur, pour pouvoir les reprendre facilement dans la carto
+                        foreach ($tabparam as $key=>$data) {
+                            $tabparam[$data] = $key;
+                        }
+                        $color = $tabparam;
+                    } else {
+                        $color = trim(array_values($tabparam)[0]);
+                    }
+                } else {
+                    exit('<div class="alert alert-danger">action bazarliste : le paramètre color est mal rempli.<br />Il doit être de la forme color="couleur1=valeur1, couleur2=valeur2"</div>');
+                }
+            } else {
+                $color = $this->params->get('baz_marker_color');
+            }
+        }
+
         return([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -73,13 +127,13 @@ class BazarListeAction extends YesWikiAction
             // Prefixe des classes CSS utilisees pour la carto et calendrier
             'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
             // Champ utilise pour les icones des marqueurs
-            'iconfield' => $_GET['iconfield'] ?? $arg['iconfield'] ?? null,
+            'iconfield' => $iconField,
             // icone des marqueurs
-            'icon' => $_GET['icon'] ?? $arg['icon'] ?? $this->params->get('baz_marker_icon'),
+            'icon' => $icon,
             // Champ utilise pour la couleur des marqueurs
-            'colorfield' => $_GET['colorfield'] ?? $arg['colorfield'] ?? null,
+            'colorfield' => $colorField,
             // couleur des marqueurs
-            'color' => $_GET['color'] ?? $arg['color'] ?? $this->params->get('baz_marker_color') ,
+            'color' => $color ,
         ]);
     }
 
@@ -293,7 +347,7 @@ class BazarListeAction extends YesWikiAction
 
                     $idkey = htmlspecialchars($id);
 
-                    $i = array_key_first(array_filter($this->arguments['groups'],function ($value) use($idkey){
+                    $i = array_key_first(array_filter($this->arguments['groups'], function ($value) use ($idkey) {
                         return ($value == $idkey) ;
                     }));
 
@@ -326,20 +380,20 @@ class BazarListeAction extends YesWikiAction
                 
                 // reorder $filters
 
-                uasort($filters,function ($a,$b){
-                        if (isset($a['index']) && isset($b['index'])) {
-                            if ($a['index'] == $b['index']) {
-                                return 0 ;
-                            } else {
-                                return ($a['index'] < $b['index']) ? -1 : 1 ;
-                            }
-                        } elseif (isset($a['index'])) {
-                            return 1 ;
-                        } elseif (isset($b['index'])) {
-                            return -1 ;
-                        } else {
+                uasort($filters, function ($a, $b) {
+                    if (isset($a['index']) && isset($b['index'])) {
+                        if ($a['index'] == $b['index']) {
                             return 0 ;
+                        } else {
+                            return ($a['index'] < $b['index']) ? -1 : 1 ;
                         }
+                    } elseif (isset($a['index'])) {
+                        return 1 ;
+                    } elseif (isset($b['index'])) {
+                        return -1 ;
+                    } else {
+                        return 0 ;
+                    }
                 }) ;
 
                 foreach ($filters as $id => $filter) {
