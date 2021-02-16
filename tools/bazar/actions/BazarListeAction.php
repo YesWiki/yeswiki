@@ -293,7 +293,7 @@ class BazarListeAction extends YesWikiAction
 
                     $idkey = htmlspecialchars($id);
 
-                    $i = array_key_first(array_filter($this->arguments['groups'],function ($value) use($idkey){
+                    $i = array_key_first(array_filter($this->arguments['groups'], function ($value) use ($idkey) {
                         return ($value == $idkey) ;
                     }));
 
@@ -326,20 +326,20 @@ class BazarListeAction extends YesWikiAction
                 
                 // reorder $filters
 
-                uasort($filters,function ($a,$b){
-                        if (isset($a['index']) && isset($b['index'])) {
-                            if ($a['index'] == $b['index']) {
-                                return 0 ;
-                            } else {
-                                return ($a['index'] < $b['index']) ? -1 : 1 ;
-                            }
-                        } elseif (isset($a['index'])) {
-                            return 1 ;
-                        } elseif (isset($b['index'])) {
-                            return -1 ;
-                        } else {
+                uasort($filters, function ($a, $b) {
+                    if (isset($a['index']) && isset($b['index'])) {
+                        if ($a['index'] == $b['index']) {
                             return 0 ;
+                        } else {
+                            return ($a['index'] < $b['index']) ? -1 : 1 ;
                         }
+                    } elseif (isset($a['index'])) {
+                        return 1 ;
+                    } elseif (isset($b['index'])) {
+                        return -1 ;
+                    } else {
+                        return 0 ;
+                    }
                 }) ;
 
                 foreach ($filters as $id => $filter) {
