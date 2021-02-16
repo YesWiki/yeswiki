@@ -31,8 +31,12 @@ class TagsField extends BazarField
                 $response[] = _convert(str_replace('\'', '&#39;', $tag['value']), 'ISO-8859-15');
             }
         }
-        sort($response);
-        $allTags = '\'' . implode('\',\'', $response) . '\'';
+        if (isset($response)) {
+            sort($response);
+            $allTags = '\'' . implode('\',\'', $response) . '\'';
+        } else {
+            $allTags = '';
+        }
 
         $script = '$(function(){
             var tagsexistants = [' . $allTags . '];
@@ -97,7 +101,7 @@ class TagsField extends BazarField
 
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
-            $tags = array_map(function($tag) {
+            $tags = array_map(function ($tag) {
                 return '<a class="tag-label label label-info" href="' . $GLOBALS['wiki']->href('listpages', $GLOBALS['wiki']->GetPageTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
