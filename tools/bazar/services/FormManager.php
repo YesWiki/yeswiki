@@ -53,6 +53,11 @@ class FormManager
 
     public function getOne($formId): ?array
     {
+        // tests of if $formId is int
+        if (strval(intval($formId)) != strval($formId)) {
+            return null ;
+        }
+
         if (isset($this->cachedForms[$formId])) {
             return $this->cachedForms[$formId];
         }
@@ -138,6 +143,11 @@ class FormManager
     public function delete($id)
     {
         //TODO : suppression des fiches associees au formulaire
+        
+        // tests of if $formId is int
+        if (strval(intval($id)) != strval($id)) {
+            return null ;
+        }
 
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
     }
@@ -303,10 +313,10 @@ class FormManager
                     $field = array_pop($filteredFields);
 
                     $fieldPropName = null;
-                    if( $field instanceof BazarField ) {
+                    if ($field instanceof BazarField) {
                         $fieldPropName = $field->getPropertyName();
                         $fieldType = $field->getType();
-                    } else if ( is_array($field)) {
+                    } elseif (is_array($field)) {
                         $fieldPropName = $field['id'];
                         $fieldType = $field['type'];
                     }
@@ -362,17 +372,17 @@ class FormManager
      */
     private function filterFieldsByPropertyName(array $fields, array $id)
     {
-        if( count($id)===1 && $id[0]==='all') {
-            return array_filter($fields, function($field) use ($id) {
-                if( $field instanceof EnumField ) {
+        if (count($id)===1 && $id[0]==='all') {
+            return array_filter($fields, function ($field) use ($id) {
+                if ($field instanceof EnumField) {
                     return true;
                 }
             });
         } else {
-            return array_filter($fields, function($field) use ($id) {
-                if( $field instanceof BazarField ) {
+            return array_filter($fields, function ($field) use ($id) {
+                if ($field instanceof BazarField) {
                     return $id[0] === 'all' || in_array($field->getPropertyName(), $id);
-                } elseif( is_array($field) && isset($field['id']) ) {
+                } elseif (is_array($field) && isset($field['id'])) {
                     return $id[0] === 'all' || in_array($field['id'], $id);
                 }
             });
