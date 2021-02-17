@@ -218,7 +218,7 @@ var typeUserAttrs = {
     },
     send_form_content_to_this_email: {
       label: "Envoyer le contenu de la fiche à cet email",
-      options: { "": "Non", 1: "Oui" },
+      options: { " ": "Non", 1: "Oui" },
     },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
