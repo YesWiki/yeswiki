@@ -30,14 +30,16 @@ class EmailField extends BazarField
     {
         if ($this->sendMail) {
             // add propertyName to the list of emails if several sendmail in same form
-            $secondPartReturn = ['sendmail' => ((isset($entry['sendmail'])) ? $entry['sendmail'] . ',' : '') . $this->propertyName] ;
+            $sendmailList = !empty($entry['sendmail']) ?
+                $entry['sendmail'] . ',' . $this->propertyName
+                : $this->propertyName;
+            $sendmailArray = ['sendmail' => $sendmailList];
         } else {
-            $secondPartReturn = [];
+            $sendmailArray = [];
         }
         return array_merge(
-            [
-            $this->propertyName => $this->getValue($entry)],
-            $secondPartReturn
+            [$this->propertyName => $this->getValue($entry)],
+            $sendmailArray
         );
     }
 
@@ -47,7 +49,7 @@ class EmailField extends BazarField
         if (!$value) {
             return null;
         }
-        
+
         // TODO add JS libraries with Twig
         if ($this->showContactForm) {
             $GLOBALS['wiki']->addJavascriptFile('tools/contact/libs/contact.js');
@@ -56,7 +58,8 @@ class EmailField extends BazarField
         return $this->render('@bazar/fields/email.twig', [
             'value' => $value,
             'showContactForm' => $this->showContactForm,
-            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(), 'field='.$this->propertyName) : null
+            'contactFormUrl' => $this->showContactForm ? $GLOBALS['wiki']->href('mail', $GLOBALS['wiki']->GetPageTag(),
+                'field=' . $this->propertyName) : null
         ]);
     }
 
@@ -64,8 +67,10 @@ class EmailField extends BazarField
     {
         return array_merge(
             parent::jsonSerialize(),
-            ['sendMail' => $this->sendMail,
-            'showContactForm' => $this->showContactForm]
+            [
+                'sendMail' => $this->sendMail,
+                'showContactForm' => $this->showContactForm
+            ]
         );
     }
 }

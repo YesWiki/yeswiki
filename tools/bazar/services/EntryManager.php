@@ -334,11 +334,8 @@ class EntryManager
             $ignoreAcls = $this->params->get('bazarIgnoreAcls');
         }
 
-        // extract $data['sendmail'] before save
-        if (isset($data['sendmail'])) {
-            $sendmail = $data['sendmail'] ;
-            unset($data['sendmail']);
-        }
+        // get the sendmail and remove it before saving
+        $sendmail = $this->removeSendmail($data);
 
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
         $saved = $this->wiki->SavePage(
@@ -377,18 +374,9 @@ class EntryManager
                 $this->wiki->SetUser($olduser, 1);
             }
         }
-
         
-        // If sendmail field exist, send an email
-        if ($sendmail) {
-            $emailsLabels = explode(',', $sendmail);
-            foreach ($emailsLabels as $emailLabel) {
-                if (!empty($data[$emailLabel])) {
-                    $this->mailer->notifyEmail($data[$emailLabel], $data);
-                }
-            }
-            unset($sendmail);
-        }
+        // if sendmail has referenced email fields, send an email to their adresses
+        $this->sendMailToNotifiedEmails($sendmail, $data);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
@@ -430,25 +418,14 @@ class EntryManager
 
         $data = $this->formatDataBeforeSave($data);
 
-        // extract $data['sendmail'] before save
-        if (isset($data['sendmail'])) {
-            $sendmail = $data['sendmail'] ;
-            unset($data['sendmail']);
-        }
+        // get the sendmail and remove it before saving
+        $sendmail = $this->removeSendmail($data);
 
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
 
-        // If sendmail field exist, send an email
-        if ($sendmail) {
-            $emailsLabels = array_unique(explode(',', $sendmail));
-            foreach ($emailsLabels as $emailLabel) {
-                if (!empty($data[$emailLabel])) {
-                    $this->mailer->notifyEmail($data[$emailLabel], $data);
-                }
-            }
-            unset($sendmail);
-        }
+        // if sendmail has referenced email fields, send an email to their adresses
+        $this->sendMailToNotifiedEmails($sendmail, $data);
 
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
@@ -677,5 +654,27 @@ class EntryManager
             }
         }
         return $data;
+    }
+
+    private function removeSendmail(array &$data): ?string
+    {
+        $sendmail = null;
+        if (isset($data['sendmail'])) {
+            $sendmail = $data['sendmail'];
+            unset($data['sendmail']);
+        }
+        return $sendmail;
+    }
+
+    private function sendMailToNotifiedEmails(string $sendmail, array $data)
+    {
+        if ($sendmail) {
+            $emailsFieldnames = array_unique(explode(',', $sendmail));
+            foreach ($emailsFieldnames as $emailFieldName) {
+                if (!empty($data[$emailFieldName])) {
+                    $this->mailer->notifyEmail($data[$emailFieldName], $data);
+                }
+            }
+        }
     }
 }
