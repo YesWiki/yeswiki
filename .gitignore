@@ -1,3 +1,6 @@
+# Composer
+vendor
+
 # YesWiki stuff
 wakka.config.php
 info.php
@@ -11,12 +14,8 @@ themes/*
 !themes/yeswiki
 templates/*
 !templates/README.md
-custom/themes/*
-!custom/themes/README.md
-custom/templates/*
-!custom/templates/README.md
-custom/tools/*
-!custom/tools/README.md
+custom/*
+!custom/.gitkeep
 
 # tools
 tools/*
