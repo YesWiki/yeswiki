@@ -14,7 +14,7 @@ $entryManager = $this->services->get(EntryManager::class);
 $output = '';
 
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
-if ((isset($_POST['mail']) or $_POST['email']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
     // entête de mail qd le champ $_GET['field'] est spécifié
     $infomsg = '';
