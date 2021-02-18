@@ -68,6 +68,11 @@ actions:
           type: text
           label: Prefixe pour les icones
           hint: Si vous utilisez le selecteur d'icone, vous n'avez pas besoin de ce champ
+      minical:
+        label: _t(AB_bazar_commons_minical)
+        type: checkbox
+        showOnlyFor:
+          - calendrier
 
   # -------------------------------------
   # Champs Communs concernant les filtres

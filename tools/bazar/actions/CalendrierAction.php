@@ -12,7 +12,7 @@ class CalendrierAction extends YesWikiAction
             $classes = explode(' ', $arg['class']);
             $classes = array_combine($classes, $classes);
         }
-        $minical = (isset($arg['minical']) && $arg['minical']="true") || (isset($classes) && in_array('minical', $classes)) ;
+        $minical = (isset($arg['minical']) && $arg['minical'] == "true") || (isset($classes) && in_array('minical', $classes)) ;
         if ($minical) {
             $classes['minical'] = 'minical';
         }
