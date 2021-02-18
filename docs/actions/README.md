@@ -23,7 +23,7 @@ Afin de rendre le fichier traductible, il est préférable de fournir une clé d
 label: _t(AB_mongroupe_label) # AB = ActionsBuilder
 actions:
   myaction:
-    label: _(AB_mongroupe_myaction_label)
+    label: _t(AB_mongroupe_myaction_label)
 ```
 
 ```php
@@ -38,7 +38,7 @@ Pour faciliter la maintenance, on peut essayer de construire le nom de la clé d
 label: _t(AB_mongroupe_label) # AB = ActionsBuilder
 actions:
   myaction:
-    label: _(AB_mongroupe_myaction_label)
+    label: _t(AB_mongroupe_myaction_label)
     properties:
       latitude:
         label: _t(AB_mongroupe_myaction_latitude_label)
@@ -154,4 +154,4 @@ class:
         btn: Normal
         btn-xs: Petit
 ```
-Ainsi, plutôt que `{{button color="btn-default" size="btn-xs"}}` le résultat sera `{{button class="btn-default btn-xs"}}
+Ainsi, plutôt que `{{button color="btn-default" size="btn-xs"}}` le résultat sera `{{button class="btn-default btn-xs"}}`
