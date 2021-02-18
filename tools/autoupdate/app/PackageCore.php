@@ -64,6 +64,7 @@ class PackageCore extends Package
         $configuration = new Configuration('wakka.config.php');
         $configuration->load();
         $configuration['yeswiki_release'] = $this->release;
+        $configuration['yeswiki_version'] = $this->requestedVersion();
         return $configuration->write();
     }
 
