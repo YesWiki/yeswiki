@@ -76,6 +76,10 @@ actions:
     title: Filtres / Facettes
     width: 40%
     properties:
+      filteruserasowner:
+        label: _t(AB_bazar_commons2_filter_user_as_owner)
+        type: checkbox
+        advanced: true
       champ:
         label: Champ pour le tri
         hint: Il est possible d'effectuer des requètes avancées, pour en savoir plus
@@ -244,11 +248,27 @@ actions:
         default: false
 
   bazaragenda:
+    label: Agenda
+    description: Les fiches seront sous forme d'événement dans un agenda.
+    properties:
+      template:
+        value: agenda
+      correspondence:
+        type: correspondance
+        subproperties:
+          bf_date_debut_evenement:
+            type: form-field
+            label: Champ pour la date de début
+          bf_date_fin_evenement:
+            type: form-field
+            label: Champ pour la date de fin
+
+  calendrier:
     label: Calendrier
     description: Les fiches seront sous forme d'événement dans un calendrier.
     properties:
       template:
-        value: agenda
+        value: calendar
       correspondence:
         type: correspondance
         subproperties:
