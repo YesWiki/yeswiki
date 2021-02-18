@@ -2,6 +2,8 @@
 
 use YesWiki\Core\YesWikiAction;
 
+require_once('BazarListeAction.php');
+
 class BazarCartoAction extends YesWikiAction
 {
     public static $availableColors = array(
@@ -88,13 +90,16 @@ class BazarCartoAction extends YesWikiAction
             // Fournit une configuration JSON via un URL
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
             'availableColors' => BazarCartoAction::$availableColors ,
+            //template - default value map
+            'template' => (isset($arg['template']) &&
+                BazarListeAction::specialActionFromTemplate($arg['template'], 'BAZARCARTO_TEMPLATES'))
+                ? $arg['template']
+                : 'map.tpl.html',
         ]);
     }
 
     public function run()
     {
-        $this->arguments['template'] = 'map.tpl.html';
-
         return $this->callAction('bazarliste', $this->arguments);
     }
 }
