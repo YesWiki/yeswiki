@@ -11,7 +11,7 @@ use YesWiki\Core\Service\TemplateNotFound;
 class BazarListeAction extends YesWikiAction
 {
     protected const BAZARCARTO_TEMPLATES = ["map","gogomap"] ; // liste des templates sans .twig ni .tpl.html
-    protected const BAZARCALENDRIER_TEMPLATES = ["calendrier"] ; // liste des templates sans .twig ni .tpl.html
+    protected const CALENDRIER_TEMPLATES = ["calendar"] ; // liste des templates sans .twig ni .tpl.html
 
     public function formatArguments($arg)
     {
@@ -141,22 +141,10 @@ class BazarListeAction extends YesWikiAction
     {
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
-        $bazarcarto_templates = [];
-        foreach (self::BAZARCARTO_TEMPLATES as $templateName) {
-            $bazarcarto_templates[] = $templateName;
-            $bazarcarto_templates[] = $templateName . '.tpl.html';
-            $bazarcarto_templates[] = $templateName . '.twig';
-        }
-        $bazarcalendrier_templates = [];
-        foreach (self::BAZARCALENDRIER_TEMPLATES as $templateName) {
-            $bazarcalendrier_templates[] = $templateName;
-            $bazarcalendrier_templates[] = $templateName . '.tpl.html';
-            $bazarcalendrier_templates[] = $templateName . '.twig';
-        }
-        if (in_array($this->arguments['template'], $bazarcarto_templates)
+        if (self::specialActionFromTemplate($this->arguments['template'], "BAZARCARTO_TEMPLATES")
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarCartoAction')) {
             return $this->callAction('bazarcarto', $this->arguments);
-        } elseif (in_array($this->arguments['template'], $bazarcalendrier_templates)
+        } elseif (self::specialActionFromTemplate($this->arguments['template'], "CALENDRIER_TEMPLATES")
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
             return $this->callAction('calendrier', $this->arguments);
         }
@@ -494,5 +482,33 @@ class BazarListeAction extends YesWikiAction
                 return strcoll($a[$champ], $b[$champ]);
             }
         };
+    }
+
+    /* Method to test if the current template is associated to a specific bazar actions
+     * @param $templateName string (ex. "map","map.tpl.html","map.twig")
+     * @param $constName string name of the constant array containing the right template names
+     *                          "BAZARCARTO_TEMPLATES" or "CALENDRIER_TEMPLATES"
+     */
+    public static function specialActionFromTemplate(string $templateName, string $constName): bool
+    {
+        switch ($constName) {
+            case "BAZARCARTO_TEMPLATES":
+                $baseArray = self::BAZARCARTO_TEMPLATES ;
+                break;
+            case "CALENDRIER_TEMPLATES":
+                $baseArray = self::CALENDRIER_TEMPLATES ;
+                break;
+            default:
+                return false;
+        }
+
+        $templatesnames = [];
+        foreach ($baseArray as $templateBaseName) {
+            $templatesnames[] = $templateBaseName;
+            $templatesnames[] = $templateBaseName . '.tpl.html';
+            $templatesnames[] = $templateBaseName . '.twig';
+        }
+
+        return in_array($templateName, $templatesnames) ;
     }
 }
