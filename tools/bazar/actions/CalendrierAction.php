@@ -2,19 +2,24 @@
 
 use YesWiki\Core\YesWikiAction;
 
+require_once('BazarListeAction.php');
+
 class CalendrierAction extends YesWikiAction
 {
-    function formatArguments($arg)
+    public function formatArguments($arg)
     {
         return([
-            'minical' => $arg['minical'] ?? null
+            'minical' => $arg['minical'] ?? null,
+            //template - default value calendar
+            'template' => (isset($arg['template']) &&
+                BazarListeAction::specialActionFromTemplate($arg['template'], 'CALENDRIER_TEMPLATES'))
+                ? $arg['template']
+                : 'calendar.tpl.html',
         ]);
     }
 
-    function run()
+    public function run()
     {
-        $this->arguments['template'] = 'calendar.tpl.html';
-
         return $this->callAction('bazarliste', $this->arguments);
     }
 }
