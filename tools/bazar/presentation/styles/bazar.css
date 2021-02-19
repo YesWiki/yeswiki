@@ -83,40 +83,6 @@ padding:0;
 	margin: 0 0 10px 0;
 }
 
-
-/** CARTO */
-.leaflet-popup .BAZ_cadre_fiche, .BAZ_cadre_map {
-	font-size:12px;
-	height: 320px;
-	overflow: auto;
-	width: 320px;
-	margin: 0;
-	padding-right: 10px;
-	display:block;
-	text-align:left;
-}
-.leaflet-popup .BAZ_titre, .BAZ_cadre_map .BAZ_titre {
-  font-size: 10px;
-  line-height: 10px;
-  margin:0 0 10px;
-}
-.leaflet-popup .BAZ_fiche_titre, .BAZ_cadre_map .BAZ_fiche_titre {
-  font-size: 16px;
-  line-height: 20px;
-  margin:0 0 16px;
-}
-
-.leaflet-popup ul.css-tabs, .BAZ_cadre_map ul.css-tabs {
-	margin:0;
-}
-.leaflet-popup ul.css-tabs a, .BAZ_cadre_map ul.css-tabs a {
-font-size:.8em;
-height:auto;
-margin:0 1px 0 0;
-padding:3px;
-}
-/* end carto */
-
 /* accordion pane */
 .accordion {
 	background:transparent;
