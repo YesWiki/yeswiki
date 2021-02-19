@@ -176,8 +176,9 @@ class Performer
                 }
             } catch (Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
-                return $this->twig->render("@templates/danger-message.twig", [
+                return $this->twig->render("@templates/alert-message.twig", [
                     // display a generic message with the detailled error
+                    'type' => 'danger',
                     'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage()
                 ]);
             }
