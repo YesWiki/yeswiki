@@ -39,6 +39,7 @@ $GLOBALS['translations'] = array(
 'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'acc&egrave;s &agrave; la base de donn&eacute;es a &eacute;chou&eacute;. <br><br>Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
 'LOG_DB_CONNECT_FAIL' => 'YesWiki : la connexion BDD a echouee', // sans accents car commande systeme
 'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',
+'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
 'HOMEPAGE_WIKINAME' => 'PagePrincipale',
 'MY_YESWIKI_SITE' => 'Mon site YesWiki',
 
