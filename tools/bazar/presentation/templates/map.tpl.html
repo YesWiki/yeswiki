@@ -6,6 +6,7 @@ if (count($fiches)>0) :
 	echo $pager_links;
 
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
+    $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/bazarcarto.css');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
@@ -53,9 +54,6 @@ if (count($fiches)>0) :
 
 			// couleur de marqueur
 			$color = getCustomValueForEntry($param['color'], $param['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
-			if (!in_array($color,$param['availableColors'])) {
-				$color = $param['availableColors'][0];
-			}
 
 			//icone de marqueur
 			$icon = $param['iconprefix']
@@ -75,8 +73,8 @@ if (count($fiches)>0) :
 											iconAnchor: '.$param['iconAnchor'].',
 											popupAnchor: '.$param['popupAnchor'].',
 											className: \'bazar-marker'.$param['smallmarker'].'\',
-											html: \'<div class="bazar-entry icon-'.$color.'" '
-											.str_replace('\'', '', $fiche['html_data']).'>'
+											html: \'<div class="bazar-entry" '
+											.str_replace('\'', '', $fiche['html_data']).' style="color:'.$color.';">'
 											.(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
 											.'</div>\'
 									}),

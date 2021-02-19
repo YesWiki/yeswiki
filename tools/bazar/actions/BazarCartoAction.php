@@ -6,11 +6,6 @@ require_once('BazarListeAction.php');
 
 class BazarCartoAction extends YesWikiAction
 {
-    public static $availableColors = array(
-        'darkred', 'red', 'lightred', 'orange', 'beige', 'green', 'darkgreen', 'lightgreen', 'blue', 'darkblue',
-        'lightblue', 'purple', 'darkpurple', 'pink', 'cadetblue', 'white', 'gray', 'lightgray', 'black',
-    );
-
     public function formatArguments($arg)
     {
         // PROVIDERS
@@ -89,7 +84,6 @@ class BazarCartoAction extends YesWikiAction
             'fullscreen' => $arg['fullscreen'] ?? 'true',
             // Fournit une configuration JSON via un URL
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
-            'availableColors' => BazarCartoAction::$availableColors ,
             //template - default value map
             'template' => (isset($arg['template']) &&
                 BazarListeAction::specialActionFromTemplate($arg['template'], 'BAZARCARTO_TEMPLATES'))
