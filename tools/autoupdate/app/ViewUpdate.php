@@ -1,5 +1,10 @@
 <?php
-// file only to prevent errors when updating from cercopitheque to doryphore
+/* === WARNING !!!! ==== DO NOT USE THIS CLASS IN DORYPHORE
+ *
+ * This file is only to prevent errors when updating from cercopitheque to doryphore.
+ * It is executed in a cercopitheque version in RAM on server. Do not call new others classes
+ * because we can not be sure that this class exists in the RAM or if the file is ever on the file system.
+ */
 namespace AutoUpdate;
 
 class ViewUpdate
@@ -8,6 +13,7 @@ class ViewUpdate
     protected $messages;
     protected $baseURL;
     
+    // important do not change the arguments of this method because called form cercopitheque
     public function __construct($autoUpdate, $messages)
     {
         $this->autoUpdate = $autoUpdate;
@@ -24,14 +30,21 @@ class ViewUpdate
         return $infos;
     }
     
+    // important do not change the arguments of this method because called form cercopitheque
     public function show()
     {
-        $output = '';
+        $data = [];
         foreach ($this->messages as $message) {
-            $output .= $message['text'] . ':' . $message['status'] . ';';
+            $data['messages']['status'] = $message['status'];
+            $data['messages']['text'] = $message['text'];
         }
-        $_SESSION['message'] = $output;
-        header("Location: ".$this->baseURL);
+        $data['baseURL'] = $this->baseURL;
+        $_SESSION['message'] = json_encode($data);
+
+        // call the handler 'welcomdoryphore' to reload wiki in doryphore version
+        // give $data by $_SESSION['message']
+        $newAdress = $GLOBALS['wiki']->Href('welcomedoryphore');
+        header("Location: ".$newAdress);
         exit();
     }
 }
