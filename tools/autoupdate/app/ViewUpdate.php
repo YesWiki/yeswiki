@@ -35,8 +35,10 @@ class ViewUpdate
     {
         $data = [];
         foreach ($this->messages as $message) {
-            $data['messages']['status'] = $message['status'];
-            $data['messages']['text'] = $message['text'];
+            $data_message = [];
+            $data_message['status'] = $message['status'];
+            $data_message['text'] = $message['text'];
+            $data['messages'][] = $data_message;
         }
         $data['baseURL'] = $this->baseURL;
         $_SESSION['message'] = json_encode($data);
