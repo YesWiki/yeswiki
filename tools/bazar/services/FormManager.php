@@ -53,16 +53,11 @@ class FormManager
 
     public function getOne($formId): ?array
     {
-        // tests of if $formId is int
-        if (strval(intval($formId)) != strval($formId)) {
-            return null ;
-        }
-
         if (isset($this->cachedForms[$formId])) {
             return $this->cachedForms[$formId];
         }
 
-        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $formId);
+        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $formId . '\'');
 
         if (!$form) {
             return null;

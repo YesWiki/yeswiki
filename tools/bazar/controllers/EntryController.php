@@ -154,12 +154,12 @@ class EntryController extends YesWikiController
 
     public function create($formId, $redirectUrl = null)
     {
-        if (empty($formId) || !ctype_digit($formId)) {
+        if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
         $form = $this->formManager->getOne($formId);
         if (!$form){
-            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : ' . $formId . '</div>';
+            return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
         }
 
         if (isset($_POST['bf_titre'])) {
