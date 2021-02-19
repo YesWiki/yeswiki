@@ -136,6 +136,7 @@ class BazarAction extends YesWikiAction
                         return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time'] ?? '');
                     case self::MOTEUR_RECHERCHE:
                     default:
+                        $this->arguments['search'] = true;
                         return $this->callAction('bazarliste', $this->arguments);
                 }
         }
