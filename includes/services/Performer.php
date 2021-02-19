@@ -176,11 +176,18 @@ class Performer
                 }
             } catch (Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
-                return $this->twig->render("@templates/alert-message.twig", [
-                    // display a generic message with the detailled error
+                $message = [
                     'type' => 'danger',
+                    // display a generic message with the detailled error
                     'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage()
-                ]);
+                ];
+                if ($objectType == 'handler' || $objectType == 'formatter') {
+                    // display it with a header and a footer
+                    return $this->twig->renderInSquelette("@templates/alert-message.twig", $message);
+                } else {
+                    // display it inline
+                    return $this->twig->render("@templates/alert-message.twig", $message);
+                }
             }
         }
         return $output;
