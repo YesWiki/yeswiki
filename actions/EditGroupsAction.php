@@ -138,7 +138,7 @@ class EditGroupsAction extends YesWikiAction
                     do {
                         ;
                     } while (mysqli_next_result($link));
-                    return $res . 'groupe ' . $name . 'supprimé' . '<br/>$sql='.$sql;
+                    return $res . 'groupe ' . $name . ' supprimé' . '<br/>';
                 }
             }
         } elseif (!empty($_GET['groupname'])) {
