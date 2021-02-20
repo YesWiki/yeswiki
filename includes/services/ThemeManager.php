@@ -57,7 +57,9 @@ class ThemeManager
         $themePath = 'themes/'.$this->theme;
         $filePath = $themePath . '/squelettes/' . $this->squelette;
 
-        if (!(file_exists('custom/'.$themePath) || file_exists($themePath))) {
+        $useFallbackTheme = !empty($this->config['use_fallback_theme']) ;
+
+        if (!((!$useFallbackTheme && file_exists('custom/'.$themePath)) || file_exists($themePath))) {
             $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_THEME_FOLDER') .$this->theme. _t('THEME_MANAGER_NOT_FOUND'),
@@ -65,14 +67,14 @@ class ThemeManager
             return false;
         }
 
-        if (!(file_exists('custom/'.$filePath) || file_exists($filePath))) {
+        if (!((!$useFallbackTheme &&file_exists('custom/'.$filePath)) || file_exists($filePath))) {
             $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND'),
                 ]);
             return false;
         }
-        $filePath = file_exists('custom/'.$filePath) ? 'custom/'. $filePath : $filePath;
+        $filePath = (!$useFallbackTheme && file_exists('custom/'.$filePath)) ? 'custom/'. $filePath : $filePath;
 
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
