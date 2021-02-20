@@ -60,28 +60,31 @@ class ThemeManager
         $useFallbackTheme = !empty($this->config['use_fallback_theme']) ;
 
         if (!((!$useFallbackTheme && file_exists('custom/'.$themePath)) || file_exists($themePath))) {
-            $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
-                    'type' => 'danger',
-                    'message' => _t('THEME_MANAGER_THEME_FOLDER') .$this->theme. _t('THEME_MANAGER_NOT_FOUND'),
-                ]);
+            $this->errorMessage = '<div class="alert alert-danger">'._t('THEME_MANAGER_THEME_FOLDER') .$this->theme. _t('THEME_MANAGER_NOT_FOUND').'</div>';
+            // $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
+            //         'type' => 'danger',
+            //         'message' => _t('THEME_MANAGER_THEME_FOLDER') .$this->theme. _t('THEME_MANAGER_NOT_FOUND'),
+            //     ]);
             return false;
         }
 
         if (!((!$useFallbackTheme &&file_exists('custom/'.$filePath)) || file_exists($filePath))) {
-            $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
-                    'type' => 'danger',
-                    'message' => _t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND'),
-                ]);
+            $this->errorMessage = '<div class="alert alert-danger">'._t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND').'</div>';
+            // $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
+            //         'type' => 'danger',
+            //         'message' => _t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND'),
+            //     ]);
             return false;
         }
         $filePath = (!$useFallbackTheme && file_exists('custom/'.$filePath)) ? 'custom/'. $filePath : $filePath;
 
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
-            $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
-                'type' => 'danger',
-                'message' => _t('THEME_MANAGER_ERROR_GETTING_FILE') .$filePath,
-            ]);
+            $this->errorMessage = '<div class="alert alert-danger">'._t('THEME_MANAGER_ERROR_GETTING_FILE') .$filePath.'</div>';
+            // $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
+            //     'type' => 'danger',
+            //     'message' => _t('THEME_MANAGER_ERROR_GETTING_FILE') .$filePath,
+            // ]);
             return false;
         }
         $this->fileContent = $fileContent;
@@ -127,7 +130,7 @@ class ThemeManager
                 foreach ($valeur as $val) {
                     if (isset($matches[2][$j]) && $matches[2][$j]!='') {
                         $action = $matches[2][$j];
-                        $text = str_replace('{{'.$action.'}}', $this->Performer->run('action', 'formatter', compact('{{'.$action.'}}')), $text);
+                        $text = str_replace('{{'.$action.'}}', $this->Performer->run('action', 'formatter', ['text'=>'{{'.$action.'}}']), $text);
                     }
                     $j++;
                 }

@@ -436,7 +436,7 @@ $GLOBALS['translations'] = array(
 // include/services/ThemeManager.php
 'THEME_MANAGER_THEME_FOLDER' => 'Le dossier du thème ',
 'THEME_MANAGER_SQUELETTE_FILE' => 'Le fichier du squelette ',
-'THEME_MANAGER_NOT_FOUND' => 'n\'a pas été trouvé.',
+'THEME_MANAGER_NOT_FOUND' => ' n\'a pas été trouvé.',
 'THEME_MANAGER_ERROR_GETTING_FILE' => 'Une erreur s\'est produite en chargeant ce fichier : ',
 
 );

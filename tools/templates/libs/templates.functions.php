@@ -948,7 +948,7 @@ function loadTemplates($metadata, &$config)
                 $config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
                 $config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
             } else {
-                exit('<div class="alert alert-danger">'._t('TEMPLATE_NO_DEFAULT_THEME').'.</div>');
+                return false;
             }
         }
         $config['use_fallback_theme'] = true;
