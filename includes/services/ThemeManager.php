@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use YesWiki\Wiki;
+use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
 
 class ThemeManager
