@@ -181,7 +181,7 @@ class Performer
                     // display a generic message with the detailled error
                     'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage()
                 ];
-                if ($objectType == 'handler' || $objectType == 'formatter') {
+                if ($objectType == 'handler') {
                     // display it with a header and a footer
                     return $this->twig->renderInSquelette("@templates/alert-message.twig", $message);
                 } else {
