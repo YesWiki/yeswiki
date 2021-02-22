@@ -98,9 +98,9 @@ class IframeHandler extends YesWikiHandler
         $output = '';
         // on ajoute un bouton de partage, si &share=1 est présent dans l'url
         if (isset($_GET['share']) && $_GET['share'] == '1') {
-            $output .= '<a class="btn btn-small btn-default link-share modalbox pull-right" href="'
+            $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
                 . $this->wiki->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
-                . $this->wiki->GetPageTag() . '"><i class="fa fa-share-alt"></i>&nbsp;' . _t('TEMPLATE_SHARE')
+                . $this->wiki->GetPageTag() . '"><i class="fa fa-share-alt"></i>' . _t('TEMPLATE_SHARE')
                 . '</a>';
         }
 

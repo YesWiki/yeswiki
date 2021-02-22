@@ -130,8 +130,8 @@ if (isset($_GET['jsonp_callback'])) {
                     "<textarea name=\"body\" required=\"required\" rows=\"3\" placeholder=\""._t('TAGS_WRITE_YOUR_COMMENT_HERE')."\" class=\"comment-response\">\n".
                     htmlspecialchars($body, ENT_COMPAT, YW_CHARSET).
                     "</textarea>\n".
-                    ($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-small btn-primary btn-modify\" value=\""._t('TAGS_MODIFY')."\" />\n").
-                    "<input type=\"button\" value=\""._t('TAGS_CANCEL')."\" class=\"btn btn-small btn-cancel-modify\" />\n".
+                    ($this->config['preview_before_save'] ? '' : "<input name=\"submit\" type=\"button\" class=\"btn btn-sm btn-primary btn-modify\" value=\""._t('TAGS_MODIFY')."\" />\n").
+                    "<input type=\"button\" value=\""._t('TAGS_CANCEL')."\" class=\"btn btn-sm btn-cancel-modify\" />\n".
                     "</form>\n";
         } // switch
     } else {
