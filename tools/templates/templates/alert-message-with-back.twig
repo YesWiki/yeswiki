@@ -1,0 +1,7 @@
+{# according to bootstrap3, type can be 'success', 'info', 'warning', 'danger' #}
+<div class="alert alert-{{ type }}">{{ message | raw }}</div>
+<div>
+    <a class="btn btn-sm btn-secondary-1" href="javascript:history.back()">
+        <i class="fas fa-arrow-left"></i>{{  _t('GO_BACK') }}
+    </a>
+</div>
