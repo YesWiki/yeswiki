@@ -420,7 +420,6 @@ class EntryManager
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
-
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
 
@@ -666,7 +665,7 @@ class EntryManager
         return $sendmail;
     }
 
-    private function sendMailToNotifiedEmails(string $sendmail, array $data)
+    private function sendMailToNotifiedEmails(?string $sendmail, ?array $data)
     {
         if ($sendmail) {
             $emailsFieldnames = array_unique(explode(',', $sendmail));
