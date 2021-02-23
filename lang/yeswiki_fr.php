@@ -39,6 +39,7 @@ $GLOBALS['translations'] = array(
 'DB_CONNECT_FAIL' => 'Pour des raisons ind&eacute;pendantes de notre volont&eacute;, le contenu de ce YesWiki est temporairement inaccessible.<br>Probablement l\'acc&egrave;s &agrave; la base de donn&eacute;es a &eacute;chou&eacute;. <br><br>Veuillez r&eacute;essayer ult&eacute;rieurement, merci de votre compr&eacute;hension.',
 'LOG_DB_CONNECT_FAIL' => 'YesWiki : la connexion BDD a echouee', // sans accents car commande systeme
 'INCORRECT_PAGENAME' => 'Le nom de la page est incorrect.',
+'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
 'HOMEPAGE_WIKINAME' => 'PagePrincipale',
 'MY_YESWIKI_SITE' => 'Mon site YesWiki',
 
@@ -298,7 +299,7 @@ $GLOBALS['translations'] = array(
 'INCORRECT_MYSQL_PASSWORD' => 'Le mot de passe MySQL est incorrect',
 'TEST_MYSQL_CONNECTION' => 'Test connexion MySQL',
 'SEARCH_FOR_DATABASE' => 'Recherche base de donn&eacute;es',
-'GO_BACK' => 'Revenir',
+'GO_BACK' => 'Retour',
 'NO_DATABASE_FOUND_TRY_TO_CREATE' => 'La base de donn&eacute;es que vous avez choisie n\'existe pas. Nous allons tenter de la cr&eacute;er',
 'TRYING_TO_CREATE_DATABASE' => 'Tentative de cr&eacute;ation de la base de donn&eacute;es',
 'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Cr&eacute;ation de la base impossible. Vous devez cr&eacute;er cette base manuellement avant d\'installer YesWiki',

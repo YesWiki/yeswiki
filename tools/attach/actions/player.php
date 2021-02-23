@@ -98,10 +98,10 @@ if (!empty($url)) {
             <div id="jquery_jplayer_'.$GLOBALS['jplayer'].'" class="jp-jplayer"></div>
             <div id="jp_container_'.$GLOBALS['jplayer'].'" class="jp-audio">
                 <div class="btn-group btn-group-sm no-dblclick">
-                    <a href="#" class="jp-play btn btn-default btn-primary btn-small"><i class="fa fa-play icon-play icon-white"></i></a>
-                    <a href="#" class="jp-pause btn btn-default btn-primary btn-small" style="display:none"><i class="fa fa-pause icon-pause icon-white"></i></a>
-                    <a href="#" class="jp-stop btn btn-default btn-small"><i class="fa fa-stop icon-stop"></i></a>
-                    <span class="btn btn-default btn-small" style="width:140px; position:relative;">
+                    <a href="#" class="jp-play btn btn-default btn-primary"><i class="fa fa-play icon-play icon-white"></i></a>
+                    <a href="#" class="jp-pause btn btn-default btn-primary" style="display:none"><i class="fa fa-pause icon-pause icon-white"></i></a>
+                    <a href="#" class="jp-stop btn btn-default"><i class="fa fa-stop icon-stop"></i></a>
+                    <span class="btn btn-default" style="width:140px; position:relative;">
                         <span style="width:100%; text-align:center; z-index:2; position:absolute; left:0;">
                             <span class="jp-current-time">00:00</span> / <span class="jp-duration">00:00</span>
                         </span>
@@ -109,9 +109,9 @@ if (!empty($url)) {
                             <div class="bar extra-play-info" style="width: 0%;background: rgba(0, 0, 0, .2);height: 100%;"></div>
                         </div>
                     </span>
-                    <a href="#" class="jp-unmute btn btn-default btn-small"><i class="fa fa-volume-off icon-volume-off"></i></a>
-                    <a href="#" class="jp-mute btn btn-default btn-small" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
-                    <a href="'.$url.'" download rel="download" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="fas fa-download"></i></a>
+                    <a href="#" class="jp-unmute btn btn-default"><i class="fa fa-volume-off icon-volume-off"></i></a>
+                    <a href="#" class="jp-mute btn btn-default" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
+                    <a href="'.$url.'" download rel="download" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';
@@ -184,10 +184,10 @@ if (!empty($url)) {
             <div id="jquery_jplayer_'.$GLOBALS['jplayer'].'" class="jp-jplayer jp-jplayer-video"></div>
             <div id="jp_container_'.$GLOBALS['jplayer'].'" class="jp-video">
                 <div class="btn-group btn-group-sm no-dblclick">
-                    <a href="#" class="jp-play btn btn-default btn-primary btn-small"><i class="fa fa-play icon-play icon-white"></i></a>
-                    <a href="#" class="jp-pause btn btn-default btn-primary btn-small" style="display:none"><i class="fa fa-pause icon-pause icon-white"></i></a>
-                    <a href="#" class="jp-stop btn btn-default btn-small"><i class="fa fa-stop icon-stop"></i></a>
-                    <span class="btn btn-default btn-small" style="width:140px; position:relative;">
+                    <a href="#" class="jp-play btn btn-default btn-primary"><i class="fa fa-play icon-play icon-white"></i></a>
+                    <a href="#" class="jp-pause btn btn-default btn-primary" style="display:none"><i class="fa fa-pause icon-pause icon-white"></i></a>
+                    <a href="#" class="jp-stop btn btn-default"><i class="fa fa-stop icon-stop"></i></a>
+                    <span class="btn btn-default" style="width:140px; position:relative;">
                         <span style="width:100%; text-align:center; z-index:2; position:absolute; left:0;">
                             <span class="jp-current-time">00:00</span> / <span class="jp-duration">00:00</span>
                         </span>
@@ -195,10 +195,10 @@ if (!empty($url)) {
                             <div class="bar extra-play-info" style="width: 0%;background: rgba(0, 0, 0, .2);height: 100%;"></div>
                         </div>
                     </span>
-                    <a href="#" class="jp-unmute btn btn-default btn-small"><i class="fa fa-volume-off icon-volume-off"></i></a>
-                    <a href="#" class="jp-mute btn btn-default btn-small" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
-                    <a href="#" class="jp-full-screen btn btn-default btn-small" role="button" tabindex="0"><i class="fas fa-expand-arrows-alt"></i></a>
-                    <a href="'.$url.'" rel="download" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default btn-small"><i class="fas fa-download"></i></a>
+                    <a href="#" class="jp-unmute btn btn-default"><i class="fa fa-volume-off icon-volume-off"></i></a>
+                    <a href="#" class="jp-mute btn btn-default" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
+                    <a href="#" class="jp-full-screen btn btn-default" role="button" tabindex="0"><i class="fas fa-expand-arrows-alt"></i></a>
+                    <a href="'.$url.'" rel="download" title="'._t('ATTACH_DOWNLOAD_THE_FILE').' : '.($url).'" class="btn btn-default"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';

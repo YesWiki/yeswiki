@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Throwable;
 use YesWiki\Wiki;
 
 class PerformerException extends \Exception
@@ -34,13 +35,16 @@ class Performer
     ];
     protected $wiki;
     protected $params;
+    protected $twig;
+
     // list of all existing object
     protected $objectList;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig)
     {
         $this->wiki = $wiki;
         $this->params = $params;
+        $this->twig = $twig;
 
         // get the list of all existing objects (actions, handlers, formatters...)
         $folders = array_merge([''], $wiki->extensions); // root folder + extensions folders
@@ -159,15 +163,31 @@ class Performer
         // execute main file with callbacks
         $files = array_merge($object['before_callbacks'], [$object], $object['after_callbacks']);
         foreach ($files as $file) {
-            if ($file['isDefinedAsClass']) {
-                $performable = $this->createPerformable($file, $vars, $output);
-                $output .= $performable->run();
-            } else {
-                $vars['plugin_output_new'] = &$output;
-                // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
-                $vars = $this->wiki->runFileInBuffer($file['filePath'], $vars);
-                $output = &$vars['plugin_output_new'];
-                unset($vars['plugin_output_new']);
+            try {
+                if ($file['isDefinedAsClass']) {
+                    $performable = $this->createPerformable($file, $vars, $output);
+                    $output .= $performable->run();
+                } else {
+                    $vars['plugin_output_new'] = &$output;
+                    // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
+                    $vars = $this->wiki->runFileInBuffer($file['filePath'], $vars);
+                    $output = &$vars['plugin_output_new'];
+                    unset($vars['plugin_output_new']);
+                }
+            } catch (Throwable $t) {
+                // catch all errors and exceptions thrown by the execution of the performable
+                $message = [
+                    'type' => 'danger',
+                    // display a generic message with the detailled error
+                    'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage()
+                ];
+                if ($objectType == 'handler') {
+                    // display it with a header and a footer
+                    return $this->twig->renderInSquelette('@templates/alert-message-with-back.twig', $message);
+                } else {
+                    // display it inline
+                    return $this->twig->render('@templates/alert-message.twig', $message);
+                }
             }
         }
         return $output;

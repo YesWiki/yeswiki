@@ -112,7 +112,7 @@ class TemplateEngine
         return $this->$method($templatePath, $data);
     }
 
-    public function renderTwig($templatePath, $data = [])
+    protected function renderTwig($templatePath, $data = [])
     {
         $data = array_merge($data, [
             'config' => $this->wiki->config,
@@ -124,7 +124,7 @@ class TemplateEngine
     /**
      * @throws TemplateNotFound
      */
-    public function renderPhp($templatePath, $data = [])
+    protected function renderPhp($templatePath, $data = [])
     {
         if (!$this->hasTemplate($templatePath)) {
             throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
