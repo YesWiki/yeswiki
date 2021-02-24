@@ -22,10 +22,9 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                 echo '<p class="password_for_editing_message">'.$this->config['password_for_editing_message'].'</p>'."\n";
             }
             echo '<form method="post" action="'.$this->href('edit', $this->GetPageTag()).'" class="form-inline">
-      <div class="form-group">
+      <div>
         <label for="password_for_editing">'._t('HASHCASH_GENERAL_PASSWORD').'</label>
-        <input type="password" class="form-control" id="password_for_editing" name="password_for_editing">
-      </div>';
+        <input type="password" class="form-control" id="password_for_editing" name="password_for_editing">';
             // pour l'edition d'une page de l'historique
             if (isset($_REQUEST['time'])) {
                 echo '<input type="hidden" name="time" value="'
@@ -35,8 +34,9 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
                 echo '<input type="hidden" name="previous" value="'
                   .htmlspecialchars($_REQUEST['previous']).'" />'."\n";
             }
+
             echo '
-      <button type="submit" class="btn btn-default">'._t('HASHCASH_SEND').'</button>
+      <button type="submit" class="btn btn-primary">'._t('HASHCASH_SEND').'</button></div>
     </form>';
             echo $this->Footer();
             exit;
