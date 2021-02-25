@@ -179,7 +179,8 @@ class Performer
                 $message = [
                     'type' => 'danger',
                     // display a generic message with the detailled error
-                    'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage()
+                    'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage() . ' in <i>' . $t->getFile()
+                        . '</i> on line <i>' . $t->getLine() . '</i>'
                 ];
                 if ($objectType == 'handler') {
                     // display it with a header and a footer
