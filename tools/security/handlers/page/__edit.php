@@ -21,7 +21,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
             if (isset($this->config['password_for_editing_message']) and !empty($this->config['password_for_editing_message'])) {
                 echo '<p class="password_for_editing_message">'.$this->config['password_for_editing_message'].'</p>'."\n";
             }
-            echo '<form method="post" action="'.$this->href('edit', $this->GetPageTag()).'" class="form-inline">
+            echo '<form method="post" action="'.$this->href(testUrlInIframe() ? 'editiframe' : 'edit', $this->GetPageTag()).'" class="form-inline">
       <div>
         <label for="password_for_editing">'._t('HASHCASH_GENERAL_PASSWORD').'</label>
         <input type="password" class="form-control" id="password_for_editing" name="password_for_editing">';

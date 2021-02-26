@@ -125,3 +125,20 @@ function replaceLinksWithIframe(string $body): string
     );
     return $pagebody;
 }
+
+function testUrlInIframe($url = '')
+{
+    if (empty($url)) {
+        // test si on est dans une iframe
+        $url = getAbsoluteUrl();
+    }
+    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
+    return $iframe ? 'iframe' : '';
+}
+
+function testRefererUrlInIframe()
+{
+    $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
+    return $iframe ? 'iframe' : '';
+}

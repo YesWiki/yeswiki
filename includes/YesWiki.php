@@ -606,7 +606,7 @@ class Wiki
     // FORMS
     public function FormOpen($method = '', $tag = '', $formMethod = 'post', $class = '')
     {
-        if ($method=='edit') {
+        if ($method=='edit' || $method=='editiframe') {
             $result  = '<form id="ACEditor" name="ACEditor" enctype="multipart/form-data" action="'.$this->href($method, $tag).'" method="'.$formMethod.'"';
             $result .= !empty($class) ? ' class="'.$class.'"' : '';
             $result .= ">\n";
