@@ -432,7 +432,7 @@ class Wiki
                     }
                 };
                 if (count($paramsArray)>0) {
-                    $params = implode("&", $paramsArray);
+                    $params = implode(($htmlspchars ? '&amp;' : '&'), $paramsArray);
                 } else {
                     $params = '';
                 }
