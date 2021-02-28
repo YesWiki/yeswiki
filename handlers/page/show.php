@@ -68,7 +68,7 @@ if ($HasAccessRead=$this->HasAccess("read")) {
                 $latest = $this->LoadPage($this->tag); ?>
 				<?php
                   $time = isset($_GET['time']) ? $_GET['time'] : '';
-                echo $this->FormOpen('edit'); ?>
+                echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit'); ?>
 				<input type="hidden" name="time" value="<?php echo $time ?>" />
 				<input type="hidden" name="previous" value="<?php echo  $latest["id"] ?>" />
 				<input type="hidden" name="body" value="<?php echo  htmlspecialchars($this->page["body"], ENT_COMPAT, YW_CHARSET) ?>" />

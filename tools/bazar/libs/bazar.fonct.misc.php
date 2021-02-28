@@ -205,20 +205,6 @@ function obtenir_extension($filename)
     }
 }
 
-function testUrlInIframe($url = '')
-{
-    if (empty($url)) {
-        // test si on est dans une iframe
-        $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    }
-    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
-    if ($iframe) {
-        return 'iframe';
-    } else {
-        return '';
-    }
-}
-
 function renameUrlToSanitizedFilename($url)
 {
     $str = preg_replace('/[\r\n\t ]+/', ' ', basename($url));
