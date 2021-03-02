@@ -41,7 +41,7 @@ class ThemeManager
      * @param $metadata metadata fr the current Page
      * @return array of templates
      */
-    public function loadTemplates($metadata): ?array
+    public function loadTemplates($metadata = []): ?array
     {
         // Premier cas le template par défaut est forcé : on ajoute ce qui est présent dans le fichier de configuration, ou le theme par defaut précisé ci dessus
         if (isset($this->config['hide_action_template']) && $this->config['hide_action_template'] == '1') {
