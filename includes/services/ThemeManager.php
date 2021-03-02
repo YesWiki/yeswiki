@@ -127,7 +127,7 @@ class ThemeManager
                     $this->config['favorite_squelette'] = SQUELETTE_PAR_DEFAUT;
                     $this->config['favorite_background_image'] = BACKGROUND_IMAGE_PAR_DEFAUT;
                 } else {
-                    return null;
+                    return [];
                 }
             }
             $this->config['use_fallback_theme'] = true;

@@ -331,5 +331,6 @@ $GLOBALS['translations'] = array(
 'THEME_MANAGER_ERROR_GETTING_FILE' => 'Una error estalle cargando el fichero : ',
 'THEME_MANAGER_CLICK_TO_INSTALL' => 'Clicar para instalar el tema ',
 'THEME_MANAGER_AND_REPAIR' => ' y reparar el sitio',
+'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Conectaya como administrador para actualizar.',
 
 );

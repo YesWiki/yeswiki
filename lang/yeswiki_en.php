@@ -409,5 +409,6 @@ $GLOBALS['translations'] = array(
 'THEME_MANAGER_ERROR_GETTING_FILE' => 'An error occured while loading the file : ',
 'THEME_MANAGER_CLICK_TO_INSTALL' => 'Click to install the theme ',
 'THEME_MANAGER_AND_REPAIR' => ' and repair the website',
+'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Login as admin to upgrade.',
 
 );
