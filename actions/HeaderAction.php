@@ -10,7 +10,7 @@ class HeaderAction extends YesWikiAction
         $themeManager = $this->getService(ThemeManager::class);
         if (!$themeManager->loadTheme()) {
             $output = $themeManager->getErrorMessage();
-            $text = "Cliquer pour installer le thème ". THEME_PAR_DEFAUT ." et réparer le site";
+            $text = _t('THEME_MANAGER_CLICK_TO_INSTALL'). THEME_PAR_DEFAUT ._t('THEME_MANAGER_AND_REPAIR');
             $output .= '<div><a href="'.$this->wiki->Href('', 'GererMisesAJour', ['upgrade'=>  THEME_PAR_DEFAUT ]).'" title="'.$text.'">'.$text.'</a></div>';
             return $output ;
         } else {
