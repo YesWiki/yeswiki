@@ -438,5 +438,7 @@ $GLOBALS['translations'] = array(
 'THEME_MANAGER_SQUELETTE_FILE' => 'Le fichier du squelette ',
 'THEME_MANAGER_NOT_FOUND' => ' n\'a pas été trouvé.',
 'THEME_MANAGER_ERROR_GETTING_FILE' => 'Une erreur s\'est produite en chargeant ce fichier : ',
+'THEME_MANAGER_CLICK_TO_INSTALL' => 'Cliquer pour installer le thème ',
+'THEME_MANAGER_AND_REPAIR' => ' et réparer le site',
 
 );
