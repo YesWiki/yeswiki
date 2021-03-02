@@ -87,9 +87,8 @@
                 {% for filterValue in filter.list %}
                   <div class="checkbox">
                     <label>
-                      <input class="filter-checkbox" type="checkbox" id="{{ filterValue.id }}" name="{{ filterValue.name }}" value="{{ filterValue.value }}">
+                      <input class="filter-checkbox" type="checkbox" id="{{ filterValue.id }}" name="{{ filterValue.name }}" value="{{ filterValue.value }}" {{ filterValue.checked }}>
                       <span>
-                        {{ filterValue.checked }}
                         {{ filterValue.label|raw }} <span class="nb-wrapper">(<span class="nb">{{ filterValue.nb }}</span>)</span>
                       </span>
                     </label>
