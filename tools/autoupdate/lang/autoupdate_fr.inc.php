@@ -33,6 +33,7 @@ $GLOBALS['translations'] = array_merge(
         'AU_DELETE_EXT' => "Supprimer",
         'AU_DELETE' => "Suppression des fichiers",
         'AU_NO_DESCRIPTION' => "Description non disponible.",
-        'AU_DOCUMENTATION_LINK' => "documentation"
+        'AU_DOCUMENTATION_LINK' => "documentation",
+        'AU_YESWIKI_DORYPHORE_POSTINSTALL' => "Welcome on Doryphore",
     )
 );

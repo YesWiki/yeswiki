@@ -34,7 +34,7 @@ class WelcomeDoryphoreHandler extends YesWikiHandler
         }
 
         // finished rendering of autoupdate
-        $output = '<h1>Welcome on Doryphore</h1>'."\n";
+        $output = '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n";
         // $output .= $message;
         $output .= $this->wiki->render("@autoupdate/update.twig", [
             'messages' => $data['messages'],
