@@ -112,7 +112,7 @@ class PageManager
         return $this->dbService->loadAll('select from_tag as tag from' . $this->dbService->prefixTable('links') . "where to_tag = '" . $this->dbService->escape($tag) . "' order by tag");
     }
 
-    public function getRecentlyChanged($limit = 50, $minDate = ''): array
+    public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
         if (!empty($minDate)) {
             if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
@@ -123,6 +123,7 @@ class PageManager
             }
         } else {
             $limit = (int) $limit;
+            $limit = ($limit <1) ? 50 : $limit ;
             if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
@@ -203,12 +204,12 @@ class PageManager
         if ($rights) {
             // is page new?
             if (!$oldPage = $this->getOne($tag)) {
-				
-				// LoadACL (if defined by acls)
-				$defaultWrite = $this->aclService->load($tag, 'write', true)['list'] ;
-				$defaultRead = $this->aclService->load($tag, 'read', true)['list'];
-				$defaultComment = $this->aclService->load($tag, 'comment', true)['list'] ;
-				
+                
+                // LoadACL (if defined by acls)
+                $defaultWrite = $this->aclService->load($tag, 'write', true)['list'] ;
+                $defaultRead = $this->aclService->load($tag, 'read', true)['list'];
+                $defaultComment = $this->aclService->load($tag, 'comment', true)['list'] ;
+                
                 // create default write acl. store empty write ACL for comments.
                 $this->aclService->save($tag, 'write', ($comment_on ? $user : $defaultWrite));
 
