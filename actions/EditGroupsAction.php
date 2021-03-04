@@ -24,9 +24,11 @@ class EditGroupsAction extends YesWikiAction
 {
     public function run()
     {
-        $aclMessage = $this->checkSecuredACL() ;
-        if (!empty($aclMessage)) {
-            return $aclMessage;
+        if (!$this->wiki->UserIsAdmin()) {
+            return $this->render('@templates/alert-message.twig', [
+                'type'=>'danger',
+                'message'=> "EditGroupsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+            ]) ;
         }
 
         // Form definition

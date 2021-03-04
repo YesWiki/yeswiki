@@ -24,9 +24,11 @@ class EditActionsAclsAction extends YesWikiAction
 {
     public function run()
     {
-        $aclMessage = $this->checkSecuredACL() ;
-        if (!empty($aclMessage)) {
-            return $aclMessage;
+        if (!$this->wiki->UserIsAdmin()) {
+            return $this->render('@templates/alert-message.twig', [
+                'type'=>'danger',
+                'message'=> "EditActionsAclsAction : " . _t('BAZ_NEED_ADMIN_RIGHTS')
+            ]) ;
         }
 
         $wiki = &$this->wiki;
