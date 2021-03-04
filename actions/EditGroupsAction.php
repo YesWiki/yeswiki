@@ -24,6 +24,11 @@ class EditGroupsAction extends YesWikiAction
 {
     public function run()
     {
+        $aclMessage = $this->checkSecuredACL() ;
+        if (!empty($aclMessage)) {
+            return $aclMessage;
+        }
+
         // Form definition
         $wiki = &$this->wiki;
         $list = $wiki->GetGroupsList(); // retrieves an array of group names from table 'triples' (content of 'resource' starts with 'ThisWikiGroup' and content of 'property' equals  'http://www.wikini.net/_vocabulary/acls')

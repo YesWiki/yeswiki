@@ -24,6 +24,11 @@ class EditHandlersAclsAction extends YesWikiAction
 {
     public function run()
     {
+        $aclMessage = $this->checkSecuredACL() ;
+        if (!empty($aclMessage)) {
+            return $aclMessage;
+        }
+
         $wiki = &$this->wiki;
         $list = $wiki->services->get(Performer::class)->list('handler');
         sort($list);
