@@ -107,7 +107,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         "</div>" +
         "</div>"
       );
-      var $modal = $("#YesWikiModal");
+      $modal = $("#YesWikiModal");
     } else {
       $modal.find(".modal-body").html("") ;
     }
@@ -151,7 +151,6 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
           for (i = 0; i < l; i++) {
             var src = res[i].getAttribute("src");
             if (src) {
-              console.log("Search : "+src);
               var selection = document.querySelectorAll('script[src="'+src+'"]') ;
               if (selection.length == 0) {
                 // append script and load it only if not present
