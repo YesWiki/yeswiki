@@ -89,8 +89,10 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       text = "<h3></h3>";
     }
 
-    $("body").append(
-      '<div class="modal fade" id="YesWikiModal">' +
+    var $modal = $("#YesWikiModal");
+    if ($modal.length == 0) {
+      $("body").append(
+        '<div class="modal fade" id="YesWikiModal">' +
         '<div class="modal-dialog' +
         size +
         '">' +
@@ -104,12 +106,15 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         "</div>" +
         "</div>" +
         "</div>"
-    );
+      );
+      var $modal = $("#YesWikiModal");
+    } else {
+      $modal.find(".modal-body").html("") ;
+    }
 
     var link = $this.attr("href");
     // incomingurl can be usefull (per example for deletepage handler)
     link += "&incomingurl=" + encodeURIComponent(window.location.toString());
-    var $modal = $("#YesWikiModal");
     if (/\.(gif|jpg|jpeg|tiff|png)$/i.test(link)) {
       $modal
         .find(".modal-body")
