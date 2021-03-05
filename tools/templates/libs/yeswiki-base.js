@@ -89,8 +89,10 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       text = "<h3></h3>";
     }
 
-    $("body").append(
-      '<div class="modal fade" id="YesWikiModal">' +
+    var $modal = $("#YesWikiModal");
+    if ($modal.length == 0) {
+      $("body").append(
+        '<div class="modal fade" id="YesWikiModal">' +
         '<div class="modal-dialog' +
         size +
         '">' +
@@ -104,12 +106,15 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         "</div>" +
         "</div>" +
         "</div>"
-    );
+      );
+      $modal = $("#YesWikiModal");
+    } else {
+      $modal.find(".modal-body").html("") ;
+    }
 
     var link = $this.attr("href");
     // incomingurl can be usefull (per example for deletepage handler)
     link += "&incomingurl=" + encodeURIComponent(window.location.toString());
-    var $modal = $("#YesWikiModal");
     if (/\.(gif|jpg|jpeg|tiff|png)$/i.test(link)) {
       $modal
         .find(".modal-body")
@@ -131,12 +136,36 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         $("#yw-modal-loading").hide();
       });
     } else {
-      $modal
-        .find(".modal-body")
-        .load(link + " .page", function(response, status, xhr) {
+      // AJAX Request
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var xmlString = this.responseText;
+          var doc = new DOMParser().parseFromString(xmlString, "text/html");
+          var page = doc.querySelector(".page").innerHTML ;
+          $modal.find(".modal-body").html(page) ;
+          // find scripts
+          var res = doc.scripts;
+          var l = res.length-1;
+          var i;
+          for (i = 0; i < l; i++) {
+            var src = res[i].getAttribute("src");
+            if (src) {
+              var selection = document.querySelectorAll('script[src="'+src+'"]') ;
+              if (selection.length == 0) {
+                // append script and load it only if not present
+                document.body.appendChild(res[i]);
+                $.getScript(src);
+              }
+            } else {
+              // do not manage script without src
+            }
+          } 
           $(document).trigger("yw-modal-open");
-          return false;
-        });
+        }
+      };
+      xhttp.open("GET", link, true);
+      xhttp.send();
     }
     $modal
       .modal({
