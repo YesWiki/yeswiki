@@ -155,13 +155,38 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
               var selection = document.querySelectorAll('script[src="'+src+'"]') ;
               if (selection.length == 0) {
                 // append script and load it only if not present
-                document.body.appendChild(res[i]);
+                document.body.appendChild(document.importNode(res[i]));
                 $.getScript(src);
               }
             } else {
-              // do not manage script without src
+              var script=res[i].innerHTML ;
+              // select all script of current page without src
+              var selection = document.scripts ;
+              var selLenght = selection.length-1;
+              var j;
+              for (j = 0; j < selLenght; j++) {
+                if (!selection[j].hasAttribute('src') && script != selection[j].innerHTML){
+                  var newScript = document.importNode(res[i]) ;
+                  document.body.appendChild(newScript);
+                }
+              }
             }
           } 
+          // find css
+          var importedCSS = doc.querySelectorAll('link[rel="stylesheet"]');
+          var l = importedCSS.length-1;
+          var i;
+          for (i = 0; i < l; i++) {
+            var href = importedCSS[i].getAttribute("href");
+            if (href) {
+              var selection = document.querySelector('link[href="'+href+'"]') ;
+              if (selection.length == 0) {
+                // append link
+                document.body.appendChild(document.importNode(importedCSS[i]));
+              }
+            }
+          }
+
           $(document).trigger("yw-modal-open");
         }
       };
