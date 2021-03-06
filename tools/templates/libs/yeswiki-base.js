@@ -90,26 +90,27 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
     }
 
     var $modal = $("#YesWikiModal");
+    var yesWikiModalHtml = '<div class="modal-dialog' +
+      size +
+      '">' +
+      '<div class="modal-content">' +
+      '<div class="modal-header">' +
+      '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
+      text +
+      "</div>" +
+      '<div class="modal-body">' +
+      "</div>" +
+      "</div>" +
+      "</div>" ;
     if ($modal.length == 0) {
       $("body").append(
         '<div class="modal fade" id="YesWikiModal">' +
-        '<div class="modal-dialog' +
-        size +
-        '">' +
-        '<div class="modal-content">' +
-        '<div class="modal-header">' +
-        '<button type="button" class="close" data-dismiss="modal">&times;</button>' +
-        text +
-        "</div>" +
-        '<div class="modal-body">' +
-        "</div>" +
-        "</div>" +
-        "</div>" +
+        yesWikiModalHtml +
         "</div>"
       );
       $modal = $("#YesWikiModal");
     } else {
-      $modal.find(".modal-body").html("") ;
+      $modal.html(yesWikiModalHtml) ;
     }
 
     var link = $this.attr("href");
