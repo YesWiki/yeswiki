@@ -22,11 +22,19 @@ if (!defined("WIKINI_VERSION")) {
 }
 
 if ($endUpdate) {
+    
+    // specific message when updating from cercopitheque
+    if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
+        $output = '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n";
+    } else {
+        $output = '' ;
+    }
     // finished rendering of autoupdate
-    echo $this->render("@autoupdate/update.twig", [
+    $output .= $this->render("@autoupdate/update.twig", [
         'messages' => $data['messages'],
         'baseUrl' => $data['baseURL'],
     ]);
+    echo $output ;
 } else {
     $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
     $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.js');
