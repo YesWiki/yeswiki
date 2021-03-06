@@ -1,6 +1,8 @@
 <?php
 namespace AutoUpdate;
 
+use YesWiki\Core\Service\ThemeManager;
+
 $loader = require __DIR__ . '/../vendor/autoload.php';
 
 // display update's message
@@ -26,6 +28,19 @@ if ($endUpdate) {
     // specific message when updating from cercopitheque
     if (isset($data['fromCercopitheque']) && $data['fromCercopitheque']) {
         $output = '<h1>'._t('AU_YESWIKI_DORYPHORE_POSTINSTALL').'</h1>'."\n";
+
+        // check presence of theme margot
+        $themeManager = $this->services->get(ThemeManager::class) ;
+        if (!$themeManager->loadTheme()) {
+            // upgrade margot
+            $get = $_GET;
+            $get['upgrade'] = THEME_PAR_DEFAUT;
+            $autoUpdate = new AutoUpdate($this);
+            $messages = new Messages();
+            $controller = new Controller($autoUpdate, $messages, $this);
+            $resUpgradeMargot = $controller->run($get);
+            $resUpgradeMargot = (!empty($resUpgradeMargot)) ? '<hr><h3>'.THEME_PAR_DEFAUT.' update</h3>'."\n" .$resUpgradeMargot : null ;
+        }
     } else {
         $output = '' ;
     }
@@ -34,6 +49,7 @@ if ($endUpdate) {
         'messages' => $data['messages'],
         'baseUrl' => $data['baseURL'],
     ]);
+    $output .= (!empty($resUpgradeMargot)) ? $resUpgradeMargot :'';
     echo $output ;
 } else {
     $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
