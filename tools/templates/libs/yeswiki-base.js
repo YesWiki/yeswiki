@@ -115,7 +115,11 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
 
     var link = $this.attr("href");
     // incomingurl can be usefull (per example for deletepage handler)
-    link += "&incomingurl=" + encodeURIComponent(window.location.toString());
+    try {
+      if (iframe !== 1) {
+        link += "&incomingurl=" + encodeURIComponent(window.location.toString());
+      }
+    } catch (e) {}
     if (/\.(gif|jpg|jpeg|tiff|png)$/i.test(link)) {
       $modal
         .find(".modal-body")
@@ -125,13 +129,17 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
             '" alt="image" />'
         );
     } else if (iframe === 1) {
+      var modalTitle = $modal.find(".modal-header h3") ;
+      if (modalTitle.length > 0 && modalTitle[0].innerText == 0) {
+        modalTitle[0].innerText = link.substr(0,128);
+      }
       $modal
         .find(".modal-body")
         .html(
           '<span id="yw-modal-loading" class="throbber"></span>' +
             '<iframe id="yw-modal-iframe" src="' +
             link +
-            '""></iframe>'
+            '" referrerpolicy="no-referrer"></iframe>'
         );
       $("#yw-modal-iframe").on("load", function() {
         $("#yw-modal-loading").hide();
