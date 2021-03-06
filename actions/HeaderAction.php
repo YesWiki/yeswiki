@@ -10,15 +10,16 @@ class HeaderAction extends YesWikiAction
         $themeManager = $this->getService(ThemeManager::class);
         if (!$themeManager->loadTheme()) {
             if ($this->wiki->UserIsAdmin()) {
-                $output = $themeManager->getErrorMessage();
+                $output = '<div style="border: red solid 4px;background: #FAA;padding: 2px;">'."\n";
+                $output .= $themeManager->getErrorMessage();
                 $text = _t('THEME_MANAGER_CLICK_TO_INSTALL'). THEME_PAR_DEFAUT ._t('THEME_MANAGER_AND_REPAIR');
-                $output .= '<div><b><a href="'.$this->wiki->Href(
+                $output .= '<b><a href="'.$this->wiki->Href(
                     '',
                     'GererMisesAJour',
                     ['upgrade'=>  THEME_PAR_DEFAUT ]
                 )
                     .'" title="'.$text.'">'.$text.'</a></b></div>';
-                exit($output) ;
+                return $output ; // because an admin can see all website without theme
             } else {
                 $output = $this->render('@templates\alert-message.twig', [
                     'type' => 'danger',
