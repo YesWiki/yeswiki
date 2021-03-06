@@ -41,23 +41,30 @@ class Controller
             and $this->autoUpdate->isAdmin()
             ) {
             $this->upgrade($get['upgrade']);
-            // reload with handler FinishUpdateHandler to prevent missing files' error due to upgrade.
-            // prepare data
-            $data = [];
-            foreach ($this->messages as $message) {
-                $data_message = [];
-                $data_message['status'] = $message['status'];
-                $data_message['text'] = $message['text'];
-                $data['messages'][] = $data_message;
+            if ($get['upgrade'] == 'yeswiki') {
+                // reload wiki to prevent missing files' error due to upgrade.
+                // prepare data
+                $data = [];
+                foreach ($this->messages as $message) {
+                    $data_message = [];
+                    $data_message['status'] = $message['status'];
+                    $data_message['text'] = $message['text'];
+                    $data['messages'][] = $data_message;
+                }
+                $data['baseURL'] = $this->autoUpdate->baseUrl();
+                $_SESSION['updateMessage'] = json_encode($data);
+                
+                // call the same href to reload wiki in new doryphore version
+                // give $data by $_SESSION['updateMessage']
+                $newAdress = $this->wiki->Href();
+                header("Location: ".$newAdress);
+                exit();
+            } else {
+                return $this->wiki->render("@autoupdate/update.twig", [
+                    'messages' => $this->messages,
+                    'baseUrl' => $this->autoUpdate->baseUrl(),
+                ]);
             }
-            $data['baseURL'] = $this->autoUpdate->baseUrl();
-            $_SESSION['updateMessage'] = json_encode($data);
-            
-            // call the same href to reload wiki in new doryphore version
-            // give $data by $_SESSION['updateMessage']
-            $newAdress = $this->wiki->Href();
-            header("Location: ".$newAdress);
-            exit();
         }
 
         if (isset($get['delete'])
