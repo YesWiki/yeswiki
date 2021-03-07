@@ -130,8 +130,16 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         );
     } else if (iframe === 1) {
       var modalTitle = $modal.find(".modal-header h3") ;
-      if (modalTitle.length > 0 && modalTitle[0].innerText == 0) {
-        modalTitle[0].innerText = link.substr(0,128);
+      if (modalTitle.length > 0 ) {
+        if (modalTitle[0].innerText == 0) {
+          modalTitle[0].innerHTML = '<a href="'+link+'">'
+            + link.substr(0,128)
+            + '</a>';
+        } else {
+          modalTitle[0].innerHTML = '<a href="'+link+'">'
+            + modalTitle[0].innerText
+            + '</a>';
+        }
       }
       $modal
         .find(".modal-body")
