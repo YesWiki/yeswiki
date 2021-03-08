@@ -41,11 +41,12 @@ class ViewUpdate
             $data['messages'][] = $data_message;
         }
         $data['baseURL'] = $this->baseURL;
-        $_SESSION['message'] = json_encode($data);
+        $data['fromCercopitheque'] = true;
+        $_SESSION['updateMessage'] = json_encode($data);
 
-        // call the handler 'welcomdoryphore' to reload wiki in doryphore version
-        // give $data by $_SESSION['message']
-        $newAdress = $GLOBALS['wiki']->Href('welcomedoryphore');
+        // reload wiki in doryphore version before displaying the message
+        // give $data by $_SESSION['updateMessage']
+        $newAdress = $this->baseURL;
         header("Location: ".$newAdress);
         exit();
     }
