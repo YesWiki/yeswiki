@@ -637,6 +637,7 @@ class BazarListeAction extends YesWikiAction
                 // start before date
                 return (
                     $date->diff($entryStartDate)->invert == 1
+                    && $entryEndDate && $date->diff($entryEndDate)->invert == 1
                     );
                 break;
             case ">":
