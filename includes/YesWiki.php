@@ -48,6 +48,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Tags\Service\TagsManager;
@@ -1375,7 +1376,7 @@ class Wiki
         // overwrite the parameters if they were already defined in the extensions's config (for arrays, recursively
         // merge them)
         foreach ($this->config as $key => $value) {
-            if (is_array($value) && $this->services->hasParameter($key) && is_array($this->services->getParameter($key))){
+            if (is_array($value) && $this->services->hasParameter($key) && is_array($this->services->getParameter($key))) {
                 // merge recursively the arrays to let overwrite only some values
                 $mergedArray = array_replace_recursive($this->services->getParameter($key), $value);
                 $this->services->setParameter($key, $mergedArray);
@@ -1407,7 +1408,7 @@ class Wiki
 
         // TODO Don't put templates in configs
         // TODO avoid modifying the $wakkaConfig array
-        $this->config['templates'] = loadTemplates($metadata, $this->config);
+        $this->config['templates'] = $this->services->get(ThemeManager::class)->loadTemplates($metadata);
     }
 
     /**
