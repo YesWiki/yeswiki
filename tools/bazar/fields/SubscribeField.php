@@ -45,12 +45,6 @@ class SubscribeField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
-        if (!$this->canEdit($entry) && !isset($entry[$this->emailField]) && isset($entry['previous-data'][$this->emailField])) {
-            $entry[$this->emailField] = $entry['previous-data'][$this->emailField] ;
-        }
-        if (isset($entry['previous-data'])) {
-            unset($entry['previous-data']) ;
-        }
 
         $subscribeEmail = $this->getSubscribeEmail($entry);
         $unsubscribeEmail = $this->getUnsubscribeEmail($entry);

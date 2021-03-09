@@ -408,21 +408,17 @@ class EntryManager
         }
 
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        if (!$replace) {
-            //save previous data
-            $data['previous-data'] = $previousData;
+        if ($replace) {
+            //remove previous data
+            $previousData = null;
         }
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data);
+        $data = $this->formatDataBeforeSave($data, $previousData);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
-        // remove previous data, not needed now
-        if (isset($data['previous-data'])) {
-            unset($data['previous-data']);
-        }
 
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->wiki->SavePage($data['id_fiche'], json_encode($data));
@@ -491,14 +487,17 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      */
-    public function formatDataBeforeSave($data)
+    public function formatDataBeforeSave($data, $previousData = null)
     {
         $form = baz_valeurs_formulaire($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof TitleField) {
-                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($data));
+                $propName = $form['prepared'][$i]->getPropertyName() ;
+                $tmpdata = isset($previousData[$propName]) ?
+                    array_merge($data, [$propName => $previousData[$propName] ]) : $data ;
+                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($tmpdata));
             }
         }
 
@@ -525,13 +524,19 @@ class EntryManager
 
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
-                $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
+                $propName = $form['prepared'][$i]->getPropertyName() ;
+                $tmpdata = isset($previousData[$propName]) ?
+                    array_merge($data, [$propName => $previousData[$propName] ]) : $data ;
+                $tab = $form['prepared'][$i]->formatValuesBeforeSave($tmpdata);
             } elseif (function_exists($form['template'][$i][0])) {
+                $propName = $form['template'][$i][1] ;
+                $tmpdata = isset($previousData[$propName]) ?
+                    array_merge($data, [$propName => $previousData[$propName] ]) : $data ;
                 $tab = $form['template'][$i][0](
                     $formtemplate,
                     $form['template'][$i],
                     'requete',
-                    $data
+                    $tmpdata
                 );
             }
 

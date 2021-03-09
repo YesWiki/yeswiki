@@ -42,9 +42,6 @@ class TitleField extends BazarField
         if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
             preg_match_all('#{{(.*)}}#U', $value, $matches);
             foreach ($matches[1] as $fieldName) {
-                if (!isset($entry[$fieldName]) && isset($entry['previous-data'][$fieldName])) {
-                    $entry[$fieldName] = $entry['previous-data'][$fieldName] ;
-                }
                 if (isset($entry[$fieldName])) {
                     if (preg_match('#^listefiche#', $fieldName) !== 0 || preg_match('#^checkboxfiche#', $fieldName) !== 0) {
                         // For a "listefiche" or a "checkboxfiche", find the entry's title

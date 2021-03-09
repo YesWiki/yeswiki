@@ -117,7 +117,7 @@ abstract class BazarField implements \JsonSerializable
     protected function getValue($entry)
     {
         // only keep data from $_GET and not $_POST because already cautch by EntryController
-        return $entry[$this->propertyName] ?? $entry['previous-data'][$this->propertyName] ?? $_GET[$this->propertyName] ?? $this->default;
+        return $entry[$this->propertyName] ?? $_GET[$this->propertyName] ?? $this->default;
     }
 
     // HELPERS

@@ -51,13 +51,6 @@ class UserField extends BazarField
         if ($value) {
             $wikiName = $value;
         } else {
-            if (!isset($entry[$this->nameField]) && isset($entry['previous-data'][$this->nameField])) {
-                $entry[$this->nameField] = $entry['previous-data'][$this->nameField];
-            }
-            
-            if (!isset($entry[$this->emailField]) && isset($entry['previous-data'][$this->emailField])) {
-                $entry[$this->emailField] = $entry['previous-data'][$this->emailField];
-            }
             $wikiName = $entry[$this->nameField];
 
             if (!$GLOBALS['wiki']->IsWikiName($wikiName)) {
