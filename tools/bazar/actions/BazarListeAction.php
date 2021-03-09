@@ -81,9 +81,9 @@ class BazarListeAction extends YesWikiAction
             'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
                 $this->getService(UserManager::class)->getLoggedUserName() : null,
             // Ordre du tri (asc ou desc)
-            'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && !empty($arg['agenda'])) ? 'desc' : 'asc') ,
+            'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && (!empty($arg['agenda']) || !empty($arg['datefilter']))) ? 'desc' : 'asc') ,
             // Champ du formulaire utilisé pour le tri
-            'champ' => $arg['champ'] ?? (!empty($arg['agenda']) ? 'bf_date_debut_evenement' : 'bf_titre') ,
+            'champ' => $arg['champ'] ?? ((!empty($arg['agenda']) || !empty($arg['datefilter'])) ? 'bf_date_debut_evenement' : 'bf_titre') ,
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
@@ -92,8 +92,9 @@ class BazarListeAction extends YesWikiAction
             'random' => $this->formatBoolean($arg, false, 'random'),
             // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'correspondance' => $arg['correspondance'] ?? null,
-            // paramètre de tri des fiches sur une date
-            'agenda' => $arg['agenda'] ?? null,
+            // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
+            'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
+            'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
@@ -188,8 +189,10 @@ class BazarListeAction extends YesWikiAction
             }, $entries);
         }
 
-        // filter entries on agenda parameter
-        $entries = $this->filterEntriesOnAgenda($entries) ;
+        // filter entries on datefilter parameter
+        if (!empty($this->arguments['datefilter'])) {
+            $entries = $this->filterEntriesOnDate($entries) ;
+        }
 
         // Sort entries
         if ($this->arguments['random']) {
@@ -517,7 +520,7 @@ class BazarListeAction extends YesWikiAction
         return in_array($templateName, $templatesnames) ;
     }
 
-    protected function filterEntriesOnAgenda($entries) : array
+    protected function filterEntriesOnDate($entries) : array
     {
         $TODAY_TEMPLATE = "/^(today|aujourdhui|=0(D)?)$/i" ;
         $FUTURE_TEMPLATE = "/^(futur|future|>0(D)?)$/i" ;
@@ -528,26 +531,23 @@ class BazarListeAction extends YesWikiAction
         $LOWER_TEMPLATE = "/^<".$DATE_TEMPLATE."$/i" ;
         $BETWEEN_TEMPLATE = "/^>".$DATE_TEMPLATE."&<".$DATE_TEMPLATE."$/i" ;
 
-        if ($this->arguments['agenda'] == null) {
-            return $entries ;
-        }
-        if (preg_match_all($TODAY_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        if (preg_match_all($TODAY_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $todayMidnigth = new \DateTime() ;
             $todayMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($todayMidnigth) {
-                return $this->filterEntriesOnAgendaTraversing($entry, "=", $todayMidnigth) ;
+                return $this->filterEntriesOnDateTraversing($entry, "=", $todayMidnigth) ;
             });
-        } elseif (preg_match_all($FUTURE_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        } elseif (preg_match_all($FUTURE_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $now = new \DateTime() ;
             $entries = array_filter($entries, function ($entry) use ($now) {
-                return $this->filterEntriesOnAgendaTraversing($entry, ">", $now) ;
+                return $this->filterEntriesOnDateTraversing($entry, ">", $now) ;
             });
-        } elseif (preg_match_all($PAST_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        } elseif (preg_match_all($PAST_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $now = new \DateTime() ;
             $entries = array_filter($entries, function ($entry) use ($now) {
-                return $this->filterEntriesOnAgendaTraversing($entry, "<", $now) ;
+                return $this->filterEntriesOnDateTraversing($entry, "<", $now) ;
             });
-        } elseif (preg_match_all($EQUAL_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        } elseif (preg_match_all($EQUAL_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $sign = $matches[1][0];
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
@@ -556,9 +556,9 @@ class BazarListeAction extends YesWikiAction
             $dateMidnigth = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $dateMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($dateMidnigth) {
-                return $this->filterEntriesOnAgendaTraversing($entry, "=", $dateMidnigth) ;
+                return $this->filterEntriesOnDateTraversing($entry, "=", $dateMidnigth) ;
             });
-        } elseif (preg_match_all($MORE_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        } elseif (preg_match_all($MORE_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $sign = $matches[1][0];
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
@@ -566,9 +566,9 @@ class BazarListeAction extends YesWikiAction
             
             $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
             $entries = array_filter($entries, function ($entry) use ($date) {
-                return $this->filterEntriesOnAgendaTraversing($entry, ">", $date) ;
+                return $this->filterEntriesOnDateTraversing($entry, ">", $date) ;
             });
-        } elseif (preg_match_all($LOWER_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        } elseif (preg_match_all($LOWER_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $sign = $matches[1][0];
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
@@ -576,9 +576,9 @@ class BazarListeAction extends YesWikiAction
             
             $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
             $entries = array_filter($entries, function ($entry) use ($date) {
-                return $this->filterEntriesOnAgendaTraversing($entry, "<", $date) ;
+                return $this->filterEntriesOnDateTraversing($entry, "<", $date) ;
             });
-        } elseif (preg_match_all($BETWEEN_TEMPLATE, $this->arguments['agenda'], $matches)) {
+        } elseif (preg_match_all($BETWEEN_TEMPLATE, $this->arguments['datefilter'], $matches)) {
             $signMore = $matches[1][0];
             $nbYearsMore = $matches[3][0];
             $nbMonthMore = $matches[5][0];
@@ -592,10 +592,10 @@ class BazarListeAction extends YesWikiAction
             if ($dateMin->diff($dateMax)->invert == 0) {
                 // $dateMax higher than $dateMin
                 $entries = array_filter($entries, function ($entry) use ($dateMin) {
-                    return $this->filterEntriesOnAgendaTraversing($entry, ">", $dateMin) ;
+                    return $this->filterEntriesOnDateTraversing($entry, ">", $dateMin) ;
                 });
                 $entries = array_filter($entries, function ($entry) use ($dateMax) {
-                    return $this->filterEntriesOnAgendaTraversing($entry, "<", $dateMax) ;
+                    return $this->filterEntriesOnDateTraversing($entry, "<", $dateMax) ;
                 });
             }
         }
@@ -619,7 +619,7 @@ class BazarListeAction extends YesWikiAction
         return $date;
     }
 
-    private function filterEntriesOnAgendaTraversing(?array $entry, string $mode = "=", \DateTime $date): bool
+    private function filterEntriesOnDateTraversing(?array $entry, string $mode = "=", \DateTime $date): bool
     {
         if (empty($entry) || !isset($entry['bf_date_debut_evenement'])) {
             return false;
