@@ -387,31 +387,57 @@ class EntryManager
     }
 
     /**
-     * Update an entry with the provided data
+     * Update an entry with partial data : the fields to be updated
+     * @param $tag
+     * @param $data
+     * @param bool $semantic
+     */
+    public function partialUpdate($tag, $data, $semantic = false)
+    {
+        $previousData = $this->getOne($tag);
+
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+
+        for ($i = 0; $i < count($form['template']); ++$i) {
+            if ($form['prepared'][$i] instanceof BazarField) {
+                $propName = $form['prepared'][$i]->getPropertyName();
+                if (!isset($data[$propName])){
+                    $data[$propName] = $previousData[$propName];
+                }
+            } elseif (function_exists($form['template'][$i][0])) {
+                $propName = $form['template'][$i][1];
+                if (!isset($data[$propName])){
+                    $data[$propName] = $previousData[$propName];
+                }
+            }
+        }
+
+        $mergedData = array_merge($previousData, $data);
+        $this->update($tag, $mergedData);
+    }
+
+    /**
+     * Update an entry with all data
      * @param $tag
      * @param $data
      * @param false $semantic
-     * @param false $replace If true, all the data will be provided
      * @throws \Exception
      */
+    //TODO remove $replace param because update is now only with all data (instead of $replace = false, use partialUpdate)
     public function update($tag, $data, $semantic = false, $replace = false)
     {
         if (!$this->wiki->HasAccess('write', $tag)) {
             throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        $previousData = $this->getOne($tag);
-        $previousData = $this->assignRestrictedFields($previousData);
+        $data = $this->assignRestrictedFields($data);
+
+        // see if it's usefull in some cases
+        //$data['id_typeannonce'] = $this->getOne($tag)['id_typeannonce'];
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($previousData['id_typeannonce'], $data);
-        }
-
-        if ($replace) {
-            $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        } else {
-            // If PATCH, overwrite previous data with new data
-            $data = array_merge($previousData, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData(data['id_typeannonce'], $data);
         }
 
         $this->validate($data);
@@ -489,7 +515,8 @@ class EntryManager
      */
     public function formatDataBeforeSave($data)
     {
-        $form = baz_valeurs_formulaire($data['id_typeannonce']);
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {

@@ -245,6 +245,6 @@ class ImageField extends FileField
         $entry['antispam'] = 1;
         $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
 
-        $entryManager->update($entry['id_fiche'], $entry, false, true);
+        $entryManager->update($entry['id_fiche'], $entry);
     }
 }
