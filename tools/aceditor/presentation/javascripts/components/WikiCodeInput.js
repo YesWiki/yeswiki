@@ -2,10 +2,8 @@ export default {
   props: [ 'isEditing', 'editor', 'wikiCode' ],
   methods: {
     selectFullText() {
-      var range = document.createRange();
-      range.selectNode(this.$refs.input);
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
+      var range = $(this.$refs.input);
+      range.select();
     },
     copyContent() {
       this.selectFullText();
