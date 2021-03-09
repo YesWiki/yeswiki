@@ -81,9 +81,9 @@ class BazarListeAction extends YesWikiAction
             'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
                 $this->getService(UserManager::class)->getLoggedUserName() : null,
             // Ordre du tri (asc ou desc)
-            'ordre' => $arg['ordre'] ?? 'asc',
+            'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && !empty($arg['agenda'])) ? 'desc' : 'asc') ,
             // Champ du formulaire utilisé pour le tri
-            'champ' => $arg['champ'] ?? 'bf_titre',
+            'champ' => $arg['champ'] ?? (!empty($arg['agenda']) ? 'bf_date_debut_evenement' : 'bf_titre') ,
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
