@@ -6,6 +6,12 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_bazar_commons_search_label' => 'Search bar',
     'AB_bazar_facettes_groupsexpanded_false' => "Only first expanded",
     'AB_bazar_facettes_groupsexpanded_true' => "All expanded",
+    'AB_bazar_commons2_filter_on_date' => "Filter on date",
+    'AB_bazar_commons2_filter_on_date_future' => "future",
+    'AB_bazar_commons2_filter_on_date_past' => "past",
+    'AB_bazar_commons2_filter_on_date_today' => "today",
+    'AB_bazar_commons2_filter_on_date_for_one_month' => "for one month",
+    'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => "+/- one week",
     //video
     'AB_attach_video_label' => "Embeded video",
     'AB_attach_video_description' => "Embeding of youtube, vimeo or peertube video.",
