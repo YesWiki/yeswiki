@@ -163,7 +163,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
           $modal.find(".modal-body").html(page) ;
           // find scripts
           var res = doc.scripts;
-          var l = res.length-1;
+          var l = res.length;
           var i;
           for (i = 0; i < l; i++) {
             var src = res[i].getAttribute("src");
@@ -178,7 +178,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
               var script=res[i].innerHTML ;
               // select all script of current page without src
               var selection = document.scripts ;
-              var selLenght = selection.length-1;
+              var selLenght = selection.length;
               var j;
               for (j = 0; j < selLenght; j++) {
                 if (!selection[j].hasAttribute('src') && script != selection[j].innerHTML){
@@ -190,7 +190,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
           } 
           // find css
           var importedCSS = doc.querySelectorAll('link[rel="stylesheet"]');
-          var l = importedCSS.length-1;
+          var l = importedCSS.length;
           var i;
           for (i = 0; i < l; i++) {
             var href = importedCSS[i].getAttribute("href");
