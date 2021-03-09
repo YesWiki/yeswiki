@@ -141,7 +141,7 @@ class ThemeManager
         }
         // custom themes folder
         if (is_dir('custom/themes')) {
-            $templates = array_merge($templates, search_template_files('custom/themes'));
+            $templates = array_replace_recursive($templates, search_template_files('custom/themes'));
         }
         ksort($templates);
 
