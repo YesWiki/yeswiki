@@ -505,7 +505,7 @@ class EntryManager
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data, $previousdata = null)
+    public function formatDataBeforeSave($data, $previousData = null)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->getService(FormManager::class)->getOne($data['id_typeannonce']);
