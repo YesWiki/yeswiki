@@ -122,8 +122,8 @@ class EntryManager
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
                 $requete .= ' AND ' . join(' OR ', array_map(function ($formId) {
-                        return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                    }, $params['formsIds']));
+                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
+                }, $params['formsIds']));
             } else {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
                 $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
@@ -482,8 +482,10 @@ class EntryManager
         $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
-        $this->wiki->LogAdministrativeAction($this->userManager->getLoggedUserName(),
-            "Suppression de la page ->\"\"" . $tag . "\"\"");
+        $this->wiki->LogAdministrativeAction(
+            $this->userManager->getLoggedUserName(),
+            "Suppression de la page ->\"\"" . $tag . "\"\""
+        );
     }
 
     /*
@@ -666,7 +668,7 @@ class EntryManager
         // (un LoadPage qui passe les droits ACLS est nécéssaire)
         
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->getService(FormManager::class)->getOne($previousData['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($previousData['id_typeannonce']);
         $data['id_fiche'] = $previousData['id_fiche'];
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
         for ($i = 0; $i < count($form['template']); ++$i) {
