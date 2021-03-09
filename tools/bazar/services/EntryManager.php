@@ -421,22 +421,15 @@ class EntryManager
         }
 
         $previousData = $this->getOne($tag);
-        $previousData = $this->assignRestrictedFields($previousData);
+        $data = $this->assignRestrictedFields($data, $previousData);
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($previousData['id_typeannonce'], $data);
-        }
-
-        if ($replace) {
-            $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        } else {
-            // If PATCH, overwrite previous data with new data
-            $data = array_merge($previousData, $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
         }
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data);
+        $data = $this->formatDataBeforeSave($data, ((!$replace) ? $previousData : null));
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
@@ -512,13 +505,18 @@ class EntryManager
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data)
+    public function formatDataBeforeSave($data, $previousdata = null)
     {
-        $form = baz_valeurs_formulaire($data['id_typeannonce']);
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->getService(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof TitleField) {
+                $propName = $form['prepared'][$i]->getPropertyName();
+                if (!isset($data[$propName]) && isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName] ;
+                }
                 $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($data));
             }
         }
@@ -546,8 +544,16 @@ class EntryManager
 
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
+                $propName = $form['prepared'][$i]->getPropertyName();
+                if (!isset($data[$propName]) && isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName];
+                }
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
             } elseif (function_exists($form['template'][$i][0])) {
+                $propName = $form['template'][$i][1];
+                if (!isset($data[$propName]) && isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName];
+                }
                 $tab = $form['template'][$i][0](
                     $formtemplate,
                     $form['template'][$i],
@@ -651,35 +657,25 @@ class EntryManager
      * Met à jour les valeurs des champs qui sont restreints en écriture
      *
      * @param array $data l'objet contenant les valeurs issues de la saisie du formulaire
+     * @param array $previousData l'objet contenant les valeurs issues de la fiche précédente
      * @return array tableau des valeurs de la fiche à sauver
      */
-    protected function assignRestrictedFields(array $data)
+    protected function assignRestrictedFields(array $data, array $previousData)
     {
         // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
         // (un LoadPage qui passe les droits ACLS est nécéssaire)
-
-        // if the field type (index 0) is in the $INDEX_CHELOUS, the name used to identified the field is a concatenation of the index 0, 1 and 6
-        $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
-        $template = baz_valeurs_formulaire($data['id_typeannonce'])['template'];
-        $protected_fields_index = [];
-        for ($i = 0; $i < count($template); ++$i) {
-            if (!empty($template[$i][12]) && !$this->wiki->CheckACL($template[$i][12])) {
-                $protected_fields_index[] = $i;
-            }
-        }
-        if (!empty($protected_fields_index)) {
-            $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE tag = '" . $this->dbService->escape($data['id_fiche']) . "' AND latest = 'Y'" . " LIMIT 1";
-            $valjson = $this->dbService->loadSingle($sql);
-            $old_fiche = json_decode($valjson['body'], true);
-            foreach ($old_fiche as $key => $value) {
-                $old_fiche[$key] = _convert($value, 'UTF-8');
-            }
-            foreach ($protected_fields_index as $index) {
-                if (in_array($template[$index][0], $INDEX_CHELOUS)) {
-                    $data[$template[$index][0] . $template[$index][1] . $template[$index][6]] = $old_fiche[$template[$index][0] . $template[$index][1] . $template[$index][6]];
-                } else {
-                    $data[$template[$index][1]] = $old_fiche[$template[$index][1]];
-                }
+        
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->getService(FormManager::class)->getOne($previousData['id_typeannonce']);
+        $data['id_fiche'] = $previousData['id_fiche'];
+        $data['id_typeannonce'] = $previousData['id_typeannonce'];
+        for ($i = 0; $i < count($form['template']); ++$i) {
+            if ($form['prepared'][$i] instanceof BazarField
+                    && !($form['prepared'][$i]->canEdit($data))) {
+                $data[$form['prepared'][$i]->getPropertyName()] = $previousData[$form['prepared'][$i]->getPropertyName()] ?? null;
+            } elseif (function_exists($form['template'][$i][0])
+                    &&  !$this->wiki->CheckACL($form['prepared'][$i]['write_acl'])) {
+                $data[$form['template'][$i][1]] = $previousData[$form['template'][$i][1]] ?? null;
             }
         }
         return $data;
