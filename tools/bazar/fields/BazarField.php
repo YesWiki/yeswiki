@@ -93,6 +93,23 @@ abstract class BazarField implements \JsonSerializable
         return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)];
     }
 
+    // Replace data before format data
+    public function formatValuesBeforeSaveWithReplace($entry, $previousEntry, $replace = false)
+    {
+        if (!$this->canEdit($entry)) {
+            if (isset($previousEntry[$this->propertyName])) {
+                $entry[$this->propertyName] = $previousEntry[$this->propertyName];
+            } elseif (isset($entry[$this->propertyName])) {
+                unset($entry[$this->propertyName]);
+            }
+        } elseif (!$replace
+                && isset($previousEntry[$this->propertyName])
+                && !isset($entry[$this->propertyName])) {
+            $entry[$this->propertyName] = $previousEntry[$this->propertyName];
+        }
+        return $this->formatValuesBeforeSave($entry) ;
+    }
+
     // Render the show view of the field
     protected function renderStatic($entry)
     {

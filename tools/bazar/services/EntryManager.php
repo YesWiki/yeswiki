@@ -421,7 +421,9 @@ class EntryManager
         }
 
         $previousData = $this->getOne($tag);
-        $data = $this->assignRestrictedFields($data, $previousData);
+        // fixed fields
+        $data['id_fiche'] = $previousData['id_fiche'];
+        $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
@@ -429,7 +431,7 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data, ((!$replace) ? $previousData : null));
+        $data = $this->formatDataBeforeSave($data, $previousData, $replace);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
@@ -507,19 +509,15 @@ class EntryManager
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data, $previousData = null)
+    public function formatDataBeforeSave($data, $previousData = null, $replace = false)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->getService(FormManager::class)->getOne($data['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof TitleField) {
-                $propName = $form['prepared'][$i]->getPropertyName();
-                if (!isset($data[$propName]) && isset($previousData[$propName])) {
-                    $data[$propName] = $previousData[$propName] ;
-                }
-                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($data));
+                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSaveWithReplace($data, $previousData, $replace));
             }
         }
 
@@ -538,7 +536,7 @@ class EntryManager
         $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
 
         // Entry status
-        if ($GLOBALS['wiki']->UserIsAdmin()) {
+        if ($this->wiki->UserIsAdmin()) {
             $data['statut_fiche'] = '1';
         } else {
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
@@ -546,22 +544,7 @@ class EntryManager
 
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
-                $propName = $form['prepared'][$i]->getPropertyName();
-                if (!isset($data[$propName]) && isset($previousData[$propName])) {
-                    $data[$propName] = $previousData[$propName];
-                }
-                $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
-            } elseif (function_exists($form['template'][$i][0])) {
-                $propName = $form['template'][$i][1];
-                if (!isset($data[$propName]) && isset($previousData[$propName])) {
-                    $data[$propName] = $previousData[$propName];
-                }
-                $tab = $form['template'][$i][0](
-                    $formtemplate,
-                    $form['template'][$i],
-                    'requete',
-                    $data
-                );
+                $tab = $form['prepared'][$i]->formatValuesBeforeSaveWithReplace($data, $previousData, $replace);
             }
 
             if (is_array($tab)) {
@@ -637,14 +620,14 @@ class EntryManager
         $fiche['owner'] = $this->pageManager->getOwner($fiche['id_fiche']);
 
         // Fiche URL
-        $exturl = $GLOBALS['wiki']->GetParameter('url');
+        $exturl = $this->wiki->GetParameter('url');
         if (isset($exturl)) {
             // WIP concernant l'action bazarlisteexterne
             $arr = explode('/wakka.php', $exturl, 2);
             $exturl = $arr[0];
             $fiche['url'] = $exturl . '/wakka.php?wiki=' . $fiche['id_fiche'];
         } else {
-            $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+            $fiche['url'] = $this->wiki->href('', $fiche['id_fiche']);
         }
 
         // Données sémantiques
@@ -653,34 +636,6 @@ class EntryManager
             $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
-    }
-
-    /**
-     * Met à jour les valeurs des champs qui sont restreints en écriture
-     *
-     * @param array $data l'objet contenant les valeurs issues de la saisie du formulaire
-     * @param array $previousData l'objet contenant les valeurs issues de la fiche précédente
-     * @return array tableau des valeurs de la fiche à sauver
-     */
-    protected function assignRestrictedFields(array $data, array $previousData)
-    {
-        // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
-        // (un LoadPage qui passe les droits ACLS est nécéssaire)
-        
-        // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($previousData['id_typeannonce']);
-        $data['id_fiche'] = $previousData['id_fiche'];
-        $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        for ($i = 0; $i < count($form['template']); ++$i) {
-            if ($form['prepared'][$i] instanceof BazarField
-                    && !($form['prepared'][$i]->canEdit($data))) {
-                $data[$form['prepared'][$i]->getPropertyName()] = $previousData[$form['prepared'][$i]->getPropertyName()] ?? null;
-            } elseif (function_exists($form['template'][$i][0])
-                    &&  !$this->wiki->CheckACL($form['prepared'][$i]['write_acl'])) {
-                $data[$form['template'][$i][1]] = $previousData[$form['template'][$i][1]] ?? null;
-            }
-        }
-        return $data;
     }
 
     private function removeSendmail(array &$data): ?string
