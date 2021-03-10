@@ -402,12 +402,12 @@ class EntryManager
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
                 $propName = $form['prepared'][$i]->getPropertyName();
-                if (!isset($data[$propName])){
+                if (!isset($data[$propName]) && isset($previousData[$propName])){
                     $data[$propName] = $previousData[$propName];
                 }
             } elseif (function_exists($form['template'][$i][0])) {
                 $propName = $form['template'][$i][1];
-                if (!isset($data[$propName])){
+                if (!isset($data[$propName]) && isset($previousData[$propName])){
                     $data[$propName] = $previousData[$propName];
                 }
             }
@@ -437,7 +437,7 @@ class EntryManager
         //$data['id_typeannonce'] = $this->getOne($tag)['id_typeannonce'];
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData(data['id_typeannonce'], $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
         }
 
         $this->validate($data);
@@ -639,7 +639,8 @@ class EntryManager
 
         // Données sémantiques
         if ($semantic) {
-            $form = $this->getService(FormManager::class)->getOne($fiche['id_typeannonce']);
+            // not possible to init the formManager in the constructor because of circular reference problem
+            $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
     }
