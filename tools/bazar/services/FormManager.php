@@ -20,23 +20,6 @@ class FormManager
 
     protected $cachedForms;
 
-    private const FIELD_TYPE = 0;
-    private const FIELD_ID = 1;
-    private const FIELD_LABEL = 2;
-    private const FIELD_SIZE = 3;
-    private const FIELD_MAX_LENGTH = 4;
-    private const FIELD_DEFAULT = 5;
-    private const FIELD_PATTERN = 6;
-    private const FIELD_SUB_TYPE = 7;
-    private const FIELD_REQUIRED = 8;
-    private const FIELD_SEARCHABLE = 9;
-    private const FIELD_HELP = 10;
-    private const FIELD_READ_ACCESS = 11;
-    private const FIELD_WRITE_ACCESS = 12;
-    private const FIELD_KEYWORDS = 13;
-    private const FIELD_SEMANTIC = 14;
-    private const FIELD_QUERIES = 15;
-
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
