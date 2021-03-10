@@ -7,8 +7,19 @@ class HeaderAction extends YesWikiAction
 {
     public function run()
     {
-        $themeManager = $this->getService(ThemeManager::class);
-        if (!$themeManager->loadTheme()) {
+        try {
+            $themeManager = $this->getService(ThemeManager::class);
+            $themeLoaded = $themeManager->loadTheme();
+        } catch (Throwable $t) {
+            // catch errors and exception to avoid a loop with error management in Performer
+            $output = '<div style="border: red solid 4px;background: #FE8;padding: 2px;">'."\n";
+            $output .=  _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage() . ' in <i>' . $t->getFile();
+            $output .=  '</i> on line <i>' . $t->getLine() . '</i><br/>' ;
+            $output .=  'If this error occurs just after of update, finish update and do not follow this message.'."\n" ;
+            $output .=  '</div>' ;
+            return $output;
+        }
+        if (!$themeLoaded) {
             if ($this->wiki->UserIsAdmin()) {
                 $output = '<div style="border: red solid 4px;background: #FAA;padding: 2px;">'."\n";
                 $output .= $themeManager->getErrorMessage();
