@@ -247,7 +247,7 @@ class FormManager
                 $prepared[$i] = $classField;
             } elseif (function_exists($field[0])) {
                 $functionName = $field[0];
-                $fieldName = 'retrocomp' ;
+                $fieldName = 'old' ;
                 $field[0] = $fieldName;
                 $field['functionName'] = $functionName ;
                 $classField = $this->fieldFactory->create($field);

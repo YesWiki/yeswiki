@@ -6,11 +6,11 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\TemplateEngine;
 
 /**
- * Ensure retrocompatibility with old format field
+ * Ensure backwardompatibility with old format field
  *
- * @Field({"retrocomp"})
+ * @Field({"old"})
  */
-class RetroCompField extends BazarField
+class OldField extends BazarField
 {
     protected $functionName ;
     protected $template ;
