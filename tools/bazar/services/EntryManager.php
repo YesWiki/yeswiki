@@ -397,7 +397,7 @@ class EntryManager
         $previousData = $this->getOne($tag);
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
@@ -425,7 +425,7 @@ class EntryManager
      * @throws \Exception
      */
     //TODO remove $replace param because update is now only with all data (instead of $replace = false, use partialUpdate)
-    public function update($tag, $data, $semantic = false, $replace = false)
+    public function update($tag, $data, $semantic = false)
     {
         if (!$this->wiki->HasAccess('write', $tag)) {
             throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
@@ -516,7 +516,7 @@ class EntryManager
     public function formatDataBeforeSave($data)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {
@@ -640,7 +640,7 @@ class EntryManager
         // Données sémantiques
         if ($semantic) {
             // not possible to init the formManager in the constructor because of circular reference problem
-            $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
     }
