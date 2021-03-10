@@ -53,8 +53,25 @@ class OldField extends BazarField
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-        return ($this->error) ? [$this->propertyName => $this->error]
+        return ($this->error) ? [$this->propertyName => null]
             : $this->functionName([], $this->template, 'requete', $entry) ;
+    }
+
+    // Replace data before format data
+    public function formatValuesBeforeSaveWithReplace($entry, $previousEntry, $replace = false)
+    {
+        if (!$this->canEdit($entry)) {
+            if (isset($previousEntry[$this->propertyName])) {
+                $entry[$this->propertyName] = $previousEntry[$this->propertyName];
+            } elseif (isset($entry[$this->propertyName])) {
+                unset($entry[$this->propertyName]);
+            }
+        }
+        // same behaviour as before
+        if (!$replace) {
+            $entry = array_merge($previousEntry,$entry) ;
+        }
+        return $this->formatValuesBeforeSave($entry) ;
     }
 
     protected function renderStatic($entry)
