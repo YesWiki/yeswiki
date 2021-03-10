@@ -63,13 +63,18 @@ class EmailField extends BazarField
         ]);
     }
 
+    public function getShowContactForm()
+    {
+        return $this->showContactForm ;
+    }
+
     public function jsonSerialize()
     {
         return array_merge(
             parent::jsonSerialize(),
             [
                 'sendMail' => $this->sendMail,
-                'showContactForm' => $this->showContactForm
+                'showContactForm' => $this->getShowContactForm()
             ]
         );
     }

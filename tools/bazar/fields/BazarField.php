@@ -127,7 +127,7 @@ abstract class BazarField implements \JsonSerializable
     // HELPERS
 
     /* Return true if we are if reading is allowed for the field */
-    protected function canRead($entry)
+    public function canRead($entry)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
         $isCreation = !$entry;

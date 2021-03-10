@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
@@ -63,7 +65,6 @@ class Guard
         // champ mot de passe ?
         //
 
-        $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
         if ($this->isPageOwner($page)) {
             // Pas de controle si proprietaire
             return $page;
@@ -73,27 +74,24 @@ class Guard
             $valeur = json_decode($valjson, true);
 
             if ($valeur) {
-                $val_formulaire = $this->formManager->getOne($valeur['id_typeannonce']);
-                if ($val_formulaire) {
+                $form = $this->formManager->getOne($valeur['id_typeannonce']);
+                if ($form) {
                     $fieldname = array();
-                    foreach ($val_formulaire['template'] as $line) {
-                        // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-                        if ($line[0] == 'champs_mail' and !empty($line[6]) and $line[6] == 'form') {
-                            if ($this->wiki->getMethod() == 'raw' || $this->wiki->getMethod() == 'json') {
+                    $iMax = count($form['template']) ;
+                    for ($i = 0; $i < $iMax; ++$i) {
+                        if (isset($form['prepared'][$i])){
+                            // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
+                            if ($form['prepared'][$i] instanceof EmailField
+                                    && $form['prepared'][$i]->getShowContactForm() == 'form'
+                                    && ($this->wiki->getMethod() == 'raw'
+                                    || $this->wiki->getMethod() == 'json')
+                                    ) {
                                 $fieldname[] = $line[1];
                             }
-                        }
-                        if (isset($line[11]) && $line[11] != '') {
-                            if ($line[11] == "%") {
-                                $line[11] = $this->userManager->getLoggedUserName();
-                            }
-                            if (!$this->aclService->check($line[11])) {
-                                // on memorise les champs non autorisés
-                                if (in_array($line[0], $INDEX_CHELOUS)) {
-                                    $fieldname[] = $line[0] . $line[1] . $line[6];
-                                } else {
-                                    $fieldname[] = $line[1];
-                                }
+                            if ($form['prepared'][$i] instanceof BazarField
+                                    && !$form['prepared'][$i]->canRead(['id_fiche' => $tag])
+                                    ){
+                                $fieldname[] = $form['prepared'][$i]->getPropertyName() ;
                             }
                         }
                     }
