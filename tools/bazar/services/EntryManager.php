@@ -83,7 +83,8 @@ class EntryManager
                 'user' => '', // N'affiche que les fiches d'un utilisateur
                 'keywords' => '', // Mots-clés pour la recherche fulltext
                 'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
-                'minDate' => '' // Date minimale des fiches
+                'minDate' => '', // Date minimale des fiches
+                'selectedEntries' => null // Sélection d'id_fiche, séparée par des virgules
             ],
             $params
         );
@@ -119,6 +120,18 @@ class EntryManager
         // si une personne a ete precisee, on limite la recherche sur elle
         if (!empty($params['user'])) {
             $requete .= ' AND owner = _utf8\''.mysqli_real_escape_string($this->wiki->dblink, $params['user']).'\'';
+        }
+
+        // si une sélection de fiches existe, on limite la recherche sur elles
+        if ($params['selectedEntries']) {
+            // security
+            $selectedEntries = explode(
+                ',',
+                mysqli_real_escape_string($this->wiki->dblink, $params['selectedEntries'])
+            );
+            // hack to change add quotes to selected entries, in order to be used as sql query
+            $selectedEntries = "'".implode("','", $selectedEntries)."'";
+            $requete .= ' AND tag IN ('.$selectedEntries.')';
         }
 
         $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
@@ -374,7 +387,7 @@ class EntryManager
                 $this->wiki->SetUser($olduser, 1);
             }
         }
-        
+
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
 
@@ -482,7 +495,7 @@ class EntryManager
         }
         return $data;
     }
-    
+
     /*
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
