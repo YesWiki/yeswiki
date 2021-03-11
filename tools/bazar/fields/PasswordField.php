@@ -20,14 +20,19 @@ class PasswordField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
-        if (!empty($value)) {
-            // If a new password has been set, encode it
-            return [$this->propertyName => md5($value),
-                'fields-to-remove' => [$this->propertyName.'-previous']];
+        if ($this->canEdit($entry)) {
+            if (!empty($value)) {
+                // If a new password has been set, encode it
+                return [$this->propertyName => md5($value),
+                    'fields-to-remove' => [$this->propertyName.'-previous']];
+            } else {
+                // If no new password was set, keep the old encoded one
+                return [$this->propertyName => $entry[$this->propertyName.'-previous'] ?? null,
+                    'fields-to-remove' => [$this->propertyName.'-previous']];
+            }
         } else {
-            // If no new password was set, keep the old encoded one
-            return [$this->propertyName => $entry[$this->propertyName.'-previous'] ?? null,
-                'fields-to-remove' => [$this->propertyName.'-previous']];
+            return [$this->propertyName => $value ?? null,
+            'fields-to-remove' => [$this->propertyName.'-previous']];
         }
     }
 

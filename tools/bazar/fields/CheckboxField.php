@@ -89,8 +89,10 @@ abstract class CheckboxField extends EnumField
                 $entry[$this->propertyName] = $checkboxField ;
             }
             unset($entry[$this->propertyName . self::SUFFIX]) ;
-        } else {
+        } elseif ($this->canEdit($entry)) {
             $entry[$this->propertyName] = '' ;
+        } else {
+            $entry[$this->propertyName] = $entry[$this->propertyName] ?? '' ;
         };
         return [$this->propertyName => $entry[$this->propertyName],
             'fields-to-remove' => [
