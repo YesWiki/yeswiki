@@ -39,26 +39,31 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/{formId}", methods={"GET"})
+     * @Route("/api/fiche/{formId}/{output}/{selectedEntries}", methods={"GET"})
      */
-    public function getAllEntries($formId)
+    public function getAllEntries($formId, $output = null, $selectedEntries = null)
     {
-        if( strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
-            return $this->getAllSemanticEntries($formId);
+
+        $entries = $this->getService(EntryManager::class)->search([
+            'formsIds'=>$formId,
+            'selectedEntries'=>$selectedEntries
+        ]);
+
+        if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
+            return $this->getAllSemanticEntries($formId, $entries);
         }
 
-        $entries = $this->getService(EntryManager::class)->search([ 'formsIds'=>$formId ]);
-
+        // add entries in html format if asked
+        elseif ($output == 'html') {
+            foreach ($entries as $id => $entry) {
+                $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+            }
+        }
         return new ApiResponse($entries);
     }
 
-    /**
-     * @Route("/api/fiche/{formId}/json-ld", methods={"GET"})
-     */
-    public function getAllSemanticEntries($formId)
+    public function getAllSemanticEntries($formId, $entries)
     {
-        $entries = $this->getService(EntryManager::class)->search([ 'formsIds'=>$formId ]);
-
         // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
@@ -181,6 +186,12 @@ class ApiController extends YesWikiController
         <p>
         <b><code>GET '.$this->wiki->href('', 'api/fiche/{formId}/json-ld').'</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format sémantique (container LDP)<br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET '.$this->wiki->href('', 'api/fiche/{formId}/html').'</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
         </p>';
 
         $output .= '
