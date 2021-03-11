@@ -47,14 +47,18 @@ class OldField extends BazarField
 
     protected function renderInput($entry)
     {
-        return $this->error ?? $this->functionName([], $this->template, 'saisie', $entry) ;
+        $funcName = $this->functionName ;
+        $templateForm = [] ;
+        return $this->error ?? $funcName($templateForm, $this->template, 'saisie', $entry) ;
     }
 
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
+        $funcName = $this->functionName ;
+        $templateForm = [] ;
         return ($this->error) ? [$this->propertyName => null]
-            : $this->functionName([], $this->template, 'requete', $entry) ;
+            : $funcName($templateForm, $this->template, 'requete', $entry) ;
     }
 
     // Replace data before format data
@@ -76,7 +80,9 @@ class OldField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return $this->error ?? $this->functionName([], $this->template, 'html', $entry) ;
+        $funcName = $this->functionName ;
+        $templateForm = [] ;
+        return $this->error ?? $funcName($templateForm, $this->template, 'html', $entry) ;
     }
 
     public function jsonSerialize()
