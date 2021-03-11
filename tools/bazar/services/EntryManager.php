@@ -420,10 +420,9 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        $previousData = $this->getOne($tag);
-        // fixed fields
-        $data['id_fiche'] = $previousData['id_fiche'];
-        $data['id_typeannonce'] = $previousData['id_typeannonce'];
+        $data = $this->assignRestrictedFieldsAndReplace($data, !$replace);
+        // in case of $data['id_fiche'] == null, replace with $tag to prevent errors
+        $data['id_fiche'] = $data['id_fiche'] ?? $tag ;
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
@@ -431,7 +430,7 @@ class EntryManager
 
         $this->validate($data);
 
-        $data = $this->formatDataBeforeSave($data, $previousData, $replace);
+        $data = $this->formatDataBeforeSave($data);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
@@ -509,7 +508,7 @@ class EntryManager
      * @return array
      * @throws Exception
      */
-    public function formatDataBeforeSave($data, $previousData = null, $replace = false)
+    public function formatDataBeforeSave($data)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -517,7 +516,7 @@ class EntryManager
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof TitleField) {
-                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSaveWithReplace($data, $previousData, $replace));
+                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($data));
             }
         }
 
@@ -544,7 +543,7 @@ class EntryManager
 
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
-                $tab = $form['prepared'][$i]->formatValuesBeforeSaveWithReplace($data, $previousData, $replace);
+                $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
             }
 
             if (is_array($tab)) {
@@ -636,6 +635,41 @@ class EntryManager
             $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
+    }
+
+    /**
+     * Met à jour les valeurs des champs qui sont restreints en écriture
+     *
+     * @param array $data l'objet contenant les valeurs issues de la saisie du formulaire
+     * @param bool $complete la fonction complète les données manquantes avec les données précédentes
+     * @return array tableau des valeurs de la fiche à sauver
+     */
+    protected function assignRestrictedFieldsAndReplace(array $data, bool $complete = true)
+    {
+        // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
+        
+        // get previous data without Guard
+        $previousPage = $this->pageManager->getOne($tag) ;
+        $previousData = $this->decode($this->pageManager->getById($previousPage['id'])['body']);
+        
+        // fixed fields
+        $data['id_fiche'] = $previousData['id_fiche'] ?? null ;
+        $data['id_typeannonce'] = $previousData['id_typeannonce'] ?? null;
+
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->wiki->services->get(FormManager::class)->getOne($previousData['id_typeannonce']);
+        
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $propName = $field->getPropertyName();
+                if (!$field->canEdit($data)) {
+                    $data[$propName] = $previousData[$propName] ?? null;
+                } elseif ($complete && !isset($data[$propName])) {
+                    $data[$propName] = $previousEntry[$propName] ?? null;
+                }
+            }
+        }
+        return $data;
     }
 
     private function removeSendmail(array &$data): ?string
