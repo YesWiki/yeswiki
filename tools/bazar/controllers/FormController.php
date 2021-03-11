@@ -58,15 +58,19 @@ class FormController extends YesWikiController
 
     public function create()
     {
-        if (isset($_POST['valider'])) {
-            $this->formManager->create($_POST);
+        if ($this->wiki->GetUser()) {
+            if (isset($_POST['valider'])) {
+                $this->formManager->create($_POST);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
+            }
+
+            return $this->render("@bazar/forms/forms_form.twig", [
+                'formAndListIds' => baz_forms_and_lists_ids()
+            ]);
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
         }
-
-        return $this->render("@bazar/forms/forms_form.twig", [
-            'formAndListIds' => baz_forms_and_lists_ids()
-        ]);
     }
 
     public function update($id)
