@@ -15,7 +15,7 @@ class HeaderAction extends YesWikiAction
             $output = '<div style="border: red solid 4px;background: #FE8;padding: 2px;">'."\n";
             $output .=  _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage() . ' in <i>' . $t->getFile();
             $output .=  '</i> on line <i>' . $t->getLine() . '</i><br/>' ;
-            $output .=  'If this error occurs just after of update, finish update and do not follow this message.'."\n" ;
+            $output .=  '<a href="'.$this->wiki->Href().'">Return</a>'."\n" ;
             $output .=  '</div>' ;
             return $output;
         }
