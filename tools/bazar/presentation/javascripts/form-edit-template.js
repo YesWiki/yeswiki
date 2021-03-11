@@ -267,6 +267,10 @@ var typeUserAttrs = {
           dragndrop: "Drag & drop",
         },
       },
+      queries: {
+        label: "Critères de filtre",
+        placeholder: "ex. : checkboxfiche6=PageTag ; cf. https://yeswiki.net/?LierFormulairesEntreEux",
+      },
     },
   },
   "radio-group": selectConf,
@@ -379,6 +383,7 @@ var typeUserAttrs = {
     param12: { label: "Param12" },
     param13: { label: "Param13" },
     param14: { label: "Param14" },
+    param15: { label: "Param15" },
   },
 };
 
@@ -462,6 +467,7 @@ var defaultMapping = {
   11: "read",
   12: "write",
   14: "semantic",
+  15: "queries",
 };
 var lists = {
   ...defaultMapping,
@@ -540,6 +546,7 @@ var yesWikiMapping = {
     12: "param12",
     13: "param13",
     14: "param14",
+    15: "param15",
   },
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
