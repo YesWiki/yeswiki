@@ -24,7 +24,7 @@ class OldField extends BazarField
             $this->error = $twig->render(
                 '@templates/alert-message.twig',
                 ['type' => 'danger',
-                 'message' => "Error \$values['functionName'] is not defined while creating RetroCompField. \n<br>".
+                 'message' => "Error \$values['functionName'] is not defined while creating ".get_class($this).". \n<br>".
                  "Do not use 'retrocomp' field in form builder."
                 ]
             );
@@ -32,7 +32,7 @@ class OldField extends BazarField
             $this->error = $twig->render(
                 '@templates/alert-message.twig',
                 ['type' => 'danger',
-                 'message' => "Error function '".$this->functionName."' is not defined while creating RetroCompField"
+                 'message' => "Error function '".$this->functionName."' is not defined while creating ".get_class($this)
                 ]
             );
         } else {
