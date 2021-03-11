@@ -85,10 +85,10 @@ class EntryController extends YesWikiController
 
         // if not found, use default template
         if (is_null($renderedEntry)) {
-            for ($i = 0; $i < count($form['template']); ++$i) {
-                if ($form['prepared'][$i] instanceof BazarField) {
+            foreach ($form['prepared'] as $field) {
+                if ($field instanceof BazarField) {
                     // TODO handle html_outside_app mode for images
-                    $renderedEntry .= $form['prepared'][$i]->renderStaticIfPermitted($entry);
+                    $renderedEntry .= $field->renderStaticIfPermitted($entry);
                 }
             }
         }
