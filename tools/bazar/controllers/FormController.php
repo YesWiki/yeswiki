@@ -58,7 +58,7 @@ class FormController extends YesWikiController
 
     public function create()
     {
-        if( isset($_POST['valider']) ) {
+        if (isset($_POST['valider'])) {
             $this->formManager->create($_POST);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
@@ -71,29 +71,41 @@ class FormController extends YesWikiController
 
     public function update($id)
     {
-        if( isset($_POST['valider']) ) {
-            $this->formManager->update($_POST);
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            if (isset($_POST['valider'])) {
+                $this->formManager->update($_POST);
 
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
+            }
+
+            return $this->render("@bazar/forms/forms_form.twig", [
+                'form' => $this->formManager->getOne($id),
+                'formAndListIds' => baz_forms_and_lists_ids()
+            ]);
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
-
-        return $this->render("@bazar/forms/forms_form.twig", [
-            'form' => $this->formManager->getOne($id),
-            'formAndListIds' => baz_forms_and_lists_ids()
-        ]);
     }
 
     public function delete($id)
     {
-        $this->formManager->delete($id);
+        if ($this->wiki->UserIsAdmin()) {
+            $this->formManager->delete($id);
 
-        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
     }
 
     public function empty($id)
     {
-        $this->formManager->clear($id);
+        if ($this->wiki->UserIsAdmin()) {
+            $this->formManager->clear($id);
 
-        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
     }
 }
