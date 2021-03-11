@@ -46,7 +46,7 @@ class ApiController extends YesWikiController
 
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds'=>$formId,
-            'selectedEntries'=>$selectedEntries
+            'queries'=>!empty($selectedEntries) ? ['id_fiche' => $selectedEntries]: [],
         ]);
 
         if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
