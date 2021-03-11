@@ -77,22 +77,19 @@ class Guard
                 $form = $this->formManager->getOne($valeur['id_typeannonce']);
                 if ($form) {
                     $fieldname = array();
-                    $iMax = count($form['template']) ;
-                    for ($i = 0; $i < $iMax; ++$i) {
-                        if (isset($form['prepared'][$i])){
-                            // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
-                            if ($form['prepared'][$i] instanceof EmailField
-                                    && $form['prepared'][$i]->getShowContactForm() == 'form'
-                                    && ($this->wiki->getMethod() == 'raw'
-                                    || $this->wiki->getMethod() == 'json')
-                                    ) {
-                                $fieldname[] = $line[1];
-                            }
-                            if ($form['prepared'][$i] instanceof BazarField
-                                    && !$form['prepared'][$i]->canRead(['id_fiche' => $tag])
-                                    ){
-                                $fieldname[] = $form['prepared'][$i]->getPropertyName() ;
-                            }
+                    foreach ($form['prepared'] as $field) {
+                        // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
+                        if ($field instanceof EmailField
+                                && $field->getShowContactForm() == 'form'
+                                && ($this->wiki->getMethod() == 'raw'
+                                || $this->wiki->getMethod() == 'json')
+                                ) {
+                            $fieldname[] = $field->getPropertyName();
+                        }
+                        if ($field instanceof BazarField
+                                && !$field->canRead(['id_fiche' => $tag])
+                                ) {
+                            $fieldname[] = $field->getPropertyName() ;
                         }
                     }
                     if (count($fieldname) > 0) {
