@@ -94,6 +94,7 @@ class FormController extends YesWikiController
     public function delete($id)
     {
         if ($this->wiki->UserIsAdmin()) {
+            $this->formManager->clear($id);
             $this->formManager->delete($id);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
