@@ -420,9 +420,9 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
+        // replace with $tag to prevent errors
+        $data['id_fiche'] = trim($tag) ;
         $data = $this->assignRestrictedFieldsAndReplace($data, !$replace);
-        // in case of $data['id_fiche'] == null, replace with $tag to prevent errors
-        $data['id_fiche'] = $data['id_fiche'] ?? $tag ;
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
@@ -649,8 +649,8 @@ class EntryManager
         // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
         
         // get previous data without Guard
-        $previousPage = $this->wiki->services->get(PageManager::class)->getOne($tag) ;
-        $previousData = $this->decode($this->wiki->services->get(PageManager::class)->getById($previousPage['id'])['body']);
+        $previousPage = $this->wiki->services->get(PageManager::class)->getOne($data['id_fiche']) ;
+        $previousData = $this->decode($this->wiki->services->get(PageManager::class)->getById(intval($previousPage['id']))['body']);
         
         // fixed fields
         $data['id_fiche'] = $previousData['id_fiche'] ?? null ;
@@ -659,13 +659,15 @@ class EntryManager
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($previousData['id_typeannonce']);
         
-        foreach ($form['prepared'] as $field) {
-            if ($field instanceof BazarField) {
-                $propName = $field->getPropertyName();
-                if (!$field->canEdit($data)) {
-                    $data[$propName] = $previousData[$propName] ?? null;
-                } elseif ($complete && !isset($data[$propName])) {
-                    $data[$propName] = $previousEntry[$propName] ?? null;
+        if (is_array($form['prepared'])) {
+            foreach ($form['prepared'] as $field) {
+                if ($field instanceof BazarField) {
+                    $propName = $field->getPropertyName();
+                    if (!$field->canEdit($data)) {
+                        $data[$propName] = $previousData[$propName] ?? null;
+                    } elseif ($complete && !isset($data[$propName])) {
+                        $data[$propName] = $previousEntry[$propName] ?? null;
+                    }
                 }
             }
         }
