@@ -1,0 +1,26 @@
+label: _t(AB_BLOCK_LABEL)
+position: 3
+previewHeight: 200px
+actions:
+  block:
+    label: _t(AB_BLOCK_LABEL)
+    description: _t(AB_BLOCK_DESC)
+    isWrapper: true
+    wrappedContentExample: _t(AB_BLOCK_SAMPLE)
+    properties:
+      class:
+        label: _t(AB_BLOCK_CLASS_LABEL)
+        type: text
+        hint: _t(AB_BLOCK_CLASS_HINT)
+      style:
+        label: _t(AB_BLOCK_STYLE_LABEL)
+        type: text
+        hint: _t(AB_BLOCK_STYLE_HINT)
+      id:
+        label: _t(AB_BLOCK_ID_LABEL)
+        type: text
+        hint: _t(AB_BLOCK_ID_HINT)
+      data:
+        label: _t(AB_BLOCK_DATA_LABEL)
+        type: text
+        hint: _t(AB_BLOCK_DATA_HINT)

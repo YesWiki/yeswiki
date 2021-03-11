@@ -142,6 +142,10 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_ACTION_GRID' => 'Action {{grid ...}}',
     'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'l\'action {{grid ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="grid"}}',
 
+    // actions/block.php
+    'TEMPLATE_ACTION_BLOCK' => 'Action {{block ...}}',
+    'TEMPLATE_ELEM_BLOCK_NOT_CLOSED' => 'l\'action {{block ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="block"}}',
+
     // action/panel.php
     'TEMPLATE_ACTION_PANEL' => 'Action {{panel ...}}',
     'TEMPLATE_ELEM_PANEL_NOT_CLOSED' => 'l\'action {{panel ...}} doit &ecirc;tre ferm&eacute;e par une action {{end elem="panel"}}',
