@@ -649,8 +649,8 @@ class EntryManager
         // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
         
         // get previous data without Guard
-        $previousPage = $this->pageManager->getOne($tag) ;
-        $previousData = $this->decode($this->pageManager->getById($previousPage['id'])['body']);
+        $previousPage = $this->wiki->services->get(PageManager::class)->getOne($tag) ;
+        $previousData = $this->decode($this->wiki->services->get(PageManager::class)->getById($previousPage['id'])['body']);
         
         // fixed fields
         $data['id_fiche'] = $previousData['id_fiche'] ?? null ;
