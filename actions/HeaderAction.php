@@ -12,7 +12,8 @@ class HeaderAction extends YesWikiAction
             $themeLoaded = $themeManager->loadTheme();
         } catch (Throwable $t) {
             // catch errors and exception to avoid a loop with error management in Performer
-            $output = '<div style="border: red solid 4px;background: #FE8;padding: 2px;">'."\n";
+            $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FE8;padding: 2px;color:gray;}</style>'."\n";
+            $output .= '<div class="alert-error-message alert">'."\n";
             $output .=  _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage() . ' in <i>' . $t->getFile();
             $output .=  '</i> on line <i>' . $t->getLine() . '</i><br/>' ;
             $output .=  '<a href="'.$this->wiki->Href().'">Return</a>'."\n" ;
@@ -21,7 +22,8 @@ class HeaderAction extends YesWikiAction
         }
         if (!$themeLoaded) {
             if ($this->wiki->UserIsAdmin()) {
-                $output = '<div style="border: red solid 4px;background: #FAA;padding: 2px;">'."\n";
+                $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FAA;padding: 2px;color:gray;}</style>'."\n";
+                $output .= '<div class="alert-error-message alert">'."\n";
                 $output .= $themeManager->getErrorMessage();
                 $text = _t('THEME_MANAGER_CLICK_TO_INSTALL'). THEME_PAR_DEFAUT ._t('THEME_MANAGER_AND_REPAIR');
                 $output .= '<b><a href="'.$this->wiki->Href(
