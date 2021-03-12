@@ -38,18 +38,18 @@ function search_template_files($directory)
     $dir = opendir($directory);
     while ($dir && ($file = readdir($dir)) !== false) {
         if ($file!='.' && $file!='..' && $file!='CVS' && is_dir($directory.DIRECTORY_SEPARATOR.$file)) {
-            if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')
-                && is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')
-            ) {
-                $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
-                while (false !== ($file2 = readdir($dir2))) {
-                    if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
-                        $tab_themes[$file]["style"][$file2] = $file2;
+            if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes')) {
+                if (is_dir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles')) {
+                    $dir2 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'styles');
+                    while (false !== ($file2 = readdir($dir2))) {
+                        if (substr($file2, -4, 4)=='.css' || substr($file2, -5, 5)=='.less') {
+                            $tab_themes[$file]["style"][$file2] = $file2;
+                        }
                     }
-                }
-                closedir($dir2);
-                if (is_array($tab_themes[$file]["style"])) {
-                    ksort($tab_themes[$file]["style"]);
+                    closedir($dir2);
+                    if (is_array($tab_themes[$file]["style"])) {
+                        ksort($tab_themes[$file]["style"]);
+                    }
                 }
                 $dir3 = opendir($directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'squelettes');
                 while (false !== ($file3 = readdir($dir3))) {
