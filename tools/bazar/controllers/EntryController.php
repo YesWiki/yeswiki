@@ -166,7 +166,7 @@ class EntryController extends YesWikiController
             $entry = $this->entryManager->create($formId, $_POST);
             if (empty($redirectUrl)) {
                 $redirectUrl = $this->wiki->Href(
-                    '',
+                    testUrlInIframe(),
                     '',
                     [  'vue' => 'consulter',
                        'action' => 'voir_fiche',
