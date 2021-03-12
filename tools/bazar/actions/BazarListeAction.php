@@ -81,9 +81,9 @@ class BazarListeAction extends YesWikiAction
             'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
                 $this->getService(UserManager::class)->getLoggedUserName() : null,
             // Ordre du tri (asc ou desc)
-            'ordre' => $arg['ordre'] ?? 'asc',
+            'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && (!empty($arg['agenda']) || !empty($arg['datefilter']))) ? 'desc' : 'asc') ,
             // Champ du formulaire utilisé pour le tri
-            'champ' => $arg['champ'] ?? 'bf_titre',
+            'champ' => $arg['champ'] ?? ((!empty($arg['agenda']) || !empty($arg['datefilter'])) ? 'bf_date_debut_evenement' : 'bf_titre') ,
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
@@ -92,6 +92,9 @@ class BazarListeAction extends YesWikiAction
             'random' => $this->formatBoolean($arg, false, 'random'),
             // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'correspondance' => $arg['correspondance'] ?? null,
+            // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
+            'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
+            'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
@@ -184,6 +187,11 @@ class BazarListeAction extends YesWikiAction
                 $entryManager->appendDisplayData($fiche, false, $this->arguments['correspondance']);
                 return $fiche;
             }, $entries);
+        }
+
+        // filter entries on datefilter parameter
+        if (!empty($this->arguments['datefilter'])) {
+            $entries = $this->filterEntriesOnDate($entries) ;
         }
 
         // Sort entries
@@ -510,5 +518,142 @@ class BazarListeAction extends YesWikiAction
         }
 
         return in_array($templateName, $templatesnames) ;
+    }
+
+    protected function filterEntriesOnDate($entries) : array
+    {
+        $TODAY_TEMPLATE = "/^(today|aujourdhui|=0(D)?)$/i" ;
+        $FUTURE_TEMPLATE = "/^(futur|future|>0(D)?)$/i" ;
+        $PAST_TEMPLATE = "/^(past|passe|<0(D)?)$/i" ;
+        $DATE_TEMPLATE = "(\+|-)(([0-9]+)Y)?(([0-9]+)M)?(([0-9]+)D)?" ;
+        $EQUAL_TEMPLATE = "/^=".$DATE_TEMPLATE."$/i" ;
+        $MORE_TEMPLATE = "/^>".$DATE_TEMPLATE."$/i" ;
+        $LOWER_TEMPLATE = "/^<".$DATE_TEMPLATE."$/i" ;
+        $BETWEEN_TEMPLATE = "/^>".$DATE_TEMPLATE."&<".$DATE_TEMPLATE."$/i" ;
+
+        if (preg_match_all($TODAY_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $todayMidnigth = new \DateTime() ;
+            $todayMidnigth->setTime(0, 0);
+            $entries = array_filter($entries, function ($entry) use ($todayMidnigth) {
+                return $this->filterEntriesOnDateTraversing($entry, "=", $todayMidnigth) ;
+            });
+        } elseif (preg_match_all($FUTURE_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $now = new \DateTime() ;
+            $entries = array_filter($entries, function ($entry) use ($now) {
+                return $this->filterEntriesOnDateTraversing($entry, ">", $now) ;
+            });
+        } elseif (preg_match_all($PAST_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $now = new \DateTime() ;
+            $entries = array_filter($entries, function ($entry) use ($now) {
+                return $this->filterEntriesOnDateTraversing($entry, "<", $now) ;
+            });
+        } elseif (preg_match_all($EQUAL_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $sign = $matches[1][0];
+            $nbYears = $matches[3][0];
+            $nbMonth = $matches[5][0];
+            $nbDays = $matches[7][0];
+            
+            $dateMidnigth = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
+            $dateMidnigth->setTime(0, 0);
+            $entries = array_filter($entries, function ($entry) use ($dateMidnigth) {
+                return $this->filterEntriesOnDateTraversing($entry, "=", $dateMidnigth) ;
+            });
+        } elseif (preg_match_all($MORE_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $sign = $matches[1][0];
+            $nbYears = $matches[3][0];
+            $nbMonth = $matches[5][0];
+            $nbDays = $matches[7][0];
+            
+            $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
+            $entries = array_filter($entries, function ($entry) use ($date) {
+                return $this->filterEntriesOnDateTraversing($entry, ">", $date) ;
+            });
+        } elseif (preg_match_all($LOWER_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $sign = $matches[1][0];
+            $nbYears = $matches[3][0];
+            $nbMonth = $matches[5][0];
+            $nbDays = $matches[7][0];
+            
+            $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
+            $entries = array_filter($entries, function ($entry) use ($date) {
+                return $this->filterEntriesOnDateTraversing($entry, "<", $date) ;
+            });
+        } elseif (preg_match_all($BETWEEN_TEMPLATE, $this->arguments['datefilter'], $matches)) {
+            $signMore = $matches[1][0];
+            $nbYearsMore = $matches[3][0];
+            $nbMonthMore = $matches[5][0];
+            $nbDaysMore = $matches[7][0];
+            $dateMin = $this->extractDate($signMore, $nbYearsMore, $nbMonthMore, $nbDaysMore);
+            $signLower = $matches[8][0];
+            $nbYearsLower = $matches[10][0];
+            $nbMonthLower = $matches[12][0];
+            $nbDaysLower = $matches[14][0];
+            $dateMax = $this->extractDate($signLower, $nbYearsLower, $nbMonthLower, $nbDaysLower);
+            if ($dateMin->diff($dateMax)->invert == 0) {
+                // $dateMax higher than $dateMin
+                $entries = array_filter($entries, function ($entry) use ($dateMin) {
+                    return $this->filterEntriesOnDateTraversing($entry, ">", $dateMin) ;
+                });
+                $entries = array_filter($entries, function ($entry) use ($dateMax) {
+                    return $this->filterEntriesOnDateTraversing($entry, "<", $dateMax) ;
+                });
+            }
+        }
+
+        return $entries ;
+    }
+
+    private function extractDate(string $sign, string $nbYears, string $nbMonth, string $nbDays): \DateTime
+    {
+        $dateInterval = new \DateInterval(
+            'P'
+                .(!empty($nbYears) ? $nbYears . 'Y' : '')
+                .(!empty($nbMonth) ? $nbMonth . 'M' : '')
+                .(!empty($nbDays) ? $nbDays . 'D' : '')
+        );
+        $dateInterval->invert = ($sign == "-") ? 1 : 0;
+        
+        $date = new \DateTime() ;
+        $date->add($dateInterval) ;
+
+        return $date;
+    }
+
+    private function filterEntriesOnDateTraversing(?array $entry, string $mode = "=", \DateTime $date): bool
+    {
+        if (empty($entry) || !isset($entry['bf_date_debut_evenement'])) {
+            return false;
+        }
+
+        $entryStartDate = new \DateTime($entry['bf_date_debut_evenement']);
+        $entryEndDate = isset($entry['bf_date_fin_evenement']) ? new \DateTime($entry['bf_date_fin_evenement']) : null  ;
+        if (isset($entry['bf_date_fin_evenement']) && strpos($entry['bf_date_fin_evenement'], 'T')=== false) {
+            // all day (so = midnigth of next day)
+            $entryEndDate->add(new \DateInterval("P1D"));
+        }
+        $nextDay = (clone $date)->add(new \DateInterval("P1D"));
+        switch ($mode) {
+            case "<":
+                // start before date
+                return (
+                    $date->diff($entryStartDate)->invert == 1
+                    && $entryEndDate && $date->diff($entryEndDate)->invert == 1
+                    );
+                break;
+            case ">":
+                // start after date or (before date but and end should be after date, end is needed)
+                return (
+                    $date->diff($entryStartDate)->invert == 0
+                    || ($entryEndDate && $date->diff($entryEndDate)->invert == 0)
+                    );
+                break;
+            case "=":
+            default:
+                // start before next day midnight and end should be after date midnigth
+                return (
+                        $nextDay->diff($entryStartDate)->invert == 1
+                        && $entryEndDate && $date->diff($entryEndDate)->invert == 0
+                    );
+        }
     }
 }

@@ -11,51 +11,6 @@ $modal = ''; // declaration d'une chaine de char vide
 ?>
 <!-- traces : pour avoir date en mois : <?php echo str_replace('00:00', '', date("M", strtotime($fiche['bf_date_debut_evenement']))); ?> -->
 
-<?php
-/**************************************************************************************************
- * parametres du template :
- * ils peuvent être passés dans l'action bazar ou bazarliste, mais sont spécifiques à ce template
- **************************************************************************************************/
-
- // test si on veut affichage de toutes les activités (tout) (par défaut) ou seulement celles à venir (futur)
- $agenda = $GLOBALS['wiki']->GetParameter('agenda');
- if (empty($agenda)) {
-     $agenda = 'tout';
- }
-
- if ($agenda=='futur') {
-
-      if (!function_exists('date_periode')) {
-       function date_periode($fiche) {
-          $nbjour = 290;
-          $datejour = time();
-          $datemax = $datejour + ($nbjour*24*60*60);  // date max � J+ nb de jours
-          $datefiche = strtotime($fiche['bf_date_debut_evenement']);
-        $datefin = strtotime($fiche['bf_date_fin_evenement']);
-          if (($datefiche >=$datejour  && $datefiche <=$datemax ) || ($datefin >=$datejour  && $datefin <=$datemax )) {
-              return true;
-              }
-           else  {
-               return  false;
-          }
-      }
-      }
-      if (!function_exists('date_compare')) {
-          //tri par ordre chronologique
-           function date_compare($a, $b)
-           {
-             $t1 = strtotime($a['bf_date_debut_evenement']);    // strtotime = fonction qui transforme une chaine de caractere en date informatque (= un chiffre calcul� depuis 1970)
-             $t2 = strtotime($b['bf_date_debut_evenement']);
-           return $t1 - $t2;
-         }
-      }
-        $fiches = array_filter($fiches, "date_periode");
-        usort($fiches, 'date_compare');  // http://php.net/manual/fr/function.usort.php (si on veut avoir mal au crane)
- }
-?>
-
-
-
 <div class="agenda-container">
   <?php foreach($fiches as $fiche): ?>
   <div class="agenda-entry-container">
