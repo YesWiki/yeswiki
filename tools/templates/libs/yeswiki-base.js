@@ -114,12 +114,6 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
     }
 
     var link = $this.attr("href");
-    // incomingurl can be usefull (per example for deletepage handler)
-    try {
-      if (iframe !== 1) {
-        link += "&incomingurl=" + encodeURIComponent(window.location.toString());
-      }
-    } catch (e) {}
     if (/\.(gif|jpg|jpeg|tiff|png)$/i.test(link)) {
       $modal
         .find(".modal-body")
@@ -153,6 +147,10 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         $("#yw-modal-loading").hide();
       });
     } else {
+      // incomingurl can be usefull (per example for deletepage handler)
+      try {
+        link += "&incomingurl=" + encodeURIComponent(window.location.toString());
+      } catch (e) {}
       // AJAX Request
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
