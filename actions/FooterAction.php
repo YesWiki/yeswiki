@@ -8,9 +8,21 @@ class FooterAction extends YesWikiAction
 {
     public function run()
     {
-        $themeManager = $this->getService(ThemeManager::class);
+        try {
+            $themeManager = $this->getService(ThemeManager::class);
+            $themeLoaded = $themeManager->loadTheme();
+        } catch (Throwable $t) {
+            // catch errors and exception to avoid a loop with error management in Performer
+            $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FE8;padding: 2px;color:gray;}</style>'."\n";
+            $output .= '<div class="alert-error-message alert">'."\n";
+            $output .=  _t('PERFORMABLE_ERROR') . "<br/>" . $t->getMessage() . ' in <i>' . $t->getFile();
+            $output .=  '</i> on line <i>' . $t->getLine() . '</i><br/>' ;
+            $output .=  '<a href="'.$this->wiki->Href().'">Return</a>'."\n" ;
+            $output .=  '</div>' ;
+            return $output;
+        }
         $output = null;
-        if ($themeManager->loadTheme()) {
+        if ($themeLoaded) {
             $output = $themeManager->renderFooter() ;
             // on affiche les requetes SQL et le temps de chargement en mode debug
             if ($this->wiki->GetConfigValue('debug')=='yes') {
