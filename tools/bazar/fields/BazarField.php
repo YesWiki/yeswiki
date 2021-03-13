@@ -86,7 +86,8 @@ abstract class BazarField implements \JsonSerializable
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-        return [$this->propertyName => $this->getValue($entry)];
+        // to prevent creation of empty keys
+        return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)];
     }
 
     // Render the show view of the field
