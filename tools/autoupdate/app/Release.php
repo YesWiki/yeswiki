@@ -27,12 +27,14 @@ class Release
         if ((string)$releaseToCompare === $this->release) {
             return 0;
         }
-        $releaseToCompare = $this->evalRelease($releaseToCompare->release);
-        $release = $this->evalRelease($this->release);
+        if ($releaseToCompare instanceof Release) {            
+            $releaseToCompare = $this->evalRelease($releaseToCompare->release);
+            $release = $this->evalRelease($this->release);
 
-        for ($i = 0; $i < 4; $i++) {
-            if ($release[$i] > $releaseToCompare[$i]) {
-                return $i + 1;
+            for ($i = 0; $i < 4; $i++) {
+                if ($release[$i] > $releaseToCompare[$i]) {
+                    return $i + 1;
+                }
             }
         }
         return -1;
