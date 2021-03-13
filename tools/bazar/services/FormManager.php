@@ -4,7 +4,9 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Bazar\Field\SelectEntryField;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Wiki;
 
@@ -317,14 +319,18 @@ class FormManager
                     }
 
                     if ($fieldPropName) {
-                        $islistforeign = (strpos($fieldPropName, 'listefiche')===0) || (strpos($fieldPropName, 'checkboxfiche')===0);
-                        $islist = in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste')) && !$islistforeign;
-                        $istext = (!in_array($fieldType, array('checkbox', 'select', 'scope', 'radio', 'liste', 'checkboxfiche', 'listefiche')));
 
-                        if ($islistforeign) {
-                            // listefiche ou checkboxfiche
-                            $facetteValue[$fieldPropName]['type'] = 'fiche';
+                        if ($field instanceof EnumField) {
+
+                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField ) {
+                                // listefiche ou checkboxfiche
+                                $facetteValue[$fieldPropName]['type'] = 'fiche';
+                            } else {
+                                $facetteValue[$fieldPropName]['type'] = 'liste';
+                            }
+                            
                             $facetteValue[$fieldPropName]['source'] = $key;
+
                             $tabval = explode(',', $value);
                             foreach ($tabval as $tval) {
                                 if (isset($facetteValue[$fieldPropName][$tval])) {
@@ -333,19 +339,7 @@ class FormManager
                                     $facetteValue[$fieldPropName][$tval] = 1;
                                 }
                             }
-                        } elseif ($islist) {
-                            // liste ou checkbox
-                            $facetteValue[$fieldPropName]['type'] = 'liste';
-                            $facetteValue[$fieldPropName]['source'] = $key;
-                            $tabval = explode(',', $value);
-                            foreach ($tabval as $tval) {
-                                if (isset($facetteValue[$fieldPropName][$tval])) {
-                                    ++$facetteValue[$fieldPropName][$tval];
-                                } else {
-                                    $facetteValue[$fieldPropName][$tval] = 1;
-                                }
-                            }
-                        } elseif ($istext and !$onlyLists) {
+                        } elseif ( !$onlyLists) {
                             // texte
                             $facetteValue[$key]['type'] = 'form';
                             $facetteValue[$key]['source'] = $key;

@@ -9,13 +9,14 @@ use YesWiki\Tags\Service\TagsManager;
 /**
  * @Field({"tags"})
  */
-class TagsField extends BazarField
+class TagsField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
 
         $this->maxChars = $this->maxChars ?? 255;
+        $this->propertyName = $this->name ;
     }
 
     protected function renderInput($entry)
@@ -111,5 +112,25 @@ class TagsField extends BazarField
         } else {
             return null ;
         }
+    }
+
+    public function getOptions()
+    {
+        if (empty($this->options) || count($this->options) == 0) {
+            $this->loadOptionsFromTags();
+        }
+        return parent::getOptions() ;
+    }
+
+    private function loadOptionsFromTags()
+    {
+        // TODO use TagsManager instead of TripleStore
+        $tripleStore = $this->getService(TripleStore::class);
+
+        $rawOptions = $tripleStore->getMatching(null,'http://outils-reseaux.org/_vocabulary/tag');
+        $this->options = array_map(function ($rawOption) {
+            return $rawOption['value'] ;
+        },$rawOptions);
+        $this->options = array_combine($this->options,$this->options);
     }
 }
