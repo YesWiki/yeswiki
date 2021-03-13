@@ -23,7 +23,7 @@ class HiddenField extends BazarField
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-        return [];
+        return ['fields-to-remove' => [$this->propertyName]];
     }
     
     public function jsonSerialize()
