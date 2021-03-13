@@ -143,10 +143,17 @@ class ImageField extends FileField
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }
+                    if (file_exists('cache/vignette_' . $value)) {
+                      unlink('cache/vignette_' . $value);
+                    }
+                    if (file_exists('cache/image_' . $value)) {
+                      unlink('cache/image_' . $value);
+                    }
 
                     $this->updateEntryAfterImageDelete($entry);
 
-                    return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>';
+                    return '<div class="alert alert-info">' . _t('BAZ_FICHIER') . $value . _t('BAZ_A_ETE_EFFACE') . '</div>'."\n".
+                            $this->render('@bazar/inputs/image.twig');
                 } else {
                     return '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 }
@@ -188,6 +195,20 @@ class ImageField extends FileField
                 if (!file_exists($filePath)) {
                     file_put_contents($filePath, file_get_contents($_POST['data-'.$this->propertyName]));
                     chmod($filePath, 0755);
+
+                    if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
+                      // delete previous file
+                      $previousFileName = $entry['oldimage_' . $this->propertyName];
+                      if (file_exists(BAZ_CHEMIN_UPLOAD . $previousFileName)) {
+                        unlink(BAZ_CHEMIN_UPLOAD . $previousFileName);
+                      }
+                      if (file_exists('cache/vignette_' . $previousFileName)) {
+                        unlink('cache/vignette_' . $previousFileName);
+                      }
+                      if (file_exists('cache/image_' . $previousFileName)) {
+                        unlink('cache/image_' . $previousFileName);
+                      }                      
+                    }                    
 
                     // Generate thumbnails
                     if ($this->thumbnailWidth != '' && $this->thumbnailHeight != '' && !file_exists('cache/vignette_' . $fileName)) {
