@@ -240,11 +240,9 @@ class MapField extends BazarField
     {
         if (isset($entry[$this->latitudeField]) && isset($entry[$this->longitudeField])) {
             $entry[$this->propertyName] = $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField];
-        } elseif (!isset($entry[$this->propertyName])) {
-            $entry[$this->propertyName] = '';
-        }
+        } 
         return [
-          $this->propertyName => $entry[$this->propertyName],
+          $this->propertyName => $this->getValue($entry),
           'fields-to-remove' => [
             $this->latitudeField,
             $this->longitudeField

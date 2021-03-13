@@ -204,26 +204,14 @@ class ImageField extends FileField
             } else {
                 echo '<div class="alert alert-danger">Extension non autoris&eacute;.</div>';
             }
-
-            return [
-                $this->propertyName => $fileName,
-                'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_'.$this->propertyName]
-            ];
+            $entry[$this->propertyName] = $fileName;
         } elseif (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
-            return [
-                $this->propertyName => $entry['oldimage_' . $this->propertyName],
-                'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
-            ];
-        } elseif (isset($entry[$this->propertyName])) {
-            return [
-              $this->propertyName => $entry[$this->propertyName],
-              'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
-          ];
-        } else {
-            return [
-            'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
-          ];
+            $entry[$this->propertyName] = $entry['oldimage_' . $this->propertyName];
         }
+        return [
+            $this->propertyName => $this->getValue($entry), 
+            'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
+        ];
     }
 
     protected function renderStatic($entry)
