@@ -663,10 +663,20 @@ class EntryManager
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof BazarField) {
                     $propName = $field->getPropertyName();
-                    if (!$field->canEdit($data)) {
-                        $data[$propName] = $previousData[$propName] ?? null;
-                    } elseif ($complete && !isset($data[$propName])) {
-                        $data[$propName] = $previousEntry[$propName] ?? null;
+                    if (!empty($propName)) { // do not create empty key
+                        if ( // 2 cases for update
+                              (!$field->canEdit($data) && isset($previousData[$propName])) ||
+                              (
+                                  $field->canEdit($data) && isset($previousData[$propName]) &&
+                                !isset($data[$propName]) && $complete
+                              )
+                            ) {
+                            $data[$propName] = $previousEntry[$propName] ;
+                        } elseif (!$field->canEdit($data) &&
+                                  !isset($previousData[$propName]) &&
+                                  isset($data[$propName])) {
+                            unset($data[$propName]) ;
+                        }
                     }
                 }
             }
