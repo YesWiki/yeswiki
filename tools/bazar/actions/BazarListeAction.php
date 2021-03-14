@@ -474,10 +474,6 @@ class BazarListeAction extends YesWikiAction
                     if ($field->getPropertyName() === $name) {
                         return $field;
                     }
-                } elseif (is_array($field)) {
-                    if (isset($field['id']) && $field['id'] === $name) {
-                        return $field;
-                    }
                 }
             }
         }

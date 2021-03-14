@@ -245,44 +245,14 @@ class FormManager
 
             if ($classField) {
                 $prepared[$i] = $classField;
-            } else {
-                /*
-                 * DEFAULT VALUES
-                 */
-
-                // champs obligatoire
-                if ($field[self::FIELD_REQUIRED] == 1) {
-                    $prepared[$i]['required'] = true;
-                } else {
-                    $prepared[$i]['required'] = false;
-                }
-
-                // texte d'invitation à la saisie
-                $prepared[$i]['label'] = $field[self::FIELD_LABEL];
-
-                // attributs html du champs
-                $prepared[$i]['attributes'] = '';
-
-                // valeurs associées
-                $prepared[$i]['values'] = '';
-
-                // texte d'aide
-                $prepared[$i]['helper'] = $field[self::FIELD_HELP];
-
-                // values for read acl
-                $prepared[$i]['read_acl'] = $field[self::FIELD_READ_ACCESS];
-
-                // values for write acl
-                $prepared[$i]['write_acl'] = $field[self::FIELD_WRITE_ACCESS];
-
-                // traitement sémantique
-                // TODO move to BazarField
-                if (!empty($field[self::FIELD_SEMANTIC])) {
-                    $prepared[$i]['sem_type'] = strpos($field[self::FIELD_SEMANTIC], ',')
-                        ? array_map(function ($str) {
-                            return trim($str);
-                        }, explode(',', $field[self::FIELD_SEMANTIC]))
-                        : $field[self::FIELD_SEMANTIC];
+            } elseif (function_exists($field[0])) {
+                $functionName = $field[0];
+                $fieldName = 'retrocomp' ;
+                $field[0] = $fieldName;
+                $field['functionName'] = $functionName ;
+                $classField = $this->fieldFactory->create($field);
+                if ($classField) {
+                    $prepared[$i] = $classField;
                 }
             }
             $i++;
@@ -313,9 +283,6 @@ class FormManager
                     if ($field instanceof BazarField) {
                         $fieldPropName = $field->getPropertyName();
                         $fieldType = $field->getType();
-                    } elseif (is_array($field)) {
-                        $fieldPropName = $field['id'];
-                        $fieldType = $field['type'];
                     }
 
                     if ($fieldPropName) {
@@ -371,8 +338,6 @@ class FormManager
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof BazarField) {
                     return $id[0] === 'all' || in_array($field->getPropertyName(), $id);
-                } elseif (is_array($field) && isset($field['id'])) {
-                    return $id[0] === 'all' || in_array($field['id'], $id);
                 }
             });
         }
