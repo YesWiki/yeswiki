@@ -238,13 +238,18 @@ class MapField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
+        if (isset($entry[$this->latitudeField]) && isset($entry[$this->longitudeField])) {
+            $entry[$this->propertyName] = $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField];
+        } elseif (!isset($entry[$this->propertyName])) {
+            $entry[$this->propertyName] = '';
+        }
         return [
-            $this->propertyName => $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField],
-            'fields-to-remove' => [
-              $this->latitudeField,
-              $this->longitudeField
-              ]
-          ];
+          $this->propertyName => $entry[$this->propertyName],
+          'fields-to-remove' => [
+            $this->latitudeField,
+            $this->longitudeField
+            ]
+        ];
     }
 
     protected function renderStatic($entry)

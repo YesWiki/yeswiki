@@ -21,6 +21,7 @@
             </a>
         </div>
         <output id="img-{{ field.propertyName }}" class="col-xs-9">{{ image|raw }}</output>
+        <input type="hidden" id="oldimage_{{ field.propertyName }}" name="oldimage_{{ field.propertyName }}" />
     {% else %}
         <input
             type="file"

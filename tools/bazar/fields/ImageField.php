@@ -219,6 +219,10 @@ class ImageField extends FileField
               $this->propertyName => $entry[$this->propertyName],
               'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
           ];
+        } else {
+            return [
+            'fields-to-remove' => ['filename-'.$this->propertyName, 'data-'.$this->propertyName, 'oldimage_' . $this->propertyName]
+          ];
         }
     }
 

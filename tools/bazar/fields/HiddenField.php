@@ -1,6 +1,7 @@
 <?php
 
 namespace YesWiki\Bazar\Field;
+
 use Psr\Container\ContainerInterface;
 
 /**
@@ -17,5 +18,19 @@ class HiddenField extends BazarField
     protected function renderStatic($entry)
     {
         return null;
+    }
+
+    // Format input values before save
+    public function formatValuesBeforeSave($entry)
+    {
+        return [];
+    }
+    
+    public function jsonSerialize()
+    {
+        return [
+            'type' => $this->getType(),
+            'value' => $this->getLabel(),
+            ];
     }
 }
