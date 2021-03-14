@@ -21,6 +21,9 @@ class AclField extends BazarField
     {
         parent::__construct($values, $services);
 
+        $this->name = null;
+        $this->label = null ;
+        $this->propertyName = null;
         $this->entryReadRight = $values[self::FIELD_ENTRY_READ_RIGHT];
         $this->entryWriteRight = $values[self::FIELD_ENTRY_WRITE_RIGHT];
         $this->entryCommentRight = $values[self::FIELD_ENTRY_COMMENT_RIGHT];
@@ -33,13 +36,13 @@ class AclField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        if (empty($GLOBALS['wiki']->LoadAcl($entry['id_fiche'], 'read', false)['list'])){
+        if (empty($GLOBALS['wiki']->LoadAcl($entry['id_fiche'], 'read', false)['list'])) {
             $GLOBALS['wiki']->SaveAcl($entry['id_fiche'], 'read', $this->replaceWithCreator($this->entryReadRight, $entry));
         }
-        if (empty($GLOBALS['wiki']->LoadAcl($entry['id_fiche'], 'write', false)['list'])){
+        if (empty($GLOBALS['wiki']->LoadAcl($entry['id_fiche'], 'write', false)['list'])) {
             $GLOBALS['wiki']->SaveAcl($entry['id_fiche'], 'write', $this->replaceWithCreator($this->entryWriteRight, $entry));
         }
-        if (empty($GLOBALS['wiki']->LoadAcl($entry['id_fiche'], 'comment', false)['list'])){
+        if (empty($GLOBALS['wiki']->LoadAcl($entry['id_fiche'], 'comment', false)['list'])) {
             $GLOBALS['wiki']->SaveAcl($entry['id_fiche'], 'comment', $this->replaceWithCreator($this->entryCommentRight, $entry));
         }
 
@@ -58,5 +61,15 @@ class AclField extends BazarField
             return $entry['nomwiki'];
         }
         return $right;
+    }
+    
+    public function jsonSerialize()
+    {
+        return [
+            'type' => $this->getType(),
+            'entryReadRight' => $this->entryReadRight,
+            'entryWriteRight' => $this->entryWriteRight,
+            'entryCommentRight' => $this->entryCommentRight,
+            ];
     }
 }

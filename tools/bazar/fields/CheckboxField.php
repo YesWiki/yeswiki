@@ -78,21 +78,23 @@ abstract class CheckboxField extends EnumField
     
     public function formatValuesBeforeSave($entry)
     {
-        if (isset($entry[$this->propertyName . self::SUFFIX])) {
-            $checkboxField = $entry[$this->propertyName . self::SUFFIX] ;
-            if (is_array($checkboxField)) {
-                $checkboxField = array_filter($checkboxField, function ($value) {
-                    return ($value == 1 || $value == true || $value == 'true') ;
-                });
-                $entry[$this->propertyName] = implode(',', array_keys($checkboxField)) ;
+        if ($this->canEdit($entry)) {
+            if (isset($entry[$this->propertyName . self::SUFFIX])) {
+                $checkboxField = $entry[$this->propertyName . self::SUFFIX] ;
+                if (is_array($checkboxField)) {
+                    $checkboxField = array_filter($checkboxField, function ($value) {
+                        return ($value == 1 || $value == true || $value == 'true') ;
+                    });
+                    $entry[$this->propertyName] = implode(',', array_keys($checkboxField)) ;
+                } else {
+                    $entry[$this->propertyName] = $checkboxField ;
+                }
+                unset($entry[$this->propertyName . self::SUFFIX]) ;
             } else {
-                $entry[$this->propertyName] = $checkboxField ;
+                $entry[$this->propertyName] = '' ;
             }
-            unset($entry[$this->propertyName . self::SUFFIX]) ;
-        } else {
-            $entry[$this->propertyName] = '' ;
-        };
-        return [$this->propertyName => $entry[$this->propertyName],
+        }
+        return [$this->propertyName => $this->getValue($entry) ,
             'fields-to-remove' => [
                 $this->propertyName . self::SUFFIX,
                 $this->propertyName

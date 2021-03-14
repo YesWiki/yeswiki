@@ -238,7 +238,16 @@ class MapField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        return [$this->propertyName => $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField]];
+        if (isset($entry[$this->latitudeField]) && isset($entry[$this->longitudeField])) {
+            $entry[$this->propertyName] = $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField];
+        } 
+        return [
+          $this->propertyName => $this->getValue($entry),
+          'fields-to-remove' => [
+            $this->latitudeField,
+            $this->longitudeField
+            ]
+        ];
     }
 
     protected function renderStatic($entry)
@@ -261,5 +270,17 @@ class MapField extends BazarField
     public function getAutocomplete()
     {
         return $this->autocomplete;
+    }
+
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+              'latitudeField' => $this->getLatitudeField(),
+              'longitudeField' => $this->getLongitudeField(),
+              'autocomplete' => $this->getAutocomplete(),
+            ]
+        );
     }
 }
