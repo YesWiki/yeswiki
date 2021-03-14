@@ -56,6 +56,9 @@ abstract class BazarField implements \JsonSerializable
         $this->readAccess = $values[self::FIELD_READ_ACCESS];
         $this->writeAccess = $values[self::FIELD_WRITE_ACCESS];
         $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
+        $this->semanticPredicate = strpos($this->semanticPredicate, ',')
+                ? array_map('trim', explode(',', $this->semanticPredicate))
+            : $this->semanticPredicate;
 
         // By default, the entry ID is the field name
         $this->propertyName = $values[self::FIELD_NAME];
