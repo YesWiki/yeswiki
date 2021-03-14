@@ -206,7 +206,7 @@ if (isset($_REQUEST['demand'])) {
             echo json_encode($formval);
             break;
         case "entries":
-            header("Location: ".$this->href('', 'api/fiche/'.$form.($is_semantic ? '/json-ld' : '')));
+            header("Location: ".$this->href('', 'api/fiches'.($is_semantic ? '/json-ld' : '')));
             break;
         case "pages":
             // recuperation des pages wikis

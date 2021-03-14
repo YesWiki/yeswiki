@@ -39,9 +39,30 @@ class ApiController extends YesWikiController
     }
 
     /**
+     * @Route("/api/fiches/{output}/{selectedEntries}", methods={"GET"})
+     */
+    public function getAllEntries($output = null, $selectedEntries = null)
+    {
+
+        $entries = $this->getService(EntryManager::class)->search([
+            'queries'=>!empty($selectedEntries) ? ['id_fiche' => $selectedEntries]: [],
+        ]);
+
+        if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
+            return $this->getAllSemanticEntries($formId, $entries);
+        } // add entries in html format if asked
+        elseif ($output == 'html') {
+            foreach ($entries as $id => $entry) {
+                $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+            }
+        }
+        return new ApiResponse($entries);
+    }
+
+    /**
      * @Route("/api/fiche/{formId}/{output}/{selectedEntries}", methods={"GET"})
      */
-    public function getAllEntries($formId, $output = null, $selectedEntries = null)
+    public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
 
         $entries = $this->getService(EntryManager::class)->search([
