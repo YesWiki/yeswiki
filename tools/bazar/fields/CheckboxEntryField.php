@@ -21,10 +21,7 @@ class CheckboxEntryField extends CheckboxField
         $this->displaySelectAllLimit = empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
             $this->displayFilterLimit :
             $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
-        $form = $services->get(FormManager::class)->getOne($this->name);
-        $this->formName = $form ?
-            ('Fiches ' . $services->get(FormManager::class)->getOne($this->name)['bn_label_nature']) :
-            _t('BAZ_NO_FORMS_FOUND');
+        $this->formName = null;
         $this->normalDisplayMode = (in_array(
             $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
             array_keys(self::CHECKBOX_TWIG_LIST)
@@ -47,6 +44,18 @@ class CheckboxEntryField extends CheckboxField
         return (count($values) > 0) ? $this->render('@bazar/fields/checkboxentry.twig', [
             'values' => $values
         ]) : '' ;
+    }
+
+    protected function getFormName()
+    {
+        // needed for CheckboxEntry to update title only when
+        // rendering Input and prevent infinite loop at construct
+
+        if (!empty($this->name)) {
+            $form = $this->services->get(FormManager::class)->getOne($this->name);
+            $this->formName = isset($form['bn_label_nature']) ? ('Fiches ' . $form['bn_label_nature']) : _t('BAZ_NO_FORMS_FOUND');
+        }
+        return $this->formName ;
     }
 
     public function getOptions()
