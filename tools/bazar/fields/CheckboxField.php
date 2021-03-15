@@ -45,9 +45,9 @@ abstract class CheckboxField extends EnumField
                 break ;
             case "dragndrop":
                 return $this->render($this->dragAndDropDisplayMode, [
-                    'options' => $this->options,
+                    'options' => $this->getOptions(),
                     'selectedOptionsId' => $this->getValues($entry),
-                    'formName' => $this->formName,
+                    'formName' => ($this->formName) ?? $this->getFormName(),
                     'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
                     'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']
                 ]);
@@ -62,7 +62,7 @@ abstract class CheckboxField extends EnumField
                     $GLOBALS['wiki']->AddJavascript($script);
                 }
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [
-                    'options' => $this->options,
+                    'options' => $this->getOptions(),
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
                     'displayFilterLimit' => $this->displayFilterLimit
@@ -105,7 +105,7 @@ abstract class CheckboxField extends EnumField
     {
         // list of choices available from options
         $choices = [] ;
-        foreach ($this->options as $key => $label) {
+        foreach ($this->getOptions() as $key => $label) {
             $choices[$key] = '{"id":"' . $key . '", "title":"' . str_replace('\'', '&#39;', str_replace('"', '\"', strip_tags($label))) . '"}';
         }
 
@@ -140,5 +140,12 @@ abstract class CheckboxField extends EnumField
     public function getSuffix(): string
     {
         return self::SUFFIX ;
+    }
+
+    protected function getFormName()
+    {
+        // needed for CheckboxEntry to update title only when
+        // rendering Input and prevent infinite loop at construct
+        return $this->formName ;
     }
 }
