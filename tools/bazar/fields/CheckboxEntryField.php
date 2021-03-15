@@ -15,7 +15,7 @@ class CheckboxEntryField extends CheckboxField
         parent::__construct($values, $services);
         $this->type = 'checkboxfiche';
 
-        $this->loadOptionsFromEntries();
+        // load options only when needed but not at construct to prevent infinite loops
 
         $this->displayFilterLimit =  $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'] ;
         $this->displaySelectAllLimit = empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
@@ -51,6 +51,10 @@ class CheckboxEntryField extends CheckboxField
 
     public function getOptions()
     {
+        // load options only when needed but not at construct to prevent infinite loops
+        if (empty($this->options) || !is_array($this->options) || count($this->options) == 0) {
+            $this->loadOptionsFromEntries();
+        }
         return  $this->options;
     }
 }
