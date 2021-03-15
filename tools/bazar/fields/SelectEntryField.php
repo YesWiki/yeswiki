@@ -22,11 +22,11 @@ class SelectEntryField extends EnumField
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
-        if($this->isDistantJson) {
+        if ($this->isDistantJson) {
             $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
             $this->loadOptionsFromJson();
         } else {
-            $this->loadOptionsFromEntries();
+            $this->options = null ;
         }
     }
 
@@ -34,17 +34,19 @@ class SelectEntryField extends EnumField
     {
         return $this->render('@bazar/inputs/select.twig', [
             'value' => $this->getValue($entry),
-            'options' => $this->options
+            'options' => $this->getOptions()
         ]);
     }
 
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
 
-        if( $this->displayMethod === 'fiche' ) {
-            if( $this->isDistantJson ) {
+        if ($this->displayMethod === 'fiche') {
+            if ($this->isDistantJson) {
                 // TODO display the entry in a iframe ?
                 return null;
             } else {
@@ -53,7 +55,7 @@ class SelectEntryField extends EnumField
             }
         }
 
-        if( $this->isDistantJson ) {
+        if ($this->isDistantJson) {
             $entryUrl = explode('BazaR/json', $this->name);
             $entryUrl = $entryUrl[0] . $value;
         } else {
@@ -62,8 +64,17 @@ class SelectEntryField extends EnumField
 
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
-            'label' => $this->options[$value],
+            'label' => $this->getOptions()[$value],
             'entryUrl' => $entryUrl
         ]);
+    }
+
+    public function getOptions()
+    {
+        // load options only when needed but not at construct to prevent infinite loops
+        if (!$this->isDistantJson && (empty($this->options) || !is_array($this->options) || count($this->options) == 0)) {
+            $this->loadOptionsFromEntries();
+        }
+        return  $this->options;
     }
 }
