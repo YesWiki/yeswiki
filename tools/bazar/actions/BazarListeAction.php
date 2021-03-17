@@ -78,8 +78,8 @@ class BazarListeAction extends YesWikiAction
             // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
-            'user' => $arg['user'] ?? (isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
-                $this->getService(UserManager::class)->getLoggedUserName() : null,
+            'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == "true") ?
+                $this->getService(UserManager::class)->getLoggedUserName() : null),
             // Ordre du tri (asc ou desc)
             'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && (!empty($arg['agenda']) || !empty($arg['datefilter']))) ? 'desc' : 'asc') ,
             // Champ du formulaire utilisé pour le tri
