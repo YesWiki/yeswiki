@@ -359,9 +359,9 @@ var typeUserAttrs = {
         'Exple: template="liste_liens.tpl.html (par défault = accordéon)"',
     },
     type_link: {
-      label: "Type de fiche liée",
+      label: "Type de fiche liée (ou label du champ)",
       placeholder:
-        "mettre checkbox ici si vos fiches liées le sont via un checkbox",
+        "mettre 'checkbox' ici si vos fiches liées le sont via un checkbox",
     },
     read: readConf,
     write: writeconf,
