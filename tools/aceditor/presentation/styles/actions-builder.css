@@ -88,7 +88,7 @@ input[type=range] {
 .config-panel-content .hint + .hint {
   margin-top: -1.5rem;
 }
-h3 {
+#actions-builder-modal h3 {
   text-align: center;
   margin-bottom: 30px;
 }
