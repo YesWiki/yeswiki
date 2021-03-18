@@ -3,6 +3,11 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\CheckboxEntryField;
+use YesWiki\Bazar\Field\SelectEntryField;
+// use YesWiki\Bazar\Field\RadioEntryField;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Performer;
 
 /**
@@ -15,14 +20,12 @@ class LinkedEntryField extends BazarField
     protected $limit;
     protected $template;
     protected $linkType;
-    protected $linkLabel;
 
     protected const FIELD_QUERY = 2;
     protected const FIELD_OTHER_PARAMS = 3;
     protected const FIELD_LIMIT = 4;
     protected const FIELD_TEMPLATE = 5;
-    protected const FIELD_LINKED_LABEL_OR_TYPE = 6;
-    private const TYPE_LABEL = 'label' ;
+    protected const FIELD_LINK_TYPE = 6;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -32,9 +35,9 @@ class LinkedEntryField extends BazarField
         $this->otherParams = $values[self::FIELD_OTHER_PARAMS] ?? '';
         $this->limit = $values[self::FIELD_LIMIT] ?? '';
         $this->template = $values[self::FIELD_TEMPLATE] ?? '';
-        $this->linkType = (!empty($values[self::FIELD_LINKED_LABEL_OR_TYPE]) && $values[self::FIELD_LINKED_LABEL_OR_TYPE] === 'checkbox')
-            ? 'checkboxfiche' : ((!empty($values[self::FIELD_LINKED_LABEL_OR_TYPE])) ? self::TYPE_LABEL : 'listefiche') ;
-        $this->linkedLabel = $values[self::FIELD_LINKED_LABEL_OR_TYPE] ?? null ;
+        $this->linkType = (!empty($values[self::FIELD_LINK_TYPE]) && $values[self::FIELD_LINK_TYPE] === 'checkbox')
+            ? 'checkboxfiche' : ($values[self::FIELD_LINK_TYPE] ?? '') ;
+        $this->propertyName = null; // to prevent bad saved field when updating entry and !canEdit or at export/import
     }
 
     protected function renderInput($entry)
@@ -47,20 +50,63 @@ class LinkedEntryField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
+        // Display the linked entries only if id_fiche and id_typeannonce
+        if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
+            return $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
+        } else {
+            return null ;
+        }
     }
 
     private function getBazarListAction($entry)
     {
-        $query = (!empty($this->query)) ? $this->query . '|' : '' ;
-        $query .= (!empty($entry['id_typeannonce']) && !empty($entry['id_fiche']))
-                    ? (($this->linkType == self::TYPE_LABEL) ? $this->linkedLabel : $this->linkType . $entry['id_typeannonce'])
-                       . '=' . $entry['id_fiche']
-                    :'';
-        return '{{bazarliste id="' . $this->name . '" query="' . $query . '"'
-            . ((!empty($this->limit)) ? ' nb="' . $this->limit .'"': '')
-            . ((!empty(trim($this->template))) ? ' template="' . trim($this->template) . '" ' : '')
-            . $this->otherParams . '}}';
+        $query = $this->getQueryForLinkedLabels($entry) ;
+        if (!empty($query)) {
+            $query = ((!empty($this->query)) ? $this->query.  '|' : '')  . $query  ;
+
+            return '{{bazarliste id="' . $this->name . '" query="' . $query . '"'
+                . ((!empty($this->limit)) ? ' nb="' . $this->limit .'"': '')
+                . ((!empty(trim($this->template))) ? ' template="' . trim($this->template) . '" ' : '')
+                . $this->otherParams . '}}';
+        } else {
+            return '';
+        }
+    }
+
+    protected function getQueryForLinkedLabels($entry): ?string
+    {
+        // get FormManager here and not in construct to prevent loop
+        $form = $this->services->get(FormManager::class)->getOne($this->name);
+
+        if (!is_array($form) || !is_array($form['prepared'])
+                || empty($entry['id_typeannonce'])
+                || empty($entry['id_fiche'])) {
+            return '';
+        }
+        $query = '' ;
+        // find CheckboxEntryField or SelectEntryField or RadioEntryField with right name
+        foreach ($form['prepared'] as $field) {
+            if (
+            (
+                $field instanceof SelectEntryField
+                || $field instanceof CheckboxEntryField
+                // || $field instanceof RadioEntryField
+            )
+            && $field->getName() == $entry['id_typeannonce']
+            &&
+            (
+                empty($this->linkType)
+                || strpos($field->getType(), $this->linkType) === 0 // checkboxfiche or listefiche
+                || $field->getPropertyName()== $this->linkType // label
+                || substr($field->getPropertyName(), strlen($field->getType().trim($entry['id_typeannonce']))) == $this->linkType // label
+            )
+                ) {
+                $query .= (empty($query)) ? '' : '|' ;
+                $query .= $field->getPropertyName() . '=' . $entry['id_fiche'];
+            }
+        }
+
+        return $query ;
     }
     
     public function jsonSerialize()
@@ -71,9 +117,7 @@ class LinkedEntryField extends BazarField
                 'query' => $this->query,
                 'limit' => $this->limit,
                 'linkType' => $this->linkType,
-                'linkedLabel' => $this->linkedLabel,
                 'template' => $this->template,
-                'BazarListeACtionStr' => $this->getBazarListAction(['id_fiche' => 'FACTICE TEST ID','id_typeannonce' => "1"]),
                 'otherParams' => $this->otherParams,
             ]
         );
