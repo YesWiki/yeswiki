@@ -69,6 +69,8 @@ class BazarListeAction extends YesWikiAction
             }
         }
 
+        $template = $_GET['template'] ?? $arg['template'] ?? null ;
+
         return([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -98,7 +100,7 @@ class BazarListeAction extends YesWikiAction
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
-            'template' => $_GET['template'] ?? $arg['template'] ?? $this->params->get('default_bazar_template'),
+            'template' => (!empty($template)) ? $template : $this->params->get('default_bazar_template'),
             // classe css a ajouter en rendu des templates liste
             'class' => $arg['class'] ?? '',
             // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
