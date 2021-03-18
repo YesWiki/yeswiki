@@ -167,7 +167,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
             var src = res[i].getAttribute("src");
             if (src) {
               var selection = document.querySelectorAll('script[src="'+src+'"]') ;
-              if (selection.length == 0) {
+              if (!selection || selection.length == 0) {
                 // append script and load it only if not present
                 document.body.appendChild(document.importNode(res[i]));
                 $.getScript(src);
@@ -194,7 +194,7 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
             var href = importedCSS[i].getAttribute("href");
             if (href) {
               var selection = document.querySelector('link[href="'+href+'"]') ;
-              if (selection.length == 0) {
+              if (!selection ||selection.length == 0) {
                 // append link
                 document.body.appendChild(document.importNode(importedCSS[i]));
               }
