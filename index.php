@@ -60,7 +60,11 @@ spl_autoload_register(function ($className) {
                     require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
                 }
             } elseif ($classNameArray[2] === 'Controller') {
-                require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
+                if ($extension == 'custom') {
+                    require 'custom/controllers/' . $classNameArray[3] . '.php';
+                } else {
+                    require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
+                }
             }
         }
     }

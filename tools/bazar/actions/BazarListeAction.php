@@ -68,6 +68,35 @@ class BazarListeAction extends YesWikiAction
                 $color = $this->params->get('baz_marker_color');
             }
         }
+        
+        $template = $_GET['template'] ?? $arg['template'] ?? $this->params->get('default_bazar_template');
+        $prerenderer = $arg['prerenderer'] ?? null ;
+        
+        if (empty($prerenderer)) {
+            if (preg_match_all("/^(.*)(.twig|.tpl.html)$/i", $template, $matches)) {
+                $prerenderer = $matches[1][0] ;
+            } else {
+                $prerenderer = $template ;
+            }
+            $prerenderer .= 'PreRenderer' ;
+        } 
+        if (!empty($prerenderer)){
+            $prerenderer =
+                (
+                    ($serviceName = 'YesWiki\\Custom\\Controller\\' . $prerenderer) &&
+                    $this->wiki->services->has($serviceName)
+                ) ? $serviceName : 
+                (
+                    (
+                        ($serviceName = 'YesWiki\\Bazar\\Controller\\' . $prerenderer) &&
+                        $this->wiki->services->has($serviceName)
+                    ) ? $serviceName :
+                    (
+                        ($serviceName = $prerenderer) &&
+                        $this->wiki->services->has($serviceName)
+                    ) ? $serviceName : null
+                );
+        } 
 
         $template = $_GET['template'] ?? $arg['template'] ?? null ;
 
@@ -139,6 +168,9 @@ class BazarListeAction extends YesWikiAction
             'colorfield' => $colorField,
             // couleur des marqueurs
             'color' => $color ,
+
+            // prerenderer controller
+            'prerenderer' => $prerenderer,
         ]);
     }
 
@@ -267,6 +299,9 @@ class BazarListeAction extends YesWikiAction
             $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">'.$pager->links.'</ul></div>';
         }
 
+        if (!empty($this->arguments['prerenderer'])){                
+            $data = $this->getService($this->arguments['prerenderer'])->preRender($data) ;
+        }
         try {
             return $this->render("@bazar/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
