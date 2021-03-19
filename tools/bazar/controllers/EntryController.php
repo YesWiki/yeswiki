@@ -132,7 +132,7 @@ class EntryController extends YesWikiController
             "owner" => $owner,
             "message" => $_GET['message'] ?? '',
             "showOwner" => $showOwner,
-            "showFooter" => $showFooter && $this->aclService->hasAccess('write', $entryId),
+            "showFooter" => $showFooter,
             "canDelete" => $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
