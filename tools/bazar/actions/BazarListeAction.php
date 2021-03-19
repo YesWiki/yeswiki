@@ -69,23 +69,29 @@ class BazarListeAction extends YesWikiAction
             }
         }
         
-        $template = $_GET['template'] ?? $arg['template'] ?? $this->params->get('default_bazar_template');
+        
+        $template = $_GET['template'] ?? $arg['template'] ?? null ;
+        $template = (!empty($template)) ? $template : $this->params->get('default_bazar_template');
         $prerenderer = $arg['prerenderer'] ?? null ;
         
         if (empty($prerenderer)) {
-            if (preg_match_all("/^(.*)(.twig|.tpl.html)$/i", $template, $matches)) {
-                $prerenderer = $matches[1][0] ;
+            if (preg_match_all("/^(.*)(.tpl.html)$/i", $template, $matches)) {
+                $prerenderer = null ; // not prerenderer if .tpl.html
             } else {
-                $prerenderer = $template ;
+                if (preg_match_all("/^(.*)(.twig)$/i", $template, $matches)) {
+                    $prerenderer = $matches[1][0] ;
+                } else {
+                    $prerenderer = $template ;
+                }
+                $prerenderer .= 'PreRenderer' ;
             }
-            $prerenderer .= 'PreRenderer' ;
-        } 
-        if (!empty($prerenderer)){
+        }
+        if (!empty($prerenderer)) {
             $prerenderer =
                 (
                     ($serviceName = 'YesWiki\\Custom\\Controller\\' . $prerenderer) &&
                     $this->wiki->services->has($serviceName)
-                ) ? $serviceName : 
+                ) ? $serviceName :
                 (
                     (
                         ($serviceName = 'YesWiki\\Bazar\\Controller\\' . $prerenderer) &&
@@ -96,9 +102,7 @@ class BazarListeAction extends YesWikiAction
                         $this->wiki->services->has($serviceName)
                     ) ? $serviceName : null
                 );
-        } 
-
-        $template = $_GET['template'] ?? $arg['template'] ?? null ;
+        }
 
         return([
             // SELECTION DES FICHES
@@ -129,7 +133,7 @@ class BazarListeAction extends YesWikiAction
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
-            'template' => (!empty($template)) ? $template : $this->params->get('default_bazar_template'),
+            'template' => $template,
             // classe css a ajouter en rendu des templates liste
             'class' => $arg['class'] ?? '',
             // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
@@ -299,7 +303,7 @@ class BazarListeAction extends YesWikiAction
             $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">'.$pager->links.'</ul></div>';
         }
 
-        if (!empty($this->arguments['prerenderer'])){                
+        if (!empty($this->arguments['prerenderer'])) {
             $data = $this->getService($this->arguments['prerenderer'])->preRender($data) ;
         }
         try {
