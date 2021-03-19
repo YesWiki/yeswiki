@@ -32,13 +32,15 @@ class TextareaField extends BazarField
         $this->maxChars = $values[6];
 
         // Retro-compatibility
-        if( $this->syntax === 'wiki' ) $this->syntax = self::SYNTAX_WIKI;
+        if ($this->syntax === 'wiki') {
+            $this->syntax = self::SYNTAX_WIKI;
+        }
     }
 
     protected function renderInput($entry)
     {
         // If HTML syntax, load editor's JS and CSS
-        if( $this->syntax === self::SYNTAX_HTML ) {
+        if ($this->syntax === self::SYNTAX_HTML) {
             $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
             $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
 
@@ -84,12 +86,15 @@ class TextareaField extends BazarField
             });';
 
             $GLOBALS['wiki']->AddJavascript($script);
+        } elseif ($this->syntax === self::SYNTAX_WIKI && $this->getName() == 'bf_contenu' ) {
+            // load action builder
+            include_once 'tools/aceditor/actions/actions_builder.php';
         }
 
         return $this->render("@bazar/inputs/textarea.twig", [
             'value' => $this->getValue($entry)
         ]);
-    }  
+    }
 
     public function formatValuesBeforeSave($entry)
     {
@@ -105,9 +110,11 @@ class TextareaField extends BazarField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
         
-        switch($this->syntax){
+        switch ($this->syntax) {
             case self::SYNTAX_WIKI:
                 // Do the page change in any case (useful for attach or grid)
                 $oldPage = $GLOBALS['wiki']->GetPageTag();
