@@ -163,7 +163,12 @@ var SYNTAX = {
             '</div>');
 
       // Actions Builder, actionsBuilderData has been defined in action-builder.tpl.html
-      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData) {
+      if (typeof actionsBuilderData !== 'undefined' && actionsBuilderData && (textarea.prop('id') == 'body' 
+          || (typeof actionsBuilderData.actionBuilderTextareaName !== 'undefined'
+          && textarea.prop('id') == actionsBuilderData.actionBuilderTextareaName))) {
+        if (textarea.prop('id') != 'body'){
+          textarea.addClass("action-builder-anchor");
+        }
         var result = '<div class="btn-group">' +
                '<a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">'+this.lang['ACEDITOR_ACTIONS']+'  <span class="caret"></span></a>' +
                '<ul class="dropdown-menu component-action-list">';
