@@ -86,7 +86,9 @@ class TextareaField extends BazarField
             });';
 
             $GLOBALS['wiki']->AddJavascript($script);
-        } elseif ($this->syntax === self::SYNTAX_WIKI && $this->getName() == 'bf_contenu' ) {
+        } elseif ($this->syntax === self::SYNTAX_WIKI && 
+            !empty($GLOBALS['wiki']->config['actionBuilderTextareaName'])
+            && $this->getName() == $GLOBALS['wiki']->config['actionBuilderTextareaName'] ) {
             // load action builder
             include_once 'tools/aceditor/actions/actions_builder.php';
         }
