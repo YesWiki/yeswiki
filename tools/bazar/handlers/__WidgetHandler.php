@@ -11,11 +11,14 @@ class __WidgetHandler extends YesWikiHandler
         $entryManager = $this->getService(EntryManager::class);
         $formManager = $this->getService(FormManager::class);
 
-        if (!isset($_GET['id'])) return null;
+        if (!isset($_GET['id'])) {
+            return null;
+        }
 
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
         echo $this->wiki->Header();
+        echo '<div class="page">';
         echo '<h1>Partager les résultats par widget HTML (code embed)</h1>' . "\n";
 
         $entries = $entryManager->search(['formsIds' => [$_GET['id']], 'keywords' => $_GET['q']]);
@@ -48,6 +51,7 @@ class __WidgetHandler extends YesWikiHandler
             'urlparams' => $urlParams
         ]);
 
+        echo '</div>';
         echo $this->wiki->Footer();
         exit();
     }

@@ -13,7 +13,9 @@ class __EditHandler extends YesWikiHandler
 
         if ($this->wiki->HasAccess('write') && $entryManager->isEntry($this->wiki->GetPageTag())) {
             $plugin_output_new = $this->wiki->Header();
+            $plugin_output_new .= '<div class="page">';
             $plugin_output_new .= $entryController->update($this->wiki->GetPageTag());
+            $plugin_output_new .= '</div>';
             $plugin_output_new .= $this->wiki->Footer();
 
             // we use die so that the script stop there and the default handler of wiki isn't called
