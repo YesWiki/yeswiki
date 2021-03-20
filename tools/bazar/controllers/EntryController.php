@@ -133,6 +133,7 @@ class EntryController extends YesWikiController
             "message" => $_GET['message'] ?? '',
             "showOwner" => $showOwner,
             "showFooter" => $showFooter,
+            "canEdit" =>  $this->aclService->hasAccess('write', $entryId),
             "canDelete" => $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
@@ -158,7 +159,7 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
         $form = $this->formManager->getOne($formId);
-        if (!$form){
+        if (!$form) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
         }
 
@@ -336,7 +337,7 @@ class EntryController extends YesWikiController
             }
         }
         
-        if ($form['bn_sem_type']){
+        if ($form['bn_sem_type']) {
             $html['id_fiche'] = $entry['id_fiche'];
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }

@@ -20,11 +20,13 @@
   {% if showFooter %}
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info well well-sm">
-      <div class="pull-right BAZ_actions_fiche">
+      <div class="pull-right BAZ_actions_fiche">      
+        {% if canEdit %}
          <a class="btn btn-xs btn-mini btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
            <i class="fa fa-pencil-alt icon-pencil"></i>
            <span>{{ _t('BAZ_MODIFIER') }}</span>
          </a>
+        {% endif %}
         {% if canDelete %}
           <a
             class="btn btn-xs btn-mini btn-danger modalbox"
