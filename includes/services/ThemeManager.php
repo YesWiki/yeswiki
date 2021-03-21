@@ -15,15 +15,15 @@ class ThemeManager
     protected $squelette;
     protected $fileContent;
     protected $errorMessage;
-    protected $TemplateEngine;
+    protected $twig;
     protected $templateHeader;
     protected $templateFooter;
     protected $Performer;
 
-    public function __construct(Wiki $wiki, TemplateEngine $TemplateEngine, Performer $Performer)
+    public function __construct(Wiki $wiki, TemplateEngine $twig, Performer $Performer)
     {
         $this->wiki = $wiki;
-        $this->TemplateEngine = $TemplateEngine;
+        $this->twig = $twig;
         $this->Performer = $Performer;
         $this->config = $wiki->config;
         $this->fileLoaded = false;
@@ -176,7 +176,7 @@ class ThemeManager
         $useFallbackTheme = !empty($this->config['use_fallback_theme']) ;
 
         if (!((!$useFallbackTheme && file_exists('custom/'.$themePath)) || file_exists($themePath))) {
-            $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
+            $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_THEME_FOLDER') .$this->theme. _t('THEME_MANAGER_NOT_FOUND'),
                 ]);
@@ -184,7 +184,7 @@ class ThemeManager
         }
 
         if (!((!$useFallbackTheme &&file_exists('custom/'.$filePath)) || file_exists($filePath))) {
-            $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
+            $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('THEME_MANAGER_SQUELETTE_FILE') .$this->squelette. _t('THEME_MANAGER_NOT_FOUND'),
                 ]);
@@ -194,7 +194,7 @@ class ThemeManager
 
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
-            $this->errorMessage = $this->TemplateEngine->render('@templates\alert-message.twig', [
+            $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_ERROR_GETTING_FILE') .$filePath,
             ]);

@@ -28,7 +28,6 @@ class EntryController extends YesWikiController
         AclService $aclService,
         SemanticTransformer $semanticTransformer,
         PageManager $pageManager,
-        TemplateEngine $templateEngine,
         ParameterBagInterface $config
     ) {
         $this->entryManager = $entryManager;
@@ -36,7 +35,6 @@ class EntryController extends YesWikiController
         $this->aclService = $aclService;
         $this->semanticTransformer = $semanticTransformer;
         $this->pageManager = $pageManager;
-        $this->templateEngine = $templateEngine;
         $this->config = $config->all();
     }
 
@@ -74,14 +72,14 @@ class EntryController extends YesWikiController
         $customTemplatePath = $this->getCustomTemplatePath($entry);
         if ($customTemplatePath) {
             $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form);
-            $renderedEntry = $this->templateEngine->render($customTemplatePath, $customTemplateValues);
+            $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
         }
 
         // use a custom semantic template if exists
         if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
             $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
             if ($customTemplatePath) {
-                $renderedEntry = $this->templateEngine->render("@bazar/$customTemplatePath", $customTemplateValues);
+                $renderedEntry = $this->render("@bazar/$customTemplatePath", $customTemplateValues);
             }
         }
 
@@ -255,7 +253,7 @@ class EntryController extends YesWikiController
             "@bazar/fiche-{$entry['id_typeannonce']}.twig"
         ];
         foreach ($templatePaths as $templatePath) {
-            if ($this->templateEngine->hasTemplate($templatePath)) {
+            if ($this->wiki->services->get(TemplateEngine::class)->hasTemplate($templatePath)) {
                 return $templatePath;
             }
         }
@@ -294,7 +292,7 @@ class EntryController extends YesWikiController
 
             if (isset($type)) {
                 $templatePath = $dir_name . "/" . strtolower($type) . ".tpl.html";
-                return $this->templateEngine->hasTemplate($templatePath) ? $templatePath : null;
+                return $this->wiki->services->get(TemplateEngine::class)->hasTemplate($templatePath) ? $templatePath : null;
             }
         }
 
