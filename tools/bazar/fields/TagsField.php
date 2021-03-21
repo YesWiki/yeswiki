@@ -116,7 +116,7 @@ class TagsField extends EnumField
 
     public function getOptions()
     {
-        if (empty($this->options) || count($this->options) == 0) {
+        if (empty($this->options)) {
             $this->loadOptionsFromTags();
         }
         return parent::getOptions() ;
@@ -127,10 +127,10 @@ class TagsField extends EnumField
         // TODO use TagsManager instead of TripleStore
         $tripleStore = $this->getService(TripleStore::class);
 
-        $rawOptions = $tripleStore->getMatching(null,'http://outils-reseaux.org/_vocabulary/tag');
+        $rawOptions = $tripleStore->getMatching(null, 'http://outils-reseaux.org/_vocabulary/tag');
         $this->options = array_map(function ($rawOption) {
             return $rawOption['value'] ;
-        },$rawOptions);
-        $this->options = array_combine($this->options,$this->options);
+        }, $rawOptions);
+        $this->options = array_combine($this->options, $this->options);
     }
 }
