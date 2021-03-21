@@ -1,3 +1,3 @@
 parameters:
   # Field name for textarea that is used to activate action-builder
-  actionBuilderTextareaName: 'bf_description'
+  actionbuilder_textarea_name: 'bf_description'
