@@ -1185,7 +1185,7 @@ function getCustomValueForEntry($parameter, $field, $entry, $default)
     if (is_array($parameter) && !empty($field)) {
         if (isset($entry[$field])) {
             // pour les checkbox, on teste les differentes valeurs et on renvoie la premiere qui va bien
-            if (0 === strpos($field, 'checkbox')) {
+            if (!isset($parameter[$entry[$field]]) && strpos($entry[$field], ',') !== false) {
                 $tab = explode(',', $entry[$field]);
                 foreach ($tab as $value) {
                     if (isset($parameter[$value])) {
