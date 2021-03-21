@@ -12,34 +12,36 @@ use YesWiki\Core\Service\TemplateEngine;
  */
 class OldField extends BazarField
 {
-    protected $functionName ;
-    protected $template ;
-    protected $error ;
+    protected $functionName;
+    protected $template;
+    protected $error;
 
     public function __construct(array $values, ContainerInterface $services)
     {
-        $this->functionName = $values['functionName'] ?? null ;
+        $this->functionName = $values['functionName'] ?? null;
         $twig = $services->get(TemplateEngine::class);
         if (empty($this->functionName)) {
             $this->error = $twig->render(
                 '@templates/alert-message.twig',
-                ['type' => 'danger',
-                 'message' => "Error \$values['functionName'] is not defined while creating ".get_class($this).". \n<br>".
-                 "Do not use 'retrocomp' field in form builder."
+                [
+                    'type' => 'danger',
+                    'message' => "Error \$values['functionName'] is not defined while creating " . get_class($this) . ". \n<br>" .
+                        "Do not use 'retrocomp' field in form builder."
                 ]
             );
         } elseif (!function_exists($this->functionName)) {
             $this->error = $twig->render(
                 '@templates/alert-message.twig',
-                ['type' => 'danger',
-                 'message' => "Error function '".$this->functionName."' is not defined while creating ".get_class($this)
+                [
+                    'type' => 'danger',
+                    'message' => "Error function '" . $this->functionName . "' is not defined while creating " . get_class($this)
                 ]
             );
         } else {
-            $this->error = null ;
+            $this->error = null;
         }
-        unset($values['functionName']) ;
-        $this->template = $values ;
+        unset($values['functionName']);
+        $this->template = $values;
         $this->template[0] = $this->functionName;
         parent::__construct($values, $services);
         $this->type = $this->functionName;
@@ -47,25 +49,25 @@ class OldField extends BazarField
 
     protected function renderInput($entry)
     {
-        $funcName = $this->functionName ;
-        $templateForm = [] ;
-        return $this->error ?? $funcName($templateForm, $this->template, 'saisie', $entry) ;
+        $funcName = $this->functionName;
+        $templateForm = [];
+        return $this->error ?? $funcName($templateForm, $this->template, 'saisie', $entry);
     }
 
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-        $funcName = $this->functionName ;
-        $templateForm = [] ;
+        $funcName = $this->functionName;
+        $templateForm = [];
         return ($this->error) ? [$this->propertyName => null]
-            : $funcName($templateForm, $this->template, 'requete', $entry) ;
+            : $funcName($templateForm, $this->template, 'requete', $entry);
     }
 
     protected function renderStatic($entry)
     {
-        $funcName = $this->functionName ;
-        $templateForm = [] ;
-        return $this->error ?? $funcName($templateForm, $this->template, 'html', $entry) ;
+        $funcName = $this->functionName;
+        $templateForm = [];
+        return $this->error ?? $funcName($templateForm, $this->template, 'html', $entry);
     }
 
     public function jsonSerialize()

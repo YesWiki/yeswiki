@@ -123,10 +123,10 @@ class FormManager
     public function delete($id)
     {
         //TODO : suppression des fiches associees au formulaire
-        
+
         // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
-            return null ;
+            return null;
         }
 
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
@@ -229,11 +229,7 @@ class FormManager
             if ($classField) {
                 $prepared[$i] = $classField;
             } elseif (function_exists($field[0])) {
-                $functionName = $field[0];
-                $fieldName = 'old' ;
-                $field[0] = $fieldName;
-                $field['functionName'] = $functionName ;
-                $classField = $this->fieldFactory->create($field);
+                $classField = $this->fieldFactory->create([0 => 'old', 'functionName' => $field[0]]);
                 if ($classField) {
                     $prepared[$i] = $classField;
                 }
@@ -269,10 +265,8 @@ class FormManager
                     }
 
                     if ($fieldPropName) {
-
                         if ($field instanceof EnumField) {
-
-                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField ) {
+                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField) {
                                 // listefiche ou checkboxfiche
                                 $facetteValue[$fieldPropName]['type'] = 'fiche';
                             } else {
@@ -289,7 +283,7 @@ class FormManager
                                     $facetteValue[$fieldPropName][$tval] = 1;
                                 }
                             }
-                        } elseif ( !$onlyLists) {
+                        } elseif (!$onlyLists) {
                             // texte
                             $facetteValue[$key]['type'] = 'form';
                             $facetteValue[$key]['source'] = $key;
@@ -311,7 +305,7 @@ class FormManager
      */
     private function filterFieldsByPropertyName(array $fields, array $id)
     {
-        if (count($id)===1 && $id[0]==='all') {
+        if (count($id) === 1 && $id[0] === 'all') {
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof EnumField) {
                     return true;
