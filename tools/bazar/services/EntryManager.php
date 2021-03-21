@@ -671,7 +671,7 @@ class EntryManager
                                 !isset($data[$propName]) && $complete
                               )
                             ) {
-                            $data[$propName] = $previousEntry[$propName] ;
+                            $data[$propName] = $previousData[$propName] ;
                         } elseif (!$field->canEdit($data) &&
                                   !isset($previousData[$propName]) &&
                                   isset($data[$propName])) {
