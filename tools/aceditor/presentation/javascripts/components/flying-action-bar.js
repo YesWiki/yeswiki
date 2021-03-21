@@ -27,7 +27,7 @@ export default class {
         <i class="fa fa-pencil-alt"></i>
       </a>
     </div>`)
-    $('textarea#body').before(this.flyingActionBar);
+    $('textarea#body,textarea.action-builder-anchor').before(this.flyingActionBar);
 
     this.editor.onCursorChange(() => this.onCusrorChange())
     this.onCusrorChange()
@@ -39,6 +39,7 @@ export default class {
       this.flyingActionBar.toggleClass('active', this.actionIsSelected);
       $('.component-action-list').toggleClass('only-edit', this.actionIsSelected)
       if (this.actionIsSelected) {
+        $('.ace_gutter').removeAttr('aria-hidden'); // to catch offset, css put opacity to 0
         let top = $('.ace_gutter-active-line').offset().top - $('.ace-editor-container').offset().top + $('.aceditor-toolbar').height()
         this.flyingActionBar.css('top', top + 'px')
       }
