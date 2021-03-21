@@ -26,6 +26,13 @@
            <i class="fa fa-pencil-alt icon-pencil"></i>
            <span>{{ _t('BAZ_MODIFIER') }}</span>
          </a>
+        {% else %}
+          <button type="button" class="btn btn-xs btn-mini btn-default"
+              disabled="disabled" data-toggle="tooltip" 
+              data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+            <i class="fa fa-pencil-alt icon-pencil"></i>
+            <span>{{ _t('BAZ_MODIFIER') }}</span>
+          </button>
         {% endif %}
         {% if canDelete %}
           <a
