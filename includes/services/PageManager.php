@@ -36,7 +36,7 @@ class PageManager
         $this->pageCache = [];
     }
 
-    public function getOne($tag, $time = "", $cache = 1): ?array
+    public function getOne($tag, $time = null, $cache = true, $bypassAcls = false): ?array
     {
         // retrieve from cache
         if (!$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
@@ -55,7 +55,7 @@ class PageManager
             }
 
             // not possible to init the EntryManager in the constructor because of circular reference problem
-            if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
+            if ($this->wiki->services->get(EntryManager::class)->isEntry($tag) && !$bypassAcls) {
                 // not possible to init the Guard in the constructor because of circular reference problem
                 $page = $this->wiki->services->get(Guard::class)->checkAcls($page, $tag);
             }

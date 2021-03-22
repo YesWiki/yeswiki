@@ -65,16 +65,18 @@ class EntryManager
      * @param $tag
      * @param bool $semantic
      * @param string $time pour consulter une fiche dans l'historique
-     * @param bool $bypassAcls is true, all fields are loaded regardless of acls
+     * @param bool $cache if false, don't use the page cache
+     * @param bool $bypassAcls if true, all fields are loaded regardless of acls
      * @return mixed|null
+     * @throws Exception
      */
-    public function getOne($tag, $semantic = false, $time = null): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, $time || '');
+        $page = $this->pageManager->getOne($tag, $time || null, $cache, $bypassAcls);
         $data = $this->decode($page['body']);
 
         // cas ou on ne trouve pas les valeurs id_fiche
@@ -479,13 +481,13 @@ class EntryManager
                 if (!$field->canRead($data) && !$field->canEdit($data)) {
                     $restrictedFields[] = $propName;
                 }
-                // TODO when entry update by the form will be done by partiel update ($replace = true), copy the field value when canRead & !canEdit
+                // TODO when entry update from the form will be done by partiel update ($replace = true), copy the field value when canRead & !canEdit
             }
         }
 
         if (!empty($restrictedFields)) {
             // if there are some restricted fields, load the previous data by bypassing the rights
-            $previousData = $this->getOne($data['id_fiche'], false, null, true);
+            $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
 
             // get the value of the restricted fields in the previous data
             foreach ($restrictedFields as $propName) {
