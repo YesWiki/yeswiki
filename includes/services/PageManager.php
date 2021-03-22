@@ -20,8 +20,16 @@ class PageManager
 
     protected $pageCache;
 
-    public function __construct(Wiki $wiki, DbService $dbService, AclService $aclService, TripleStore $tripleStore, EntryManager $entryManager, UserManager $userManager, Guard $bazarGuard, ParameterBagInterface $params)
-    {
+    public function __construct(
+        Wiki $wiki,
+        DbService $dbService,
+        AclService $aclService,
+        TripleStore $tripleStore,
+        EntryManager $entryManager,
+        UserManager $userManager,
+        Guard $bazarGuard,
+        ParameterBagInterface $params
+    ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
@@ -122,8 +130,8 @@ class PageManager
                 return $pages;
             }
         } else {
-            $limit = (int) $limit;
-            $limit = ($limit <1) ? 50 : $limit ;
+            $limit = (int)$limit;
+            $limit = ($limit < 1) ? 50 : $limit;
             if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
@@ -140,15 +148,15 @@ class PageManager
 
     public function getCreateTime($pageTag)
     {
-        $sql = 'SELECT time FROM'.$this->dbService->prefixTable('pages')
-            .' WHERE tag = "'.$this->dbService->escape($pageTag).'"'
-            .' AND comment_on = ""'
-            .' ORDER BY `time` ASC LIMIT 1';
+        $sql = 'SELECT time FROM' . $this->dbService->prefixTable('pages')
+            . ' WHERE tag = "' . $this->dbService->escape($pageTag) . '"'
+            . ' AND comment_on = ""'
+            . ' ORDER BY `time` ASC LIMIT 1';
         $page = $this->dbService->loadSingle($sql);
         if ($page) {
             return $page['time'];
         }
-        return null ;
+        return null;
     }
 
     public function searchFullText($phrase): array
@@ -158,7 +166,7 @@ class PageManager
 
     public function getWanted(): array
     {
-        $r = "SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM ".$this->dbService->prefixTable('links')." as l LEFT JOIN ".$this->dbService->prefixTable('pages')." as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC";
+        $r = "SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM " . $this->dbService->prefixTable('links') . " as l LEFT JOIN " . $this->dbService->prefixTable('pages') . " as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC";
         return $this->dbService->loadAll($r);
     }
 
@@ -174,10 +182,10 @@ class PageManager
 
     public function deleteOrphaned($tag)
     {
-        $this->dbService->query("DELETE FROM ".$this->dbService->prefixTable('pages')."WHERE tag='" . $this->dbService->escape($tag) . "' OR comment_on='" . $this->dbService->escape($tag) . "'");
-        $this->dbService->query("DELETE FROM ".$this->dbService->prefixTable('links')."WHERE from_tag='" . $this->dbService->escape($tag) . "' ");
-        $this->dbService->query("DELETE FROM ".$this->dbService->prefixTable('acls')."WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
-        $this->dbService->query("DELETE FROM ".$this->dbService->prefixTable('referrers')."WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
+        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('pages') . "WHERE tag='" . $this->dbService->escape($tag) . "' OR comment_on='" . $this->dbService->escape($tag) . "'");
+        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('links') . "WHERE from_tag='" . $this->dbService->escape($tag) . "' ");
+        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('acls') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
+        $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('referrers') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
     }
 
     /**
@@ -199,17 +207,18 @@ class PageManager
         $user = $this->userManager->getLoggedUserName();
 
         // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess('comment', $comment_on) : $this->aclService->hasAccess('write', $tag));
+        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess('comment',
+                $comment_on) : $this->aclService->hasAccess('write', $tag));
 
         if ($rights) {
             // is page new?
             if (!$oldPage = $this->getOne($tag)) {
-                
+
                 // LoadACL (if defined by acls)
-                $defaultWrite = $this->aclService->load($tag, 'write', true)['list'] ;
+                $defaultWrite = $this->aclService->load($tag, 'write', true)['list'];
                 $defaultRead = $this->aclService->load($tag, 'read', true)['list'];
-                $defaultComment = $this->aclService->load($tag, 'comment', true)['list'] ;
-                
+                $defaultComment = $this->aclService->load($tag, 'comment', true)['list'];
+
                 // create default write acl. store empty write ACL for comments.
                 $this->aclService->save($tag, 'write', ($comment_on ? $user : $defaultWrite));
 
@@ -269,7 +278,7 @@ class PageManager
         $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y' LIMIT 1");
     }
 
-    public function getMetadata($tag) : ?array
+    public function getMetadata($tag): ?array
     {
         $metadata = $this->tripleStore->getOne($tag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '');
 

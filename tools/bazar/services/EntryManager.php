@@ -21,8 +21,14 @@ class EntryManager
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
-    public function __construct(Wiki $wiki, Mailer $mailer, TripleStore $tripleStore, DbService $dbService, SemanticTransformer $semanticTransformer, ParameterBagInterface $params)
-    {
+    public function __construct(
+        Wiki $wiki,
+        Mailer $mailer,
+        TripleStore $tripleStore,
+        DbService $dbService,
+        SemanticTransformer $semanticTransformer,
+        ParameterBagInterface $params
+    ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
         $this->tripleStore = $tripleStore;
@@ -46,6 +52,7 @@ class EntryManager
      * @param $tag
      * @param bool $semantic
      * @param string $time pour consulter une fiche dans l'historique
+     * @param bool $bypassAcls is true, all fields are loaded regardless of acls
      * @return mixed|null
      */
     public function getOne($tag, $semantic = false, $time = null): ?array
@@ -91,20 +98,20 @@ class EntryManager
         // requete pour recuperer toutes les PageWiki etant des fiches bazar
         // TODO refactor to use the TripleStore service
         $requete_pages_wiki_bazar_fiches =
-            'SELECT DISTINCT resource FROM '.$this->dbService->prefixTable('triples').
-            'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" '.
+            'SELECT DISTINCT resource FROM ' . $this->dbService->prefixTable('triples') .
+            'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
             'ORDER BY resource ASC';
 
         $requete =
-            'SELECT DISTINCT * FROM '.$this->dbService->prefixTable('pages').
+            'SELECT DISTINCT * FROM ' . $this->dbService->prefixTable('pages') .
             'WHERE latest="Y" AND comment_on = \'\'';
 
         // On limite au type de fiche
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
                 $requete .= ' AND ' . join(' OR ', array_map(function ($formId) {
-                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                }, $params['formsIds']));
+                        return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
+                    }, $params['formsIds']));
             } else {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
                 $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
@@ -113,20 +120,20 @@ class EntryManager
 
         // periode de modification
         if (!empty($params['minDate'])) {
-            $requete .= ' AND time >= "'.$params['minDate'].'"';
+            $requete .= ' AND time >= "' . $params['minDate'] . '"';
         }
 
         // si une personne a ete precisee, on limite la recherche sur elle
         if (!empty($params['user'])) {
-            $requete .= ' AND owner = _utf8\''.mysqli_real_escape_string($this->wiki->dblink, $params['user']).'\'';
+            $requete .= ' AND owner = _utf8\'' . mysqli_real_escape_string($this->wiki->dblink, $params['user']) . '\'';
         }
 
-        $requete .= ' AND tag IN ('.$requete_pages_wiki_bazar_fiches.')';
+        $requete .= ' AND tag IN (' . $requete_pages_wiki_bazar_fiches . ')';
 
         $requeteSQL = '';
 
         //preparation de la requete pour trouver les mots cles
-        if (trim($params['keywords']) != '' && $params['keywords'] !=_t('BAZ_MOT_CLE')) {
+        if (trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
             $this->dbService->query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
             $search = str_replace(array('["', '"]'), '', json_encode(array(removeAccents($params['keywords']))));
             $recherche = explode(' ', $search);
@@ -136,7 +143,7 @@ class EntryManager
                 if ($i > 0) {
                     $requeteSQL .= ' OR ';
                 }
-                $requeteSQL .= ' body LIKE \'%'.$this->dbService->escape($recherche[$i]).'%\'';
+                $requeteSQL .= ' body LIKE \'%' . $this->dbService->escape($recherche[$i]) . '%\'';
             }
             $requeteSQL .= ')';
         }
@@ -169,17 +176,17 @@ class EntryManager
                     $first = true;
                     foreach ($valcrit as $critere) {
                         if (!$first) {
-                            $requeteSQL .= ' '.$params['searchOperator'].' ';
+                            $requeteSQL .= ' ' . $params['searchOperator'] . ' ';
                         }
 
                         if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                             $requeteSQL .=
-                                'body REGEXP \'"'.$nom.'":"'.$critere.'"\'';
+                                'body REGEXP \'"' . $nom . '":"' . $critere . '"\'';
                         } else {
                             $requeteSQL .=
-                                'body REGEXP \'"'.$nom.'":("'.$critere.
-                                '"|"[^"]*,'.$critere.'"|"'.$critere.',[^"]*"|"[^"]*,'
-                                .$critere.',[^"]*")\'';
+                                'body REGEXP \'"' . $nom . '":("' . $critere .
+                                '"|"[^"]*,' . $critere . '"|"' . $critere . ',[^"]*"|"[^"]*,'
+                                . $critere . ',[^"]*")\'';
                         }
 
                         $first = false;
@@ -188,12 +195,12 @@ class EntryManager
                 } else {
                     if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                         $requeteSQL .=
-                            ' AND (body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                            ' AND (body REGEXP \'"' . $nom . '":"' . $val . '"\')';
                     } else {
                         $requeteSQL .=
-                            ' AND (body REGEXP \'"'.$nom.'":("'.$val.
-                            '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
-                            .$val.',[^"]*")\')';
+                            ' AND (body REGEXP \'"' . $nom . '":("' . $val .
+                            '"|"[^"]*,' . $val . '"|"' . $val . ',[^"]*"|"[^"]*,'
+                            . $val . ',[^"]*")\')';
                     }
                 }
             }
@@ -222,7 +229,7 @@ class EntryManager
                                 $first = false;
                             }
                             $joinrequeteSQL .=
-                                '(body REGEXP \'"'.$nom.'":"[^"]*'.$critere.
+                                '(body REGEXP \'"' . $nom . '":"[^"]*' . $critere .
                                 '[^"]*"\')';
                         }
                         $joinrequeteSQL .= ')';
@@ -234,20 +241,20 @@ class EntryManager
                         }
                         if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                             $joinrequeteSQL .=
-                                '(body REGEXP \'"'.$nom.'":"'.$val.'"\')';
+                                '(body REGEXP \'"' . $nom . '":"' . $val . '"\')';
                         } else {
                             $joinrequeteSQL .=
-                                '(body REGEXP \'"'.$nom.'":("'.$val.
-                                '"|"[^"]*,'.$val.'"|"'.$val.',[^"]*"|"[^"]*,'
-                                .$val.',[^"]*")\')';
+                                '(body REGEXP \'"' . $nom . '":("' . $val .
+                                '"|"[^"]*,' . $val . '"|"' . $val . ',[^"]*"|"[^"]*,'
+                                . $val . ',[^"]*")\')';
                         }
                     }
                 }
             }
             if ($requeteSQL != '') {
-                $requeteSQL .= ' UNION '.$requete.' AND ('.$joinrequeteSQL.')';
+                $requeteSQL .= ' UNION ' . $requete . ' AND (' . $joinrequeteSQL . ')';
             } else {
-                $requeteSQL .= ' AND ('.$joinrequeteSQL.')';
+                $requeteSQL .= ' AND (' . $joinrequeteSQL . ')';
             }
             $requete .= $requeteSQL;
         } elseif ($requeteSQL != '') {
@@ -256,12 +263,12 @@ class EntryManager
 
         // debug
         if (isset($_GET['showreq'])) {
-            echo '<hr><code style="width:100%;height:100px;">'.$requete.'</code><hr>';
+            echo '<hr><code style="width:100%;height:100px;">' . $requete . '</code><hr>';
         }
 
         // systeme de cache des recherches
         // TODO voir si ça sert à quelque chose
-        $reqid = 'bazar-search-'.md5($requete);
+        $reqid = 'bazar-search-' . md5($requete);
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
             $GLOBALS['_BAZAR_'][$reqid] = array();
             $results = $this->dbService->loadAll($requete);
@@ -374,7 +381,7 @@ class EntryManager
                 $this->wiki->SetUser($olduser, 1);
             }
         }
-        
+
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
 
@@ -438,9 +445,9 @@ class EntryManager
     {
         if (baz_a_le_droit('valider_fiche')) {
             if ($accepted) {
-                $this->dbService->query('UPDATE'.$this->dbService->prefixTable('fiche').'SET bf_statut_fiche=1 WHERE bf_id_fiche="'.$this->dbService->escape($entryId).'"');
+                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('fiche') . 'SET bf_statut_fiche=1 WHERE bf_id_fiche="' . $this->dbService->escape($entryId) . '"');
             } else {
-                $this->dbService->query('UPDATE'.$this->dbService->prefixTable('fiche').'SET bf_statut_fiche=2 WHERE bf_id_fiche="'.$this->dbService->escape($entryId).'"');
+                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('fiche') . 'SET bf_statut_fiche=2 WHERE bf_id_fiche="' . $this->dbService->escape($entryId) . '"');
             }
             //TODO envoie mail annonceur
         }
@@ -461,14 +468,15 @@ class EntryManager
 
         // Si besoin, on supprime l'utilisateur associé
         if (isset($fiche['nomwiki'])) {
-            $request = 'DELETE FROM '.$this->dbService->prefixTable('users').' WHERE `name` = "'. $fiche['nomwiki'].'"';
+            $request = 'DELETE FROM ' . $this->dbService->prefixTable('users') . ' WHERE `name` = "' . $fiche['nomwiki'] . '"';
             $this->dbService->query($request);
         }
 
-        $this->wiki->DeleteOrphanedPage($tag);
+        $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
-        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(), "Suppression de la page ->\"\"" . $tag . "\"\"");
+        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(),
+            "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
     /*
@@ -482,10 +490,13 @@ class EntryManager
         }
         return $data;
     }
-    
-    /*
+
+    /**
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
+     * @param $data
+     * @return array
+     * @throws Exception
      */
     public function formatDataBeforeSave($data)
     {
@@ -509,7 +520,7 @@ class EntryManager
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
 
         // Get creation date if it exists, initialize it otherwise
-        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM '.$this->dbService->prefixTable('pages')."WHERE tag='".$data['id_fiche']."'");
+        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
         $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
 
         // Entry status
@@ -567,9 +578,13 @@ class EntryManager
         return $data;
     }
 
-    /*
+    /**
      * Append data needed for display
      * TODO move this to a class dedicated to display
+     * @param $fiche
+     * @param bool $semantic
+     * @param string $correspondance
+     * @throws Exception
      */
     public function appendDisplayData(&$fiche, $semantic = false, $correspondance = '')
     {
@@ -577,7 +592,7 @@ class EntryManager
         if (!empty($correspondance)) {
             $tabcorrespondances = getMultipleParameters($correspondance, ',', '=');
             if ($tabcorrespondances['fail'] != 1) {
-                foreach ($tabcorrespondances as $key=>$data) {
+                foreach ($tabcorrespondances as $key => $data) {
                     if (isset($key)) {
                         if (isset($data) && isset($fiche[$data])) {
                             $fiche[$key] = $fiche[$data];
@@ -605,7 +620,7 @@ class EntryManager
             // WIP concernant l'action bazarlisteexterne
             $arr = explode('/wakka.php', $exturl, 2);
             $exturl = $arr[0];
-            $fiche['url'] = $exturl.'/wakka.php?wiki='.$fiche['id_fiche'];
+            $fiche['url'] = $exturl . '/wakka.php?wiki=' . $fiche['id_fiche'];
         } else {
             $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
         }
