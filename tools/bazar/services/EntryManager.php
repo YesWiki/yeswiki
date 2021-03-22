@@ -423,12 +423,13 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        $previousData = $this->getOne($tag);
+        // if there are some restricted fields, load the previous data by bypassing the rights
+        $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
         // replace id_fiche with $tag to prevent errors
         $data['id_fiche'] = trim($tag);
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
         // replace the field values which are restricted at reading and writing
-        $data = $this->assignRestrictedFields($data);
+        $data = $this->assignRestrictedFields($data, $previousData);
 
         if (!$replace) {
             // merge the field values which match to the actual form and which are not in $data
@@ -465,33 +466,35 @@ class EntryManager
      * As the fields are rectricted at reading, the right must be bypassed to load them.
      *
      * @param array $data the provided data to update
+     * @param array $previousData the provided previousData to update
      * @return array the data with the restricted values added
      * @throws Exception
      */
-    protected function assignRestrictedFields(array $data)
+    protected function assignRestrictedFields(array $data, array $previousData)
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
-        // check if there are some restricted fields at both reading and writing
+        // check if there are some restricted fields at writing
         $restrictedFields = [];
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $propName = $field->getPropertyName();
-                if (!$field->canRead($data) && !$field->canEdit($data)) {
+                if (!empty($propName) && !$field->canEdit($data)) {
                     $restrictedFields[] = $propName;
                 }
-                // TODO when entry update from the form will be done by partiel update ($replace = true), copy the field value when canRead & !canEdit
             }
         }
 
         if (!empty($restrictedFields)) {
-            // if there are some restricted fields, load the previous data by bypassing the rights
-            $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
 
             // get the value of the restricted fields in the previous data
             foreach ($restrictedFields as $propName) {
-                $data[$propName] = $previousData[$propName] ?? null;
+                if (isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName] ;
+                } elseif (isset($data[$propName])) {
+                    unset($data[$propName]);
+                }
             }
         }
         return $data;
@@ -512,7 +515,7 @@ class EntryManager
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $propName = $field->getPropertyName();
-                if (!isset($data[$propName]) && isset($previousData[$propName])) {
+                if (!empty($propName) && !isset($data[$propName]) && isset($previousData[$propName])) {
                     $data[$propName] = $previousData[$propName];
                 }
             }
