@@ -87,7 +87,7 @@ if (isset($_REQUEST['demand'])) {
             } else {
                 $wikipage = $this->LoadPage($idfiche);
                 if ($wikipage) {
-                    if ($this->HasAccess('read',$idfiche)) {
+                    if ($this->HasAccess('read', $idfiche)) {
                         if ($html==1) {
                             echo json_encode(array('html' => baz_voir_fiche(0, $idfiche)));
                         } else {
@@ -151,6 +151,7 @@ if (isset($_REQUEST['demand'])) {
                                 '</div> <!-- /.BAZ_rubrique -->' . "\n" .
                                 '{{/if}}' . "\n\n";
                         } elseif (function_exists($tableau[$i][0])) {
+                            //TODO replace with BazarField
                             $texte = trim(
                                 $tableau[$i][0](
                                     $formtemplate,
@@ -216,7 +217,7 @@ if (isset($_REQUEST['demand'])) {
             $pages = _convert($this->LoadAll($sql), 'ISO-8859-15');
             $pagesindex = array();
             foreach ($pages as $page) {
-                if ($this->HasAccess('read',$page["tag"])) {
+                if ($this->HasAccess('read', $page["tag"])) {
                     $pagesindex[$page["tag"]] = $page;
                 }
             }

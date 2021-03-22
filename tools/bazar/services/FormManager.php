@@ -20,23 +20,6 @@ class FormManager
 
     protected $cachedForms;
 
-    private const FIELD_TYPE = 0;
-    private const FIELD_ID = 1;
-    private const FIELD_LABEL = 2;
-    private const FIELD_SIZE = 3;
-    private const FIELD_MAX_LENGTH = 4;
-    private const FIELD_DEFAULT = 5;
-    private const FIELD_PATTERN = 6;
-    private const FIELD_SUB_TYPE = 7;
-    private const FIELD_REQUIRED = 8;
-    private const FIELD_SEARCHABLE = 9;
-    private const FIELD_HELP = 10;
-    private const FIELD_READ_ACCESS = 11;
-    private const FIELD_WRITE_ACCESS = 12;
-    private const FIELD_KEYWORDS = 13;
-    private const FIELD_SEMANTIC = 14;
-    private const FIELD_QUERIES = 15;
-
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
@@ -140,10 +123,10 @@ class FormManager
     public function delete($id)
     {
         //TODO : suppression des fiches associees au formulaire
-        
+
         // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
-            return null ;
+            return null;
         }
 
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
@@ -245,44 +228,10 @@ class FormManager
 
             if ($classField) {
                 $prepared[$i] = $classField;
-            } else {
-                /*
-                 * DEFAULT VALUES
-                 */
-
-                // champs obligatoire
-                if ($field[self::FIELD_REQUIRED] == 1) {
-                    $prepared[$i]['required'] = true;
-                } else {
-                    $prepared[$i]['required'] = false;
-                }
-
-                // texte d'invitation à la saisie
-                $prepared[$i]['label'] = $field[self::FIELD_LABEL];
-
-                // attributs html du champs
-                $prepared[$i]['attributes'] = '';
-
-                // valeurs associées
-                $prepared[$i]['values'] = '';
-
-                // texte d'aide
-                $prepared[$i]['helper'] = $field[self::FIELD_HELP];
-
-                // values for read acl
-                $prepared[$i]['read_acl'] = $field[self::FIELD_READ_ACCESS];
-
-                // values for write acl
-                $prepared[$i]['write_acl'] = $field[self::FIELD_WRITE_ACCESS];
-
-                // traitement sémantique
-                // TODO move to BazarField
-                if (!empty($field[self::FIELD_SEMANTIC])) {
-                    $prepared[$i]['sem_type'] = strpos($field[self::FIELD_SEMANTIC], ',')
-                        ? array_map(function ($str) {
-                            return trim($str);
-                        }, explode(',', $field[self::FIELD_SEMANTIC]))
-                        : $field[self::FIELD_SEMANTIC];
+            } elseif (function_exists($field[0])) {
+                $classField = $this->fieldFactory->create([0 => 'old', 'functionName' => $field[0]]);
+                if ($classField) {
+                    $prepared[$i] = $classField;
                 }
             }
             $i++;
@@ -313,16 +262,11 @@ class FormManager
                     if ($field instanceof BazarField) {
                         $fieldPropName = $field->getPropertyName();
                         $fieldType = $field->getType();
-                    } elseif (is_array($field)) {
-                        $fieldPropName = $field['id'];
-                        $fieldType = $field['type'];
                     }
 
                     if ($fieldPropName) {
-
                         if ($field instanceof EnumField) {
-
-                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField ) {
+                            if ($field instanceof SelectEntryField || $field instanceof CheckboxEntryField) {
                                 // listefiche ou checkboxfiche
                                 $facetteValue[$fieldPropName]['type'] = 'fiche';
                             } else {
@@ -339,7 +283,7 @@ class FormManager
                                     $facetteValue[$fieldPropName][$tval] = 1;
                                 }
                             }
-                        } elseif ( !$onlyLists) {
+                        } elseif (!$onlyLists) {
                             // texte
                             $facetteValue[$key]['type'] = 'form';
                             $facetteValue[$key]['source'] = $key;
@@ -361,7 +305,7 @@ class FormManager
      */
     private function filterFieldsByPropertyName(array $fields, array $id)
     {
-        if (count($id)===1 && $id[0]==='all') {
+        if (count($id) === 1 && $id[0] === 'all') {
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof EnumField) {
                     return true;
@@ -371,8 +315,6 @@ class FormManager
             return array_filter($fields, function ($field) use ($id) {
                 if ($field instanceof BazarField) {
                     return $id[0] === 'all' || in_array($field->getPropertyName(), $id);
-                } elseif (is_array($field) && isset($field['id'])) {
-                    return $id[0] === 'all' || in_array($field['id'], $id);
                 }
             });
         }

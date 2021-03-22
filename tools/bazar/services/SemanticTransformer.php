@@ -26,15 +26,10 @@ class SemanticTransformer
         $semanticData['@id'] = $GLOBALS['wiki']->href('', $data['id_fiche']);
 
         foreach ($form['prepared'] as $field) {
-
             if ($field instanceof BazarField) {
                 $fieldPropName = $field->getPropertyName();
                 $fieldSemanticPredicate = $field->getSemanticPredicate();
                 $fieldType = $field->getType();
-            } else {
-                $fieldPropName = $field['id'];
-                $fieldSemanticPredicate = $field['sem_type'];
-                $fieldType = $field['type'];
             }
 
             // If the file is not semantically defined, ignore it
@@ -85,15 +80,10 @@ class SemanticTransformer
         }
 
         foreach ($form['prepared'] as $field) {
-
             if ($field instanceof BazarField) {
                 $fieldPropName = $field->getPropertyName();
                 $fieldSemanticPredicate = $field->getSemanticPredicate();
                 $fieldType = $field->getType();
-            } else {
-                $fieldPropName = $field['id'];
-                $fieldSemanticPredicate = $field['sem_type'];
-                $fieldType = $field['type'];
             }
 
             // If the file is not semantically defined, ignore it
