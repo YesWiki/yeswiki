@@ -5,16 +5,22 @@ namespace YesWiki\Bazar\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
 class EntryManager
 {
     protected $wiki;
     protected $mailer;
+    protected $pageManager;
     protected $tripleStore;
+    protected $aclService;
+    protected $userManager;
     protected $dbService;
     protected $semanticTransformer;
     protected $params;
@@ -24,14 +30,20 @@ class EntryManager
     public function __construct(
         Wiki $wiki,
         Mailer $mailer,
+        PageManager $pageManager,
         TripleStore $tripleStore,
+        AclService $aclService,
+        UserManager $userManager,
         DbService $dbService,
         SemanticTransformer $semanticTransformer,
         ParameterBagInterface $params
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
+        $this->pageManager = $pageManager;
         $this->tripleStore = $tripleStore;
+        $this->aclService = $aclService;
+        $this->userManager = $userManager;
         $this->dbService = $dbService;
         $this->semanticTransformer = $semanticTransformer;
         $this->params = $params;
@@ -61,7 +73,7 @@ class EntryManager
             return null;
         }
 
-        $page = $this->wiki->LoadPage($tag, $time || '');
+        $page = $this->pageManager->getOne($tag, $time || '');
         $data = $this->decode($page['body']);
 
         // cas ou on ne trouve pas les valeurs id_fiche
@@ -327,13 +339,13 @@ class EntryManager
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
-            $olduser = $this->wiki->GetUser();
-            $this->wiki->LogoutUser();
+            $olduser = $this->userManager->getLoggedUser();
+            $this->userManager->logout();
 
             // On s'identifie de facon a attribuer la propriete de la fiche a
             // l'utilisateur qui vient d etre cree
-            $user = $this->wiki->LoadUser($GLOBALS['utilisateur_wikini']);
-            $this->wiki->SetUser($user);
+            $user = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
+            $this->userManager->login($user);
         }
 
         $ignoreAcls = true;
@@ -345,7 +357,7 @@ class EntryManager
         $sendmail = $this->removeSendmail($data);
 
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
-        $saved = $this->wiki->SavePage(
+        $saved = $this->pageManager->save(
             $data['id_fiche'],
             json_encode($data),
             '',
@@ -376,9 +388,9 @@ class EntryManager
 
         // on remet l'utilisateur initial
         if (isset($GLOBALS['utilisateur_wikini'])) {
-            $this->wiki->LogoutUser();
+            $this->userManager->logout();
             if (!empty($olduser)) {
-                $this->wiki->SetUser($olduser, 1);
+                $this->userManager->login($olduser, 1);
             }
         }
 
@@ -398,13 +410,14 @@ class EntryManager
      * @param $tag
      * @param $data
      * @param false $semantic
-     * @param false $replace If true, all the data will be provided
-     * @throws \Exception
+     * @param false $replace If true, all the data will be provided (no merge with the previous data)
+     * @return array
+     * @throws Exception
      */
     public function update($tag, $data, $semantic = false, $replace = false)
     {
-        if (!$this->wiki->HasAccess('write', $tag)) {
-            throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
+        if (!$this->aclService->hasAccess('write', $tag)) {
+            throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
         $previousData = $this->getOne($tag);
@@ -428,7 +441,7 @@ class EntryManager
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->wiki->SavePage($data['id_fiche'], json_encode($data));
+        $this->pageManager->save($data['id_fiche'], json_encode($data));
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
@@ -443,7 +456,8 @@ class EntryManager
 
     public function publish($entryId, $accepted)
     {
-        if (baz_a_le_droit('valider_fiche')) {
+        // not possible to init the Guard in the constructor because of circular reference problem
+        if ($this->wiki->services->get(Guard::class)->isAllowed('valider_fiche')) {
             if ($accepted) {
                 $this->dbService->query('UPDATE' . $this->dbService->prefixTable('fiche') . 'SET bf_statut_fiche=1 WHERE bf_id_fiche="' . $this->dbService->escape($entryId) . '"');
             } else {
@@ -460,8 +474,8 @@ class EntryManager
      */
     public function delete($tag)
     {
-        if (!$this->wiki->HasAccess('write', $tag)) {
-            throw new \Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
+        if (!$this->aclService->hasAccess('write', $tag)) {
+            throw new Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
         }
 
         $fiche = $this->getOne($tag);
@@ -475,7 +489,7 @@ class EntryManager
         $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
-        $this->wiki->LogAdministrativeAction($this->wiki->GetUserName(),
+        $this->wiki->LogAdministrativeAction($this->userManager->getLoggedUserName(),
             "Suppression de la page ->\"\"" . $tag . "\"\"");
     }
 
@@ -612,7 +626,7 @@ class EntryManager
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
 
         // owner
-        $fiche['owner'] = $this->wiki->GetPageOwner($fiche['id_fiche']);
+        $fiche['owner'] = $this->pageManager->getOwner($fiche['id_fiche']);
 
         // Fiche URL
         $exturl = $GLOBALS['wiki']->GetParameter('url');
@@ -627,7 +641,8 @@ class EntryManager
 
         // Données sémantiques
         if ($semantic) {
-            $form = $this->getService(FormManager::class)->getOne($fiche['id_typeannonce']);
+            // not possible to init the formManager in the constructor because of circular reference problem
+            $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
     }

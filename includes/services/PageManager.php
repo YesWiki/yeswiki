@@ -13,9 +13,7 @@ class PageManager
     protected $dbService;
     protected $aclService;
     protected $tripleStore;
-    protected $entryManager;
     protected $userManager;
-    protected $bazarGuard;
     protected $params;
 
     protected $pageCache;
@@ -25,18 +23,14 @@ class PageManager
         DbService $dbService,
         AclService $aclService,
         TripleStore $tripleStore,
-        EntryManager $entryManager,
         UserManager $userManager,
-        Guard $bazarGuard,
         ParameterBagInterface $params
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
         $this->tripleStore = $tripleStore;
-        $this->entryManager = $entryManager;
         $this->userManager = $userManager;
-        $this->bazarGuard = $bazarGuard;
         $this->params = $params;
 
         $this->pageCache = [];
@@ -60,8 +54,10 @@ class PageManager
                 $page["metadatas"] = $this->getMetadata($tag);
             }
 
-            if ($this->entryManager->isEntry($tag)) {
-                $page = $this->bazarGuard->checkAcls($page, $tag);
+            // not possible to init the EntryManager in the constructor because of circular reference problem
+            if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
+                // not possible to init the Guard in the constructor because of circular reference problem
+                $page = $this->wiki->services->get(Guard::class)->checkAcls($page, $tag);
             }
 
             // cache result
