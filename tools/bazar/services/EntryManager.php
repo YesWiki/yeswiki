@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
@@ -297,22 +298,22 @@ class EntryManager
     /**
      * Validate the fiche's data
      * @param $data
-     * @throws \Exception
+     * @throws Exception
      */
     public function validate($data)
     {
         if (!isset($data['antispam']) or !$data['antispam'] == 1) {
-            throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+            throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
         }
 
         // On teste le titre car ça peut bugguer sérieusement sans
         if (!isset($data['bf_titre'])) {
-            throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+            throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
         }
 
         // form metadata
         if (!isset($data['id_typeannonce'])) {
-            throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
+            throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
         }
     }
 
@@ -323,7 +324,7 @@ class EntryManager
      * @param false $semantic
      * @param null $sourceUrl
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
     {
@@ -420,9 +421,17 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        // replace with $tag to prevent errors
-        $data['id_fiche'] = trim($tag) ;
-        $data = $this->assignRestrictedFieldsAndReplace($data, !$replace);
+        $previousData = $this->getOne($tag);
+        // replace id_fiche with $tag to prevent errors
+        $data['id_fiche'] = trim($tag);
+        $data['id_typeannonce'] = $previousData['id_typeannonce'];
+        // replace the field values which are restricted at reading and writing
+        $data = $this->assignRestrictedFields($data);
+
+        if (!$replace) {
+            // merge the field values which match to the actual form and which are not in $data
+            $data = $this->mergeFields($previousData, $data);
+        }
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
@@ -448,6 +457,68 @@ class EntryManager
         return $data;
     }
 
+    /**
+     * Replace the field values which are restricted at reading and writing. These values must be loaded to save them
+     * without user modification.
+     * As the fields are rectricted at reading, the right must be bypassed to load them.
+     *
+     * @param array $data the provided data to update
+     * @return array the data with the restricted values added
+     * @throws Exception
+     */
+    protected function assignRestrictedFields(array $data)
+    {
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+
+        // check if there are some restricted fields at both reading and writing
+        $restrictedFields = [];
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $propName = $field->getPropertyName();
+                if (!$field->canRead($data) && !$field->canEdit($data)) {
+                    $restrictedFields[] = $propName;
+                }
+                // TODO when entry update by the form will be done by partiel update ($replace = true), copy the field value when canRead & !canEdit
+            }
+        }
+
+        if (!empty($restrictedFields)) {
+            // if there are some restricted fields, load the previous data by bypassing the rights
+            $previousPage = $this->wiki->services->get(PageManager::class)->getOne($data['id_fiche']);
+            $previousData = $this->decode($this->wiki->services->get(PageManager::class)->getById(intval($previousPage['id']))['body']);
+
+            // get the value of the restricted fields in the previous data
+            foreach ($restrictedFields as $propName) {
+                $data[$propName] = $previousData[$propName] ?? null;
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Add the $previousData attributes which match the actual form and which are not in $data
+     * @param array $previousData the data saved in the entry
+     * @param array $data the provided data to update
+     * @return array the data with the merged values
+     * @throws Exception
+     */
+    protected function mergeFields(array $previousData, array $data)
+    {
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $propName = $field->getPropertyName();
+                if (!isset($data[$propName]) && isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName];
+                }
+            }
+        }
+        return $data;
+    }
+
     public function publish($entryId, $accepted)
     {
         // not possible to init the Guard in the constructor because of circular reference problem
@@ -464,7 +535,7 @@ class EntryManager
     /**
      * Delete a fiche
      * @param $tag
-     * @throws \Exception
+     * @throws Exception
      */
     public function delete($tag)
     {
@@ -635,53 +706,6 @@ class EntryManager
             $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
-    }
-
-    /**
-     * Met à jour les valeurs des champs qui sont restreints en écriture
-     *
-     * @param array $data l'objet contenant les valeurs issues de la saisie du formulaire
-     * @param bool $complete la fonction complète les données manquantes avec les données précédentes
-     * @return array tableau des valeurs de la fiche à sauver
-     */
-    protected function assignRestrictedFieldsAndReplace(array $data, bool $complete = true)
-    {
-        // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
-        
-        // get previous data without Guard
-        $previousPage = $this->wiki->services->get(PageManager::class)->getOne($data['id_fiche']) ;
-        $previousData = $this->decode($this->wiki->services->get(PageManager::class)->getById(intval($previousPage['id']))['body']);
-        
-        // fixed fields
-        $data['id_fiche'] = $previousData['id_fiche'] ?? null ;
-        $data['id_typeannonce'] = $previousData['id_typeannonce'] ?? null;
-
-        // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($previousData['id_typeannonce']);
-        
-        if (is_array($form['prepared'])) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof BazarField) {
-                    $propName = $field->getPropertyName();
-                    if (!empty($propName)) { // do not create empty key
-                        if ( // 2 cases for update
-                              (!$field->canEdit($data) && isset($previousData[$propName])) ||
-                              (
-                                  $field->canEdit($data) && isset($previousData[$propName]) &&
-                                !isset($data[$propName]) && $complete
-                              )
-                            ) {
-                            $data[$propName] = $previousData[$propName] ;
-                        } elseif (!$field->canEdit($data) &&
-                                  !isset($previousData[$propName]) &&
-                                  isset($data[$propName])) {
-                            unset($data[$propName]) ;
-                        }
-                    }
-                }
-            }
-        }
-        return $data;
     }
 
     private function removeSendmail(array &$data): ?string
