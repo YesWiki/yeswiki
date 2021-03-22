@@ -39,7 +39,7 @@ class PageManager
     public function getOne($tag, $time = null, $cache = true, $bypassAcls = false): ?array
     {
         // retrieve from cache
-        if (!$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
+        if (!$bypassAcls && !$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
             if ($cachedPage and !isset($cachedPage["metadatas"])) {
                 $cachedPage["metadatas"] = $this->getMetadata($tag);
             }
@@ -61,7 +61,7 @@ class PageManager
             }
 
             // cache result
-            if (!$time) {
+            if (!$bypassAcls && !$time) {
                 $this->cache($page, $tag);
             }
         }
@@ -203,8 +203,10 @@ class PageManager
         $user = $this->userManager->getLoggedUserName();
 
         // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess('comment',
-                $comment_on) : $this->aclService->hasAccess('write', $tag));
+        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess(
+            'comment',
+            $comment_on
+        ) : $this->aclService->hasAccess('write', $tag));
 
         if ($rights) {
             // is page new?
