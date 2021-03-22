@@ -485,8 +485,7 @@ class EntryManager
 
         if (!empty($restrictedFields)) {
             // if there are some restricted fields, load the previous data by bypassing the rights
-            $previousPage = $this->wiki->services->get(PageManager::class)->getOne($data['id_fiche']);
-            $previousData = $this->decode($this->wiki->services->get(PageManager::class)->getById(intval($previousPage['id']))['body']);
+            $previousData = $this->getOne($data['id_fiche'], false, null, true);
 
             // get the value of the restricted fields in the previous data
             foreach ($restrictedFields as $propName) {
@@ -519,6 +518,11 @@ class EntryManager
         return $data;
     }
 
+    /**
+     * @param $entryId
+     * @param $accepted
+     * @throws Exception
+     */
     public function publish($entryId, $accepted)
     {
         // not possible to init the Guard in the constructor because of circular reference problem
