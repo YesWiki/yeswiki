@@ -28,6 +28,7 @@ class CheckboxEntryField extends CheckboxField
         )) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST ;
         $this->dragAndDropDisplayMode='@bazar/inputs/checkbox_drag_and_drop_entry.twig' ;
+        $this->options = null;
     }
     
     protected function renderStatic($entry)
@@ -61,7 +62,7 @@ class CheckboxEntryField extends CheckboxField
     public function getOptions()
     {
         // load options only when needed but not at construct to prevent infinite loops
-        if (empty($this->options) || !is_array($this->options) || count($this->options) == 0) {
+        if (is_null($this->options)) {
             $this->loadOptionsFromEntries();
         }
         return  $this->options;

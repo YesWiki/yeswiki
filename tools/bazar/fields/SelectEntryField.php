@@ -72,7 +72,7 @@ class SelectEntryField extends EnumField
     public function getOptions()
     {
         // load options only when needed but not at construct to prevent infinite loops
-        if (!$this->isDistantJson && (empty($this->options) || !is_array($this->options) || count($this->options) == 0)) {
+        if (!$this->isDistantJson && is_null($this->options)) {
             $this->loadOptionsFromEntries();
         }
         return  $this->options;
