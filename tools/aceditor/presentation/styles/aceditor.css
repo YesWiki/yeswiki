@@ -4,7 +4,8 @@
 }
 /* Show line numbers only on page edit */
 form:not(#ACEditor) .ace-editor-container .ace_gutter {
-  display: none !important;
+  opacity: 0;
+  z-index:0 ;
 }
 form:not(#ACEditor) .ace-editor-container .ace_scroller {
   left: .7em !important;
