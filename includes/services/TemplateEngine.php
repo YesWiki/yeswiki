@@ -92,7 +92,9 @@ class TemplateEngine
     {
         $result = '';
         $result .= $this->wiki->Header();
+        $result .= '<div class="page">';
         $result .= $this->render($templatePath, $data);
+        $result .= '</div>';
         $result .= $this->wiki->Footer();
         return $result;
     }
