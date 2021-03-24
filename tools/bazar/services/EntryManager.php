@@ -471,8 +471,8 @@ class EntryManager
      *
      * @param array $data the provided data to update
      * @param array $previousData the provided previousData to update
+     * @param array $form the entry form
      * @return array the data with the restricted values added
-     * @throws Exception
      */
     protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
@@ -497,6 +497,8 @@ class EntryManager
                 if (isset($previousData[$propName])) {
                     $data[$propName] = $previousData[$propName] ;
                 } elseif (isset($data[$propName])) {
+                    // only for cases when a field is maliciously injected in $_POST (so in $data) and the key doesn't
+                    // exist in $previousData
                     unset($data[$propName]);
                 }
             }
@@ -507,6 +509,7 @@ class EntryManager
     /**
      * Add the $previousData attributes which match the actual form and which are not in $data
      * @param array $previousData the data saved in the entry
+     * @param array $form the entry form
      * @param array $data the provided data to update
      * @return array the data with the merged values
      * @throws Exception
