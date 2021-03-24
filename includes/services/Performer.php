@@ -77,17 +77,23 @@ class Performer
                     $filePath = $dir . $file;
                     $object = &$this->objectList[$objectType][$objectName];
                     if (startsWith($file, '__')) {
-                        $object['before_callbacks'][] = [
+                        if (!isset($object['before_callbacks'])) {
+                            $object['before_callbacks'] = [] ;
+                        }
+                        array_unshift($object['before_callbacks'], [
                             'filePath' => $filePath,
                             'baseName' => $baseName,
                             'isDefinedAsClass' => $isDefinedAsClass
-                        ];
+                        ]);
                     } elseif (endsWith($file, '__.php')) {
-                        $object['after_callbacks'][] = [
+                        if (!isset($object['after_callbacks'])) {
+                            $object['after_callbacks'] = [] ;
+                        }
+                        array_unshift($object['after_callbacks'], [
                             'filePath' => $filePath,
                             'baseName' => $baseName,
                             'isDefinedAsClass' => $isDefinedAsClass
-                        ];
+                        ]);
                     } else {
                         $object = [
                             'filePath' => $filePath,
