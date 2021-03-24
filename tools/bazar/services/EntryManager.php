@@ -428,12 +428,16 @@ class EntryManager
         // replace id_fiche with $tag to prevent errors
         $data['id_fiche'] = trim($tag);
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
+
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        
         // replace the field values which are restricted at reading and writing
-        $data = $this->assignRestrictedFields($data, $previousData);
+        $data = $this->assignRestrictedFields($data, $previousData, $form);
 
         if (!$replace) {
             // merge the field values which match to the actual form and which are not in $data
-            $data = $this->mergeFields($previousData, $data);
+            $data = $this->mergeFields($previousData, $data, $form);
         }
 
         if ($semantic) {
@@ -470,16 +474,16 @@ class EntryManager
      * @return array the data with the restricted values added
      * @throws Exception
      */
-    protected function assignRestrictedFields(array $data, array $previousData)
+    protected function assignRestrictedFields(array $data, array $previousData, array $form)
     {
-        // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
-
         // check if there are some restricted fields at writing
         $restrictedFields = [];
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $propName = $field->getPropertyName();
+                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
+                // see BazarField->formatValuesBeforeSave() for details
+                // so do not save the previous data even if existing
                 if (!empty($propName) && !$field->canEdit($data)) {
                     $restrictedFields[] = $propName;
                 }
@@ -507,11 +511,8 @@ class EntryManager
      * @return array the data with the merged values
      * @throws Exception
      */
-    protected function mergeFields(array $previousData, array $data)
+    protected function mergeFields(array $previousData, array $data, array $form)
     {
-        // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
-
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $propName = $field->getPropertyName();
