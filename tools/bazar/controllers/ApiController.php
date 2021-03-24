@@ -16,7 +16,7 @@ use YesWiki\Core\YesWikiController;
 class ApiController extends YesWikiController
 {
     /**
-     * @Route("/api/form")
+     * @Route("/api/forms")
      */
     public function getAllForms()
     {
@@ -26,7 +26,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/form/{formId}")
+     * @Route("/api/forms/{formId}")
      */
     public function getForm($formId)
     {
@@ -41,12 +41,13 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiches/{output}/{selectedEntries}", methods={"GET"})
+     * @Route("/api/forms/{formId}/entries/{output}/{selectedEntries}", methods={"GET"})
      */
-    public function getAllEntries($output = null, $selectedEntries = null)
+    public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
 
         $entries = $this->getService(EntryManager::class)->search([
+            'formsIds' => $formId,
             'queries' => !empty($selectedEntries) ? ['id_fiche' => $selectedEntries] : [],
         ]);
 
@@ -62,13 +63,12 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/{formId}/{output}/{selectedEntries}", methods={"GET"})
+     * @Route("/api/entries/{output}/{selectedEntries}", methods={"GET"})
      */
-    public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
+    public function getAllEntries($output = null, $selectedEntries = null)
     {
 
         $entries = $this->getService(EntryManager::class)->search([
-            'formsIds' => $formId,
             'queries' => !empty($selectedEntries) ? ['id_fiche' => $selectedEntries] : [],
         ]);
 
@@ -105,7 +105,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/url/{sourceUrl}")
+     * @Route("/api/entry/url/{sourceUrl}")
      */
     public function getEntryUrl($sourceUrl)
     {
@@ -126,7 +126,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/{formId}", methods={"POST"})
+     * @Route("/api/entries/{formId}", methods={"POST"})
      */
     public function createEntry($formId)
     {
@@ -148,7 +148,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/fiche/{formId}/json-ld", methods={"POST"})
+     * @Route("/api/entries/{formId}/json-ld", methods={"POST"})
      */
     public function createSemanticEntry($formId)
     {
@@ -176,13 +176,13 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/form') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/forms') . '</code></b><br />
         Retourne la liste de tous les formulaires Bazar.
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/form/{formId}') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}') . '</code></b><br />
         Retourne les informations sur le formulaire <code>formId</code>.
         </p>';
 
@@ -208,46 +208,46 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/fiches') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/entries') . '</code></b><br />
         Obtenir la liste des fiches de tous les formulaires Bazar.<br />
         Si le header <code>Accept</code> est <code>application/ld+json</code>, le JSON retourné sera au format sémantique (container LDP)
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/fiche/{formId}') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code><br />
         Si le header <code>Accept</code> est <code>application/ld+json</code>, le JSON retourné sera au format sémantique (container LDP)
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/fiche/{formId}/json-ld') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/json-ld') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format sémantique (container LDP)<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/fiche/{formId}/html') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/html') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>POST ' . $this->wiki->href('', 'api/fiche/{formId}') . '</code></b><br />
+        <b><code>POST ' . $this->wiki->href('', 'api/entries/{formId}') . '</code></b><br />
         Créer une nouvelle fiche en utilisant le formulaire <code>formId</code><br />
         Si le header <code>Content-Type</code> est <code>application/ld+json</code>, un JSON sémantique est attendu.
         </p>';
 
         $output .= '
         <p>
-        <b><code>POST ' . $this->wiki->href('', 'api/fiche/{formId}/json-ld') . '</code></b><br />
+        <b><code>POST ' . $this->wiki->href('', 'api/entries/{formId}/json-ld') . '</code></b><br />
         Créer une nouvelle fiche de type <code>formId</code> au format sémantique<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/fiche/url/{sourceUrl}') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/entry/url/{sourceUrl}') . '</code></b><br />
         Retourne l\'URL de la page Wiki synchronisée avec <code>sourceUrl</code><br />
         </p>';
 
