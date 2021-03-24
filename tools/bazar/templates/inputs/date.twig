@@ -15,7 +15,7 @@
         />
         <select class="form-control select-allday" name="{{ field.name }}_allday">
             <option value="1" {% if not hasTime %} selected {% endif %}>{{  _t('BAZ_ALL_DAY') }}</option>
-            <option value="0" {% if hasTime %}  selected {% endif %})>{{ _t('BAZ_ENTER_HOUR') }}</option>
+            <option value="0" {% if hasTime %}  selected {% endif %}>{{ _t('BAZ_ENTER_HOUR') }}</option>
         </select>
     </div>
     <div class="select-time {% if not hasTime %}hide{% endif %} input-prepend input-group">
