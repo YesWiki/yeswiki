@@ -222,7 +222,7 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/json-ld') . '</code></b><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/json-ld') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format sémantique (container LDP)<br />
         </p>';
 
