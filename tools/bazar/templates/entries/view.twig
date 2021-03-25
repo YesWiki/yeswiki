@@ -21,21 +21,23 @@
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info well well-sm">
       <div class="pull-right BAZ_actions_fiche">
-        <button class="btn btn-xs btn-mini btn-default"
+        {% if canEdit %}<a{% else %}<button{% endif %}
+          class="btn btn-xs btn-mini btn-default"
           {% if not canEdit %}disabled{% endif %}
           href="{{ url({ tag: entryId, handler: 'edit' }) }}"
           {% if not canEdit %}data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_WRITE_RIGHTS') }}"{% endif %}>
           <i class="fa fa-pencil-alt icon-pencil"></i>
           <span>{{ _t('BAZ_MODIFIER') }}</span>
-        </button>
-        <button class="btn btn-xs btn-mini btn-danger modalbox"
+        {% if canEdit %}</a>{% else %}</button>{% endif %}
+        {% if canDelete %}<a{% else %}<button{% endif %}
+          class="btn btn-xs btn-mini btn-danger modalbox"
           {% if not canDelete %}disabled{% endif %}
           href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"
           data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}"
           {% if not canDelete %}data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}"{% endif %}>
             <i class="fa fa-trash icon-trash icon-white"></i>
             <span>{{ _t('BAZ_SUPPRIMER') }}</span>
-        </button>
+        {% if canDelete %}</a>{% else %}</button>{% endif %}
       </div>
       <span class="BAZ_main_fiche_info">
         <a href="{{ url({ tag: entryId }) }}">
