@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
@@ -64,16 +65,18 @@ class EntryManager
      * @param $tag
      * @param bool $semantic
      * @param string $time pour consulter une fiche dans l'historique
-     * @param bool $bypassAcls is true, all fields are loaded regardless of acls
+     * @param bool $cache if false, don't use the page cache
+     * @param bool $bypassAcls if true, all fields are loaded regardless of acls
      * @return mixed|null
+     * @throws Exception
      */
-    public function getOne($tag, $semantic = false, $time = null): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false): ?array
     {
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, $time || '');
+        $page = $this->pageManager->getOne($tag, $time || null, $cache, $bypassAcls);
         $data = $this->decode($page['body']);
 
         // cas ou on ne trouve pas les valeurs id_fiche
@@ -122,8 +125,8 @@ class EntryManager
         if (!empty($params['formsIds'])) {
             if (is_array($params['formsIds'])) {
                 $requete .= ' AND ' . join(' OR ', array_map(function ($formId) {
-                        return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
-                    }, $params['formsIds']));
+                    return 'body LIKE \'%"id_typeannonce":"' . $formId . '"%\'';
+                }, $params['formsIds']));
             } else {
                 // on a une chaine de caractere pour l'id plutot qu'un tableau
                 $requete .= ' AND body LIKE \'%"id_typeannonce":"' . $params['formsIds'] . '"%\'';
@@ -297,22 +300,22 @@ class EntryManager
     /**
      * Validate the fiche's data
      * @param $data
-     * @throws \Exception
+     * @throws Exception
      */
     public function validate($data)
     {
         if (!isset($data['antispam']) or !$data['antispam'] == 1) {
-            throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+            throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
         }
 
         // On teste le titre car ça peut bugguer sérieusement sans
         if (!isset($data['bf_titre'])) {
-            throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+            throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
         }
 
         // form metadata
         if (!isset($data['id_typeannonce'])) {
-            throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
+            throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
         }
     }
 
@@ -323,7 +326,7 @@ class EntryManager
      * @param false $semantic
      * @param null $sourceUrl
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
     {
@@ -420,18 +423,25 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        $previousData = $this->getOne($tag);
-        $previousData = $this->assignRestrictedFields($previousData);
+        // if there are some restricted fields, load the previous data by bypassing the rights
+        $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
+        // replace id_fiche with $tag to prevent errors
+        $data['id_fiche'] = trim($tag);
+        $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
-        if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($previousData['id_typeannonce'], $data);
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        
+        // replace the field values which are restricted at reading and writing
+        $data = $this->assignRestrictedFields($data, $previousData, $form);
+
+        if (!$replace) {
+            // merge the field values which match to the actual form and which are not in $data
+            $data = $this->mergeFields($previousData, $data, $form);
         }
 
-        if ($replace) {
-            $data['id_typeannonce'] = $previousData['id_typeannonce'];
-        } else {
-            // If PATCH, overwrite previous data with new data
-            $data = array_merge($previousData, $data);
+        if ($semantic) {
+            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
         }
 
         $this->validate($data);
@@ -454,6 +464,74 @@ class EntryManager
         return $data;
     }
 
+    /**
+     * Replace the field values which are restricted at reading and writing. These values must be loaded to save them
+     * without user modification.
+     * As the fields are rectricted at reading, the right must be bypassed to load them.
+     *
+     * @param array $data the provided data to update
+     * @param array $previousData the provided previousData to update
+     * @param array $form the entry form
+     * @return array the data with the restricted values added
+     */
+    protected function assignRestrictedFields(array $data, array $previousData, array $form)
+    {
+        // check if there are some restricted fields at writing
+        $restrictedFields = [];
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $propName = $field->getPropertyName();
+                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
+                // see BazarField->formatValuesBeforeSave() for details
+                // so do not save the previous data even if existing
+                if (!empty($propName) && !$field->canEdit($data)) {
+                    $restrictedFields[] = $propName;
+                }
+            }
+        }
+
+        if (!empty($restrictedFields)) {
+
+            // get the value of the restricted fields in the previous data
+            foreach ($restrictedFields as $propName) {
+                if (isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName] ;
+                } elseif (isset($data[$propName])) {
+                    // only for cases when a field is maliciously injected in $_POST (so in $data) and the key doesn't
+                    // exist in $previousData
+                    unset($data[$propName]);
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * Add the $previousData attributes which match the actual form and which are not in $data
+     * @param array $previousData the data saved in the entry
+     * @param array $form the entry form
+     * @param array $data the provided data to update
+     * @return array the data with the merged values
+     * @throws Exception
+     */
+    protected function mergeFields(array $previousData, array $data, array $form)
+    {
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $propName = $field->getPropertyName();
+                if (!empty($propName) && !isset($data[$propName]) && isset($previousData[$propName])) {
+                    $data[$propName] = $previousData[$propName];
+                }
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * @param $entryId
+     * @param $accepted
+     * @throws Exception
+     */
     public function publish($entryId, $accepted)
     {
         // not possible to init the Guard in the constructor because of circular reference problem
@@ -470,7 +548,7 @@ class EntryManager
     /**
      * Delete a fiche
      * @param $tag
-     * @throws \Exception
+     * @throws Exception
      */
     public function delete($tag)
     {
@@ -489,8 +567,10 @@ class EntryManager
         $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
-        $this->wiki->LogAdministrativeAction($this->userManager->getLoggedUserName(),
-            "Suppression de la page ->\"\"" . $tag . "\"\"");
+        $this->wiki->LogAdministrativeAction(
+            $this->userManager->getLoggedUserName(),
+            "Suppression de la page ->\"\"" . $tag . "\"\""
+        );
     }
 
     /*
@@ -514,7 +594,8 @@ class EntryManager
      */
     public function formatDataBeforeSave($data)
     {
-        $form = baz_valeurs_formulaire($data['id_typeannonce']);
+        // not possible to init the formManager in the constructor because of circular reference problem
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
         for ($i = 0; $i < count($form['template']); ++$i) {
@@ -538,7 +619,7 @@ class EntryManager
         $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
 
         // Entry status
-        if ($GLOBALS['wiki']->UserIsAdmin()) {
+        if ($this->wiki->UserIsAdmin()) {
             $data['statut_fiche'] = '1';
         } else {
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
@@ -547,13 +628,6 @@ class EntryManager
         for ($i = 0; $i < count($form['template']); ++$i) {
             if ($form['prepared'][$i] instanceof BazarField) {
                 $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
-            } elseif (function_exists($form['template'][$i][0])) {
-                $tab = $form['template'][$i][0](
-                    $formtemplate,
-                    $form['template'][$i],
-                    'requete',
-                    $data
-                );
             }
 
             if (is_array($tab)) {
@@ -629,14 +703,14 @@ class EntryManager
         $fiche['owner'] = $this->pageManager->getOwner($fiche['id_fiche']);
 
         // Fiche URL
-        $exturl = $GLOBALS['wiki']->GetParameter('url');
+        $exturl = $this->wiki->GetParameter('url');
         if (isset($exturl)) {
             // WIP concernant l'action bazarlisteexterne
             $arr = explode('/wakka.php', $exturl, 2);
             $exturl = $arr[0];
             $fiche['url'] = $exturl . '/wakka.php?wiki=' . $fiche['id_fiche'];
         } else {
-            $fiche['url'] = $GLOBALS['wiki']->href('', $fiche['id_fiche']);
+            $fiche['url'] = $this->wiki->href('', $fiche['id_fiche']);
         }
 
         // Données sémantiques
@@ -645,44 +719,6 @@ class EntryManager
             $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
         }
-    }
-
-    /**
-     * Met à jour les valeurs des champs qui sont restreints en écriture
-     *
-     * @param array $data l'objet contenant les valeurs issues de la saisie du formulaire
-     * @return array tableau des valeurs de la fiche à sauver
-     */
-    protected function assignRestrictedFields(array $data)
-    {
-        // on regarde si des champs sont restreints en écriture pour l'utilisateur, et pour ceux-ci ont leur assigne la même valeur
-        // (un LoadPage qui passe les droits ACLS est nécéssaire)
-
-        // if the field type (index 0) is in the $INDEX_CHELOUS, the name used to identified the field is a concatenation of the index 0, 1 and 6
-        $INDEX_CHELOUS = ['radio', 'liste', 'checkbox', 'listefiche', 'checkboxfiche'];
-        $template = baz_valeurs_formulaire($data['id_typeannonce'])['template'];
-        $protected_fields_index = [];
-        for ($i = 0; $i < count($template); ++$i) {
-            if (!empty($template[$i][12]) && !$this->wiki->CheckACL($template[$i][12])) {
-                $protected_fields_index[] = $i;
-            }
-        }
-        if (!empty($protected_fields_index)) {
-            $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE tag = '" . $this->dbService->escape($data['id_fiche']) . "' AND latest = 'Y'" . " LIMIT 1";
-            $valjson = $this->dbService->loadSingle($sql);
-            $old_fiche = json_decode($valjson['body'], true);
-            foreach ($old_fiche as $key => $value) {
-                $old_fiche[$key] = _convert($value, 'UTF-8');
-            }
-            foreach ($protected_fields_index as $index) {
-                if (in_array($template[$index][0], $INDEX_CHELOUS)) {
-                    $data[$template[$index][0] . $template[$index][1] . $template[$index][6]] = $old_fiche[$template[$index][0] . $template[$index][1] . $template[$index][6]];
-                } else {
-                    $data[$template[$index][1]] = $old_fiche[$template[$index][1]];
-                }
-            }
-        }
-        return $data;
     }
 
     private function removeSendmail(array &$data): ?string

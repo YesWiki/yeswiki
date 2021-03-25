@@ -135,7 +135,7 @@ abstract class BazarField implements \JsonSerializable
     }
 
     /* Return true if we are if editing is allowed for the field */
-    protected function canEdit($entry)
+    public function canEdit($entry)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
         $isCreation = !$entry;

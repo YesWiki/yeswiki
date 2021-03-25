@@ -36,10 +36,10 @@ class PageManager
         $this->pageCache = [];
     }
 
-    public function getOne($tag, $time = "", $cache = 1): ?array
+    public function getOne($tag, $time = null, $cache = true, $bypassAcls = false): ?array
     {
         // retrieve from cache
-        if (!$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
+        if (!$bypassAcls && !$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
             if ($cachedPage and !isset($cachedPage["metadatas"])) {
                 $cachedPage["metadatas"] = $this->getMetadata($tag);
             }
@@ -55,13 +55,13 @@ class PageManager
             }
 
             // not possible to init the EntryManager in the constructor because of circular reference problem
-            if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
+            if ($this->wiki->services->get(EntryManager::class)->isEntry($tag) && !$bypassAcls) {
                 // not possible to init the Guard in the constructor because of circular reference problem
                 $page = $this->wiki->services->get(Guard::class)->checkAcls($page, $tag);
             }
 
             // cache result
-            if (!$time) {
+            if (!$bypassAcls && !$time) {
                 $this->cache($page, $tag);
             }
         }
@@ -203,8 +203,10 @@ class PageManager
         $user = $this->userManager->getLoggedUserName();
 
         // check bypass of rights or write privilege
-        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess('comment',
-                $comment_on) : $this->aclService->hasAccess('write', $tag));
+        $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess(
+            'comment',
+            $comment_on
+        ) : $this->aclService->hasAccess('write', $tag));
 
         if ($rights) {
             // is page new?
