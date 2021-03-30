@@ -238,16 +238,38 @@ class MapField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        if (isset($entry[$this->latitudeField]) && isset($entry[$this->longitudeField])) {
-            $entry[$this->propertyName] = $entry[$this->latitudeField] . '|' . $entry[$this->longitudeField];
-        } 
-        return [
-          $this->propertyName => $this->getValue($entry),
+        if (!$this->canEdit($entry)) {
+            // retrieve value from value because redefined with right value
+            $value = $this->getValue($entry);
+            $values = (empty($value)) ? null : explode('|', $value);
+            if (empty($values[0]) || empty($values[1])) {
+                if (isset($entry[$this->getLatitudeField()])) {
+                    unset($entry[$this->getLatitudeField()]);
+                }
+                if (isset($entry[$this->getLongitudeField()])) {
+                    unset($entry[$this->getLongitudeField()]);
+                }
+            } else {
+                $entry[$this->getLatitudeField()] = $values[0];
+                $entry[$this->getLongitudeField()] = $values[1];
+            }
+        }
+        if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
+            $entry[$this->propertyName] = $entry[$this->getLatitudeField()] . '|' . $entry[$this->getLongitudeField()];
+            return [
+            $this->propertyName => $this->getValue($entry),
+            $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+            $this->getLongitudeField() => $entry[$this->getLongitudeField()]
+          ];
+        } else {
+            return [
           'fields-to-remove' => [
-            $this->latitudeField,
-            $this->longitudeField
+            $this->propertyName,
+            $this->getLatitudeField(),
+            $this->getLongitudeField()
             ]
         ];
+        }
     }
 
     protected function renderStatic($entry)
