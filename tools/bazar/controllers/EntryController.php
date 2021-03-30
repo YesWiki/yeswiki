@@ -210,9 +210,9 @@ class EntryController extends YesWikiController
     private function getRenderedInputs($form, $entry = null)
     {
         $renderedFields = [];
-        for ($i = 0; $i < count($form['prepared']); ++$i) {
-            if ($form['prepared'][$i] instanceof BazarField) {
-                $renderedFields[] = $form['prepared'][$i]->renderInputIfPermitted($entry);
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $renderedFields[] = $field->renderInputIfPermitted($entry);
             }
         }
         return $renderedFields;
@@ -274,18 +274,20 @@ class EntryController extends YesWikiController
 
     private function getValuesForCustomTemplate($entry, $form)
     {
-        $html = $formtemplate = [];
-        for ($i = 0; $i < count($form['template']); ++$i) {
-            if ($form['prepared'][$i] instanceof BazarField) {
-                $id = $form['prepared'][$i]->getPropertyName();
-                $html[$id] = $form['prepared'][$i]->renderStaticIfPermitted($entry);
-                if ($id == 'bf_titre') {
-                    preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
-                } else {
-                    preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);
-                }
-                if (isset($matches[1]) && $matches[1] != '') {
-                    $html[$id] = $matches[1];
+        $html = [];
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof BazarField) {
+                $id = $field->getPropertyName();
+                if (!empty($id)) {
+                    $html[$id] = $field->renderStaticIfPermitted($entry);
+                    if ($id == 'bf_titre') {
+                        preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
+                    } else {
+                        preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);
+                    }
+                    if (isset($matches[1]) && $matches[1] != '') {
+                        $html[$id] = $matches[1];
+                    }
                 }
             }
         }

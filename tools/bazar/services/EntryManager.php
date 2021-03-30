@@ -598,9 +598,9 @@ class EntryManager
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
         // If there is a title field, compute the entry's title
-        for ($i = 0; $i < count($form['template']); ++$i) {
-            if ($form['prepared'][$i] instanceof TitleField) {
-                $data = array_merge($data, $form['prepared'][$i]->formatValuesBeforeSave($data));
+        foreach ($form['prepared'] as $field) {
+            if ($field instanceof TitleField) {
+                $data = array_merge($data, $field->formatValuesBeforeSave($data));
             }
         }
 
@@ -625,9 +625,9 @@ class EntryManager
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-        for ($i = 0; $i < count($form['template']); ++$i) {
-            if ($form['prepared'][$i] instanceof BazarField) {
-                $tab = $form['prepared'][$i]->formatValuesBeforeSave($data);
+        foreach ($form['prepared'] as $bazarField) {
+            if ($bazarField instanceof BazarField) {
+                $tab = $bazarField->formatValuesBeforeSave($data);
             }
 
             if (is_array($tab)) {
