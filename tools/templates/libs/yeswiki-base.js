@@ -151,14 +151,12 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       try {
         link += "&incomingurl=" + encodeURIComponent(window.location.toString());
       } catch (e) {}
-      // AJAX Request
+      // AJAX Request for javascripts
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
           var xmlString = this.responseText;
           var doc = new DOMParser().parseFromString(xmlString, "text/html");
-          var page = doc.querySelector(".page").innerHTML ;
-          $modal.find(".modal-body").html(page) ;
           // find scripts
           var res = doc.scripts;
           var l = res.length;
@@ -200,8 +198,13 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
               }
             }
           }
-
-          $(document).trigger("yw-modal-open");
+          // AJAX Request for content
+          $modal
+          .find(".modal-body")
+          .load(link + " .page", function(response, status, xhr) {
+            $(document).trigger("yw-modal-open");
+            return false;
+          });
         }
       };
       xhttp.open("GET", link, true);
