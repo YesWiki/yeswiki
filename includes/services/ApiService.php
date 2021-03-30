@@ -19,23 +19,25 @@ class ApiService
     public function isAuthorized(array $requestParams = [])
     {
         $acl = $this->loadACL($requestParams);
-        if (in_array("public", $acl)) {
-            return true ; //no Bearer
-        }
-        if (!empty($acl[0]) && !$this->aclService->check(implode(' ', $acl))) {
+        $publicMode = in_array("public", $acl);
+        // remove public
+        $acl = array_diff($acl, ["public"]);
+        // check ACL if not empty after removing public
+        if (!empty(implode(' ', $acl)) && !$this->aclService->check(implode(' ', $acl))) {
             // acl defined but not allowed
             return false;
         }
-        // check bearer
-        $apiKey = $this->getBearerToken();
         return(
-            $this->params->has('api_allowed_keys') &&
+            $publicMode ||
             (
+                $this->params->has('api_allowed_keys') &&
                 (
-                    isset($this->params->get('api_allowed_keys')['public']) &&
-                    $this->params->get('api_allowed_keys')['public'] === true
-                ) ||
-                in_array($apiKey, $this->params->get('api_allowed_keys'))
+                    (
+                        isset($this->params->get('api_allowed_keys')['public']) &&
+                        $this->params->get('api_allowed_keys')['public'] === true
+                    ) ||
+                    in_array($this->getBearerToken(), $this->params->get('api_allowed_keys'))
+                )
             )
         );
     }
