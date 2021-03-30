@@ -4,32 +4,38 @@ namespace YesWiki\Core\Service;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\HttpFoundation\Response;
 
 class ApiService
 {
     protected $params;
+    protected $aclService;
 
-    public function __construct(ParameterBagInterface $params)
+    public function __construct(ParameterBagInterface $params, AclService $aclService)
     {
+        $this->aclService = $aclService;
         $this->params = $params;
     }
 
     public function isAuthorized(array $requestParams = [])
     {
         $acl = $this->loadACL($requestParams);
+        if (in_array("public", $acl)) {
+            return true ; //no Bearer
+        }
+        if (!empty($acl[0]) && !$this->aclService->check(implode(' ', $acl))) {
+            // acl defined but not allowed
+            return false;
+        }
+        // check bearer
         $apiKey = $this->getBearerToken();
         return(
-            in_array("public", $acl) ||
+            $this->params->has('api_allowed_keys') &&
             (
-                $this->params->has('api_allowed_keys') &&
                 (
-                    (
-                        isset($this->params->get('api_allowed_keys')['public']) &&
-                        $this->params->get('api_allowed_keys')['public'] === true
-                    ) ||
-                    in_array($apiKey, $this->params->get('api_allowed_keys'))
-                )
+                    isset($this->params->get('api_allowed_keys')['public']) &&
+                    $this->params->get('api_allowed_keys')['public'] === true
+                ) ||
+                in_array($apiKey, $this->params->get('api_allowed_keys'))
             )
         );
     }
