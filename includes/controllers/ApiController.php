@@ -12,6 +12,7 @@ class ApiController extends YesWikiController
 {
     /**
      * @Route("/api")
+     * @RouteACL({"public"})
      */
     public function getDocumentation()
     {
@@ -33,22 +34,22 @@ class ApiController extends YesWikiController
             $response = null ;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
-                if (!class_exists($apiClassName,false)){
+                if (!class_exists($apiClassName, false)) {
                     include($pluginBase . 'controllers/ApiController.php') ;
                 }
-                if (class_exists($apiClassName,false)) {
+                if (class_exists($apiClassName, false)) {
                     $apiController = new $apiClassName() ;
                     $apiController->setWiki($this->wiki);
-                    if (method_exists($apiController,'getDocumentation')) {
+                    if (method_exists($apiController, 'getDocumentation')) {
                         $response = $apiController->getDocumentation() ;
-                    } 
+                    }
                 }
             }
             if (empty($response)) {
                 $func = 'documentation'.ucfirst(strtolower($extension));
                 if (function_exists($func)) {
                     $output .= $func();
-                } 
+                }
             } else {
                 $output .= $response ;
             }

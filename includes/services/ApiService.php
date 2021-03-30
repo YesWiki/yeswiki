@@ -2,7 +2,9 @@
 
 namespace YesWiki\Core\Service;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApiService
 {
@@ -13,12 +15,22 @@ class ApiService
         $this->params = $params;
     }
 
-    public function isAuthorized()
+    public function isAuthorized(array $requestParams = [])
     {
+        $acl = $this->loadACL($requestParams);
         $apiKey = $this->getBearerToken();
         return(
-            $this->params->has('api_allowed_keys') &&
-            ((isset($this->params->get('api_allowed_keys')['public']) && $this->params->get('api_allowed_keys')['public'] === true) || in_array($apiKey, $this->params->get('api_allowed_keys')))
+            in_array("public", $acl) ||
+            (
+                $this->params->has('api_allowed_keys') &&
+                (
+                    (
+                        isset($this->params->get('api_allowed_keys')['public']) &&
+                        $this->params->get('api_allowed_keys')['public'] === true
+                    ) ||
+                    in_array($apiKey, $this->params->get('api_allowed_keys'))
+                )
+            )
         );
     }
 
@@ -57,5 +69,24 @@ class ApiService
             }
         }
         return null;
+    }
+
+    private function loadACL(array $requestParams = []): array
+    {
+        if (empty($requestParams['_controller'])) {
+            return [];
+        }
+        $reflexionMethod = new \ReflectionMethod($requestParams['_controller']);
+        if (!$reflexionMethod) {
+            return [];
+        }
+        $reader = new AnnotationReader();
+        $annotation = $reader->getMethodAnnotations($reflexionMethod);
+        // If there is no Field annotation
+        if (isset($annotation[1]->keywords) && is_array($annotation[1]->keywords)) {
+            return $annotation[1]->keywords;
+        } else {
+            return [];
+        }
     }
 }

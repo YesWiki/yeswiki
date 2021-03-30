@@ -31,6 +31,7 @@ require_once 'includes/objects/YesWikiAction.php';
 require_once 'includes/objects/YesWikiHandler.php';
 require_once 'includes/objects/YesWikiFormatter.php';
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpFoundation\Request;
@@ -87,6 +88,7 @@ class Wiki
      */
     public function __construct($config = array())
     {
+        AnnotationRegistry::registerFile(__DIR__ . '/annotations/RouteACL.php');
         $init = new \YesWiki\Init($config);
         $this->config = $init->config;
         $this->CookiePath = $init->initCookies();
@@ -1182,8 +1184,9 @@ class Wiki
 
             try {
                 // TODO put this elsewhere ?
-                if ($this->services->get(ApiService::class)->isAuthorized()) {
-                    $request->attributes->add($matcher->match($context->getPathInfo()));
+                $attributes = $matcher->match($context->getPathInfo());
+                if ($this->services->get(ApiService::class)->isAuthorized($attributes)) {
+                    $request->attributes->add($attributes);
 
                     $controller = $controllerResolver->getController($request);
                     $arguments = $argumentResolver->getArguments($request, $controller);
