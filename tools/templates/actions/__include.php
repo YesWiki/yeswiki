@@ -10,11 +10,15 @@ $pageincluded = $this->GetParameter('page');
 
 // if metadata exists to change included page, we take the value of it
 if (isset($this->metadatas[$pageincluded])) {
+    $oldpageincluded = $pageincluded ;
     $pageincluded = $this->metadatas[$pageincluded];
     $this->parameter["page"] = $pageincluded;
-    // redo tools\attach\actions\__include.php without changing oldpage
-    $this->tag = trim($pageincluded);
-    $this->page = $this->LoadPage($this->tag);
+    // to prevent errors in actions order in Performer
+    if ($this->tag == trim($oldpageincluded)) { // case /attach/actions/___include before this
+        // redo tools\attach\actions\__include.php without changing oldpage
+        $this->tag = trim($pageincluded);
+        $this->page = $this->LoadPage($this->tag);
+    }
 }
 $clear = $this->GetParameter('clear');
 $class = $this->GetParameter('class');
