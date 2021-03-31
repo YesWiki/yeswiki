@@ -1,3 +1,6 @@
+<script>
+  var facettetext = <?php echo json_encode(array('facettetext' => $facettestext, 'show_tooltip' => $showtooltip)); ?>;
+</script>
 <div id="widgetapp" v-cloak
   data-formid="<?php echo $_GET['id']; ?>"
   data-templatemodel="<?php echo $params['template']; ?>"
@@ -131,7 +134,7 @@
               <select v-model="markerfieldmodel" class="form-control">
                 <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
                     <?php foreach ($facettes as $key => $value) : ?>
-                    <option value="<?php echo $value['id']; ?>">
+                    <option value="<?php echo $value['source']; ?>">
                         <?php echo $value['label']; ?>
                     </option>
                     <?php endforeach; ?>
@@ -149,7 +152,7 @@
               <select v-model="colorfieldmodel" class="form-control">
                 <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
                   <?php foreach ($facettes as $key => $value) : ?>
-                    <option value="<?php echo $value['id']; ?>">
+                    <option value="<?php echo $value['source']; ?>">
                         <?php echo $value['label']; ?>
                     </option>
                   <?php endforeach; ?>
@@ -166,7 +169,7 @@
             <select v-model="iconfieldmodel" class="form-control">
               <option value="<?php echo _t('BAZ_CHOISIR'); ?>"><?php echo _t('BAZ_CHOISIR'); ?></option>
               <?php foreach ($facettes as $key => $value) : ?>
-                <option value="<?php echo $value['id']; ?>">
+                <option value="<?php echo $value['source']; ?>">
                       <?php echo $value['label']; ?>
                 </option>
               <?php endforeach; ?>
@@ -179,23 +182,19 @@
         <div class="panel-body" style="height:400px;overflow-y:auto;">
           <ul class="list-group">
             <!-- v-sortable="{group: 'facettes'}" -->
-            <script>
-                //var facetteval = <?php echo json_encode(array('facettetext' => $facettes)); ?>;
-                var facettetext = <?php echo json_encode(array('facettetext' => $facettestext, 'show_tooltip' => $showtooltip)); ?>;
-            </script>
             <?php $i=-1; foreach ($facettes as $key => $value) : $i++ ?>
-              <li class="list-group-item" data-id="<?php echo $value['id']; ?>">
+              <li class="list-group-item" data-id="<?php echo $value['source']; ?>">
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" value="<?php echo $value['id']; ?>" v-model="checkedfacette">
-                    <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['id']; ?>']">
-                        <input class="form-control" type="text" v-model="facettetext['<?php echo $value['id']; ?>']" @keyup.enter="hideTooltip" />
+                    <input type="checkbox" value="<?php echo $value['source']; ?>" v-model="checkedfacette">
+                    <div class="input-group input-group-sm" v-on:click.stop v-if="show_tooltip['<?php echo $value['source']; ?>']">
+                        <input class="form-control" type="text" v-model="facettetext['<?php echo $value['source']; ?>']" @keyup.enter="hideTooltip" />
                         <span class="input-group-btn">
               			    	<button @click.stop.prevent="hideTooltip" class="btn btn-default"><i class="fa fa-check"></i></button>
               			    </span>
                     </div>
-                    <div class="facette-text" v-if="!show_tooltip['<?php echo $value['id']; ?>']">
-                        {{facettetext['<?php echo $value['id']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['id']; ?>')"><i class="fa fa-pencil-alt"></i></button>
+                    <div class="facette-text" v-if="!show_tooltip['<?php echo $value['source']; ?>']">
+                        {{facettetext['<?php echo $value['source']; ?>']}} <button class="btn btn-xs btn-link" @click.stop.prevent="showTooltip('<?php echo $value['source']; ?>')"><i class="fa fa-pencil-alt"></i></button>
                     </div>
 
 
