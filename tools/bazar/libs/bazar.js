@@ -157,6 +157,7 @@ $(document).ready(function () {
     var atleastonemailfieldnotvalid = false;
     var atleastoneurlfieldnotvalid = false;
     var atleastonecheckboxfieldnotvalid = false;
+    var atleastoneradiofieldnotvalid = false;
     var atleastonetagfieldnotvalid = false;
 
     // il y a des champs requis, on teste la validite champs par champs
@@ -217,6 +218,17 @@ $(document).ready(function () {
       }
     });
 
+    // radio inputs .radio_required
+    $('#formulaire .radio_required:visible').each(function () {
+      var nbradio = $(this).find(':checked');
+      if (nbradio.length === 0) {
+        atleastoneradiofieldnotvalid = true;
+        $(this).addClass('invalid');
+      } else {
+        $(this).removeClass('invalid');
+      }
+    });
+
     // les checkbox des tags
     $('#formulaire [required] .bootstrap-tagsinput:visible').each(function () {
       var nbtag = $(this).find('.tag');
@@ -251,6 +263,13 @@ $(document).ready(function () {
       //on remonte en haut du formulaire
       $('html, body').animate({
         scrollTop: $('#formulaire .invalid').offset().top - 80,
+      }, 500);
+    } else if (atleastoneradiofieldnotvalid=== true) {
+      alert('Il faut choisir une valeur de bouton radio');
+      
+      //on remonte en haut du formulaire
+      $('html, body').animate({
+        scrollTop: $('#formulaire .radio_required.invalid').offset().top - 80,
       }, 500);
     } else if (atleastonecheckboxfieldnotvalid === true) {
       alert('Il faut cocher au moins une case a cocher');

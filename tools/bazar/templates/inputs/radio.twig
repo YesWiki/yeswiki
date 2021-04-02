@@ -1,7 +1,7 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
-    <div class="bazar-radio">
+    <div class="bazar-radio{{ field.required ? ' radio_required' : ''}}">
         {% for key, option in options %}
         <div class="radio">
             <label for="{{ field.propertyName ~ key }}">
