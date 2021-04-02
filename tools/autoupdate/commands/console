@@ -35,7 +35,7 @@ $wiki->config['is_cli'] = true;
 
 // second little hack (bad habit..): we use the first admin user to perform updates as an admin
 $admins = $wiki->GetGroupACL('admins');
-$firstAdmin = $wiki->LoadUser(explode("\r\n", $admins)[0]);
+$firstAdmin = $wiki->LoadUser(preg_split("/\s+/", $admins)[0]);
 $wiki->setUser($firstAdmin);
 
 // ... register commands
