@@ -120,6 +120,19 @@ class FormManager
             . ' WHERE `bn_id_nature`=' . $data['bn_id_nature']);
     }
 
+    public function clone($id)
+    {
+        $data = $this->getOne($id);
+        if (!empty($data)) {
+            unset($data['bn_id_nature']);
+            $data['bn_label_nature'] = $data['bn_label_nature'].' ('._t('BAZ_DUPLICATE').')';
+            return $this->create($data);
+        } else {
+            // raise error?
+            return false;
+        }
+    }
+
     public function delete($id)
     {
         //TODO : suppression des fiches associees au formulaire

@@ -113,4 +113,15 @@ class FormController extends YesWikiController
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }
     }
+
+    public function clone($id)
+    {
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            $this->formManager->clone($id);
+
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
+        }
+    }
 }

@@ -31,6 +31,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_EDIT = 'modif';
     public const ACTION_FORM_DELETE = 'delete';
     public const ACTION_FORM_EMPTY = 'empty';
+    public const ACTION_FORM_CLONE = 'clone';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
 
     // Lists
@@ -108,6 +109,8 @@ class BazarAction extends YesWikiAction
                         return $formController->delete($_GET['idformulaire']);
                     case self::ACTION_FORM_EMPTY:
                         return $formController->empty($_GET['idformulaire']);
+                    case self::ACTION_FORM_CLONE:
+                        return $formController->clone($_GET['idformulaire']);
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
                 }

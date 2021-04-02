@@ -60,6 +60,16 @@
             {{ key }}
           </td>
           <td>
+            <div class="create-actions">
+            {% if form.canEdit %}
+            <a class="btn btn-default btn-mini btn-xs"title="{{ _t('BAZ_CLONE_FORM') }}"href="{{ url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
+              <i class="far fa-clone"></i>
+            </a>
+            {% else %}
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+                <i class="far fa-clone"></i>
+              </button>
+            {% endif %}
             {% if form.canEdit %}
               <a class="btn btn-default btn-mini btn-xs"title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}"href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
                 <i class="fa fa-pencil-alt"></i>
@@ -69,8 +79,10 @@
                 <i class="fa fa-pencil-alt"></i>
               </button>
             {% endif %}
+            </div>
+            <div class="erase-actions">
             {% if form.canDelete %}
-              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'empty', idformulaire: key }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_VIDER_FORMULAIRE') }} ?');" -toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'empty', idformulaire: key }}) }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_VIDER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
                 <i class="fas fa-eraser"></i>
               </a>
               <a class="btn btn-danger btn-xs" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'delete', idformulaire: key }}) }}"  onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_FORMULAIRE') }} ?');" data-toggle="tooltip" data-placement="bottom">
@@ -84,6 +96,7 @@
                 <i class="fa fa-trash"></i>
               </button>
             {% endif %}
+            </div>
           </td>
         </tr>
       {% endfor %}
