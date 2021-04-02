@@ -13,7 +13,7 @@
       "AutoUpdate\\": "app"
     }
   },
-  "require-dev": {
-    "phpunit/phpunit": "^5.7"
+  "require": {
+    "symfony/console": "^5.2"
   }
 }
