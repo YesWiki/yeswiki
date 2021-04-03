@@ -1062,7 +1062,8 @@ function removeAccents($str, $charset = YW_CHARSET)
     return $str;
 }
 
-/** genere_nom_wiki()
+/**
+ *  genere_nom_wiki()
  *  Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant
  *  a 50 caracteres et en mettant 2 majuscules
  *  Si le NomWiki existe deja, on propose recursivement NomWiki2, NomWiki3, etc..
@@ -1070,66 +1071,99 @@ function removeAccents($str, $charset = YW_CHARSET)
  *   @param  string  chaine de caracteres avec de potentiels accents a enlever
  *   @param int nombre d'iteration pour la fonction recursive (1 par defaut)
  *
- *
  *   return  string chaine de caracteres, en NomWiki unique
  */
 function genere_nom_wiki($nom, $occurence = 1)
 {
+    // the condition for the unicity is when the tag doesn't refer to an existing page
+    return generateTagNameFromCondition($nom, function($tag){
+        return !$GLOBALS['wiki']->LoadPage($tag);
+    });
+}
 
-    // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
-    if ($occurence <= 1) {
-        // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48
-        // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
-        // plus traitement des accents et ponctuation
-        // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $nom), 0, 47, YW_CHARSET));
-        $temp = explode(' ', ucwords(strtolower($temp)));
-        $nom = '';
-        foreach ($temp as $mot) {
-            // on vire d'eventuels autres caracteres speciaux
-            $nom .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
-        }
+/**
+ * Generate a tag name from a display name. The resulting name have the Yeswiki tag format and is unique.
+ * To test the unicity, the $condition is tested. When the $condition is true, the resulting name is unique.
+ *
+ * @param $name the input name
+ * @param $condition the function used to test the unicity
+ * @return string the resulting YesWiki tag
+ */
+function generateTagNameFromCondition($name, $condition): string
+{
+    $uniformizedName = createTagNameFromDisplayName($name);
+    // the condition to stop iteration is to have a available username and an available page of the same name
+    return addNumberToUniqueNameIfNotCondition($name, $condition);
+}
 
-        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
-        $var = preg_replace('/[^A-Z]/', '', $nom);
-        if (strlen($var) < 2) {
-            $last = ucfirst(substr($nom, strlen($nom) - 1));
-            $nom = substr($nom, 0, -1).$last;
-        }
-
-        $nom = '';
-        foreach ($temp as $mot) {
-            // on vire d'eventuels autres caracteres speciaux
-            $nom .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
-        }
-
-        // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
-        $var = preg_replace('/[^A-Z]/', '', $nom);
-        if (strlen($var) < 2) {
-            $last = ucfirst(substr($nom, strlen($nom) - 1));
-            $nom = substr($nom, 0, -1).$last;
-        }
-    } elseif ($occurence > 2) {
-        // si on en est a plus de 2 occurences, on supprime le chiffre precedent et on ajoute la nouvelle occurence
-        $nb = -1 * strlen(strval($occurence - 1));
-        $nom = substr($nom, 0, $nb).$occurence;
+/**
+ * Find a unique name by incrementing $number while the $condition is false. The number is found as soon as the $condition
+ * is true.
+ *
+ * @param $name the input name
+ * @param int $number the number at the current iteration
+ * @return string the unique name witj the final $number at the end. If $number is 1 (default value), the $name is
+ * returned without number.
+ */
+function addNumberToUniqueNameIfNotCondition ($name, $condition, $number = 1): string
+{
+    if ($number == 1) {
+        $newUsername = $name;
     } else {
-        // cas ou l'occurence est la deuxieme : on reprend le NomWiki en y ajoutant le chiffre 2
-        $nom = $nom.$occurence;
+        $newUsername = $name . $number;
     }
 
-    if ($occurence == 0) {
-        // pour occurence = 0 on ne teste pas l'existance de la page
-        return $nom;
-    } elseif (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
-        // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
-        return $nom;
-    } else {
-        // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
-        ++$occurence;
-
-        return genere_nom_wiki($nom, $occurence);
+    if ($condition($newUsername)) {
+        return $newUsername;
     }
+
+    // If name is all ready taken
+    return addNumberToUniqueNameIfNotCondition($name, $condition, $number + 1);
+}
+
+/**
+ *  Normalize a string as a YesWiki tag.
+ *  Remove spaces and special characters, limite to 50 chars and make sure that there are at least 2 upper case characters.
+ *
+ * @param $displayName the input name
+ * @param string $charset the charset used
+ * @return string the resulting YesWiki tag
+ */
+function createTagNameFromDisplayName($displayName, $charset = 'UTF-8'): string
+{
+    // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48
+    // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
+    // plus traitement des accents et ponctuation
+    // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
+    $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $displayName), 0, 47, $charset)); // $charset replaced by FunkycraM
+    $temp = explode(' ', ucwords(strtolower($temp)));
+    $name = '';
+    foreach ($temp as $mot) {
+        // on vire d'eventuels autres caracteres speciaux
+        $name .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
+    }
+
+    // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
+    $var = preg_replace('/[^A-Z]/', '', $name);
+    if (strlen($var) < 2) {
+        $last = ucfirst(substr($name, strlen($name) - 1));
+        $name = substr($name, 0, -1).$last;
+    }
+
+    $name = '';
+    foreach ($temp as $mot) {
+        // on vire d'eventuels autres caracteres speciaux
+        $name .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
+    }
+
+    // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
+    $var = preg_replace('/[^A-Z]/', '', $name);
+    if (strlen($var) < 2) {
+        $last = ucfirst(substr($name, strlen($name) - 1));
+        $name = substr($name, 0, -1).$last;
+    }
+
+    return $name;
 }
 
 /**
