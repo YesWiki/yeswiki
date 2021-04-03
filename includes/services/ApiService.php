@@ -2,8 +2,8 @@
 
 namespace YesWiki\Core\Service;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 class ApiService
 {
@@ -16,9 +16,9 @@ class ApiService
         $this->params = $params;
     }
 
-    public function isAuthorized(array $requestParams = [])
+    public function isAuthorized(array $requestParams, RouteCollection $routes)
     {
-        $acl = $this->loadACL($requestParams);
+        $acl = $this->loadACL($requestParams, $routes);
         $publicMode = in_array("public", $acl);
         // remove public
         $acl = array_diff($acl, ["public"]);
@@ -79,22 +79,15 @@ class ApiService
         return null;
     }
 
-    private function loadACL(array $requestParams = []): array
+    private function loadACL(array $requestParams = [], ?RouteCollection $routes = null): array
     {
-        if (empty($requestParams['_controller'])) {
+        $routeName = $requestParams['_route'] ?? null;
+        if (empty($routeName) ||
+            empty($requestParams['_controller']) ||
+            empty($routes->all()[$routeName])) {
             return [];
         }
-        $reflexionMethod = new \ReflectionMethod($requestParams['_controller']);
-        if (!$reflexionMethod) {
-            return [];
-        }
-        $reader = new AnnotationReader();
-        $annotation = $reader->getMethodAnnotations($reflexionMethod);
-        // If there is no Field annotation
-        if (isset($annotation[1]->keywords) && is_array($annotation[1]->keywords)) {
-            return $annotation[1]->keywords;
-        } else {
-            return [];
-        }
+        $route =  $routes->all()[$routeName] ;
+        return $route->hasOption('acl') ? $route->getOption('acl') : [];
     }
 }

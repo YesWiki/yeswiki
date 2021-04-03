@@ -11,8 +11,7 @@ use YesWiki\Core\YesWikiController;
 class ApiController extends YesWikiController
 {
     /**
-     * @Route("/api")
-     * @RouteACL({"public"})
+     * @Route("/api",options={"acl":{"public"}})
      */
     public function getDocumentation()
     {
