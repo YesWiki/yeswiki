@@ -1182,8 +1182,9 @@ class Wiki
 
             try {
                 // TODO put this elsewhere ?
-                if ($this->services->get(ApiService::class)->isAuthorized()) {
-                    $request->attributes->add($matcher->match($context->getPathInfo()));
+                $attributes = $matcher->match($context->getPathInfo());
+                if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->routes)) {
+                    $request->attributes->add($attributes);
 
                     $controller = $controllerResolver->getController($request);
                     $arguments = $argumentResolver->getArguments($request, $controller);

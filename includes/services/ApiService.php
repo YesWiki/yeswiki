@@ -3,22 +3,42 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 class ApiService
 {
     protected $params;
+    protected $aclService;
 
-    public function __construct(ParameterBagInterface $params)
+    public function __construct(ParameterBagInterface $params, AclService $aclService)
     {
+        $this->aclService = $aclService;
         $this->params = $params;
     }
 
-    public function isAuthorized()
+    public function isAuthorized(array $requestParams, RouteCollection $routes)
     {
-        $apiKey = $this->getBearerToken();
+        $acl = $this->loadACL($requestParams, $routes);
+        $publicMode = in_array("public", $acl);
+        // remove public
+        $acl = array_diff($acl, ["public"]);
+        // check ACL if not empty after removing public
+        if (!empty(implode(' ', $acl)) && !$this->aclService->check(implode(' ', $acl))) {
+            // acl defined but not allowed
+            return false;
+        }
         return(
-            $this->params->has('api_allowed_keys') &&
-            ((isset($this->params->get('api_allowed_keys')['public']) && $this->params->get('api_allowed_keys')['public'] === true) || in_array($apiKey, $this->params->get('api_allowed_keys')))
+            $publicMode ||
+            (
+                $this->params->has('api_allowed_keys') &&
+                (
+                    (
+                        isset($this->params->get('api_allowed_keys')['public']) &&
+                        $this->params->get('api_allowed_keys')['public'] === true
+                    ) ||
+                    in_array($this->getBearerToken(), $this->params->get('api_allowed_keys'))
+                )
+            )
         );
     }
 
@@ -57,5 +77,17 @@ class ApiService
             }
         }
         return null;
+    }
+
+    private function loadACL(array $requestParams = [], ?RouteCollection $routes = null): array
+    {
+        $routeName = $requestParams['_route'] ?? null;
+        if (empty($routeName) ||
+            empty($requestParams['_controller']) ||
+            empty($routes->all()[$routeName])) {
+            return [];
+        }
+        $route =  $routes->all()[$routeName] ;
+        return $route->hasOption('acl') ? $route->getOption('acl') : [];
     }
 }
