@@ -80,3 +80,38 @@ Be careful to the namespace used in your file `YesWiki\ExtensionName\controller`
         return $output;
     }
 ```
+
+### Open a public route in private API scenario
+
+It is possible to open a **public route** even in private API scenario.
+
+In the file of the route, change the method's annotation from :
+```php
+/**
+ * @Route("/api")
+ */
+```
+to
+```php
+/**
+ * @Route("/api",options={"acl":{"public"}})
+ */
+```
+
+This route will be accessible to everyone without authorization bearer.
+
+**To open a route to specific group _@mygroup_ without bearer**, change the method's annotation from :
+```php
+/**
+ * @Route("/api")
+ */
+```
+to
+```php
+/**
+ * @Route("/api",options={"acl":{"public","@mygroup"}})
+ */
+```
+
+This route will be accessible only to members of this group without authorization bearer.
+_The cookies or $_POST for authentification the concerned user should be sent in the request._
