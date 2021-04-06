@@ -291,7 +291,11 @@ class EntryManager
                 $json = $this->decode($page['body']);
                 // TODO call this function only when necessary
                 $this->appendDisplayData($json);
-                $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+                if (!empty($json['id_fiche'])) {
+                    $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+                } elseif ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes') {
+                    throw new Exception('empty \'id_fiche\' for page '.json_encode($page));
+                }
             }
         }
         return $GLOBALS['_BAZAR_'][$reqid];
