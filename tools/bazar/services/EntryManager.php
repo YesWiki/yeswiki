@@ -287,17 +287,28 @@ class EntryManager
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
             $GLOBALS['_BAZAR_'][$reqid] = array();
             $results = $this->dbService->loadAll($requete);
+            $debugAdmin = ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
                 if (!empty($page['body'])) {
                     $json = $this->decode($page['body']);
-                    if (!empty($json['id_fiche'])) {
-                        // TODO call this function only when necessary
-                        $this->appendDisplayData($json);
-                        $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
-                    } elseif ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes') {
-                        throw new Exception('empty \'id_fiche\' for page '.json_encode($page));
+
+                    if ($debugAdmin) {
+                        if (empty($json['id_fiche'])) {
+                            throw new Exception('empty \'id_fiche\' in body of page '.json_encode($page));
+                        }
+                        if (empty($page['tag'])) {
+                            throw new Exception('empty \'tag\' of page '.json_encode($page));
+                        }
                     }
-                } elseif ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes') {
+
+                    // cas ou on ne trouve pas les valeurs id_fiche (comme dans getOne)
+                    if (!isset($json['id_fiche'])) {
+                        $json['id_fiche'] = $page['tag'];
+                    }
+                    // TODO call this function only when necessary
+                    $this->appendDisplayData($json);
+                    $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+                } elseif ($debugAdmin) {
                     throw new Exception('empty \'body\' for page '.json_encode($page));
                 }
             }
@@ -431,10 +442,10 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
+        // replace id_fiche with $tag to prevent errors before getOne
+        $data['id_fiche'] = trim($tag);
         // if there are some restricted fields, load the previous data by bypassing the rights
         $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
-        // replace id_fiche with $tag to prevent errors
-        $data['id_fiche'] = trim($tag);
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         // not possible to init the formManager in the constructor because of circular reference problem
