@@ -294,7 +294,7 @@ class EntryManager
 
                     if ($debugAdmin) {
                         if (empty($json['id_fiche'])) {
-                            throw new Exception('empty \'id_fiche\' in body of page '.json_encode($page));
+                            throw new Exception('empty \'id_fiche\' in body of page '.json_encode($page).'<br> edit it to create id_fiche');
                         }
                         if (empty($page['tag'])) {
                             throw new Exception('empty \'tag\' of page '.json_encode($page));
