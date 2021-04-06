@@ -608,7 +608,7 @@ class EntryManager
         if (!isset($data['id_fiche'])) {
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new Exception('$data[\'id_fiche\'] can be generated from $data[\'bf_titre\'] !');
+                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
             }
             // TODO see if we can remove this
             $_POST['id_fiche'] = $data['id_fiche'];
