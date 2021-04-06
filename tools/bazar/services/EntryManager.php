@@ -607,9 +607,13 @@ class EntryManager
         // Entry ID
         if (!isset($data['id_fiche'])) {
             // Generate the ID from the title
-            $data['id_fiche'] = genere_nom_wiki($data['bf_titre']);
+            if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
+                throw new Exception('$data[\'id_fiche\'] can be generated from $data[\'bf_titre\'] !');
+            }
             // TODO see if we can remove this
             $_POST['id_fiche'] = $data['id_fiche'];
+        } elseif (empty($data['id_fiche'])) {
+            throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
@@ -642,6 +646,11 @@ class EntryManager
                 $data = array_merge($data, $tab);
             }
         }
+        // $data['id_fiche'] can not be empty
+        if (empty($data['id_fiche'])) {
+            throw new Exception('$data[\'id_fiche\'] is empty !');
+        }
+
         $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
 
         // on enleve les champs hidden pas necessaires a la fiche
