@@ -288,13 +288,17 @@ class EntryManager
             $GLOBALS['_BAZAR_'][$reqid] = array();
             $results = $this->dbService->loadAll($requete);
             foreach ($results as $page) {
-                $json = $this->decode($page['body']);
-                // TODO call this function only when necessary
-                $this->appendDisplayData($json);
-                if (!empty($json['id_fiche'])) {
-                    $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+                if (!empty($page['body'])) {
+                    $json = $this->decode($page['body']);
+                    if (!empty($json['id_fiche'])) {
+                        // TODO call this function only when necessary
+                        $this->appendDisplayData($json);
+                        $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+                    } elseif ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes') {
+                        throw new Exception('empty \'id_fiche\' for page '.json_encode($page));
+                    }
                 } elseif ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes') {
-                    throw new Exception('empty \'id_fiche\' for page '.json_encode($page));
+                    throw new Exception('empty \'body\' for page '.json_encode($page));
                 }
             }
         }
