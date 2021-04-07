@@ -77,42 +77,41 @@ class EntryManager
         }
 
         $page = $this->pageManager->getOne($tag, $time || null, $cache, $bypassAcls);
-        $adminDebug = ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes');
-        $data = $this->getDataFromPage($page, $tag, $semantic, $adminDebug);
+        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        $data = $this->getDataFromPage($page, $semantic, $debug);
 
         return $data;
     }
 
     /** getDataFromPage
      * @param array $page , content of page from sql
-     * @param string $tag , tag of the entry
      * @param bool $semantic
      * @param bool $debug, to throw exception in case of error
      * 
      * @return array data formated
      */
-    private function getDataFromPage($page, string $tag, bool $semantic = false, bool $debug = false): array
+    private function getDataFromPage($page, bool $semantic = false, bool $debug = false): array
     {
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
-                    throw new Exception('empty \'id_fiche\' in body of page '.json_encode($page).'<br> edit it to create id_fiche');
+                    trigger_error('empty \'id_fiche\' in EntryManager::getDataFromPage in body of page \''. $page['tag'].'\'. Edit it to create id_fiche');
                 }
-                if (empty($tag)) {
-                    throw new Exception('empty \'tag\' ! ');
+                if (empty($page['tag'])) {
+                    trigger_error('empty $page[\'tag\'] in EntryManager::getDataFromPage! ');
                 }
             }
 
             // cas ou on ne trouve pas les valeurs id_fiche
             if (!isset($data['id_fiche'])) {
-                $data['id_fiche'] = $tag;
+                $data['id_fiche'] = $page['tag'];
             }
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic);
         } elseif ($debug) {
-            throw new Exception('empty \'body\' for page '.json_encode($page));
+            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'');
         }
 
         return $data;
@@ -315,9 +314,9 @@ class EntryManager
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
             $GLOBALS['_BAZAR_'][$reqid] = array();
             $results = $this->dbService->loadAll($requete);
-            $adminDebug = ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes');
+            $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
-                $data = $this->getDataFromPage($page, $page['tag'] ??  null, false, $adminDebug);
+                $data = $this->getDataFromPage($page, false, $debug);
                 $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
             }
         }
