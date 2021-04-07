@@ -87,7 +87,7 @@ class EntryManager
      * @param array $page , content of page from sql
      * @param bool $semantic
      * @param bool $debug, to throw exception in case of error
-     * 
+     *
      * @return array data formated
      */
     private function getDataFromPage($page, bool $semantic = false, bool $debug = false): array
@@ -97,10 +97,11 @@ class EntryManager
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
-                    trigger_error('empty \'id_fiche\' in EntryManager::getDataFromPage in body of page \''. $page['tag'].'\'. Edit it to create id_fiche');
+                    trigger_error('empty \'id_fiche\' in EntryManager::getDataFromPage in body of page \''
+                        . $page['tag'].'\'. Edit it to create id_fiche', E_USER_WARNING);
                 }
                 if (empty($page['tag'])) {
-                    trigger_error('empty $page[\'tag\'] in EntryManager::getDataFromPage! ');
+                    trigger_error('empty $page[\'tag\'] in EntryManager::getDataFromPage! ', E_USER_WARNING);
                 }
             }
 
@@ -111,7 +112,7 @@ class EntryManager
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic);
         } elseif ($debug) {
-            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'');
+            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'', E_USER_WARNING);
         }
 
         return $data;
