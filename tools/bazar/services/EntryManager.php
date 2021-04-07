@@ -451,7 +451,7 @@ class EntryManager
         }
 
         // replace id_fiche with $tag to prevent errors before getOne
-        $data['id_fiche'] = trim($tag);
+        $data['id_fiche'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
         $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
