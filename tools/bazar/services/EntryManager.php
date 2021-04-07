@@ -77,15 +77,38 @@ class EntryManager
         }
 
         $page = $this->pageManager->getOne($tag, $time || null, $cache, $bypassAcls);
-        $data = $this->decode($page['body']);
+        $adminDebug = ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes');
+        $data = $this->getDataFromPage($page, $tag, $semantic, $adminDebug);
 
-        // cas ou on ne trouve pas les valeurs id_fiche
-        if (!isset($data['id_fiche'])) {
-            $data['id_fiche'] = $tag;
+        return $data;
+    }
+
+    /**
+     *
+     */
+    private function getDataFromPage($page, string $tag, bool $semantic = false, bool $debug = false): array
+    {
+        if (!empty($page['body'])) {
+            $data = $this->decode($page['body']);
+
+            if ($debug) {
+                if (empty($data['id_fiche'])) {
+                    throw new Exception('empty \'id_fiche\' in body of page '.json_encode($page).'<br> edit it to create id_fiche');
+                }
+                if (empty($tag)) {
+                    throw new Exception('empty \'tag\' ! ');
+                }
+            }
+
+            // cas ou on ne trouve pas les valeurs id_fiche
+            if (!isset($data['id_fiche'])) {
+                $data['id_fiche'] = $tag;
+            }
+            // TODO call this function only when necessary
+            $this->appendDisplayData($data, $semantic);
+        } elseif ($debug) {
+            throw new Exception('empty \'body\' for page '.json_encode($page));
         }
-
-        // TODO call this function only when necessary
-        $this->appendDisplayData($data, $semantic);
 
         return $data;
     }
@@ -287,30 +310,10 @@ class EntryManager
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
             $GLOBALS['_BAZAR_'][$reqid] = array();
             $results = $this->dbService->loadAll($requete);
-            $debugAdmin = ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes');
+            $adminDebug = ($this->wiki->UserIsAdmin() && $this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
-                if (!empty($page['body'])) {
-                    $json = $this->decode($page['body']);
-
-                    if ($debugAdmin) {
-                        if (empty($json['id_fiche'])) {
-                            throw new Exception('empty \'id_fiche\' in body of page '.json_encode($page).'<br> edit it to create id_fiche');
-                        }
-                        if (empty($page['tag'])) {
-                            throw new Exception('empty \'tag\' of page '.json_encode($page));
-                        }
-                    }
-
-                    // cas ou on ne trouve pas les valeurs id_fiche (comme dans getOne)
-                    if (!isset($json['id_fiche'])) {
-                        $json['id_fiche'] = $page['tag'];
-                    }
-                    // TODO call this function only when necessary
-                    $this->appendDisplayData($json);
-                    $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
-                } elseif ($debugAdmin) {
-                    throw new Exception('empty \'body\' for page '.json_encode($page));
-                }
+                $data = $this->getDataFromPage($page, $page['tag'] ??  null, false, $adminDebug);
+                $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
             }
         }
         return $GLOBALS['_BAZAR_'][$reqid];
