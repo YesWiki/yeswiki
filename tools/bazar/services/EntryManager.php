@@ -77,15 +77,43 @@ class EntryManager
         }
 
         $page = $this->pageManager->getOne($tag, $time || null, $cache, $bypassAcls);
-        $data = $this->decode($page['body']);
+        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        $data = $this->getDataFromPage($page, $semantic, $debug);
 
-        // cas ou on ne trouve pas les valeurs id_fiche
-        if (!isset($data['id_fiche'])) {
-            $data['id_fiche'] = $tag;
+        return $data;
+    }
+
+    /** getDataFromPage
+     * @param array $page , content of page from sql
+     * @param bool $semantic
+     * @param bool $debug, to throw exception in case of error
+     *
+     * @return array data formated
+     */
+    private function getDataFromPage($page, bool $semantic = false, bool $debug = false): array
+    {
+        if (!empty($page['body'])) {
+            $data = $this->decode($page['body']);
+
+            if ($debug) {
+                if (empty($data['id_fiche'])) {
+                    trigger_error('empty \'id_fiche\' in EntryManager::getDataFromPage in body of page \''
+                        . $page['tag'].'\'. Edit it to create id_fiche', E_USER_WARNING);
+                }
+                if (empty($page['tag'])) {
+                    trigger_error('empty $page[\'tag\'] in EntryManager::getDataFromPage! ', E_USER_WARNING);
+                }
+            }
+
+            // cas ou on ne trouve pas les valeurs id_fiche
+            if (!isset($data['id_fiche'])) {
+                $data['id_fiche'] = $page['tag'];
+            }
+            // TODO call this function only when necessary
+            $this->appendDisplayData($data, $semantic);
+        } elseif ($debug) {
+            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'', E_USER_WARNING);
         }
-
-        // TODO call this function only when necessary
-        $this->appendDisplayData($data, $semantic);
 
         return $data;
     }
@@ -287,11 +315,10 @@ class EntryManager
         if (!isset($GLOBALS['_BAZAR_'][$reqid])) {
             $GLOBALS['_BAZAR_'][$reqid] = array();
             $results = $this->dbService->loadAll($requete);
+            $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
-                $json = $this->decode($page['body']);
-                // TODO call this function only when necessary
-                $this->appendDisplayData($json);
-                $GLOBALS['_BAZAR_'][$reqid][$json['id_fiche']] = $json;
+                $data = $this->getDataFromPage($page, false, $debug);
+                $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
             }
         }
         return $GLOBALS['_BAZAR_'][$reqid];
@@ -423,10 +450,10 @@ class EntryManager
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
+        // replace id_fiche with $tag to prevent errors before getOne
+        $data['id_fiche'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
         $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
-        // replace id_fiche with $tag to prevent errors
-        $data['id_fiche'] = trim($tag);
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         // not possible to init the formManager in the constructor because of circular reference problem
