@@ -83,8 +83,13 @@ class EntryManager
         return $data;
     }
 
-    /**
-     *
+    /** getDataFromPage
+     * @param array $page , content of page from sql
+     * @param string $tag , tag of the entry
+     * @param bool $semantic
+     * @param bool $debug, to throw exception in case of error
+     * 
+     * @return array data formated
      */
     private function getDataFromPage($page, string $tag, bool $semantic = false, bool $debug = false): array
     {
