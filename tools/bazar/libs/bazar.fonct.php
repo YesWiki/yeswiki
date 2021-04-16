@@ -1017,18 +1017,28 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
             $func = (substr($val, 0, 10) ===  'listeListe' ? 'liste' : 'checkbox');
             $dummy = '';
             $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
-            $form = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
-            $form = array_shift($form);
-            $html = $func($dummy, $form, 'html', $fiche);
-            preg_match_all(
-                '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
-                $html,
-                $matches
-            );
-            if (isset($matches[1][0]) && $matches[1][0] != '') {
-                $val = $matches[1][0];
+            $f = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
+            $f = array_shift($f);
+            if (function_exists($func)) {
+                $html = $func($dummy, $f, 'html', $fiche);
+                preg_match_all(
+                    '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
+                    $html,
+                    $matches
+                );
+                if (isset($matches[1][0]) && $matches[1][0] != '') {
+                    $val = $matches[1][0];
+                } else {
+                    $val = '';
+                }
             } else {
-                $val = '';
+                $found = '';
+                foreach ($form['prepared'] as $field) {
+                    if ($field->getPropertyName() == $val) {
+                        $found = $field->renderStaticIfPermitted($fiche);
+                    }
+                }
+                $val = $found;
             }
         } else {
             $val = isset($fiche[$val]) ? $fiche[$val] : '';
