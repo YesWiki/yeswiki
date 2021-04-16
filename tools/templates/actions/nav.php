@@ -49,23 +49,30 @@ if (!empty($icons)) {
     }
 }
 
+$hideIfNoAccess = $this->GetParameter('hideifnoaccess');
 $listlinks = '';
 foreach ($titles as $key => $title) {
+    $haveAccess = true;
     $linkParts = $this->extractLinkParts($links[$key]);
     [$url, $method, $params] = ['', '', ''];
-    if ($linkParts){
+    if ($linkParts) {
         $this->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
         $method = $linkParts['method'];
         $params = $linkParts['params'];
         $url = $this->href($method, $linkParts['tag'], $params);
+        if ($hideIfNoAccess == "true" && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
+            $haveAccess = false;
+        }
     } else {
         $url = $links[$key];
     }
     // class="active" if the url have the same url than the current one (independently of the method and the params)
-    $listclass = ($url == $this->href($method, $this->GetPageTag(), $params)) ? ' class="active"' : '';
-    $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
-        . (isset($icons[$key]) ? $icons[$key] : '')
-        . $title.'</a></li>'."\n";
+    if ($haveAccess) {
+        $listclass = ($url == $this->href($method, $this->GetPageTag(), $params)) ? ' class="active"' : '';
+        $listlinks .= '<li' . $listclass . '><a href="'.$url.'">'
+            . (isset($icons[$key]) ? $icons[$key] : '')
+            . $title.'</a></li>'."\n";
+    }
 }
 
 $navID = uniqid('nav_');
@@ -76,5 +83,7 @@ if (is_array($data)) {
     }
 }
 
-echo ' <!-- start of nav -->
+if (!empty($listlinks)) {
+    echo ' <!-- start of nav -->
         <ul class="'.$class.'" id="'.$navID.'" '.$data.'>'.$listlinks.'</ul>'."\n";
+}

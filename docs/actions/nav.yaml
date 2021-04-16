@@ -29,3 +29,8 @@ actions:
               nav nav-pills: Horizontal sobre
               nav nav-tabs nav-justified : Horizontal justifié
               nav nav-stacked: Vertical
+      hideifnoaccess:
+        advanced: true
+        label: Masquer si l'utilisateur n'a pas accès à la page liée
+        type: checkbox
+        default: false
