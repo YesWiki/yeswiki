@@ -24,6 +24,12 @@ actions:
         type: text
         showif:
           file: \.(png|jpg|jpeg|gif)$
+      nofullimagelink:
+        label: Rendre l'image non clicable
+        type: list
+        options:
+          1: oui, désactiver le clic
+          0: non, permettre le clic
       size:
         label: Taille de l'image
         type: list
