@@ -41,4 +41,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_attach_pdf_position_label' => "Position du pdf",
     'AB_attach_pdf_largeur_max_label' => "Largeur maximale",
     'AB_attach_pdf_hauteur_max_label' => "Hauteur maximale",
+    // admins actions
+    'AB_admin_actions_label' => 'Outils d\'administation',
+    'AB_admin_editactionsacls_label' => 'Éditer les droits d\'accès aux actions',
+    'AB_admin_edithandlersacls_label' => 'Éditer les droits d\'accès aux handlers',
+    'AB_admin_editgroups_label' => 'Éditer les groupes d\utilisateurs',
+    'AB_admin_adminpages_label' => 'Afficher les logs administratifs',
+    'AB_admin_gererdroits_label' => 'Gérer les droits d\'accés aux pages',
+    'AB_admin_gererthemes_label' => 'Gérer le thème des pages',
+    'AB_admin_setwikidefaulttheme_label' => 'Définir le thème de base',
 ));

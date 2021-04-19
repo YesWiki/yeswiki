@@ -14,9 +14,16 @@ $data['action_groups'] = [];
 foreach ($docFiles as $filePath) {
     $filename = pathinfo($filePath)['filename'];
     $data['action_groups'][$filename] = Yaml::parseFile($filePath);
-    // When order is not defined, put at the end
-    if (empty($data['action_groups'][$filename]['position'])) {
-        $data['action_groups'][$filename]['position'] = 1000;
+    // remove file for no admins if 'onlyForAdmins'
+    if (isset($data['action_groups'][$filename]['onlyForAdmins'])
+        && $data['action_groups'][$filename]['onlyForAdmins']
+        && !$GLOBALS['wiki']->UserIsAdmin()) {
+        unset($data['action_groups'][$filename]);
+    } else {
+        // When order is not defined, put at the end
+        if (empty($data['action_groups'][$filename]['position'])) {
+            $data['action_groups'][$filename]['position'] = 1000;
+        }
     }
 }
 // Sort by position
