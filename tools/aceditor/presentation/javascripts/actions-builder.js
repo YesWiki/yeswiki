@@ -77,6 +77,9 @@ window.myapp = new Vue({
       if (!this.editor) return false;
       return this.editor.currentSelectedAction != ""
     },
+    isBazarListeAction(){
+      return this.currentGroupId == 'bazarliste'
+    },
     selectedActionAllConfigs() {
       let result = {}
       this.configPanels.forEach(panel => result = {...result, ...panel.params.properties })
