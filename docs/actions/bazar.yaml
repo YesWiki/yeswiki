@@ -11,3 +11,7 @@ actions:
         default: '0'
       vue:
         default: 'saisir'
+      redirecturl:
+        label: _t(AB_bazar_action_redirecturl_label)
+        type: url
+        advanced: true

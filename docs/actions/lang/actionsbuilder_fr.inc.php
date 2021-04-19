@@ -19,6 +19,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     // BazarAction
     'AB_bazar_action_label' => "Afficher un formulaire de création de fiche",
     'AB_bazar_action_description' => "Permet d'afficher le formulaire pour créer une fiche.",
+    'AB_bazar_action_redirecturl_label' => "Adresse de redirection après saisie",
     //video
     'AB_attach_video_label' => "Vidéo intégrée",
     'AB_attach_video_description' => "Intégration d'une vidéo youtube, vimeo ou peertube.",
