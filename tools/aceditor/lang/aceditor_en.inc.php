@@ -51,12 +51,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text',
 'ACEDITOR_ACTIONS'              => "Components",
 'ACEDITOR_ACTIONS_EDIT_CURRENT' => "Edit selected component",
+'ACEDITOR_COMMENT' => 'Comments',
 
 'ACTION_BUILDER_CHOOSE_FORM'     => 'Pick a form',
 'ACTION_BUILDER_CHOOSE_ACTION'   => 'How do you want to display the data',
 'ACTION_BUILDER_WIKI_CODE_TITLE' => "Code to insert in the page",
 'ACTION_BUILDER_PARAMETERS'      => 'Parameters',
-'ACTION_BUILDER_COPY'            => 'Copy',
-    
-'ACEDITOR_COMMENT' => 'Comments'
+'ACTION_BUILDER_COPY'            => 'Copy'
 ));

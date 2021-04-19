@@ -30,8 +30,8 @@ var SYNTAX = {
     'LINE_RGT'        : '',
     'LINK_LFT'        : '[[',
     'LINK_RGT'        : ']]',
-    'COMMENT_LFT'     : '{{#',
-    'COMMENT_RGT'     : '#}}'
+    'COMMENT_LFT'     : '{#',
+    'COMMENT_RGT'     : '#}'
   },
   html : {
     'TITLE1_LFT'      : '<h1>',

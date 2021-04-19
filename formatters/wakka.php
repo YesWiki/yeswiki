@@ -74,7 +74,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 .'-{3,}|'
                 ."\n(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
                 ."^(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
-                ."\{\{\#.*?\#\}\}|"
+                ."\{\#.*?\#\}|"
                 ."\{\{.*?\}\}|"
                 .'\b' . WN_INTERWIKI_LINK . '\b|'
                 .'\b' . WN_WIKI_LINK . '\b|'
@@ -345,7 +345,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         }
                     }
                     // comment
-                    elseif (preg_match("/^\{\{\#(.*?)\#\}\}$/s", $thing, $matches)) {
+                    elseif (preg_match("/^\{\#(.*?)\#\}$/s", $thing, $matches)) {
                         return null;
                     }
                     // events / action
