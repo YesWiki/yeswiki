@@ -10,6 +10,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 
@@ -49,6 +50,20 @@ class ApiController extends YesWikiController
             'formsIds' => $formId,
             'queries' => !empty($selectedEntries) ? ['id_fiche' => $selectedEntries] : [],
         ]);
+
+        // filter only readable entries
+        $entries = array_filter($entries, function ($entry) {
+            return $this->getService(AclService::class)->hasAccess('read', $entry['id_fiche']);
+        });
+
+        // for not admins use Guard
+        if (!$this->wiki->UserIsAdmin()) {
+            // TODO guard usage in EntryManager->search()
+            $entryManager = $this->getService(EntryManager::class);
+            $entries = array_map(function ($entry) use ($entryManager) {
+                return $entryManager->getOne($entry['id_fiche']);
+            }, $entries);
+        }
 
         if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
             return $this->getAllSemanticEntries($formId, $entries);

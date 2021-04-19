@@ -82,7 +82,8 @@ class Guard
                         if ($field instanceof EmailField
                                 && $field->getShowContactForm() == 'form'
                                 && ($this->wiki->getMethod() == 'raw'
-                                || $this->wiki->getMethod() == 'json')
+                                || $this->wiki->getMethod() == 'json'
+                                || $this->wiki->GetPageTag() == 'api')
                                 ) {
                             $fieldname[] = $field->getPropertyName();
                         }
