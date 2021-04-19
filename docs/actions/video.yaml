@@ -41,16 +41,17 @@ actions:
       hauteurmax:
         label: _t(AB_attach_video_hauteur_max_label)
         type: number
-        advanced: true
-      label: Classe
-      type: class
-      subproperties:
-        position:
-          label: _t(AB_attach_video_position_label)
-          type: list
-          advanced: true
-          default: ''
-          options:
-            '': standard
-            pull-left: float left
-            pull-right: float right
+        advanced: true        
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          position:
+            label: _t(AB_attach_video_position_label)
+            type: list
+            advanced: true
+            default: ''
+            options:
+              '': standard
+              pull-left: float left
+              pull-right: float right
