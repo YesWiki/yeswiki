@@ -1,0 +1,56 @@
+label: _t(AB_advanced_actions_label)
+position: 1999
+onlyForAdmins: true
+previewHeight: 200px
+actions:
+  backlinks:
+    label: _t(AB_advanced_action_backlinks_label)
+  include:
+    label: _t(AB_advanced_action_include_label)
+    properties:
+      page:
+        label: 'Page'
+        type: text
+        required: true
+  listpages:
+    label: _t(AB_advanced_action_listpages_label)
+    properties:
+      sort:
+        label: _t(AB_advanced_action_listpages_sort_label)
+        type: list
+        default: ''
+        options:
+          - 'tag'
+          - 'user'
+          - 'owner'
+          - 'time'
+      tree:
+        label: _t(AB_advanced_action_listpages_tree_label)
+        hint: _t(AB_advanced_action_listpages_tree_hint)
+        type: text
+        default: ''
+      levels:
+        label: _t(AB_advanced_action_listpages_levels_label)
+        hint: _t(AB_advanced_action_listpages_levels_hint)
+        type: number
+        default: ''
+        min: 1
+        max: 7
+      exclude:
+        label:  _t(AB_advanced_action_listpages_exclude_label)
+        hint:  _t(AB_advanced_action_listpages_exclude_hint)
+        type: text
+      owner:
+        label:  _t(AB_advanced_action_listpages_owner_label)
+        hint:  _t(AB_advanced_action_listpages_owner_hint)
+        type: checkbox
+        default: ''
+        checkedvalue: 'owner'
+        uncheckedvalue: ''
+      user:
+        label:  _t(AB_advanced_action_listpages_user_label)
+        hint:  _t(AB_advanced_action_listpages_user_hint)
+        type: checkbox
+        default: ''
+        checkedvalue: 'user'
+        uncheckedvalue: ''
