@@ -41,11 +41,10 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/forms/{formId}/entries/{output}/{selectedEntries}", methods={"GET"})
+     * @Route("/api/forms/{formId}/entries/{output}/{selectedEntries}", methods={"GET"},options={"acl":{"public"}})
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
             'queries' => !empty($selectedEntries) ? ['id_fiche' => $selectedEntries] : [],
@@ -67,7 +66,6 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
-
         $entries = $this->getService(EntryManager::class)->search([
             'queries' => !empty($selectedEntries) ? ['id_fiche' => $selectedEntries] : [],
         ]);
@@ -88,7 +86,8 @@ class ApiController extends YesWikiController
         // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
-        return new ApiResponse([
+        return new ApiResponse(
+            [
             '@context' => (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'],
             '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
             '@type' => ['ldp:Container', 'ldp:BasicContainer'],
