@@ -19,7 +19,7 @@ import FlyingActionBar from './components/flying-action-bar.js'
 import InputHint from './components/InputHint.js'
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
-  calendrier: 'bazaragenda',
+  calendrier: 'bazarcalendar',
   map: 'bazarcarto'
 }
 console.log("actionsBuilderData", actionsBuilderData) // data variable has been defined in actions-builder.tpl.html
@@ -84,7 +84,7 @@ window.myapp = new Vue({
     },
     wikiCodeBase() {
       let actionId = this.selectedActionId
-      if (actionId.startsWith('bazar')) actionId = 'bazarliste'
+      if (actionId != 'bazar' && actionId.startsWith('bazar')) actionId = 'bazarliste'
       var result = `{{${actionId}`
       for(var key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
@@ -155,13 +155,24 @@ window.myapp = new Vue({
     },
     getSelectedFormByAjax() {
       if (!this.selectedFormId) return;
-      if (this.loadedForms[this.selectedFormId]) this.selectedForm = this.loadedForms[this.selectedFormId]
+      if (this.loadedForms[this.selectedFormId])
+      {
+        this.selectedForm = this.loadedForms[this.selectedFormId]
+        if (this.selectedAction){
+          // action choosen updateActionParams
+          setTimeout(() => this.updateActionParams(), 0);
+        }
+      }
       else {
         $.getJSON(location.origin + location.pathname + `?root/json&demand=forms&id=${this.selectedFormId}`, data => {
           this.loadedForms[this.selectedFormId] = data[0]
           // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
           if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
           this.selectedForm = data[0]
+          if (this.selectedAction){
+            // action choosen updateActionParams
+            setTimeout(() => this.updateActionParams(), 0);
+          }
         })
       }
     },
@@ -195,10 +206,25 @@ window.myapp = new Vue({
       // Adds values from special components
       if (this.$refs.specialInput) this.$refs.specialInput.forEach(p => result = {...result, ...p.getValues()})
 
+      // default value for 'bazarliste'
+      if (this.selectedActionId == 'bazarliste') result.template = result.template || 'liste_accordeon'
+
+      // put in first position 'id' and 'template' if existing
+      const orderedResult = {}
+      if (result.id) orderedResult['id'] = result.id
+      if (result.template) orderedResult['template'] = result.template
       // Order params, and remove empty values
-      const orderedResult = this.needFormField ? { id: result.id, template: result.template || 'liste_accordeon' } : {}
       Object.keys(result).sort().forEach(key => { if (result[key] !== "") orderedResult[key] = result[key] })
       this.actionParams = orderedResult
+    },
+    actionGroupsWithBackwardCompatibility() {
+      let actionGroupsWithBackwardCompatibility = this.actionGroups
+      if (actionGroupsWithBackwardCompatibility.bazarliste.actions){
+        for(let key in ACTIONS_BACKWARD_COMPATIBILITY){
+          actionGroupsWithBackwardCompatibility.bazarliste.actions[key] = key
+        }
+      }
+      return actionGroupsWithBackwardCompatibility
     }
   },
   watch: {
@@ -208,7 +234,7 @@ window.myapp = new Vue({
   mounted() {
     $(document).ready(() => {
       this.editor = new AceEditorWrapper()
-      new FlyingActionBar(this.editor, this.actionGroups)
+      new FlyingActionBar(this.editor, this.actionGroupsWithBackwardCompatibility())
       $('.open-actions-builder-btn').click((event) => {
         $('#actions-builder-modal').modal('show')
         this.currentGroupId = $(event.target).data('group-name')
