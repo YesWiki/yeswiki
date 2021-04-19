@@ -74,6 +74,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 .'-{3,}|'
                 ."\n(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
                 ."^(\t+|([ ]{1})+)(-|[[:alnum:]]+\))?|"
+                ."\{\#.*?\#\}|"
                 ."\{\{.*?\}\}|"
                 .'\b' . WN_INTERWIKI_LINK . '\b|'
                 .'\b' . WN_WIKI_LINK . '\b|'
@@ -342,6 +343,10 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         } else { // if there is no URL, return at least the text
                             return htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
                         }
+                    }
+                    // comment
+                    elseif (preg_match("/^\{\#(.*?)\#\}$/s", $thing, $matches)) {
+                        return null;
                     }
                     // events / action
                     // process this regex before "indented text" regex to permits linebreak and space in action tag formatting

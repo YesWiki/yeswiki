@@ -51,6 +51,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ACEDITOR_LINK_TITLE'		=> 'Add a link to selected text',
 'ACEDITOR_ACTIONS'              => "Components",
 'ACEDITOR_ACTIONS_EDIT_CURRENT' => "Edit selected component",
+'ACEDITOR_COMMENT' => 'Comments',
 
 'ACTION_BUILDER_CHOOSE_FORM'     => 'Pick a form',
 'ACTION_BUILDER_CHOOSE_ACTION'   => 'How do you want to display the data',

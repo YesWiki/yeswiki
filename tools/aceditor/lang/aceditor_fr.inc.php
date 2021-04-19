@@ -50,6 +50,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACEDITOR_HELP' => 'Aide mémoire',
     'ACEDITOR_ACTIONS' => "Composants",
     'ACEDITOR_ACTIONS_EDIT_CURRENT' => "Éditer le composant sélectionné",
+    'ACEDITOR_COMMENT' => 'Commentaires',
 
     'ACTION_BUILDER_CHOOSE_FORM' => 'Choisissez un Formulaire',
     'ACTION_BUILDER_CHOOSE_ACTION' => 'Sous quelle forme voulez-vous afficher les données?',
