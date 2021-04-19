@@ -350,6 +350,10 @@ var SYNTAX = {
           else if (keyCode == 83 && isShift === false) {
             $('.aceditor-btn-save').click();e.preventDefault();
           }
+          // comment key ':'
+          else if (keyCode == 58 && isShift === false) {
+            $('.aceditor-btn-comment').mousedown();e.preventDefault();
+          }
           return;
         }
       });
