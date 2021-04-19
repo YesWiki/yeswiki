@@ -29,7 +29,9 @@ var SYNTAX = {
     'LINE_LFT'        : '\n------\n',
     'LINE_RGT'        : '',
     'LINK_LFT'        : '[[',
-    'LINK_RGT'        : ']]'
+    'LINK_RGT'        : ']]',
+    'COMMENT_LFT'     : '{{#',
+    'COMMENT_RGT'     : '#}}'
   },
   html : {
     'TITLE1_LFT'      : '<h1>',
@@ -61,7 +63,9 @@ var SYNTAX = {
     'LINE_LFT'        : '<hr>\n',
     'LINE_RGT'        : '',
     'LINK_LFT'        : '<a href=&quot;#&quot;>',
-    'LINK_RGT'        : '</a>'
+    'LINK_RGT'        : '</a>',
+    'COMMENT_LFT'     : '<!--',
+    'COMMENT_RGT'     : '-->'
   }
 };
 
@@ -159,6 +163,7 @@ var SYNTAX = {
                 '<li><a title="'+this.lang['ACEDITOR_BIGGER_TEXT']+'" class="aceditor-btn aceditor-btn-lead" data-lft="'+this.syntax['LEAD_LFT']+'" data-rgt="'+this.syntax['LEAD_RGT']+'"><div class="lead">'+this.lang['ACEDITOR_BIGGER_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'" class="aceditor-btn aceditor-btn-well" data-lft="'+this.syntax['HIGHLIGHT_LFT']+'" data-rgt="'+this.syntax['HIGHLIGHT_RGT']+'"><div class="well">'+this.lang['ACEDITOR_HIGHLIGHT_TEXT']+'</div></a></li>' +
                 '<li><a title="'+this.lang['ACEDITOR_SOURCE_CODE']+'" class="aceditor-btn aceditor-btn-code" data-lft="'+this.syntax['CODE_LFT']+'" data-rgt="'+this.syntax['CODE_RGT']+'"><div class="code"><pre>'+this.lang['ACEDITOR_SOURCE_CODE']+'</pre></div></a></li>' +
+                '<li><a title="'+this.lang['ACEDITOR_COMMENT']+'" class="aceditor-btn aceditor-btn-comment" data-lft="'+this.syntax['COMMENT_LFT']+'" data-rgt="'+this.syntax['COMMENT_RGT']+'">'+this.lang['ACEDITOR_COMMENT']+'</a></li>' +
               '</ul>' +
             '</div>');
 

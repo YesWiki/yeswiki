@@ -55,5 +55,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACTION_BUILDER_CHOOSE_ACTION' => 'Sous quelle forme voulez-vous afficher les données?',
     'ACTION_BUILDER_WIKI_CODE_TITLE' => "Code à include dans la page",
     'ACTION_BUILDER_PARAMETERS' => 'Paramètres',
-    'ACTION_BUILDER_COPY' => 'Copier'
+    'ACTION_BUILDER_COPY' => 'Copier',
+    
+    'ACEDITOR_COMMENT' => 'Commentaires'
 ));
