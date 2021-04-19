@@ -1,0 +1,13 @@
+label: _t(AB_bazar_action_label)
+position: 2
+needFormField: true
+previewHeight: 450px
+actions:
+  bazar:
+    label: _t(AB_bazar_action_label)
+    description: _t(AB_bazar_action_description)
+    properties:
+      voirmenu:
+        default: '0'
+      vue:
+        default: 'saisir'
