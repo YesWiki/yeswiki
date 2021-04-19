@@ -14,6 +14,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_bazar_commons2_filter_on_date_for_two_years' => "for two years",
     'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => "+/- one week",
     'AB_bazar_commons2_filter_index' => "'bf_date_debut_evenement' shoud be defined.",
+    // BazarAction
+    'AB_bazar_action_label' => "Display a form to create an entry",
+    'AB_bazar_action_description' => "Help to display a form to create an entry",
+    'AB_bazar_action_redirecturl_label' => "redirect url after entry's submit",
     //video
     'AB_attach_video_label' => "Embeded video",
     'AB_attach_video_description' => "Embeding of youtube, vimeo or peertube video.",
