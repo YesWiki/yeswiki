@@ -285,6 +285,11 @@ var typeUserAttrs = {
     },
     hint: { label: "Texte d'aide" },
     size: { label: "Largeur champ de saisie" },
+    rows: {
+      label: "Nombre de lignes",
+      type: 'number',
+      placeholder: 'Défaut vide = 3 lignes'
+    },
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
@@ -476,7 +481,6 @@ var lists = {
 var yesWikiMapping = {
   text: defaultMapping,
   number: defaultMapping,
-  textarea: defaultMapping,
   champs_mail: {
     ...defaultMapping,
     ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email" },
