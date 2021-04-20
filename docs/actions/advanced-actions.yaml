@@ -10,7 +10,7 @@ actions:
     properties:
       page:
         label: 'Page'
-        type: text
+        type: page-list
         required: true
   listpages:
     label: _t(AB_advanced_action_listpages_label)
@@ -27,7 +27,7 @@ actions:
       tree:
         label: _t(AB_advanced_action_listpages_tree_label)
         hint: _t(AB_advanced_action_listpages_tree_hint)
-        type: text
+        type: page-list
         default: ''
       levels:
         label: _t(AB_advanced_action_listpages_levels_label)
@@ -39,7 +39,7 @@ actions:
       exclude:
         label:  _t(AB_advanced_action_listpages_exclude_label)
         hint:  _t(AB_advanced_action_listpages_exclude_hint)
-        type: text
+        type: page-list
       owner:
         label:  _t(AB_advanced_action_listpages_owner_label)
         hint:  _t(AB_advanced_action_listpages_owner_hint)

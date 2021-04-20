@@ -90,6 +90,7 @@ Les type sont
   - checkbox
   - list
   - form-field
+  - page-list
 
 #### checkbox
 Paramètres optionels : `checkedvalue` `uncheckedvalue`. Par défault la valeur d'un paramètre checkbox est "true" ou "false", si par exemple vous voulez que lorsqu'on coche la case, la valeur soit "1", alors renseignez checkvalue: 1 et uncheckedvalue: 0
