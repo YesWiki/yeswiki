@@ -216,8 +216,11 @@ var SYNTAX = {
               '<a class="btn btn-default aceditor-btn aceditor-btn-line" data-lft="'+this.syntax['LINE_LFT']+'" data-rgt="'+this.syntax['LINE_RGT']+'" title="'+this.lang['ACEDITOR_LINE']+'">' +
                 '<i class="fa fa-minus icon-minus"></i>' +
               '</a>' +
-              '<a class="btn btn-default aceditor-btn aceditor-btn-link" data-prompt="'+this.lang['ACEDITOR_LINK_PROMPT']+'" data-prompt-val="http://" data-lft="'+this.syntax['LINK_LFT']+'" data-rgt="'+this.syntax['LINK_RGT']+'" title="'+this.lang['ACEDITOR_LINK_TITLE']+'" class="btn">' +
-                '<i class="fa fa-link"></i></a>' +
+              '<a class="btn btn-default aceditor-btn aceditor-btn-link" '+
+                  'data-link="1" data-lft="" data-rgt="" '+
+                  'title="'+this.lang["ACEDITOR_LINK_TITLE"]+'">'+
+                  '<i class="fa fa-link"></i> ' +
+                  "</a>" +
             '</div>');
 
       // help
@@ -264,6 +267,143 @@ var SYNTAX = {
               }).modal('show').on('hidden hidden.bs.modal', function () {
                 $modal.remove();
               });
+          }  else if ($(this).data('link')) {
+            /* get pageList */
+            if(!pagelist){
+              var pagelist = [];
+              let fullUrl = location.href;
+              let baseUrl = fullUrl.match(/(.*\?[A-Za-z0-9-_]+)/g);
+              $.ajax({
+                url: baseUrl+"/json&demand=pages",
+                async:false, // to wait pageList ini before display YesWikiLinkModal
+                type: 'GET',
+                cache: true,
+                success: function(result){
+                  pagelist = [];
+                  for (var key in result) {
+                    let pageTag = result[key].tag;
+                    if (pageTag){
+                      pagelist.push('"'+pageTag+'"');
+                    }
+                  }
+                },
+              });
+            }
+            /* get aceditor */
+            var aceditor = $('textarea#body,textarea.action-builder-anchor').data('aceditor');
+            /* create modal */
+            $("body").append(
+              `
+<div class="modal fade" id="YesWikiLinkModal">
+<div class="modal-dialog">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+      <h3>` +
+                $(this).attr("title") +
+                `</h3>
+    </div>
+    <div class="modal-body">
+    <form id="form-link">
+      <div class="control-group form-group">
+        <label class="radio-inline">
+          <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> `+aceditorlang['ACEDITOR_LINK_ADD_INTERNAL']+`
+        </label>
+        <label class="radio-inline">
+          <input type="radio" name="linkType" id="linkext" value="external"><span></span> `+aceditorlang['ACEDITOR_LINK_ADD_EXTERNAL']+`
+        </label>
+      </div>
+      <div class="control-group form-group internal-link">
+        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_PAGE_NAME']+`</label>
+        <div class="controls">
+          <input class="form-control" type="text" autocomplete="off" name="wikiurl" data-provide="typeahead" data-items="5" data-source='[` +
+                pagelist.toString() +
+                `]' value="">
+          <span class="text-info">`+aceditorlang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']+`</span>
+        </div>
+      </div>
+      <div class="control-group form-group external-link hide">
+        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_EXTERNAL']+`</label>
+        <div class="controls">
+          <input class="form-control" type="url" name="url" value="">
+        </div>
+      </div>
+      <div class="control-group form-group">
+        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_TEXT']+`</label>
+        <div class="controls">
+          <input class="form-control" type="text" name="text-url" value="` + aceditor.getSelectedText() + `">
+        </div>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
+          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions2" value="ext"><span></span>
+          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_NEW_TAB']+`
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="linkOptions" id="linkOptions3" value="modal"><span></span>
+          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_MODAL']+`
+        </label>
+      </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <a href="#" class="btn btn-default" data-dismiss="modal">`+aceditorlang['ACEDITOR_LINK_CANCEL']+`</a>
+      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">`+aceditorlang['ACEDITOR_LINK_INSERT']+`</a>
+    </div>
+  </div>
+</div>
+</div>`
+            );
+
+            var $linkmodal = $("#YesWikiLinkModal");
+            $('[name="linkType"]').change(function() {
+              if ($(this).val() == "internal") {
+                $(".internal-link").removeClass("hide");
+                $(".external-link").addClass("hide");
+              } else {
+                $(".external-link").removeClass("hide");
+                $(".internal-link").addClass("hide");
+              }
+            });
+
+            $(".btn-insert").click(function() {
+              var internal = $('#YesWikiLinkModal .radio-inline input[value="internal"]').is(':checked') ;
+              var wikiurl = $('#YesWikiLinkModal [name="wikiurl"]').val() ;
+              var exturl = $('#YesWikiLinkModal [name="url"]').val() ;
+              var realLink = internal ? wikiurl : exturl;
+              var text = $('#YesWikiLinkModal [name="text-url"]').val() ;
+              text = text ? text : realLink;
+              if ($('#YesWikiLinkModal .radio input[value="ext"]').is(':checked') && realLink) {
+                var replacement = '{{button class="new-window" link="' + realLink + '" nobtn="1" text="'+text+'" title="'+text+'"}}';
+              } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
+                var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
+              } else if (realLink) {
+                var replacement = '[[' + realLink + ' '+text+']]';
+              }
+              if (realLink){
+                aceditor.session.replace(aceditor.getSelectionRange(),replacement);
+              } else {
+                // do nothing
+              }
+            });
+
+            $linkmodal
+              .modal({
+                keyboard: false
+              })
+              .modal("show")
+              .on("hidden hidden.bs.modal", function() {
+                $linkmodal.remove();
+              });
+          /* End of link modal */
           } else {
             textarea.surroundSelectedText($(this).data('lft'), $(this).data('rgt'))
           }
