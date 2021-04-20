@@ -19,7 +19,7 @@
 
         <!-- Choose Action -->
         <div class="form-group" v-show="Object.keys(this.actions).length > 1">
-          <label class="control-label">{{ needFormField ? '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' : 'Actions' }}</label>
+          <label class="control-label">{{ isBazarListeAction ? '<?php echo _t('ACTION_BUILDER_CHOOSE_TEMPLATE'); ?>' : '<?php echo _t('ACTION_BUILDER_CHOOSE_ACTION'); ?>' }}</label>
           <select v-model="selectedActionId" required class="form-control">
             <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId">{{ action.label }}</option>
           </select>
