@@ -307,29 +307,29 @@ var SYNTAX = {
     <form id="form-link">
       <div class="control-group form-group">
         <label class="radio-inline">
-          <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> Ajouter une page interne au YesWiki
+          <input type="radio" name="linkType" id="linkint" value="internal" checked><span></span> `+aceditorlang['ACEDITOR_LINK_ADD_INTERNAL']+`
         </label>
         <label class="radio-inline">
-          <input type="radio" name="linkType" id="linkext" value="external"><span></span> Ajouter une URL (lien externe)
+          <input type="radio" name="linkType" id="linkext" value="external"><span></span> `+aceditorlang['ACEDITOR_LINK_ADD_EXTERNAL']+`
         </label>
       </div>
       <div class="control-group form-group internal-link">
-        <label class="control-label">Nom de la page YesWiki</label>
+        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_PAGE_NAME']+`</label>
         <div class="controls">
           <input class="form-control" type="text" autocomplete="off" name="wikiurl" data-provide="typeahead" data-items="5" data-source='[` +
                 pagelist.toString() +
                 `]' value="">
-          <span class="text-info">Si vous rentrez une page non-existante, elle sera créée.</span>
+          <span class="text-info">`+aceditorlang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']+`</span>
         </div>
       </div>
       <div class="control-group form-group external-link hide">
-        <label class="control-label">Lien externe</label>
+        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_EXTERNAL']+`</label>
         <div class="controls">
           <input class="form-control" type="url" name="url" value="">
         </div>
       </div>
       <div class="control-group form-group">
-        <label class="control-label">Texte du lien</label>
+        <label class="control-label">`+aceditorlang['ACEDITOR_LINK_TEXT']+`</label>
         <div class="controls">
           <input class="form-control" type="text" name="text-url" value="` + aceditor.getSelectedText() + `">
         </div>
@@ -337,26 +337,26 @@ var SYNTAX = {
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions1" value="int" checked><span></span>
-          Le lien s'ouvre dans l'onglet courant 
+          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_CURRENT_TAB']+` 
         </label>
       </div>
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions2" value="ext"><span></span>
-          Le lien s'ouvre dans un nouvel onglet
+          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_NEW_TAB']+`
         </label>
       </div>
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions3" value="modal"><span></span>
-          Le lien s'ouvre dans une fenêtre modale
+          `+aceditorlang['ACEDITOR_LINK_OPEN_IN_MODAL']+`
         </label>
       </div>
       </form>
     </div>
     <div class="modal-footer">
-      <a href="#" class="btn btn-default" data-dismiss="modal">Annuler</a>
-      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">Insérer</a>
+      <a href="#" class="btn btn-default" data-dismiss="modal">`+aceditorlang['ACEDITOR_LINK_CANCEL']+`</a>
+      <a href="#" class="btn btn-primary btn-insert"  data-dismiss="modal">`+aceditorlang['ACEDITOR_LINK_INSERT']+`</a>
     </div>
   </div>
 </div>
