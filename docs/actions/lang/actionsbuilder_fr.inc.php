@@ -53,6 +53,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     // advanced actions
     'AB_advanced_actions_label' => 'Actions avancées',
     'AB_advanced_action_backlinks_label' => 'Afficher les pages qui ont un lien vers la page courante',
+    'AB_advanced_action_backlinks_page_label' => 'Page de base',
+    'AB_advanced_action_backlinks_page_hint' => 'Vide = page courante',
     'AB_advanced_action_include_label' => 'Inclure une page dans une autre',
     'AB_advanced_action_listpages_label' => 'Afficher les pages sous forme de liste',
     'AB_advanced_action_listpages_sort_label' => 'Tri',

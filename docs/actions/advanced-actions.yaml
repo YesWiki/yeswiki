@@ -5,11 +5,16 @@ previewHeight: 200px
 actions:
   backlinks:
     label: _t(AB_advanced_action_backlinks_label)
+    properties:
+      page:
+        label: _t(AB_advanced_action_backlinks_page_label)
+        hint: _t(AB_advanced_action_backlinks_page_hint)
+        type: page-list
   include:
     label: _t(AB_advanced_action_include_label)
     properties:
       page:
-        label: 'Page'
+        label: _t(AB_advanced_action_backlinks_page_label)
         type: page-list
         required: true
   listpages:
