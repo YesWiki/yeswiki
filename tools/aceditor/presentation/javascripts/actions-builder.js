@@ -87,7 +87,7 @@ window.myapp = new Vue({
     },
     wikiCodeBase() {
       let actionId = this.selectedActionId
-      if (actionId != 'bazar' && actionId.startsWith('bazar')) actionId = 'bazarliste'
+      if (this.isBazarListeAction) actionId = 'bazarliste'
       var result = `{{${actionId}`
       for(var key in this.actionParams) {
         result += ` ${key}="${this.actionParams[key]}"`
