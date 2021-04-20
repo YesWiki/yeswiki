@@ -75,8 +75,12 @@
 </script>
 
 <!-- Load manually script because we need to use type="module" for ES6 import to work -->
-<script src="tools/templates/libs/vendor/vue/vue.js"></script>
-<script type="module" src="tools/aceditor/presentation/javascripts/actions-builder.js"></script>
+<?php
+$revision = $GLOBALS['wiki']->config['yeswiki_release'] ?? null ;
+$rev = ($revision) ? '?v='.$revision : '';
+?>
+<script src="tools/templates/libs/vendor/vue/vue.js<?php echo $rev; ?>"></script>
+<script type="module" src="tools/aceditor/presentation/javascripts/actions-builder.js<?php echo $rev; ?>"></script>
 
 <?php
   $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
