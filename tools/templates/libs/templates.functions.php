@@ -64,15 +64,16 @@ function search_template_files($directory)
                 $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
                 if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
                     while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -5, 5)=='.json' && file_exists($pathToPresets.'/'.$file4)) {
-                            $json = file_get_contents($pathToPresets.'/'.$file4);
-                            if (!empty($json)) {
-                                $jsonData = json_decode($json, true);
-                                if (!empty($jsonData)) {
-                                    $tab_themes[$file]["presets"][$file4] = $jsonData;
-                                }
+                        if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
+                            $css = file_get_contents($pathToPresets.'/'.$file4);
+                            if (!empty($css)) {
+                                $tab_themes[$file]["presets"][$file4] = $css;
                             }
                         }
+                    }
+                    closedir($dir4);
+                    if (is_array($tab_themes[$file]["presets"])) {
+                        ksort($tab_themes[$file]["presets"]);
                     }
                 }
             }

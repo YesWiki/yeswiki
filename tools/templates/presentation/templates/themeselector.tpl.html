@@ -52,7 +52,7 @@
         <li>
           <a class="css-preset" href="javascript:void(0)"
             data-variables="<?php echo htmlspecialchars(json_encode($value['variables'])); ?>">
-          <?php echo (!empty($value['title'][$GLOBALS['prefered_language']]) ? $value['title'][$GLOBALS['prefered_language']] : $value['title']['fr']); ?>
+          <?php echo str_replace('.css', '', $key); ?>
           </a>
         </li>
       <?php endforeach; ?>
