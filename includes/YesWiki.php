@@ -1260,17 +1260,21 @@ class Wiki
         if (!isset($GLOBALS['js'])) {
             $GLOBALS['js'] = '';
         }
+        $revision = $this->config['yeswiki_release'] ?? null ;
+        $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
+        $rev = ($revision) ? $initChar.'v='.$revision : '';
+
         if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>')) {
+            if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>')) {
                 if ($first) {
-                    $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n".$GLOBALS['js'];
+                    $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>'."\n".$GLOBALS['js'];
                 } else {
-                    $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.'"></script>'."\n";
+                    $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>'."\n";
                 }
             }
         } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$file.'"></script>')) {
-                $GLOBALS['js'] .= '  <script defer src="'.$file.'"></script>'."\n";
+            if (!strpos($GLOBALS['js'], '<script defer src="'.$file.$rev.'"></script>')) {
+                $GLOBALS['js'] .= '  <script defer src="'.$file.$rev.'"></script>'."\n";
             }
         }
         return;
