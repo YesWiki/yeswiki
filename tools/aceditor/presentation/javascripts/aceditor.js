@@ -273,7 +273,6 @@ var SYNTAX = {
               var pagelist = [];
               let fullUrl = location.href;
               let baseUrl = fullUrl.match(/(.*\?[A-Za-z0-9-_]+)/g);
-              console.log('url called:'+baseUrl+"/json&demand=pages");
               $.ajax({
                 url: baseUrl+"/json&demand=pages",
                 async:false, // to wait pageList ini before display YesWikiLinkModal
@@ -287,7 +286,6 @@ var SYNTAX = {
                       pagelist.push('"'+pageTag+'"');
                     }
                   }
-                  console.log('pagelist:'+JSON.stringify(pagelist))
                 },
               });
             }
@@ -351,7 +349,7 @@ var SYNTAX = {
       <div class="radio">
         <label>
           <input type="radio" name="linkOptions" id="linkOptions3" value="modal"><span></span>
-          Le lien s'ouvre dans une fenêtre modale (uniquement pour les liens internes)
+          Le lien s'ouvre dans une fenêtre modale
         </label>
       </div>
       </form>
@@ -384,9 +382,9 @@ var SYNTAX = {
               var text = $('#YesWikiLinkModal [name="text-url"]').val() ;
               text = text ? text : realLink;
               if ($('#YesWikiLinkModal .radio input[value="ext"]').is(':checked') && realLink) {
-                var replacement = '""<a href="' + (internal ? '?' : '') + realLink + '" target="blank" title="'+text+'">'+text+'</a>""';
-              } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink && internal) {
-                var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'"}}';
+                var replacement = '{{button class="new-window" link="' + realLink + '" nobtn="1" text="'+text+'" title="'+text+'"}}';
+              } else if($('#YesWikiLinkModal .radio input[value="modal"]').is(':checked') && realLink) {
+                var replacement = '{{button class="modalbox" nobtn="1" link="'+realLink+'" text="'+text+'" title="'+text+'"}}';
               } else if (realLink) {
                 var replacement = '[[' + realLink + ' '+text+']]';
               }
