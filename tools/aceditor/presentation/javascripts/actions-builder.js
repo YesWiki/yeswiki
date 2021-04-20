@@ -64,7 +64,7 @@ window.myapp = new Vue({
     // so we always display those commons properties in different panels
     configPanels() {
       let result = []
-      if (Object.values(this.selectedAction.properties).some(conf => conf.type)) {
+      if (this.selectedAction.properties && Object.values(this.selectedAction.properties).some(conf => conf.type)) {
         result.push({params: this.selectedAction, class: 'specific-action-params'})
       }
       for(let actionName in this.actions) {
@@ -76,6 +76,9 @@ window.myapp = new Vue({
     isEditingExistingAction() {
       if (!this.editor) return false;
       return this.editor.currentSelectedAction != ""
+    },
+    isBazarListeAction(){
+      return this.currentGroupId == 'bazarliste'
     },
     selectedActionAllConfigs() {
       let result = {}
@@ -187,7 +190,7 @@ window.myapp = new Vue({
         var configValue = this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default
         if (configValue && !this.values[propName]) this.values[propName] = configValue
       }
-      if (this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
+      if (this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0);
     },
     updateActionParams() {

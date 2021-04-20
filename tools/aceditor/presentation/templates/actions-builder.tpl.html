@@ -14,7 +14,7 @@
           <select v-model="selectedFormId" required class="form-control">
             <option v-for="(name, id) in formIds" :value="id">{{ name }}</option>
           </select>
-          Nb. : Il est possible d'afficher plusieurs bases de donn&eacute;es d'un coup en entrant leur id s&eacute;par&eacute; par une virgule [<a href="https://yeswiki.net/?ActionBazarliste">acc&eacute;der &agrave; la documentation</a>].
+          <span v-if="isBazarListeAction"><?php echo  _t('ACTION_BUILDER_SEVERAL_FORMS_HINT'); ?></span>
         </div>
 
         <!-- Choose Action -->
