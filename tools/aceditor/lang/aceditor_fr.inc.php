@@ -58,5 +58,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACTION_BUILDER_WIKI_CODE_TITLE' => "Code à include dans la page",
     'ACTION_BUILDER_PARAMETERS' => 'Paramètres',
     'ACTION_BUILDER_COPY' => 'Copier',
-    'ACTION_BUILDER_SEVERAL_FORMS_HINT' => 'Nb. : Il est possible d\'afficher plusieurs bases de donn&eacute;es d\'un coup en entrant leur id s&eacute;par&eacute; par une virgule [<a href="https://yeswiki.net/?ActionBazarliste">acc&eacute;der &agrave; la documentation</a>].'
+    'ACTION_BUILDER_SEVERAL_FORMS_HINT' => 'Nb. : Il est possible d\'afficher plusieurs bases de donn&eacute;es d\'un coup en entrant leur id s&eacute;par&eacute; par une virgule [<a href="https://yeswiki.net/?ActionBazarliste">acc&eacute;der &agrave; la documentation</a>].',
+    'ACTION_BUILDER_ADVANCED_PARAMETERS' => 'Paramètres Avancés',
+    'ACTION_BUILDER_PREVIEW'             => 'Aperçu (non cliquable)',
+    'ACTION_BUILDER_ONLINEDOC'           => 'Documentation en ligne',
+    'ACTION_BUILDER_UPDATE_CODE'         => 'Mettre à jour le code',
+    'ACTION_BUILDER_INSERT_CODE'         => 'Insérer dans la page',
 ));
