@@ -70,11 +70,13 @@ class UserManager
         $_SESSION['user'] = '';
         $this->wiki->DeleteCookie('name');
         $this->wiki->DeleteCookie('password');
+        $this->wiki->DeleteCookie('remember');
     }
 
     public function create($wikiName, $email, $password)
     {
-        return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
+        return $this->dbService->query(
+            'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
             "signuptime = now(), " .
             "name = '" . $this->dbService->escape($wikiName) . "', " .
             "motto = '', " .

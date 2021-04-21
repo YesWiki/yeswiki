@@ -47,8 +47,10 @@ use Symfony\Component\Routing\RouteCollection;
 
 // TODO put elsewhere
 // https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
-class AnnotatedRouteControllerLoader extends AnnotationClassLoader {
-    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot) {
+class AnnotatedRouteControllerLoader extends AnnotationClassLoader
+{
+    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot)
+    {
         $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
     }
 }
@@ -298,9 +300,9 @@ class Init
         // Core controllers
         $routes->addCollection($loader->load('includes/controllers'));
 
-        foreach($wiki->extensions as $extensionKey => $extensionPath) {
+        foreach ($wiki->extensions as $extensionKey => $extensionPath) {
             $controllersDir = __DIR__ . '/../' . $extensionPath . 'controllers';
-            if( is_dir($controllersDir)) {
+            if (is_dir($controllersDir)) {
                 $routes->addCollection($loader->load($controllersDir));
             }
         }
@@ -317,22 +319,28 @@ class Init
     {
         // configuration du cookie de session
         // determine le chemin pour les cookies
-        $a = parse_url($this->config['base_url']);
-        $CookiePath = $a['path'];
+        $urlParsed = parse_url($this->config['base_url']);
+        $CookiePath = $urlParsed['path'];
 
-        // Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
+        // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
-        // ajoute un '/' si on est a la racine web
-        if (empty($CookiePath) || !empty($this->config['global_cookie_path'])) {
-            $CookiePath = '/';
+        // ajoute un '/' terminal sauf si on est a la racine web et si nécessaire
+        if (substr($CookiePath, -1) !== '/') {
+            $CookiePath .= '/';
+        }
+
+        $sessionName = "YesWiki-main";
+        if ($CookiePath !== '/') {
+            $sessionName = "YesWiki-" . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
         // test if session exists, because the wiki object is instanciated for every plugin
         if (!isset($_SESSION)) {
-            $a = session_get_cookie_params();
-            session_set_cookie_params($a['lifetime'], $CookiePath);
-            unset($a);
+            $cookiesParam = session_get_cookie_params();
+            $cookiesParam['path'] = $CookiePath;
+            session_set_cookie_params($cookiesParam);
+            session_name($sessionName);
             session_start();
         }
 

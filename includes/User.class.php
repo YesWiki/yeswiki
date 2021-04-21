@@ -1,5 +1,6 @@
 <?php
 namespace YesWiki;
+
 use YesWiki\Core\Service\TripleStore;
 
 class User
@@ -433,7 +434,7 @@ class User
         // Generate the password recovery key
         $key = md5($this->properties['name'] . '_' . $this->properties['email'] . rand(0, 10000) . date('Y-m-d H:i:s') . PW_SALT);
         // Erase the previous triples in the trible table
-        $this->wiki->services->get(TripleStore::class)->delete($this->properties['name'],$this->keyVocabulary,null,'','') ;
+        $this->wiki->services->get(TripleStore::class)->delete($this->properties['name'], $this->keyVocabulary, null, '', '') ;
         // Store the (name, vocabulary, key) triple in triples table
         $res = $this->wiki->services->get(TripleStore::class)->create($this->properties['name'], $this->keyVocabulary, $key, '', '');
 
@@ -506,7 +507,7 @@ class User
     public function checkEmailKey($hash, $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        return !is_null($this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key',$hash,'',''));
+        return !is_null($this->wiki->services->get(TripleStore::class)->exist($user, 'http://outils-reseaux.org/_vocabulary/key', $hash, '', ''));
     }
     /* End of Password recovery process (AKA reset password)   */
 
@@ -598,6 +599,7 @@ class User
             $_SESSION['user'] = '';
             $this->wiki->session->deleteCookie('name');
             $this->wiki->session->deleteCookie('password');
+            $this->wiki->session->deleteCookie('remember');
             $OK = true;
         }
         return $OK;
