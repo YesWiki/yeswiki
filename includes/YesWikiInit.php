@@ -258,7 +258,7 @@ class Init
 
 
     /**
-     * Initialize the cookie
+     * Initialize the cookie and return cookie's path
      *
      * @return string $CookiePath path to the cookie
      */
@@ -266,22 +266,28 @@ class Init
     {
         // configuration du cookie de session
         // determine le chemin pour les cookies
-        $a = parse_url($this->config['base_url']);
-        $CookiePath = dirname($a['path']);
+        $urlParsed = parse_url($this->config['base_url']);
+        $CookiePath = $urlParsed['path'];
 
         // Fixe la gestion des cookie sous les OS utilisant le \ comme separteur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
-        // ajoute un '/' terminal sauf si on est a la racine web
-        if ($CookiePath != '/') {
+        // ajoute un '/' terminal sauf si on est a la racine web et si nécessaire
+        if (substr($CookiePath, -1) !== '/') {
             $CookiePath .= '/';
+        }
+
+        $sessionName = "YesWiki-main";
+        if ($CookiePath !== '/') {
+            $sessionName = "YesWiki-" . str_replace('/', '-', substr($CookiePath, 1, -1));
         }
 
         // test if session exists, because the wiki object is instanciated for every plugin
         if (!isset($_SESSION)) {
-            $a = session_get_cookie_params();
-            session_set_cookie_params($a['lifetime'], $CookiePath);
-            unset($a);
+            $cookiesParam = session_get_cookie_params();
+            $cookiesParam['path'] = $CookiePath;
+            session_set_cookie_params($cookiesParam);
+            session_name($sessionName);
             session_start();
         }
 
