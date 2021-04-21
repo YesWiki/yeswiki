@@ -128,9 +128,9 @@ class BazarAction extends YesWikiAction
                 }
                 // no break
             case self::VOIR_IMPORTER:
-                return baz_afficher_formulaire_import();
+                return $this->callAction('bazarimport', $this->arguments);
             case self::VOIR_EXPORTER:
-                return baz_afficher_formulaire_export();
+                return $this->callAction('bazarexport', $this->arguments);
             case self::VOIR_CONSULTER:
             case self::VOIR_DEFAUT:
             default:
