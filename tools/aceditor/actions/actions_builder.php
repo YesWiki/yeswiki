@@ -13,16 +13,27 @@ $docFiles = array_merge($docFiles, $extensionDocFiles);
 $data['action_groups'] = [];
 foreach ($docFiles as $filePath) {
     $filename = pathinfo($filePath)['filename'];
-    $data['action_groups'][$filename] = Yaml::parseFile($filePath);
+    if ($filename == 'documentation') {
+        // find key from filePath between tools and actions
+        $matches = [];
+        if (preg_match('/tools(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)) {
+            $key = $matches[1];
+        } else {
+            $key = $filename;
+        }
+    } else {
+        $key = $filename;
+    }
+    $data['action_groups'][$key] = Yaml::parseFile($filePath);
     // remove file for no admins if 'onlyForAdmins'
-    if (isset($data['action_groups'][$filename]['onlyForAdmins'])
-        && $data['action_groups'][$filename]['onlyForAdmins']
+    if (isset($data['action_groups'][$key]['onlyForAdmins'])
+        && $data['action_groups'][$key]['onlyForAdmins']
         && !$GLOBALS['wiki']->UserIsAdmin()) {
-        unset($data['action_groups'][$filename]);
+        unset($data['action_groups'][$key]);
     } else {
         // When order is not defined, put at the end
-        if (empty($data['action_groups'][$filename]['position'])) {
-            $data['action_groups'][$filename]['position'] = 1000;
+        if (empty($data['action_groups'][$key]['position'])) {
+            $data['action_groups'][$key]['position'] = 1000;
         }
     }
 }
