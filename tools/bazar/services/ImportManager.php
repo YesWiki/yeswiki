@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\FileField;
@@ -200,7 +201,7 @@ class ImportManager
                 && !empty($entry[$header['field']->getLatitudeField()])
                 && !empty($entry[$header['field']->getLongitudeField()])
                 ) {
-                    // backward compatibility for MapField
+                // backward compatibility for MapField
                 $value = $entry[$header['field']->getLatitudeField()].'|'.$entry[$header['field']->getLongitudeField()] ;
             }
 
@@ -264,7 +265,7 @@ class ImportManager
      */
     public function importEntry(array $importedEntries, string $formId): ?array
     {
-        if (!$this->importdone){
+        if (!$this->importdone) {
             // Pour les traitements particulier lors de l import
             $GLOBALS['_BAZAR_']['provenance'] = 'import';
             $createdEntries = [];
@@ -282,7 +283,7 @@ class ImportManager
             $this->importdone = true;
             return $createdEntries;
         }
-        return null;        
+        return null;
     }
 
     /**
@@ -306,14 +307,14 @@ class ImportManager
                     if ($ext == 'csv') {
                         if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
                             if (($firstLine = fgetcsv($handle, 0, ',')) !== false) {
-                                if ($columnIndexesForPropertyNames = 
-                                    $this->getColumnIndexesForPropertyNames($firstLine,$headers)) {
+                                if ($columnIndexesForPropertyNames =
+                                    $this->getColumnIndexesForPropertyNames($firstLine, $headers)) {
                                     
                                     // next lines
                                     $extracted = [];
-                                    while (($data = fgetcsv($handle, 0, ',')) !== false) {// init errors 
+                                    while (($data = fgetcsv($handle, 0, ',')) !== false) {// init errors
                                         $this->errormsg = [] ;
-                                        $extractedData = $this->getEntryFromCSVLine($data,$headers,$columnIndexesForPropertyNames,$formId);
+                                        $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $formId);
                                         $extracted[] = [
                                             'entry' => $extractedData,
                                             'errormsg' => $this->errormsg
@@ -337,7 +338,7 @@ class ImportManager
      * @param array $headers from getHeaders
      * @return array|null [$propertyName => $index, ...], null if error
      */
-    private function getColumnIndexesForPropertyNames(array $firstLine,array $headers): ?array
+    private function getColumnIndexesForPropertyNames(array $firstLine, array $headers): ?array
     {
         $index = 0 ;
         // remove date columns if existing
@@ -349,15 +350,16 @@ class ImportManager
         }
         // sweep on headers
         $columnIndexes = [];
-        foreach ($headers as $propertyName => $header){
+        foreach ($headers as $propertyName => $header) {
             if (isset($firstLine[$index])) {
                 // backward compatibility for map
-                if (($header['field'] instanceof MapField
+                if ((
+                    $header['field'] instanceof MapField
                     && $firstLine[$index] == $header['field']->getLatitudeField()
                     && $firstLine[$index+1] == $header['field']->getLongitudeField()
-                    ) || (
+                ) || (
                         $header['field'] instanceof UserField
-                    )){
+                    )) {
                     // field on two columns
                     $columnIndexes[$propertyName] = [$index,$index+1];
                     ++$index;
@@ -378,32 +380,31 @@ class ImportManager
      * @param string $formId
      * @return array|null entry
      */
-    private function getEntryFromCSVLine(array $data, array $headers,array $columnIndexesForPropertyNames, string $formId):?array
+    private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId):?array
     {
         $entry = [];
-        foreach($columnIndexesForPropertyNames as $propertyName => $index){
+        foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
             $field = $headers[$propertyName]['field'];
-            if($field instanceof MapField) {
-                $entry = $this->updateEntryWithMapFieldData($entry,$data,$index,$propertyName,$field);
-            } elseif (!is_array($index)){
+            if ($field instanceof MapField) {
+                $entry = $this->updateEntryWithMapFieldData($entry, $data, $index, $propertyName, $field);
+            } elseif (!is_array($index)) {
                 // standard case
-                $value = $this->getValueFromData($data,$index);
+                $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
-                    if ($field instanceof EnumField){
-                        $value = $this->extractValueFromEnumFieldData($value,$field);
-                    } elseif ($field instanceof ImageField){
+                    if ($field instanceof EnumField) {
+                        $value = $this->extractValueFromEnumFieldData($value, $field);
+                    } elseif ($field instanceof ImageField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
-                        $value = $this->extractValueFromImageFieldData($value,$field);
-                    } elseif ($field instanceof FileField){
+                        $value = $this->extractValueFromImageFieldData($value, $field);
+                    } elseif ($field instanceof FileField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
-                        $value = $this->extractValueFromFileFieldData($value,$field);
+                        $value = $this->extractValueFromFileFieldData($value, $field);
                     }
                     $entry[$propertyName] = $value;
                 }
-            } elseif ($field instanceof UserField){     
-                $entry = $this->updateEntryWithUserFieldData($entry,$data,$index,$propertyName,$field);           
+            } elseif ($field instanceof UserField) {
+                $entry = $this->updateEntryWithUserFieldData($entry, $data, $index, $propertyName, $field);
             }
-            
         }
 
         // append entry's data
@@ -428,9 +429,9 @@ class ImportManager
      * @param int $index
      * @return mixed value
      */
-    private function getValueFromData(array $data,int $index)
+    private function getValueFromData(array $data, int $index)
     {
-        if (isset($data[$index])){
+        if (isset($data[$index])) {
             $value = $data[$index];
             $value = str_replace(
                 array(
@@ -470,11 +471,11 @@ class ImportManager
      * @param MapField $field
      * @return array $entry after update
      */
-    private function updateEntryWithMapFieldData(array $entry, array $data,int $index, string $propertyName,MapField $field):array
+    private function updateEntryWithMapFieldData(array $entry, array $data, int $index, string $propertyName, MapField $field):array
     {
-        if (!is_array($index)){
+        if (!is_array($index)) {
             // standard case for MapField
-            $value = $this->getValueFromData($data,$index);
+            $value = $this->getValueFromData($data, $index);
             $values = (empty($value)) ? null : explode('|', $value);
             if (empty($values[0]) || empty($values[1])) {
                 $latitude = $values[0];
@@ -482,10 +483,10 @@ class ImportManager
             }
         } else {
             // retrieve data from two columns
-            $latitude = $this->getValueFromData($data,$index[0]);
-            $longitude = $this->getValueFromData($data,$index[1]);
+            $latitude = $this->getValueFromData($data, $index[0]);
+            $longitude = $this->getValueFromData($data, $index[1]);
         }
-        if (!empty($latitude) && !empty($longitude)){
+        if (!empty($latitude) && !empty($longitude)) {
             $entry[$propertyName] = $latitude . '|' . $longitude;
             $entry[$field->getLatitudeField()] = $latitude ;
             $entry[$field->getLongitudeField()] = $longitude;
@@ -502,13 +503,13 @@ class ImportManager
      * @param UserField $field
      * @return array $entry after update
      */
-    private function updateEntryWithUserFieldData(array $entry, array $data,int $index, string $propertyName,UserField $field):array
+    private function updateEntryWithUserFieldData(array $entry, array $data, int $index, string $propertyName, UserField $field):array
     {
-        $nomwiki = $this->getValueFromData($data,$index[0]);
+        $nomwiki = $this->getValueFromData($data, $index[0]);
         if (!empty($nomwiki)) {
             $entry['nomwiki'] = $nomwiki;
         }
-        $passwordMd5 = $this->getValueFromData($data,$index[1]);
+        $passwordMd5 = $this->getValueFromData($data, $index[1]);
         if (!empty($passwordMd5)) {
             $entry['mot_de_passe_wikini'] = $passwordMd5;
         }
@@ -527,29 +528,29 @@ class ImportManager
         $options = $field->getOptions();
         $flippedOptions = [];
         // not usinf array_flip because it takes the last duplicated index, we prefer the first one
-        foreach($options as $key => $val){
-            if (!isset($flippedOptions[$val])){
+        foreach ($options as $key => $val) {
+            if (!isset($flippedOptions[$val])) {
                 $flippedOptions[$val] = $key;
             }
         }
 
         // extract CSV
-        $values = str_getcsv($value,',');
+        $values = str_getcsv($value, ',');
 
         // convert values to index
-        $indexes = array_map(function ($option) use ($options,$flippedOptions) {
-            if (isset($flippedOptions[$option])){
+        $indexes = array_map(function ($option) use ($options, $flippedOptions) {
+            if (isset($flippedOptions[$option])) {
                 // search if $option is a correct value then take assoiacted index
                 return $flippedOptions[$option];
-            } elseif (isset($options[$option])){
+            } elseif (isset($options[$option])) {
                 //search if $option is an index
                 return $option;
             } else {
                 return null;
             }
-        },$values);
+        }, $values);
 
-        return implode(',',$indexes);
+        return implode(',', $indexes);
     }
 
     /**

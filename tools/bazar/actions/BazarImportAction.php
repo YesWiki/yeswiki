@@ -20,8 +20,8 @@ class BazarImportAction extends YesWikiAction
 
         return([
                 'id' =>  $id,
-                'mode' => isset($_POST['submit_file']) ? 'submitfile' :
-                    ( isset($_POST['importfiche']) ? 'importentries' : 'default'),
+                'mode' => (isset($_POST['submit_file']) && !empty($_FILES['fileimport']['name'])) ? 'submitfile' :
+                    (isset($_POST['importfiche']) ? 'importentries' : 'default'),
                 'importentries' => $_POST['importfiche'] ?? null,
                 'filesData' => $_FILES['fileimport'] ?? null,
             ]);
@@ -44,13 +44,13 @@ class BazarImportAction extends YesWikiAction
         // switch to right method
         switch ($this->arguments['mode']) {
             case 'submitfile':
-                if ($extracted = $this->importManager->extractCSVfromCSVFile($this->arguments['id'], $this->arguments['filesData'])){                    
+                if ($extracted = $this->importManager->extractCSVfromCSVFile($this->arguments['id'], $this->arguments['filesData'])) {
                     // append displayData
                     $extracted = array_map(function ($extract) {
-                        $extract['displayData'] = $this->entryController->view($extract['entry'], '',0);
+                        $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0);
                         $extract['base64'] = base64_encode(serialize($extract['entry']));
                         return $extract;
-                    },$extracted);
+                    }, $extracted);
                 }
                 break;
             
