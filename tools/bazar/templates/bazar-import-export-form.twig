@@ -1,0 +1,44 @@
+<form method="post" class="form-horizontal"
+  action="{{ url({params:params}) }}" {% block formDetails %}{% endblock %}>
+  {% block formContent %}
+    {% if not (forms|length > 0) %}
+      <div class="alert alert-danger">{{ _t('BAZ_PAS_DE_FORMULAIRES_TROUVES') }}</div>
+    {% else %}
+      <div class="control-group form-group">
+        <label class="control-label col-sm-3">{% block label %}{{ _t('BAZ_TYPE_FICHE_EXPORT') }}{% endblock %} :</label>
+        <div class="controls col-sm-9">
+          <select class="form-control" name="id_typeannonce" onchange="javascript:this.form.submit();">
+            {% if not id or id == 0 %}
+              {# si l'on n'a pas deja choisit de fiche, on demarre sur l'option CHOISIR, vide #}
+              <option value="" selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
+            {% endif %}
+            {# on dresse la liste des formulaires #}
+            {% for form in forms %}
+              <option value="{{ form.bn_id_nature }}"
+                  {{ id == form.bn_id_nature ? ' selected="selected"' }}>
+                {{ form.bn_label_nature }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {% endif %}
+    {% block appendToForm %}
+      {% if csv and selectedForm %}
+        <em>
+          {% block appendToFormLabel %}{{ _t('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER') ~ selectedForm.bn_label_nature }}{% endblock %}
+        </em>
+        <pre class="precsv">
+          {{- csv|raw -}}
+        </pre>
+        
+        {# on cree le lien vers ce fichier #}
+        <a href="#" onclick="downloadCSV($('.precsv').html(), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;" 
+            class="btn btn-neutral link-csv-file">
+          <i class="fa fa-download"></i>
+            {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
+        </a>
+      {% endif %}
+    {% endblock %}{# {% block appendToForm %} #}
+  {% endblock %}{# {% block formContent %} #}
+</form>

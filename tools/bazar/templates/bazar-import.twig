@@ -1,0 +1,105 @@
+{% extends '@bazar/bazar-import-export-form.twig' %}
+
+{% block label %}{{ _t('BAZ_TYPE_FICHE_IMPORT') }}{% endblock %}
+{% block formDetails %}enctype="multipart/form-data"{% endblock %}
+
+{% block formContent %}
+  {% if mode == 'submitfile' %}
+    <div class="checkbox">
+      {% block checkboxAll %}
+        <label class="checkbox">
+          <input data-target="#accordion-import" type="checkbox" class="selectall">
+            {{ ' ' ~ _t('BAZ_SELECT_ALL') }}
+        </label>
+      {% endblock %}
+    </div>
+    <div class="panel-group accordion-group no-dblclick" id="accordion-import">
+      {% for index,extract in extracted %}
+        {% if extract.errormsg|length > 0 %}
+          <label>
+            <input type="checkbox" disabled>{{ extract.entry.bf_titre }}
+          </label>
+            <a class="btn-mini btn-xs btn btn-default"
+              data-target="#collapse{{ extract.entry.id_fiche ~ (index + 1) }}"
+              data-toggle="collapse">
+              <i class="fa fa-eye-open icon-eye-open icon-white"></i>
+              {{ _t('BAZ_SEE_ENTRY') }}
+            </a>
+          <div class="panel panel-danger">
+            <div id="collapse{{ extract.entry.id_fiche ~ (index + 1) }}" class="panel-collapse collapse">
+              <div class="panel-body">
+                <div class="alert alert-danger">
+                  {{ extract.errormsg|join('<br>') }}
+                </div>
+                {{ extract.displayData|raw }}
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <label>
+            <input type="checkbox" name="importfiche[{{ extract.entry.id_fiche ~ (index + 1) }}]"
+              value='{{ extract.base64|raw }}'>{{ extract.entry.bf_titre }}
+          </label>
+          <a class="btn-mini btn-xs btn btn-default"
+            data-target="#collapse{{ extract.entry.id_fiche ~ (index + 1) }}"
+            data-toggle="collapse">
+            <i class="fa fa-eye-open icon-eye-open icon-white"></i>
+              {{ _t('BAZ_SEE_ENTRY')  }}
+          </a>
+          <div class="panel panel-default">
+            <div id="collapse{{ extract.entry.id_fiche ~ (index + 1) }}" class="panel-collapse collapse">
+              <div class="panel-body">
+                {{ extract.displayData|raw }}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div><!-- /#accordion-import -->
+    {{ block('checkboxAll') }}
+
+    <input type="hidden" value="{{ id }}" name="id" />
+    <button class="btn btn-primary" type="submit">
+      {{ _t('BAZ_IMPORT_SELECTION') }}
+    </button>
+  {% elseif  mode == 'importentries' %}
+      <div class="alert alert-success">
+        {{ _t('BAZ_NOMBRE_FICHE_IMPORTE') ~ ' '~ importedEntries|length }}
+      </div>
+      {% set outputToFormat = '' %}
+      {% for index,entry in importedEntries %}
+        {% set outputToFormat = outputToFormat ~ ' ' ~ index ~') [[' ~ entry.id_fiche ~ ' ' ~ entry.bf_titre ~ ']]\n' %}
+      {% endfor %}
+      {{ format(outputToFormat)|raw }}
+  {% else %}
+    {{ parent() }}
+  {% endif %}
+{% endblock %}
+
+{% block appendToForm %}
+  {% if id %}
+    <div class="control-group form-group">
+      <label class="control-label col-sm-3">{{ _t('BAZ_FICHIER_CSV_A_IMPORTER') }} :</label>
+      <div class="controls col-sm-9">
+        <input type="file" class="form-control" name="fileimport" id="idfileimport" />
+      </div>
+    </div>
+
+    <div class="control-group form-group import-file">
+      <div class="controls col-sm-9 col-sm-offset-3">
+        <input name="submit_file" type="submit" value="{{ _t('BAZ_IMPORTER_CE_FICHIER') }}" class="btn btn-primary" />
+      </div>
+    </div>
+
+    <div class="alert alert-info">
+      <a data-dismiss="alert" class="close" type="button">&times;</a>
+      {{ _t('BAZ_ENCODAGE_CSV') }}
+    </div>
+  {% endif %}
+  {{ parent() }}
+{% endblock %}
+
+{% block appendToFormLabel %}{{ _t('BAZ_EXEMPLE_FICHIER_CSV') ~ selectedForm.bn_label_nature}}{% endblock %}
+
+{% block downloadFileName %}export-bazar-modele-{{ id }}.csv{% endblock %}
+{% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_IMPORT_CSV') -}}{% endblock %}
