@@ -14,7 +14,11 @@ spl_autoload_register(function ($className) {
         } else {
             $extension = strtolower($classNameArray[1]);
             if ($classNameArray[2] === 'Service') {
-                require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
+                if ($extension == 'custom') {
+                    require 'custom/services/' . $classNameArray[3] . '.php';
+                } else {
+                    require 'tools/' . $extension . '/services/' . $classNameArray[3] . '.php';
+                }
             } elseif ($classNameArray[2] === 'Field') {
                 if ($extension == 'custom') {
                     require 'custom/fields/' . $classNameArray[3] . '.php';
@@ -22,9 +26,17 @@ spl_autoload_register(function ($className) {
                     require 'tools/' . $extension . '/fields/' . $classNameArray[3] . '.php';
                 }
             } elseif ($classNameArray[2] === 'Controller') {
-                require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
-            } elseif ($classNameArray[2] === 'Commands') {
-                require 'tools/' . $extension . '/commands/' . $classNameArray[3] . '.php';
+                if ($extension == 'custom') {
+                    require 'custom/controllers/' . $classNameArray[3] . '.php';
+                } else {
+                    require 'tools/' . $extension . '/controllers/' . $classNameArray[3] . '.php';
+                }
+            } elseif ($classNameArray[2] === 'Commands') {                
+                if ($extension == 'custom') {
+                    require 'custom/commands/' . $classNameArray[3] . '.php';
+                } else {
+                    require 'tools/' . $extension . '/commands/' . $classNameArray[3] . '.php';
+                }
             }
         }
     }
