@@ -477,7 +477,7 @@ class ImportManager
             // standard case for MapField
             $value = $this->getValueFromData($data, $index);
             $values = (empty($value)) ? null : explode('|', $value);
-            if (empty($values[0]) || empty($values[1])) {
+            if (!empty($values[0]) && !empty($values[1])) {
                 $latitude = $values[0];
                 $longitude = $values[1];
             }
