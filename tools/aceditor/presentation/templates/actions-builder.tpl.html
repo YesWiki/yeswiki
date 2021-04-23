@@ -74,8 +74,9 @@
   var actionsBuilderData = <?php echo json_encode($data) ?>;
 </script>
 
-<!-- Load manually script because we need to use type="module" for ES6 import to work -->
 <?php
+// Load manually script because we need to use type="module" for ES6 import to work
+// TODO Use YesWiki->AddJavascriptFile() with option module to avoir duplicate code for revision
 $revision = $GLOBALS['wiki']->config['yeswiki_release'] ?? null ;
 $rev = ($revision) ? '?v='.$revision : '';
 ?>
