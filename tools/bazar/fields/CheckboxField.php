@@ -82,7 +82,7 @@ abstract class CheckboxField extends EnumField
     {
         if ($this->canEdit($entry)) {
             // get value
-            $checkboxField = $entry[$this->propertyName] ;
+            $checkboxField = $entry[$this->propertyName] ?? null ;
             // detect if from Form to check if clean field
             if (isset($entry[$this->propertyName . self::FROM_FORM_ID])) {
                 $oldValue = $entry[$this->propertyName . self::FROM_FORM_ID];
