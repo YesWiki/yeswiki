@@ -59,12 +59,19 @@ if (count($fiches)>0) :
 			$icon = $param['iconprefix']
 					.getCustomValueForEntry($param['icon'], $param['iconfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_icon']);
 
-			$tab = explode('|', isset($fiche['carte_google']) ? $fiche['carte_google'] : '');
-			if (count($tab)>1 && $tab[0]!='' && $tab[1]!='' && is_numeric($tab[0]) && is_numeric($tab[1])) {
+			if (!isset($fiche['geolocation'])) { // backward compatibility hack for old carte_google fields
+        $fiche['geolocation'] = [];
+        $tab = explode('|', isset($fiche['carte_google']) ? $fiche['carte_google'] : '');
+        if (!empty($tab[0]) && !empty($tab[1])) {
+            $fiche['geolocation']['bf_latitude'] = $tab[0];
+            $fiche['geolocation']['bf_longitude'] = $tab[1];
+        }
+      }
+      if (count($fiche['geolocation'])>1 && $fiche['geolocation']['bf_latitude']!='' && $fiche['geolocation']['bf_longitude']!='' && is_numeric($fiche['geolocation']['bf_latitude']) && is_numeric($fiche['geolocation']['bf_longitude'])) {
 					// on genere le point marqueur sur la carte
 					$markersjs .= '
 					i++;
-					var markerLocation = new L.LatLng('.$tab[0].', '.$tab[1].');
+					var markerLocation = new L.LatLng('.$fiche['geolocation']['bf_latitude'].', '.$fiche['geolocation']['bf_longitude'].');
 					marker[i] = new L.Marker(
 							markerLocation,
 							{

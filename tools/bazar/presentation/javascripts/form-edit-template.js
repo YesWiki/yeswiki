@@ -46,8 +46,8 @@ var fields = [
   },
   {
     label: "Géolocalisation sur une carte",
-    name: "carte_google",
-    attrs: { type: "carte_google" },
+    name: "map",
+    attrs: { type: "map" },
     icon: '<i class="fas fa-map-marked-alt"></i>',
   },
   {
@@ -225,7 +225,7 @@ var typeUserAttrs = {
     write: writeconf,
     semantic: semanticConf,
   },
-  carte_google: {
+  map: {
     name_latitude: { label: "Nom champ latitude", value: "bf_latitude" },
     name_longitude: { label: "Nom champ longitude", value: "bf_longitude" },
   },
@@ -399,7 +399,7 @@ var templates = {
       field: `<input id="${fieldData.name}" type="email" value="" />`
     };
   },
-  carte_google: function (fieldDate) {
+  map: function (fieldDate) {
     return {
       field: "Geolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays",
     };
@@ -485,7 +485,7 @@ var yesWikiMapping = {
     ...defaultMapping,
     ...{ 6: "replace_email_by_button", 9: "send_form_content_to_this_email" },
   },
-  carte_google: {
+  map: {
     0: "type",
     1: "name_latitude",
     2: "name_longitude",
@@ -563,6 +563,7 @@ var yesWikiTypes = {
   listedatedeb: { type: "date" },
   listedatefin: { type: "date" },
   jour: { type: "date" },
+  carte_google: { type: "map" },
   checkbox: { type: "checkbox-group", subtype2: "list" },
   liste: { type: "select", subtype2: "list" },
   radio: { type: "radio-group", subtype2: "list" },

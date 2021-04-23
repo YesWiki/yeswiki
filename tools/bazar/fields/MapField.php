@@ -25,7 +25,26 @@ class MapField extends BazarField
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
         $this->autocomplete = $values[self::FIELD_AUTOCOMPLETE];
 
-        $this->propertyName = 'carte_google';
+        $this->propertyName = 'geolocation';
+    }
+
+    protected function getValue($entry)
+    {
+        $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+
+        // backward compatibility with former `carte_google` propertyName
+        if (empty($value) && !empty($entry['carte_google'])) {
+            $value = explode('|', $entry['carte_google']);
+            if (empty($value[0]) || empty($value[1])) {
+                $value = null;
+            } else {
+                $value = [
+                    $this->getLatitudeField() => $value[0],
+                    $this->getLongitudeField()=> $value[1]
+                ];
+            }
+        }
+        return $value;
     }
 
     protected function renderInput($entry)
@@ -200,14 +219,9 @@ class MapField extends BazarField
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
 
         $geoCodingScript = '';
-        $latitude = '';
-        $longitude = '';
         if (isset($value)) {
-            $tab = explode('|', $value);
-            if (count($tab) > 1 && !empty($tab[0]) && !empty($tab[1])) {
-                $latitude = $tab[0];
-                $longitude = $tab[1];
-                $geoCodingScript .= 'var point = L.latLng('.$latitude.', '.$longitude.');
+            if (count($value) > 1 && !empty($value[$this->getLatitudeField()]) && !empty($value[$this->getLongitudeField()])) {
+                $geoCodingScript .= 'var point = L.latLng('.$value[$this->getLatitudeField()].', '.$value[$this->getLongitudeField()].');
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
                 map.panTo( geocodedmarker.getLatLng(), {animate:true});
                 geocodedmarker.bindPopup(popupHtml( point ), {closeButton: false, closeOnClick: false});
@@ -230,9 +244,8 @@ class MapField extends BazarField
         $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
 
         return $this->render("@bazar/inputs/map.twig", [
-            'value' => $this->getValue($entry),
-            'latitude' => $latitude,
-            'longitude' => $longitude
+            'latitude' => $value[$this->getLatitudeField()],
+            'longitude' => $value[$this->getLongitudeField()]
         ]);
     }
 
@@ -240,9 +253,8 @@ class MapField extends BazarField
     {
         if (!$this->canEdit($entry)) {
             // retrieve value from value because redefined with right value
-            $value = $this->getValue($entry);
-            $values = (empty($value)) ? null : explode('|', $value);
-            if (empty($values[0]) || empty($values[1])) {
+            $values = $this->getValue($entry);
+            if (empty($values[$this->getLatitudeField()]) || empty($values[$this->getLongitudeField()])) {
                 if (isset($entry[$this->getLatitudeField()])) {
                     unset($entry[$this->getLatitudeField()]);
                 }
@@ -250,23 +262,29 @@ class MapField extends BazarField
                     unset($entry[$this->getLongitudeField()]);
                 }
             } else {
-                $entry[$this->getLatitudeField()] = $values[0];
-                $entry[$this->getLongitudeField()] = $values[1];
+                $entry[$this->getPropertyName()] = $values;
+                $entry[$this->getLatitudeField()] = $values[$this->getLatitudeField()];
+                $entry[$this->getLongitudeField()] = $values[$this->getLatitudeField()];
             }
         }
         if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
-            $entry[$this->propertyName] = $entry[$this->getLatitudeField()] . '|' . $entry[$this->getLongitudeField()];
+            $entry[$this->getPropertyName()] = [
+                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()]
+            ];
             return [
-            $this->propertyName => $this->getValue($entry),
+            $this->getPropertyName() => $entry[$this->getPropertyName()],
             $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-            $this->getLongitudeField() => $entry[$this->getLongitudeField()]
+            $this->getLongitudeField() => $entry[$this->getLongitudeField()],
+            'fields-to-remove' => ['carte_google']
           ];
         } else {
             return [
           'fields-to-remove' => [
-            $this->propertyName,
+            $this->getPropertyName(),
             $this->getLatitudeField(),
-            $this->getLongitudeField()
+            $this->getLongitudeField(),
+            'carte_google'
             ]
         ];
         }
