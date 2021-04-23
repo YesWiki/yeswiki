@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Service;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\FileField;
+use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
@@ -211,7 +212,8 @@ class CSVManager
                 } elseif (($header['field'] instanceof  ImageField) || ($header['field'] instanceof  FileField)) {
                     // ajoute l'URL de base aux images et fichiers
                     $value = $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
-                } elseif ($header['field'] instanceof  EnumField) {
+                } elseif ($header['field'] instanceof  EnumField
+                    && !($header['field'] instanceof TagsField)) {
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field']);
                 }
             }
@@ -422,7 +424,10 @@ class CSVManager
                 // standard case
                 $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
-                    if ($field instanceof EnumField) {
+                    if ($field instanceof EnumField
+                        && !($field instanceof TagsField)) {
+                        // for tags not needed to get keys because these are the same
+                        // and do not filter on existing tags but allow alls tags
                         $value = $this->extractValueFromEnumFieldData($value, $field);
                     } elseif ($field instanceof ImageField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
