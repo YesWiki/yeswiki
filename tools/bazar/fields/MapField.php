@@ -221,7 +221,7 @@ class MapField extends BazarField
 
         $geoCodingScript = '';
         if (isset($value)) {
-            if (count($value) > 1 && !empty($value[$this->getLatitudeField()]) && !empty($value[$this->getLongitudeField()])) {
+            if (count($value) > 1) {
                 $geoCodingScript .= 'var point = L.latLng('.$value[$this->getLatitudeField()].', '.$value[$this->getLongitudeField()].');
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
                 map.panTo( geocodedmarker.getLatLng(), {animate:true});
@@ -255,7 +255,7 @@ class MapField extends BazarField
         if (!$this->canEdit($entry)) {
             // retrieve value from value because redefined with right value
             $values = $this->getValue($entry);
-            if (empty($values[$this->getLatitudeField()]) || empty($values[$this->getLongitudeField()])) {
+            if (empty($values)) {
                 if (isset($entry[$this->getLatitudeField()])) {
                     unset($entry[$this->getLatitudeField()]);
                 }
