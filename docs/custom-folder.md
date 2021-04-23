@@ -45,9 +45,52 @@ Names of the param can only be lower case character
 
 ## Custom Handlers
 
-Puts your custom handlers in `custom/handlers/page`
+Puts your custom handlers in `custom/handlers/page` or `custom/handlers` as class
 
 ## Custom Langs
 
 Puts your custom translations in `custom/lang/custom_LOCALE.inc.php`, where LOCALE is `fr` `en` `es`...
 you can then use your translation with following code `<?php echo _t('MY_TRANSLATION_KEY'); ?>`
+
+## Custom Field
+
+Puts your custom fields in `custom/fields`
+use `namespace YesWiki\Custom\Field;`
+
+## Custom Service
+
+Puts your custom fields in `custom/services`
+use `namespace YesWiki\Custom\Service;`
+and create the file`custom/config.yml` with
+
+```
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  YesWiki\Bazar\Service\:
+    resource: 'services/*'
+```
+
+## Custom Controller
+
+Puts your custom fields in `custom/controller`
+use `namespace YesWiki\Custom\Controller;`
+and create the file`custom/config.yml` with
+
+```
+services:
+  _defaults:
+    autowire: true
+    public: true
+
+  # Allows to use controllers as services
+  YesWiki\Bazar\Controller\:
+    resource: 'controllers/*'
+```
+
+## Custom Command
+
+Puts your custom fields in `custom/commands`
+use `namespace YesWiki\Custom\Commands;`
