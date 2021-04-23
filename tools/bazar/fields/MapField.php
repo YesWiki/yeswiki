@@ -220,7 +220,7 @@ class MapField extends BazarField
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/geocoder.js');
 
         $geoCodingScript = '';
-        if (isset($value)) {
+        if (is_array($value)) {
             if (count($value) > 1) {
                 $geoCodingScript .= 'var point = L.latLng('.$value[$this->getLatitudeField()].', '.$value[$this->getLongitudeField()].');
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
@@ -245,8 +245,8 @@ class MapField extends BazarField
         $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
 
         return $this->render("@bazar/inputs/map.twig", [
-            'latitude' => $value[$this->getLatitudeField()],
-            'longitude' => $value[$this->getLongitudeField()]
+            'latitude' => is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null,
+            'longitude' => is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null
         ]);
     }
 
