@@ -70,6 +70,24 @@ class ImportManager
                         'field' => $field,
                         'fullHeader' => $fullHeader2,
                     ];
+                } elseif ($field instanceof  MapField) {
+                    // TODO save userField data on one field
+                    // after refacto MapField
+                    $latitudeHeader = $field->getLatitudeField();
+                    $longitudeHeader = $field->getLongitudeField();
+                    if ($field->isRequired()) {
+                        $latitudeHeader .= " *";
+                        $longitudeHeader .= " *";
+                    }
+        
+                    $headers[$latitudeHeader] = [
+                        'field' => $field,
+                        'fullHeader' => $latitudeHeader,
+                    ];
+                    $headers[$longitudeHeader] = [
+                        'field' => $field,
+                        'fullHeader' => $longitudeHeader,
+                    ];
                 } else {
 
                     // *** standard case ****
@@ -197,12 +215,30 @@ class ImportManager
                 } elseif ($header['field'] instanceof  EnumField) {
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field']);
                 }
-            } elseif ($header['field'] instanceof  MapField
-                && !empty($entry[$header['field']->getLatitudeField()])
-                && !empty($entry[$header['field']->getLongitudeField()])
+            }
+            if ($header['field'] instanceof  MapField
+                && (empty($entry[$header['field']->getLatitudeField()])
+                || empty($entry[$header['field']->getLongitudeField()]))
                 ) {
-                // backward compatibility for MapField
-                $value = $entry[$header['field']->getLatitudeField()].'|'.$entry[$header['field']->getLongitudeField()] ;
+                $value = null ;
+                // do not export not complete MapField's data
+                if (!empty($entry[$header['field']->getPropertyName()])) {
+                    $values = explode('|', $entry[$header['field']->getPropertyName()]);
+                    $latitude = $values[0] ?? null;
+                    $longitude = $values[1] ?? null;
+                    if (!empty($latitude) && !empty($longitude)) {
+                        switch ($propertyName) {
+                            case $header['field']->getLatitudeField():
+                                $value = $latitude ;
+                                break;
+                            case $header['field']->getLongitudeField():
+                                $value = $longitude ;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
             }
 
             $line[] = $value ?? '';
@@ -353,13 +389,9 @@ class ImportManager
         foreach ($headers as $propertyName => $header) {
             if (isset($firstLine[$index])) {
                 // backward compatibility for map
-                if ((
-                    $header['field'] instanceof MapField
-                    && $firstLine[$index] == $header['field']->getLatitudeField()
-                    && $firstLine[$index+1] == $header['field']->getLongitudeField()
-                ) || (
-                    $header['field'] instanceof UserField
-                )) {
+                if ($header['field'] instanceof MapField
+                    || $header['field'] instanceof UserField
+                    ) {
                     // field on two columns
                     $columnIndexes[$propertyName] = [$index,$index+1];
                     ++$index;
@@ -466,15 +498,15 @@ class ImportManager
      * updateEntry with MapField Data
      * @param array $entry before update
      * @param array $data array line from CSV file
-     * @param int $index
+     * @param int|array $index
      * @param string $propertyName
      * @param MapField $field
      * @return array $entry after update
      */
-    private function updateEntryWithMapFieldData(array $entry, array $data, int $index, string $propertyName, MapField $field):array
+    private function updateEntryWithMapFieldData(array $entry, array $data, $index, string $propertyName, MapField $field):array
     {
         if (!is_array($index)) {
-            // standard case for MapField
+            // retrieve data from one columns
             $value = $this->getValueFromData($data, $index);
             $values = (empty($value)) ? null : explode('|', $value);
             if (!empty($values[0]) && !empty($values[1])) {
@@ -487,7 +519,7 @@ class ImportManager
             $longitude = $this->getValueFromData($data, $index[1]);
         }
         if (!empty($latitude) && !empty($longitude)) {
-            $entry[$propertyName] = $latitude . '|' . $longitude;
+            $entry[$field->getPropertyName()] = $latitude . '|' . $longitude;
             $entry[$field->getLatitudeField()] = $latitude ;
             $entry[$field->getLongitudeField()] = $longitude;
         }
