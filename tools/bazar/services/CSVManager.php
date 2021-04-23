@@ -215,27 +215,34 @@ class CSVManager
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field']);
                 }
             }
-            if ($header['field'] instanceof  MapField
-                && (empty($entry[$header['field']->getLatitudeField()])
-                || empty($entry[$header['field']->getLongitudeField()]))
-                ) {
-                $value = null ;
-                // do not export not complete MapField's data
+            if ($header['field'] instanceof  MapField) {
                 if (!empty($entry[$header['field']->getPropertyName()])) {
-                    $values = explode('|', $entry[$header['field']->getPropertyName()]);
+                    $value = $entry[$header['field']->getPropertyName()];
+                    if (is_array($value)) {
+                        // standard case
+                        $latitude = $value[$header['field']->getLatitudeField()] ?? null;
+                        $longitude = $value[$header['field']->getLongitudeField()] ?? null;
+                    }
+                } elseif (!empty($entry['carte_google'])) {
+                    // retrocompatibility carte_google
+                    $values = explode('|', $entry['carte_google']);
                     $latitude = $values[0] ?? null;
                     $longitude = $values[1] ?? null;
-                    if (!empty($latitude) && !empty($longitude)) {
-                        switch ($propertyName) {
-                            case $header['field']->getLatitudeField():
-                                $value = $latitude ;
-                                break;
-                            case $header['field']->getLongitudeField():
-                                $value = $longitude ;
-                                break;
-                            default:
-                                break;
-                        }
+                } else {
+                    // compatibility with very old data
+                    $latitude = $entry[$header['field']->getLatitudeField()] ?? null;
+                    $longitude = $entry[$header['field']->getLongitudeField()] ?? null;
+                }
+                if (!empty($latitude) && !empty($longitude)) {
+                    switch ($propertyName) {
+                        case $header['field']->getLatitudeField():
+                            $value = $latitude ;
+                            break;
+                        case $header['field']->getLongitudeField():
+                            $value = $longitude ;
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
