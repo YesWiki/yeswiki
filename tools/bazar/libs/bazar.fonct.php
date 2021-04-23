@@ -40,6 +40,8 @@
 // |                                            ENTETE du PROGRAMME                                       |
 // +------------------------------------------------------------------------------------------------------+
 
+use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Service\FormManager;
 
 function multiArraySearch($array, $key, $value)
@@ -99,24 +101,13 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                     'data-'.htmlspecialchars($key).'="'.
                     htmlspecialchars($value).'" ';
                 } else {
-                    if (is_array($form['template'])) {
-                        foreach ($form['template'] as $id => $val) {
-                            if ($val[1] === $key || (isset($val[6]) &&
-                              $val[0].$val[1].$val[6] === $key)) {
-                                if (in_array(
-                                    $form['template'][$id][0],
-                                    array(
-                                        'checkbox',
-                                        'liste',
-                                        'checkboxfiche',
-                                        'listefiche',
-                                        'tags',
-                                        'jour',
-                                        'scope',
-                                        'radio',
-                                        //'texte'
-                                    )
-                                )
+                    if (isset($form['prepared'])) {
+                        foreach ($form['prepared'] as $field) {
+                            $propertyName = $field->getPropertyName() ;
+                            if ($propertyName === $key) {
+                                if ($field instanceof EnumField
+                                    || $field instanceof DateField
+                                    || $field->getName() == 'scope'
                                 ) {
                                     $htmldata .=
                                     'data-'.htmlspecialchars($key).'="'.
