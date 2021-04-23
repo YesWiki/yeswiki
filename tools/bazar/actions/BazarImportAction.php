@@ -3,11 +3,11 @@
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ImportManager;
+use YesWiki\Bazar\Service\CSVManager;
 
 class BazarImportAction extends YesWikiAction
 {
-    private $importManager;
+    private $CSVManager;
     private $formManager;
     private $entryController;
 
@@ -34,7 +34,7 @@ class BazarImportAction extends YesWikiAction
         }
 
         // get services
-        $this->importManager = $this->getService(ImportManager::class);
+        $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
         $this->entryController = $this->getService(EntryController::class);
 
@@ -44,7 +44,7 @@ class BazarImportAction extends YesWikiAction
         // switch to right method
         switch ($this->arguments['mode']) {
             case 'submitfile':
-                if ($extracted = $this->importManager->extractCSVfromCSVFile($this->arguments['id'], $this->arguments['filesData'])) {
+                if ($extracted = $this->CSVManager->extractCSVfromCSVFile($this->arguments['id'], $this->arguments['filesData'])) {
                     // append displayData
                     $extracted = array_map(function ($extract) {
                         $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0);
@@ -55,13 +55,13 @@ class BazarImportAction extends YesWikiAction
                 break;
             
             case 'importentries':
-                $importedEntries = $this->importManager->importEntry($this->arguments['importentries'], $this->arguments['id']);
+                $importedEntries = $this->CSVManager->importEntry($this->arguments['importentries'], $this->arguments['id']);
                 break;
             
             case 'default':
             default:
                 // get csv_template
-                $csv_template = $this->importManager->getCSVfromFormId($this->arguments['id'], null, true) ;
+                $csv_template = $this->CSVManager->getCSVfromFormId($this->arguments['id'], null, true) ;
                 break;
         }
 
@@ -70,7 +70,7 @@ class BazarImportAction extends YesWikiAction
             'forms' => $forms,
             'params' => [
                 BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
-            'csv' => isset($csv_template) ? $this->importManager->arrayToCSV($csv_template) : null,
+            'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSV($csv_template) : null,
             'selectedForm' => $this->formManager->getOne($this->arguments['id']),
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,

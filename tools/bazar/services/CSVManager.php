@@ -12,7 +12,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Wiki;
 
-class ImportManager
+class CSVManager
 {
     protected $debug;
     protected $entryManager;

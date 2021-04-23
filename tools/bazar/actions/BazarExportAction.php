@@ -2,11 +2,11 @@
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ImportManager;
+use YesWiki\Bazar\Service\CSVManager;
 
 class BazarExportAction extends YesWikiAction
 {
-    private $importManager;
+    private $CSVManager;
     private $formManager;
 
     public function formatArguments($arg)
@@ -30,14 +30,14 @@ class BazarExportAction extends YesWikiAction
         }
 
         // get services
-        $this->importManager = $this->getService(ImportManager::class);
+        $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
 
         // get Forms
         $forms = $this->formManager->getAll();
 
         // get CSV
-        $csv_raw = $this->importManager->getCSVfromFormId($this->arguments['id'], $this->arguments['q']) ;
+        $csv_raw = $this->CSVManager->getCSVfromFormId($this->arguments['id'], $this->arguments['q']) ;
 
         return $this->render('@bazar/bazar-export.twig', [
             'id' => $this->arguments['id'],
@@ -45,7 +45,7 @@ class BazarExportAction extends YesWikiAction
             'params' => [
                 BAZ_VARIABLE_VOIR => BAZ_VOIR_EXPORTER],
             'selectedForm' => $this->formManager->getOne($this->arguments['id']),
-            'csv' => $this->importManager->arrayToCSV($csv_raw),
+            'csv' => $this->CSVManager->arrayToCSV($csv_raw),
             'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0 ,
         ]);
     }
