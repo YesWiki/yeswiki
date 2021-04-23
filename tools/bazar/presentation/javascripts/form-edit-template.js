@@ -564,6 +564,7 @@ var yesWikiTypes = {
   listedatefin: { type: "date" },
   jour: { type: "date" },
   map: { type: "map" },
+  carte_google: { type: "map" },
   checkbox: { type: "checkbox-group", subtype2: "list" },
   liste: { type: "select", subtype2: "list" },
   radio: { type: "radio-group", subtype2: "list" },
