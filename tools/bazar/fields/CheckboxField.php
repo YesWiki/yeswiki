@@ -21,7 +21,7 @@ abstract class CheckboxField extends EnumField
         self::CHECKBOX_DISPLAY_MODE_LIST => '@bazar/inputs/checkbox_list.twig',
     ];
 
-    protected const SUFFIX = '_raw' ;
+    protected const FROM_FORM_ID = '_fromForm' ;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -49,7 +49,8 @@ abstract class CheckboxField extends EnumField
                     'selectedOptionsId' => $this->getValues($entry),
                     'formName' => ($this->formName) ?? $this->getFormName(),
                     'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
-                    'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']
+                    'height' => empty($GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->config['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'],
+                    'oldValue' => $this->getValue($entry)
                 ]);
                 break ;
             default:
@@ -65,7 +66,8 @@ abstract class CheckboxField extends EnumField
                     'options' => $this->getOptions(),
                     'values' => $this->getValues($entry),
                     'displaySelectAllLimit' => $this->displaySelectAllLimit,
-                    'displayFilterLimit' => $this->displayFilterLimit
+                    'displayFilterLimit' => $this->displayFilterLimit,
+                    'oldValue' => $this->getValue($entry)
                 ]);
         }
     }
@@ -79,24 +81,30 @@ abstract class CheckboxField extends EnumField
     public function formatValuesBeforeSave($entry)
     {
         if ($this->canEdit($entry)) {
-            if (isset($entry[$this->propertyName . self::SUFFIX])) {
-                $checkboxField = $entry[$this->propertyName . self::SUFFIX] ;
-                if (is_array($checkboxField)) {
-                    $checkboxField = array_filter($checkboxField, function ($value) {
-                        return ($value == 1 || $value == true || $value == 'true') ;
-                    });
-                    $entry[$this->propertyName] = implode(',', array_keys($checkboxField)) ;
-                } else {
-                    $entry[$this->propertyName] = $checkboxField ;
+            // get value
+            $checkboxField = $entry[$this->propertyName] ;
+            // detect if from Form to check if clean field
+            if (isset($entry[$this->propertyName . self::FROM_FORM_ID])) {
+                $oldValue = $entry[$this->propertyName . self::FROM_FORM_ID];
+                $oldValue = ($oldValue == "''") ? '' : $oldValue ;
+                if (!is_array($checkboxField) && ($checkboxField == $oldValue)) {
+                    $checkboxField = '' ;
                 }
-                unset($entry[$this->propertyName . self::SUFFIX]) ;
+            }
+            
+            // format value
+            if (is_array($checkboxField)) {
+                $checkboxField = array_filter($checkboxField, function ($value) {
+                    return ($value == 1 || $value == true || $value == 'true') ;
+                });
+                $entry[$this->propertyName] = implode(',', array_keys($checkboxField)) ;
             } else {
-                $entry[$this->propertyName] = '' ;
+                $entry[$this->propertyName] = $checkboxField ;
             }
         }
         return [$this->propertyName => $this->getValue($entry) ,
             'fields-to-remove' => [
-                $this->propertyName . self::SUFFIX,
+                $this->propertyName . self::FROM_FORM_ID,
                 $this->propertyName
                 ]];
     }
@@ -137,9 +145,9 @@ abstract class CheckboxField extends EnumField
         return $script ;
     }
 
-    public function getSuffix(): string
+    public function getFromFormId(): string
     {
-        return self::SUFFIX ;
+        return self::FROM_FORM_ID ;
     }
 
     protected function getFormName()

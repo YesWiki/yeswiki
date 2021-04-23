@@ -1,5 +1,6 @@
 {% extends "@bazar/layouts/input.twig" %}
 
 {% block input %}
-    <input type="text" name="{{ field.propertyName  ~ field.suffix }}" class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}">
+    <input type="text" name="{{ field.propertyName }}" class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}">
+    <input type="hidden" value="''" name="{{ field.propertyName  ~ field.fromFormId }}">
 {% endblock %}

@@ -18,7 +18,7 @@
 		  {% block item_option %}
             <label for="{{ field.propertyName ~ '[' ~ key ~ ']' }}">
 			  {% apply spaceless %}
-                <input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ field.suffix ~ '[' ~ key ~ ']' }}" {% if key in values %}checked{% endif %} />
+                <input class="element_checkbox" type="checkbox" id="{{ field.propertyName ~ '[' ~ key ~ ']' }}" value="1" name="{{ field.propertyName ~ '[' ~ key ~ ']' }}" {% if key in values %}checked{% endif %} />
                 <span>{{ option|raw }}</span>
 			  {% endapply %}
             </label>
@@ -27,5 +27,6 @@
         {% endfor %}
     </div>
 	{% endblock %}
+	<input type="hidden" value="{{ oldValue ?? '\'\''}}" name="{{ field.propertyName  ~ field.fromFormId }}">
 {{ include_javascript('tools/tags/libs/vendor/bootstrap-tagsinput.min.js') }}
 {% endblock %}
