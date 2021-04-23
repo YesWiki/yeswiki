@@ -309,6 +309,10 @@ class CSVManager
                 $entry = array_map('strval', $entry);
 
                 $entry['antispam'] = 1;
+                if (isset($entry['id_fiche'])) {
+                    // to prevent errors when several entries with same bf_titre
+                    unset($entry['id_fiche']);
+                }
                 $entry = $this->entryManager->create($formId, $entry);
 
                 if ($entry) {
