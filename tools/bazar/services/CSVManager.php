@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\FileField;
@@ -263,7 +262,7 @@ class CSVManager
                 $values = array_map(function ($tag) use ($options) {
                     return $options[$tag] ?? $tag;
                 }, $values);
-                $newValue = $this->arrayToCSV([$values]);
+                $newValue = trim($this->arrayToCSV([$values]));
             } else {
                 $newValue = $value;
             }
@@ -388,16 +387,7 @@ class CSVManager
         $columnIndexes = [];
         foreach ($headers as $propertyName => $header) {
             if (isset($firstLine[$index])) {
-                // backward compatibility for map
-                if ($header['field'] instanceof MapField
-                    || $header['field'] instanceof UserField
-                    ) {
-                    // field on two columns
-                    $columnIndexes[$propertyName] = [$index,$index+1];
-                    ++$index;
-                } else {
-                    $columnIndexes[$propertyName] = $index;
-                }
+                $columnIndexes[$propertyName] = $index;
             }
             ++$index;
         }
@@ -417,9 +407,7 @@ class CSVManager
         $entry = [];
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
             $field = $headers[$propertyName]['field'];
-            if ($field instanceof MapField) {
-                $entry = $this->updateEntryWithMapFieldData($entry, $data, $index, $propertyName, $field);
-            } elseif (!is_array($index)) {
+            if (!empty($index)) {
                 // standard case
                 $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
@@ -434,8 +422,6 @@ class CSVManager
                     }
                     $entry[$propertyName] = $value;
                 }
-            } elseif ($field instanceof UserField) {
-                $entry = $this->updateEntryWithUserFieldData($entry, $data, $index, $propertyName, $field);
             }
         }
 
@@ -492,60 +478,6 @@ class CSVManager
         }
 
         return $value ?? null ;
-    }
-
-    /**
-     * updateEntry with MapField Data
-     * @param array $entry before update
-     * @param array $data array line from CSV file
-     * @param int|array $index
-     * @param string $propertyName
-     * @param MapField $field
-     * @return array $entry after update
-     */
-    private function updateEntryWithMapFieldData(array $entry, array $data, $index, string $propertyName, MapField $field):array
-    {
-        if (!is_array($index)) {
-            // retrieve data from one columns
-            $value = $this->getValueFromData($data, $index);
-            $values = (empty($value)) ? null : explode('|', $value);
-            if (!empty($values[0]) && !empty($values[1])) {
-                $latitude = $values[0];
-                $longitude = $values[1];
-            }
-        } else {
-            // retrieve data from two columns
-            $latitude = $this->getValueFromData($data, $index[0]);
-            $longitude = $this->getValueFromData($data, $index[1]);
-        }
-        if (!empty($latitude) && !empty($longitude)) {
-            $entry[$field->getPropertyName()] = $latitude . '|' . $longitude;
-            $entry[$field->getLatitudeField()] = $latitude ;
-            $entry[$field->getLongitudeField()] = $longitude;
-        }
-        return $entry;
-    }
-
-    /**
-     * updateEntry with UserField Data
-     * @param array $entry before update
-     * @param array $data array line from CSV file
-     * @param int $index
-     * @param string $propertyName
-     * @param UserField $field
-     * @return array $entry after update
-     */
-    private function updateEntryWithUserFieldData(array $entry, array $data, int $index, string $propertyName, UserField $field):array
-    {
-        $nomwiki = $this->getValueFromData($data, $index[0]);
-        if (!empty($nomwiki)) {
-            $entry['nomwiki'] = $nomwiki;
-        }
-        $passwordMd5 = $this->getValueFromData($data, $index[1]);
-        if (!empty($passwordMd5)) {
-            $entry['mot_de_passe_wikini'] = $passwordMd5;
-        }
-        return $entry;
     }
 
     /**
