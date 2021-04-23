@@ -31,10 +31,10 @@
   display: none !important;
 }
 
-.carte_google-field .label-wrap,
-.carte_google-field .value-wrap,
-.carte_google-field .required-wrap,
-.carte_google-field .name-wrap {
+.map-field .label-wrap,
+.map-field .value-wrap,
+.map-field .required-wrap,
+.map-field .name-wrap {
   display: none !important;
 }
 
