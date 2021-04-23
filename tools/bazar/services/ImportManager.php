@@ -358,8 +358,8 @@ class ImportManager
                     && $firstLine[$index] == $header['field']->getLatitudeField()
                     && $firstLine[$index+1] == $header['field']->getLongitudeField()
                 ) || (
-                        $header['field'] instanceof UserField
-                    )) {
+                    $header['field'] instanceof UserField
+                )) {
                     // field on two columns
                     $columnIndexes[$propertyName] = [$index,$index+1];
                     ++$index;
@@ -630,7 +630,6 @@ class ImportManager
             }
         } else {
             $this->errormsg[] = _t('BAZ_FILE_NOT_FOUND').' : '.$fileUrl;
-            $this->error = true;
         }
 
         return $value ;
