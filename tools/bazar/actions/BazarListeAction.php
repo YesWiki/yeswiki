@@ -182,7 +182,7 @@ class BazarListeAction extends YesWikiAction
                 'formsIds' => $this->arguments['idtypeannonce'],
                 'keywords' => $_REQUEST['q'] ?? '',
                 'user' => $this->arguments['user'],
-                'dateMin' => $this->arguments['dateMin']
+                'minDate' => $this->arguments['dateMin']
             ]);
 
             // Add display data to all entries
