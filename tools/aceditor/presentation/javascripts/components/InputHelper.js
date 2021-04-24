@@ -3,7 +3,7 @@
 export default {
   methods: {
     componentIdFrom(config) {
-      return `input-${['text', 'number', 'range', 'url'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
+      return `input-${['text', 'number', 'range', 'url', 'email'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
     },
     // Whether or not display this field (and include it's key/value in the action params)
     display(config) {
