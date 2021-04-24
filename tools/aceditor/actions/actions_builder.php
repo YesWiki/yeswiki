@@ -9,14 +9,19 @@ $data = baz_forms_and_lists_ids();
 // Bazar actions documentation, read from Yaml file
 $docFiles = glob('docs/actions/*.yaml');
 $extensionDocFiles = glob('tools/**/actions/documentation.yaml', GLOB_BRACE);
+$customDocFiles = glob('custom/actions/documentation.yaml');
 $docFiles = array_merge($docFiles, $extensionDocFiles);
+$docFiles = array_merge($docFiles, $customDocFiles);
 $data['action_groups'] = [];
 foreach ($docFiles as $filePath) {
     $filename = pathinfo($filePath)['filename'];
     if ($filename == 'documentation') {
         // find key from filePath between tools and actions
         $matches = [];
-        if (preg_match('/tools(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)) {
+        if (preg_match('/tools(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
+            ||
+            preg_match('/(custom)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
+            ) {
             $key = $matches[1];
         } else {
             $key = $filename;
