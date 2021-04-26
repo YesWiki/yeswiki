@@ -214,7 +214,7 @@ class CSVManager
                     $value = $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
                 } elseif ($header['field'] instanceof  EnumField
                     && !($header['field'] instanceof TagsField)) {
-                    $value = $this->getLabelsFromEnumFieldOptions($value, $header['field']);
+                    $value = $this->getLabelsFromEnumFieldOptions($value, $header['field'], $entry);
                 }
             }
             if ($header['field'] instanceof  MapField) {
@@ -257,12 +257,33 @@ class CSVManager
 
     /**
      * getLabelsFromEnumFieldOptions
-     * @param string $value
+     * @param mixed $value
      * @param BazarEnumFieldField $field
+     * @param array $entry
      * @return mixed array|string|null
      */
-    private function getLabelsFromEnumFieldOptions(string $value, EnumField $field)
+    private function getLabelsFromEnumFieldOptions($value, EnumField $field, array $entry)
     {
+        // prevent errors when entries are saved with array in values for entry
+        // (bug from old doryphore version but it is better not to block export)
+        if (is_array($value)) {
+            $reasonMessage = 'an array : '.json_encode($value)
+                . ', which has been exported to string (not maintained). ';
+            $value = implode(',', array_values($value));
+        }
+        
+        if (!is_string($value)) {
+            $reasonMessage = 'this : '.json_encode($value)
+                    . ', which was replaced by null. ';
+            $value = null;
+        }
+        if ($this->debug && !empty($reasonMessage)) {
+            trigger_error('Error when exporting \''.$field->getPropertyName().'\''
+            .' from entry \''.($entry['id_fiche'] ?? '<no id_fiche>').'\'.'.
+            ' Waiting a string, giving ' . $reasonMessage
+            .'You should edit and save this entry to prevent error.');
+        }
+
         if (!empty($value)) {
             $options = $field->getOptions();
             // explode values
