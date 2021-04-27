@@ -304,8 +304,10 @@ class BazarListeAction extends YesWikiAction
                     // Formatte la liste des resultats en fonction de la source
                     if ($facettable['type'] == 'liste') {
                         $field = $this->findFieldByName($forms, $facettable['source']);
-                        $list['titre_liste'] = $field->getLabel();
-                        $list['label'] = $field->getOptions();
+                        if ($field instanceof BazarField) {
+                            $list['titre_liste'] = $field->getLabel();
+                            $list['label'] = $field->getOptions();
+                        }
                     } elseif ($facettable['type'] == 'fiche') {
                         $field = $this->findFieldByName($forms, $facettable['source']);
                         if ($field instanceof BazarField) {
