@@ -131,7 +131,7 @@ if (count($fiches)>0) :
 			$js.= 'provider = L.tileLayer.provider("'.$param['provider'].'");' ;
 			$js.= 'baseLayers["'.$param['provider'].'"] = provider ;' ;
 		}*/
-		if( ! is_array($param['providers']) ){
+		if( empty($param['providers']) ){
 			$param['providers'] = array($param['provider']);
 		}
 		foreach( $param['providers'] as $provider ) {
