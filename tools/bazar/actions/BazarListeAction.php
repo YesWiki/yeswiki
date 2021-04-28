@@ -13,6 +13,8 @@ class BazarListeAction extends YesWikiAction
     protected const BAZARCARTO_TEMPLATES = ["map","gogomap"] ; // liste des templates sans .twig ni .tpl.html
     protected const CALENDRIER_TEMPLATES = ["calendar"] ; // liste des templates sans .twig ni .tpl.html
 
+    protected $debug;
+
     public function formatArguments($arg)
     {
         // ICONS FIELD
@@ -145,6 +147,9 @@ class BazarListeAction extends YesWikiAction
 
     public function run()
     {
+        // for debug
+        $this->debug = ($this->wiki->GetConfigValue('debug') =='yes');
+
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
         if (self::specialActionFromTemplate($this->arguments['template'], "BAZARCARTO_TEMPLATES")
@@ -302,15 +307,21 @@ class BazarListeAction extends YesWikiAction
                 foreach ($facettables as $id => $facettable) {
                     $list = [];
                     // Formatte la liste des resultats en fonction de la source
-                    if ($facettable['type'] == 'liste') {
+                    if (in_array($facettable['type'], ['liste','fiche'])) {
                         $field = $this->findFieldByName($forms, $facettable['source']);
-                        if ($field instanceof BazarField) {
+                        if (!($field instanceof BazarField)) {
+                            if ($this->debug) {
+                                trigger_error("Waiting field instanceof BazarField from findFieldByName, ".
+                                    (
+                                        (is_null($field)) ? 'null' : (
+                                            (gettype($field) == "object") ? get_class($field) : gettype($field)
+                                        )
+                                    ) . ' returned');
+                            }
+                        } elseif ($facettable['type'] == 'liste') {
                             $list['titre_liste'] = $field->getLabel();
                             $list['label'] = $field->getOptions();
-                        }
-                    } elseif ($facettable['type'] == 'fiche') {
-                        $field = $this->findFieldByName($forms, $facettable['source']);
-                        if ($field instanceof BazarField) {
+                        } elseif ($facettable['type'] == 'fiche') {
                             $formId = $field->getName() ;
                             $form = $forms[$formId];
                             $list['titre_liste'] = $form['bn_label_nature'];
