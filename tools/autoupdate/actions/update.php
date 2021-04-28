@@ -32,14 +32,19 @@ if ($endUpdate) {
         // check presence of theme margot
         $themeManager = $this->services->get(ThemeManager::class) ;
         if (!$themeManager->loadTheme()) {
-            // upgrade margot
-            $get = $_GET;
-            $get['upgrade'] = THEME_PAR_DEFAUT;
+            // check favorite_theme in wakka.config.php
             $autoUpdate = new AutoUpdate($this);
-            $messages = new Messages();
-            $controller = new Controller($autoUpdate, $messages, $this);
-            $resUpgradeMargot = $controller->run($get);
-            $resUpgradeMargot = (!empty($resUpgradeMargot)) ? '<hr><h3>'.THEME_PAR_DEFAUT.' update</h3>'."\n" .$resUpgradeMargot : null ;
+            $configFromFile = $autoUpdate->getWikiConfiguration();
+
+            $favoriteThemefromFile = $configFromFile->favorite_theme ?? '';
+            if (empty($favoriteThemefromFile) || $favoriteThemefromFile == 'yeswiki') {
+                // upgrade yeswikicerco theme
+                $get['upgrade'] = 'yeswikicerco';
+                $messages = new Messages();
+                $controller = new Controller($autoUpdate, $messages, $this);
+                $resUpgradeTheme = $controller->run($get);
+                $resUpgradeTheme = (!empty($resUpgradeTheme)) ? '<hr><h3>yeswikicerco theme update</h3>'."\n" .$resUpgradeTheme : null ;
+            }
         }
     } else {
         $output = '' ;
@@ -49,7 +54,7 @@ if ($endUpdate) {
         'messages' => $data['messages'],
         'baseUrl' => $data['baseURL'],
     ]);
-    $output .= (!empty($resUpgradeMargot)) ? $resUpgradeMargot :'';
+    $output .= (!empty($resUpgradeTheme)) ? $resUpgradeTheme :'';
     echo $output ;
 } else {
     $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
