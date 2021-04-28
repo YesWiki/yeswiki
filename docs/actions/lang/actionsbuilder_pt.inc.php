@@ -2,7 +2,7 @@
 // AB stands for ActionsBuilder
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     // BAZAR
-	'AB_bazar_label' => "Exibir os dados de um formulário",
+    'AB_bazar_label' => "Exibir os dados de um formulário",
     'AB_bazar_commons_search_label' => 'Barra de pesquisa',
     'AB_bazar_commons_minical' => "Exibir o conteúdo na forma de uma mini agenda",
     'AB_bazar_commons2_filter_user_as_owner' => "Exibir apenas os arquivos do usuário atual",
@@ -16,11 +16,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_bazar_commons2_filter_on_date_for_two_years' => "por dois anos",
     'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => "+/- uma semana",
     'AB_bazar_commons2_filter_index' => "'bf_date_debut_evenement' deve ser definido.",
-	// BazaarAction
+    // BazaarAction
     'AB_bazar_action_label' => "Exibir um formulário de criação de arquivo",
     'AB_bazar_action_description' => "Usado para exibir o formulário para criar um arquivo.",
     'AB_bazar_action_redirecturl_label' => "Endereço de redirecionamento após a entrada",
-	//video
+    //video
     'AB_attach_video_label' => "Vídeo incorporado",
     'AB_attach_video_description' => "Integração de um vídeo do youtube, vimeo ou peertube.",
     'AB_attach_video_serveur_label' => "Servidor do vídeo",
@@ -41,7 +41,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_attach_pdf_position_label' => "Posição do pdf",
     'AB_attach_pdf_largement_max_label' => "Largura máxima",
     'AB_attach_pdf_hauteur_max_label' => "Altura máxima",
-	// admins actions
+    // admins actions
     'AB_admin_actions_label' => 'Ferramentas de administração',
     'AB_admin_editactionsacls_label' => 'Editar direitos de acesso às ações',
     'AB_admin_edithandlersacls_label' => 'Editar direitos de acesso aos handlers',
@@ -50,7 +50,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_admin_gererdroits_label' => 'Gerenciar direitos de acesso à página',
     'AB_admin_gererthemes_label' => 'Gerenciar o tema das páginas',
     'AB_admin_setwikidefaulttheme_label' => 'Definir o tema base',
-	// advanced actions
+    // advanced actions
     'AB_advanced_actions_label' => 'Ações avançadas',
     'AB_advanced_action_backlinks_label' => 'Mostrar páginas que possuem um link para a página atual',
     'AB_advanced_action_backlinks_page_label' => 'Página base',
@@ -87,15 +87,14 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_advanced_action_textsearch_separator_label' => 'separador entre os itens encontrados',
     'AB_advanced_action_orphanedpages_label' => 'Listar as páginas órfãs',
     'AB_advanced_action_pageindex_label' => 'Listar todas as páginas',
-	'AB_advanced_action_pageonlyindex_label' => 'Listar todas as páginas exceto os arquivos bazar',
-	'AB_advanced_action_trail_label' => 'Exibir links de "Próxima página" "Resumo" "Página anterior" em uma página',
-	'AB_advanced_action_trail_toc_label' => 'Página de resumo',
-  	'AB_advanced_action_recentchanges_label' => 'Liste as últimas alterações',
-  	'AB_advanced_action_recentchanges_max_label' => 'Número máximo de alterações para exibir',
-  	'AB_advanced_action_recentchanges_period_label' => 'Data a partir da qual as alterações são exibidas',
-  	'AB_advanced_action_recentchanges_period_hint' => 'Formato: 2000-01-01 00:00:00',
-  	'AB_advanced_action_recentcomments_label' => 'Liste os comentários mais recentes',
-  	'AB_advanced_action_recentcomments_max_label' => 'Número máximo de comentários a serem exibidos',
-  	'AB_advanced_action_userstable_label' => 'Tabela dos usuários',
-    )
-     );
+    'AB_advanced_action_pageonlyindex_label' => 'Listar todas as páginas exceto os arquivos bazar',
+    'AB_advanced_action_trail_label' => 'Exibir links de "Próxima página" "Resumo" "Página anterior" em uma página',
+    'AB_advanced_action_trail_toc_label' => 'Página de resumo',
+    'AB_advanced_action_recentchanges_label' => 'Liste as últimas alterações',
+    'AB_advanced_action_recentchanges_max_label' => 'Número máximo de alterações para exibir',
+    'AB_advanced_action_recentchanges_period_label' => 'Data a partir da qual as alterações são exibidas',
+    'AB_advanced_action_recentchanges_period_hint' => 'Formato: 2000-01-01 00:00:00',
+    'AB_advanced_action_recentcomments_label' => 'Liste os comentários mais recentes',
+    'AB_advanced_action_recentcomments_max_label' => 'Número máximo de comentários a serem exibidos',
+    'AB_advanced_action_userstable_label' => 'Tabela dos usuários',
+    ));

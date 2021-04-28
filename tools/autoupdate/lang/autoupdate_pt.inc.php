@@ -9,7 +9,7 @@
 $GLOBALS['translations'] = array_merge(
     $GLOBALS['translations'],
     array(
-		'AU_ACL' => "Verificação dos direitos nos arquivos",
+        'AU_ACL' => "Verificação dos direitos nos arquivos",
         'AU_REPO_ERROR' => "Repositórios inacessíveis.",
         'AU_VERSION_WIKI' => "Versão do Wiki",
         'AU_VERSION_REPO' => "Versão disponível no repositório",
@@ -18,8 +18,8 @@ $GLOBALS['translations'] = array_merge(
         'AU_INTEGRITY' => "Verificação da integridade do arquivo",
         'AU_DECOMPRESSION' => "Descompressão do arquivo",
         'AU_UPDATE' => "Atualizar",
-          'AU_FORCE_UPDATE' => "Reinstalar",
-          'AU_VERSION_UPDATE' => "Alterar a versão",
+        'AU_FORCE_UPDATE' => "Reinstalar",
+        'AU_VERSION_UPDATE' => "Alterar a versão",
         'AU_UPDATE_TOOL' => "Atualização dos tools",
         'AU_UPDATE_PACKAGE' => "Atualização de",
         'AU_INSTALL' => "Instalar",
