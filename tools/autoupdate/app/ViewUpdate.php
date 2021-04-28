@@ -41,7 +41,7 @@ class ViewUpdate
             $data['messages'][] = $data_message;
         }
         $data['baseURL'] = $this->baseURL;
-        $data['fromCercopitheque'] = true;
+        $data['fromCercopitheque'] = (YESWIKI_VERSION == "cercopitheque");
         $_SESSION['updateMessage'] = json_encode($data);
 
         // reload wiki in doryphore version before displaying the message
