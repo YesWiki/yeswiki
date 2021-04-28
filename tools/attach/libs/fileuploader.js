@@ -1299,6 +1299,8 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     var hiddenfilenameinput = UploadModal.find('.filename');
     var imageinput = UploadModal.find('.image-option');
     var fileinput = UploadModal.find('.file-option');
+    var fileinput = UploadModal.find('.file-option');
+    var pdfinput = UploadModal.find('.pdf-option');
 
     function hideUploadModal() {
       // delete element in upload list
@@ -1339,6 +1341,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         desctxt = getParameterByName(formvals, 'attach_link_text');
       }
       var actionattach = '{{attach file="' + getParameterByName(formvals, 'filename') + '" desc="' + desctxt + '"';
+
+      var displaypdf = getParameterByName(formvals, 'attach_action_display_pdf');
+      if (typeof displaypdf != 'undefined' && displaypdf == '1') {
+        actionattach += ' displaypdf="1"';
+      }
 
       var imagesize = getParameterByName(formvals, 'attach_imagesize');
       if (typeof imagesize != 'undefined' && imagesize != '') {
@@ -1386,6 +1393,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
       onSubmit: function(id, fileName) {
         // upload modal is cleaned and showed
         fileinput.hide();
+        pdfinput.hide();
         imageinput.hide();
         UploadModal.modal('show');
       },
@@ -1400,6 +1408,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
           imageinput.show();
           hiddenfilenameinput.val(responseJSON.simplefilename);
           UploadModal.find('.attach_alt').val('image ' + responseJSON.simplefilename + ' (' + filesize.text() + ')');
+        } else if (responseJSON.extension === 'pdf') {
+          fileinput.show();
+          pdfinput.show();
+          hiddenfilenameinput.val(responseJSON.simplefilename);
+          filedownloadtext.val(responseJSON.simplefilename + ' (' + filesize.text() + ')');
         } else {
           fileinput.show();
           hiddenfilenameinput.val(responseJSON.simplefilename);
