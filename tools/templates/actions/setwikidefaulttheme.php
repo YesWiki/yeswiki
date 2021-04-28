@@ -16,11 +16,6 @@ if (!is_writable('wakka.config.php')) {
         $config = new Configuration('wakka.config.php');
         $config->load();
 
-        // load defaut params from config after LoadExtensions
-        $config->favorite_theme = $GLOBALS['wiki']->config['favorite_theme'] ?? $config->favorite_theme ?? null;
-        $config->favorite_squelette = $GLOBALS['wiki']->config['favorite_squelette'] ?? $config->favorite_squelette ?? null;
-        $config->favorite_style = $GLOBALS['wiki']->config['favorite_style'] ?? $config->favorite_style ?? null;
-
         if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
             $params = checkParamActionSetTemplate($_POST, $themes);
             if ($params !== false) {

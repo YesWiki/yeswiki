@@ -5,17 +5,19 @@ function getTemplatesList()
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles
     //et squelettes, et on les range dans le tableau $wakkaConfig['templates']
     $repertoire_initial = 'themes';
-    $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
+    if (empty($GLOBALS['wiki']->config['templates'])) {
+        $GLOBALS['wiki']->config['templates'] = search_template_files($repertoire_initial);
 
-    //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
-    if (is_dir('themes')) {
-        $repertoire_racine = 'themes';
-        $GLOBALS['wiki']->config['templates'] = array_merge(
-            $GLOBALS['wiki']->config['templates'],
-            search_template_files($repertoire_racine)
-        );
-        if (is_array($GLOBALS['wiki']->config['templates'])) {
-            ksort($GLOBALS['wiki']->config['templates']);
+        //s'il y a un repertoire themes a la racine, on va aussi chercher les templates dedans
+        if (is_dir('themes')) {
+            $repertoire_racine = 'themes';
+            $GLOBALS['wiki']->config['templates'] = array_merge(
+                $GLOBALS['wiki']->config['templates'],
+                search_template_files($repertoire_racine)
+            );
+            if (is_array($GLOBALS['wiki']->config['templates'])) {
+                ksort($GLOBALS['wiki']->config['templates']);
+            }
         }
     }
 
@@ -37,16 +39,10 @@ function showSelectTemplateForm($themes, $config)
     if (isset($config->favorite_theme)) {
         $defTheme = $config->favorite_theme;
     }
-
-    $defStyle = '';
-    if (isset($config->favorite_style)) {
-        $defStyle = $config->favorite_style;
-    }
-
-    $defSquelette = '';
-    if (isset($config->favorite_squelette)) {
-        $defSquelette = $config->favorite_squelette;
-    }
+    // load defaut params from config after LoadExtensions
+    $defTheme = $config->favorite_theme ?? $GLOBALS['wiki']->config['favorite_theme'] ?? '';
+    $defSquelette = $config->favorite_squelette ?? $GLOBALS['wiki']->config['favorite_squelette'] ?? '';
+    $defStyle = $config->favorite_style ?? $GLOBALS['wiki']->config['favorite_style'] ?? '';
 
     $defForceTheme = false;
     if (isset($config->hide_action_template) and $config->hide_action_template === '1') {
