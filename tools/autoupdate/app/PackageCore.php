@@ -17,6 +17,11 @@ class PackageCore extends Package
 
     public function upgrade()
     {
+        // check PHP if needed
+        if ($this->newVersionRequested() && !$this->PHPVersionEnoughHigh()) {
+            trigger_error(_t('AU_PHP_TOO_LOW').PHP_VERSION."\n"._t('AU_PHP_TOO_LOW_HINT'));
+            return false;
+        }
         $desPath = $this->localPath;
         if ($this->extractionPath === null) {
             throw new \Exception("Le paquet n'a pas été décompressé.", 1);
