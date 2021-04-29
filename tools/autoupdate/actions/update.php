@@ -31,15 +31,56 @@ if ($endUpdate) {
 
         // check presence of theme margot
         $themeManager = $this->services->get(ThemeManager::class) ;
-        if (!$themeManager->loadTheme()) {
-            // upgrade margot
-            $get = $_GET;
-            $get['upgrade'] = THEME_PAR_DEFAUT;
-            $autoUpdate = new AutoUpdate($this);
+      
+        // check favorite_theme in wakka.config.php
+        $autoUpdate = new AutoUpdate($this);
+        $configFromFile = $autoUpdate->getWikiConfiguration();
+        $favoriteThemefromFile = $configFromFile['favorite_theme'] ?? '';
+        
+        if (empty($favoriteThemefromFile) || $favoriteThemefromFile == 'yeswiki') {
+            // upgrade yeswikicerco theme
+            $get['upgrade'] = 'yeswikicerco';
             $messages = new Messages();
             $controller = new Controller($autoUpdate, $messages, $this);
-            $resUpgradeMargot = $controller->run($get);
-            $resUpgradeMargot = (!empty($resUpgradeMargot)) ? '<hr><h3>'.THEME_PAR_DEFAUT.' update</h3>'."\n" .$resUpgradeMargot : null ;
+            $upgradeThemeMessage = $controller->run($get);
+            
+            if (!empty($upgradeThemeMessage)) {
+                if (empty($configFromFile['favorite_theme'])) {
+                    $configFromFile['favorite_theme'] = 'yeswikicerco';
+                    $configFromFile['favorite_style'] = 'gray.css';
+                    $configFromFile['favorite_squelette'] = 'responsive-1col.tpl.html';
+                } else {
+                    $configFromFile['favorite_theme'] = 'yeswikicerco';
+                    $configFromFile['favorite_style'] = $configFromFile['favorite_style'] ?? 'gray.css';
+                    $configFromFile['favorite_squelette'] = $configFromFile['favorite_squelette'] ?? 'responsive-1col.tpl.html';
+                }
+                $configFromFile->write();
+                // reload wiki with rights values
+
+                // title
+                $data['messages'][] = [
+                    'status'=>'ok',
+                    'text'=> '=== yeswikicerco theme update ==='
+                ];
+                // extract messages
+                $matches = [];
+                if (preg_match_all(
+                    '/<li class="list-group-item">\s*<span class="pull-right label [^"]*">([^<]*)<\/span>\s([^<]*)/',
+                    $upgradeThemeMessage,
+                    $matches
+                )) {
+                    foreach ($matches[0] as $index => $match) {
+                        $data['messages'][] = [
+                            'status'=>$matches[1][$index],
+                            'text'=> str_replace("&#039;", "'", $matches[2][$index])
+                        ];
+                    }
+                }
+                $_SESSION['updateMessage'] = json_encode($data);
+                $newAdress = $data['baseURL'];
+                header("Location: ".$newAdress);
+                exit();
+            }
         }
     } else {
         $output = '' ;
@@ -49,7 +90,6 @@ if ($endUpdate) {
         'messages' => $data['messages'],
         'baseUrl' => $data['baseURL'],
     ]);
-    $output .= (!empty($resUpgradeMargot)) ? $resUpgradeMargot :'';
     echo $output ;
 } else {
     $this->addJavascriptFile('tools/templates/libs/vendor/datatables/jquery.dataTables.min.js');
