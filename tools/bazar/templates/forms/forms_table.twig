@@ -44,11 +44,11 @@
             <a class="btn btn-default btn-xs" title="{{ _t('BAZ_CSV') }}" href="{{ url({ params: { 'vue': 'exporter', 'id': key }}) }}" data-toggle="tooltip" data-placement="bottom">
               CSV
             </a>
-            <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api/fiche/' ~ key }) }}" data-toggle="tooltip" data-placement="bottom">
+            <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries'}) }}" data-toggle="tooltip" data-placement="bottom">
               JSON
             </a>
             {% if form.isSemantic %}
-              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api/fiche/' ~ key ~ '/json-ld' }) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/json-ld'}) }}" data-toggle="tooltip" data-placement="bottom">
                 JSON-LD
               </a>
             {% endif %}

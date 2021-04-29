@@ -121,9 +121,11 @@ class EntryManager
     /**
      * Return an array of fiches based on search parameters
      * @param array $params
+     * @param bool $filterOnReadACL
+     * @param bool $useGuard
      * @return mixed
      */
-    public function search($params = []): array
+    public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(
@@ -308,6 +310,11 @@ class EntryManager
             $requete .= $requeteSQL;
         }
 
+        // $filterOnReadACL
+        if (!$this->wiki->UserIsAdmin() && $filterOnReadACL) {
+            $requete .= $this->updateRequestWithACL() ?? '';
+        }
+
         // debug
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $requete . '</code><hr>';
@@ -321,7 +328,11 @@ class EntryManager
             $results = $this->dbService->loadAll($requete);
             $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
-                $data = $this->getDataFromPage($page, false, $debug);
+                // not possible to init the Guard in the constructor because of circular reference problem
+                $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
+                    ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
+                    : $page;
+                $data = $this->getDataFromPage($filteredPage, false, $debug);
                 $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
             }
         }
@@ -792,5 +803,70 @@ class EntryManager
                 }
             }
         }
+    }
+
+    /** create request for ACL
+     * @return string $request request to append to request
+     */
+    private function updateRequestWithACL():string
+    {
+        // needed ACL
+        $neededACL = ['*'];
+        // connected ?
+        $user = $this->userManager->getLoggedUser();
+        if (!empty($user)) {
+            $userName = $user['name'];
+            $neededACL[] = '+';
+            $neededACL[] = $userName;
+            $groups = $this->wiki->GetGroupsList();
+            foreach ($groups as $group) {
+                if ($this->wiki->UserIsInGroup($group, $userName, true)) {
+                    $neededACL[] = '@'.$group;
+                }
+            }
+        }
+
+        // check default readacl
+        $newRequestStart = ' AND ';
+        $newRequestEnd = '';
+        if ($this->aclService->check($this->wiki->config['default_read_acl'] ?? '*')) {
+            // current user can display pages without read acl
+            $newRequestStart .= '(';
+            $newRequestEnd = ')'.$newRequestEnd;
+
+            $newRequestStart .= 'tag NOT IN (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
+            'WHERE privilege="read")';
+
+            $newRequestStart .= ' OR (';
+            $newRequestEnd = ')'.$newRequestEnd;
+        }
+        // construct new request when acl
+        $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
+            'WHERE privilege="read"';
+        $newRequestEnd = ')'.$newRequestEnd;
+
+        // needed ACL
+        if (count($neededACL) > 0) {
+            $newRequestStart .= ' AND (';
+
+            $addOr = false;
+            foreach ($neededACL as $acl) {
+                if ($addOr) {
+                    $newRequestStart .= ' OR ';
+                } else {
+                    $addOr = true;
+                }
+                $newRequestStart .= ' list LIKE "%'.$acl.'%"';
+            }
+            $newRequestStart .= ')';
+            // not authorized ACL
+            foreach ($neededACL as $acl) {
+                $newRequestStart .= ' AND ';
+                $newRequestStart .= ' list NOT LIKE "!%'.$acl.'%"';
+            }
+        }
+
+        // return request to append
+        return $newRequestStart.$newRequestEnd;
     }
 }
