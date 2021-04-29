@@ -32,6 +32,24 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && !$entryManager->isE
 					</div>
 			    </div>
 
+				<div class="form-group pdf-option">
+					<label class="control-label col-sm-3">'._t('ATTACH_ACTION_DISPLAY_PDF_TEXT').'</label>
+					<div class="controls col-sm-9">
+					  <div class="radio inline-container"">
+					    <label>
+					      <input type="radio" name="attach_action_display_pdf" value="0" checked="checked">
+					      <span></span>
+					      '._t('ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT').'
+				        </label>
+						<label>
+					      <input type="radio" name="attach_action_display_pdf" value="1">
+					      <span></span>
+					      '._t('ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT').'
+				        </label>
+					  </div>
+					</div>
+			    </div>
+
 			    <div class="form-group image-option">
 					<label class="control-label col-sm-3">'._t('IMAGE_ALIGN').'</label>
 					<div class="controls col-sm-9">
