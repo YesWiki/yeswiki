@@ -112,6 +112,11 @@ class PackageCore extends Package
         return $result;
     }
 
+    public function PHPVersionEnoughHigh()
+    {
+        return version_compare(PHP_VERSION, '7.3.0', '>=');
+    }
+
     /***************************************************************************
      * Méthodes privée
      **************************************************************************/
