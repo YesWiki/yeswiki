@@ -289,8 +289,6 @@ var SYNTAX = {
                 },
               });
             }
-            /* get aceditor */
-            var aceditor = $('textarea#body,textarea.action-builder-anchor').data('aceditor');
             /* create modal */
             $("body").append(
               `
