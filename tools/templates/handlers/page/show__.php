@@ -25,16 +25,21 @@ if (isset($GLOBALS['template-error']) && $GLOBALS['template-error']['type'] == '
 }
 
 if (!$this->HasAccess('read')) {
-    $output = $this->Header();
-    $output .= '<body class="login-body">'."\n"
-        .'<div class="container">'."\n"
-        .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
-
     if ($contenu = $this->LoadPage("PageLogin")) {
+        $output = $this->Header();
+        $output .= '<body class="login-body">'."\n"
+            .'<div class="container">'."\n"
+            .'<div class="yeswiki-page-widget page-widget page" '.$this->Format('{{doubleclic iframe="1"}}').'>'."\n";
+        $output .= '<div class="alert alert-danger alert-error">'.
+            _t('LOGIN_NOT_AUTORIZED').', '._t('LOGIN_PLEASE_REGISTER').'.'.
+            '</div>'."\n";
         $output .= $this->Format($contenu["body"]);
+        $output .= '</div><!-- end .page-widget -->' . "\n";
+        $output .= '</div><!-- end .container -->' . "\n";
+        $output .= $this->Footer();
     } else {
         // sinon on affiche le formulaire d'identification minimal
-        $output .= str_replace(
+        $output = str_replace(
             "<i>"._t('LOGIN_NOT_AUTORIZED')."</i>",
             '<div class="alert alert-danger alert-error">'.
             _t('LOGIN_NOT_AUTORIZED').', '._t('LOGIN_PLEASE_REGISTER').'.'.
@@ -44,9 +49,6 @@ if (!$this->HasAccess('read')) {
         );
     }
     // common footer for all iframe page
-    $output .= '</div><!-- end .page-widget -->' . "\n";
-    $output .= '</div><!-- end .container -->' . "\n";
-    $output .= $this->Footer();
     exit($output);
 }
 
