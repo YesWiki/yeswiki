@@ -218,32 +218,34 @@ class EntryManager
                     $requeteSQL .= ' AND (';
                     $first = true;
                     foreach ($valcrit as $critere) {
+                        $rawCriteron = $this->convertToRawJSONStringForREGEXP($critere);
                         if (!$first) {
                             $requeteSQL .= ' ' . $params['searchOperator'] . ' ';
                         }
 
                         if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                             $requeteSQL .=
-                                'body REGEXP \'"' . $nom . '":"' . $critere . '"\'';
+                                'body REGEXP \'"' . $nom . '":"' . $rawCriteron . '"\'';
                         } else {
                             $requeteSQL .=
-                                'body REGEXP \'"' . $nom . '":("' . $critere .
-                                '"|"[^"]*,' . $critere . '"|"' . $critere . ',[^"]*"|"[^"]*,'
-                                . $critere . ',[^"]*")\'';
+                                'body REGEXP \'"' . $nom . '":("' . $rawCriteron .
+                                '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
+                                . $rawCriteron . ',[^"]*")\'';
                         }
 
                         $first = false;
                     }
                     $requeteSQL .= ')';
                 } else {
+                    $rawCriteron = $this->convertToRawJSONStringForREGEXP($val);
                     if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                         $requeteSQL .=
-                            ' AND (body REGEXP \'"' . $nom . '":"' . $val . '"\')';
+                            ' AND (body REGEXP \'"' . $nom . '":"' . $rawCriteron . '"\')';
                     } else {
                         $requeteSQL .=
-                            ' AND (body REGEXP \'"' . $nom . '":("' . $val .
-                            '"|"[^"]*,' . $val . '"|"' . $val . ',[^"]*"|"[^"]*,'
-                            . $val . ',[^"]*")\')';
+                            ' AND (body REGEXP \'"' . $nom . '":("' . $rawCriteron .
+                            '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
+                            . $rawCriteron . ',[^"]*")\')';
                     }
                 }
             }
@@ -271,8 +273,9 @@ class EntryManager
                             } else {
                                 $first = false;
                             }
+                            $rawCriteron = $this->convertToRawJSONStringForREGEXP($critere);
                             $joinrequeteSQL .=
-                                '(body REGEXP \'"' . $nom . '":"[^"]*' . $critere .
+                                '(body REGEXP \'"' . $nom . '":"[^"]*' . $rawCriteron .
                                 '[^"]*"\')';
                         }
                         $joinrequeteSQL .= ')';
@@ -282,14 +285,15 @@ class EntryManager
                         } else {
                             $first = false;
                         }
+                        $rawCriteron = $this->convertToRawJSONStringForREGEXP($val);
                         if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
                             $joinrequeteSQL .=
-                                '(body REGEXP \'"' . $nom . '":"' . $val . '"\')';
+                                '(body REGEXP \'"' . $nom . '":"' . $rawCriteron . '"\')';
                         } else {
                             $joinrequeteSQL .=
-                                '(body REGEXP \'"' . $nom . '":("' . $val .
-                                '"|"[^"]*,' . $val . '"|"' . $val . ',[^"]*"|"[^"]*,'
-                                . $val . ',[^"]*")\')';
+                                '(body REGEXP \'"' . $nom . '":("' . $rawCriteron .
+                                '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
+                                . $rawCriteron . ',[^"]*")\')';
                         }
                     }
                 }
@@ -322,6 +326,17 @@ class EntryManager
             }
         }
         return $GLOBALS['_BAZAR_'][$reqid];
+    }
+
+    /** format data as in sql
+     * @param string $rawValue
+     * @return string $formatedValue
+     */
+    private function convertToRawJSONStringForREGEXP(string $rawValue): string
+    {
+        $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue))-2);
+        $formattedValue = str_replace('\\', '\\\\', $valueJSON);
+        return $this->dbService->escape($formattedValue);
     }
 
     /**

@@ -452,9 +452,9 @@ class BazarListeAction extends YesWikiAction
             foreach ($res1 as $req) {
                 $res2 = explode('=', $req, 2);
                 if (isset($queryArray[$res2[0]]) && !empty($queryArray[$res2[0]])) {
-                    $queryArray[$res2[0]] = $queryArray[$res2[0]].','.trim($res2[1]);
+                    $queryArray[$res2[0]] = $queryArray[$res2[0]].','.trim($res2[1] ?? '');
                 } else {
-                    $queryArray[$res2[0]] = trim($res2[1]);
+                    $queryArray[$res2[0]] = trim($res2[1] ?? '');
                 }
             }
         }
