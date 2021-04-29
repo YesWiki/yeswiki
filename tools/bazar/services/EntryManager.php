@@ -121,9 +121,10 @@ class EntryManager
     /**
      * Return an array of fiches based on search parameters
      * @param array $params
+     * @param bool $useGuard
      * @return mixed
      */
-    public function search($params = []): array
+    public function search($params = [], bool $useGuard = false): array
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(
@@ -321,7 +322,11 @@ class EntryManager
             $results = $this->dbService->loadAll($requete);
             $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
             foreach ($results as $page) {
-                $data = $this->getDataFromPage($page, false, $debug);
+                // not possible to init the Guard in the constructor because of circular reference problem
+                $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
+                    ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
+                    : $page;
+                $data = $this->getDataFromPage($filteredPage, false, $debug);
                 $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
             }
         }
