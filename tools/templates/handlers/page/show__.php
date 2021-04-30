@@ -48,7 +48,6 @@ if (!$this->HasAccess('read')) {
             $plugin_output_new
         );
     }
-    // common footer for all iframe page
     exit($output);
 }
 
