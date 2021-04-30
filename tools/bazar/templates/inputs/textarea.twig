@@ -5,7 +5,7 @@
     {% if field.hint %}
         <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
     {% endif %}
-    {{ field.label }}
+    {{ field.label|raw }}
     {% if field.maxChars and field.syntax == 'nohtml' %}(<span class="charsRemaining">{{ field.maxChars }}</span> caract&egrave;res restants){% endif %}
 {% endblock %}
 
@@ -17,7 +17,7 @@
         rows="{{ field.numRows }}"
         {% if field.size %}cols="{{ field.size }}"{% endif %}
         {% if field.maxChars %}maxlength="{{ field.maxChars }}"{% endif %}
-        placeholder="{{ field.label|raw('html') }}"
+        placeholder="{{ field.label|raw('html')|striptags }}"
         {% if field.required %}required{% endif %}
     >
         {{- value -}}

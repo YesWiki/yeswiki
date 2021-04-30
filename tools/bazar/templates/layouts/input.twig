@@ -6,7 +6,7 @@
             {% if field.hint %}
                 <img class="tooltip_aide" title="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
             {% endif %}
-            {{ field.label }}         
+            {{ field.label|raw }}         
         {%- endblock -%}
     </label>
     <div class="controls col-sm-9">
