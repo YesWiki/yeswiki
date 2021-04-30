@@ -626,17 +626,6 @@ function initializeFormbuilder(formAndListIds) {
       $(this).val(newValue);
     });
 
-    // Remove accidental br at the end of the labels
-    $('.fld-label:not(.focus-initialized)')
-      .addClass('focus-initialized')
-      .on('focusout', function() {
-        var newValue = $(this).html().replace(/(<div><br><\/div>)+$/g, '')
-        // replace multiple '<div><br></div>' when at the end of the value
-        newValue = newValue.replace(/(<br>)+$/g, '')
-        // replace multiple '<br>' when at the end of the value
-        $(this).html(newValue);
-      });
-
     if ($("#form-builder-container").is(":visible")) {
       var formData = formBuilder.actions.getData();
       var wikiText = formatJsonDataIntoWikiText(formData);
@@ -720,6 +709,15 @@ function initializeFormbuilder(formAndListIds) {
   $("#formbuilder-link").click(initializeBuilderFromTextInput);
 }
 
+// Remove accidental br at the end of the labels
+function removeBR(text) {
+  var newValue = text.replace(/(<div><br><\/div>)+$/g, '')
+  // replace multiple '<div><br></div>' when at the end of the value
+  newValue = newValue.replace(/(<br>)+$/g, '')
+  // replace multiple '<br>' when at the end of the value
+  return newValue;
+}
+
 function initializeBuilderFromTextInput() {
   var jsonData = parseWikiTextIntoJsonData($formBuilderTextInput.val());
   formBuilder.actions.setData(JSON.stringify(jsonData));
@@ -757,7 +755,11 @@ function formatJsonDataIntoWikiText(formData) {
         var value = formElement[property];
         if (["required", "access"].indexOf(property) > -1)
           value = value ? "1" : "0";
-        wikiProps[key] = value;
+        if (property == "label"){
+          wikiProps[key] = removeBR(value);
+        } else {
+          wikiProps[key] = value;
+        }
       }
     }
 
