@@ -24,6 +24,10 @@ class BazarImportAction extends YesWikiAction
                     (isset($_POST['importfiche']) ? 'importentries' : 'default'),
                 'importentries' => $_POST['importfiche'] ?? null,
                 'filesData' => $_FILES['fileimport'] ?? null,
+                'bazar-import-option-detect-columns-on-headers' =>
+                    isset($_REQUEST['bazar-import-option-detect-columns-on-headers'])
+                        ? $this->formatBoolean($_REQUEST['bazar-import-option-detect-columns-on-headers'], false, '1')
+                        : true, // true if no REQUEST then test if empty
             ]);
     }
     
@@ -44,7 +48,11 @@ class BazarImportAction extends YesWikiAction
         // switch to right method
         switch ($this->arguments['mode']) {
             case 'submitfile':
-                if ($extracted = $this->CSVManager->extractCSVfromCSVFile($this->arguments['id'], $this->arguments['filesData'])) {
+                if ($extracted = $this->CSVManager->extractCSVfromCSVFile(
+                    $this->arguments['id'],
+                    $this->arguments['filesData'],
+                    $this->arguments['bazar-import-option-detect-columns-on-headers']
+                )) {
                     // append displayData
                     $extracted = array_map(function ($extract) {
                         $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0);
@@ -75,6 +83,7 @@ class BazarImportAction extends YesWikiAction
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,
             'mode' => $this->arguments['mode'],
+            'optionDetectColumnsOnHeadersChecked' => $this->arguments['bazar-import-option-detect-columns-on-headers']
         ]);
     }
 }

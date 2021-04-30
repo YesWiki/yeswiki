@@ -368,8 +368,9 @@ class CSVManager
      * extract CSV from csv file
      * @param string|null $formId
      * @param array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
+     * @param bool $detectColumnsOnHeaders
      */
-    public function extractCSVfromCSVFile(?string $formId, $filesData)
+    public function extractCSVfromCSVFile(?string $formId, $filesData, bool $detectColumnsOnHeaders = false)
     {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
@@ -386,7 +387,7 @@ class CSVManager
                         if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
                             if (($firstLine = fgetcsv($handle, 0, ',')) !== false) {
                                 if ($columnIndexesForPropertyNames =
-                                    $this->getColumnIndexesForPropertyNames($firstLine, $headers)) {
+                                    $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)) {
                                     
                                     // next lines
                                     $extracted = [];
@@ -414,27 +415,201 @@ class CSVManager
      * get columnIndexes for propertyNames
      * @param array $firstLine of the CSV from fgetcsv
      * @param array $headers from getHeaders
+     * @param bool $detectColumnsOnHeaders
      * @return array|null [$propertyName => $index, ...], null if error
      */
-    private function getColumnIndexesForPropertyNames(array $firstLine, array $headers): ?array
+    private function getColumnIndexesForPropertyNames(array $firstLine, array $headers, bool $detectColumnsOnHeaders = false): ?array
     {
-        $index = 0 ;
-        // remove date columns if existing
-        if ($firstLine[$index] == 'datetime_create') {
-            ++$index;
-        }
-        if ($firstLine[$index] == 'datetime_latest') {
-            ++$index;
-        }
-        // sweep on headers
-        $columnIndexes = [];
-        foreach ($headers as $propertyName => $header) {
-            if (isset($firstLine[$index])) {
-                $columnIndexes[$propertyName] = $index;
+        if ($detectColumnsOnHeaders) {
+            // init data
+            $firstLineIndexed = [];
+            foreach ($firstLine as $key => $val) {
+                // usefull to preserve index with splice because not possible with numeric keys
+                $firstLineIndexed['key_'.$key] = $val;
             }
-            ++$index;
+            $data = [
+                'columnIndexes' => [],
+                'firstLine' => $firstLineIndexed,
+                'headers' => $headers,
+                'originalHeadersKeys' => array_keys($headers)
+            ];
+            $data = $this->detectDateTimeHeaders($data);
+            $data = $this->detectHeadersOnFullHeader($data);
+            $data = $this->detectHeadersOnLabels($data);
+            $data = $this->detectHeadersOnLabelsWithStar($data);
+            $data = $this->detectHeadersOnPropertyName($data);
+            $data = $this->detectHeadersModifiedAfterOneDetected($data);
+            $columnIndexes = $data['columnIndexes'];
+            $columnIndexes = $this->removeDateTimeColumns($columnIndexes);
+        } else {
+            $index = 0 ;
+            // remove date columns if existing
+            if ($firstLine[$index] == 'datetime_create') {
+                ++$index;
+            }
+            if ($firstLine[$index] == 'datetime_latest') {
+                ++$index;
+            }
+            // sweep on headers
+            $columnIndexes = [];
+            foreach ($headers as $propertyName => $header) {
+                if (isset($firstLine[$index])) {
+                    $columnIndexes[$propertyName] = $index;
+                }
+                ++$index;
+            }
         }
         return !empty($columnIndexes) ? $columnIndexes : null;
+    }
+
+    /**
+     * splice array from key
+     * @param array &$line
+     * @param string $key
+     */
+    private function array_splice_from_key(array &$line, string $key)
+    {
+        $index = array_search($key, array_keys($line));
+        array_splice($line, $index, 1);
+    }
+
+    /**
+     * get column indexes for datetimes
+     * @param array $data
+     * @return array
+     */
+    private function detectDateTimeHeaders(array $data): array
+    {
+        foreach (['datetime_create','datetime_latest'] as $value) {
+            $first_found_key = array_search($value, $data['firstLine'], true);
+            if ($first_found_key !== false) {
+                $this->array_splice_from_key($data['firstLine'], $first_found_key);
+                // update columnindexes
+                $data['columnIndexes'][$value] = (int) substr($first_found_key, strlen('key_'));
+            }
+        }
+        return $data;
+    }
+
+    /**
+     * remove column indexes for datetimes
+     * @param array $columns
+     * @return array
+     */
+    private function removeDateTimeColumns(array $columns): array
+    {
+        foreach (['datetime_create','datetime_latest'] as $value) {
+            $this->array_splice_from_key($columns, $value);
+        }
+        return $columns;
+    }
+
+    /**
+     * get column indexes on condition
+     * @param array $data
+     * @return array
+     */
+    private function detectHeaders(array $data, $condition): array
+    {
+        $foundPropertyNames = [];
+        foreach ($data['headers'] as $propertyName => $header) {
+            $first_found_key = array_search($condition($propertyName, $header), $data['firstLine'], true);
+            if ($first_found_key !== false) {
+                // remove from firstLine
+                $this->array_splice_from_key($data['firstLine'], $first_found_key);
+                // to remove already found headers
+                $foundPropertyNames[] = $propertyName;
+                // update columnindexes
+                $data['columnIndexes'][$propertyName] = (int) substr($first_found_key, strlen('key_'));
+            }
+        }
+        // filter headers
+        foreach ($foundPropertyNames as $propertyName) {
+            $this->array_splice_from_key($data['headers'], $propertyName);
+        };
+        return $data;
+    }
+
+
+    /**
+     * get column indexes on fullHeaders
+     * @param array $data
+     * @return array
+     */
+    private function detectHeadersOnFullHeader(array $data): array
+    {
+        return $this->detectHeaders($data, function ($propertyName, $header) {
+            return $header['fullHeader'];
+        });
+    }
+
+    /**
+     * get column indexes on labels
+     * @param array $data
+     * @return array
+     */
+    private function detectHeadersOnLabels(array $data): array
+    {
+        return $this->detectHeaders($data, function ($propertyName, $header) {
+            return $header['field']->getLabel();
+        });
+    }
+
+    /**
+     * get column indexes on labels with stars
+     * @param array $data
+     * @return array
+     */
+    private function detectHeadersOnLabelsWithStar(array $data): array
+    {
+        return $this->detectHeaders($data, function ($propertyName, $header) {
+            return $header['field']->getLabel() . ' *';
+        });
+    }
+
+    /**
+     * get column indexes on propertyName
+     * @param array $data
+     * @return array
+     */
+    private function detectHeadersOnPropertyName(array $data): array
+    {
+        return $this->detectHeaders($data, function ($propertyName, $header) {
+            return $propertyName;
+        });
+    }
+    /**
+     * get column indexes if modified after one detected columns
+     * @param array $data
+     * @return array
+     */
+    private function detectHeadersModifiedAfterOneDetected(array $data): array
+    {
+        // not found indexes
+        $notFoundIndexes = array_map(function ($key) {
+            return (int)substr($key, strlen('key_'));
+        }, array_keys($data['firstLine']));
+        // detect modified fields after one detected
+        foreach ($notFoundIndexes as $index) {
+            $propertyNameForPreviousIndex = array_search($index-1, $data['columnIndexes'], true);
+            if ($index == 0 || $propertyNameForPreviousIndex !== false) {
+                if ($index == 0 ||$propertyNameForPreviousIndex == 'datetime_latest') {
+                    $keyIndexForPreviousPropertyName = -1;
+                } else {
+                    $keyIndexForPreviousPropertyName = array_search($propertyNameForPreviousIndex, $data['originalHeadersKeys'], true);
+                }
+                $waitedPropertyName = $data['originalHeadersKeys'][$keyIndexForPreviousPropertyName + 1] ?? null;
+                if (in_array($waitedPropertyName, array_keys($data['headers']))) {
+                    // remove from firstLine
+                    $this->array_splice_from_key($data['firstLine'], 'key_'.$index);
+                    // update columnindexes
+                    $data['columnIndexes'][$waitedPropertyName] = $index;
+                    // remove already found headers
+                    $this->array_splice_from_key($data['headers'], $waitedPropertyName);
+                }
+            }
+        }
+        return $data;
     }
 
     /**
@@ -450,7 +625,7 @@ class CSVManager
         $entry = [];
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
             $field = $headers[$propertyName]['field'];
-            if (!empty($index)) {
+            if (intval($index) == $index) {
                 // standard case
                 $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
@@ -482,8 +657,10 @@ class CSVManager
             } else {
                 $entry['statut_fiche'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];
             }
+        } else {
+            $this->errormsg[] = 'Empty $entry[\'bf_titre\'] in '.get_class($this).', line '.__LINE__;
+            return null ;
         }
-
         return !empty($entry) ? $entry : null;
     }
 

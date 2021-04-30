@@ -77,6 +77,20 @@
 {% endblock %}
 
 {% block appendToForm %}
+  <div class="control-group form-group">
+    <div class="controls col-sm-9">
+      <label>
+        <input type="hidden" name="bazar-import-option-detect-columns-on-headers[0]" value="0" />
+        <input type="checkbox" class="form-check-input" 
+          id="bazar-import-option-detect-columns-on-headers" name="bazar-import-option-detect-columns-on-headers[1]" 
+          onchange="javascript:this.form.submit();" value="1"
+          {% if optionDetectColumnsOnHeadersChecked %}checked{% endif %} />
+        <span></span>{{ _t('BAZ_IMPORT_DETECT_COLUMNS_ON_HEADERS') }}
+        <img class="tooltip_aide" title="{{ _t('BAZ_IMPORT_DETECT_COLUMNS_ON_HEADER_HINT') }}"
+          src="tools/bazar/presentation/images/aide.png" width="16" height="16" alt="image aide" />
+      </label>
+    </div>
+  </div>
   {% if id %}
     <div class="control-group form-group">
       <label class="control-label col-sm-3">{{ _t('BAZ_FICHIER_CSV_A_IMPORTER') }} :</label>
