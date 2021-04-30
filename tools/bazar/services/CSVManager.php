@@ -142,10 +142,15 @@ class CSVManager
      * @param string|null $formId
      * @param string|null $keywords for EntryManager->search
      * @param bool $fakeMode to create a template
+     * @param bool $keysInsteadOfValues to export keys insteadof values
      * @return array|null csv; null is empty or error
      */
-    public function getCSVfromFormId(?string $formId, ?string $keywords = null, bool $fakeMode = false):?array
-    {
+    public function getCSVfromFormId(
+        ?string $formId,
+        ?string $keywords = null,
+        bool $fakeMode = false,
+        bool $keysInsteadOfValues = false
+    ):?array {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
                 $csv_raw = [];
@@ -156,8 +161,10 @@ class CSVManager
                 // add header to csv_raw
                 $csv_raw[] = array_values(array_merge(
                     $fakeMode ? [] : ['datetime_create','datetime_latest'],
-                    array_map(function ($fieldHeader) {
-                        return $fieldHeader['fullHeader'];
+                    array_map(function ($fieldHeader) use ($keysInsteadOfValues) {
+                        return $keysInsteadOfValues
+                            ? $fieldHeader['field']->getPropertyName()
+                            : $fieldHeader['fullHeader'];
                     }, $headers)
                 ));
 
@@ -168,7 +175,7 @@ class CSVManager
                         'keywords' => $keywords
                         ]);
                     foreach ($entries as $entry) {
-                        $csv_line = $this->getCSVLineFromEntry($entry, $headers);
+                        $csv_line = $this->getCSVLineFromEntry($entry, $headers, $keysInsteadOfValues);
                         if ($csv_line) {
                             $csv_raw[] = $csv_line;
                         }
@@ -192,9 +199,10 @@ class CSVManager
      * getCSVLineFromEntry
      * @param array $entry
      * @param array $headers from $this->getHeaders
+     * @param bool $keysInsteadOfValues to export keys insteadof values
      * @return array|null $entry in csv or null if error
      */
-    private function getCSVLineFromEntry(array $entry, array $headers): ?array
+    private function getCSVLineFromEntry(array $entry, array $headers, bool $keysInsteadOfValues = false): ?array
     {
         // line
         $line = [];
@@ -213,7 +221,8 @@ class CSVManager
                     // ajoute l'URL de base aux images et fichiers
                     $value = $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
                 } elseif ($header['field'] instanceof  EnumField
-                    && !($header['field'] instanceof TagsField)) {
+                    && !($header['field'] instanceof TagsField)
+                    && !$keysInsteadOfValues) {
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field'], $entry);
                 }
             }

@@ -9,3 +9,18 @@
 
 {% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}
 {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
+
+{% block appendToForm %}
+  <div class="control-group form-group">
+    <div class="controls col-sm-9">
+      <label>
+        <input type="checkbox" class="form-check-input" 
+          id="bazar-export-option-keys-instead-of-values" name="bazar-export-option-keys-instead-of-values" 
+          onchange="javascript:this.form.submit();" value="1"
+          {% if optionKeysInsteadOfValuesChecked %}checked{% endif %} />
+        <span></span>{{ _t('BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES') }}
+      </label>
+    </div>
+  </div>
+  {{ parent() }}
+{% endblock %}

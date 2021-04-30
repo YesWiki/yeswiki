@@ -130,6 +130,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_NOMBRE_FICHE_IMPORTE' => 'Nombre de fiche(s) import&eacute;e(s) : ',
         'BAZ_IMPORTER' => 'Importer',
         'BAZ_EXPORTER' => 'Exporter',
+        'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Exporter les clés plutôt que les valeurs (plus stable pour les imports mais moins lisible)',
         'BAZ_NON' => 'Non',
         'BAZ_ANNULER' => 'Annuler',
         'BAZ_VALIDER' => 'Valider',
