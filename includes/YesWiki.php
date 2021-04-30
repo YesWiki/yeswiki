@@ -1367,7 +1367,7 @@ class Wiki
                 // TODO remove this compatibility after 2021-06-30
                 if ($debug) {
                     trigger_error("Your are using 'config.yml' in '".$pluginBase
-                        .'\'. Rename it as \'config.yaml\' because compatibility with .yml files will not be maintain after 2021-06-30!', E_USER_WARNING);
+                        .'\'. Rename it as \'config.yaml\' because compatibility with .yml files will not be maintained after 2021-06-30!', E_USER_WARNING);
                 }
                 $loader->load('config.yml');
             }
