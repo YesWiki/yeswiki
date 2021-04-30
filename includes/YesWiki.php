@@ -1346,6 +1346,8 @@ class Wiki
         $this->services->setParameter('max-upload-size', $this->file_upload_max_size());
 
         // Load all services
+        // TODO remove next line when compatibility with .yml not maintained
+        $debug = ($this->GetConfigValue('debug')=='yes');
         foreach ($this->extensions as $k => $pluginBase) {
             $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
 
@@ -1359,7 +1361,14 @@ class Wiki
             }
 
             // TODO load the user-defined configs after this loop
-            if (file_exists($pluginBase . 'config.yml')) {
+            if (file_exists($pluginBase . 'config.yaml')) {
+                $loader->load('config.yaml');
+            } elseif (file_exists($pluginBase . 'config.yml')) {
+                // TODO remove this compatibility after 2021-06-30
+                if ($debug) {
+                    trigger_error("Your are using 'config.yml' in '".$pluginBase
+                        .'\'. Rename it as \'config.yaml\' because compatibility with .yml files will not be maintain after 2021-06-30!', E_USER_WARNING);
+                }
                 $loader->load('config.yml');
             }
 

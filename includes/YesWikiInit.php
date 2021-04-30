@@ -281,7 +281,7 @@ class Init
         $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
 
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
-        $loader->load('services.yml');
+        $loader->load('services.yaml');
 
         return $containerBuilder;
     }

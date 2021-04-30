@@ -61,7 +61,7 @@ use `namespace YesWiki\Custom\Field;`
 
 Puts your custom fields in `custom/services`
 use `namespace YesWiki\Custom\Service;`
-and create the file`custom/config.yml` with
+and create the file`custom/config.yaml` with
 
 ```
 services:
@@ -77,7 +77,7 @@ services:
 
 Puts your custom fields in `custom/controller`
 use `namespace YesWiki\Custom\Controller;`
-and create the file`custom/config.yml` with
+and create the file`custom/config.yaml` with
 
 ```
 services:

@@ -1,6 +1,6 @@
 parameters:
   hello_world:
-    my_param: 'this is a test param defined in tools/helloworld/config.yml. It can be ovewritten in wakka.config.php'
+    my_param: 'this is a test param defined in tools/helloworld/config.yaml. It can be ovewritten in wakka.config.php'
 
 services:
   _defaults:
