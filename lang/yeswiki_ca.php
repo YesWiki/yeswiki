@@ -28,7 +28,7 @@
 *@copyright     2014 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array(
+$GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // wakka.php
 'UNKNOWN_ACTION' => 'Acció desconeguda',
@@ -324,4 +324,4 @@ $GLOBALS['translations'] = array(
 'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'Directament al directori de YesWiki. Així que ho hagueu fet, el vostre YesWiki ha de funcionar correctament',
 'TRY_AGAIN' => 'Proveu-ho una altra vegada',
 
-);
+));

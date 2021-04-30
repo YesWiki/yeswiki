@@ -28,7 +28,7 @@
 *@copyright     2014 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array(
+$GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // wakka.php
 'INVALID_ACTION' => 'Action invalide',
@@ -442,4 +442,4 @@ $GLOBALS['translations'] = array(
 'THEME_MANAGER_AND_REPAIR' => ' et réparer le site',
 'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'administrateur pour faire la mise à jour.',
 
-);
+));

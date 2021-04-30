@@ -28,7 +28,7 @@
 *@copyright     2016 Outils-Réseaux
 */
 
-$GLOBALS['translations'] = array(
+$GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // wakka.php
 'UNKNOWN_ACTION' => 'Acción desconocida',
@@ -333,4 +333,4 @@ $GLOBALS['translations'] = array(
 'THEME_MANAGER_AND_REPAIR' => ' y reparar el sitio',
 'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Conectaya como administrador para actualizar.',
 
-);
+));
