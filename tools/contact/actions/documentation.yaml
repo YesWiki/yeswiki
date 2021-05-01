@@ -1,0 +1,41 @@
+label: _t(AB_contact_groupe_label)
+# onlyForAdmins: true
+previewHeight: 200px
+actions:
+  abonnement:
+    label: _t(AB_abonnement_action_label)
+    # TODO add properties
+  contact:
+    label: _t(AB_contact_action_label)
+    properties:
+      mail:
+        label: _t(AB_contact_action_mail_label)
+        type: email
+        required: true
+      entete:
+        label: _t(AB_contact_action_entete_label)
+        type: text
+      template:
+        label: _t(AB_contact_action_template_label)
+        hint: _t(AB_contact_action_template_hint)
+        type: text
+        advanced: true
+      class:
+        label: _t(AB_contact_action_class_label)
+        type: text
+        advanced: true
+  deabonnement:
+    label: _t(AB_deabonnement_action_label)
+    # TODO add properties
+  listsubscription:
+    label: _t(AB_listsubscription_action_label)
+    # TODO add properties
+  mailinglist:
+    label: _t(AB_mailinglist_action_label)
+    description: _t(AB_mailinglist_action_description)
+    # TODO add properties
+  mailperiod:
+    label: _t(AB_mailperiod_action_label)
+  userlistsubscription:
+    label: userlistsubscription
+    # TODO add properties

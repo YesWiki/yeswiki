@@ -108,6 +108,19 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_REPLY' => 'Vous pouvez lui écrire un message à',
 'CONTACT_REPLY2' => 'en répondant à ce mail',
 
-
+// action-builder Contact
+'AB_contact_groupe_label' => "Actions d'envoi d'e-mail/listes",
+'AB_abonnement_action_label' => "S'abonner à une liste de diffusion",
+'AB_deabonnement_action_label' => "Se désabonner d'une liste de diffusion",
+'AB_contact_action_label' => "Afficher un formulaire de contact",
+'AB_contact_action_mail_label' => "E-mail du destinataire",
+'AB_contact_action_entete_label' => "En-tête",
+'AB_contact_action_template_label' => "Template personnalisé",
+'AB_contact_action_template_hint' => "Ex. : complete-contact-form.tpl.html",
+'AB_contact_action_class_label' => "classe css",
+'AB_listsubscription_action_label' => "listsubscription",
+'AB_mailperiod_action_label' => "Suivre les modifications sur une page",
+'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
+'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
 
 ));
