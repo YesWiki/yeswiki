@@ -1,6 +1,6 @@
 label: _t(AB_advanced_actions_label)
 position: 1999
-onlyForAdmins: true
+# onlyForAdmins: true
 previewHeight: 200px
 actions:
   backlinks:
