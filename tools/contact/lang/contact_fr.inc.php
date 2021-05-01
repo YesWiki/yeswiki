@@ -109,7 +109,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_REPLY2' => 'en répondant à ce mail',
 
 // action-builder Contact
-'AB_contact_groupe_label' => "Actions d'envoi d'e-mail/listes",
+'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
 'AB_abonnement_action_label' => "S'abonner à une liste de diffusion",
 'AB_deabonnement_action_label' => "Se désabonner d'une liste de diffusion",
 'AB_contact_action_label' => "Afficher un formulaire de contact",

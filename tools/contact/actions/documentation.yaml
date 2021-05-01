@@ -1,4 +1,4 @@
-label: _t(AB_contact_groupe_label)
+label: _t(AB_contact_group_label)
 # onlyForAdmins: true
 previewHeight: 200px
 actions:

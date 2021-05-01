@@ -1,0 +1,6 @@
+label: _t(AB_tags_group_label)
+previewHeight: 200px
+actions:
+  admintag:
+    label: _t(AB_tags_admintag_label)
+    # TODO add properties

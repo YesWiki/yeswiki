@@ -3,6 +3,10 @@ position: 1999
 # onlyForAdmins: true
 previewHeight: 200px
 actions:
+  accordion:
+    label: _t(AB_advanced_action_accordion_label)
+    isWrapper: true
+    wrappedContentExample: _t(AB_advanced_action_accordion_example)
   backlinks:
     label: _t(AB_advanced_action_backlinks_label)
     properties:
