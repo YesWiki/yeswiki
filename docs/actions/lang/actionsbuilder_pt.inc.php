@@ -41,15 +41,15 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_attach_pdf_position_label' => "Posição do pdf",
     'AB_attach_pdf_largement_max_label' => "Largura máxima",
     'AB_attach_pdf_hauteur_max_label' => "Altura máxima",
-    // admins actions
-    'AB_admin_actions_label' => 'Ferramentas de administração',
-    'AB_admin_editactionsacls_label' => 'Editar direitos de acesso às ações',
-    'AB_admin_edithandlersacls_label' => 'Editar direitos de acesso aos handlers',
-    'AB_admin_editgroups_label' => 'Editar grupos de usuários',
-    'AB_admin_adminpages_label' => 'Mostrar os logs administrativos',
-    'AB_admin_gererdroits_label' => 'Gerenciar direitos de acesso à página',
-    'AB_admin_gererthemes_label' => 'Gerenciar o tema das páginas',
-    'AB_admin_setwikidefaulttheme_label' => 'Definir o tema base',
+    // management
+    //'AB_management_label' => 'Gestion du YesWiki', // TODO à traduire puis enlever les commentaires
+    'AB_management_editactionsacls_label' => 'Editar direitos de acesso às ações',
+    'AB_management_edithandlersacls_label' => 'Editar direitos de acesso aos handlers',
+    'AB_management_editgroups_label' => 'Editar grupos de usuários',
+    'AB_management_adminpages_label' => 'Mostrar os logs administrativos',
+    'AB_management_gererdroits_label' => 'Gerenciar direitos de acesso à página',
+    'AB_management_gererthemes_label' => 'Gerenciar o tema das páginas',
+    'AB_management_setwikidefaulttheme_label' => 'Definir o tema base',
     // advanced actions
     'AB_advanced_actions_label' => 'Ações avançadas',
     'AB_advanced_action_backlinks_label' => 'Mostrar páginas que possuem um link para a página atual',

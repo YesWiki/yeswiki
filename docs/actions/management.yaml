@@ -1,0 +1,19 @@
+label: _t(AB_management_label)
+position: 2000
+# onlyForAdmins: true
+previewHeight: 200px
+actions:
+  editactionsacls:
+    label: _t(AB_management_editactionsacls_label)
+  edithandlersacls:
+    label: _t(AB_management_edithandlersacls_label)
+  editgroups:
+    label: _t(AB_management_editgroups_label)
+  adminpages:
+    label: _t(AB_management_adminpages_label)
+  gererdroits:
+    label: _t(AB_management_gererdroits_label)
+  gererthemes:
+    label: _t(AB_management_gererthemes_label)
+  setwikidefaulttheme:
+    label: _t(AB_management_setwikidefaulttheme_label)
