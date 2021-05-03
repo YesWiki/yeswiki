@@ -6,6 +6,7 @@ use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\TagsField;
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
@@ -224,6 +225,12 @@ class CSVManager
                     && !($header['field'] instanceof TagsField)
                     && !$keysInsteadOfValues) {
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field'], $entry);
+                } elseif ($header['field'] instanceof  TextareaField
+                    && ($header['field']->getSyntax() == TextareaField::SYNTAX_WIKI)) {
+                    $value = str_replace("\\", "\\\\", $value);
+                    $value = str_replace("\"", "\\\"", $value);
+                    $value = str_replace("\n", "\\n", $value);
+                    $value = str_replace("\r", "\\r", $value);
                 }
             }
             if ($header['field'] instanceof  MapField) {
@@ -640,6 +647,12 @@ class CSVManager
                     } elseif ($field instanceof FileField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
                         $value = $this->extractValueFromFileFieldData($value, $field);
+                    } elseif ($field instanceof  TextareaField
+                        && ($field->getSyntax() == TextareaField::SYNTAX_WIKI)) {
+                        $value = str_replace("\\n", "\n", $value);
+                        $value = str_replace("\\r", "\r", $value);
+                        $value = str_replace("\\\"", "\"", $value);
+                        $value = str_replace("\\\\", "\\", $value);
                     }
                     $entry[$propertyName] = $value;
                 }

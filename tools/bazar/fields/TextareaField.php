@@ -17,9 +17,9 @@ class TextareaField extends BazarField
 
     protected const ACCEPTED_TAGS = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
 
-    protected const SYNTAX_WIKI = 'wiki-textarea';
-    protected const SYNTAX_HTML = 'html';
-    protected const SYNTAX_PLAIN = 'nohtml';
+    public const SYNTAX_WIKI = 'wiki-textarea';
+    public const SYNTAX_HTML = 'html';
+    public const SYNTAX_PLAIN = 'nohtml';
 
     public function __construct(array $values, ContainerInterface $services)
     {
