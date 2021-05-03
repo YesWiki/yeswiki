@@ -37,6 +37,8 @@ class Guard
 
         switch ($action) {
             case 'supp_fiche':
+                // it should not be possible to delete a file if not connected even if no owner (prevent spam)
+                return $ownerId != '' && $isOwner;
             case 'voir_champ':
                 return $isOwner;
 

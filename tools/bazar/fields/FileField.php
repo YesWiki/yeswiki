@@ -23,25 +23,26 @@ class FileField extends BazarField
 
         if (isset($value) && $value != '') {
             if (isset($_GET['delete_file']) && $_GET['delete_file'] == $value) {
-                if ($this->getService(Guard::class)->isAllowed('supp_fiche', (isset($entry['owner']) ? $entry['owner'] : ''))) {
+                if ($this->isAllowedToDeleteFile($entry)) {
                     if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
                         unlink(BAZ_CHEMIN_UPLOAD . $value);
                     }
                 } else {
-                    return '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
+                    $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
                 }
             }
 
             if (file_exists(BAZ_CHEMIN_UPLOAD . $value)) {
-                return $this->render('@bazar/inputs/file.twig', [
+                return ($alertMessage ?? '') .$this->render('@bazar/inputs/file.twig', [
                     'value' => $value,
                     'fileUrl' => BAZ_CHEMIN_UPLOAD . $value,
-                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, false)
+                    'deleteUrl' => $GLOBALS['wiki']->href('edit', $GLOBALS['wiki']->GetPageTag(), 'delete_file=' . $value, false),
+                    'isAllowedToDeleteFile' => $this->isAllowedToDeleteFile($entry)
                 ]);
             }
         }
 
-        return $this->render('@bazar/inputs/file.twig');
+        return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig');
     }
 
     public function formatValuesBeforeSave($entry)
@@ -87,5 +88,15 @@ class FileField extends BazarField
         }
 
         return null;
+    }
+
+    /**
+     * check if user is allowed to delete file
+     * @param array $entry
+     * @return bool
+     */
+    protected function isAllowedToDeleteFile(array $entry):bool
+    {
+        return $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
     }
 }
