@@ -4,6 +4,8 @@ namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Field\CheckboxField;
+use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\TextareaField;
@@ -331,7 +333,30 @@ class CSVManager
         $columnNumber = 1;
 
         foreach ($headers as $propertyName => $header) {
-            $line[] = 'ligne '.$lineNumber.' - champ '.$columnNumber;
+            if ($header['field'] instanceof CheckboxField || $header['field'] instanceof CheckboxEntryField) {
+                $options = $header['field']->getOptions();
+                $nb = min(3, count($options)-1);
+                $line[] = trim($this->arrayToCSV([// emulate CSV
+                        array_map(function ($index) use ($lineNumber, $columnNumber, $options) {
+                            return $options[array_keys($options)[$index]];
+                        }, range(0, $nb))
+                    ]));
+            } elseif ($header['field'] instanceof TagsField) {
+                $line[] = '"'.implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
+                    return 'ligne '.$lineNumber.' - champ '.$columnNumber.' - tag '.$index;
+                }, [1,2,3])).'"';
+            } elseif ($header['field'] instanceof EnumField) {
+                $options = $header['field']->getOptions();
+                $index = rand(0, count($options)-1);
+                $line[] = trim($this->arrayToCSV([// emulate CSV
+                        [//emulate a line
+                            'ligne '.$lineNumber.' - champ '.$columnNumber.' - ex: '.
+                            $options[array_keys($options)[$index]]
+                        ]
+                    ]));
+            } else {
+                $line[] = 'ligne '.$lineNumber.' - champ '.$columnNumber;
+            }
             ++$columnNumber;
         }
 
@@ -506,7 +531,9 @@ class CSVManager
     private function removeDateTimeColumns(array $columns): array
     {
         foreach (['datetime_create','datetime_latest'] as $value) {
-            $this->array_splice_from_key($columns, $value);
+            if (in_array($value, array_keys($columns))) {
+                $this->array_splice_from_key($columns, $value);
+            }
         }
         return $columns;
     }
