@@ -370,7 +370,7 @@ class CSVManager
      * @param array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
      * @param bool $detectColumnsOnHeaders
      */
-    public function extractCSVfromCSVFile(?string $formId, $filesData, bool $detectColumnsOnHeaders = false)
+    public function extractCSVfromCSVFile(?string $formId, $filesData, bool $detectColumnsOnHeaders = true)
     {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {

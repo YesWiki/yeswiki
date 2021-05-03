@@ -25,9 +25,12 @@ class BazarImportAction extends YesWikiAction
                 'importentries' => $_POST['importfiche'] ?? null,
                 'filesData' => $_FILES['fileimport'] ?? null,
                 'bazar-import-option-detect-columns-on-headers' =>
-                    isset($_REQUEST['bazar-import-option-detect-columns-on-headers'])
-                        ? $this->formatBoolean($_REQUEST['bazar-import-option-detect-columns-on-headers'], false, '1')
-                        : true, // true if no REQUEST then test if empty
+                    !$this->formatBoolean($_REQUEST, false, 'bazar-import-option-not-detect-columns-on-headers'),
+                'params' => array_merge(
+                    [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
+                    isset($_GET['debug']) ? ['debug' => 'yes'] : []
+                ),
+                'debug' => ($this->wiki->GetConfigValue('debug') == 'yes'),
             ]);
     }
     
@@ -76,14 +79,14 @@ class BazarImportAction extends YesWikiAction
         return $this->render('@bazar/bazar-import.twig', [
             'id' => $this->arguments['id'],
             'forms' => $forms,
-            'params' => [
-                BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
+            'params' => $this->arguments['params'],
             'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSV($csv_template) : null,
             'selectedForm' => $this->formManager->getOne($this->arguments['id']),
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,
             'mode' => $this->arguments['mode'],
-            'optionDetectColumnsOnHeadersChecked' => $this->arguments['bazar-import-option-detect-columns-on-headers']
+            'optionNotDetectColumnsOnHeadersChecked' => !$this->arguments['bazar-import-option-detect-columns-on-headers'],
+            'debug' => $this->arguments['debug']
         ]);
     }
 }
