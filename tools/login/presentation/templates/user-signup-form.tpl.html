@@ -15,7 +15,7 @@
 		</label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="name" size="40" value="<?php echo $name; ?>" 
-				pattern="[^!#@]{1}.{2,}"/><?php /* pattern for not special characters */ ?>
+				pattern="[^!#@\\\/]{1}[^\\\/]{2,}"/><?php /* pattern for not special characters */ ?>
 		</div>
  	</div>
 	<div class="control-group form-group">
