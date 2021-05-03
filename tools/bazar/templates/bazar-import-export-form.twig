@@ -34,7 +34,7 @@
         </pre>
         
         {# on cree le lien vers ce fichier #}
-        <a href="#" onclick="downloadCSV($('.precsv').html(), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;" 
+        <a href="#" onclick="downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;" 
             class="btn btn-neutral link-csv-file">
           <i class="fa fa-download"></i>
             {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}

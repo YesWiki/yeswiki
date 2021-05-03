@@ -229,10 +229,9 @@ class CSVManager
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field'], $entry);
                 } elseif ($header['field'] instanceof  TextareaField
                     && ($header['field']->getSyntax() == TextareaField::SYNTAX_WIKI)) {
-                    $value = str_replace("\\", "\\\\", $value);
-                    $value = str_replace("\"", "\\\"", $value);
-                    $value = str_replace("\n", "\\n", $value);
-                    $value = str_replace("\r", "\\r", $value);
+                    // following lines needed to export via <pre> in javascript
+                    $value = str_replace('<', htmlentities('<'), $value);
+                    $value = str_replace('>', htmlentities('>'), $value);
                 }
             }
             if ($header['field'] instanceof  MapField) {
@@ -676,10 +675,8 @@ class CSVManager
                         $value = $this->extractValueFromFileFieldData($value, $field);
                     } elseif ($field instanceof  TextareaField
                         && ($field->getSyntax() == TextareaField::SYNTAX_WIKI)) {
-                        $value = str_replace("\\n", "\n", $value);
-                        $value = str_replace("\\r", "\r", $value);
-                        $value = str_replace("\\\"", "\"", $value);
-                        $value = str_replace("\\\\", "\\", $value);
+                        $value = str_replace(htmlentities('>'), '>', $value);
+                        $value = str_replace(htmlentities('<'), '<', $value);
                     }
                     $entry[$propertyName] = $value;
                 }

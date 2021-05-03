@@ -753,3 +753,9 @@ function downloadCSV(csv, filename) {
   // Click download link
   downloadLink.click();
 }
+
+function removeCSVCrochet(str){
+  var res = str.replace(/&lt;/gm,'<');
+  res = res.replace(/&gt;/gm,'>');
+  return res;
+}
