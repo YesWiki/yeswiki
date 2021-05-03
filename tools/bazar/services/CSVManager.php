@@ -164,11 +164,11 @@ class CSVManager
                 // add header to csv_raw
                 $csv_raw[] = array_values(array_merge(
                     $fakeMode ? [] : ['datetime_create','datetime_latest'],
-                    array_map(function ($fieldHeader) use ($keysInsteadOfValues) {
-                        return $keysInsteadOfValues
-                            ? $fieldHeader['field']->getPropertyName()
-                            : $fieldHeader['fullHeader'];
-                    }, $headers)
+                    $keysInsteadOfValues
+                        ? array_keys($headers)
+                        : array_map(function ($fieldHeader) {
+                            return  $fieldHeader['fullHeader'];
+                        }, $headers)
                 ));
 
                 if (!$fakeMode) {
