@@ -334,11 +334,11 @@ class CSVManager
         foreach ($headers as $propertyName => $header) {
             if ($header['field'] instanceof CheckboxField || $header['field'] instanceof CheckboxEntryField) {
                 $options = $header['field']->getOptions();
-                $nb = min(3, count($options)-1);
+                $nb = min(3, count($options));
                 $line[] = trim($this->arrayToCSV([// emulate CSV
                         array_map(function ($index) use ($lineNumber, $columnNumber, $options) {
                             return $options[array_keys($options)[$index]];
-                        }, range(0, $nb))
+                        }, range(0, $nb-1))
                     ]));
             } elseif ($header['field'] instanceof TagsField) {
                 $line[] = '"'.implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
@@ -346,11 +346,11 @@ class CSVManager
                 }, [1,2,3])).'"';
             } elseif ($header['field'] instanceof EnumField) {
                 $options = $header['field']->getOptions();
-                $index = rand(0, count($options)-1);
+                $index = rand(1, count($options))-1;
                 $line[] = trim($this->arrayToCSV([// emulate CSV
                         [//emulate a line
-                            'ligne '.$lineNumber.' - champ '.$columnNumber.' - ex: '.
-                            $options[array_keys($options)[$index]]
+                            'ligne '.$lineNumber.' - champ '.$columnNumber.
+                            (empty($options) ? '': ' - ex: '.$options[array_keys($options)[$index]])
                         ]
                     ]));
             } else {
