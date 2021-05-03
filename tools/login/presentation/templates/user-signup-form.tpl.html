@@ -6,7 +6,7 @@
       <div class="alert alert-danger"><?php echo $error; ?></div>          
   <?php endif; ?>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_WIKINAME');?>
+		<label class="control-label col-sm-3"><?php echo _t('USER_USERNAME');?>
 			<span class='form-help fa fa-question-circle'
 				title="<?php echo _t('USERNAME_MUST_BE_WIKINAME');?>"
 				onclick="$(this).tooltip('toggle');"
@@ -15,19 +15,20 @@
 		</label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="name" size="40" value="<?php echo $name; ?>" 
-				pattern="[\w]*"/><?php /* pattern for not special characters */ ?>
+				pattern="[^!#@]{1}.{2,}"/><?php /* pattern for not special characters */ ?>
 		</div>
  	</div>
 	<div class="control-group form-group">
 		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
 		<div class="controls col-sm-9">
-			<input class="form-control" name="email" size="40" value="<?php echo $email; ?>" />
+			<input class="form-control" name="email" size="40" value="<?php echo $email; ?>" 
+				pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}"/>
 		</div>
 	</div>
 	<div class="control-group form-group">
 		<label class="control-label col-sm-3"><?php echo _t('USER_PASSWORD');?></label>
 		<div class="controls col-sm-9">
-			<input class="form-control" type="password" name="password" size="40" />
+			<input class="form-control" type="password" name="password" size="40"/>
 		</div>
 	</div>
 	<div class="control-group form-group">
