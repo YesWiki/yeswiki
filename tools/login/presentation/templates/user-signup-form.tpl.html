@@ -6,9 +6,16 @@
       <div class="alert alert-danger"><?php echo $error; ?></div>          
   <?php endif; ?>
 	<div class="control-group form-group">
-		<label class="control-label col-sm-3"><?php echo _t('USER_WIKINAME');?></label>
+		<label class="control-label col-sm-3"><?php echo _t('USER_WIKINAME');?>
+			<span class='form-help fa fa-question-circle'
+				title="<?php echo _t('USERNAME_MUST_BE_WIKINAME');?>"
+				onclick="$(this).tooltip('toggle');"
+				onmouseover="$(this).tooltip('toggle');">
+			</span>
+		</label>
 		<div class="controls col-sm-9">
-			<input class="form-control" name="name" size="40" value="<?php echo $name; ?>" />
+			<input class="form-control" name="name" size="40" value="<?php echo $name; ?>" 
+				pattern="[\w]*"/><?php /* pattern for not special characters */ ?>
 		</div>
  	</div>
 	<div class="control-group form-group">
