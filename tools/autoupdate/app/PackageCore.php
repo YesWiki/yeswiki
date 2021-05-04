@@ -119,7 +119,7 @@ class PackageCore extends Package
 
     public function PHPVersionEnoughHigh()
     {
-        return version_compare(PHP_VERSION, '7.3.0', '>=');
+        return version_compare(PHP_VERSION, $this->getNeededPHPversion(), '>=');
     }
 
     /***************************************************************************
@@ -145,5 +145,14 @@ class PackageCore extends Package
             return true;
         }
         return false;
+    }
+    
+    /**
+     * get needed PHP version // TODO get from json file from repository
+     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
+     */
+    private function getNeededPHPversion(): string
+    {
+        return '7.3.0';
     }
 }
