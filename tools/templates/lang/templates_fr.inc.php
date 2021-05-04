@@ -192,5 +192,22 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_FILE_NOT_DELETED' => ' non supprimé !',
     'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !",
     'TEMPLATE_PRESET_ERROR' => "Impossible d'appliquer ce preset, il y a une erreur !",
+    'TEMPLATE_PRESETS' => 'Configurations graphiques',
+    'TEMPLATE_CREATE_PRESET' => 'Créer sa configuration graphique',
+    'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuration graphique',
+
+    // actions-builder
+    'AB_template_group_label' => 'Mise en forme',
+    'AB_template_action_label_label' => 'Etiquette',
+    'AB_template_action_label_example' => 'Texte de votre étiquette à changer par la suite',
+    'AB_template_actions_class' => 'Classe',
+    'AB_template_actions_color' => 'Couleur',
+    'AB_template_actions_primary' => 'Primaire',
+    'AB_template_actions_secondary_1' => 'Secondaire-1',
+    'AB_template_actions_secondary_2' => 'Secondaire-2',
+    'AB_template_actions_success' => 'Succès',
+    'AB_template_actions_info' => 'Info',
+    'AB_template_actions_warning' => 'Attention',
+    'AB_template_actions_danger' => 'Danger',
     )
 );
