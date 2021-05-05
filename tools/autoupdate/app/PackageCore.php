@@ -17,13 +17,6 @@ class PackageCore extends Package
 
     public function upgrade()
     {
-        // check PHP if needed
-        if ($this->newVersionRequested() && !$this->PHPVersionEnoughHigh()) {
-            trigger_error(_t('AU_PHP_TOO_LOW').$this->getNeededPHPversion().
-                _t('AU_PHP_TOO_LOW_END').PHP_VERSION."\n"
-                ._t('AU_PHP_TOO_LOW_HINT'));
-            return false;
-        }
         $desPath = $this->localPath;
         if ($this->extractionPath === null) {
             throw new \Exception("Le paquet n'a pas été décompressé.", 1);
@@ -34,6 +27,18 @@ class PackageCore extends Package
         // get the first subfolder extracted from the zip (it contains everything)
         $dirs = array_filter(glob($this->extractionPath.'*'), 'is_dir');
         $this->extractionPath = $dirs[0].'/';
+
+        // check if PHP update needed
+        if ($this->newVersionRequested()) {
+            $neededPHPVersion = $this->getNeededPHPversionFromExtractedFolder() ;
+            if (!$this->PHPVersionEnoughHigh($neededPHPVersion)) {
+                trigger_error(_t('AU_PHP_TOO_LOW').$neededPHPVersion.
+                    _t('AU_PHP_TOO_LOW_END').PHP_VERSION."\n"
+                    ._t('AU_PHP_TOO_LOW_HINT'));
+                return false;
+            }
+        }
+
         if ($res = opendir($this->extractionPath)) {
             while (($file = readdir($res)) !== false) {
                 // Ignore les fichiers de la liste
@@ -119,9 +124,20 @@ class PackageCore extends Package
         return $result;
     }
 
-    public function PHPVersionEnoughHigh()
+    /**
+     * check if current PHP version enough high
+     * @param string $neededRevision
+     * @return bool
+     */
+    public function PHPVersionEnoughHigh(?string $neededRevision = null)
     {
-        return version_compare(PHP_VERSION, $this->getNeededPHPversion(), '>=');
+        return version_compare(
+            PHP_VERSION,
+            (empty($neededRevision))
+            ? $this->getNeededPHPversion()
+            : $neededRevision,
+            '>='
+        );
     }
 
     /**
@@ -156,5 +172,37 @@ class PackageCore extends Package
             return true;
         }
         return false;
+    }
+
+    /**
+     * get needed PHP version from json file from extracted folder
+     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
+     */
+    private function getNeededPHPversionFromExtractedFolder(): string
+    {
+        $jsonPath = $this->extractionPath . 'composer.json';
+        if (file_exists($jsonPath)) {
+            $jsonFile = file_get_contents($jsonPath);
+            if (!empty($jsonFile)) {
+                $composerData = json_decode($jsonFile, true) ;
+                if (!empty($composerData['require']['php'])) {
+                    $rawNeededPHPRevision = $composerData['require']['php'];
+                    $matches = [];
+                    // accepted format '7','7.3','7.*','7.3.0','7.3.*
+                    // and these with '^', '>' or '>=' before
+                    if (preg_match('/^(\^|>=|>)?([0-9]*)(?:\.([0-9\*]*))?(?:\.([0-9\*]*))?/', $rawNeededPHPRevision, $matches)) {
+                        $major = $matches[2];
+                        $minor = $matches[3] ?? 0;
+                        $minor = ($minor == '*') ? 0 : $minor;
+                        $fix = $matches[4] ?? 0;
+                        $fix = ($fix == '*') ? 0 : $fix;
+                        return $major.'.'.$minor.'.'.$fix;
+                    }
+                }
+            }
+        } else {
+            trigger_error('Not existing file composer.json in extracted package.');
+        }
+        return '7.3.0';
     }
 }
