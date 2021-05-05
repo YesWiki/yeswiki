@@ -54,7 +54,7 @@ class BazarExportAction extends YesWikiAction
             'forms' => $forms,
             'params' => $this->arguments['params'],
             'selectedForm' => $this->formManager->getOne($this->arguments['id']),
-            'csv' => $this->CSVManager->arrayToCSV($csv_raw),
+            'csv' => $this->CSVManager->arrayToCSVToDisplay($csv_raw),
             'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0 ,
             'optionKeysInsteadOfValuesChecked' => $this->arguments['bazar-export-option-keys-instead-of-values']
         ]);

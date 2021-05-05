@@ -80,7 +80,7 @@ class BazarImportAction extends YesWikiAction
             'id' => $this->arguments['id'],
             'forms' => $forms,
             'params' => $this->arguments['params'],
-            'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSV($csv_template) : null,
+            'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSVToDisplay($csv_template) : null,
             'selectedForm' => $this->formManager->getOne($this->arguments['id']),
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,

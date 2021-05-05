@@ -227,11 +227,6 @@ class CSVManager
                     && !($header['field'] instanceof TagsField)
                     && !$keysInsteadOfValues) {
                     $value = $this->getLabelsFromEnumFieldOptions($value, $header['field'], $entry);
-                } elseif ($header['field'] instanceof  TextareaField
-                    && ($header['field']->getSyntax() == TextareaField::SYNTAX_WIKI)) {
-                    // following lines needed to export via <pre> in javascript
-                    $value = str_replace('<', htmlentities('<'), $value);
-                    $value = str_replace('>', htmlentities('>'), $value);
                 }
             }
             if ($header['field'] instanceof  MapField) {
@@ -673,10 +668,6 @@ class CSVManager
                     } elseif ($field instanceof FileField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
                         $value = $this->extractValueFromFileFieldData($value, $field);
-                    } elseif ($field instanceof  TextareaField
-                        && ($field->getSyntax() == TextareaField::SYNTAX_WIKI)) {
-                        $value = str_replace(htmlentities('>'), '>', $value);
-                        $value = str_replace(htmlentities('<'), '<', $value);
                     }
                     $entry[$propertyName] = $value;
                 }
@@ -857,5 +848,22 @@ class CSVManager
         }
 
         return $value ;
+    }
+
+    /**
+     * convert CSV raw to string to display in <pre>
+     * @param array|null $data
+     * @return string $csvToDisplay
+     */
+    public function arrayToCSVToDisplay(?array $data):?string
+    {
+        // format file
+        $csv = $this->arrayToCSV($data) ?? '';
+
+        // replace '<' and '> by html entities to prevent error in <pre> displaying
+        $csvToDisplay = str_replace('<', htmlentities('<'), $csv);
+        $csvToDisplay = str_replace('>', htmlentities('>'), $csvToDisplay);
+
+        return $csvToDisplay;
     }
 }
