@@ -203,6 +203,6 @@ class PackageCore extends Package
         } else {
             trigger_error('Not existing file composer.json in extracted package.');
         }
-        return '7.3.0';
+        return $this->getNeededPHPversion();
     }
 }
