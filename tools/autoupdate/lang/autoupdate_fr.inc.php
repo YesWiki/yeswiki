@@ -34,7 +34,8 @@ $GLOBALS['translations'] = array_merge(
         'AU_DELETE' => "Suppression des fichiers",
         'AU_NO_DESCRIPTION' => "Description non disponible.",
         'AU_DOCUMENTATION_LINK' => "documentation",
-        'AU_PHP_TOO_LOW' => "Vous ne pouvez pas changer de version YesWiki car votre version PHP n'est pas supérieure à 7.3. Vous avez la version ",
+        'AU_PHP_TOO_LOW' => "Vous ne pouvez pas changer de version YesWiki car votre version PHP n'est pas supérieure à ",
+        'AU_PHP_TOO_LOW_END' => ". Vous avez la version ",
         'AU_PHP_TOO_LOW_HINT' => "Veuillez mettre à jour PHP sur votre serveur avant de changer de version !",
     )
 );

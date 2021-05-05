@@ -19,7 +19,9 @@ class PackageCore extends Package
     {
         // check PHP if needed
         if ($this->newVersionRequested() && !$this->PHPVersionEnoughHigh()) {
-            trigger_error(_t('AU_PHP_TOO_LOW').PHP_VERSION."\n"._t('AU_PHP_TOO_LOW_HINT'));
+            trigger_error(_t('AU_PHP_TOO_LOW').$this->getNeededPHPversion().
+                _t('AU_PHP_TOO_LOW_END').PHP_VERSION."\n"
+                ._t('AU_PHP_TOO_LOW_HINT'));
             return false;
         }
         $desPath = $this->localPath;
@@ -122,6 +124,15 @@ class PackageCore extends Package
         return version_compare(PHP_VERSION, $this->getNeededPHPversion(), '>=');
     }
 
+    /**
+     * get needed PHP version // TODO get from json file from repository
+     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
+     */
+    public function getNeededPHPversion(): string
+    {
+        return '7.3.0';
+    }
+
     /***************************************************************************
      * Méthodes privée
      **************************************************************************/
@@ -145,14 +156,5 @@ class PackageCore extends Package
             return true;
         }
         return false;
-    }
-    
-    /**
-     * get needed PHP version // TODO get from json file from repository
-     * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
-     */
-    private function getNeededPHPversion(): string
-    {
-        return '7.3.0';
     }
 }
