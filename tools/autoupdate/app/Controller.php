@@ -85,7 +85,8 @@ class Controller
             'tools' => $this->autoUpdate->repository->getToolsPackages(),
             'showCore' => true,
             'showThemes' => true,
-            'showTools' => true
+            'showTools' => true,
+            'phpVersion' => PHP_VERSION
         ]);
     }
 
