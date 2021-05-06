@@ -3,4 +3,53 @@ previewHeight: 200px
 actions:
   admintag:
     label: _t(AB_tags_admintag_label)
-    # TODO add properties
+  listpagestag:
+    label: _t(AB_tags_listpagestag_label)
+    properties:
+      tags: 
+        label: tags
+        type: text
+      type: 
+        label: type
+        type: text
+      class: 
+        label: class
+        type: text
+      nb: 
+        label: nb
+        type: number
+        min: 0
+      tri: 
+        label: tri
+        type: text
+      template:
+        label: template
+        type: text
+      shownumberinfo:
+        label: shownumberinfo
+        type: checkbox
+  nuagetag:
+    label: nuagetag
+    properties:
+      tags:
+        label: tags
+        type: text
+      class:
+        label: class
+        type: text
+      nbclasses:
+        label: nbclasses
+        type: number
+        min: 0
+      tri:
+        label: tri
+        type: text
+  rss:
+    label: rss
+    properties:
+      tags:
+        label: tags
+        type: text
+      class:
+        label: class
+        type: text

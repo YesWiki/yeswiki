@@ -97,6 +97,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_advanced_action_recentcomments_label' => 'Liste les derniers commentaires',
     'AB_advanced_action_recentcomments_max_label' => 'Nombre maximum de commentaires à afficher',
     'AB_advanced_action_userstable_label' => 'Table des utilisateurs',
-    'AB_advanced_action_accordion_label' => 'accordion : afficher des panneaux en accordéon',
-    'AB_advanced_action_accordion_example' => '{{panel title="Titre 1"}}{{end elem="panel"}}{{panel title="Titre 2"}}{{end elem="panel"}}',
+    'AB_advanced_action_configuration_label' => 'Afficher le contenu du fichier de configuration',
+    'AB_management_filemanager_label' => 'Gestion des fichiers',
 ));

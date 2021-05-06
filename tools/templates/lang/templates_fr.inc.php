@@ -209,5 +209,15 @@ $GLOBALS['translations'] = array_merge(
     'AB_template_actions_info' => 'Info',
     'AB_template_actions_warning' => 'Attention',
     'AB_template_actions_danger' => 'Danger',
+    'AB_template_action_accordion_label' => 'accordion : afficher des panneaux en accordéon',
+    'AB_template_action_accordion_example' => '{{panel title="Titre 1"}}Texte du panneau à changer par la suite{{end elem="panel"}}{{panel title="Titre 2"}}Texte du panneau à changer par la suite{{end elem="panel"}}',
+    'AB_template_action_ariane_label' => 'Fil d\'ariane',
+    'AB_template_action_col_label' => 'Colonne',
+    'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
+    'AB_template_col_size_label' => 'Largeur de la colonne',
+    'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
+    'AB_template_action_grid_example' => '{{col size="3"}}Texte de la colonne à changer par la suite{{end elem="col"}}'
+        .'{{col size="6"}}Texte de la colonne à changer par la suite{{end elem="col"}}'
+        .'{{col size="3"}}Texte de la colonne à changer par la suite{{end elem="col"}}',
     )
 );

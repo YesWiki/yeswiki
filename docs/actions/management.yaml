@@ -1,6 +1,6 @@
 label: _t(AB_management_label)
 position: 2000
-# onlyForAdmins: true
+onlyForAdmins: true
 previewHeight: 200px
 actions:
   editactionsacls:
@@ -17,3 +17,14 @@ actions:
     label: _t(AB_management_gererthemes_label)
   setwikidefaulttheme:
     label: _t(AB_management_setwikidefaulttheme_label)
+  themeselector:
+    label: themeselector
+    properties:
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        advanced: true
+  despam:
+    label: despam
+  filemanager:
+    label: _t(AB_management_filemanager_label)

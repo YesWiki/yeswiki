@@ -111,6 +111,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 // action-builder Contact
 'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
 'AB_abonnement_action_label' => "S'abonner à une liste de diffusion",
+'AB_abonnement_template_label' => "template",
+'AB_abonnement_class_label' => "classe",
+'AB_abonnement_mailinglist_label' => "Liste de diffusion",
 'AB_deabonnement_action_label' => "Se désabonner d'une liste de diffusion",
 'AB_contact_action_label' => "Afficher un formulaire de contact",
 'AB_contact_action_mail_label' => "E-mail du destinataire",

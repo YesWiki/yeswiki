@@ -1,12 +1,8 @@
 label: _t(AB_advanced_actions_label)
 position: 1999
-# onlyForAdmins: true
+onlyForAdmins: true
 previewHeight: 200px
 actions:
-  accordion:
-    label: _t(AB_advanced_action_accordion_label)
-    isWrapper: true
-    wrappedContentExample: _t(AB_advanced_action_accordion_example)
   backlinks:
     label: _t(AB_advanced_action_backlinks_label)
     properties:
@@ -180,5 +176,43 @@ actions:
         required: true
   bazarrecordsindex:
     label: _t(AB_advanced_action_bazarrecordsindex_label)
-  interwikilist:
-    label: _t(AB_advanced_action_interwikilist_label)
+  # interwikilist:
+  #   label: _t(AB_advanced_action_interwikilist_label)
+  configuration:
+    label: _t(AB_advanced_action_configuration_label)
+    properties:
+      param:
+        label: param
+        required: true
+        type: list
+        options:
+          - root_page
+          - base_url
+          - navigation_links
+          - meta_keywords
+          - meta_description
+          - wakka_name
+          - yeswiki_release
+          - yeswiki_version
+          - favorite_theme
+          - favorite_style
+          - favorite_squelette
+          - default_language
+          - charset
+          - lang
+          - theme_path
+          - wakka_version
+          - wikini_version
+  progressbar:
+    label: progressbar
+    properties: 
+      val:
+        label: val
+        required: true
+        type: number
+        min: 0
+        max: 100
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        advanced: true
