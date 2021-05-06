@@ -278,7 +278,8 @@ if (!defined('WIKINI_VERSION')) {
                 <div class="checkbox">
                   <label>
                     <input type="hidden" name="config[rewrite_mode]" value="0" />
-                    <input type="checkbox" name="config[rewrite_mode]" value="1" <?php echo $wakkaConfig['rewrite_mode'] ? 'checked' : '' ?> >
+                    <input type="checkbox" name="config[rewrite_mode]" value="1" <?php
+                      echo ($wakkaConfig['rewrite_mode'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('ACTIVATE_REDIRECTION_MODE'); ?>
                   </label>
@@ -287,7 +288,8 @@ if (!defined('WIKINI_VERSION')) {
 
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" name="config[allow_raw_html]" value="1" <?php echo $wakkaConfig['allow_raw_html'] ? '' : 'checked' ?> />
+                    <input type="checkbox" name="config[allow_raw_html]" value="1" <?php
+                      echo ($wakkaConfig['allow_raw_html'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_HTML_INSERTION'); ?>
                   </label>
@@ -296,7 +298,8 @@ if (!defined('WIKINI_VERSION')) {
 
                 <div class="checkbox">
                   <label>
-                    <input type="checkbox" name="allowRobots" value="1" <?php echo isset($wakkaConfig['allowRobots']) ? '' : 'checked' ?> />
+                    <input type="checkbox" name="config[allow_robots]" value="1" <?php
+                      echo ($wakkaConfig['allow_robots'] ?? true) ? 'checked' : '' ?> />
                     <span></span>
                     &nbsp;<?php echo _t('AUTHORIZE_INDEX_BY_ROBOTS'); ?>
                   </label>

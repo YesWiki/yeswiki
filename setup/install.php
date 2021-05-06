@@ -132,6 +132,51 @@ test(
     0
 );
 
+// Config indexation by robots
+if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
+    // update robots.txt file
+    if (file_exists('robots.txt')) {
+        $robotFile = file_get_contents('robots.txt');
+        // Append User-agent
+        $strToAppend = 'User-agent: *';
+        $endLine = "\n";
+        if (strpos($strToAppend."\r\n", $robotFile) != false) {
+            $endLine = "\r\n";
+        }
+
+        $robotFile = str_replace(
+            $strToAppend.$endLine,
+            $strToAppend.$endLine.
+            'Disallow: /'.$endLine,
+            $robotFile
+        );
+    } else {
+        $robotFile .= "User-agent: *\r\n";
+        $robotFile .= "Disallow: /\r\n";
+    }
+    // save robots.txt file
+    file_put_contents('robots.txt', $robotFile);
+
+    // set meta
+    $config['meta'] = array_merge(
+        $config['meta'] ?? [],
+        ['robots' => 'noindex,nofollow,max-image-preview:none,noarchive,noimageindex']
+    );
+}
+
+
+if (isset($config['allow_robots'])) {
+    // do not save this config because not use by YesWiki
+    unset($config['allow_robots']);
+}
+
+// update some values
+foreach (['allow_raw_html','rewrite_mode'] as $name) {
+    if (isset($config[$name])) {
+        $config[$name] = (in_array($config[$name], ['1',true,'true'])) ? true : false;
+    }
+}
+
 ?>
 <br />
 <div class="alert alert-info"><?php echo _t('NEXT_STEP_WRITE_CONFIGURATION_FILE'); ?>
