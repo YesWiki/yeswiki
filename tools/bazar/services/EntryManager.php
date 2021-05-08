@@ -765,13 +765,8 @@ class EntryManager
         $fiche['owner'] = $this->pageManager->getOwner($fiche['id_fiche']);
 
         // Fiche URL
-        $exturl = $this->wiki->GetParameter('url');
-        if (isset($exturl)) {
-            // WIP concernant l'action bazarlisteexterne
-            $arr = explode('/wakka.php', $exturl, 2);
-            $exturl = $arr[0];
-            $fiche['url'] = $exturl . '/wakka.php?wiki=' . $fiche['id_fiche'];
-        } else {
+        if (!isset($fiche['url'])) {
+            // could already be defined for entries from external json
             $fiche['url'] = $this->wiki->href('', $fiche['id_fiche']);
         }
 
