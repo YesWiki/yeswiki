@@ -74,10 +74,27 @@ class BazarListeAction extends YesWikiAction
         $template = $_GET['template'] ?? $arg['template'] ?? null ;
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
 
+        // get form ids for ExternalBazarService
+        // format id="4,https://example.com|6,7,https://example.com|6->8"
+        $ids = $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null ;
+        $externalIds = $this->getExternalUrlsFromIds($ids);
+        $externalModeActivated = !empty(array_filter($externalIds, function ($externalId) {
+            return !empty($externalId['url']);
+        }));
+        // format ids as standard
+        $ids = array_values(array_map(function ($externalId) {
+            return $externalId['id'];
+        }, $externalIds));
+
         return([
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $this->formatArray($arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
+            'idtypeannonce' => $ids,
+            // external mode
+            'externalModeActivated' => $externalModeActivated,
+            'externalIds' => $externalIds,
+            // to be able to refresh cache for external json
+            'refreshCache' => $this->formatBoolean($_GET, false, 'refreshCache'),
             // Paramètres pour une requete specifique
             'query' => $this->formatQuery($arg),
             // filtrer les resultats sur une periode données si une date est indiquée
@@ -172,13 +189,13 @@ class BazarListeAction extends YesWikiAction
         // TODO put in all bazar templates
         $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        // Are the entries on an external wiki ?
-        if (!empty($this->arguments['url'])) {
-            $forms = $externalWikiService->getForms($this->arguments['url']);
+        // External mode activated ?
+        if ($this->arguments['externalModeActivated']) {
+            $forms = $externalWikiService->getFormsForBazarListe($this->arguments['externalIds'], $this->arguments['refreshCache']);
             $entries = $externalWikiService->getEntries([
-                'url' => $this->arguments['url'],
-                'queries' => $this->arguments['query'],
-                'formsIds' => $this->arguments['idtypeannonce'],
+                'forms' => $forms,
+                'refreshCache' => $this->arguments['refreshCache'],
+                'queries' => $this->arguments['query']
             ]);
         } else {
             $forms = $formManager->getAll();
@@ -667,5 +684,40 @@ class BazarListeAction extends YesWikiAction
                         && $entryEndDate && $date->diff($entryEndDate)->invert == 0
                     );
         }
+    }
+
+    /**
+     * extract external url from ids
+     * get form ids for ExternalBazarService
+     * format id="4,https://example.com|6,7,https://example.com|6->8"
+     * @param string $ids
+     * @return array
+     */
+    private function getExternalUrlsFromIds(string $ids)
+    {
+        // external ids
+        $externalIds = [];
+        if (preg_match_all('/(?:'
+            .'(' // begin url capturing
+            .'(?:(?:https?):\/\/)' // http or https protocol
+            .'(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)' // long part to catch url
+            .'(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6})'
+            .'|(?:localhost))' // or localhost
+            .'(?::\d+)?' // optionnal port
+            .'(?:[^\s^,^|]*)?)'
+            .'\|' // following by a '|'
+            . ')?' // 0 or 1 time - capturing
+            .'([0-9]+)' // and a number
+            .'(?:->([0-9]+))?' // optionnaly following by '->' and a number
+            .'/u', $ids, $matches)) {
+            foreach ($matches[0] as $index => $match) {
+                $externalIds[] = [
+                    'url' => $matches[1][$index] ?? '',
+                    'id' => $matches[2][$index] ?? '',
+                    'localFormId' => $matches[3][$index] ?? ''
+                ];
+            }
+        }
+        return $externalIds;
     }
 }
