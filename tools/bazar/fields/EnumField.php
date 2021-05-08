@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
 
 abstract class EnumField extends BazarField
@@ -43,7 +44,7 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromJson()
     {
-        $json = getCachedUrlContent($this->name);
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name);
         $this->options = array_map(function ($entry) {
             return $entry['bf_titre'];
         }, json_decode($json, true));
