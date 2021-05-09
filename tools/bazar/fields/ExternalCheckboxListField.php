@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
 /**
- * @Field({"externalcheckboxentryfield"})
+ * @Field({"externalcheckboxlistfield"})
  */
-class ExternalCheckboxEntryField extends CheckboxEntryField
+class ExternalCheckboxListField extends CheckboxListField
 {
     protected $JSONFormAddress ;
 
@@ -20,6 +20,7 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
         $values[ExternalBazarService::FIELD_JSON_FORM_ADDR] = '';
 
         parent::__construct($values, $services);
+        $this->options = null;
     }
 
     protected function renderInput($entry)
@@ -30,28 +31,6 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
     public function formatValuesBeforeSave($entry)
     {
         return null;
-    }
-    
-    protected function renderStatic($entry)
-    {
-        // copy from parent but with different href
-        $keys = $this->getValues($entry);
-        $values = [] ;
-        foreach ($keys as $key) {
-            if (in_array($key, array_keys($this->getOptions()))) {
-                $values[$key]['value'] = $this->options[$key] ;
-                $values[$key]['href'] = $entry['external-data']['baseUrl'].'?'.$key.'/iframe' ;
-            }
-        }
-
-        return (count($values) > 0) ? $this->render('@bazar/fields/externalcheckboxentry.twig', [
-            'values' => $values
-        ]) : '' ;
-    }
-
-    protected function getFormName()
-    {
-        return '' ;
     }
 
     public function getOptions()
