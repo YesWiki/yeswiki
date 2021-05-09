@@ -113,8 +113,19 @@ function afficher_image(
     }
 }
 
-function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
+function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit', $url = '')
 {
+    if (!empty($url)) {
+        $temp = tmpfile();
+        $httpcontent  = file_get_contents($url);
+        if (empty($httpcontent)) {
+            $image_src = null;
+            fclose($temp);
+        } else {
+            $image_src = stream_get_meta_data($temp)['uri'];
+            file_put_contents($image_src, $httpcontent);
+        }
+    }
     if (file_exists($image_src)) {
         if (!file_exists($image_dest) || (isset($_GET['refresh']) && $_GET['refresh']==1)) {
             if (file_exists($image_dest)) {

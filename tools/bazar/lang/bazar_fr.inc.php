@@ -303,5 +303,11 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'liste',
         'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'Liste vide',
         'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'Nombre d\'&eacute;l&eacute;ments : ',
+
+        // ==== ExternalBazarService ====
+        'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'contenu du formulaire reçu mal formaté.',
+        'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'contenu des fiches reçues mal formaté.',
+        'BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE' => 'Vous utilisez la paramètre \'query\' pour des fiches externes. Il n\'est pas encore fonctionnel.',
+        'BAZ_EXTERNAL_SERVICE_BETA_MODE' => 'L\'affichage des fiches externes est en encore en phase beta. Veuillez signaler à l\'équipe des développeurs YesWiki tout ce qui pourrait mal fonctionné. Merci',
     )
 );

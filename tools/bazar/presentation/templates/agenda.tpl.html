@@ -42,10 +42,9 @@ $modal = ''; // declaration d'une chaine de char vide
       <?php $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1; ?>
       <a class="<?php echo $useModal ? 'modalbox' : ''; ?>"
          title="<?php echo htmlspecialchars($fiche['bf_titre']);?>"
-         href="<?php echo ($fiche['url'] ?? // default case
-          (!isset($fiche['external-data']) ? $this->wiki->href('', $fiche['id_fiche']) : ''))
-          . ((isset($fiche['external-data']) && $useModal && isset($fiche['url'])) 
-            ? '/iframe" data-iframe="1"' : '"'); ?>>
+         href="<?php echo (isset($fiche['external-data']))
+          ? $fiche['url'] . (($useModal) ? '/iframe" data-iframe="1"' : '"')
+          : $this->wiki->href('', $fiche['id_fiche']) .'"'; ?>>
       </a>
     </figure>
   </div>

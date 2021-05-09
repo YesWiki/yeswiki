@@ -59,7 +59,7 @@ class ExternalBazarService
         if ($forms) {
             return $forms[0];
         } elseif ($this->debug) {
-            trigger_error("Erreur ExternalWikiService::getForm: contenu du formulaire mal formaté.");
+            trigger_error(get_class($this)."::getForm: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM'));
             return null;
         }
     }
@@ -84,7 +84,7 @@ class ExternalBazarService
     //     if ($forms) {
     //         return $forms;
     //     } elseif ($this->debug) {
-    //         trigger_error("Erreur ExternalWikiService::getForms: contenu des formulaires mal formaté.");
+    //        trigger_error(get_class($this)."::getForms: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM'));
     //         return null;
     //     }
     // }
@@ -160,6 +160,9 @@ class ExternalBazarService
         if (empty($params['forms'])) {
             throw new \Exception("parameter forms should not be empty");
         }
+        if ($this->debug) {
+            trigger_error(_t('BAZ_EXTERNAL_SERVICE_BETA_MODE'));
+        }
 
         // Formattage des queries
         $querystring = '';
@@ -171,6 +174,9 @@ class ExternalBazarService
                 $querystring .= $key.'='.$value.'|';
             }
             $querystring = !empty($querystring) ? '&query='.htmlspecialchars(substr($querystring, 0, -1)) : '';
+        }
+        if (!empty($querystring) && $this->debug) {
+            trigger_error(_t('BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE'));
         }
 
         $entries = [];
@@ -198,6 +204,7 @@ class ExternalBazarService
                             // 'origin_id_typeannonce' => $entry['id_typeannonce'], // if needed in fields
                             'baseUrl' => $url,
                         ];
+                    $entry['url'] = $url . '?' . $entry['id_fiche'];
                     $entry['id_typeannonce'] =$localFormId;
                     $entries[] = $entry;
                 }
@@ -207,7 +214,7 @@ class ExternalBazarService
         if (!empty($entries)) {
             return $entries;
         } elseif ($this->debug) {
-            trigger_error("Erreur ExternalWikiService::getEntries: contenu des fiches mal formaté.");
+            trigger_error(get_class($this)."::getEntries: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES'));
             return null;
         }
     }
