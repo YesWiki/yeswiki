@@ -42,12 +42,22 @@ abstract class EnumField extends BazarField
         }
     }
 
-    public function loadOptionsFromJson()
+    protected function loadOptionsFromJSONForm($JSONAddress): array
     {
-        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name);
-        $this->options = array_map(function ($entry) {
-            return $entry['bf_titre'];
-        }, json_decode($json, true));
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($JSONAddress,9000000);
+        // do not refresh less than 99 days because cache defined by ExternalBazarService
+        $form = json_decode($json, true);
+        if (isset($form[0]['prepared'])){
+            foreach($form[0]['prepared'] as $field){
+                // be carefull it is an array here
+                if (($field['propertyname'] ?? '') == $this->getPropertyName()){
+                    $this->options = $field['options'] ?? [];
+                    return $this->options ;
+                }
+            }
+        }
+        $this->options = [];
+        return $this->options ;
     }
 
     public function loadOptionsFromEntries()

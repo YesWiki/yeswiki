@@ -1,0 +1,7 @@
+{% extends "@bazar/fields/checkbox.twig" %}
+
+{% block value_item -%}
+	<a href="{{ value.href|e }}" class="modalbox" data-iframe="1" title="{{ value.value|striptags }}">
+	{{- value.value|raw -}}
+	</a>
+{%- endblock %}

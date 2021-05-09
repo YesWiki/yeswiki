@@ -7,6 +7,32 @@ use YesWiki\Wiki;
 
 class ExternalBazarService
 {
+    public const FIELD_JSON_FORM_ADDR = 3 ;// replace FIELD_SIZE = 3;
+    public const FIELD_ORIGINAL_TYPE = 4 ;// FIELD_MAX_CHARS = 4;
+
+    private const JSON_FORM_BASE_URL = '?BazaR/json&demand=forms&id=';
+    private const CONVERT_FIELD_NAMES = [
+        'checkbox' => 'externalcheckboxlistfield',
+        'checkboxlistfield' => 'externalcheckboxlistfield',
+        'checkboxfiche' => 'externalcheckboxentryfield',
+        'checkboxentryfield' => 'externalcheckboxentryfield',
+        'image' => 'externalimagefield',
+        'imagefield' => 'externalimagefield',
+        'fichier' => 'externalfilefield',
+        'filefield' => 'externalfilefield',
+        'radio' => 'externalradiolistfield',
+        'radiolistfield' => 'externalradiolistfield',
+        'radiofiche' => 'externalradioentryfield',
+        'radioentryfield' => 'externalradioentryfield',
+        'liste' => 'externalselectlistfield',
+        'selectlistfield' => 'externalselectlistfield',
+        'listefiche' => 'externalselectentryfield',
+        'selectentryfield' => 'externalselectentryfield',
+        'listefiches' => 'externallinkedentryfield',
+        'listefichesliees' => 'externallinkedentryfield',
+        'linkedentryfield' => 'externallinkedentryfield',
+    ];
+
     protected $debug;
     protected $timeCacheForEntries ;
     protected $timeCacheForForms ;
@@ -53,7 +79,7 @@ class ExternalBazarService
             $url= $this->formatUrl($url);
         }
 
-        $json = $this->getJSONCachedUrlContent($url.'?BazaR/json&demand=forms&id='.$formId, $refreshCache  ? 0 : $this->timeCacheForForms);
+        $json = $this->getJSONCachedUrlContent($url.self::JSON_FORM_BASE_URL.$formId, $refreshCache  ? 0 : $this->timeCacheForForms);
         $forms = json_decode($json, true);
 
         if ($forms) {
@@ -279,13 +305,23 @@ class ExternalBazarService
      */
     public function cacheUrl(string $url, int $cache_life = 60, string $dir = 'cache')
     {
-        $cache_file = $dir.'/'.removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $url)));
+        $cache_file = $dir.'/'.$this->sanitizeFileName($url);
 
         $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
         if (!$filemtime or (time() - $filemtime >= $cache_life)) {
             file_put_contents($cache_file, file_get_contents($url));
         }
         return $cache_file;
+    }
+
+    /**
+     * sanitize file name
+     * @param string $inputString
+     * @return string $outputString
+     */
+    private function sanitizeFileName(string $inputString):string
+    {
+        return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
     }
 
     /**
@@ -373,6 +409,15 @@ class ExternalBazarService
         $form['external_bn_id_nature'] = $form['bn_id_nature'];
         $form['external_url'] = $url;
         $form['bn_id_nature'] = $localFormId;
+
+        // change fields type before prepareData
+        foreach ($form['template'] as $index => $fieldTemplate) {
+            if (isset(self::CONVERT_FIELD_NAMES[$fieldTemplate[0]])) {
+                $form['template'][$index][self::FIELD_ORIGINAL_TYPE] = $fieldTemplate[0];
+                $form['template'][$index][0] = self::CONVERT_FIELD_NAMES[$fieldTemplate[0]];
+                $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $url.self::JSON_FORM_BASE_URL.$form['external_bn_id_nature'];
+            }
+        }
 
         // parse external fields
 
