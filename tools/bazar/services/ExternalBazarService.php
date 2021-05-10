@@ -4,20 +4,20 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
+use YesWiki\Bazar\Field\ExternalImageField;
 
 class ExternalBazarService
 {
     public const FIELD_JSON_FORM_ADDR = 3 ;// replace FIELD_SIZE = 3;
     public const FIELD_ORIGINAL_TYPE = 4 ;// FIELD_MAX_CHARS = 4;
 
+    private const MAX_CACHE_TIME = 864000 ; // 10 days ot to keep external data in local
     private const JSON_FORM_BASE_URL = '?BazaR/json&demand=forms&id=';
     private const CONVERT_FIELD_NAMES = [
         'checkbox' => 'externalcheckboxlistfield',
         'checkboxlistfield' => 'externalcheckboxlistfield',
         'checkboxfiche' => 'externalcheckboxentryfield',
         'checkboxentryfield' => 'externalcheckboxentryfield',
-        'image' => 'externalimagefield',
-        'imagefield' => 'externalimagefield',
         'fichier' => 'externalfilefield',
         'filefield' => 'externalfilefield',
         'radio' => 'externalradiolistfield',
@@ -31,6 +31,12 @@ class ExternalBazarService
         'listefiches' => 'externallinkedentryfield',
         'listefichesliees' => 'externallinkedentryfield',
         'linkedentryfield' => 'externallinkedentryfield',
+        'tagsfield' => 'externaltagsfield',
+        'tags' => 'externaltagsfield',
+    ];
+    private const CONVERT_FIELD_NAMES_FOR_IMAGES = [
+        'image' => 'externalimagefield',
+        'imagefield' => 'externalimagefield',
     ];
 
     protected $debug;
@@ -254,6 +260,10 @@ class ExternalBazarService
         } else {
             $newUrl = $url;
         }
+        // add / at end if needed  
+        if (substr($newUrl,-1) !== '/') {
+            $newUrl = $newUrl . '/';
+        }
         return $newUrl;
     }
 
@@ -266,7 +276,7 @@ class ExternalBazarService
      */
     private function getCachedUrlContent(string $url, int $cache_life = 60)
     {
-        $cache_file = $this->cacheUrl($url, $cache_life);
+        $cache_file = $this->cacheUrl($url, min($cache_life, self::MAX_CACHE_TIME));
         return file_get_contents($cache_file);
     }
 
@@ -416,6 +426,9 @@ class ExternalBazarService
                 $form['template'][$index][self::FIELD_ORIGINAL_TYPE] = $fieldTemplate[0];
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES[$fieldTemplate[0]];
                 $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $url.self::JSON_FORM_BASE_URL.$form['external_bn_id_nature'];
+            } elseif (isset(self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]])) {
+                $form['template'][$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
+                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $url.self::JSON_FORM_BASE_URL.$form['external_bn_id_nature'];
             }
         }
 

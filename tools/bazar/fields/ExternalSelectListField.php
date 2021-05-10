@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
 /**
- * @Field({"externalcheckboxlistfield"})
+ * @Field({"externalselectlistfield"})
  */
-class ExternalCheckboxListField extends CheckboxListField
+class ExternalSelectListField extends SelectListField
 {
     protected $JSONFormAddress ;
 

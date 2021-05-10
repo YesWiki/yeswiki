@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
 /**
- * @Field({"externalcheckboxlistfield"})
+ * @Field({"externalselectentryfield"})
  */
-class ExternalCheckboxListField extends CheckboxListField
+class ExternalSelectEntryField extends SelectEntryField
 {
     protected $JSONFormAddress ;
 
@@ -31,6 +31,23 @@ class ExternalCheckboxListField extends CheckboxListField
     {
         return null;
     }
+    
+    protected function renderStatic($entry)
+    {
+        // copy from parent but with different href
+        $value = $this->getValue($entry);
+        if (!$value) {
+            return null;
+        }
+
+        $entryUrl = $entry['external-data']['baseUrl'].'?'.$value.'/iframe';
+
+        return $this->render('@bazar/fields/external_select_entry.twig', [
+            'value' => $value,
+            'label' => $this->getOptions()[$value],
+            'entryUrl' => $entryUrl
+        ]);
+    }
 
     public function getOptions()
     {
@@ -39,11 +56,5 @@ class ExternalCheckboxListField extends CheckboxListField
             $this->loadOptionsFromJSONForm($this->JSONFormAddress);
         }
         return  $this->options;
-    }
-
-    public function loadOptionsFromList()
-    {
-        $this->options = null;
-        $this->getOptions();
     }
 }

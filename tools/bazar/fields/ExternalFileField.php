@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
 /**
- * @Field({"externalcheckboxlistfield"})
+ * @Field({"externalfilefield"})
  */
-class ExternalCheckboxListField extends CheckboxListField
+class ExternalFileField extends FileField
 {
     protected $JSONFormAddress ;
 
@@ -32,18 +32,18 @@ class ExternalCheckboxListField extends CheckboxListField
         return null;
     }
 
-    public function getOptions()
+    protected function renderStatic($entry)
     {
-        // load options only when needed but not at construct to prevent infinite loops
-        if (is_null($this->options)) {
-            $this->loadOptionsFromJSONForm($this->JSONFormAddress);
-        }
-        return  $this->options;
-    }
+        // copy from parent but with different href
+        $value = $this->getValue($entry);
 
-    public function loadOptionsFromList()
-    {
-        $this->options = null;
-        $this->getOptions();
+        if (isset($value) && $value != '') {
+            return $this->render('@bazar/fields/file.twig', [
+                'value' => $value,
+                'fileUrl' => $entry['external-data']['baseUrl'] . BAZ_CHEMIN_UPLOAD . $value
+            ]);
+        }
+
+        return null;
     }
 }

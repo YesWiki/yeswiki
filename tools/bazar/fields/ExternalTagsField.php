@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
 /**
- * @Field({"externalcheckboxlistfield"})
+ * @Field({"externaltagsfield"})
  */
-class ExternalCheckboxListField extends CheckboxListField
+class ExternalTagsField extends TagsField
 {
     protected $JSONFormAddress ;
 
@@ -41,9 +41,32 @@ class ExternalCheckboxListField extends CheckboxListField
         return  $this->options;
     }
 
-    public function loadOptionsFromList()
+    public function loadOptionsFromTags()
     {
         $this->options = null;
         $this->getOptions();
+    }
+
+    protected function renderStatic($entry)
+    {
+        // copy from parent but with different href
+
+        $value = $this->getValue($entry);
+
+        $tags = explode(',', $value);
+
+        if (count($tags) > 0 && !empty($tags[0])) {
+            sort($tags);
+            $tags = array_map(function ($tag) use ($entry){
+                return '<a class="tag-label label label-info" href="' 
+                    . $entry['external-data']['baseUrl'].'?'.$GLOBALS['wiki']->GetPageTag().'/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+            }, $tags);
+
+            return $this->render('@bazar/fields/tags.twig', [
+                'value' => join(' ', $tags) ?? ''
+            ]);
+        } else {
+            return null ;
+        }
     }
 }
