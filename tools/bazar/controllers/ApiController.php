@@ -50,7 +50,7 @@ class ApiController extends YesWikiController
             'queries' => !empty($selectedEntries) ? ['id_fiche' => $selectedEntries] : [],
         ], true, true);
 
-        if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
+        if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
             return $this->getAllSemanticEntries($formId, $entries);
         } // add entries in html format if asked
         elseif ($output == 'html') {
