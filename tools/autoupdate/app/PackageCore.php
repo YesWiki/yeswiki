@@ -6,9 +6,9 @@ class PackageCore extends Package
     const CORE_NAME = 'yeswiki';
     public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes', 'wakka.config.php');
 
-    public function __construct($release, $address, $desc, $doc)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
-        parent::__construct($release, $address, $desc, $doc);
+        parent::__construct($release, $address, $desc, $doc,$minimalPhpVersion);
         $this->installed = true;
         $this->localPath = realpath(dirname($_SERVER["SCRIPT_FILENAME"]));
         $this->name = $this::CORE_NAME;
@@ -141,12 +141,17 @@ class PackageCore extends Package
     }
 
     /**
-     * get needed PHP version // TODO get from json file from repository
+     * get needed PHP version from json file from repository
      * @return string formatted as '7.3.0', '7.3.0' is the wanted version in case of error
      */
     public function getNeededPHPversion(): string
     {
-        return '7.3.0';
+        // check format of JSON package 99.99.99
+        $matches = [];
+        if (preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)){
+            return $this->minimalPhpVersion ;
+        }
+        return '7.3.0'; // just in case of error give a number
     }
 
     /***************************************************************************
