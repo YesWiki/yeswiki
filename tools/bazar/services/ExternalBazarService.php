@@ -13,6 +13,7 @@ class ExternalBazarService
 
     private const MAX_CACHE_TIME = 864000 ; // 10 days ot to keep external data in local
     private const JSON_FORM_BASE_URL = '?BazaR/json&demand=forms&id=';
+    private const CACHE_FILENAME_PREFIX = 'ExternalBazarServiceCache_';
     private const CONVERT_FIELD_NAMES = [
         'checkbox' => 'externalcheckboxlistfield',
         'checkboxlistfield' => 'externalcheckboxlistfield',
@@ -129,6 +130,8 @@ class ExternalBazarService
      */
     public function getFormsForBazarListe(array $externalIds, bool $refreshCache = false) : ?array
     {
+        $this->cleanOldCacheFiles();
+
         if (!$this->checkexternalIdsFormat($externalIds)) {
             // error
             return null;
@@ -315,7 +318,7 @@ class ExternalBazarService
      */
     public function cacheUrl(string $url, int $cache_life = 60, string $dir = 'cache')
     {
-        $cache_file = $dir.'/'.$this->sanitizeFileName($url);
+        $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
 
         $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
         if (!$filemtime or (time() - $filemtime >= $cache_life)) {
@@ -332,18 +335,6 @@ class ExternalBazarService
     private function sanitizeFileName(string $inputString):string
     {
         return removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $inputString)));
-    }
-
-    /**
-     * display external image
-     * TODO move it to a controller
-     * @param array $entry external entry
-     * @param null|string $imageFileName
-     * @return string|null html to display
-     */
-    public function displayExternalImage(array $entry, ?string $value):?string
-    {
-        return 'test';
     }
 
     /**
@@ -437,5 +428,20 @@ class ExternalBazarService
         $form['prepared'] = $this->formManager->prepareData($form);
 
         return $form;
+    }
+
+    /**
+     * clean old cache files to prevent leak of data between sites
+     * 
+     */
+    private function cleanOldCacheFiles()
+    {
+        $cacheFiles = glob('cache/'.self::CACHE_FILENAME_PREFIX.'*');
+        foreach($cacheFiles as $filePath){
+            $filemtime = @filemtime($filePath);  // returns FALSE if file does not exist
+            if (!$filemtime or (time() - $filemtime >= self::MAX_CACHE_TIME)) {
+                unlink($filePath);
+            }
+        }
     }
 }
