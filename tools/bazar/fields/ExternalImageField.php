@@ -37,7 +37,7 @@ class ExternalImageField extends ImageField
         // inspired from parent but with different href
         $value = $this->getValue($entry);
 
-        if (isset($value) && $value != '' && $this->isExistingUrl($entry['external-data']['baseUrl'].BAZ_CHEMIN_UPLOAD . $value)) {
+        if (isset($value) && $value != '') {
             return $this->displayImageWithoutCache(
                 $entry['external-data']['baseUrl'],
                 $this->name,
@@ -52,22 +52,6 @@ class ExternalImageField extends ImageField
         }
 
         return null;
-    }
-
-    /**
-     * test is url exits
-     * @param string $url
-     * @return bool
-     */
-    private function isExistingUrl(string $url):bool
-    {
-        $url_headers = @get_headers($url);
-        if(!$url_headers || $url_headers[0] == 'HTTP/1.1 404 Not Found') {
-            return false;
-        }
-        else {
-            return true;
-        }
     }
 
     /**
@@ -103,8 +87,7 @@ class ExternalImageField extends ImageField
         $destimg = sanitizeFilename($nom_image);
         // If we have a full URL, remove the base URL first
         $nom_image = str_replace($baseUrl . BAZ_CHEMIN_UPLOAD, '', $nom_image);
-        if ($this->isExistingUrl($baseUrl .BAZ_CHEMIN_UPLOAD . $nom_image)
-        && preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
+        if (preg_match('/^.*\.(jpg|jpe?g|png|gif)$/i', strtolower($nom_image))) {
             // vignette?
             if ($hauteur_vignette != '' && $largeur_vignette != '') {
                 $adr_vignette = $baseUrl .'cache/vignette_' . $destimg;
