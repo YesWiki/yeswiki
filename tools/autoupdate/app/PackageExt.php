@@ -11,9 +11,9 @@ abstract class PackageExt extends Package
 
     abstract protected function localPath();
 
-    public function __construct($release, $address, $desc, $doc)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
-        parent::__construct($release, $address, $desc, $doc);
+        parent::__construct($release, $address, $desc, $doc,$minimalPhpVersion);
         $this->installed = $this->installed();
         $this->localPath = $this->localPath();
         $this->updateAvailable = $this->updateAvailable();
