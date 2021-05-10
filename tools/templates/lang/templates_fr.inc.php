@@ -169,8 +169,19 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_FORCE_TEMPLATE' => 'Forcer le choix pour tout le wiki.',
 
     // themeselector.tpl.html
-    'TEMPLATE_PRESETS' => 'Configurations graphiques',
-    'TEMPLATE_CREATE_PRESET' => 'Créer sa configuration graphique',
-    'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuration graphique',
+    'TEMPLATE_PRESETS' => 'Personnalisations graphiques',
+    'TEMPLATE_CREATE_PRESET' => 'Créer sa personnalisation graphique',
+    'TEMPLATE_CUSTOMIZE_PRESET' => 'Personnalisation graphique',
+    'TEMPLATE_PRIMARY_COLOR' => 'Couleur primaire',
+    'TEMPLATE_SECONDARY_COLOR_1' => 'Couleur secondaire 1',
+    'TEMPLATE_SECONDARY_COLOR_2' => 'Couleur secondaire 2',
+    'TEMPLATE_NEUTRAL_COLOR' => 'Couleur de texte',
+    'TEMPLATE_SOFT_COLOR' => 'Couleur neutre',
+    'TEMPLATE_LIGHT_COLOR' => 'Couleur claire',
+    'TEMPLATE_MAIN_TEXT_SIZE' => 'Taille de texte',
+    'TEMPLATE_MAIN_TEXT_FONT' => 'Police des textes',
+    'TEMPLATE_MAIN_TITLE_FONT' => 'Police des titres',
+    'TEMPLATE_CHOOSE_FONT' => 'Choisir une police',
+    'TEMPLATE_SEARCH_POINTS' => 'Rechercher...',
     )
 );

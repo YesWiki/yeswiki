@@ -47,13 +47,15 @@
   <?php if (!empty($themes[$wiki->config['favorite_theme']]['presets'])) : ?>
     <div class="preset-settings-container">
       <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
+      <style id="preset-loader"></style>
       <ul class="css-preset-list list-inline">
       <?php foreach ($themes[$wiki->config['favorite_theme']]['presets'] as $key => $value) : ?>
         <li>
-          <a class="css-preset" href="javascript:void(0)"
-            data-variables="<?php echo htmlspecialchars(json_encode($value['variables'])); ?>">
+          <a class="css-preset" href="themes/<?php echo $wiki->config['favorite_theme'].'/presets/'.$key; ?>"
+            onclick="$('#preset-loader').text($(this).next().text()); return false;">
           <?php echo str_replace('.css', '', $key); ?>
           </a>
+          <div id="css-content-<?php echo $key; ?>" class="hide"><?php echo $value; ?></div>
         </li>
       <?php endforeach; ?>
       </ul>
@@ -133,32 +135,55 @@
       <span class="closebtn" onclick="closeNav()">&times;</span>
     </h4>
     <?php
-    // TODO : don't use CDN trackers are bad
     $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js');
-    $GLOBALS['wiki']->addJavascriptFile('https://av01d.github.io/fontselect-jquery-plugin/jquery.fontselect.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/jquery.fontselect.js');
     $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css');
-
-    foreach ($themes[$wiki->config['favorite_theme']]['presets']['default.json']['variables'] as $varcss) : ?>
-
-    <?php if ($varcss['type'] == 'color') : ?>
+    ?>
     <div class="form-group">
-      <input class="form-input colorpicker" type="color" name="<?php echo $varcss['name']; ?>"
-      value="<?php echo $varcss['value']; ?>" />
-      <label><?php echo (!empty($varcss['label'][$GLOBALS['prefered_language']]) ?
-        $varcss['label'][$GLOBALS['prefered_language']] : $varcss['label']['fr']); ?></label>
+      <input class="form-input colorpicker" type="color" name="primary-color"
+      value="#f9c401" />
+      <label><?php echo _t('TEMPLATE_PRIMARY_COLOR'); ?></label>
     </div>
-    <?php endif; ?>
-
-    <?php if ($varcss['type'] == 'font') : ?>
     <div class="form-group">
-      <label><?php echo (!empty($varcss['label'][$GLOBALS['prefered_language']]) ?
-        $varcss['label'][$GLOBALS['prefered_language']] : $varcss['label']['fr']); ?></label>
-      <input class="form-input fontpicker" type="text" name="<?php echo $varcss['name']; ?>"
-        value="<?php echo $varcss['value']; ?>" />
+      <input class="form-input colorpicker" type="color" name="secondary-color-1"
+      value="#147386" />
+      <label><?php echo _t('TEMPLATE_SECONDARY_COLOR_1'); ?></label>
     </div>
-    <?php endif; ?>
-
-    <?php endforeach; ?>
+    <div class="form-group">
+      <input class="form-input colorpicker" type="color" name="secondary-color-2"
+      value="#d78958" />
+      <label><?php echo _t('TEMPLATE_SECONDARY_COLOR_2'); ?></label>
+    </div>
+    <div class="form-group">
+      <input class="form-input colorpicker" type="color" name="neutral-color"
+      value="#444041" />
+      <label><?php echo _t('TEMPLATE_NEUTRAL_COLOR'); ?></label>
+    </div>
+    <div class="form-group">
+      <input class="form-input colorpicker" type="color" name="neutral-soft-color"
+      value="#a7a6a6" />
+      <label><?php echo _t('TEMPLATE_SOFT_COLOR'); ?></label>
+    </div>
+    <div class="form-group">
+      <input class="form-input colorpicker" type="color" name="neutral-light-color"
+      value="#ffffff" />
+      <label><?php echo _t('TEMPLATE_LIGHT_COLOR'); ?></label>
+    </div>
+    <div class="form-group">
+      <label><?php echo _t('TEMPLATE_MAIN_TEXT_SIZE'); ?></label>
+      <input class="form-input range" type="range" min="9" max="34" step="1" name="main-text-fontsize"
+        value="17" />
+    </div>
+    <div class="form-group">
+      <label><?php echo _t('TEMPLATE_MAIN_TEXT_FONT'); ?></label>
+      <input class="form-input fontpicker" type="text" name="main-text-fontfamily"
+        value="'Nunito', sans-serif" />
+    </div>
+    <div class="form-group">
+      <label><?php echo _t('TEMPLATE_MAIN_TITLE_FONT'); ?></label>
+      <input class="form-input fontpicker" type="text" name="main-title-fontfamily"
+        value="'Nunito', sans-serif" />
+    </div>
   </form>
 </div>
 
@@ -372,8 +397,8 @@
     if (typeof $('.fontpicker').fontselect === "function") {
       $('.fontpicker')
       .fontselect({
-        placeholder: 'Choisir une police',
-        placeholderSearch: 'Chercher...',
+        placeholder: '<?php echo _t('TEMPLATE_CHOOSE_FONT'); ?>',
+        placeholderSearch: '<?php echo _t('TEMPLATE_SEARCH_POINTS'); ?>',
       })
       .on('change', function() {
         // Replace + signs with spaces for css
@@ -388,5 +413,9 @@
         document.documentElement.style.setProperty('--'+$(this).attr('name'), "'"+fontFamily+"'");
       });
     }
+
+    $('.range').on('change', function() {
+      document.documentElement.style.setProperty('--'+$(this).attr('name'), ""+this.value+"px");
+    });
   }, false);
 </script>
