@@ -8,6 +8,20 @@ use YesWiki\Core\Service\TemplateEngine;
 
 class ThemeManager
 {
+    public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
+
+    private const POST_DATA_KEYS = [
+        'primary-color',
+        'secondary-color-1',
+        'secondary-color-2',
+        'neutral-color',
+        'neutral-soft-color',
+        'neutral-light-color',
+        'main-text-fontsize',
+        'main-text-fontfamily',
+        'main-title-fontfamily'
+    ];
+
     protected $wiki;
     protected $config;
     protected $fileLoaded;
@@ -252,5 +266,95 @@ class ThemeManager
         }
 
         return $text;
+    }
+
+    /**
+     * get custom css-presets
+     * @return array $template = [$filename=>$css]
+     */
+    public function getCustomCSSPresets(): array
+    {
+        $path = self::CUSTOM_CSS_PRESETS_PATH;
+        $dir = opendir($path);
+        $tab = [];
+        while ($dir && ($file = readdir($dir)) !== false) {
+            if ($file!='.' && $file!='..' && $file!='CVS'
+                    && substr($file, -4, 4)=='.css' && file_exists($path.DIRECTORY_SEPARATOR.$file)) {
+                $css = file_get_contents($path.DIRECTORY_SEPARATOR.$file);
+                if (!empty($css)) {
+                    $tab[$file] = $css;
+                }
+            }
+        }
+        
+        closedir($dir);
+        return $tab;
+    }
+
+    /**
+     * delete a css custom preset
+     * @param string $filename
+     * @return bool
+     */
+    public function deleteCustomCSSPreset(string $filename):bool
+    {
+        $path = self::CUSTOM_CSS_PRESETS_PATH;
+        if ($this->wiki->UserIsAdmin() && file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
+            unlink($path.DIRECTORY_SEPARATOR.$filename);
+            if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    
+
+    /**
+     * add a css custom preset (only admins can change a file)
+     * @param string $filename
+     * @param array $post
+     * @return bool
+     */
+    public function addCustomCSSPreset(string $filename, array $post):bool
+    {
+        if (!$this->checkPOSTToAddCustomCSSPreset($post)) {
+            return false;
+        }
+        $path = self::CUSTOM_CSS_PRESETS_PATH;
+        
+        $fileContent = ":root {\r\n";
+        foreach (self::POST_DATA_KEYS as $key) {
+            $fileContent .= '  --'.$key.': '.$post[$key].";\r\n";
+        }
+        $fileContent .= "}\r\n";
+        
+        if (file_exists($path.DIRECTORY_SEPARATOR.$filename) && !$this->wiki->UserIsAdmin()) {
+            // change filename
+            $filename = substr($filename, 0, -4);
+            $filename .= '_'. date('Y-m-d_H-i').'.css';
+        }
+        if ($this->wiki->getUser()) {
+            // create or update
+            file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $fileContent);
+            return (file_exists($path.DIRECTORY_SEPARATOR.$filename));
+        }
+        
+        return true;
+    }
+
+    /**
+     * check post to add custom CSS Preset
+     * @param array $post
+     * @return bool
+     */
+    private function checkPOSTToAddCustomCSSPreset(array $post):bool
+    {
+        foreach (self::POST_DATA_KEYS as $key) {
+            if (empty($post[$key])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -183,5 +183,9 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_MAIN_TITLE_FONT' => 'Police des titres',
     'TEMPLATE_CHOOSE_FONT' => 'Choisir une police',
     'TEMPLATE_SEARCH_POINTS' => 'Rechercher...',
+    'TEMPLATE_DELETE_CSS_PRESET' => 'Voulez-vous supprimer le preset personnalisé',
+    'TEMPLATE_ADD_CSS_PRESET_API_HINT' => 'Sauvegarde un fichier preset personnalisé',
+    'TEMPLATE_DELETE_CSS_PRESET_API_HINT' => 'Supprime un fichier preset personnalisé',
+    'TEMPLATE_PRESET_FILENAME' => 'Nom du preset',
     )
 );

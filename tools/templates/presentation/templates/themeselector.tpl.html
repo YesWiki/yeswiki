@@ -47,15 +47,31 @@
   <?php if (!empty($themes[$wiki->config['favorite_theme']]['presets'])) : ?>
     <div class="preset-settings-container">
       <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
-      <style id="preset-loader"></style>
       <ul class="css-preset-list list-inline">
       <?php foreach ($themes[$wiki->config['favorite_theme']]['presets'] as $key => $value) : ?>
         <li>
           <a class="css-preset" href="themes/<?php echo $wiki->config['favorite_theme'].'/presets/'.$key; ?>"
-            onclick="$('#preset-loader').text($(this).next().text()); return false;">
+            data-key="<?php echo $key ;?>"
+            <?php echo extractDataFromPreset($value) ;?>>
           <?php echo str_replace('.css', '', $key); ?>
           </a>
-          <div id="css-content-<?php echo $key; ?>" class="hide"><?php echo $value; ?></div>
+        </li>
+      <?php endforeach; ?>
+      <?php foreach ($wiki->services->get(YesWiki\Core\Service\ThemeManager::class)->getCustomCSSPresets() as $key => $value) : ?>
+        <li>
+          <a class="css-preset" href="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
+            data-key="<?php echo $key ;?>"
+            <?php echo extractDataFromPreset($value) ;?>>
+          <?php echo str_replace('.css', '', $key); ?>
+          </a>
+          <?php if ($wiki->UserIsAdmin()) :?>
+            <button class="btn btn-default btn-xs"
+              data-key="<?php echo $key ;?>"
+              onclick="javascript:deleteCSSPreset(this,'<?php echo _t('TEMPLATE_DELETE_CSS_PRESET').' '.$key.' ?' ;?>',
+                '<?php echo $wiki->Href('templates/custom-presets/'.$key,'api');?>');">
+              <i class="fas fa-trash"></i>
+            </button>
+          <?php endif; ?>  
         </li>
       <?php endforeach; ?>
       </ul>
@@ -184,6 +200,18 @@
       <input class="form-input fontpicker" type="text" name="main-title-fontfamily"
         value="'Nunito', sans-serif" />
     </div>
+    <?php if ($wiki->GetUser()) : ?>
+      <div class="form-group">
+        <label><?php echo _t('TEMPLATE_PRESET_FILENAME'); ?></label>
+        <input class="form-input" type="text" name="filename"
+          value="custom-<?php echo date('Y-m-d_H-i');?>" />
+      </div>
+      <button type="button" class="btn btn-xs btn-warning"
+        onclick="javascript:saveCSSPreset(this,
+          '<?php echo $wiki->Href('templates/custom-presets/','api');?>');">
+        <?php echo _t('TEMPLATE_SAVE'); ?>
+      </button>
+    <?php endif ; ?>
   </form>
 </div>
 
@@ -352,6 +380,40 @@
     } else {
       document.getElementById("preset-sidenav").style.width = "250px";
       document.getElementById("yw-container").style.paddingRight = "250px";
+      $('#preset-sidenav .colorpicker').each(function(){
+        // define values from current set for color picker
+        var value = document.documentElement.style.getPropertyValue('--'+$(this).attr('name'));
+        if (value){  
+          $(this).val(value);
+          // trigger change event
+          $(this).change();
+        }
+      });
+      $('#preset-sidenav .fontpicker').each(function(){
+        // define values from current set for color picker
+        var value = document.documentElement.style.getPropertyValue('--'+$(this).attr('name'));
+        if (value){  
+          // extract name
+          let values = value.split(',');
+          value = values[0];
+          value = value.replace(/'/g,'');
+          $(this).val(value);
+          // trigger change event
+          $(this).change();
+        }
+      });
+      $('#preset-sidenav .form-input[name=main-text-fontsize]').each(function(){
+        // define values from current set for color picker
+        var value = document.documentElement.style.getPropertyValue('--main-text-fontsize');
+        if (value){  
+          // extract name
+          let values = value.split('px');
+          value = values[0];
+          $(this).val(value);
+          // trigger change event
+          $(this).change();
+        }
+      });
     }
     return false;
   }
@@ -369,8 +431,8 @@
         showInput: true,
         clickoutFiresChange: true,
         showInitial: true,
-        chooseText: "Sauver",
-        cancelText: "Annuler",
+        chooseText: "<?php echo _t('TEMPLATE_APPLY');?>",
+        cancelText: "<?php echo _t('TEMPLATE_CANCEL');?>",
         change: function(color) {
           document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
         },
