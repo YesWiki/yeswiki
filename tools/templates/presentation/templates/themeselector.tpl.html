@@ -4,7 +4,7 @@
     <div class="controls">
       <select class="form-control" id="changetheme" name="theme">
         <?php foreach ($themeNames as $key => $value) : ?>
-          <?php if ($value !== $wiki->config['favorite_theme']) : ?>
+          <?php if ($value !== $favoriteTheme) : ?>
           <option value="<?php echo $value; ?>"><?php echo $value; ?></option>
           <?php else : ?>
           <option value="<?php echo $value; ?>" selected="selected"><?php echo $value; ?></option>
@@ -18,11 +18,11 @@
     <label class="control-label"><?php echo _t('TEMPLATE_SQUELETTE'); ?></label>
     <div class="controls">
       <select class="form-control" id="changesquelette" name="squelette">
-        <?php foreach ($themes[$wiki->config['favorite_theme']]['squelette'] as $key => $value) : ?>
-          <?php if ($value !== $wiki->config['favorite_squelette']) : ?>
+        <?php foreach ($themes[$favoriteTheme]['squelette'] as $key => $value) : ?>
+          <?php if ($value !== $favoriteSquelette) : ?>
           <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
           <?php else : ?>
-          <option value="<?php echo $wiki->config['favorite_squelette']; ?>" selected="selected"><?php echo $value; ?></option>
+          <option value="<?php echo $favoriteSquelette; ?>" selected="selected"><?php echo $value; ?></option>
           <?php endif; ?>
         <?php endforeach; ?>
       </select>
@@ -33,38 +33,38 @@
     <label class="control-label"><?php echo _t('TEMPLATE_STYLE'); ?></label>
     <div class="controls">
       <select class="form-control" id="changestyle" name="style">
-        <?php foreach ($themes[$wiki->config['favorite_theme']]['style'] as $key => $value) : ?>
-          <?php if ($value !== $wiki->config['favorite_style']) : ?>
+        <?php foreach ($themes[$favoriteTheme]['style'] as $key => $value) : ?>
+          <?php if ($value !== $favoriteStyle) : ?>
           <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
           <?php else : ?>
-          <option value="<?php echo $wiki->config['favorite_style']; ?>" selected="selected"><?php echo $value; ?></option>
+          <option value="<?php echo $favoriteStyle; ?>" selected="selected"><?php echo $value; ?></option>
           <?php endif; ?>
         <?php endforeach; ?>
       </select>
     </div>
   </div>
 
-  <?php if (!empty($themes[$wiki->config['favorite_theme']]['presets'])) : ?>
+  <?php if (!empty($themes[$favoriteTheme]['presets'])) : ?>
     <div class="preset-settings-container">
       <h4><?php echo _t('TEMPLATE_PRESETS'); ?></h4>
       <ul class="css-preset-list list-inline">
-      <?php foreach ($themes[$wiki->config['favorite_theme']]['presets'] as $key => $value) : ?>
+      <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
         <li>
-          <a class="css-preset" href="themes/<?php echo $wiki->config['favorite_theme'].'/presets/'.$key; ?>"
+          <a class="css-preset" href="themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
             data-key="<?php echo $key ;?>"
-            <?php echo extractDataFromPreset($value) ;?>>
+            <?php echo $dataHtmlForPresets[$key] ;?>>
           <?php echo str_replace('.css', '', $key); ?>
           </a>
         </li>
       <?php endforeach; ?>
-      <?php foreach ($wiki->services->get(YesWiki\Core\Service\ThemeManager::class)->getCustomCSSPresets() as $key => $value) : ?>
+      <?php foreach ($customCSSPresets as $key => $value) : ?>
         <li>
-          <a class="css-preset" href="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
+          <a class="css-preset" href="<?php echo $CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
             data-key="<?php echo $key ;?>"
-            <?php echo extractDataFromPreset($value) ;?>>
+            <?php echo $dataHtmlForCustomCSSPresets[$key] ;?>>
           <?php echo str_replace('.css', '', $key); ?>
           </a>
-          <?php if ($wiki->UserIsAdmin()) :?>
+          <?php if ($showDeleteButton) :?>
             <button class="btn btn-default btn-xs"
               data-key="<?php echo $key ;?>"
               onclick="javascript:deleteCSSPreset(this,'<?php echo _t('TEMPLATE_DELETE_CSS_PRESET').' '.$key.' ?' ;?>',
@@ -153,7 +153,9 @@
     <?php
     $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js');
     $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/jquery.fontselect.js');
+    $GLOBALS['wiki']->addJavascriptFile('tools/templates/presentation/javascripts/preset-sidenav.js');
     $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css');
+    $GLOBALS['wiki']->addCSSFile('tools/templates/presentation/styles/preset-sidenav.css');
     ?>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="primary-color"
@@ -214,270 +216,11 @@
     <?php endif ; ?>
   </form>
 </div>
-
-<style>
-  /* The side navigation menu */
-  #preset-sidenav {
-    height: 100%;
-    /* 100% Full-height */
-    width: 0;
-    /* 0 width - change this with JavaScript */
-    position: fixed;
-    /* Stay in place */
-    top: 0;
-    right: 0;
-    background-color: #efefef;
-    border-left: 1px solid var(--neutral-soft-color);
-    overflow-x: hidden;
-    /* Disable horizontal scroll */
-    transition: 0.5s;
-    /* 0.5 second transition effect to slide in the sidenav */
-    z-index: 2000;
-    padding-top: 2rem;
-    /* Place content under menu */
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-  }
-
-  #preset-form {
-    margin: 0 1em;
-  }
-  #preset-form label {
-    font-size:13px;
-    font-weight: normal;
-  }
-  #preset-form h4 {
-    font-size: 1rem;
-  }
-
-  /* Position and style the close button (top right corner) */
-  #preset-sidenav .closebtn {
-    float: right;
-    font-size: 25px;
-    line-height: 1.1rem;
-    cursor: pointer;
-  }
-
-  /* Style page content - use this if you want to push the page content to the right when you open the side
-  navigation */
-  #yw-container {
-    transition: padding-right .5s;
-  }
-
-  /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller
-  font size) */
-  @media screen and (max-height: 450px) {
-    #preset-sidenav {
-      padding-top: 15px;
-    }
-
-    #preset-sidenav a {
-      font-size: 18px;
-    }
-  }
-
-  .btn-new-preset {
-    margin-top: .5rem;
-  }
-
-
-  /* FONT PICKER */
-  .font-select * {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  }
-
-  .font-select {
-  font-size: 16px;
-  width:100%;
-  position: relative;
-  display: inline-block;
-  }
-
-  .font-select .fs-drop {
-  position: absolute;
-  top: 38px;
-  left: 0;
-  z-index: 999;
-  background: #fff;
-  color: #000;
-  width: 100%;
-  border: 1px solid #aaa;
-  border-top: 0;
-  box-shadow: 0 4px 5px rgba(0,0,0,.15);
-  border-radius: 0 0 4px 4px;
-  }
-
-  .font-select > span {
-  outline: 0;
-  border-radius: 0.25rem;
-  border: 1px solid #ced4da;
-  display: block;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  height: 38px;
-  line-height: 32px;
-  padding: 3px 8px 3px 8px;
-  color: #444;
-  background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3e%3cpath fill='%23303030' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right 0.75rem center/8px 10px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  }
-
-  .font-select-active > span {
-  background-color: #eee;
-  border-bottom-left-radius : 0;
-  border-bottom-right-radius: 0;
-  }
-
-  .font-select .fs-results {
-  max-height: 190px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  margin: 0;
-  padding: 0;
-  }
-
-  .font-select .fs-results li {
-  line-height: 80%;
-  padding: 8px;
-  margin: 0;
-  list-style: none;
-  font-size: 18px;
-  white-space: nowrap;
-  }
-
-  .font-select .fs-results li.active {
-  background-color: #3875d7;
-  color: #fff;
-  cursor: pointer;
-  }
-
-  .font-select .fs-search {
-  border-bottom: 1px solid #aaa;
-  padding: 4px;
-  }
-
-  .font-select .fs-search input {
-  padding: 7px;
-  width: 100%;
-  border: 1px solid #aaa;
-  font: 16px Helvetica, Sans-serif;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.06);
-  border-radius: .1875rem;
-  }
-
-</style>
-<script>
-  function openNav() {
-    // si c'est déja ouvert, on ferme
-    if (document.getElementById("preset-sidenav").style.width == "250px") {
-      closeNav()
-    } else {
-      document.getElementById("preset-sidenav").style.width = "250px";
-      document.getElementById("yw-container").style.paddingRight = "250px";
-      $('#preset-sidenav .colorpicker').each(function(){
-        // define values from current set for color picker
-        var value = document.documentElement.style.getPropertyValue('--'+$(this).attr('name'));
-        if (value){  
-          $(this).val(value);
-          // trigger change event
-          $(this).change();
-        }
-      });
-      $('#preset-sidenav .fontpicker').each(function(){
-        // define values from current set for color picker
-        var value = document.documentElement.style.getPropertyValue('--'+$(this).attr('name'));
-        if (value){  
-          // extract name
-          let values = value.split(',');
-          value = values[0];
-          value = value.replace(/'/g,'');
-          $(this).val(value);
-          // trigger change event
-          $(this).change();
-        }
-      });
-      $('#preset-sidenav .form-input[name=main-text-fontsize]').each(function(){
-        // define values from current set for color picker
-        var value = document.documentElement.style.getPropertyValue('--main-text-fontsize');
-        if (value){  
-          // extract name
-          let values = value.split('px');
-          value = values[0];
-          $(this).val(value);
-          // trigger change event
-          $(this).change();
-        }
-      });
-    }
-    return false;
-  }
-
-  function closeNav() {
-    document.getElementById("preset-sidenav").style.width = "0";
-    document.getElementById("yw-container").style.paddingRight = "0";
-    return false;
-  }
-  document.addEventListener('DOMContentLoaded', function(){
-    if (typeof $('.colorpicker').spectrum === "function") {
-      $('.colorpicker').spectrum({
-        showPalette:true,
-        showAlpha: true,
-        showInput: true,
-        clickoutFiresChange: true,
-        showInitial: true,
-        chooseText: "<?php echo _t('TEMPLATE_APPLY');?>",
-        cancelText: "<?php echo _t('TEMPLATE_CANCEL');?>",
-        change: function(color) {
-          document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
-        },
-        hide: function(color) {
-          document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
-        },
-        move: function(color) {
-          document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
-        },
-        palette: [
-          [
-            getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
-            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-1'),
-            getComputedStyle(document.documentElement).getPropertyValue('--secondary-color-2')
-          ],
-          [
-            getComputedStyle(document.documentElement).getPropertyValue('--neutral-light-color'),
-            getComputedStyle(document.documentElement).getPropertyValue('--neutral-soft-color'),
-            getComputedStyle(document.documentElement).getPropertyValue('--neutral-color')
-          ]
-        ]
-      })
-    }
-    if (typeof $('.fontpicker').fontselect === "function") {
-      $('.fontpicker')
-      .fontselect({
-        placeholder: '<?php echo _t('TEMPLATE_CHOOSE_FONT'); ?>',
-        placeholderSearch: '<?php echo _t('TEMPLATE_SEARCH_POINTS'); ?>',
-      })
-      .on('change', function() {
-        // Replace + signs with spaces for css
-        var font = this.value.replace(/\+/g, ' ');
-
-        // Split font into family and weight
-        font = font.split(':');
-
-        var fontFamily = font[0];
-        var fontWeight = font[1] || 400;
-
-        document.documentElement.style.setProperty('--'+$(this).attr('name'), "'"+fontFamily+"'");
-      });
-    }
-
-    $('.range').on('change', function() {
-      document.documentElement.style.setProperty('--'+$(this).attr('name'), ""+this.value+"px");
-    });
-  }, false);
-</script>
+<SCRIPT>
+  var themeSelectorTranslation = {
+    'TEMPLATE_CHOOSE_FONT': '<?php echo _t('TEMPLATE_CHOOSE_FONT'); ?>',
+    'TEMPLATE_SEARCH_POINTS': '<?php echo _t('TEMPLATE_SEARCH_POINTS'); ?>',
+    'TEMPLATE_APPLY': "<?php echo _t('TEMPLATE_APPLY');?>",
+    'TEMPLATE_CANCEL': "<?php echo _t('TEMPLATE_CANCEL');?>",
+  };
+</SCRIPT>
