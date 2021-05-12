@@ -35,5 +35,12 @@ $GLOBALS['translations'] = array_merge(
         'AU_NO_DESCRIPTION' => "Description non disponible.",
         'AU_DOCUMENTATION_LINK' => "documentation",
         'AU_YESWIKI_DORYPHORE_POSTINSTALL' => "Welcome on Doryphore",
+        'AU_PHP_TOO_LOW_START' => "Vous ne pouvez pas ",
+        'AU_PHP_TOO_LOW_MIDDLE' => " car votre version PHP n'est pas supérieure à ",
+        'AU_PHP_TOO_LOW_END' => ". Vous avez la version ",
+        'AU_PHP_TOO_LOW_HINT' => "Veuillez mettre à jour PHP sur votre serveur avant de ",
+        'AU_PHP_TOO_LOW_VERSION_UPDATE' => "changer de version YesWiki",
+        'AU_PHP_TOO_LOW_UPDATE' => "mettre à jour YesWiki",
+        'AU_PHP_TOO_LOW_FORCE_UPDATE' => "réinstaller YesWiki",
     )
 );
