@@ -199,13 +199,16 @@ class BazarListeAction extends YesWikiAction
             ]);
         } else {
             $forms = $formManager->getAll();
-            $entries = $entryManager->search([
-                'queries' => $this->arguments['query'],
-                'formsIds' => $this->arguments['idtypeannonce'],
-                'keywords' => $_REQUEST['q'] ?? '',
-                'user' => $this->arguments['user'],
-                'minDate' => $this->arguments['dateMin']
-            ]);
+            $entries = $entryManager->search(
+                [
+                    'queries' => $this->arguments['query'],
+                    'formsIds' => $this->arguments['idtypeannonce'],
+                    'keywords' => $_REQUEST['q'] ?? '',
+                    'user' => $this->arguments['user'],
+                    'minDate' => $this->arguments['dateMin']
+                ],
+                true // filter on read ACL
+            );
 
             // Add display data to all entries
             $entries = array_map(function ($fiche) use ($entryManager) {

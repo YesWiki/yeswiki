@@ -205,10 +205,13 @@ class ExternalBazarService
             $url = $form['external_url'] ?? null;
             // local
             if (empty($url)) {
-                $localEntries = array_values($this->entryManager->search([
-                    'queries' => $params['queries'],
-                    'formsIds' => [$localFormId]
-                ]));
+                $localEntries = array_values($this->entryManager->search(
+                    [
+                        'queries' => $params['queries'],
+                        'formsIds' => [$localFormId]
+                    ],
+                    true // filter on read ACL
+                ));
                 array_push($entries, ...$localEntries);
             } else {
                 $distantFormId = $form['external_bn_id_nature'];
