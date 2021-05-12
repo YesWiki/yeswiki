@@ -15,13 +15,13 @@ actions:
             label: _t(AB_template_actions_color)
             type: list
             options:
-              label-primary: _t(AB_template_action_label_primary)
-              label-secondary-1: _t(AB_template_action_label_secondary_1)
-              label-secondary-2: _t(AB_template_action_label_secondary_2)
-              label-success: _t(AB_template_action_label_success)
-              label-info: _t(AB_template_action_label_info)
-              label-warning: _t(AB_template_action_label_warning)
-              label-danger: _t(AB_template_action_label_danger)
+              label-primary: _t(AB_template_actions_primary)
+              label-secondary-1: _t(AB_template_actions_secondary_1)
+              label-secondary-2: _t(AB_template_actions_secondary_2)
+              label-success: _t(AB_template_actions_success)
+              label-info: _t(AB_template_actions_info)
+              label-warning: _t(AB_template_actions_warning)
+              label-danger: _t(AB_template_actions_danger)
   nav:
     label: Onglets
     description: Générer un menu
@@ -32,6 +32,7 @@ actions:
         type: text
         default: LeNomDeVotrePage, LaSecondePage, LaTroisiemePage
         hint: Nom des pages wiki séparées par des virgules
+        doclink: https://yeswiki.net/?DocumentationMiseEnPageOnglet
       titles:
         label: Intitulés de vos pages
         default: Première page, Seconde page, Troisième page
@@ -97,6 +98,7 @@ actions:
       bgcolor:
         label: Couleur de fond de la section
         type: color
+        doclink: https://yeswiki.net/?section
       file:
         label: Image de fond de la section
         advanced: true
@@ -198,7 +200,7 @@ actions:
       class:
         label: _t(AB_template_actions_class)
         type: text
-        advanced: true
+        doclink: https://yeswiki.net/?AccordioN
   grid:
     label: _t(AB_template_action_grid_label)
     isWrapper: true
@@ -207,23 +209,25 @@ actions:
       class:
         label: _t(AB_template_actions_class)
         type: text
-        advanced: true
-  col:
-    label: _t(AB_template_action_col_label)
-    isWrapper: true
-    wrappedContentExample: _t(AB_template_action_col_example)
-    properties:
-      size: 
-        label: _t(AB_template_col_size_label)
-        type: range
-        required: true
-        min: 1
-        max: 12
-        default: 4
-      class:
-        label: _t(AB_template_actions_class)
-        type: text
-        advanced: true
+        doclink: https://yeswiki.net/?GriD
+  # removed because not a good idea to use it alone
+  # col:
+  #   label: _t(AB_template_action_col_label)
+  #   isWrapper: true
+  #   wrappedContentExample: _t(AB_template_action_col_example)
+  #   doclink: https://yeswiki.net/?CoL
+  #   properties:
+  #     size: 
+  #       label: _t(AB_template_col_size_label)
+  #       type: range
+  #       required: true
+  #       min: 1
+  #       max: 12
+  #       default: 4
+  #     class:
+  #       label: _t(AB_template_actions_class)
+  #       type: text
+  #       advanced: true
   # ariane:
   #   label: _t(AB_template_action_ariane_label)
   #   properties:
