@@ -9,6 +9,7 @@ use YesWiki\Core\Service\TemplateEngine;
 class ThemeManager
 {
     public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
+    public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
 
     private const POST_DATA_KEYS = [
         'primary-color',
@@ -81,6 +82,26 @@ class ThemeManager
                 $this->config['favorite_style'] = $_REQUEST['style'];
                 $this->config['favorite_squelette'] = $_REQUEST['squelette'];
 
+                // presets
+                if (isset($_REQUEST['preset']) &&
+                        (
+                            (
+                                ($isCustom = (substr($_REQUEST['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX))
+                                && is_file(self::CUSTOM_CSS_PRESETS_PATH.'/'.substr($_REQUEST['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                            )
+                            ||
+                            (
+                                !$isCustom &&
+                                (
+                                    is_file('custom/themes/'.$_REQUEST['theme'].'/presets/'.$_REQUEST['preset'])
+                                    || is_file('themes/'.$_REQUEST['theme'].'/presets/'.$_REQUEST['preset'])
+                                )
+                            )
+                        )
+                    ) {
+                    $this->config['favorite_preset'] = $_REQUEST['preset'];
+                }
+
                 if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
                     $this->config['favorite_background_image'] = $_REQUEST['bgimg'];
                 } else {
@@ -92,6 +113,9 @@ class ThemeManager
                     $this->config['favorite_theme'] = $metadata['theme'];
                     $this->config['favorite_style'] = $metadata['style'];
                     $this->config['favorite_squelette'] = $metadata['squelette'];
+                    if (isset($metadata['favorite_preset'])) {
+                        $this->config['favorite_preset'] = $metadata['favorite_preset'];
+                    }
                     if (isset($metadata['bgimg'])) {
                         $this->config['favorite_background_image'] = $metadata['bgimg'];
                     } else {
