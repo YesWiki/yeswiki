@@ -5,7 +5,8 @@ if(count($fiches)>0) : ?>
     <?php
     foreach($fiches as $fiche): ?>
         <li class="bazar-entry" <?php echo $fiche['html_data'];?>>
-          <a href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>" target="_blank">
+          <a href="<?php echo $fiche['url']; ?>"
+           target="_blank">
             <?php
             $style = '';
             $color = getCustomValueForEntry(

@@ -101,6 +101,10 @@ parameters:
   baz_wheel_zoom: 'false'
   # image marqueur
   baz_marker_image_file: 'tools/bazar/presentation/images/marker.png'
+  # ------
+  # ExternalBazarService
+  baz_external_service_time_cache_for_entries: 60 # seconds
+  baz_external_service_time_cache_for_forms: 1200 # seconds
 
 services:
   _defaults:

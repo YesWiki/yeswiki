@@ -1,5 +1,5 @@
 <div class="BAZ_cadre_fiche id{{ form.bn_id_nature }}">
-  {% if message %}
+  {% if message and not entry['external-data'] %}
     <div class="alert alert-success">
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
@@ -20,36 +20,38 @@
   {% if showFooter %}
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info well well-sm">
-      <div class="pull-right BAZ_actions_fiche">
-        {% if canEdit %}
-          <a class="btn btn-xs btn-mini btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
-            <i class="fa fa-pencil-alt icon-pencil"></i>
-            <span>{{ _t('BAZ_MODIFIER') }}</span>
-          </a>
-        {% else %}
-          <button type="button" class="btn btn-xs btn-mini btn-default" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{  _t('BAZ_NEED_WRITE_RIGHTS') }}">
-            <i class="fa fa-pencil-alt icon-pencil"></i>
-            <span>{{ _t('BAZ_MODIFIER') }}</span>
-          </button>
-        {% endif %}
-        {% if canDelete %}
-          <a class="btn btn-xs btn-mini btn-danger modalbox"
-             href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"
-             data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}">
-            <i class="fa fa-trash icon-trash icon-white"></i>
-            <span>{{ _t('BAZ_SUPPRIMER') }}</span>
-          </a>
-        {% else %}
-          <button type="button" class="btn btn-xs btn-mini btn-danger modalbox" disabled data-toggle="tooltip"
-                  data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
-            <i class="fa fa-trash icon-trash icon-white"></i>
-            <span>{{ _t('BAZ_SUPPRIMER') }}</span>
-          </button>
-        {% endif %}
-      </div>
+      {% if not entry['external-data'] %}
+        <div class="pull-right BAZ_actions_fiche">
+          {% if canEdit %}
+            <a class="btn btn-xs btn-mini btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
+              <i class="fa fa-pencil-alt icon-pencil"></i>
+              <span>{{ _t('BAZ_MODIFIER') }}</span>
+            </a>
+          {% else %}
+            <button type="button" class="btn btn-xs btn-mini btn-default" disabled data-toggle="tooltip"
+              data-placement="bottom" title="{{  _t('BAZ_NEED_WRITE_RIGHTS') }}">
+              <i class="fa fa-pencil-alt icon-pencil"></i>
+              <span>{{ _t('BAZ_MODIFIER') }}</span>
+            </button>
+          {% endif %}
+          {% if canDelete %}
+            <a class="btn btn-xs btn-mini btn-danger modalbox"
+              href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"
+              data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}">
+              <i class="fa fa-trash icon-trash icon-white"></i>
+              <span>{{ _t('BAZ_SUPPRIMER') }}</span>
+            </a>
+          {% else %}
+            <button type="button" class="btn btn-xs btn-mini btn-danger modalbox" disabled data-toggle="tooltip"
+                    data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+              <i class="fa fa-trash icon-trash icon-white"></i>
+              <span>{{ _t('BAZ_SUPPRIMER') }}</span>
+            </button>
+          {% endif %}
+        </div>
+      {% endif %}
       <span class="BAZ_main_fiche_info">
-        <a href="{{ url({ tag: entryId }) }}">
+        <a href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
           {{ entryId }}
         </a>
         <span class="category">({{ form.bn_label_nature }})</span>

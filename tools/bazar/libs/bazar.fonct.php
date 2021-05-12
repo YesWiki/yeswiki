@@ -265,37 +265,6 @@ function genere_nom_wiki($nom, $occurence = 1)
     }
 }
 
-/**
- * Mets dans le cache une url .
- *
- * @param $url : url a mettre en cache
- * @param $cache_life : booleen pour afficher ou non le nombre  du resultat de la recherche (vrai par defaut)
- *
- * @return string location of cached file
- */
-function cacheUrl($url, $cache_life = '60', $dir = 'cache')
-{
-    $cache_file = $dir.'/'.removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $url)));
-
-    $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
-    if (!$filemtime or (time() - $filemtime >= $cache_life)) {
-        file_put_contents($cache_file, file_get_contents($url));
-    }
-    return $cache_file;
-}
-
-/**
- * Renvoie le contenu d une url en cache.
- *
- * @param $url : url a mettre en cache
- * @param $cache_life : booleen pour afficher ou non le nombre  du resultat de la recherche (vrai par defaut)
- */
-function getCachedUrlContent($url, $cache_life = '60')
-{
-    $cache_file = cacheUrl($url, $cache_life);
-    return file_get_contents($cache_file);
-}
-
 function startsWith($haystack, $needle)
 {
     $length = strlen($needle);

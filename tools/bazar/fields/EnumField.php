@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
 
 abstract class EnumField extends BazarField
@@ -43,10 +44,28 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromJson()
     {
-        $json = getCachedUrlContent($this->name);
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name);
         $this->options = array_map(function ($entry) {
             return $entry['bf_titre'];
         }, json_decode($json, true));
+    }
+
+    protected function loadOptionsFromJSONForm($JSONAddress): array
+    {
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($JSONAddress, 9000000);
+        // do not refresh less than 99 days because cache defined by ExternalBazarService
+        $form = json_decode($json, true);
+        if (isset($form[0]['prepared'])) {
+            foreach ($form[0]['prepared'] as $field) {
+                // be carefull it is an array here
+                if (isset($field['propertyname']) && ($field['propertyname'] == $this->getPropertyName())) {
+                    $this->options = $field['options'] ?? [];
+                    return $this->options ;
+                }
+            }
+        }
+        $this->options = [];
+        return $this->options ;
     }
 
     public function loadOptionsFromEntries()

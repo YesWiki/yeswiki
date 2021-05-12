@@ -33,7 +33,14 @@ if (count($fiches)>0) {
         }
 
         // echo entry
-        echo '<div class="bazar-entry" '.$fiche['html_data'].'><small><a href="' . $GLOBALS['wiki']->href('revisions', $fiche['id_fiche']) . '">'.$svgIcon.'</a>&nbsp;'.$time.'</small> <a href="'.$GLOBALS['wiki']->href('', $fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a> <small>par '.$GLOBALS['wiki']->Format($fiche['owner']).'</small></div>'."\n";
+        echo '<div class="bazar-entry" '.$fiche['html_data'].'><small>'
+            .'<a href="' . $fiche['url'].'/revisions">' // handler revisions
+              .$svgIcon.'</a>&nbsp;'.$time.'</small> '
+              .'<a href="'.$fiche['url'].'">'
+                .$fiche['bf_titre'].'</a> <small>par '
+                .((isset($fiche['external-data']))
+                    ? '<a href="'.$fiche['external-data']['baseUrl'].'?'.$fiche['owner'].'">'.$fiche['owner'].'</a>'
+                    : $this->wiki->Format($fiche['owner'])).'</small></div>'."\n";
     }
 } else {
    echo 'Il n\'y a pas de fiche pour cette période.';
