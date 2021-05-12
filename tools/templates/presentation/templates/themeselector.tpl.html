@@ -50,7 +50,7 @@
       <ul class="css-preset-list list-inline">
       <?php foreach ($themes[$favoriteTheme]['presets'] as $key => $value) : ?>
         <li>
-          <a class="css-preset" href="themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
+          <a class="css-preset<?php echo ($key == $selectedPresetName) ? ' active' :'' ;?>" href="themes/<?php echo $favoriteTheme.'/presets/'.$key; ?>"
             data-key="<?php echo $key ;?>"
             <?php echo $dataHtmlForPresets[$key] ;?>>
           <?php echo str_replace('.css', '', $key); ?>
@@ -59,7 +59,7 @@
       <?php endforeach; ?>
       <?php foreach ($customCSSPresets as $key => $value) : ?>
         <li>
-          <a class="css-preset" href="<?php echo $CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
+          <a class="css-preset custom<?php echo ($key == $selectedCustomPresetName) ? ' active' :'' ;?>" href="<?php echo $CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
             data-key="<?php echo $key ;?>"
             <?php echo $dataHtmlForCustomCSSPresets[$key] ;?>>
           <?php echo str_replace('.css', '', $key); ?>
@@ -159,48 +159,48 @@
     ?>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="primary-color"
-      value="#f9c401" />
+      value="<?php echo $currentCSSValues['primary-color'] ??'#f9c401';?>" />
       <label><?php echo _t('TEMPLATE_PRIMARY_COLOR'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="secondary-color-1"
-      value="#147386" />
+      value="<?php echo $currentCSSValues['secondary-color-1'] ??'#147386';?>" />
       <label><?php echo _t('TEMPLATE_SECONDARY_COLOR_1'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="secondary-color-2"
-      value="#d78958" />
+      value="<?php echo $currentCSSValues['secondary-color-2'] ??'#d78958';?>" />
       <label><?php echo _t('TEMPLATE_SECONDARY_COLOR_2'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="neutral-color"
-      value="#444041" />
+      value="<?php echo $currentCSSValues['neutral-color'] ??'#444041';?>" />
       <label><?php echo _t('TEMPLATE_NEUTRAL_COLOR'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="neutral-soft-color"
-      value="#a7a6a6" />
+      value="<?php echo $currentCSSValues['neutral-soft-color'] ??'#a7a6a6';?>" />
       <label><?php echo _t('TEMPLATE_SOFT_COLOR'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="neutral-light-color"
-      value="#ffffff" />
+      value="<?php echo $currentCSSValues['neutral-light-color'] ??'#ffffff';?>" />
       <label><?php echo _t('TEMPLATE_LIGHT_COLOR'); ?></label>
     </div>
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TEXT_SIZE'); ?></label>
       <input class="form-input range" type="range" min="9" max="34" step="1" name="main-text-fontsize"
-        value="17" />
+        value="<?php echo explode('px',$currentCSSValues['main-text-fontsize'])[0] ?? '17';?>" />
     </div>
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TEXT_FONT'); ?></label>
       <input class="form-input fontpicker" type="text" name="main-text-fontfamily"
-        value="'Nunito', sans-serif" />
+        value="<?php echo $currentCSSValues['main-text-fontfamily'] ?? '\'Nunito\', sans-serif';?>" />
     </div>
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TITLE_FONT'); ?></label>
       <input class="form-input fontpicker" type="text" name="main-title-fontfamily"
-        value="'Nunito', sans-serif" />
+        value="<?php echo $currentCSSValues['main-title-fontfamily'] ?? '\'Nunito\', sans-serif';?>" />
     </div>
     <?php if ($wiki->GetUser()) : ?>
       <div class="form-group">

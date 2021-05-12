@@ -48,6 +48,7 @@ function closeNav() {
     document.getElementById("yw-container").style.paddingRight = "0";
     return false;
 }
+
 document.addEventListener('DOMContentLoaded', function(){
     if (typeof $('.colorpicker').spectrum === "function") {
         $('.colorpicker').spectrum({
@@ -60,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function(){
         cancelText: themeSelectorTranslation['TEMPLATE_CANCEL'],
         change: function(color) {
             document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
+            $('.css-preset').removeClass('active') ;
         },
         hide: function(color) {
             document.documentElement.style.setProperty('--'+$(this).attr('name'), color.toRgbString());
@@ -137,6 +139,12 @@ $('.css-preset').click(function() {
             $(this).val(filename);
         });
     }
+    // set class active or toggle it
+    let isAlreadyActive = $(this).hasClass('active') ;
+    $('.css-preset').removeClass('active') ;
+    if (!isAlreadyActive){
+        $(this).addClass('active') ;
+    }
     return false;
 });
 function deleteCSSPreset(elem,text,url){
@@ -151,13 +159,24 @@ function deleteCSSPreset(elem,text,url){
                     console.log(key+' deleted !');
                     $(elem).parent().remove();
                 } else {
-                    console.log(key+' not deleted ! Message :'+JSON.stringify(data));
+                    let message = key+' not deleted !';
+                    console.log(message+' Message :'+JSON.stringify(data));
+                    if (typeof toastMessage == 'function'){
+                        toastMessage(message,3000,'alert alert-warning');
+                    } else {
+                        alert(message);
+                    }
                 }
             },
             method: 'DELETE',
             cache: false,
             error: function(jqXHR,textStatus,errorThrown){
                 console.log('trying DELETE '+url+' ; but error obtained:'+textStatus);
+                if (typeof toastMessage == 'function'){
+                    toastMessage(key+' not deleted !',3000,'alert alert-warning');
+                } else {
+                    alert(key+' not deleted !');
+                }
             },
         });
     }
@@ -217,7 +236,13 @@ function saveCSSPreset(elem,url){
                 console.log(fullFileName+' added !');
                 window.location.reload();
             } else {
-                console.log(fullFileName+' not added !'+"\n"+JSON.stringify(data));
+                let message = fullFileName+' not added !';
+                console.log(message+"\n"+JSON.stringify(data));
+                if (typeof toastMessage == 'function'){
+                    toastMessage(message,3000,'alert alert-warning');
+                } else {
+                    alert(message);
+                }
             }
         },
         method: 'POST',
@@ -235,6 +260,12 @@ function saveCSSPreset(elem,url){
         cache: false,
         error: function(jqXHR,textStatus,errorThrown){
             console.log('trying POST '+url+' ; but error obtained:'+textStatus);
+            let message = fullFileName+' not added !';
+            if (typeof toastMessage == 'function'){
+                toastMessage(message,3000,'alert alert-warning');
+            } else {
+                alert(message);
+            }
         },
     });
 }

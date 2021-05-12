@@ -152,3 +152,11 @@ font: 16px Helvetica, Sans-serif;
 box-shadow: inset 0 1px 3px rgba(0,0,0,.06);
 border-radius: .1875rem;
 }
+
+/* part to define active preset */
+a.css-preset.active {
+    border: 2px solid;
+    border-radius: 5px;
+    border-color: var(--secondary-color-1);
+    padding: 1px 3px 1px 3px;
+}

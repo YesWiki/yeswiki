@@ -397,13 +397,29 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
     $wiki = $GLOBALS['wiki'];
+    $themePresets = $wiki->config['templates'][$wiki->config['favorite_theme']]['presets'] ?? [];
     $dataHtmlForPresets = array_map(function ($value) {
         return extractDataFromPreset($value);
-    }, $wiki->config['templates'][$wiki->config['favorite_theme']]['presets'] ?? []);
+    }, $themePresets);
     $customCSSPresets = $wiki->services->get(ThemeManager::class)->getCustomCSSPresets() ;
     $dataHtmlForCustomCSSPresets = array_map(function ($value) {
         return extractDataFromPreset($value);
     }, $customCSSPresets);
+    if (!empty($wiki->config['favorite_preset'])) {
+        $presetName = $wiki->config['favorite_preset'];
+        if (substr($presetName, 0, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX)) == ThemeManager::CUSTOM_CSS_PRESETS_PREFIX) {
+            $presetName = substr($presetName, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX));
+            if (in_array($presetName, array_keys($customCSSPresets))) {
+                $currentCSSValues = extractPropValuesFromPreset($customCSSPresets[$presetName]);
+                $selectedCustomPresetName = $presetName;
+            }
+        } else {
+            if (in_array($presetName, array_keys($themePresets))) {
+                $currentCSSValues = extractPropValuesFromPreset($themePresets[$presetName]);
+                $selectedPresetName = $presetName;
+            }
+        }
+    }
 
     $selecteur =$wiki->render("@templates/themeselector.tpl.html", [
         'mode' => $mode,
@@ -422,6 +438,9 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'CUSTOM_CSS_PRESETS_PATH' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
         'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
         'showDeleteButton' => ($wiki->UserIsAdmin()),
+        'currentCSSValues' => $currentCSSValues ?? [],
+        'selectedPresetName' => $selectedPresetName ??  null,
+        'selectedCustomPresetName' => $selectedCustomPresetName ??  null,
     ]);
 
     $js = add_templates_list_js();
@@ -431,9 +450,19 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
 
 function extractDataFromPreset(string $presetContent): string
 {
+    $data = '';
+    $values = extractPropValuesFromPreset($presetContent);
+    foreach ($values as $prop => $value) {
+        $data .= ' data-'.$prop.'="'.str_replace('"', '\'', $value).'"';
+    }
+    return $data;
+}
+
+function extractPropValuesFromPreset(string $presetContent): array
+{
     // extract root part
     $matches = [];
-    $data = '';
+    $results = [];
     $error = false;
     if (preg_match('/^:root\s*{((?:.|\n)*)}\s*$/', $presetContent, $matches)) {
         $vars = $matches[1];
@@ -445,14 +474,13 @@ function extractDataFromPreset(string $presetContent): string
                 if (preg_match('/[a-z\-]*color[a-z0-9\-]*/', $matches[1][$index], $newmatch)) {
                     if (!preg_match('/^#[A-Fa-f0-9]*$/', $matches[2][$index], $newmatch)) {
                         $error = true;
-                        ;
                     }
                 }
-                $data .= ' data-'.$matches[1][$index].'="'.str_replace('"', '\'', $matches[2][$index]).'"';
+                $results[$matches[1][$index]] = $matches[2][$index];
             }
         }
     }
-    return $error ? '' : $data;
+    return $error ? [] : $results;
 }
 
 

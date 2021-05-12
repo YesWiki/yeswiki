@@ -277,6 +277,19 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         style.options[style.options.length] = o;
       }
     }
+    let presetValue = '';
+    let selectedCssPresets = $('.css-preset.active');
+    if (selectedCssPresets && selectedCssPresets.length > 0){
+      let selectedCssPreset = $(selectedCssPresets).first();
+      let key = $(selectedCssPreset).data('key');
+      if (key) {
+        if ($(selectedCssPreset).hasClass('custom')){
+          presetValue = "&preset=custom/"+key;
+        } else {
+          presetValue = "&preset="+key;
+        }
+      }
+    }
 
     var url = window.location.toString();
     var urlAux = url.split("&theme=");
@@ -287,7 +300,8 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       "&squelette=" +
       $("#changesquelette").val() +
       "&style=" +
-      $("#changestyle").val();
+      $("#changestyle").val()+
+      presetValue;
   });
 
   /* tooltips */
