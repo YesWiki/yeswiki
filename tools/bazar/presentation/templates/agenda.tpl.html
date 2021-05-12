@@ -42,9 +42,13 @@ $modal = ''; // declaration d'une chaine de char vide
       <?php $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1; ?>
       <a class="<?php echo $useModal ? 'modalbox' : ''; ?>"
          title="<?php echo htmlspecialchars($fiche['bf_titre']);?>"
-         href="<?php echo (isset($fiche['external-data']))
-          ? $fiche['url'] . (($useModal) ? '/iframe" data-iframe="1"' : '"')
-          : $this->wiki->href('', $fiche['id_fiche']) .'"'; ?>>
+         href="<?php echo $fiche['url']
+          // add /iframe only for external YesWiki entries and modal
+          .(
+            (isset($fiche['external-data']) && $useModal)
+            ? '/iframe" data-iframe="1"'
+            : '"'
+          ); ?>>
       </a>
     </figure>
   </div>

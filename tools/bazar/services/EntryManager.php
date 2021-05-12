@@ -767,7 +767,7 @@ class EntryManager
         // Fiche URL
         if (!isset($fiche['url'])) {
             // could already be defined for entries from external json
-            $fiche['url'] = $this->wiki->href('', $fiche['id_fiche']);
+            $fiche['url'] = $this->wiki->Href('', $fiche['id_fiche']);
         }
 
         // Données sémantiques

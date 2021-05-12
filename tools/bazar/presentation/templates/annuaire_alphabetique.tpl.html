@@ -52,9 +52,13 @@
   <?php endif; ?>
 
   <a class="nom bazar-entry modalbox" <?php echo $fiche['html_data']?>
-    href="<?php echo (isset($fiche['external-data']))
-    ? $fiche['url'] . '/iframe" data-iframe="1" title="'.htmlentities(strip_tags($fiche['bf_titre'])).'"'
-    : $this->wiki->href('', $fiche['id_fiche']) .'"'; ?>>
+    href="<?php echo $fiche['url']
+      // add /iframe only for external YesWiki entries
+      .(
+        (isset($fiche['external-data']))
+        ? '/iframe" data-iframe="1" title="'.htmlentities(strip_tags($fiche['bf_titre'])).'"' // title used by iframe
+        : '"'
+      ); ?>>
     <?php echo $fiche['bf_titre']; ?>
   </a>
 <?php endforeach; ?>

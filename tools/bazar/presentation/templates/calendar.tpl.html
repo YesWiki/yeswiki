@@ -36,7 +36,7 @@ if(count($fiches)>0) {
                       title: "'.addslashes($titleprefix.$fiche['bf_titre']).'",
                       start:"'. $fiche['bf_date_debut_evenement'].'",
                       end:"'. formatEndDate($fiche['bf_date_fin_evenement']).'",
-                      url:"'.(isset($fiche['external-data']) ? $fiche['url'] : $this->wiki->href('', $fiche['id_fiche'])).'",
+                      url:"'.$fiche['url'].'",
                       allDay: '.((strlen($fiche['bf_date_debut_evenement'])>10) ? 'false':'true').',
                       className: "bazar-entry '.(!isset($fiche['external-data']) ? 'modalbox':'').'",
                       backgroundColor: "'.$color.'",
