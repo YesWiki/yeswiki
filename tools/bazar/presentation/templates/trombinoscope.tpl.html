@@ -22,7 +22,7 @@
                     'cache/image_300_300_'.$fiche['imagebf_image'],
                      300, 300, 'crop'); ?>" <?php echo (isset($fiche['external-data']))
                 ? 'onerror="this.src=\''.$fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image'].'\'"'
-                : ''
+                : '' //TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ?
               ;?>>
         <?php else : ?>
           <img class="trombi-image img-placeholder"
