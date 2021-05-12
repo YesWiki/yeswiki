@@ -94,7 +94,7 @@ class BazarListeAction extends YesWikiAction
             'externalModeActivated' => $externalModeActivated,
             'externalIds' => $externalIds,
             // to be able to refresh cache for external json
-            'refreshCache' => $this->formatBoolean($_GET, false, 'refreshCache'),
+            'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             // Paramètres pour une requete specifique
             'query' => $this->formatQuery($arg),
             // filtrer les resultats sur une periode données si une date est indiquée
@@ -191,10 +191,10 @@ class BazarListeAction extends YesWikiAction
 
         // External mode activated ?
         if ($this->arguments['externalModeActivated']) {
-            $forms = $externalWikiService->getFormsForBazarListe($this->arguments['externalIds'], $this->arguments['refreshCache']);
+            $forms = $externalWikiService->getFormsForBazarListe($this->arguments['externalIds'], $this->arguments['refresh']);
             $entries = $externalWikiService->getEntries([
                 'forms' => $forms,
-                'refreshCache' => $this->arguments['refreshCache'],
+                'refresh' => $this->arguments['refresh'],
                 'queries' => $this->arguments['query']
             ]);
         } else {

@@ -76,17 +76,17 @@ class ExternalBazarService
      * get a form from external wiki
      * @param string $url
      * @param int $formId
-     * @param bool $refreshCache
+     * @param bool $refresh
      * @param bool $checkUrl
      * @return null|array
      */
-    public function getForm(string $url, int $formId, bool $refreshCache = false, bool $checkUrl = true) : ?array
+    public function getForm(string $url, int $formId, bool $refresh = false, bool $checkUrl = true) : ?array
     {
         if ($checkUrl) {
             $url= $this->formatUrl($url);
         }
 
-        $json = $this->getJSONCachedUrlContent($url.self::JSON_FORM_BASE_URL.$formId, $refreshCache  ? 0 : $this->timeCacheForForms);
+        $json = $this->getJSONCachedUrlContent($url.self::JSON_FORM_BASE_URL.$formId, $refresh  ? 0 : $this->timeCacheForForms);
         $forms = json_decode($json, true);
 
         if ($forms) {
@@ -101,17 +101,17 @@ class ExternalBazarService
     /**
      * get all forms from external wiki
      * @param string $url
-     * @param bool $refreshCache
+     * @param bool $refresh
      * @param bool $checkUrl
      * @return null|array
      */
-    // public function getForms(string $url, bool $refreshCache = false, bool $checkUrl = true) : ?array
+    // public function getForms(string $url, bool $refresh = false, bool $checkUrl = true) : ?array
     // {
     //     if ($checkUrl) {
     //         $url= $this->formatUrl($url);
     //     }
 
-    //     $json = $this->getJSONCachedUrlContent($url.'?BazaR/json&demand=forms', $refreshCache  ? 0 : $this->timeCacheForForms);
+    //     $json = $this->getJSONCachedUrlContent($url.'?BazaR/json&demand=forms', $refresh  ? 0 : $this->timeCacheForForms);
     //     $forms = json_decode($json, true);
 
     //     if ($forms) {
@@ -125,10 +125,10 @@ class ExternalBazarService
     /**
      * get forms from external wiki
      * @param array $externalIds // format 'url' => url, 'id' => *id, 'localFormId' => $id
-     * @param bool $refreshCache
+     * @param bool $refresh
      * @return array forms
      */
-    public function getFormsForBazarListe(array $externalIds, bool $refreshCache = false) : ?array
+    public function getFormsForBazarListe(array $externalIds, bool $refresh = false) : ?array
     {
         $this->cleanOldCacheFiles();
 
@@ -150,7 +150,7 @@ class ExternalBazarService
             } else {
                 foreach ($ids as $values) {
                     if (empty($values['localFormId'])) {
-                        if ($form = $this->getForm($url, $values['id'], $refreshCache, false)) {
+                        if ($form = $this->getForm($url, $values['id'], $refresh, false)) {
                             $localFormId = $this->findNewId();
                             $form = $this->prepareExtForm($localFormId, $url, $form);
                             // put in cache in FormManager
@@ -187,7 +187,7 @@ class ExternalBazarService
             [
                 'forms' => [], // forms
                 'queries' => '', // Sélection par clé-valeur
-                'refeshCache' => false, // parameter to force refresh cache
+                'refresh' => false, // parameter to force refresh cache
             ],
             $params
         );
@@ -229,7 +229,7 @@ class ExternalBazarService
                 $distantFormId = $form['external_bn_id_nature'];
                 $json = $this->getJSONCachedUrlContent(
                     $url.'?api/forms/'.$distantFormId.'/entries', // .$querystring, // TODO use query in api
-                    $params['refreshCache']  ? 0 : $this->timeCacheForEntries
+                    $params['refresh']  ? 0 : $this->timeCacheForEntries
                 );
                 $batchEntries = json_decode($json, true);
                 // replace formId
@@ -263,8 +263,8 @@ class ExternalBazarService
         } else {
             $newUrl = $url;
         }
-        // add / at end if needed  
-        if (substr($newUrl,-1) !== '/') {
+        // add / at end if needed
+        if (substr($newUrl, -1) !== '/') {
             $newUrl = $newUrl . '/';
         }
         return $newUrl;
@@ -432,12 +432,12 @@ class ExternalBazarService
 
     /**
      * clean old cache files to prevent leak of data between sites
-     * 
+     *
      */
     private function cleanOldCacheFiles()
     {
         $cacheFiles = glob('cache/'.self::CACHE_FILENAME_PREFIX.'*');
-        foreach($cacheFiles as $filePath){
+        foreach ($cacheFiles as $filePath) {
             $filemtime = @filemtime($filePath);  // returns FALSE if file does not exist
             if (!$filemtime or (time() - $filemtime >= self::MAX_CACHE_TIME)) {
                 unlink($filePath);
