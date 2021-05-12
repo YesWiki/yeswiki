@@ -22,7 +22,8 @@ if (isset($error)) {
       </div>'."\n";
 } else {
     echo '<div class="'.$class.'">
-    <div class="bar"
-    style="width: '.$val.'%;"></div>
+    <div class="progress-bar" role="progressbar"
+    style="width: '.$val.'%;"
+    aria-valuenow="'.$val.'" aria-valuemin="0" aria-valuemax="100"></div>
     </div>'."\n";
 }
