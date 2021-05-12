@@ -86,6 +86,11 @@ class ExternalBazarService
             $url= $this->formatUrl($url);
         }
 
+        // to prevent DDOS attack refresh only for connected
+        if (!$this->wiki->GetUser()) {
+            $refresh = false;
+        }
+
         $json = $this->getJSONCachedUrlContent($url.self::JSON_FORM_BASE_URL.$formId, $refresh  ? 0 : $this->timeCacheForForms);
         $forms = json_decode($json, true);
 
@@ -166,6 +171,11 @@ class ExternalBazarService
             ],
             $params
         );
+
+        // to prevent DDOS attack refresh only for connected
+        if (!$this->wiki->GetUser()) {
+            $params['refresh'] = false;
+        }
 
         if (empty($params['forms'])) {
             throw new \Exception("parameter forms should not be empty");
