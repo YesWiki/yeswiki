@@ -97,31 +97,6 @@ class ExternalBazarService
         }
     }
 
-    // NOT USED
-    /**
-     * get all forms from external wiki
-     * @param string $url
-     * @param bool $refresh
-     * @param bool $checkUrl
-     * @return null|array
-     */
-    // public function getForms(string $url, bool $refresh = false, bool $checkUrl = true) : ?array
-    // {
-    //     if ($checkUrl) {
-    //         $url= $this->formatUrl($url);
-    //     }
-
-    //     $json = $this->getJSONCachedUrlContent($url.'?BazaR/json&demand=forms', $refresh  ? 0 : $this->timeCacheForForms);
-    //     $forms = json_decode($json, true);
-
-    //     if ($forms) {
-    //         return $forms;
-    //     } elseif ($this->debug) {
-    //        trigger_error(get_class($this)."::getForms: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM'));
-    //         return null;
-    //     }
-    // }
-
     /**
      * get forms from external wiki
      * @param array $externalIds // format 'url' => url, 'id' => *id, 'localFormId' => $id
