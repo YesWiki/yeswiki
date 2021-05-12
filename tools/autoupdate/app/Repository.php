@@ -44,7 +44,8 @@ class Repository extends PackageCollection
                 $this->address,
                 $packageInfos['file'],
                 $packageInfos['description'],
-                $packageInfos['documentation']
+                $packageInfos['documentation'],
+                $packageInfos['minimal_php_version'] ?? null
             );
         }
 

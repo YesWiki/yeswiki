@@ -7,10 +7,18 @@
 </p>
 
 {% if isAdmin and core.newVersionRequested %}
-    <a  href="{{ baseUrl }}{{ core.updateLink }}"
-        class="btn btn-danger" title="{{ AU_VERSION_UPDATE }}">
-        {{ AU_VERSION_UPDATE }}
-    </a>
+    {% if core.PHPVersionEnoughHigh %}
+        <a  href="{{ baseUrl }}{{ core.updateLink }}"
+            class="btn btn-danger" title="{{ AU_VERSION_UPDATE }}">
+            {{ AU_VERSION_UPDATE }}
+        </a>
+    {% else %}
+        <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
+            data-placement="bottom" title="{{ AU_PHP_TOO_LOW }}">
+            {{ AU_VERSION_UPDATE }}
+        </button>
+        <p><i>{{ AU_PHP_TOO_LOW_HINT }}</i></p>
+    {% endif %}
 {% elseif isAdmin and core.updateAvailable %}
     <p> {{ AU_WARNING }} </p>
     <a  href="{{ baseUrl}}{{ core.updateLink }}"

@@ -21,6 +21,7 @@ abstract class Package extends Files
     public $updateLink;
     public $description = "";
     public $documentation = "";
+    protected $minimalPhpVersion;
 
     abstract public function upgrade();
     abstract public function upgradeInfos();
@@ -28,7 +29,7 @@ abstract class Package extends Files
     abstract protected function localRelease();
     //abstract protected function updateAvailable();
 
-    public function __construct($release, $address, $desc, $doc)
+    public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
         $this->release = $release;
         $this->address = $address;
@@ -37,6 +38,7 @@ abstract class Package extends Files
         $this->name = $this->name();
         $this->updateLink = '&upgrade=' . $this->name;
         $this->localRelease = $this->localRelease();
+        $this->minimalPhpVersion = $minimalPhpVersion;
     }
 
     public function checkACL()
