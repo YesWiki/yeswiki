@@ -5,6 +5,7 @@ function openNav() {
     } else {
         document.getElementById("preset-sidenav").style.width = "250px";
         document.getElementById("yw-container").style.paddingRight = "250px";
+        let previousAdtive = $('.css-preset.active');
         $('#preset-sidenav .colorpicker').each(function(){
         // define values from current set for color picker
         var value = document.documentElement.style.getPropertyValue('--'+$(this).attr('name'));
@@ -30,6 +31,7 @@ function openNav() {
         $('#preset-sidenav .form-input[name=main-text-fontsize]').each(function(){
         // define values from current set for color picker
         var value = document.documentElement.style.getPropertyValue('--main-text-fontsize');
+        
         if (value){  
             // extract name
             let values = value.split('px');
@@ -39,6 +41,7 @@ function openNav() {
             $(this).change();
         }
         });
+        $(previousAdtive).addClass('active');
     }
     return false;
 }
@@ -100,11 +103,13 @@ document.addEventListener('DOMContentLoaded', function(){
         var fontWeight = font[1] || 400;
 
         document.documentElement.style.setProperty('--'+$(this).attr('name'), "'"+fontFamily+"'");
+        $('.css-preset').removeClass('active') ;
         });
     }
 
     $('#preset-sidenav .range').on('change', function() {
-        document.documentElement.style.setProperty('--'+$(this).attr('name'), ""+this.value+"px");
+        document.documentElement.style.setProperty('--'+$(this).attr('name'), ""+$(this).val()+"px");
+        $('.css-preset').removeClass('active') ;
     });
 }, false);
 

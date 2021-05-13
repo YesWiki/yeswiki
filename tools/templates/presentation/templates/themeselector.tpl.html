@@ -190,7 +190,7 @@
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TEXT_SIZE'); ?></label>
       <input class="form-input range" type="range" min="9" max="34" step="1" name="main-text-fontsize"
-        value="<?php echo explode('px',$currentCSSValues['main-text-fontsize'])[0] ?? '17';?>" />
+        value="<?php echo (isset($currentCSSValues['main-text-fontsize'])) ? explode('px',$currentCSSValues['main-text-fontsize'])[0] : '17';?>" />
     </div>
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TEXT_FONT'); ?></label>
