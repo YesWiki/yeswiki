@@ -455,6 +455,18 @@ function extractDataFromPreset(string $presetContent): string
     foreach ($values as $prop => $value) {
         $data .= ' data-'.$prop.'="'.str_replace('"', '\'', $value).'"';
     }
+    if (
+        !empty($data)
+        && !empty($values['primary-color'])
+        && !empty($values['main-text-fontsize']
+        && !empty($values['main-text-fontfamily']))
+    ) {
+        $data .= ' style="';
+        $data .= 'color:'.$values['primary-color'].';';
+        $data .= 'font-family:'.str_replace('"', '\'', $values['main-text-fontfamily']).';';
+        $data .= 'font-size:'.$values['main-text-fontsize'].';';
+        $data .= '"';
+    }
     return $data;
 }
 
