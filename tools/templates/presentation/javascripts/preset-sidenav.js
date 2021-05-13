@@ -240,7 +240,18 @@ function saveCSSPreset(elem,url){
             if (data.status) {
                 let resultFileName = data.filename ?? fullFileName ;
                 console.log(resultFileName+' added !');
-                window.location.reload();
+                var url = window.location.toString();
+                let urlAux = url.split("&theme=");
+                window.location =
+                    urlAux[0] +
+                    "&theme=" +
+                    $("#changetheme").val() +
+                    "&squelette=" +
+                    $("#changesquelette").val() +
+                    "&style=" +
+                    $("#changestyle").val()+
+                    "&preset=" +customCSSPresetsPrefix+
+                    resultFileName;
             } else {
                 let message = fullFileName+' not added !';
                 console.log(message+"\n"+JSON.stringify(data));
@@ -274,4 +285,21 @@ function saveCSSPreset(elem,url){
             }
         },
     });
+}
+
+function getActivePreset(){
+    var presetKey = '';
+    let selectedCssPresets = $('.css-preset.active');
+    if (selectedCssPresets && selectedCssPresets.length > 0){
+      let selectedCssPreset = $(selectedCssPresets).first();
+      let key = $(selectedCssPreset).data('key');
+      if (key) {
+        if ($(selectedCssPreset).hasClass('custom')){
+          presetKey = customCSSPresetsPrefix+key;
+        } else {
+          presetKey = key;
+        }
+      }
+    }
+    return presetKey;
 }

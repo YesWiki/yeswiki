@@ -278,16 +278,10 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       }
     }
     let presetValue = '';
-    let selectedCssPresets = $('.css-preset.active');
-    if (selectedCssPresets && selectedCssPresets.length > 0){
-      let selectedCssPreset = $(selectedCssPresets).first();
-      let key = $(selectedCssPreset).data('key');
-      if (key) {
-        if ($(selectedCssPreset).hasClass('custom')){
-          presetValue = "&preset=custom/"+key;
-        } else {
-          presetValue = "&preset="+key;
-        }
+    if (typeof getActivePreset == 'function'){
+      let key = getActivePreset();
+      if (key){
+        presetValue = "&preset="+key;
       }
     }
 

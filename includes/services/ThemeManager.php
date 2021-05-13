@@ -302,7 +302,7 @@ class ThemeManager
         $tab = [];
         $cssFiles = glob($path.DIRECTORY_SEPARATOR.'*.css');
         foreach ($cssFiles as $filepath) {
-            $filename = pathinfo($filepath)['filename'];
+            $filename = pathinfo($filepath)['filename'].'.css';
             $css = file_get_contents($filepath);
             if (!empty($css)) {
                 $tab[$filename] = $css;
