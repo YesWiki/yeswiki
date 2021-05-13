@@ -26,11 +26,12 @@ class ApiController extends YesWikiController
      */
     public function addCustomCSSPreset($presetFilename)
     {
+        $res = $this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST);
         return new ApiResponse(['status'=>
-            ($this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST))
+            (!empty($res))
                 ? 1 // 'OK'
                 : 0 // 'not OK
-            ]);
+            ] + (!empty($res) ? ['filename' => $res] : []));
     }
 
     /**

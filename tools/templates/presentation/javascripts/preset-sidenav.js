@@ -233,7 +233,8 @@ function saveCSSPreset(elem,url){
         url: url,
         success: function(data,textStatus,jqXHR){
             if (data.status) {
-                console.log(fullFileName+' added !');
+                let resultFileName = data.filename ?? fullFileName ;
+                console.log(resultFileName+' added !');
                 window.location.reload();
             } else {
                 let message = fullFileName+' not added !';

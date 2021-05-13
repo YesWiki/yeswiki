@@ -299,19 +299,15 @@ class ThemeManager
     public function getCustomCSSPresets(): array
     {
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-        $dir = opendir($path);
         $tab = [];
-        while ($dir && ($file = readdir($dir)) !== false) {
-            if ($file!='.' && $file!='..' && $file!='CVS'
-                    && substr($file, -4, 4)=='.css' && file_exists($path.DIRECTORY_SEPARATOR.$file)) {
-                $css = file_get_contents($path.DIRECTORY_SEPARATOR.$file);
-                if (!empty($css)) {
-                    $tab[$file] = $css;
-                }
+        $cssFiles = glob($path.DIRECTORY_SEPARATOR.'*.css');
+        foreach ($cssFiles as $filepath) {
+            $filename = pathinfo($filepath)['filename'];
+            $css = file_get_contents($filepath);
+            if (!empty($css)) {
+                $tab[$filename] = $css;
             }
         }
-        
-        closedir($dir);
         return $tab;
     }
 
@@ -338,9 +334,9 @@ class ThemeManager
      * add a css custom preset (only admins can change a file)
      * @param string $filename
      * @param array $post
-     * @return bool
+     * @return bool|null|string null or false for error, filename if success
      */
-    public function addCustomCSSPreset(string $filename, array $post):bool
+    public function addCustomCSSPreset(string $filename, array $post)
     {
         if (!$this->checkPOSTToAddCustomCSSPreset($post)) {
             return false;
@@ -359,12 +355,18 @@ class ThemeManager
             $filename .= '_'. date('Y-m-d_H-i').'.css';
         }
         if ($this->wiki->getUser()) {
+            // check if folder exists
+            if (!is_dir($path)) {
+                if (!mkdir($path)) {
+                    return false;
+                }
+            }
             // create or update
             file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $fileContent);
-            return (file_exists($path.DIRECTORY_SEPARATOR.$filename));
+            return (file_exists($path.DIRECTORY_SEPARATOR.$filename)) ? $filename : false;
         }
         
-        return true;
+        return false;
     }
 
     /**
