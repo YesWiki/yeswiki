@@ -164,7 +164,7 @@ function deleteCSSPreset(elem,text,url){
                     console.log(key+' deleted !');
                     $(elem).parent().remove();
                 } else {
-                    let message = key+' not deleted !';
+                    let message = key+themeSelectorTranslation['TEMPLATE_FILE_NOT_DELETED'];
                     console.log(message+' Message :'+JSON.stringify(data));
                     if (typeof toastMessage == 'function'){
                         toastMessage(message,3000,'alert alert-warning');
@@ -177,10 +177,11 @@ function deleteCSSPreset(elem,text,url){
             cache: false,
             error: function(jqXHR,textStatus,errorThrown){
                 console.log('trying DELETE '+url+' ; but error obtained:'+textStatus);
+                let message = key+themeSelectorTranslation['TEMPLATE_FILE_NOT_DELETED'];
                 if (typeof toastMessage == 'function'){
-                    toastMessage(key+' not deleted !',3000,'alert alert-warning');
+                    toastMessage(message,3000,'alert alert-warning');
                 } else {
-                    alert(key+' not deleted !');
+                    alert(message);
                 }
             },
         });
@@ -240,8 +241,8 @@ function saveCSSPreset(elem,url){
             if (data.status) {
                 let resultFileName = data.filename ?? fullFileName ;
                 console.log(resultFileName+' added !');
-                var url = window.location.toString();
-                let urlAux = url.split("&theme=");
+                var urlwindow = window.location.toString();
+                let urlAux = urlwindow.split("&theme=");
                 window.location =
                     urlAux[0] +
                     "&theme=" +
@@ -253,7 +254,7 @@ function saveCSSPreset(elem,url){
                     "&preset=" +customCSSPresetsPrefix+
                     resultFileName;
             } else {
-                let message = fullFileName+' not added !';
+                let message = fullFileName+themeSelectorTranslation['TEMPLATE_FILE_NOT_ADDED'];
                 console.log(message+"\n"+JSON.stringify(data));
                 if (typeof toastMessage == 'function'){
                     toastMessage(message,3000,'alert alert-warning');
@@ -277,7 +278,7 @@ function saveCSSPreset(elem,url){
         cache: false,
         error: function(jqXHR,textStatus,errorThrown){
             console.log('trying POST '+url+' ; but error obtained:'+textStatus);
-            let message = fullFileName+' not added !';
+            let message = fullFileName+themeSelectorTranslation['TEMPLATE_FILE_NOT_ADDED'];
             if (typeof toastMessage == 'function'){
                 toastMessage(message,3000,'alert alert-warning');
             } else {
@@ -302,4 +303,29 @@ function getActivePreset(){
       }
     }
     return presetKey;
+}
+
+function saveTheme(url){
+    let theme = $("#changetheme").val();
+    let squelette = $("#changesquelette").val();
+    let style = $("#changestyle").val();
+    let preset = getActivePreset();    
+    let errorMessage = themeSelectorTranslation['TEMPLATE_THEME_NOT_SAVE'];
+    if (theme && squelette && style){
+        $("body").append('<form id="templateFormSubmit" method="post" action="'+url+'" enctype="multipart/form-data">'
+            + '<input type="hidden" name="action" value="setTemplate"/>'
+            + '<input type="hidden" name="wdtTheme" value="'+theme+'"/>'
+            + '<input type="hidden" name="wdtSquelette" value="'+squelette+'"/>'
+            + '<input type="hidden" name="wdtStyle" value="'+style+'"/>'
+            + '<input type="hidden" name="preset" value="'+preset+'"/>'
+            +'</form>')
+        $('#templateFormSubmit').submit();
+    } else {
+        if (typeof toastMessage == 'function'){
+            toastMessage(errorMessage,3000,'alert alert-warning');
+        } else {
+            alert(errorMessage);
+        }
+    }
+    return false;
 }

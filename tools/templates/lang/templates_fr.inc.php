@@ -187,5 +187,8 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_ADD_CSS_PRESET_API_HINT' => 'Sauvegarde un fichier preset personnalisé',
     'TEMPLATE_DELETE_CSS_PRESET_API_HINT' => 'Supprime un fichier preset personnalisé',
     'TEMPLATE_PRESET_FILENAME' => 'Nom du preset',
+    'TEMPLATE_THEME_NOT_SAVE' => 'Thème non sauvegardé',
+    'TEMPLATE_FILE_NOT_ADDED' => ' non ajouté !',
+    'TEMPLATE_FILE_NOT_DELETED' => ' non supprimé !',
     )
 );

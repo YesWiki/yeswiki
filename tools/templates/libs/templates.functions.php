@@ -438,7 +438,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'CUSTOM_CSS_PRESETS_PATH' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
         'CUSTOM_CSS_PRESETS_PREFIX' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,
         'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
-        'showDeleteButton' => ($wiki->UserIsAdmin()),
+        'showAdminActions' => ($wiki->UserIsAdmin()),
         'currentCSSValues' => $currentCSSValues ?? [],
         'selectedPresetName' => $selectedPresetName ??  null,
         'selectedCustomPresetName' => $selectedCustomPresetName ??  null,

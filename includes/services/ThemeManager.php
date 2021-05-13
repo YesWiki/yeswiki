@@ -170,6 +170,19 @@ class ThemeManager
             }
             $this->config['use_fallback_theme'] = true;
         }
+        // test l'existence du preset
+        if (isset($this->config['favorite_preset'])
+            &&
+            (
+                (
+                    ($isCutom = substr($this->config['favorite_preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
+                    && !file_exists(self::CUSTOM_CSS_PRESETS_PATH.DIRECTORY_SEPARATOR
+                        .substr($this->config['favorite_preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                )
+            )
+        ) {
+            unset($this->config['favorite_preset']);
+        }
 
         $templates = [];
 

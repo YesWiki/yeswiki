@@ -64,7 +64,7 @@
             <?php echo $dataHtmlForCustomCSSPresets[$key] ;?>>
           <?php echo str_replace('.css', '', $key); ?>
           </a>
-          <?php if ($showDeleteButton) :?>
+          <?php if ($showAdminActions) :?>
             <button class="btn btn-default btn-xs"
               data-key="<?php echo $key ;?>"
               onclick="javascript:deleteCSSPreset(this,'<?php echo _t('TEMPLATE_DELETE_CSS_PRESET').' '.$key.' ?' ;?>',
@@ -79,6 +79,11 @@
         </i><?php echo _t('TEMPLATE_CREATE_PRESET'); ?>
       </a>
     </div>
+  <?php endif; ?>
+  <?php if ($mode != 'edit' && $showAdminActions) : ?>
+    <button class="btn btn-warning" type="button" onclick="saveTheme('<?php echo $wiki->Href('');?>')">
+      <?php print(_t('TEMPLATE_APPLY')); ?>
+    </button>    
   <?php endif; ?>
 
   <?php echo $bgselector; ?>
@@ -159,27 +164,27 @@
     ?>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="primary-color"
-      value="<?php echo $currentCSSValues['primary-color'] ??'#f9c401';?>" />
+      value="<?php echo $currentCSSValues['primary-color'] ??'#1A89A0';?>" />
       <label><?php echo _t('TEMPLATE_PRIMARY_COLOR'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="secondary-color-1"
-      value="<?php echo $currentCSSValues['secondary-color-1'] ??'#147386';?>" />
+      value="<?php echo $currentCSSValues['secondary-color-1'] ??'#d8604c';?>" />
       <label><?php echo _t('TEMPLATE_SECONDARY_COLOR_1'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="secondary-color-2"
-      value="<?php echo $currentCSSValues['secondary-color-2'] ??'#d78958';?>" />
+      value="<?php echo $currentCSSValues['secondary-color-2'] ??'#D78958';?>" />
       <label><?php echo _t('TEMPLATE_SECONDARY_COLOR_2'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="neutral-color"
-      value="<?php echo $currentCSSValues['neutral-color'] ??'#444041';?>" />
+      value="<?php echo $currentCSSValues['neutral-color'] ??'#4E5056';?>" />
       <label><?php echo _t('TEMPLATE_NEUTRAL_COLOR'); ?></label>
     </div>
     <div class="form-group">
       <input class="form-input colorpicker" type="color" name="neutral-soft-color"
-      value="<?php echo $currentCSSValues['neutral-soft-color'] ??'#a7a6a6';?>" />
+      value="<?php echo $currentCSSValues['neutral-soft-color'] ??'#b0b1b3';?>" />
       <label><?php echo _t('TEMPLATE_SOFT_COLOR'); ?></label>
     </div>
     <div class="form-group">
@@ -222,6 +227,9 @@
     'TEMPLATE_SEARCH_POINTS': '<?php echo _t('TEMPLATE_SEARCH_POINTS'); ?>',
     'TEMPLATE_APPLY': "<?php echo _t('TEMPLATE_APPLY');?>",
     'TEMPLATE_CANCEL': "<?php echo _t('TEMPLATE_CANCEL');?>",
+    'TEMPLATE_THEME_NOT_SAVE': "<?php echo _t('TEMPLATE_THEME_NOT_SAVE');?>",
+    'TEMPLATE_FILE_NOT_ADDED': "<?php echo _t('TEMPLATE_FILE_NOT_ADDED');?>",
+    'TEMPLATE_FILE_NOT_DELETED': "<?php echo _t('TEMPLATE_FILE_NOT_DELETED');?>",
   };
   var customCSSPresetsPrefix = '<?php echo $CUSTOM_CSS_PRESETS_PREFIX ;?>';
 </SCRIPT>
