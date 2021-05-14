@@ -160,24 +160,14 @@ function deleteCSSPreset(elem,text,url){
         $.ajax({
             url: url,
             success: function(data,textStatus,jqXHR){
-                if (data.status) {
-                    console.log(key+' deleted !');
-                    $(elem).parent().remove();
-                } else {
-                    let message = key+themeSelectorTranslation['TEMPLATE_FILE_NOT_DELETED'];
-                    console.log(message+' Message :'+JSON.stringify(data));
-                    if (typeof toastMessage == 'function'){
-                        toastMessage(message,3000,'alert alert-warning');
-                    } else {
-                        alert(message);
-                    }
-                }
+                console.log(key+' deleted !');
+                $(elem).parent().remove();
             },
             method: 'DELETE',
             cache: false,
             error: function(jqXHR,textStatus,errorThrown){
-                console.log('trying DELETE '+url+' ; but error obtained:'+textStatus);
                 let message = key+themeSelectorTranslation['TEMPLATE_FILE_NOT_DELETED'];
+                console.log(message+' Message :'+jqXHR.responseText);
                 if (typeof toastMessage == 'function'){
                     toastMessage(message,3000,'alert alert-warning');
                 } else {
@@ -238,30 +228,19 @@ function saveCSSPreset(elem,url){
     $.ajax({
         url: url,
         success: function(data,textStatus,jqXHR){
-            if (data.status) {
-                let resultFileName = data.filename ?? fullFileName ;
-                console.log(resultFileName+' added !');
-                var urlwindow = window.location.toString();
-                let urlAux = urlwindow.split("&theme=");
-                window.location =
-                    urlAux[0] +
-                    "&theme=" +
-                    $("#changetheme").val() +
-                    "&squelette=" +
-                    $("#changesquelette").val() +
-                    "&style=" +
-                    $("#changestyle").val()+
-                    "&preset=" +customCSSPresetsPrefix+
-                    resultFileName;
-            } else {
-                let message = fullFileName+themeSelectorTranslation['TEMPLATE_FILE_NOT_ADDED'];
-                console.log(message+"\n"+JSON.stringify(data));
-                if (typeof toastMessage == 'function'){
-                    toastMessage(message,3000,'alert alert-warning');
-                } else {
-                    alert(message);
-                }
-            }
+            console.log(fullFileName+' added !');
+            var urlwindow = window.location.toString();
+            let urlAux = urlwindow.split("&theme=");
+            window.location =
+                urlAux[0] +
+                "&theme=" +
+                $("#changetheme").val() +
+                "&squelette=" +
+                $("#changesquelette").val() +
+                "&style=" +
+                $("#changestyle").val()+
+                "&preset=" +customCSSPresetsPrefix+
+                fullFileName;
         },
         method: 'POST',
         data: {
@@ -277,10 +256,16 @@ function saveCSSPreset(elem,url){
         },
         cache: false,
         error: function(jqXHR,textStatus,errorThrown){
-            console.log('trying POST '+url+' ; but error obtained:'+textStatus);
+            let data = JSON.parse(jqXHR.responseText);
             let message = fullFileName+themeSelectorTranslation['TEMPLATE_FILE_NOT_ADDED'];
+            let duration = 3000;
+            if (data.errorCode == 2){
+                message = message+"\n"+themeSelectorTranslation['TEMPLATE_FILE_ALREADY_EXISTING'];
+                duration = 6000;
+            }
+            console.log(message+". Message :"+data.message);
             if (typeof toastMessage == 'function'){
-                toastMessage(message,3000,'alert alert-warning');
+                toastMessage(message,duration,'alert alert-danger');
             } else {
                 alert(message);
             }

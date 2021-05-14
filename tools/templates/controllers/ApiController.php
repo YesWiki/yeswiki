@@ -14,11 +14,11 @@ class ApiController extends YesWikiController
      */
     public function deleteCustomCSSPreset($presetFilename)
     {
-        return new ApiResponse(['status'=>
-            ($this->getService(ThemeManager::class)->deleteCustomCSSPreset($presetFilename))
-                ? 1 // 'OK'
-                : 0 // 'not OK
-            ]);
+        $result = $this->getService(ThemeManager::class)->deleteCustomCSSPreset($presetFilename);
+        $code = ($result['status'])
+            ? 200 // 'OK'
+            : 400 ;// 'not OK
+        return new ApiResponse(['code'=> $code,'message'=>$result['message']], $code);
     }
 
     /**
@@ -26,12 +26,12 @@ class ApiController extends YesWikiController
      */
     public function addCustomCSSPreset($presetFilename)
     {
-        $res = $this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST);
-        return new ApiResponse(['status'=>
-            (!empty($res))
-                ? 1 // 'OK'
-                : 0 // 'not OK
-            ] + (!empty($res) ? ['filename' => $res] : []));
+        $result = $this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST);
+        $code = ($result['status'])
+            ? 200 // 'OK'
+            : 400 ;// 'not OK
+
+        return new ApiResponse(['code'=> $code,'message'=>$result['message'],'errorCode'=>$result['errorCode']], $code);
     }
 
     /**

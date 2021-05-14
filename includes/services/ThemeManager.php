@@ -327,18 +327,22 @@ class ThemeManager
     /**
      * delete a css custom preset
      * @param string $filename
-     * @return bool
+     * @return array ['status' => bool, 'message' => '...']
      */
-    public function deleteCustomCSSPreset(string $filename):bool
+    public function deleteCustomCSSPreset(string $filename):array
     {
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-        if ($this->wiki->UserIsAdmin() && file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
-            unlink($path.DIRECTORY_SEPARATOR.$filename);
-            if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
-                return true;
-            }
+        if (!$this->wiki->UserIsAdmin()) {
+            return ['status'=>false,'message'=>'User is not admin'];
         }
-        return false;
+        if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
+            return ['status'=>false,'message'=>'File '.$filename.' is not existing !'];
+        }
+        unlink($path.DIRECTORY_SEPARATOR.$filename);
+        if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
+            return ['status'=>true,'message'=>''];
+        }
+        return ['status'=>false,'message'=>'Not possible to delete '.$filename];
     }
 
     
@@ -347,12 +351,21 @@ class ThemeManager
      * add a css custom preset (only admins can change a file)
      * @param string $filename
      * @param array $post
-     * @return bool|null|string null or false for error, filename if success
+     * @return array ['status' => bool, 'message' => '...','errorCode'=>0]
+     *   errorCode : 0 : not connected user
+     *               1 : bad post data
+     *               2 : file already existing but user not admin
+     *               3 : custom/css-presets not existing and not possible to create it
+     *               4 : file not created
      */
-    public function addCustomCSSPreset(string $filename, array $post)
+    public function addCustomCSSPreset(string $filename, array $post): array
     {
+        if (!$this->wiki->getUser()) {
+            return ['status'=>false,'message'=>'Not connected user','errorCode'=>0];
+        }
+
         if (!$this->checkPOSTToAddCustomCSSPreset($post)) {
-            return false;
+            return ['status'=>false,'message'=>'Bad post data','errorCode'=>1];
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
         
@@ -363,23 +376,19 @@ class ThemeManager
         $fileContent .= "}\r\n";
         
         if (file_exists($path.DIRECTORY_SEPARATOR.$filename) && !$this->wiki->UserIsAdmin()) {
-            // change filename
-            $filename = substr($filename, 0, -4);
-            $filename .= '_'. date('Y-m-d_H-i').'.css';
+            return ['status'=>false,'message'=>'File already existing but user not admin','errorCode'=>2];
         }
-        if ($this->wiki->getUser()) {
-            // check if folder exists
-            if (!is_dir($path)) {
-                if (!mkdir($path)) {
-                    return false;
-                }
+        // check if folder exists
+        if (!is_dir($path)) {
+            if (!mkdir($path)) {
+                return ['status'=>false,'message'=>$path.' not existing and not possible to create it','errorCode'=>3];
             }
-            // create or update
-            file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $fileContent);
-            return (file_exists($path.DIRECTORY_SEPARATOR.$filename)) ? $filename : false;
         }
-        
-        return false;
+        // create or update
+        file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $fileContent);
+        return (file_exists($path.DIRECTORY_SEPARATOR.$filename))
+            ? ['status'=>true,'message'=>$filename.' created/updated','errorCode'=>null]
+            : ['status'=>false,'message'=>$filename.' not created','errorCode'=>4];
     }
 
     /**

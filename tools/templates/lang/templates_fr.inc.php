@@ -190,5 +190,6 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_THEME_NOT_SAVE' => 'Thème non sauvegardé',
     'TEMPLATE_FILE_NOT_ADDED' => ' non ajouté !',
     'TEMPLATE_FILE_NOT_DELETED' => ' non supprimé !',
+    'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !",
     )
 );
