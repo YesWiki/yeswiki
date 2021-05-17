@@ -59,7 +59,7 @@
       <?php endforeach; ?>
       <?php foreach ($customCSSPresets as $key => $value) : ?>
         <li>
-          <a class="css-preset custom<?php echo ($key == $selectedCustomPresetName) ? ' active' :'' ;?>" href="<?php echo $CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
+          <a class="css-preset custom<?php echo ($key == $selectedCustomPresetName) ? ' active' :'' ;?>" href="<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PATH.'/'.$key; ?>"
             data-key="<?php echo $key ;?>"
             <?php echo $dataHtmlForCustomCSSPresets[$key] ;?>>
           <?php echo str_replace('.css', '', $key); ?>
@@ -239,5 +239,5 @@
     'TEMPLATE_FILE_ALREADY_EXISTING': "<?php echo addslashes(_t('TEMPLATE_FILE_ALREADY_EXISTING'));?>",
     'TEMPLATE_PRESET_ERROR': "<?php echo _t('TEMPLATE_PRESET_ERROR');?>",
   };
-  var customCSSPresetsPrefix = '<?php echo $CUSTOM_CSS_PRESETS_PREFIX ;?>';
+  var customCSSPresetsPrefix = '<?php echo YesWiki\Core\Service\ThemeManager::CUSTOM_CSS_PRESETS_PREFIX ;?>';
 </script>

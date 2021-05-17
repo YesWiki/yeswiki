@@ -435,8 +435,6 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'favoriteStyle' => $wiki->config['favorite_style'] ?? null,
         'dataHtmlForPresets' => $dataHtmlForPresets,
         'customCSSPresets' => $customCSSPresets,
-        'CUSTOM_CSS_PRESETS_PATH' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
-        'CUSTOM_CSS_PRESETS_PREFIX' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,
         'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
         'showAdminActions' => ($wiki->UserIsAdmin()),
         'currentCSSValues' => $currentCSSValues ?? [],
