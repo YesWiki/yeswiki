@@ -22,6 +22,11 @@ if (!is_writable('wakka.config.php')) {
                 $config->favorite_theme = $params['theme'];
                 $config->favorite_squelette = $params['squelette'];
                 $config->favorite_style = $params['style'];
+                if (!empty($config->favorite_preset) && empty($params['preset'])) {
+                    unset($config->favorite_preset);
+                } elseif (!empty($params['preset'])) {
+                    $config->favorite_preset = $params['preset'];
+                }
                 unset($config->hide_action_template);
                 if ($params['forceTheme']) {
                     $config->hide_action_template = '1';

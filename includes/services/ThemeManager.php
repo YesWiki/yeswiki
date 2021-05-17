@@ -8,6 +8,21 @@ use YesWiki\Core\Service\TemplateEngine;
 
 class ThemeManager
 {
+    public const CUSTOM_CSS_PRESETS_PATH = 'custom/css-presets';
+    public const CUSTOM_CSS_PRESETS_PREFIX = 'custom/';
+
+    private const POST_DATA_KEYS = [
+        'primary-color',
+        'secondary-color-1',
+        'secondary-color-2',
+        'neutral-color',
+        'neutral-soft-color',
+        'neutral-light-color',
+        'main-text-fontsize',
+        'main-text-fontfamily',
+        'main-title-fontfamily'
+    ];
+
     protected $wiki;
     protected $config;
     protected $fileLoaded;
@@ -67,6 +82,26 @@ class ThemeManager
                 $this->config['favorite_style'] = $_REQUEST['style'];
                 $this->config['favorite_squelette'] = $_REQUEST['squelette'];
 
+                // presets
+                if (isset($_REQUEST['preset']) &&
+                        (
+                            (
+                                ($isCustom = (substr($_REQUEST['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX))
+                                && is_file(self::CUSTOM_CSS_PRESETS_PATH.'/'.substr($_REQUEST['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                            )
+                            ||
+                            (
+                                !$isCustom &&
+                                (
+                                    is_file('custom/themes/'.$_REQUEST['theme'].'/presets/'.$_REQUEST['preset'])
+                                    || is_file('themes/'.$_REQUEST['theme'].'/presets/'.$_REQUEST['preset'])
+                                )
+                            )
+                        )
+                    ) {
+                    $this->config['favorite_preset'] = $_REQUEST['preset'];
+                }
+
                 if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/'.$_REQUEST['bgimg']))) {
                     $this->config['favorite_background_image'] = $_REQUEST['bgimg'];
                 } else {
@@ -78,6 +113,9 @@ class ThemeManager
                     $this->config['favorite_theme'] = $metadata['theme'];
                     $this->config['favorite_style'] = $metadata['style'];
                     $this->config['favorite_squelette'] = $metadata['squelette'];
+                    if (isset($metadata['favorite_preset'])) {
+                        $this->config['favorite_preset'] = $metadata['favorite_preset'];
+                    }
                     if (isset($metadata['bgimg'])) {
                         $this->config['favorite_background_image'] = $metadata['bgimg'];
                     } else {
@@ -131,6 +169,19 @@ class ThemeManager
                 }
             }
             $this->config['use_fallback_theme'] = true;
+        }
+        // test l'existence du preset
+        if (isset($this->config['favorite_preset'])
+            &&
+            (
+                (
+                    ($isCutom = substr($this->config['favorite_preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
+                    && !file_exists(self::CUSTOM_CSS_PRESETS_PATH.DIRECTORY_SEPARATOR
+                        .substr($this->config['favorite_preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                )
+            )
+        ) {
+            unset($this->config['favorite_preset']);
         }
 
         $templates = [];
@@ -252,5 +303,106 @@ class ThemeManager
         }
 
         return $text;
+    }
+
+    /**
+     * get custom css-presets
+     * @return array $template = [$filename=>$css]
+     */
+    public function getCustomCSSPresets(): array
+    {
+        $path = self::CUSTOM_CSS_PRESETS_PATH;
+        $tab = [];
+        $cssFiles = glob($path.DIRECTORY_SEPARATOR.'*.css');
+        foreach ($cssFiles as $filepath) {
+            $filename = pathinfo($filepath)['filename'].'.css';
+            $css = file_get_contents($filepath);
+            if (!empty($css)) {
+                $tab[$filename] = $css;
+            }
+        }
+        return $tab;
+    }
+
+    /**
+     * delete a css custom preset
+     * @param string $filename
+     * @return array ['status' => bool, 'message' => '...']
+     */
+    public function deleteCustomCSSPreset(string $filename):array
+    {
+        $path = self::CUSTOM_CSS_PRESETS_PATH;
+        if (!$this->wiki->UserIsAdmin()) {
+            return ['status'=>false,'message'=>'User is not admin'];
+        }
+        if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
+            return ['status'=>false,'message'=>'File '.$filename.' is not existing !'];
+        }
+        unlink($path.DIRECTORY_SEPARATOR.$filename);
+        if (!file_exists($path.DIRECTORY_SEPARATOR.$filename)) {
+            return ['status'=>true,'message'=>''];
+        }
+        return ['status'=>false,'message'=>'Not possible to delete '.$filename];
+    }
+
+    
+
+    /**
+     * add a css custom preset (only admins can change a file)
+     * @param string $filename
+     * @param array $post
+     * @return array ['status' => bool, 'message' => '...','errorCode'=>0]
+     *   errorCode : 0 : not connected user
+     *               1 : bad post data
+     *               2 : file already existing but user not admin
+     *               3 : custom/css-presets not existing and not possible to create it
+     *               4 : file not created
+     */
+    public function addCustomCSSPreset(string $filename, array $post): array
+    {
+        if (!$this->wiki->getUser()) {
+            return ['status'=>false,'message'=>'Not connected user','errorCode'=>0];
+        }
+
+        if (!$this->checkPOSTToAddCustomCSSPreset($post)) {
+            return ['status'=>false,'message'=>'Bad post data','errorCode'=>1];
+        }
+        $path = self::CUSTOM_CSS_PRESETS_PATH;
+        
+        $fileContent = ":root {\r\n";
+        foreach (self::POST_DATA_KEYS as $key) {
+            $fileContent .= '  --'.$key.': '.$post[$key].";\r\n";
+        }
+        $fileContent .= "}\r\n";
+        
+        if (file_exists($path.DIRECTORY_SEPARATOR.$filename) && !$this->wiki->UserIsAdmin()) {
+            return ['status'=>false,'message'=>'File already existing but user not admin','errorCode'=>2];
+        }
+        // check if folder exists
+        if (!is_dir($path)) {
+            if (!mkdir($path)) {
+                return ['status'=>false,'message'=>$path.' not existing and not possible to create it','errorCode'=>3];
+            }
+        }
+        // create or update
+        file_put_contents($path.DIRECTORY_SEPARATOR.$filename, $fileContent);
+        return (file_exists($path.DIRECTORY_SEPARATOR.$filename))
+            ? ['status'=>true,'message'=>$filename.' created/updated','errorCode'=>null]
+            : ['status'=>false,'message'=>$filename.' not created','errorCode'=>4];
+    }
+
+    /**
+     * check post to add custom CSS Preset
+     * @param array $post
+     * @return bool
+     */
+    private function checkPOSTToAddCustomCSSPreset(array $post):bool
+    {
+        foreach (self::POST_DATA_KEYS as $key) {
+            if (empty($post[$key])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

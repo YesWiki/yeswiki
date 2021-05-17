@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Core\Service\ThemeManager;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -16,13 +19,26 @@ if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->con
     $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/presentation/styles/bootstrap.min.css" />'."\n";
 }
 
+// presets activated and path ?
+$presetsActivated = !empty($this->config['templates'][$this->config['favorite_theme']]['presets']) && !empty($this->config['favorite_preset']);
+if ($presetsActivated) {
+    $custom_prefix = ThemeManager::CUSTOM_CSS_PRESETS_PREFIX;
+    $presetIsCustom = (substr($this->config['favorite_preset'], 0, strlen($custom_prefix)) == $custom_prefix);
+    if (!$presetIsCustom) {
+        $presetFile = 'themes/'.$this->config['favorite_theme'].'/presets/'.$this->config['favorite_preset'];
+    } else {
+        $presetFile = ThemeManager::CUSTOM_CSS_PRESETS_PATH . '/' . substr($this->config['favorite_preset'], strlen($custom_prefix));
+    }
+}
+
 // on regarde dans quel dossier se trouve le theme
-if (!empty($this->config['use_fallback_theme'])) {
-    $styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
-} else {
-    $styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+$styleFile = 'themes/'.$this->config['favorite_theme'].'/styles/'.$this->config['favorite_style'];
+if (empty($this->config['use_fallback_theme'])) {
     if (file_exists('custom/'.$styleFile)) {
         $styleFile = 'custom/'.$styleFile;
+    }
+    if ($presetsActivated && !$presetIsCustom && file_exists('custom/'.$presetFile)) {
+        $presetFile = 'custom/'.$presetFile;
     }
 }
 
@@ -31,6 +47,13 @@ if ($this->config['favorite_style']!='none') {
     if (substr($this->config['favorite_style'], -4, 4) == '.css') {
         $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$styleFile.'" id="mainstyle" />'."\n";
     }
+}
+
+// on ajoute le preset css selectionne du theme
+if (($this->config['favorite_style']!='none')
+        && $presetsActivated
+        && substr($this->config['favorite_preset'], -4, 4) == '.css') {
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$presetFile.'"/>'."\n";
 }
 
 // on ajoute les icones de fontawesome
@@ -51,11 +74,7 @@ if (!empty($othercss)) {
     }
 }
 
-// if exists and not empty, add the 'PageCss' yeswiki page to the styles (the PageCss content must respect the CSS syntax)
-$pageCss = $this->LoadPage('PageCss');
-if ($pageCss && !empty($pageCss['body'])) {
-    $styles .= '  <link rel="stylesheet" href="' . $this->href('css', 'PageCss') .'" />'."\n";
-}
+// PageCSS moved to actions/linkstyle__.php to be added at the end
 
 // add css files which are included in the custom styles directory
 $customCssPath = 'custom/styles';

@@ -80,6 +80,12 @@ function checkParamActionSetTemplate($post, $availableThemes)
     }
     $params['squelette'] = $post['wdtSquelette'];
 
+    // Vérifie la validité du preset.
+    $params['preset'] = $post['preset'] ;
+    if (!empty($params['preset']) && substr($params['preset'], -4) != '.css') {
+        return false;
+    }
+
     $params['forceTheme'] = false;
     if (isset($post['wdtForceTheme']) and $post['wdtForceTheme'] === 'on') {
         $params['forceTheme'] = true;

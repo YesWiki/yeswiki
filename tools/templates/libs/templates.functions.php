@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\ThemeManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -64,15 +65,16 @@ function search_template_files($directory)
                 $pathToPresets = $directory.DIRECTORY_SEPARATOR.$file.DIRECTORY_SEPARATOR.'presets';
                 if (is_dir($pathToPresets) && $dir4 = opendir($pathToPresets)) {
                     while (false !== ($file4 = readdir($dir4))) {
-                        if (substr($file4, -5, 5)=='.json' && file_exists($pathToPresets.'/'.$file4)) {
-                            $json = file_get_contents($pathToPresets.'/'.$file4);
-                            if (!empty($json)) {
-                                $jsonData = json_decode($json, true);
-                                if (!empty($jsonData)) {
-                                    $tab_themes[$file]["presets"][$file4] = $jsonData;
-                                }
+                        if (substr($file4, -4, 4)=='.css' && file_exists($pathToPresets.'/'.$file4)) {
+                            $css = file_get_contents($pathToPresets.'/'.$file4);
+                            if (!empty($css)) {
+                                $tab_themes[$file]["presets"][$file4] = $css;
                             }
                         }
+                    }
+                    closedir($dir4);
+                    if (is_array($tab_themes[$file]["presets"])) {
+                        ksort($tab_themes[$file]["presets"]);
                     }
                 }
             }
@@ -394,29 +396,102 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     }
     $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
-    $selecteur = $GLOBALS['wiki']->render("@templates/themeselector.tpl.html", [
+    $wiki = $GLOBALS['wiki'];
+    $themePresets = $wiki->config['templates'][$wiki->config['favorite_theme']]['presets'] ?? [];
+    $dataHtmlForPresets = array_map(function ($value) {
+        return extractDataFromPreset($value);
+    }, $themePresets);
+    $customCSSPresets = $wiki->services->get(ThemeManager::class)->getCustomCSSPresets() ;
+    $dataHtmlForCustomCSSPresets = array_map(function ($value) {
+        return extractDataFromPreset($value);
+    }, $customCSSPresets);
+    if (!empty($wiki->config['favorite_preset'])) {
+        $presetName = $wiki->config['favorite_preset'];
+        if (substr($presetName, 0, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX)) == ThemeManager::CUSTOM_CSS_PRESETS_PREFIX) {
+            $presetName = substr($presetName, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX));
+            if (in_array($presetName, array_keys($customCSSPresets))) {
+                $currentCSSValues = extractPropValuesFromPreset($customCSSPresets[$presetName]);
+                $selectedCustomPresetName = $presetName;
+            }
+        } else {
+            if (in_array($presetName, array_keys($themePresets))) {
+                $currentCSSValues = extractPropValuesFromPreset($themePresets[$presetName]);
+                $selectedPresetName = $presetName;
+            }
+        }
+    }
+
+    $selecteur =$wiki->render("@templates/themeselector.tpl.html", [
         'mode' => $mode,
-        'wiki' => $GLOBALS['wiki'],
+        'wiki' => $wiki,
         'id' => $id,
         'class' => $formclass,
         'bgselector' => $bgselector,
-        'themeNames' => array_keys($GLOBALS['wiki']->config['templates']),
-        'themes' => $GLOBALS['wiki']->config['templates'],
+        'themeNames' => array_keys($wiki->config['templates']),
+        'themes' => $wiki->config['templates'],
         'listWikinames' => $listWikinames,
+        'favoriteTheme' => $wiki->config['favorite_theme'] ?? null,
+        'favoriteSquelette' => $wiki->config['favorite_squelette'] ?? null,
+        'favoriteStyle' => $wiki->config['favorite_style'] ?? null,
+        'dataHtmlForPresets' => $dataHtmlForPresets,
+        'customCSSPresets' => $customCSSPresets,
+        'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
+        'showAdminActions' => ($wiki->UserIsAdmin()),
+        'currentCSSValues' => $currentCSSValues ?? [],
+        'selectedPresetName' => $selectedPresetName ??  null,
+        'selectedCustomPresetName' => $selectedCustomPresetName ??  null,
     ]);
 
     $js = add_templates_list_js();
-    $js .= "
-    $('.css-preset').click(function() {
-        var cssvar = $(this).data('variables');
-        cssvar.forEach(function(item){
-            document.documentElement.style.setProperty('--'+item.name, item.value);
-        });
-        return false;
-    });
-    ";
     $GLOBALS['wiki']->addJavascript($js);
     return $selecteur;
+}
+
+function extractDataFromPreset(string $presetContent): string
+{
+    $data = '';
+    $values = extractPropValuesFromPreset($presetContent);
+    foreach ($values as $prop => $value) {
+        $data .= ' data-'.$prop.'="'.str_replace('"', '\'', $value).'"';
+    }
+    if (
+        !empty($data)
+        && !empty($values['primary-color'])
+        && !empty($values['main-text-fontsize']
+        && !empty($values['main-text-fontfamily']))
+    ) {
+        $data .= ' style="';
+        $data .= 'color:'.$values['primary-color'].';';
+        $data .= 'font-family:'.str_replace('"', '\'', $values['main-text-fontfamily']).';';
+        $data .= 'font-size:'.$values['main-text-fontsize'].';';
+        $data .= '"';
+    }
+    return $data;
+}
+
+function extractPropValuesFromPreset(string $presetContent): array
+{
+    // extract root part
+    $matches = [];
+    $results = [];
+    $error = false;
+    if (preg_match('/^:root\s*{((?:.|\n)*)}\s*$/', $presetContent, $matches)) {
+        $vars = $matches[1];
+        
+
+        if (preg_match_all('/\s*--([0-9a-z\-]*):\s*([^;]*);\s*/', $vars, $matches)) {
+            foreach ($matches[0] as $index => $val) {
+                $newmatch = [];
+                if (preg_match('/[a-z\-]*color[a-z0-9\-]*/', $matches[1][$index], $newmatch)) {
+                    if (!preg_match('/^#[A-Fa-f0-9]*$/', $matches[2][$index], $newmatch)) {
+                        $error = true;
+                    }
+                }
+                $results[$matches[1][$index]] = $matches[2][$index];
+            }
+        }
+    }
+    return $error ? [] : $results;
 }
 
 

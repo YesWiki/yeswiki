@@ -277,6 +277,13 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
         style.options[style.options.length] = o;
       }
     }
+    let presetValue = '';
+    if (typeof getActivePreset == 'function'){
+      let key = getActivePreset();
+      if (key){
+        presetValue = "&preset="+key;
+      }
+    }
 
     var url = window.location.toString();
     var urlAux = url.split("&theme=");
@@ -287,7 +294,8 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
       "&squelette=" +
       $("#changesquelette").val() +
       "&style=" +
-      $("#changestyle").val();
+      $("#changestyle").val()+
+      presetValue;
   });
 
   /* tooltips */

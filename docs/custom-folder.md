@@ -29,6 +29,28 @@ All the javascript files in the `custom/javascripts/` directory are included.
 
 All the css files in the `custom/styles/` directory are included.
 
+## Custom Css-Presets
+
+For themes using presets, you can have custom presets.
+
+ - They should be in folder `custom/css-presets/`.
+ - Their extension should be `.css`
+ - Their content should be like this:
+
+```
+:root {
+  --primary-color: #1a89a0;
+  --secondary-color-1: #d8604c;
+  --secondary-color-2: #d78958;
+  --neutral-color: #4e5056;
+  --neutral-soft-color: #b0b1b3;
+  --neutral-light-color: #ffffff;
+  --main-text-fontsize: 17px;
+  --main-text-fontfamily: 'Nunito', sans-serif;
+  --main-title-fontfamily:'Nunito', sans-serif;
+}
+```
+
 ## Custom Squelette
 
 Override the theme squelette following the path `custom/themes/THEME_TO_OVERRIDE/squelettes/SQUELETTE_TO_OVERRIDE.tpl.html`
