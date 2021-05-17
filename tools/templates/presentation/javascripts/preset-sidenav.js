@@ -117,15 +117,28 @@ document.addEventListener('DOMContentLoaded', function(){
 $('.css-preset').click(function() {
     closeNav();
     // get data
-    var primaryColor = $(this).data('primary-color') || '#1a89a0';
-    var secondaryColor1 = $(this).data('secondary-color-1') || '#d8604c';
-    var secondaryColor2 = $(this).data('secondary-color-2') || '#d78958';
-    var neutralColor = $(this).data('neutral-color') || '#4e5056';
-    var neutralSoftColor = $(this).data('neutral-soft-color') || '#b0b1b3';
-    var neutralLightColor = $(this).data('neutral-light-color') || '#ffffff';
-    var mainTextFontsize = $(this).data('main-text-fontsize') || '17px';
-    var mainTextFontfamily = $(this).data('main-text-fontfamily') || '\'Nunito\', sans-serif';
-    var mainTitleFontfamily = $(this).data('main-title-fontfamily') || '\'Nunito\', sans-serif';
+    var primaryColor = $(this).data('primary-color');
+    var secondaryColor1 = $(this).data('secondary-color-1') ;
+    var secondaryColor2 = $(this).data('secondary-color-2');
+    var neutralColor = $(this).data('neutral-color');
+    var neutralSoftColor = $(this).data('neutral-soft-color');
+    var neutralLightColor = $(this).data('neutral-light-color');
+    var mainTextFontsize = $(this).data('main-text-fontsize');
+    var mainTextFontfamily = $(this).data('main-text-fontfamily');
+    var mainTitleFontfamily = $(this).data('main-title-fontfamily');
+    // check all data
+    if (!primaryColor || !secondaryColor1 || !secondaryColor2 || !neutralColor
+        || !neutralSoftColor || !neutralLightColor || !mainTextFontsize
+        || !mainTextFontfamily || !mainTitleFontfamily) {
+        // error
+        let message = themeSelectorTranslation['TEMPLATE_PRESET_ERROR'];
+        if (typeof toastMessage == 'function'){
+            toastMessage(message,3000,'alert alert-warning');
+        } else {
+            alert(message);
+        }
+        return false;
+    }
     // set values
     document.documentElement.style.setProperty('--primary-color', primaryColor);
     document.documentElement.style.setProperty('--secondary-color-1', secondaryColor1);
@@ -256,14 +269,20 @@ function saveCSSPreset(elem,url){
         },
         cache: false,
         error: function(jqXHR,textStatus,errorThrown){
-            let data = JSON.parse(jqXHR.responseText);
+            try {
+                var data = JSON.parse(jqXHR.responseText);
+                var dataMessage = data.message;
+            } catch (error) {
+                var data = null;  
+                var dataMessage = JSON.stringify(jqXHR.responseText);
+            }
             let message = fullFileName+themeSelectorTranslation['TEMPLATE_FILE_NOT_ADDED'];
             let duration = 3000;
-            if (data.errorCode == 2){
+            if (data && data.errorCode == 2){
                 message = message+"\n"+themeSelectorTranslation['TEMPLATE_FILE_ALREADY_EXISTING'];
                 duration = 6000;
             }
-            console.log(message+". Message :"+data.message);
+            console.log(message+". Message :"+dataMessage);
             if (typeof toastMessage == 'function'){
                 toastMessage(message,duration,'alert alert-danger');
             } else {

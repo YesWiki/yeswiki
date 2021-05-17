@@ -29,7 +29,11 @@ class ApiController extends YesWikiController
         $result = $this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST);
         $code = ($result['status'])
             ? 200 // 'OK'
-            : 400 ;// 'not OK
+            :   (
+                (in_array($result['errorCode'], [3,4]))
+                    ? 500 // server error
+                    : 400 // bad request error
+            ) ;// 'not OK
 
         return new ApiResponse(['code'=> $code,'message'=>$result['message'],'errorCode'=>$result['errorCode']], $code);
     }

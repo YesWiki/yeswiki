@@ -211,7 +211,13 @@
       <div class="form-group">
         <label><?php echo _t('TEMPLATE_PRESET_FILENAME'); ?></label>
         <input class="form-input" type="text" name="filename"
-          value="custom-<?php echo date('Y-m-d_H-i');?>" />
+          value="<?php echo (!empty($selectedPresetName) 
+              ? substr($selectedPresetName,0,-4)
+              : (
+                !empty($selectedCustomPresetName)
+                ? substr($selectedCustomPresetName,0,-4)
+                : 'custom-'.date('Y-m-d_H-i')
+              )) ;?>" />
       </div>
       <button type="button" class="btn btn-xs btn-warning"
         onclick="javascript:saveCSSPreset(this,
@@ -231,6 +237,7 @@
     'TEMPLATE_FILE_NOT_ADDED': "<?php echo _t('TEMPLATE_FILE_NOT_ADDED');?>",
     'TEMPLATE_FILE_NOT_DELETED': "<?php echo _t('TEMPLATE_FILE_NOT_DELETED');?>",
     'TEMPLATE_FILE_ALREADY_EXISTING': "<?php echo addslashes(_t('TEMPLATE_FILE_ALREADY_EXISTING'));?>",
+    'TEMPLATE_PRESET_ERROR': "<?php echo _t('TEMPLATE_PRESET_ERROR');?>",
   };
   var customCSSPresetsPrefix = '<?php echo $CUSTOM_CSS_PRESETS_PREFIX ;?>';
 </script>
