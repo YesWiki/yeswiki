@@ -1171,9 +1171,15 @@ class Wiki
             $request = Request::createFromGlobals();
             $context->fromRequest($request);
 
-            // Use query string as the path
-            $context->setPathInfo('/' . $context->getQueryString());
-            $context->setQueryString('');
+            // Use query string as the path (part before '&')
+            $extract = explode('&', $context->getQueryString());
+            $path = $extract[0];
+            if (count($extract) > 1) {
+                array_unshift($extract);
+                $newQuerytring = implode('&', $extract);
+            }
+            $context->setPathInfo('/' . $path);
+            $context->setQueryString($newQuerytring ?? '');
 
             $matcher = new UrlMatcher($this->routes, $context);
 
