@@ -77,7 +77,7 @@ class BazarListeAction extends YesWikiAction
         // get form ids for ExternalBazarService
         // format id="4,https://example.com|6,7,https://example.com|6->8"
         $ids = $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null ;
-        $externalIds = $this->getExternalUrlsFromIds($ids);
+        $externalIds = $this->getExternalUrlsFromIds(is_array($ids) ? implode(',', $ids) : $ids);
         $externalModeActivated = !empty(array_filter($externalIds, function ($externalId) {
             return !empty($externalId['url']);
         }));
