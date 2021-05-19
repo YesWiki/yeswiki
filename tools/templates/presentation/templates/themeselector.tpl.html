@@ -148,6 +148,8 @@
 <?php endif; ?>
 </form>
 
+<?php if ($mode != 'edit') : ?>
+<?php // do not display this part in edit mode because handler edit__ is called after generation of .js and .css html ?>
 <div id="preset-sidenav" class="sidenav">
 
   <form id="preset-form" action="#" method="post">
@@ -227,6 +229,7 @@
     <?php endif ; ?>
   </form>
 </div>
+<?php endif; ?>
 <script>
   var themeSelectorTranslation = {
     'TEMPLATE_CHOOSE_FONT': '<?php echo _t('TEMPLATE_CHOOSE_FONT'); ?>',
