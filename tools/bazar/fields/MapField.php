@@ -34,14 +34,21 @@ class MapField extends BazarField
         $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
 
         // backward compatibility with former `carte_google` propertyName
-        if (empty($value) && !empty($entry['carte_google'])) {
-            $value = explode('|', $entry['carte_google']);
-            if (empty($value[0]) || empty($value[1])) {
-                $value = null;
-            } else {
+        if (empty($value)){
+            if (!empty($entry['carte_google'])) {
+                $value = explode('|', $entry['carte_google']);
+                if (empty($value[0]) || empty($value[1])) {
+                    $value = null;
+                } else {
+                    $value = [
+                        $this->getLatitudeField() => $value[0],
+                        $this->getLongitudeField()=> $value[1]
+                    ];
+                }
+            } elseif (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
                 $value = [
-                    $this->getLatitudeField() => $value[0],
-                    $this->getLongitudeField()=> $value[1]
+                    $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                    $this->getLongitudeField()=> $entry[$this->getLongitudeField()]
                 ];
             }
         }
