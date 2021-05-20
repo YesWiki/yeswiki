@@ -303,4 +303,50 @@ class EntryController extends YesWikiController
 
         return $values;
     }
+
+    /**
+     * format queries form GET and from $arg in order to give the right 'queries' to EntryManager->search
+     * @param array|string|null $arg
+     * @return array
+     */
+    public function formatQuery($arg) : array
+    {
+        $queryArray = [];
+
+        // Aggregate argument and $_GET values
+        if (isset($_GET['query'])) {
+            if (!empty($arg['query'])) {
+                if (is_array($arg['query'])) {
+                    $queryArray = $arg['query'] ;
+                    $query = $_GET['query'];
+                } else {
+                    $query = $arg['query'].'|'.$_GET['query'];
+                }
+            } else {
+                $query = $_GET['query'];
+            }
+        } else {
+            if (isset($arg['query']) && is_array($arg['query'])) {
+                $queryArray = $arg['query'] ;
+                $query = null;
+            } else {
+                $query = $arg['query'] ?? null;
+            }
+        }
+
+        // Create an array from the queries
+        if (!empty($query)) {
+            $res1 = explode('|', $query);
+            foreach ($res1 as $req) {
+                $res2 = explode('=', $req, 2);
+                if (isset($queryArray[$res2[0]]) && !empty($queryArray[$res2[0]])) {
+                    $queryArray[$res2[0]] = $queryArray[$res2[0]].','.trim($res2[1] ?? '');
+                } else {
+                    $queryArray[$res2[0]] = trim($res2[1] ?? '');
+                }
+            }
+        }
+
+        return $queryArray;
+    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
@@ -96,7 +97,7 @@ class BazarListeAction extends YesWikiAction
             // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             // Paramètres pour une requete specifique
-            'query' => $this->formatQuery($arg),
+            'query' => $this->getService(EntryController::class)->formatQuery($arg),
             // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
@@ -439,47 +440,6 @@ class BazarListeAction extends YesWikiAction
         }
 
         return [];
-    }
-
-    private function formatQuery($arg) : array
-    {
-        $queryArray = [];
-
-        // Aggregate argument and $_GET values
-        if (isset($_GET['query'])) {
-            if (!empty($arg['query'])) {
-                if (is_array($arg['query'])) {
-                    $queryArray = $arg['query'] ;
-                    $query = $_GET['query'];
-                } else {
-                    $query = $arg['query'].'|'.$_GET['query'];
-                }
-            } else {
-                $query = $_GET['query'];
-            }
-        } else {
-            if (isset($arg['query']) && is_array($arg['query'])) {
-                $queryArray = $arg['query'] ;
-                $query = null;
-            } else {
-                $query = $arg['query'] ?? null;
-            }
-        }
-
-        // Create an array from the queries
-        if (!empty($query)) {
-            $res1 = explode('|', $query);
-            foreach ($res1 as $req) {
-                $res2 = explode('=', $req, 2);
-                if (isset($queryArray[$res2[0]]) && !empty($queryArray[$res2[0]])) {
-                    $queryArray[$res2[0]] = $queryArray[$res2[0]].','.trim($res2[1] ?? '');
-                } else {
-                    $queryArray[$res2[0]] = trim($res2[1] ?? '');
-                }
-            }
-        }
-
-        return $queryArray;
     }
 
     private function formatDateMin($period)
