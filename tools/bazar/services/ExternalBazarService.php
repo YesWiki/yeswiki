@@ -195,9 +195,6 @@ class ExternalBazarService
             }
             $querystring = !empty($querystring) ? '&query='.htmlspecialchars(substr($querystring, 0, -1)) : '';
         }
-        if (!empty($querystring) && $this->debug) {
-            trigger_error(_t('BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE'));
-        }
 
         $entries = [];
         foreach ($params['forms'] as $form) {
@@ -216,7 +213,7 @@ class ExternalBazarService
             } else {
                 $distantFormId = $form['external_bn_id_nature'];
                 $json = $this->getJSONCachedUrlContent(
-                    $url.'?api/forms/'.$distantFormId.'/entries', // .$querystring, // TODO use query in api
+                    $url.'?api/forms/'.$distantFormId.'/entries'.$querystring,
                     $params['refresh']  ? 0 : $this->timeCacheForEntries
                 );
                 $batchEntries = json_decode($json, true);
