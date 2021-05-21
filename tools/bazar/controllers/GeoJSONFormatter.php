@@ -29,8 +29,10 @@ class GeoJSONFormatter extends YesWikiController
             if (empty($geo)) {
                 return [];
             } else {
-                $entry = array_merge($entry, $geo);
-                return $entry;
+                return [
+                    'entry' => $entry,
+                    'geo' => $geo
+                    ];
             }
         }, $entries), function ($entry) {
             return !empty($entry) ;
@@ -40,12 +42,13 @@ class GeoJSONFormatter extends YesWikiController
         if (!empty($entriesWithGeo)) {
             $data['type'] = 'FeatureCollection';
             $data['features'] = [];
-            foreach ($entriesWithGeo as $id => $entry) {
+            foreach ($entriesWithGeo as $id => $extendedEntry) {
+                $entry = $extendedEntry['entry'];
                 $data['features'][] = [
                     'type' => 'Feature',
                     'geometry' => [
                         'type' => 'Point',
-                        'coordinates' => [$entry['longitude'],$entry['latitude']]
+                        'coordinates' => [$extendedEntry['geo']['longitude'],$extendedEntry['geo']['latitude']]
                     ],
                     'id' => $entry['id_fiche'],
                     'title' => $entry['bf_titre'],
