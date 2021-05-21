@@ -25,9 +25,10 @@ class DateField extends BazarField
                 $result = explode('T', $value);
                 list($hour, $minute) = array_map('intval', explode(':', $result[1]));
             }
-        } elseif ($this->default && $this->default != '') {
+        } elseif ($this->default && $this->default != '' && $this->default != 0) {
             // Default value when new entry
-            if ($this->default == 'today') {
+            // 0 and 1 are present to manage olf format of this field
+            if (in_array($this->default, ['today','1'])) {
                 $day = date("Y-m-d");
             } else {
                 $day = date("Y-m-d", strtotime($this->default));
@@ -70,5 +71,12 @@ class DateField extends BazarField
         return $this->render('@bazar/fields/date.twig', [
             'value' => $value
         ]);
+    }
+    
+    protected function getValue($entry)
+    {
+        // TODO see if it is necessary to look for $_REQUEST
+        // do not take default for this field
+        return $entry[$this->propertyName] ?? null;
     }
 }
