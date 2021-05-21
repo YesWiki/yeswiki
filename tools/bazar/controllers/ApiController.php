@@ -48,7 +48,7 @@ class ApiController extends YesWikiController
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
             'queries' => $this->getService(EntryController::class)
-                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : []),
+                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
         ], true, true);
 
         if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
@@ -69,7 +69,7 @@ class ApiController extends YesWikiController
     {
         $entries = $this->getService(EntryManager::class)->search([
             'queries' => $this->getService(EntryController::class)
-                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : []),
+                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
         ]);
 
         if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {

@@ -97,7 +97,7 @@ class BazarListeAction extends YesWikiAction
             // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             // Paramètres pour une requete specifique
-            'query' => $this->getService(EntryController::class)->formatQuery($arg),
+            'query' => $this->getService(EntryController::class)->formatQuery($arg, $_GET),
             // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur

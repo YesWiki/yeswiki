@@ -307,23 +307,24 @@ class EntryController extends YesWikiController
     /**
      * format queries form GET and from $arg in order to give the right 'queries' to EntryManager->search
      * @param array|string|null $arg
+     * @param array $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
      * @return array
      */
-    public function formatQuery($arg) : array
+    public function formatQuery($arg, array $get) : array
     {
         $queryArray = [];
 
-        // Aggregate argument and $_GET values
-        if (isset($_GET['query'])) {
+        // Aggregate argument and $get values
+        if (isset($get['query'])) {
             if (!empty($arg['query'])) {
                 if (is_array($arg['query'])) {
                     $queryArray = $arg['query'] ;
-                    $query = $_GET['query'];
+                    $query = $get['query'];
                 } else {
-                    $query = $arg['query'].'|'.$_GET['query'];
+                    $query = $arg['query'].'|'.$get['query'];
                 }
             } else {
-                $query = $_GET['query'];
+                $query = $get['query'];
             }
         } else {
             if (isset($arg['query']) && is_array($arg['query'])) {
