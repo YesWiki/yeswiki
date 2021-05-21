@@ -45,9 +45,6 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-        /* start buffer for api */
-        ob_start();
-
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
             'queries' => $this->getService(EntryController::class)
@@ -64,20 +61,7 @@ class ApiController extends YesWikiController
         } elseif ($output == 'geojson') {
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         }
-        // error + fetch trigger_errors on message
-        $triggerErrorMessages = ob_get_contents() ;
-        ob_get_clean();
-        $code = (empty($triggerErrorMessages))
-            ? Response::HTTP_OK
-            : Response::HTTP_INTERNAL_SERVER_ERROR;
-
-        return new ApiResponse(
-            (!empty($triggerErrorMessages)
-            ? ['trigger_error_messages'=>$triggerErrorMessages]
-            :[])
-            +$entries,
-            $code
-        );
+        return new ApiResponse($entries);
     }
 
     /**
