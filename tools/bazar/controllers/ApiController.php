@@ -67,11 +67,17 @@ class ApiController extends YesWikiController
         // error + fetch trigger_errors on message
         $triggerErrorMessages = ob_get_contents() ;
         ob_get_clean();
+        $code = (empty($triggerErrorMessages))
+            ? Response::HTTP_OK
+            : Response::HTTP_INTERNAL_SERVER_ERROR;
 
-        return new ApiResponse((!empty($triggerErrorMessages)
-            ? ['code'=>200,'trigger_error_messages'=>$triggerErrorMessages]
+        return new ApiResponse(
+            (!empty($triggerErrorMessages)
+            ? ['trigger_error_messages'=>$triggerErrorMessages]
             :[])
-            +$entries);
+            +$entries,
+            $code
+        );
     }
 
     /**
@@ -79,20 +85,7 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
-        $entries = $this->getService(EntryManager::class)->search([
-            'queries' => $this->getService(EntryController::class)
-                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
-        ]);
-
-        if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
-            return $this->getAllSemanticEntries($formId, $entries);
-        } // add entries in html format if asked
-        elseif ($output == 'html') {
-            foreach ($entries as $id => $entry) {
-                $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
-            }
-        }
-        return new ApiResponse($entries);
+        return $this->getAllFormEntries([], $output, $selectedEntries);
     }
 
     public function getAllSemanticEntries($formId, $entries)
