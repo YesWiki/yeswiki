@@ -45,6 +45,9 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
+        /* start buffer for api */
+        ob_start();
+
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
             'queries' => $this->getService(EntryController::class)
@@ -58,8 +61,17 @@ class ApiController extends YesWikiController
             foreach ($entries as $id => $entry) {
                 $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
             }
+        } elseif ($output == 'geojson') {
+            $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         }
-        return new ApiResponse($entries);
+        // error + fetch trigger_errors on message
+        $triggerErrorMessages = ob_get_contents() ;
+        ob_get_clean();
+
+        return new ApiResponse((!empty($triggerErrorMessages)
+            ? ['code'=>200,'trigger_error_messages'=>$triggerErrorMessages]
+            :[])
+            +$entries);
     }
 
     /**
@@ -225,6 +237,18 @@ class ApiController extends YesWikiController
         <p>
         <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/json-ld') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format sémantique (container LDP)<br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/html') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/geojson') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format geojson<br />
         </p>';
 
         $output .= '
