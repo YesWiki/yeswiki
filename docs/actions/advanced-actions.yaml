@@ -1,17 +1,90 @@
 label: _t(AB_advanced_actions_label)
 position: 1999
-onlyForAdmins: true
 previewHeight: 200px
 actions:
-  backlinks:
-    label: _t(AB_advanced_action_backlinks_label)
+  tocjs:
+    label: _t(AB_advanced_action_tocjs_label)
     properties:
-      page:
-        label: _t(AB_advanced_action_backlinks_page_label)
-        hint: _t(AB_advanced_action_backlinks_page_hint)
+      align:
+        label: _t(AB_advanced_action_tocjs_position_label)
+        advanced: true
+        type: list
+        options:
+          right: _t(AB_advanced_action_tocjs_position_right_option)
+          left: _t(AB_advanced_action_tocjs_position_left_option)
+      size:
+        label:  _t(AB_advanced_action_tocjs_size_label)
+        advanced: true
+        type: list
+        options:
+            - 2
+            - 3
+            - 4
+  trail:
+    label: _t(AB_advanced_action_trail_label)    
+    properties:
+      toc:
+        label:  _t(AB_advanced_action_trail_toc_label)
         type: page-list
-  wantedpages:
-    label: _t(AB_advanced_action_wantedpages_label)
+        required: true
+  progressbar:
+    label: _t(AB_advanced_action_progressbar_label)
+    properties: 
+      val:
+        label: _t(AB_advanced_action_progressbar_val_label)
+        hint: _t(AB_advanced_action_progressbar_val_hint)
+        required: true
+        type: number
+        min: 0
+        max: 100
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        advanced: true
+  # textsearch:
+  #   label: _t(AB_advanced_action_textsearch_label)
+  #   properties:
+  #     label:
+  #       label:  _t(AB_advanced_action_textsearch_label_label)
+  #       type: text
+  #     size:
+  #       label:  _t(AB_advanced_action_textsearch_size_label)
+  #       type: number
+  #       default: ''
+  #       min: 1
+  #     button:
+  #       label:  _t(AB_advanced_action_textsearch_button_label)
+  #       type: text
+  #     phrase:
+  #       label:  _t(AB_advanced_action_textsearch_phrase_label)
+  #       type: text
+  #       advanced: true
+  #     separator:
+  #       label:  _t(AB_advanced_action_textsearch_separator_label)
+  #       type: text
+  #       advanced: true
+  newtextsearch:
+    label: _t(AB_advanced_action_newtextsearch_label)
+    properties:
+      label:
+        label:  _t(AB_advanced_action_textsearch_label_label)
+        type: text
+      size:
+        label:  _t(AB_advanced_action_textsearch_size_label)
+        type: number
+        default: ''
+        min: 1
+      button:
+        label:  _t(AB_advanced_action_textsearch_button_label)
+        type: text
+      phrase:
+        label:  _t(AB_advanced_action_textsearch_phrase_label)
+        type: text
+        advanced: true
+      separator:
+        label:  _t(AB_advanced_action_textsearch_separator_label)
+        type: text
+        advanced: true
   include:
     label: _t(AB_advanced_action_include_label)
     properties:
@@ -68,6 +141,13 @@ actions:
         default: ''
         checkedvalue: 'user'
         uncheckedvalue: ''
+  backlinks:
+    label: _t(AB_advanced_action_backlinks_label)
+    properties:
+      page:
+        label: _t(AB_advanced_action_backlinks_page_label)
+        hint: _t(AB_advanced_action_backlinks_page_hint)
+        type: page-list
   mychanges:
     label: _t(AB_advanced_action_mychanges_label)
     properties:
@@ -79,17 +159,33 @@ actions:
         uncheckedvalue: ''
   mypages:
     label: _t(AB_advanced_action_mypages_label)
+  configuration:
+    label: _t(AB_advanced_action_configuration_label)
+    properties:
+      param:
+        label: param
+        required: true
+        type: list
+        options:
+          - root_page
+          - base_url
+          - navigation_links
+          - meta_keywords
+          - meta_description
+          - wakka_name
+          - yeswiki_release
+          - yeswiki_version
+          - favorite_theme
+          - favorite_style
+          - favorite_squelette
+          - default_language
+          - charset
+          - lang
+          - theme_path
+          - wakka_version
+          - wikini_version
   listusers:
     label: _t(AB_advanced_action_listusers_label)
-    properties:
-      last:
-        label:  _t(AB_advanced_action_listusers_last_label)
-        hint:  _t(AB_advanced_action_listusers_last_hint)
-        type: number
-        default: ''
-        min: 1
-  userstable:
-    label: _t(AB_advanced_action_userstable_label)
     properties:
       last:
         label:  _t(AB_advanced_action_listusers_last_label)
@@ -117,102 +213,15 @@ actions:
         type: number
         default: ''
         min: 1
-  textsearch:
-    label: _t(AB_advanced_action_textsearch_label)
-    properties:
-      label:
-        label:  _t(AB_advanced_action_textsearch_label_label)
-        type: text
-      size:
-        label:  _t(AB_advanced_action_textsearch_size_label)
-        type: number
-        default: ''
-        min: 1
-      button:
-        label:  _t(AB_advanced_action_textsearch_button_label)
-        type: text
-      phrase:
-        label:  _t(AB_advanced_action_textsearch_phrase_label)
-        type: text
-        advanced: true
-      separator:
-        label:  _t(AB_advanced_action_textsearch_separator_label)
-        type: text
-        advanced: true
-  newtextsearch:
-    label: _t(AB_advanced_action_newtextsearch_label)
-    properties:
-      label:
-        label:  _t(AB_advanced_action_textsearch_label_label)
-        type: text
-      size:
-        label:  _t(AB_advanced_action_textsearch_size_label)
-        type: number
-        default: ''
-        min: 1
-      button:
-        label:  _t(AB_advanced_action_textsearch_button_label)
-        type: text
-      phrase:
-        label:  _t(AB_advanced_action_textsearch_phrase_label)
-        type: text
-        advanced: true
-      separator:
-        label:  _t(AB_advanced_action_textsearch_separator_label)
-        type: text
-        advanced: true
   pageindex:
     label: _t(AB_advanced_action_pageindex_label)
   pageonlyindex:
     label: _t(AB_advanced_action_pageonlyindex_label)
+  wantedpages:
+    label: _t(AB_advanced_action_wantedpages_label)
   orphanedpages:
     label: _t(AB_advanced_action_orphanedpages_label)
-  trail:
-    label: _t(AB_advanced_action_trail_label)    
-    properties:
-      toc:
-        label:  _t(AB_advanced_action_trail_toc_label)
-        type: page-list
-        required: true
   bazarrecordsindex:
     label: _t(AB_advanced_action_bazarrecordsindex_label)
   # interwikilist:
   #   label: _t(AB_advanced_action_interwikilist_label)
-  configuration:
-    label: _t(AB_advanced_action_configuration_label)
-    properties:
-      param:
-        label: param
-        required: true
-        type: list
-        options:
-          - root_page
-          - base_url
-          - navigation_links
-          - meta_keywords
-          - meta_description
-          - wakka_name
-          - yeswiki_release
-          - yeswiki_version
-          - favorite_theme
-          - favorite_style
-          - favorite_squelette
-          - default_language
-          - charset
-          - lang
-          - theme_path
-          - wakka_version
-          - wikini_version
-  progressbar:
-    label: progressbar
-    properties: 
-      val:
-        label: val
-        required: true
-        type: number
-        min: 0
-        max: 100
-      class:
-        label: _t(AB_template_actions_class)
-        type: text
-        advanced: true

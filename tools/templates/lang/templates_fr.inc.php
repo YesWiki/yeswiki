@@ -209,7 +209,7 @@ $GLOBALS['translations'] = array_merge(
     'AB_template_actions_info' => 'Info',
     'AB_template_actions_warning' => 'Attention',
     'AB_template_actions_danger' => 'Danger',
-    'AB_template_action_accordion_label' => 'accordion : afficher des panneaux en accordéon',
+    'AB_template_action_accordion_label' => 'Afficher des encadrés en accordéon',
     'AB_template_action_accordion_example' => "{{panel title=\"Titre 1\"}}\nTexte du panneau 1 à changer par la suite\n{{end elem=\"panel\"}}\n"
         ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
     'AB_template_action_ariane_label' => 'Fil d\'ariane',

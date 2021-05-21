@@ -1,8 +1,7 @@
 label: _t(AB_tags_group_label)
 previewHeight: 200px
 actions:
-  admintag:
-    label: _t(AB_tags_admintag_label)
+  # admintag: moved to /docs/actions/management.yaml
   listpagestag:
     label: _t(AB_tags_listpagestag_label)
     properties:
