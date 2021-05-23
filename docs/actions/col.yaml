@@ -1,0 +1,21 @@
+label: _t(AB_template_action_col_label)
+previewHeight: 200px
+onlyEdit: true
+actions:
+  col:
+    label: _t(AB_template_action_col_label)
+    isWrapper: true
+    wrappedContentExample: _t(AB_template_action_col_example)
+    doclink: https://yeswiki.net/?CoL
+    properties:
+      size: 
+        label: _t(AB_template_col_size_label)
+        type: range
+        required: true
+        min: 1
+        max: 12
+        default: 4
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        advanced: true

@@ -218,8 +218,8 @@ $GLOBALS['translations'] = array_merge(
     'AB_template_col_size_label' => 'Largeur de la colonne',
     'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
     'AB_template_action_grid_example' => "{{col size=\"3\"}}\nTexte de la colonne 1 à changer par la suite\n{{end elem=\"col\"}}\n"
-        ."{{col size=\"4\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
-        ."{{col size=\"2\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
     )
 );
