@@ -52,6 +52,11 @@
                 JSON-LD
               </a>
             {% endif %}
+            {% if form.isGeo %}
+              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_GEOJSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/geojson'}) }}" data-toggle="tooltip" data-placement="bottom">
+                GeoJSON
+              </a>
+            {% endif %}
             <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_WIDGET') }}" href="{{ url({ handler: 'widget', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
               {{ _t('BAZ_WIDGET') }}
             </a>

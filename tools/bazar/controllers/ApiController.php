@@ -58,6 +58,8 @@ class ApiController extends YesWikiController
             foreach ($entries as $id => $entry) {
                 $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
             }
+        } elseif ($output == 'geojson') {
+            $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         }
         return new ApiResponse($entries);
     }
@@ -67,20 +69,7 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
-        $entries = $this->getService(EntryManager::class)->search([
-            'queries' => $this->getService(EntryController::class)
-                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
-        ]);
-
-        if ($output == 'json-ld' || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
-            return $this->getAllSemanticEntries($formId, $entries);
-        } // add entries in html format if asked
-        elseif ($output == 'html') {
-            foreach ($entries as $id => $entry) {
-                $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
-            }
-        }
-        return new ApiResponse($entries);
+        return $this->getAllFormEntries([], $output, $selectedEntries);
     }
 
     public function getAllSemanticEntries($formId, $entries)
@@ -225,6 +214,18 @@ class ApiController extends YesWikiController
         <p>
         <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/json-ld') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format sémantique (container LDP)<br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/html') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/geojson') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format geojson<br />
         </p>';
 
         $output .= '
