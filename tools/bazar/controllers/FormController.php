@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
@@ -49,6 +50,9 @@ class FormController extends YesWikiController
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return ($field instanceof MapField);
+                }));
+                $values[$form['bn_id_nature']]['isDate'] = !empty(array_filter($form['prepared'], function ($field) {
+                    return ($field instanceof DateField);
                 }));
             }
         }
