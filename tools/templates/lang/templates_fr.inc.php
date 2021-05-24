@@ -192,5 +192,34 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_FILE_NOT_DELETED' => ' non supprimé !',
     'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !",
     'TEMPLATE_PRESET_ERROR' => "Impossible d'appliquer ce preset, il y a une erreur !",
+    'TEMPLATE_PRESETS' => 'Configurations graphiques',
+    'TEMPLATE_CREATE_PRESET' => 'Créer sa configuration graphique',
+    'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuration graphique',
+
+    // actions-builder
+    'AB_template_group_label' => 'Mise en forme',
+    'AB_template_action_label_label' => 'Etiquette',
+    'AB_template_action_label_example' => 'Texte de votre étiquette à changer par la suite',
+    'AB_template_actions_class' => 'Classe',
+    'AB_template_actions_color' => 'Couleur',
+    'AB_template_actions_primary' => 'Primaire',
+    'AB_template_actions_secondary_1' => 'Secondaire-1',
+    'AB_template_actions_secondary_2' => 'Secondaire-2',
+    'AB_template_actions_success' => 'Succès',
+    'AB_template_actions_info' => 'Info',
+    'AB_template_actions_warning' => 'Attention',
+    'AB_template_actions_danger' => 'Danger',
+    'AB_template_action_accordion_label' => 'Afficher des encadrés en accordéon',
+    'AB_template_action_accordion_example' => "{{panel title=\"Titre 1\"}}\nTexte du panneau 1 à changer par la suite\n{{end elem=\"panel\"}}\n"
+        ."{{panel title=\"Titre 2\"}}\nTexte du panneau 2 à changer par la suite\n{{end elem=\"panel\"}}\n",
+    'AB_template_action_ariane_label' => 'Fil d\'ariane',
+    'AB_template_action_col_label' => 'Colonne',
+    'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
+    'AB_template_col_size_label' => 'Largeur de la colonne',
+    'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
+    'AB_template_action_grid_example' => "{{col size=\"3\"}}\nTexte de la colonne 1 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
+        ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
     )
 );

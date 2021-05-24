@@ -233,7 +233,12 @@ window.myapp = new Vue({
   },
   watch: {
     selectedFormId: function() { this.getSelectedFormByAjax() },
-    selectedActionId: function() { this.initValuesOnActionSelected() }
+    selectedActionId: function() { 
+      if (!this.isBazarListeAction && !this.isEditingExistingAction){
+        this.values = {};
+      }
+      this.initValuesOnActionSelected();
+    }
   },
   mounted() {
     $(document).ready(() => {

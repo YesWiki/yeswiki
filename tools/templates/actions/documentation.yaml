@@ -1,0 +1,221 @@
+label: _t(AB_template_group_label)
+previewHeight: 200px
+position: 3
+actions:
+  label:
+    label: _t(AB_template_action_label_label)
+    isWrapper: true
+    wrappedContentExample: _t(AB_template_action_label_example)
+    properties:
+      class:
+        label: _t(AB_template_actions_class)
+        type: class
+        subproperties:
+          label:
+            label: _t(AB_template_actions_color)
+            type: list
+            options:
+              label-primary: _t(AB_template_actions_primary)
+              label-secondary-1: _t(AB_template_actions_secondary_1)
+              label-secondary-2: _t(AB_template_actions_secondary_2)
+              label-success: _t(AB_template_actions_success)
+              label-info: _t(AB_template_actions_info)
+              label-warning: _t(AB_template_actions_warning)
+              label-danger: _t(AB_template_actions_danger)
+  nav:
+    label: Onglets
+    description: Générer un menu
+    hint: LeNomDeVotrePage doit être le nom de la page dans laquelle vous mettrez cette action. Pensez à coller le code obtenu dans chacune des pages des onglets.
+    properties:
+      links:
+        label: Liens vers vos pages wiki
+        type: text
+        default: LeNomDeVotrePage, LaSecondePage, LaTroisiemePage
+        hint: Nom des pages wiki séparées par des virgules
+        doclink: https://yeswiki.net/?DocumentationMiseEnPageOnglet
+      titles:
+        label: Intitulés de vos pages
+        default: Première page, Seconde page, Troisième page
+        hint: Textes de chaque onglet séparés par des virgules
+        type: text
+      class:
+        label: _t(AB_template_actions_class)
+        type: class
+        subproperties:
+          type:
+            label: class
+            type: list
+            default: 
+            options:
+              nav nav-tabs: Horizontal souligné
+              nav nav-pills: Horizontal sobre
+              nav nav-tabs nav-justified : Horizontal justifié
+              nav nav-stacked: Vertical
+      hideifnoaccess:
+        advanced: true
+        label: Masquer si l'utilisateur n'a pas accès à la page liée
+        type: checkbox
+        default: false
+  panel:
+    label: Encadré
+    isWrapper: true
+    wrappedContentExample: Texte de votre encadré à modifier par la suite
+    properties:
+      title:
+        label: Titre
+        type: text
+        default: Titre de mon encadré
+        required: true
+      type:
+        label: Type
+        type: list
+        doclink: https://yeswiki.net/?DemoAccordion
+        options:
+          default: Simple encadré
+          collapsible: Accordéon ouvert
+          collapsed: Accordéon fermé
+      class:
+        label: _t(AB_template_actions_class)
+        type: class
+        subproperties:
+          label:
+            label: Couleur
+            type: list
+            options:
+              panel-default: Défaut
+              panel-primary: Primaire
+              panel-secondary-1: Secondaire-1
+              panel-secondary-2: Secondaire-2
+              panel-success: Succès
+              panel-info: Info
+              panel-warning: Attention
+              panel-danger: Danger
+  section:
+    label: Section
+    isWrapper: true
+    wrappedContentExample: Texte de votre section à remplacer par la suite
+    properties:
+      bgcolor:
+        label: Couleur de fond de la section
+        type: color
+        doclink: https://yeswiki.net/?section
+      file:
+        label: Image de fond de la section
+        advanced: true
+        type: text
+        hint: Entrez le nom.jpg d'une image déjà uploadé dans cette page, ou le nom d'une nouvelle image.jpg pour faire apparaitre son boutton d'upload
+      height:
+        label: Hauteur de la section (en pixels)
+        type: text
+      class:
+        label: Classe
+        type: class
+        subproperties:
+          height:
+            advanced: true
+            label: Hauteur préfigurée de la section
+            type: list
+            options:
+              one-quarter-height: un quart de la hauteur
+              one-third-height: un tiers
+              half-height: une moitié
+              two-third-height: deux tiers
+              three-quarter-height: trois quarts
+              full-height: 100% hauteur
+          textcolor:
+            label: Tonalité du texte
+            type: list
+            default: black
+            options:
+              white: Claire
+              black: Foncée
+          textalign:
+            label: Centrage du texte
+            type: list
+            default : text-left
+            options :
+              text-left: Calé à gauche
+              text-right: Calé à droite
+              text-center: Centré
+              text-justify: Justifié
+          image:
+            advanced: true
+            label: Comportement de l'image
+            type: list
+            options:
+              cover: Couvre section avec l'image
+              fixed: L'image est bloquée lors du scroll
+              center: L'image reste centré
+              parallax: L'image remonte au scroll genre parallax
+          animation:
+            label: Animation
+            type: list
+            advanced: true
+            hint: Beaucoup plus d'effets disponibles sur https://animate.style/
+            doclink: https://yeswiki.net/?AniMation
+            options:
+              wow bounce: Bonds
+              wow flash: Flash
+              wow pulse: Pulse
+              wow rubberBand: Elastique
+              wow shakeX: Gauche à droite
+              wow shakeY: Bas en haut
+              wow headShake: Secoué
+              wow swing: Swing
+              wow tada: Tada
+              wow wobble: Essuie glace
+              wow jello: Danse
+              wow heartBeat: Bat
+      visibility:
+        advanced: true
+        type: list
+        label: Visible par 
+        options:
+          '': Tout le monde
+          '+': Utilisateur connecté
+          '%': Propriétaire de la page
+          '@admins': Admins seulement
+#      data:
+#        label: Data wow
+#        type: text
+#        subproperties:
+#          wow-iteration:
+#            label: Nb d'itération souhaitée
+#            default: 2
+#            type: number
+#          wow-length:
+#            label: Durée de l'effet (en sec)
+#            type: number
+#          wow-offset:
+#            label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
+#            type: number
+#          wow-delay:
+#            label: Délais de l'animation quand la page est chargée (en sec)
+#            type: number
+  accordion:
+    label: _t(AB_template_action_accordion_label)
+    isWrapper: true
+    wrappedContentExample: _t(AB_template_action_accordion_example)
+    properties:
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        doclink: https://yeswiki.net/?AccordioN
+  grid:
+    label: _t(AB_template_action_grid_label)
+    isWrapper: true
+    wrappedContentExample: _t(AB_template_action_grid_example)
+    properties:
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        doclink: https://yeswiki.net/?GriD
+  #  col: # moved to /docs/actions/col.yaml
+  # ariane:
+  #   label: _t(AB_template_action_ariane_label)
+  #   properties:
+  #     nb:
+  #       label: nb
+  #       type: number
+  #       min: 1
+

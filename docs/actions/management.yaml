@@ -1,0 +1,43 @@
+label: _t(AB_management_label)
+position: 2000
+onlyForAdmins: true
+previewHeight: 200px
+actions:
+  editactionsacls:
+    label: _t(AB_management_editactionsacls_label)
+  edithandlersacls:
+    label: _t(AB_management_edithandlersacls_label)
+  editgroups:
+    label: _t(AB_management_editgroups_label)
+  adminpages:
+    label: _t(AB_management_adminpages_label)
+  gererdroits:
+    label: _t(AB_management_gererdroits_label)
+  userstable:
+    label: _t(AB_management_userstable_label)
+    properties:
+      last:
+        label:  _t(AB_advanced_action_listusers_last_label)
+        hint:  _t(AB_advanced_action_listusers_last_hint)
+        type: number
+        default: ''
+        min: 1
+  gererthemes:
+    label: _t(AB_management_gererthemes_label)
+  setwikidefaulttheme:
+    label: _t(AB_management_setwikidefaulttheme_label)
+  themeselector:
+    label: _t(AB_management_themeselector_label)
+    properties:
+      class:
+        label: _t(AB_template_actions_class)
+        type: text
+        advanced: true
+  admintag:
+    label: _t(AB_tags_admintag_label)  
+  mailperiod:
+    label: _t(AB_mailperiod_action_label)
+  despam:
+    label: despam
+  filemanager:
+    label: _t(AB_management_filemanager_label)
