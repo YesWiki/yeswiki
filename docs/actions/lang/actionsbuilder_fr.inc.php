@@ -109,4 +109,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_advanced_action_recentcomments_label' => 'Liste les derniers commentaires',
     'AB_advanced_action_recentcomments_max_label' => 'Nombre maximum de commentaires à afficher',
     'AB_advanced_action_configuration_label' => 'Afficher le contenu du fichier de configuration',
+    // col
+    'AB_template_col_size_hint' => 'Attention, la somme des largeurs de toutes les colonnes ne devra pas excéder 12 !',
 ));

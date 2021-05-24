@@ -11,6 +11,7 @@ actions:
       size: 
         label: _t(AB_template_col_size_label)
         type: range
+        hint: _t(AB_template_col_size_hint)
         required: true
         min: 1
         max: 12
