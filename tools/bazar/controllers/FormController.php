@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\YesWikiController;
@@ -46,6 +47,9 @@ class FormController extends YesWikiController
                 $values[$form['bn_id_nature']]['canEdit'] = $this->getService(Guard::class)->isAllowed('saisie_formulaire');
                 $values[$form['bn_id_nature']]['canDelete'] = $this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
+                $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                    return ($field instanceof MapField);
+                }));
             }
         }
 

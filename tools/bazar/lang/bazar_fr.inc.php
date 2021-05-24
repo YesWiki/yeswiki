@@ -66,6 +66,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_CSV' => 'CSV',
         'BAZ_JSON' => 'JSON',
         'BAZ_JSON_LD' => 'JSON-LD (Sémantique)',
+        'BAZ_GEOJSON' => 'GeoJSON',
         'BAZ_ACTIONS_FICHES' => 'Fiches',
         'BAZ_LOADING' => 'Chargement',
         'BAZ_IMPORT_SELECTION' => 'Importer la sélection',
