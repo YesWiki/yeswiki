@@ -67,8 +67,8 @@ class Guard
         // champ mot de passe ?
         //
 
-        if ($this->isPageOwner($page)) {
-            // Pas de controle si proprietaire
+        if ($this->wiki->UserIsAdmin() || $this->isPageOwner($page)) {
+            // Pas de controle si proprietaire ou administrateur
             return $page;
         }
         if ($page) {
