@@ -40,27 +40,24 @@ if ($this->HasAccess("write")) {
 
     // if this page exists
     if ($content) {
-        // if owner is current user
+        $owner = $this->GetPageOwner($page);
+        // message
+        if ($this->UserIsOwner($page)) {
+            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : "._t('TEMPLATE_YOU');
+        } elseif ($owner) {
+            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
+        } else {
+            $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER');
+        }
+
+        // if current user is owner or admin
         if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
-            $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : "._t('TEMPLATE_YOU').' - '._t('TEMPLATE_PERMISSIONS');
+            $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
             $barreredactionelements['linkacls'] = $this->href("acls", $page);
             $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
-        } else {
-            if ($owner = $this->GetPageOwner($page)) {
-                $barreredactionelements['owner'] = _t('TEMPLATE_OWNER')." : ".$owner;
-                if ($this->UserIsAdmin()) {
-                    $barreredactionelements['linkacls'] = $this->href("acls", $page);
-                    $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
-                } else {
-                    //$barreredactionelements['linkacls'] = $this->href('', $owner);
-                }
-            } else {
-                $barreredactionelements['owner'] = _t('TEMPLATE_NO_OWNER').($this->GetUser() ? " - "._t('TEMPLATE_CLAIM') : "");
-                if ($this->GetUser()) {
-                    $barreredactionelements['linkacls'] = $this->href("claim", $page);
-                }
-                //else $barreredactionelements['linkacls'] = $this->href("claim", $page);
-            }
+        } elseif (!$owner && $this->GetUser()) {
+            $barreredactionelements['owner'] .= " - "._t('TEMPLATE_CLAIM');
+            $barreredactionelements['linkacls'] = $this->href("claim", $page);
         }
     }
 
