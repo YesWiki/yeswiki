@@ -76,7 +76,7 @@ class EntryManager
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, $time || null, $cache, $bypassAcls);
+        $page = $this->pageManager->getOne($tag, $time, $cache, $bypassAcls);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
