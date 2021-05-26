@@ -67,7 +67,7 @@ class IcalFormatter extends YesWikiController
                 $filename = 'calendar';
             }
             if (!empty($obContent)) {
-                $comment = $this->splitAt74thChar("X-COMMENT:".str_replace(["\n","\r"], ['\\n','\\r'], $obContent)."\r\n");
+                $comment = $this->splitAt75thChar("X-COMMENT:".str_replace(["\n","\r"], ['\\n','\\r'], $obContent)."\r\n");
                 $fileData = str_replace("BEGIN:VCALENDAR\r\n", "BEGIN:VCALENDAR\r\n".$comment, $fileData);
             }
             $headers = [
@@ -153,13 +153,13 @@ class IcalFormatter extends YesWikiController
     {
         $header = "BEGIN:VCALENDAR\r\n";
         $header .= "VERSION:2.0\r\n";
-        $header .= $this->splitAt74thChar("PRODID:-//".$this->params->get("base_url")
+        $header .= $this->splitAt75thChar("PRODID:-//".$this->params->get("base_url")
             ."//YesWiki ".$this->params->get("yeswiki_version")
             ." ".$this->params->get("yeswiki_release")."//EN\r\n");
         if (!empty($formId) && intval($formId) == $formId) {
-            $header .= $this->splitAt74thChar("SOURCE:".$this->wiki->Href('forms/'.$formId.'/entries/ical', 'api')."\r\n");
+            $header .= $this->splitAt75thChar("SOURCE:".$this->wiki->Href('forms/'.$formId.'/entries/ical', 'api')."\r\n");
         } else {
-            $header .= $this->splitAt74thChar("SOURCE:".$this->wiki->Href('entries/ical', 'api')."\r\n");
+            $header .= $this->splitAt75thChar("SOURCE:".$this->wiki->Href('entries/ical', 'api')."\r\n");
         }
 
         $footer = "END:VCALENDAR\r\n";
@@ -186,28 +186,26 @@ class IcalFormatter extends YesWikiController
         $output .="DTEND".$this->formatDate($icalData['endDate'])."\r\n";
         $output .="CREATED".$this->formatDate($entry['date_creation_fiche'])."\r\n";
         $output .="DATE-MOD".$this->formatDate($entry['date_maj_fiche'])."\r\n";
-        $output .=$this->splitAt74thChar("SUMMARY:".$entry['bf_titre']."\r\n");
-        $output .=$this->splitAt74thChar("NAME:".$entry['bf_titre']."\r\n");
-        if (!empty($entry['bf_description'])) {
-            // $output .=$this->splitAt74thChar("DESCRIPTION;ENCODING=BASE64:".str_replace(["\r","\n"], ["=0D",'=0A'], $entry['bf_description'])."\r\n");
-            // $output .=$this->splitAt74thChar("DESCRIPTION;ENCODING=BASE64:".base64_encode($entry['bf_description'])."\r\n");
-            $output .=$this->splitAt74thChar("DESCRIPTION:".str_replace(["\r","\n"], ['\\r','\\n'], $entry['bf_description'])."\r\n");
-        }
+        $output .=$this->splitAt75thChar("SUMMARY:".$entry['bf_titre']."\r\n");
+        $output .=$this->splitAt75thChar("NAME:".$entry['bf_titre']."\r\n");
+        $decription = (!empty($entry['bf_description'])) ? $entry['bf_description']."\r\n" :'';
+        $decription .= "Source: ".$entry['url'];
+        $output .=$this->splitAt75thChar("DESCRIPTION:".str_replace(["\r","\n"], ['\\r','\\n'], $decription)."\r\n");
         $location = '';
         $location .= (!empty($entry['bf_adresse'])) ? $entry['bf_adresse'] .' ' : '';
         $location .= (!empty($entry['bf_code_postal'])) ? $entry['bf_code_postal'] .' ' : '';
         $location .= (!empty($entry['bf_ville'])) ? $entry['bf_ville'] .' ' : '';
         if (!empty($location)) {
-            $output .=$this->splitAt74thChar("LOCATION:".$location."\r\n");
+            $output .=$this->splitAt75thChar("LOCATION:".$location."\r\n");
         }
         $geo = $this->geoJSONFormatter->getGeoData($entry, $cache);
         if (!empty($geo)) {
-            $output .=$this->splitAt74thChar("GEO:".$geo['latitude'].";".$geo['longitude']."\r\n");
+            $output .=$this->splitAt75thChar("GEO:".$geo['latitude'].";".$geo['longitude']."\r\n");
         }
         if (!empty($entry['imagebf_image'])) {
             $baseUrl = $this->getBaseURL();
             $url = $baseUrl . 'files/' . $entry['imagebf_image'];
-            $output .=$this->splitAt74thChar("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url."\r\n");
+            $output .=$this->splitAt75thChar("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url."\r\n");
         }
         // image https://icalendar.org/New-Properties-for-iCalendar-RFC-7986/5-10-image-property.html
         $output .="END:VEVENT\r\n";
@@ -238,9 +236,10 @@ class IcalFormatter extends YesWikiController
      * @param string $input
      * @return string $output
      */
-    private function splitAt74thChar(string $input):string
+    private function splitAt75thChar(string $input):string
     {
-        $output = chunk_split($input, 74, "\r\n ");
+        $output = chunk_split($input, 75, "\r\n ");
+        $output = str_replace("\r\r\n \n", "\r\n \r\n", $output);
         $output = substr($output, 0, -strlen("\r\n "));
         if (substr($output, -strlen("\r\n \r\n")) == "\r\n \r\n") {
             $output = substr($output, 0, -strlen(" \r\n"));
