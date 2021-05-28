@@ -232,8 +232,9 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/html') . '</code></b><br />
-        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/ical') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format ical<br />
+        Il est possible de filtrer sur les dates en ajoutant à l\'url <code>&datefilter=>-6M</code> (exemple pour les dates plus récentes que 6 mois)<br />
         </p>';
 
         $output .= '
@@ -245,8 +246,26 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/html') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
+        </p>';
+
+        $output .= '
+        <p>
         <b><code>POST ' . $this->wiki->href('', 'api/entries/{formId}/json-ld') . '</code></b><br />
         Créer une nouvelle fiche de type <code>formId</code> au format sémantique<br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/geojson') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format geojson<br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/ical') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format ical<br />
         </p>';
 
         $output .= '
