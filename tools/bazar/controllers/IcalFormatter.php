@@ -214,6 +214,7 @@ class IcalFormatter extends YesWikiController
             $baseUrl = $this->getBaseURL();
             $url = $baseUrl . 'files/' . $entry['imagebf_image'];
             $output .=$this->splitAt75thChar("IMAGE;VALUE=URI;DISPLAY=BADGE:".$url."\r\n");
+            $output .=$this->splitAt75thChar("ATTACH:".$url."\r\n"); // duplicate on attach to be compatible with more calendar client
         }
         // image https://icalendar.org/New-Properties-for-iCalendar-RFC-7986/5-10-image-property.html
         $output .="END:VEVENT\r\n";
