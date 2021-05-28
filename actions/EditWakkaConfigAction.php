@@ -159,23 +159,8 @@ class EditWakkaConfigAction extends YesWikiAction
     {
         $val = trim($value);
         if (substr($val, 0, 1) == '[' && substr($val, -1) == ']') {
-            $val = substr($val, 1, -2);
-            $val = explode(',', $val);
-            $res = [];
-            foreach ($val as $va) {
-                $va = trim($va);
-                list($k, $v) = explode('=>', $va);
-                $k = trim($k);
-                $v = trim($v);
-                if (substr($v, 0, strlen('\'')) == '\'' && substr($v, -strlen('\'')) == '\'') {
-                    $v = substr($v, strlen('\''), -2*strlen('\''));
-                }
-                if (substr($k, 0, strlen('\'')) == '\'' && substr($k, -strlen('\'')) == '\'') {
-                    $k = substr($k, strlen('\''), -2*strlen('\''));
-                }
-                $res[$k] = $v;
-            }
-            return $res;
+            eval("\$val = $val;");
+            return $val;
         }
         return $value;
     }
