@@ -221,5 +221,11 @@ $GLOBALS['translations'] = array_merge(
         ."{{col size=\"3\"}}\nTexte de la colonne 2 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 3 à changer par la suite\n{{end elem=\"col\"}}\n"
         ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
+
+    // gererdroits
+    'ACLS_SELECT_PAGES_FILTER' => 'Filtrer',
+    'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'Uniquement les pages',
+    'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'Uniquement les pages spéciales',
+    'ACLS_SELECT_PAGES_FILTER_FORM' => 'Formulaire :',
     )
 );
