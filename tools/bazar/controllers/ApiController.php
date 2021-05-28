@@ -61,7 +61,7 @@ class ApiController extends YesWikiController
         } elseif ($output == 'geojson') {
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         } elseif ($output == 'ical') {
-            return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId);
+            return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
         }
         return new ApiResponse(empty($entries) ? null : $entries);
     }
