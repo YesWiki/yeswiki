@@ -251,5 +251,7 @@ $GLOBALS['translations'] = array_merge(
     'EDIT_WAKKA_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un e-mail aux admininistrateurs à chaque modificaiton de fiche (1)',
     'EDIT_WAKKA_CONFIG_HINT_mail_custom_message' => 'Message personnalisé pour l\'envoi des e-mails',
     'EDIT_WAKKA_CONFIG_HINT_bazarIgnoreAcls' => 'Outre-passer les droits d\'acls lors de la création de fiches à partir de formulaires (1 ou 0)',
+    'EDIT_WAKKA_CONFIG_HINT_password_for_editing' => 'Mot de passe demandé pour modifier les formulaires (vide = pas de restriction)',
+    'EDIT_WAKKA_CONFIG_HINT_password_for_editing_message' => 'Message qui s\'affiche au dessus de champ mot de passe demandé pour modifier les formulaires',
     )
 );

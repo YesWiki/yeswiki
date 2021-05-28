@@ -18,6 +18,8 @@ class EditWakkaConfigAction extends YesWikiAction
 
         'use_alerte',
         'use_captcha',
+        'password_for_editing',
+        'password_for_editing_message',
 
         'baz_map_center_lat',
         'baz_map_center_lon',
