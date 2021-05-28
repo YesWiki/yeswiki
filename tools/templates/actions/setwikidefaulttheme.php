@@ -8,7 +8,7 @@ require_once 'tools/templates/libs/setwikidefaulttheme.functions.php';
 if (!is_writable('wakka.config.php')) {
     echo '<div class="alert alert-danger">'
         . _t('ERROR_NO_ACCESS')
-        . " setwikidefaulttheme, le fichier de configuration est protégé en écriture</div>\n";
+        . " setwikidefaulttheme, "._t('FILE_WRITE_PROTECTED')."</div>\n";
 } else {
     if ($this->UserIsAdmin()) {
         $themes = getTemplatesList();

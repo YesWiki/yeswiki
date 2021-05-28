@@ -42,6 +42,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'PERFORMABLE_ERROR' => 'Une erreur inattendue s\'est produite. Veuillez contacter l\'administrateur du site et lui communiquer l\'erreur suivante :',
 'HOMEPAGE_WIKINAME' => 'PagePrincipale',
 'MY_YESWIKI_SITE' => 'Mon site YesWiki',
+'FILE_WRITE_PROTECTED' => 'le fichier de configuration est protégé en écriture',
 
 // tools.php
 'YESWIKI_TOOLS_CONFIG' => 'Configuration extension(s) de YesWiki',
