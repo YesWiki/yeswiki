@@ -9,6 +9,7 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Bazar\Field\DateField;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\YesWikiController;
 use \DateInterval;
 use \DateTime;
@@ -18,23 +19,27 @@ class IcalFormatter extends YesWikiController
 {
     protected $params;
     protected $geoJSONFormatter;
+    protected $entryController;
 
     public function __construct(
         ParameterBagInterface $params,
-        GeoJSONFormatter $geoJSONFormatter
+        GeoJSONFormatter $geoJSONFormatter,
+        EntryController $entryController
     ) {
         $this->params = $params;
         $this->geoJSONFormatter = $geoJSONFormatter;
+        $this->entryController = $entryController;
     }
 
     /**
      * format api response
      * @param array $entries
      * @param mixed $formId
+     * @param array|null $get
      * @param string $filename
      * @return Response
      */
-    public function apiResponse(array $entries, $formId = null, string $filename = ''): Response
+    public function apiResponse(array $entries, $formId = null, ?array $get = null, string $filename = ''): Response
     {
         // start ob for trigger_error messages
         ob_start();
@@ -47,6 +52,9 @@ class IcalFormatter extends YesWikiController
         }
         if (empty($filename)) {
             $filename = (empty($formId)) ? 'calendar' : 'calendar-form-'.$formId;
+        }
+        if (!empty($get['datefilter'])) {
+            $entries = $this->entryController->filterEntriesOnDate($entries, $get['datefilter']);
         }
         $fileData = $this->formatToICAL($entries, $formId);
         // stop ob
