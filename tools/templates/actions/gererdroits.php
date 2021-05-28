@@ -141,7 +141,7 @@ $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.boot
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 ?>
 <p><?php echo _t('ACLS_SELECT_PAGES_TO_MODIFY'); ?></p>
-<div class="form-group pull-right">
+<div class="form-group">
   <label for="filterforpages"><?php echo _t('ACLS_SELECT_PAGES_FILTER'); ?></label>
   <select class="form-control" id="filterforpages" onchange="reloadGererDroits(this)">
     <option value="" <?php echo (empty($filter)) ? 'selected="selected"' : ''; ?>></option>
