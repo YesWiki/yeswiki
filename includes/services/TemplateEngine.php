@@ -69,7 +69,8 @@ class TemplateEngine
         });
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
-            return $this->wiki->Href($options['handler'], $options['tag'], $options['params'], false);
+            $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
+            return $this->wiki->Href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
             return $this->wiki->Format($text, $formatter);
