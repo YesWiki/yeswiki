@@ -24,6 +24,8 @@ actions:
         min: 1
   gererthemes:
     label: _t(AB_management_gererthemes_label)
+  editwakkaconfig:
+    label: _t(AB_management_editwakkaconfig_label)
   setwikidefaulttheme:
     label: _t(AB_management_setwikidefaulttheme_label)
   themeselector:
