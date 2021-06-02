@@ -223,9 +223,9 @@ $GLOBALS['translations'] = array_merge(
         ."{{col size=\"3\"}}\nTexte de la colonne 4 à changer par la suite\n{{end elem=\"col\"}}\n",
 
     // gererdroits
-    'ACLS_SELECT_PAGES_FILTER' => 'Filtrer',
-    'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'Uniquement les pages',
-    'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'Uniquement les pages spéciales',
-    'ACLS_SELECT_PAGES_FILTER_FORM' => 'Formulaire :',
+    'ACLS_SELECT_PAGES_FILTER' => 'Filtrer :',
+    'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'les pages uniquement',
+    'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'les pages spéciales uniquement',
+    'ACLS_SELECT_PAGES_FILTER_FORM' => 'les fiches du formulaire : {name} ({id})',
     )
 );

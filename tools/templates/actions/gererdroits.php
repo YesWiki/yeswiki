@@ -141,15 +141,15 @@ $this->addJavascriptFile('tools/templates/libs/vendor/datatables/dataTables.boot
 $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css');
 ?>
 <p><?php echo _t('ACLS_SELECT_PAGES_TO_MODIFY'); ?></p>
-<div class="form-group">
-  <label for="filterforpages"><?php echo _t('ACLS_SELECT_PAGES_FILTER'); ?></label>
+<div class="form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">
+  <label for="filterforpages" style="margin-right:10px;"><?php echo _t('ACLS_SELECT_PAGES_FILTER'); ?></label>
   <select class="form-control" id="filterforpages" onchange="reloadGererDroits(this)">
     <option value="" <?php echo (empty($filter)) ? 'selected="selected"' : ''; ?>></option>
     <option value="pages" <?php echo ("pages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES'); ?></option>
     <option value="specialpages" <?php echo ("specialpages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES'); ?></option>
     <?php foreach ($forms as $id => $form): ?>
       <option value="<?php echo $id;?>" <?php echo ($id == $filter) ? 'selected="selected"' : '';
-        ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_FORM') . $form['bn_label_nature'].' ('.$id.')';?>
+        ?>><?php echo str_replace('{name}',$form['bn_label_nature'],str_replace('{id}',$id,_t('ACLS_SELECT_PAGES_FILTER_FORM')));?>
     <?php endforeach ?>
   </select>
 </div>
