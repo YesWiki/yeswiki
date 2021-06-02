@@ -113,7 +113,7 @@ class ApiService
         }
 
         $apiAllowedKeys = $this->params->get('api_allowed_keys');
-        if (!in_array($bearerToken,$apiAllowedKeys){
+        if (!in_array($bearerToken,$apiAllowedKeys)){
             return false;
         }
 
