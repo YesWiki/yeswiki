@@ -21,8 +21,8 @@ class ApiController extends YesWikiController
     public function getAllForms()
     {
         $this->denyAccessUnlessAdmin();
-
-        return new ApiResponse($this->getService(FormManager::class)->getAll());
+        $forms = $this->getService(FormManager::class)->getAll();
+        return new ApiResponse(empty($forms) ? null : $forms);
     }
 
     /**
@@ -61,7 +61,7 @@ class ApiController extends YesWikiController
         } elseif ($output == 'geojson') {
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         }
-        return new ApiResponse($entries);
+        return new ApiResponse(empty($entries) ? null : $entries);
     }
 
     /**
