@@ -76,7 +76,7 @@ if (empty($url) || parse_url($url, PHP_URL_HOST) != $_SERVER['SERVER_NAME'] ||
     
     include dirname(dirname(__FILE__)). DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'commons-video-pdf.php' ;
     
-    echo '<div class="' . $class_for_embed . ' embed-responsive ' . $forme . '"'. $styleForSize . '><iframe src="tools/attach/libs/vendor/pdfjs-dist/web/viewer.html?file='
+    echo '<div class="' . ($class_for_embed ? $class_for_embed . ' ' : '') . 'embed-responsive ' . $forme . '"'. $styleForSize . '><iframe src="tools/attach/libs/vendor/pdfjs-dist/web/viewer.html?file='
         . urlencode($url) . '" class="embed-responsive-item" frameborder="0" allowfullscreen></iframe></div>';
     if ($manageSize) {
         echo '</div>' ;

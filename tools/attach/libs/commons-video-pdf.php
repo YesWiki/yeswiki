@@ -18,7 +18,7 @@
  * @param    $styleForSize     string   Texte pour définir le style et déterminer la taille de la zone
  * @param    $class_for_embed  string  Référence vers la chaîne de texte représentant la classe pour le container embed
  */
-$styleForSize = ($manageSize) ? ' style="max-width:'.$maxWidth.'px;max-height:'.$maxHeight .'px;"' : '' ;
+$styleForSize = ($manageSize) ? ' style="max-width:' . $maxWidth . 'px;max-height:' . $maxHeight .'px;"' : '' ;
     
 //position
 $class = $baseObject->GetParameter("class");
@@ -36,9 +36,6 @@ if (!empty($class)) {
             $divHTML .= '" class="' . $class . '">' ;
             echo $divHTML ;
         } else {
-            // remove class because not usefull
-            //$class_for_embed  = ' ' . str_replace('pull-right','',str_replace('pull-left','',$class)) ;
-            
             $managePosition = true ;
             $divHTML = '<div style="width:100%;' ;
             $divHTML .= '" class="' . $class . '">' ;
@@ -48,7 +45,7 @@ if (!empty($class)) {
         if ($manageSize) {
             $class_for_div = 'class="' . $class . '"';
         } else {
-            $class_for_embed = ' ' . $class ;
+            $class_for_embed = $class;
         }
     }
 }

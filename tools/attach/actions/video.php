@@ -73,7 +73,7 @@ if (empty($id) || empty($serveur) || !in_array(strtolower($serveur), ALLOWED_SER
     $baseObject = $this ; // for compatibility with php actions
     include dirname(dirname(__FILE__)). DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'commons-video-pdf.php' ;
     
-    echo '<div class="' . $class_for_embed . ' embed-responsive ' . $ratioCss . '"'. $styleForSize . '>' ;
+    echo '<div class="' . ($class_for_embed ? $class_for_embed . ' ' : '') . 'embed-responsive ' . $ratioCss . '"'. $styleForSize . '>' ;
     if ($serveur == 'vimeo') {
         echo '<iframe src="https://player.vimeo.com/video/' . $id
             . '?color=ffffff&title=0&byline=0&portrait=0" class="embed-responsive-item" frameborder="0"'
