@@ -656,7 +656,7 @@ class BazarListeAction extends YesWikiAction
      * @param string $ids
      * @return array
      */
-    private function getExternalUrlsFromIds(string $ids)
+    private function getExternalUrlsFromIds(?string $ids)
     {
         // external ids
         $externalIds = [];
