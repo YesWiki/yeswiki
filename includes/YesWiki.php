@@ -726,7 +726,7 @@ class Wiki
 
         // match all attributes (key and value)
         // prepare an array for extract() to work with (in $this->IncludeBuffered())
-        if (preg_match_all("/([a-zA-Z0-9]*)=\"(.*)\"/U", $vars_temp, $matches)) {
+        if (preg_match_all("/([a-zA-Z0-9_]*)=\"(.*)\"/U", $vars_temp, $matches)) {
             for ($a = 0; $a < count($matches[1]); $a ++) {
                 $vars[$matches[1][$a]] = $matches[2][$a];
             }
