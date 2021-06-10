@@ -84,6 +84,7 @@ class EditWakkaConfigAction extends YesWikiAction
     {
         $config = new Configuration('wakka.config.php');
         $config->load();
+        var_dump($config);
 
         foreach (self::AUTHORIZED_KEYS_HINT as $key) {
             $new_value = $this->arguments['post'][$key] ??  null;
@@ -138,7 +139,7 @@ class EditWakkaConfigAction extends YesWikiAction
                 .implode(
                     ',',
                     array_map(function ($k, $v) {
-                        return "'".$k."' => '".$v."'";
+                        return "'".$k."' => ". (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
                     }, array_keys($value), array_values($value))
                 )
                 .']';
@@ -160,9 +161,29 @@ class EditWakkaConfigAction extends YesWikiAction
     private function strtoarray(string $value)
     {
         $val = trim($value);
-        if (substr($val, 0, 1) == '[' && substr($val, -1) == ']') {
-            eval("\$val = $val;");
-            return $val;
+        $matches = [];
+        if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/',$val,$matches)){
+            $val = $matches[1];
+            $lines= preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/',$val);
+            $result = [];
+            foreach($lines as $line){
+                $extract = explode('=>',$line);
+                if (count($extract) == 2){
+                    $key = trim($extract[0]);
+                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/',$key,$matches)){
+                        $key = $matches[1];
+                    }
+                    $val = trim($extract[1]);
+                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/',$val,$matches)){
+                        $val = $matches[1];
+                    }
+                    $val = ($val == 'true') ? true : (($val == 'false') ? false : $val );
+                    $result[$key] = $val;
+                }
+            }
+            if (count($result) > 0){
+                return $result;
+            }
         }
         return $value;
     }
