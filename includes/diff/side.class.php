@@ -13,7 +13,7 @@ class Side
     public $argument;
     public $length;
 
-    public function Side($content)
+    public function __construct($content)
     {
         $this->content = $content;
         $this->position = 0;

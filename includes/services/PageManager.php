@@ -103,7 +103,15 @@ class PageManager
 
     public function getById($id): ?array
     {
-        return $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
+        $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
+        $tag = $page['tag'] ?? null;
+        // not possible to init the EntryManager in the constructor because of circular reference problem
+        if (!empty($tag) && $this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
+            // not possible to init the Guard in the constructor because of circular reference problem
+            $page = $this->wiki->services->get(Guard::class)->checkAcls($page, $tag);
+        }
+
+        return $page;
     }
 
     public function getRevisions($page)

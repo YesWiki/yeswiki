@@ -111,9 +111,21 @@ if ($this->HasAccess("read")) {
         $pageA = $this->LoadPageById($_REQUEST["b"]);
         $pageB = $this->LoadPageById($_REQUEST["a"]);
 
-        // extract text from bodies
-        $textA = _convert($pageA["body"], "ISO-8859-15");
-        $textB = _convert($pageB["body"], "ISO-8859-15");
+        $tag = $this->getPageTag();
+        $isEntry = !empty($tag) && $this->services
+            ->get(YesWiki\Bazar\Service\EntryManager::class)
+            ->isEntry($tag);
+        if ($isEntry) {
+            $entryController = $this->services
+                ->get(YesWiki\Bazar\Controller\EntryController::class);
+            // extract text from bodies
+            $textA = '""'.$entryController->view($tag, $pageA['time'], false).'""';
+            $textB = '""'.$entryController->view($tag, $pageB['time'], false).'""';
+        } else {
+            // extract text from bodies
+            $textA = _convert($pageA["body"], "ISO-8859-15");
+            $textB = _convert($pageB["body"], "ISO-8859-15");
+        }
 
         $sideA = new Side($textA);
         $sideB = new Side($textB);
@@ -176,19 +188,19 @@ if ($this->HasAccess("read")) {
 
                 if (($letter=='d') || ($letter=='c')) {
                     $sideA->copy_whitespace($output);
-                    $output .="@@";
+                    $output .= ($isEntry) ? '<span class="del">' : "@@";
                     $sideA->copy_word($output);
                     $sideA->copy_until_ordinal($argument[1], $output);
-                    $output .="@@";
+                    $output .=($isEntry) ? '</span>' :"@@";
                 }
 
                 // inserted word
                 if ($letter == 'a' || $letter == 'c') {
                     $sideB->copy_whitespace($output);
-                    $output .="££";
+                    $output .=($isEntry) ? '<span class="add">' :"££";
                     $sideB->copy_word($output);
                     $sideB->copy_until_ordinal($argument[3], $output);
-                    $output .="££";
+                    $output .=($isEntry) ? '</span>' :"££";
                 }
             }
         }
