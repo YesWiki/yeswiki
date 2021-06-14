@@ -50,6 +50,7 @@ class FormController extends YesWikiController
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return ($field instanceof MapField);
                 }));
+                $values[$form['bn_id_nature']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 

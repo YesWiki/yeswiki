@@ -57,6 +57,14 @@
                 GeoJSON
               </a>
             {% endif %}
+            {% if form.isDate %}
+              <a class="btn btn-default btn-mini btn-xs" 
+                target="_blank" title="{{ _t('BAZ_ICAL') }}" 
+                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical'}) }}" 
+                data-toggle="tooltip" data-placement="bottom">
+                ICAL
+              </a>
+            {% endif %}
             <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_WIDGET') }}" href="{{ url({ handler: 'widget', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
               {{ _t('BAZ_WIDGET') }}
             </a>
