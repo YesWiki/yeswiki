@@ -60,7 +60,7 @@
             {% if form.isDate %}
               <a class="btn btn-default btn-mini btn-xs" 
                 target="_blank" title="{{ _t('BAZ_ICAL') }}" 
-                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical&datefilter=>-6M'}) }}" 
+                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical'}) }}" 
                 data-toggle="tooltip" data-placement="bottom">
                 ICAL
               </a>
