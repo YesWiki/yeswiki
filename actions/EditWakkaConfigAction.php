@@ -84,7 +84,6 @@ class EditWakkaConfigAction extends YesWikiAction
     {
         $config = new Configuration('wakka.config.php');
         $config->load();
-        var_dump($config);
 
         foreach (self::AUTHORIZED_KEYS_HINT as $key) {
             $new_value = $this->arguments['post'][$key] ??  null;
@@ -162,26 +161,26 @@ class EditWakkaConfigAction extends YesWikiAction
     {
         $val = trim($value);
         $matches = [];
-        if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/',$val,$matches)){
+        if (preg_match('/^\s*\[\s*(.*)\s*\]\s*$/', $val, $matches)) {
             $val = $matches[1];
-            $lines= preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/',$val);
+            $lines= preg_split('/(?<=\'|"|true|false|[0-9])\s*,\s*(?=\'|"|true|false|[0-9])/', $val);
             $result = [];
-            foreach($lines as $line){
-                $extract = explode('=>',$line);
-                if (count($extract) == 2){
+            foreach ($lines as $line) {
+                $extract = explode('=>', $line);
+                if (count($extract) == 2) {
                     $key = trim($extract[0]);
-                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/',$key,$matches)){
+                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $key, $matches)) {
                         $key = $matches[1];
                     }
                     $val = trim($extract[1]);
-                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/',$val,$matches)){
+                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $val, $matches)) {
                         $val = $matches[1];
                     }
-                    $val = ($val == 'true') ? true : (($val == 'false') ? false : $val );
+                    $val = ($val == 'true') ? true : (($val == 'false') ? false : $val);
                     $result[$key] = $val;
                 }
             }
-            if (count($result) > 0){
+            if (count($result) > 0) {
                 return $result;
             }
         }
