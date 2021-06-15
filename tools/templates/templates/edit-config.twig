@@ -1,9 +1,9 @@
-<h3>{{ _t('EDIT_WAKKA_CONFIG_TITLE') }}</h3>
+<h3>{{ _t('EDIT_CONFIG_TITLE') }}</h3>
 <form
   action=""
   method="post"
-  name="edit-wakka-config"
-  id="edit-wakka-config"
+  name="edit-config"
+  id="edit-config"
   class="form-horizontal"
 >
   {% for key,value in data %}
@@ -12,7 +12,7 @@
       <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
         {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
         {% if placeholders[key] -%}
-          placeholder="{{ _t('EDIT_WAKKA_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"
+          placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"
         {%- endif %}
         >
       {% if help[key] %}

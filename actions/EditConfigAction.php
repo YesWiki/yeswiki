@@ -3,9 +3,9 @@
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\Performer;
 
-class EditWakkaConfigAction extends YesWikiAction
+class EditConfigAction extends YesWikiAction
 {
-    private const SAVE_NAME = 'save_wakka';
+    private const SAVE_NAME = 'save_config';
     private const AUTHORIZED_KEYS_HINT = [
         'wakka_name',
         'root_page',
@@ -68,7 +68,7 @@ class EditWakkaConfigAction extends YesWikiAction
 
         // display form
         list($data, $placeholders) = $this->getDataFromConfigFile();
-        return $output . $this->render('@templates/edit-wakka-config.twig', [
+        return $output . $this->render('@templates/edit-config.twig', [
             'SAVE_NAME' => self::SAVE_NAME,
             'data' => $data,
             'placeholders' => $placeholders,
@@ -98,7 +98,7 @@ class EditWakkaConfigAction extends YesWikiAction
         $config->write();
         return $this->render('@templates/alert-message.twig', [
             'type'=>'info',
-            'message'=> _t('EDIT_WAKKA_CONFIG_SAVE')
+            'message'=> _t('EDIT_CONFIG_SAVE')
         ]);
     }
 
@@ -195,8 +195,8 @@ class EditWakkaConfigAction extends YesWikiAction
     {
         $help = [];
         foreach (self::AUTHORIZED_KEYS_HINT as $key) {
-            if (isset($GLOBALS['translations']['EDIT_WAKKA_CONFIG_HINT_'.$key])) {
-                $help[$key] = _t('EDIT_WAKKA_CONFIG_HINT_'.$key);
+            if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
+                $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
             }
         }
 
