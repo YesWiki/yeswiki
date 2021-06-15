@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiController;
 use \DateInterval;
 use \DateTime;
@@ -20,15 +21,18 @@ class IcalFormatter extends YesWikiController
     protected $params;
     protected $geoJSONFormatter;
     protected $entryController;
+    protected $performer;
 
     public function __construct(
         ParameterBagInterface $params,
         GeoJSONFormatter $geoJSONFormatter,
-        EntryController $entryController
+        EntryController $entryController,
+        Performer $performer
     ) {
         $this->params = $params;
         $this->geoJSONFormatter = $geoJSONFormatter;
         $this->entryController = $entryController;
+        $this->performer = $performer;
     }
 
     /**
@@ -196,7 +200,9 @@ class IcalFormatter extends YesWikiController
         $output .="DATE-MOD".$this->formatDate($entry['date_maj_fiche'])."\r\n";
         $output .=$this->splitAt75thChar("SUMMARY:".$entry['bf_titre']."\r\n");
         $output .=$this->splitAt75thChar("NAME:".$entry['bf_titre']."\r\n");
-        $decription = (!empty($entry['bf_description'])) ? $entry['bf_description']."\r\n" :'';
+        $decription = (!empty($entry['bf_description'])) ?
+            $this->renderAndStripTags($entry['bf_description'])."\r\n"
+            :'';
         $decription .= "Source: ".$entry['url'];
         $output .=$this->splitAt75thChar("DESCRIPTION:".str_replace(["\r","\n"], ['\\r','\\n'], $decription)."\r\n");
         $location = '';
@@ -247,12 +253,30 @@ class IcalFormatter extends YesWikiController
      */
     private function splitAt75thChar(string $input):string
     {
-        $output = chunk_split($input, 75, "\r\n ");
+        // cut lines at 75 char whithout breaking words (except long words)
+        $output = wordwrap($input, 75, " \r\n ", true);
+        // prevent errors when cutting between \r\n
         $output = str_replace("\r\r\n \n", "\r\n \r\n", $output);
-        $output = substr($output, 0, -strlen("\r\n "));
+        // remove last " \r\n" to prevent empty lines
         if (substr($output, -strlen("\r\n \r\n")) == "\r\n \r\n") {
             $output = substr($output, 0, -strlen(" \r\n"));
         }
+        return $output;
+    }
+
+    /**
+     * render and strip tags
+     * @param string $input
+     * @return string $output
+     */
+    private function renderAndStripTags(string $input):string
+    {
+        // render description
+        $renderedInput = $this->performer->run('wakka', 'formatter', ['text' => $input]) ;
+        $cleanedRendered = strip_tags($renderedInput, ['a']);
+        // extract links
+        $output = preg_replace('/<a.*href="([^"]*)".*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);
+
         return $output;
     }
 
