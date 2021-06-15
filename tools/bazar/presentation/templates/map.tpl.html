@@ -85,7 +85,7 @@ if (count($fiches)>0) :
 											className: \'bazar-marker'.$param['smallmarker'].'\',
 											html: \'<div class="bazar-entry" '
 											.str_replace('\'', '', $fiche['html_data']).' style="color:'.$color.';">'
-											.(!empty($icon) ? '<i class="'.$icon.'"></i>' : '')
+											.(!empty($icon) ? '<i class="fa-fw '.$icon.'"></i>' : '')
 											.'</div>\'
 									}),
 									title: \''.addslashes($fiche['bf_titre']).'\'
