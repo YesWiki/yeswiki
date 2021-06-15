@@ -3,113 +3,113 @@ previewHeight: 400px
 onlyEdit: true
 actions:
   commons:
-    title: Pour les images
+    title: _t(AB_attach_commons_title)
     width: 40%
     showif:
       file: \.(png|jpg|jpeg|gif|pdf)$
     properties:
       link:
-        label: Lien quand on cliquera sur l'image
+        label: _t(AB_attach_link_label)
         default: https://
         type: url
         showif:
           file: \.(png|jpg|jpeg|gif)$
       caption:
-        label: Texte affiché au survol
+        label: _t(AB_attach_caption_label)
         type: text
         showif:
           file: \.(png|jpg|jpeg|gif)$
       legend:
-        label: Légende
+        label: _t(AB_attach_legend_label)
         type: text
         showif:
           file: \.(png|jpg|jpeg|gif)$
       nofullimagelink:
-        label: Permettre de cliquer sur l'image pour l'afficher en grand
+        label: _t(AB_attach_nofullimagelink_label)
         type: list
         options:
-          0: Oui
-          1: Non
+          0: _t(AB_attach_yes)
+          1: _t(AB_attach_no)
       size:
-        label: Taille de l'image
+        label: _t(AB_attach_size_label)
         type: list
         showif:
           file: \.(png|jpg|jpeg|gif)$
         options:
-          small: Petite
-          medium: Moyenne
-          big: Grosse
-          original: Taille d'origine
+          small: _t(AB_attach_size_small)
+          medium: _t(AB_attach_size_medium)
+          big: _t(AB_attach_size_big)
+          original: _t(AB_attach_size_original)
       width: 
-        label: Largeur
+        label: _t(AB_attach_width_label)
         type: number
         advanced: true
         showif:
           file: \.(png|jpg|jpeg|gif)$
       height:
-        label: Hauteur
+        label: _t(AB_attach_height_label)
         type: number
         advanced: true
         showif:
           file: \.(png|jpg|jpeg|gif)$
       class:
-        label: Classe
+        label: _t(AB_attach_class_label)
         type: class
         subproperties:
           position:
-            label: Position
+            label: _t(AB_attach_class_position_label)
             type: list
             showif:
               file: \.(png|jpg|jpeg|gif|pdf)$
             options:
-              left: Gauche
-              center: Centre
-              right: Droit
+              left: _t(AB_attach_class_position_left)
+              center: _t(AB_attach_class_position_center)
+              right: _t(AB_attach_class_position_right)
           effect:
-            label: Effet
+            label: _t(AB_attach_class_effect_label)
             type: list
             showif:
               file: \.(png|jpg|jpeg|gif|pdf)$
             options:
-              lightshadow: Ombre portée
-              whiteborder: Bord blanc
-              zoom: Agrandissement au survol
+              lightshadow: _t(AB_attach_class_effect_lightshadow)
+              whiteborder: _t(AB_attach_class_effect_whiteborder)
+              zoom: _t(AB_attach_class_effect_zoom)
           izmir:
-            label: Effets izmir
+            label: _t(AB_attach_class_izmir_label)
             type: list
             advanced: true
-            hint: Et beaucoup plus d'effets disponibles sur https://ciar4n.com/izmir
+            hint: _t(AB_attach_class_izmir_hint)
             showif:
               file: \.(png|jpg|jpeg|gif)$
             options:
-              c4-izmir: Izmir
-              c4-izmir c4-border-cc-3: Bordure
-              c4-izmir c4-image-zoom-in: Zoom
-              c4-izmir c4-reveal-up: Texte surgissant
-              c4-izmir c4-gradient-top: Gradiant
-              C4-izmir c4-layout-top-center: Texte en haut
+              c4-izmir: _t(AB_attach_class_izmir_izmir)
+              c4-izmir c4-border-cc-3: _t(AB_attach_class_izmir_border)
+              c4-izmir c4-image-zoom-in: _t(AB_attach_class_izmir_zoom)
+              c4-izmir c4-reveal-up: _t(AB_attach_class_izmir_revealup)
+              c4-izmir c4-gradient-top: _t(AB_attach_class_izmir_gradiant)
+              C4-izmir c4-layout-top-center: _t(AB_attach_class_izmir_topcentertext)
   attach:
     width: 40%
-    title: Paramètres Généraux
+    title: _t(AB_attach_attach_title)
     label: Attach
-    description: Attacher un fichier
+    description: _t(AB_attach_attach_description)
     properties:
       file:
-        label: Fichier uploadé
+        label: _t(AB_attach_file_label)
         type: text    
-        hint: Pour afficher le fichier d'une autre page, taper "NomDePage/NomDeFichier.ext"
+        hint: _t(AB_attach_file_hint)
       desc:
-        label: Description
+        label: _t(AB_attach_desc_label)
         type: text
       displaypdf:
-        label: Afficher le fichier PDF
+        label: _t(AB_attach_displaypdf_label)
         type: list
         default: ''
         showif:
           file: \.pdf$
         options:
-          1: Oui
-          0: Non
+          1: _t(AB_attach_yes)
+          0: _t(AB_attach_no)
       ratio:
         label: _t(AB_attach_pdf_ratio_label)
         type: list
