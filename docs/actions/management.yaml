@@ -38,6 +38,13 @@ actions:
   mailperiod:
     label: _t(AB_mailperiod_action_label)
   despam:
-    label: despam
+    label: _t(AB_management_despam_label)
+    hint: _t(AB_management_despam_hint)
+    properties:
+      hint:
+        label: ''
+        type: hint
+        hint: _t(AB_management_despam_hint_details)
+        doclink: https://yeswiki.net/?LutterContreLeSpam
   filemanager:
     label: _t(AB_management_filemanager_label)
