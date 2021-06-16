@@ -112,3 +112,4 @@ parameters:
   attach-video-config:
     default_video_service: 'peertube'
     default_peertube_instance: 'https://framatube.org/'
+  attach_editable_config_params: 'attach-video-config'

@@ -6,7 +6,8 @@ use YesWiki\Core\Service\Performer;
 class EditConfigAction extends YesWikiAction
 {
     private const SAVE_NAME = 'save_config';
-    private const AUTHORIZED_KEYS_HINT = [
+    private const CONFIG_POSTFIX = '_editable_config_params';
+    private const AUTHORIZED_KEYS = [
         'wakka_name',
         'root_page',
         'meta_keywords',
@@ -16,25 +17,18 @@ class EditConfigAction extends YesWikiAction
         'default_read_acl',
         'default_write_acl',
 
-        'use_alerte',
-        'use_captcha',
         'password_for_editing',
         'password_for_editing_message',
-
-        'baz_map_center_lat',
-        'baz_map_center_lon',
-        'baz_map_zoom',
-        'baz_map_height',
 
         'debug',
         'default_language',
 
         'contact_from',
-        'BAZ_ADRESSE_MAIL_ADMIN',
-        'BAZ_ENVOI_MAIL_ADMIN',
         'mail_custom_message',
         'bazarIgnoreAcls',
     ];
+
+    private $keys ;
 
     public function formatArguments($arg)
     {
@@ -46,6 +40,7 @@ class EditConfigAction extends YesWikiAction
 
     public function run()
     {
+        $this->keys = null ;
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type'=>'danger',
@@ -77,6 +72,37 @@ class EditConfigAction extends YesWikiAction
     }
 
     /**
+     * get AUTHORIZED_KEYS
+     * return array
+     */
+    private function getAuthorizedKeys(): array
+    {
+        if (is_null($this->keys)) {
+            $keys = self::AUTHORIZED_KEYS;
+            foreach ($this->wiki->extensions as $extensionFolder) {
+                $matches = [];
+                if (preg_match('/(?:\/?tools\/?)?([^\/]+)\/?/', $extensionFolder, $matches)) {
+                    $extensionName = $matches[1];
+                    $paramName = $extensionName . self::CONFIG_POSTFIX;
+                    if ($this->params->has($paramName)) {
+                        $keysToMerge = $this->params->get($paramName);
+                        if (!empty($keysToMerge)) {
+                            if (is_array($keysToMerge)) {
+                                $keys = array_merge($keys, $keysToMerge);
+                            } elseif (is_string($keysToMerge)) {
+                                $keys[] = $keysToMerge;
+                            }
+                        }
+                    }
+                }
+            }
+            // remove duplicate
+            $this->keys = array_unique($keys);
+        }
+        return $this->keys;
+    }
+
+    /**
      * save data to wakka.config.php
      * @return string|null message to display at the top of the part for editing
      */
@@ -85,7 +111,7 @@ class EditConfigAction extends YesWikiAction
         $config = new Configuration('wakka.config.php');
         $config->load();
 
-        foreach (self::AUTHORIZED_KEYS_HINT as $key) {
+        foreach ($this->getAuthorizedKeys() as $key) {
             $new_value = $this->arguments['post'][$key] ??  null;
 
             if (empty($new_value)) {
@@ -113,7 +139,7 @@ class EditConfigAction extends YesWikiAction
 
         $data = [];
         $placeholders = [];
-        foreach (self::AUTHORIZED_KEYS_HINT as $key) {
+        foreach ($this->getAuthorizedKeys() as $key) {
             if (isset($config->$key)) {
                 $data[$key] = $this->array2Str($config->$key);
             } else {
@@ -194,7 +220,7 @@ class EditConfigAction extends YesWikiAction
     private function getHelp(): array
     {
         $help = [];
-        foreach (self::AUTHORIZED_KEYS_HINT as $key) {
+        foreach ($this->getAuthorizedKeys() as $key) {
             if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
                 $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
             }
