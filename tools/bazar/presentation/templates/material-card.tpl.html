@@ -66,7 +66,7 @@ if ( count($fiches)>0 ) : ?>
   <div class="row">
   <?php foreach ($fiches as $fiche) : ?>
 
-        <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
+        <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry material-card-entry" <?php echo $fiche['html_data'];?>">
 			  <?php
 				$color = getCustomValueForEntry(
 				  $param['color'],
@@ -175,7 +175,7 @@ $GLOBALS['wiki']->AddJavascript($js);
   }
   </style>
 
-    <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry" <?php echo $fiche['html_data'];?>">
+    <div class="col-md-<?php echo $rowcol; ?> col-sm-6 col-xs-12 bazar-entry material-card-entry" <?php echo $fiche['html_data'];?>">
       <a class="<?php echo $modal; ?>" title="<?php echo htmlspecialchars($fiche['bf_titre']);?>" href="<?php echo $GLOBALS['wiki']->href('',$fiche['id_fiche']);?>">
 			<?php
 			$color = getCustomValueForEntry(
