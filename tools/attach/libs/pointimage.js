@@ -13,13 +13,29 @@ $(document).ready(function () {
 	$popovers.popover({trigger: 'focus', html:'true', placement:'top', delay: { show: 0, hide: 0 }});
 	$popovers.on( "click", function() { return false; });
 
-	/*$popovers.on('shown.bs.popover', function () {
+	$popovers.on('shown.bs.popover', function () {
 		var $popup = $(this);
-	    $popup.next('.popover').find('.popover-title').prepend('<button type="button" class="btn-close-popover pull-right close">&times;</button>'); 
-	    $popup.next('.popover').find('.btn-close-popover').click(function (e) {
-	        $popup.popover('hide');
-	    });
-	});*/
+		// the following part is to activate <a> tags because the off focus event deletes the popup before the mouseup
+		// and a link is activated on a mouseup event (if it is already existing)
+		var $links = $popup.next('.popover').find('.popover-content a');
+		$links.each(function(){
+			$(this).off("mousedown"); // remove previous onmousedown events ;
+			$(this).on("mousedown", function(event){ 
+				var target = $(this).attr('target');
+				if (!target || target.length ==0 ){
+					window.location = $(this).attr('href');
+				} else if (target == 'blank' || target == '_blank' || $(this).hasClass('modalbox')) {
+					window.open($(this).attr('href'));
+				} else {
+					// console.log(event.target);
+				}
+			});
+		});
+	//     $popup.next('.popover').find('.popover-title').prepend('<button type="button" class="btn-close-popover pull-right close">&times;</button>'); 
+	//     $popup.next('.popover').find('.btn-close-popover').click(function (e) {
+	//         $popup.popover('hide');
+	//     });
+	});
 	$pointimagecontainers.on( "click", ".btn-close-popover",  function() {
 		$(this).parents('.popover').prev('.img-marker').popover('hide'); 
 		return false;
