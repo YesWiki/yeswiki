@@ -10,7 +10,7 @@ $(document).ready(function () {
 		}
 	});
 
-	$popovers.popover({trigger: 'focus', html:'true', placement:'top', delay: { show: 0, hide: 0 }});
+	$popovers.popover({trigger: 'click', html:'true', placement:'top', delay: { show: 0, hide: 0 }});
 	$popovers.on( "click", function() { return false; });
 
 	$popovers.on('shown.bs.popover', function () {
@@ -22,9 +22,10 @@ $(document).ready(function () {
 			$(this).off("mousedown"); // remove previous onmousedown events ;
 			$(this).on("mousedown", function(event){ 
 				var target = $(this).attr('target');
-				if (!target || target.length ==0 ){
+				if ((!target || target.length ==0 ) && !$(this).hasClass('modalbox') && !$(this).hasClass('new-window')){
 					window.location = $(this).attr('href');
-				} else if (target == 'blank' || target == '_blank' || $(this).hasClass('modalbox')) {
+				} else if (target == 'blank' || target == '_blank' || $(this).hasClass('modalbox') || $(this).hasClass('new-window')) {
+					// modal is opened in new tab because openModal is difficult to reach in this context
 					window.open($(this).attr('href'));
 				} else {
 					// console.log(event.target);
