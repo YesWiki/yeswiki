@@ -149,7 +149,15 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
     } else {
       // incomingurl can be usefull (per example for deletepage handler)
       try {
-        link += "&incomingurl=" + encodeURIComponent(window.location.toString());
+        let url = document.createElement('a');
+        url.href = link;
+        let queryString = url.search;
+        if (!queryString || queryString.length == 0){
+          var separator = '?';
+        } else {
+          var separator = '&';
+        }
+        link += separator + "incomingurl=" + encodeURIComponent(window.location.toString());
       } catch (e) {}
       // AJAX Request for javascripts
       var xhttp = new XMLHttpRequest();
