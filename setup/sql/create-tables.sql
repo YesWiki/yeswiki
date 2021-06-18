@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}pages` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `tag` varchar(191) NOT NULL,
   `time` datetime NOT NULL,
-  `body` text NOT NULL,
+  `body` longtext NOT NULL,
   `body_r` text NOT NULL,
   `owner` varchar(191) NOT NULL,
   `user` varchar(191) NOT NULL,
