@@ -239,6 +239,8 @@ class ExternalBazarService
         }
     }
 
+    // TODO detect if external url has short url without '?'
+    // by testing the base Url and checking the presence of '?'
     public function formatUrl($url)
     {
         $matches = [];
