@@ -397,29 +397,7 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
     $listWikinames = '["'.implode('","', $listWikinames).'"]';
 
     $wiki = $GLOBALS['wiki'];
-    $themePresets = $wiki->config['templates'][$wiki->config['favorite_theme']]['presets'] ?? [];
-    $dataHtmlForPresets = array_map(function ($value) {
-        return extractDataFromPreset($value);
-    }, $themePresets);
-    $customCSSPresets = $wiki->services->get(ThemeManager::class)->getCustomCSSPresets() ;
-    $dataHtmlForCustomCSSPresets = array_map(function ($value) {
-        return extractDataFromPreset($value);
-    }, $customCSSPresets);
-    if (!empty($wiki->config['favorite_preset'])) {
-        $presetName = $wiki->config['favorite_preset'];
-        if (substr($presetName, 0, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX)) == ThemeManager::CUSTOM_CSS_PRESETS_PREFIX) {
-            $presetName = substr($presetName, strlen(ThemeManager::CUSTOM_CSS_PRESETS_PREFIX));
-            if (in_array($presetName, array_keys($customCSSPresets))) {
-                $currentCSSValues = extractPropValuesFromPreset($customCSSPresets[$presetName]);
-                $selectedCustomPresetName = $presetName;
-            }
-        } else {
-            if (in_array($presetName, array_keys($themePresets))) {
-                $currentCSSValues = extractPropValuesFromPreset($themePresets[$presetName]);
-                $selectedPresetName = $presetName;
-            }
-        }
-    }
+    $presetsData = $wiki->services->get(ThemeManager::class)->getPresetsData();
 
     $selecteur =$wiki->render("@templates/themeselector.tpl.html", [
         'mode' => $mode,
@@ -433,67 +411,19 @@ function show_form_theme_selector($mode = 'selector', $formclass = '')
         'favoriteTheme' => $wiki->config['favorite_theme'] ?? null,
         'favoriteSquelette' => $wiki->config['favorite_squelette'] ?? null,
         'favoriteStyle' => $wiki->config['favorite_style'] ?? null,
-        'dataHtmlForPresets' => $dataHtmlForPresets,
-        'customCSSPresets' => $customCSSPresets,
-        'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
+        'dataHtmlForPresets' => $presetsData['dataHtmlForPresets'],
+        'customCSSPresets' => $presetsData['customCSSPresets'],
+        'dataHtmlForCustomCSSPresets' => $presetsData['dataHtmlForCustomCSSPresets'],
         'showAdminActions' => ($wiki->UserIsAdmin()),
-        'currentCSSValues' => $currentCSSValues ?? [],
-        'selectedPresetName' => $selectedPresetName ??  null,
-        'selectedCustomPresetName' => $selectedCustomPresetName ??  null,
+        'currentCSSValues' => $presetsData['currentCSSValues'] ?? [],
+        'selectedPresetName' => $presetsData['selectedPresetName'] ??  null,
+        'selectedCustomPresetName' => $presetsData['selectedCustomPresetName'] ??  null,
     ]);
 
     $js = add_templates_list_js();
     $GLOBALS['wiki']->addJavascript($js);
     return $selecteur;
 }
-
-function extractDataFromPreset(string $presetContent): string
-{
-    $data = '';
-    $values = extractPropValuesFromPreset($presetContent);
-    foreach ($values as $prop => $value) {
-        $data .= ' data-'.$prop.'="'.str_replace('"', '\'', $value).'"';
-    }
-    if (
-        !empty($data)
-        && !empty($values['primary-color'])
-        && !empty($values['main-text-fontsize']
-        && !empty($values['main-text-fontfamily']))
-    ) {
-        $data .= ' style="';
-        $data .= 'color:'.$values['primary-color'].';';
-        $data .= 'font-family:'.str_replace('"', '\'', $values['main-text-fontfamily']).';';
-        $data .= 'font-size:'.$values['main-text-fontsize'].';';
-        $data .= '"';
-    }
-    return $data;
-}
-
-function extractPropValuesFromPreset(string $presetContent): array
-{
-    // extract root part
-    $matches = [];
-    $results = [];
-    $error = false;
-    if (preg_match('/^:root\s*{((?:.|\n)*)}\s*$/', $presetContent, $matches)) {
-        $vars = $matches[1];
-        
-
-        if (preg_match_all('/\s*--([0-9a-z\-]*):\s*([^;]*);\s*/', $vars, $matches)) {
-            foreach ($matches[0] as $index => $val) {
-                $newmatch = [];
-                if (preg_match('/[a-z\-]*color[a-z0-9\-]*/', $matches[1][$index], $newmatch)) {
-                    if (!preg_match('/^#[A-Fa-f0-9]*$/', $matches[2][$index], $newmatch)) {
-                        $error = true;
-                    }
-                }
-                $results[$matches[1][$index]] = $matches[2][$index];
-            }
-        }
-    }
-    return $error ? [] : $results;
-}
-
 
 function add_templates_list_js()
 {

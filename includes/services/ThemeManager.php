@@ -405,4 +405,111 @@ class ThemeManager
         }
         return true;
     }
+
+    /**
+     * get presets data
+     * @return array
+     *      [
+     *          'themePresets' => [],
+     *          'dataHtmlForPresets' => [],
+     *          'selectedPresetName' => ''/null,
+     *          'customCSSPresets' => [],
+     *          'dataHtmlForCustomCSSPresets' => [],
+     *          'selectedCustomPresetName' => ''/null,
+     *          'currentCSSValues' => [],
+     *      ]
+     */
+    public function getPresetsData(): ?array
+    {
+        $themePresets = $this->wiki->config['templates'][$this->wiki->config['favorite_theme']]['presets'] ?? [];
+        $dataHtmlForPresets = array_map(function ($value) {
+            return $this->extractDataFromPreset($value);
+        }, $themePresets);
+        $customCSSPresets = $this->getCustomCSSPresets() ;
+        $dataHtmlForCustomCSSPresets = array_map(function ($value) {
+            return $this->extractDataFromPreset($value);
+        }, $customCSSPresets);
+        if (!empty($this->wiki->config['favorite_preset'])) {
+            $presetName = $this->wiki->config['favorite_preset'];
+            if (substr($presetName, 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX) {
+                $presetName = substr($presetName, strlen(self::CUSTOM_CSS_PRESETS_PREFIX));
+                if (in_array($presetName, array_keys($customCSSPresets))) {
+                    $currentCSSValues = $this->extractPropValuesFromPreset($customCSSPresets[$presetName]);
+                    $selectedCustomPresetName = $presetName;
+                }
+            } else {
+                if (in_array($presetName, array_keys($themePresets))) {
+                    $currentCSSValues = $this->extractPropValuesFromPreset($themePresets[$presetName]);
+                    $selectedPresetName = $presetName;
+                }
+            }
+        }
+
+        return [
+            'themePresets' => $themePresets,
+            'dataHtmlForPresets' => $dataHtmlForPresets,
+            'selectedPresetName' => $selectedPresetName ?? null,
+            'customCSSPresets' => $customCSSPresets,
+            'dataHtmlForCustomCSSPresets' => $dataHtmlForCustomCSSPresets,
+            'selectedCustomPresetName' => $selectedCustomPresetName ?? null,
+            'currentCSSValues' => $currentCSSValues ?? [],
+        ];
+    }
+
+    /**
+     * extract data from preset
+     * @param string $presetContent
+     * @return string data to put in html
+     */
+    private function extractDataFromPreset(string $presetContent): string
+    {
+        $data = '';
+        $values = $this->extractPropValuesFromPreset($presetContent);
+        foreach ($values as $prop => $value) {
+            $data .= ' data-'.$prop.'="'.str_replace('"', '\'', $value).'"';
+        }
+        if (
+            !empty($data)
+            && !empty($values['primary-color'])
+            && !empty($values['main-text-fontsize']
+            && !empty($values['main-text-fontfamily']))
+        ) {
+            $data .= ' style="';
+            $data .= 'color:'.$values['primary-color'].';';
+            $data .= 'font-family:'.str_replace('"', '\'', $values['main-text-fontfamily']).';';
+            $data .= 'font-size:'.$values['main-text-fontsize'].';';
+            $data .= '"';
+        }
+        return $data;
+    }
+
+    /**
+     * extract properties values from preset contents
+     * @param string $presetContent
+     * @return array
+     */
+    private function extractPropValuesFromPreset(string $presetContent): array
+    {
+        // extract root part
+        $matches = [];
+        $results = [];
+        $error = false;
+        if (preg_match('/^:root\s*{((?:.|\n)*)}\s*$/', $presetContent, $matches)) {
+            $vars = $matches[1];
+            
+
+            if (preg_match_all('/\s*--([0-9a-z\-]*):\s*([^;]*);\s*/', $vars, $matches)) {
+                foreach ($matches[0] as $index => $val) {
+                    $newmatch = [];
+                    if (preg_match('/[a-z\-]*color[a-z0-9\-]*/', $matches[1][$index], $newmatch)) {
+                        if (!preg_match('/^#[A-Fa-f0-9]*$/', $matches[2][$index], $newmatch)) {
+                            $error = true;
+                        }
+                    }
+                    $results[$matches[1][$index]] = $matches[2][$index];
+                }
+            }
+        }
+        return $error ? [] : $results;
+    }
 }
