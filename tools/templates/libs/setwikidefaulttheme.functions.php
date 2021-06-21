@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Core\Service\ThemeManager;
+
 function getTemplatesList()
 {
     //on cherche tous les dossiers du repertoire themes et des sous dossier styles
@@ -27,6 +29,10 @@ function getTemplatesList()
         $themes[$templateName] = array(
             'styles' => array_keys($templateValues['style']),
             'squelettes' => array_keys($templateValues['squelette']),
+        ) + (
+            (empty($templateValues['presets']))
+             ? []
+             : ['presets' => $templateValues['presets']]
         );
     }
 
@@ -48,6 +54,13 @@ function showSelectTemplateForm($themes, $config)
     if (isset($config->hide_action_template) and $config->hide_action_template === '1') {
         $defForceTheme = true;
     }
+
+    // define vars for presets
+    $wiki = $GLOBALS['wiki'];
+    $presetsData = $wiki->services->get(ThemeManager::class)->getPresetsData();
+    $customCSSPresets = $presetsData['customCSSPresets'];
+    $selectedPresetName =  $presetsData['selectedPresetName'] ??  null;
+    $selectedCustomPresetName =  $presetsData['selectedCustomPresetName'] ??  null;
 
     include('tools/templates/presentation/templates/setwikidefaulttheme.tpl.html');
 }
