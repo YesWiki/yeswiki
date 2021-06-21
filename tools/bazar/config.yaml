@@ -105,6 +105,14 @@ parameters:
   # ExternalBazarService
   baz_external_service_time_cache_for_entries: 60 # seconds
   baz_external_service_time_cache_for_forms: 1200 # seconds
+  # for edit config action
+  bazar_editable_config_params:
+    - 'baz_map_center_lat'
+    - 'baz_map_center_lon'
+    - 'baz_map_zoom'
+    - 'baz_map_height'
+    - 'BAZ_ADRESSE_MAIL_ADMIN'
+    - 'BAZ_ENVOI_MAIL_ADMIN'
 
 services:
   _defaults:

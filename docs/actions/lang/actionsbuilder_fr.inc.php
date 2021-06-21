@@ -96,6 +96,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_management_despam_hint' => 'Liste les dernières versions des pages récemment créées pour pouvoir choisir celles à supprimer',
     'AB_management_despam_hint_details' => 'Ceci permet de rétablir les pages vandalisées ou de supprimer les nouvelles pages créées'
             .' par des spams. ATTENTION : la suppression des pages choisies sera DÉFINITITVE.',
+    'AB_management_editconfig_label' => 'Modifier des paramètres du fichier de configuration',
     // advanced actions
     'AB_advanced_actions_label' => 'Actions avancées',
     'AB_advanced_action_backlinks_label' => 'Afficher les pages qui ont un lien vers la page courante',

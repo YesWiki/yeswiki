@@ -3,3 +3,7 @@ parameters:
   use_hashcash: true  # hashcash pour le mode edition
   use_nospam: false   # antispam pour commentaires
   use_captcha: false  # recaptcha
+  security_editable_config_params:
+    - 'use_alerte'
+    - 'use_captcha'
+    - 'use_hashcash'

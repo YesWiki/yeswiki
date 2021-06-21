@@ -1,0 +1,33 @@
+<h3>{{ _t('EDIT_CONFIG_TITLE') }}</h3>
+<form
+  action=""
+  method="post"
+  name="edit-config"
+  id="edit-config"
+  class="form-horizontal"
+>
+  {% for key,value in data %}
+    <div class="form-group">
+      <label for="{{ key }}">{{ key }}</label>
+      <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
+        {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
+        {% if placeholders[key] -%}
+          placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"
+        {%- endif %}
+        >
+      {% if help[key] %}
+        <small id="{{ key }}Help" class="form-text text-muted">{{ help[key] }}</small>
+      {% endif %}
+    </div>
+  {% endfor %}
+  {# DO NOT REMOVE THE FOLLOWING LINE THAT IS DEFINED FOR POST ACTIONS__.php#}
+  <!-- end of #edit-config form -->
+  <input type="hidden" name="{{ SAVE_NAME }}" value="1">
+  <div class="form-group">
+    <div class="col-sm-9 col-sm-offset-3">
+      <button type="submit" name="valider" class="btn btn-primary">
+        {{ _t('BAZ_VALIDER') }}
+      </button>
+    </div>
+  </div>
+</form>
