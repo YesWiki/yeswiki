@@ -560,7 +560,7 @@ class Wiki
     public function extractLinkParts($link): ?array
     {
         if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
-            . RFC3986_URI_CHARS . '))?$/', $link, $linkParts)) {
+            . RFC3986_URI_CHARS . '))?$/u', $link, $linkParts)) {
             $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
             $method = !empty($linkParts[2]) ? $linkParts[2] : null;
             $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
