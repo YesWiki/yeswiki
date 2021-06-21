@@ -464,7 +464,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_default_language' => '(\'fr\',\'en\',...)',
 'EDIT_CONFIG_HINT_contact_from' => 'Adresse e-mail utilisée pour comme expéditeur des messages depuis les fiches',
 'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Adresse e-mail de l\'adminstrateur pour comme expéditeur certains messages depuis les fiches',
-'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un e-mail aux admininistrateurs à chaque modificaiton de fiche (1)',
+'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un e-mail aux admininistrateurs à chaque modification de fiche (1)',
 'EDIT_CONFIG_HINT_mail_custom_message' => 'Message personnalisé pour l\'envoi des e-mails',
 'EDIT_CONFIG_HINT_bazarIgnoreAcls' => 'Outre-passer les droits d\'acls lors de la création de fiches à partir de formulaires (1 ou 0)',
 'EDIT_CONFIG_HINT_password_for_editing' => 'Mot de passe demandé pour modifier les formulaires (vide = pas de restriction)',
