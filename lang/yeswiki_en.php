@@ -437,5 +437,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_password_for_editing' => 'Asked password to modify forms (empty = no restriction)',
 'EDIT_CONFIG_HINT_password_for_editing_message' => 'Message displayed above the password asked password to modify forms',
 'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Textarea field\'s name for which components are activated',
+'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Time (s) between two cache\'s refreshes for JSON\'s requests in listefiche',
     
 ));
