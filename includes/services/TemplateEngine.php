@@ -30,15 +30,7 @@ class TemplateEngine
         foreach ($this->wiki->extensions as $extensionName => $pluginInfo) {
             // Ability to override an extension template from the custom folder
             $paths = ["custom/templates/$extensionName/"];
-            // Ability to override an extension template from another extension
-            foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
-                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";
-            }
-            // Standard path for an extension template
-            $paths[] = "tools/$extensionName/templates/";
-            // Legacy directories, should not be used anymore for new templates. Maybe
-            // of them are not used by anybody, but just in case we keep them for backward compatibility
-            $paths[] = "tools/$extensionName/presentation/templates/";
+            // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
             $paths[] = "custom/themes/tools/$extensionName/templates/";
             foreach ([
                          'custom/templates',
@@ -49,6 +41,15 @@ class TemplateEngine
                 $paths[] = $dir . '/' . $extensionName . '/templates/';
                 $paths[] = $dir . '/' . $extensionName . '/';
             }
+            // Ability to override an extension template from another extension
+            foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
+                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";
+            }
+            // Standard path for an extension template
+            $paths[] = "tools/$extensionName/templates/";
+            // Legacy directories, should not be used anymore for new templates. Maybe
+            // of them are not used by anybody, but just in case we keep them for backward compatibility
+            $paths[] = "tools/$extensionName/presentation/templates/";
 
             foreach ($paths as $path) {
                 if (file_exists($path)) {
