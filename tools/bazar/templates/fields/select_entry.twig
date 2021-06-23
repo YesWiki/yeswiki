@@ -2,8 +2,12 @@
 
 {% block value_container %}
 	<span class="BAZ_texte">
-		<a href="{{ entryUrl|e }}" class="modalbox" title="Voir la fiche {{ label|striptags }}">
-			{{- label|raw -}}
+		<a href="{{ entryUrl|e ~ (field.isDistantJson ? '/iframe')}}"
+			class="modalbox"
+			data-size="modal-lg"
+			{{ field.isDistantJson ? 'data-iframe="1"' }}
+			title="Voir la fiche {{ label|striptags }}">
+				{{- label|raw -}}
 		</a>
 	</span>
 {% endblock %}

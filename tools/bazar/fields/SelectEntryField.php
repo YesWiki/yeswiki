@@ -10,7 +10,7 @@ use YesWiki\Bazar\Controller\EntryController;
  */
 class SelectEntryField extends EnumField
 {
-    protected $isDistantJson;
+    public $isDistantJson;
     protected $displayMethod;
 
     protected const FIELD_DISPLAY_METHOD = 3;
@@ -47,7 +47,7 @@ class SelectEntryField extends EnumField
 
         if ($this->displayMethod === 'fiche') {
             if ($this->isDistantJson) {
-                // TODO display the entry in a iframe ?
+                // TODO display the entry in an iframe ?
                 return null;
             } else {
                 // TODO add documentation
@@ -56,8 +56,17 @@ class SelectEntryField extends EnumField
         }
 
         if ($this->isDistantJson) {
-            $entryUrl = explode('BazaR/json', $this->name);
-            $entryUrl = $entryUrl[0] . $value;
+            if (preg_match('/^(.*\/\??)'// catch baseUrl
+                    .'(?:' // followed by
+                    .'\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
+                    .'|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
+                    .'|api\/entries\/[0-9]*' // or api entries/{id}
+                    .')/',$this->name,$matches)){
+                $baseUrl = $matches[1];
+            } else {
+                $baseUrl = $this->name ;
+            } 
+            $entryUrl = $baseUrl . $value;
         } else {
             $entryUrl = $GLOBALS['wiki']->href('', $value);
         }
