@@ -12,6 +12,7 @@ class SelectEntryField extends EnumField
 {
     public $isDistantJson;
     protected $displayMethod;
+    protected $baseUrl ;
 
     protected const FIELD_DISPLAY_METHOD = 3;
 
@@ -25,8 +26,19 @@ class SelectEntryField extends EnumField
         if ($this->isDistantJson) {
             $this->propertyName = $this->type . removeAccents(preg_replace('/--+/u', '-', preg_replace('/[[:punct:]]/', '-', $this->name))) . $this->listLabel;
             $this->loadOptionsFromJson();
+            if (preg_match('/^(.*\/\??)'// catch baseUrl
+                    .'(?:' // followed by
+                    .'\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
+                    .'|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
+                    .'|api\/entries\/[0-9]*' // or api entries/{id}
+                    .')/', $this->name, $matches)) {
+                $this->baseUrl = $matches[1];
+            } else {
+                $this->baseUrl = $this->name ;
+            }
         } else {
             $this->options = null ;
+            $this->baseUrl = null;
         }
     }
 
@@ -56,17 +68,11 @@ class SelectEntryField extends EnumField
         }
 
         if ($this->isDistantJson) {
-            if (preg_match('/^(.*\/\??)'// catch baseUrl
-                    .'(?:' // followed by
-                    .'\w*\/json&(?:.*)demand=entries(?:&.*)?' // json handler with demand = entries
-                    .'|api\/forms\/[0-9]*\/entries' // or api forms/{id}/entries
-                    .'|api\/entries\/[0-9]*' // or api entries/{id}
-                    .')/',$this->name,$matches)){
-                $baseUrl = $matches[1];
+            if (!empty($this->optionsUrls[$value])) {
+                $entryUrl = $this->optionsUrls[$value];
             } else {
-                $baseUrl = $this->name ;
-            } 
-            $entryUrl = $baseUrl . $value;
+                $entryUrl = $baseUrl . $value;
+            }
         } else {
             $entryUrl = $GLOBALS['wiki']->href('', $value);
         }

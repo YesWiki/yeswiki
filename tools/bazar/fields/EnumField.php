@@ -11,6 +11,7 @@ use YesWiki\Bazar\Service\ListManager;
 abstract class EnumField extends BazarField
 {
     protected $options;
+    protected $optionsUrls; // only for loadOptionsFromJson
 
     protected $listLabel; // Allows to differentiate two enums using the same list
     protected $keywords;
@@ -29,6 +30,7 @@ abstract class EnumField extends BazarField
         $this->queries = $values[self::FIELD_QUERIES];
 
         $this->options = [];
+        $this->optionsUrls = [];
 
         $this->propertyName = $this->type . $this->name . $this->listLabel;
     }
@@ -52,9 +54,13 @@ abstract class EnumField extends BazarField
         $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name, $refreshCacheDuration);
         $entries = json_decode($json, true);
         $options = [];
-        foreach($entries as $id => $entry){
+        $this->optionsUrls = [];
+        foreach ($entries as $id => $entry) {
             if (!empty($entry['bf_titre'])) {
                 $options[$id] = $entry['bf_titre'];
+            }
+            if (!empty($entry['url'])) {
+                $this->optionsUrls[$id] = $entry['url'];
             }
         }
         $this->options = $options ;
