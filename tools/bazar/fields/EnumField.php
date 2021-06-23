@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
@@ -44,10 +45,19 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromJson()
     {
-        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name);
-        $this->options = array_map(function ($entry) {
-            return $entry['bf_titre'];
-        }, json_decode($json, true));
+        $params = $this->getService(ParameterBagInterface::class);
+        $refreshCacheDuration = ($params->has('baz_enum_field_time_cache_for_json'))
+            ? $params->get('baz_enum_field_time_cache_for_json')
+            : 7200 ; // 2 hours by default
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name, $refreshCacheDuration);
+        $entries = json_decode($json, true);
+        $options = [];
+        foreach($entries as $id => $entry){
+            if (!empty($entry['bf_titre'])) {
+                $options[$id] = $entry['bf_titre'];
+            }
+        }
+        $this->options = $options ;
     }
 
     protected function loadOptionsFromJSONForm($JSONAddress): array

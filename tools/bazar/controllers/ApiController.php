@@ -62,6 +62,19 @@ class ApiController extends YesWikiController
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         } elseif ($output == 'ical') {
             return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
+        } elseif ($output == 'only-titles') {
+            $titles = [];
+            if (!empty($entries)) {
+                foreach($entries as $id => $entry) {
+                    if (!empty($entry['bf_titre']) || $entry['bf_titre'] === 0)  {
+                        $titles[$id] = [
+                                'bf_titre' => $entry['bf_titre'],
+                                'id_fiche' => $id,
+                            ] + (!empty($entry['url']) ? ['url' => $entry['url']] : []);
+                    }
+                }
+            }
+            return new ApiResponse(empty($titles) ? null : $titles);
         }
         return new ApiResponse(empty($entries) ? null : $entries);
     }
@@ -239,6 +252,12 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/only-titles') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (et l\'url)<br />
+        </p>';
+
+        $output .= '
+        <p>
         <b><code>POST ' . $this->wiki->href('', 'api/entries/{formId}') . '</code></b><br />
         Créer une nouvelle fiche en utilisant le formulaire <code>formId</code><br />
         Si le header <code>Content-Type</code> est <code>application/ld+json</code>, un JSON sémantique est attendu.
@@ -266,6 +285,12 @@ class ApiController extends YesWikiController
         <p>
         <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/ical') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format ical<br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/only-titles') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (et l\'url)<br />
         </p>';
 
         $output .= '
