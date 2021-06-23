@@ -62,19 +62,23 @@ class ApiController extends YesWikiController
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         } elseif ($output == 'ical') {
             return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
-        } elseif ($output == 'only-titles') {
-            $titles = [];
-            if (!empty($entries)) {
+        } elseif (isset($_GET['fields'])) {
+            $fields = explode(',',$_GET['fields']);
+            $lightEntries = [];
+            if (!empty($entries) && !empty($fields)) {
                 foreach($entries as $id => $entry) {
-                    if (!empty($entry['bf_titre']) || $entry['bf_titre'] === 0)  {
-                        $titles[$id] = [
-                                'bf_titre' => $entry['bf_titre'],
-                                'id_fiche' => $id,
-                            ] + (!empty($entry['url']) ? ['url' => $entry['url']] : []);
+                    $lightEntry = [];
+                    foreach($fields as $field_name){
+                        if (isset($entry[$field_name]))  {
+                            $lightEntry[$field_name] = $entry[$field_name];
+                        }
+                    }
+                    if (!empty($lightEntry)) {
+                        $lightEntries[$id] = $lightEntry ;
                     }
                 }
             }
-            return new ApiResponse(empty($titles) ? null : $titles);
+            return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
         }
         return new ApiResponse(empty($entries) ? null : $entries);
     }
