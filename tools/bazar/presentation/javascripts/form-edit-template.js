@@ -616,6 +616,9 @@ function initializeFormbuilder(formAndListIds) {
       formBuilderInitialized = true;
     }
     if ($formBuilderTextInput.is(":focus")) return;
+    // Change names
+    $(".form-group.name-wrap label").text("Identifiant unique");
+    $(".form-group.label-wrap label").text("Intitulé");
     
     // Slugiy field names
     $(".fld-name").each(function () {
