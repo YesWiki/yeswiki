@@ -63,6 +63,7 @@ abstract class EnumField extends BazarField
                 $this->optionsUrls[$id] = $entry['url'];
             }
         }
+        asort($options);
         $this->options = $options ;
     }
 
@@ -111,6 +112,7 @@ abstract class EnumField extends BazarField
         foreach ($fiches as $fiche) {
             $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
         }
+        asort($this->options);
     }
 
     public function getOptions()
