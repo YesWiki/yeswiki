@@ -41,7 +41,7 @@ if (!empty($nbcols)) {
 							'crop'
 						); ?>" <?php echo (isset($fiche['external-data']))
 						? 'onerror="this.src=\''.$fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image'].'\'"'
-						 .'width="400" height="300"'
+						 .'style="max-width:400px;max-height:300px;"'
 						: '' //TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ?
 					  ;?>>
 					</a>
@@ -93,7 +93,7 @@ if (!empty($nbcols)) {
 							'crop'
 						); ?>"<?php echo (isset($fiche['external-data']))
 						? 'onerror="this.src=\''.$fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image'].'\'"'
-						.'width="200" height="150"'
+						.'style="max-width:200px;max-height:150px;"'
 						: '' //TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ?
 					  ;?>>
 					</a>
