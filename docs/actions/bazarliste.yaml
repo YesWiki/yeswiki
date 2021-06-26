@@ -462,3 +462,37 @@ actions:
   #   properties:
   #     template:
   #       value: liste_mails_seuls
+
+  bazarblog:
+    label: Blog
+    description: Les fiches seront sous forme de blog.
+    hint: Un champ de type bf_image est possible
+    properties:
+      template:
+        value: blog
+      header:
+        label: Afficher l'en-tête
+        type: checkbox
+        default: 'true'
+        checkedvalue: 'true'
+        uncheckedvalue: 'false'
+      show_author:
+        label: Afficher l'auteur, l'autrice
+        advanced: true
+        type: checkbox
+        default: 0
+        checkedvalue: 1
+        uncheckedvalue: 0
+      show_date:
+        label: Afficher la date de création
+        advanced: true
+        type: checkbox
+        default: 0
+        checkedvalue: 1
+        uncheckedvalue: 0
+      correspondence:
+        type: correspondance
+        subproperties:
+          date_creation_fiche:
+            type: form-field
+            label: Champ pour la date de publication
