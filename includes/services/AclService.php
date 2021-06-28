@@ -226,8 +226,8 @@ class AclService
                                 // to manage retrocompatibility without usage of CheckACL without $tag
                                 // and no management of '%'
                                 $result = false;
-                            } else {
-                                // $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
+                            } elseif ($mode == 'edit') {
+                                $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
                             }
                             break;
                         case '@': // groups
