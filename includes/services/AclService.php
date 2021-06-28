@@ -227,7 +227,7 @@ class AclService
                                 // and no management of '%'
                                 $result = false;
                             } else {
-                                $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
+                                // $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
                             }
                             break;
                         case '@': // groups
