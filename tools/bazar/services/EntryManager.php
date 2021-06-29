@@ -110,7 +110,7 @@ class EntryManager
                 $data['id_fiche'] = $page['tag'];
             }
             // TODO call this function only when necessary
-            $this->appendDisplayData($data, $semantic);
+            $this->appendDisplayData($data, $semantic, '', $page);
         } elseif ($debug) {
             trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'', E_USER_WARNING);
         }
@@ -734,9 +734,11 @@ class EntryManager
      * @param $fiche
      * @param bool $semantic
      * @param string $correspondance
+     * @param array $page , appendDisplayData is called in environement with access to $page
+     *      helping to get owner without asking a new Time to Page manager to get it
      * @throws Exception
      */
-    public function appendDisplayData(&$fiche, $semantic = false, $correspondance = '')
+    public function appendDisplayData(&$fiche, $semantic = false, $correspondance = '', array $page)
     {
         // champs correspondants
         if (!empty($correspondance)) {
@@ -762,7 +764,7 @@ class EntryManager
         $fiche['html_data'] = getHtmlDataAttributes($fiche);
 
         // owner
-        $fiche['owner'] = $this->pageManager->getOwner($fiche['id_fiche']);
+        $fiche['owner'] = $page['owner'] ?? null;
 
         // Fiche URL
         if (!isset($fiche['url'])) {

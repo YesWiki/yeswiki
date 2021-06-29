@@ -139,7 +139,7 @@ abstract class BazarField implements \JsonSerializable
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
         $isCreation = !$entry;
-        return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : '');
+        return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }
 
     protected function render($templatePath, $data = [])

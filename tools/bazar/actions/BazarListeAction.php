@@ -211,11 +211,7 @@ class BazarListeAction extends YesWikiAction
                 true // filter on read ACL
             );
 
-            // Add display data to all entries
-            $entries = array_map(function ($fiche) use ($entryManager) {
-                $entryManager->appendDisplayData($fiche, false, $this->arguments['correspondance']);
-                return $fiche;
-            }, $entries);
+            // call to appendDisplayData removed because already done in EntryManager->search
         }
 
         // filter entries on datefilter parameter

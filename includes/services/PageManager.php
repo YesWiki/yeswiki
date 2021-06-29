@@ -42,6 +42,8 @@ class PageManager
         if (!$bypassAcls && !$time && $cache && (($cachedPage = $this->getCached($tag)) !== false)) {
             if ($cachedPage and !isset($cachedPage["metadatas"])) {
                 $cachedPage["metadatas"] = $this->getMetadata($tag);
+                // save page with metadatas
+                $this->cache($cachedPage, $tag);
             }
             $page = $cachedPage;
         } else { // load page

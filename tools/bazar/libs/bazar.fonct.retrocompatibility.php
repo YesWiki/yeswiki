@@ -97,7 +97,7 @@ function searchResultstoArray($pages, $params, $formtab = '')
 
     foreach ($pages as $page) {
         $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->decode($page['body']);
-        $GLOBALS['wiki']->services->get(EntryManager::class)->appendDisplayData($fiche, false, $params['correspondance']);
+        $GLOBALS['wiki']->services->get(EntryManager::class)->appendDisplayData($fiche, false, $params['correspondance'],$page);
         $fiches[$fiche['id_fiche']] = $fiche;
     }
 

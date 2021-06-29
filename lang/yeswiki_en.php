@@ -438,5 +438,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_password_for_editing_message' => 'Message displayed above the password asked password to modify forms',
 'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Textarea field\'s name for which components are activated',
 'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Time (s) between two cache\'s refreshes for JSON\'s requests in listefiche',
+'EDIT_CONFIG_HINT_baz_check_owner_acl_only_for_field_can_edit' => 'Check owner read acl \'%\' only when editing bazar fields (false by default)',
     
 ));
