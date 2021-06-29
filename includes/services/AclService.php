@@ -13,6 +13,7 @@ class AclService
     protected $params;
 
     protected $cache;
+    private $checkOwnerReadAcl;
 
     public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params)
     {
@@ -22,6 +23,8 @@ class AclService
         $this->params = $params;
         
         $this->cache = [];
+        $this->checkOwnerReadAcl = !($this->params->has('baz_check_owner_acl_only_for_field_can_edit')
+            && $this->params->get('baz_check_owner_acl_only_for_field_can_edit'));
     }
     
     /**
@@ -226,7 +229,7 @@ class AclService
                                 // to manage retrocompatibility without usage of CheckACL without $tag
                                 // and no management of '%'
                                 $result = false;
-                            } elseif ($mode == 'edit') {
+                            } elseif ($this->checkOwnerReadAcl || $mode == 'edit') {
                                 $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
                             }
                             break;
