@@ -22,6 +22,8 @@ if ($this->HasAccess('write')) {
             $buffer = $pageeditionfiche;
         }
     } else {
+        // define $GLOBALS['inIframe'] for edit handler
+        $GLOBALS['inIframe'] = true;
         ob_start();
         echo $this->Run($this->getPageTag(), 'edit');
         $buffer = ob_get_contents();
@@ -52,7 +54,6 @@ if ($this->HasAccess('write')) {
     );
 
     $output .= '</div><!-- end div.page-widget -->'."\n";
-
 } else {
     $output = '';
     // on recupere les entetes html mais pas ce qu'il y a dans le body
@@ -68,5 +69,5 @@ if ($this->HasAccess('write')) {
 
 $this->addJavascriptFile('tools/templates/libs/vendor/iframeResizer.contentWindow.min.js');
 // on recupere juste les javascripts et la fin des balises body et html
-$output .= preg_replace('/^.+<script/Us',  '<script', $this->Footer());
+$output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
 echo $output;
