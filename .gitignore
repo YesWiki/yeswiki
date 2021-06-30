@@ -36,8 +36,6 @@ tools/*
 !tools/despam/*
 !tools/hashcash
 !tools/hashcash/*
-!tools/ipblock
-!tools/ipblock/*
 !tools/lang
 !tools/lang/*
 !tools/login
