@@ -45,6 +45,7 @@ $lang = array(
   'ACTION_BUILDER_INSERT_CODE'   => _t('ACTION_BUILDER_INSERT_CODE'),
 );
 $js = 'var aceditorlang = '.json_encode($lang);
+$js .= ';var aceditorBaseUrl = '.json_encode($this->config['base_url']).';';
 
 $this->AddJavascript($js);
 $this->AddJavascriptFile('tools/aceditor/presentation/javascripts/ace-lib.js');

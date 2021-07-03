@@ -96,6 +96,7 @@ var SYNTAX = {
   function Plugin( element, options ) {
     this.element = element;
     this.lang = aceditorlang;
+    this.baseUrl = aceditorBaseUrl;
 
     this.options = $.extend( {}, defaults, options) ;
 
@@ -231,6 +232,7 @@ var SYNTAX = {
 
 
       // ---- BUTTONS BINDING --------
+      var baseUrl = this.baseUrl;
       toolbar.find('a.aceditor-btn').each(function() {
         $(this).on('click', function(e){
           e.preventDefault();
@@ -271,10 +273,8 @@ var SYNTAX = {
             /* get pageList */
             if(!pagelist){
               var pagelist = [];
-              let fullUrl = location.href;
-              let baseUrl = fullUrl.match(/(.*\?[A-Za-z0-9-_]+)/g);
               $.ajax({
-                url: baseUrl+"/json&demand=pages",
+                url: baseUrl+"root/json&demand=pages",
                 async:false, // to wait pageList ini before display YesWikiLinkModal
                 type: 'GET',
                 cache: true,

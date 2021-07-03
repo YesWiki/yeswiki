@@ -1,5 +1,5 @@
 export default {
-  props: [ 'value', 'config' ],
+  props: [ 'value', 'config', 'baseUrl' ],
   data() {
     return {importedPages: null}
   },
@@ -7,7 +7,7 @@ export default {
     pageList() {
       if (!this.importedPages){
         $.ajax({
-          url: location.origin + location.pathname + `?root/json&demand=pages`,
+          url: this.baseUrl + `root/json&demand=pages`,
           async: false,
           dataType: "json",
           type: 'GET',
