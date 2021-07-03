@@ -275,7 +275,7 @@ var SYNTAX = {
               var pagelist = [];
               $.ajax({
                 url: baseUrl+"root/json&demand=pages",
-                async:false, // to wait pageList ini before display YesWikiLinkModal
+                async:true,
                 type: 'GET',
                 cache: true,
                 success: function(result){
@@ -283,9 +283,12 @@ var SYNTAX = {
                   for (var key in result) {
                     let pageTag = result[key].tag;
                     if (pageTag){
-                      pagelist.push('"'+pageTag+'"');
+                      pagelist.push(pageTag);
                     }
                   }
+                  // remove previous typehead and refresh source
+                  $('#wikiurl-page-list-input').typeahead('destroy');
+                  $('#wikiurl-page-list-input').typeahead({ source: pagelist, items: 5});
                 },
               });
             }
@@ -314,9 +317,9 @@ var SYNTAX = {
       <div class="control-group form-group internal-link">
         <label class="control-label">`+aceditorlang['ACEDITOR_LINK_PAGE_NAME']+`</label>
         <div class="controls">
-          <input class="form-control" type="text" autocomplete="off" name="wikiurl" data-provide="typeahead" data-items="5" data-source='[` +
-                pagelist.toString() +
-                `]' value="">
+          <input id="wikiurl-page-list-input" class="form-control" type="text" autocomplete="off" name="wikiurl" data-provide="typeahead" data-items="5" data-source='` +
+                JSON.stringify(pagelist) +
+                `' value="">
           <span class="text-info">`+aceditorlang['ACEDITOR_LINK_HINT_NEW_PAGE_NAME']+`</span>
         </div>
       </div>
