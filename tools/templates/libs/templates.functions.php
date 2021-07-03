@@ -154,8 +154,8 @@ function nomwikidouble($nomwiki, $nomswiki)
 function replace_missingpage_links($output)
 {
     $pattern = '/<span class="(forced-link )?missingpage">(.*)<\/span><a href="' . str_replace(
-        array('/', '?'),
-        array('\/', '\?'),
+        array('/', '?','.'),
+        array('\/', '\?','\.'),
         $GLOBALS['wiki']->config['base_url']
     ) . '(.*)\/edit">\?<\/a>/U';
     preg_match_all($pattern, $output, $matches, PREG_SET_ORDER);
