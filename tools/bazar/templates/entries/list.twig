@@ -40,13 +40,13 @@
   <div class="facette-container row">
     {% if params.filterposition == 'right' %}
       {# entries #}
-      <div class="results-col col-sm-{{ params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format }}">
-        <div class="results">
-          <div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
-            <div class="list">{{ renderedEntries|raw }}</div>
+      {% block entries %}
+        <div class="results-col col-sm-{{ params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format }}">
+          <div class="results">
+            {{ block('renderedEntries')}}
           </div>
         </div>
-      </div>
+      {% endblock %}
     {% endif %}
 
     {# filters #}
@@ -103,17 +103,13 @@
 
     {% if params.filterposition == 'left' %}
       {# entries #}
-      <div class="results-col col-sm-{{ params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format }}">
-        <div class="results">
-          <div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
-            <div class="list">{{ renderedEntries|raw }}</div>
-          </div>
-        </div>
-      </div>
+      {{ block('entries')}}
     {% endif %}
   </div>
 {% else %}
-<div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
-  <div class="list">{{ renderedEntries|raw }}</div>
-</div>
+  {% block renderedEntries %}
+    <div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
+      <div class="list">{{ renderedEntries|raw }}</div>
+    </div>
+  {% endblock %}
 {% endif %}
