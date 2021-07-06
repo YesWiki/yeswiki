@@ -180,9 +180,6 @@ class ExternalBazarService
         if (empty($params['forms'])) {
             throw new \Exception("parameter forms should not be empty");
         }
-        if ($this->debug) {
-            trigger_error(_t('BAZ_EXTERNAL_SERVICE_BETA_MODE'));
-        }
 
         // Formattage des queries
         $querystring = '';
