@@ -1,29 +1,28 @@
 export default {
-  props: [ 'value', 'config', 'baseUrl' ],
-  data() {
-    return {importedPages: null}
-  },
+  props: [ 'value', 'config' ],
   computed: {
     pageList() {
-      if (!this.importedPages){
-        $.ajax({
-          url: this.baseUrl + `root/json&demand=pages`,
-          async: false,
-          dataType: "json",
-          type: 'GET',
-          cache: true,
-          success: data => {
+      var baseUrl = actionsBuilderData.baseUrl;
+      $.ajax({
+        url: baseUrl + `root/json&demand=pages`,
+        async: true,
+        dataType: "json",
+        type: 'GET',
+        cache: true,
+        success: data => {
           let pages = [];
           for (var key in data) {
             let pageTag = data[key].tag;
             if (pageTag){
-              pages.push('"'+pageTag+'"');
+              pages.push(pageTag);
             }
           }
-          this.importedPages = "["+pages.toString()+"]" ;
-        }})
-      }
-      return this.importedPages
+          // remove previous typehead and refresh source
+          $(this.$refs.input).typeahead('destroy');
+          $(this.$refs.input).typeahead({ source: pages, items: 5});
+        }
+      })
+      return []
     }
   },
   template: `
