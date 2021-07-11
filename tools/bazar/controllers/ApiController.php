@@ -84,7 +84,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/entries/{output}/{selectedEntries}", methods={"GET"})
+     * @Route("/api/entries/{output}/{selectedEntries}", methods={"GET"}, options={"acl":{"public"}})
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
