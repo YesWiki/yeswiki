@@ -208,6 +208,10 @@ var typeUserAttrs = {
     read: readConf,
     write: writeconf,
     semantic: semanticConf,
+    pattern: {
+      label: "Motif",
+      placeholder: "Mode avancé. Ex: [0-9]+ ou [A-Za-z]{3}, ...",
+    }
   },
   champs_mail: {
     hint: { label: "Texte d'aide" },

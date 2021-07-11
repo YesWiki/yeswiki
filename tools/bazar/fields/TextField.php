@@ -44,9 +44,11 @@ class TextField extends BazarField
     protected function renderStatic($entry)
     {
         $value = $this->getValue($entry);
-        if( !$value ) return null;
+        if (!$value) {
+            return null;
+        }
 
-        if( $this->name === 'bf_titre') {
+        if ($this->name === 'bf_titre') {
             return $this->render("@bazar/fields/title.twig", [
                 'value' => $value
             ]);
@@ -55,5 +57,15 @@ class TextField extends BazarField
                 'value' => $value
             ]);
         }
+    }
+
+    public function getPattern()
+    {
+        return $this->pattern;
+    }
+
+    public function getSubType()
+    {
+        return $this->subType;
     }
 }
