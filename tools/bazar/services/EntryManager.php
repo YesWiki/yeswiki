@@ -92,6 +92,7 @@ class EntryManager
      */
     private function getDataFromPage($page, bool $semantic = false, bool $debug = false): array
     {
+        $data = [];
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
 
