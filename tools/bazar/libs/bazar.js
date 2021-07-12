@@ -709,6 +709,11 @@ $(document).ready(function () {
       $(this).parents('.facette-container').find('.results-label').hide();
     }
   });
+
+  // gestion du bouton de réinitialisation des filtres
+  $('.facette-container .filters .reset-filters').on('click', function(){
+    $('.facette-container .filters input.filter-checkbox:checked').click();
+  });
 })
 
 function exportTableToCSV(filename) {
