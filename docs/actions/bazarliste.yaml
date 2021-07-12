@@ -157,6 +157,14 @@ actions:
         min: 1
         max: 12
         showif: facettes
+      resetfiltersbutton:
+        label: _t(AB_bazar_commons2_resetfiltersbutton_label)
+        advanced: true
+        type: checkbox
+        default: 0
+        checkedvalue: 1
+        uncheckedvalue: 0
+        showif: facettes
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
         type: list
