@@ -288,6 +288,8 @@ $GLOBALS['translations'] = array_merge(
 
         'BAZ_ALL_DAY' => 'Toute la journ&eacute;e',
         'BAZ_ENTER_HOUR' => 'Entrer l\'heure',
+
+        'BAZ_RESET_FILTERS' => 'Réinitialiser les filtres',
         
         //================ Drag & Drop for Checkbox fiche =======================================
         'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => '&Eacute;l&eacute;ments disponibles',
