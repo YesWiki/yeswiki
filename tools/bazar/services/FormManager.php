@@ -355,4 +355,30 @@ class FormManager
             return true;
         }
     }
+
+    /**
+     * return field from field name or property name
+     * @param null|string $name
+     * @param null|string $formId
+     * @return null|BazarField
+     */
+    public function findFieldFromNameOrPropertyName(?string $name,?string $formId): ?BazarField
+    {
+        // check params
+        if (empty($name) || empty($formId) || strval(intval($formId)) != strval($formId)) {
+            return null;
+        }
+
+        $form = $this->getOne($formId);
+        if (empty($form) || !is_array($form['prepared'])){
+            return null;
+        }
+
+        foreach($form['prepared'] as $field){
+            if (in_array($name,[$field->getName(),$field->getPropertyName()])){
+                return $field;
+            }
+        }
+        return null;
+    }
 }

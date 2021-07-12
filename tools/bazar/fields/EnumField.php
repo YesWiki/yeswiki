@@ -37,8 +37,8 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromList()
     {
-        if (!empty($this->name)) {
-            $listValues = $this->getService(ListManager::class)->getOne($this->name);
+        if (!empty($this->getLinkedObjectName())) {
+            $listValues = $this->getService(ListManager::class)->getOne($this->getLinkedObjectName());
             if (is_array($listValues)) {
                 $this->options = $listValues['label'];
             }
@@ -51,7 +51,7 @@ abstract class EnumField extends BazarField
         $refreshCacheDuration = ($params->has('baz_enum_field_time_cache_for_json'))
             ? $params->get('baz_enum_field_time_cache_for_json')
             : 7200 ; // 2 hours by default
-        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->name, $refreshCacheDuration);
+        $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent($this->getLinkedObjectName(), $refreshCacheDuration);
         $entries = json_decode($json, true);
         $options = [];
         $this->optionsUrls = [];
@@ -105,7 +105,7 @@ abstract class EnumField extends BazarField
 
         $fiches = $entryManager->search([
             'queries' => $tabquery,
-            'formsIds' => $this->name,
+            'formsIds' => $this->getLinkedObjectName(),
             'keywords' => (!empty($this->keywords)) ? $this->keywords : ''
         ]);
 
@@ -120,11 +120,22 @@ abstract class EnumField extends BazarField
         return  $this->options;
     }
 
+    public function getName()
+    {
+        return $this->listLabel;
+    }
+
+    public function getLinkedObjectName()
+    {
+        return $this->name;
+    }
+
     public function jsonSerialize()
     {
         return array_merge(
             parent::jsonSerialize(),
             [
+                'linkedObjectName' => $this->getLinkedObjectName(),
                 'queries' => $this->queries,
                 'options' => $this->getOptions(),
             ]
