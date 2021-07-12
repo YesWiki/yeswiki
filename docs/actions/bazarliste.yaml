@@ -21,6 +21,7 @@ actions:
           - bazarcarto
           - bazartimeline
           - bazarcarousel
+          - bazarcalendar
       colorfield:
         label: Champ pour la couleur
         type: form-field
@@ -72,7 +73,7 @@ actions:
         label: _t(AB_bazar_commons_minical)
         type: checkbox
         showOnlyFor:
-          - calendrier
+          - bazarcalendar
 
   # -------------------------------------
   # Champs Communs concernant les filtres
@@ -96,6 +97,7 @@ actions:
           - bazarcarto
           - bazartimeline
           - bazarannuaire
+          - bazarcalendar
       ordre:
         label: Ordre de classement
         type: list
@@ -108,6 +110,7 @@ actions:
           - bazarcarto
           - bazartimeline
           - bazarannuaire
+          - bazarcalendar
       nb:
         label: Limitation
         hint: Limite l'affichage du nombre de fiche
