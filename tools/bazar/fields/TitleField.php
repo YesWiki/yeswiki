@@ -42,10 +42,19 @@ class TitleField extends BazarField
             preg_match_all('#{{(.*)}}#U', $value, $matches);
             $formId = $entry['id_typeannonce'] ?? null;
             foreach ($matches[1] as $fieldName) {
-                $field = $formManager->findFieldFromNameOrPropertyName($fieldName,$formId);
-                if ($field instanceof EnumField || $field instanceof FileField){
+                $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
+                if ($field instanceof EnumField || $field instanceof FileField) {
                     $fieldValue = $field->getValue($entry);
-                    if ($field instanceof EnumField){
+                    if ($field instanceof CheckboxField) {
+                        // get first value instead of keys
+                        $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
+                        $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
+                        $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
+                    } elseif ($field instanceof TagsField) {
+                        // get first value instead of keys
+                        $fieldValues = explode(',', $fieldValue);
+                        $replacement = trim($fieldValues[0]) ?? '';
+                    } elseif ($field instanceof EnumField) {
                         // get value instead of key
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
                     } else {
