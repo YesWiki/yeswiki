@@ -497,4 +497,20 @@ class EntryController extends YesWikiController
     }
 
     /* END OF PART TO FILTER ON DATE */
+
+    public function renderBazarList($entries, $param =[], $showNumEntries = true){
+        $ids = [];
+        foreach ($entries as $entry){
+            if (!empty($entry['id_fiche'])){
+                $ids[] = $entry['id_fiche'];
+            }
+        }
+        $params['query'] = 'id_fiche=' . implode(',',$ids);
+        $params['shownumentries'] = $showNumEntries;
+
+        if (empty($ids)){
+            return '<div class="alert alert-info">'._t('BAZ_IL_Y_A').' 0 '. _t('BAZ_FICHE') . '</div>';
+        }
+        return $GLOBALS['wiki']->Action('bazarliste', 0, $params);
+    }
 }

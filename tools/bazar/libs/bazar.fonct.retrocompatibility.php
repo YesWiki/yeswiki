@@ -304,19 +304,8 @@ function getAllParameters_carto($wiki)
  */
 function displayResultList($entries, $params = [], $info_nb = true)
 {
-    $ids = [];
-    foreach ($entries as $entry){
-        if (!empty($entry['id_fiche'])){
-            $ids[] = $entry['id_fiche'];
-        }
-    }
-    $params['query'] = 'id_fiche=' . implode(',',$ids);
-    $params['shownumentries'] = $info_nb;
-
-    if (empty($ids)){
-        return '<div class="alert alert-info">'._t('BAZ_IL_Y_A').' 0 '. _t('BAZ_FICHE') . '</div>';
-    }
-    return $GLOBALS['wiki']->Action('bazarliste', 0, $params);
+    $entryController = $GLOBALS['wiki']->services->get(EntryController::class);
+    return $entryController->renderBazarList($entries);
 }
 
 /**
