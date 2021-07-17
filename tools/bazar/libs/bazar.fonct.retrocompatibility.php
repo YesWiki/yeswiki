@@ -305,7 +305,7 @@ function getAllParameters_carto($wiki)
 function displayResultList($entries, $params = [], $info_nb = true)
 {
     $entryController = $GLOBALS['wiki']->services->get(EntryController::class);
-    return $entryController->renderBazarList($entries);
+    return $entryController->renderBazarList($entries, $params, $info_nb);
 }
 
 /**
