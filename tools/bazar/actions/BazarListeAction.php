@@ -206,7 +206,8 @@ class BazarListeAction extends YesWikiAction
                     'formsIds' => $this->arguments['idtypeannonce'],
                     'keywords' => $_REQUEST['q'] ?? '',
                     'user' => $this->arguments['user'],
-                    'minDate' => $this->arguments['dateMin']
+                    'minDate' => $this->arguments['dateMin'],
+                    'correspondance' => $this->arguments['correspondance'] ?? ''
                 ],
                 true // filter on read ACL
             );

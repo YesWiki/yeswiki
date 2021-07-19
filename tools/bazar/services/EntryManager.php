@@ -87,10 +87,11 @@ class EntryManager
      * @param array $page , content of page from sql
      * @param bool $semantic
      * @param bool $debug, to throw exception in case of error
+     * @param string $correspondance, to pass correspondance parameter directly to appendDisplayData
      *
      * @return array data formated
      */
-    private function getDataFromPage($page, bool $semantic = false, bool $debug = false): array
+    private function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $correspondance = ''): array
     {
         $data = [];
         if (!empty($page['body'])) {
@@ -111,7 +112,7 @@ class EntryManager
                 $data['id_fiche'] = $page['tag'];
             }
             // TODO call this function only when necessary
-            $this->appendDisplayData($data, $semantic, '', $page);
+            $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
             trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \''. $page['tag'] .'\'', E_USER_WARNING);
         }
@@ -136,7 +137,8 @@ class EntryManager
                 'user' => '', // N'affiche que les fiches d'un utilisateur
                 'keywords' => '', // Mots-clés pour la recherche fulltext
                 'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
-                'minDate' => '' // Date minimale des fiches
+                'minDate' => '', // Date minimale des fiches
+                'correspondance' => ''
             ],
             $params
         );
@@ -333,7 +335,7 @@ class EntryManager
                 $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
                     ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
                     : $page;
-                $data = $this->getDataFromPage($filteredPage, false, $debug);
+                $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
                 $GLOBALS['_BAZAR_'][$reqid][$data['id_fiche']] = $data;
             }
         }
