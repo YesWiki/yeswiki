@@ -97,7 +97,7 @@ if (! $this->UserIsAdmin()) {
         } elseif ($filter == "specialpages") {
             $search = ' AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs","TableauDeBord"'.
               ',"PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu"'.
-              ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur") ';
+              ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","WakkaConfig","ActuYeswiki","LookWiki") ';
         } elseif ($filter == intval($filter)) {
             $requete_pages_wiki_bazar_fiches =
           'SELECT DISTINCT resource FROM '.$table.'triples ' .
@@ -149,7 +149,7 @@ $this->addCSSFile('tools/templates/libs/vendor/datatables/dataTables.bootstrap.m
     <option value="specialpages" <?php echo ("specialpages" == $filter) ? 'selected="selected"' : ''; ?>><?php echo _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES'); ?></option>
     <?php foreach ($forms as $id => $form): ?>
       <option value="<?php echo $id;?>" <?php echo ($id == $filter) ? 'selected="selected"' : '';
-        ?>><?php echo str_replace('{name}',$form['bn_label_nature'],str_replace('{id}',$id,_t('ACLS_SELECT_PAGES_FILTER_FORM')));?>
+        ?>><?php echo str_replace('{name}', $form['bn_label_nature'], str_replace('{id}', $id, _t('ACLS_SELECT_PAGES_FILTER_FORM')));?>
     <?php endforeach ?>
   </select>
 </div>
