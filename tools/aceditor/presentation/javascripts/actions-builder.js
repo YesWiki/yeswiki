@@ -170,7 +170,8 @@ window.myapp = new Vue({
         }
       }
       else {
-        $.getJSON(this.baseUrl + `root/json&demand=forms&id=${this.selectedFormId}`, data => {
+        let firstSeparator = (this.baseUrl.substr(-1) === "?") ? "&" : "?";
+        $.getJSON(this.baseUrl + `root/json`+firstSeparator+`demand=forms&id=${this.selectedFormId}`, data => {
           this.loadedForms[this.selectedFormId] = data[0]
           // On first form loaded, we load again the values so the special components are rendered and we can parse values on each special component
           if (!this.selectedForm && this.isEditingExistingAction) setTimeout(() => this.initValues(), 0)
