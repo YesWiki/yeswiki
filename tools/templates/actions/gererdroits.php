@@ -97,7 +97,7 @@ if (! $this->UserIsAdmin()) {
         } elseif ($filter == "specialpages") {
             $search = ' AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs","TableauDeBord"'.
               ',"PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu"'.
-              ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","WakkaConfig","ActuYeswiki","LookWiki") ';
+              ',"PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","GererConfig","ActuYeswiki","LookWiki") ';
         } elseif ($filter == intval($filter)) {
             $requete_pages_wiki_bazar_fiches =
           'SELECT DISTINCT resource FROM '.$table.'triples ' .
