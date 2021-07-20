@@ -340,7 +340,7 @@ class BazarListeAction extends YesWikiAction
                             $list['titre_liste'] = $field->getLabel();
                             $list['label'] = $field->getOptions();
                         } elseif ($facettable['type'] == 'fiche') {
-                            $formId = $field->getName() ;
+                            $formId = $field->getLinkedObjectName() ;
                             $form = $forms[$formId];
                             $list['titre_liste'] = $form['bn_label_nature'];
                             foreach ($facettable as $idfiche => $nb) {

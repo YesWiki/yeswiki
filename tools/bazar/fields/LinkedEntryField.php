@@ -92,7 +92,7 @@ class LinkedEntryField extends BazarField
                 || $field instanceof CheckboxEntryField
                 // || $field instanceof RadioEntryField
             )
-            && $field->getName() == $entry['id_typeannonce']
+            && $field->getLinkedObjectName() == $entry['id_typeannonce']
             &&
             (
                 empty($this->linkType)
