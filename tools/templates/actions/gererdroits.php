@@ -73,7 +73,7 @@ if (! $this->UserIsAdmin()) {
                         } elseif (!empty($_POST['newecrire'])) {
                             $this->SaveAcl($page_cochee, 'write', $_POST['newecrire'], $appendAcl);
                         }
-                        if (!empty($_POST['newecrire_advanced'])) {
+                        if (!empty($_POST['newcomment_advanced'])) {
                             $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment_advanced'], $appendAcl);
                         } elseif (!empty($_POST['newcomment'])) {
                             $this->SaveAcl($page_cochee, 'comment', $_POST['newcomment'], $appendAcl);
