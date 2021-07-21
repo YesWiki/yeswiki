@@ -420,7 +420,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'ACLS_FOR_SELECTED_PAGES' => 'Actions pour les pages cochées ci dessus',
 'ACLS_RESET_SELECTED_PAGES' => 'Réinitialiser (avec les valeurs par défaut définies dans',
 'ACLS_REPLACE_SELECTED_PAGES' => 'Remplacer (Les droits actuels seront supprim&eacute;s)',
-'ACLS_HELPER' => 'Séparez chaque entrée par un retour à la ligne, par exemple</br>
+'ACLS_HELPER' => 'Séparez chaque entrée des virgules, par exemple</br>
 <b>*</b> (tous les utilisateurs)</br>
 <b>+</b> (utilisateurs enregistrés)</br>
 <b>%</b> (créateur de la fiche/page)</br>
