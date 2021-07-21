@@ -196,67 +196,64 @@ class AclService
         $acl = trim($acl);
         $result = false ; // result by default , this function is like a big "OR LOGICAL"
 
-        foreach (explode(" ", $acl) as $blockLine) {
-            /* Explode by " " to manage several ACL on same line */
-            foreach (explode("\n", $blockLine) as $line) {
-                $line = trim($line);
+        foreach (explode("\n", $acl) as $line) {
+            $line = trim($line);
 
-                // check for inversion character "!"
-                if (preg_match('/^[!](.*)$/', $line, $matches)) {
-                    $std_response = false ;
-                    $line = $matches[1];
-                } else {
-                    $std_response = true;
-                }
+            // check for inversion character "!"
+            if (preg_match('/^[!](.*)$/', $line, $matches)) {
+                $std_response = false ;
+                $line = $matches[1];
+            } else {
+                $std_response = true;
+            }
 
-                // if there's still anything left... lines with just a "!" don't count!
-                if ($line) {
-                    switch ($line[0]) {
-                        case '#': // comments
-                            break;
-                        case '*': // everyone
-                            $result = $std_response;
-                            break;
-                        case '+': // registered users
-                            $result = ($this->userManager->getOneByName($user)) ? $std_response : !$std_response ;
-                            break;
-                        case '%': // owner
-                            if ($mode == 'creation') {
-                                // in creation mode, even if there is a tag
-                                // the current user can access to field
-                                $result = $std_response ;
-                            } elseif ($tag == '') {
-                                // to manage retrocompatibility without usage of CheckACL without $tag
-                                // and no management of '%'
-                                $result = false;
-                            } elseif ($this->checkOwnerReadAcl || ($mode == 'edit')) {
-                                $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
-                            }
-                            break;
-                        case '@': // groups
-                            $gname = substr($line, 1);
-                            // paranoiac: avoid line = '@'
-                            if ($gname) {
-                                if ($this->wiki->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
-                                    $result = $std_response ;
-                                } else {
-                                    $result = ! $std_response ;
-                                }
-                            } else {
-                                $result = false ; // line '@'
-                            }
-                            break;
-                        default: // simple user entry
-                            if ($line == $user) {
+            // if there's still anything left... lines with just a "!" don't count!
+            if ($line) {
+                switch ($line[0]) {
+                    case '#': // comments
+                        break;
+                    case '*': // everyone
+                        $result = $std_response;
+                        break;
+                    case '+': // registered users
+                        $result = ($this->userManager->getOneByName($user)) ? $std_response : !$std_response ;
+                        break;
+                    case '%': // owner
+                        if ($mode == 'creation') {
+                            // in creation mode, even if there is a tag
+                            // the current user can access to field
+                            $result = $std_response ;
+                        } elseif ($tag == '') {
+                            // to manage retrocompatibility without usage of CheckACL without $tag
+                            // and no management of '%'
+                            $result = false;
+                        } elseif ($this->checkOwnerReadAcl || ($mode == 'edit')) {
+                            $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response ;
+                        }
+                        break;
+                    case '@': // groups
+                        $gname = substr($line, 1);
+                        // paranoiac: avoid line = '@'
+                        if ($gname) {
+                            if ($this->wiki->UserIsInGroup($gname, $user, false/* we have allready checked if user was an admin */)) {
                                 $result = $std_response ;
                             } else {
                                 $result = ! $std_response ;
                             }
-                    }
-                    if ($result) {
-                        return true ;
-                    } // else continue like a big logical OR
+                        } else {
+                            $result = false ; // line '@'
+                        }
+                        break;
+                    default: // simple user entry
+                        if ($line == $user) {
+                            $result = $std_response ;
+                        } else {
+                            $result = ! $std_response ;
+                        }
                 }
+                if ($result) {
+                    return true ;
+                } // else continue like a big logical OR
             }
         }
 
