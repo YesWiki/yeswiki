@@ -53,8 +53,8 @@ abstract class BazarField implements \JsonSerializable
         $this->required = $values[self::FIELD_REQUIRED] == 1;
         $this->searchable = $values[self::FIELD_SEARCHABLE];
         $this->hint = $values[self::FIELD_HINT];
-        $this->readAccess = $values[self::FIELD_READ_ACCESS];
-        $this->writeAccess = $values[self::FIELD_WRITE_ACCESS];
+        $this->readAccess = str_replace(',', "\n", $values[self::FIELD_READ_ACCESS]);
+        $this->writeAccess = str_replace(',', "\n", $values[self::FIELD_WRITE_ACCESS]);
         $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
         $this->semanticPredicate = strpos($this->semanticPredicate, ',')
                 ? array_map('trim', explode(',', $this->semanticPredicate))
