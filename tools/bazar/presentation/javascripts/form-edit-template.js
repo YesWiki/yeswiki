@@ -135,15 +135,28 @@ var visibilityOptions = {
   " % ": "Propriétaire de la fiche et admins",
   "@admins": "Membre du groupe admin",
 };
+// create list of groups
+var formattedGroupList = [];
+if (groupsList && groupsList.length > 0){
+  let groupsListLen = groupsList.length;
+  for(i=0;i<groupsListLen;++i){
+    if (groupsList[i] !== "admins"){
+      formattedGroupList["@"+groupsList[i]] = "Membre du groupe "+groupsList[i];
+      formattedGroupList["%,@"+groupsList[i]] = "Propriétaire de la fiche,admins et membre du groupe "+groupsList[i];
+    }
+  }
+}
+
 var aclsOptions = {
   ...visibilityOptions,
   ...{
     user:
       "Utilisateur (lorsqu'on créé un utilisateur en même temps que la fiche)",
   },
+  ...formattedGroupList,
 };
-var readConf = { label: "Peut être lu par", options: visibilityOptions };
-var writeconf = { label: "Peut être saisi par", options: visibilityOptions };
+var readConf = { label: "Peut être lu par", options: {...visibilityOptions,...formattedGroupList} };
+var writeconf = { label: "Peut être saisi par", options: {...visibilityOptions,...formattedGroupList} };
 var searchableConf = {
   label: "Présence dans le moteur de recherche",
   options: { "": "Non", 1: "Oui" },
