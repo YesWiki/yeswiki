@@ -253,7 +253,7 @@ var typeUserAttrs = {
     align: {
       label: "Alignement",
       value: "right",
-      options: { left: "Gauche", center: "Centre", right: "Droite" },
+      options: { left: "Gauche", right: "Droite" },
     },
     read: readConf,
     write: writeconf,
