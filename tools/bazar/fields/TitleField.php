@@ -57,6 +57,28 @@ class TitleField extends BazarField
                     } elseif ($field instanceof EnumField) {
                         // get value instead of key
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
+                    } elseif ($field instanceof ImageField) {
+                        if (!empty($_POST['filename-'.$field->getPropertyName()])) {
+                            $replacement = sanitizeFilename($_POST['filename-'.$field->getPropertyName()]);
+                            if (empty($replacement)) {
+                                $replacement = 'image';
+                            }
+                        } elseif (!empty($fieldValue)) {
+                            $replacement = $fieldValue;
+                        } else {
+                            $replacement = 'image';
+                        }
+                    } elseif ($field instanceof FileField) {
+                        if (!empty($_FILES[$field->getPropertyName()]['name'])) {
+                            $replacement = sanitizeFilename($_FILES[$field->getPropertyName()]['name']);
+                            if (empty($replacement)) {
+                                $replacement = 'file';
+                            }
+                        } elseif (!empty($fieldValue)) {
+                            $replacement = $fieldValue;
+                        } else {
+                            $replacement = 'file';
+                        }
                     } else {
                         $replacement = $fieldValue;
                     }
