@@ -49,7 +49,11 @@ $(document).ready(function() {
 
     if (rgHttpUrl.test(url)) {
       // on formate l url pour acceder au service json de yeswiki
-      var taburl = url.split('wakka.php');
+      if (url.search('wakka.php') > -1){
+        var taburl = url.split('wakka.php');
+      } else {
+        var taburl = url.split("?");
+      }
       url = taburl[0].replace(/\/+$/g, '') + '/wakka.php?wiki=BazaR/json&demand=forms';
       resultforms.html('<div class="alert alert-info"><span class="throbber">' + formtranslations.loading + '...</span> ' + formtranslations.recuperation + ' ' + url + '</div>');
       $.ajax({
