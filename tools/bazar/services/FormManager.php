@@ -362,7 +362,7 @@ class FormManager
      * @param null|string $formId
      * @return null|BazarField
      */
-    public function findFieldFromNameOrPropertyName(?string $name,?string $formId): ?BazarField
+    public function findFieldFromNameOrPropertyName(?string $name, ?string $formId): ?BazarField
     {
         // check params
         if (empty($name) || empty($formId) || strval(intval($formId)) != strval($formId)) {
@@ -370,12 +370,12 @@ class FormManager
         }
 
         $form = $this->getOne($formId);
-        if (empty($form) || !is_array($form['prepared'])){
+        if (empty($form) || !is_array($form['prepared'])) {
             return null;
         }
 
-        foreach($form['prepared'] as $field){
-            if (in_array($name,[$field->getName(),$field->getPropertyName()])){
+        foreach ($form['prepared'] as $field) {
+            if (in_array($name, [$field->getName(),$field->getPropertyName()])) {
                 return $field;
             }
         }
