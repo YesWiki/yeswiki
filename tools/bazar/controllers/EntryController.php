@@ -85,11 +85,21 @@ class EntryController extends YesWikiController
 
         // if not found, use default template
         if (is_null($renderedEntry)) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof BazarField) {
-                    // TODO handle html_outside_app mode for images
-                    $renderedEntry .= $field->renderStaticIfPermitted($entry);
+            if (!empty($form)) {
+                foreach ($form['prepared'] as $field) {
+                    if ($field instanceof BazarField) {
+                        // TODO handle html_outside_app mode for images
+                        $renderedEntry .= $field->renderStaticIfPermitted($entry);
+                    }
                 }
+            } else {
+                $renderedEntry = $this->render(
+                    "@templates/alert-message.twig",
+                    [
+                        'type' => 'info',
+                        'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
+                    ]
+                );
             }
         }
 

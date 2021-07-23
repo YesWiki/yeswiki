@@ -145,6 +145,7 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_PAS_DE_FICHE' => 'Vous n\'avez pas encore saisi de fiches.',
         'BAZ_PAS_DE_FICHE_AVEC_CET_ID' => 'La fiche que vous recherchez n\'existe pas (peut être a-t-elle &eacute;t&eacute; supprim&eacute;e entre temps ?)',
         'BAZ_PAS_DE_FORM_AVEC_CET_ID' => 'Le formulaire que vous recherchez n\'existe pas (peut être a-t-il &eacute;t&eacute; supprim&eacute;e entre temps ?)',
+        'BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE' => 'Le formulaire numéro {{nb}} indiqué dans la fiche n\'existe pas (peut être a-t-il &eacute;t&eacute; supprim&eacute;e entre temps ?)',
         'BAZ_VOS_FICHES' => 'Mes fiches saisies',
         'BAZ_ERREUR_SAISIE' => 'Erreur de saisie ',
         'BAZ_VEUILLEZ_CORRIGER' => 'Veuillez corriger',
