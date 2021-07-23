@@ -112,7 +112,9 @@ abstract class EnumField extends BazarField
         foreach ($fiches as $fiche) {
             $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
         }
-        asort($this->options);
+        if (is_array($this->options)) {
+            asort($this->options);
+        }
     }
 
     public function getOptions()
