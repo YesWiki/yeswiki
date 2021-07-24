@@ -19,21 +19,24 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
       let urlwindow = window.location.toString();
       let urlSplitted = urlwindow.split("?");
       let baseUrl = urlSplitted[0];
-      let paramsSplitted = urlSplitted[1].split("&");
-      let url = baseUrl + "?";
+      let paramsSplitted = (urlSplitted.length > 1) ? urlSplitted[1].split("&") : [];
       let i;
+      let params = '';
       for (i = 0; i < paramsSplitted.length; i++) {
           if (paramsSplitted[i].substr(0,7) != 'filter='){
               if (i > 0){
-                  url = url + "&";
+                params = params + "&";
               }
-              url = url + paramsSplitted[i];
+              params = params + paramsSplitted[i];
           }
       } 
       if (value != ''){
-          url = url + "&filter=" + value;
+        if (params.length > 0) {
+          params = params + '&';
+        }
+        params = params + "filter=" + value;
       }
-      window.location = url;
+      window.location = baseUrl + ((params.length > 0) ? '?' + params: '');
   }
 </script>
 <?php
