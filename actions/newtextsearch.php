@@ -31,6 +31,8 @@ $separator = $this->GetParameter('separator', false);
 $prefixe = $this->config['table_prefix'];
 // prefixe des tables pour ce wiki
 $user = $this->GetUser();
+// nombre de pages dont on affiche une partie du contenu
+$maxDisplayedPages = 25;
 
 
 $entryController = $this->services->get(EntryController::class);
@@ -158,17 +160,21 @@ if ($phrase) {
         if (empty($separator)) {
             echo $this->Format('---- --- **Résultats de la recherche [""'.$phrase.'""] :---**');
             echo('<ol>');
+            $counter = 0;
             foreach ($resultat as $i => $page) {
                 if ($this->HasAccess("read", $page["tag"])) {
                     $lien = $this->ComposeLinkToPage($page["tag"]);
                     echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, "</h4>";
                     $extract= '';
-                    if ($entryManager->isEntry($page["tag"])) {
-                        $renderedEntry = $entryController->view($page["tag"], '', false); // without footer
-                        $extract = displayNewSearchResult($renderedEntry, $phrase);
-                    }
-                    if (empty($extract)) {
-                        $extract = displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase);
+                    if ($counter < $maxDisplayedPages) {
+                        if ($entryManager->isEntry($page["tag"])) {
+                            $renderedEntry = $entryController->view($page["tag"], '', false); // without footer
+                            $extract = displayNewSearchResult($renderedEntry, $phrase);
+                        }
+                        if (empty($extract)) {
+                            $extract = displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase);
+                        }
+                        $counter += 1;
                     }
                     echo $extract."</li>\n";
                 }
