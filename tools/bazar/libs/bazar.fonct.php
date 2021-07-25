@@ -43,6 +43,7 @@
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\TemplateEngine;
 
 function multiArraySearch($array, $key, $value)
 {
@@ -167,17 +168,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
             $val = isset($fiche[$val]) ? $fiche[$val] : '';
         }
     }
-    if (!empty($val)) {
-        echo '<'.$tag;
-        if (!empty($class)) {
-            echo ' class="'.$class.'"';
-        }
-        echo '>'."\n";
-        if (!empty($label)) {
-            echo '<strong>'.$label.'</strong> '."\n";
-        }
-        echo $val.'</'.$tag.'>'."\n";
-    }
+    echo $GLOBALS['wiki']->services->get(TemplateEngine::class)->showStr($val, $label, $class, $tag) ;
 }
 
 /** removeAccents() Renvoie une chaine de caracteres avec les accents en moins

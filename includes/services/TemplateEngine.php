@@ -82,6 +82,9 @@ class TemplateEngine
         $this->addTwigHelper('include_css', function ($file) {
             $this->wiki->AddCSSFile($file);
         });
+        $this->addTwigHelper('showStr', function ($value, $label = '', $class= '', $tag='p') {
+            return $this->showStr($value, $label, $class, $tag);
+        });
     }
 
     private function addTwigHelper($name, $callback)
@@ -146,5 +149,34 @@ class TemplateEngine
         $content = ob_get_contents(); // get buffer's content
         ob_end_clean(); // destroy buffer
         return $content;
+    }
+
+    /**
+     * function to replace old 'show' function
+     * @param string $value
+     * @param string $label
+     * @param string $class
+     * @param string $tag
+     * @return string
+     */
+    public function showStr(string $value, string $label = '', string $class = '', string $tag = 'p'): ?string
+    {
+        $output = '';
+        if (!in_array($tag, ['p','div','span','h1','h2','h3','h4','h5','h6'])) {
+            $tag = 'p';
+        }
+        if (!empty($value)) {
+            $output .= '<'.$tag ;
+            if (!empty($class)) {
+                $output .= ' class="'.$class.'"' ;
+            }
+            $output .= '>' ;
+            if (!empty($label)) {
+                $output .= '<strong>'.$label."</strong>\n" ;
+            }
+            $output .= $value ;
+            $output .= '</'.$tag.">\n" ;
+        }
+        return $output;
     }
 }
