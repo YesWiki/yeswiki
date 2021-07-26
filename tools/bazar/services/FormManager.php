@@ -4,7 +4,6 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\SelectEntryField;
@@ -381,42 +380,5 @@ class FormManager
             }
         }
         return null;
-    }
-
-    
-
-    /**
-     * search needles in values (options) of EnumField and return array [['propertyName' => ...,'key'=>$key,'isCheckbox' => true],]
-     * @param array $needles
-     * @param array $form
-     * @return array
-     */
-    public function searchInFormOptions(array $needles, array $form): array
-    {
-        // sanitize needles
-        $needles = array_filter($needles, function ($needle) {
-            return (!empty($needle) && is_string($needle));
-        });
-        $results = [];
-        foreach ($form['prepared'] as $field) {
-            if ($field instanceof EnumField) {
-                $options = $field->getOptions();
-                if (is_array($options)) {
-                    foreach ($options as $key => $option) {
-                        foreach ($needles as $needle) {
-                            // mb_strtolower instead of strtolower to manage utf 8 characters
-                            if (strpos(mb_strtolower($option), mb_strtolower($needle)) !== false) {
-                                $results[] = [
-                                    'propertyName' => $field->getPropertyName(),
-                                    'key' => $key,
-                                    'isCheckBox' => ($field instanceof CheckboxField)
-                                ];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $results;
     }
 }

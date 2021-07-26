@@ -15,6 +15,7 @@
  use YesWiki\Bazar\Controller\EntryController;
  use YesWiki\Bazar\Service\EntryManager;
  use YesWiki\Bazar\Service\FormManager;
+ use YesWiki\Bazar\Service\SearchManager;
 
  // On récupére ou initialise toutes le varible comme pour textsearch
 // label à afficher devant la zone de saisie
@@ -71,7 +72,7 @@ if (!function_exists('displayNewSearchResult')) {
     function displayNewSearchResult($string, $phrase)
     {
         $string = strip_tags($string);
-        $query = rtrim(str_replace("+", " ", $phrase));
+        $query = trim(str_replace(array("+","?","*"), array(" "," "," "), $phrase));
         $qt = explode(" ", $query);
         $num = count($qt);
         $cc = ceil(154 / $num);
@@ -90,52 +91,55 @@ if (!function_exists('displayNewSearchResult')) {
 
 // lancement de la recherche
 if ($phrase) {
-    // extract needles for values in list
-    $needles = [];
-    if (preg_match_all('/^([^" ]+)|(?:")([^"]+)(?:")|([^" ]+)$|(?: )([^" ]+)(?: )/', $phrase, $matches)) {
-        foreach ($matches[0] as $key => $match) {
-            for ($i=1; $i < 5; $i++) {
-                if (!empty($matches[$i][$key])) {
-                    $needle = str_replace(array('*', '?'), array('', '_'), $matches[$i][$key]);
-                    if (!in_array($needle, $needles)) {
-                        $needles[] = $needle;
-                    }
-                }
-            }
-        }
-    }
-
-    // Modification de caractère spéciaux
-    $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $phrase);
-    $phraseFormatted = addslashes($phraseFormatted);
-
+    // extract needles with values in list
     // find in values for entries
     $formManager = $this->services->get(FormManager::class);
     $forms = $formManager->getAll();
+    $searchManager = $this->services->get(SearchManager::class);
+    $needles = $searchManager->searchWithLists(str_replace(array('*', '?'), array('', '_'), $phrase), $forms);
     $requeteSQLForList = '';
-    $firstForList = true ;
-    foreach ($forms as $form) {
-        foreach ($formManager->searchInFormOptions($needles, $form) as $result) {
-            if ($firstForList) {
-                $firstForList = false;
-            } else {
-                $requeteSQLForList .= ' OR ';
-            }
-            if (!$result['isCheckBox']) {
-                $requeteSQLForList .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
-            } else {
-                $requeteSQLForList .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
-                    '"'.$result['key'] . '"'.
-                    '|"[^"]*,' . $result['key'] . '"'.
-                    '|"' . $result['key'] . ',[^"]*"'.
-                    '|"[^"]*,' .$result['key'] . ',[^"]*"'.
-                    ')\'';
+    if (!empty($needles)) {
+        $first = true;
+        // generate search
+        foreach ($needles as $needle => $results) {
+            if (!empty($results)) {
+                if ($first) {
+                    $first = false;
+                } else {
+                    $requeteSQLForList .= ' AND ';
+                }
+                $requeteSQLForList .= '(';
+                // add search in list
+                // $results is an array not empty only if list
+                $firstResult = true;
+                foreach ($results as $result) {
+                    if ($firstResult) {
+                        $firstResult = false;
+                    } else {
+                        $requeteSQLForList .= ' OR ';
+                    }
+                    if (!$result['isCheckBox']) {
+                        $requeteSQLForList .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
+                    } else {
+                        $requeteSQLForList .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
+                            '"'.$result['key'] . '"'.
+                            '|"[^"]*,' . $result['key'] . '"'.
+                            '|"' . $result['key'] . ',[^"]*"'.
+                            '|"[^"]*,' .$result['key'] . ',[^"]*"'.
+                            ')\'';
+                    }
+                }
+                $requeteSQLForList .= ')';
             }
         }
     }
     if (!empty($requeteSQLForList)) {
         $requeteSQLForList = ' OR ('.$requeteSQLForList.') ';
     }
+    
+    // Modification de caractère spéciaux
+    $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $phrase);
+    $phraseFormatted = addslashes($phraseFormatted);
 
     // Blablabla SQL
     $requestfull = 'SELECT body, tag FROM '.$prefixe.'pages

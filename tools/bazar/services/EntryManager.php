@@ -27,6 +27,7 @@ class EntryManager
     protected $dbService;
     protected $semanticTransformer;
     protected $params;
+    protected $searchManager;
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
@@ -39,7 +40,8 @@ class EntryManager
         UserManager $userManager,
         DbService $dbService,
         SemanticTransformer $semanticTransformer,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        SearchManager $searchManager
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -50,6 +52,7 @@ class EntryManager
         $this->dbService = $dbService;
         $this->semanticTransformer = $semanticTransformer;
         $this->params = $params;
+        $this->searchManager = $searchManager;
     }
 
     /**
@@ -184,43 +187,29 @@ class EntryManager
 
         //preparation de la requete pour trouver les mots cles
         if (trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
-            // catch "exact text" and rest separated by space
-            if (preg_match_all('/^([^" ]+)|(?:")([^"]+)(?:")|([^" ]+)$|(?: )([^" ]+)(?: )/', $params['keywords'], $matches)) {
+            $needles = $this->searchManager->searchWithLists($params['keywords'], $this->getFormsFromIds($param['formsIds'] ?? null));
+            if (!empty($needles)) {
                 $first = true;
-                $needles = [];
-                foreach ($matches[0] as $key => $match) {
-                    for ($i=1; $i < 5; $i++) {
-                        if (!empty($matches[$i][$key])) {
-                            if ($first) {
-                                $first = false;
-                            } else {
-                                $requeteSQL .= ' AND ';
-                            }
-                            if (!in_array($matches[$i][$key], $needles)) {
-                                $needles[] = $matches[$i][$key];
-                            }
-                            $search = $this->convertToRawJSONStringForREGEXP($matches[$i][$key]);
-                            $search = str_replace('_', '\\_', $search);
-                            $requeteSQL .= ' body LIKE \'%' . $search . '%\'';
-                        }
+                // generate search
+                foreach ($needles as $needle => $results) {
+                    if ($first) {
+                        $first = false;
+                    } else {
+                        $requeteSQL .= ' AND ';
                     }
-                }
-                // search in list values
-                $formManager = $this->wiki->services->get(FormManager::class); // not load in contruct to prevent circular loading
-                $forms = $this->getFormsFromIds($param['formsIds'] ?? null);
-                foreach ($forms as $form) {
-                    $requeteSQLForList = '';
-                    $firstForList = true ;
-                    foreach ($formManager->searchInFormOptions($needles, $form) as $result) {
-                        if ($firstForList) {
-                            $firstForList = false;
-                        } else {
-                            $requeteSQLForList .= ' OR ';
-                        }
+                    $requeteSQL .= '(';
+                    // add standard search
+                    $search = $this->convertToRawJSONStringForREGEXP($needle);
+                    $search = str_replace('_', '\\_', $search);
+                    $requeteSQL .= ' body LIKE \'%' . $search . '%\'';
+                    // add search in list
+                    // $results is an array not empty only if list
+                    foreach ($results as $result) {
+                        $requeteSQL .= ' OR ';
                         if (!$result['isCheckBox']) {
-                            $requeteSQLForList .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
+                            $requeteSQL .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
                         } else {
-                            $requeteSQLForList .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
+                            $requeteSQL .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
                                 '"'.$result['key'] . '"'.
                                 '|"[^"]*,' . $result['key'] . '"'.
                                 '|"' . $result['key'] . ',[^"]*"'.
@@ -228,14 +217,7 @@ class EntryManager
                                 ')\'';
                         }
                     }
-                    if (!empty($requeteSQLForList)) {
-                        if ($first) {
-                            $first = false;
-                        } else {
-                            $requeteSQL .= ' OR ';
-                        }
-                        $requeteSQL .= '('.$requeteSQLForList.')';
-                    }
+                    $requeteSQL .= ')';
                 }
                 if (!empty($requeteSQL)) {
                     $requeteSQL = ' AND ('.$requeteSQL.')';
