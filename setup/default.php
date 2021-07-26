@@ -109,7 +109,7 @@ if (!defined('WIKINI_VERSION')) {
         <div class="form-group">
           <label class="col-sm-3 control-label"><?php echo _t('HOMEPAGE'); ?></label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" />
+            <input type="text" required class="form-control" name="config[root_page]" value="<?php echo $wakkaConfig['root_page'] ?>" pattern="<?php echo WN_CAMEL_CASE_EVOLVED ;?>"/>
             <p class="help-block"><?php echo _t('MUST_BE_WIKINAME'); ?></p>
           </div>
         </div>
@@ -319,3 +319,9 @@ if (!defined('WIKINI_VERSION')) {
     </fieldset>
 
   </form>
+  
+  <style>
+    input:not(:placeholder-shown):invalid, textarea:not(:placeholder-shown):invalid {
+        border-color: #DD2C00;
+    }
+  </style>

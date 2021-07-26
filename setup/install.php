@@ -103,6 +103,14 @@ if (!$version || empty($_POST['admin_login'])) {
     unset($admin_password);
 }
 
+$config['root_page'] = trim($config['root_page']);
+test(
+    _t('CHECKING_ROOT_PAGE_NAME').' ...',
+    preg_match('/^'.WN_CAMEL_CASE_EVOLVED.'$/', $config['root_page']),
+    _t('INCORRECT_ROOT_PAGE_NAME'),
+    1
+);
+
 // all in utf8mb4
 mysqli_set_charset($dblink, 'utf8mb4');
 mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
