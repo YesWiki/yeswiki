@@ -5,6 +5,8 @@ namespace YesWiki\Bazar\Service;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
@@ -25,6 +27,7 @@ class EntryManager
     protected $dbService;
     protected $semanticTransformer;
     protected $params;
+    protected $searchManager;
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
@@ -37,7 +40,8 @@ class EntryManager
         UserManager $userManager,
         DbService $dbService,
         SemanticTransformer $semanticTransformer,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        SearchManager $searchManager
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -48,6 +52,7 @@ class EntryManager
         $this->dbService = $dbService;
         $this->semanticTransformer = $semanticTransformer;
         $this->params = $params;
+        $this->searchManager = $searchManager;
     }
 
     /**
@@ -182,18 +187,42 @@ class EntryManager
 
         //preparation de la requete pour trouver les mots cles
         if (trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
-            $this->dbService->query("SET sql_mode = 'NO_BACKSLASH_ESCAPES';");
-            $search = str_replace(array('["', '"]'), '', json_encode(array(removeAccents($params['keywords']))));
-            $recherche = explode(' ', $search);
-            $nbmots = count($recherche);
-            $requeteSQL .= ' AND (';
-            for ($i = 0; $i < $nbmots; ++$i) {
-                if ($i > 0) {
-                    $requeteSQL .= ' OR ';
+            $needles = $this->searchManager->searchWithLists($params['keywords'], $this->getFormsFromIds($param['formsIds'] ?? null));
+            if (!empty($needles)) {
+                $first = true;
+                // generate search
+                foreach ($needles as $needle => $results) {
+                    if ($first) {
+                        $first = false;
+                    } else {
+                        $requeteSQL .= ' AND ';
+                    }
+                    $requeteSQL .= '(';
+                    // add standard search
+                    $search = $this->convertToRawJSONStringForREGEXP($needle);
+                    $search = str_replace('_', '\\_', $search);
+                    $requeteSQL .= ' body LIKE \'%' . $search . '%\'';
+                    // add search in list
+                    // $results is an array not empty only if list
+                    foreach ($results as $result) {
+                        $requeteSQL .= ' OR ';
+                        if (!$result['isCheckBox']) {
+                            $requeteSQL .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
+                        } else {
+                            $requeteSQL .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
+                                '"'.$result['key'] . '"'.
+                                '|"[^"]*,' . $result['key'] . '"'.
+                                '|"' . $result['key'] . ',[^"]*"'.
+                                '|"[^"]*,' .$result['key'] . ',[^"]*"'.
+                                ')\'';
+                        }
+                    }
+                    $requeteSQL .= ')';
                 }
-                $requeteSQL .= ' body LIKE \'%' . $this->dbService->escape($recherche[$i]) . '%\'';
+                if (!empty($requeteSQL)) {
+                    $requeteSQL = ' AND ('.$requeteSQL.')';
+                }
             }
-            $requeteSQL .= ')';
         }
 
         //on ajoute dans la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
@@ -868,5 +897,32 @@ class EntryManager
 
         // return request to append
         return $newRequestStart.$newRequestEnd;
+    }
+
+    /**
+     * sanitize formsIds and get forms
+     * @param mixed $formsIds
+     * @return array $forms
+     */
+    private function getFormsFromIds($formsIds): array
+    {
+        $formManager = $this->wiki->services->get(FormManager::class); // not load in contruct to prevent circular loading
+        if (!empty($formsIds)) {
+            if (is_scalar($formsIds)) {
+                $formsIds = [$formsIds];
+            }
+            if (is_array($formsIds)) {
+                $formsIds = array_filter($formsIds, function ($formId) {
+                    return is_scalar($formId) && (strval(intval($formId)) == strval($formId));
+                });
+            } else {
+                $formsIds = null;
+            }
+        }
+        if (!empty($formsIds)) {
+            return $formManager->getMany($formsIds);
+        } else {
+            return $formManager->getAll();
+        }
     }
 }

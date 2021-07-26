@@ -12,8 +12,12 @@
  * Utilisation {{newtextsearch}} en lieu eet place de {{textsearch}}
  **/
 
+ use YesWiki\Bazar\Controller\EntryController;
+ use YesWiki\Bazar\Service\EntryManager;
+ use YesWiki\Bazar\Service\FormManager;
+ use YesWiki\Bazar\Service\SearchManager;
 
-// On récupére ou initialise toutes le varible comme pour textsearch
+ // On récupére ou initialise toutes le varible comme pour textsearch
 // label à afficher devant la zone de saisie
 $label = $this->GetParameter('label', _t('WHAT_YOU_SEARCH').'&nbsp;: ');
 // largeur de la zone de saisie
@@ -28,7 +32,12 @@ $separator = $this->GetParameter('separator', false);
 $prefixe = $this->config['table_prefix'];
 // prefixe des tables pour ce wiki
 $user = $this->GetUser();
+// nombre de pages dont on affiche une partie du contenu
+$maxDisplayedPages = 25;
 
+
+$entryController = $this->services->get(EntryController::class);
+$entryManager = $this->services->get(EntryManager::class);
 
 // se souvenir si c'était :
 // -- un paramétre de l'action : {{textsearch phrase="Test"}}
@@ -63,13 +72,13 @@ if (!function_exists('displayNewSearchResult')) {
     function displayNewSearchResult($string, $phrase)
     {
         $string = strip_tags($string);
-        $query = rtrim(str_replace("+", " ", $phrase));
+        $query = trim(str_replace(array("+","?","*"), array(" "," "," "), $phrase));
         $qt = explode(" ", $query);
         $num = count($qt);
         $cc = ceil(154 / $num);
         $string_re = '';
         for ($i = 0; $i < $num; $i++) {
-            $tab[$i] = preg_split("/($qt[$i])/i", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
+            $tab[$i] = preg_split("/($qt[$i])/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
             if (count($tab[$i])>1) {
                 $avant[$i] = strip_tags(mb_substr($tab[$i][0], -$cc, $cc));
                 $apres[$i] = strip_tags(mb_substr($tab[$i][2], 0, $cc));
@@ -82,9 +91,55 @@ if (!function_exists('displayNewSearchResult')) {
 
 // lancement de la recherche
 if ($phrase) {
+    // extract needles with values in list
+    // find in values for entries
+    $formManager = $this->services->get(FormManager::class);
+    $forms = $formManager->getAll();
+    $searchManager = $this->services->get(SearchManager::class);
+    $needles = $searchManager->searchWithLists(str_replace(array('*', '?'), array('', '_'), $phrase), $forms);
+    $requeteSQLForList = '';
+    if (!empty($needles)) {
+        $first = true;
+        // generate search
+        foreach ($needles as $needle => $results) {
+            if (!empty($results)) {
+                if ($first) {
+                    $first = false;
+                } else {
+                    $requeteSQLForList .= ' AND ';
+                }
+                $requeteSQLForList .= '(';
+                // add search in list
+                // $results is an array not empty only if list
+                $firstResult = true;
+                foreach ($results as $result) {
+                    if ($firstResult) {
+                        $firstResult = false;
+                    } else {
+                        $requeteSQLForList .= ' OR ';
+                    }
+                    if (!$result['isCheckBox']) {
+                        $requeteSQLForList .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
+                    } else {
+                        $requeteSQLForList .= ' body REGEXP \'"'.str_replace('_', '\\_', $result['propertyName']).'":(' .
+                            '"'.$result['key'] . '"'.
+                            '|"[^"]*,' . $result['key'] . '"'.
+                            '|"' . $result['key'] . ',[^"]*"'.
+                            '|"[^"]*,' .$result['key'] . ',[^"]*"'.
+                            ')\'';
+                    }
+                }
+                $requeteSQLForList .= ')';
+            }
+        }
+    }
+    if (!empty($requeteSQLForList)) {
+        $requeteSQLForList = ' OR ('.$requeteSQLForList.') ';
+    }
+    
     // Modification de caractère spéciaux
-    $phrase= str_replace(array('*', '?'), array('%', '_'), $phrase);
-    $phrase = addslashes($phrase);
+    $phraseFormatted= str_replace(array('*', '?'), array('%', '_'), $phrase);
+    $phraseFormatted = addslashes($phraseFormatted);
 
     // Blablabla SQL
     $requestfull = 'SELECT body, tag FROM '.$prefixe.'pages
@@ -93,7 +148,7 @@ if ($phrase) {
                   AND ( list IS NULL OR list ="*" '.
                   ($user ? 'OR owner = "'.$user['name'].'" OR list = "+" OR (list NOT LIKE "%!'.$user['name'].'%" AND list LIKE "%'.$user['name'].'")':'').')'.
                   // TODO retrouver la facon d'afficher les commentaires (AFFICHER_COMMENTAIRES ? '':'AND tag NOT LIKE "comment%"').
-                  ' AND body LIKE "%' . $phrase . '%"
+                  ' AND body LIKE "%' . $phraseFormatted . '%"'.$requeteSQLForList.'
                   ORDER BY tag';
 
     // exécution de la requete
@@ -104,28 +159,42 @@ if ($phrase) {
             $js = '';
         }
         // affichage des resultats
-        // restauration de la chaine de base
-        $phrase = str_replace(array('%','_'), array('*', '?'), $phrase);
 
         // affichage des résultats en liste
         if (empty($separator)) {
             echo $this->Format('---- --- **Résultats de la recherche [""'.$phrase.'""] :---**');
             echo('<ol>');
+            $counter = 0;
             foreach ($resultat as $i => $page) {
                 if ($this->HasAccess("read", $page["tag"])) {
                     $lien = $this->ComposeLinkToPage($page["tag"]);
                     echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, "</h4>";
-                    echo displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase);
-                    echo "</li>\n";
+                    $extract= '';
+                    if ($counter < $maxDisplayedPages) {
+                        if ($entryManager->isEntry($page["tag"])) {
+                            $renderedEntry = $entryController->view($page["tag"], '', false); // without footer
+                            $extract = displayNewSearchResult($renderedEntry, $phrase);
+                        }
+                        if (empty($extract)) {
+                            $extract = displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase);
+                        }
+                        $counter += 1;
+                    }
+                    echo $extract."</li>\n";
                 }
             }
             echo('</ol>');
 
         // affichage des résultats en ligne
         } else {
-            foreach ($resultat as $line) {
-                echo($this->ComposeLinkToPage($line['tag']).' ');
+            $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
+            echo '<p>'._t('SEARCH_RESULT_OF').' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
+            foreach ($resultat as $i => $line) {
+                if ($this->HasAccess("read", $line["tag"])) {
+                    echo((($i>0) ? $separator:'').$this->ComposeLinkToPage($line['tag']));
+                }
             }
+            echo '</p>', "\n";
         }
         $GLOBALS['js'] = $js;
     } else {
