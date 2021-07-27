@@ -286,7 +286,7 @@ var SYNTAX = {
                       pagelist.push(pageTag);
                     }
                   }
-                  // remove previous typehead and refresh source
+                  // remove previous typeahead and refresh source
                   $('#wikiurl-page-list-input').typeahead('destroy');
                   $('#wikiurl-page-list-input').typeahead({ source: pagelist, items: 5});
                 },
