@@ -17,7 +17,7 @@ export default {
               pages.push(pageTag);
             }
           }
-          // remove previous typehead and refresh source
+          // remove previous typeahead and refresh source
           $(this.$refs.input).typeahead('destroy');
           $(this.$refs.input).typeahead({ source: pages, items: 5});
         }
