@@ -41,11 +41,12 @@ class TagsField extends EnumField
 
         $script = '$(function(){
             var tagsexistants = [' . $allTags . '];
-            var pagetag = $(\'#formulaire .yeswiki-input-pagetag\');
+            var pagetag = $(\'#formulaire .yeswiki-input-pagetag[name="'.$this->getName().'"]\');
             pagetag.tagsinput({
                 typeahead: {
-                    afterSelect: function(val) { this.$element.val(""); },
-                    source: tagsexistants
+                    afterSelect: function(val) { pagetag.val(""); },
+                    source: tagsexistants,
+                    autoSelect: false,
                 },
                 confirmKeys: [13, 186, 188]
             });
