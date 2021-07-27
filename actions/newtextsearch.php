@@ -69,7 +69,7 @@ if (!$paramPhrase) {
 
 if (!function_exists('displayNewSearchResult')) {
     /* fonction nécessaire à l'affichage en contexte */
-    function displayNewSearchResult($string, $phrase)
+    function displayNewSearchResult($string, $phrase, $needles = [])
     {
         $string = strip_tags($string);
         $query = trim(str_replace(array("+","?","*"), array(" "," "," "), $phrase));
@@ -77,12 +77,24 @@ if (!function_exists('displayNewSearchResult')) {
         $num = count($qt);
         $cc = ceil(154 / $num);
         $string_re = '';
-        for ($i = 0; $i < $num; $i++) {
-            $tab[$i] = preg_split("/($qt[$i])/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
-            if (count($tab[$i])>1) {
-                $avant[$i] = strip_tags(mb_substr($tab[$i][0], -$cc, $cc));
-                $apres[$i] = strip_tags(mb_substr($tab[$i][2], 0, $cc));
-                $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant[$i] . '<b>' . $tab[$i][1] . '</b>' . $apres[$i] . '<i style="color:silver;">[…]</i></p> ';
+        foreach ($needles as $needle => $result) {
+            if (preg_match('/'.$needle.'/i', $string, $matches)) {
+                $tab = preg_split("/(".$matches[0].")/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
+                if (count($tab)>1) {
+                    $avant = strip_tags(mb_substr($tab[0], -$cc, $cc));
+                    $apres = strip_tags(mb_substr($tab[2], 0, $cc));
+                    $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant . '<b>' . $tab[1] . '</b>' . $apres . '<i style="color:silver;">[…]</i></p> ';
+                }
+            }
+        }
+        if (empty($string_re)) {
+            for ($i = 0; $i < $num; $i++) {
+                $tab[$i] = preg_split("/($qt[$i])/iu", $string, 2, PREG_SPLIT_DELIM_CAPTURE);
+                if (count($tab[$i])>1) {
+                    $avant[$i] = strip_tags(mb_substr($tab[$i][0], -$cc, $cc));
+                    $apres[$i] = strip_tags(mb_substr($tab[$i][2], 0, $cc));
+                    $string_re .= '<p style="margin-top:0;margin-left:1rem;"><i style="color:silver;">[…]</i>' . $avant[$i] . '<b>' . $tab[$i][1] . '</b>' . $apres[$i] . '<i style="color:silver;">[…]</i></p> ';
+                }
             }
         }
         return $string_re;
@@ -109,15 +121,12 @@ if ($phrase) {
                     $requeteSQLForList .= ' AND ';
                 }
                 $requeteSQLForList .= '(';
+                // add regexp standard search
+                $requeteSQLForList .= 'body REGEXP \''.$needle.'\'';
                 // add search in list
                 // $results is an array not empty only if list
-                $firstResult = true;
                 foreach ($results as $result) {
-                    if ($firstResult) {
-                        $firstResult = false;
-                    } else {
-                        $requeteSQLForList .= ' OR ';
-                    }
+                    $requeteSQLForList .= ' OR ';
                     if (!$result['isCheckBox']) {
                         $requeteSQLForList .= ' body LIKE \'%"'.str_replace('_', '\\_', $result['propertyName']).'":"'.$result['key'].'"%\'';
                     } else {
@@ -149,7 +158,7 @@ if ($phrase) {
                   ($user ? 'OR owner = "'.$user['name'].'" OR list = "+" OR (list NOT LIKE "%!'.$user['name'].'%" AND list LIKE "%'.$user['name'].'")':'').')'.
                   // TODO retrouver la facon d'afficher les commentaires (AFFICHER_COMMENTAIRES ? '':'AND tag NOT LIKE "comment%"').
                   ' AND body LIKE "%' . $phraseFormatted . '%"'.$requeteSQLForList.'
-                  ORDER BY tag';
+                  GROUP BY tag ORDER BY tag LIMIT 100';
 
     // exécution de la requete
     if ($resultat = $this->LoadAll($requestfull)) {
@@ -173,10 +182,10 @@ if ($phrase) {
                     if ($counter < $maxDisplayedPages) {
                         if ($entryManager->isEntry($page["tag"])) {
                             $renderedEntry = $entryController->view($page["tag"], '', false); // without footer
-                            $extract = displayNewSearchResult($renderedEntry, $phrase);
+                            $extract = displayNewSearchResult($renderedEntry, $phrase, $needles);
                         }
                         if (empty($extract)) {
-                            $extract = displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase);
+                            $extract = displayNewSearchResult($this->Format($page["body"], 'wakka', $page["tag"]), $phrase, $needles);
                         }
                         $counter += 1;
                     }

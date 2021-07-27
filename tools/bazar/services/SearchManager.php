@@ -34,7 +34,8 @@ class SearchManager
                 for ($i=1; $i < 5; $i++) {
                     if (!empty($matches[$i][$key])) {
                         if (!array_key_exists($matches[$i][$key], $needles)) {
-                            $needles[$matches[$i][$key]] = [];
+                            $needle = $this->prepareNeedleForRegexp($matches[$i][$key]);
+                            $needles[$needle] = [];
                         }
                     }
                 }
@@ -73,7 +74,7 @@ class SearchManager
                     foreach ($options as $key => $option) {
                         foreach ($needles as $needle => $values) {
                             // mb_strtolower instead of strtolower to manage utf 8 characters
-                            if (strpos(mb_strtolower($option), mb_strtolower($needle)) !== false) {
+                            if (preg_match('/'.mb_strtolower($needle).'/i', mb_strtolower($option), $matches)) {
                                 $results[] = [
                                     'propertyName' => $field->getPropertyName(),
                                     'key' => $key,
@@ -87,5 +88,47 @@ class SearchManager
             }
         }
         return $results;
+    }
+
+    /**
+     * prepare needle by removing accents and define string for regexp
+     * @param string $needle
+     * @return string
+     */
+    private function prepareNeedleForRegexp(string $needle): string
+    {
+        // remove accents
+        $needle = str_replace(
+            ['à','á','â','ã','ä','ç','è','è','é','ê','ë','ì','í','î','ï','ñ','ò','ó','ô','õ','ö','ù','ú','û','ü','ý','ÿ','À','Á','Â','Ã','Ä','Ç','È','É','Ê','Ë','Ì','Í','Î','Ï','Ñ','Ò','Ó','Ô','Õ','Ö','Ù','Ú','Û','Ü','Ý'],
+            ['a','a','a','a','a','c','e','e','e','e','e','i','i','i','i','n','o','o','o','o','o','u','u','u','u','y','y','a','a','a','a','a','c','e','e','e','e','i','i','i','i','n','o','o','o','o','o','u','u','u','u','y'],
+            $needle
+        );
+
+        // add for regexp
+        $needle = str_replace(
+            [
+                'a',
+                'c',
+                'e',
+                'i',
+                'n',
+                'o',
+                'u',
+                'y',
+            ],
+            [
+                '(?:a|à|á|â|ã|ä|A|À|Á|Â|Ã|Ä)',
+                '(?:c|ç|C|Ç)',
+                '(?:e|è|é|ê|ë|E|È|É|Ê|Ë)',
+                '(?:i|ì|í|î|ï|I|Ì|Í|Î|Ï)',
+                '(?:n|ñ|N|Ñ)',
+                '(?:o|ò|ó|ô|õ|ö|O|Ò|Ó|Ô|Õ|Ö)',
+                '(?:u|ù|ú|û|ü|U|Ù|Ú|Û|Ü)',
+                '(?:y|ý|ÿ|Y|Ý)',
+            ],
+            $needle
+        );
+
+        return $needle;
     }
 }

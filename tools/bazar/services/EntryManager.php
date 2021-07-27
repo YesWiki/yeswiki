@@ -201,7 +201,7 @@ class EntryManager
                     // add standard search
                     $search = $this->convertToRawJSONStringForREGEXP($needle);
                     $search = str_replace('_', '\\_', $search);
-                    $requeteSQL .= ' body LIKE \'%' . $search . '%\'';
+                    $requeteSQL .= ' body REGEXP \'' . $search . '\'';
                     // add search in list
                     // $results is an array not empty only if list
                     foreach ($results as $result) {
