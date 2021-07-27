@@ -114,6 +114,11 @@ class TagsField extends EnumField
         }
     }
 
+    public function getName()
+    {
+        return $this->name;
+    }
+
     public function getOptions()
     {
         if (empty($this->options)) {
