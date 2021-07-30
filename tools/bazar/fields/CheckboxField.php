@@ -125,7 +125,7 @@ abstract class CheckboxField extends EnumField
                 itemValue: \'id\',
                 itemText: \'title\',
                 typeahead: {
-                    afterSelect: function(val) { bazartag["'.$this->propertyName.'"].val(""); },
+                    afterSelect: function(val) { bazartag["'.$this->propertyName.'"].tagsinput(\'input\').val(""); },
                     source: tagsexistants,
                     autoSelect: false,
                 },

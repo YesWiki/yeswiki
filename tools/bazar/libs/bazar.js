@@ -668,7 +668,9 @@ $(document).ready(function () {
   });
 
   $('.bootstrap-tagsinput').on('change', function () {
-    $(this).find('input').val('');
+    $(this).parent().find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function () {
+      $(this).tagsinput('input').val('');
+    });
   });
 
   $.extend($.fn.typeahead.Constructor.prototype, {

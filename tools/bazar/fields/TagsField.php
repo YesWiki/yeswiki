@@ -44,7 +44,7 @@ class TagsField extends EnumField
             var pagetag = $(\'#formulaire .yeswiki-input-pagetag[name="'.$this->getName().'"]\');
             pagetag.tagsinput({
                 typeahead: {
-                    afterSelect: function(val) { pagetag.val(""); },
+                    afterSelect: function(val) { pagetag.tagsinput(\'input\').val(""); },
                     source: tagsexistants,
                     autoSelect: false,
                 },

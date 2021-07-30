@@ -24,7 +24,7 @@ if (!CACHER_MOTS_CLES && $this->HasAccess("write") && $this->HasAccess("read")) 
     var pagetag = $(\'#ACEditor .yeswiki-input-pagetag\');
 	pagetag.tagsinput({
 		typeahead: {
-            afterSelect: function(val) {pagetag.val(""); },
+            afterSelect: function(val) {pagetag.tagsinput(\'input\').val(""); },
 			source: tagsexistants,
             autoSelect:false,
         },
