@@ -57,10 +57,35 @@ class Configuration
     public function write()
     {
         $content = "<?php\n\$wakkaConfig = ";
-        $test = var_export($this->_parameters, true);
 
-        $content .= var_export($this->_parameters, true);
+        $content .= $this->customVarExport($this->_parameters, true);
         $content .= ";\n";
         file_put_contents($this->_file, $content);
+    }
+
+    /**
+     * PHP var_export() with short array syntax (square brackets) indented 2 spaces.
+     * tips : https://www.php.net/manual/en/function.var-export.php#124194
+     * NOTE: The only issue is when a string value has `=>\n[`, it will get converted to `=> [`
+     * @param mixed $expression
+     * @param bool $return
+     * @return null|string
+     */
+    private function customVarExport($expression, $return=false): ?string
+    {
+        $export = var_export($expression, true);
+        $patterns = [
+            "/array \(/" => '[',
+            "/^([ ]*)\)(,?)$/m" => '$1]$2',
+            "/=>[ ]?\n[ ]+\[/" => '=> [',
+            "/([ ]*)(\'[^\']+\') => ([\[\'])/" => '$1$2 => $3',
+        ];
+        $export = preg_replace(array_keys($patterns), array_values($patterns), $export);
+        if ((bool)$return) {
+            return $export;
+        } else {
+            echo $export;
+            return null;
+        }
     }
 }
