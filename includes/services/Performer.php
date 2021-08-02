@@ -94,7 +94,11 @@ class Performer
                             'baseName' => $baseName,
                             'isDefinedAsClass' => $isDefinedAsClass
                         ]);
-                    } else {
+                    } elseif (
+                        // TODO remove this test when removing actions/header.php and footer.php
+                        !isset($object['filePath']) // object not already defined
+                        ||  !in_array($filePath, ['actions/header.php','actions\header.php','actions/footer.php','actions\footer.php'])
+                    ) {
                         $object = [
                             'filePath' => $filePath,
                             'baseName' => $baseName,
@@ -210,6 +214,7 @@ class Performer
         if (!Performer::TYPES[$objectType]) {
             throw new PerformerException("Invalid type $objectType");
         }
+        return $this->objectList[$objectType];
         return array_unique(array_keys($this->objectList[$objectType]));
     }
 }
