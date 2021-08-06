@@ -16,7 +16,7 @@ class UserManagerTest extends TestCase
     public function testUserManagerExisting(): UserManager
     {
         require_once 'includes/YesWikiLoader.php';
-        $wiki = YesWikiLoader::getWiki();
+        $wiki = YesWikiLoader::getWiki(true);
         $this->assertTrue($wiki->services->has(UserManager::class));
         return $wiki->services->get(UserManager::class);
     }

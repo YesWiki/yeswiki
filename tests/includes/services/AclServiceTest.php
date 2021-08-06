@@ -15,7 +15,7 @@ class AclServiceTest extends TestCase
     public function testACLServiceExisting(): AclService
     {
         require_once 'includes/YesWikiLoader.php';
-        $wiki = YesWikiLoader::getWiki();
+        $wiki = YesWikiLoader::getWiki(true);
         $this->assertTrue($wiki->services->has(AclService::class));
         return $wiki->services->get(AclService::class);
     }

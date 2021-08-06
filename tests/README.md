@@ -41,7 +41,7 @@ class MyClassTest extends TestCase
 public function testMyFunction()
 {
     require_once 'includes/YesWikiLoader.php';
-    $wiki = YesWikiLoader::getWiki();
+    $wiki = YesWikiLoader::getWiki(true);
     $this->assertTrue(true/*... to modify*/);
 }
 ```

@@ -14,7 +14,7 @@ class YesWikiTest extends TestCase
     public function testInitWiki():Wiki
     {
         require_once 'includes/YesWikiLoader.php';
-        $wiki = YesWikiLoader::getWiki();
+        $wiki = YesWikiLoader::getWiki(true);
         // services should not be empty
         $this->assertTrue(!is_null($wiki));
         $this->assertTrue($wiki->services->has(Wiki::class));

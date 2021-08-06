@@ -25,7 +25,7 @@ class YesWikiLoader
     {
     } // prevent public usage
 
-    public static function getWiki(): Wiki
+    public static function getWiki(bool $test = false): Wiki
     {
         if (is_null(self::$wiki)) {
             require_once 'includes/autoload.inc.php';
@@ -36,11 +36,13 @@ class YesWikiLoader
 
             $loadedWiki = require_once 'includes/YesWiki.php';
             if ($loadedWiki !== true || is_null(self::$wiki)) {
-                // params to succeed to instanciate wiki
-                $_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '';
-                $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
-                $_SERVER['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
-                $_SESSION = $_SESSION ?? [];
+                // params to succeed to instanciate wiki for tests
+                if ($test) {
+                    $_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '';
+                    $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
+                    $_SERVER['REMOTE_ADDR'] = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                    $_SESSION = $_SESSION ?? [];
+                }
 
                 self::$wiki = new Wiki();
             }
