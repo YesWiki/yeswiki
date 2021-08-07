@@ -111,7 +111,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                                 ) {
                                     $htmldata .=
                                     'data-'.htmlspecialchars($key).'="'.
-                                    htmlspecialchars($value).'" ';
+                                    htmlspecialchars(is_array($value)?'['.implode(',', $value).']':$value).'" ';
                                 }
                             }
                         }
