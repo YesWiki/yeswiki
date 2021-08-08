@@ -2,12 +2,12 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use PHPUnit\Framework\TestCase;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Core\YesWikiLoader;
-use YesWiki\Wiki;
+use YesWiki\Test\Core\YesWikiTestCase;
 
-class UserManagerTest extends TestCase
+require_once 'tests/YesWikiTestCase.php';
+
+class UserManagerTest extends YesWikiTestCase
 {
     /**
      * @covers UserManager::__construct
@@ -15,8 +15,7 @@ class UserManagerTest extends TestCase
      */
     public function testUserManagerExisting(): UserManager
     {
-        require_once 'includes/YesWikiLoader.php';
-        $wiki = YesWikiLoader::getWiki(true);
+        $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(UserManager::class));
         return $wiki->services->get(UserManager::class);
     }

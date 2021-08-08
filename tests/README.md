@@ -20,11 +20,11 @@ THe whole documentation is available here : https://phpunit.de and https://phpun
 
 namespace YesWiki\Test\Bazar\Actions;
 
-use PHPUnit\Framework\TestCase;
-use YesWiki\Core\YesWikiLoader;
-use YesWiki\Wiki;
+use YesWiki\Test\Core\YesWikiTestCase;
 
-class MyClassTest extends TestCase
+require_once 'tests/YesWikiTestCase.php';
+
+class MyClassTest extends YesWikiTestCase
 {
     
     /**
@@ -40,8 +40,7 @@ class MyClassTest extends TestCase
 ```
 public function testMyFunction()
 {
-    require_once 'includes/YesWikiLoader.php';
-    $wiki = YesWikiLoader::getWiki(true);
+    $wiki = $this->getWiki();
     $this->assertTrue(true/*... to modify*/);
 }
 ```

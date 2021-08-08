@@ -2,20 +2,19 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use PHPUnit\Framework\TestCase;
 use YesWiki\Core\Service\AclService;
-use YesWiki\Core\YesWikiLoader;
-use YesWiki\Wiki;
+use YesWiki\Test\Core\YesWikiTestCase;
 
-class AclServiceTest extends TestCase
+require_once 'tests/YesWikiTestCase.php';
+
+class AclServiceTest extends YesWikiTestCase
 {
     /**
      * @return AclService
      */
     public function testACLServiceExisting(): AclService
     {
-        require_once 'includes/YesWikiLoader.php';
-        $wiki = YesWikiLoader::getWiki(true);
+        $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(AclService::class));
         return $wiki->services->get(AclService::class);
     }
