@@ -106,7 +106,7 @@ class TemplateEngine
         return $this->twigLoader->exists($templatePath);
     }
 
-    // second argument provide namespace, so we when we render '@bazar/bazaraliste.twig'
+    // second argument provide namespace, so we when we render '@bazar/bazarliste.twig'
     // it will look first in custom/templates/bazar/,
     // then in tools/XXX/templates/bazar/
     // and finally in tools/bazar/templates/

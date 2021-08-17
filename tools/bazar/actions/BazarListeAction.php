@@ -44,10 +44,10 @@ class BazarListeAction extends YesWikiAction
                 $icon = $this->params->get('baz_marker_icon');
             }
         }
-        
+
         // COLORS FIELD
         $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null ;
-        
+
         // COLORS
         $color = $_GET['color'] ?? $arg['color'] ?? null ;
         $colorAlreadyDefined = ($color == $this->params->get('baz_marker_color') || is_array($color)) ;
@@ -251,7 +251,7 @@ class BazarListeAction extends YesWikiAction
         ]);
     }
 
-    private function renderEntries($entries) : string
+    private function renderEntries($entries): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
 
@@ -292,13 +292,18 @@ class BazarListeAction extends YesWikiAction
         }
 
         try {
-            return $this->render("@bazar/{$templateName}", $data);
+            // allow custom folder for templates if the templates starts with @
+            if (startsWith($templateName, '@')) {
+                return $this->render("{$templateName}", $data);
+            } else {
+                return $this->render("@bazar/{$templateName}", $data);
+            }
         } catch (TemplateNotFound $e) {
             return '<div class="alert alert-danger">'.$e->getMessage().'</div>';
         }
     }
 
-    private function formatFilters($entries, $forms) : array
+    private function formatFilters($entries, $forms): array
     {
         $formManager = $this->getService(FormManager::class);
 
@@ -407,7 +412,7 @@ class BazarListeAction extends YesWikiAction
                     }
                 }
 
-                
+
                 // reorder $filters
 
                 uasort($filters, function ($a, $b) {
@@ -431,7 +436,7 @@ class BazarListeAction extends YesWikiAction
                         unset($filter['index']) ;
                     }
                 }
-                
+
                 return $filters;
             }
         }
@@ -470,7 +475,7 @@ class BazarListeAction extends YesWikiAction
         }
     }
 
-    private function buildFieldSorter($ordre, $champ) : callable
+    private function buildFieldSorter($ordre, $champ): callable
     {
         return function ($a, $b) use ($ordre, $champ) {
             if ($ordre == 'desc') {
