@@ -555,22 +555,7 @@ Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l\'out
 Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/associations/yeswiki/formulaires/1 En contribuant (même juste un peu)]]** vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci
 
 {{end elem=\"col\"}}
-{{end elem=\"grid\"}}
-\"\"<!-- Matomo -->
-<script type=\"text/javascript\">
-  var _paq = window._paq || [];
-  /* tracker methods like \"setCustomDimension\" should be called before \"trackPageView\" */
-  _paq.push([\'trackPageView\']);
-  _paq.push([\'enableLinkTracking\']);
-  (function() {
-    var u=\"//stats.coop.tools/\";
-    _paq.push([\'setTrackerUrl\', u+\'matomo.php\']);
-    _paq.push([\'setSiteId\', \'2\']);
-    var d=document, g=d.createElement(\'script\'), s=d.getElementsByTagName(\'script\')[0];
-    g.type=\'text/javascript\'; g.async=true; g.defer=true; g.src=u+\'matomo.js\'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-<!-- End Matomo Code -->\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{end elem=\"grid\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageRapideHaut',  now(), '{{moteurrecherche template=\"moteurrecherche_button.tpl.html\"}}
 {{buttondropdown icon=\"cog\" caret=\"0\"}}
  - {{login template=\"modal.tpl.html\" nobtn=\"1\"}}
