@@ -132,6 +132,8 @@ class BazarListeAction extends YesWikiAction
             'search' => $this->formatBoolean($arg, false, 'search'),
             // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
+            // Iframe ?
+            'isInIframe' => testUrlInIframe(),
 
             // FACETTES
             // Identifiants des champs utilisés pour les facettes

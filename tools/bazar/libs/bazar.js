@@ -557,24 +557,22 @@ $(document).ready(function () {
     changeURLParameter('facette', newquery);
 
     // on ajuste les liens vers les formulaires d'export
-    if (newquery !== '') {
-      $('.export-links a').each(
-        function() {
-          var link = $(this).attr('href');
-          var queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null;
-          if (queryexists == null) {
-            $(this).attr('href', link+'&query='+newquery);
-          } else {
-            var queryinit = $('#queryinit').val();
-            if (queryinit) { newquery = queryinit+'|'+newquery}
-            $(this).attr(
-              'href',
-              link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), '&query=' + newquery)
-            );
-          }
+    $('.export-links a').each(
+      function() {
+        var link = $(this).attr('href');
+        var queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null;
+        if (queryexists == null) {
+          $(this).attr('href', link+((newquery !== '')?'&query='+newquery:''));
+        } else {
+          var queryinit = $('#queryinit').val();
+          if (queryinit) { newquery = queryinit+'|'+newquery}
+          $(this).attr(
+            'href',
+            link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '')?'&query='+newquery:''))
+          );
         }
-      );
-    }
+      }
+    );
 
     // au moins un filtre à actionner
     if (tabfilters.length > 0) {

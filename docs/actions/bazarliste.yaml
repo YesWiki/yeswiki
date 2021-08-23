@@ -74,6 +74,13 @@ actions:
         type: checkbox
         showOnlyFor:
           - bazarcalendar
+      showexportbuttons:
+        label: _t(AB_bazar_commons2_showexportbuttons)
+        type: checkbox
+        advanced: true
+        default: 0
+        checkedvalue: 1
+        uncheckedvalue: 0
 
   # -------------------------------------
   # Champs Communs concernant les filtres

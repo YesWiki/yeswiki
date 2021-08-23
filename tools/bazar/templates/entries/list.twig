@@ -118,3 +118,35 @@
     </div>
   {% endblock %}
 {% endif %}
+{# showexportbuttons #}
+{% if not params.isInIframe and params.showexportbuttons %}
+  <div class="export-links pull-right">
+    <a class="btn btn-default btn-mini btn-xs"
+      data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}"
+      href="{{ url({handler:'rss',params:(params.idtypeannonce 
+        ? (params.idtypeannonce|length == 1
+            ? 'id=' ~  params.idtypeannonce|first
+            : params.idtypeannonce|map((id,key) => 'id[' ~ key ~ ']=' ~ id)|join('&')
+          )
+        : []
+        )}) }}">
+      <i class="fa fa-signal icon-signal"></i>
+    </a>
+    <a class="btn btn-default btn-mini btn-xs"
+      data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}"
+      href="{{ url({handler:'',tag:'BazaR',params:'vue=exporter' ~ (params.idtypeannonce ? '&id=' ~ params.idtypeannonce|first : '') }) }}">
+      CSV
+    </a>
+    <a class="btn btn-default btn-mini btn-xs"
+      data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}"
+      href="{{ url({tag:'api',handler: ( params.idtypeannonce ? 'forms/' ~ params.idtypeannonce|first ~'/': '') ~ 'entries'}) }}">
+      JSON
+    </a>
+    <a class="btn btn-default btn-mini btn-xs"
+      data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_WIDGET')|raw('html') }}"
+      href="{{ url({handler:'widget',params:'id=' ~ (params.idtypeannonce ? params.idtypeannonce|join(',') : forms|map(form => form.bn_id_nature)|join(','))}) }}">
+      {{ _t('BAZ_WIDGET') }}
+    </a>
+  </div>
+{% endif %}
+{# end for showexportbuttons #}
