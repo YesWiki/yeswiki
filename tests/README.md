@@ -9,7 +9,7 @@ THe whole documentation is available here : https://phpunit.de and https://phpun
 
 1. in command line, go to root directory.
 2. ensure phpunit is installed with command `composer install`
-3. start test with command `./vendor/bin.phpunit tests`
+3. start test with command `./vendor/bin/phpunit tests`
 
 ## Create a test
 
