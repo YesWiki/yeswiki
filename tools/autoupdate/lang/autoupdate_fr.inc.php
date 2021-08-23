@@ -42,5 +42,7 @@ $GLOBALS['translations'] = array_merge(
         'AU_PHP_TOO_LOW_VERSION_UPDATE' => "changer de version YesWiki",
         'AU_PHP_TOO_LOW_UPDATE' => "mettre à jour YesWiki",
         'AU_PHP_TOO_LOW_FORCE_UPDATE' => "réinstaller YesWiki",
+        'AU_CHANGELOG' => "Notes de versions",
+        'AU_CHANGELOG_HINT' => "Cliquer pour découvrir les dernières modifications incluses dans la mise à jour de YesWiki",
     )
 );
