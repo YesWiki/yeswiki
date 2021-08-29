@@ -294,12 +294,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         try {
-            // allow custom folder for templates if the templates starts with @
-            if (startsWith($templateName, '@')) {
-                return $this->render("{$templateName}", $data);
-            } else {
-                return $this->render("@bazar/{$templateName}", $data);
-            }
+            return $this->render("@bazar/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
             return '<div class="alert alert-danger">'.$e->getMessage().'</div>';
         }
