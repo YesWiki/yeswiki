@@ -63,13 +63,13 @@ class ApiController extends YesWikiController
         } elseif ($output == 'ical') {
             return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
         } elseif (isset($_GET['fields'])) {
-            $fields = explode(',',$_GET['fields']);
+            $fields = explode(',', $_GET['fields']);
             $lightEntries = [];
             if (!empty($entries) && !empty($fields)) {
-                foreach($entries as $id => $entry) {
+                foreach ($entries as $id => $entry) {
                     $lightEntry = [];
-                    foreach($fields as $field_name){
-                        if (isset($entry[$field_name]))  {
+                    foreach ($fields as $field_name) {
+                        if (isset($entry[$field_name])) {
                             $lightEntry[$field_name] = $entry[$field_name];
                         }
                     }
@@ -256,8 +256,8 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/only-titles') . '</code></b><br />
-        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (et l\'url)<br />
+        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries&fields=bf_titre') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (il est possible de spécifier d\autres champs en séparant leur nom par des \',\')<br />
         </p>';
 
         $output .= '
@@ -293,8 +293,8 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}/only-titles') . '</code></b><br />
-        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (et l\'url)<br />
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/{formId}&fields=bf_titre') . '</code></b><br />
+        Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (il est possible de spécifier d\'autres champs en séparant leur nom par des \',\' ex: <code>&field=bf_titre,url</code>)<br />
         </p>';
 
         $output .= '
