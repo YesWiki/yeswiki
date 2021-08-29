@@ -301,7 +301,7 @@ class Init
         $routes->addCollection($loader->load('includes/controllers'));
 
         foreach ($wiki->extensions as $extensionKey => $extensionPath) {
-            $controllersDir = __DIR__ . '/../' . $extensionPath . 'controllers';
+            $controllersDir = \getcwd(). '/' . $extensionPath . 'controllers';
             if (is_dir($controllersDir)) {
                 $routes->addCollection($loader->load($controllersDir));
             }
