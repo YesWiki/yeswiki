@@ -106,18 +106,34 @@ class EditConfigAction extends YesWikiAction
      * save data to wakka.config.php
      * @return string|null message to display at the top of the part for editing
      */
-    private function save():?string
+    private function save(): ?string
     {
         $config = new Configuration('wakka.config.php');
         $config->load();
 
         foreach ($this->getAuthorizedKeys() as $key) {
-            $new_value = $this->arguments['post'][$key] ??  null;
-
-            if (empty($new_value)) {
-                unset($config->$key);
+            // some keys could be arrays
+            $k = explode('[', $key);
+            if (isset($k[1])) {
+                $firstLevel = $k[0];
+                $secondLevel = str_replace(']', '', $k[1]);
+                $new_value = $this->arguments['post'][$firstLevel][$secondLevel] ??  null;
+                if (empty($new_value)) {
+                    unset($config->$key);
+                } else {
+                    if (is_array($config->$firstLevel)) {
+                        $config->$firstLevel = array_merge($config->$firstLevel, [$secondLevel => $this->strtoarray($new_value)]);
+                    } else {
+                        $config->$firstLevel = [$secondLevel => $this->strtoarray($new_value)];
+                    }
+                }
             } else {
-                $config->$key = $this->strtoarray($new_value);
+                $new_value = $this->arguments['post'][$key] ??  null;
+                if (empty($new_value)) {
+                    unset($config->$key);
+                } else {
+                    $config->$key = $this->strtoarray($new_value);
+                }
             }
         }
 
@@ -132,7 +148,7 @@ class EditConfigAction extends YesWikiAction
      * get data from config file
      * @return array [$data,$placeholders] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
      */
-    private function getDataFromConfigFile():array
+    private function getDataFromConfigFile(): array
     {
         $config = new Configuration('wakka.config.php');
         $config->load();
@@ -140,10 +156,22 @@ class EditConfigAction extends YesWikiAction
         $data = [];
         $placeholders = [];
         foreach ($this->getAuthorizedKeys() as $key) {
-            if (isset($config->$key)) {
-                $data[$key] = $this->array2Str($config->$key);
+            // some keys could be arrays
+            $k = explode('[', $key);
+            if (isset($k[1])) {
+                $firstLevel = $k[0];
+                $secondLevel = str_replace(']', '', $k[1]);
+                if (isset($config->$firstLevel[$secondLevel])) {
+                    $data[$key] = $this->array2Str($config->$firstLevel[$secondLevel]);
+                } else {
+                    $data[$key] = '';
+                }
             } else {
-                $data[$key] = '';
+                if (isset($config->$key)) {
+                    $data[$key] = $this->array2Str($config->$key);
+                } else {
+                    $data[$key] = '';
+                }
             }
             if ($this->params->has($key)) {
                 $placeholders[$key] = $this->array2Str($this->params->get($key));
@@ -157,7 +185,7 @@ class EditConfigAction extends YesWikiAction
      * @param mixed $value
      * @return string
      */
-    private function array2Str($value):string
+    private function array2Str($value): string
     {
         if (is_array($value)) {
             $value = '['
