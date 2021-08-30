@@ -124,10 +124,9 @@ class Performer
         require_once($object['filePath']);
         $className = $object['baseName'];
         /* extract extension name from path to allow namespace */
-        if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/](handlers|actions)[a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
+        if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
             $extensionName = empty($matches[1]) ? $matches[2]:$matches[1];
-            $classNameWithNamespace = "YesWiki\\".ucfirst(strtolower($extensionName))."\\".
-                (($matches[3] == "actions") ? "Action" : "Handler")."\\".$object['baseName'];
+            $classNameWithNamespace = "YesWiki\\".ucfirst(strtolower($extensionName))."\\".$object['baseName'];
             if (class_exists($classNameWithNamespace)) {
                 $className = $classNameWithNamespace;
             }
