@@ -97,7 +97,25 @@ class EditConfigAction extends YesWikiAction
                 }
             }
             // remove duplicate
-            $this->keys = array_unique($keys);
+            $scannedKeysNames = [];
+            $scannedKeys = [];
+            foreach ($keys as $key) {
+                if (is_array($key)) {
+                    foreach ($key as $firstLevel => $secondLevelKeys) {
+                        if (!in_array($firstLevel, $scannedKeysNames)) {
+                            $scannedKeysNames[] = $firstLevel;
+                            $scannedKeys[] = $key;
+                            break;
+                        }
+                    }
+                } else {
+                    if (!in_array($key, $scannedKeysNames)) {
+                        $scannedKeysNames[] = $key;
+                        $scannedKeys[] = $key;
+                    }
+                }
+            }
+            $this->keys = $scannedKeys;
         }
         return $this->keys;
     }
@@ -113,18 +131,27 @@ class EditConfigAction extends YesWikiAction
 
         foreach ($this->getAuthorizedKeys() as $key) {
             // some keys could be arrays
-            $k = explode('[', $key);
-            if (isset($k[1])) {
-                $firstLevel = $k[0];
-                $secondLevel = str_replace(']', '', $k[1]);
-                $new_value = $this->arguments['post'][$firstLevel][$secondLevel] ??  null;
-                if (empty($new_value)) {
-                    unset($config->$key);
-                } else {
-                    if (is_array($config->$firstLevel)) {
-                        $config->$firstLevel = array_merge($config->$firstLevel, [$secondLevel => $this->strtoarray($new_value)]);
-                    } else {
-                        $config->$firstLevel = [$secondLevel => $this->strtoarray($new_value)];
+            if (is_array($key)) {
+                foreach ($key as $firstLevelKey => $secondLevelKeys) {
+                    foreach ($secondLevelKeys as $secondLevelKey) {
+                        $new_value = $this->arguments['post'][$firstLevelKey][$secondLevelKey] ??  null;
+                        if (empty($new_value)) {
+                            if (isset($config->$firstLevelKey[$secondLevelKey])) {
+                                $tmp = $config->$firstLevelKey;
+                                unset($tmp[$secondLevelKey]);
+                                if (empty($tmp)) {
+                                    unset($config->$firstLevelKey);
+                                } else {
+                                    $config->$firstLevelKey = $tmp;
+                                }
+                            }
+                        } else {
+                            if (isset($config->$firstLevelKey) && is_array($config->$firstLevelKey)) {
+                                $config->$firstLevelKey = array_merge($config->$firstLevelKey, [$secondLevelKey => $this->strtoarray($new_value)]);
+                            } else {
+                                $config->$firstLevelKey = [$secondLevelKey => $this->strtoarray($new_value)];
+                            }
+                        }
                     }
                 }
             } else {
@@ -157,14 +184,18 @@ class EditConfigAction extends YesWikiAction
         $placeholders = [];
         foreach ($this->getAuthorizedKeys() as $key) {
             // some keys could be arrays
-            $k = explode('[', $key);
-            if (isset($k[1])) {
-                $firstLevel = $k[0];
-                $secondLevel = str_replace(']', '', $k[1]);
-                if (isset($config->$firstLevel[$secondLevel])) {
-                    $data[$key] = $this->array2Str($config->$firstLevel[$secondLevel]);
-                } else {
-                    $data[$key] = '';
+            if (is_array($key)) {
+                foreach ($key as $firstLevelKey => $secondLevelKeys) {
+                    foreach ($secondLevelKeys as $secondLevelKey) {
+                        if (isset($config->$firstLevelKey[$secondLevelKey])) {
+                            $data[$firstLevelKey.'['.$secondLevelKey.']'] = $this->array2Str($config->$firstLevelKey[$secondLevelKey]);
+                        } else {
+                            $data[$firstLevelKey.'['.$secondLevelKey.']'] = '';
+                        }
+                        if ($this->params->has($firstLevelKey) && isset($this->params->get($firstLevelKey)[$secondLevelKey])) {
+                            $placeholders[$firstLevelKey.'['.$secondLevelKey.']'] = $this->array2Str($this->params->get($firstLevelKey)[$secondLevelKey]);
+                        }
+                    }
                 }
             } else {
                 if (isset($config->$key)) {
@@ -172,9 +203,9 @@ class EditConfigAction extends YesWikiAction
                 } else {
                     $data[$key] = '';
                 }
-            }
-            if ($this->params->has($key)) {
-                $placeholders[$key] = $this->array2Str($this->params->get($key));
+                if ($this->params->has($key)) {
+                    $placeholders[$key] = $this->array2Str($this->params->get($key));
+                }
             }
         }
         return [$data,$placeholders];
@@ -188,14 +219,25 @@ class EditConfigAction extends YesWikiAction
     private function array2Str($value): string
     {
         if (is_array($value)) {
-            $value = '['
-                .implode(
-                    ',',
-                    array_map(function ($k, $v) {
-                        return "'".$k."' => ". (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
-                    }, array_keys($value), array_values($value))
-                )
-                .']';
+            if (count($value) > 0 && count(array_diff_key($value, array_fill(0, count($value), " "))) == 0) {
+                $value = '['
+                    .implode(
+                        ',',
+                        array_map(function ($k, $v) {
+                            return (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
+                        }, array_keys($value), array_values($value))
+                    )
+                    .']';
+            } else {
+                $value = '['
+                    .implode(
+                        ',',
+                        array_map(function ($k, $v) {
+                            return "'".$k."' => ". (($v === false) ? "false" : (($v=== true) ? "true" : "'".$v."'"));
+                        }, array_keys($value), array_values($value))
+                    )
+                    .']';
+            }
         } elseif (!is_string($value)) {
             try {
                 $value = strval($value);
@@ -221,17 +263,25 @@ class EditConfigAction extends YesWikiAction
             $result = [];
             foreach ($lines as $line) {
                 $extract = explode('=>', $line);
-                if (count($extract) == 2) {
-                    $key = trim($extract[0]);
-                    if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $key, $matches)) {
-                        $key = $matches[1];
+                if (in_array(count($extract), [1,2])) {
+                    if (count($extract) == 2) {
+                        $key = trim($extract[0]);
+                        if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $key, $matches)) {
+                            $key = $matches[1];
+                        }
+                        $val = trim($extract[1]);
+                    } else {
+                        $val = trim($extract[0]);
                     }
-                    $val = trim($extract[1]);
                     if (preg_match('/^\s*(?:\'|")\s*(.*)\s*(?:\'|")\s*$/', $val, $matches)) {
                         $val = $matches[1];
                     }
                     $val = ($val == 'true') ? true : (($val == 'false') ? false : $val);
-                    $result[$key] = $val;
+                    if (count($extract) == 2) {
+                        $result[$key] = $val;
+                    } else {
+                        $result[] = $val;
+                    }
                 }
             }
             if (count($result) > 0) {
@@ -249,8 +299,16 @@ class EditConfigAction extends YesWikiAction
     {
         $help = [];
         foreach ($this->getAuthorizedKeys() as $key) {
-            if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
+            if (!is_array($key) && isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
                 $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
+            } elseif (is_array($key)) {
+                foreach ($key as $firstLevelKey => $secondLevelKeys) {
+                    foreach ($secondLevelKeys as $secondLevelKey) {
+                        if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']'])) {
+                            $help[$firstLevelKey.'['.$secondLevelKey.']'] = _t('EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']');
+                        }
+                    }
+                }
             }
         }
 
