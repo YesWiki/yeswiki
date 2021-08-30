@@ -39,12 +39,12 @@ if ($this->UserIsAdmin()) {
 
     // remove createur field
     // we can do this only starting MySQL>=8.0 and MariaDB>=10.0 (MariaDB 8 and MariaDB 9 do not exist)
-    $result = $this->Query("SELECT tag FROM ".$this->config['table_prefix']."pages WHERE body LIKE '%\"createur\":%'");
+    $result = $this->Query("SELECT tag FROM ".$this->config['table_prefix']."pages WHERE body LIKE '%\"createur\":\"%'");
     if (@mysqli_num_rows($result) > 0 && (@mysqli_get_server_version($dblink) / 10000) >= 8) {
         $output .= 'ℹ️ Removing createur field from bazar entries in ' . $this->config['table_prefix'].'pages table.<br />';
 
         // don't show output because it can be an error if column doesn't exists
-        @$this->Query("UPDATE " . $this->config['table_prefix']. "pages SET body = regexp_replace(body, '\"createur\":\".*?\",', '')");
+        @$this->Query("UPDATE " . $this->config['table_prefix']. "pages SET body = regexp_replace(body, '\"createur\":\"[^\"]*?\",', '')");
         $output .= '✅ Done !<br />';
     } else {
         $output .= '✅ The table '.$this->config['table_prefix'].'pages is already free of createur fields in bazar entries !<br />';
