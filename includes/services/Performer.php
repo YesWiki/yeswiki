@@ -122,8 +122,19 @@ class Performer
     public function createPerformable(array $object, array &$vars, &$output)
     {
         require_once($object['filePath']);
-        if (class_exists($object['baseName'])) {
-            $instance = new $object['baseName']();
+        $className = $object['baseName'];
+        /* extract extension name from path to allow namespace */
+        if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/](handlers|actions)[a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
+            $extensionName = empty($matches[1]) ? $matches[2]:$matches[1];
+            $classNameWithNamespace = "YesWiki\\".ucfirst(strtolower($extensionName))."\\".
+                (($matches[3] == "actions") ? "Action" : "Handler")."\\".$object['baseName'];
+            if (class_exists($classNameWithNamespace)) {
+                $className = $classNameWithNamespace;
+            }
+        }
+
+        if (class_exists($className)) {
+            $instance = new $className();
             $instance->setWiki($this->wiki);
             $instance->setParams($this->params);
             $instance->setArguments($vars);
@@ -135,7 +146,7 @@ class Performer
             $this->wiki->parameter = &$vars;
             return $instance;
         } else {
-            throw new PerformerException("There were a problem while loading {$object['baseName']} at " .
+            throw new PerformerException("There were a problem while loading {$className} at " .
                 "{$object['filePath']}. Ensures the class exists");
         }
     }
