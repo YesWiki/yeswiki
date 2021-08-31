@@ -83,6 +83,10 @@ $GLOBALS['translations'] = array_merge(
         'LEFT' => 'Gauche',
         'CENTER' => 'Centre',
         'RIGHT' => 'Droite',
-        'FAILED' => '&Eacute;chou&eacute;'
+        'FAILED' => '&Eacute;chou&eacute;',
+        
+        // edit config action
+        'EDIT_CONFIG_HINT_attach-video-config[default_video_service]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
+        'EDIT_CONFIG_HINT_attach-video-config[default_peertube_instance]' => 'Adresse du serveur peertube par défaut',
     )
 );
