@@ -224,7 +224,6 @@ class Performer
         if (!Performer::TYPES[$objectType]) {
             throw new PerformerException("Invalid type $objectType");
         }
-        return $this->objectList[$objectType];
         return array_unique(array_keys($this->objectList[$objectType]));
     }
 }
