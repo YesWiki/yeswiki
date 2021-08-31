@@ -32,7 +32,7 @@ if (!empty($actif) && $actif == '1') {
     }
     // d'abord les liens avec des attributs class
     $plugin_output_new = preg_replace(
-        '~<a href="'.preg_quote($this->config['base_url'].$page_active).'" class="(.*)"~Ui',
+        '~<a href="'.preg_quote($this->config['base_url'].$page_active, '~').'" class="(.*)"~Ui',
         '<a class="active-link $1" href="'.$this->config['base_url'].$page_active.'"',
         $plugin_output_new
     );
