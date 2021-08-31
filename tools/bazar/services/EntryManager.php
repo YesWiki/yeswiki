@@ -126,13 +126,13 @@ class EntryManager
     }
 
     /**
-     * Return an array of fiches based on search parameters
-     * @param array $params
+     * Return the request for searching entries in database
+     * @param array &$params
      * @param bool $filterOnReadACL
-     * @param bool $useGuard
-     * @return mixed
+     * @param bool $applyOnAllRevisions
+     * @return $string
      */
-    public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
+    private function prepareRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(
@@ -157,7 +157,7 @@ class EntryManager
 
         $requete =
             'SELECT DISTINCT * FROM ' . $this->dbService->prefixTable('pages') .
-            'WHERE latest="Y" AND comment_on = \'\'';
+            'WHERE '.($applyOnAllRevisions ? '' : 'latest="Y" AND ').' comment_on = \'\'';
 
         // On limite au type de fiche
         if (!empty($params['formsIds'])) {
@@ -351,6 +351,20 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $requete . '</code><hr>';
         }
+
+        return $requete;
+    }
+        
+    /**
+     * Return an array of fiches based on search parameters
+     * @param array $params
+     * @param bool $filterOnReadACL
+     * @param bool $useGuard
+     * @return mixed
+     */
+    public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
+    {
+        $requete = $this->prepareRequest($params, $filterOnReadACL);
 
         // systeme de cache des recherches
         // TODO voir si ça sert à quelque chose
@@ -924,5 +938,69 @@ class EntryManager
         } else {
             return $formManager->getAll();
         }
+    }
+      
+    /**
+     * remove attributes from entries only for admins !!!
+     * @param array $params
+     * @param array $attributesNames
+     * @param bool $applyOnAllRevisions
+     * return bool true if attributesNames are fond and replaced
+     */
+    public function removeAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        if (!$this->wiki->UserIsAdmin()) {
+            return false;
+        }
+
+        /* sanitize params */
+        if (empty($attributesNames)) {
+            throw new \Exception("\$attributesNames sould not be empty !");
+        } elseif (
+            !empty(array_filter(
+                $attributesNames,
+                function ($attributeName) {
+                    return !is_scalar($attributeName);
+                }
+            ))
+            ) {
+            throw new \Exception("\$attributesNames sould be array of string !");
+        }
+
+        $requete = $this->prepareRequest($params, false, $applyOnAllRevisions);
+        // add search for attributes
+        $requete .= ' AND '.implode(' AND ', array_map(function ($attributeName) {
+            return 'body like \'"'.$attributeName.'":"%"%\'';
+        }, $attributesNames));
+
+        $pages = $this->dbService->loadAll($requete);
+
+        if (empty($pages)) {
+            return false;
+        }
+
+        foreach ($pages as $page) {
+            $entry = $this->decode($page['body']);
+            foreach ($params['attributesNames'] as $attributeName) {
+                if (isset($entry[$attributeName])) {
+                    unset($entry[$attributeName]);
+                }
+            }
+
+            // save
+            // on encode en utf-8 pour reussir a encoder en json
+            if (YW_CHARSET != 'UTF-8') {
+                $entry = array_map('utf8_encode', $entry);
+            }
+            $body = json_encode($entry);
+            if ($applyOnAllRevisions) {
+                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(chop($body)) . "'".
+                    " WHERE id = '" . $this->dbService->escape($page['id']) . "';");
+            } else {
+                $this->pageManager->save($entry['id_fiche'], $body);
+            }
+        }
+
+        return true;
     }
 }
