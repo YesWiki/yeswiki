@@ -35,14 +35,17 @@ var DATATABLE_OPTIONS = {
   buttons: [
     {
       extend: 'copy',
+      className: 'btn btn-default',
       text: '<i class="far fa-copy"></i> Copier'
     },
     {
       extend: 'csv',
+      className: 'btn btn-default',
       text: '<i class="fas fa-file-csv"></i> CSV'
     },
     {
       extend: 'print',
+      className: 'btn btn-default',
       text: '<i class="fas fa-print"></i> Imprimer'
     },
     // {
