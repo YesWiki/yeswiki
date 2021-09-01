@@ -1,0 +1,14 @@
+<?php
+
+use YesWiki\Bazar\Controller\EntryController;
+
+$entryController = $this->wiki->services->get(EntryController::class);
+
+$output = '';
+foreach($fiches as $fiche){
+    if (!isset($fiche['external-data'])){
+        $output .= $entryController->view($fiche['id_fiche']);
+    }
+}
+
+echo $output;
