@@ -132,7 +132,7 @@ class EntryManager
      * @param bool $applyOnAllRevisions
      * @return $string
      */
-    private function prepareRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+    private function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(
@@ -364,7 +364,7 @@ class EntryManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-        $requete = $this->prepareRequest($params, $filterOnReadACL);
+        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
 
         // systeme de cache des recherches
         // TODO voir si ça sert à quelque chose
@@ -550,7 +550,7 @@ class EntryManager
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->pageManager->save($data['id_fiche'], json_encode($data));
+        $this->pageManager->save($data['id_fiche'], json_encode($data),'');
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
@@ -967,11 +967,13 @@ class EntryManager
             throw new \Exception("\$attributesNames sould be array of string !");
         }
 
-        $requete = $this->prepareRequest($params, false, $applyOnAllRevisions);
+        $attributesQueries = [];
+        foreach($attributesNames as $attributeName){
+            $attributesQueries[$attributeName] = '*';
+        }
         // add search for attributes
-        $requete .= ' AND '.implode(' AND ', array_map(function ($attributeName) {
-            return 'body like \'"'.$attributeName.'":"%"%\'';
-        }, $attributesNames));
+        $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
+        $requete = $this->prepareSearchRequest($params, false, $applyOnAllRevisions);
 
         $pages = $this->dbService->loadAll($requete);
 
@@ -981,7 +983,7 @@ class EntryManager
 
         foreach ($pages as $page) {
             $entry = $this->decode($page['body']);
-            foreach ($params['attributesNames'] as $attributeName) {
+            foreach ($attributesNames as $attributeName) {
                 if (isset($entry[$attributeName])) {
                     unset($entry[$attributeName]);
                 }
