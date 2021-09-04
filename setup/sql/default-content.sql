@@ -479,7 +479,7 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 ('PageFooter',  now(), '{{section class=\"text-center\"}}
 {{yeswikiversion}}
 {{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-right cover\" file=\"bandeau.png\" height=\"250\" }}
+('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" height=\"250\" }}
 ======Description de mon wiki======
 Double cliquer ici pour changer le texte et l\'image de fond.
 
