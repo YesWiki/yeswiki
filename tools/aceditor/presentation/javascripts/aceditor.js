@@ -228,7 +228,7 @@ var SYNTAX = {
       toolbar.append( '<div class="btn-group pull-right">' +
               '<a class="btn btn-info aceditor-btn aceditor-btn-help" data-remote="true" href="wakka.php?wiki=ReglesDeFormatage" title="'+this.lang['ACEDITOR_HELP']+'">' +
                 this.lang['ACEDITOR_HELP'] +
-                '<i class="fa fa-question-circle"></i>' +
+                '<i class="fa fa-question-circle" style="margin-left: 8px"></i>' +
               '</a>' +
             '</div>');
 
