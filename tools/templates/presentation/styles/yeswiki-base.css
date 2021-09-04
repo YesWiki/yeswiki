@@ -230,6 +230,10 @@ li.toc5 {
   height: 70vh;
   border: 0;
 }
+/* remove first column of revisions */
+#YesWikiModal .first-revisions-selector {
+  display:none;
+}
 
 /* menu du haut fixe */
 #yw-topnav.affix {

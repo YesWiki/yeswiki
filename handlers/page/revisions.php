@@ -63,7 +63,7 @@ if ($this->HasAccess("read")) {
             $c++;
             if (($c <= $max) || !$max) {
                 $output .= "<tr>";
-                $output .= "<td><input type=\"radio\" name=\"a\" value=\"".$page["id"]."\" ".($c == 1 ? "checked=\"checked\"" : "")." /></td>";
+                $output .= "<td class=\"first-revisions-selector\"><input type=\"radio\" name=\"a\" value=\"".$page["id"]."\" ".($c == 1 ? "checked=\"checked\"" : "")." /></td>";
                 $output .= "<td><input type=\"radio\" name=\"b\" value=\"".$page["id"]."\" ".($c == 2 ? "checked=\"checked\"" : "")." /></td>";
                 $output .= "<td>&nbsp;<a href=\"".$this->href("show")."&amp;time=".urlencode($page["time"])."\">".$page["time"]."</a></td>";
                 $output .= "<td>&nbsp;par ".$this->Format($page["user"])."</td>";
