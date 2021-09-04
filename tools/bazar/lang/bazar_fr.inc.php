@@ -313,5 +313,18 @@ $GLOBALS['translations'] = array_merge(
         'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'contenu du formulaire reçu mal formaté.',
         'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'contenu des fiches reçues mal formaté.',
         'BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE' => 'Vous utilisez la paramètre \'query\' pour des fiches externes. Il n\'est pas encore fonctionnel.',
+
+        // for edit config
+        'EDIT_CONFIG_HINT_baz_map_center_lat' => 'Latitude par défaut des affichages cartographiques',
+        'EDIT_CONFIG_HINT_baz_map_center_lon' => 'Longitude par défaut des affichages cartographiques',
+        'EDIT_CONFIG_HINT_baz_map_zoom' => 'Niveau de zoom par défaut des affichages cartographiques',
+        'EDIT_CONFIG_HINT_baz_map_height' => 'Hauteur par défaut en pixels des affichages cartographiques',
+        'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Adresse mail de l\'expéditeur des modifications des fiches bazar',
+        'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un mail aux admininistrateurs à chaque modification de fiche (1 ou 0)',
+        'EDIT_CONFIG_HINT_baz_check_owner_acl_only_for_field_can_edit' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (faux par défaut)',
+        'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Temps (s) entre deux rafraîchissements du cache pour les requêtes JSON pour listefiche',
+        'EDIT_CONFIG_HINT_bazarIgnoreAcls' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
+        'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
+
     )
 );

@@ -14,6 +14,8 @@ parameters:
     https://www.w3.org/ns/activitystreams: 'activitystreams'
   # les passages de parametres query en get affectent-ils les resultats de fiches croisees avec checkboxfiche?
   global_query: 'true'
+  # authorize entry creation when wiki is not opened to create page
+  bazarIgnoreAcls: true
 
   # Valeurs liees aux flux RSS
 
@@ -118,6 +120,7 @@ parameters:
     - 'BAZ_ENVOI_MAIL_ADMIN'
     - 'baz_enum_field_time_cache_for_json'
     - 'baz_check_owner_acl_only_for_field_can_edit'
+    - 'bazarIgnoreAcls'
 
 services:
   _defaults:

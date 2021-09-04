@@ -15,7 +15,6 @@ class EditConfigAction extends YesWikiAction
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',
-        'bazarIgnoreAcls' => 'access',
         'password_for_editing' => 'access',
         'password_for_editing_message' => 'access',
         'allow_doubleclic' => 'access',
