@@ -15,7 +15,7 @@ overflow-x: hidden;
 transition: 0.5s;
 /* 0.5 second transition effect to slide in the sidenav */
 z-index: 2000;
-padding-top: 2rem;
+padding-top: 1rem;
 /* Place content under menu */
 -webkit-box-sizing: border-box;
 -moz-box-sizing: border-box;
@@ -31,6 +31,10 @@ font-weight: normal;
 }
 #preset-form h4 {
 font-size: 1rem;
+margin-bottom: 2rem;
+}
+#preset-form .form-group {
+    margin-top: 0;
 }
 
 /* Position and style the close button (top right corner) */
@@ -50,17 +54,17 @@ transition: padding-right .5s;
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller
 font size) */
 @media screen and (max-height: 450px) {
-#preset-sidenav {
-    padding-top: 15px;
-}
+    #preset-sidenav {
+        padding-top: 15px;
+    }
 
-#preset-sidenav a {
-    font-size: 18px;
-}
+    #preset-sidenav a {
+        font-size: 18px;
+    }
 }
 
 .btn-new-preset {
-margin-top: .5rem;
+    margin: .5rem 0 1rem 0;
 }
 
 

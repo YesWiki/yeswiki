@@ -43,6 +43,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_CUSTOM_GRAPHICS' => 'Apparence de la page',
     'TEMPLATE_SAVE' => 'Sauver',
     'TEMPLATE_APPLY' => 'Appliquer',
+    'TEMPLATE_APPLY_ALL' => 'Appliquer pour tout le site',
     'TEMPLATE_CANCEL' => 'Annuler',
     'TEMPLATE_THEME' => 'Th&egrave;me',
     'TEMPLATE_SQUELETTE' => 'Squelette',
@@ -169,9 +170,6 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_FORCE_TEMPLATE' => 'Forcer le choix pour tout le wiki.',
 
     // themeselector.tpl.html
-    'TEMPLATE_PRESETS' => 'Personnalisations graphiques',
-    'TEMPLATE_CREATE_PRESET' => 'Créer sa personnalisation graphique',
-    'TEMPLATE_CUSTOMIZE_PRESET' => 'Personnalisation graphique',
     'TEMPLATE_PRIMARY_COLOR' => 'Couleur primaire',
     'TEMPLATE_SECONDARY_COLOR_1' => 'Couleur secondaire 1',
     'TEMPLATE_SECONDARY_COLOR_2' => 'Couleur secondaire 2',
@@ -193,7 +191,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_FILE_ALREADY_EXISTING' => "Le fichier est déjà existant ! Changez de nom de preset ou connectez-vous en admin !",
     'TEMPLATE_PRESET_ERROR' => "Impossible d'appliquer ce preset, il y a une erreur !",
     'TEMPLATE_PRESETS' => 'Configurations graphiques',
-    'TEMPLATE_CREATE_PRESET' => 'Créer sa configuration graphique',
+    'TEMPLATE_CREATE_PRESET' => 'Créer une nouvelle configuration graphique',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Configuration graphique',
 
     // actions-builder

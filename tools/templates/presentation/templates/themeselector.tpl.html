@@ -75,14 +75,14 @@
         </li>
       <?php endforeach; ?>
       </ul>
-      <a class="btn btn-xs btn-primary btn-new-preset" href="javascript:void(0)" onclick="openNav()">
+      <a class="btn btn-xs btn-primary btn-block btn-new-preset" href="javascript:void(0)" onclick="openNav()">
         </i><?php echo _t('TEMPLATE_CREATE_PRESET'); ?>
       </a>
     </div>
   <?php endif; ?>
   <?php if ($mode != 'edit' && $showAdminActions) : ?>
-    <button class="btn btn-warning" type="button" onclick="saveTheme('<?php echo $wiki->Href('');?>')">
-      <?php print(_t('TEMPLATE_APPLY')); ?>
+    <button class="btn btn-success btn-block " type="button" onclick="saveTheme('<?php echo $wiki->Href('');?>')">
+      <?php print(_t('TEMPLATE_APPLY_ALL')); ?>
     </button>    
   <?php endif; ?>
 
@@ -202,17 +202,17 @@
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TEXT_FONT'); ?></label>
       <input class="form-input fontpicker" type="text" name="main-text-fontfamily"
-        value="<?php echo $currentCSSValues['main-text-fontfamily'] ?? '\'Nunito\', sans-serif';?>" />
+        value="<?php echo $currentCSSValues['main-text-fontfamily'] ?? 'Nunito';?>" />
     </div>
     <div class="form-group">
       <label><?php echo _t('TEMPLATE_MAIN_TITLE_FONT'); ?></label>
       <input class="form-input fontpicker" type="text" name="main-title-fontfamily"
-        value="<?php echo $currentCSSValues['main-title-fontfamily'] ?? '\'Nunito\', sans-serif';?>" />
+        value="<?php echo $currentCSSValues['main-title-fontfamily'] ?? 'Nunito';?>" />
     </div>
     <?php if ($wiki->GetUser()) : ?>
       <div class="form-group">
         <label><?php echo _t('TEMPLATE_PRESET_FILENAME'); ?></label>
-        <input class="form-input" type="text" name="filename"
+        <input class="form-input form-control" type="text" name="filename"
           value="<?php echo (!empty($selectedPresetName) 
               ? substr($selectedPresetName,0,-4)
               : (
@@ -221,7 +221,7 @@
                 : 'custom-'.date('Y-m-d_H-i')
               )) ;?>" />
       </div>
-      <button type="button" class="btn btn-xs btn-warning"
+      <button type="button" class="btn btn-primary btn-block"
         onclick="javascript:saveCSSPreset(this,
           '<?php echo $wiki->Href('templates/custom-presets/','api');?>');">
         <?php echo _t('TEMPLATE_SAVE'); ?>

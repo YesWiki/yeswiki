@@ -285,8 +285,8 @@ Vous trouverez un formulaire permettant
 
 {{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
 
-{{button class=\"btn-primary\" link=\"LookWiki\" text=\"Pour faire une sélection personnalisée du thème de ce wiki\" }} 
-{{button class=\"btn-secondary-1\" link=\"PageCss\" text=\"Pour personnaliser finement les CSS de ce wiki (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
+{{button class=\"btn-primary \" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }} 
+{{button class=\"btn-default\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
 
 
 =====Gérer les thèmes des pages=====
@@ -304,50 +304,43 @@ Vous trouverez un formulaire permettant
 
 ===Gérer les utilisateurs===
 {{userstable}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('LookWiki',  now(), '======Tester les thèmes \"\"YesWiki\"\"======
+('LookWiki',  now(), '======Personnaliser le look de votre wiki======
 {{grid}}
-{{col size=\"4\"}}
-=====Titre 1=====
-	Bla blabla blablabla bla [[{{rootPage}} Retour a la page d\'accueil]].
+{{col size=\"6\"}}
+	Cette page à pour but d\'afficher des composants YesWiki afin que vous puissiez voir en direct
+    ce à quoi cela ressemble lorsque vous modifiez les paramètres dans l encadré à droite
+    
+    [[{{rootPage}} Retour a la page d\'accueil]].
 
-	Etiam a {{label class=\"label-primary\"}}pri_ffr{{end elem=\"label\"}} sagittis justo. Aliquam vel egestas eros. Quisque eget dolor ornare, accumsan sem et, rhoncus diam. Morbi sodales neque vitae lorem ultrices, sit amet sollicitudin lectus tempor.** Donec quis mauris quis sem blandit faucibus** ut elementum lacus. //Orci varius natoque// penatibus et __magnis dis parturient__ montes, nascetur ridiculus mus. Interdum et malesuada @@fames ac ante ipsum primis @@in faucibus. Suspendisse vitae egestas nisi. **//__Pellentesque faucibus a elit vitae luctus__//**. Mauris condimentum vitae diam ut egestas. Etiam sed dui et lorem luctus pulvinar vel nec diam. 
+	Etiam a {{label class=\"label-primary\"}}lorem ipsum{{end elem=\"label\"}} sagittis justo. 
+    Aliquam vel egestas eros. Quisque eget dolor ornare, accumsan sem et, rhoncus diam. 
+    Morbi sodales neque vitae lorem ultrices, sit amet sollicitudin lectus tempor.
+    ** Donec quis mauris quis sem blandit faucibus** ut elementum lacus. //Orci varius natoque// penatibus 
+    et __magnis dis parturient__ montes, nascetur ridiculus mus. Interdum et malesuada 
+    @@fames ac ante ipsum primis @@in faucibus. Suspendisse vitae egestas nisi.
 {{end elem=\"col\"}}
-{{col size=\"4\"}}
-	=====Titre 2=====
-	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue magna at dapibus facilisis. Suspendisse nisi ante, vehicula vel dolor non, laoreet eleifend ante. Aenean augue elit, cursus nec urna et, tincidunt commodo augue. Maecenas sed ex rhoncus, vehicula mauris sit amet, laoreet libero. Aliquam egestas ac risus sit amet cursus. Pellentesque vestibulum elit in dolor aliquam, quis molestie risus fermentum. Etiam non sem accumsan, faucibus est in, hendrerit nisi. Vivamus auctor in dui et egestas. Duis non ante sit amet risus euismod pulvinar. Suspendisse potenti. Duis sit amet malesuada lectus. 
-{{end elem=\"col\"}}
-{{col size=\"4\"}}
-{{section class=\"well\" nocontainer=\"1\"}}
-	====Choisir le thème, styles et squelettes associés====
-	{{themeselector}}
-{{end elem=\"section\"}}
+{{col size=\"6\"}}
+    {{section class=\"well\" nocontainer=\"1\"}}
+        ====Choisir le thème, styles et squelettes associés====
+        {{themeselector}}
+    {{end elem=\"section\"}}
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}
 
 {{section class=\"full-width white\" bgcolor=\"var(--secondary-color-1)\" height=\"250\"}}
-	======Insertion de pad ou de vidéo======
-	Il est possible d\'incruster dans son wiki des pads, des vidéos, des lignes du temps...
-{{end elem=\"section\"}}
-
-{{grid}}
-{{col size=\"6\"}}
-=====Incrustation d\'un pad=====
-\"\"<iframe name=\"embed_readwrite\" src=\"https://pad.coop.tools/p/pad-wikidebase?showControls=true&showChat=true&showLineNumbers=true&useMonospaceFont=false\" width=100% height=400></iframe>\"\"
-{{end elem=\"col\"}}
-{{col size=\"6\"}}
-=====Incrustation d\'une vidéo=====
-\"\"<iframe width=\"100%\" height=\"315\" sandbox=\"allow-same-origin allow-scripts\" src=\"https://video.coop.tools/videos/embed/e5add04e-d195-41af-8a60-095f8b215fa1\" frameborder=\"0\" allowfullscreen></iframe>\"\"
-Ceci est aussi possible à partir des plateformes youtbe/vimeo/dailymotion...
-{{end elem=\"col\"}}
-
-{{end elem=\"grid\"}}
-
-
-{{section class=\"full-width white\" bgcolor=\"var(--secondary-color-2)\" height=\"250\"}}
 	======Composants graphiques======
 	Des petits composants pour rendre vos pages plus conviviales 
 	Ceci en est déjà un en vous permettant de créer une bande de couleur sur la largeur de la page ;-)
 {{end elem=\"section\"}}
+
+====Boutons====
+{{button link=\"{{rootPage}}\" class=\"btn btn-primary\" text=\"btn-primary\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-default\" text=\"btn-default\"}}
+
 
 ====Etiquettes====
 {{label}}Label-default{{end elem=\"label\"}}
@@ -358,6 +351,7 @@ Ceci est aussi possible à partir des plateformes youtbe/vimeo/dailymotion...
 {{label class=\"label-info\"}}label-info{{end elem=\"label\"}}  
 {{label class=\"label-warning\"}}label-warning{{end elem=\"label\"}}  
 {{label class=\"label-danger\"}}label-danger{{end elem=\"label\"}}
+
 
 ====Encadrés====
 {{panel title=\"Titre default\" type=\"collapsed\"}}
@@ -385,14 +379,7 @@ Contenu panel-warning
 Contenu panel-danger
 {{end elem=\"panel\"}}
 {{end elem=\"accordion\"}}
-
-====Boutons====
-{{button link=\"{{rootPage}}\" class=\"btn btn-default\" text=\"btn-default\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-primary\" text=\"btn-primary\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageColonneDroite',  now(), 'Double cliquer sur ce texte pour éditer cette colonne.
