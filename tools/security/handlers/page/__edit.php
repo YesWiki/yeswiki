@@ -87,13 +87,8 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
         // si l\'on quitte la page, on affiche la popup si besoin
         $(window).on(\'beforeunload\', function(e) {
           if (showPopup) {
-            
-            var confirmationMessage = "\o/";
-
-            e.returnValue = confirmationMessage;     // Gecko, Trident, Chrome 34+
-            return confirmationMessage;              // Gecko, WebKit, Chrome <34
+            return true;
           }
-          return true;
         });';
 
         $this->AddJavascript($js);
