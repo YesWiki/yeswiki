@@ -2,23 +2,25 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
 
-<div class="bazar-list dynamic" data-entries="{{ entries }}" data-params="{{ params }}">
-  <div class="list">
-    {% block display_entries %}
-    {% endblock %}
+<div class="bazar-list-dynamic-container" data-entries="{{ entries }}" data-params="{{ params|json_encode }}"
+     data-filters="{{ filters }}">
+  <div class="facette-container dynamic row" data-filter-align="{{ params.filterposition }}">
+    
+    {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+    {% set resultsColSize = filters ? resultsColSize : 12 %}
+    <div class="results-col col-sm-{{ resultsColSize }}">
+      <div class="bazar-list dynamic">
+        {% block display_entries %}
+        {% endblock %}      
+      </div>
+    </div>
 
-    {% block pagination %}
-      <ul class="pagination" v-if="params.pagination">
-        <li @click="currentPage = 0" :class="{disabled: currentPage == 0}">
-          <i class="fa fa-chevron-left"></i>
-        </li>          
-        <li v-for="page in pages" :class="{active: currentPage == page}" @click="currentPage = page">
-          ${ page + 1 }
-        </li>          
-        <li @click="currentPage = pages.length - 1" :class="{disabled: currentPage == pages.length - 1}">
-          <i class="fa fa-chevron-right"></i>
-        </li>
-      </ul>
-    {% endblock %}
+    {% if filters %}
+      {{ include("@bazar/entries/list_dynamic/_filters.twig") }}
+    {% endif %}
+    
   </div>
+
+  {{ include("@bazar/entries/list_dynamic/_pagination.twig") }}
 </div>
+

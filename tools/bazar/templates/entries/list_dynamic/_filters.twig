@@ -1,0 +1,45 @@
+<div :class="`filters-col col-sm-${params.filtercolsize}`">
+  <div :class="`filters no-dblclick ${params.filterposition}`">
+    
+    <div class="results-info text-info">
+      <span class="nb-results">[[ entriesToDisplay.length ]]</span>
+      <template v-if="entriesToDisplay.length > 1">
+        <span class="result-label" style="display: none;">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+        <span class="results-label">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
+      </template>
+      <template v-else>
+        <span class="result-label">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
+        <span class="results-label" style="display: none;">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
+      </template>
+
+      <template v-if="params.resetfiltersbutton">
+        <span class="btn btn-xs btn-info reset-filters pull-right" :class="{'btn-block': params.filtercolsize < 4}">
+          {{ _t('BAZ_RESET_FILTERS') }}
+        </span>
+        <div class="clearfix"></div>
+      </template>
+    </div>
+
+    <div class="results-container">
+      <div v-for="filter, key in filters" class="filter-box panel panel-default">
+        <div class="panel-heading" :class="{collapsed: filter.collapsed}"
+             data-toggle="collapse" :data-target="'#' + filterDomId(key)">
+          <span v-html="filter.icon"></span>
+          [[ filter.title ]]
+        </div>
+        <div class="panel-collapse collapse" :class="{in: !filter.collapsed}" :id="filterDomId(key)">
+          <div class="checkbox" v-for="filterValue in filter.list">
+            <label>
+              <input class="filter-checkbox" type="checkbox" v-model="filterValue.checked"
+                     :value="filterValue.value">
+              <span>
+                <span v-html="filterValue.label"></span>
+                <span class="nb">([[ filterValue.nb ]])</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

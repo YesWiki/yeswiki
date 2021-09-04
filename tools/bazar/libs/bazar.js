@@ -609,7 +609,7 @@ $(document).ready(function () {
   }
 
   // process changes on visible entries according to filters
-  $('.facette-container').each(function () {
+  $('.facette-container:not(.dynamic)').each(function () {
     var $container = $(this);
     var $filters = $('.filter-checkbox', $container);
     var data = {

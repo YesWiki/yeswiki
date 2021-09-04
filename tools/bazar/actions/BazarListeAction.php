@@ -238,7 +238,8 @@ class BazarListeAction extends YesWikiAction
             }, $entries);
             return $this->render("@bazar/entries/list_dynamic/{$this->arguments['template']}.twig", [
                 'entries' => json_encode($entries),
-                'params' => json_encode($this->arguments),
+                'params' => $this->arguments,
+                'filters' => json_encode($filters)
             ]);
         } else {
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
