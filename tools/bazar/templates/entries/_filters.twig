@@ -17,18 +17,13 @@
       {% endif %}
     </div>
     {% if params.filtertext %}
-    <div class="input-group filtertext">
-      <span class="input-group-addon">
-        <i class="fa fa-filter"></i>
-      </span>
-      <input
-        type="text"
-        class="form-control filter-bazar"
-        id="inputBazarFilter{{ listId }}"
-        placeholder="{{ _t('BAZAR_FILTER') }}"
-        data-target="bazar-list-{{ listId }}"
-      />
-    </div>
+      <div class="input-group filtertext">
+        <span class="input-group-addon">
+          <i class="fa fa-filter"></i>
+        </span>
+        <input type="text" class="form-control filter-bazar" id="inputBazarFilter{{ listId }}"
+               placeholder="{{ _t('BAZAR_FILTER') }}" data-target="bazar-list-{{ listId }}"/>
+      </div>
     {% endif %}
     <div class="results-container">
       {% for key, filter in filters %}

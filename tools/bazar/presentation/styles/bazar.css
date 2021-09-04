@@ -32,7 +32,7 @@ color:#E9322D;
   font-size:.9em;
 }
 
-.results {
+.results-col {
   clear: both;
 }
 
@@ -176,6 +176,21 @@ ul.list-sortables li, ul.valeur_formulaire li {list-style-type:none; padding:0; 
 	-webkit-box-shadow: 0 0 90px #000;
 }
 
+.facette-container {
+  display: flex;
+  flex-direction: row;
+}
+.facette-container[data-filter-align=left] {
+  flex-direction: row-reverse;
+}
+@media (max-width: 768px) {
+  .facette-container {
+    flex-direction: column;
+  }
+  .facette-container[data-filter-align=left] {
+    flex-direction: column-reverse;
+  }
+}
 .facette-container .panel-heading {cursor: pointer;}
 
 .bazar-lists select {

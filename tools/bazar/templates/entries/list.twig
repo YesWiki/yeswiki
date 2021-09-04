@@ -3,29 +3,16 @@
 {% endif %}
 
 {% if filters %}
-  <div class="facette-container row">
-    {% if params.filterposition == 'right' %}
-      {% block entries %}
-        <div class="results-col col-sm-{{ params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format }}">
-          <div class="results">
-            {{ block('renderedEntries')}}
-          </div>
-        </div>
-      {% endblock %}
-    {% endif %}
+  <div class="facette-container row" data-filter-align="{{ params.filterposition }}">
+    {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+    <div class="results-col col-sm-{{ resultsColSize }}">
+      {{ include("@bazar/entries/_entries.twig") }}
+    </div>
 
     {{ include("@bazar/entries/_filters.twig") }}
-
-    {% if params.filterposition == 'left' %}
-      {{ block('entries')}}
-    {% endif %}
   </div>
 {% else %}
-  {% block renderedEntries %}
-    <div id="bazar-list-{{ listId }}" class="bazar-list" data-template="{{ params.template }}">
-      <div class="list">{{ renderedEntries|raw }}</div>
-    </div>
-  {% endblock %}
+  {{ include("@bazar/entries/_entries.twig") }}
 {% endif %}
 
 {# showexportbuttons #}
