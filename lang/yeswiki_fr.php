@@ -464,5 +464,4 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
 'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
-'EDIT_CONFIG_GROUP_IPBLOCK' => 'Blocage d\'adresses IP',
 ));
