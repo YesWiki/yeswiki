@@ -6,7 +6,8 @@
       <div class="panel panel-{{ group == 'core' ? 'primary' : 'default' }}">
         <div class="panel-heading" id="head_{{ group }}" data-parent="#accordion" data-toggle="collapse" href="#{{ group }}">
           <h4 class="panel-title">
-            {{ _t('EDIT_CONFIG_GROUP_' ~ group|upper) }}
+            {% set groupTitle = 'EDIT_CONFIG_GROUP_' ~ group|upper %}
+            {{ (_t(groupTitle) == groupTitle) ? group|upper : _t(groupTitle) }}
           </h4>
         </div>
         <div id="{{ group }}" class="panel-collapse collapse">
