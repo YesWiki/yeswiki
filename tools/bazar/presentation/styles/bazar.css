@@ -35,6 +35,10 @@ color:#E9322D;
 .results {
   clear: both;
 }
+
+.reset-filters.btn-block {
+  margin-top: 5px;
+}
 /*
 .btn_adresse,.btn_client {
 display:inline;

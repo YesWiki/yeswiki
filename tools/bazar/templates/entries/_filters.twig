@@ -10,9 +10,10 @@
         <span class="results-label" style="display: none;">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
       {% endif %}
       {% if params.resetfiltersbutton %}
-        <div class="btn btn-xs btn-info reset-filters pull-right">
-          <i>{{ _t('BAZ_RESET_FILTERS') }}</i>
-        </div><div class="clearfix"></div>
+        <span class="btn btn-xs btn-info reset-filters pull-right {{ params.filtercolsize < 4 ? 'btn-block': '' }}">
+          {{ _t('BAZ_RESET_FILTERS') }}
+        </span>
+        <div class="clearfix"></div>
       {% endif %}
     </div>
     {% if params.filtertext %}
