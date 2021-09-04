@@ -1271,9 +1271,9 @@ class Wiki
         $rev = ($revision) ? $initChar.'v='.$revision : '';
 
         if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>')) {
-                
-                $code = "<script src='{$this->getBaseUrl()}/$file$rev'";
+            // include local files
+            $code = "<script src='{$this->getBaseUrl()}/$file$rev'";
+            if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) $code .= " defer";
                 if ($module) $code .= " type='module'";
                 $code .= '></script>'."\n";
@@ -1284,8 +1284,10 @@ class Wiki
                 }
             }
         } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['js'], '<script defer src="'.$file.$rev.'"></script>')) {
-                $GLOBALS['js'] .= '  <script defer src="'.$file.$rev.'"></script>'."\n";
+            // include external files
+            $code = "<script defer src='$file.$rev'></script>";
+            if (!str_contains($GLOBALS['js'], $code)) {
+                $GLOBALS['js'] .= $code."\n";
             }
         }
         return;
