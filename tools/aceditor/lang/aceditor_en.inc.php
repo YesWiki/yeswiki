@@ -76,4 +76,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'ACTION_BUILDER_ONLINEDOC'           => 'Online documentation',
 'ACTION_BUILDER_UPDATE_CODE'         => 'Update code',
 'ACTION_BUILDER_INSERT_CODE'         => 'Insert into page',
+
+
+// for edit config
+'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Textarea field\'s name for which components are activated',
 ));

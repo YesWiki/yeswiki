@@ -75,4 +75,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACTION_BUILDER_ONLINEDOC'           => 'Documentation en ligne',
     'ACTION_BUILDER_UPDATE_CODE'         => 'Mettre à jour le code',
     'ACTION_BUILDER_INSERT_CODE'         => 'Insérer dans la page',
+
+    // for edit config
+    'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Nom du champ texte long pour lequel les composants sont activés',
+    'EDIT_CONFIG_GROUP_ACEDITOR' => 'Editeur de page',
 ));
