@@ -20,7 +20,8 @@ class EditConfigAction extends YesWikiAction
         'default_write_acl' => 'access',
         'bazarIgnoreAcls' => 'access',
         'password_for_editing' => 'access',
-        'password_for_editing_message' => 'access',  
+        'password_for_editing_message' => 'access',
+        'allow_doubleclic' => 'access',
 
         'contact_from' => 'email',
         'mail_custom_message' => 'email',
