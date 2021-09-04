@@ -28,12 +28,9 @@ export default {
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
-      <input type="text" autocomplete="off" :value="value"
+      <input type="text" autocomplete="off" :value="value" class="form-control"
             data-provide="typeahead" data-items="5" :data-source='pageList'
-             v-on:input="$emit('input', $event.target.value)" class="form-control"
-             v-on:focus="$emit('input', $event.target.value)"
-             v-on:blur="$emit('input', $event.target.value)"
-             v-on:select="$emit('input', $event.target.value)"
+             v-on:input="$emit('input', $event.target.value)" 
              :required="config.required" :min="config.min" :max="config.max" ref="input"
       />
       <input-hint :config="config"></input-hint>

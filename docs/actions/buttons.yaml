@@ -13,7 +13,8 @@ actions:
       link:
         label: _t(AB_buttons_action_button_link_label)
         default: https://yeswiki.net
-        type: url
+        hint: _t(AB_buttons_action_button_link_hint)
+        type: page-list
         required: true
       title:
         label: _t(AB_buttons_action_button_title_label)
