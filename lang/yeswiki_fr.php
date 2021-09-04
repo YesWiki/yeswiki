@@ -323,6 +323,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'INSERTION_OF_USER_IN_ADMIN_GROUP' => 'Insertion de l\'utilisateur sp&eacute;cifi&eacute; dans le groupe admin',
 'NEXT_STEP_WRITE_CONFIGURATION_FILE' => 'A l\'&eacute;tape suivante, le programme d\'installation va essayer d\'&eacute;crire le fichier de configuration ',
 'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'Assurez vous que le serveur web a bien le droit d\'&eacute;crire dans ce fichier, sinon vous devrez le modifier manuellement',
+'CHECK_EXISTING_TABLE_PREFIX' => 'Vérification de l\'existence du préfixe de table',
+'TABLE_PREFIX_ALREADY_USED' => 'Le préfixe de table est déjà utilisé. Veuillez en choisir un nouveau.',
 
 // setup/writeconfig.php
 'WRITING_CONFIGURATION_FILE' => '&Eacute;criture du fichier de configuration',

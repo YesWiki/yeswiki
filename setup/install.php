@@ -80,6 +80,12 @@ if ($testdb == 1) {
         1
     );
 }
+test(
+    _t('CHECK_EXISTING_TABLE_PREFIX').' ...',
+    (mysqli_num_rows(@mysqli_query($dblink, 'SHOW TABLES LIKE \''.$config['table_prefix'].'pages\'')) === 0),
+    _t('TABLE_PREFIX_ALREADY_USED').' !',
+    1
+);
 
 if (!$version || empty($_POST['admin_login'])) {
     $admin_name = $_POST['admin_name'];
