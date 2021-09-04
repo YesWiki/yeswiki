@@ -144,6 +144,9 @@ var SYNTAX = {
       aceditor.getSession().on('change', function(){
         textarea.val(aceditor.getSession().getValue());
       });
+      aceditor.on('change', function(){
+        if (typeof showPopup !== "undefined"){showPopup = 1};
+      });
 
       textarea.data('aceditor', aceditor);
 
