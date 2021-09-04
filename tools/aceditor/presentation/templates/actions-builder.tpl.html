@@ -14,7 +14,7 @@
           <select v-model="selectedFormId" required class="form-control">
             <option v-for="(name, id) in formIds" :value="id">{{ name }}</option>
           </select>
-          <span v-if="isBazarListeAction"><?php echo  _t('ACTION_BUILDER_SEVERAL_FORMS_HINT'); ?></span>
+          <span v-if="isBazarListeAction" class="text-muted"><?php echo  _t('ACTION_BUILDER_SEVERAL_FORMS_HINT'); ?></span>
         </div>
 
         <!-- Choose Action -->

@@ -96,6 +96,9 @@ input[type=range] {
   text-align: center;
   margin-top: 2rem;
 }
+#actions-builder-modal .text-muted{
+  font-size: .8em;
+}
 
 
 /* ADVANCED PROPERTIES */
