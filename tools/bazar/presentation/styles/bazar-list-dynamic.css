@@ -1,0 +1,16 @@
+/* PAGINATION */
+.bazar-list.dynamic .pagination {
+  display: flex;
+  justify-content: center;
+}
+.bazar-list.dynamic .pagination > li {
+  margin: 0 .5rem ;
+  cursor: pointer
+}
+.bazar-list.dynamic .pagination > li.active {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+.bazar-list.dynamic .pagination > li.disabled {
+  opacity: .6;
+}

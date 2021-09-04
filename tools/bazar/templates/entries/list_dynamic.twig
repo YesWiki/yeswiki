@@ -1,9 +1,24 @@
 {{ include_javascript('tools/templates/libs/vendor/vue/vue.js') }}
 {{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
 
-<div class="bazar-list dynamic" data-entries="{{ entries }}">
+<div class="bazar-list dynamic" data-entries="{{ entries }}" data-params="{{ params }}">
   <div class="list">
     {% block display_entries %}
+    {% endblock %}
+
+    {% block pagination %}
+      <ul class="pagination" v-if="params.pagination">
+        <li @click="currentPage = 0" :class="{disabled: currentPage == 0}">
+          <i class="fa fa-chevron-left"></i>
+        </li>          
+        <li v-for="page in pages" :class="{active: currentPage == page}" @click="currentPage = page">
+          ${ page + 1 }
+        </li>          
+        <li @click="currentPage = pages.length - 1" :class="{disabled: currentPage == pages.length - 1}">
+          <i class="fa fa-chevron-right"></i>
+        </li>
+      </ul>
     {% endblock %}
   </div>
 </div>
