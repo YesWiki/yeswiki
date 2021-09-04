@@ -39,4 +39,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CAPTCHA_ERROR_WRONG_WORD' => 'La page n\'a pas été enregistrée car le mot de vérification rentré n\'est pas correct.',
 'CAPTCHA_VERIFICATION' => 'V&eacute;rification pour sauver la page',
 'CAPTCHA_WRITE' => 'Ecrire ici le mot présent dans l\'image',
+
+// for edit config
+'EDIT_CONFIG_HINT_use_captcha' => 'Activer l\'utilisation d\'un captcha avant la sauvegarde (1 ou 0)',
+'EDIT_CONFIG_HINT_use_hashcash' => 'Activer l\'antispam hashcash du wiki (activé par défaut)',
+'EDIT_CONFIG_HINT_use_alerte' => 'Prévenir si l\'on quitte la page sans sauvegarder (1 ou 0)',
+'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',
 ));
