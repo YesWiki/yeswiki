@@ -45,8 +45,9 @@ if (!empty($actif) && $actif == '1') {
     );
 }
 
-// rajoute le javascript pour le double clic si le parametre est activé et les droits en écriture existent
-if (!empty($dblclic) && $dblclic == '1' && $this->HasAccess('write', $incPageName)) {
+// rajoute le javascript pour le double clic si la configuration l'autorise, si le parametre est activé et les droits en écriture existent
+if (!empty($this->config['allow_doubleclic']) && in_array($this->config['allow_doubleclic'], ['1', 'yes', true])
+    && !empty($dblclic) && $dblclic == '1' && $this->HasAccess('write', $incPageName)) {
     $actiondblclic = ' ondblclick="document.location=\''.$this->Href('edit', $incPageName).'\';"';
 } else {
     $actiondblclic = '';
