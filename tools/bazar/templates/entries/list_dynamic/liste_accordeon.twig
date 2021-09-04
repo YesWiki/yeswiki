@@ -1,7 +1,16 @@
 {% extends "@bazar/entries/list_dynamic.twig" %}
 
 {% block display_entries %}
-
-  <li v-for="entry in entriesToDisplay">[[ entry.bf_titre ]]</li>  
-
+  <div class="panel-group accordion-group no-dblclick" id="accordion">
+    <div v-for="entry in entriesToDisplay" class="bazar-entry panel panel-default collapsed">
+      <div class="panel-heading collapsed" :data-target="'#' + entryDomId(entry)" data-toggle="collapse">
+        <h4 class="panel-title">{{"{{ entry.bf_titre }}"}}</h4>
+      </div>
+      <div class="panel-collapse collapse" :id="entryDomId(entry)" >
+        <div class="panel-body">
+          Load asynchronoulsy template
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

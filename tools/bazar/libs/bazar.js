@@ -683,7 +683,7 @@ $(document).ready(function () {
   });
 
   var bazarList = [];
-  $('.filter-bazar').on('keyup', function(e) {
+  $('.facette-container:not(.dynamic) .filter-bazar').on('keyup', function(e) {
     var target = $(this).data('target')
     var searchstring = $(this).val()
     if (searchstring) {
@@ -711,8 +711,8 @@ $(document).ready(function () {
   });
 
   // gestion du bouton de réinitialisation des filtres
-  $('.facette-container .filters .reset-filters').on('click', function(){
-    $('.facette-container .filters input.filter-checkbox:checked').click();
+  $('.facette-container:not(.dynamic) .filters .reset-filters').on('click', function(){
+    $('.facette-container:not(.dynamic) .filters input.filter-checkbox:checked').click();
   });
 })
 

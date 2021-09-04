@@ -2,7 +2,7 @@
   <div :class="`filters no-dblclick ${params.filterposition}`">
     
     <div class="results-info text-info">
-      <span class="nb-results">[[ entriesToDisplay.length ]]</span>
+      <span class="nb-results">{{"{{ filteredEntries.length }}"}}</span>
       <template v-if="entriesToDisplay.length > 1">
         <span class="result-label" style="display: none;">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
         <span class="results-label">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
@@ -13,7 +13,8 @@
       </template>
 
       <template v-if="params.resetfiltersbutton">
-        <span class="btn btn-xs btn-info reset-filters pull-right" :class="{'btn-block': params.filtercolsize < 4}">
+        <span class="btn btn-xs btn-info reset-filters pull-right" @click="resetFilters()"
+              :class="{'btn-block': params.filtercolsize < 4}">
           {{ _t('BAZ_RESET_FILTERS') }}
         </span>
         <div class="clearfix"></div>
@@ -25,7 +26,7 @@
         <div class="panel-heading" :class="{collapsed: filter.collapsed}"
              data-toggle="collapse" :data-target="'#' + filterDomId(key)">
           <span v-html="filter.icon"></span>
-          [[ filter.title ]]
+          {{"{{ filter.tile }}"}}
         </div>
         <div class="panel-collapse collapse" :class="{in: !filter.collapsed}" :id="filterDomId(key)">
           <div class="checkbox" v-for="filterValue in filter.list">
@@ -34,7 +35,7 @@
                      :value="filterValue.value">
               <span>
                 <span v-html="filterValue.label"></span>
-                <span class="nb">([[ filterValue.nb ]])</span>
+                <span class="nb">({{"{{ filterValue.nb }}"}})</span>
               </span>
             </label>
           </div>

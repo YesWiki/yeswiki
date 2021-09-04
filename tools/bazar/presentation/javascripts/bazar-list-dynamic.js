@@ -1,7 +1,6 @@
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    delimiters: ['[[', ']]'],
     data: {
       entries: [],
       params: {},
@@ -53,7 +52,15 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     },
     methods: {
       filterDomId(key) {
-        return `accordion_${key}_${this._uid}`
+        return `accordion_filter_${key}_${this._uid}`
+      },
+      entryDomId(entry) {
+        return `accordion_entry_${entry.id_fiche}_${this._uid}`
+      },
+      resetFilters() {
+        for(let filterId in this.filters) {
+          this.filters[filterId] 
+        }
       }
     },
     mounted() {
