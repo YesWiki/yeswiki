@@ -225,5 +225,12 @@ $GLOBALS['translations'] = array_merge(
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'les pages uniquement',
     'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'les pages spéciales uniquement',
     'ACLS_SELECT_PAGES_FILTER_FORM' => 'les fiches du formulaire : {name} ({id})',
+
+    // for edit config
+    'EDIT_CONFIG_HINT_meta_keywords' => 'Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30)',
+    'EDIT_CONFIG_HINT_meta_description' => 'Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point))',
+    'EDIT_CONFIG_HINT_meta[robots]' => 'Empêcher les robots à indexer le wiki (Mettre \'noindex,nofollow,noarchive,noimageindex\')',
+    'EDIT_CONFIG_GROUP_TEMPLATES' => 'Mise en forme',
+
     )
 );

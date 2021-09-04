@@ -11,9 +11,6 @@ class EditConfigAction extends YesWikiAction
         'wakka_name' => 'core',
         'root_page' => 'core',
         'default_language' => 'core',
-        'meta_keywords' => 'core',
-        'meta_description' => 'core',
-        'meta' => 'core',
         'debug' => 'core',
 
         'default_read_acl' => 'access',
