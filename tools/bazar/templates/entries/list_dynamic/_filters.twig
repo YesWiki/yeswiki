@@ -25,8 +25,8 @@
       <div v-for="filter, key in filters" class="filter-box panel panel-default">
         <div class="panel-heading" :class="{collapsed: filter.collapsed}"
              data-toggle="collapse" :data-target="'#' + filterDomId(key)">
-          <span v-html="filter.icon"></span>
-          {{"{{ filter.tile }}"}}
+          <i v-html="filter.icon"></i>
+          {{"{{ filter.title }}"}}
         </div>
         <div class="panel-collapse collapse" :class="{in: !filter.collapsed}" :id="filterDomId(key)">
           <div class="checkbox" v-for="filterValue in filter.list">

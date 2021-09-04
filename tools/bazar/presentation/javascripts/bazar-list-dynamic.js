@@ -23,7 +23,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         let result = this.entries
         for(const filterId in this.computedFilters) {
           result = result.filter(entry => {
-            return this.computedFilters[filterId].includes(entry[filterId])
+            if (!entry[filterId]) return false
+            return entry[filterId].split(',').some(value => {
+              return this.computedFilters[filterId].includes(value)
+            })
           })
         }
         return result
@@ -42,7 +45,18 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       pages() {
         if (!this.perPage) return []
         let pagesCount = Math.floor(this.filteredEntries.length / parseInt(this.perPage)) + 1
-        return Array.from(Array(pagesCount).keys());
+        let start = 0, end = pagesCount - 1        
+        let pages = [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2]
+        pages = pages.filter(page => page >= start && page <= end)
+        if (!pages.includes(start)) {
+          if (!pages.includes(start + 1)) pages.unshift('divider')
+          pages.unshift(0)
+        }
+        if (!pages.includes(end)) {
+          if (!pages.includes(end - 1)) pages.push('divider')
+          pages.push(end)
+        }
+        return pages
       }
     },
     watch: {
@@ -59,8 +73,14 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       },
       resetFilters() {
         for(let filterId in this.filters) {
-          this.filters[filterId] 
+          this.filters[filterId].list.forEach(option => option.checked = false)
         }
+      },
+      getEntryRender(entry) {
+        if (entry.html_render) return
+        $.getJSON(`?api/entries/html/${entry.id_fiche}`, function(data) {
+          Vue.set(entry, 'html_render', data[entry.id_fiche].html_output)
+        })
       }
     },
     mounted() {
