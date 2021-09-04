@@ -1,0 +1,9 @@
+{{ include_javascript('tools/templates/libs/vendor/vue/vue.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
+
+<div class="bazar-list dynamic" data-entries="{{ entries }}">
+  <div class="list">
+    {% block display_entries %}
+    {% endblock %}
+  </div>
+</div>

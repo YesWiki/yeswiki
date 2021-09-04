@@ -118,6 +118,9 @@ class BazarListeAction extends YesWikiAction
             // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
+            // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
+            // Only few bazar templates have been converted to javascript
+            'dynamic' => $this->formatBoolean($arg, false, 'dynamic'),
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
@@ -167,7 +170,6 @@ class BazarListeAction extends YesWikiAction
 
     public function run()
     {
-        // for debug
         $this->debug = ($this->wiki->GetConfigValue('debug') =='yes');
 
         // If the template is a map or a calendar, call the dedicated action so that
@@ -183,14 +185,6 @@ class BazarListeAction extends YesWikiAction
         $entryManager = $this->getService(EntryManager::class);
         $formManager = $this->getService(FormManager::class);
         $externalWikiService = $this->getService(ExternalBazarService::class);
-
-        if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
-            $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
-        }
-        ++$GLOBALS['_BAZAR_']['nbbazarliste'];
-
-        // TODO put in all bazar templates
-        $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
         // External mode activated ?
         if ($this->arguments['externalModeActivated']) {
@@ -214,8 +208,6 @@ class BazarListeAction extends YesWikiAction
                 true, // filter on read ACL
                 true, // use Guard
             );
-
-            // call to appendDisplayData removed because already done in EntryManager->search
         }
 
         // filter entries on datefilter parameter
@@ -236,28 +228,48 @@ class BazarListeAction extends YesWikiAction
         }
 
         $filters = $this->formatFilters($entries, $forms);
+        if ($this->arguments['dynamic']) {
+            array_map(function($entry) {
+                unset($entry['html_data']);
+                // TODO BazarListeDynamic
+                // if template doc say which attributes are used in the template,
+                // then slice $entriy to send only minimal attributes
+                return $entry;
+            }, $entries);
+            return $this->render("@bazar/entries/list_dynamic/{$this->arguments['template']}.twig", [
+                'entries' => json_encode($entries)
+            ]);
+        } else {
+            // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
+            // We use a global variable to count the number of bazarliste action run on this page
+            if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
+                $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
+            }
+            ++$GLOBALS['_BAZAR_']['nbbazarliste'];
+            $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'] ;
+            
+            // TODO put in all bazar templates
+            $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-        $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'] ;
-
-        return $this->render('@bazar/entries/list.twig', [
-            'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
-            'filters' => $filters,
-            'renderedEntries' => $this->renderEntries($entries),
-            'numEntries' => count($entries),
-            'params' => $this->arguments,
-            // Search form parameters
-            'keywords' => $_GET['q'] ?? '',
-            'pageTag' => $this->wiki->getPageTag(),
-            'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
-            'formId' => $this->arguments['idtypeannonce'][0] ?? null,
-            'facette' => $_GET['facette'] ?? null,
-        ]);
+            return $this->render('@bazar/entries/list.twig', [
+                'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
+                'filters' => $filters,
+                'renderedEntries' => $this->renderEntries($entries),
+                'numEntries' => count($entries),
+                'params' => $this->arguments,
+                // Search form parameters
+                'keywords' => $_GET['q'] ?? '',
+                'pageTag' => $this->wiki->getPageTag(),
+                'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
+                'formId' => $this->arguments['idtypeannonce'][0] ?? null,
+                'facette' => $_GET['facette'] ?? null,
+            ]);
+        }      
     }
 
     private function renderEntries($entries): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
-
         $templateName = $this->arguments['template'];
         if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
             $templateName = $templateName . '.tpl.html';

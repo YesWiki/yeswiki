@@ -22,6 +22,11 @@ actions:
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
+      dynamic:
+        label: Rendu dynamique
+        showOnlyFor:
+          - bazarliste
+        type: checkbox
       colorfield:
         label: Champ pour la couleur
         type: form-field
