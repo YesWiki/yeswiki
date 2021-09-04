@@ -29,6 +29,7 @@ class EditConfigAction extends YesWikiAction
     ];
 
     private $keys ;
+    private $associatedExtensions ;
 
     public function formatArguments($arg)
     {
@@ -41,6 +42,7 @@ class EditConfigAction extends YesWikiAction
     public function run()
     {
         $this->keys = null ;
+        $this->associatedExtensions = null ;
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type'=>'danger',
@@ -62,10 +64,18 @@ class EditConfigAction extends YesWikiAction
         }
 
         // display form
-        list($data, $placeholders) = $this->getDataFromConfigFile();
+        list($data, $placeholders, $associatedExtensions) = $this->getDataFromConfigFile();
+        $keysList = [];
+        foreach ($data as $key => $value) {
+            if (!empty($associatedExtensions[$key])) {
+                $keysList[$associatedExtensions[$key]] = array_merge($keysList[$associatedExtensions[$key]] ?? [], [$key => $value]);
+            } else {
+                $keysList[''] = array_merge($keysList[''] ?? [], [$key => $value]);
+            }
+        }
         return $output . $this->render('@templates/edit-config.twig', [
             'SAVE_NAME' => self::SAVE_NAME,
-            'data' => $data,
+            'keysList' => $keysList,
             'placeholders' => $placeholders,
             'help' => $this->getHelp(),
         ]);
@@ -73,12 +83,16 @@ class EditConfigAction extends YesWikiAction
 
     /**
      * get AUTHORIZED_KEYS
-     * return array
+     * return array [$keys,$associatedExtensions]
      */
     private function getAuthorizedKeys(): array
     {
         if (is_null($this->keys)) {
             $keys = self::AUTHORIZED_KEYS;
+            $associatedExtensions = [];
+            foreach ($keys as $key) {
+                $associatedExtensions[$key] = 'core';
+            }
             foreach ($this->wiki->extensions as $extensionFolder) {
                 $matches = [];
                 if (preg_match('/(?:\/?tools\/?)?([^\/]+)\/?/', $extensionFolder, $matches)) {
@@ -89,8 +103,20 @@ class EditConfigAction extends YesWikiAction
                         if (!empty($keysToMerge)) {
                             if (is_array($keysToMerge)) {
                                 $keys = array_merge($keys, $keysToMerge);
+                                foreach ($keysToMerge as $key) {
+                                    if (is_array($key)) {
+                                        foreach ($key as $keyname => $values) {
+                                            foreach ($values as $value) {
+                                                $associatedExtensions[$keyname.'['.$value.']'] = $extensionName;
+                                            }
+                                        }
+                                    } else {
+                                        $associatedExtensions[$key] = $extensionName;
+                                    }
+                                }
                             } elseif (is_string($keysToMerge)) {
                                 $keys[] = $keysToMerge;
+                                $associatedExtensions[$keysToMerge] = $extensionName;
                             }
                         }
                     }
@@ -116,8 +142,9 @@ class EditConfigAction extends YesWikiAction
                 }
             }
             $this->keys = $scannedKeys;
+            $this->associatedExtensions = $associatedExtensions;
         }
-        return $this->keys;
+        return [$this->keys,$this->associatedExtensions];
     }
 
     /**
@@ -129,7 +156,7 @@ class EditConfigAction extends YesWikiAction
         $config = new Configuration('wakka.config.php');
         $config->load();
 
-        foreach ($this->getAuthorizedKeys() as $key) {
+        foreach ($this->getAuthorizedKeys()[0] as $key) {
             // some keys could be arrays
             if (is_array($key)) {
                 foreach ($key as $firstLevelKey => $secondLevelKeys) {
@@ -173,7 +200,7 @@ class EditConfigAction extends YesWikiAction
 
     /**
      * get data from config file
-     * @return array [$data,$placeholders] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
+     * @return array [$data,$placeholders,$associatedExtensions] format ['name' => string $value,'name2'=> "['ee'=>'yy',...]"]
      */
     private function getDataFromConfigFile(): array
     {
@@ -182,7 +209,8 @@ class EditConfigAction extends YesWikiAction
 
         $data = [];
         $placeholders = [];
-        foreach ($this->getAuthorizedKeys() as $key) {
+        list($keys, $associatedExtensions) = $this->getAuthorizedKeys();
+        foreach ($keys as $key) {
             // some keys could be arrays
             if (is_array($key)) {
                 foreach ($key as $firstLevelKey => $secondLevelKeys) {
@@ -208,7 +236,7 @@ class EditConfigAction extends YesWikiAction
                 }
             }
         }
-        return [$data,$placeholders];
+        return [$data,$placeholders,$associatedExtensions];
     }
 
     /**
@@ -298,7 +326,7 @@ class EditConfigAction extends YesWikiAction
     private function getHelp(): array
     {
         $help = [];
-        foreach ($this->getAuthorizedKeys() as $key) {
+        foreach ($this->getAuthorizedKeys()[0] as $key) {
             if (!is_array($key) && isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
                 $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
             } elseif (is_array($key)) {

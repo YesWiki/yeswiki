@@ -6,19 +6,21 @@
   id="edit-config"
   class="form-horizontal"
 >
-  {% for key,value in data %}
-    <div class="form-group">
-      <label for="{{ key }}">{{ key }}</label>
-      <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
-        {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
-        {% if placeholders[key] -%}
-          placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"
-        {%- endif %}
-        >
-      {% if help[key] %}
-        <small id="{{ key }}Help" class="form-text text-muted">{{ help[key] }}</small>
-      {% endif %}
-    </div>
+  {% for extName,data in keysList %}
+    {% for key,value in data %}
+      <div class="form-group">
+        <label for="{{ key }}">{{ help[key] ?? key }}{#{% if extName %} <i>{{ _t('EDIT_CONFIG_EXTENSION') ~ ': ' ~ extName }}</i>{% endif %}#}</label>
+        <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
+          {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
+          {% if placeholders[key] -%}
+            placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"
+          {%- endif %}
+          >
+        {% if help[key] %}
+          <small id="{{ key }}Help" class="form-text text-muted">{{ key }}</small>
+        {% endif %}
+      </div>
+    {% endfor %}
   {% endfor %}
   {# DO NOT REMOVE THE FOLLOWING LINE THAT IS DEFINED FOR POST ACTIONS__.php#}
   <!-- end of #edit-config form -->
