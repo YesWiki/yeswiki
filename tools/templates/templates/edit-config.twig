@@ -18,7 +18,7 @@
                 {% if help[key] %}<span> - {{ key }}</span>{% endif %}
                 <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
                   {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
-                  {% if placeholders[key] -%}placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"{%- endif %}
+                  {% if placeholders[key] -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
                   />
               </div>
             {% endfor %}

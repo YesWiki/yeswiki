@@ -413,7 +413,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // actions/EditConfigAction.php
 'EDIT_CONFIG_TITLE' => 'Change configuration file',
-'EDIT_CONFIG_EXEMPLE' => 'Example',
+'EDIT_CONFIG_CURRENT_VALUE' => 'Current value',
 'EDIT_CONFIG_SAVE' => 'Configuration saved',
 'EDIT_CONFIG_HINT_wakka_name' => 'Head of the YesWiki website',
 'EDIT_CONFIG_HINT_root_page' => 'Welcome page\'s name',
