@@ -448,7 +448,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 
 // actions/EditConfigAction.php
 'EDIT_CONFIG_TITLE' => 'Modification du fichier de configuration',
-'EDIT_CONFIG_EXEMPLE' => 'Exemple',
+'EDIT_CONFIG_EXEMPLE' => 'Valeur par défaut ',
 'EDIT_CONFIG_SAVE' => 'Configuration sauvegardée',
 'EDIT_CONFIG_HINT_wakka_name' => 'Titre de votre wiki',
 'EDIT_CONFIG_HINT_root_page' => 'Nom de la page d\'accueil',
@@ -474,6 +474,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_allow_doubleclic' => 'Autoriser le doubleclic pour éditer les menus et pages spéciales',
 'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Nom du champ texte long pour lequel les composants sont activés',
 'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Temps (s) entre deux rafraîchissements du cache pour les requêtes JSON pour listefiche',
+'EDIT_CONFIG_HINT_use_captcha' => 'Activer l\'utilisation d\'un captcha avant la sauvegarde (1 ou 0)',
+'EDIT_CONFIG_HINT_use_hashcash' => 'Activer l\antispam hashcash du wiki (activé par défaut)',
 'EDIT_CONFIG_HINT_baz_check_owner_acl_only_for_field_can_edit' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (faux par défaut)',
 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
 'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
