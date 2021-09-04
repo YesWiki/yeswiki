@@ -77,6 +77,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'ACTION_BUILDER_INSERT_CODE'         => 'Insérer dans la page',
 
     // for edit config
-    'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Nom du champ texte long pour lequel les composants sont activés',
-    'EDIT_CONFIG_GROUP_ACEDITOR' => 'Editeur de page',
+    'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Nom du champ bazar texte long pour lequel les composants sont visibles',
+    'EDIT_CONFIG_GROUP_ACEDITOR' => 'Barre d\'édition pour les pages et les champs texte',
 ));
