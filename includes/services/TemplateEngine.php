@@ -76,8 +76,8 @@ class TemplateEngine
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
             return $this->wiki->Format($text, $formatter);
         });
-        $this->addTwigHelper('include_javascript', function ($file, $first = false) {
-            $this->wiki->AddJavascriptFile($file, $first);
+        $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
+            $this->wiki->AddJavascriptFile($file, $first, $module);
         });
         $this->addTwigHelper('include_css', function ($file) {
             $this->wiki->AddCSSFile($file);

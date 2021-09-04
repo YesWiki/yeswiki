@@ -1261,7 +1261,7 @@ class Wiki
         return;
     }
 
-    public function AddJavascriptFile($file, $first = false)
+    public function AddJavascriptFile($file, $first = false, $module = false)
     {
         if (!isset($GLOBALS['js'])) {
             $GLOBALS['js'] = '';
@@ -1272,10 +1272,15 @@ class Wiki
 
         if (!empty($file) && file_exists($file)) {
             if (!strpos($GLOBALS['js'], '<script defer src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>')) {
+                
+                $code = "<script src='{$this->getBaseUrl()}/$file$rev'";
+                if (!$first) $code .= " defer";
+                if ($module) $code .= " type='module'";
+                $code .= '></script>'."\n";
                 if ($first) {
-                    $GLOBALS['js'] = '  <script src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>'."\n".$GLOBALS['js'];
+                    $GLOBALS['js'] = $code . $GLOBALS['js'];
                 } else {
-                    $GLOBALS['js'] .= '  <script defer src="'.$this->getBaseUrl().'/'.$file.$rev.'"></script>'."\n";
+                    $GLOBALS['js'] .= $code;
                 }
             }
         } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {

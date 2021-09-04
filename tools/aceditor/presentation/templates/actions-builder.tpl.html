@@ -75,20 +75,14 @@
 </script>
 
 <?php
-// Load manually script because we need to use type="module" for ES6 import to work
-// TODO Use YesWiki->AddJavascriptFile() with option module to avoir duplicate code for revision
-$revision = $GLOBALS['wiki']->config['yeswiki_release'] ?? null ;
-$rev = ($revision) ? '?v='.$revision : '';
-?>
-<script src="tools/templates/libs/vendor/vue/vue.js<?php echo $rev; ?>"></script>
-<script type="module" src="tools/aceditor/presentation/javascripts/actions-builder.js<?php echo $rev; ?>"></script>
+  $this->wiki->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
+  $this->wiki->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
+  $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
+  $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js');
+  $this->wiki->AddCSSFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css');
+  $this->wiki->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
+  $this->wiki->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
 
-<?php
-  $GLOBALS['wiki']->addCSSFile('tools/aceditor/presentation/styles/actions-builder.css');
-  $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css');
-  $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js');
-  $GLOBALS['wiki']->addJavascriptFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js');
-  $GLOBALS['wiki']->addCSSFile('tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css');
-  $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/leaflet.css');
-  $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet.js');
+  $this->wiki->AddJavascriptFile('tools/templates/libs/vendor/vue/vue.js');
+  $this->wiki->AddJavascriptFile('tools/aceditor/presentation/javascripts/actions-builder.js', false, true);
 ?>
