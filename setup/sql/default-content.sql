@@ -285,11 +285,10 @@ Vous trouverez un formulaire permettant
 
 {{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
 
-{{button class=\"btn-primary \" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }} 
-{{button class=\"btn-default\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
-
-
-=====Gérer les thèmes des pages=====
+{{button class="btn-secondary-1 btn-block" link="LookWiki" text="Personnaliser le thème de ce wiki (couleurs, police...)" }} 
+{{button class="btn-default btn-block" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot" }}
+------
+===(Avancé) Gérer le thème page par page===
 {{gererthemes}}
 -----
 ===Gérer le thème par défaut du wiki===
