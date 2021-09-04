@@ -463,7 +463,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_baz_map_zoom' => 'Choisir le niveau de zoom par défaut des cartes du wiki',
 'EDIT_CONFIG_HINT_baz_map_height' => 'Choisir la hauteur par défaut des cartes du wiki',
 'EDIT_CONFIG_HINT_debug' => 'Activer le mode de debug (\'yes\'/\'no\')',
-'EDIT_CONFIG_HINT_default_language' => '(\'fr\',\'en\',...)',
+'EDIT_CONFIG_HINT_default_language' => 'Langue par défaut (\'fr\',\'en\',...)',
 'EDIT_CONFIG_HINT_contact_from' => 'Adresse e-mail utilisée pour comme expéditeur des messages depuis les fiches',
 'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Adresse e-mail de l\'adminstrateur pour comme expéditeur certains messages depuis les fiches',
 'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Envoyer un e-mail aux admininistrateurs à chaque modification de fiche (1)',
@@ -474,5 +474,11 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Nom du champ texte long pour lequel les composants sont activés',
 'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Temps (s) entre deux rafraîchissements du cache pour les requêtes JSON pour listefiche',
 'EDIT_CONFIG_HINT_baz_check_owner_acl_only_for_field_can_edit' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (faux par défaut)',
-    
+'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
+'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
+'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+'EDIT_CONFIG_GROUP_ACEDITOR' => 'Editeur de page',
+'EDIT_CONFIG_GROUP_ATTACH' => 'Téléversement de médias',
+'EDIT_CONFIG_GROUP_BAZAR' => 'Base de donnée',
+'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',
 ));

@@ -8,24 +8,22 @@ class EditConfigAction extends YesWikiAction
     private const SAVE_NAME = 'save_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
     private const AUTHORIZED_KEYS = [
-        'wakka_name',
-        'root_page',
-        'meta_keywords',
-        'meta_description',
-        'meta',
+        'wakka_name' => 'core',
+        'root_page' => 'core',
+        'default_language' => 'core',
+        'meta_keywords' => 'core',
+        'meta_description' => 'core',
+        'meta' => 'core',
+        'debug' => 'core',
 
-        'default_read_acl',
-        'default_write_acl',
+        'default_read_acl' => 'access',
+        'default_write_acl' => 'access',
+        'bazarIgnoreAcls' => 'access',
+        'password_for_editing' => 'access',
+        'password_for_editing_message' => 'access',  
 
-        'password_for_editing',
-        'password_for_editing_message',
-
-        'debug',
-        'default_language',
-
-        'contact_from',
-        'mail_custom_message',
-        'bazarIgnoreAcls',
+        'contact_from' => 'email',
+        'mail_custom_message' => 'email',
     ];
 
     private $keys ;
@@ -88,11 +86,8 @@ class EditConfigAction extends YesWikiAction
     private function getAuthorizedKeys(): array
     {
         if (is_null($this->keys)) {
-            $keys = self::AUTHORIZED_KEYS;
-            $associatedExtensions = [];
-            foreach ($keys as $key) {
-                $associatedExtensions[$key] = 'core';
-            }
+            $associatedExtensions = self::AUTHORIZED_KEYS;
+            $keys = array_keys(self::AUTHORIZED_KEYS);
             foreach ($this->wiki->extensions as $extensionFolder) {
                 $matches = [];
                 if (preg_match('/(?:\/?tools\/?)?([^\/]+)\/?/', $extensionFolder, $matches)) {

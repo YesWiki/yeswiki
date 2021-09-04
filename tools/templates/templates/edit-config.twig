@@ -1,27 +1,32 @@
 <h3>{{ _t('EDIT_CONFIG_TITLE') }}</h3>
-<form
-  action=""
-  method="post"
-  name="edit-config"
-  id="edit-config"
-  class="form-horizontal"
->
-  {% for extName,data in keysList %}
-    {% for key,value in data %}
-      <div class="form-group">
-        <label for="{{ key }}">{{ help[key] ?? key }}{#{% if extName %} <i>{{ _t('EDIT_CONFIG_EXTENSION') ~ ': ' ~ extName }}</i>{% endif %}#}</label>
-        <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
-          {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
-          {% if placeholders[key] -%}
-            placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"
-          {%- endif %}
-          >
-        {% if help[key] %}
-          <small id="{{ key }}Help" class="form-text text-muted">{{ key }}</small>
-        {% endif %}
-      </div>
+
+<form action="" method="post" name="edit-config" id="edit-config" class="form-horizontal">
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    {% for group, data in keysList %}
+      <div class="panel panel-{{ group == 'core' ? 'primary' : 'default' }}">
+        <div class="panel-heading" id="head_{{ group }}" data-parent="#accordion" data-toggle="collapse" href="#{{ group }}">
+          <h4 class="panel-title">
+            {{ _t('EDIT_CONFIG_GROUP_' ~ group|upper) }}
+          </h4>
+        </div>
+        <div id="{{ group }}" class="panel-collapse collapse">
+          <div class="panel-body">
+            {% for key,value in data %}
+              <div class="field-container">
+                <label for="{{ key }}">{{ help[key] ?? key }}</label>
+                {% if help[key] %}<span> - {{ key }}</span>{% endif %}
+                <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
+                  {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
+                  {% if placeholders[key] -%}placeholder="{{ _t('EDIT_CONFIG_EXEMPLE') }}: {{ placeholders[key] }}"{%- endif %}
+                  />
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>      
     {% endfor %}
-  {% endfor %}
+  </div>
+
   {# DO NOT REMOVE THE FOLLOWING LINE THAT IS DEFINED FOR POST ACTIONS__.php#}
   <!-- end of #edit-config form -->
   <input type="hidden" name="{{ SAVE_NAME }}" value="1">
@@ -33,3 +38,8 @@
     </div>
   </div>
 </form>
+
+<style>
+  #edit-config { margin-top: 2rem; }
+  .field-container { margin: 1rem 0; }
+</style>
