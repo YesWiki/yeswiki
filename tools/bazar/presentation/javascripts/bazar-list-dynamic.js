@@ -9,6 +9,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       entries: [],
       params: {},
       filters: [],
+      searchedEntries: [],
+      filteredEntries: [],
+      paginatedEntries: [],
+      entriesToDisplay: [],
       currentPage: 0,
       perPage: 10,
       search: '',
@@ -23,52 +27,6 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
           if (checkedValues.length > 0) result[filterId] = checkedValues
         }
         return result
-      },
-      searchedEntries() {
-        // TODO BazarListDynamic, this method is recalculated each time update one field on an entry,
-        // for example changing the visible attribute, or pdating the html_render
-        let result = this.entries
-        if (this.search || this.searchFormId) {
-          result = result.filter(entry => {
-            if (this.searchFormId && entry.id_typeannonce != this.searchFormId) return false
-            if (this.search) {
-              // TODO BazarListDynamic improve search : search each word separatly, search dans list.. ou utiliser l'API?
-              return this.removeDiatrics(entry.bf_titre).includes(this.removeDiatrics(this.search))
-            }
-            return true
-          })
-        }
-        return result
-      },
-      filteredEntries() {
-        // Handles filters
-        let result = this.searchedEntries
-        for(const filterId in this.computedFilters) {
-          result = result.filter(entry => {
-            if (!entry[filterId]) return false
-            return entry[filterId].split(',').some(value => {
-              return this.computedFilters[filterId].includes(value)
-            })
-          })
-        }
-        return result
-      },
-      paginatedEntries() {
-        let result = this.filteredEntries
-        if (this.perPage) {
-          let start = this.perPage * this.currentPage
-          result = result.slice(start, start + this.perPage)
-        }
-        return result
-      },
-      entriesToDisplay() {
-        // calculate color and icon
-        this.paginatedEntries.forEach(entry => {
-          entry.color = this.valueFrom(entry, this.params.colorfield, this.params.color)
-          entry.icon  = this.valueFrom(entry, this.params.iconfield, this.params.icon)
-          return entry
-        })
-        return this.paginatedEntries
       },
       filteredEntriesCount() {
         return this.filteredEntries.length
@@ -93,9 +51,60 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     watch: {
       filteredEntriesCount() {
         this.currentPage = 0
-      }
+      },
+      search() { this.calculateBaseEntries() },
+      searchFormId() { this.calculateBaseEntries() },
+      computedFilters() { this.filterEntries() },
+      currentPage() { this.paginateEntries() }
     },
     methods: {
+      calculateBaseEntries() {
+        let result = this.entries
+        if (this.search || this.searchFormId) {
+          result = result.filter(entry => {
+            if (this.searchFormId && entry.id_typeannonce != this.searchFormId) return false
+            if (this.search) {
+              // TODO BazarListDynamic improve search : search each word separatly, search dans list.. ou utiliser l'API?
+              return this.removeDiatrics(entry.bf_titre).includes(this.removeDiatrics(this.search))
+            }
+            return true
+          })
+        }
+        this.searchedEntries = Object.values({ ...result })
+        this.filterEntries()
+      },
+      filterEntries() {
+        // Handles filters
+        let result = this.searchedEntries
+        for(const filterId in this.computedFilters) {
+          result = result.filter(entry => {
+            if (!entry[filterId]) return false
+            return entry[filterId].split(',').some(value => {
+              return this.computedFilters[filterId].includes(value)
+            })
+          })
+        }
+        this.filteredEntries = result
+        this.paginateEntries()
+      },
+      paginateEntries() {
+        let result = this.filteredEntries
+        if (this.perPage) {
+          let start = this.perPage * this.currentPage
+          result = result.slice(start, start + this.perPage)
+        }
+        this.paginatedEntries = result
+        this.formatEntries()
+      },
+      formatEntries() {
+        // calculate color and icon
+        this.paginatedEntries.forEach(entry => {
+          entry.color = this.valueFrom(entry, this.params.colorfield, this.params.color)
+          entry.icon  = this.valueFrom(entry, this.params.iconfield, this.params.icon)
+          return entry
+        })
+        this.entriesToDisplay = this.paginatedEntries
+      },
       filterDomId(key) {
         return `accordion_filter_${key}_${this._uid}`
       },
@@ -132,15 +141,19 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       this.perPage = parseInt(this.params.pagination)
       // Retrieve data asynchronoulsy
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
-        this.entries = data.entries.map(array => {
-          // initialize some fields so they get reactive
-          let entry = { color: null, icon: null }
-          for(let key in data.fieldMapping) {
-            entry[data.fieldMapping[key]] = array[key]
-          }
-          return entry
-        })
         this.filters = data.filters || []
+        // First display filters cause entries can be a bit long to load
+        setTimeout(() => {
+          this.entries = data.entries.map(array => {
+            // initialize some fields so they get reactive
+            let entry = { color: null, icon: null }
+            for(let key in data.fieldMapping) {
+              entry[data.fieldMapping[key]] = array[key]
+            }
+            return entry
+          })
+          this.calculateBaseEntries()
+        }, 0)  
       })
       
     }
