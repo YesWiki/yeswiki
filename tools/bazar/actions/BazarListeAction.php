@@ -1,10 +1,7 @@
 <?php
 
-use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\ExternalBazarService;
-use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\Service\TemplateNotFound;
@@ -181,69 +178,20 @@ class BazarListeAction extends YesWikiAction
                 && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
             return $this->callAction('calendrier', $this->arguments);
         }
-
-        $entryManager = $this->getService(EntryManager::class);
-        $formManager = $this->getService(FormManager::class);
-        $externalWikiService = $this->getService(ExternalBazarService::class);
-
-        // External mode activated ?
-        if ($this->arguments['externalModeActivated']) {
-            $forms = $externalWikiService->getFormsForBazarListe($this->arguments['externalIds'], $this->arguments['refresh']);
-            $entries = $externalWikiService->getEntries([
-                'forms' => $forms,
-                'refresh' => $this->arguments['refresh'],
-                'queries' => $this->arguments['query']
-            ]);
-        } else {
-            $forms = $formManager->getAll();
-            $entries = $entryManager->search(
-                [
-                    'queries' => $this->arguments['query'],
-                    'formsIds' => $this->arguments['idtypeannonce'],
-                    'keywords' => $_REQUEST['q'] ?? '',
-                    'user' => $this->arguments['user'],
-                    'minDate' => $this->arguments['dateMin'],
-                    'correspondance' => $this->arguments['correspondance'] ?? ''
-                ],
-                true, // filter on read ACL
-                true, // use Guard
-            );
-        }
-
-        // filter entries on datefilter parameter
-        if (!empty($this->arguments['datefilter'])) {
-            $entries = $this->getService(EntryController::class)->filterEntriesOnDate($entries, $this->arguments['datefilter']) ;
-        }
-
-        // Sort entries
-        if ($this->arguments['random']) {
-            shuffle($entries);
-        } else {
-            usort($entries, $this->buildFieldSorter($this->arguments['ordre'], $this->arguments['champ']));
-        }
-
-        // Limit entries
-        if ($this->arguments['nb'] !== '') {
-            $entries = array_slice($entries, 0, $this->arguments['nb']);
-        }
-
-        $filters = $this->formatFilters($entries, $forms);
+        
+        $bazatListService = $this->getService(BazarListService::class);
+        $bazatListService->setArguments($this->arguments);
+        $forms = $bazatListService->getForms();
 
         if ($this->arguments['dynamic']) {
-            array_map(function($entry) {
-                unset($entry['html_data']);
-                // TODO BazarListeDynamic
-                // if template doc say which attributes are used in the template,
-                // then slice $entriy to send only minimal attributes
-                return $entry;
-            }, $entries);
             return $this->render("@bazar/entries/list_dynamic/{$this->arguments['template']}.twig", [
-                'entries' => json_encode($entries),
                 'params' => $this->arguments,
-                'filters' => json_encode($filters),
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
             ]);
         } else {
+            $entries = $bazatListService->getEntries($forms);     
+            $filters = $bazatListService->formatFilters($entries, $forms);  
+
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
             if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
@@ -270,6 +218,8 @@ class BazarListeAction extends YesWikiAction
             ]);
         }      
     }
+
+    
 
     private function renderEntries($entries): string
     {
@@ -317,146 +267,7 @@ class BazarListeAction extends YesWikiAction
         }
     }
 
-    private function formatFilters($entries, $forms): array
-    {
-        $formManager = $this->getService(FormManager::class);
-
-        if (count($this->arguments['groups']) > 0) {
-            // Scanne tous les champs qui pourraient faire des filtres pour les facettes
-            $facettables = $formManager->scanAllFacettable($entries, $this->arguments['groups']);
-
-            if (count($facettables) > 0) {
-                $filters = [];
-
-                // Récupere les facettes cochees
-                $tabfacette = [];
-                if (isset($_GET['facette']) && !empty($_GET['facette'])) {
-                    $tab = explode('|', $_GET['facette']);
-                    //découpe la requete autour des |
-                    foreach ($tab as $req) {
-                        $tabdecoup = explode('=', $req, 2);
-                        if (count($tabdecoup)>1) {
-                            $tabfacette[$tabdecoup[0]] = explode(',', trim($tabdecoup[1]));
-                        }
-                    }
-                }
-
-                foreach ($facettables as $id => $facettable) {
-                    $list = [];
-                    // Formatte la liste des resultats en fonction de la source
-                    if (in_array($facettable['type'], ['liste','fiche'])) {
-                        $field = $this->findFieldByName($forms, $facettable['source']);
-                        if (!($field instanceof BazarField)) {
-                            if ($this->debug) {
-                                trigger_error("Waiting field instanceof BazarField from findFieldByName, ".
-                                    (
-                                        (is_null($field)) ? 'null' : (
-                                            (gettype($field) == "object") ? get_class($field) : gettype($field)
-                                        )
-                                    ) . ' returned');
-                            }
-                        } elseif ($facettable['type'] == 'liste') {
-                            $list['titre_liste'] = $field->getLabel();
-                            $list['label'] = $field->getOptions();
-                        } elseif ($facettable['type'] == 'fiche') {
-                            $formId = $field->getLinkedObjectName() ;
-                            $form = $forms[$formId];
-                            $list['titre_liste'] = $form['bn_label_nature'];
-                            foreach ($facettable as $idfiche => $nb) {
-                                if ($idfiche != 'source' && $idfiche != 'type') {
-                                    $f = $this->getService(EntryManager::class)->getOne($idfiche);
-                                    $list['label'][$idfiche] = $f['bf_titre'];
-                                }
-                            }
-                        }
-                    } elseif ($facettable['type'] == 'form') {
-                        if ($facettable['source'] == 'id_typeannonce') {
-                            $list['titre_liste'] = _t('BAZ_TYPE_FICHE');
-                            foreach ($facettable as $idf => $nb) {
-                                if ($idf != 'source' && $idf != 'type') {
-                                    $list['label'][$idf] = $forms[$idf]['bn_label_nature'];
-                                }
-                            }
-                        } elseif ($facettable['source'] == 'owner') {
-                            $list['titre_liste'] = _t('BAZ_CREATOR');
-                            foreach ($facettable as $idf => $nb) {
-                                if ($idf != 'source' && $idf != 'type') {
-                                    $list['label'][$idf] = $idf;
-                                }
-                            }
-                        } else {
-                            $list['titre_liste'] = $id;
-                            foreach ($facettable as $idf => $nb) {
-                                if ($idf != 'source' && $idf != 'type') {
-                                    $list['label'][$idf] = $idf;
-                                }
-                            }
-                        }
-                    }
-
-                    $idkey = htmlspecialchars($id);
-
-                    $i = array_key_first(array_filter($this->arguments['groups'], function ($value) use ($idkey) {
-                        return ($value == $idkey) ;
-                    }));
-
-                    $filters[$idkey]['icon'] =
-                        (isset($this->arguments['groupicons'][$i]) && !empty($this->arguments['groupicons'][$i])) ?
-                            '<i class="'.$this->arguments['groupicons'][$i].'"></i> ' : '';
-
-                    $filters[$idkey]['title'] =
-                        (isset($this->arguments['titles'][$i]) && !empty($this->arguments['titles'][$i])) ?
-                            $this->arguments['titles'][$i] : $list['titre_liste'];
-
-                    $filters[$idkey]['collapsed'] = ($i != 0) && !$this->arguments['groupsexpanded'];
-
-                    $filters[$idkey]['index'] = $i;
-
-                    foreach ($list['label'] as $listkey => $label) {
-                        if (isset($facettables[$id][$listkey]) && !empty($facettables[$id][$listkey])) {
-                            $filters[$idkey]['list'][] = [
-                                'id' => $idkey.$listkey,
-                                'name' => $idkey,
-                                'value' => htmlspecialchars($listkey),
-                                'label' => $label,
-                                'nb' => $facettables[$id][$listkey],
-                                'checked' => (isset($tabfacette[$idkey]) and in_array($listkey, $tabfacette[$idkey])) ? ' checked' : '',
-                            ];
-                        }
-                    }
-                }
-
-
-                // reorder $filters
-
-                uasort($filters, function ($a, $b) {
-                    if (isset($a['index']) && isset($b['index'])) {
-                        if ($a['index'] == $b['index']) {
-                            return 0 ;
-                        } else {
-                            return ($a['index'] < $b['index']) ? -1 : 1 ;
-                        }
-                    } elseif (isset($a['index'])) {
-                        return 1 ;
-                    } elseif (isset($b['index'])) {
-                        return -1 ;
-                    } else {
-                        return 0 ;
-                    }
-                }) ;
-
-                foreach ($filters as $id => $filter) {
-                    if (isset($filter['index'])) {
-                        unset($filter['index']) ;
-                    }
-                }
-
-                return $filters;
-            }
-        }
-
-        return [];
-    }
+    
 
     private function formatDateMin($period)
     {
@@ -471,33 +282,6 @@ class BazarListeAction extends YesWikiAction
                 $d = strtotime("-1 month");
                 return date("Y-m-d H:i:s", $d);
         }
-    }
-
-    /*
-     * Scan all forms and return the first field matching the given ID
-     */
-    private function findFieldByName($forms, $name)
-    {
-        foreach ($forms as $form) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof BazarField) {
-                    if ($field->getPropertyName() === $name) {
-                        return $field;
-                    }
-                }
-            }
-        }
-    }
-
-    private function buildFieldSorter($ordre, $champ): callable
-    {
-        return function ($a, $b) use ($ordre, $champ) {
-            if ($ordre == 'desc') {
-                return strcoll($b[$champ], $a[$champ]);
-            } else {
-                return strcoll($a[$champ], $b[$champ]);
-            }
-        };
     }
 
     /* Method to test if the current template is associated to a specific bazar actions

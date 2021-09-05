@@ -9,10 +9,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
-
 class ApiController extends YesWikiController
 {
     /**
@@ -171,6 +171,34 @@ class ApiController extends YesWikiController
             'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
             'Location: ' . $this->wiki->Href('', $entry['id_fiche'])
         ]);
+    }
+
+    /**
+     * @Route("/api/bazar-list-data", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getBazarListData()
+    {
+        $bazatListService = $this->getService(BazarListService::class);
+        $bazatListService->setArguments($_GET);
+        $forms = $bazatListService->getForms();
+        $entries = $bazatListService->getEntries($forms);     
+        $filters = $bazatListService->formatFilters($entries, $forms);  
+
+        array_map(function($entry) {
+            unset($entry['html_data']);
+            // TODO BazarListeDynamic
+            // if template doc say which attributes are used in the template,
+            // then slice $entriy to send only minimal attributes
+            return $entry;
+        }, $entries);
+
+        return new ApiResponse(
+            [
+                'entries' => $entries,
+                'filters' => $filters
+            ],
+            Response::HTTP_OK
+        );
     }
 
     /**

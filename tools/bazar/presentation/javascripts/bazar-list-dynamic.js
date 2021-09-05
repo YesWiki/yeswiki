@@ -122,15 +122,20 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       }
     },
     mounted() {
-      this.entries = JSON.parse(this.$el.dataset.entries).map(entry => {
-        // initialize some fields so they get reactive
-        entry.color = null
-        entry.icon = null
-        return entry
-      })
       this.params = JSON.parse(this.$el.dataset.params)
-      this.filters = JSON.parse(this.$el.dataset.filters)
       this.perPage = this.params.pagination
+
+      // Retrieve data asynchronoulsy
+      $.getJSON('?api/bazar-list-data', this.params, (data) => {
+        this.entries = data.entries.map(entry => {
+          // initialize some fields so they get reactive
+          entry.color = null
+          entry.icon = null
+          return entry
+        })
+        this.filters = data.filters || []
+      })
+      
     }
   })
 })

@@ -1,4 +1,4 @@
-<div class="filters-col col-sm-{{ params.filtercolsize }}">
+<div class="filters-col col-sm-{{ params.filtercolsize }}" v-if="Object.keys(filters).length">
   <div class="filters no-dblclick {{ params.filterposition }}">
     
     <div class="results-info text-info">
@@ -28,7 +28,7 @@
               <input class="filter-checkbox" type="checkbox" v-model="filterValue.checked" :value="filterValue.value">
               <span>
                 <span v-html="filterValue.label"></span>
-                <span class="nb">({{"{{ filterValue.nb }}"}})</span>
+                <span class="nb" v-if="filterValue.nb">({{"{{ filterValue.nb }}"}})</span>
               </span>
             </label>
           </div>

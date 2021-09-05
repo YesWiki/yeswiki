@@ -1,5 +1,5 @@
 {% block pagination %}
-  <ul class="pagination" v-if="params.pagination">
+  <ul class="pagination" v-if="params.pagination && entriesToDisplay.length > 0">
     <li @click="currentPage = 0" :class="{disabled: currentPage == 0}">
       <i class="fa fa-chevron-left"></i>
     </li>

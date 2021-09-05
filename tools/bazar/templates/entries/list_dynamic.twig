@@ -2,8 +2,7 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
 
-<div class="bazar-list-dynamic-container" data-entries="{{ entries }}" data-params="{{ params|json_encode }}"
-     data-filters="{{ filters }}">
+<div class="bazar-list-dynamic-container" data-params="{{ params|json_encode }}">
 
   {% if params.search %}
     {{ include("@bazar/entries/list_dynamic/_search_input.twig") }}
@@ -12,7 +11,7 @@
   <div class="facette-container dynamic row" data-filter-align="{{ params.filterposition }}">
     
     {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
-    {% set resultsColSize = filters ? resultsColSize : 12 %}
+    {% set resultsColSize = params.groups ? resultsColSize : 12 %}
     <div class="results-col col-sm-{{ resultsColSize }}">
       <div class="bazar-list dynamic">
         {% block display_entries %}
@@ -20,7 +19,7 @@
       </div>
     </div>
 
-    {% if filters %}
+    {% if params.groups %}
       {{ include("@bazar/entries/list_dynamic/_filters.twig") }}
     {% endif %}
     
