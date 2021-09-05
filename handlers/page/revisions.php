@@ -47,7 +47,7 @@ if ($this->HasAccess("read")) {
         $output .= $this->FormOpen("diff", "", "get");
         $output .= "<table border=\"0\" cellspacing=\"0\" cellpadding=\"1\">\n";
         $output .= "<tr>\n";
-        $output .= "<td><input type=\"submit\" value=\"Voir Diff&eacute;rences\" /></td>";
+        $output .= "<td><input type=\"submit\" value=\"Voir Diff&eacute;rences\" /><span class=\"current-revision-text\"> de la version actuelle avec</span></td>";
         $output .= "<td><input type=\"checkbox\" name=\"fastdiff\"/>\nAffichage simplifi&eacute;\n</td>";
         $output .= "</tr>\n";
         $output .= "</table>\n";
@@ -62,7 +62,7 @@ if ($this->HasAccess("read")) {
         foreach ($pages as $page) {
             $c++;
             if (($c <= $max) || !$max) {
-                $output .= "<tr>";
+                $output .= "<tr".($c == 1 ? ' class="current-page-revision"':'').">";
                 $output .= "<td class=\"first-revisions-selector\"><input type=\"radio\" name=\"a\" value=\"".$page["id"]."\" ".($c == 1 ? "checked=\"checked\"" : "")." /></td>";
                 $output .= "<td><input type=\"radio\" name=\"b\" value=\"".$page["id"]."\" ".($c == 2 ? "checked=\"checked\"" : "")." /></td>";
                 $output .= "<td>&nbsp;<a href=\"".$this->href("show")."&amp;time=".urlencode($page["time"])."\">".$page["time"]."</a></td>";

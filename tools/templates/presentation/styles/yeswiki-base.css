@@ -231,7 +231,8 @@ li.toc5 {
   border: 0;
 }
 /* remove first column of revisions */
-#YesWikiModal .first-revisions-selector {
+#YesWikiModal .first-revisions-selector, #YesWikiModal  .current-page-revision,
+body > :not(#YesWikiModal) .current-revision-text {
   display:none;
 }
 
