@@ -75,6 +75,7 @@ class PackageCore extends Package
                     );
                 }
             }
+            closedir($res);
             foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
                 if (is_file($extractionPath .'/'. $file) or is_dir($extractionPath .'/'. $file)) {
                     $this->copy($extractionPath . '/' . $file, $desPath . '/' . $file);
