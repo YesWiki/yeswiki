@@ -94,18 +94,22 @@
   left: 9.5px;
 }
 
-.bazar-marker .entry-name {
+.bazar-map-container .bazar-marker .entry-name {
   display: none;
   position: absolute;
+  top: -46px;
+  left: -5px;
+  width: 1000px;
+}
+.bazar-map-container .bazar-marker .entry-name span {
+  background-color: darkred;
   color: var(--neutral-light-color);
   padding: .2rem .8rem;
   border-radius: 3px;
-  top: -46px;
-  left: -5px;
   font-size: .95em;
 }
-.bazar-marker.xl.selected .entry-name,
-.bazar-marker.xl:hover .entry-name {
+.bazar-map-container .bazar-marker.xl.selected .entry-name,
+.bazar-map-container .bazar-marker.xl:hover .entry-name {
   display: block;
 }
 

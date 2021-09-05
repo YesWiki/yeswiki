@@ -4,8 +4,14 @@
 
 {% block assets %}
   <link rel="stylesheet" href="//unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="//unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="//unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+  {{ include_css('tools/bazar/presentation/styles/bazarcarto.css') }}
+
   <script src="//unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="//unpkg.com/vue2-leaflet"></script>
+  <script src="//unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+  
 {% endblock %}
 
 {% block display_entries %}
