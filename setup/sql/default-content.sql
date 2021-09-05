@@ -271,12 +271,12 @@ Vous trouverez un formulaire permettant
 
 ===Gérer les menus et pages spéciales de ce wiki===
  - [[PageMenuHaut Éditer menu horizontal d\'en haut]]
- - [[PageTitre Éditer le titre]]
- - [[PageRapideHaut Éditer le menu roue crantée]]
- - [[PageHeader Éditer le bandeau]]
- - [[PageFooter Éditer le footer]]
- - [[PageMenu Éditer le menu vertical (apparaissant sur les thèmes 2 colonnes ou plus)]]
- - [[ReglesDeFormatage Éditer le mémo de formatage (bouton \"?\" dans la barre d\'édition )]]
+ - [[PageTitre/edit Éditer le titre]]
+ - [[PageRapideHaut/edit Éditer le menu roue crantée]]
+ - [[PageHeader/edit Éditer le bandeau]]
+ - [[PageFooter/edit Éditer le footer]]
+ - [[PageMenu/edit Éditer le menu vertical (apparaissant sur les thèmes 2 colonnes ou plus)]]
+ - [[ReglesDeFormatage/edit Éditer le mémo de formatage (bouton \"?\" dans la barre d\'édition )]]
 ------
 ===Gestion des mots clés ===
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
