@@ -1,10 +1,10 @@
 {% extends "@bazar/entries/list_dynamic.twig" %}
 
 {% block display_entries %}
-  <div class="panel-group accordion-group no-dblclick" :id="`accordion_${_uid}`">
-    <div v-for="entry in entriesToDisplay" class="bazar-entry panel panel-default collapsed">
-      <div class="panel-heading collapsed" :data-target="'#' + entryDomId(entry)" data-toggle="collapse"
-           @click="getEntryRender(entry)" :data-parent="`#accordion_${_uid}`">
+  <div class="panel-group no-dblclick">
+    <Panel v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry" 
+           @opened="getEntryRender(entry)">
+      <template #header>
         <h4 class="panel-title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
           <i v-show="entry.icon" :class="entry.icon"></i>
@@ -14,13 +14,11 @@
           {# TODO BazarListDynamic crops soustitre with text ellipsis #}
           {{"{{ entry.soustitre }}"}}
         </small>
-      </div>
-      <div class="panel-collapse collapse" :id="entryDomId(entry)" >
-        <div class="panel-body">
-          <div v-html="entry.html_render"></div>
-          {# TODO BazarListdDynamic the footer with actions to edit and delete should be included in html_render #}
-        </div>
-      </div>
-    </div>
+      </template>
+      <template #body>
+        <div v-html="entry.html_render"></div>
+        {# TODO BazarListdDynamic the footer with actions to edit and delete should be included in html_render #}
+      </template>
+    </Panel>
   </div>
 {% endblock %}

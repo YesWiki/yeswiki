@@ -1,6 +1,9 @@
+import Panel from './components/Panel.js'
+
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
+    components: { Panel },
     data: {
       entries: [],
       params: {},
