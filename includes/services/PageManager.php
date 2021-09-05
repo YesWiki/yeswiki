@@ -145,6 +145,7 @@ class PageManager
                 return $pages;
             }
         }
+        return null;
     }
 
     public function getAll(): array
