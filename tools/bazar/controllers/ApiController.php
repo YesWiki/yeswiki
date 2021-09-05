@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Exception;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -178,28 +179,32 @@ class ApiController extends YesWikiController
      */
     public function getBazarListData()
     {
-        $bazatListService = $this->getService(BazarListService::class);
-        $bazatListService->setArguments($_GET);
-        $forms = $bazatListService->getForms();
-        $entries = $bazatListService->getEntries($forms);     
-        $filters = $bazatListService->formatFilters($entries, $forms);  
-
-        // Basic fields
-        $fieldMapping = ['id_fiche', 'bf_titre', 'id_typeannonce'];
-        // Fields for filters
-        foreach($filters as $field => $config) $fieldMapping[] = $field;
-        // Fields used by template
-        $fieldMapping = array_unique(array_merge($fieldMapping, $_GET['necessary_fields']));
-        
-        // Reduce the size of the data sent by transforming entries object into array
-        // we use the $fieldMapping to transform back the data when receiving data in the front end
-        $entries = array_map(function($entry) use ($fieldMapping) {
-            $result = [];
-            foreach($fieldMapping as $field) {
-                $result[] = $entry[$field] ?? null;
-            }
-            return $result;
-        }, $entries);
+        try {
+            $bazatListService = $this->getService(BazarListService::class);
+            $bazatListService->setArguments($_GET);
+            $forms = $bazatListService->getForms();
+            $entries = $bazatListService->getEntries($forms);     
+            $filters = $bazatListService->formatFilters($entries, $forms);  
+            
+            // Basic fields
+            $fieldMapping = ['id_fiche', 'bf_titre', 'id_typeannonce'];
+            // Fields for filters
+            foreach($filters as $field => $config) $fieldMapping[] = $field;
+            // Fields used by template
+            $fieldMapping = array_unique(array_merge($fieldMapping, $_GET['necessary_fields']));
+            
+            // Reduce the size of the data sent by transforming entries object into array
+            // we use the $fieldMapping to transform back the data when receiving data in the front end
+            $entries = array_map(function($entry) use ($fieldMapping) {
+                $result = [];
+                foreach($fieldMapping as $field) {
+                    $result[] = $entry[$field] ?? null;
+                }
+                return $result;
+            }, $entries);
+        } catch (\Exception $e) {
+            return new ApiResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return new ApiResponse(
             [

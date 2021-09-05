@@ -1,4 +1,5 @@
 import Panel from './components/Panel.js'
+import BazarMap from './components/BazarMap.js'
 
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
@@ -24,6 +25,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         return result
       },
       searchedEntries() {
+        // TODO BazarListDynamic, this method is recalculated each time update one field on an entry,
+        // for example changing the visible attribute, or pdating the html_render
         let result = this.entries
         if (this.search || this.searchFormId) {
           result = result.filter(entry => {

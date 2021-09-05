@@ -1,0 +1,13 @@
+{% extends "@bazar/entries/list_dynamic.twig" %}
+
+{% set necessary_fields = ['bf_latitude', 'bf_longitude'] %}
+
+{% block assets %}
+  <link rel="stylesheet" href="//unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="//unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="//unpkg.com/vue2-leaflet"></script>
+{% endblock %}
+
+{% block display_entries %}
+  <Bazar-Map :params="params" class="bazar-map"></Bazar-Map>
+{% endblock %}

@@ -60,6 +60,14 @@
   height: 46px;
   font-size: 40px;
 }
+.bazar-marker.xl:hover {
+  z-index: 1000 !important;
+}
+.bazar-marker.xl:hover .bazar-entry,
+.bazar-marker.xl.selected .bazar-entry {
+  transform: scale(1.3);
+  margin-top: -5px;
+}
 .bazar-marker .bazar-entry i {
   position: absolute;
   top: 3.5px;
@@ -71,4 +79,61 @@
   top: 8px;
   left: 7.5px;
   font-size: 16px;
+}
+
+
+/* Dynamic Bazar Map */
+.bazar-map-container {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bazar-map-container .bazar-marker.xl .bazar-entry i {
+  left: 9.5px;
+}
+
+.bazar-marker .entry-name {
+  display: none;
+  position: absolute;
+  color: var(--neutral-light-color);
+  padding: .2rem .8rem;
+  border-radius: 3px;
+  top: -46px;
+  left: -5px;
+  font-size: .95em;
+}
+.bazar-marker.xl.selected .entry-name,
+.bazar-marker.xl:hover .entry-name {
+  display: block;
+}
+
+.bazar-map-container .entry-container {
+  position: relative;
+  min-height: 50%;
+  background-color: var(--neutral-light-color);
+  padding: 1rem;
+  overflow: auto;
+  border-bottom: 5px solid #f1f1f1;
+}
+.bazar-map-container .btn-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 7rem;
+  width: 7rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  background-color: var(--neutral-light-color);
+}
+.bazar-map-container .btn-close i {
+  padding: 2rem;
+  cursor: pointer;
+}
+.bazar-map-container .btn-close i:hover {
+  font-size: 1.2em;
 }

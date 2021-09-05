@@ -84,7 +84,7 @@ class BazarListService
 
     public function formatFilters($entries, $forms) : array
     {
-        if (count($this->arguments['groups']) == 0) return [];
+        if (count($this->arguments['groups'] ?? []) == 0) return [];
         
         // Scanne tous les champs qui pourraient faire des filtres pour les facettes
         $facettables = $this->formManager
@@ -130,7 +130,7 @@ class BazarListService
                     $list['titre_liste'] = $form['bn_label_nature'];
                     foreach ($facettable as $idfiche => $nb) {
                         if ($idfiche != 'source' && $idfiche != 'type') {
-                            $f = $this->getService(EntryManager::class)->getOne($idfiche);
+                            $f = $this->entryManager->getOne($idfiche);
                             $list['label'][$idfiche] = $f['bf_titre'];
                         }
                     }
