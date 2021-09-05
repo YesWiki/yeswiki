@@ -263,8 +263,10 @@ class TripleStore
      *            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
      * @param string $prop_prefix
      *            The prefix to add to $property (defaults to <tt>WIKINI_VOC_PREFIX</tt>)
+     * @param string $extraSQL
+     *            Extra SQL query (null by default)
      */
-    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
+    public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, $extraSQL = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -275,7 +277,9 @@ class TripleStore
         if ($value !== null) {
             $sql .= 'AND value = "' . $this->dbService->escape($value) . '"';
         }
-
+        if ($extraSQL !== null) {
+            $sql .= 'AND ('.$extraSQL.')';
+        }
         // invalidate the cache
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
