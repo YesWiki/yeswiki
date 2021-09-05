@@ -4,11 +4,20 @@ namespace AutoUpdate;
 class PackageCore extends Package
 {
     const CORE_NAME = 'yeswiki';
-    public $ignoredFiles = array('.', '..', 'custom', 'templates','tools', 'files', 'cache', 'themes', 'wakka.config.php');
+    public $ignoredFiles = [
+        '.',
+        '..',
+        'custom',
+        'tools',
+        'files',
+        'cache',
+        'themes',
+        'wakka.config.php'
+    ];
 
     public function __construct($release, $address, $desc, $doc, $minimalPhpVersion = null)
     {
-        parent::__construct($release, $address, $desc, $doc,$minimalPhpVersion);
+        parent::__construct($release, $address, $desc, $doc, $minimalPhpVersion);
         $this->installed = true;
         $this->localPath = realpath(dirname($_SERVER["SCRIPT_FILENAME"]));
         $this->name = $this::CORE_NAME;
@@ -151,7 +160,7 @@ class PackageCore extends Package
     {
         // check format of JSON package 99.99.99
         $matches = [];
-        if (preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)){
+        if (preg_match('/^([0-9]*)\.([0-9]*)\.([0-9]*)$/', $this->minimalPhpVersion, $matches)) {
             return $this->minimalPhpVersion ;
         }
         return '7.3.0'; // just in case of error give a number
