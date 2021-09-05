@@ -40,6 +40,12 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         return result
       },
       entriesToDisplay() {
+        // calculate color and icon
+        this.paginatedEntries.forEach(entry => {
+          entry.color = this.valueFrom(entry, this.params.colorfield, this.params.color)
+          entry.icon  = this.valueFrom(entry, this.params.iconfield, this.params.icon)
+          return entry
+        })
         return this.paginatedEntries
       },
       pages() {
@@ -81,10 +87,25 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         $.getJSON(`?api/entries/html/${entry.id_fiche}`, function(data) {
           Vue.set(entry, 'html_render', data[entry.id_fiche].html_output)
         })
+      },
+      valueFrom(entry, field, mapping) {
+        if (!entry[field]) return null
+        let values = entry[field].split(',')
+        // If some filters are checked, and the entry have multiple values, we will shall display 
+        // the value associated with the checked filter
+        // TODO BazarListDynamic check with users if this is expected behaviour
+        // also check if we should display icon inside the filter itself
+        if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
+        return mapping[values[0]]
       }
     },
     mounted() {
-      this.entries = JSON.parse(this.$el.dataset.entries)
+      this.entries = JSON.parse(this.$el.dataset.entries).map(entry => {
+        // initialize some fields so they get reactive
+        entry.color = null
+        entry.icon = null
+        return entry
+      })
       this.params = JSON.parse(this.$el.dataset.params)
       this.filters = JSON.parse(this.$el.dataset.filters)
       this.perPage = this.params.pagination

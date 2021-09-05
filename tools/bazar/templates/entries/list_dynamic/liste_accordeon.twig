@@ -5,11 +5,20 @@
     <div v-for="entry in entriesToDisplay" class="bazar-entry panel panel-default collapsed">
       <div class="panel-heading collapsed" :data-target="'#' + entryDomId(entry)" data-toggle="collapse"
            @click="getEntryRender(entry)" :data-parent="`#accordion_${_uid}`">
-        <h4 class="panel-title">{{"{{ entry.bf_titre }}"}}</h4>
+        <h4 class="panel-title">
+          <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
+          <i v-show="entry.icon" :class="entry.icon"></i>
+          {{"{{ entry.bf_titre }}"}}
+        </h4>
+        <small v-if="entry.soustitre" class='accordion-subtitle'>
+          {# TODO BazarListDynamic crops soustitre with text ellipsis #}
+          {{"{{ entry.soustitre }}"}}
+        </small>
       </div>
       <div class="panel-collapse collapse" :id="entryDomId(entry)" >
         <div class="panel-body">
           <div v-html="entry.html_render"></div>
+          {# TODO BazarListdDynamic the footer with actions to edit and delete should be included in html_render #}
         </div>
       </div>
     </div>
