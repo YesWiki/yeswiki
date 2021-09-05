@@ -661,4 +661,91 @@ function toastMessage(
     }
     return false;
   });
+  // reaction
+
+  // init user reaction count
+  $(".reactions-container").each(function (i, val) {
+    var userReaction = $(val).find(".user-reaction").length;
+    var nbReactionLeft = $(val).find(".max-reaction").text();
+    $(val)
+      .find(".max-reaction")
+      .text(nbReactionLeft - userReaction);
+  });
+  // handler reaction click
+  $(".link-reaction").click(function () {
+    var url = $(this).attr("href");
+    var data = $(this).data();
+    var nb = $(this).find(".reaction-numbers");
+    var nbInit = parseInt(nb.text());
+    if (url !== "#") {
+      if ($(this).hasClass("user-reaction")) {
+        // on supprime la reaction
+        if (typeof blockReactionRemove !== "undefined" && blockReactionRemove) {
+          if (blockReactionRemoveMessage) {
+            if (typeof toastMessage == "function") {
+              toastMessage(
+                blockReactionRemoveMessage,
+                3000,
+                "alert alert-warning"
+              );
+            } else {
+              alert(blockReactionRemoveMessage);
+            }
+          }
+          return false;
+        } else {
+          nb.text(nbInit - 1);
+          $(this).removeClass("user-reaction");
+          var nbReactionLeft = parseFloat(
+            $(this).parents(".reactions-container").find(".max-reaction").text()
+          );
+          $(this)
+            .parents(".reactions-container")
+            .find(".max-reaction")
+            .text(nbReactionLeft + 1);
+          $.ajax({
+            method: "DELETE",
+            url: url+'/'+data.reactionid+'/'+data.id+'/'+data.pagetag+'/'+data.username
+          })
+          return false;
+        }
+      } else {
+        // on ajoute la reaction si le max n'est pas dépassé
+        var nbReactionLeft = parseFloat( $(this).parents(".reactions-container").find(".max-reaction").text());
+        if (nbReactionLeft>0) {
+          $(this)
+            .find(".reaction-numbers")
+            .text(nbReactionLeft - 1);
+            
+          nb.text(nbInit + 1);
+          $(this).addClass("user-reaction");
+          $(this)
+            .parents(".reactions-container")
+            .find(".max-reaction")
+            .text(nbReactionLeft -1);
+          $.ajax({
+            method: "POST",
+            url: url,
+            data: data,
+          }).done(function (data) {
+            if (data.state == "error") {
+              alert(data.errorMessage);
+              nb.text(nbInit);
+            }
+          });
+        } else {
+          var message = 'Vous n\'avez plus de choix possibles, vous pouvez retirer un choix existant pour changer'
+          if (typeof toastMessage == "function") {
+            toastMessage(
+              message,
+              3000,
+              "alert alert-warning"
+            );
+          } else {
+            alert(message)
+          }
+        }
+      }
+    }
+  });
 })(jQuery);
