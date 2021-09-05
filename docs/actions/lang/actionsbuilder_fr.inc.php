@@ -39,6 +39,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_attach_height_label' => "Hauteur",
     'AB_attach_class_label' => "Classe",
     'AB_attach_class_position_label' => "Position",
+    'AB_attach_class_position_none' => "Texte en dessous",
     'AB_attach_class_position_left' => "Gauche",
     'AB_attach_class_position_center' => "Centre",
     'AB_attach_class_position_right' => "Droite",

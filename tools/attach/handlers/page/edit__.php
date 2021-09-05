@@ -54,8 +54,13 @@ if ($this->HasAccess("write") && $this->HasAccess("read") && !$entryManager->isE
 					<label class="control-label col-sm-3">'._t('IMAGE_ALIGN').'</label>
 					<div class="controls col-sm-9">
             <div class="radio inline-container">
+					  <label class="label-image-align-none" for="image-align-none">
+						<input type="radio" id="image-align-none" checked="checked" value="" name="attach_align" class="input_radio image-align-none" />
+						<span></span>
+						<img src="tools/attach/presentation/images/align-none.png" alt="align-none" /> '._t('NONE').'
+					  </label>
   					  <label class="label-image-align-left" for="image-align-left">
-                        <input type="radio" id="image-align-left" checked="checked" value="left" name="attach_align" class="input_radio image-align-left" />
+                        <input type="radio" id="image-align-left"value="left" name="attach_align" class="input_radio image-align-left" />
                         <span></span>
                           <img src="tools/attach/presentation/images/align-left.png" alt="align-left" /> '._t('LEFT').'
                       </label>

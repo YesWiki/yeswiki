@@ -570,7 +570,8 @@ if (!class_exists('attach')) {
                 }
             }
 
-            $output = (isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '');
+            $notAligned = ($this->classes === "attached_file");
+            $output = ($notAligned ? '<div>' : '').(isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '').($notAligned ? '</div>' :'');
 
             echo $output;
             //$this->showUpdateLink();
@@ -658,7 +659,7 @@ if (!class_exists('attach')) {
             
             // Call pdf actions
             $params = $this->wiki->parameter;
-            echo $this->wiki->Action('pdf',0,$params) ;
+            echo $this->wiki->Action('pdf', 0, $params) ;
         }
 
 

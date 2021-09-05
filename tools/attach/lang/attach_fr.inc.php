@@ -80,6 +80,7 @@ $GLOBALS['translations'] = array_merge(
         'ZOOM_HOVER' => 'Agrandissement au survol',
         'ALT_INFOS' => 'Ce texte sera affich&eacute; &agrave; la place de l\'image si elle est introuvable sur le serveur',
         'ALTERNATIVE_TEXT' => 'Texte de remplacement',
+        'NONE' => 'Texte en dessous',
         'LEFT' => 'Gauche',
         'CENTER' => 'Centre',
         'RIGHT' => 'Droite',

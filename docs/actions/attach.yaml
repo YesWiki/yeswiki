@@ -62,6 +62,7 @@ actions:
             showif:
               file: \.(png|jpg|jpeg|gif|pdf)$
             options:
+              '': _t(AB_attach_class_position_none)
               left: _t(AB_attach_class_position_left)
               center: _t(AB_attach_class_position_center)
               right: _t(AB_attach_class_position_right)
