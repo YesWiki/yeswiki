@@ -57,13 +57,13 @@ class FormController extends YesWikiController
         return $this->render("@bazar/forms/forms_table.twig", [
             'message' => $message,
             'forms' => $values,
-            'loggedUser' => $this->wiki->GetUser()
+            'userIsAdmin' => $this->wiki->UserIsAdmin()
         ]);
     }
 
     public function create()
     {
-        if ($this->wiki->GetUser()) {
+        if ($this->wiki->UserIsAdmin()) {
             if (isset($_POST['valider'])) {
                 $this->formManager->create($_POST);
 
