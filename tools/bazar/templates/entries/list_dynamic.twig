@@ -4,6 +4,11 @@
 
 <div class="bazar-list-dynamic-container" data-entries="{{ entries }}" data-params="{{ params|json_encode }}"
      data-filters="{{ filters }}">
+
+  {% if params.search %}
+    {{ include("@bazar/entries/list_dynamic/_search_input.twig") }}
+  {% endif %}
+  
   <div class="facette-container dynamic row" data-filter-align="{{ params.filterposition }}">
     
     {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}

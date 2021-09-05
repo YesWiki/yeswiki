@@ -228,6 +228,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         $filters = $this->formatFilters($entries, $forms);
+
         if ($this->arguments['dynamic']) {
             array_map(function($entry) {
                 unset($entry['html_data']);
@@ -239,7 +240,8 @@ class BazarListeAction extends YesWikiAction
             return $this->render("@bazar/entries/list_dynamic/{$this->arguments['template']}.twig", [
                 'entries' => json_encode($entries),
                 'params' => $this->arguments,
-                'filters' => json_encode($filters)
+                'filters' => json_encode($filters),
+                'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
             ]);
         } else {
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist

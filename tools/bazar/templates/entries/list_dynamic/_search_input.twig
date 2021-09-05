@@ -1,0 +1,31 @@
+<div class="bazar-search control-group">
+  <div class="input-group input-prepend input-append">
+    {# Icon #}
+    <span class="add-on input-group-addon">
+      <i class="fa fa-search icon-search"></i>
+    </span>
+
+    {# Input #}
+    <input type="text" v-model="search" placeholder="{{ _t('BAZ_MOT_CLE') }}" 
+           class="search-input form-control input-lg">
+
+    {# Form selector, when no form is specified in the action (used in admin section for example) #}
+    {% if forms|length > 0 %}
+      <span class="input-group-btn search-filter" style="width:auto;max-width:240px;">
+        <select v-model="searchFormId" class="form-control input-lg">
+          <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
+          {% for form in forms %}
+            <option value="{{ form.bn_id_nature }}">
+              {{ form.bn_label_nature }}
+            </option>
+          {% endfor %}
+        </select>
+      </span>
+    {% endif %}
+
+    {# Submit button #}
+    <span class="input-group-btn search-button-container">
+      <input value="{{ _t('BAZ_RECHERCHER') }}" class="btn btn-primary" type="submit" />
+    </span>
+  </div>
+</div>

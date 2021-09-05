@@ -6,7 +6,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       params: {},
       filters: [],
       currentPage: 0,
-      perPage: 10
+      perPage: 10,
+      search: '',
+      searchFormId: null // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
     },
     computed: {
       computedFilters() {
@@ -18,9 +20,23 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         }
         return result
       },
-      filteredEntries() {
-        // Handles filters and search
+      searchedEntries() {
         let result = this.entries
+        if (this.search || this.searchFormId) {
+          result = result.filter(entry => {
+            if (this.searchFormId && entry.id_typeannonce != this.searchFormId) return false
+            if (this.search) {
+              // TODO BazarListDynamic improve search : search each word separatly, search dans list.. ou utiliser l'API?
+              return this.removeDiatrics(entry.bf_titre).includes(this.removeDiatrics(this.search))
+            }
+            return true
+          })
+        }
+        return result
+      },
+      filteredEntries() {
+        // Handles filters
+        let result = this.searchedEntries
         for(const filterId in this.computedFilters) {
           result = result.filter(entry => {
             if (!entry[filterId]) return false
@@ -97,6 +113,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         // also check if we should display icon inside the filter itself
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
+      },
+      removeDiatrics(str) {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
       }
     },
     mounted() {
