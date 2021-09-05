@@ -127,13 +127,14 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     mounted() {
       this.params = JSON.parse(this.$el.dataset.params)
       this.perPage = parseInt(this.params.pagination)
-
       // Retrieve data asynchronoulsy
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
-        this.entries = data.entries.map(entry => {
+        this.entries = data.entries.map(array => {
           // initialize some fields so they get reactive
-          entry.color = null
-          entry.icon = null
+          let entry = { color: null, icon: null }
+          for(let key in data.fieldMapping) {
+            entry[data.fieldMapping[key]] = array[key]
+          }
           return entry
         })
         this.filters = data.filters || []

@@ -184,17 +184,27 @@ class ApiController extends YesWikiController
         $entries = $bazatListService->getEntries($forms);     
         $filters = $bazatListService->formatFilters($entries, $forms);  
 
-        array_map(function($entry) {
-            unset($entry['html_data']);
-            // TODO BazarListeDynamic
-            // if template doc say which attributes are used in the template,
-            // then slice $entriy to send only minimal attributes
-            return $entry;
+        // Basic fields
+        $fieldMapping = ['id_fiche', 'bf_titre', 'id_typeannonce'];
+        // Fields for filters
+        foreach($filters as $field => $config) $fieldMapping[] = $field;
+        // Fields used by template
+        $fieldMapping = array_unique(array_merge($fieldMapping, $_GET['necessary_fields']));
+        
+        // Reduce the size of the data sent by transforming entries object into array
+        // we use the $fieldMapping to transform back the data when receiving data in the front end
+        $entries = array_map(function($entry) use ($fieldMapping) {
+            $result = [];
+            foreach($fieldMapping as $field) {
+                $result[] = $entry[$field] ?? null;
+            }
+            return $result;
         }, $entries);
 
         return new ApiResponse(
             [
                 'entries' => $entries,
+                'fieldMapping' => $fieldMapping,
                 'filters' => $filters
             ],
             Response::HTTP_OK

@@ -2,6 +2,11 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
 
+{# Fields to retrieve from API call. By defaut we get only bf_titre, each template should override this #}
+{% if necessary_fields is defined %}
+  {% set params = params|merge({necessary_fields: necessary_fields}) %}
+{% endif %}
+
 <div class="bazar-list-dynamic-container" data-params="{{ params|json_encode }}">
 
   {% if params.search %}

@@ -1,5 +1,7 @@
 {% extends "@bazar/entries/list_dynamic.twig" %}
 
+{% set necessary_fields = ['bf_titre', 'soustitre'] %}
+
 {% block display_entries %}
   <div class="panel-group no-dblclick">
     <Panel v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry" 
