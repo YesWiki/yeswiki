@@ -28,7 +28,7 @@ class BazarListService
     public function getForms() : array
     {
         // External mode activated ?
-        if ($this->arguments['externalModeActivated']) {
+        if ($this->arguments['externalModeActivated'] === true) {
             return $this->externalBazarService
                         ->getFormsForBazarListe($this->arguments['externalIds'], $this->arguments['refresh']);
         } else {
@@ -41,7 +41,8 @@ class BazarListService
         if (!$forms) $forms = $this->getForms();
 
         // External mode activated ?
-        if ($this->arguments['externalModeActivated']) {
+        // TODO BazarListdynamic test externalmode works
+        if ($this->arguments['externalModeActivated'] === true) {
             $entries = $this->externalBazarService->getEntries([
                 'forms' => $forms,
                 'refresh' => $this->arguments['refresh'],
@@ -60,6 +61,7 @@ class BazarListService
                 true, // filter on read ACL,
                 true // use Guard
             );
+            
         }
 
         // filter entries on datefilter parameter

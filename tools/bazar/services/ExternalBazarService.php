@@ -234,6 +234,7 @@ class ExternalBazarService
             trigger_error(get_class($this)."::getEntries: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES'));
             return null;
         }
+        return [];
     }
 
     // TODO detect if external url has short url without '?'
