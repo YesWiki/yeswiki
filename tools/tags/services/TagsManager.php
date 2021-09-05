@@ -4,6 +4,7 @@ namespace YesWiki\Tags\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
@@ -11,19 +12,24 @@ class TagsManager
 {
     protected $wiki;
     protected $dbService;
+    protected $securityController;
     protected $tripleStore;
     protected $params;
 
-    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->params = $params;
+        $this->securityController = $securityController;
     }
 
     public function deleteAll($page)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         //on recupere les anciens tags de la page courante
         $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         if (is_array($tabtagsexistants)) {
@@ -37,6 +43,9 @@ class TagsManager
 
     public function save($page, $liste_tags)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // TODO check if we need to escape here, or if we can do that in the tripleStore methods
         $tags = explode(',', $this->dbService->escape(_convert($liste_tags, YW_CHARSET, true)));
 

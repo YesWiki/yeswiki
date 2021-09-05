@@ -40,6 +40,7 @@ Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utili
   }
 </script>
 <?php
+use YesWiki\Security\Controller\SecurityController;
 
 //action réservée aux admins
 if (! $this->UserIsAdmin()) {
@@ -276,7 +277,15 @@ if (!function_exists('display_droit')) {
   </div>
 
 	<p>
-		<input name="geredroits_modifier" class="btn btn-primary" onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" value="<?php echo _t('ACLS_UPDATE'); ?>" type="submit">
+		<input
+      name="geredroits_modifier"
+      class="btn btn-primary" 
+      onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" 
+      value="<?php echo _t('ACLS_UPDATE'); ?>" 
+      <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+          echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+      } ?>
+      type="submit">
 	</p>
 <?php
 echo $this->FormClose();

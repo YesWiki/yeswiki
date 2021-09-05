@@ -11,6 +11,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class EntryController extends YesWikiController
 {
@@ -21,6 +22,7 @@ class EntryController extends YesWikiController
     protected $pageManager;
     protected $templateEngine;
     protected $config;
+    protected $securityController;
 
     public function __construct(
         EntryManager $entryManager,
@@ -28,7 +30,8 @@ class EntryController extends YesWikiController
         AclService $aclService,
         SemanticTransformer $semanticTransformer,
         PageManager $pageManager,
-        ParameterBagInterface $config
+        ParameterBagInterface $config,
+        SecurityController $securityController
     ) {
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -36,6 +39,7 @@ class EntryController extends YesWikiController
         $this->semanticTransformer = $semanticTransformer;
         $this->pageManager = $pageManager;
         $this->config = $config->all();
+        $this->securityController = $securityController;
     }
 
     public function selectForm()
@@ -127,8 +131,8 @@ class EntryController extends YesWikiController
             "message" => $_GET['message'] ?? '',
             "showOwner" => $showOwner,
             "showFooter" => $showFooter,
-            "canEdit" =>  $this->aclService->hasAccess('write', $entryId),
-            "canDelete" => $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
+            "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
+            "canDelete" => !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner(),
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
         ]);

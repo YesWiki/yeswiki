@@ -78,7 +78,16 @@
 
   <div class='control-group form-group'>
     <div class="controls col-lg-4 col-lg-offset-4">
-      <input type='submit' class="btn btn-primary" value='<?php print(_t('TEMPLATE_APPLY')); ?>'/>
+      <input
+        type='submit' 
+        class="btn btn-primary" 
+        value="<?php print(_t('TEMPLATE_APPLY')); ?>"
+        <?php
+         if ($GLOBALS['wiki']->services->get(YesWiki\Security\Controller\SecurityController::class)->isWikiHibernated()){
+           echo 'disabled data-toggle="tooltip" data-placement="bottom" title="'._t('WIKI_IN_HIBERNATION').'"';
+         }
+        ?>
+        />
     </div>
   </div>
 </form>

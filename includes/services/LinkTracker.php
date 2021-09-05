@@ -3,24 +3,27 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class LinkTracker
 {
     protected $wiki;
     protected $dbService;
+    protected $securityController;
     protected $userManager;
     protected $params;
 
     public $enabled;
     public $links;
 
-    public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->userManager = $userManager;
         $this->params = $params;
+        $this->securityController = $securityController;
 
         $this->enabled = false;
         $this->links = [];
@@ -48,7 +51,7 @@ class LinkTracker
     public function forceAddIfNotIncluded(string $tag) : bool
     {
         $inclusions = $this->wiki->GetAllInclusions() ;
-        if ($inclusions && count($inclusions) <2 && !in_array($tag,$this->links)) {
+        if ($inclusions && count($inclusions) <2 && !in_array($tag, $this->links)) {
             $this->links[] = $tag ;
             return true ;
         } else {
@@ -70,6 +73,9 @@ class LinkTracker
 
     public function persist()
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $fromTag = $this->wiki->GetPageTag();
         
         // Delete old links for this page

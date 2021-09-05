@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Security\Controller\SecurityController;
+
 // Charles Nepote 2005-2006
 // Didier Loiseau 2005
 // License GPL.
@@ -125,6 +127,9 @@ if ($this->UserIsAdmin()) {
         echo "</form>\n";
         echo "</div>\n\n";
     } elseif (isset($_POST['clean'])) {
+        if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // -- (3) Nettoyage des pages et affichage de la page de resultats -------
         //
         $deletedPages = "";

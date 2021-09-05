@@ -3,24 +3,27 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class AclService
 {
     protected $wiki;
     protected $dbService;
+    protected $securityController;
     protected $userManager;
     protected $params;
 
     protected $cache;
     private $checkOwnerReadAcl;
 
-    public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, UserManager $userManager, ParameterBagInterface $params, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->userManager = $userManager;
         $this->params = $params;
+        $this->securityController = $securityController;
         
         $this->cache = [];
         $this->checkOwnerReadAcl = !($this->params->has('baz_check_owner_acl_only_for_field_can_edit')
@@ -81,6 +84,9 @@ class AclService
      */
     public function save($tag, $privilege, $list, $appendAcl = false)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // If list is comma-separated, convert into to line-break-separated
         if (strpos($list, ',') !== false) {
             $list = preg_replace('/\s*,\s*/', "\n", $list);
@@ -113,6 +119,9 @@ class AclService
      */
     public function delete($tag, $privileges = ['read','write','comment'])
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!is_array($privileges)) {
             $privileges = array($privileges);
         }

@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Security\Controller\SecurityController;
 
 /**
  * @Field({"fichier"})
@@ -97,6 +98,6 @@ class FileField extends BazarField
      */
     protected function isAllowedToDeleteFile(array $entry):bool
     {
-        return $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
+        return !$this->wiki->services->get(SecurityController::class)->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
     }
 }

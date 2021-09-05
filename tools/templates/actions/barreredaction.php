@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Security\Controller\SecurityController;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -27,7 +30,7 @@ if ($this->HasAccess("write")) {
     $barreredactionelements['class'] = ($this->GetParameter('class') ? 'footer '.$this->GetParameter('class') : 'footer');
 
     // on ajoute le lien d'édition si l'action est autorisée
-    if ($this->HasAccess("write", $page)) {
+    if ($this->HasAccess("write", $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
         $barreredactionelements['linkedit'] = $this->href("edit", $page);
     }
 
@@ -54,7 +57,9 @@ if ($this->HasAccess("write")) {
         if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
             $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
             $barreredactionelements['linkacls'] = $this->href("acls", $page);
-            $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
+            if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
+            }
         } elseif (!$owner && $this->GetUser()) {
             $barreredactionelements['owner'] .= " - "._t('TEMPLATE_CLAIM');
             $barreredactionelements['linkacls'] = $this->href("claim", $page);

@@ -1,5 +1,11 @@
 <?php
+
+use YesWiki\Security\Controller\SecurityController;
+
 if (isset($this)) {
+    if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+        throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+    };
     if ($this->userIsAdmin()) {
         include_once 'includes/Encoding.php';
         $output = '';
@@ -106,7 +112,7 @@ if (isset($this)) {
 }
 
 if (php_sapi_name() === 'cli') {
-    $cwd = dirname(exec('pwd'),2);
+    $cwd = dirname(exec('pwd'), 2);
     $cwd = str_replace(DIRECTORY_SEPARATOR . 'git', '', $cwd);
     set_include_path($cwd);
     include_once 'wakka.config.php';

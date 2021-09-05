@@ -1,4 +1,7 @@
 <?php
+
+use YesWiki\Security\Controller\SecurityController;
+
 /*
 $Id: edit.php 851 2007-08-29 14:54:07Z lordfarquaad $
 Copyright (c) 2002, Hendrik Mans <hendrik@mans.de>
@@ -40,7 +43,9 @@ if (!defined('WIKINI_VERSION')) {
 // on initialise la sortie:
 $output = '';
 
-if ($this->HasAccess('write') && $this->HasAccess('read')) {
+$isWikiHibernated = $this->services->get(SecurityController::class)->isWikiHibernated();
+
+if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated) {
     if (!empty($_POST['submit'])) {
         $submit = $_POST['submit'];
     } else {
@@ -160,6 +165,9 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
     } // switch
 } else {
     $output .= "<i>Vous n'avez pas acc&egrave;s en &eacute;criture &agrave; cette page !</i>\n";
+    if ($isWikiHibernated) {
+        $output .= $this->services->get(SecurityController::class)->getMessageWhenHibernated();
+    }
 }
 
 // Header

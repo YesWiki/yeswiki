@@ -1,5 +1,7 @@
 <?php
 
+namespace YesWiki\Bazar;
+
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
@@ -14,7 +16,9 @@ class __EditHandler extends YesWikiHandler
         if ($this->wiki->HasAccess('write') && $entryManager->isEntry($this->wiki->GetPageTag())) {
             $plugin_output_new = $this->wiki->Header();
             $plugin_output_new .= '<div class="page">';
-            $plugin_output_new .= $entryController->update($this->wiki->GetPageTag());
+            $plugin_output_new .= $this->isWikiHibernated()
+                ? $this->getMessageWhenHibernated()
+                : $entryController->update($this->wiki->GetPageTag());
             $plugin_output_new .= '</div>';
             $plugin_output_new .= $this->wiki->Footer();
 

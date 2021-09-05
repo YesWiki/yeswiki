@@ -5,6 +5,7 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class PageManager
@@ -12,6 +13,7 @@ class PageManager
     protected $wiki;
     protected $dbService;
     protected $aclService;
+    protected $securityController;
     protected $tripleStore;
     protected $userManager;
     protected $params;
@@ -24,7 +26,8 @@ class PageManager
         AclService $aclService,
         TripleStore $tripleStore,
         UserManager $userManager,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        SecurityController $securityController
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -32,6 +35,7 @@ class PageManager
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
         $this->params = $params;
+        $this->securityController = $securityController;
 
         $this->pageCache = [];
     }
@@ -145,7 +149,6 @@ class PageManager
                 return $pages;
             }
         }
-        return null;
     }
 
     public function getAll(): array
@@ -189,6 +192,9 @@ class PageManager
 
     public function deleteOrphaned($tag)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('pages') . "WHERE tag='" . $this->dbService->escape($tag) . "' OR comment_on='" . $this->dbService->escape($tag) . "'");
         $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('links') . "WHERE from_tag='" . $this->dbService->escape($tag) . "' ");
         $this->dbService->query("DELETE FROM " . $this->dbService->prefixTable('acls') . "WHERE page_tag='" . $this->dbService->escape($tag) . "' ");
@@ -211,6 +217,9 @@ class PageManager
      */
     public function save($tag, $body, $comment_on = "", $bypass_acls = false)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $user = $this->userManager->getLoggedUserName();
 
         // check bypass of rights or write privilege
@@ -280,6 +289,9 @@ class PageManager
 
     public function setOwner($tag, $user)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!$this->userManager->getOneByName($user)) {
             return;
         }
@@ -304,6 +316,9 @@ class PageManager
 
     public function setMetadata($tag, $metadata)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $previousMetadata = $this->getMetadata($tag);
 
         if ($previousMetadata) {

@@ -2,11 +2,16 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Security\Controller\SecurityController;
 
 // Verification de securite
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
+
+if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+    throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+};
 
 $output = '';
 if (empty($this->config['is_cli']) || $this->config['is_cli'] !== true) {

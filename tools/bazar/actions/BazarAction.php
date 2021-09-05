@@ -78,6 +78,9 @@ class BazarAction extends YesWikiAction
 
         switch ($view) {
             case self::VOIR_SAISIR:
+                if ($this->isWikiHibernated()) {
+                    return $this->getMessageWhenHibernated();
+                }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
                         return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
@@ -102,14 +105,29 @@ class BazarAction extends YesWikiAction
             case self::VOIR_FORMULAIRE:
                 switch ($action) {
                     case self::ACTION_FORM_CREATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->create();
                     case self::ACTION_FORM_EDIT:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->update($_GET['idformulaire']);
                     case self::ACTION_FORM_DELETE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->delete($_GET['idformulaire']);
                     case self::ACTION_FORM_EMPTY:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->empty($_GET['idformulaire']);
                     case self::ACTION_FORM_CLONE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $formController->clone($_GET['idformulaire']);
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
@@ -118,10 +136,19 @@ class BazarAction extends YesWikiAction
             case self::VOIR_LISTES:
                 switch ($action) {
                     case self::ACTION_LIST_CREATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $listController->create();
                     case self::ACTION_LIST_EDIT:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $listController->update($_GET['idliste']);
                     case self::ACTION_LIST_DELETE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
                         return $listController->delete($_GET['idliste']);
                     default:
                         return $listController->displayAll();

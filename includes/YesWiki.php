@@ -51,6 +51,7 @@ use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiControllerResolver;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 
 class Wiki
@@ -328,7 +329,7 @@ class Wiki
      */
     public function PurgePages()
     {
-        if ($days = $this->GetConfigValue('pages_purge_time')) {
+        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
             // is purge active ?
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
@@ -691,7 +692,7 @@ class Wiki
 
     public function PurgeReferrers()
     {
-        if ($days = $this->GetConfigValue("referrers_purge_time")) {
+        if (($days = $this->GetConfigValue("referrers_purge_time"))&& !$this->services->get(SecurityController::class)->isWikiHibernated()) {
             $this->Query('delete from ' . $this->config['table_prefix'] . "referrers where time < date_sub(now(), interval '" . mysqli_real_escape_string($this->dblink, $days) . "' day)");
         }
     }
@@ -1163,8 +1164,15 @@ class Wiki
             // We must manually parse the body data for the PUT or PATCH methods
             // See https://www.php.net/manual/fr/features.file-upload.put-method.php
             // TODO properly use the Symfony HttpFoundation component to avoid this
-            if (empty($_POST) && ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
-                $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
+            if (($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+                if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+                    $response = new Response(_t('WIKI_IN_HIBERNATION'), Response::HTTP_UNAUTHORIZED);
+                    $response->send();
+                    exit();
+                }
+                if (empty($_POST)) {
+                    $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
+                }
             }
 
             $context = new RequestContext();
@@ -1274,8 +1282,12 @@ class Wiki
             // include local files
             $code = "<script src='{$this->getBaseUrl()}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
-                if (!$first) $code .= " defer";
-                if ($module) $code .= " type='module'";
+                if (!$first) {
+                    $code .= " defer";
+                }
+                if ($module) {
+                    $code .= " type='module'";
+                }
                 $code .= '></script>'."\n";
                 if ($first) {
                     $GLOBALS['js'] = $code . $GLOBALS['js'];

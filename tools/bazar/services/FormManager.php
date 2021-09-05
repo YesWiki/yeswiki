@@ -8,6 +8,7 @@ use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Field\SelectEntryField;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class FormManager
@@ -15,6 +16,7 @@ class FormManager
     protected $wiki;
     protected $dbService;
     protected $entryManager;
+    protected $securityController;
     protected $fieldFactory;
     protected $params;
 
@@ -25,7 +27,8 @@ class FormManager
         DbService $dbService,
         EntryManager $entryManager,
         FieldFactory $fieldFactory,
-        ParameterBagInterface $params
+        ParameterBagInterface $params,
+        SecurityController $securityController
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -34,6 +37,7 @@ class FormManager
         $this->params = $params;
 
         $this->cachedForms = [];
+        $this->securityController = $securityController;
     }
 
     public function getOne($formId): ?array
@@ -90,6 +94,9 @@ class FormManager
     // TODO Pass a Form object instead of a raw array
     public function create($data)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // If ID is not set or if it is already used, find a new ID
         if (!$data['bn_id_nature'] || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
@@ -109,6 +116,9 @@ class FormManager
 
     public function update($data)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . addslashes(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
             . '`bn_template`="' . addslashes(_convert($data['bn_template'], YW_CHARSET, true)) . '" ,'
@@ -135,18 +145,24 @@ class FormManager
 
     public function delete($id)
     {
-        //TODO : suppression des fiches associees au formulaire
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         
         // tests of if $formId is int
         if (strval(intval($id)) != strval($id)) {
             return null ;
         }
 
+        $this->clear($id);
         return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $id);
     }
 
     public function clear($id)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('acls') .
             'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
