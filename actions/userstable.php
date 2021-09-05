@@ -18,10 +18,6 @@
 */
 
 $loggedUser = $this->GetUser();
-if ($loggedUser == "") { // no logged user
-    echo '<div class="alert alert-danger alert-error">'._t('LOGGED_USERS_ONLY_ACTION').'</div>';
-    return ;
-}
 
 require_once 'includes/constants.php';
 require_once 'includes/User.class.php';
@@ -35,12 +31,12 @@ $isAdmin = $this->UserIsAdmin();
 $sql = 'SELECT name, email, signuptime FROM '.$this->config['table_prefix'].'users ORDER BY ';
 if ($last = $this->GetParameter('last')) {
     $last= (int) $last ;
-    if ($last == 0) {
+    if ($last < 1) {
         $last = 12 ;
     }
     $sql .= 'signuptime DESC LIMIT '.$last;
 } else {
-    $sql .= 'name ASC';
+    $sql .= 'signuptime DESC';
 }
 $last_users = $this->LoadAll($sql);
 if ($isAdmin && (!empty($_POST['userstable_action']))) { // Check if the page received a post named 'userstable_action'
@@ -76,13 +72,12 @@ if ($isAdmin) { // Emails only shown to admins
 }
 echo '	<th>Inscription</th>', "\n";
 echo '	<th>Modifier</th>', "\n";
-if ($isAdmin) { // Delete buttons only shown to admins
-    echo '	<th>Supprimer</th>', "\n";
-}
+echo '	<th>Supprimer</th>', "\n";
 echo '</tr>', "\n";
 echo '</thead>', "\n";
 echo '<tbody>', "\n";
 foreach ($last_users as $user) {
+    $userIsTheOneConnected = (isset($loggedUser['name']) && isset($user['name']) && ($loggedUser['name'] == $user['name']));
     $ug = array();
     foreach ($groups as $group) {
         if ($wiki->UserIsInGroup($group, $user['name'], true)) {
@@ -91,13 +86,13 @@ foreach ($last_users as $user) {
     }
     echo '<tr>';
     echo '<td>' . $user['name'] . '</td>';
-    echo '<td>', implode(', ', $ug) , '</td>';
+    echo '<td>', (($isAdmin || $userIsTheOneConnected) ? implode(', ', $ug):(!empty($ug) ? '***':'')) , '</td>';
     if ($isAdmin) {  // Email only shown to admins
         echo '<td>', $user['email'] , '</td>';
     }
     echo '<td>', $user['signuptime'] , '</td>';
     echo '<td>';
-    if ($loggedUser['name'] == $user['name']) { // $loggedUser fullness allready tested. Current user
+    if ($userIsTheOneConnected) { // $loggedUser fullness allready tested. Current user
         echo '<a href="'.$this->href('', 'ParametresUtilisateur').'" class="btn btn-sm btn-primary" role="button">'._t('USER_MODIFY').'</a>';
     } else { // not the current user, then can be modified
         if ($isAdmin) {
@@ -105,7 +100,7 @@ foreach ($last_users as $user) {
         }
     }
     echo '</td>';
-    if ($isAdmin && ($loggedUser['name'] != $user['name'])) { // admin and not the current user, then can be deleted
+    if ($isAdmin && !$userIsTheOneConnected) { // admin and not the current user, then can be deleted
         echo '<td>';
         echo '<form action="'.$this->href('', $this->tag).'" method="post">';
         echo '<input type="hidden" name="userstable_action" value="delete_'.$user['name'].'" />';
