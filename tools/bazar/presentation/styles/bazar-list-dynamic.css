@@ -4,12 +4,21 @@
   justify-content: center;
 }
 .bazar-list-dynamic-container .pagination > li {
-  margin: 0 .5rem ;
-  cursor: pointer
+  margin: 0 .2rem;
+  padding: 0 .5rem;
+  cursor: pointer;
+  border-radius: 3px;
+}
+.bazar-list-dynamic-container .pagination > li:hover {
+  font-weight: bold;
 }
 .bazar-list-dynamic-container .pagination > li.active {
-  color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: var(--neutral-light-color);
   font-weight: bold;
+}
+.bazar-list-dynamic-container .pagination > li i {
+  color: var(--primary-color);
 }
 .bazar-list-dynamic-container .pagination > li.disabled {
   opacity: .6;

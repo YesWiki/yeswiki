@@ -67,6 +67,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         })
         return this.paginatedEntries
       },
+      filteredEntriesCount() {
+        return this.filteredEntries.length
+      },
       pages() {
         if (!this.perPage) return []
         let pagesCount = Math.floor(this.filteredEntries.length / parseInt(this.perPage)) + 1
@@ -85,7 +88,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       }
     },
     watch: {
-      perPages() {
+      filteredEntriesCount() {
         this.currentPage = 0
       }
     },
@@ -123,7 +126,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     },
     mounted() {
       this.params = JSON.parse(this.$el.dataset.params)
-      this.perPage = this.params.pagination
+      this.perPage = parseInt(this.params.pagination)
 
       // Retrieve data asynchronoulsy
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
