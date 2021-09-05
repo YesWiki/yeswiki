@@ -428,6 +428,21 @@ actions:
         default:
         checkedvalue: oui
         uncheckedvalue:
+      avecpage:
+        label: Afficher une page au-dessus du slider
+        type: checkbox
+        default:
+        checkedvalue: oui
+        uncheckedvalue:
+        hint: La page affichée sera PageDessusSlider
+        advanced: true
+      showlinkinsteadofurl:
+        label: Montrer le lien bf_lien au lieu de celui vers la fiche
+        type: checkbox
+        default:
+        checkedvalue: oui
+        uncheckedvalue:
+        advanced: true
       correspondence:
         type: correspondance
         subproperties:

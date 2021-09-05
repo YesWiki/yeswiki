@@ -24,6 +24,11 @@ if (count($fiches)>0) :
         $sanstitre = 'non';
     }
 
+    $showLinkInsteadOfUrl = $GLOBALS['wiki']->GetParameter('showlinkinsteadofurl');
+    if (empty($showLinkInsteadOfUrl)) {
+        $showLinkInsteadOfUrl = 'non';
+    }
+
 ?>
 
 <style>
@@ -172,7 +177,9 @@ padding: 20px;
   <div class="carousel-inner">
     <?php foreach ($fiches as $fiche) : $nb++; ?>
     <div class="item slides <?php if ($nb == 1) echo 'active'; ?>">
-      <div class="slide-img slide-<?php echo $nb; ?>" style="background-image: url(<?php echo 'files/'.$fiche['imagebf_image'];?>);"></div>
+      <div class="slide-img slide-<?php echo $nb; ?>" style="background-image: url(<?php
+        echo (isset($fiche['external-data']) ? $fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image']:'files/'.$fiche['imagebf_image']);
+      ?>);"></div>
       <div class="hero">
         <?php if ($avecpage != 'oui') : ?>
             <hgroup>
@@ -184,8 +191,8 @@ padding: 20px;
                   <h3><?php echo $fiche['bf_description']; ?></h3>
                 <?php endif; ?>
             </hgroup>
-              <?php if (isset($fiche['bf_lien']) && $fiche['bf_lien']!='' ) : ?>
-               <a class="btn btn-hero btn-lg" href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">En savoir plus</a>
+              <?php if (!($showLinkInsteadOfUrl == 'oui' && empty($fiche['bf_lien']))) : ?>
+               <a class="btn btn-hero btn-sm" href="<?php echo $fiche[($showLinkInsteadOfUrl == 'oui') ? 'bf_lien' : 'url']; ?>">En savoir plus</a>
               <?php endif; ?>
           <?php endif; ?>
       </div>
