@@ -241,7 +241,7 @@ class EntryController extends YesWikiController
             "@bazar/fiche-{$entry['id_typeannonce']}.twig"
         ];
         foreach ($templatePaths as $templatePath) {
-            if ($this->wiki->services->get(TemplateEngine::class)->hasTemplate($templatePath)) {
+            if ($this->getService(TemplateEngine::class)->hasTemplate($templatePath)) {
                 return $templatePath;
             }
         }
@@ -280,7 +280,7 @@ class EntryController extends YesWikiController
 
             if (isset($type)) {
                 $templatePath = $dir_name . "/" . strtolower($type) . ".tpl.html";
-                return $this->wiki->services->get(TemplateEngine::class)->hasTemplate($templatePath) ? $templatePath : null;
+                return $this->getService(TemplateEngine::class)->hasTemplate($templatePath) ? $templatePath : null;
             }
         }
 
@@ -306,7 +306,7 @@ class EntryController extends YesWikiController
                 }
             }
         }
-        
+
         if ($form['bn_sem_type']) {
             $html['id_fiche'] = $entry['id_fiche'];
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
@@ -406,7 +406,7 @@ class EntryController extends YesWikiController
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
             $nbDays = $matches[7][0];
-            
+
             $dateMidnigth = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays);
             $dateMidnigth->setTime(0, 0);
             $entries = array_filter($entries, function ($entry) use ($dateMidnigth) {
@@ -417,7 +417,7 @@ class EntryController extends YesWikiController
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
             $nbDays = $matches[7][0];
-            
+
             $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
             $entries = array_filter($entries, function ($entry) use ($date) {
                 return $this->filterEntriesOnDateTraversing($entry, ">", $date) ;
@@ -427,7 +427,7 @@ class EntryController extends YesWikiController
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
             $nbDays = $matches[7][0];
-            
+
             $date = $this->extractDate($sign, $nbYears, $nbMonth, $nbDays) ;
             $entries = array_filter($entries, function ($entry) use ($date) {
                 return $this->filterEntriesOnDateTraversing($entry, "<", $date) ;
@@ -456,7 +456,7 @@ class EntryController extends YesWikiController
 
         return $entries ;
     }
-    
+
     private function extractDate(string $sign, string $nbYears, string $nbMonth, string $nbDays): \DateTime
     {
         $dateInterval = new \DateInterval(
@@ -466,7 +466,7 @@ class EntryController extends YesWikiController
                 .(!empty($nbDays) ? $nbDays . 'D' : '')
         );
         $dateInterval->invert = ($sign == "-") ? 1 : 0;
-        
+
         $date = new \DateTime() ;
         $date->add($dateInterval) ;
 
