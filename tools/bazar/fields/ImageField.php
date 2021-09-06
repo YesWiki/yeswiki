@@ -47,7 +47,7 @@ class ImageField extends FileField
         $js = 'function getOrientation(file, callback) {
           var reader = new FileReader();
           reader.onload = function(e) {
-        
+
             var view = new DataView(e.target.result);
             if (view.getUint16(0, false) != 0xFFD8) return callback(-2);
             var length = view.byteLength, offset = 2;
