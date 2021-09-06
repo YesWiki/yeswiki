@@ -118,8 +118,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       },
       getEntryRender(entry) {
         if (entry.html_render) return
-        $.getJSON(`?api/entries/html/${entry.id_fiche}`, function(data) {
-          Vue.set(entry, 'html_render', data[entry.id_fiche].html_output)
+        $.getJSON(`?api/entry/${entry.id_fiche}/view`, function(data) {
+          Vue.set(entry, 'html_render', data.html)
         })
       },
       valueFrom(entry, field, mapping) {

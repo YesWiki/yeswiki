@@ -217,6 +217,15 @@ class ApiController extends YesWikiController
     }
 
     /**
+     * @Route("/api/entry/{id}/view", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getBazarShowEntry($id)
+    {
+        $html = $this->getService(EntryController::class)->view($id, '', 1);
+        return new ApiResponse(['html' => $html]);
+    }
+
+    /**
      * Display Auth api documentation
      *
      * @return string
