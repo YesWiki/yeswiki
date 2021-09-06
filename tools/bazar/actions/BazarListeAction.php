@@ -130,6 +130,7 @@ class BazarListeAction extends YesWikiAction
             'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
             // Affiche le formulaire de recherche en haut
             'search' => $this->formatBoolean($arg, false, 'search'),
+            'searchfields'=> $this->formatArray($arg['searchfields'] ?? null),
             // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
             // Iframe ?

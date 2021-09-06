@@ -1,6 +1,7 @@
 import Panel from './components/Panel.js'
 import BazarMap from './components/BazarMap.js'
 
+var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
@@ -60,17 +61,33 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     methods: {
       calculateBaseEntries() {
         let result = this.entries
-        if (this.search || this.searchFormId) {
+        let needSearch = this.search && this.search.length > 2
+        if (needSearch || this.searchFormId) {
           result = result.filter(entry => {
+            // filter based on formId, when no form id is specified
             if (this.searchFormId && entry.id_typeannonce != this.searchFormId) return false
-            if (this.search) {
-              // TODO BazarListDynamic improve search : search each word separatly, search dans list.. ou utiliser l'API?
-              return this.removeDiatrics(entry.bf_titre).includes(this.removeDiatrics(this.search))
+            if (needSearch) {
+              entry.searchScore = 0
+              let words = this.search.split(' ')
+                                     .map(word => this.removeDiatrics(word))
+                                     .filter(word => word.length > 1 && !wordsToExcludeFromSearch.includes(word))
+              words.forEach(word => {
+                this.params.searchfields.forEach(field => {
+                  let fieldValue = entry[field] ? entry[field] : ""
+                  if (Array.isArray(fieldValue)) fieldValue = fieldValue.join(' ')
+                  fieldValue = this.removeDiatrics(fieldValue)
+                  if (fieldValue && fieldValue.includes(word)) {
+                    entry.searchScore += field == 'bf_titre' ? 2 * word.length : word.length
+                  }
+                })
+              })
+              return entry.searchScore > 0
             }
             return true
           })
+          if (needSearch) result = result.sort((a, b) => (a.searchScore > b.searchScore) ? -1 : 1)
         }
-        this.searchedEntries = Object.values({ ...result })
+        this.searchedEntries = result
         this.filterEntries()
       },
       filterEntries() {

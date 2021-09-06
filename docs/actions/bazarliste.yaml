@@ -13,6 +13,22 @@ actions:
       search:
         label: _t(AB_bazar_commons_search_label)
         type: checkbox
+      dynamic:
+        label: Rendu dynamique (beta)
+        showOnlyFor:
+          - bazarliste
+          - bazarcarto
+        type: checkbox
+      searchfields:
+        label: _t(AB_bazar_commons_search_fields_label)
+        type: form-field
+        advanced: true
+        showif: dynamic
+        multiple: true
+        default: bf_titre
+        showOnlyFor:
+          - bazarliste
+          - bazarcarto
       pagination:
         label: Nombre de fiches par page
         hint: Laisser vide pour ne pas utiliser la pagination
@@ -22,11 +38,7 @@ actions:
           - bazartimeline
           - bazarcarousel
           - bazarcalendar
-      dynamic:
-        label: Rendu dynamique
-        showOnlyFor:
-          - bazarliste
-        type: checkbox
+      
       colorfield:
         label: Champ pour la couleur
         type: form-field
