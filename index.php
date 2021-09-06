@@ -35,12 +35,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use YesWiki\Core\YesWikiLoader;
 
-require_once 'includes/autoload.inc.php';
-$loader = require_once 'vendor/autoload.php';
-AnnotationRegistry::registerLoader([$loader, 'loadClass']);
-
-require_once 'includes/YesWiki.php';
-$wiki = new \YesWiki\Wiki();
+require_once 'includes/YesWikiLoader.php';
+$wiki = YesWikiLoader::getWiki();
 $wiki->Run($wiki->tag, $wiki->method);
