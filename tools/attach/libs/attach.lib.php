@@ -570,7 +570,7 @@ if (!class_exists('attach')) {
                 }
             }
 
-            $notAligned = ($this->classes === "attached_file");
+            $notAligned = (strpos($this->classes, 'left') === false && strpos($this->classes, 'right') == false  && strpos($this->classes, 'center') == false);
             $output = ($notAligned ? '<div>' : '').(isset($link) ? $link : '')."<figure class=\"$this->classes\" $data>$img$caption$legend</figure>".(isset($link) ? '</a>' : '').($notAligned ? '</div>' :'');
 
             echo $output;
