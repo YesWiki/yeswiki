@@ -44,9 +44,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'EDIT_CONFIG_HINT_use_captcha' => 'Activer l\'utilisation d\'un captcha avant la sauvegarde (1 ou 0)',
 'EDIT_CONFIG_HINT_use_hashcash' => 'Activer l\'antispam hashcash du wiki (activé par défaut)',
 'EDIT_CONFIG_HINT_use_alerte' => 'Prévenir si l\'on quitte la page sans sauvegarder (1 ou 0)',
-'EDIT_CONFIG_HINT_wiki_status' => 'État du wiki (running, hibernate ou maintenance)',
+'EDIT_CONFIG_HINT_wiki_status' => 'État du wiki (running ou vide = standard, hibernate = lecture seule)',
 'EDIT_CONFIG_GROUP_SECURITY' => 'Sécurité',
 
 // security controller
-'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en hibernation. Veuillez contacter l\'administrateur pour le réactiver.',
+'WIKI_IN_HIBERNATION' => 'Action désactivée car ce wiki est en lecture seule. Veuillez contacter l\'administrateur pour le réactiver.',
 ));

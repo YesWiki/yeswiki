@@ -35,7 +35,7 @@ class SecurityController extends YesWikiController
     public function getMessageWhenHibernated():string
     {
         $message = [
-            'type' => 'danger',
+            'type' => 'info',
             'message' => _t('WIKI_IN_HIBERNATION') . "<br/>"
         ];
         return $this->templateEngine->render('@templates/alert-message-with-back.twig', $message);

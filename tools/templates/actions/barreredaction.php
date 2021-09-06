@@ -56,13 +56,15 @@ if ($this->HasAccess("write")) {
         // if current user is owner or admin
         if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
             $barreredactionelements['owner'] .= ' - '._t('TEMPLATE_PERMISSIONS');
-            $barreredactionelements['linkacls'] = $this->href("acls", $page);
             if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $barreredactionelements['linkacls'] = $this->href("acls", $page);
                 $barreredactionelements['linkdeletepage'] = $this->href("deletepage", $page);
             }
         } elseif (!$owner && $this->GetUser()) {
             $barreredactionelements['owner'] .= " - "._t('TEMPLATE_CLAIM');
-            $barreredactionelements['linkacls'] = $this->href("claim", $page);
+            if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                $barreredactionelements['linkacls'] = $this->href("claim", $page);
+            }
         }
     }
 
