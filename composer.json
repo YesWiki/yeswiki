@@ -6,6 +6,9 @@
     "version": "4.0.0-beta",
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "scripts": {
+      "test": "phpunit tests"
+    },
     "require": {
         "php": "^7.3",
         "ext-json": "*",
