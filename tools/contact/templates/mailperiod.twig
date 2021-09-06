@@ -1,0 +1,31 @@
+<div class="mail-period">
+  {# Flash Message #}
+  {% for messageType, message in messages %}
+    <div class="alert alert-{{ messageType }}">{{ message }}</div>
+  {% endfor %}
+
+  <label>{{ _t('CONTACT_PERIOD') }}</label>
+
+  <div class="btn-group btn-group-sm" role="group" style="margin-left: 1rem">
+    
+    {# Subscribe choices #}
+    {% for period, config in periods %}
+      <a href="{{ url({ params: { subscribe: period} }) }}" 
+         class="btn btn-{{ config.subscribed ? 'primary' : 'default' }}">
+        {{ config.label }}
+      </a>
+    {% endfor %}
+
+    {# Unsubscribe #}
+    {% if periods|filter(config => config.subscribed)|length > 0 %}
+      <a href="{{ url({ params: { unsubscribe: true} }) }}" class="btn btn-danger">
+        {{  _t('CONTACT_UNSUBSCRIBE') }}
+      </a>
+    {% endif %}
+
+    {# User not connected #}
+    {% if not userName %}
+      {{ _t('CONTACT_LOGIN_TO_GET_INFOS') }}
+    {% endif %}
+  </div>
+</div>

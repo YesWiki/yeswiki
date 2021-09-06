@@ -93,13 +93,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'CONTACT_TEMPLATE_NOT_FOUND' => 'Fichier de template non trouvé',
 'CONTACT_MESSAGE_SENT_FROM' => 'Message envoyé à partir de',
 
-'CONTACT_PERIOD' => 'Période',
+'CONTACT_PERIOD' => 'Recevoir le contenu de cette page par email de manière',
 'CONTACT_DAILY' => 'Journalière',
 'CONTACT_WEEKLY' => 'Hebdomadaire',
 'CONTACT_MONTHLY' => 'Mensuelle',
-'CONTACT_FOREVER' => 'Toujours',
-'CONTACT_SUBSCRIBE_FOR_THIS_PERIOD' => 'Me notifier par mail sur cette période',
-'CONTACT_UNSUBSCRIBE_FOR_THIS_PERIOD' => 'Me désabonner des notifications de cette période',
+'CONTACT_UNSUBSCRIBE' => 'Se désabonner',
+'CONTACT_SUCCESS_SUBSCRIBE' => 'Vous êtes maintenant abonné de manière ',
+'CONTACT_SUCCESS_UNSUBSCRIBE' => 'Vous avez bien été désabonné',
 'CONTACT_LOGIN_TO_GET_INFOS' => 'Pour vous abonner à ce contenu, vous devez vous identifier.',
 
 'CONTACT_THIS_MESSAGE' => 'Ce message est envoyé par un visiteur depuis la fiche',
@@ -122,7 +122,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 'AB_contact_action_template_hint' => "Ex. : complete-contact-form.tpl.html",
 'AB_contact_action_class_label' => "classe css",
 'AB_listsubscription_action_label' => "listsubscription",
-'AB_mailperiod_action_label' => "Suivre les modifications sur une page",
+'AB_mailperiod_action_label' => "S'abonner pour recevoir périodiquement le contenu d'une page par email",
+'AB_mailperiod_action_hint' => "Pour que cette aciton fonctionne vous devez vérifier certains paramètres sur votre serveur. Voir la documentation sur https://yeswiki.net/?MailPeriod",
 'AB_mailinglist_action_label' => "Inscrire massivement des mails à une newsletter",
 'AB_mailinglist_action_description' => "Action permettant d'inscrire ou désinscrire massivement des mails à une newsletter",
 
