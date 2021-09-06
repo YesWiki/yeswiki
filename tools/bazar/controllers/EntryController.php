@@ -133,6 +133,7 @@ class EntryController extends YesWikiController
             "showFooter" => $showFooter,
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
             "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner()),
+            "isAdmin" => $this->wiki->UserIsAdmin(),
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
         ]);
