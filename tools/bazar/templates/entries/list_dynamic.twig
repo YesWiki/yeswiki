@@ -11,7 +11,7 @@
 
 <div class="bazar-list-dynamic-container" data-params="{{ params|json_encode }}">
 
-  {% if params.search %}
+  {% if params.search and not params.groups %}
     {{ include("@bazar/entries/list_dynamic/_search_input.twig") }}
   {% endif %}
   

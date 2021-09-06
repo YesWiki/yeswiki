@@ -185,7 +185,7 @@ actions:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true
         type: checkbox
-        default: 0
+        default: 1
         checkedvalue: 1
         uncheckedvalue: 0
         showif: facettes

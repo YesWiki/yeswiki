@@ -1,6 +1,7 @@
-<div class="filters-col col-sm-{{ params.filtercolsize }}" v-if="Object.keys(filters).length">
-  <div class="filters no-dblclick {{ params.filterposition }}">
-    
+<div class="filters-col col-sm-{{ params.filtercolsize }}">
+  {{ include("@bazar/entries/list_dynamic/_search_input.twig") }}
+
+  <div class="filters no-dblclick {{ params.filterposition }}" v-if="Object.keys(filters).length">
     <div class="results-info text-info">
       <span class="nb-results">{{"{{ filteredEntriesCount }}"}}</span>
       <span class="result-label">

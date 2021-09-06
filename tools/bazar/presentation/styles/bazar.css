@@ -10,6 +10,9 @@ color:#E9322D;
 .BAZ_menu .nav, .bazar-search {
   margin-bottom:20px;
 }
+.filters-col .bazar-search {
+  margin-bottom: 2rem;
+}
 
 .bazar-table {
   table-layout:fixed;
