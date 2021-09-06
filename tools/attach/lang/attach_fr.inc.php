@@ -89,6 +89,6 @@ $GLOBALS['translations'] = array_merge(
         // edit config action
         'EDIT_CONFIG_HINT_attach-video-config[default_video_service]' => 'Service de vidéo par défaut (peertube, youtube ou vimeo)',
         'EDIT_CONFIG_HINT_attach-video-config[default_peertube_instance]' => 'Adresse du serveur peertube par défaut',
-        'EDIT_CONFIG_GROUP_ATTACH' => 'Gestionnaire de médias',
+        'EDIT_CONFIG_GROUP_ATTACH' => 'Insertion de médias (images, vidéos)',
     )
 );

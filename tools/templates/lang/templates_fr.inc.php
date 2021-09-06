@@ -230,7 +230,7 @@ $GLOBALS['translations'] = array_merge(
     'EDIT_CONFIG_HINT_meta_keywords' => 'Mots clés pour le référencement (séparés par des virgules, pas plus de 20-30)',
     'EDIT_CONFIG_HINT_meta_description' => 'Description du site en une phrase, pour le référencement (Attention : ne pas mettre de "." (point))',
     'EDIT_CONFIG_HINT_meta[robots]' => 'Empêcher les robots à indexer le wiki (Mettre \'noindex,nofollow,noarchive,noimageindex\')',
-    'EDIT_CONFIG_GROUP_TEMPLATES' => 'Mise en forme',
+    'EDIT_CONFIG_GROUP_TEMPLATES' => 'Balises meta pour l\'indexation web', // idéalement 'Mise en forme' mais templates est pour le moment uniquement utilisé pour meta
 
     )
 );
