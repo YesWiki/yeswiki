@@ -98,6 +98,6 @@ class FileField extends BazarField
      */
     protected function isAllowedToDeleteFile(array $entry):bool
     {
-        return !$this->wiki->services->get(SecurityController::class)->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
+        return !$this->getService(SecurityController::class)->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
     }
 }
