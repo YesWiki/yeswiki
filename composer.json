@@ -21,8 +21,7 @@
         "doctrine/cache": "^1.10",
         "symfony/routing": "^5.1",
         "symfony/http-foundation": "^5.1",
-        "symfony/http-kernel": "^5.1",
-        "phpunit/phpunit": "^9"
+        "symfony/http-kernel": "^5.1"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
@@ -32,6 +31,7 @@
         }
     },
     "require-dev": {
-        "symfony/var-dumper": "^5.1"
+        "symfony/var-dumper": "^5.1",
+        "phpunit/phpunit": "^9"
     }
 }
