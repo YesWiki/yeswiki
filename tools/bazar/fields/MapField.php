@@ -161,14 +161,18 @@ class MapField extends BazarField
                 geocodedmarker.setLatLng(point);
                 map.panTo(point, {animate:true}).zoomIn();
             });
+            var fields = ["#bf_adresse", "#bf_adresse1", "#bf_adresse2", "#bf_ville", "#bf_code_postal", "#bf_pays"]
+            fields = fields.map((id) => $(id)).filter((field) => field.length > 0)
+            fields.forEach((field) => {
+                field.on("blur", () => showAddress(map))
+            })
+
             function showAddress(map) {
                 var address = "";
-                if (document.getElementById("bf_adresse")) address += document.getElementById("bf_adresse").value + \' \';
-                if (document.getElementById("bf_adresse1")) address += document.getElementById("bf_adresse1").value + \' \';
-                if (document.getElementById("bf_adresse2")) address += document.getElementById("bf_adresse2").value + \' \';
-                if (document.getElementById("bf_ville")) address += document.getElementById("bf_ville").value + \' \';
-                if (document.getElementById("bf_code_postal")) address += document.getElementById("bf_code_postal").value + \' \';
+                fields.forEach((field) => address += field.val() + " ")
+                console.log("geocode address", address);
                 address = address.replace(/\\("|\'|\\)/g, " ").trim();
+                if (!address) return
                 geocodage( address, showAddressOk, showAddressError );
                 return false;
             }
@@ -189,7 +193,15 @@ class MapField extends BazarField
                 }
             }
             function popupHtml( point ) {
-                return "<div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-globe\"></i> Lat</span><input type=\"text\" class=\"form-control bf_latitude\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" value=\""+point.lat+"\" /></div><br><div class=\"input-group\"><span class=\"input-group-addon\"><i class=\"fa fa-globe\"></i> Lon</span><input type=\"text\" pattern=\"-?\\\d{1,3}\\\.\\\d+\" class=\"form-control bf_longitude\" value=\""+point.lng+"\" /></div><br>Déplacer le point ailleurs si besoin ou modifier les coordonnées GPS.";
+                return `
+                    <div class="input-group" style="margin-bottom: 10px">
+                        <span class="input-group-addon">Lat</span>
+                        <input type="text" class="form-control bf_latitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lat}" />
+                        <span class="input-group-addon">Lon</span>
+                        <input type="text" class="form-control bf_longitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lng}" />
+                    </div>
+                    <div class="text-justify">Déplacer le point si besoin ou modifier les coordonnées GPS.</div>
+                `
             }
         
             function geocodedmarkerRefresh( point )

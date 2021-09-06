@@ -51,7 +51,7 @@ var fields = [
     icon: '<i class="fas fa-link"></i>',
   },
   {
-    label: "Géolocalisation sur une carte",
+    label: "Géolocalisation de l'adresse",
     name: "map",
     attrs: { type: "map" },
     icon: '<i class="fas fa-map-marked-alt"></i>',
@@ -428,7 +428,7 @@ var templates = {
   },
   map: function (fieldDate) {
     return {
-      field: "Geolocation à partir d'un champ bf_adresse1 (ou bf_adresse2) et/ou bf_ville et/ou bf_pays",
+      field: "Geolocation à partir d'un champ bf_adresse et/ou bf_ville et/ou bf_code_postal et/ou bf_pays",
     };
   },
   image: function (fieldDate) {
@@ -700,28 +700,40 @@ function initializeFormbuilder(formAndListIds) {
       })
       .trigger("change");
 
-    // Make the default names easier to read
+    
     $(".fld-name").each(function() { 
       var name = $(this).val()
-      // If it's a new field added, then we can change automatically the name
+
+      // Detect new fields added
       if (!existingFieldsNames.includes(name)) {
-        console.log("new field", name, $(this).closest('.form-field').attr('type'))
+        
         var fieldType = $(this).closest('.form-field').attr('type');
+
+        // Make the default names easier to read
         if (['radio_group', 'checkbox_group', 'select'].includes(fieldType)) {
           name = ''
-        } else {
+        } else if (!name.includes('bf_')) {
           name = defaultFieldsName[fieldType] || 'bf_' + fieldType
           if (existingFieldsNames.includes(name)) {
             // If name already exist, we add a number (bf_address, bf_address1, bf_address2...)
             number = 1
-            while(existingFieldsNames.includes(name + number)) {
-              number += 1
-            }
+            while(existingFieldsNames.includes(name + number)) number += 1
             name += number
           }
-          console.log("new name", name)
         }
-        
+
+        // if it's a map, we automatically add a bf_addresse
+        if (fieldType == 'map' && !existingFieldsNames.includes('bf_adresse')) {
+          var field = {
+            type: 'text',
+            subtype: 'text',
+            name: 'bf_adresse',
+            label: 'Adresse'
+          };
+          var index = $(this).closest('.form-field').index()
+          console.log("index", index, field)
+          formBuilder.actions.addField(field, index);
+        }
       }
       $(this).val(name)
       existingFieldsNames.push(name)
