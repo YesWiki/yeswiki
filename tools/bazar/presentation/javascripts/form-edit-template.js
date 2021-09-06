@@ -645,20 +645,23 @@ function initializeFormbuilder(formAndListIds) {
 
   // Each 300ms update the text field converting form bulder content into wiki syntax
   var formBuilderInitialized = false;
-  var existingFieldsNames = []
+  var existingFieldsNames = [], existingFieldsIds = []
   
   setInterval(function () {
     if (!formBuilder || !formBuilder.actions || !formBuilder.actions.setData)
       return;
     if (!formBuilderInitialized) {
       initializeBuilderFromTextInput();
-      $(".fld-name").each(function() { existingFieldsNames.push($(this).val()) })
+      existingFieldsIds = getFieldsIds()
       formBuilderInitialized = true;
     }
     if ($formBuilderTextInput.is(":focus")) return;
     // Change names
     $(".form-group.name-wrap label").text("Identifiant unique");
     $(".form-group.label-wrap label").text("Intitulé");
+    existingFieldsNames = []
+    $(".fld-name").each(function() { existingFieldsNames.push($(this).val()) })
+    
     
     // Slugiy field names
     $(".fld-name").each(function () {
@@ -703,10 +706,10 @@ function initializeFormbuilder(formAndListIds) {
     
     $(".fld-name").each(function() { 
       var name = $(this).val()
+      var id = $(this).closest('.form-field').attr('id')
 
       // Detect new fields added
-      if (!existingFieldsNames.includes(name)) {
-        
+      if (!existingFieldsIds.includes(id)) {
         var fieldType = $(this).closest('.form-field').attr('type');
 
         // Make the default names easier to read
@@ -731,13 +734,13 @@ function initializeFormbuilder(formAndListIds) {
             label: 'Adresse'
           };
           var index = $(this).closest('.form-field').index()
-          console.log("index", index, field)
           formBuilder.actions.addField(field, index);
         }
       }
       $(this).val(name)
-      existingFieldsNames.push(name)
-     })
+    })
+
+    existingFieldsIds = getFieldsIds()
 
     $(".text-field select[name=subtype]:not(.initialized)")
       .change(function () {
@@ -779,6 +782,11 @@ function initializeFormbuilder(formAndListIds) {
   $("#formbuilder-link").click(initializeBuilderFromTextInput);
 }
 
+function getFieldsIds() {
+  result = []
+  $(".fld-name").each(function() { result.push($(this).closest('.form-field').attr('id')) })
+  return result
+}
 // Remove accidental br at the end of the labels
 function removeBR(text) {
   var newValue = text.replace(/(<div><br><\/div>)+$/g, '')
