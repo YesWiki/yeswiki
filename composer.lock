@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1f0bd1d149163b113d126f7d3461b460",
+    "content-hash": "7ccd49fab653652a5ddb3a15fc7619bf",
     "packages": [
         {
             "name": "composer/installers",
@@ -4389,7 +4389,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "yeswiki/theme-margot": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
