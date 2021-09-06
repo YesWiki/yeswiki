@@ -179,9 +179,9 @@ class BazarListeAction extends YesWikiAction
             return $this->callAction('calendrier', $this->arguments);
         }
         
-        $bazatListService = $this->getService(BazarListService::class);
-        $bazatListService->setArguments($this->arguments);
-        $forms = $bazatListService->getForms();
+        $bazarListService = $this->getService(BazarListService::class);
+        $bazarListService->setArguments($this->arguments);
+        $forms = $bazarListService->getForms();
 
         if ($this->arguments['dynamic']) {
             return $this->render("@bazar/entries/list_dynamic/{$this->arguments['template']}.twig", [
@@ -189,8 +189,8 @@ class BazarListeAction extends YesWikiAction
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
             ]);
         } else {
-            $entries = $bazatListService->getEntries($forms);     
-            $filters = $bazatListService->formatFilters($entries, $forms);  
+            $entries = $bazarListService->getEntries($forms);     
+            $filters = $bazarListService->formatFilters($entries, $forms);  
 
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
