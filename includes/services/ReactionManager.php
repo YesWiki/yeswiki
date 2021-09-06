@@ -21,14 +21,18 @@ class ReactionManager
         $this->tripleStore = $tripleStore;
     }
 
-    public function getAllReactions($pageTag, $ids)
+    public function getAllReactions($pageTag = '', $ids = [])
     {
         $res = [];
         // get reactions in db
-        $val = $this->wiki->getAllTriplesValues($pageTag, self::TYPE_URI, '', '');
+        $val = $this->tripleStore->getAll($pageTag, self::TYPE_URI, '', '');
         foreach ($val as $v) {
             $v['value'] = json_decode($v['value'], true);
-            $v['value']['pageTag'] = $pageTag;
+            if (!empty($pageTag)) {
+                $v['value']['pageTag'] = $pageTag;
+            } else {
+                $v['value']['pageTag'] = $v['resource'];
+            }
             $res[$v['value']['idReaction']][]=$v['value'];
         }
         return $res;
@@ -52,7 +56,7 @@ class ReactionManager
         }
     }
 
-    public function getUserReactions($user, $pageTag = '', $ids)
+    public function getUserReactions($user, $pageTag = '', $ids = [])
     {
         $res =[];
         // TODO : make more efficient db query
