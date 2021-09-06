@@ -14,6 +14,7 @@ use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class EntryManager
@@ -26,6 +27,7 @@ class EntryManager
     protected $userManager;
     protected $dbService;
     protected $semanticTransformer;
+    protected $securityController;
     protected $params;
     protected $searchManager;
 
@@ -41,7 +43,8 @@ class EntryManager
         DbService $dbService,
         SemanticTransformer $semanticTransformer,
         ParameterBagInterface $params,
-        SearchManager $searchManager
+        SearchManager $searchManager,
+        SecurityController $securityController
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -53,6 +56,7 @@ class EntryManager
         $this->semanticTransformer = $semanticTransformer;
         $this->params = $params;
         $this->searchManager = $searchManager;
+        $this->securityController = $securityController;
     }
 
     /**
@@ -429,6 +433,9 @@ class EntryManager
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $data['id_typeannonce'] = "$formId"; // Must be a string
 
         if ($semantic) {
@@ -518,6 +525,9 @@ class EntryManager
      */
     public function update($tag, $data, $semantic = false, $replace = false)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!$this->aclService->hasAccess('write', $tag)) {
             throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
@@ -550,7 +560,7 @@ class EntryManager
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->pageManager->save($data['id_fiche'], json_encode($data),'');
+        $this->pageManager->save($data['id_fiche'], json_encode($data), '');
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data);
@@ -633,6 +643,9 @@ class EntryManager
      */
     public function publish($entryId, $accepted)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // not possible to init the Guard in the constructor because of circular reference problem
         if ($this->wiki->services->get(Guard::class)->isAllowed('valider_fiche')) {
             if ($accepted) {
@@ -651,6 +664,9 @@ class EntryManager
      */
     public function delete($tag)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!$this->aclService->hasAccess('write', $tag)) {
             throw new Exception(_t('BAZ_ERROR_DELETE_UNAUTHORIZED'));
         }
@@ -949,6 +965,9 @@ class EntryManager
      */
     public function removeAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!$this->wiki->UserIsAdmin()) {
             return false;
         }
@@ -968,7 +987,7 @@ class EntryManager
         }
 
         $attributesQueries = [];
-        foreach($attributesNames as $attributeName){
+        foreach ($attributesNames as $attributeName) {
             $attributesQueries[$attributeName] = '*';
         }
         // add search for attributes

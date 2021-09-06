@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Security\Controller\SecurityController;
 
 /**
  * @Field({"image"})
@@ -192,7 +193,7 @@ class ImageField extends FileField
             $filePath = BAZ_CHEMIN_UPLOAD . $fileName;
 
             if (preg_match("/(gif|jpeg|png|jpg)$/i", $fileName)) {
-                if (!file_exists($filePath)) {
+                if (!file_exists($filePath) && !$this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
                     file_put_contents($filePath, file_get_contents($_POST['data-'.$this->propertyName]));
                     chmod($filePath, 0755);
 

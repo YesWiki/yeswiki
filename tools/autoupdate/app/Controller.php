@@ -1,6 +1,8 @@
 <?php
 namespace AutoUpdate;
 
+use YesWiki\Security\Controller\SecurityController;
+
 /**
  * Classe Controller
  *
@@ -15,12 +17,14 @@ class Controller
     private $autoUpdate;
     private $messages;
     private $wiki;
+    private $securityController;
 
     public function __construct($autoUpdate, $messages, $wiki)
     {
         $this->autoUpdate = $autoUpdate;
         $this->messages = $messages;
         $this->wiki = $wiki;
+        $this->securityController = $this->wiki->services->get(SecurityController::class);
     }
 
     /*	Parameter $requestedVersion contains the name of the YesWiki version
@@ -39,6 +43,7 @@ class Controller
 
         if (isset($get['upgrade'])
             and $this->autoUpdate->isAdmin()
+            and !$this->securityController->isWikiHibernated()
             ) {
             $this->upgrade($get['upgrade']);
             if ($get['upgrade'] == 'yeswiki') {
@@ -69,6 +74,7 @@ class Controller
 
         if (isset($get['delete'])
             and $this->autoUpdate->isAdmin()
+            and !$this->securityController->isWikiHibernated()
             ) {
             $this->delete($get['delete']);
             return $this->wiki->render("@autoupdate/update.twig", [
@@ -79,7 +85,7 @@ class Controller
 
         return $this->wiki->render("@autoupdate/status.twig", [
             'baseUrl' => $this->autoUpdate->baseUrl(),
-            'isAdmin' => $this->autoUpdate->isAdmin(),
+            'isAdmin' => $this->autoUpdate->isAdmin() && !$this->securityController->isWikiHibernated(),
             'core' => $this->autoUpdate->repository->getCorePackage(),
             'themes' => $this->autoUpdate->repository->getThemesPackages(),
             'tools' => $this->autoUpdate->repository->getToolsPackages(),

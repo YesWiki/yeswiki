@@ -59,7 +59,9 @@
 </div>
 {% endif %}
 
-<a href="{{ url({ params: { vue: 'listes', action: 'saisir_liste'}})|raw }}" class="btn btn-primary">
+<a href="{{ url({ params: { vue: 'listes', action: 'saisir_liste'}})|raw }}" class="btn btn-primary"
+    {% if not canCreate %}disabled data-toggle="tooltip"
+        data-placement="bottom" title="{{  _t('WIKI_IN_HIBERNATION') }}"{% endif %}>
     <i class="fa fa-plus icon-plus icon-white"></i>
     {{ _t('BAZ_NOUVELLE_LISTE') }}
 </a>

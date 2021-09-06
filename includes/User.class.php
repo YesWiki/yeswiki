@@ -2,6 +2,7 @@
 namespace YesWiki;
 
 use YesWiki\Core\Service\TripleStore;
+use YesWiki\Security\Controller\SecurityController;
 
 class User
 {
@@ -30,6 +31,8 @@ class User
     protected $passwordMinimumLength = 5;
 
     protected $keyVocabulary = 'http://outils-reseaux.org/_vocabulary/key';
+
+    protected $securityController;
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~ END OF PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 
@@ -38,6 +41,7 @@ class User
         $this->wiki = $wiki;
         $this->initUsersTable();
         $this->initLimitations();
+        $this->securityController = $this->wiki->services->get(SecurityController::class);
     }
 
     /* ~~~~~~~~~~~~~~~~~~~~~~ SETS PROPERTY METHODS ~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -476,6 +480,9 @@ class User
     */
     public function resetPassword($user, $key, $password, $confPassword='')
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         if ($this->checkEmailKey($key, $user) === false) { // The password recovery key does not match
             $this->error = _t('USER_INCORRECT_PASSWORD_KEY').'.';
@@ -522,6 +529,9 @@ class User
      */
     public function updatePassword($password, $confPassword='')
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         if (isset($confPassword) && ($confPassword != '')) {
             $OK = $this->passwordIsCorrect($password, $confPassword);
@@ -638,6 +648,9 @@ class User
     */
     public function createIntoDB()
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         $result = false;
         $sql = 'INSERT INTO `'.$this->usersTable.'` SET '.
@@ -765,6 +778,9 @@ class User
    */
     public function updateIntoDB($fieldsToUpdate = '')
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         // NOTE: Can we update name ?
         $this->error = '';
         $fieldsTab = array_map('trim', explode(',', $fieldsToUpdate));
@@ -868,6 +884,9 @@ class User
     */
     public function delete()
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $this->error = '';
         $OK = true;
         if (!$this->runnerIsAdmin()) { // actual user is not admin

@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Wiki;
 
@@ -14,6 +15,7 @@ class ListManager
     protected $wiki;
     protected $dbService;
     protected $tripleStore;
+    protected $securityController;
     protected $pageManager;
     protected $params;
 
@@ -21,13 +23,14 @@ class ListManager
 
     protected $cachedLists;
 
-    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, PageManager $pageManager, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, PageManager $pageManager, ParameterBagInterface $params, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
         $this->params = $params;
+        $this->securityController = $securityController;
 
         $this->cachedLists = [];
     }
@@ -61,7 +64,7 @@ class ListManager
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         $result = [];
-        foreach($lists as $list) {
+        foreach ($lists as $list) {
             $result[$list['resource']] = $this->getOne($list['resource']);
         }
 
@@ -70,6 +73,9 @@ class ListManager
 
     public function create($title, $values)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $id = genere_nom_wiki('Liste '.$title);
 
         if (YW_CHARSET !== 'UTF-8') {
@@ -87,6 +93,9 @@ class ListManager
 
     public function update($id, $title, $values)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (YW_CHARSET !== 'UTF-8') {
             $values = array_map('utf8_encode', $values);
             $title = utf8_encode($title);
@@ -100,11 +109,14 @@ class ListManager
 
     public function delete($id)
     {
-        if( !isset($id) || $id === '') {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        if (!isset($id) || $id === '') {
             throw new \Exception('List ID not specified');
         }
 
-        if( !$GLOBALS['wiki']->UserIsAdmin() && !$GLOBALS['wiki']->UserIsOwner($id)) {
+        if (!$GLOBALS['wiki']->UserIsAdmin() && !$GLOBALS['wiki']->UserIsOwner($id)) {
             throw new \Exception('Unauthorized');
         }
 

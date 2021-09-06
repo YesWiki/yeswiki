@@ -5,6 +5,7 @@ namespace YesWiki\Core\Service;
 use YesWiki\Wiki;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Security\Controller\SecurityController;
 
 class ThemeManager
 {
@@ -34,12 +35,14 @@ class ThemeManager
     protected $templateHeader;
     protected $templateFooter;
     protected $Performer;
+    protected $securityController;
 
-    public function __construct(Wiki $wiki, TemplateEngine $twig, Performer $Performer)
+    public function __construct(Wiki $wiki, TemplateEngine $twig, Performer $Performer, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->twig = $twig;
         $this->Performer = $Performer;
+        $this->securityController = $securityController;
         $this->config = $wiki->config;
         $this->fileLoaded = false;
         $this->theme = null;
@@ -331,6 +334,9 @@ class ThemeManager
      */
     public function deleteCustomCSSPreset(string $filename):array
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
         if (!$this->wiki->UserIsAdmin()) {
             return ['status'=>false,'message'=>'User is not admin'];
@@ -360,6 +366,9 @@ class ThemeManager
      */
     public function addCustomCSSPreset(string $filename, array $post): array
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         if (!$this->wiki->getUser()) {
             return ['status'=>false,'message'=>'Not connected user','errorCode'=>0];
         }

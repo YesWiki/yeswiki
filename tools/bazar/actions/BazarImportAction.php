@@ -39,6 +39,10 @@ class BazarImportAction extends YesWikiAction
         if (!empty($aclMessage = $this->checkSecuredACL())) {
             return $aclMessage;
         }
+        
+        if ($this->isWikiHibernated()) {
+            return $this->getMessageWhenHibernated();
+        }
 
         // get services
         $this->CSVManager = $this->getService(CSVManager::class);

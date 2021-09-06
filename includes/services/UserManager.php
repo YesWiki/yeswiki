@@ -5,19 +5,22 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class UserManager
 {
     protected $wiki;
     protected $dbService;
+    protected $securityController;
     protected $params;
 
 
-    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params)
+    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params, SecurityController $securityController)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->securityController = $securityController;
         $this->params = $params;
     }
 
@@ -75,6 +78,9 @@ class UserManager
 
     public function create($wikiName, $email, $password)
     {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
         return $this->dbService->query(
             'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
             "signuptime = now(), " .

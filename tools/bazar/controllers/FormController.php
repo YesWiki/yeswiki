@@ -6,14 +6,17 @@ use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\SecurityController;
 
 class FormController extends YesWikiController
 {
     protected $formManager;
+    protected $securityController;
 
-    public function __construct(FormManager $formManager)
+    public function __construct(FormManager $formManager, SecurityController $securityController)
     {
         $this->formManager = $formManager;
+        $this->securityController = $securityController;
     }
 
     public function displayAll($message)
@@ -44,8 +47,8 @@ class FormController extends YesWikiController
             foreach ($forms as $form) {
                 $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
                 $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = $this->wiki->UserIsAdmin();
+                $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() &&$this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return ($field instanceof MapField);
@@ -57,7 +60,7 @@ class FormController extends YesWikiController
         return $this->render("@bazar/forms/forms_table.twig", [
             'message' => $message,
             'forms' => $values,
-            'userIsAdmin' => $this->wiki->UserIsAdmin()
+            'userIsAdmin' => $this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin()
         ]);
     }
 

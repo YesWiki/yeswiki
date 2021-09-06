@@ -3,6 +3,7 @@ namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 /**
@@ -75,18 +76,19 @@ abstract class YesWikiPerformable
      * @return string HTML
      */
     public function render($templatePath, $data = [], $method = 'render')
-    {        
+    {
         $data = array_merge($data, ['arguments' => $this->arguments]);
         return $this->twig->$method($templatePath, $data);
     }
 
     public function renderInSquelette($templatePath, $data = [])
-    {        
+    {
         return $this->render($templatePath, $data, 'renderInSquelette');
     }
 
     //  Shortcut to access services
-    protected function getService($className) {
+    protected function getService($className)
+    {
         return $this->wiki->services->get($className);
     }
 
@@ -99,7 +101,8 @@ abstract class YesWikiPerformable
     }
 
     // Can be extended to format the arguments
-    protected function formatArguments($arguments) {
+    protected function formatArguments($arguments)
+    {
         return $arguments;
     }
 
@@ -112,7 +115,7 @@ abstract class YesWikiPerformable
                 return $default ;
             }
         }
-        if( is_bool($param) ) {
+        if (is_bool($param)) {
             return $param;
         } elseif (empty($param)) {
             return $default ;
@@ -130,5 +133,23 @@ abstract class YesWikiPerformable
         } else {
             return !empty($param) ? array_map('trim', explode(',', $param)) : [];
         }
+    }
+
+    /**
+     * check if wiki_status is hibernated
+     * @return bool true if in hibernation
+     */
+    protected function isWikiHibernated(): bool
+    {
+        return $this->wiki->services->get(SecurityController::class)->isWikiHibernated();
+    }
+
+    /**
+     * return alert message when in hibernation
+     * @return string true if in hibernation
+     */
+    protected function getMessageWhenHibernated(): string
+    {
+        return $this->wiki->services->get(SecurityController::class)->getMessageWhenHibernated();
     }
 }

@@ -1,4 +1,6 @@
 <?php
+use YesWiki\Security\Controller\SecurityController;
+
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
@@ -18,7 +20,9 @@ if (!is_writable('wakka.config.php')) {
 
         if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
             $params = checkParamActionSetTemplate($_POST, $themes);
-            if ($params !== false) {
+            if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+                echo $this->services->get(SecurityController::class)->getMessageWhenHibernated();
+            } elseif ($params !== false) {
                 $config->favorite_theme = $params['theme'];
                 $config->favorite_squelette = $params['squelette'];
                 $config->favorite_style = $params['style'];
