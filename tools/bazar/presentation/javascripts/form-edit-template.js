@@ -258,7 +258,6 @@ var typeUserAttrs = {
   },
   image: {
     hint: { label: "Texte d'aide" },
-    name2: { label: "Name", value: "bf_image" },
     thumb_height: { label: "Hauteur Vignette", value: "140" },
     thumb_width: { label: "Largeur Vignette", value: "140" },
     resize_height: { label: "Hauteur redimension", value: "600" },
@@ -513,7 +512,7 @@ var yesWikiMapping = {
   image: {
     ...defaultMapping,
     ...{
-      1: "name2",
+      1: "name",
       3: "thumb_height",
       4: "thumb_width",
       5: "resize_height",
@@ -593,6 +592,11 @@ var yesWikiTypes = {
   listefiches: { type: "listefichesliees" },
 };
 
+var defaultFieldsName = {
+  textarea: "bf_description",
+  image: "bf_image",
+}
+
 function initializeFormbuilder(formAndListIds) {
   // FormBuilder conf
   formBuilder = $formBuilderContainer.formBuilder({
@@ -625,16 +629,19 @@ function initializeFormbuilder(formAndListIds) {
 
   // Each 300ms update the text field converting form bulder content into wiki syntax
   var formBuilderInitialized = false;
+  var existingFieldsNames = []
+  
   setInterval(function () {
     if (!formBuilder || !formBuilder.actions || !formBuilder.actions.setData)
       return;
     if (!formBuilderInitialized) {
       initializeBuilderFromTextInput();
+      $(".fld-name").each(function() { existingFieldsNames.push($(this).val()) })
       formBuilderInitialized = true;
     }
     if ($formBuilderTextInput.is(":focus")) return;
     // Change names
-    $(".form-group.name-wrap label, .form-group.name2-wrap label").text("Identifiant unique");
+    $(".form-group.name-wrap label").text("Identifiant unique");
     $(".form-group.label-wrap label").text("Intitulé");
     
     // Slugiy field names
@@ -677,17 +684,32 @@ function initializeFormbuilder(formAndListIds) {
       })
       .trigger("change");
 
-    // For checkbox, select etc... the name should be blank by default
-    // so we replace the generated value by blank
-    $(".radio-group-field .fld-name").each(function () {
-      if ($(this).val().includes("radio_group_")) $(this).val("");
-    });
-    $(".checkbox-group-field .fld-name").each(function () {
-      if ($(this).val().includes("checkbox_group_")) $(this).val("");
-    });
-    $(".select-field .fld-name").each(function () {
-      if ($(this).val().includes("select_")) $(this).val("");
-    });
+    // Make the default names easier to read
+    $(".fld-name").each(function() { 
+      var name = $(this).val()
+      // If it's a new field added, then we can change automatically the name
+      if (!existingFieldsNames.includes(name)) {
+        console.log("new field", name, $(this).closest('.form-field').attr('type'))
+        var fieldType = $(this).closest('.form-field').attr('type');
+        if (['radio_group', 'checkbox_group', 'select'].includes(fieldType)) {
+          name = ''
+        } else {
+          name = defaultFieldsName[fieldType] || 'bf_' + fieldType
+          if (existingFieldsNames.includes(name)) {
+            // If name already exist, we add a number (bf_address, bf_address1, bf_address2...)
+            number = 1
+            while(existingFieldsNames.includes(name + number)) {
+              number += 1
+            }
+            name += number
+          }
+          console.log("new name", name)
+        }
+        
+      }
+      $(this).val(name)
+      existingFieldsNames.push(name)
+     })
 
     $(".text-field select[name=subtype]:not(.initialized)")
       .change(function () {
