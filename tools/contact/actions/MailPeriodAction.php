@@ -11,8 +11,8 @@ class MailPeriodAction extends YesWikiAction
 {
     function run()
     {       
+        $user = $this->getService(UserManager::class)->getLoggedUser();
         $userName = $this->getService(UserManager::class)->getLoggedUserName();
-
         $periods = [
             'day' =>   ['label' => _t('CONTACT_DAILY')], 
             'week' =>  ['label' => _t('CONTACT_WEEKLY')],
@@ -21,22 +21,24 @@ class MailPeriodAction extends YesWikiAction
         $periods = $this->updatePeriods($periods, $userName);
         $messages = [];
         
-        if (isset($_REQUEST['subscribe'])) {
-            $period = $_REQUEST['subscribe'];
-            $group = $periods[$period]['group'];
-            $this->unsubscribUserFromAllGroups($userName, $periods);
-            $this->subscribeUserToGroup($userName, $group);
-            $messages['success'] = _t('CONTACT_SUCCESS_SUBSCRIBE') . $periods[$period]['label'];
-        } else if (isset($_REQUEST['unsubscribe'])) {
-            $this->unsubscribUserFromAllGroups($userName, $periods);
-            $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
+        if ($user) {
+            if (isset($_REQUEST['subscribe'])) {
+                $period = $_REQUEST['subscribe'];
+                $group = $periods[$period]['group'];
+                $this->unsubscribUserFromAllGroups($userName, $periods);
+                $this->subscribeUserToGroup($userName, $group);
+                $messages['success'] = _t('CONTACT_SUCCESS_SUBSCRIBE') . $periods[$period]['label'];
+            } else if (isset($_REQUEST['unsubscribe'])) {
+                $this->unsubscribUserFromAllGroups($userName, $periods);
+                $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
+            }
+
+            // Updating again to get modification from previous operations
+            $periods = $this->updatePeriods($periods, $userName);
         }
 
-        // Updating again to get modification from previous operations
-        $periods = $this->updatePeriods($periods, $userName);
-
         return $this->render('@contact/mailperiod.twig', [
-            'userName' => $userName,
+            'user' => $user,
             'messages' => $messages,
             'periods' => $periods
         ]);

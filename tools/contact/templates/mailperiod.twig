@@ -10,7 +10,8 @@
     
     {# Subscribe choices #}
     {% for period, config in periods %}
-      <a href="{{ url({ params: { subscribe: period} }) }}" 
+      {% set url = user ? url({ params: { subscribe: period} }) : '#LoginModal' %}
+      <a href="{{ url }}" {% if not user %}data-toggle="modal"{% endif %}
          class="btn btn-{{ config.subscribed ? 'primary' : 'default' }}">
         {{ config.label }}
       </a>
@@ -21,11 +22,6 @@
       <a href="{{ url({ params: { unsubscribe: true} }) }}" class="btn btn-danger">
         {{  _t('CONTACT_UNSUBSCRIBE') }}
       </a>
-    {% endif %}
-
-    {# User not connected #}
-    {% if not userName %}
-      {{ _t('CONTACT_LOGIN_TO_GET_INFOS') }}
     {% endif %}
   </div>
 </div>
