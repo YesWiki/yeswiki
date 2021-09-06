@@ -1,6 +1,8 @@
 <?php
 /**
  * Yeswiki is a great wiki
+ * This file load the autoload file only once and load the wiki as singleton
+ * Created to allow tests without running YesWiki but in the same state as production
  *
  * @category Wiki
  * @package  YesWiki
