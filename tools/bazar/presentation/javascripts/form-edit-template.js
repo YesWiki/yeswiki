@@ -45,6 +45,12 @@ var fields = [
       '<svg height="512pt" viewBox="0 -90 512 512" width="512pt" xmlns="http://www.w3.org/2000/svg"><path d="m452 0h-392c-33.085938 0-60 26.914062-60 60v212c0 33.085938 26.914062 60 60 60h392c33.085938 0 60-26.914062 60-60v-212c0-33.085938-26.914062-60-60-60zm20 272c0 11.027344-8.972656 20-20 20h-392c-11.027344 0-20-8.972656-20-20v-212c0-11.027344 8.972656-20 20-20h392c11.027344 0 20 8.972656 20 20zm-295-151v131h-40v-131h-57v-40h152v40zm40 91h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm0 0"/></svg>',
   },
   {
+    label: "Url",
+    name: "url",
+    attrs: { type: "url" },
+    icon: '<i class="fas fa-link"></i>',
+  },
+  {
     label: "Géolocalisation sur une carte",
     name: "map",
     attrs: { type: "map" },
@@ -225,6 +231,11 @@ var typeUserAttrs = {
       label: "Motif",
       placeholder: "Mode avancé. Ex: [0-9]+ ou [A-Za-z]{3}, ...",
     }
+  },
+  url: {
+    read: readConf,
+    write: writeconf,
+    semantic: semanticConf
   },
   champs_mail: {
     hint: { label: "Texte d'aide" },
@@ -433,6 +444,9 @@ var templates = {
       string += ` value="${fieldData.value}"/>`;
     return { field: string };
   },
+  url: function (fieldData) {
+    return { field: `<input type="url" placeholder="${fieldData.value || ''}"/>` }
+  },
   tags: function (field) {
     return { field: "<input/>" };
   },
@@ -496,6 +510,7 @@ var lists = {
 };
 var yesWikiMapping = {
   text: defaultMapping,
+  url: defaultMapping,
   number: defaultMapping,
   champs_mail: {
     ...defaultMapping,
@@ -571,7 +586,8 @@ var yesWikiMapping = {
 };
 // Mapping betwwen yeswiki field type and standard field implemented by form builder
 var yesWikiTypes = {
-  lien_internet: { type: "text", subtype: "url" },
+  lien_internet: { type: "url" },
+  lien_internet_bis: { type: "text", subtype: "url" },
   mot_de_passe: { type: "text", subtype: "password" },
   // "nombre": { type: "text", subtype: "tel" },
   texte: { type: "text" }, // all other type text subtype (range, text, tel)
@@ -613,7 +629,7 @@ function initializeFormbuilder(formAndListIds) {
       "header",
       "collaborative_doc",
     ],
-    controlOrder: ["text", "textarea", "jour", "image", "file", "champs_mail", "tags"],
+    controlOrder: ["text", "textarea", "jour", "image", "url", "file", "champs_mail", "tags"],
     disabledAttrs: [
       "access",
       "placeholder",
@@ -790,6 +806,9 @@ function formatJsonDataIntoWikiText(formData) {
       }
     // for non mapped fields, we just keep the form type
     if (!wikiProps[0]) wikiProps[0] = formElement.type;
+    
+    // fix for url field which can be build with textField or urlField
+    if (wikiProps[0]) wikiProps[0] = wikiProps[0].replace('_bis', '') 
 
     for (var key in mapping) {
       var property = mapping[key];
