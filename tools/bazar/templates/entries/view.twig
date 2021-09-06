@@ -20,11 +20,11 @@
   {% if showFooter %}
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info">
-      {% if isAdmin %}
-        <span class="BAZ_main_fiche_info">
-          <a href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
-            {{ entryId }}
-          </a>
+      <span class="BAZ_main_fiche_info">
+        <a href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
+          {{ entryId }}
+        </a>
+        {% if isAdmin %}
           <span class="category">({{ form.bn_label_nature }})</span>
           {%- if showOwner -%}
             , {{ _t('BAZ_ECRITE') }}
@@ -40,8 +40,8 @@
             {{ _t('BAZ_DATE_MAJ') }}
             {{ entry.date_maj_fiche|date('d/m/Y à H:i') }}
           </span>
-        </span>
-      {% endif %}
+        {% endif %}
+      </span>
 
       {% if not entry['external-data'] %}
         <div class="BAZ_actions_fiche">
