@@ -624,3 +624,13 @@ body {
 .remove-this-div-on-page-load {
   display: none !important;
 }
+
+.update-hint {
+  font-size: .9rem;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  opacity: .9;
+  font-style: italic;
+  line-height: 1rem;
+  text-align: justify;
+}

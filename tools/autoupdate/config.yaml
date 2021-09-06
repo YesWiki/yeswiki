@@ -1,0 +1,11 @@
+parameters:
+  admin_pages_to_update:
+    - BazaR
+    - GererSite
+    - GererDroits
+    - GererMisesAJour
+    - GererThemes
+    - GererConfig
+    - GererUtilisateurs
+    - ActuYeswiki
+    - CommentFairePour

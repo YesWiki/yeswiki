@@ -466,4 +466,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
 'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
+
+// handlers/update
+'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',
+'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',
+'UPDATE_ADMIN_PAGES_HINT' => 'Mets à jour les pages de gestion avec les dernières fonctionnalités. Ceci est réversible.',
+'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour les pages {{listpage}} !',
 ));
