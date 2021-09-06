@@ -13,6 +13,7 @@ class HiddenField extends BazarField
     {
         parent::__construct($values, $services);
         $this->type = 'hidden';
+        $this->label = $this->getPropertyName();
     }
 
     protected function renderStatic($entry)
@@ -21,16 +22,16 @@ class HiddenField extends BazarField
     }
 
     // Format input values before save
-    public function formatValuesBeforeSave($entry)
-    {
-        return ['fields-to-remove' => [$this->propertyName]];
-    }
+    // public function formatValuesBeforeSave($entry)
+    // {
+    //     return ['fields-to-remove' => [$this->propertyName]];
+    // }
     
     public function jsonSerialize()
     {
         return [
             'type' => $this->getType(),
-            'value' => $this->getLabel(),
+            'default' => $this->getDefault(),
             ];
     }
 }

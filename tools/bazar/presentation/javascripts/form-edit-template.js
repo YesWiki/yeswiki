@@ -539,7 +539,7 @@ var yesWikiMapping = {
   titre: { 0: "type", 1: "value", 2: "label" },
   acls: { 0: "type", 1: "read", 2: "write", 3: "comment" },
   metadatas: { 0: "type", 1: "theme", 2: "squelette", 3: "style", 4: "image" },
-  hidden: { 0: "type", 1: "name", 2: "value" },
+  hidden: { 0: "type", 1: "name", 5: "value" },
   bookmarklet: { 0: "type", 1: "name", 2: "label", 3: "value" },
   listefichesliees: {
     0: "type",
