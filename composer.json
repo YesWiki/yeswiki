@@ -2,8 +2,7 @@
     "name": "yeswiki/yeswiki",
     "description": "A wiki system with extensions making collaboration more simple (databases, maps, easy editing, themes,...)",
     "homepage": "https://yeswiki.net",
-    "license": "AGPL-3.0",
-    "version": "4.0.0-beta",
+    "license": "AGPL-3.0-or-later",
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
@@ -17,7 +16,7 @@
         "symfony/dependency-injection": "^5.1",
         "symfony/config": "^5.1",
         "symfony/yaml": "^5.1",
-        "yeswiki/theme-margot": "*",
+        "yeswiki/theme-margot": "dev-master",
         "oomphinc/composer-installers-extender": "^2.0",
         "twig/twig": "^3.0",
         "doctrine/annotations": "^1.11",
