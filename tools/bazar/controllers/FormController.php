@@ -60,7 +60,8 @@ class FormController extends YesWikiController
         return $this->render("@bazar/forms/forms_table.twig", [
             'message' => $message,
             'forms' => $values,
-            'userIsAdmin' => $this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin()
+            'userIsAdmin' => $this->wiki->UserIsAdmin(),
+            'isWikiHibernated' => $this->securityController->isWikiHibernated()
         ]);
     }
 

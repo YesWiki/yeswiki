@@ -3,6 +3,8 @@
 {{ include_javascript('tools/bazar/libs/bazar.edit_forms.js') }}
 {{ include_css('tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css') }}
 
+{% set tooltipMessage =  isWikiHibernated ? _t('WIKI_IN_HIBERNATION') : _t('BAZ_NEED_ADMIN_RIGHTS') %}
+
 {% if message %}
 <div class="alert alert-success">
   <a data-dismiss="alert" class="close" type="button">&times;</a>
@@ -79,7 +81,7 @@
               <i class="far fa-clone"></i>
             </a>
             {% else %}
-              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}">
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="far fa-clone"></i>
               </button>
             {% endif %}
@@ -88,7 +90,7 @@
                 <i class="fa fa-pencil-alt"></i>
               </a>
             {% else %}
-              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}">
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fa fa-pencil-alt"></i>
               </button>
             {% endif %}
@@ -102,10 +104,10 @@
                 <i class="fa fa-trash"></i>
               </a>
             {% else %}
-              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}">
+              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fas fa-eraser"></i>
               </button>
-              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}">
+              <button type="button" class="btn btn-danger btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fa fa-trash"></i>
               </button>
             {% endif %}
@@ -122,14 +124,14 @@
 </div>
 {% endif %}
 
-{% if userIsAdmin %}
+{% if userIsAdmin and not isWikiHibernated %}
   <a class="btn btn-primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
 {% else %}
-  <button type="button" class="btn btn-primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}">
+  <button type="button" class="btn btn-primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage  }}">
 {% endif %}
   <i class="fa fa-plus icon-plus icon-white"></i>
   {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
-{% if userIsAdmin %}</a>{% else %}</button>{% endif %}
+{% if userIsAdmin and not isWikiHibernated %}</a>{% else %}</button>{% endif %}
 
 <hr>
 
@@ -139,9 +141,9 @@
 		<span class="add-on input-group-addon">
       <i class="fa fa-link icon-globe"></i>
     </span>
-		<input id="url-import-forms" class="form-control input-xxlarge" {% if not userIsAdmin %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
+		<input id="url-import-forms" class="form-control input-xxlarge" {% if not userIsAdmin or isWikiHibernated %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
 		<span class="input-group-btn">
-      <button id="btn-import-forms" {% if not userIsAdmin %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}"{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
+      <button id="btn-import-forms" {% if not userIsAdmin or isWikiHibernated %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
     </span>
 	</div>
   <p class="text-info">Exemple d'url pour obtenir des formulaires types: <code>https://yeswiki.net</code></p>
