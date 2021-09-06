@@ -193,7 +193,7 @@ class ApiController extends YesWikiController
             // Fields for filters
             foreach($filters as $field => $config) $fieldMapping[] = $field;
             // Fields used to search
-            foreach($_GET['searchfields'] as $field) $fieldMapping[] = $field;
+            foreach($_GET['searchfields'] ?? [] as $field) $fieldMapping[] = $field;
             // Fields used by template
             $fieldMapping = array_merge($fieldMapping, $_GET['necessary_fields']);
             $fieldMapping = array_values(array_unique($fieldMapping)); // array_values to have incremental keys

@@ -1,3 +1,7 @@
+.bazar-list-dynamic-container:not(.mounted) {
+  opacity: 0;
+}
+
 /* PAGINATION */
 .bazar-list-dynamic-container .pagination {
   display: flex;

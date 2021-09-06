@@ -20,17 +20,10 @@ if (document.querySelector('.bazar-map')) {
     },    
     computed: {
       entries() {
-        // if (!this.bounds) return []
-        return this.$root.entriesToDisplay/*.filter(entry => {
-          let latLng = L.latLng(entry.bf_latitude, entry.bf_longitude)
-          return this.bounds.pad(1.2).contains(latLng)
-        })*/
+        return this.$root.entriesToDisplay
       },
     },
     methods: {
-      markerClass(entry) {
-        return `bazar-marker ${this.params.smallmarker} ${this.selectedEntry == entry ? 'selected' : ''}`
-      },
       updateBounds() {
         if (!this.$refs.map) return
         this.bounds = this.$refs.map.mapObject.getBounds()
@@ -45,13 +38,36 @@ if (document.querySelector('.bazar-map')) {
           if (a[i] !== b[i]) return false;
         }
         return true;
+      },
+      createMarker(entry) {
+        if (entry.marker) return entry.marker
+        entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true });
+        entry.marker.setIcon(
+          L.divIcon({
+            className: `bazar-marker ${this.params.smallmarker}`,
+            iconSize: this.params.iconSize,
+            iconAnchor: this.params.iconAnchor,
+            html: `
+              <div class="entry-name">
+                <span style="background-color: ${entry.color}">${ entry.bf_titre }</span>
+              </div>
+              <div class="bazar-entry" style="color: ${entry.color}">
+                <i class="${entry.icon || 'fa fa-bullseye'}"></i>
+              </div>`,
+          })
+        );
+        entry.marker.on('click', (ev) => {
+          this.selectedEntry = entry
+        });
+        return entry.marker
       }
     },
     watch: {
-      selectedEntry() {
+      selectedEntry: function (newVal, oldVal) {
+        if (oldVal) oldVal.marker._icon.classList.remove('selected')
         if (this.selectedEntry) {
           this.$root.getEntryRender(this.selectedEntry)
-          
+          this.selectedEntry.marker._icon.classList.add('selected')
         }
         this.$nextTick(function() {
           this.$refs.map.mapObject.invalidateSize(true)
@@ -63,16 +79,15 @@ if (document.querySelector('.bazar-map')) {
         this.center = [this.params.latitude, this.params.longitude]
       },
       entries(newVal, oldVal) {
-        console.log("entries changed")
         let newIds = newVal.map(e => e.id_fiche)
         let oldIds = oldVal.map(e => e.id_fiche)
-        // TODO BazarListdynamic check wether or not use removeLayers instead
         if (!this.arraysEqual(newIds, oldIds)) {
           this.$nextTick(function() {
-            this.$refs.cluster.addLayers(this.$refs.markers)
+            let markers = this.entries.map(entry => this.createMarker(entry))
+            if (this.params.cluster) this.$refs.cluster.addLayers(markers)
+            else markers.forEach(marker => marker.addTo(this.$refs.map.mapObject))
           })
         }
-              
       }
     },
     template: `
@@ -83,20 +98,7 @@ if (document.querySelector('.bazar-map')) {
         
         <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="OSM !"></l-tile-layer>
 
-        <l-marker-cluster ref="cluster">
-          <l-marker v-for="entry in entries" :key="entry.id_fiche" ref="markers" :visible.sync="entry.visible" 
-                    :lat-lng="[entry.bf_latitude, entry.bf_longitude]" @click="selectedEntry = entry">
-            <l-icon :class-name="markerClass(entry)" 
-                    :icon-size="JSON.parse(params.iconSize)" :icon-anchor="JSON.parse(params.iconAnchor)" 
-                    :popup-anchor="JSON.parse(params.popupAnchor)">
-              <div class="entry-name">
-                <span :style="{'background-color': entry.color}">{{ entry.bf_titre }}</span>
-              </div>
-              <div class="bazar-entry" :style="{color: entry.color}">
-                <i :class="entry.icon"></i>
-              </div>
-            </l-icon>
-          </l-marker>
+        <l-marker-cluster ref="cluster" >
         </l-marker-cluster>
       </l-map>
       <div v-if="selectedEntry" class="entry-container">
@@ -109,3 +111,4 @@ if (document.querySelector('.bazar-map')) {
   Vue.component('BazarMap', BazarMap)
 }
 export default BazarMap
+

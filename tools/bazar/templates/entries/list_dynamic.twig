@@ -9,7 +9,7 @@
   {% set params = params|merge({necessary_fields: necessary_fields}) %}
 {% endif %}
 
-<div class="bazar-list-dynamic-container" data-params="{{ params|json_encode }}">
+<div class="bazar-list-dynamic-container" data-params="{{ params|json_encode }}" :class="{mounted: mounted}">
 
   {% if params.search and not params.groups %}
     {{ include("@bazar/entries/list_dynamic/_search_input.twig") }}

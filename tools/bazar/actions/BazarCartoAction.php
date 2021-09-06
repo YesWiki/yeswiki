@@ -75,9 +75,9 @@ class BazarCartoAction extends YesWikiAction
             // Zoom sur molette
             'zoom_molette' => $arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom'),
             // Affichage en eclate des points superposes : true or false
-            'spider' => $arg['spider'] ?? 'false',
+            'spider' => $this->formatBoolean($arg, false, 'spider'),
             // Affichage en cluster : true or false
-            'cluster' => $arg['cluster'] ?? 'false',
+            'cluster' => $this->formatBoolean($arg, false, 'cluster'),
             // Ajout bouton plein écran (https://github.com/brunob/leaflet.fullscreen)
             'fullscreen' => $arg['fullscreen'] ?? 'true',
             // Fournit une configuration JSON via un URL

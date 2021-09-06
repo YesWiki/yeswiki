@@ -7,6 +7,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     el: domElement,
     components: { Panel },
     data: {
+      mounted: false,
       entries: [],
       params: {},
       filters: [],
@@ -168,6 +169,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     mounted() {
       this.params = JSON.parse(this.$el.dataset.params)
       this.perPage = parseInt(this.params.pagination)
+      this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
         this.filters = data.filters || []
