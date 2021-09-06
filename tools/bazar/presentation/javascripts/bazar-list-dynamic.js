@@ -50,13 +50,12 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       }
     },
     watch: {
-      filteredEntriesCount() {
-        this.currentPage = 0
-      },
+      filteredEntriesCount() { this.currentPage = 0 },
       search() { this.calculateBaseEntries() },
       searchFormId() { this.calculateBaseEntries() },
       computedFilters() { this.filterEntries() },
-      currentPage() { this.paginateEntries() }
+      currentPage() { this.paginateEntries() },
+      searchedEntries() { this.calculateFiltersCount() },
     },
     methods: {
       calculateBaseEntries() {
@@ -122,6 +121,18 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         })
         this.entriesToDisplay = this.paginatedEntries
       },
+      calculateFiltersCount() {
+        for(let fieldName in this.filters) {
+          for (let option of this.filters[fieldName].list) {
+            option.nb = this.searchedEntries.filter(entry => {
+              let entryValues = entry[fieldName]
+              if (!entryValues) return
+              entryValues = entryValues.split(',')
+              return entryValues.some(value => value == option.value)
+            }).length
+          }
+        }
+      },
       filterDomId(key) {
         return `accordion_filter_${key}_${this._uid}`
       },
@@ -132,6 +143,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         for(let filterId in this.filters) {
           this.filters[filterId].list.forEach(option => option.checked = false)
         }
+        this.search = ''
       },
       getEntryRender(entry) {
         if (entry.html_render) return

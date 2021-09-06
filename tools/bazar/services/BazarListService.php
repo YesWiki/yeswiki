@@ -194,7 +194,6 @@ class BazarListService
             }
         }
 
-
         // reorder $filters
         uasort($filters, function ($a, $b) {
             if (isset($a['index']) && isset($b['index'])) {
@@ -210,7 +209,7 @@ class BazarListService
             } else {
                 return 0 ;
             }
-        }) ;
+        });
 
         foreach ($filters as $id => $filter) {
             if (isset($filter['index'])) {
@@ -247,6 +246,4 @@ class BazarListService
             }
         };
     }
-
-
 }

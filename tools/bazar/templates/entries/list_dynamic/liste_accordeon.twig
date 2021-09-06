@@ -4,6 +4,9 @@
 
 {% block display_entries %}
   <div class="panel-group no-dblclick">
+    <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
+      {{ _t('BAZ_NO_RESULT') }}
+    </div>
     <Panel v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry" 
            @opened="getEntryRender(entry)">
       <template #header>

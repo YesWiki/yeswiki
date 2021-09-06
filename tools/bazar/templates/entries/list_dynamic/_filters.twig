@@ -24,12 +24,12 @@
           <i v-html="filter.icon"></i>{{"{{ filter.title }}"}}
         </template>
         <template #body>
-          <div class="checkbox" v-for="filterValue in filter.list">
+          <div class="checkbox" v-for="filterOption, id in filter.list" :key="id" v-show="filterOption.nb > 0">
             <label>
-              <input class="filter-checkbox" type="checkbox" v-model="filterValue.checked" :value="filterValue.value">
+              <input class="filter-checkbox" type="checkbox" v-model="filterOption.checked" :value="filterOption.value">
               <span>
-                <span v-html="filterValue.label"></span>
-                <span class="nb" v-if="filterValue.nb">({{"{{ filterValue.nb }}"}})</span>
+                <span v-html="filterOption.label"></span>
+                <span class="nb" v-if="filterOption.nb">({{"{{ filterOption.nb }}"}})</span>
               </span>
             </label>
           </div>
