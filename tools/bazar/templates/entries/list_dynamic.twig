@@ -34,5 +34,9 @@
 
   {{ include("@bazar/entries/list_dynamic/_pagination.twig") }}
 
+  {% if not params.isInIframe and params.showexportbuttons %}
+    {{ include("@bazar/entries/list/_export_buttons.twig") }}
+  {% endif %}
+
   <modal-entry ref="modal"></modal-entry>
 </div>
