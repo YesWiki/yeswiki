@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Wiki;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\EntryManager;
@@ -12,11 +13,12 @@ class BazarListService
 {
     protected $arguments = [];
   
-    public function __construct(Wiki $wiki, EntryManager $entryManager, 
+    public function __construct(Wiki $wiki, EntryManager $entryManager, EntryController $entryController,
                                 ExternalBazarService $externalBazarService, FormManager $formManager)
     {
       $this->wiki = $wiki;
       $this->entryManager = $entryManager;
+      $this->entryController = $entryController;
       $this->externalBazarService = $externalBazarService;
       $this->formManager = $formManager;
     }
@@ -66,7 +68,7 @@ class BazarListService
 
         // filter entries on datefilter parameter
         if (!empty($this->arguments['datefilter'])) {
-            $entries = $this->entryManager->filterEntriesOnDate($entries, $this->arguments['datefilter']) ;
+            $entries = $this->entryController->filterEntriesOnDate($entries, $this->arguments['datefilter']) ;
         }
 
         // Sort entries
