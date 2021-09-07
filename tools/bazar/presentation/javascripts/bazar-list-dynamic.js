@@ -118,11 +118,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         this.formatEntries()
       },
       formatEntries() {
-        // calculate color and icon
         this.paginatedEntries.forEach(entry => {
-          entry.color = this.valueFrom(entry, this.params.colorfield, this.params.color)
-          entry.icon  = this.valueFrom(entry, this.params.iconfield, this.params.icon)
-          return entry
+          entry.color = this.colorIconValueFor(entry, this.params.colorfield, this.params.color)
+          entry.icon  = this.colorIconValueFor(entry, this.params.iconfield, this.params.icon)
         })
         this.entriesToDisplay = this.paginatedEntries
       },
@@ -159,13 +157,12 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       openEntryModal(entry) {
         this.$refs.modal.displayEntry(entry)
       },
-      valueFrom(entry, field, mapping) {
+      colorIconValueFor(entry, field, mapping) {
         if (!entry[field]) return null
         let values = entry[field].split(',')
-        // If some filters are checked, and the entry have multiple values, we will shall display 
+        // If some filters are checked, and the entry have multiple values, we display 
         // the value associated with the checked filter
         // TODO BazarListDynamic check with users if this is expected behaviour
-        // also check if we should display icon inside the filter itself
         if (this.computedFilters[field]) values = values.filter(val => this.computedFilters[field].includes(val))
         return mapping[values[0]]
       },
@@ -179,15 +176,17 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
-        this.filters = data.filters || []
         // First display filters cause entries can be a bit long to load
+        this.filters = data.filters || []        
+        if (data.entries.length > 50) this.perPage = 20 // Auto paginate if large numbers
         setTimeout(() => {
           this.entries = data.entries.map(array => {
-            // initialize some fields so they get reactive
             let entry = { color: null, icon: null }
+            // Transform array data into object using the fieldMapping
             for(let key in data.fieldMapping) {
               entry[data.fieldMapping[key]] = array[key]
             }
+            
             return entry
           })
           this.calculateBaseEntries()

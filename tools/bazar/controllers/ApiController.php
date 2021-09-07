@@ -190,13 +190,15 @@ class ApiController extends YesWikiController
             $fieldMapping = ['id_fiche', 'bf_titre'];
             // If no id, we need idtypeannonce (== formId) to filter
             if (!isset($_GET['id'])) $fieldMapping[] = ['id_typeannonce'];
+            // fields for colo / icon
+            $fieldMapping = array_merge($fieldMapping, [ $_GET['colorfield'], $_GET['iconfield'] ]);
             // Fields for filters
             foreach($filters as $field => $config) $fieldMapping[] = $field;
             // Fields used to search
             foreach($_GET['searchfields'] ?? [] as $field) $fieldMapping[] = $field;
             // Fields used by template
             $fieldMapping = array_merge($fieldMapping, $_GET['necessary_fields']);
-            $fieldMapping = array_values(array_unique($fieldMapping)); // array_values to have incremental keys
+            $fieldMapping = array_values(array_unique(array_filter($fieldMapping))); // array_values to have incremental keys
             
             // Reduce the size of the data sent by transforming entries object into array
             // we use the $fieldMapping to transform back the data when receiving data in the front end
