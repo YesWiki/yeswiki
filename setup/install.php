@@ -127,6 +127,7 @@ $replacements = [
     'password' => $admin_password,
     'email' => $admin_email,
     'rootPage' => $config['root_page'],
+    'url' => $config['base_url']
 ];
 
 // tables, admin user and admin group creation
