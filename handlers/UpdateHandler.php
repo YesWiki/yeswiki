@@ -73,6 +73,11 @@ class UpdateHandler extends YesWikiHandler
 
             // propose to update content of admin's pages
             $output .= $this->frontUpdateAdminPages();
+
+            // test if templates directory is up to date
+            if (!file_exists('templates/edit-config.twig')) {
+                $output .= '<div class="alert alert-warning">ℹ️ '._t('UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE').'</div>';
+            }
         } else {
             $output .= '<div class="alert alert-danger">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
         }

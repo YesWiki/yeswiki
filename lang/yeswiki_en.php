@@ -428,5 +428,14 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_password_for_editing_message' => 'Message displayed above the password asked password to modify forms',
 'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Time (s) between two cache\'s refreshes for JSON\'s requests in listefiche',
 'EDIT_CONFIG_HINT_baz_check_owner_acl_only_for_field_can_edit' => 'Check owner read acl \'%\' only when editing bazar fields (false by default)',
-    
+
+// handlers/update
+'UPDATE_ADMIN_PAGES' => 'Update admin pages',
+'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirm pages\' update : ',
+'UPDATE_ADMIN_PAGES_HINT' => 'Update admin pages with latest features. This is reversible.',
+'UPDATE_ADMIN_PAGES_ERROR' => 'Not possible to update all admin pages !',
+'UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE' => 'The folder \'tempaltes\' seems not to be up to date. '.
+    'This could lead to a bad behaviour of actions like {{editconfig}} ! '.
+    'It is possible to solve it by updating a new time the wiki. '.
+    'Indeed, this folder needs to updates. ',
 ));
