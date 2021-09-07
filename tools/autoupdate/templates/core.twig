@@ -6,54 +6,75 @@
     {{ _t('AU_VERSION_REPO') }} : <span class="label label-primary">{{ core.requestedVersion }} {{ core.release }}</span>
 </p>
 
-{% if isAdmin and core.newVersionRequested %}
-    {% if core.PHPVersionEnoughHigh %}
-        <a  href="{{ baseUrl }}{{ core.updateLink }}"
-            class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
-            {{ _t('AU_VERSION_UPDATE') }}
-        </a>
+{% if core.newVersionRequested %}
+    {% if isAdmin %}
+        {% if core.PHPVersionEnoughHigh %}
+            <a  href="{{ baseUrl }}{{ core.updateLink }}"
+                class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
+                {{ _t('AU_VERSION_UPDATE') }}
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
+                data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
+                        ~ _t('AU_PHP_TOO_LOW_VERSION_UPDATE') 
+                        ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
+                        ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+                {{ _t('AU_VERSION_UPDATE') }}
+            </button>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_VERSION_UPDATE') ~ ' !' }}</i></p>
+        {% endif %}
     {% else %}
         <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
-                    ~ _t('AU_PHP_TOO_LOW_VERSION_UPDATE') 
-                    ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
-                    ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+            data-placement="bottom" title="{{ _t('ACLS_RESERVED_FOR_ADMINS') }}">
             {{ _t('AU_VERSION_UPDATE') }}
         </button>
-        <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_VERSION_UPDATE') ~ ' !' }}</i></p>
     {% endif %}
-{% elseif isAdmin and core.updateAvailable %}
-    {% if core.PHPVersionEnoughHigh %}
-        <p> {{ _t('AU_WARNING') }} </p>
-        <a  href="{{ baseUrl}}{{ core.updateLink }}"
-            class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
-            {{ _t('AU_UPDATE') }}
-        </a>
+{% elseif core.updateAvailable %}
+    {% if isAdmin %}
+        {% if core.PHPVersionEnoughHigh %}
+            <p> {{ _t('AU_WARNING') }} </p>
+            <a  href="{{ baseUrl}}{{ core.updateLink }}"
+                class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
+                {{ _t('AU_UPDATE') }}
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
+                data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
+                        ~ _t('AU_PHP_TOO_LOW_UPDATE') 
+                        ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
+                        ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+                {{ _t('AU_UPDATE') }}
+            </button>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_UPDATE') ~ ' !' }}</i></p>
+        {% endif %}
     {% else %}
         <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
-                    ~ _t('AU_PHP_TOO_LOW_UPDATE') 
-                    ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
-                    ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+            data-placement="bottom" title="{{ _t('ACLS_RESERVED_FOR_ADMINS') }}">
             {{ _t('AU_UPDATE') }}
         </button>
-        <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_UPDATE') ~ ' !' }}</i></p>
     {% endif %}
-{% elseif isAdmin and not core.updateAvailable %}
-    {% if core.PHPVersionEnoughHigh %}
-        <a  href="{{ baseUrl }}{{ core.updateLink }}"
-            class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
-            {{ _t('AU_FORCE_UPDATE') }}
-        </a>
+{% elseif not core.updateAvailable %}
+    {% if isAdmin %}
+        {% if core.PHPVersionEnoughHigh %}
+            <a  href="{{ baseUrl }}{{ core.updateLink }}"
+                class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
+                {{ _t('AU_FORCE_UPDATE') }}
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
+                data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
+                        ~ _t('AU_PHP_TOO_LOW_FORCE_UPDATE') 
+                        ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
+                        ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+                {{ _t('AU_FORCE_UPDATE') }}
+            </button>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_FORCE_UPDATE') ~ ' !' }}</i></p>
+        {% endif %}
     {% else %}
         <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
-            data-placement="bottom" title="{{ _t('AU_PHP_TOO_LOW_START') 
-                    ~ _t('AU_PHP_TOO_LOW_FORCE_UPDATE') 
-                    ~ _t('AU_PHP_TOO_LOW_MIDDLE') ~ (core.neededPHPversion ?? '99.99.99')
-                    ~ _t('AU_PHP_TOO_LOW_END') ~ phpVersion }}">
+            data-placement="bottom" title="{{ _t('ACLS_RESERVED_FOR_ADMINS') }}">
             {{ _t('AU_FORCE_UPDATE') }}
         </button>
-        <p><i>{{ _t('AU_PHP_TOO_LOW_HINT') ~ _t('AU_PHP_TOO_LOW_FORCE_UPDATE') ~ ' !' }}</i></p>
     {% endif %}
 {% endif %}
 {# Remove following lines if the page https://yeswiki.net/?ChangeLog is not maintained anymore. #}
