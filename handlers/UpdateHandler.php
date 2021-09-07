@@ -108,7 +108,7 @@ class UpdateHandler extends YesWikiHandler
             if ($updatePagesState) {
                 $output .= '✅ Done !<br />';
             } else {
-                $output .= '<span class="label label-warning">! '.str_replace('{{listpage}}', $adminPagesList, _t('UPDATE_ADMIN_PAGES_ERROR')).'</span>'.$message.'<br />';
+                $output .= '<span class="label label-warning">! '._t('UPDATE_ADMIN_PAGES_ERROR').'</span>'.'<br />'.$message;
             }
         } else {
             $output .= '<a href="'.$this->wiki->Href('update', '', ['updateAdminPages'=>true]).'" '.

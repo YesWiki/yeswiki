@@ -471,5 +471,5 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'UPDATE_ADMIN_PAGES' => 'Mettre à jour les pages de gestion',
 'UPDATE_ADMIN_PAGES_CONFIRM' => 'Confirmer la mise à jour des pages : ',
 'UPDATE_ADMIN_PAGES_HINT' => 'Mets à jour les pages de gestion avec les dernières fonctionnalités. Ceci est réversible.',
-'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour les pages {{listpage}} !',
+'UPDATE_ADMIN_PAGES_ERROR' => 'Il n\'a pas été possible de mettre à jour toutes les pages de gestion !',
 ));
