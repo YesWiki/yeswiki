@@ -1,24 +1,78 @@
 # YesWiki pages
 INSERT INTO `{{prefix}}pages` (`tag`, `time`, `body`, `body_r`, `owner`, `user`, `latest`, `handler`, `comment_on`) VALUES
-('ActuYeswiki',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Actualité\"}}
+('AccueilYeswiki',  now(), '{{grid}}
+{{col size=\"6\"}}
+===\"\"YesWiki\"\" : un outil convivial potentiellement collaboratif===
+\"\"YesWiki\"\" a été conçu pour rester **simple d\'usage**.
+Il renferme des **fonctionnalités cachées**, installées par défaut, pouvant **être activées au fur et à mesure** de l\'émergence des besoins.
+Pour cela vous pourrez facilement dans {{button class=\"new-window\" link=\"https://www.yeswiki.net\" nobtn=\"1\" text=\"YesWiki\" title=\"YesWiki\"}} : 
+ - modifier une page, (ré)organiser les menus
+ - choisir **le rendu graphique** ou l\'adapter à vos envies
+ - concevoir des **formulaires pour récolter des donnés** diverses
+ - présenter ces données **{{button class=\"new-window\" link=\"ExempleFormulaire\" nobtn=\"1\" text=\"sous des rendus variés\" title=\"sous des rendus variés\"}}** (agenda, carte, listes, annuaire, album...)
+ - **exporter ou importer** des données sous des formats ouverts (csv, json, webhooks)
+ - triturer, **adapter**, prototyper complètement le site **{{button class=\"new-window\" link=\"https://yeswiki.net/?IlsUtilisentYesWiki\" nobtn=\"1\" text=\"selon vos besoins\" title=\"selon vos besoins\"}}**
+ - récupérer la structure, les formulaires d\'autres \"\"YesWikis\"\" pour les adapter à vos projets
+ - installer des extensions pour activer de nouvelles fonctionnalités (LMS pour créer des parcours de formation, générateur d\'ebooks, authentification LDAP...)
+
+Si vous voulez **vous exercer** sereinement, vous pouvez essayer de modifier la page [[BacASable bac à sable]] où quelques défis vous seront proposés. 
+{{end elem=\"col\"}}
+{{col size=\"6\"}}
+===\"\"YesWiki\"\" : une communauté===
+En plus d\'être un logiciel de création de wikis, \"\"YesWiki\"\" est aujourd\'hui maintenu et amélioré par une communauté de professionnels et d\'utilisateurs issus d\'horizons différents qui prend du plaisir à partager ses rêves, ses créations et ses développements. Nous serons ravi·e·s de vous y accueillir !
+
+Pour nous rejoindre ou avoir une vision sur les chantiers actuellement en cours, voici notre [[https://yeswiki.net/?LaGareCentrale espace central]].
+
+Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l\'outil et de ses améliorations, **abonnez-vous à notre newsletter** 
+\"\"<script type=\"text/javascript\" src=\"//mautic.coop.tools/form/generate.js?id=1\"></script>\"\"
+
+Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/associations/yeswiki/formulaires/1 En contribuant (même juste un peu)]]** vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci
+
+{{end elem=\"col\"}}
+{{end elem=\"grid\"}}
+{{bazarliste id=\"https://www.yeswiki.net|7\" template=\"carousel.tpl.html\" champ=\"bf_ordre\" ordre=\"asc\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ActuYeswiki',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
 
 \"\"<iframe id=\"yeswiki-actus\" width=\"100%\" height=\"1000\" frameborder=\"0\" class=\"auto-resize\" src=\"https://yeswiki.net/?ActualiteS/iframe\" title=\"Actualités YesWiki\" style=\"padding:5px;\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('AidE',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Actualité\"}}
+('AidE',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
 
 {{include page=\"ReglesDeFormatage\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('AnnuaireAlpha',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"annuaire_alphabetique\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('BacASable',  now(), 'Si vous cliquez sur \"éditer cette page\" ou double-cliquez simplement sur la page,
- - vous pourrez écrire dans cette page comme bon vous semble,
- - puis en cliquant sur \"sauver\" vous pourrez enregistrer vos modifications.
+('BacASable',  now(), '=====Bac à sable=====
+===Premiers défis à réaliser===
+ 1) premier défi => **écrire dans cette page**
+  - cliquez sur \"éditez la page\" (en bas) ou double cliquez dans la page,
+  - l\'aspect de la page va légèrement changer car vous êtes en mode édition
+  - écrivez ce que vous voulez ici : super
+  - puis cliquez sur le bouton \"sauver\" (en haut à gauche) et observez votre travail
+ 2) deuxième défi => **insérer un bouton**
+  - cliquez sur \"éditez la page\" ou double cliquez dans la page,
+  - cliquez sur composants / boutons et laissez vous guider,
+  - cliquez sur \"insérer dans la page\",
+  - sauvez
+   - vous pourrez ensuite explorer les autres composants
+ 4) troisième défi => **modifier votre bouton**
+  - Passez la page en mode édition,
+  - cliquez sur le code du bouton => un petit crayon apparaît dans la marge,
+  - cliquez sur le petit crayon et changez les paramètres,
+  - cliquez sur \"mettre à jour le code\",
+  - sauvez
+   - Cela fonctionnera pour tous les codes des composants
+ 3) Et enfin => **revenir en arrière**, restaurer une version précédente de la page
+  - cliquez, en bas de la page, sur modifiée le...
+  - cliquez sur une des versions précédentes,
+  - cliquez sur \"ré-éditer cette version archivée\",
+  - sauvez et le tour est joué.
+
 Une aide simple est aisément accessible en cliquant sur le bouton \"?\" en mode édition de la page.', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('BazaR',  now(), '{{bazar showexportbuttons=\"1\"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CartoAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"map\" markersize=\"small\" height=\"800px\" zoom=\"6\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('CommentFairePour',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Actualité\"}}
+('CommentFairePour',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
 \"\"<iframe class=\"auto-resize\" width=\"100%\" scroll=\"no\" frameborder=\"0\" src=\"https://yeswiki.net/?CommentFairePour/iframe\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('CoursUtilisationYesWiki',  now(), '======Cours sur l\'utilisation de YesWiki======
 ====Le principe \"Wiki\"====
@@ -215,7 +269,7 @@ Le propriétaire peut compléter ces colonnes par les informations suivantes, s�
 En mode édition, si on est propriétaire de la page, ou que les droits sont ouverts, on peut changer la structure et la présentation du site, en jouant avec les listes déroulantes en bas de page : Théme, Squelette, Style.
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('DerniersChangementsRSS',  now(), '{{recentchangesrss}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('DocuMentation',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Actualité\"}}
+('DocuMentation',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
 
 \"\"<iframe id=\"yeswiki-doc\" width=\"100%\" height=\"1000\" frameborder=\"0\" class=\"auto-resize\" src=\"https://yeswiki.net/?DocumentatioN/iframe\"></iframe>\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExempleAgenda',  now(), '{{nav links=\"VueActivite, VueAgenda, SaisirAgenda\" titles=\"Voir les prochaines activités, Voir l\'agenda, Proposer une activité\"}}
@@ -224,8 +278,8 @@ En mode édition, si on est propriétaire de la page, ou que les droits sont ouv
 ('ExempleAnnuaire',  now(), '======Type annuaire======
 Voici quelques possibilités autour des annuaires (à copier-coller - adapter)
 {{nav links=\"SaisirAnnuaire, AnnuaireAlpha, CartoAnnuaire, TrombiAnnuaire\" titles=\"S\'inscrire dans l\'annuaire, Annuaire alphabétique, Annuaire cartographique, Trombinoscope\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ExempleFormulaire',  now(), '======Exemples à adapter (ou à jeter)======
-=====Formulaires=====
+('ExempleFormulaire',  now(), '{{nav links=\"DocuMentation, Aide, CommentFairePour, ExempleFormulaire, ActuYeswiki\" titles=\"Documentation Yeswiki, Aide mémoire, Comment faire pour, Exemples, Actualité\"}}
+======Exemples de formulaires à adapter (ou à jeter)======
 Les formulaires qui vous sont proposés dans ce menu sont souvent demandés par les collectifs.
 Ils sont fournis pour inspiration et __sont bien sûr adaptables (ou supprimables)__ via la page BazaR.
 Vous pouvez aussi renommer-réorganiser-enlever les pages de ce menu selon vos besoins. 
@@ -234,112 +288,108 @@ Vous trouverez un formulaire permettant
  - de gérer un [[TrombiAnnuaire annuaire]] (des membres du collectif par exemple)
  - un [[VueActivite agenda]] pour présenter les activités __à venir__ ou une vue globale en calendrier
  - une [[FacetteRessource ressourcerie]] pour collecter, flitrer et partager des ressources
- - un [[VoirBlog blog]] permettant d\'afficher l\'actualité du collectif
-  
-=====Mise en page avancée===== 
-[[LookWiki Voir une page avec l\'utilisation d\'éléments graphiques avancés]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+ - un [[VoirBlog blog]] permettant d\'afficher l\'actualité du collectif', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ExempleRessource',  now(), '{{nav links=\"FacetteRessource, SaisirRessource\" titles=\"Les ressources, Déposer une ressource\"}}
 
 {{bazar voirmenu=\"0\" vue=\"saisir\" id=\"4\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ExemPles',  now(), ' - Exemples
+  - [[ExempleFormulaire Explications]]
+  - [[TrombiAnnuaire Type annuaire]]
+  - [[VueActivite Type agenda]]
+  - [[FacetteRessource Type ressourcerie]]
+  - [[VoirBlog Type blog]]
+  - [[LookWiki Mise en page avancée]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('FacetteRessource',  now(), '{{nav links=\"FacetteRessource, SaisirRessource\" titles=\"Les ressources, Déposer une ressource\"}}
 
 {{bazarliste id=\"4\" template=\"liste_accordeon\" correspondance=\"soustitre=bf_description\" groups=\"checkboxListeType\" titles=\"Tri par type\" voirmenu=\"0\" vue=\"recherche\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererConfig',  now(), '{{button class=\"btn-warning btn-xs modalbox\" icon=\"fas fa-star\" link=\"ActuYeswiki\" text=\"Actu de YesWiki\" title=\"Actu de YesWiki\" }}
-
-
-{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
+('GererConfig',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
 {{editconfig}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererDroits',  now(), '{{button class=\"btn-warning btn-xs modalbox\" icon=\"fas fa-star\" link=\"ActuYeswiki\" text=\"Actu de YesWiki\" title=\"Actu de YesWiki\" }}
-
-
-{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
+('GererDroits',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
 ===Gérer les droits des pages===
 {{gererdroits}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererMisesAJour',  now(), '{{button class=\"btn-warning btn-xs modalbox\" icon=\"fas fa-star\" link=\"ActuYeswiki\" text=\"Actu de YesWiki\" title=\"Actu de YesWiki\" }}
-
-
-{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
+('GererMisesAJour',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
 ===Mises à jour / extensions===
 {{update}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSite',  now(), '{{button class=\"btn-warning btn-xs modalbox\" icon=\"fas fa-star\" link=\"ActuYeswiki\" text=\"Actu de YesWiki\" title=\"Actu de YesWiki\" }}
+('GererMotsClef',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
-
-{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
-
-===Gérer les menus et pages spéciales de ce wiki===
- - [[PageMenuHaut Éditer menu horizontal d\'en haut]]
- - [[PageTitre/edit Éditer le titre]]
- - [[PageRapideHaut/edit Éditer le menu roue crantée]]
- - [[PageHeader/edit Éditer le bandeau]]
- - [[PageFooter/edit Éditer le footer]]
- - [[PageMenu/edit Éditer le menu vertical (apparaissant sur les thèmes 2 colonnes ou plus)]]
- - [[ReglesDeFormatage/edit Éditer le mémo de formatage (bouton \"?\" dans la barre d\'édition )]]
-------
 ===Gestion des mots clés ===
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererThemes',  now(), '{{button class=\"btn-warning btn-xs modalbox\" icon=\"fas fa-star\" link=\"ActuYeswiki\" text=\"Actu de YesWiki\" title=\"Actu de YesWiki\" }}
+('GererSite',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
+{{attach file=\"modele.jpg\" desc=\"image Dessin_sans_titre.jpg (66.9kB)\" size=\"big\" class=\"right\"}}===Gérer les menus et pages spéciales de ce wiki===
+ - [[PageTitre/edit Éditer la Page Titre]]
+ - [[PageHeader/edit Éditer la Page Header]]
+ - [[PageMenuHaut/edit Éditer la Page Menu Haut]]
+ - [[PageFooter/edit Éditer la Page Footer]]
+==Et éventuellement==
+ - [[PageRapideHaut/edit Éditer la Page Rapide Haut]]
+==Mais aussi==
+ - [[PageMenu/edit Éditer le menu vertical]]
+ - [[ReglesDeFormatage/edit Éditer le mémo de formatage]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('GererThemes',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
-{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
+{{button class=\"btn-secondary-1 btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
+{{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
 
-{{button class="btn-secondary-1 btn-block" link="LookWiki" text="Personnaliser le thème de ce wiki (couleurs, police...)" }} 
-{{button class="btn-default btn-block" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot" }}
-------
-===(Avancé) Gérer le thème page par page===
+===Gérer les thèmes des pages===
 {{gererthemes}}
 -----
 ===Gérer le thème par défaut du wiki===
 {{setwikidefaulttheme}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererUtilisateurs',  now(), '{{button class=\"btn-warning btn-xs modalbox\" icon=\"fas fa-star\" link=\"ActuYeswiki\" text=\"Actu de YesWiki\" title=\"Actu de YesWiki\" }}
-
-
-{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Fichier de configuration, Mises à jour / extensions\"}}
+('GererUtilisateurs',  now(), '{{nav links=\"GererSite, GererDroits, GererThemes, GererUtilisateurs, GererMotsClef, GererConfig, GererMisesAJour\" titles=\"Gestion du site, Droits d\'accès, Look, Utilisateurs et groupes, Mots clefs, Fichier de conf, Mises à jour / extensions\"}}
 
 ===Gérer les groupes d\'utilisateurs===
 {{editgroups}}
 
 ===Gérer les utilisateurs===
 {{userstable}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('LookWiki',  now(), '======Personnaliser le look de votre wiki======
+('LookWiki',  now(), '======Tester les thèmes \"\"YesWiki\"\"======
 {{grid}}
-{{col size=\"6\"}}
-	Cette page à pour but d\'afficher des composants YesWiki afin que vous puissiez voir en direct
-    ce à quoi cela ressemble lorsque vous modifiez les paramètres dans l encadré à droite
-    
-    [[{{rootPage}} Retour a la page d\'accueil]].
+{{col size=\"4\"}}
+=====Titre 1=====
+	Bla blabla blablabla bla [[PagePrincipale Retour a la page d\'accueil]].
 
-	Etiam a {{label class=\"label-primary\"}}lorem ipsum{{end elem=\"label\"}} sagittis justo. 
-    Aliquam vel egestas eros. Quisque eget dolor ornare, accumsan sem et, rhoncus diam. 
-    Morbi sodales neque vitae lorem ultrices, sit amet sollicitudin lectus tempor.
-    ** Donec quis mauris quis sem blandit faucibus** ut elementum lacus. //Orci varius natoque// penatibus 
-    et __magnis dis parturient__ montes, nascetur ridiculus mus. Interdum et malesuada 
-    @@fames ac ante ipsum primis @@in faucibus. Suspendisse vitae egestas nisi.
+	Etiam a {{label class=\"label-primary\"}}pri_ffr{{end elem=\"label\"}} sagittis justo. Aliquam vel egestas eros. Quisque eget dolor ornare, accumsan sem et, rhoncus diam. Morbi sodales neque vitae lorem ultrices, sit amet sollicitudin lectus tempor.** Donec quis mauris quis sem blandit faucibus** ut elementum lacus. //Orci varius natoque// penatibus et __magnis dis parturient__ montes, nascetur ridiculus mus. Interdum et malesuada @@fames ac ante ipsum primis @@in faucibus. Suspendisse vitae egestas nisi. **//__Pellentesque faucibus a elit vitae luctus__//**. Mauris condimentum vitae diam ut egestas. Etiam sed dui et lorem luctus pulvinar vel nec diam. 
 {{end elem=\"col\"}}
-{{col size=\"6\"}}
-    {{section class=\"well\" nocontainer=\"1\"}}
-        ====Choisir le thème, styles et squelettes associés====
-        {{themeselector}}
-    {{end elem=\"section\"}}
+{{col size=\"4\"}}
+	=====Titre 2=====
+	Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue magna at dapibus facilisis. Suspendisse nisi ante, vehicula vel dolor non, laoreet eleifend ante. Aenean augue elit, cursus nec urna et, tincidunt commodo augue. Maecenas sed ex rhoncus, vehicula mauris sit amet, laoreet libero. Aliquam egestas ac risus sit amet cursus. Pellentesque vestibulum elit in dolor aliquam, quis molestie risus fermentum. Etiam non sem accumsan, faucibus est in, hendrerit nisi. Vivamus auctor in dui et egestas. Duis non ante sit amet risus euismod pulvinar. Suspendisse potenti. Duis sit amet malesuada lectus. 
+{{end elem=\"col\"}}
+{{col size=\"4\"}}
+{{section class=\"well\" nocontainer=\"1\"}}
+	====Choisir le thème, styles et squelettes associés====
+	{{themeselector}}
+{{end elem=\"section\"}}
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}
 
 {{section class=\"full-width white\" bgcolor=\"var(--secondary-color-1)\" height=\"250\"}}
+	======Insertion de pad ou de vidéo======
+	Il est possible d\'incruster dans son wiki des pads, des vidéos, des lignes du temps...
+{{end elem=\"section\"}}
+
+{{grid}}
+{{col size=\"6\"}}
+=====Incrustation d\'un pad=====
+\"\"<iframe name=\"embed_readwrite\" src=\"https://pad.coop.tools/p/pad-wikidebase?showControls=true&showChat=true&showLineNumbers=true&useMonospaceFont=false\" width=100% height=400></iframe>\"\"
+{{end elem=\"col\"}}
+{{col size=\"6\"}}
+=====Incrustation d\'une vidéo=====
+\"\"<iframe width=\"100%\" height=\"315\" sandbox=\"allow-same-origin allow-scripts\" src=\"https://video.coop.tools/videos/embed/e5add04e-d195-41af-8a60-095f8b215fa1\" frameborder=\"0\" allowfullscreen></iframe>\"\"
+Ceci est aussi possible à partir des plateformes youtbe/vimeo/dailymotion...
+{{end elem=\"col\"}}
+
+{{end elem=\"grid\"}}
+
+
+{{section class=\"full-width white\" bgcolor=\"var(--secondary-color-2)\" height=\"250\"}}
 	======Composants graphiques======
 	Des petits composants pour rendre vos pages plus conviviales 
 	Ceci en est déjà un en vous permettant de créer une bande de couleur sur la largeur de la page ;-)
 {{end elem=\"section\"}}
-
-====Boutons====
-{{button link=\"{{rootPage}}\" class=\"btn btn-primary\" text=\"btn-primary\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}
-{{button link=\"{{rootPage}}\" class=\"btn btn-default\" text=\"btn-default\"}}
-
 
 ====Etiquettes====
 {{label}}Label-default{{end elem=\"label\"}}
@@ -350,7 +400,6 @@ Vous trouverez un formulaire permettant
 {{label class=\"label-info\"}}label-info{{end elem=\"label\"}}  
 {{label class=\"label-warning\"}}label-warning{{end elem=\"label\"}}  
 {{label class=\"label-danger\"}}label-danger{{end elem=\"label\"}}
-
 
 ====Encadrés====
 {{panel title=\"Titre default\" type=\"collapsed\"}}
@@ -378,7 +427,14 @@ Contenu panel-warning
 Contenu panel-danger
 {{end elem=\"panel\"}}
 {{end elem=\"accordion\"}}
-', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+
+====Boutons====
+{{button link=\"PagePrincipale\" class=\"btn btn-default\" text=\"btn-default\"}}
+{{button link=\"PagePrincipale\" class=\"btn btn-primary\" text=\"btn-primary\"}}
+{{button link=\"PagePrincipale\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
+{{button link=\"PagePrincipale\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
+{{button link=\"PagePrincipale\" class=\"btn btn-success\" text=\"btn-success\"}}
+{{button link=\"PagePrincipale\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageColonneDroite',  now(), 'Double cliquer sur ce texte pour éditer cette colonne.
@@ -465,22 +521,21 @@ Pour en savoir plus, voyez la documentation sur https://yeswiki.net/?Documentati
 ('PageFooter',  now(), '{{section class=\"text-center\"}}
 {{yeswikiversion}}
 {{end elem=\"section\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau.png\" height=\"250\" }}
+('PageHeader',  now(), '{{section bgcolor=\"var(--neutral-color)\" class=\"white text-center cover\" file=\"bandeau1.png\" height=\"250\" }}
 ======Description de mon wiki======
-Double cliquer ici pour changer le texte et l\'image de fond.
+Rendez-vous dans la roue crantée / gestion du site pour modifier ce bandeau
 
 {{end elem=\"section\"}}
-
 {#INFO CACHÉE pour vous aider : 
 Pour changer l\'image du bandeau : renommer bandeau.jpg par le nom de votre nouvelle image. Sauver, puis charger votre image préalablement préparée
 (cette image devra avoir comme taille 1920 X 300 et 90 dpi de résolution)
 
-Aplat de couleur : supprimer file=\"bandeau.jpg\", cliquez sur section, cliquez sur le petit crayon dans la marge et laissez vous guidez. vous pourrez 
+Aplat de couleur : supprimer file=\"bandeau.jpg\", cliquez sur section, cliquez sur le petit crayon dans la marge et laissez vous guider. vous pourrez 
  - changer la tonalité du texte
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageLogin',  now(), '{{login}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenu',  now(), ' - [[{{rootPage}} Accueil]]
+('PageMenu',  now(), ' - [[PagePrincipale Accueil]]
  - [[LookWiki Test du look]]
 
 ---- 
@@ -498,61 +553,39 @@ Double cliquer sur ce texte pour éditer cette colonne.
 
 
 \"\"\"\"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenuHaut',  now(), ' - [[BacASable Bac à sable]]
- - Exemples
-  - [[ExempleFormulaire Explications]]
+('PageMenuExemple',  now(), '  - [[ExempleFormulaire Exemples de formulaires]]
   - [[TrombiAnnuaire Type annuaire]]
   - [[VueActivite Type agenda]]
   - [[FacetteRessource Type ressourcerie]]
-  - [[VoirBlog Type blog]]
-  - [[LookWiki Mise en page avancée]]
- - [[DocuMentation Aide]]
+  - [[VoirBlog Type blog]]', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('PageMenuHaut',  now(), ' - [[BacASable Bac à sable]]
+ - Menu exemple
+  - [[Pagetest1 Sous menu 1]]
+  - [[PageTest2 Sous menu 2]]
 
-{#INFO CACHÉE pour vous aider
-Ce menu est une liste à puces constituées de liens.
- - les puces de premier niveau constituent les onglets de ce menu
- - les sous-puces constituent les sous-menus 
- - il n\'est pas conseillé de créer un lien pour une puce qui contiendra un sous-menu. (voir ci-dessus)
+{#INFO CACHÉE
+Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu du haut. Pour faire évoluer le menu, inspirez vous du menu exemple.
 #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('{{rootPage}}',  now(), '======Félicitations, votre wiki est installé ! ======{{grid}}
-{{col size=\"6\"}}
-===\"\"YesWiki\"\" : un outil convivial potentiellement collaboratif===
-Voici quelques éléments afin de bien démarrer de vous approprier ce nouvel outil.
- - **Le double-clic est votre ami !** Si vous voulez modifier une page de votre Yeswiki, double-cliquez simplement dessus ou cliquez sur \"éditer la page\" en bas à gauche
-  - Si vous voulez vous exercer sereinement, vous pouvez essayer de modifier la page [[BacASable bac à sable]]. 
-  - Vous pouvez également essayer de modifier de la même manière la page sur laquelle vous êtes actuellement. 
-  - Vous souhaitez **modifier le menu horizontal général** ? Double-cliquez gauche sur ce menu (en dehors du texte), et vous aurez accès à l\'édition de ce menu. Utilisez les tirets (\"-\") pour créer de nouvelles entrées.
-  - Et **il y a une page de la doc \"\"YesWiki\"\" à lire absolument**, celle qui vous permet de [[https://yeswiki.net/?HistoriqueRevisions restaurer une page modifiée en cas d\'erreur ou de problème]]. Comme ça, aucun risques !!!
- - Le menu d\'administration en haut à droite, accessible depuis la roue crantée (clic gauche) vous permettra :
-  - de [[WikiAdmin gérer le site (pages importantes, comptes et groupes utilisateurs, etc.)]],
-  - d’administrer la [[BazaR base de données Bazar]],
-  - de consulter les [[TableauDeBord dernières modifications sur le wiki]].
+('PagePrincipale',  now(), '======Félicitations, votre wiki est installé !======
+{{include page=\"AccueilYeswiki\"}}
 
-{{end elem=\"col\"}}
-{{col size=\"6\"}}
-===\"\"YesWiki\"\" : une communauté===
-En plus d\'être un logiciel de création de wikis, \"\"YesWiki\"\" est aujourd\'hui maintenu et amélioré par une communauté de professionnels et d\'utilisateurs issus d\'horizons différents qui prend du plaisir à partager ses rêves, ses créations et ses développements. Nous serons ravi·e·s de vous y accueillir !
-
-Pour nous rejoindre ou avoir une vision sur les chantiers actuellement en cours, voici notre [[https://yeswiki.net/?LaGareCentrale espace central]].
-
-Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l\'outil et de ses améliorations, **abonnez-vous à notre newsletter** 
-\"\"<script type=\"text/javascript\" src=\"//mautic.coop.tools/form/generate.js?id=1\"></script>\"\"
-
-Yeswiki repose sur le bénévolat et le don. **[[https://www.helloasso.com/associations/yeswiki/formulaires/1 En contribuant (même juste un peu)]]** vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci
-
-{{end elem=\"col\"}}
-{{end elem=\"grid\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{#Et hop, effacez tout et belle aventure#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageRapideHaut',  now(), '{{moteurrecherche template=\"moteurrecherche_button.tpl.html\"}}
 {{buttondropdown icon=\"cog\" caret=\"0\"}}
  - {{login template=\"modal.tpl.html\" nobtn=\"1\"}}
  - ------
- - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Aide, doc, actu\" link=\"AidE\"}}
+ - {{button nobtn=\"1\" icon=\"fa fa-question\" text=\"Aide, démo, actu\" link=\"DocuMentation\"}}
+ - {{button nobtn=\"1\" icon=\"fas fa-yin-yang\" text=\"Présentation YesWiki\" link=\"AccueilYeswiki\"}}
  - ------
  - {{button nobtn=\"1\" icon=\"fa fa-wrench\" text=\"Gestion du site\" link=\"GererSite\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-tachometer-alt\" text=\"Tableau de bord\" link=\"TableauDeBord\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Base de données\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageTitre',  now(), '{{configuration param=\"wakka_name\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('Pagetest1',  now(), '======Sous menu 1======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('PageTest2',  now(), '======Sous menu 2======', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('PageTitre',  now(), '{{configuration param=\"wakka_name\" }}
+
+{#Astuce, vous pouvez remplacer le code précédent par ce que vous souhaitez afficher comme titre en haut à gauche #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ParametresUtilisateur',  now(), '{{UserSettings}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('RechercheTexte',  now(), '{{newtextsearch}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('ReglesDeFormatage',  now(), 'Cette page est modifiable en allant sur ReglesDeFormatage
@@ -627,7 +660,7 @@ Texte colonne 3
 %%<a href=\"#paragraphe1\">Aller vers le paragraphe cible</a>%% Permet de créer le lien qui ira vers votre paragraphe
 %%<div id=\"paragraphe1\"></div>%% Cette partie sera à placer juste au dessus de la partie cible
 ====Vous trouverez beaucoup d\'autres astuces dans====
-\"\"<a href=\"https://yeswiki.net/?CommentFairePour\" target=\"_blank\" class=\"btn btn-primary btn-xs\">Comment faire pour...</a>\"\"
+**Comment faire pour**... Dans Roue crantée / Aide, démo, actu
 {{end elem=\"col\"}}
 {{end elem=\"grid\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('SaisirAgenda',  now(), '{{nav links=\"VueActivite, VueAgenda, SaisirAgenda\" titles=\"Voir les prochaines activités, Voir l\'agenda, Proposer une activité\"}}
@@ -644,17 +677,25 @@ Texte colonne 3
 {{bazar voirmenu=\"0\" vue=\"saisir\" id=\"4\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('TableauDeBord',  now(), '======Tableau de bord======
 {{mailperiod}}
+{{accordion }}
+
+{{panel title=\"Dernières modifications sur le wiki\" type=\"collapsible\" }}
+{{grid}}
+{{col size=\"6\"}}
+====12 Derniers comptes utilisateurs ====
+{{Listusers/last=\"12\"}}
+{{end elem=\"col\"}}
+{{col size=\"6\"}}
+====12 Dernières pages modifiées ====
+{{recentchanges max=\"12\"}}
+{{end elem=\"col\"}}
+{{end elem=\"grid\"}}
+{{end elem=\"panel\"}}
+{{panel title=\"Index des pages et fiches du wiki\" type=\"collapsed\" }}
 {{grid}}
 {{col size=\"4\"}}
-====Derniers comptes utilisateurs ====
-{{Listusers}}
-------
-====Dernières pages modifiées ====
-{{recentchanges}}
-------
 ==== Pages orphelines ====
 {{OrphanedPages}}
-------
 {{end elem=\"col\"}}
 {{col size=\"4\"}}
 ==== Index des fiches bazar ====
@@ -663,9 +704,10 @@ Texte colonne 3
 {{col size=\"4\"}}
 ==== Index des pages seules ====
 {{pageonlyindex}}
-------
 {{end elem=\"col\"}}
-{{end elem=\"grid\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{end elem=\"grid\"}}
+{{end elem=\"panel\"}}
+{{end elem=\"accordion\" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('TrombiAnnuaire',  now(), '{{nav links=\"TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire\" titles=\"Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S\'inscrire dans l\'annuaire\"}}
 
 {{bazarliste id=\"1\" template=\"trombinoscope\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
@@ -743,24 +785,24 @@ INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
 
 # Bazar entries
 INSERT INTO `{{prefix}}pages` (`tag`, `time`, `body`, `body_r`, `owner`, `user`, `latest`, `handler`, `comment_on`) VALUES
-('ElizabethJFeinler',  now(), '{\"bf_titre\":\"JFeinler Elizabeth\",\"bf_nom\":\"JFeinler\",\"bf_prenom\":\"Elizabeth\",\"bf_fonction\":\"informaticienne, pionni\\u00e8re de l\'internet\",\"bf_projet\":\"En 1974, j\'ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l\'ARPANET.  \",\"bf_mail\":\"\",\"bf_structure\":\"Stanford Research Institute et NASA \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\",\"geolocation\":{\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\"},\"id_typeannonce\":\"1\",\"id_fiche\":\"ElizabethJFeinler\",\"imagebf_image\":\"ElizabethJFeinler_elizabethfeinler.jpg\",\"date_creation_fiche\":\"2020-02-12 13:22:23\",\"statut_fiche\":\"1\",\"geolocation\":{\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\"},\"date_maj_fiche\":\"2021-05-24 22:07:16\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('FramasofT',  now(), '{\"bf_titre\":\"Framasoft\",\"bf_url\":\"https:\\/\\/framasoft.org\\/fr\\/\",\"checkboxListeType\":\"3\",\"bf_description\":\"Framasoft, c\\u2019est une association d\\u2019\\u00e9ducation populaire, un groupe d\\u2019ami\\u00b7es convaincu\\u00b7es qu\\u2019un monde num\\u00e9rique \\u00e9mancipateur est possible, persuad\\u00e9\\u00b7es qu\\u2019il adviendra gr\\u00e2ce \\u00e0 des actions concr\\u00e8tes sur le terrain et en ligne avec vous et pour vous !\",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"FramasofT\",\"date_creation_fiche\":\"2020-02-12 11:12:07\",\"statut_fiche\":\"1\",\"fichierfichier\":\"\",\"date_maj_fiche\":\"2020-02-12 13:12:54\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('LovelaceAda',  now(), '{\"bf_titre\":\"Lovelace Ada\",\"bf_nom\":\"Lovelace\",\"bf_prenom\":\"Ada\",\"bf_fonction\":\"Pionni\\u00e8re de la science informatique \",\"bf_projet\":\"<p>J\'ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l\'ordinateur : la machine analytique de Charles Babbage. <br><\\/p>\",\"bf_mail\":\"\",\"bf_structure\":\"Universit\\u00e9 de Cambridge \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Londres \",\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\",\"id_typeannonce\":\"1\",\"id_fiche\":\"LovelaceAda\",\"geolocation\":{\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\"},\"date_creation_fiche\":\"2021-05-25 11:00:19\",\"statut_fiche\":\"1\",\"imagebf_image\":\"AdaLovelace_ada_byron.jpg\",\"date_maj_fiche\":\"2021-05-25 11:01:13\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('UnBeauLogoPourYeswiki',  now(), '{\"bf_titre\":\"Un beau logo pour Yeswiki\",\"bf_chapeau\":\"Il fallait le rafraichir, nous l\'avons fait ! \",\"bf_description\":\"Apr\\u00e8s multiples discussions, tests et essais, un logo plus actuel a \\u00e9t\\u00e9 cr\\u00e9\\u00e9 pour Yeswiki\\r\\nNous esp\\u00e9rons que vous l\'aimerez ;-) \",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnBeauLogoPourYeswiki\",\"date_creation_fiche\":\"2020-02-12 12:16:05\",\"statut_fiche\":\"1\",\"imagebf_image\":\"yeswiki-logo.png\",\"date_maj_fiche\":\"2020-02-12 12:16:06\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('UnNouveauThemePourYeswiki',  now(), '{\"bf_titre\":\"Un nouveau th\\u00e8me pour Yeswiki\",\"bf_chapeau\":\"Margot, voil\\u00e0 le nom du nouveau th\\u00e8me qui sera distribu\\u00e9 avec la prochaine version de Yeswiki\\t\",\"bf_description\":\"Plus moderne, mieux pens\\u00e9, plus graphiqu.\\r\\nMargot permettra d\'unifier les rendus graphiques des wikis.\",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnNouveauThemePourYeswiki\",\"date_creation_fiche\":\"2020-02-12 12:17:49\",\"statut_fiche\":\"1\",\"imagebf_image\":\"\",\"date_maj_fiche\":\"2020-02-12 12:17:50\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YeswikidaY',  now(), '{\"bf_titre\":\"Yeswikiday\",\"bf_description\":\"Une journ\\u00e9e pour faire avancer le projet Yeswiki dans la bonne humeur\",\"bf_date_debut_evenement\":\"2020-04-30T09:00:00+00:00\",\"bf_date_debut_evenement_allday\":\"0\",\"bf_date_debut_evenement_hour\":\"09\",\"bf_date_debut_evenement_minutes\":\"00\",\"bf_date_fin_evenement\":\"2020-04-30T16:00:00+00:00\",\"bf_date_fin_evenement_allday\":\"0\",\"bf_date_fin_evenement_hour\":\"16\",\"bf_date_fin_evenement_minutes\":\"00\",\"bf_horaire\":\"\",\"bf_site_internet\":\"https:\\/\\/yeswiki.net\\/?DocumentatioN\",\"bf_adresse\":\"\",\"bf_code_postal\":\"7700\",\"bf_ville\":\"Mouscron\",\"bf_latitude\":\"50.7433351\",\"bf_longitude\":\"3.2139093\",\"id_typeannonce\":\"2\",\"id_fiche\":\"YeswikidaY\",\"date_creation_fiche\":\"2020-02-12 10:21:49\",\"statut_fiche\":\"1\",\"imagebf_image\":\"yeswiki-logo.png\",\"fichierfichier\":\"\",\"carte_google\":\"50.7433351|3.2139093\",\"date_maj_fiche\":\"2020-02-12 10:21:49\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YeswikiLeSiteOfficiel',  now(), '{\"bf_titre\":\"Yeswiki : le site officiel\",\"bf_url\":\"https:\\/\\/yeswiki.net\",\"checkboxListeType\":\"1\",\"bf_description\":\"Tout ce qu\'il y a \\u00e0 savoir sur Yeswiki \",\"bf_auteur\":\"\",\"data-imagebf_image\":\"\",\"filename-imagebf_image\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"YeswikiLeSiteOfficiel\",\"date_creation_fiche\":\"2020-02-12 10:10:00\",\"statut_fiche\":\"1\",\"fichierfichier\":\"\",\"date_maj_fiche\":\"2020-02-12 10:10:00\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('TesT2',  now(), '{\"bf_titre\":\"Sortie Culturelle\",\"bf_description\":\"La culture, moins on en a, plus on l\'\\u00e9tale!\",\"bf_date_debut_evenement\":\"2021-05-30T18:00:00+02:00\",\"bf_date_fin_evenement\":\"2023-05-02T20:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/www.yeswiki.net\",\"bf_adresse\":\"Avenue des Champs Elys\\u00e9es\",\"bf_code_postal\":\"75000\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\",\"id_typeannonce\":\"2\",\"id_fiche\":\"TesT2\",\"imagebf_image\":\"yeswiki-logo.png\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2021-05-24 22:54:03\",\"statut_fiche\":\"1\",\"geolocation\":{\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\"},\"date_maj_fiche\":\"2021-06-21 19:29:14\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YoupiIciCEstLeTitre',  now(), '{\"bf_titre\":\"Youpi ici c\'est le titre\",\"bf_description\":\"Un \\u00e9v\\u00e9nement autour du vin, c\'est pour cela qu\'il est \\u00e0 Bordeaux...\",\"bf_date_debut_evenement\":\"2020-01-08\",\"bf_date_fin_evenement\":\"2020-01-10\",\"bf_site_internet\":\"\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Bordeaux\",\"bf_latitude\":\"44.841225\",\"bf_longitude\":\"-0.5800364\",\"id_typeannonce\":\"2\",\"id_fiche\":\"YoupiIciCEstLeTitre\",\"date_creation_fiche\":\"2020-01-24 09:42:52\",\"statut_fiche\":\"1\",\"imagebf_image\":null,\"fichierfichier\":\"\",\"geolocation\":{\"bf_latitude\":\"44.841225\",\"bf_longitude\":\"-0.5800364\"},\"date_maj_fiche\":\"2021-06-21 19:33:56\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+('LovelaceAda',  now(), '{\"bf_titre\":\"Lovelace Ada\",\"bf_nom\":\"Lovelace\",\"bf_prenom\":\"Ada\",\"bf_fonction\":\"Pionni\\u00e8re de la science informatique \",\"bf_projet\":\"<p>J\'ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l\'ordinateur : la machine analytique de Charles Babbage. <br><\\/p>\",\"bf_mail\":\"\",\"bf_structure\":\"Universit\\u00e9 de Cambridge \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Londres \",\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\",\"id_typeannonce\":\"1\",\"id_fiche\":\"LovelaceAda\",\"geolocation\":{\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\"},\"date_creation_fiche\":\"2021-05-25 11:00:19\",\"statut_fiche\":\"1\",\"imagebf_image\":\"LovelaceAda_lovelace.png\",\"date_maj_fiche\":\"2021-05-25 11:01:13\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('UnNouveauThemePourYeswiki',  now(), '{\"bf_titre\":\"Un nouveau th\\u00e8me pour Yeswiki\",\"bf_chapeau\":\"Margot, voil\\u00e0 le nom du nouveau th\\u00e8me qui sera distribu\\u00e9 avec la prochaine version de Yeswiki\\t\",\"bf_description\":\"Plus moderne, mieux pens\\u00e9, plus graphiqu.\\r\\nMargot permettra d\'unifier les rendus graphiques des wikis.\",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnNouveauThemePourYeswiki\",\"date_creation_fiche\":\"2020-02-12 12:17:49\",\"statut_fiche\":\"1\",\"imagebf_image\":\"UnNouveauThemePourYeswiki_capture-de\\u0301cran-2020-02-12-a\\u0300-13.16.33.png\",\"date_maj_fiche\":\"2020-02-12 12:17:50\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('TesT2',  now(), '{\"bf_titre\":\"Sortie Culturelle\",\"bf_description\":\"La culture, moins on en a, plus on l\'\\u00e9tale!\",\"bf_date_debut_evenement\":\"2023-05-30T18:00:00+02:00\",\"bf_date_fin_evenement\":\"2021-05-02T20:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/www.yeswiki.net\",\"bf_adresse\":\"Avenue des Champs Elys\\u00e9es\",\"bf_code_postal\":\"75000\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\",\"id_typeannonce\":\"2\",\"id_fiche\":\"TesT2\",\"imagebf_image\":\"TesT2_presence-photo.png\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2021-05-24 22:54:03\",\"statut_fiche\":\"1\",\"geolocation\":{\"bf_latitude\":\"48.865669\",\"bf_longitude\":\"2.3203067\"},\"date_maj_fiche\":\"2021-06-21 19:29:14\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('YoupiIciCEstLeTitre',  now(), '{\"bf_titre\":\"Youpi ici c\'est le titre\",\"bf_description\":\"Un \\u00e9v\\u00e9nement autour du vin, c\'est pour cela qu\'il est \\u00e0 Bordeaux...\",\"bf_date_debut_evenement\":\"2020-01-08\",\"bf_date_fin_evenement\":\"2020-01-10\",\"bf_site_internet\":\"\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Bordeaux\",\"bf_latitude\":\"44.841225\",\"bf_longitude\":\"-0.5800364\",\"id_typeannonce\":\"2\",\"id_fiche\":\"YoupiIciCEstLeTitre\",\"date_creation_fiche\":\"2020-01-24 09:42:52\",\"statut_fiche\":\"1\",\"imagebf_image\":null,\"fichierfichier\":\"\",\"geolocation\":{\"bf_latitude\":\"44.841225\",\"bf_longitude\":\"-0.5800364\"},\"date_maj_fiche\":\"2021-06-21 19:33:56\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ElizabethJFeinler',  now(), '{\"bf_titre\":\"JFeinler Elizabeth\",\"bf_nom\":\"JFeinler\",\"bf_prenom\":\"Elizabeth\",\"bf_fonction\":\"informaticienne, pionni\\u00e8re de l\'internet\",\"bf_projet\":\"En 1974, j\'ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l\'ARPANET.  \",\"bf_mail\":\"\",\"bf_structure\":\"Stanford Research Institute et NASA \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\",\"id_typeannonce\":\"1\",\"id_fiche\":\"ElizabethJFeinler\",\"imagebf_image\":\"ElizabethJFeinler_elizabethfeinler-2011.jpg\",\"geolocation\":{\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\"},\"date_creation_fiche\":\"2021-05-24 22:07:17\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2021-08-06 10:31:00\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('YeswikidaY',  now(), '{\"bf_titre\":\"Yeswikiday\",\"bf_description\":\"Une journ\\u00e9e pour faire avancer le projet Yeswiki dans la bonne humeur\",\"bf_date_debut_evenement\":\"2020-04-30T09:00:00+02:00\",\"bf_date_fin_evenement\":\"2020-04-30T16:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/yeswiki.net\\/?DocumentatioN\",\"bf_adresse\":\"\",\"bf_code_postal\":\"7700\",\"bf_ville\":\"Mouscron\",\"bf_latitude\":\"50.7433351\",\"bf_longitude\":\"3.2139093\",\"id_typeannonce\":\"2\",\"id_fiche\":\"YeswikidaY\",\"imagebf_image\":\"YeswikidaY_yeswiki-logo.png\",\"fichierfichier\":\"\",\"geolocation\":{\"bf_latitude\":\"50.7433351\",\"bf_longitude\":\"3.2139093\"},\"date_creation_fiche\":\"2020-02-12 11:21:49\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2021-08-06 10:34:29\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('UnBeauLogoPourYeswiki',  now(), '{\"bf_titre\":\"Un beau logo pour Yeswiki\",\"bf_chapeau\":\"Il fallait le rafraichir, nous l\'avons fait ! \",\"bf_description\":\"Apr\\u00e8s multiples discussions, tests et essais, un logo plus actuel a \\u00e9t\\u00e9 cr\\u00e9\\u00e9 pour Yeswiki\\r\\nNous esp\\u00e9rons que vous l\'aimerez ;-) \",\"id_typeannonce\":\"3\",\"id_fiche\":\"UnBeauLogoPourYeswiki\",\"date_creation_fiche\":\"2020-02-12 13:16:06\",\"statut_fiche\":\"1\",\"imagebf_image\":\"UnBeauLogoPourYeswiki_yeswiki-logo.png\",\"date_maj_fiche\":\"2021-09-05 13:23:52\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('FramasofT',  now(), '{\"bf_titre\":\"Framasoft\",\"bf_url\":\"https:\\/\\/framasoft.org\\/fr\\/\",\"bf_description\":\"Framasoft, c\\u2019est une association d\\u2019\\u00e9ducation populaire, un groupe d\\u2019ami\\u00b7es convaincu\\u00b7es qu\\u2019un monde num\\u00e9rique \\u00e9mancipateur est possible, persuad\\u00e9\\u00b7es qu\\u2019il adviendra gr\\u00e2ce \\u00e0 des actions concr\\u00e8tes sur le terrain et en ligne avec vous et pour vous !\",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"FramasofT\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2020-02-12 14:12:58\",\"statut_fiche\":\"1\",\"checkboxListeType\":\"3\",\"imagebf_image\":null,\"date_maj_fiche\":\"2021-09-07 12:07:38\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('YeswikiLeSiteOfficiel',  now(), '{\"bf_titre\":\"Yeswiki : le site officiel\",\"bf_url\":\"https:\\/\\/yeswiki.net\",\"bf_description\":\"Tout ce qu\'il y a \\u00e0 savoir sur Yeswiki \",\"bf_auteur\":\"\",\"id_typeannonce\":\"4\",\"id_fiche\":\"YeswikiLeSiteOfficiel\",\"fichierfichier\":\"\",\"date_creation_fiche\":\"2020-02-12 11:10:01\",\"statut_fiche\":\"1\",\"checkboxListeType\":\"1\",\"imagebf_image\":null,\"date_maj_fiche\":\"2021-09-07 12:10:10\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
 INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
-('ElizabethJFeinler', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('FramasofT', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('LovelaceAda', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('UnBeauLogoPourYeswiki', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('UnNouveauThemePourYeswiki', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('YeswikidaY', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('YeswikiLeSiteOfficiel', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('TesT2', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
-('YoupiIciCEstLeTitre', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar');
+('YoupiIciCEstLeTitre', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('ElizabethJFeinler', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('YeswikidaY', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('UnBeauLogoPourYeswiki', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('FramasofT', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
+('YeswikiLeSiteOfficiel', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar');
 # end Bazar entries
 
