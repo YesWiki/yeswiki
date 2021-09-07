@@ -144,6 +144,18 @@ actions:
 #        advanced: true
 #        label: "Requête SQL (avancé)"
 #        type: text
+      datefilter:
+        label: _t(AB_bazar_commons2_filter_on_date)
+        type: list
+        advanced: true
+        hint: _t(AB_bazar_commons2_filter_index)
+        options:
+          futur: _t(AB_bazar_commons2_filter_on_date_future)
+          past: _t(AB_bazar_commons2_filter_on_date_past)
+          today: _t(AB_bazar_commons2_filter_on_date_today)
+          '>-1M': _t(AB_bazar_commons2_filter_on_date_for_one_month)
+          '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
+          '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
       facettes:
         type: facette
         btn-label-add: Ajouter Une Facette
@@ -189,18 +201,6 @@ actions:
         checkedvalue: 1
         uncheckedvalue: 0
         showif: facettes
-      datefilter:
-        label: _t(AB_bazar_commons2_filter_on_date)
-        type: list
-        advanced: true
-        hint: _t(AB_bazar_commons2_filter_index)
-        options:
-          futur: _t(AB_bazar_commons2_filter_on_date_future)
-          past: _t(AB_bazar_commons2_filter_on_date_past)
-          today: _t(AB_bazar_commons2_filter_on_date_today)
-          '>-1M': _t(AB_bazar_commons2_filter_on_date_for_one_month)
-          '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
-          '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
 
   # -----------------
   # Liste des Actions
