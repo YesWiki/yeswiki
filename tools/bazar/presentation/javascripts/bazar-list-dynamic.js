@@ -8,7 +8,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     components: { Panel },
     data: {
       mounted: false,
-      entries: [],
+      ready: false, // when ajax data have been retrieved
       params: {},
       filters: [],
       searchedEntries: [],
@@ -184,6 +184,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             return entry
           })
           this.calculateBaseEntries()
+          this.ready = true
         }, 0)  
       })
       

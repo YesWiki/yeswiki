@@ -3,7 +3,7 @@
 {% set necessary_fields = ['bf_titre', 'soustitre'] %}
 
 {% block display_entries %}
-  <div class="panel-group no-dblclick">
+  <div class="panel-group no-dblclick" v-if="ready">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
     </div>
