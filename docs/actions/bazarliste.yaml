@@ -263,7 +263,7 @@ actions:
         showIf:
           dynamic: true
         options:
-          sidenav: Dans une barre latérale
+          sidebar: Dans une barre latérale
           modal: Dans une popup          
       width:
         advanced: true

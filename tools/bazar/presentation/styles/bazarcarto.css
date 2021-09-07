@@ -87,7 +87,10 @@
   position: relative;
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+}
+.facette-container.dynamic[data-filter-align="right"] .bazar-map-container {
+  flex-direction: row-reverse;
 }
 
 /* MARKER */
@@ -147,11 +150,19 @@
 /* ENTRY PANEL */
 .bazar-map-container .entry-container {
   position: relative;
+  transition: all .3s;
   min-height: 50%;
+  min-width: 400px;
   background-color: var(--neutral-light-color);
   padding: 1rem;
   overflow: auto;
   border-bottom: 5px solid #f1f1f1;
 }
-
-
+.bazar-map-container.small-width .entry-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}

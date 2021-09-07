@@ -71,12 +71,14 @@ if (document.querySelector('.bazar-map')) {
           else
             this.$root.getEntryRender(this.selectedEntry)
           
-          this.selectedEntry.marker._icon.classList.add('selected')
+          this.$nextTick(function() {
+            this.selectedEntry.marker._icon.classList.add('selected')
+          })
         }
         this.$nextTick(function() {
-          this.$refs.map.mapObject.invalidateSize(true)
-          if (this.selectedEntry) 
-            this.center = [this.selectedEntry.bf_latitude, this.selectedEntry.bf_longitude]
+          // this.$refs.map.mapObject.invalidateSize(true)
+          // if (this.selectedEntry) 
+          //   this.center = [this.selectedEntry.bf_latitude, this.selectedEntry.bf_longitude]
         })
       },
       params() {
@@ -95,7 +97,8 @@ if (document.querySelector('.bazar-map')) {
       }
     },
     template: `
-    <div class="bazar-map-container" :style="{height: params.height}">
+    <div class="bazar-map-container" :style="{height: params.height}"
+         :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
       <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
              @update:center="updateBounds()" @ready="updateBounds()"
              @click="selectedEntry = null">
