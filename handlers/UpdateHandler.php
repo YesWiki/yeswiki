@@ -151,6 +151,8 @@ class UpdateHandler extends YesWikiHandler
                     if (preg_match('/'.$page.'\',\s*(?:now\(\))?\s*,\s*\'([\S\s]*)\',\s*\'\'\s*,\s*\'{{WikiName}}\',\s*\'{{WikiName}}\', \'(?:Y|N)\', \'page\', \'\'/U', $defaultSQL, $matches)) {
                         $pageContent = str_replace('\\"', '"', $matches[1]);
                         $pageContent = str_replace('\\\'', '\'', $pageContent);
+                        $pageContent = str_replace('{{rootPage}}', $this->params->get('root_page'), $pageContent);
+                        $pageContent = str_replace('{{url}}', $this->params->get('base_url'), $pageContent);
                         if ($this->getService(PageManager::class)->save($page, $pageContent) !== 0) {
                             $output .= (!empty($output) ? ', ':'').$page;
                         }

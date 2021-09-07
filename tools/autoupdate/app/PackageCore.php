@@ -18,7 +18,15 @@ class PackageCore extends Package
     public const FILES_TO_ADD_TO_IGNORED_FOLDERS = [
         'files/README.md',
         'files/AdaLovelace_ada_byron.jpg',
+        'files/LovelaceAda_lovelace.png',
         'files/ElizabethJFeinler_elizabethfeinler.jpg',
+        'files/ElizabethJFeinler_elizabethfeinler-2011.jpg',
+        'files/TesT2_presence-photo.png',
+        'files/UnBeauLogoPourYeswiki_yeswiki-logo.png',
+        'files/UnNouveauThemePourYeswiki_capture-décran-2020-02-12-à-13.16.33.png',
+        'files/YeswikidaY_yeswiki-logo.png',
+        'files/GererSite_modele_19880101000000_23001231235959.jpg',
+        'files/PageHeader_bandeau1_19880101000000_23001231235959.png',
         'files/yeswiki-logo.png',
         'themes/README.md',
         'templates/README.md',
@@ -77,14 +85,13 @@ class PackageCore extends Package
             }
             closedir($res);
             foreach (self::FILES_TO_ADD_TO_IGNORED_FOLDERS as $file) {
-                if (is_file($extractionPath .'/'. $file) or is_dir($extractionPath .'/'. $file)) {
-                    $this->copy($extractionPath . '/' . $file, $desPath . '/' . $file);
+                if (is_file($this->extractionPath .'/'. $file) or is_dir($this->extractionPath .'/'. $file)) {
+                    $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
                 }
             }
             foreach (self::FILES_TO_UPDATE_TO_IGNORED_FOLDERS as $file) {
-                $this->copy($extractionPath . '/' . $file, $desPath . '/' . $file);
+                $this->copy($this->extractionPath . '/' . $file, $desPath . '/' . $file);
             }
-            closedir($res);
         }
         return true;
     }
