@@ -334,6 +334,8 @@ Vous trouverez un formulaire permettant
 {{button class=\"btn-secondary-1 btn-block\" link=\"LookWiki\" text=\"Personnaliser le thème de ce wiki (couleurs, police...)\" }}
 {{button class=\"btn-default btn-block\" link=\"PageCss\" text=\"Ajouter du code CSS (zone sensible)\" title=\"Cette page ne peut contenir QUE du Css / voir la doc sur https://yeswiki.net/?DocumentationThemeMargot\" }}
 
+
+
 ===Gérer les thèmes des pages===
 {{gererthemes}}
 -----
@@ -350,7 +352,7 @@ Vous trouverez un formulaire permettant
 {{grid}}
 {{col size=\"4\"}}
 =====Titre 1=====
-	Bla blabla blablabla bla [[PagePrincipale Retour a la page d\'accueil]].
+	Bla blabla blablabla bla [[{{rootPage}} Retour a la page d\'accueil]].
 
 	Etiam a {{label class=\"label-primary\"}}pri_ffr{{end elem=\"label\"}} sagittis justo. Aliquam vel egestas eros. Quisque eget dolor ornare, accumsan sem et, rhoncus diam. Morbi sodales neque vitae lorem ultrices, sit amet sollicitudin lectus tempor.** Donec quis mauris quis sem blandit faucibus** ut elementum lacus. //Orci varius natoque// penatibus et __magnis dis parturient__ montes, nascetur ridiculus mus. Interdum et malesuada @@fames ac ante ipsum primis @@in faucibus. Suspendisse vitae egestas nisi. **//__Pellentesque faucibus a elit vitae luctus__//**. Mauris condimentum vitae diam ut egestas. Etiam sed dui et lorem luctus pulvinar vel nec diam. 
 {{end elem=\"col\"}}
@@ -429,12 +431,12 @@ Contenu panel-danger
 {{end elem=\"accordion\"}}
 
 ====Boutons====
-{{button link=\"PagePrincipale\" class=\"btn btn-default\" text=\"btn-default\"}}
-{{button link=\"PagePrincipale\" class=\"btn btn-primary\" text=\"btn-primary\"}}
-{{button link=\"PagePrincipale\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
-{{button link=\"PagePrincipale\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
-{{button link=\"PagePrincipale\" class=\"btn btn-success\" text=\"btn-success\"}}
-{{button link=\"PagePrincipale\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{button link=\"{{rootPage}}\" class=\"btn btn-default\" text=\"btn-default\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-primary\" text=\"btn-primary\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-1\" text=\"btn-secondary-1\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-secondary-2\" text=\"btn-secondary-2\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-success\" text=\"btn-success\"}}
+{{button link=\"{{rootPage}}\" class=\"btn btn-info\" text=\"btn-info\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MotDePassePerdu',  now(), '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageColonneDroite',  now(), 'Double cliquer sur ce texte pour éditer cette colonne.
@@ -535,7 +537,7 @@ Aplat de couleur : supprimer file=\"bandeau.jpg\", cliquez sur section, cliquez 
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageLogin',  now(), '{{login}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenu',  now(), ' - [[PagePrincipale Accueil]]
+('PageMenu',  now(), ' - [[{{rootPage}} Accueil]]
  - [[LookWiki Test du look]]
 
 ---- 
