@@ -57,6 +57,20 @@ class TemplateEngine
                 }
             }
         }
+        
+        // Core templates
+        $corePaths = [];
+        $corePaths[] = 'custom/templates/core/';
+        // Ability to override an extension template from another extensioncore
+        foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
+            $corePaths[] = "tools/$otherExtensionName/templates/core/";
+        }
+        $corePaths[] = 'templates/';
+        foreach ($corePaths as $path) {
+            if (file_exists($path)) {
+                $this->twigLoader->addPath($path, 'core');
+            }
+        }
 
         // Set up twig
         $this->twig = new \Twig\Environment($this->twigLoader, [

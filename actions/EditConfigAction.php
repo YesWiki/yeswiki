@@ -68,7 +68,7 @@ class EditConfigAction extends YesWikiAction
                 $keysList[''] = array_merge($keysList[''] ?? [], [$key => $value]);
             }
         }
-        return $output . $this->render('@templates/edit-config.twig', [
+        return $output . $this->render('@core/edit-config.twig', [
             'SAVE_NAME' => self::SAVE_NAME,
             'keysList' => $keysList,
             'placeholders' => $placeholders,

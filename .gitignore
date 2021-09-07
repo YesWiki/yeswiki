@@ -15,8 +15,6 @@ files/*
 !files/PageHeader_bandeau_20200101000000_29991231000000.png
 themes/*
 !themes/README.md
-templates/*
-!templates/README.md
 custom/*
 !custom/.gitkeep
 
