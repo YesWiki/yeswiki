@@ -84,6 +84,8 @@ class BazarCartoAction extends YesWikiAction
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
             //template - default value map
             'template' => $arg['template'] ?? 'map.tpl.html',
+
+            'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
         ]);
     }
 

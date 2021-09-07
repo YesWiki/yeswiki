@@ -66,7 +66,11 @@ if (document.querySelector('.bazar-map')) {
       selectedEntry: function (newVal, oldVal) {
         if (oldVal) oldVal.marker._icon.classList.remove('selected')
         if (this.selectedEntry) {
-          this.$root.getEntryRender(this.selectedEntry)
+          if (this.params.entrydisplay == 'modal')
+            this.$root.openEntryModal(this.selectedEntry)
+          else
+            this.$root.getEntryRender(this.selectedEntry)
+          
           this.selectedEntry.marker._icon.classList.add('selected')
         }
         this.$nextTick(function() {
@@ -101,7 +105,9 @@ if (document.querySelector('.bazar-map')) {
         <l-marker-cluster ref="cluster" >
         </l-marker-cluster>
       </l-map>
-      <div v-if="selectedEntry" class="entry-container">
+
+      <!-- SideNav to display entry -->
+      <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>

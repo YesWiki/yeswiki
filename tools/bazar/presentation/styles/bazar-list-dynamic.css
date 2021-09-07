@@ -27,3 +27,28 @@
 .bazar-list-dynamic-container .pagination > li.disabled {
   opacity: .6;
 }
+
+/* ENTRY */
+.entry-container.modal-body {
+  padding-top: 1rem;
+}
+.entry-container .btn-close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 7rem;
+  width: 7rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+}
+.entry-container .btn-close i {
+  padding: 2rem;
+  cursor: pointer;
+  background-color: var(--neutral-light-color);
+}
+.entry-container .btn-close i:hover {
+  font-size: 1.2em;
+}

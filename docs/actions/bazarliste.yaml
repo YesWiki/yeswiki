@@ -255,6 +255,16 @@ actions:
       coordinates:
         label: Vue initiale
         type: geo
+      entrydisplay:
+        label: Lors du click, afficher la fiche
+        type: list
+        default: sidenav
+        advanced: true
+        showIf:
+          dynamic: true
+        options:
+          sidenav: Dans une barre latérale
+          modal: Dans une popup          
       width:
         advanced: true
         label: Largeur de la carte

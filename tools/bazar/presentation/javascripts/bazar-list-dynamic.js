@@ -1,20 +1,24 @@
 import Panel from './components/Panel.js'
+import ModalEntry from './components/ModalEntry.js'
 import BazarMap from './components/BazarMap.js'
 
 var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel },
+    components: { Panel, ModalEntry },
     data: {
-      mounted: false,
+      mounted: false, // when vue get initialized
       ready: false, // when ajax data have been retrieved
       params: {},
+
       filters: [],
+      entries: [],     
       searchedEntries: [],
       filteredEntries: [],
       paginatedEntries: [],
       entriesToDisplay: [],
+
       currentPage: 0,
       perPage: 10,
       search: '',
@@ -151,6 +155,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         $.getJSON(`?api/entry/${entry.id_fiche}/view`, function(data) {
           Vue.set(entry, 'html_render', data.html)
         })
+      },
+      openEntryModal(entry) {
+        this.$refs.modal.displayEntry(entry)
       },
       valueFrom(entry, field, mapping) {
         if (!entry[field]) return null

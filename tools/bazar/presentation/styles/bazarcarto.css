@@ -144,7 +144,7 @@
   background-color: #f5701e;
 }
 
-/* ENTRY */
+/* ENTRY PANEL */
 .bazar-map-container .entry-container {
   position: relative;
   min-height: 50%;
@@ -152,26 +152,6 @@
   padding: 1rem;
   overflow: auto;
   border-bottom: 5px solid #f1f1f1;
-}
-.bazar-map-container .entry-container .btn-close {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 7rem;
-  width: 7rem;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.7rem;
-  background-color: var(--neutral-light-color);
-}
-.bazar-map-container .entry-container .btn-close i {
-  padding: 2rem;
-  cursor: pointer;
-}
-.bazar-map-container .entry-container .btn-close i:hover {
-  font-size: 1.2em;
 }
 
 
