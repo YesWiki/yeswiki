@@ -1011,15 +1011,41 @@ class EntryManager
             return $formManager->getAll();
         }
     }
+
+    
+    /**
+    * remove attributes from entries only for admins !!!
+    * @param array $params
+    * @param array $attributesNames
+    * @param bool $applyOnAllRevisions
+    * return bool true if attributesNames are foond and replaced
+    */
+    public function removeAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'remove');
+    }
+
+    /**
+    * rename attributes from entries only for admins !!!
+    * @param array $params
+    * @param array $attributesNames [$oldName => $newName]
+    * @param bool $applyOnAllRevisions
+    * return bool true if attributesNames are foond and replaced
+    */
+    public function renameAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    {
+        return $this->manageAttributes($params, $attributesNames, $applyOnAllRevisions, 'rename');
+    }
       
     /**
-     * remove attributes from entries only for admins !!!
+     * manage attributes from entries only for admins !!!
      * @param array $params
      * @param array $attributesNames
      * @param bool $applyOnAllRevisions
-     * return bool true if attributesNames are fond and replaced
+     * @param string $mode
+     * return bool true if attributesNames are foond and replaced
      */
-    public function removeAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false): bool
+    private function manageAttributes($params = [], array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): bool
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -1031,6 +1057,16 @@ class EntryManager
         /* sanitize params */
         if (empty($attributesNames)) {
             throw new \Exception("\$attributesNames sould not be empty !");
+        } elseif ($mode ==='rename') {
+            if (!empty(array_filter(
+                $attributesNames,
+                function ($attributeName) {
+                    return !is_array($attributeName) || count($attributeName) !=1 || !is_scalar($attributeName[array_keys($attributeName)[0]]);
+                }
+            ))
+            ) {
+                throw new \Exception("\$attributesNames sould be array of arrays with only one elem !");
+            }
         } elseif (
             !empty(array_filter(
                 $attributesNames,
@@ -1044,7 +1080,13 @@ class EntryManager
 
         $attributesQueries = [];
         foreach ($attributesNames as $attributeName) {
-            $attributesQueries[$attributeName] = '*';
+            if ($mode ==='rename') {
+                foreach ($attributeName as $oldName => $newName) {
+                    $attributesQueries[$oldName] = '*';
+                }
+            } else {
+                $attributesQueries[$attributeName] = '*';
+            }
         }
         // add search for attributes
         $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
@@ -1058,9 +1100,19 @@ class EntryManager
 
         foreach ($pages as $page) {
             $entry = $this->decode($page['body']);
+            
             foreach ($attributesNames as $attributeName) {
-                if (isset($entry[$attributeName])) {
-                    unset($entry[$attributeName]);
+                if ($mode ==='rename') {
+                    foreach ($attributeName as $oldName => $newName) {
+                        if (isset($entry[$oldName])) {
+                            $entry[$newName] = $entry[$oldName];
+                            unset($entry[$oldName]);
+                        }
+                    }
+                } else {
+                    if (isset($entry[$attributeName])) {
+                        unset($entry[$attributeName]);
+                    }
                 }
             }
 
