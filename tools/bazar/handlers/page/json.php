@@ -206,10 +206,13 @@ if (isset($_REQUEST['demand'])) {
             echo json_encode($formval);
             break;
         case "entries":
-            if (!empty($form)){
-                $forms = explode(',',$form);
-                if (count($forms) == 1){
+            if (!empty($form)) {
+                $forms = explode(',', $form);
+                if (count($forms) == 1) {
                     header("Location: ".$this->href('', 'api/forms/'.$forms[0].'/entries'.($is_semantic ? '/json-ld' : '')));
+                    break;
+                } else {
+                    header("Location: ".$this->href('', 'api/entries'.($is_semantic ? '/json-ld' : ''), ['query' => 'id_typeannonce='.$form], false));
                     break;
                 }
             }
