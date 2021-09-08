@@ -82,7 +82,7 @@ class FormManager
         $results = [];
 
         foreach ($formsIds as $formId) {
-            if (!$this->cachedForms[$formId]) {
+            if (empty($this->cachedForms[$formId])) {
                 $this->cachedForms[$formId] = $this->getOne($formId);
             }
             $results[$formId] = $this->cachedForms[$formId];

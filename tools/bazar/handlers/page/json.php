@@ -187,24 +187,17 @@ if (isset($_REQUEST['demand'])) {
             }
             break;
         case "forms":
-            // les formulaires bazar
-            $formval = baz_valeurs_formulaire($form);
-            // si un seul formulaire, on cree un tableau à une entrée
-            if (!empty($form)) {
-                $formval = array($formval['bn_id_nature'] => $formval);
+            if (is_array($form) && count($form) > 0) {
+                header("Location: ".$this->href('', 'api/forms', ['formId' => implode(',', $form)], false));
+                break;
+            } elseif (strval($form) === strval(intval($form))) {
+                header("Location: ".$this->href('', 'api/forms/'.strval($form)));
+                break;
+            } else {
+                header("Location: ".$this->href('', 'api/forms'));
+                break;
             }
-            if (!function_exists('sortByLabel')) {
-                function sortByLabel($a, $b)
-                {
-                    return $a['bn_label_nature'] < $b['bn_label_nature'];
-                }
-            }
-            if ($formval) {
-                usort($formval, 'sortByLabel');
-                $formval = _convert($formval, 'UTF-8');
-            }
-            echo json_encode($formval);
-            break;
+            // no break
         case "entries":
             if (!empty($form)) {
                 $forms = explode(',', $form);
@@ -219,20 +212,7 @@ if (isset($_REQUEST['demand'])) {
             header("Location: ".$this->href('', 'api/entries'.($is_semantic ? '/json-ld' : '')));
             break;
         case "pages":
-            // recuperation des pages wikis
-            $sql = 'SELECT * FROM '.$this->GetConfigValue('table_prefix').'pages';
-            $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
-            $sql .= ' AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
-            $sql .= ' ORDER BY tag ASC';
-            $pages = _convert($this->LoadAll($sql), 'ISO-8859-15');
-            $pagesindex = array();
-            foreach ($pages as $page) {
-                if ($this->HasAccess('read', $page["tag"])) {
-                    $pagesindex[$page["tag"]] = $page;
-                }
-            }
-            echo json_encode($pagesindex);
-            //echo array_map('json_encode', );
+            header("Location: ".$this->href('', 'api/pages'));
             break;
         case "comments":
             // les commentaires wiki
