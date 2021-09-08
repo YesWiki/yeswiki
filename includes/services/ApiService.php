@@ -23,7 +23,7 @@ class ApiService
         $bearerToken = $this->getBearerToken();
         // connect user from api_allowed_keys (format 'userName' => 'key')
         // to be admin, the userName should exist and be in @admins group
-        if ($bearerToken){
+        if ($bearerToken) {
             $this->connectBearer($bearerToken);
         }
 
@@ -108,23 +108,29 @@ class ApiService
      */
     private function connectBearer(?string $bearerToken):bool
     {
-        if (!$bearerToken || !$this->params->has('api_allowed_keys')){
+        if (!$bearerToken || !$this->params->has('api_allowed_keys')) {
             return false;
         }
 
         $apiAllowedKeys = $this->params->get('api_allowed_keys');
-        if (!in_array($bearerToken,$apiAllowedKeys)){
+        if (!is_array($apiAllowedKeys)) {
             return false;
         }
+        $flippedApiAllowedKeys = array_flip($apiAllowedKeys);
+        if (isset($flippedApiAllowedKeys[$bearerToken])) {
+            $userName = $flippedApiAllowedKeys[$bearerToken];
+        }
+        if (!empty($userName)) {
+            // get user from key
+            $user = $this->userManager->getOneByName($userName);
+        }
 
-        $key = array_search($bearerToken,$apiAllowedKeys);
-        // get user from key
-        $user = $this->userManager->getOneByName($key);
-
-        if (empty($user)){
+        if (empty($user)) {
             return false;
         }
         // login
+        $this->userManager->logout();
         $this->userManager->login($user);
+        return true;
     }
 }
