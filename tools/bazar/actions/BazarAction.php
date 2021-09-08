@@ -52,7 +52,7 @@ class BazarAction extends YesWikiAction
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null),
             // Permet de rediriger vers une url après saisie de fiche
-            'redirecturl' => $arg['redirecturl'] ?? ''
+            'redirecturl' => $_GET['redirecturl'] ?? $arg['redirecturl'] ?? ''
         ]);
     }
 
