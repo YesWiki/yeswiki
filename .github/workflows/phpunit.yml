@@ -3,20 +3,33 @@ name: PHP Composer
 on:
   push:
     branches: [ doryphore ]
+    paths:
+    - 'composer.lock'
+    - '*.php'
   pull_request:
     branches: [ doryphore ]
+    paths:
+    - 'composer.lock'
+    - '*.php'
+
+env:
+  DB_NAME: yeswiki_test
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    # it provides
+    # see https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1804-README.md
+    runs-on: ubuntu-18.04
 
     steps:
+    - uses: actions/checkout@v2
     - uses: shivammathur/setup-php@v2
       with:
         php-version: '7.3'
-
-    - uses: actions/checkout@v2
+        extensions: mysqli
+        tools: composer:v2
+      env:
+        fail-fast: true
 
     - name: Validate composer.json and composer.lock
       run: composer validate --strict
@@ -24,6 +37,48 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
+    - name: Configures and starts Apache
+      run: |
+        echo "<VirtualHost *:80>
+          ServerName localhost
+          DocumentRoot ${{ github.workspace }}
+
+          <Directory "${{ github.workspace }}">
+            Options FollowSymLinks MultiViews ExecCGI
+            AllowOverride All
+            Require all granted
+          </Directory>
+        </VirtualHost>" | sudo tee /etc/apache2/sites-enabled/000-default.conf
+        sudo chown www-data:www-data -R ${{ github.workspace }}
+        sudo apt install libapache2-mod-php7.3
+        sudo /etc/init.d/apache2 start
+
+    - name: Set up MySQL
+      run: |
+        sudo /etc/init.d/mysql start
+        mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -uroot -proot
+
+    - run: curl http://localhost
+
+    - name: Setup Wiki
+      run: |
+        curl --silent --fail --show-error \
+          -F "config[default_language]=fr" \
+          -F "config[wakka_name]=MyTestWiki" \
+          -F "config[root_page]=PagePrincipale" \
+          -F "config[base_url]=http://localhost/?" \
+          -F "config[mysql_host]=localhost" \
+          -F "config[mysql_database]=${{ env.DB_NAME }}" \
+          -F "config[mysql_user]=root" \
+          -F "config[mysql_password]=root" \
+          -F "config[table_prefix]=yeswiki_" \
+          -F "admin_name=ActionTest" \
+          -F "admin_password=ActionTestPassword" \
+          -F "admin_password_conf=ActionTestPassword" \
+          -F "admin_email=test@example.com" \
+          -F "submit=Continue" \
+          "http://localhost/?PagePrincipale&installAction=install"
+
     - name: Run test suite
-      run: composer run-script test
+      run: composer test
 

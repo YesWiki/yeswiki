@@ -2,9 +2,10 @@ name: Docker Image
 
 on:
   push:
-    paths-ignore:
-    - '**/*.md'
-    - 'files/**/*'
+    paths:
+    - Dockerfile
+    - .dockerignore
+    - docker-compose*.yml
 
 jobs:
   build:
@@ -12,12 +13,5 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Build the Docker image
-      run: docker build -t yeswiki/yeswiki .
-
-    # - uses: jerray/publish-docker-action@v1.0.5
-    #   with:
-    #     repository: yeswiki/yeswiki
-    #     username: ${{ secrets.DOCKER_HUB_USERNAME }}
-    #     password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-    #     auto_tag: true
+    - name: Build a Docker image able to run yeswiki
+      run: docker build -t yeswiki/server .
