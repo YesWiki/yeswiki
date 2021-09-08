@@ -111,7 +111,7 @@ class UpdateHandler extends YesWikiHandler
         if ($_GET['updateAdminPages'] ?? false) {
             list($updatePagesState, $message) = $this->updateAdminPages($adminPagesToUpdate);
             if ($updatePagesState) {
-                $output .= '✅ Done !<br />';
+                $output .= '✅ Done ! <span class="label label-info">! '._t('UPDATE_ADMIN_PAGES_TIP').'</span><br />';
             } else {
                 $output .= '<span class="label label-warning">! '._t('UPDATE_ADMIN_PAGES_ERROR').'</span>'.'<br />'.$message;
             }
