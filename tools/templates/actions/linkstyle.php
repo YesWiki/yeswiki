@@ -58,7 +58,7 @@ if (($this->config['favorite_style']!='none')
 
 // on ajoute les icones de fontawesome
 if (empty($this->config['fontawesome']) || $this->config['fontawesome'] != '0') {
-    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/libs/vendor/fontawesome-5/css/all.min.css" />'."\n";
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/styles/vendor/fontawesome/css/all.min.css" />'."\n";
 }
 
 // si l'action propose d'autres css a ajouter, on les ajoute
