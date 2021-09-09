@@ -12,6 +12,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "bootstrap": "^3",
+    "jquery": "^3.5.1",
     "spectrum-colorpicker2": "^2.0.8",
     "vue": "^2.6.14"
   }
