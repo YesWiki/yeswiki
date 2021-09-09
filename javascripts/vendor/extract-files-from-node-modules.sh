@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Extract files that we need from the node_modules folder
+# The extracted files are integrated to the repository, so production server don't need to
+# have node installed
+
 mkdir -p javascripts/vendor/jquery && cp -f node_modules/jquery/dist/jquery.min.js javascripts/vendor/jquery
 
 mkdir -p javascripts/vendor/vue && cp -f node_modules/vue/dist/{vue.js,vue.min.js} javascripts/vendor/vue
