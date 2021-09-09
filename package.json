@@ -10,5 +10,6 @@
     "postinstall": "./javascripts/vendor/copy_libs_from_node_modules.sh"
   },
   "dependencies": {
+    "vue": "^2.6.14"
   }
 }
