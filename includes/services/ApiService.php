@@ -116,16 +116,14 @@ class ApiService
         if (!is_array($apiAllowedKeys)) {
             return false;
         }
-        $flippedApiAllowedKeys = array_flip($apiAllowedKeys);
-        if (isset($flippedApiAllowedKeys[$bearerToken])) {
-            $userName = $flippedApiAllowedKeys[$bearerToken];
-        }
+        $userName = array_search($bearerToken, $apiAllowedKeys);
         if (!empty($userName)) {
             // get user from key
             $user = $this->userManager->getOneByName($userName);
         }
 
         if (empty($user)) {
+            $this->userManager->logout();
             return false;
         }
         // login
