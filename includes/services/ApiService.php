@@ -123,7 +123,6 @@ class ApiService
         }
 
         if (empty($user)) {
-            $this->userManager->logout();
             return false;
         }
         // login
