@@ -7,7 +7,7 @@
   "license": "AGPL-3.0",
   "homepage": "http://yeswiki.net",
   "scripts": {
-    "postinstall": "./javascripts/vendor/copy_libs_from_node_modules.sh"
+    "postinstall": "./javascripts/vendor/extract-files-from-node-modules.sh"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
