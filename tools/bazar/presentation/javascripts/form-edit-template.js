@@ -774,7 +774,7 @@ function initializeFormbuilder(formAndListIds) {
     // Changes icons and icones helpers
     $("a[type=remove].icon-cancel")
       .removeClass("icon-cancel")
-      .addClass("glyphicon glyphicon-trash");
+      .html('<i class="fa fa-trash"></i>')
     $("a[type=copy].icon-copy").attr("title", "Dupliquer");
     $("a[type=edit].icon-pencil").attr("title", "Editer/Masquer");
   }, 300);
