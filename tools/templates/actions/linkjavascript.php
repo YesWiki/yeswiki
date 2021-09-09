@@ -60,7 +60,7 @@ if (isset($scripts) && is_array($scripts)) {
 
 // s'il n'y a pas le javascript de yeswiki dans le theme, on le rajoute
 if (!$yeswikijs) {
-    $this->addJavascriptFile('tools/templates/libs/yeswiki-base.js');
+    $this->addJavascriptFile('javascripts/yeswiki-base.js');
 }
 
 // add javascript files which are included in the custom javascript directory

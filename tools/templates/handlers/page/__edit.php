@@ -17,4 +17,4 @@ if (isset($_GET["body"]) && !isset($_POST["body"])) {
 // ajout des scripts necessaires pour le mode edition
 $js = add_templates_list_js();
 $this->addJavascript($js);
-$this->addJavascriptFile('tools/templates/libs/templates_edit.js');
+$this->addJavascriptFile('tools/templates/javascripts/template-edit.js');
