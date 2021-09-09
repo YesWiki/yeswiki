@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 // Vérification de sécurité
 use YesWiki\Bazar\Controller\FormController;
+use YesWiki\Bazar\Service\FormManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -187,17 +188,53 @@ if (isset($_REQUEST['demand'])) {
             }
             break;
         case "forms":
+            $formManager = $this->services->get(FormManager::class);
             if (is_array($form) && count($form) > 0) {
-                header("Location: ".$this->href('', 'api/forms', ['formId' => implode(',', $form)], false));
-                break;
-            } elseif (strval($form) === strval(intval($form))) {
-                header("Location: ".$this->href('', 'api/forms/'.strval($form)));
-                break;
+                $formsIds = array_filter($form, function ($id) {
+                    return (strval($id) == strval(intval($id)));
+                });
+            } elseif (!empty($form)) {
+                if (strval($form) === strval(intval($form))) {
+                    $formsIds = [$form];
+                } else {
+                    $formsIds = [];
+                }
             } else {
-                header("Location: ".$this->href('', 'api/forms'));
-                break;
+                $formsIds = [];
+                $forms = $formManager->getAll();
             }
-            // no break
+            
+            if (count($formsIds) == 1) {
+                $form = $formManager->getOne($formsIds[0]);
+                if (!empty($form)) {
+                    echo json_encode([0 => $form]);
+                    break ;
+                } else {
+                    $forms = [];
+                }
+            } elseif (count($formsIds) > 1) {
+                $forms = $formManager->getMany($formsIds);
+                $forms = array_filter($forms, function ($form) {
+                    return !empty($form);
+                });
+            }
+            
+            if (empty($forms)) {
+                echo json_encode(new \ArrayObject());
+            } else {
+                // sort on label
+                usort($forms, function ($a, $b) {
+                    if (!isset($a['bn_label_nature']) ||
+                        !isset($b['bn_label_nature']) ||
+                        $a['bn_label_nature'] == $b['bn_label_nature']) {
+                        return 0;
+                    }
+                    return ($a['bn_label_nature'] < $b['bn_label_nature']) ? -1 : 1;
+                });
+                $forms = _convert($forms, 'UTF-8');
+                echo json_encode($forms);
+            }
+            break;
         case "entries":
             if (!empty($form)) {
                 $forms = explode(',', $form);

@@ -17,39 +17,17 @@ class ApiController extends YesWikiController
 {
     /**
      * @Route("/api/forms", methods={"GET"},options={"acl":{"public"}})
+     * @Route("/api/forms/", methods={"GET"},options={"acl":{"public"}})
      */
     public function getAllForms()
     {
-        if (isset($_GET['formId'])) {
-            $formsIds = explode(',', $_GET['formId']);
-            $formsIds = array_filter($formsIds, function ($id) {
-                return (strval($id) == strval(intval($id)));
-            });
-            if (count($formsIds) == 1) {
-                return $this->getForm($formsIds[0]);
-            } elseif (count($formsIds) > 1) {
-                $forms = $this->getService(FormManager::class)->getMany($formsIds);
-            }
-        }
-        if (empty($forms)) {
-            $forms = $this->getService(FormManager::class)->getAll();
-        }
-        if (!empty($forms)) {
-            // sort on label
-            usort($forms, function ($a, $b) {
-                if ($a['bn_label_nature'] == $b['bn_label_nature']) {
-                    return 0;
-                }
-                return ($a['bn_label_nature'] < $b['bn_label_nature']) ? -1 : 1;
-            });
-            $forms = _convert($forms, 'UTF-8');
-        }
-        
+        $forms = $this->getService(FormManager::class)->getAll();
         return new ApiResponse(empty($forms) ? null : $forms);
     }
 
     /**
      * @Route("/api/forms/{formId}", methods={"GET"},options={"acl":{"public"}})
+     * @Route("/api/forms/{formId}/", methods={"GET"},options={"acl":{"public"}})
      */
     public function getForm($formId)
     {
@@ -58,7 +36,7 @@ class ApiController extends YesWikiController
             throw new NotFoundHttpException();
         }
 
-        return new ApiResponse([$form['bn_id_nature'] => $form]);
+        return new ApiResponse($form);
     }
 
     /**
