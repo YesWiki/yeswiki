@@ -46,7 +46,7 @@ if (is_dir($repertoire)) {
 
 // s'il n'y a pas le javascript de bootstrap dans le theme, on le rajoute
 if (!$bootstrapjs) {
-    $this->addJavascriptFile('tools/templates/libs/vendor/bootstrap.min.js');
+    $this->addJavascriptFile('javascripts/vendor/bootstrap/bootstrap.min.js');
     $this->addJavascriptFile('tools/templates/libs/vendor/bootstrap3-typeahead.min.js');
 }
 
