@@ -9,20 +9,22 @@ class AdminReactionsAction extends YesWikiAction
 {
     public function run()
     {
-        $output = '<h2>Administrer les réactions</h2>';
         if ($this->wiki->UserIsAdmin()) {
             $allReactions = $this->wiki->services->get(ReactionManager::class)->getAllReactions();
+            ksort($allReactions);
             foreach ($allReactions as $reactions) {
-                foreach ($reactions as $reaction) {
-                    $output .= implode(' - ', $reaction).'<br />';
-                }
+                usort($reactions, function ($a, $b) { // sort by user
+                    return strnatcasecmp($a['user'], $b['user']);
+                });
             }
+            return $this->render('@templates/admin-reactions-table.twig', [
+                'reactions'=> $allReactions,
+            ]);
         } else {
             return $this->render('@templates/alert-message.twig', [
                 'type'=>'info',
-                'message'=> 'Veuillez vous connecter en tant qu\'admin pour administrer les réactions.'
+                'message'=> _t('REACTION_CONNECT_AS_ADMIN')
             ]);
         }
-        return $output;
     }
 }

@@ -33,6 +33,9 @@ class ReactionManager
             } else {
                 $v['value']['pageTag'] = $v['resource'];
             }
+            if (empty($v['value']['date'])) {
+                $v['value']['date'] = _t('REACTION_DATE_UNKNOWN');
+            }
             $res[$v['value']['idReaction']][]=$v['value'];
         }
         return $res;
@@ -41,12 +44,13 @@ class ReactionManager
     public function getActionParametersFromPage($page)
     {
         $p = $this->wiki->LoadPage($page);
-        if (preg_match_all('/{{reactions\s([^}]*)}}/Ui', $p['body'], $matches)) {
+        if (preg_match_all('/{{reactions\s([^}]*)\s*}}/Ui', $p['body'], $matches)) {
             $params = [];
             foreach ($matches[0] as $id => $m) {
                 $paramText = $matches[1][$id];
                 if (preg_match_all('/([a-zA-Z0-9_]*)=\"(.*)\"/U', $paramText, $paramMatches)) {
-                    $reactionId = \URLify::slug($paramMatches[2][0]); //generate the id from the title
+                    $k = array_search('title', $paramMatches[1]);
+                    $reactionId = \URLify::slug($paramMatches[2][$k]); //generate the id from the title
                     foreach ($paramMatches[0] as $idM => $paramMatch) {
                         $params[$reactionId][$paramMatches[1][$idM]] = $paramMatches[2][$idM];
                     }

@@ -9,7 +9,7 @@ class UserReactionsAction extends YesWikiAction
 {
     public function run()
     {
-        $output = '<h2>Vos réactions</h2>';
+        $output = '<h2>'._t('REACTION_YOUR_REACTIONS').'</h2>';
         if ($user = $this->wiki->GetUser()) {
             $userReactions = $this->wiki->services->get(ReactionManager::class)->getUserReactions(
                 $user['name']
@@ -21,7 +21,7 @@ class UserReactionsAction extends YesWikiAction
         } else {
             return $this->render('@templates/alert-message.twig', [
                 'type'=>'info',
-                'message'=> 'Veuillez vous connecter pour voir vos réactions.'
+                'message'=> _t('REACTION_LOGIN_TO_SEE_YOUR_REACTION')
             ]);
         }
         return $output;
