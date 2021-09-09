@@ -1280,14 +1280,16 @@ class Wiki
         // Backward compatibility : in case some extensions were using javascript code previously in
         // tools/templates, we handle it
         $mapping = [
-            'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js'
+            'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js',
+            'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js' => 'javascripts/vendor/spectrum-colorpicker2/spectrum.min.js',
+            'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css' => 'styles/vendor/spectrum-colorpicker2/spectrum.min.css',
         ];
         if (array_key_exists($file, $mapping)) $file = $mapping[$file];
 
         // Handle production environement
         if ($this->config['debug'] != 'yes') {
             $productionMapping = [
-                'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js'
+                'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js',
             ];
             if (array_key_exists($file, $productionMapping)) $file = $productionMapping[$file];
         }
