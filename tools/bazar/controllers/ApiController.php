@@ -16,24 +16,23 @@ use YesWiki\Core\YesWikiController;
 class ApiController extends YesWikiController
 {
     /**
-     * @Route("/api/forms")
+     * @Route("/api/forms", methods={"GET"},options={"acl":{"public"}})
+     * @Route("/api/forms/", methods={"GET"},options={"acl":{"public"}})
      */
     public function getAllForms()
     {
-        $this->denyAccessUnlessAdmin();
         $forms = $this->getService(FormManager::class)->getAll();
         return new ApiResponse(empty($forms) ? null : $forms);
     }
 
     /**
-     * @Route("/api/forms/{formId}")
+     * @Route("/api/forms/{formId}", methods={"GET"},options={"acl":{"public"}})
+     * @Route("/api/forms/{formId}/", methods={"GET"},options={"acl":{"public"}})
      */
     public function getForm($formId)
     {
-        $this->denyAccessUnlessAdmin();
-
         $form = $this->getService(FormManager::class)->getOne($formId);
-        if (!$form) {
+        if (!$form || !isset($form['bn_id_nature'])) {
             throw new NotFoundHttpException();
         }
 

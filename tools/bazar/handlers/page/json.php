@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 // Vérification de sécurité
 use YesWiki\Bazar\Controller\FormController;
+use YesWiki\Bazar\Service\FormManager;
 
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
@@ -187,23 +188,52 @@ if (isset($_REQUEST['demand'])) {
             }
             break;
         case "forms":
-            // les formulaires bazar
-            $formval = baz_valeurs_formulaire($form);
-            // si un seul formulaire, on cree un tableau à une entrée
-            if (!empty($form)) {
-                $formval = array($formval['bn_id_nature'] => $formval);
-            }
-            if (!function_exists('sortByLabel')) {
-                function sortByLabel($a, $b)
-                {
-                    return $a['bn_label_nature'] < $b['bn_label_nature'];
+            $formManager = $this->services->get(FormManager::class);
+            if (is_array($form) && count($form) > 0) {
+                $formsIds = array_filter($form, function ($id) {
+                    return (strval($id) == strval(intval($id)));
+                });
+            } elseif (!empty($form)) {
+                if (strval($form) === strval(intval($form))) {
+                    $formsIds = [$form];
+                } else {
+                    $formsIds = [];
                 }
+            } else {
+                $formsIds = [];
+                $forms = $formManager->getAll();
             }
-            if ($formval) {
-                usort($formval, 'sortByLabel');
-                $formval = _convert($formval, 'UTF-8');
+            
+            if (count($formsIds) == 1) {
+                $form = $formManager->getOne($formsIds[0]);
+                if (!empty($form)) {
+                    echo json_encode([0 => $form]);
+                    break ;
+                } else {
+                    $forms = [];
+                }
+            } elseif (count($formsIds) > 1) {
+                $forms = $formManager->getMany($formsIds);
+                $forms = array_filter($forms, function ($form) {
+                    return !empty($form);
+                });
             }
-            echo json_encode($formval);
+            
+            if (empty($forms)) {
+                echo json_encode(new \ArrayObject());
+            } else {
+                // sort on label
+                usort($forms, function ($a, $b) {
+                    if (!isset($a['bn_label_nature']) ||
+                        !isset($b['bn_label_nature']) ||
+                        $a['bn_label_nature'] == $b['bn_label_nature']) {
+                        return 0;
+                    }
+                    return ($a['bn_label_nature'] < $b['bn_label_nature']) ? -1 : 1;
+                });
+                $forms = _convert($forms, 'UTF-8');
+                echo json_encode($forms);
+            }
             break;
         case "entries":
             if (!empty($form)) {
@@ -219,20 +249,7 @@ if (isset($_REQUEST['demand'])) {
             header("Location: ".$this->href('', 'api/entries'.($is_semantic ? '/json-ld' : '')));
             break;
         case "pages":
-            // recuperation des pages wikis
-            $sql = 'SELECT * FROM '.$this->GetConfigValue('table_prefix').'pages';
-            $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
-            $sql .= ' AND tag NOT IN (SELECT resource FROM '.$this->GetConfigValue('table_prefix').'triples WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
-            $sql .= ' ORDER BY tag ASC';
-            $pages = _convert($this->LoadAll($sql), 'ISO-8859-15');
-            $pagesindex = array();
-            foreach ($pages as $page) {
-                if ($this->HasAccess('read', $page["tag"])) {
-                    $pagesindex[$page["tag"]] = $page;
-                }
-            }
-            echo json_encode($pagesindex);
-            //echo array_map('json_encode', );
+            header("Location: ".$this->href('', 'api/pages'));
             break;
         case "comments":
             // les commentaires wiki
