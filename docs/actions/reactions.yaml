@@ -1,0 +1,27 @@
+label: _t(AB_REACTION_GROUP_LABEL)
+actions:
+  reactions:
+    label: _t(AB_REACTION_LABEL)
+    description: _t(AB_REACTION_DESC)
+    properties:
+      title:
+        type: text
+        label: _t(AB_REACTION_TITLE_LABEL)
+        required: true
+      maxreaction:
+        type: number
+        label: _t(AB_REACTION_MAXREACTION_LABEL)
+        default: 1
+        value: 1
+      choices:
+        type: reaction
+        btn-label-add: _t(AB_REACTION_ADD_REACTION)
+        subproperties:
+          label:
+            label: _t(AB_REACTION_NAME)
+            type: text
+          image:
+            label: _t(AB_REACTION_ICON)
+            type: icon
+      # labels
+      # images
