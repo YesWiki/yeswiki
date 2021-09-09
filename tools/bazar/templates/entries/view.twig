@@ -20,47 +20,46 @@
   {% if showFooter %}
     <div class="clearfix"></div>
     <div class="BAZ_fiche_info">
-      <span class="BAZ_main_fiche_info">
-        <a href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
-          {{ entryId }}
-        </a>
-        {% if isAdmin %}
-          <span class="category">({{ form.bn_label_nature }})</span>
-          {%- if showOwner -%}
-            , {{ _t('BAZ_ECRITE') }}
-            {{ owner|raw }}
-          {%- endif -%}
-        
+      {% if isAdmin %}
+        <span class="BAZ_main_fiche_info">
+          {{ _t('BAZ_ECRITE') }}
+          {{ owner|raw }}
+          <span class="category"> ({{ form.bn_label_nature }})</span>
           <br />
           <span class="date_creation">
-            {{ _t('BAZ_DATE_CREATION') }}
+            {{ _t('BAZ_DATE_CREATION')|capitalize }}
             {{ entry.date_creation_fiche|date('d/m/Y à H:i') }},
           </span>
           <span class="date_mise_a_jour">
             {{ _t('BAZ_DATE_MAJ') }}
             {{ entry.date_maj_fiche|date('d/m/Y à H:i') }}
           </span>
-        {% endif %}
-      </span>
+        </span>
+      {% endif %}
 
-      {% if not entry['external-data'] %}
-        <div class="BAZ_actions_fiche">
+      <div class="BAZ_actions_fiche">
+        <a class="btn btn-entry-action btn-sm btn-default" href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
+          <i class="fa fa-eye"></i>
+          <span>{{ _t('BAZ_SEE_ENTRY') }}</span>
+        </a>
+        {% if not entry['external-data'] %}
           {% if canEdit %}
-            <a class="btn btn-entry-action btn-xs btn-mini btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
+            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
               <i class="fa fa-pencil-alt icon-pencil"></i>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
           {% endif %}
           {% if canDelete %}
-            <a class="btn btn-entry-action btn-xs btn-mini btn-danger modalbox"
+            <a class="btn btn-entry-action btn-sm btn-danger modalbox"
               href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"
               data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}">
               <i class="fa fa-trash icon-trash icon-white"></i>
               <span>{{ _t('BAZ_SUPPRIMER') }}</span>
             </a>
           {% endif %}
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
+      
     </div>
   {% endif %}
 </div>

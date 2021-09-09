@@ -110,17 +110,12 @@ class EntryController extends YesWikiController
         // fake ->tag for the attached images
         $this->wiki->tag = $oldPageTag;
 
-        $showOwner = false;
+        // Format owner
         $owner = $this->wiki->GetPageOwner($entryId);
-
-        // If owner is not an IP address
-        if ($owner != '' && $owner != 'WikiAdmin' && preg_replace('/([0-9]|\.)/', '', $owner) != '') {
-            $showOwner = true;
-            // Make the user name clickable when the parameter 'bazar_user_entry_id' is defined in the config file and a corresponding bazar entry exists
-            // TODO Once the integration of login-sso is done, replace $this->pageManager->getOne with the proper fonction
-            if (!empty($this->config['sso_config']) && isset($this->config['sso_config']['bazar_user_entry_id']) && $this->pageManager->getOne($owner)) {
-                $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
-            }
+        $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
+        if ($isOwnerIpAddress || !$owner) $owner = "Utilisateur Inconu";
+        if (!empty($this->config['sso_config']) && isset($this->config['sso_config']['bazar_user_entry_id']) && $this->pageManager->getOne($owner)) {
+            $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
         }
 
         return $this->render('@bazar/entries/view.twig', [
@@ -129,7 +124,6 @@ class EntryController extends YesWikiController
             "entryId" => $entryId,
             "owner" => $owner,
             "message" => $_GET['message'] ?? '',
-            "showOwner" => $showOwner,
             "showFooter" => $showFooter,
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
             "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner()),
