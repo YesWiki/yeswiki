@@ -1,0 +1,14 @@
+{
+  "name": "yeswiki",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yeswiki/yeswiki.git"
+  },
+  "license": "AGPL-3.0",
+  "homepage": "http://yeswiki.net",
+  "scripts": {
+    "postinstall": "./javascripts/vendor/copy_libs_from_node_modules.sh"
+  },
+  "dependencies": {
+  }
+}

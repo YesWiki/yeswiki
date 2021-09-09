@@ -1,5 +1,8 @@
 # Composer
 vendor
+# Node modules
+node_modules
+!javascripts/vendor
 
 # YesWiki stuff
 wakka.config.php
