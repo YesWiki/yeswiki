@@ -48,6 +48,6 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess("read")) {
         exit(json_encode($fiche));
     } else {
         $this->AddJavascriptFile('tools/bazar/libs/bazar.js');
-        $this->page["body"] = '""'.$entryController->view($this->GetPageTag(), 0).'""';
+        $this->page["body"] = '""'.$entryController->view($this->GetPageTag(), 0, false).'""';
     }
 }
