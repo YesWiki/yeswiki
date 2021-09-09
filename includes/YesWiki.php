@@ -1271,23 +1271,33 @@ class Wiki
 
     public function AddJavascriptFile($file, $first = false, $module = false)
     {
-        if (!isset($GLOBALS['js'])) {
-            $GLOBALS['js'] = '';
-        }
+        if (!isset($GLOBALS['js'])) $GLOBALS['js'] = '';
+
         $revision = $this->config['yeswiki_release'] ?? null ;
         $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
         $rev = ($revision) ? $initChar.'v='.$revision : '';
+
+        // Backward compatibility : in case some extensions were using javascript code previously in
+        // tools/templates, we handle it
+        $mapping = [
+            'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js'
+        ];
+        if (array_key_exists($file, $mapping)) $file = $mapping[$file];
+
+        // Handle production environement
+        if ($this->config['debug'] != 'yes') {
+            $productionMapping = [
+                'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js'
+            ];
+            if (array_key_exists($file, $productionMapping)) $file = $productionMapping[$file];
+        }
 
         if (!empty($file) && file_exists($file)) {
             // include local files
             $code = "<script src='{$this->getBaseUrl()}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
-                if (!$first) {
-                    $code .= " defer";
-                }
-                if ($module) {
-                    $code .= " type='module'";
-                }
+                if (!$first) $code .= " defer";
+                if ($module) $code .= " type='module'";
                 $code .= '></script>'."\n";
                 if ($first) {
                     $GLOBALS['js'] = $code . $GLOBALS['js'];
