@@ -1,8 +1,9 @@
 {{ include_javascript('javascripts/vendor/vue/vue.js') }}
-{{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
-{{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
 
 {% block assets %}{% endblock %}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/bazar-list-dynamic.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/bazar-list-dynamic.css') }}
 
 {# Extra Fields to retrieve from API call. By default we retrieve the one specified in the displayfields config #}
 {% if necessary_fields is defined %}
@@ -16,7 +17,7 @@
     {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
   
-  <div class="facette-container dynamic row" data-filter-align="{{ params.filterposition }}">
+  <div class="facette-container dynamic row" data-filter-align="{{ params.groups ? params.filterposition : '' }}">
     
     {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
     {% set resultsColSize = params.groups ? resultsColSize : 12 %}

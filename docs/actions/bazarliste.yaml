@@ -266,7 +266,7 @@ actions:
       entrydisplay:
         label: Lors du click, afficher la fiche
         type: list
-        default: sidenav
+        default: sidebar
         advanced: true
         showIf:
           dynamic: true

@@ -20,3 +20,12 @@ mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts s
 
 mkdir -p javascripts/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.js javascripts/vendor/vue-select
 mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select
+
+mkdir -p javascripts/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.js javascripts/vendor/leaflet
+mkdir -p styles/vendor/leaflet && cp -f node_modules/leaflet/dist/leaflet.css styles/vendor/leaflet
+cp -f -r node_modules/leaflet/dist/images styles/vendor/leaflet
+
+mkdir -p javascripts/vendor/leaflet-markercluster && cp -f node_modules/leaflet.markercluster/dist/leaflet.markercluster.js javascripts/vendor/leaflet-markercluster
+mkdir -p styles/vendor/leaflet-markercluster && cp -f node_modules/leaflet.markercluster/dist/MarkerCluster.css styles/vendor/leaflet-markercluster
+
+mkdir -p javascripts/vendor/vue2-leaflet && cp -f node_modules/vue2-leaflet/dist/vue2-leaflet.min.js javascripts/vendor/vue2-leaflet

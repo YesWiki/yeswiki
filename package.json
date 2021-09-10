@@ -13,8 +13,11 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "bootstrap": "^3",
     "jquery": "^3.5.1",
+    "leaflet": "^1.7.1",
+    "leaflet.markercluster": "^1.5.1",
     "spectrum-colorpicker2": "^2.0.8",
     "vue": "^2.6.14",
-    "vue-select": "^3.13.0"
+    "vue-select": "^3.13.0",
+    "vue2-leaflet": "^2.7.1"
   }
 }
