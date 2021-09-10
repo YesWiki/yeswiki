@@ -921,12 +921,26 @@ class EntryManager
             // not authorized ACL
             foreach ($neededACL as $acl) {
                 $newRequestStart .= ' AND ';
-                $newRequestStart .= ' list NOT LIKE "!%'.$acl.'%"';
+                $newRequestStart .= ' list NOT LIKE "%!'.$acl.'%"';
             }
         }
 
+        $request = $newRequestStart.$newRequestEnd;
+
+        // add detection of '%'
+        if (!empty($user)) {
+            $newRequestStart = ' OR (';
+            $newRequestEnd = ')';
+            
+            $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
+                'WHERE privilege="read" AND list LIKE "%\\%%" AND list NOT LIKE "%!\\%%"';
+            $newRequestEnd = ') AND owner = _utf8\'' . mysqli_real_escape_string($this->wiki->dblink, $userName) . '\''.$newRequestEnd;
+
+            $request = $request.$newRequestStart.$newRequestEnd;
+        }
+
         // return request to append
-        return $newRequestStart.$newRequestEnd;
+        return $request;
     }
 
     /**
