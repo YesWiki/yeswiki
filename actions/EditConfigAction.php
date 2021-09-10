@@ -154,7 +154,7 @@ class EditConfigAction extends YesWikiAction
                 foreach ($key as $firstLevelKey => $secondLevelKeys) {
                     foreach ($secondLevelKeys as $secondLevelKey) {
                         $new_value = $this->arguments['post'][$firstLevelKey][$secondLevelKey] ??  null;
-                        if (empty($new_value)) {
+                        if (is_null($new_value) || $new_value === '') {
                             if (isset($config->$firstLevelKey[$secondLevelKey])) {
                                 $tmp = $config->$firstLevelKey;
                                 unset($tmp[$secondLevelKey]);
@@ -175,7 +175,7 @@ class EditConfigAction extends YesWikiAction
                 }
             } else {
                 $new_value = $this->arguments['post'][$key] ??  null;
-                if (empty($new_value)) {
+                if (is_null($new_value) || $new_value === '') {
                     unset($config->$key);
                 } else {
                     $config->$key = $this->strtoarray($new_value);
@@ -260,7 +260,7 @@ class EditConfigAction extends YesWikiAction
             }
         } elseif (!is_string($value)) {
             try {
-                $value = strval($value);
+                $value = (($value === false) ? "false" : (($value=== true) ? "true" : strval($value)));
             } catch (\Throwable $th) {
                 $value = '';
             }
@@ -307,6 +307,8 @@ class EditConfigAction extends YesWikiAction
             if (count($result) > 0) {
                 return $result;
             }
+        } else {
+            $value = ($value == 'true') ? true : (($value == 'false') ? false : $value);
         }
         return $value;
     }
