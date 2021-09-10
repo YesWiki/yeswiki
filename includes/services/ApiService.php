@@ -23,9 +23,7 @@ class ApiService
         $bearerToken = $this->getBearerToken();
         // connect user from api_allowed_keys (format 'userName' => 'key')
         // to be admin, the userName should exist and be in @admins group
-        if ($bearerToken) {
-            $this->connectBearer($bearerToken);
-        }
+        $bearerIsConnected = $this->connectBearer($bearerToken);
 
         // acl
         $acl = $this->loadACL($requestParams, $routes);
@@ -42,11 +40,11 @@ class ApiService
             (
                 $this->params->has('api_allowed_keys') &&
                 (
+                    $bearerIsConnected ||
                     (
                         isset($this->params->get('api_allowed_keys')['public']) &&
                         $this->params->get('api_allowed_keys')['public'] === true
-                    ) ||
-                    in_array($bearerToken, $this->params->get('api_allowed_keys'))
+                    )
                 )
             )
         );
@@ -103,12 +101,12 @@ class ApiService
 
     /**
      * connect user from bearer token
-     * @param ?string $bearerToken
+     * @param null|string $bearerToken
      * @return bool
      */
-    private function connectBearer(?string $bearerToken):bool
+    private function connectBearer(?string $bearerToken = null):bool
     {
-        if (!$bearerToken || !$this->params->has('api_allowed_keys')) {
+        if (empty($bearerToken) || !$this->params->has('api_allowed_keys')) {
             return false;
         }
 
