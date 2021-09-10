@@ -87,14 +87,14 @@ class EntryController extends YesWikiController
                 $renderedEntry = $this->render("@bazar/$customTemplatePath", $customTemplateValues);
             }
         }
-
         // if not found, use default template
         if (is_null($renderedEntry)) {
             if (!empty($form)) {
                 foreach ($form['prepared'] as $field) {
                     if ($field instanceof BazarField) {
                         // TODO handle html_outside_app mode for images
-                        $renderedEntry .= $field->renderStaticIfPermitted($entry);
+                        if (!in_array($field->getPropertyName(), $this->fieldsToExclude()))
+                            $renderedEntry .= $field->renderStaticIfPermitted($entry);
                     }
                 }
             } else {
@@ -133,6 +133,10 @@ class EntryController extends YesWikiController
             "renderedEntry" => $renderedEntry,
             "incomingUrl" => $_GET['incomingurl'] ?? getAbsoluteUrl()
         ]);
+    }
+
+    private function fieldsToExclude() {
+        return $_GET['excludeFields'] ? explode(',', $_GET['excludeFields']) : [];
     }
 
     public function publish($entryId, $accepted)
@@ -289,7 +293,7 @@ class EntryController extends YesWikiController
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $id = $field->getPropertyName();
-                if (!empty($id)) {
+                if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = $field->renderStaticIfPermitted($entry);
                     if ($id == 'bf_titre') {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);

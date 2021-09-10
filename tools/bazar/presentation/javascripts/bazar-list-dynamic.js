@@ -148,7 +148,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       },
       getEntryRender(entry) {
         if (entry.html_render) return
-        $.getJSON(`?api/entry/${entry.id_fiche}/view`, function(data) {
+        let fieldsToExclude = this.params.displayfields ? Object.values(this.params.displayfields) : []
+        $.getJSON(`?api/entry/${entry.id_fiche}/view&excludeFields=${fieldsToExclude}`, function(data) {
           Vue.set(entry, 'html_render', data.html)
         })
       },
