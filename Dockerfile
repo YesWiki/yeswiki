@@ -17,3 +17,9 @@ RUN mkdir -p themes/margot \
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Node & NPM & Yarn
+RUN curl -sL https://deb.nodesource.com/setup_14.x  | bash -
+RUN apt-get install -y --no-install-recommends nodejs
+RUN curl -L https://npmjs.org/install.sh | sh
+RUN npm install -g yarn

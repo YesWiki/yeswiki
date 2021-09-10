@@ -14,10 +14,12 @@ class TemplateEngine
     protected $wiki;
     protected $twigLoader;
     protected $twig;
+    protected $assetsManager;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $config)
+    public function __construct(Wiki $wiki, ParameterBagInterface $config, AssetsManager $assetsManager)
     {
         $this->wiki = $wiki;
+        $this->assetsManager = $assetsManager;
         // Default path (main namespace) is the root of the project. There are no templates
         // there, but it's needed to call relative path like render('tools/bazar/templates/...')
         $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
@@ -91,10 +93,10 @@ class TemplateEngine
             return $this->wiki->Format($text, $formatter);
         });
         $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
-            $this->wiki->AddJavascriptFile($file, $first, $module);
+            $this->assetsManager->AddJavascriptFile($file, $first, $module);
         });
         $this->addTwigHelper('include_css', function ($file) {
-            $this->wiki->AddCSSFile($file);
+            $this->assetsManager->AddCSSFile($file);
         });
     }
 

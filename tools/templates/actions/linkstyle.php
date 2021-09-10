@@ -11,12 +11,12 @@ $styles = "\n".'  <!-- CSS files -->'."\n";
 
 // si pas le mot yeswiki. ou yw. dans les css, on charge les styles par defaut de yeswiki
 if (!strstr($this->config['favorite_style'], 'yw.')) {
-    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/presentation/styles/yeswiki-base.css" />'."\n";
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/styles/yeswiki-base.css" />'."\n";
 }
 
 // si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
 if (!strstr($this->config['favorite_style'], 'bootstrap.') && !strstr($this->config['favorite_style'], 'bs.')) {
-    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/presentation/styles/bootstrap.min.css" />'."\n";
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/styles/vendor/bootstrap/css/bootstrap.min.css" />'."\n";
 }
 
 // presets activated and path ?
@@ -58,7 +58,7 @@ if (($this->config['favorite_style']!='none')
 
 // on ajoute les icones de fontawesome
 if (empty($this->config['fontawesome']) || $this->config['fontawesome'] != '0') {
-    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/tools/templates/libs/vendor/fontawesome-5/css/all.min.css" />'."\n";
+    $styles .= '  <link rel="stylesheet" href="'.$this->getBaseUrl().'/styles/vendor/fontawesome/css/all.min.css" />'."\n";
 }
 
 // si l'action propose d'autres css a ajouter, on les ajoute

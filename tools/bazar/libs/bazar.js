@@ -136,12 +136,6 @@ $(document).ready(function () {
   $('object').append('<param value="opaque" name="wmode">');
   $('embed').attr('wmode', 'opaque');
 
-  /* swap open/close side menu icons */
-  $('.yeswiki-list-category[data-toggle=collapse]').click(function () {
-    // toggle icon
-    $(this).find('i').toggleClass('glyphicon-chevron-right glyphicon-chevron-down');
-  });
-
   //============validation formulaire============================
   //============gestion des dates================================
 
