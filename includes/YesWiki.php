@@ -50,6 +50,7 @@ use YesWiki\Core\Service\Performer;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
@@ -1226,95 +1227,36 @@ class Wiki
         }
     }
 
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddCSS($style)
     {
-        if (!isset($GLOBALS['css'])) {
-            $GLOBALS['css'] = '';
-        }
-        if (!empty($style) && !strpos($GLOBALS['css'], '<style>'."\n".$style.'</style>')) {
-            $GLOBALS['css'] .= '  <style>'."\n".$style.'</style>'."\n";
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddCSS($style);
     }
 
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddCSSFile($file, $conditionstart = '', $conditionend = '')
     {
-        if (!isset($GLOBALS['css'])) {
-            $GLOBALS['css'] = '';
-        }
-        if (!empty($file) && file_exists($file)) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                .'  <link rel="stylesheet" href="'.$this->getBaseUrl().'/'.$file.'">'
-                ."\n".'  '.$conditionend."\n";
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$file.'">')) {
-                $GLOBALS['css'] .= '  '.$conditionstart."\n"
-                    .'  <link rel="stylesheet" href="'.$file.'">'."\n"
-                    .'  '.$conditionend."\n";
-            }
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
     }
 
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddJavascript($script)
     {
-        if (!isset($GLOBALS['js'])) {
-            $GLOBALS['js'] = '';
-        }
-        if (!empty($script) && !strpos($GLOBALS['js'], '<script>'."\n".$script.'</script>')) {
-            $GLOBALS['js'] .= '  <script>'."\n".$script.'</script>'."\n";
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddJavascript($script);
     }
 
+    /**
+     * @deprecated Use AssetsManager service instead
+     */
     public function AddJavascriptFile($file, $first = false, $module = false)
     {
-        if (!isset($GLOBALS['js'])) $GLOBALS['js'] = '';
-
-        $revision = $this->config['yeswiki_release'] ?? null ;
-        $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
-        $rev = ($revision) ? $initChar.'v='.$revision : '';
-
-        // Backward compatibility : in case some extensions were using javascript code previously in
-        // tools/templates, we handle it
-        $mapping = [
-            'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js',
-            'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js' => 'javascripts/vendor/spectrum-colorpicker2/spectrum.min.js',
-            'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css' => 'styles/vendor/spectrum-colorpicker2/spectrum.min.css',
-        ];
-        if (array_key_exists($file, $mapping)) $file = $mapping[$file];
-
-        // Handle production environement
-        if ($this->config['debug'] != 'yes') {
-            $productionMapping = [
-                'javascripts/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.min.js',
-            ];
-            if (array_key_exists($file, $productionMapping)) $file = $productionMapping[$file];
-        }
-
-        if (!empty($file) && file_exists($file)) {
-            // include local files
-            $code = "<script src='{$this->getBaseUrl()}/$file$rev'";
-            if (!str_contains($GLOBALS['js'], $code) || $first) {
-                if (!$first) $code .= " defer";
-                if ($module) $code .= " type='module'";
-                $code .= '></script>'."\n";
-                if ($first) {
-                    $GLOBALS['js'] = $code . $GLOBALS['js'];
-                } else {
-                    $GLOBALS['js'] .= $code;
-                }
-            }
-        } elseif (strpos($file, "http://") === 0 || strpos($file, "https://") === 0) {
-            // include external files
-            $code = "<script defer src='$file.$rev'></script>";
-            if (!str_contains($GLOBALS['js'], $code)) {
-                $GLOBALS['js'] .= $code."\n";
-            }
-        }
-        return;
+        return $this->services->get(AssetsManager::class)->AddJavascriptFile($file, $first, $module);
     }
 
     public function parse_size($size)
