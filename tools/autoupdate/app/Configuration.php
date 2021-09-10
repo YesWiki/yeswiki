@@ -29,7 +29,7 @@ class Configuration extends Collection
         $release = $this->list['yeswiki_release'];
         $this->list['yeswiki_release'] = (string)$this->list['yeswiki_release'];
         $content = "<?php\n" . "\$$arrayName = ";
-        $content .= var_export($this->list, true);
+        $content .= $this->customVarExport($this->list, true);
         $content .= ";\n";
 
         $this->list['yeswiki_release'] = $release;
@@ -38,5 +38,31 @@ class Configuration extends Collection
             return false;
         }
         return true;
+    }
+
+    /**
+     * PHP var_export() with short array syntax (square brackets) indented 2 spaces.
+     * tips : https://www.php.net/manual/en/function.var-export.php#124194
+     * NOTE: The only issue is when a string value has `=>\n[`, it will get converted to `=> [`
+     * @param mixed $expression
+     * @param bool $return
+     * @return null|string
+     */
+    private function customVarExport($expression, $return=false): ?string
+    {
+        $export = var_export($expression, true);
+        $patterns = [
+            "/array \(/" => '[',
+            "/^([ ]*)\)(,?)$/m" => '$1]$2',
+            "/=>[ ]?\n[ ]+\[/" => '=> [',
+            "/([ ]*)(\'[^\']+\') => ([\[\'])/" => '$1$2 => $3',
+        ];
+        $export = preg_replace(array_keys($patterns), array_values($patterns), $export);
+        if ((bool)$return) {
+            return $export;
+        } else {
+            echo $export;
+            return null;
+        }
     }
 }
