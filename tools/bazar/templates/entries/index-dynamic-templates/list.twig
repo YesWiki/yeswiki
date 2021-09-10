@@ -1,7 +1,7 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
 {% block display_entries %}
-  <div class="panel-group no-dblclick" v-if="ready">
+  <div class="panel-group no-dblclick" style="opacity: 0;" :class="{ready: ready}">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
       {{ _t('BAZ_NO_RESULT') }}
     </div>
