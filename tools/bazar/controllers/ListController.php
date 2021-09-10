@@ -41,7 +41,7 @@ class ListController extends YesWikiController
         return $this->render('@bazar/lists/list_table.twig', [
             'lists' => $values,
             'loggedUser' => $this->wiki->GetUser(),
-            'canCreate' =>$this->securityController->isWikiHibernated()
+            'canCreate' => !$this->securityController->isWikiHibernated()
             ]);
     }
 
