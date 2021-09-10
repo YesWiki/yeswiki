@@ -27,6 +27,7 @@ console.log("actionsBuilderData", actionsBuilderData) // data variable has been 
 
 // Declare this one globally because we use it everywhere
 Vue.component('input-hint', InputHint)
+Vue.component('v-select', VueSelect.VueSelect);
 
 // Handle oldbrowser not supporting ES6
 if (!('noModule' in HTMLScriptElement.prototype)) {

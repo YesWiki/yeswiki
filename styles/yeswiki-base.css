@@ -634,3 +634,12 @@ body {
   line-height: 1rem;
   text-align: justify;
 }
+
+/* VUE SELECT */
+.v-select {
+  border: 2px solid var(--primary-color);
+  border-radius: 3px !important;
+}
+.v-select .vs__dropdown-toggle {
+  border: none;
+}
