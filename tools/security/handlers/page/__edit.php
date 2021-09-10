@@ -80,7 +80,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
         });
 
         // on annule la popup si l\'on sauve la page
-        $(\'#ACEditor\').on(\'submit\', function() {
+        $(\'#ACEditor, #formulaire\').on(\'submit\', function() {
           showPopup = 0;
         });
 
