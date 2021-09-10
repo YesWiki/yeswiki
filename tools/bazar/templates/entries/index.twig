@@ -1,22 +1,22 @@
 {% if params.search %}
-  {{ include("@bazar/entries/list/_search_input.twig") }}
+  {{ include("@bazar/entries/index/_search_input.twig") }}
 {% endif %}
 
 {% if filters %}
   <div class="facette-container row" data-filter-align="{{ params.filterposition }}">
     {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
     <div class="results-col col-sm-{{ resultsColSize }}">
-      {{ include("@bazar/entries/list/_entries.twig") }}
+      {{ include("@bazar/entries/index/_entries.twig") }}
     </div>
 
-    {{ include("@bazar/entries/list/_filters.twig") }}
+    {{ include("@bazar/entries/index/_filters.twig") }}
   </div>
 {% else %}
-  {{ include("@bazar/entries/list/_entries.twig") }}
+  {{ include("@bazar/entries/index/_entries.twig") }}
 {% endif %}
 
 {# showexportbuttons #}
 {% if not params.isInIframe and params.showexportbuttons %}
-  {{ include("@bazar/entries/list/_export_buttons.twig") }}
+  {{ include("@bazar/entries/index/_export_buttons.twig") }}
 {% endif %}
 {# end for showexportbuttons #}

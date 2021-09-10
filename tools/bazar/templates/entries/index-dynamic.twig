@@ -12,7 +12,7 @@
 <div class="bazar-list-dynamic-container" data-params="{{ params|json_encode }}" :class="{mounted: mounted}">
 
   {% if params.search and not params.groups %}
-    {{ include("@bazar/entries/list_dynamic/_search_input.twig") }}
+    {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
   
   <div class="facette-container dynamic row" data-filter-align="{{ params.filterposition }}">
@@ -27,15 +27,15 @@
     </div>
 
     {% if params.groups %}
-      {{ include("@bazar/entries/list_dynamic/_filters.twig") }}
+      {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
     {% endif %}
     
   </div>
 
-  {{ include("@bazar/entries/list_dynamic/_pagination.twig") }}
+  {{ include("@bazar/entries/index-dynamic/_pagination.twig") }}
 
   {% if not params.isInIframe and params.showexportbuttons %}
-    {{ include("@bazar/entries/list/_export_buttons.twig") }}
+    {{ include("@bazar/entries/index/_export_buttons.twig") }}
   {% endif %}
 
   <modal-entry ref="modal"></modal-entry>

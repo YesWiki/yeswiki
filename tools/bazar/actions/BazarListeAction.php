@@ -187,7 +187,7 @@ class BazarListeAction extends YesWikiAction
         $forms = $bazarListService->getForms();
 
         if ($this->arguments['dynamic']) {
-            return $this->render("@bazar/entries/list_dynamic/{$this->arguments['template']}.twig", [
+            return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
                 'params' => $this->arguments,
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
             ]);
@@ -206,7 +206,7 @@ class BazarListeAction extends YesWikiAction
             // TODO put in all bazar templates
             $this->wiki->AddJavascriptFile('tools/bazar/libs/bazar.js');
 
-            return $this->render('@bazar/entries/list.twig', [
+            return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
                 'filters' => $filters,
                 'renderedEntries' => $this->renderEntries($entries),
