@@ -70,6 +70,8 @@ class BazarListeAction extends YesWikiAction
         }
 
         $template = $_GET['template'] ?? $arg['template'] ?? null ;
+        $dynamic = $this->formatBoolean($arg, false, 'dynamic');
+        if ($dynamic && $template == 'liste_accordeon') $template = 'list';
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
 
         // get form ids for ExternalBazarService
@@ -117,7 +119,7 @@ class BazarListeAction extends YesWikiAction
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
             // Only few bazar templates have been converted to javascript
-            'dynamic' => $this->formatBoolean($arg, false, 'dynamic'),
+            'dynamic' => $dynamic,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
@@ -219,8 +221,6 @@ class BazarListeAction extends YesWikiAction
             ]);
         }      
     }
-
-    
 
     private function renderEntries($entries): string
     {
