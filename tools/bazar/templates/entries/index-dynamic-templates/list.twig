@@ -8,14 +8,23 @@
     <Panel v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry" 
            @opened="getEntryRender(entry)">
       <template #header>
-        <h4 class="panel-title">
-          <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
-          <i v-show="entry.icon" :class="entry.icon"></i>
-          {{"{{ field(entry, 'title', 'bf_titre') }}"}}
-        </h4>
-        <small class='accordion-subtitle'>
-          {{"{{ field(entry, 'subtitle', 'bf_description') }}"}}
-        </small>
+        <div class="panel-heading-container" :class="{'with-image': field(entry, 'visual')}">
+          {# VISUAL AREA #}
+          <div class="visual-area" v-if="field(entry, 'visual')" 
+              :style="{'background-image': `url(cache/vignette_${field(entry, 'visual')})`}">
+          </div>
+          {# TITLE AREA #}
+          <h4 div class="title-area panel-title">
+            <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
+            <i v-show="entry.icon" :class="entry.icon"></i>
+            <span class="title">{{"{{ field(entry, 'title', 'bf_titre') }}"}}</span>
+          </h4>
+          {# FLOATING AREA #}
+          <div class="floating-area" v-html="field(entry, 'floating')"></div>
+          {# SUBTITLE AREA #}
+          <div class='subtitle-area' v-if="field(entry, 'subtitle', 'bf_description')"
+              v-html="field(entry, 'subtitle', 'bf_description')"></div>
+        </div>
       </template>
       <template #body>
         <div v-html="entry.html_render"></div>

@@ -4,6 +4,11 @@
 
 .bazar-list-dynamic-container .panel-group.ready {
   opacity: 1 !important;
+}
+
+/* ------------- */
+/*   PAGINATION  */
+/* ------------- */
 .bazar-list-dynamic-container .pagination {
   display: flex;
   justify-content: center;
@@ -29,7 +34,9 @@
   opacity: .6;
 }
 
-/* ENTRY */
+/* ------------- */
+/*     ENTRY     */
+/* ------------- */
 .entry-container.modal-body {
   padding-top: 1rem;
 }
@@ -52,4 +59,61 @@
 }
 .entry-container .btn-close i:hover {
   font-size: 1.2em;
+}
+
+/* ------------- */
+/* LIST TEMPLATE */
+/* ------------- */
+.bazar-list.dynamic .panel-heading-container {
+  display: grid;
+  grid-template-areas: 
+    "title floating"
+    "subtitle subtitle";
+  align-items: start;
+  row-gap: .5rem;
+  grid-template-rows: max-content;
+}
+.bazar-list.dynamic .panel-heading-container.with-image {
+  grid-template-areas: 
+    "visual title floating"
+    "visual subtitle subtitle";
+  grid-template-columns: 11rem auto auto;
+}
+@media (max-width: 1000px) {
+  .bazar-list.dynamic .panel-heading-container.with-image {
+    grid-template-columns: 25% auto auto;
+  }
+}
+.bazar-list.dynamic .panel-heading-container .visual-area {
+  grid-area: visual;
+  background-size: cover;
+  align-self: stretch;
+  margin-right: 1rem;
+  background-position: center;
+  border-radius: 3px;
+  min-height: 100px;
+}
+.bazar-list.dynamic .panel-heading-container .title-area {
+  grid-area: title;
+}
+.bazar-list.dynamic .panel-heading-container .floating-area {
+  grid-area: floating;
+  float: right;
+  font-weight: normal;
+  color: var(--primary-color);
+  font-size: .95em;
+  justify-self: right;
+  padding-right: 2.2rem;
+}
+.bazar-list.dynamic .panel-heading-container .subtitle-area {
+  grid-area: subtitle;
+  font-size: .95em;
+  text-align: justify;
+}
+.bazar-list.dynamic .panel-heading-container p {
+  margin: 0;
+}
+.bazar-list.dynamic .panel-body {
+  font-size: .95em;
+  margin-top: 1rem;
 }
