@@ -42,7 +42,7 @@
   text-rendering: auto;
   line-height: 1;
   font-size: 20px;
-  color: darkred;
+  color: var(--primary-color);
   position: relative;
   text-align: center;
   display: block;
@@ -105,7 +105,7 @@
   display: none;
 }
 .bazar-map-container .bazar-marker .entry-name span {
-  background-color: darkred;
+  background-color: var(--primary-color);
   color: var(--neutral-light-color);
   padding: .3rem .8rem;
   border-radius: 5px;
