@@ -1,6 +1,6 @@
 import Panel from './components/Panel.js'
 import ModalEntry from './components/ModalEntry.js'
-import BazarMap from './components/BazarMap.js'
+import BazarMap from './components/BazarMap.js' // keep this import even it's not used cause it permit to run the file
 
 var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
@@ -20,7 +20,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       entriesToDisplay: [],
 
       currentPage: 0,
-      perPage: 10,
+      pagination: 10,
       search: '',
       searchFormId: null // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
     },
@@ -38,8 +38,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         return this.filteredEntries.length
       },
       pages() {
-        if (!this.perPage) return []
-        let pagesCount = Math.floor(this.filteredEntries.length / parseInt(this.perPage)) + 1
+        if (this.pagination <= 0) return []
+        let pagesCount = Math.floor(this.filteredEntries.length / parseInt(this.pagination)) + 1
         let start = 0, end = pagesCount - 1        
         let pages = [this.currentPage - 2, this.currentPage - 1, this.currentPage, this.currentPage + 1, this.currentPage + 2]
         pages = pages.filter(page => page >= start && page <= end)
@@ -110,9 +110,9 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       },
       paginateEntries() {
         let result = this.filteredEntries
-        if (this.perPage) {
-          let start = this.perPage * this.currentPage
-          result = result.slice(start, start + this.perPage)
+        if (this.pagination > 0) {
+          let start = this.pagination * this.currentPage
+          result = result.slice(start, start + this.pagination)
         }
         this.paginatedEntries = result
         this.formatEntries()
@@ -136,17 +136,15 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
           }
         }
       },
-      filterDomId(key) {
-        return `accordion_filter_${key}_${this._uid}`
-      },
-      entryDomId(entry) {
-        return `accordion_entry_${entry.id_fiche}_${this._uid}`
-      },
       resetFilters() {
         for(let filterId in this.filters) {
           this.filters[filterId].list.forEach(option => option.checked = false)
         }
         this.search = ''
+      },
+      field(entry, field, fallbackField) {
+        let mappedField = this.params.displayfields[field]
+        return mappedField ? entry[mappedField] : entry[fallbackField]
       },
       getEntryRender(entry) {
         if (entry.html_render) return
@@ -172,13 +170,13 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     },
     mounted() {
       this.params = JSON.parse(this.$el.dataset.params)
-      this.perPage = parseInt(this.params.pagination)
+      this.pagination = parseInt(this.params.pagination)
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
         // First display filters cause entries can be a bit long to load
         this.filters = data.filters || []        
-        if (data.entries.length > 50) this.perPage = 20 // Auto paginate if large numbers
+        if (data.entries.length > 50 && !this.pagination) this.pagination = 20 // Auto paginate if large numbers
         setTimeout(() => {
           this.entries = data.entries.map(array => {
             let entry = { color: null, icon: null }

@@ -70,8 +70,21 @@ class BazarListeAction extends YesWikiAction
         }
 
         $template = $_GET['template'] ?? $arg['template'] ?? null ;
+        
+        // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
+        if (is_array($arg['displayfields'])) { // with bazarcarto this method is run twice
+            $displayFields = $arg['displayfields'];
+        } else {
+            $displayFields = [];
+            foreach(explode(',', $arg['displayfields'] ?? '') as $field) {
+                $values = explode('=', $field);
+                if (count($values) == 2) $displayFields[$values[0]] = $values[1];
+            }
+        }
         if ($dynamic && $template == 'liste_accordeon') $template = 'list';
+        // End dynamic
+
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || substr($template, 0, strlen('agenda')) == 'agenda') ;
 
         // get form ids for ExternalBazarService
@@ -120,6 +133,7 @@ class BazarListeAction extends YesWikiAction
             // Dynamic mean the template will be rendered from the front end in order to improve UX and perf
             // Only few bazar templates have been converted to javascript
             'dynamic' => $dynamic,
+            'displayfields' => $displayFields,
 
             // AFFICHAGE
             // Template pour l'affichage de la liste de fiches
@@ -236,7 +250,7 @@ class BazarListeAction extends YesWikiAction
         $data['param'] = $this->arguments;
         $data['pager_links'] = '';
 
-        if (!empty($this->arguments['pagination'])) {
+        if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
             require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
             $tab = $_GET;
             unset($tab['wiki']);

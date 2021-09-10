@@ -187,24 +187,26 @@ class ApiController extends YesWikiController
             $filters = $bazatListService->formatFilters($entries, $forms);  
             
             // Basic fields
-            $fieldMapping = ['id_fiche', 'bf_titre'];
+            $fieldList = ['id_fiche', 'bf_titre'];
             // If no id, we need idtypeannonce (== formId) to filter
-            if (!isset($_GET['id'])) $fieldMapping[] = ['id_typeannonce'];
+            if (!isset($_GET['id'])) $fieldList[] = ['id_typeannonce'];
             // fields for colo / icon
-            $fieldMapping = array_merge($fieldMapping, [ $_GET['colorfield'], $_GET['iconfield'] ]);
+            $fieldList = array_merge($fieldList, [ $_GET['colorfield'], $_GET['iconfield'] ]);
             // Fields for filters
-            foreach($filters as $field => $config) $fieldMapping[] = $field;
+            foreach($filters as $field => $config) $fieldList[] = $field;
             // Fields used to search
-            foreach($_GET['searchfields'] ?? [] as $field) $fieldMapping[] = $field;
+            foreach($_GET['searchfields'] ?? [] as $field) $fieldList[] = $field;
             // Fields used by template
-            $fieldMapping = array_merge($fieldMapping, $_GET['necessary_fields']);
-            $fieldMapping = array_values(array_unique(array_filter($fieldMapping))); // array_values to have incremental keys
+            foreach($_GET['displayfields'] ?? [] as $field) $fieldList[] = $field;
+            // extra fields required by template
+            $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
+            $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
             
             // Reduce the size of the data sent by transforming entries object into array
             // we use the $fieldMapping to transform back the data when receiving data in the front end
-            $entries = array_map(function($entry) use ($fieldMapping) {
+            $entries = array_map(function($entry) use ($fieldList) {
                 $result = [];
-                foreach($fieldMapping as $field) {
+                foreach($fieldList as $field) {
                     $result[] = $entry[$field] ?? null;
                 }
                 return $result;
@@ -216,7 +218,7 @@ class ApiController extends YesWikiController
         return new ApiResponse(
             [
                 'entries' => $entries,
-                'fieldMapping' => $fieldMapping,
+                'fieldMapping' => $fieldList,
                 'filters' => $filters
             ],
             Response::HTTP_OK

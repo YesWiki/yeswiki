@@ -4,7 +4,7 @@
 
 {% block assets %}{% endblock %}
 
-{# Fields to retrieve from API call. By defaut we get only bf_titre, each template should override this #}
+{# Extra Fields to retrieve from API call. By default we retrieve the one specified in the displayfields config #}
 {% if necessary_fields is defined %}
   {% set params = params|merge({necessary_fields: necessary_fields}) %}
 {% endif %}

@@ -255,6 +255,14 @@ actions:
       coordinates:
         label: Vue initiale
         type: geo
+      displayfields:
+        type: correspondance
+        showIf: dynamic
+        subproperties:
+          markerhover:
+            type: form-field
+            label: Champ à afficher au survol du marker
+            default: bf_titre
       entrydisplay:
         label: Lors du click, afficher la fiche
         type: list
@@ -347,6 +355,24 @@ actions:
     properties:
       template:
         value: 'liste_accordeon'
+      displayfields:
+        type: correspondance
+        showIf: dynamic
+        subproperties:
+          title:
+            type: form-field
+            label: Champ pour la zone de titre
+            default: bf_titre
+          subtitle:
+            type: form-field
+            label: Champ pour la zone de sous titre
+            default: bf_description
+          floating:
+            type: form-field
+            label: Champ pour la zone flottante
+          visual:
+            type: form-field
+            label: Champ pour la zone visuelle
 
   bazartrombi:
     label: Trombinoscope

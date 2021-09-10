@@ -86,6 +86,7 @@ class BazarCartoAction extends YesWikiAction
             'template' => $arg['template'] ?? 'map.tpl.html',
 
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
+            'pagination' => -1 // disbale pagination
         ]);
     }
 

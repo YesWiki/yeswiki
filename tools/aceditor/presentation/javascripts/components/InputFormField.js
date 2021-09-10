@@ -29,7 +29,7 @@ export default {
       
       <v-select v-if="config.multiple" v-model="fields" :options="fieldOptions" label="id" :multiple="true">
         <template v-slot:option="option">
-        <span v-html="option.label"></span> - {{ option.id }}
+          <span v-html="option.label"></span> - {{ option.id }}
         </template>
       </v-select>
       

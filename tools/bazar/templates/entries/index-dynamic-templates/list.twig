@@ -1,7 +1,5 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
-{% set necessary_fields = ['bf_titre', 'soustitre'] %}
-
 {% block display_entries %}
   <div class="panel-group no-dblclick" v-if="ready">
     <div v-if="entriesToDisplay.length == 0" class="alert alert-info">
@@ -13,11 +11,10 @@
         <h4 class="panel-title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
           <i v-show="entry.icon" :class="entry.icon"></i>
-          {{"{{ entry.bf_titre }}"}}
+          {{"{{ field(entry, 'title', 'bf_titre') }}"}}
         </h4>
-        <small v-if="entry.soustitre" class='accordion-subtitle'>
-          {# TODO BazarListDynamic crops soustitre with text ellipsis #}
-          {{"{{ entry.soustitre }}"}}
+        <small class='accordion-subtitle'>
+          {{"{{ field(entry, 'subtitle', 'bf_description') }}"}}
         </small>
       </template>
       <template #body>

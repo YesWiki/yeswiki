@@ -49,7 +49,9 @@ if (document.querySelector('.bazar-map')) {
             iconAnchor: this.params.iconAnchor,
             html: `
               <div class="entry-name">
-                <span style="background-color: ${entry.color}">${ entry.bf_titre }</span>
+                <span style="background-color: ${entry.color}">
+                  ${this.$root.field(entry, 'markerhover', 'bf_titre')}
+                </span>
               </div>
               <div class="bazar-entry" style="color: ${entry.color}">
                 <i class="${entry.icon || 'fa fa-bullseye'}"></i>
