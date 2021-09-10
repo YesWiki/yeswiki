@@ -38,7 +38,7 @@ class AssetsManager
     {
         if (!isset($GLOBALS['css'])) $GLOBALS['css'] = '';
 
-        $this->mapFilePath($file);
+        $file = $this->mapFilePath($file);
 
         if (!empty($file) && file_exists($file)) {
             if (!strpos($GLOBALS['css'], '<link rel="stylesheet" href="'.$this->wiki->getBaseUrl().'/'.$file.'">')) {
@@ -75,7 +75,7 @@ class AssetsManager
         $initChar =  (strpos($file, '?') !== false) ? '&' : '?';
         $rev = ($revision) ? $initChar.'v='.$revision : '';
         
-        $this->mapFilePath($file);
+        $file = $this->mapFilePath($file);
 
         if (!empty($file) && file_exists($file)) {
             // include local files
@@ -109,7 +109,7 @@ class AssetsManager
         if ($this->wiki->GetConfigValue('debug') != 'yes') {            
             if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) $file = self::PRODUCTION_PATH_MAPPING[$file];
         }
-
+        
         return $file;
     }
 }
