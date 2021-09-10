@@ -22,6 +22,11 @@ spectrum-colorpicker2@^2.0.8:
   resolved "https://registry.yarnpkg.com/spectrum-colorpicker2/-/spectrum-colorpicker2-2.0.8.tgz#674faef7e1ca05d9339b33fa00061a0bc3517c25"
   integrity sha512-z8Wlww/SgRbMgwgljfPxA3HNJMRQ0PRKB9ef0bKVDB1EeSR+MsC0KuOjt9H/R/CdAIoBmvKJEfIAvWS4PQpL0Q==
 
+vue-select@^3.13.0:
+  version "3.13.0"
+  resolved "https://registry.yarnpkg.com/vue-select/-/vue-select-3.13.0.tgz#78d519984139156adcbf56af260fb6c2a69093a6"
+  integrity sha512-+PcWtfA1i3WVtkVwBPQknnOZL6QWSD2XiAVbSn0xAQvjOrmGAg7z+o9HkezXhtGdEstloJOdM8SujrUVyphKqg==
+
 vue@^2.6.14:
   version "2.6.14"
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.14.tgz#e51aa5250250d569a3fbad3a8a5a687d6036e235"
