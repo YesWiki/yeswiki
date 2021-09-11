@@ -28,7 +28,7 @@
         <!-- Action Configuration -->
         <div v-if="selectedAction && (!needFormField || selectedForm)" class="action-parameters-container">
 
-          <div v-if="selectedAction.hint" class="alert alert-warning">{{ selectedAction.hint }}</div>
+          <div v-if="selectedAction.hint" class="alert alert-info">{{ selectedAction.hint }}</div>
 
           <!-- Iframe Preview -->
           <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup.previewHeight"></preview-action>
