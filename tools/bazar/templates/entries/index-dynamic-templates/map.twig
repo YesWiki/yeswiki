@@ -4,12 +4,16 @@
 
 {% block assets %}
   {{ include_css('styles/vendor/leaflet/leaflet.css') }}
-  {{ include_css('styles/vendor/leaflet-markercluster/MarkerCluster.css') }}
+  {{ include_css('styles/vendor/leaflet-markercluster/leaflet.markercluster.css') }}
+  {{ include_css('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css') }}
   {{ include_css('tools/bazar/presentation/styles/bazarcarto.css') }}
 
   {{ include_javascript('javascripts/vendor/leaflet/leaflet.js') }}
-  {{ include_javascript('javascripts/vendor/leaflet-markercluster/leaflet.markercluster.js') }}
-  {{ include_javascript('javascripts/vendor/vue2-leaflet/vue2-leaflet.min.js') }}  
+  {{ include_javascript('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.js') }}
+  {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
+  {{ include_javascript('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js') }}
+  {{ include_javascript('javascripts/vendor/vue2-leaflet/vue2-leaflet.min.js') }} 
+   
 {% endblock %}
 
 {% block display_entries %}

@@ -168,6 +168,16 @@ jshint@^2.13.1:
     shelljs "0.3.x"
     strip-json-comments "1.0.x"
 
+leaflet-providers@^1.12.0:
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/leaflet-providers/-/leaflet-providers-1.12.0.tgz#bf407f580d9564480e2346bc1e6412ef696624cf"
+  integrity sha512-pU/mR4B+NbayBGCg5/88dmRq7t1EGiNPhsVGV3yqHuDn594vIwus4CiPVW0RtiKJNKg8Vf1pILAbFl0i+yk+lQ==
+
+leaflet.fullscreen@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/leaflet.fullscreen/-/leaflet.fullscreen-2.0.0.tgz#ef60c291dccde6508ce690561b2c3a5d933e0384"
+  integrity sha512-MCgTKmdEF9Twh8nWI7SVBiEFvDmxS78Y+k63SwjNiFRzp3T4b9G7HmR69sdSKr0yOhCiDEssLw1RUoswMxD21Q==
+
 leaflet.markercluster@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/leaflet.markercluster/-/leaflet.markercluster-1.5.1.tgz#4e352c8cbb9508e6175a20ac29cf179601907c4c"

@@ -216,7 +216,7 @@ actions:
         label: Fond de carte
         required: true
         type: list
-        default: OpenStreetMap.Mapnik
+        default: Stadia.OSMBright
         options:
           - OpenStreetMap.Mapnik
           - OpenStreetMap.BlackAndWhite
@@ -224,6 +224,9 @@ actions:
           - OpenStreetMap.France
           - OpenStreetMap.HOT
           - OpenTopoMap
+          - Stadia.AlidadeSmooth
+          - Stadia.AlidadeSmoothDark
+          - Stadia.OSMBright
           - Stamen.Toner
           - Stamen.TonerBackground
           - Stamen.TonerLite
@@ -291,26 +294,26 @@ actions:
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
-      spider:
-        advanced: true
-        label: Mode spider
-        hint: Éclate un groupe de point lors du click
-        type: checkbox
-        default: false
+      # spider:
+      #   advanced: true
+      #   label: Mode spider
+      #   hint: Éclate un groupe de point lors du click
+      #   type: checkbox
+      #   default: false
       cluster:
         label: Regroupe les points par zone (clusters)
         type: checkbox
         default: false
-#      barregestion:
-#        advanced: true
-#        label: Barre de gestion des fiches
-#        type: checkbox
-#        default: false
-      navigation:
-        advanced: true
-        label: Boutons de contrôle du zoom
-        type: checkbox
-        default: true
+      # barregestion:
+      #   advanced: true
+      #   label: Barre de gestion des fiches
+      #   type: checkbox
+      #   default: false
+      # navigation:
+      #   advanced: true
+      #   label: Boutons de contrôle du zoom
+      #   type: checkbox
+      #   default: true
       zoommolette:
         advanced: true
         label: Pouvoir zoomer avec la molette de la souris

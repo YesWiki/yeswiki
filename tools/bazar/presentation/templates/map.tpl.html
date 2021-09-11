@@ -9,7 +9,7 @@ if (count($fiches)>0) :
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/bazarcarto.css');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/bazar.js');
     $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.js');
-    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/leaflet-providers.js');
+    $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
     ?>
 
     <div id="osmmap<?php echo $param['nbbazarliste']; ?>"
@@ -32,8 +32,8 @@ if (count($fiches)>0) :
 
     } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
 
-      $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-markercluster/MarkerCluster.css');
-      $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet.markercluster.js');
+      $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-markercluster/leaflet.markercluster.css');
+      $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.js');
       $markersjs = 'var markerscluster = new L.MarkerClusterGroup();'."\n";
 
     } else {
@@ -42,8 +42,8 @@ if (count($fiches)>0) :
 
     if ($param['fullscreen'] == 'true' || $param['fullscreen'] == '1') {
 		$param['fullscreen'] = 'true';
-      $GLOBALS['wiki']->AddCSSFile('tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.css');
-      $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/fullscreen/Control.FullScreen.js');
+      $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
+      $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
 	} else {
 		$param['fullscreen'] = 'false' ;
 	}

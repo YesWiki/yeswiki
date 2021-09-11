@@ -14,6 +14,8 @@
     "bootstrap": "^3",
     "jquery": "^3.5.1",
     "leaflet": "^1.7.1",
+    "leaflet-providers": "^1.12.0",
+    "leaflet.fullscreen": "^2.0.0",
     "leaflet.markercluster": "^1.5.1",
     "spectrum-colorpicker2": "^2.0.8",
     "vue": "^2.6.14",

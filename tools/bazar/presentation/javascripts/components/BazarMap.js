@@ -22,11 +22,34 @@ if (document.querySelector('.bazar-map')) {
       entries() {
         return this.$root.entriesToDisplay
       },
+      map() {
+        return this.$refs.map ? this.$refs.map.mapObject : null
+      },
+      mapOptions() {
+        return {
+          scrollWheelZoom: JSON.parse(this.params.zoom_molette),
+	        zoomControl: JSON.parse(this.params.navigation),
+          fullscreenControl: JSON.parse(this.params.fullscreen),
+          fullscreenControlOptions: {
+            forceSeparateButton: true,
+            title: 'Mode plein écran', // change the title of the button, default Full Screen
+            titleCancel: 'Retour à la vue normale', // change the title of the button when fullscreen is on, default Exit Full Screen
+            // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
+            forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
+          },
+          maxZoom: 18
+        }
+      }
     },
     methods: {
       updateBounds() {
         if (!this.$refs.map) return
-        this.bounds = this.$refs.map.mapObject.getBounds()
+        this.bounds = this.map.getBounds()        
+      },
+      createTileLayer() {
+        if (!this.map) return
+        let provideOptions = this.params.provider_credentials ? JSON.parse(this.params.provider_credentials) : {}
+        L.tileLayer.provider(this.params.provider, provideOptions).addTo(this.map)
       },
       arraysEqual(a, b) {
         if (a === b) return true;
@@ -77,11 +100,6 @@ if (document.querySelector('.bazar-map')) {
             this.selectedEntry.marker._icon.classList.add('selected')
           })
         }
-        this.$nextTick(function() {
-          // this.$refs.map.mapObject.invalidateSize(true)
-          // if (this.selectedEntry) 
-          //   this.center = [this.selectedEntry.bf_latitude, this.selectedEntry.bf_longitude]
-        })
       },
       params() {
         this.center = [this.params.latitude, this.params.longitude]
@@ -93,30 +111,28 @@ if (document.querySelector('.bazar-map')) {
           this.$nextTick(function() {
             let markers = this.entries.map(entry => this.createMarker(entry))
             if (this.params.cluster) this.$refs.cluster.addLayers(markers)
-            else markers.forEach(marker => marker.addTo(this.$refs.map.mapObject))
+            else markers.forEach(marker => marker.addTo(this.map))
           })
         }
       }
     },
     template: `
-    <div class="bazar-map-container" :style="{height: params.height}"
-         :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
-      <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
-             @update:center="updateBounds()" @ready="updateBounds()"
-             @click="selectedEntry = null">
+      <div class="bazar-map-container" :style="{height: params.height}"
+          :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
         
-        <l-tile-layer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="OSM !"></l-tile-layer>
+          <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
+              :options="mapOptions"
+              @update:center="updateBounds()" @ready="updateBounds(); createTileLayer()"
+              @click="selectedEntry = null">
+          <l-marker-cluster ref="cluster" ></l-marker-cluster>
+        </l-map>
 
-        <l-marker-cluster ref="cluster" >
-        </l-marker-cluster>
-      </l-map>
-
-      <!-- SideNav to display entry -->
-      <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
-        <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
-        <div v-html="selectedEntry.html_render"></div>
+        <!-- SideNav to display entry -->
+        <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
+          <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
+          <div v-html="selectedEntry.html_render"></div>
+        </div>
       </div>
-    </div>
     `
   }
   Vue.component('BazarMap', BazarMap)
