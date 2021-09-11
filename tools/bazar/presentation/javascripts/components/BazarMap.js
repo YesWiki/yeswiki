@@ -110,8 +110,12 @@ if (document.querySelector('.bazar-map')) {
         if (!this.arraysEqual(newIds, oldIds)) {
           this.$nextTick(function() {
             let markers = this.entries.map(entry => this.createMarker(entry))
-            if (this.params.cluster) this.$refs.cluster.addLayers(markers)
-            else markers.forEach(marker => marker.addTo(this.map))
+            if (this.params.cluster) {
+              this.$refs.cluster.addLayers(markers)
+            } else {
+              oldVal.forEach(entry => entry.marker.remove())
+              markers.forEach(marker => marker.addTo(this.map))
+            }
           })
         }
       }
