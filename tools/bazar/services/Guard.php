@@ -141,7 +141,7 @@ class Guard
             return false;
         }
         if (is_null($this->authorizedGroupsToEditForms)) {
-            $authorizedGroups = $this->params->get('baz_allowed_group_to_edit_forms');
+            $authorizedGroups = $this->params->get('baz_allowed_groups_to_edit_forms');
         
             if (empty($authorizedGroups) || !is_array($authorizedGroups)) {
                 $this->authorizedGroupsToEditForms = [];

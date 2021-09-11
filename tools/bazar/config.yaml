@@ -111,7 +111,7 @@ parameters:
   # option only for configs with 500 errors when not admin connected
   baz_check_owner_acl_only_for_field_can_edit: false
   # to define allowed groups to edit forms
-  baz_allowed_group_to_edit_forms: [] 
+  baz_allowed_groups_to_edit_forms: [] 
   # for edit config action
   bazar_editable_config_params:
     - 'baz_map_center_lat'
@@ -123,7 +123,7 @@ parameters:
     - 'baz_enum_field_time_cache_for_json'
     - 'baz_check_owner_acl_only_for_field_can_edit'
     - 'bazarIgnoreAcls'
-    - baz_allowed_group_to_edit_forms
+    - baz_allowed_groups_to_edit_forms
 
 services:
   _defaults:
