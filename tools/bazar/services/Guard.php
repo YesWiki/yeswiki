@@ -7,6 +7,7 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class Guard
@@ -17,9 +18,16 @@ class Guard
     protected $aclService;
     protected $params;
     protected $authorizedGroupsToEditForms;
+    protected $securityController;
 
-    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager, AclService $aclService, ParameterBagInterface $params)
-    {
+    public function __construct(
+        Wiki $wiki,
+        FormManager $formManager,
+        UserManager $userManager,
+        AclService $aclService,
+        ParameterBagInterface $params,
+        SecurityController $securityController
+    ) {
         $this->wiki = $wiki;
         $this->formManager = $formManager;
         $this->userManager = $userManager;
@@ -27,16 +35,20 @@ class Guard
         $this->userManager = $userManager;
         $this->params = $params;
         $this->authorizedGroupsToEditForms = null;
+        $this->securityController = $securityController;
     }
 
     // TODO remove this method and use YesWiki::HasAccess
     public function isAllowed($action = 'saisie_fiche', $ownerId = '') : bool
     {
+        if ($this->securityController->isWikiHibernated()) {
+            return false;
+        }
         $loggedUserName = $this->userManager->getLoggedUserName();
         $isOwner = $ownerId === $loggedUserName || $ownerId === '';
 
         // Admins are allowed all actions
-        if ($GLOBALS['wiki']->UserIsInGroup('admins')) {
+        if ($this->wiki->UserIsInGroup('admins')) {
             return true;
         }
 

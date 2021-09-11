@@ -47,8 +47,8 @@ class FormController extends YesWikiController
             foreach ($forms as $form) {
                 $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
                 $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() &&$this->wiki->UserIsAdmin();
+                $values[$form['bn_id_nature']]['canEdit'] = $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== "";
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return ($field instanceof MapField);
@@ -60,7 +60,7 @@ class FormController extends YesWikiController
         return $this->render("@bazar/forms/forms_table.twig", [
             'message' => $message,
             'forms' => $values,
-            'canEditForms' => !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire'),
+            'canEditForms' => $this->getService(Guard::class)->isAllowed('saisie_formulaire'),
             'isWikiHibernated' => $this->securityController->isWikiHibernated()
         ]);
     }
@@ -79,7 +79,7 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled()
             ]);
         } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => ($this->securityController->isWikiHibernated() ?'WIKI_IN_HIBERNATION':'BAZ_NEED_ADMIN_RIGHTS')], false));
         }
     }
 
@@ -98,30 +98,30 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled()
             ]);
         } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => ($this->securityController->isWikiHibernated() ?'WIKI_IN_HIBERNATION':'BAZ_NEED_ADMIN_RIGHTS')], false));
         }
     }
 
     public function delete($id)
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if (!$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin()) {
             $this->formManager->clear($id);
             $this->formManager->delete($id);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));
         } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => ($this->securityController->isWikiHibernated() ?'WIKI_IN_HIBERNATION':'BAZ_NEED_ADMIN_RIGHTS')], false));
         }
     }
 
     public function empty($id)
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if (!$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin()) {
             $this->formManager->clear($id);
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));
         } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => ($this->securityController->isWikiHibernated() ?'WIKI_IN_HIBERNATION':'BAZ_NEED_ADMIN_RIGHTS')], false));
         }
     }
 
@@ -132,7 +132,7 @@ class FormController extends YesWikiController
 
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_CLONED'], false));
         } else {
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => ($this->securityController->isWikiHibernated() ?'WIKI_IN_HIBERNATION':'BAZ_NEED_ADMIN_RIGHTS')], false));
         }
     }
 
