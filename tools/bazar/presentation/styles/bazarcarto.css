@@ -157,6 +157,9 @@
   padding: 0 0 1rem 1rem;
   overflow: auto;
 }
+.bazar-map-container .entry-container .btn-close i {
+  padding-right: 1rem;
+}
 .facette-container.dynamic[data-filter-align="right"] .bazar-map-container .entry-container {
   padding-left: 0;
   padding-right: 1rem;
@@ -165,7 +168,7 @@
   padding-right: 0;
 }
 .bazar-map-container .entry-container .btn-close {
-  height: 5rem;
+  height: 5.4rem;
 }
 .bazar-map-container.small-width .entry-container {
   position: absolute;
