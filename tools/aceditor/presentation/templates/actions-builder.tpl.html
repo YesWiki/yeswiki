@@ -35,7 +35,7 @@
 
           <div class="panels-config-container">
             <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class" 
-                 :style="{width: panel.params.width || '50%'}" v-show="checkVisibility(panel.params)">
+                 :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
               <h3>{{ panel.params.title ? panel.params.title : '<?php echo _t('ACTION_BUILDER_PARAMETERS') ?>'}}</h3>
               <div class="config-panel-content">
                 <template v-for="(config, propName) in panel.params.properties">
@@ -51,7 +51,10 @@
           </div>
 
           <!-- Advanced Params Checkbox -->
-          <input-checkbox v-model="displayAdvancedParams" :config="{label: '<?php echo _t('ACTION_BUILDER_ADVANCED_PARAMETERS') ?>'}" class="advanced-params"></input-checkbox>
+          <input-checkbox v-if="isSomeAdvancedParams" v-model="displayAdvancedParams" 
+                          :config="{label: '<?php echo _t('ACTION_BUILDER_ADVANCED_PARAMETERS') ?>'}" 
+                          class="advanced-params">
+          </input-checkbox>
 
           <div class="col-md-12 result-container">
             <h3><?php echo _t('ACTION_BUILDER_WIKI_CODE_TITLE') ?></h3>

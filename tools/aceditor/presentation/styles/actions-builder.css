@@ -1,7 +1,7 @@
 
 /* CUSTOM FORM */
 .form-group, #actions-builder-app .form-group:first-child {
-  margin-top: 15px;
+  margin-top: 1.2rem;
 }
 .form-group.range {
   margin-top: 25px;
@@ -36,6 +36,10 @@ input[type=range] {
 #actions-builder-app [type="checkbox"] + span:not(.lever):after {
   margin-top: 2px;
 }
+.checkbox {
+  margin-bottom: 1rem;
+  margin-top: 0rem;
+}
 .iconpicker-popover.popover {
   width: 400px;
 }
@@ -54,6 +58,9 @@ input[type=range] {
   border-radius: 0 3px 3px 0 !important;
   border: none !important;
   width: 4rem !important;
+}
+#center-position-map {
+  margin-bottom: 1.5rem;
 }
 
 /* CONFIG PARAMETERS */
@@ -77,16 +84,15 @@ input[type=range] {
   padding-right: 1rem;
 }
 .config-panel-content .hint {
-  font-size: .9rem;
-  margin-bottom: 1.5rem;
-  margin-top: 5px;
-  opacity: .9;
-  font-style: italic;
+  font-size: .8em;
+  margin-bottom: 1rem;
+  margin-top: 4px;
+  opacity: .8;
   line-height: 1rem;
   text-align: justify;
 }
 .config-panel-content .hint + .hint {
-  margin-top: -1.5rem;
+  margin-top: -1rem;
 }
 #actions-builder-modal h3 {
   text-align: center;
@@ -102,8 +108,8 @@ input[type=range] {
 
 
 /* ADVANCED PROPERTIES */
-.multi-input-container {
-  margin-bottom: 2rem;
+.multi-input-container .btn-add-element {
+  margin-bottom: 1.5rem;
 }
 .multi-input-container.facettes {
   text-align: center;
@@ -119,10 +125,14 @@ input[type=range] {
 }
 .inline-form {
   display: flex;
+  align-items: baseline;
 }
 .inline-form .form-group {
   padding: 0 !important;
   margin: 1rem 0 0 0;
+}
+.inline-form .btn-close-container {
+  align-self: center;
 }
 
 

@@ -4,7 +4,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     // BAZAR
     'AB_bazar_label' => "Afficher les données d'un formulaire",
     'AB_bazar_commons_search_label' => 'Barre de recherche',
-    'AB_bazar_commons_search_fields_label' => 'Champs dans lesquels rechercher',
+    'AB_bazar_commons_search_fields_label' => 'Champs pour la recherche',
     'AB_bazar_commons_minical' => "Afficher le contenu sous forme d'un mini calendrier",
     'AB_bazar_commons2_filter_user_as_owner' => "N'afficher que les fiches de l'utilisateur courant",
     'AB_bazar_facettes_groupsexpanded_false' => "Uniquement la première dépliée",
@@ -17,8 +17,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
     'AB_bazar_commons2_filter_on_date_for_two_years' => "depuis deux ans",
     'AB_bazar_commons2_filter_on_date_one_week_more_and_less' => "+/- une semaine",
     'AB_bazar_commons2_filter_index' => "'bf_date_debut_evenement' doit être défini.",
-    'AB_bazar_commons2_resetfiltersbutton_label' => 'Ajouter un bouton pour réinitialiser les filtres',
-    'AB_bazar_commons2_showexportbuttons' => 'Montrer les boutons d\'export',
+    'AB_bazar_commons2_resetfiltersbutton_label' => 'Bouton pour réinitialiser les filtres',
+    'AB_bazar_commons2_showexportbuttons' => 'Boutons d\'export (CSV, JSON...)',
     // BazarAction
     'AB_bazar_action_label' => "Afficher un formulaire de création de fiche",
     'AB_bazar_action_description' => "Permet d'afficher le formulaire pour créer une fiche.",

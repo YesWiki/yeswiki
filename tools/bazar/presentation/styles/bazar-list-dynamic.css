@@ -70,7 +70,6 @@
     "title floating"
     "subtitle subtitle";
   align-items: start;
-  row-gap: .5rem;
   grid-template-rows: max-content;
 }
 .bazar-list.dynamic .panel-heading-container.with-image {
@@ -92,6 +91,7 @@
   background-position: center;
   border-radius: 3px;
   min-height: 100px;
+  background-color: var(--neutral-soft-color);
 }
 .bazar-list.dynamic .panel-heading-container .title-area {
   grid-area: title;
@@ -109,6 +109,7 @@
   grid-area: subtitle;
   font-size: .95em;
   text-align: justify;
+  padding-top: .5rem;
 }
 .bazar-list.dynamic .panel-heading-container p {
   margin: 0;

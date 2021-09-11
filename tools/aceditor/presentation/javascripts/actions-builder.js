@@ -76,6 +76,12 @@ window.myapp = new Vue({
       }
       return result
     },
+    isSomeAdvancedParams() {
+      return this.configPanels.some(panel => {
+        let props = Object.values(panel.params.properties)
+        return props.some(prop => prop.advanced)
+      })
+    },
     // Are we editing an action or creating a new one?
     isEditingExistingAction() {
       if (!this.editor) return false;

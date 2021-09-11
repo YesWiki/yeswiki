@@ -8,16 +8,10 @@ actions:
   # -------------------------------------
   commons:
     title: Affichage
-    width: 30%
+    width: 33%
     properties:
       search:
         label: _t(AB_bazar_commons_search_label)
-        type: checkbox
-      dynamic:
-        label: Rendu dynamique (beta)
-        showOnlyFor:
-          - bazarliste
-          - bazarcarto
         type: checkbox
       searchfields:
         label: _t(AB_bazar_commons_search_fields_label)
@@ -29,6 +23,12 @@ actions:
         showOnlyFor:
           - bazarliste
           - bazarcarto
+      dynamic:
+        label: Rendu dynamique (version beta)
+        showOnlyFor:
+          - bazarliste
+          - bazarcarto
+        type: checkbox
       pagination:
         label: Nombre de fiches par page
         hint: Laisser vide pour ne pas utiliser la pagination
@@ -104,8 +104,45 @@ actions:
   # -------------------------------------
   commons2:
     title: Filtres / Facettes
-    width: 40%
+    width: 33%
     properties:
+      facettes:
+        type: facette
+        btn-label-add: Ajouter Une Facette
+        subproperties:
+          field:
+            label: Champ
+            type: form-field
+            only: lists # ce champ doit être de type checkboxListe, listeListe ...
+          title:
+            label: Titre
+            type: text
+          icon:
+            label: Icone
+            type: icon
+      groupsexpanded:
+        label: Affichage initial des facettes
+        type: list
+        advanced: true
+        options:
+          'false': _t(AB_bazar_facettes_groupsexpanded_false)
+          'true': _t(AB_bazar_facettes_groupsexpanded_true)
+        showif: facettes
+      filterposition:
+        label: Position des facettes
+        type: list
+        advanced: true
+        options:
+          right: Droite
+          left: Gauche
+        showif: facettes
+      filtercolsize:
+        label: Largeur des facettes
+        advanced: true
+        type: range
+        min: 1
+        max: 12
+        showif: facettes
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox
@@ -156,43 +193,6 @@ actions:
           '>-1M': _t(AB_bazar_commons2_filter_on_date_for_one_month)
           '>-2Y': _t(AB_bazar_commons2_filter_on_date_for_two_years)
           '>-7D&<+7D': _t(AB_bazar_commons2_filter_on_date_one_week_more_and_less)
-      facettes:
-        type: facette
-        btn-label-add: Ajouter Une Facette
-        subproperties:
-          field:
-            label: Champ
-            type: form-field
-            only: lists # ce champ doit être de type checkboxListe, listeListe ...
-          title:
-            label: Titre
-            type: text
-          icon:
-            label: Icone
-            type: icon
-      groupsexpanded:
-        label: Affichage initial des facettes
-        type: list
-        advanced: true
-        options:
-          'false': _t(AB_bazar_facettes_groupsexpanded_false)
-          'true': _t(AB_bazar_facettes_groupsexpanded_true)
-        showif: facettes
-      filterposition:
-        label: Position des facettes
-        type: list
-        advanced: true
-        options:
-          right: Droite
-          left: Gauche
-        showif: facettes
-      filtercolsize:
-        label: Largeur des facettes
-        advanced: true
-        type: range
-        min: 1
-        max: 12
-        showif: facettes
       resetfiltersbutton:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true
@@ -209,6 +209,7 @@ actions:
     label: Cartographie
     description: Les fiches seront sous forme de marqueur.
     hint: Le champ géolocalisation doit être présent dans votre formulaire
+    width: 35%
     properties:
       template:
         value: map
@@ -258,24 +259,10 @@ actions:
       coordinates:
         label: Vue initiale
         type: geo
-      displayfields:
-        type: correspondance
-        showIf: dynamic
-        subproperties:
-          markerhover:
-            type: form-field
-            label: Champ à afficher au survol du marker
-            default: bf_titre
-      entrydisplay:
-        label: Lors du click, afficher la fiche
-        type: list
-        default: sidebar
-        advanced: true
-        showIf:
-          dynamic: true
-        options:
-          sidebar: Dans une barre latérale
-          modal: Dans une popup          
+      cluster:
+        label: Regroupe les points par zone (clusters)
+        type: checkbox
+        default: false
       width:
         advanced: true
         label: Largeur de la carte
@@ -287,6 +274,24 @@ actions:
         label: Hauteur de la carte
         type: text
         default: 600px
+      entrydisplay:
+        label: Lors du click, afficher la fiche
+        type: list
+        default: sidebar
+        advanced: true
+        showif: dynamic
+        options:
+          sidebar: Dans une barre latérale
+          modal: Dans une popup    
+      displayfields:
+        type: correspondance
+        showif: dynamic
+        advanced: true
+        subproperties:
+          markerhover:
+            type: form-field
+            label: Champ à afficher au survol du marker
+            default: bf_titre      
       smallmarker:
         advanced: true
         label: Petit marqueurs
@@ -300,10 +305,6 @@ actions:
       #   hint: Éclate un groupe de point lors du click
       #   type: checkbox
       #   default: false
-      cluster:
-        label: Regroupe les points par zone (clusters)
-        type: checkbox
-        default: false
       # barregestion:
       #   advanced: true
       #   label: Barre de gestion des fiches
