@@ -1,6 +1,5 @@
 import Panel from './components/Panel.js'
 import ModalEntry from './components/ModalEntry.js'
-import BazarMap from './components/BazarMap.js' // keep this import even it's not used cause it permit to run the file
 
 var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
