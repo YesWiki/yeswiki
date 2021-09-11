@@ -49,11 +49,11 @@
   text-align: center;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   font-size: 1.7rem;
 }
 .entry-container .btn-close i {
-  padding: 2rem;
+  padding: 1rem 1rem 1rem 2rem;
   cursor: pointer;
   background-color: var(--neutral-light-color);
 }
