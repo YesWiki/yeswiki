@@ -1,3 +1,30 @@
+/* --------------- */
+/*   ENTRY VIEW    */
+/* --------------- */
+.BAZ_cadre_fiche .BAZ_rubrique {
+	margin: 0 0 10px 0;
+}
+
+
+/* ENTRY FOOTER */
+.BAZ_fiche_info {
+  font-size: .9rem;
+  display: flex;
+  flex-direction: row;
+}
+.BAZ_fiche_info .BAZ_actions_fiche {
+  align-self: center;
+  text-align: right;
+  flex: 1 auto;
+}
+
+
+/* --------------- */
+/*   ENTRY FORM    */
+/* --------------- */
+
+/* following file is a mess, should try to refactor a bit ! */
+
 #map img {max-width:none !important;}
 #map label {
   width: auto !important; display:inline !important;
@@ -6,6 +33,11 @@
 .required_symbol, .symbole_obligatoire {
 color:#E9322D;
 }
+
+
+/* --------------- */
+/*   BAZAR LIST    */
+/* --------------- */
 
 .BAZ_menu .nav, .bazar-search {
   margin-bottom:20px;
@@ -27,71 +59,12 @@ color:#E9322D;
    overflow:auto;
 }
 
-/* ENTRY FOOTER */
-.BAZ_fiche_info {
-  font-size: .9rem;
-  display: flex;
-  flex-direction: row;
-}
-.BAZ_fiche_info .BAZ_actions_fiche {
-  align-self: center;
-  text-align: right;
-  flex: 1 auto;
-}
-
 .results-col {
   clear: both;
 }
 
 .reset-filters.btn-block {
   margin-top: 5px;
-}
-/*
-.btn_adresse,.btn_client {
-display:inline;
-width:215px;
-font-size:11px;
-color:#000;
-border:1px solid #AAA;
-background:#CCC;
-margin:0 0 5px;
-}*/
-
-#bf_latitude, #bf_longitude {
-width: 130px;
-}
-
-.coordonnees_google .formulaire_ligne {
-clear:none;
-float:left;
-width:90px;
-margin:0;
-padding:0;
-}
-
-.coordonnees_google .formulaire_label {
-clear:none;
-float:left;
-font-size:10px;
-width:45px;
-margin:0 1px 0 0;
-padding:0;
-}
-
-.coordonnees_google .formulaire_input input {
-clear:none;
-float:left;
-width:42px;
-font-size:12px;
-color:#000;
-border:1px solid #AAA;
-background:#CCC;
-margin:0;
-padding:0;
-}
-
-.BAZ_rubrique {
-	margin: 0 0 10px 0;
 }
 
 /* accordion pane */
