@@ -22,7 +22,8 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       currentPage: 0,
       pagination: 10,
       search: '',
-      searchFormId: null // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
+      searchFormId: null, // wether to search for a particular form ID (only used when no form id is defined for the bazar list action)
+      searchTimer: null // use ot debounce user input
     },
     computed: {
       computedFilters() {
@@ -56,7 +57,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
     },
     watch: {
       filteredEntriesCount() { this.currentPage = 0 },
-      search() { this.calculateBaseEntries() },
+      search() { 
+        clearTimeout(this.searchTimer)
+        this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
+      },
       searchFormId() { this.calculateBaseEntries() },
       computedFilters() { this.filterEntries() },
       currentPage() { this.paginateEntries() },
