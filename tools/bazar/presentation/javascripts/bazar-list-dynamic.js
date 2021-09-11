@@ -177,7 +177,11 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       $.getJSON('?api/bazar-list-data', this.params, (data) => {
         // First display filters cause entries can be a bit long to load
         this.filters = data.filters || []        
+        
+        // Auto adjust some params depending on entries count
         if (data.entries.length > 50 && !this.pagination) this.pagination = 20 // Auto paginate if large numbers
+        if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
+        
         setTimeout(() => {
           this.entries = data.entries.map(array => {
             let entry = { color: null, icon: null }
