@@ -200,7 +200,7 @@ class MapField extends BazarField
                         <span class="input-group-addon">Lon</span>
                         <input type="text" class="form-control bf_longitude" pattern="-?\\\d{1,3}\\\.\\\d+" value="${point.lng}" />
                     </div>
-                    <div class="text-justify">Déplacer le point si besoin ou modifier les coordonnées GPS.</div>
+                    <div class="text-center">'._t('BAZ_ADJUST_MARKER_POSITION').'</div>
                 `
             }
         
@@ -208,8 +208,13 @@ class MapField extends BazarField
             {
                 if (geocodedmarker) map.removeLayer(geocodedmarker);
                 geocodedmarker = L.marker(point, {draggable:true}).addTo(map);
-                geocodedmarker.bindPopup(popupHtml( geocodedmarker.getLatLng() ), {closeButton: false, closeOnClick: false}).openPopup();
-                map.panTo( geocodedmarker.getLatLng(), {animate:true});
+                geocodedmarker.bindPopup(popupHtml( geocodedmarker.getLatLng() ), {
+                    closeButton: false, 
+                    closeOnClick: false,
+                    minWidth: 300
+                }).openPopup();
+                map.setView(point, 18);
+                // map.panTo( geocodedmarker.getLatLng(), {animate:true});
                 $(\'#bf_latitude\').val(point.lat);
                 $(\'#bf_longitude\').val(point.lng);
         
