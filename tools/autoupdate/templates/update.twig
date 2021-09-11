@@ -12,4 +12,4 @@
 {% endfor %}
 </ul>
 
-<a href='{{ baseUrl }}/update'>Finaliser la mise à jour (lancer les actions de post-installation)</a>
+<a href='{{ url({handler:'update',params:(updateAlreadyForced ? {updateAlreadyForced:1} : {})}) }}'>Finaliser la mise à jour (lancer les actions de post-installation)</a>

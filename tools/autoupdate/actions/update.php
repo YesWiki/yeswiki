@@ -3,6 +3,10 @@ namespace AutoUpdate;
 
 use YesWiki\Core\Service\ThemeManager;
 
+if (!defined("WIKINI_VERSION")) {
+    die("acc&egrave;s direct interdit");
+}
+
 $loader = require __DIR__ . '/../vendor/autoload.php';
 
 // display update's message
@@ -17,10 +21,6 @@ if (isset($_SESSION['updateMessage'])) {
         $endUpdate = is_array($data) && isset($data['messages']) && isset($data['baseURL'])
             && $this->UserIsAdmin();
     }
-}
-
-if (!defined("WIKINI_VERSION")) {
-    die("acc&egrave;s direct interdit");
 }
 
 if ($endUpdate) {
@@ -89,6 +89,7 @@ if ($endUpdate) {
     $output .= $this->render("@autoupdate/update.twig", [
         'messages' => $data['messages'],
         'baseUrl' => $data['baseURL'],
+        'updateAlreadyForced' => (isset($_GET['updateAlreadyForced']) && $_GET['updateAlreadyForced'] == 1) ? true : false,
     ]);
     echo $output ;
 } else {

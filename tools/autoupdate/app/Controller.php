@@ -68,6 +68,7 @@ class Controller
                 return $this->wiki->render("@autoupdate/update.twig", [
                     'messages' => $this->messages,
                     'baseUrl' => $this->autoUpdate->baseUrl(),
+                    'updateAlreadyForced' => (isset($get['updateAlreadyForced']) && $get['updateAlreadyForced'] == 1) ? true : false,
                 ]);
             }
         }
@@ -80,6 +81,7 @@ class Controller
             return $this->wiki->render("@autoupdate/update.twig", [
                 'messages' => $this->messages,
                 'baseUrl' => $this->autoUpdate->baseUrl(),
+                'updateAlreadyForced' => (isset($get['updateAlreadyForced']) && $get['updateAlreadyForced'] == 1) ? true : false,
             ]);
         }
 
@@ -116,7 +118,7 @@ class Controller
         $package = $this->autoUpdate->repository->getPackage($packageName);
 
         // Téléchargement de l'archive
-        $file = $package->getFile();
+        $file = $package ? $package->getFile() : false;
         if (false === $file) {
             $this->messages->add('AU_DOWNLOAD', 'AU_ERROR');
             return;

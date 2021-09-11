@@ -8,6 +8,13 @@ use YesWiki\Core\YesWikiHandler;
 
 class UpdateHandler extends YesWikiHandler
 {
+    public function formatArguments($args)
+    {
+        return [
+            'updateAlreadyForced' => $this->formatBoolean($_GET, false, 'updateAlreadyForced'),
+        ];
+    }
+
     public function run()
     {
         if ($this->getService(SecurityController::class)->isWikiHibernated()) {
@@ -76,7 +83,22 @@ class UpdateHandler extends YesWikiHandler
 
             // test if templates directory is up to date
             if (!file_exists('templates/edit-config.twig')) {
-                $output .= '<div class="alert alert-warning">ℹ️ '._t('UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE').'</div>';
+                // redirect to force once update
+                if (($this->wiki->tag == "GererMisesAJour") && !$this->arguments['updateAlreadyForced'] && !is_dir('.git')) {
+                    // check if folder .git exists to prevent autoupate in dev environement
+                    $this->wiki->redirect($this->wiki->Href(
+                        null,
+                        null,
+                        [
+                            'upgrade' => 'yeswiki',
+                            'updateAlreadyForced' => 1
+                        ],
+                        false
+                    ));
+                    exit();
+                } else {
+                    $output .= '<div class="alert alert-warning">ℹ️ '._t('UPDATE_TEMPLATES_FOLDER_NOT_UP_TO_DATE').'</div>';
+                }
             }
         } else {
             $output .= '<div class="alert alert-danger">'._t('ACLS_RESERVED_FOR_ADMINS').'</div>';
@@ -139,35 +161,35 @@ class UpdateHandler extends YesWikiHandler
         $defaultSQL = file_get_contents('setup/sql/default-content.sql');
         $defaultSQLSplittedByBlock  = explode("INSERT INTO", $defaultSQL);
         $blocks = [];
-        for ($i=1; $i < count($defaultSQLSplittedByBlock); $i++) { 
+        for ($i=1; $i < count($defaultSQLSplittedByBlock); $i++) {
             $block = $defaultSQLSplittedByBlock[$i];
-            if (substr($block,0,1) !== '#' && 
-                    substr($defaultSQLSplittedByBlock[$i-1],0,strlen('# YesWiki pages')) === '# YesWiki pages'){ // only working for pages
-                $typeBlock = explode('`',substr($block,strlen(' `{{prefix}}')),2);
-                if ($typeBlock[0] == 'pages'){
+            if (substr($block, 0, 1) !== '#' &&
+                    substr($defaultSQLSplittedByBlock[$i-1], 0, strlen('# YesWiki pages')) === '# YesWiki pages') { // only working for pages
+                $typeBlock = explode('`', substr($block, strlen(' `{{prefix}}')), 2);
+                if ($typeBlock[0] == 'pages') {
                     $blocks[] = $typeBlock[1];
                 }
             }
         }
 
         $defaultSQLSplitted = [];
-        foreach($blocks as $block){
-            $splittedBlock = explode("VALUES\n('", $block,2);
+        foreach ($blocks as $block) {
+            $splittedBlock = explode("VALUES\n('", $block, 2);
             if (count($splittedBlock) < 2) {
-                $splittedBlock = explode("VALUES\r\n('", $block,2);
+                $splittedBlock = explode("VALUES\r\n('", $block, 2);
                 $separator = "\r\n";
             } else {
                 $separator = "\n";
             }
             $splittedBlock = explode("),".$separator."('", $splittedBlock[1]);
-            foreach($splittedBlock as $extract){
-                $tag = explode('\'',$extract)[0];
+            foreach ($splittedBlock as $extract) {
+                $tag = explode('\'', $extract)[0];
                 $defaultSQLSplitted[$tag] = $extract;
             }
         }
         $output = '';
         foreach ($adminPagesToUpdate as $page) {
-            if (isset($defaultSQLSplitted[$page])){
+            if (isset($defaultSQLSplitted[$page])) {
                 if (preg_match('/'.$page.'\',\s*(?:now\(\))?\s*,\s*\'([\S\s]*)\',\s*\'\'\s*,\s*\'{{WikiName}}\',\s*\'{{WikiName}}\', \'(?:Y|N)\', \'page\', \'\'/U', $defaultSQLSplitted[$page], $matches)) {
                     $pageContent = str_replace('\\"', '"', $matches[1]);
                     $pageContent = str_replace('\\\'', '\'', $pageContent);
@@ -177,9 +199,8 @@ class UpdateHandler extends YesWikiHandler
                         $output .= (!empty($output) ? ', ':'')._t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE').$page;
                     }
                 }
-
             } else {
-                $output .= (!empty($output) ? ', ':'').str_replace('{{page}}',$page,_t('UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL'));
+                $output .= (!empty($output) ? ', ':'').str_replace('{{page}}', $page, _t('UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL'));
             }
         }
         return [empty($output),$output];
