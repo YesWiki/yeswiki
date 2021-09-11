@@ -34,6 +34,29 @@
 color:#E9322D;
 }
 
+.bazar-entry-edit-image {
+  display: flex;
+  align-items: center;
+}
+.bazar-entry-edit-image output img {
+  height: 150px;
+}
+.bazar-entry-edit-image .image-actions {
+  display: flex;
+  flex-direction: column;
+  margin-left: 1rem;
+}
+/* Image input when there is already an image loaded */
+.form-group.input-image:not(.file) .control-label {
+  position: relative;
+  padding: 0;
+  margin: 0 -15px;
+}
+.form-group.input-image:not(.file) .control-label:before {
+  content: none;
+}
+
+
 
 /* --------------- */
 /*   BAZAR LIST    */

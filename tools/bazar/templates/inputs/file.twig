@@ -7,7 +7,7 @@
             &nbsp;-&nbsp;            
             {% if isAllowedToDeleteFile %}
                 <a href="{{ deleteUrl }}" 
-                    onClick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER') }}');">
+                   onClick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_FICHIER') }}');">
                     {{- _t('BAZ_SUPPRIMER') -}}
                 </a>            
             {% else %}            
