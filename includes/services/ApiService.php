@@ -9,15 +9,23 @@ class ApiService
 {
     protected $params;
     protected $aclService;
+    protected $userManager;
 
-    public function __construct(ParameterBagInterface $params, AclService $aclService)
+    public function __construct(ParameterBagInterface $params, AclService $aclService, UserManager $userManager)
     {
         $this->aclService = $aclService;
         $this->params = $params;
+        $this->userManager = $userManager;
     }
 
     public function isAuthorized(array $requestParams, RouteCollection $routes)
     {
+        $bearerToken = $this->getBearerToken();
+        // connect user from api_allowed_keys (format 'userName' => 'key')
+        // to be admin, the userName should exist and be in @admins group
+        $bearerIsConnected = $this->connectBearer($bearerToken);
+
+        // acl
         $acl = $this->loadACL($requestParams, $routes);
         $publicMode = in_array("public", $acl);
         // remove public
@@ -32,11 +40,11 @@ class ApiService
             (
                 $this->params->has('api_allowed_keys') &&
                 (
+                    $bearerIsConnected ||
                     (
                         isset($this->params->get('api_allowed_keys')['public']) &&
                         $this->params->get('api_allowed_keys')['public'] === true
-                    ) ||
-                    in_array($this->getBearerToken(), $this->params->get('api_allowed_keys'))
+                    )
                 )
             )
         );
@@ -89,5 +97,35 @@ class ApiService
         }
         $route =  $routes->all()[$routeName] ;
         return $route->hasOption('acl') ? $route->getOption('acl') : [];
+    }
+
+    /**
+     * connect user from bearer token
+     * @param null|string $bearerToken
+     * @return bool
+     */
+    private function connectBearer(?string $bearerToken = null):bool
+    {
+        if (empty($bearerToken) || !$this->params->has('api_allowed_keys')) {
+            return false;
+        }
+
+        $apiAllowedKeys = $this->params->get('api_allowed_keys');
+        if (!is_array($apiAllowedKeys)) {
+            return false;
+        }
+        $userName = array_search($bearerToken, $apiAllowedKeys);
+        if (!empty($userName)) {
+            // get user from key
+            $user = $this->userManager->getOneByName($userName);
+        }
+
+        if (empty($user)) {
+            return false;
+        }
+        // login
+        $this->userManager->logout();
+        $this->userManager->login($user);
+        return true;
     }
 }
