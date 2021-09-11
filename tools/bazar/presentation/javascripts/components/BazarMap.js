@@ -45,8 +45,8 @@ if (document.querySelector('.bazar-map')) {
         entry.marker.setIcon(
           L.divIcon({
             className: `bazar-marker ${this.params.smallmarker}`,
-            iconSize: this.params.iconSize,
-            iconAnchor: this.params.iconAnchor,
+            iconSize: JSON.parse(this.params.iconSize),
+            iconAnchor: JSON.parse(this.params.iconAnchor),
             html: `
               <div class="entry-name">
                 <span style="background-color: ${entry.color}">
