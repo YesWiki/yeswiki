@@ -136,7 +136,7 @@ class EntryController extends YesWikiController
     }
 
     private function fieldsToExclude() {
-        return $_GET['excludeFields'] ? explode(',', $_GET['excludeFields']) : [];
+        return isset($_GET['excludeFields']) ? explode(',', $_GET['excludeFields']) : [];
     }
 
     public function publish($entryId, $accepted)

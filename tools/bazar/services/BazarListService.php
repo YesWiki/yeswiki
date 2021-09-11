@@ -53,7 +53,7 @@ class BazarListService
         } else {
             $entries = $this->entryManager->search(
                 [
-                    'queries' => $this->arguments['query'],
+                    'queries' => $this->arguments['query'] ?? '',
                     'formsIds' => $this->arguments['idtypeannonce'],
                     'keywords' => $_REQUEST['q'] ?? '',
                     'user' => $this->arguments['user'],

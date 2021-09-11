@@ -73,7 +73,7 @@ class BazarListeAction extends YesWikiAction
         
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
-        if (is_array($arg['displayfields'])) { // with bazarcarto this method is run twice
+        if (isset($arg['displayfields']) && is_array($arg['displayfields'])) { // with bazarcarto this method is run twice
             $displayFields = $arg['displayfields'];
         } else {
             $displayFields = [];
