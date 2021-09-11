@@ -10,9 +10,7 @@ use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
 
 class BazarListService
-{
-    protected $arguments = [];
-  
+{  
     public function __construct(Wiki $wiki, EntryManager $entryManager, EntryController $entryController,
                                 ExternalBazarService $externalBazarService, FormManager $formManager)
     {
@@ -23,42 +21,38 @@ class BazarListService
       $this->formManager = $formManager;
     }
 
-    public function setArguments($args) {
-      $this->arguments = $args;
-    }
-
-    public function getForms() : array
+    public function getForms($options) : array
     {
         // External mode activated ?
-        if ($this->arguments['externalModeActivated'] === true) {
+        if ($options['externalModeActivated'] === true) {
             return $this->externalBazarService
-                        ->getFormsForBazarListe($this->arguments['externalIds'], $this->arguments['refresh']);
+                        ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
         } else {
             return $this->formManager->getAll();
         }
     }
 
-    public function getEntries($forms = null) : array
+    public function getEntries($options, $forms = null) : array
     {
-        if (!$forms) $forms = $this->getForms();
+        if (!$forms) $forms = $this->getForms($options);
 
         // External mode activated ?
         // TODO BazarListdynamic test externalmode works
-        if ($this->arguments['externalModeActivated'] === true) {
+        if ($options['externalModeActivated'] === true) {
             $entries = $this->externalBazarService->getEntries([
                 'forms' => $forms,
-                'refresh' => $this->arguments['refresh'],
-                'queries' => $this->arguments['query']
+                'refresh' => $options['refresh'],
+                'queries' => $options['query']
             ]);
         } else {
             $entries = $this->entryManager->search(
                 [
-                    'queries' => $this->arguments['query'] ?? '',
-                    'formsIds' => $this->arguments['idtypeannonce'],
+                    'queries' => $options['query'] ?? '',
+                    'formsIds' => $options['idtypeannonce'],
                     'keywords' => $_REQUEST['q'] ?? '',
-                    'user' => $this->arguments['user'],
-                    'minDate' => $this->arguments['dateMin'],
-                    'correspondance' => $this->arguments['correspondance'] ?? ''
+                    'user' => $options['user'],
+                    'minDate' => $options['dateMin'],
+                    'correspondance' => $options['correspondance'] ?? ''
                 ],
                 true, // filter on read ACL,
                 true // use Guard
@@ -67,36 +61,36 @@ class BazarListService
         }
 
         // filter entries on datefilter parameter
-        if (!empty($this->arguments['datefilter'])) {
-            $entries = $this->entryController->filterEntriesOnDate($entries, $this->arguments['datefilter']) ;
+        if (!empty($options['datefilter'])) {
+            $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']) ;
         }
 
         // Sort entries
-        if ($this->arguments['random']) {
+        if ($options['random']) {
             shuffle($entries);
         } else {
-            usort($entries, $this->buildFieldSorter($this->arguments['ordre'], $this->arguments['champ']));
+            usort($entries, $this->buildFieldSorter($options['ordre'], $options['champ']));
         }
 
         // Limit entries
-        if ($this->arguments['nb'] !== '') {
-            $entries = array_slice($entries, 0, $this->arguments['nb']);
+        if ($options['nb'] !== '') {
+            $entries = array_slice($entries, 0, $options['nb']);
         }
 
         return $entries;
     }
 
-    public function formatFilters($entries, $forms) : array
+    public function formatFilters($options, $entries, $forms) : array
     {
-        if (count($this->arguments['groups'] ?? []) == 0) return [];
+        if (count($options['groups'] ?? []) == 0) return [];
         
         // Scanne tous les champs qui pourraient faire des filtres pour les facettes
         $facettables = $this->formManager
-                            ->scanAllFacettable($entries, $this->arguments['groups']);
+                            ->scanAllFacettable($entries, $options['groups']);
 
         if (count($facettables) == 0) return [];
         
-        if (!$forms) $forms = $this->getForms();
+        if (!$forms) $forms = $this->getForms($options);
         $filters = [];
         // Récupere les facettes cochees
         $tabfacette = [];
@@ -166,19 +160,19 @@ class BazarListService
 
             $idkey = htmlspecialchars($id);
 
-            $i = array_key_first(array_filter($this->arguments['groups'], function ($value) use ($idkey) {
+            $i = array_key_first(array_filter($options['groups'], function ($value) use ($idkey) {
                 return ($value == $idkey) ;
             }));
 
             $filters[$idkey]['icon'] =
-                (isset($this->arguments['groupicons'][$i]) && !empty($this->arguments['groupicons'][$i])) ?
-                    '<i class="'.$this->arguments['groupicons'][$i].'"></i> ' : '';
+                (isset($options['groupicons'][$i]) && !empty($options['groupicons'][$i])) ?
+                    '<i class="'.$options['groupicons'][$i].'"></i> ' : '';
 
             $filters[$idkey]['title'] =
-                (isset($this->arguments['titles'][$i]) && !empty($this->arguments['titles'][$i])) ?
-                    $this->arguments['titles'][$i] : $list['titre_liste'];
+                (isset($options['titles'][$i]) && !empty($options['titles'][$i])) ?
+                    $options['titles'][$i] : $list['titre_liste'];
 
-            $filters[$idkey]['collapsed'] = ($i != 0) && !$this->arguments['groupsexpanded'];
+            $filters[$idkey]['collapsed'] = ($i != 0) && !$options['groupsexpanded'];
 
             $filters[$idkey]['index'] = $i;
 

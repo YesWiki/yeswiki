@@ -181,10 +181,9 @@ class ApiController extends YesWikiController
     {
         try {
             $bazatListService = $this->getService(BazarListService::class);
-            $bazatListService->setArguments($_GET);
-            $forms = $bazatListService->getForms();
-            $entries = $bazatListService->getEntries($forms);     
-            $filters = $bazatListService->formatFilters($entries, $forms);  
+            $forms = $bazatListService->getForms($_GET);
+            $entries = $bazatListService->getEntries($_GET, $forms);     
+            $filters = $bazatListService->formatFilters($_GET, $entries, $forms);  
             
             // Basic fields
             $fieldList = ['id_fiche', 'bf_titre'];
