@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Core\Service\AclService;
@@ -14,14 +15,18 @@ class Guard
     protected $formManager;
     protected $userManager;
     protected $aclService;
+    protected $params;
+    protected $authorizedGroupsToEditForms;
 
-    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager, AclService $aclService)
+    public function __construct(Wiki $wiki, FormManager $formManager, UserManager $userManager, AclService $aclService, ParameterBagInterface $params)
     {
         $this->wiki = $wiki;
         $this->formManager = $formManager;
         $this->userManager = $userManager;
         $this->aclService = $aclService;
         $this->userManager = $userManager;
+        $this->params = $params;
+        $this->authorizedGroupsToEditForms = null;
     }
 
     // TODO remove this method and use YesWiki::HasAccess
@@ -47,8 +52,9 @@ class Guard
             case 'voir_mes_fiches':
                 return true;
 
-            case 'valider_fiche':
             case 'saisie_formulaire':
+                return $this->isUserInAuthorizedGroupsToEditForms();
+            case 'valider_fiche':
             case 'saisie_liste':
             default:
                 return false;
@@ -120,6 +126,46 @@ class Guard
         // check if user is owner
         if ($page['owner'] == $this->userManager->getLoggedUserName()) {
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * check if user in authorized groups to edit forms
+     * @return bool
+     */
+    private function isUserInAuthorizedGroupsToEditForms(): bool
+    {
+        $user = $this->userManager->getLoggedUser();
+        if (empty($user)) {
+            return false;
+        }
+        if (is_null($this->authorizedGroupsToEditForms)) {
+            $authorizedGroups = $this->params->get('baz_allowed_group_to_edit_forms');
+        
+            if (empty($authorizedGroups) || !is_array($authorizedGroups)) {
+                $this->authorizedGroupsToEditForms = [];
+            } else {
+                $groupsList = $this->wiki->GetGroupsList();
+                if (empty($groupsList)) {
+                    $this->authorizedGroupsToEditForms = [];
+                } else {
+                    $groupsList = array_map(function ($group) {
+                        return '@'.$group;
+                    }, $groupsList);
+                    $this->authorizedGroupsToEditForms = array_filter($authorizedGroups, function ($group) use ($groupsList) {
+                        return is_string($group) && (substr($group, 0, 1) === "@") && in_array($group, $groupsList);
+                    });
+                }
+            }
+        }
+        if (empty($this->authorizedGroupsToEditForms)) {
+            return false;
+        }
+        foreach ($this->authorizedGroupsToEditForms as $group) {
+            if ($this->wiki->UserIsInGroup(substr($group, 1))) {
+                return true;
+            }
         }
         return false;
     }

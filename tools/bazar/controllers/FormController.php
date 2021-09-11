@@ -60,14 +60,14 @@ class FormController extends YesWikiController
         return $this->render("@bazar/forms/forms_table.twig", [
             'message' => $message,
             'forms' => $values,
-            'userIsAdmin' => $this->wiki->UserIsAdmin(),
+            'canEditForms' => !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire'),
             'isWikiHibernated' => $this->securityController->isWikiHibernated()
         ]);
     }
 
     public function create()
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             if (isset($_POST['valider'])) {
                 $this->formManager->create($_POST);
 

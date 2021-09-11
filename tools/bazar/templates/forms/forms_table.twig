@@ -124,14 +124,14 @@
 </div>
 {% endif %}
 
-{% if userIsAdmin and not isWikiHibernated %}
+{% if canEditForms %}
   <a class="btn btn-primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
 {% else %}
   <button type="button" class="btn btn-primary" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage  }}">
 {% endif %}
   <i class="fa fa-plus icon-plus icon-white"></i>
   {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
-{% if userIsAdmin and not isWikiHibernated %}</a>{% else %}</button>{% endif %}
+{% if canEditForms %}</a>{% else %}</button>{% endif %}
 
 <hr>
 
@@ -141,9 +141,9 @@
 		<span class="add-on input-group-addon">
       <i class="fa fa-link icon-globe"></i>
     </span>
-		<input id="url-import-forms" class="form-control input-xxlarge" {% if not userIsAdmin or isWikiHibernated %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
+		<input id="url-import-forms" class="form-control input-xxlarge" {% if not canEditForms %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
 		<span class="input-group-btn">
-      <button id="btn-import-forms" {% if not userIsAdmin or isWikiHibernated %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
+      <button id="btn-import-forms" {% if not canEditForms %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} class="btn btn-primary" type="submit">{{ _t('BAZ_GO') }} !</button>
     </span>
 	</div>
   <p class="text-info">Exemple d'url pour obtenir des formulaires types: <code>https://yeswiki.net</code></p>

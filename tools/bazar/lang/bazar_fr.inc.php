@@ -324,6 +324,7 @@ $GLOBALS['translations'] = array_merge(
         'EDIT_CONFIG_HINT_baz_check_owner_acl_only_for_field_can_edit' => 'Tester les droits de lecture de type \'%\' uniquement pour l\'écriture des champs bazar (faux par défaut)',
         'EDIT_CONFIG_HINT_baz_enum_field_time_cache_for_json' => 'Temps (s) entre deux rafraîchissements du cache pour les requêtes JSON pour listefiche',
         'EDIT_CONFIG_HINT_bazarIgnoreAcls' => 'Permettre la création de fiches même si le wiki est fermé en écriture (true ou false)',
+        'EDIT_CONFIG_HINT_baz_allowed_group_to_edit_forms' => 'Liste des groupes autorisés à modifier les formulaires',
         'EDIT_CONFIG_GROUP_BAZAR' => 'Base de données',
 
     )
