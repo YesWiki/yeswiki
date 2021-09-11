@@ -368,7 +368,7 @@ var typeUserAttrs = {
       placeholder: "margot, interface, colibris",
     },
     squelette: { label: "Squelette", value: "1col.tpl.html" },
-    style: { label: "Style", placeholder: "bootstrap.min.css..." },
+    style: { label: "Style", placeholder: "bootstrap.css..." },
     image: { label: "Image de fond", placeholder: "foret.jpg..." },
   },
   bookmarklet: {},
