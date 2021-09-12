@@ -7,6 +7,8 @@ use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\DiffService;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 
@@ -116,5 +118,21 @@ class ApiController extends YesWikiController
             $pagesWithTag[$page['tag']] = $page;
         }
         return new ApiResponse(empty($pagesWithTag) ? null : $pagesWithTag);
+    }
+
+    /**
+     * @Route("/api/pages/{id}",options={"acl":{"public"}})
+     */
+    public function getPage($id)
+    {
+        $pageManager = $this->getService(PageManager::class);
+        $page = $pageManager->getById($id);
+        if (!empty($_GET['includeRender'])) {
+            $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
+        }
+        if (!empty($_GET['includeDiffFromId'])) {
+            $page['diff'] = $this->getService(DiffService::class)->getDiff($_GET['includeDiffFromId'], $id);
+        }
+        return new ApiResponse($page);
     }
 }

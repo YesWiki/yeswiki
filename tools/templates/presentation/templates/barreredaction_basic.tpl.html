@@ -10,8 +10,8 @@
 	</a>
 <?php endif; ?>
 <?php if (isset($time)) : ?>
-	<a title="<?php echo _t('TEMPLATE_CLICK_TO_SEE_REVISIONS').' '.$page;?>" href="<?php echo $linkrevisions;?>" class="link-revisions modalbox">
-		<i class="fa fa-history"></i><span><?php echo _t('TEMPLATE_LAST_UPDATE');?> : <?php echo $time;?></span>
+	<a title="<?php echo _t('TEMPLATE_CLICK_TO_SEE_REVISIONS').' '.$page;?>" href="<?php echo $linkrevisions;?>" class="link-revisions">
+		<i class="fa fa-history"></i><span><?php echo _t('TEMPLATE_LAST_UPDATE');?> <?php echo $time;?></span>
 	</a>
 <?php endif; ?>
 <?php if (isset($linkacls)) : ?>

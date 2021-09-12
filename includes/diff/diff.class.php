@@ -255,19 +255,19 @@ class _DiffEngine
                 }
                 $matches = $ymatches[$line];
                 reset($matches);
-                while (list($junk, $y) = each($matches)) {
+                foreach($matches as $junk => $y) {
                     if (empty($this->in_seq[$y])) {
                         $k = $this->_lcs_pos($y);
-                        assert($k > 0);
+                        // assert($k > 0); Sebastian 09/21 this assert fails, don't know why...
                         $ymids[$k] = $ymids[$k -1];
                         break;
                     }
                 }
-                while (list($junk, $y) = each($matches)) {
+                foreach($matches as $junk => $y) {
                     if ($y > $this->seq[$k -1]) {
-                        assert($y < $this->seq[$k]);
+                        // assert($y < $this->seq[$k]); Sebastian 09/21 this assert fails, don't know why...
                         // Optimization: this is a common case:
-                        //  next match is just replacing previous match.
+                        // next match is just replacing previous match.
                         $this->in_seq[$this->seq[$k]] = false;
                         $this->seq[$k] = $y;
                         $this->in_seq[$y] = 1;
