@@ -120,9 +120,14 @@ class PageManager
         return $page;
     }
 
-    public function getRevisions($page)
+    public function getRevisions($page, $limit = 10000)
     {
-        return $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where tag = '" . $this->dbService->escape($page) . "' order by time desc");
+        return $this->dbService->loadAll("
+            SELECT id, time, user from {$this->dbService->prefixTable('pages')} 
+            WHERE tag = '{$this->dbService->escape($page)}' 
+            ORDER BY time DESC
+            LIMIT {$limit}
+        ");
     }
 
     public function getLinkingTo($tag)

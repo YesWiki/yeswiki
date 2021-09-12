@@ -58,7 +58,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_EDIT_THIS_PAGE' => '&Eacute;diter la page',
     'TEMPLATE_WIKINAME_IS_NOT_A_PAGE' => 'Ce ChatMot n\'est pas une page',
     'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'Les derni&egrave;res modifications de la page',
-    'TEMPLATE_LAST_UPDATE' => 'Modifi&eacute;e le',
+    'TEMPLATE_LAST_UPDATE' => 'Dernière édition :',
     'TEMPLATE_OWNER' => 'Propri&eacute;taire',
     'TEMPLATE_YOU' => 'vous',
     'TEMPLATE_NO_OWNER' => 'Pas de propri&eacute;taire',
@@ -77,7 +77,7 @@ $GLOBALS['translations'] = array_merge(
     'TEMPLATE_SHARE' => 'Partager',
 
     // formatage des dates
-    'TEMPLATE_DATE_FORMAT' => 'd.m.Y \&\a\g\r\a\v\e; H:i:s',
+    'TEMPLATE_DATE_FORMAT' => 'd M Y',
 
     // recherche
     'TEMPLATE_SEARCH_INPUT_TITLE' => 'Rechercher dans YesWiki [alt-shift-C]',

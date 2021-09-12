@@ -479,4 +479,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
     'Il est possible de résoudre ceci en relançant une mise à jour. '.
     'En effet, ce dossier nécessite une mise à jour en deux fois. ',
 'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
+
+// handlers/revisions
+'SUCCESS_RESTORE_REVISION' => "La version a bien été restaurée"
 ));

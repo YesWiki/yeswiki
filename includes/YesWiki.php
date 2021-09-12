@@ -1468,14 +1468,6 @@ class Wiki
     }
 
     /**
-     * @deprecated Use PageManager::getRevisions instead
-     */
-    public function LoadRevisions($page)
-    {
-        return $this->services->get(PageManager::class)->getRevisions($page);
-    }
-
-    /**
      * @deprecated Use PageManager::getLinkingTo instead
      */
     public function LoadPagesLinkingTo($tag)

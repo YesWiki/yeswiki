@@ -5,8 +5,7 @@ use YesWiki\Security\Controller\SecurityController;
 if (!defined("WIKINI_VERSION")) {
     die("acc&egrave;s direct interdit");
 }
-
-if ($this->HasAccess("write")) {
+if ($this->HasAccess("write") && $this->method != "revisions") {
     // on récupére la page et ses valeurs associées
     $page = $this->GetParameter('page');
     if (empty($page)) {

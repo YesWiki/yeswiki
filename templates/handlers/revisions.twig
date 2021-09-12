@@ -1,0 +1,61 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript('javascripts/handlers/revisions.js') }}
+{{ include_css('styles/handlers/revisions.css') }}
+
+<div class="revisions-container" data-revisions="{{ revisions|json_encode }}">
+  <template v-if="selectedRevision">
+    
+    <h1 class="text-center text-default">Historique de la page</h1>
+
+    <div class="timeline-container">
+      <template v-for="revision in revisions">
+        <div class="timeline-item" :key="revision.id"
+            :style="timelineItemStyle(revision)"
+            :class="{active: selectedRevision == revision}"
+            @click="selectedRevision = revision">
+          
+        </div>
+        <span class="timeline-item-text" :style="timelineItemStyle(revision, false)">
+          N°{{"{{revision.number }}"}} - {{"{{revision.displayTime }}"}}
+        </span>
+      </template>
+      <div class="timeline-bar"></div>
+    </div>
+
+    <div class="revision-title-container">
+      <i class="fa fa-chevron-left fa-4x" @click="moveRevision(true)" :disabled="selectedRevision == firstRevision"></i>
+      <div class="text-center revision-title">
+        <h3 class="text-secondary-1">
+          Version N°{{"{{selectedRevision.number }}"}} du {{"{{selectedRevision.displayTime }}"}}
+          par {{"{{ selectedRevision.user }}"}}
+        </h3>        
+         <a :href="restoreUrl" class="btn btn-success btn-restore"
+            :disabled="selectedRevision == lastRevision"
+            v-text="selectedRevision == lastRevision ? 'Version actuelle' : 'Restaurer cette version'">
+        </a>
+      </div>
+      <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="selectedRevision == lastRevision"></i>
+    </div>
+    
+    <ul class="view-types-selector nav nav-tabs">
+      <li v-for="label, type in viewTypes" role="presentation"
+          :class="{active: selectedViewType == type}"
+          @click="selectedViewType = type">
+          <a href="#" v-text="label"></a>
+      </li>
+    </ul>
+
+    <div class="preview-container">
+      <div v-if="selectedViewType == 'html'" v-html="selectedRevision.html"></div>
+      <pre v-if="selectedViewType == 'code'" v-html="selectedRevision.body"></pre>
+      <template v-if="selectedViewType == 'diff'">
+        <div v-if="selectedRevision.diff" v-html="selectedRevision.diff"></div>
+        <div v-else class="text-center">Aucune différence à afficher. Cette version est là plus ancienne chargée en mémoire</div>
+      </template>
+      
+      <div class="text-center text-soft spinner-loader" v-if="!selectedRevision.html">
+        <i class="fas fa-circle-notch fa-spin fa-4x"></i>
+      </div>
+    </div>
+  </template>
+</div>
