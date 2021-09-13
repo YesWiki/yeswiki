@@ -44,6 +44,5 @@ $GLOBALS['translations'] = array_merge(
         'AU_PHP_TOO_LOW_FORCE_UPDATE' => "réinstaller YesWiki",
         'AU_CHANGELOG' => "Notes de versions",
         'AU_CHANGELOG_HINT' => "Cliquer pour découvrir les dernières modifications incluses dans la mise à jour de YesWiki",
-        'AU_UPDATED_TWICE' => "Une second mise à jour a été relancée pour terminer l'intallation de cette version. Veuillez à nouveau cliquer sur le lien suivant pour la finaliser !",
     )
 );

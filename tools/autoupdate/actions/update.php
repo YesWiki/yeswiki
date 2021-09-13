@@ -89,7 +89,6 @@ if ($endUpdate) {
     $output .= $this->render("@autoupdate/update.twig", [
         'messages' => $data['messages'],
         'baseUrl' => $data['baseURL'],
-        'updateAlreadyForced' => (isset($_GET['updateAlreadyForced']) && $_GET['updateAlreadyForced'] == 1) ? true : false,
     ]);
     echo $output ;
 } else {
