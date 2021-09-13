@@ -44,5 +44,7 @@ $GLOBALS['translations'] = array_merge(
         'AU_PHP_TOO_LOW_FORCE_UPDATE' => "réinstaller YesWiki",
         'AU_CHANGELOG' => "Notes de versions",
         'AU_CHANGELOG_HINT' => "Cliquer pour découvrir les dernières modifications incluses dans la mise à jour de YesWiki",
+        'AU_YESWIKI_SECOND_TIME_UPDATE' => "Seconde mise à jour du cœur YesWiki",
+        'AU_FILE_NOT_POSSIBLE_TO_UPDATE' => "Il n'a pas été possible de mettre à jour le fichier '{{file}}' ! Ceci pourrait entraîner des disfonctionnements mineurs.",
     )
 );

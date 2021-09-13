@@ -85,6 +85,54 @@ if ($endUpdate) {
     } else {
         $output = '' ;
     }
+    // check presence of specific files
+    $filesToCheck = ['templates/edit-config.twig']; // only present if templates folder is updated
+    $filesToCheck = $filesToCheck + PackageCore::FILES_TO_ADD_TO_IGNORED_FOLDERS; 
+    $notExistingFiles = array_filter($filesToCheck,function($file){
+        return !file_exists($file);
+    });
+    if (!empty($notExistingFiles) && !isset($data['updateAlreadyForced'])){
+        $data['updateAlreadyForced'] = true;
+        // redo update
+        $autoUpdate = new AutoUpdate($this);
+        $get['upgrade'] = 'yeswiki';
+        $messages = new Messages();
+        $controller = new Controller($autoUpdate, $messages, $this);
+        $upgradeYWMessages = $controller->run($get);
+        if (!empty($upgradeYWMessages)) {
+            $data['messages'][] = [
+                'status'=>'ok',
+                'text'=> '=== '._t('AU_YESWIKI_SECOND_TIME_UPDATE').' ===',
+            ];
+            // extract messages
+            $matches = [];
+            if (preg_match_all(
+                '/<li class="list-group-item">\s*<span class="pull-right label [^"]*">([^<]*)<\/span>\s([^<]*)/',
+                $upgradeYWMessages,
+                $matches
+            )) {
+                foreach ($matches[0] as $index => $match) {
+                    $data['messages'][] = [
+                        'status'=>$matches[1][$index],
+                        'text'=> str_replace("&#039;", "'", $matches[2][$index])
+                    ];
+                }
+            }
+            $_SESSION['updateMessage'] = json_encode($data);
+            $newAdress = $data['baseURL'];
+            header("Location: ".$newAdress);
+            exit();
+        }
+    } else {
+        unset($data['updateAlreadyForced']);
+        foreach ($notExistingFiles as $file) {
+            $data['messages'][] = [
+                'status'=>'not ok',
+                'text'=> str_replace('{{file}}',$file,_t('AU_FILE_NOT_POSSIBLE_TO_UPDATE')),
+            ];
+        }
+    }
+
     // finished rendering of autoupdate
     $output .= $this->render("@autoupdate/update.twig", [
         'messages' => $data['messages'],

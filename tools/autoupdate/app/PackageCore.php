@@ -17,9 +17,7 @@ class PackageCore extends Package
     
     public const FILES_TO_ADD_TO_IGNORED_FOLDERS = [
         'files/README.md',
-        'files/AdaLovelace_ada_byron.jpg',
         'files/LovelaceAda_lovelace.png',
-        'files/ElizabethJFeinler_elizabethfeinler.jpg',
         'files/ElizabethJFeinler_elizabethfeinler-2011.jpg',
         'files/TesT2_presence-photo.png',
         'files/UnBeauLogoPourYeswiki_yeswiki-logo.png',
@@ -27,7 +25,6 @@ class PackageCore extends Package
         'files/YeswikidaY_yeswiki-logo.png',
         'files/GererSite_modele_19880101000000_23001231235959.jpg',
         'files/PageHeader_bandeau1_19880101000000_23001231235959.png',
-        'files/yeswiki-logo.png',
         'themes/README.md',
         'templates/README.md',
         'cache/README.md',
