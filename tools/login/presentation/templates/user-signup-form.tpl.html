@@ -22,7 +22,8 @@
 		<label class="control-label col-sm-3"><?php echo _t('USER_EMAIL_ADDRESS');?></label>
 		<div class="controls col-sm-9">
 			<input class="form-control" name="email" size="40" value="<?php echo $email; ?>" 
-				pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}"/>
+				pattern="[!#-'*+/-9=?A-Za-z^-~-]+(?:\.[!#-'*+/-9=?A-Z^-~-]+)*@(?:[!#-'*+/-9=?A-Z^-~-]+\.[!#-'*+/-9=?A-Z^-~-]+)*"/><?php
+				// pattern inspired from RFC 5322 ?>
 		</div>
 	</div>
 	<div class="control-group form-group">
