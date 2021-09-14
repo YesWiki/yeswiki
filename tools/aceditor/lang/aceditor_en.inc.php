@@ -79,5 +79,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], array(
 
 
 // for edit config
-'EDIT_CONFIG_HINT_actionbuilder_textarea_name' => 'Textarea field\'s name for which components are activated',
+'EDIT_CONFIG_HINT_ACTIONBUILDER_TEXTAREA_NAME' => 'Textarea field\'s name for which components are activated',
+'EDIT_CONFIG_GROUP_ACEDITOR' => 'Edit bar for pages and text fields',
 ));
