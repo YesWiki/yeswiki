@@ -326,8 +326,11 @@ class EditConfigAction extends YesWikiAction
             } elseif (is_array($key)) {
                 foreach ($key as $firstLevelKey => $secondLevelKeys) {
                     foreach ($secondLevelKeys as $secondLevelKey) {
-                        if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']'])) {
-                            $help[$firstLevelKey.'['.$secondLevelKey.']'] = _t('EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']');
+                        $hintKey = 'EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']';
+                        if (isset($GLOBALS['translations'][$hintKey])) {
+                            $help[$firstLevelKey.'['.$secondLevelKey.']'] = _t($hintKey);
+                        } elseif (isset($GLOBALS['translations'][strtoupper($hintKey)])) {
+                            $help[$firstLevelKey.'['.$secondLevelKey.']'] = _t(strtoupper($hintKey));
                         }
                     }
                 }
