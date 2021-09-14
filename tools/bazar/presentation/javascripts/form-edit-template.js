@@ -346,8 +346,9 @@ var typeUserAttrs = {
     },
   },
   labelhtml: {
+    type: "textarea",
     label: { value: "Custom HTML" },
-    content_saisie: { label: "Contenu lors la saisie" },
+    content_saisie: { label: "Contenu lors de la saisie" },
     content_display: { label: "Contenu lors de l'affichage d'une fiche" },
   },
   utilisateur_wikini: {
