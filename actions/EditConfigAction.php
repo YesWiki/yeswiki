@@ -321,9 +321,13 @@ class EditConfigAction extends YesWikiAction
     {
         $help = [];
         foreach ($this->getAuthorizedKeys()[0] as $key) {
-            if (!is_array($key) && isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
-                $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
-            } elseif (is_array($key)) {
+            if (!is_array($key)) {
+                if (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.$key])) {
+                    $help[$key] = _t('EDIT_CONFIG_HINT_'.$key);
+                } elseif (isset($GLOBALS['translations']['EDIT_CONFIG_HINT_'.strtoupper($key)])) {
+                    $help[$key] = _t('EDIT_CONFIG_HINT_'.strtoupper($key));
+                }
+            } else {
                 foreach ($key as $firstLevelKey => $secondLevelKeys) {
                     foreach ($secondLevelKeys as $secondLevelKey) {
                         $hintKey = 'EDIT_CONFIG_HINT_'.$firstLevelKey.'['.$secondLevelKey.']';
