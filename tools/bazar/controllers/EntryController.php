@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
@@ -98,7 +99,7 @@ class EntryController extends YesWikiController
                         $titleField = $field;
                         unset($formFields[$index]);
                     }
-                    if ($field->getType() == 'image') {
+                    if (is_null($imageField) && ($field instanceof ImageField)) {
                         $imageField = $field;
                         unset($formFields[$index]);
                     }
