@@ -83,11 +83,11 @@ class Guard
                         // cas des formulaires champs mails, qui ne doivent pas apparaitre en /raw
                         if ($field instanceof EmailField
                                 && $field->getShowContactForm() == 'form'
-                                && ($this->wiki->getMethod() == 'raw'
-                                || $this->wiki->getMethod() == 'diff'
-                                || $this->wiki->getMethod() == 'json'
-                                || $this->wiki->getMethod() == 'hello'
-                                || $this->wiki->GetPageTag() == 'api')
+                                && (
+                                    !in_array($this->wiki->getMethod(), ['show','edit','editiframe'])
+                                    ||
+                                    $this->wiki->GetPageTag() == 'api'
+                                )
                                 ) {
                             $fieldname[] = $field->getPropertyName();
                         }

@@ -8,7 +8,6 @@ class HelloHandler extends YesWikiHandler
     {
         // check access to not give access to protected pages
         if ($this->wiki->HasAccess("read")) {
-            // be carefull hello handler aws added in tools/bara/services/Guard to secured handlers
             $pageBody = $this->wiki->page['body'];
             return $this->renderInSquelette('@helloworld/hello.twig', ['body' => $pageBody]);
         } else {
