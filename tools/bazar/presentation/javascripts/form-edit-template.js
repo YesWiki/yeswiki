@@ -346,10 +346,9 @@ var typeUserAttrs = {
     },
   },
   labelhtml: {
-    type: "textarea",
     label: { value: "Custom HTML" },
-    content_saisie: { label: "Contenu lors de la saisie" },
-    content_display: { label: "Contenu lors de l'affichage d'une fiche" },
+    content_saisie: { label: "Contenu lors de la saisie", type: "textarea", rows: "4" },
+    content_display: { label: "Contenu lors de l'affichage d'une fiche", type: "textarea", rows: "4"  },
   },
   utilisateur_wikini: {
     name_field: { label: "Champ pour le nom d'utilisateur", value: "bf_titre" },
