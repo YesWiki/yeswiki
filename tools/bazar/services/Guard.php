@@ -86,6 +86,7 @@ class Guard
                                 && ($this->wiki->getMethod() == 'raw'
                                 || $this->wiki->getMethod() == 'diff'
                                 || $this->wiki->getMethod() == 'json'
+                                || $this->wiki->getMethod() == 'hello'
                                 || $this->wiki->GetPageTag() == 'api')
                                 ) {
                             $fieldname[] = $field->getPropertyName();
