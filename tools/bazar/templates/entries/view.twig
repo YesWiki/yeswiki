@@ -38,10 +38,12 @@
       {% endif %}
 
       <div class="BAZ_actions_fiche">
-        <a class="btn btn-entry-action btn-sm btn-default" href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
-          <i class="fa fa-eye"></i>
-          <span>{{ _t('BAZ_SEE_ENTRY') }}</span>
-        </a>
+        {% if canShow %}
+          <a class="btn btn-entry-action btn-sm btn-default" href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
+            <i class="fa fa-eye"></i>
+            <span>{{ _t('BAZ_SEE_ENTRY') }}</span>
+          </a>
+        {% endif %}
         {% if not entry['external-data'] %}
           {% if canEdit %}
             <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">

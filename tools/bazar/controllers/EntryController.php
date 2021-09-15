@@ -125,6 +125,7 @@ class EntryController extends YesWikiController
             "owner" => $owner,
             "message" => $_GET['message'] ?? '',
             "showFooter" => $showFooter,
+            "canShow" => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
             "canEdit" =>  !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
             "canDelete" => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() or $this->wiki->UserIsOwner()),
             "isAdmin" => $this->wiki->UserIsAdmin(),
