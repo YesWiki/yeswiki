@@ -279,8 +279,14 @@ $(document).ready(function () {
       $('html, body').animate({
         scrollTop: $('#formulaire .bootstrap-tagsinput.invalid').offset().top - 80,
       }, 500);
-    }
+    } else if ($('#formulaire .geocode-input.required').length > 0 && !$('#formulaire .geocode-input #bf_latitude').val()) {
+      alert("Vous devez géolocaliser l'adresse");
 
+      //on remonte en haut du formulaire
+      $('html, body').animate({
+        scrollTop: $('#formulaire .geocode-input').offset().top - 80,
+      }, 500);
+    }
     // formulaire validé, on soumet le formulaire
     else {
       return true;

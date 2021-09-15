@@ -11,11 +11,13 @@ class MapField extends BazarField
 {
     protected $latitudeField;
     protected $longitudeField;
+    protected $required;
     protected $autocomplete;
 
     protected const FIELD_LATITUDE_FIELD = 1;
-    protected const FIELD_LONGITUDE_FIELD = 2;
+    protected const FIELD_LONGITUDE_FIELD = 2;   
     protected const FIELD_AUTOCOMPLETE = 5;
+    protected const FIELD_REQUIRED = 8;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -23,6 +25,7 @@ class MapField extends BazarField
 
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
+        $this->required = $values[self::FIELD_REQUIRED] === "1";
         $this->autocomplete = $values[self::FIELD_AUTOCOMPLETE];
 
         $this->propertyName = 'geolocation';
@@ -163,9 +166,6 @@ class MapField extends BazarField
             });
             var fields = ["#bf_adresse", "#bf_adresse1", "#bf_adresse2", "#bf_ville", "#bf_code_postal", "#bf_pays"]
             fields = fields.map((id) => $(id)).filter((field) => field.length > 0)
-            fields.forEach((field) => {
-                field.on("blur", () => showAddress(map))
-            })
 
             function showAddress(map) {
                 var address = "";
@@ -269,6 +269,7 @@ class MapField extends BazarField
         $GLOBALS['wiki']->AddJavascript($initMapScript.$geoCodingScript);
 
         return $this->render("@bazar/inputs/map.twig", [
+            'required' => $this->required,
             'latitude' => is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null,
             'longitude' => is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null
         ]);

@@ -522,6 +522,7 @@ var yesWikiMapping = {
     2: "name_longitude",
     3: "?",
     4: "?",
+    8: "required"
   },
   date: { ...defaultMapping, ...{ 5: "today_button" } },
   image: {

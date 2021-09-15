@@ -33,7 +33,6 @@
 
 .map-field .label-wrap,
 .map-field .value-wrap,
-.map-field .required-wrap,
 .map-field .name-wrap {
   display: none !important;
 }
