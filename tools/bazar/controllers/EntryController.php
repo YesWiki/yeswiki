@@ -90,7 +90,23 @@ class EntryController extends YesWikiController
         // if not found, use default template
         if (is_null($renderedEntry)) {
             if (!empty($form)) {
-                foreach ($form['prepared'] as $field) {
+                $formFields = $form['prepared'];
+                // Move Title and Image field in first position
+                $titleField = null; $imageField = null;
+                foreach ($formFields as $index => $field) {
+                    if ($field->getPropertyName() == 'bf_titre') {
+                        $titleField = $field;
+                        unset($formFields[$index]);
+                    }
+                    if ($field->getType() == 'image') {
+                        $imageField = $field;
+                        unset($formFields[$index]);
+                    }
+                }
+                if ($titleField) array_unshift($formFields, $titleField);
+                if ($imageField) array_unshift($formFields, $imageField);
+
+                foreach ($formFields as $field) {
                     if ($field instanceof BazarField) {
                         // TODO handle html_outside_app mode for images
                         $renderedEntry .= $field->renderStaticIfPermitted($entry);
