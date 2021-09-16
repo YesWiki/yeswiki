@@ -12,6 +12,7 @@ class EditConfigAction extends YesWikiAction
         'root_page' => 'core',
         'default_language' => 'core',
         'debug' => 'core',
+        'timezone' => 'core',
 
         'default_read_acl' => 'access',
         'default_write_acl' => 'access',

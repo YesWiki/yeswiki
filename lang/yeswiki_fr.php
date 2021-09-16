@@ -463,6 +463,7 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING' => 'Mot de passe demandé pour modifier les pages',
 'EDIT_CONFIG_HINT_PASSWORD_FOR_EDITING_MESSAGE' => 'Message informatif pour demander le mot de passe',
 'EDIT_CONFIG_HINT_ALLOW_DOUBLECLIC' => 'Autoriser le doubleclic pour éditer les menus et pages spéciales',
+'EDIT_CONFIG_HINT_TIMEZONE' => 'Fuseau horaire du site (ex. UCT, Europe/Paris, Europe/London, GMT = utiliser celui du serveur,)',
 'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
 'EDIT_CONFIG_GROUP_ACCESS' => "Droit d'accès",
 'EDIT_CONFIG_GROUP_EMAIL' => 'Emails',
