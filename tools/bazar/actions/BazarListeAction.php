@@ -211,7 +211,8 @@ class BazarListeAction extends YesWikiAction
                     'minDate' => $this->arguments['dateMin'],
                     'correspondance' => $this->arguments['correspondance'] ?? ''
                 ],
-                true // filter on read ACL
+                true, // filter on read ACL
+                true, // use Guard
             );
 
             // call to appendDisplayData removed because already done in EntryManager->search
