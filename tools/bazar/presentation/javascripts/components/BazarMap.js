@@ -25,9 +25,9 @@ Vue.component('BazarMap', {
     },
     mapOptions() {
       return {
-        scrollWheelZoom: JSON.parse(this.params.zoom_molette),
-        zoomControl: JSON.parse(this.params.navigation),
-        fullscreenControl: JSON.parse(this.params.fullscreen),
+        scrollWheelZoom: this.params.zoom_molette,
+        zoomControl: this.params.navigation,
+        fullscreenControl: this.params.fullscreen,
         fullscreenControlOptions: {
           forceSeparateButton: true,
           title: 'Mode plein écran', // change the title of the button, default Full Screen

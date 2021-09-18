@@ -2,8 +2,8 @@
 <?php
 if (count($fiches)>0) :
     $js = '';
-	// TODO: y-a-t'il pagination en mode carto ?
-	echo $pager_links;
+		// TODO: y-a-t'il pagination en mode carto ?
+		echo $pager_links;
 
     $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/bazarcarto.css');
@@ -18,7 +18,7 @@ if (count($fiches)>0) :
     <?php
     $tablinktitle = array();
 
-    if ($param['spider'] == 'true' or $param['spider'] == '1') {
+    if ($param['spider']) {
 
         $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js');
         $markersjs = 'var popups = Array();'."\n".'oms = new OverlappingMarkerSpiderfier(map'.$param['nbbazarliste'].');'."\n".
@@ -30,7 +30,7 @@ if (count($fiches)>0) :
           map'.$param['nbbazarliste'].'.closePopup();
         });'."\n";
 
-    } elseif ($param['cluster'] == 'true' or $param['cluster'] == '1') {
+    } elseif ($param['cluster']) {
 
       $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-markercluster/leaflet.markercluster.css');
       $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.js');
@@ -40,16 +40,13 @@ if (count($fiches)>0) :
         $markersjs = '';
     }
 
-    if ($param['fullscreen'] == 'true' || $param['fullscreen'] == '1') {
-		$param['fullscreen'] = 'true';
+    if ($param['fullscreen']) {
       $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
       $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
-	} else {
-		$param['fullscreen'] = 'false' ;
-	}
+		} 
 
-	$i = 0;
-	foreach ($fiches as $fiche) :?>
+		$i = 0;
+		foreach ($fiches as $fiche) :?>
 			<?php
 
 			// couleur de marqueur
@@ -107,14 +104,17 @@ if (count($fiches)>0) :
 	if ($param['cluster'] == 'true' or $param['cluster'] == '1') {
 			$markersjs .= 'map'.$param['nbbazarliste'].'.addLayer(markerscluster);'."\n";
 	}
-	$js .=
-			'// Init leaflet map
-		var map'.$param['nbbazarliste'].' = new L.Map(\'osmmap'.$param['nbbazarliste'].'\', {
-				scrollWheelZoom:'.$param['zoom_molette'].',
-				zoomControl:'.$param['navigation'].',
-		fullscreenControl:'.$param['fullscreen'].',
-				iconAnchor:   [6, 20]
-		});';
+	$param['zoom_molette'] = json_encode($param['zoom_molette']);
+	$param['navigation'] = json_encode($param['navigation']);
+	$param['fullscreen'] = json_encode($param['fullscreen']);
+	$js .= "// Init leaflet map
+		var map{$param['nbbazarliste']} = new L.Map('osmmap{$param['nbbazarliste']}', {
+				scrollWheelZoom: {$param['zoom_molette']},
+				zoomControl: {$param['navigation']},
+			  fullscreenControl: {$param['fullscreen']},
+				iconAnchor: [6, 20]
+		});
+	";
 
 
 	// Pas de L.control.layers
