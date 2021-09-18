@@ -18,7 +18,7 @@ Vue.component('BazarMap', {
   },    
   computed: {
     entries() {
-      return this.$root.entriesToDisplay
+      return this.$root.entriesToDisplay.filter(entry => entry.bf_latitude && entry.bf_longitude)
     },
     map() {
       return this.$refs.map ? this.$refs.map.mapObject : null
@@ -111,8 +111,11 @@ Vue.component('BazarMap', {
           if (this.params.cluster) {
             this.$refs.cluster.addLayers(markers)
           } else {
-            oldVal.forEach(entry => entry.marker.remove())
-            markers.forEach(marker => marker.addTo(this.map))
+            oldVal.filter(entry => entry.marker).forEach(entry => entry.marker.remove())
+            this.entries.forEach(entry => {
+              try { entry.marker.addTo(this.map) }
+              catch(error) { console.error(`Entry ${entry.id_fiche} has invalid geolocation`, error) }
+            })
           }
         })
       }
