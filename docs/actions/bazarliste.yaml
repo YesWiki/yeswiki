@@ -288,7 +288,7 @@ actions:
     properties:
       template:
         value: agenda
-      correspondence:
+      correspondance:
         type: correspondance
         subproperties:
           bf_date_debut_evenement:
@@ -304,7 +304,7 @@ actions:
     properties:
       template:
         value: calendar
-      correspondence:
+      correspondance:
         type: correspondance
         subproperties:
           bf_date_debut_evenement:
@@ -358,7 +358,7 @@ actions:
         default:
         checkedvalue: 1
         uncheckedvalue:
-      correspondence:
+      correspondance:
         type: correspondance
         subproperties:
           bf_baseline:
@@ -392,7 +392,7 @@ actions:
       couleur:
         label: Couleur du damier
         type: color
-      correspondence:
+      correspondance:
         type: correspondance
         hint: Ce template est fortement customisable
         doclink: https://yeswiki.net/?DamierTplHtml2
@@ -408,7 +408,7 @@ actions:
     properties:
       template:
         value: timeline
-      correspondence:
+      correspondance:
         type: correspondance
         subproperties:
           bf_date_debut_evenement:
@@ -443,7 +443,7 @@ actions:
         checkedvalue: oui
         uncheckedvalue:
         advanced: true
-      correspondence:
+      correspondance:
         type: correspondance
         subproperties:
           bf_titre:
@@ -523,7 +523,7 @@ actions:
         default: 0
         checkedvalue: 1
         uncheckedvalue: 0
-      correspondence:
+      correspondance:
         type: correspondance
         subproperties:
           date_creation_fiche:
