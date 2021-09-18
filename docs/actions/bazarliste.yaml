@@ -29,6 +29,7 @@ actions:
           - bazarliste
           - bazarcarto
         type: checkbox
+        advanced: true
       pagination:
         label: Nombre de fiches par page
         hint: Laisser vide pour ne pas utiliser la pagination
@@ -197,7 +198,7 @@ actions:
         label: _t(AB_bazar_commons2_resetfiltersbutton_label)
         advanced: true
         type: checkbox
-        default: 1
+        default: 0
         checkedvalue: 1
         uncheckedvalue: 0
         showif: facettes
@@ -217,7 +218,7 @@ actions:
         label: Fond de carte
         required: true
         type: list
-        default: Stadia.OSMBright
+        default: OpenStreetMap.Mapnik # TODO change to Stadia.OSMBright if community agrees?
         options:
           - OpenStreetMap.Mapnik
           - OpenStreetMap.BlackAndWhite
