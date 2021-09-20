@@ -123,7 +123,7 @@ if (! $this->UserIsAdmin()) {
     $liste_pages = $this->Query('SELECT * FROM '.$table."pages WHERE latest='Y' ".($search ?? '')."ORDER BY "
         .$table.'pages.tag ASC');
 
-    echo '<form method="post" action="'.$this->href().'" class="form-acls form-inline">';
+    echo '<form method="post" action="'.$this->href(null, null, (!empty($filter) ? ['filter' => $filter] : [])).'" class="form-acls form-inline">';
 ?>
 
 <?php
