@@ -56,7 +56,7 @@
 {% elseif not core.updateAvailable %}
     {% if isAdmin %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ baseUrl }}{{ core.updateLink }}"
+            <a  href="{{ url({params:{upgrade:core.updateLink}})  }}"
                 class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
                 {{ _t('AU_FORCE_UPDATE') }}
             </a>
