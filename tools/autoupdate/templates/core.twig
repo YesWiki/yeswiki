@@ -9,7 +9,7 @@
 {% if core.newVersionRequested %}
     {% if isAdmin %}
         {% if core.PHPVersionEnoughHigh %}
-            <a  href="{{ baseUrl }}{{ core.updateLink }}"
+            <a  href="{{ url({params:{upgrade:core.updateLink}}) }}"
                 class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
                 {{ _t('AU_VERSION_UPDATE') }}
             </a>
@@ -33,7 +33,7 @@
     {% if isAdmin %}
         {% if core.PHPVersionEnoughHigh %}
             <p> {{ _t('AU_WARNING') }} </p>
-            <a  href="{{ baseUrl}}{{ core.updateLink }}"
+            <a  href="{{ url({params:{upgrade:core.updateLink}}) }}"
                 class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
                 {{ _t('AU_UPDATE') }}
             </a>

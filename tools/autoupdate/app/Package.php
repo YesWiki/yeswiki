@@ -36,7 +36,7 @@ abstract class Package extends Files
         $this->description = $desc;
         $this->documentation = $doc;
         $this->name = $this->name();
-        $this->updateLink = '&upgrade=' . $this->name;
+        $this->updateLink = $this->name;
         $this->localRelease = $this->localRelease();
         $this->minimalPhpVersion = $minimalPhpVersion;
     }
