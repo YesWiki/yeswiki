@@ -68,7 +68,7 @@
             <button class="btn btn-default btn-xs"
               data-key="<?php echo $key ;?>"
               onclick="javascript:deleteCSSPreset(this,'<?php echo _t('TEMPLATE_DELETE_CSS_PRESET').' '.$key.' ?' ;?>',
-                '<?php echo $wiki->Href('templates/custom-presets/'.$key,'api');?>');">
+                '<?php echo $wiki->Href('templates/custom-presets/'.$key,($wiki->config['rewrite_mode'] ? '?':'').'api');?>');">
               <i class="fas fa-trash"></i>
             </button>
           <?php endif; ?>  
@@ -223,7 +223,7 @@
       </div>
       <button type="button" class="btn btn-primary btn-block"
         onclick="javascript:saveCSSPreset(this,
-          '<?php echo $wiki->Href('templates/custom-presets/','api');?>');">
+          '<?php echo $wiki->Href('templates/custom-presets/', ($wiki->config['rewrite_mode'] ? '?':'').'api').'\','.($wiki->config['rewrite_mode'] ? '1':'0');?>);">
         <?php echo _t('TEMPLATE_SAVE'); ?>
       </button>
     <?php endif ; ?>

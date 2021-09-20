@@ -210,7 +210,7 @@ function getStyleValueEvenIfNotInitialized(prop){
     }
     return value ;
 }
-function saveCSSPreset(elem,url){
+function saveCSSPreset(elem,url,rewriteMode){
     event.preventDefault();
     var fileName = $(elem).prev().find('input[name=filename]').val();
     fileName = fileName.replace('.css','');
@@ -243,10 +243,10 @@ function saveCSSPreset(elem,url){
         success: function(data,textStatus,jqXHR){
             console.log(fullFileName+' added !');
             var urlwindow = window.location.toString();
-            let urlAux = urlwindow.split("&theme=");
+            let urlAux = urlwindow.split((rewriteMode ? "?" : "&")+"theme=");
             window.location =
                 urlAux[0] +
-                "&theme=" +
+                (rewriteMode ? "?" : "&")+"theme=" +
                 $("#changetheme").val() +
                 "&squelette=" +
                 $("#changesquelette").val() +
