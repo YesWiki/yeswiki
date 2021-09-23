@@ -71,19 +71,19 @@ class BazarCartoAction extends YesWikiAction
             // Niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
             'zoom' => $_GET['zoom'] ?? $arg['zoom'] ?? $this->params->get('baz_map_zoom'),
             // Affiche outil de navigation
-            'navigation' => $this->formatBoolean($arg, $this->params->get('baz_show_nav'), 'navigation'),
+            'navigation' => $_GET['navigation'] ?? $arg['navigation'] ?? $this->params->get('baz_show_nav'),
             // Zoom sur molette
-            'zoom_molette' => $this->formatBoolean($arg, $this->params->get('baz_wheel_zoom'), 'zoommolette'),
+            'zoom_molette' => $arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom'),
             // Affichage en eclate des points superposes : true or false
             'spider' => $this->formatBoolean($arg, false, 'spider'),
             // Affichage en cluster : true or false
             'cluster' => $this->formatBoolean($arg, false, 'cluster'),
             // Ajout bouton plein écran (https://github.com/brunob/leaflet.fullscreen)
-            'fullscreen' => $this->formatBoolean($arg, true, 'fullscreen'),
+            'fullscreen' => $arg['fullscreen'] ?? 'true',
             // Fournit une configuration JSON via un URL
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
             //template - default value map
-            'template' => $arg['template'] ?? 'map',
+            'template' => $arg['template'] ?? 'map.tpl.html',
 
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1 // disable pagination
