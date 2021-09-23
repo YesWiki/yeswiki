@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Controller\ApiController as BazarApiController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\EmailField;
 use YesWiki\Core\Service\AclService;
@@ -92,14 +93,9 @@ class Guard
                                     ||
                                     (
                                         $this->wiki->GetPageTag() == 'api'
-                                        && !(
-                                            // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
-                                            (substr(array_keys($_GET)[0], 0, strlen('api/entries/html/')) == 'api/entries/html/')
-                                            &&
-                                            isset($_GET['fields'])
-                                            &&
-                                            ($_GET['fields'] == 'html_output')
-                                        )
+                                        &&
+                                        // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
+                                        !$this->wiki->services->get(BazarApiController::class)->isEntryViewFastAccessHelper()
                                     )
                                 )
                             ) {

@@ -47,22 +47,6 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-        // fast access for one entry
-        if (empty($formId) && $output == 'html'
-                && !empty($selectedEntries) && is_string($selectedEntries) && count(explode(',', $selectedEntries)) == 1
-                && !empty($_GET['fields']) && $_GET['fields'] == 'html_output') {
-            $entryId = explode(',', $selectedEntries)[0];
-            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
-                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
-            } else {
-                $html = $this->render('@templates/alert-message.twig', [
-                    'type' => 'info',
-                    'message' => _t('ERROR_NO_ACCESS')
-                ]);
-            }
-            return new ApiResponse(empty($html) ? null : [$entryId => ['html_output' => $html]]);
-        }
-
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
             'queries' => $this->getService(EntryController::class)
@@ -106,7 +90,51 @@ class ApiController extends YesWikiController
      */
     public function getAllEntries($output = null, $selectedEntries = null)
     {
+        // fast access for one entry
+        if ($this->isEntryViewFastAccess($output, $selectedEntries, $_GET)) {
+            $entryId = explode(',', $selectedEntries)[0];
+            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
+                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+            } else {
+                $html = $this->render('@templates/alert-message.twig', [
+                    'type' => 'info',
+                    'message' => _t('ERROR_NO_ACCESS')
+                ]);
+            }
+            return new ApiResponse(empty($html) ? null : [$entryId => ['html_output' => $html]]);
+        }
         return $this->getAllFormEntries([], $output, $selectedEntries);
+    }
+
+    /**
+     * helper to check if EntryView fast access
+     * @param null|string $output
+     * @param null|string $selectedEntries
+     * @param null|array $get
+     * @param bool
+     */
+    private function isEntryViewFastAccess($output, $selectedEntries, $get): bool
+    {
+        return ($output == 'html'
+            && !empty($selectedEntries) && is_string($selectedEntries) && count(explode(',', $selectedEntries)) == 1
+            && !empty($get['fields']) && $get['fields'] == 'html_output');
+    }
+    
+    /**
+     * helper to check if EntryView fast access for Bazar/Service/Guard
+     * @param bool
+     */
+    public function isEntryViewFastAccessHelper(): bool
+    {
+        $route = array_keys($_GET)[0];
+        if (substr($route, strlen('api/entries/html'), 1) == '/') {
+            $output = substr($route, strlen('api/entries/'), strlen('html'));
+            $selectedEntries = substr($route, strlen('api/entries/html/'));
+        } else {
+            $output = '';
+            $selectedEntries = '';
+        }
+        return $this->isEntryViewFastAccess($output, $selectedEntries, $_GET);
     }
 
     public function getAllSemanticEntries($formId, $entries)
