@@ -84,11 +84,25 @@ class Guard
                         if ($field instanceof EmailField
                                 && $field->getShowContactForm() == 'form'
                                 && (
-                                    !in_array($this->wiki->getMethod(), ['show','edit','editiframe'])
+                                    (
+                                        !$this->wiki->GetPageTag() == 'api'
+                                        &&
+                                        !in_array($this->wiki->getMethod(), ['show','edit','editiframe'])
+                                    )
                                     ||
-                                    $this->wiki->GetPageTag() == 'api'
+                                    (
+                                        $this->wiki->GetPageTag() == 'api'
+                                        && !(
+                                            // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
+                                            (substr(array_keys($_GET)[0], 0, strlen('api/entries/html/')) == 'api/entries/html/')
+                                            &&
+                                            isset($_GET['fields'])
+                                            &&
+                                            ($_GET['fields'] == 'html_output')
+                                        )
+                                    )
                                 )
-                                ) {
+                            ) {
                             $fieldname[] = $field->getPropertyName();
                         }
                         if ($field instanceof BazarField

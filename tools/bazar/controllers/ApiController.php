@@ -12,6 +12,7 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 
@@ -46,6 +47,22 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
+        // fast access for one entry
+        if (empty($formId) && $output == 'html'
+                && !empty($selectedEntries) && is_string($selectedEntries) && count(explode(',', $selectedEntries)) == 1
+                && !empty($_GET['fields']) && $_GET['fields'] == 'html_output') {
+            $entryId = explode(',', $selectedEntries)[0];
+            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
+                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+            } else {
+                $html = $this->render('@templates/alert-message.twig', [
+                    'type' => 'info',
+                    'message' => _t('ERROR_NO_ACCESS')
+                ]);
+            }
+            return new ApiResponse(empty($html) ? null : [$entryId => ['html_output' => $html]]);
+        }
+
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
             'queries' => $this->getService(EntryController::class)
@@ -246,15 +263,6 @@ class ApiController extends YesWikiController
             ] + (empty($errormsg) ? [] : ['errorMessage' => $errormsg]),
             Response::HTTP_OK
         );
-    }
-
-    /**
-     * @Route("/api/entry/{id}/view", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getBazarShowEntry($id)
-    {
-        $html = $this->getService(EntryController::class)->view($id, '', 1);
-        return new ApiResponse(['html' => $html]);
     }
 
     /**
