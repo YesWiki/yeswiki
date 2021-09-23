@@ -177,7 +177,7 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       this.pagination = parseInt(this.params.pagination)
       this.mounted = true
       // Retrieve data asynchronoulsy
-      $.getJSON('?api/bazar-list-data', this.params, (data) => {
+      $.getJSON('?api/entries/bazarlist', this.params, (data) => {
         // First display filters cause entries can be a bit long to load
         this.filters = data.filters || []        
         

@@ -14,6 +14,7 @@ use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
+
 class ApiController extends YesWikiController
 {
     /**
@@ -175,41 +176,64 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/bazar-list-data", methods={"GET"}, options={"acl":{"public"}})
+     * @Route("/api/entries/bazarlist", methods={"GET"}, options={"acl":{"public"}},priority=2)
      */
     public function getBazarListData()
     {
         try {
+            ob_start(); // to catch error messages
             $bazatListService = $this->getService(BazarListService::class);
-            $forms = $bazatListService->getForms($_GET);
-            $entries = $bazatListService->getEntries($_GET, $forms);     
-            $filters = $bazatListService->formatFilters($_GET, $entries, $forms);  
+            $forms = $bazatListService->getForms([]);
+            $entries = $bazatListService->getEntries(
+                [
+                    'user' => null,
+                    'dateMin' =>  null,
+                    'random' => false,
+                    'ordre' => 'asc',
+                    'champ' => 'bf_titre',
+                    'nb' =>  null,
+                    'colorfield ' => null,
+                    'iconfield ' => null,
+                ] + $_GET,
+                $forms
+            );
+            $filters = $bazatListService->formatFilters($_GET, $entries, $forms);
             
             // Basic fields
             $fieldList = ['id_fiche', 'bf_titre'];
             // If no id, we need idtypeannonce (== formId) to filter
-            if (!isset($_GET['id'])) $fieldList[] = ['id_typeannonce'];
+            if (!isset($_GET['id'])) {
+                $fieldList[] = 'id_typeannonce';
+            }
             // fields for colo / icon
-            $fieldList = array_merge($fieldList, [ $_GET['colorfield'], $_GET['iconfield'] ]);
+            $fieldList = array_merge($fieldList, [ $_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
             // Fields for filters
-            foreach($filters as $field => $config) $fieldList[] = $field;
+            foreach ($filters as $field => $config) {
+                $fieldList[] = $field;
+            }
             // Fields used to search
-            foreach($_GET['searchfields'] ?? [] as $field) $fieldList[] = $field;
+            foreach ($_GET['searchfields'] ?? [] as $field) {
+                $fieldList[] = $field;
+            }
             // Fields used by template
-            foreach($_GET['displayfields'] ?? [] as $field) $fieldList[] = $field;
+            foreach ($_GET['displayfields'] ?? [] as $field) {
+                $fieldList[] = $field;
+            }
             // extra fields required by template
             $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
             $fieldList = array_values(array_unique(array_filter($fieldList))); // array_values to have incremental keys
             
             // Reduce the size of the data sent by transforming entries object into array
             // we use the $fieldMapping to transform back the data when receiving data in the front end
-            $entries = array_map(function($entry) use ($fieldList) {
+            $entries = array_map(function ($entry) use ($fieldList) {
                 $result = [];
-                foreach($fieldList as $field) {
+                foreach ($fieldList as $field) {
                     $result[] = $entry[$field] ?? null;
                 }
                 return $result;
             }, $entries);
+            $errormsg = ob_get_contents();
+            ob_end_clean();
         } catch (\Exception $e) {
             return new ApiResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -219,7 +243,7 @@ class ApiController extends YesWikiController
                 'entries' => $entries,
                 'fieldMapping' => $fieldList,
                 'filters' => $filters
-            ],
+            ] + (empty($errormsg) ? [] : ['errorMessage' => $errormsg]),
             Response::HTTP_OK
         );
     }
@@ -330,6 +354,12 @@ class ApiController extends YesWikiController
         <p>
         <b><code>GET ' . $this->wiki->href('', 'api/entries/html') . '</code></b><br />
         Obtenir la liste de toutes les fiches au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
+        </p>';
+
+        $output .= '
+        <p>
+        <b><code>GET ' . $this->wiki->href('', 'api/entries/bazarlist') . '</code></b><br />
+        Obtenir les données nécessaires à bazarliste dynamic au format json<br />
         </p>';
 
         $output .= '

@@ -10,21 +10,25 @@ use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\FormManager;
 
 class BazarListService
-{  
-    public function __construct(Wiki $wiki, EntryManager $entryManager, EntryController $entryController,
-                                ExternalBazarService $externalBazarService, FormManager $formManager)
-    {
-      $this->wiki = $wiki;
-      $this->entryManager = $entryManager;
-      $this->entryController = $entryController;
-      $this->externalBazarService = $externalBazarService;
-      $this->formManager = $formManager;
+{
+    public function __construct(
+        Wiki $wiki,
+        EntryManager $entryManager,
+        EntryController $entryController,
+        ExternalBazarService $externalBazarService,
+        FormManager $formManager
+    ) {
+        $this->wiki = $wiki;
+        $this->entryManager = $entryManager;
+        $this->entryController = $entryController;
+        $this->externalBazarService = $externalBazarService;
+        $this->formManager = $formManager;
     }
 
     public function getForms($options) : array
     {
         // External mode activated ?
-        if ($options['externalModeActivated'] === true) {
+        if (($options['externalModeActivated'] ?? false) === true) {
             return $this->externalBazarService
                         ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
         } else {
@@ -34,11 +38,13 @@ class BazarListService
 
     public function getEntries($options, $forms = null) : array
     {
-        if (!$forms) $forms = $this->getForms($options);
+        if (!$forms) {
+            $forms = $this->getForms($options);
+        }
 
         // External mode activated ?
         // TODO BazarListdynamic test externalmode works
-        if ($options['externalModeActivated'] === true) {
+        if (($options['externalModeActivated'] ?? false) === true) {
             $entries = $this->externalBazarService->getEntries([
                 'forms' => $forms,
                 'refresh' => $options['refresh'],
@@ -57,7 +63,6 @@ class BazarListService
                 true, // filter on read ACL,
                 true // use Guard
             );
-            
         }
 
         // filter entries on datefilter parameter
@@ -82,15 +87,21 @@ class BazarListService
 
     public function formatFilters($options, $entries, $forms) : array
     {
-        if (count($options['groups'] ?? []) == 0) return [];
+        if (count($options['groups'] ?? []) == 0) {
+            return [];
+        }
         
         // Scanne tous les champs qui pourraient faire des filtres pour les facettes
         $facettables = $this->formManager
                             ->scanAllFacettable($entries, $options['groups']);
 
-        if (count($facettables) == 0) return [];
+        if (count($facettables) == 0) {
+            return [];
+        }
         
-        if (!$forms) $forms = $this->getForms($options);
+        if (!$forms) {
+            $forms = $this->getForms($options);
+        }
         $filters = [];
         // Récupere les facettes cochees
         $tabfacette = [];
