@@ -157,7 +157,7 @@ $(document).ready(function () {
     // il y a des champs requis, on teste la validite champs par champs
     if (inputsreq.length > 0) {
       inputsreq.each(function () {
-        if (!($(this).val().length === 0 || $(this).val() === '' || $(this).val() === '0')) {
+        if (!($(this).val().length === 0 || $(this).val() === '' || ($(this).attr('type') == 'range' && $(this).val() === $(this).data('default')))) {
           $(this).removeClass('invalid');
         } else {
           atleastonefieldnotvalid = true;
