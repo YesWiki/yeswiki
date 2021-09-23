@@ -24,6 +24,29 @@ class BazarCartoAction extends YesWikiAction
         $markerSize = $_GET['markersize'] ?? $arg['markersize'] ?? null;
         $smallMarker = $_GET['smallmarker'] ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
 
+
+        // backward compatibility for custom map.tpl.html
+        // TO remove this part when dynamic is robust AND user of custom templates are really aware of this
+        $dynamic = $this->formatBoolean($arg, false, 'dynamic');
+        $navigation = (!$dynamic) ?
+            ($_GET['navigation'] ?? $arg['navigation'] ?? $this->params->get('baz_show_nav')) :
+            $this->formatBoolean($arg['navigation'] ?? $this->params->get('baz_show_nav'), true);
+        $zoom_molette = (!$dynamic) ?
+            ($arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom')) :
+            $this->formatBoolean(($arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom')), false);
+        $fullscreen = (!$dynamic) ?
+            ($arg['fullscreen'] ?? 'true') :
+            $this->formatBoolean($arg, true, 'fullscreen');
+        $template = (!$dynamic) ?
+            ($arg['template'] ?? 'map.tpl.html') :
+            ($arg['template'] ?? 'map');
+        $spider = (!$dynamic) ?
+            ($arg['spider'] ?? 'false') :
+            $this->formatBoolean($arg, false, 'spider');
+        $cluster = (!$dynamic) ?
+            ($arg['cluster'] ?? 'false') :
+            $this->formatBoolean($arg, false, 'cluster');
+
         return([
             /*
              * Le fond de carte utilisé pour la carte
@@ -71,19 +94,19 @@ class BazarCartoAction extends YesWikiAction
             // Niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
             'zoom' => $_GET['zoom'] ?? $arg['zoom'] ?? $this->params->get('baz_map_zoom'),
             // Affiche outil de navigation
-            'navigation' => $_GET['navigation'] ?? $arg['navigation'] ?? $this->params->get('baz_show_nav'),
+            'navigation' => $navigation,
             // Zoom sur molette
-            'zoom_molette' => $arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom'),
+            'zoom_molette' => $zoom_molette,
             // Affichage en eclate des points superposes : true or false
-            'spider' => $this->formatBoolean($arg, false, 'spider'),
+            'spider' => $spider,
             // Affichage en cluster : true or false
-            'cluster' => $this->formatBoolean($arg, false, 'cluster'),
+            'cluster' => $cluster,
             // Ajout bouton plein écran (https://github.com/brunob/leaflet.fullscreen)
-            'fullscreen' => $arg['fullscreen'] ?? 'true',
+            'fullscreen' => $fullscreen,
             // Fournit une configuration JSON via un URL
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
             //template - default value map
-            'template' => $arg['template'] ?? 'map.tpl.html',
+            'template' => $template,
 
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1 // disable pagination
