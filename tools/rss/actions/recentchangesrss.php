@@ -24,7 +24,7 @@ if (!defined("WIKINI_VERSION")) {
 
 if ($this->GetMethod() != 'xml') {
     echo _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS').' : ';
-    echo $this->Link($this->Href('xml'));
+    echo $this->Link($this->getPageTag(), 'xml', null, $this->Href('xml'));
     return;
 }
 
