@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\ImportService;
 use YesWiki\Wiki;
 use YesWiki\Bazar\Field\ExternalImageField;
 
@@ -12,8 +13,10 @@ class ExternalBazarService
     public const FIELD_ORIGINAL_TYPE = 4 ;// FIELD_MAX_CHARS = 4;
 
     private const MAX_CACHE_TIME = 864000 ; // 10 days ot to keep external data in local
-    private const JSON_FORM_BASE_URL = '?BazaR/json&demand=forms&id=';
+    private const JSON_FORM_BASE_URL = 'BazaR/json&demand=forms&id=';
+    private const JSON_ENTRIES_OLD_BASE_URL = 'BazaR/json&demand=entries&id=';
     private const CACHE_FILENAME_PREFIX = 'ExternalBazarServiceCache_';
+    private const CACHE_FILENAME_DETAILS_PREFIX = 'Details_';
     private const CONVERT_FIELD_NAMES = [
         'checkbox' => 'externalcheckboxlistfield',
         'checkboxlistfield' => 'externalcheckboxlistfield',
@@ -45,21 +48,25 @@ class ExternalBazarService
     protected $timeCacheForForms ;
     protected $formManager ;
     protected $entryManager ;
+    protected $importService ;
     protected $wiki ;
 
     
     protected $newFormId;
     protected $tmpForm ;
+    private $urlCache;
 
     public function __construct(
         Wiki $wiki,
         ParameterBagInterface $params,
         FormManager $formManager,
-        EntryManager $entryManager
+        EntryManager $entryManager,
+        ImportService $importService
     ) {
         $this->wiki = $wiki;
         $this->params = $params;
         $this->formManager = $formManager;
+        $this->importService = $importService;
         $this->entryManager = $entryManager;
         $this->debug = ($this->params->has('debug') && $this->params->get('debug') =='yes');
         $this->timeCacheForEntries = $this->params->has('baz_external_service_time_cache_for_entries')
@@ -70,6 +77,7 @@ class ExternalBazarService
         
         $this->newFormId = null;
         $this->tmpForm = null;
+        $this->urlCache = null;
     }
 
     /**
@@ -85,21 +93,28 @@ class ExternalBazarService
         if ($checkUrl) {
             $url= $this->formatUrl($url);
         }
+        $urlDetails = $this->getUrlDetails($url, $refresh  ? 0 : $this->timeCacheForForms);
+        if (empty($urlDetails)) {
+            if ($this->debug) {
+                trigger_error(get_class($this)."::getForm: "._t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
+            }
+            return null;
+        }
 
         // to prevent DDOS attack refresh only for connected
         if (!$this->wiki->GetUser()) {
             $refresh = false;
         }
 
-        $json = $this->getJSONCachedUrlContent($url.self::JSON_FORM_BASE_URL.$formId, $refresh  ? 0 : $this->timeCacheForForms);
+        $json = $this->getJSONCachedUrlContent($urlDetails[0].'/'.($urlDetails[2] ? '' : '?').self::JSON_FORM_BASE_URL.$formId, $refresh  ? 0 : $this->timeCacheForForms);
         $forms = json_decode($json, true);
 
         if ($forms) {
             return $forms[0];
         } elseif ($this->debug) {
             trigger_error(get_class($this)."::getForm: "._t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM'));
-            return null;
         }
+        return null;
     }
 
     /**
@@ -209,21 +224,44 @@ class ExternalBazarService
                 array_push($entries, ...$localEntries);
             } else {
                 $distantFormId = $form['external_bn_id_nature'];
-                $json = $this->getJSONCachedUrlContent(
-                    $url.'?api/forms/'.$distantFormId.'/entries'.$querystring,
-                    $params['refresh']  ? 0 : $this->timeCacheForEntries
-                );
-                $batchEntries = json_decode($json, true);
-                // replace formId
-                foreach ($batchEntries as $entry) {
-                    // save external data with key 'external-data' because '-' is not used for name
-                    $entry['external-data'] = [
-                            // 'origin_id_typeannonce' => $entry['id_typeannonce'], // if needed in fields
-                            'baseUrl' => $url,
-                        ];
-                    $entry['url'] = $url . '?' . $entry['id_fiche'];
-                    $entry['id_typeannonce'] =$localFormId;
-                    $entries[] = $entry;
+                
+                $urlDetails = $this->getUrlDetails($url, $this->timeCacheForEntries);
+                if (empty($urlDetails)) {
+                    if ($this->debug) {
+                        trigger_error(get_class($this)."::getEntries: "._t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
+                    }
+                } else {
+                    $json = $this->getJSONCachedUrlContent(
+                        $urlDetails[0].'?api/forms/'.$distantFormId.'/entries'.$querystring,
+                        $params['refresh']  ? 0 : $this->timeCacheForEntries
+                    );
+                    $batchEntries = json_decode($json, true);
+                    if (empty($batchEntries)) {
+                        // check if old route is working
+                        $json = $this->getJSONCachedUrlContent(
+                            $urlDetails[0].'/'.($urlDetails[2] ? '' : '?').self::JSON_ENTRIES_OLD_BASE_URL.$distantFormId.$querystring,
+                            $params['refresh']  ? 0 : $this->timeCacheForEntries
+                        );
+                        $batchEntries = json_decode($json, true);
+                        if (is_array($batchEntries)) {
+                            $batchEntries = array_map(function ($entry) {
+                                return ['html_data' => ''] + $entry;
+                            }, $batchEntries);
+                        }
+                    }
+                    if (is_array($batchEntries)) {
+                        // replace formId
+                        foreach ($batchEntries as $entry) {
+                            // save external data with key 'external-data' because '-' is not used for name
+                            $entry['external-data'] = [
+                                    // 'origin_id_typeannonce' => $entry['id_typeannonce'], // if needed in fields
+                                    'baseUrl' => $url,
+                                ];
+                            $entry['url'] = $url . '?' . $entry['id_fiche'];
+                            $entry['id_typeannonce'] =$localFormId;
+                            $entries[] = $entry;
+                        }
+                    }
                 }
             }
         }
@@ -303,7 +341,7 @@ class ExternalBazarService
      */
     public function cacheUrl(string $url, int $cache_life = 60, string $dir = 'cache')
     {
-        $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
+        $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.self::CACHE_FILENAME_DETAILS_PREFIX.$this->sanitizeFileName($url);
 
         $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
         if (!$filemtime or (time() - $filemtime >= $cache_life)) {
@@ -406,6 +444,12 @@ class ExternalBazarService
                 $form['template'][$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
                 $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $url.self::JSON_FORM_BASE_URL.$form['external_bn_id_nature'];
             }
+            // add missing indexes
+            if (count($form['template'][$index]) < 15) {
+                for ($i=count($form['template'][$index]); $i < 16; $i++) {
+                    $form['template'][$index][$i] = '';
+                }
+            }
         }
 
         // parse external fields
@@ -428,5 +472,30 @@ class ExternalBazarService
                 unlink($filePath);
             }
         }
+    }
+
+    /**
+     * get rewrite mode, base url for this external url
+     * @param string $url
+     * @param int $cache_life : duration of the cahe in second
+     * @param string $dir : base dirname where save the cache
+     * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
+     */
+    private function getUrlDetails(string $url, int $cache_life = 60, string $dir = 'cache'): array
+    {
+        if (!isset($this->urlCache[$url])) {
+            $cache_file = $dir.'/'.self::CACHE_FILENAME_PREFIX.$this->sanitizeFileName($url);
+            $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+
+            if (!$filemtime or (time() - $filemtime >= $cache_life)) {
+                $details = $this->importService->extractBaseUrlAndRootPage($url) ;
+                file_put_contents($cache_file, json_encode($details));
+            } else {
+                $details = json_decode(file_get_contents($cache_file));
+            }
+            
+            $this->urlCache[$url] = $details;
+        }
+        return $this->urlCache[$url];
     }
 }
