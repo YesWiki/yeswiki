@@ -297,10 +297,15 @@ function toastMessage(message, duration = 3000, toastClass = 'alert alert-second
     }
 
     var url = window.location.toString();
-    var urlAux = url.split("&theme=");
+    let separator = '&';
+    if ((typeof aceditorBaseUrl == 'string')&& !aceditorBaseUrl.includes("?")){
+      // rewrite mode
+      separator = '?';
+    }
+    var urlAux = url.split(separator+"theme=");
     window.location =
       urlAux[0] +
-      "&theme=" +
+      separator+"theme=" +
       $("#changetheme").val() +
       "&squelette=" +
       $("#changesquelette").val() +
