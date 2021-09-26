@@ -30,15 +30,6 @@ ul.fake-ul {
 .deletions {
   color: #880000;
 }
-.add, .add * {
-  color: white !important;
-  background-color: #4ea952 !important;
-}
-.del, .del * {
-  color: white !important;
-  background-color: red !important;
-  text-decoration: line-through !important;
-}
 
 /* Navigation par table des matieres */
 .trail_table {

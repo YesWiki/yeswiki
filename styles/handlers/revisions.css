@@ -96,3 +96,14 @@
   padding: 2rem;
   min-height: 800px;
 }
+
+ins, ins * {
+  color: white !important;
+  background-color: #4ea952 !important;
+  text-decoration: none !important;
+}
+del, del * {
+  color: white !important;
+  background-color: red !important;
+  text-decoration: line-through !important;
+}
