@@ -57,11 +57,23 @@
 
 .view-types-selector {
   display: flex;
-  justify-content: center;
+  justify-content: left;
+  align-items: center;
   border-bottom: 15px double var(--neutral-color);
+}
+.view-types-selector li {
   /* Display the nav in black */
   --primary-color: var(--neutral-color);
   --link-color: var(--neutral-color);
+}
+.view-types-selector .code-or-preview {
+  flex: 1 auto;
+  text-align: right;  
+  margin: 0;
+}
+.view-types-selector .code-or-preview span {
+  color: var(--primary-color);
+  padding-left: 1.5rem;
 }
 
 .revision-title-container {
@@ -95,6 +107,15 @@
   background-color: #9e9e9e21;
   padding: 2rem;
   min-height: 800px;
+}
+
+.preview-container pre {
+  white-space: pre-wrap; /* breaks line so we don't need to horizontally scroll */
+  font-family: monospace;
+  font-size: 1rem;
+  padding: 0;
+  border: none;
+  background: none;
 }
 
 ins, ins * {

@@ -131,7 +131,9 @@ class ApiController extends YesWikiController
             $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
         }
         if (!empty($_GET['includeDiffFromId'])) {
-            $page['diff'] = $this->getService(DiffService::class)->getDiff($_GET['includeDiffFromId'], $id);
+            $diffService = $this->getService(DiffService::class);
+            $page['diff_html'] = $diffService->getPageDiff($_GET['includeDiffFromId'], $id, true);
+            $page['diff_code'] = $diffService->getPageDiff($_GET['includeDiffFromId'], $id, false);
         }
         return new ApiResponse($page);
     }
