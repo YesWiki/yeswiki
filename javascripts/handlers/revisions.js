@@ -5,11 +5,11 @@ new Vue({
     revisions: [],
     selectedRevision: null,
     viewTypes: {
-      'html': "Aperçu de la version",
-      'code': "Code de la version",
-      'diff': "Différences avec la version antérieure"
+      'current': "Aperçu de cette version",
+      'diff': "Modifs apportées par cette version"
     },
-    selectedViewType: 'html',
+    displayWikiCode: false,
+    selectedViewType: 'current',
   },
   computed: {
     firstRevision() { return this.revisions[this.revisions.length - 1] },
@@ -26,7 +26,10 @@ new Vue({
         year: '2-digit', month: 'short', day: 'numeric', 
         hour: 'numeric', minute: 'numeric' 
       })
-      rev.body = ''; rev.html = ''; rev.diff = '';// initial prop so it gets reactive
+      // initial prop so it gets reactive
+      rev.current_code = ''; rev.current_html = ''; 
+      rev.diff_html = ''; rev.diff_code = '';
+      rev.fullyRetrieved = false
       return rev
     })    
     let timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
@@ -44,14 +47,16 @@ new Vue({
   },
   watch: {
     selectedRevision() {
-      if (this.selectedRevision && !this.selectedRevision.body) {
+      if (this.selectedRevision && !this.selectedRevision.fullyRetrieved) {
         let url = `?api/pages/${this.selectedRevision.id}&includeRender=true`
         let prevRevision = this.revisions.filter(rev => rev.id < this.selectedRevision.id)[0]
         if (prevRevision) url += `&includeDiffFromId=${prevRevision.id}`
         $.getJSON(url, (data) => {
-          this.selectedRevision.body = data.body
-          this.selectedRevision.html = data.html
-          this.selectedRevision.diff = data.diff
+          this.selectedRevision.current_code = data.body
+          this.selectedRevision.current_html = data.html
+          this.selectedRevision.diff_html = data.diff_html
+          this.selectedRevision.diff_code = data.diff_code
+          this.selectedRevision.fullyRetrieved = true
         })
       }
     }
