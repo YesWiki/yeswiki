@@ -24,7 +24,8 @@
         "symfony/routing": "^5.1",
         "symfony/http-foundation": "^5.1",
         "symfony/http-kernel": "^5.1",
-        "tamtamchik/simple-flash": "^2.0"
+        "tamtamchik/simple-flash": "^2.0",
+        "caxy/php-htmldiff": "^0.1.12"
     },
     "extra": {
         "installer-types": ["yeswiki-extension", "yeswiki-theme"],
