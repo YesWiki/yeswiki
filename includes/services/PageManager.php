@@ -115,10 +115,18 @@ class PageManager
     public function getRevisions($page, $limit = 10000)
     {
         return $this->dbService->loadAll("
-            SELECT id, time, user from {$this->dbService->prefixTable('pages')} 
+            SELECT id, time, user FROM {$this->dbService->prefixTable('pages')} 
             WHERE tag = '{$this->dbService->escape($page)}' 
             ORDER BY time DESC
             LIMIT {$limit}
+        ");
+    }
+
+    public function countRevisions($page)
+    {
+        return $this->dbService->count("
+            SELECT * FROM {$this->dbService->prefixTable('pages')} 
+            WHERE tag = '{$this->dbService->escape($page)}'
         ");
     }
 

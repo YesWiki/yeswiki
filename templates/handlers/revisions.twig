@@ -2,7 +2,9 @@
 {{ include_javascript('javascripts/handlers/revisions.js') }}
 {{ include_css('styles/handlers/revisions.css') }}
 
-<div class="revisions-container" data-revisions="{{ revisions|json_encode }}">
+<div class="revisions-container" 
+     data-revisions="{{ revisions|json_encode }}" 
+     data-revisions-count="{{ revisionsCount }}">
   <template v-if="selectedRevision">
     
     <h1 class="text-center text-default">Historique de la page</h1>

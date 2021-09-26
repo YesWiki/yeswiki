@@ -17,6 +17,7 @@ new Vue({
     restoreUrl() { return `${document.location.search}&restoreRevisionId=${this.selectedRevision.id}` }
   },
   mounted() {
+    let revisionsCount = parseInt(this.$el.dataset.revisionsCount)
     this.revisions = JSON.parse(this.$el.dataset.revisions).map(rev => {
       rev.id = parseInt(rev.id)
       rev.time = new Date(rev.time)
@@ -31,7 +32,7 @@ new Vue({
     let timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
     let prevRevision
     this.revisions.forEach((rev, index) => {
-      rev.number = this.revisions.length - index
+      rev.number = revisionsCount - index
       rev.placeInTimeLine = (rev.timestamp - this.firstRevision.timestamp)/timelineLength * 100
       if (prevRevision) {
         // At least 1% gap betwwen each, otherwise we don't see anything in the UI
