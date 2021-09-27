@@ -4,6 +4,8 @@ namespace YesWiki\Core\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
@@ -126,14 +128,24 @@ class ApiController extends YesWikiController
     public function getPage($id)
     {
         $pageManager = $this->getService(PageManager::class);
+        $diffService = $this->getService(DiffService::class);
+        $entryManager = $this->getService(EntryManager::class);
+        $entryController = $this->getService(EntryController::class);
         $page = $pageManager->getById($id);
-        if (!empty($_GET['includeRender'])) {
+        $isEntry = $entryManager->isEntry($page['tag']);
+        if ($isEntry)
+            $page['html'] = $entryController->view($page['tag'], $page['time'], false);
+        else
             $page['html'] = $this->wiki->Format($page["body"], 'wakka', $page['tag']);
-        }
-        if (!empty($_GET['includeDiffFromId'])) {
-            $diffService = $this->getService(DiffService::class);
-            $page['diff_html'] = $diffService->getPageDiff($_GET['includeDiffFromId'], $id, true);
-            $page['diff_code'] = $diffService->getPageDiff($_GET['includeDiffFromId'], $id, false);
+        
+        if (!empty($_GET['includeDiff'])) {
+            $prevVersion = $pageManager->getPreviousRevision($page);
+            $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
+            if (!$isEntry) $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
+
+            $lastVersion = $pageManager->getOne($page['tag']);       
+            $page['diff_html'] = $diffService->getPageDiff($page, $lastVersion, true);
+            if (!$isEntry) $page['diff_code'] = $diffService->getPageDiff($page, $lastVersion, false);
         }
         return new ApiResponse($page);
     }
