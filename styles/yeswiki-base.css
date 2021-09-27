@@ -643,3 +643,10 @@ body {
 .v-select .vs__dropdown-toggle {
   border: none;
 }
+
+.spinner-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .1;
+}

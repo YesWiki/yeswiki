@@ -1,11 +1,12 @@
 import Panel from './components/Panel.js'
+import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 
 var wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>{
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry },
+    components: { Panel, ModalEntry, SpinnerLoader },
     data: {
       mounted: false, // when vue get initialized
       ready: false, // when ajax data have been retrieved

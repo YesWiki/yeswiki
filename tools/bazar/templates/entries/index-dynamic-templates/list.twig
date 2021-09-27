@@ -27,7 +27,8 @@
         </div>
       </template>
       <template #body>
-        <div v-html="entry.html_render"></div>
+        <div v-if="entry.html_render" v-html="entry.html_render"></div>
+        <spinner-loader v-else height="300"></spinner-loader>
       </template>
     </Panel>
   </div>
