@@ -481,5 +481,13 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations']??[], array(
 'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => 'la page "{{page}}" n\'a pas été trouvée dans default-content.sql',
 
 // handlers/revisions
-'SUCCESS_RESTORE_REVISION' => "La version a bien été restaurée"
+'SUCCESS_RESTORE_REVISION' => "La version a bien été restaurée",
+'TITLE_PAGE_HISTORY' => 'Historique de la page',
+'TITLE_ENTRY_HISTORY' => 'Historique de la fiche',
+'REVISION_VERSION' => 'Version N°',
+'REVISION_ON' => 'du',
+'REVISION_BY' => 'par',
+'CURRENT_VERSION' => 'Version actuelle',
+'RESTORE_REVISION' => 'Restaurer cette version',
+'DISPLAY_WIKI_CODE' => 'Afficher le code Wiki'
 ));
