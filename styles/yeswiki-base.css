@@ -782,6 +782,17 @@ html[lang="pt"] [lang]:not([lang="pt"]){
 .reaction-fa-icons {
   font-size: 3em;
 }
+.mini-react {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+.mini-react .reaction-img {
+  max-height:1.5em;
+}
+.mini-react .reaction-emoji,
+.mini-react .reaction-fa-icons {
+  font-size: 1.5em;
+}
 .reaction-content {
   width: 9em;
   text-align: center;
@@ -835,4 +846,48 @@ html[lang="pt"] [lang]:not([lang="pt"]){
   border: 3px solid rgba(0, 0, 0, 0.5);
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
   text-decoration: none;
+}
+
+.update-hint {
+  font-size: .9rem;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  opacity: .9;
+  font-style: italic;
+  line-height: 1rem;
+  text-align: justify;
+}
+
+/* timeline */
+.timeline {
+  position: relative;
+  margin: 2em 0;
+  padding: 0em 3em;
+}
+
+.timeline:before {
+  content: "";
+  position: absolute;
+  height: calc(100% + 2em);
+  width: 1px;
+  border-left: 3px solid var(--primary-color);
+  left: 1.15em;
+  top: -1em;
+  bottom: 0;
+  z-index: 0;
+}
+
+.timeline li {
+  list-style: none;
+  margin-top:2em;
+}
+
+.timeline li:before {
+  position: absolute;
+  content: "·";
+  font-size: 8em;
+  left: 4px;
+  vertical-align: middle;
+  line-height: 8px;
+  color: var(--primary-color);
 }
