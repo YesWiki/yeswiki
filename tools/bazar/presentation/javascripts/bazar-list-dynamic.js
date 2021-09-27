@@ -62,7 +62,10 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
       },
       searchFormId() { this.calculateBaseEntries() },
-      computedFilters() { this.filterEntries() },
+      computedFilters() { 
+        this.filterEntries()
+        this.saveFiltersIntoHash()
+      },
       currentPage() { this.paginateEntries() },
       searchedEntries() { this.calculateFiltersCount() },
     },
@@ -146,6 +149,29 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
         }
         this.search = ''
       },
+      saveFiltersIntoHash() {
+        if (!this.ready) return
+        let hashes = []
+        for(const filterId in this.computedFilters) {
+          hashes.push(`${filterId}=${this.computedFilters[filterId].join(',')}`)
+        }
+        document.location.hash = hashes.join('&')
+      },
+      initFiltersFromHash(filters, hash) {
+        hash = hash.substring(1) // remove #
+        console.log("hash", document.location.hash)
+        for(let combinaison of hash.split('&')) {          
+          let filterId = combinaison.split('=')[0]
+          let filterValues = combinaison.split('=')[1]
+          if (filterId && filterValues && filters[filterId]) {
+            filterValues = filterValues.split(',')
+            for(let filter of filters[filterId].list) {
+              if (filterValues.includes(filter.value)) filter.checked = true
+            }
+          }
+        }  
+        return filters      
+      },
       field(entry, field, fallbackField) {
         let mappedField = this.params.displayfields[field]
         return mappedField ? entry[mappedField] : entry[fallbackField]
@@ -174,14 +200,15 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       }
     },
     mounted() {
+      let savedHash = document.location.hash // don't know how, but the hash get cleared after 
       this.params = JSON.parse(this.$el.dataset.params)
       this.pagination = parseInt(this.params.pagination)
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON('?api/entries/bazarlist', this.params, (data) => {
         // First display filters cause entries can be a bit long to load
-        this.filters = data.filters || []        
-        
+        this.filters = this.initFiltersFromHash(data.filters || [], savedHash)      
+
         // Auto adjust some params depending on entries count
         if (data.entries.length > 50 && !this.pagination) this.pagination = 20 // Auto paginate if large numbers
         if (data.entries.length > 1000) this.params.cluster = true // Activate cluster for map mode
@@ -193,14 +220,12 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
             for(let key in data.fieldMapping) {
               entry[data.fieldMapping[key]] = array[key]
             }
-            
             return entry
           })
           this.calculateBaseEntries()
           this.ready = true
         }, 0)  
       })
-      
     }
   })
 })
