@@ -22,11 +22,10 @@
     {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
     {% set resultsColSize = params.groups ? resultsColSize : 12 %}
     <div class="results-col col-sm-{{ resultsColSize }}">
-      <div class="bazar-list dynamic" v-if="ready">
+      <div class="bazar-list dynamic">
         {% block display_entries %}
         {% endblock %}      
-      </div>
-      <spinner-loader v-else height="600"></spinner-loader>
+      </div>      
     </div>
 
     {% if params.groups %}

@@ -159,7 +159,6 @@ document.querySelectorAll(".bazar-list-dynamic-container").forEach(domElement =>
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
-        console.log("hash", document.location.hash)
         for(let combinaison of hash.split('&')) {          
           let filterId = combinaison.split('=')[0]
           let filterValues = combinaison.split('=')[1]
